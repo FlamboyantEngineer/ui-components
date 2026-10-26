@@ -1,0 +1,14 @@
+/* Property Scope: the filtered parts stack; the status region takes no room while empty. */
+
+.ui-property-scope {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-property-scope__status {
+  padding: 4px 10px;
+}
+
+.ui-property-scope__status:empty {
+  display: none;
+}

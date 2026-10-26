@@ -1,0 +1,91 @@
+/* Toolbar Scroller */
+
+.ui-toolbar-scroller {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.ui-toolbar-scroller__strip {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  overflow: auto hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.ui-toolbar-scroller__strip::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-toolbar-scroller__strip > * {
+  flex: none;
+}
+
+.ui-toolbar-scroller__fade {
+  position: absolute;
+  inset-block: 0;
+  width: 40px;
+  pointer-events: none;
+}
+
+.ui-toolbar-scroller__fade[data-edge='start'] {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-scroller__fade[data-edge='end'] {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-scroller__fade[data-edge='start']:dir(rtl) {
+  background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-scroller__fade[data-edge='end']:dir(rtl) {
+  background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-scroller > .ui-toolbar-scroller__scroll-button[data-edge] {
+  position: absolute;
+  inset-block-start: 50%;
+  z-index: 1;
+  translate: 0 -50%;
+  border-color: var(--ref-border);
+  background: var(--ref-raised);
+}
+
+.ui-toolbar-scroller > .ui-toolbar-scroller__scroll-button[data-edge][data-hovered] {
+  background: color-mix(in srgb, var(--ref-raised), var(--ref-text) var(--ref-tint-subtle));
+}
+
+.ui-toolbar-scroller__scroll-button[data-edge='start'] {
+  inset-inline-start: 0;
+}
+
+.ui-toolbar-scroller__scroll-button[data-edge='end'] {
+  inset-inline-end: 0;
+}
+
+.ui-toolbar-scroller__fade[hidden],
+.ui-toolbar-scroller__scroll-button[hidden] {
+  display: none;
+}
+
+/* A scroller collapsing into a menu keeps every tool at its natural width so it can measure them. */
+.ui-toolbar-scroller[data-overflow='menu'] > .ui-toolbar-scroller__strip {
+  overflow: hidden;
+}
+
+.ui-toolbar-scroller__item,
+.ui-toolbar-scroller__overflow {
+  display: flex;
+  flex: none;
+  align-items: center;
+}

@@ -1,0 +1,90 @@
+/* Breadcrumb */
+
+.ui-breadcrumb {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  font-size: var(--ref-font-size-md);
+  line-height: 24px;
+}
+.ui-breadcrumb[data-size='xs'] {
+  font-size: var(--ref-font-size-xs);
+  line-height: 16px;
+}
+.ui-breadcrumb[data-size='sm'] {
+  font-size: var(--ref-font-size-sm);
+  line-height: 20px;
+}
+.ui-breadcrumb[data-size='lg'] {
+  font-size: var(--ref-font-size);
+  line-height: 28px;
+}
+
+.ui-breadcrumb__list {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+}
+
+.ui-breadcrumb__item {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.ui-breadcrumb__link {
+  min-width: 0;
+  border-radius: var(--ref-radius-sm);
+  color: var(--ref-accent-ink);
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* A block label fills its shrinking link, ellipsizes there and keeps the link's underline. */
+.ui-breadcrumb__link > .ui-breadcrumb__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-breadcrumb__link[data-hovered] {
+  text-decoration: underline;
+}
+.ui-breadcrumb__link[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+.ui-breadcrumb__link[data-disabled] {
+  color: var(--ref-muted);
+  text-decoration: none;
+  cursor: default;
+}
+.ui-breadcrumb__link[data-current] {
+  color: var(--ref-text);
+}
+
+.ui-breadcrumb__separator {
+  flex: none;
+  margin: 0 4px;
+  color: var(--ref-muted);
+}
+
+/* A trail collapsing into a menu keeps every crumb at its natural width, so it can measure them. */
+.ui-breadcrumb[data-overflow='menu'] .ui-breadcrumb__item {
+  flex: none;
+}
+
+.ui-breadcrumb__overflow {
+  color: var(--ref-muted);
+}
+
+.ui-breadcrumb__menu {
+  flex: none;
+  margin-inline-start: 2px;
+  color: var(--ref-muted);
+}

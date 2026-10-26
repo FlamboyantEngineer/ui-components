@@ -1,0 +1,119 @@
+/* Comment Thread */
+
+.ui-comment-thread {
+  display: grid;
+  gap: 10px;
+  box-sizing: border-box;
+  max-width: 440px;
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+}
+
+.ui-comment-thread[data-selected] {
+  border-color: var(--ref-accent);
+  box-shadow: 0 0 0 1px var(--ref-accent);
+}
+
+.ui-comment-thread[data-resolved] {
+  background: var(--ref-canvas);
+}
+
+.ui-comment-thread__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-comment-thread__quote {
+  flex: 1 1 100%;
+  margin: 0;
+  padding: 2px 8px;
+  border-inline-start: 3px solid var(--ref-warning);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-comment-thread__status {
+  flex: none;
+}
+
+.ui-comment-thread__resolve {
+  margin-inline-start: auto;
+}
+
+.ui-comment-thread__comments {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-comment-thread__item:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-comment-thread__more {
+  padding-inline-start: 36px;
+}
+
+.ui-comment-thread__show-more {
+  color: var(--ref-accent-ink);
+}
+
+.ui-comment-thread__error {
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-comment-thread__composer {
+  padding-top: 10px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-comment-thread-reply {
+  display: grid;
+  gap: 4px;
+}
+
+.ui-comment-thread-reply__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-comment-thread-reply__author {
+  min-width: 0;
+}
+
+.ui-comment-thread-reply__actions {
+  flex: none;
+}
+
+.ui-comment-thread-reply__time,
+.ui-comment-thread-reply__edited {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-comment-thread-reply__edited::before {
+  content: '· ';
+}
+
+.ui-comment-thread-reply__body,
+.ui-comment-thread-reply__editor,
+.ui-comment-thread-reply__reactions {
+  padding-inline-start: 36px;
+}
+
+.ui-comment-thread-reply__body {
+  font-size: var(--ref-font-size);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

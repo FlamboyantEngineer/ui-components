@@ -1,0 +1,68 @@
+/* Pivot Table: the field chooser's four zones above the table, totals in bold. */
+
+.ui-pivot-table {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  color: var(--ref-text);
+}
+
+.ui-pivot-table__chooser {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.ui-pivot-table__chooser .ui-board__column,
+.ui-pivot-table__chooser .ui-board__cell {
+  width: 200px;
+}
+
+.ui-pivot-table__field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ui-pivot-table__field[data-zone='values'] {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-pivot-table__field-label {
+  overflow-wrap: anywhere;
+}
+
+.ui-pivot-table__aggregate {
+  flex: 1 1 100%;
+  width: auto;
+  font-weight: 400;
+}
+
+.ui-pivot-table__table {
+  max-height: 420px;
+}
+
+.ui-pivot-table__key,
+.ui-pivot-table__value {
+  white-space: nowrap;
+}
+
+.ui-pivot-table__value {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-pivot-table__key[data-total],
+.ui-pivot-table__value[data-total] {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-pivot-table__chooser .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-pivot-table__chooser .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

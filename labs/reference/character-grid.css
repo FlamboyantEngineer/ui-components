@@ -1,0 +1,107 @@
+/* Character Grid: a search, headed sections of square cells eight to a row, and a preview. */
+
+.ui-character-grid {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  padding: 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+}
+
+.ui-popover .ui-character-grid {
+  border: 0;
+  padding: 0;
+}
+
+.ui-character-grid__grid {
+  max-height: 220px;
+  overflow-y: auto;
+  outline: none;
+}
+
+.ui-character-grid__section {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.ui-character-grid__heading {
+  grid-column: 1 / -1;
+  padding: 4px 0 2px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-character-grid__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  border-radius: var(--ref-radius-sm);
+  font-size: var(--ref-font-size-xl);
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-character-grid__cell[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-character-grid__cell[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-character-grid__cell[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+
+.ui-character-grid__message {
+  padding: 16px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+  text-align: center;
+}
+
+.ui-character-grid__preview {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 36px;
+  padding-top: 6px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-character-grid__preview-char {
+  grid-row: span 2;
+  font-size: var(--ref-font-size-2xl);
+  line-height: 1;
+  text-align: center;
+}
+
+.ui-character-grid__preview-name {
+  overflow: hidden;
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-character-grid__preview-code {
+  color: var(--ref-muted);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-character-grid__search {
+  flex: none;
+}

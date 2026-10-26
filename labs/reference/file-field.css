@@ -1,0 +1,31 @@
+/* File Field: the field's upload, its files' download links and the removed committed files. */
+
+.ui-file-field {
+  width: 100%;
+}
+
+/* The held files stay readable while disabled: the command and remove buttons dim themselves. */
+.ui-file-field[data-disabled] .ui-file-upload__file {
+  border-style: dashed;
+}
+
+.ui-file-field__upload {
+  width: 100%;
+}
+
+.ui-file-field__download {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: var(--ref-radius);
+  color: var(--ref-accent-ink);
+}
+
+.ui-file-field__download:hover {
+  background: var(--ref-hover);
+}
+
+.ui-file-field__removed {
+  flex: none;
+  font-size: var(--ref-font-size-sm);
+}

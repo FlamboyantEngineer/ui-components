@@ -1,0 +1,35 @@
+/* Dropdown Menu. The trigger is a Button or Icon Button. */
+
+.ui-dropdown-menu__caret {
+  transition: transform var(--ref-duration-fast);
+}
+
+.ui-dropdown-menu[data-open] .ui-dropdown-menu__caret {
+  transform: rotate(180deg);
+}
+
+/* A split button joins its action and its chevron into one control. */
+
+.ui-dropdown-menu[data-split] {
+  display: inline-flex;
+  vertical-align: top;
+}
+
+.ui-dropdown-menu .ui-dropdown-menu__action {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.ui-dropdown-menu .ui-dropdown-menu__toggle {
+  margin-inline-start: -1px;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.ui-dropdown-menu__toggle .ui-glyph {
+  transition: transform var(--ref-duration-fast);
+}
+
+.ui-dropdown-menu[data-open] .ui-dropdown-menu__toggle .ui-glyph {
+  transform: rotate(180deg);
+}

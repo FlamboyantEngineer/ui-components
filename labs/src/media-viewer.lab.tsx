@@ -1,0 +1,168 @@
+import { useState, type ReactNode } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import {
+  MediaViewer,
+  type MediaViewerItem,
+} from '../../src/components/media-viewer/media-viewer.js';
+import { PdfViewer } from '../../src/components/pdf-viewer/pdf-viewer.js';
+import type { Key } from '../../src/core/props.js';
+import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
+
+/** A drawn landscape of the given size, as an SVG data URL. */
+function scene(width: number, height: number, sky: string, ground: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="${sky}"/><circle cx="${width * 0.75}" cy="${height * 0.3}" r="${Math.min(width, height) * 0.1}" fill="#fde68a"/><path d="M0 ${height * 0.7} L${width * 0.35} ${height * 0.4} L${width * 0.6} ${height * 0.65} L${width} ${height * 0.45} V${height} H0 Z" fill="${ground}"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+const harbour = scene(1600, 900, '#93c5fd', '#1e3a8a');
+const tower = scene(700, 1200, '#fecaca', '#7f1d1d');
+const meadow = scene(1200, 1200, '#bbf7d0', '#166534');
+
+const photos: MediaViewerItem[] = [
+  {
+    id: 'harbour',
+    src: harbour,
+    name: 'Harbour.svg',
+    type: 'image/svg+xml',
+    alt: 'Blue hills under a pale sky with a low sun',
+    caption: 'The harbour at dawn, from the lighthouse path.',
+    downloadUrl: harbour,
+  },
+  {
+    id: 'tower',
+    src: tower,
+    name: 'Tower.svg',
+    type: 'image/svg+xml',
+    alt: 'Red hills under a pink sky, in portrait',
+    caption: 'The old tower in the evening.',
+    downloadUrl: tower,
+  },
+  {
+    id: 'meadow',
+    src: meadow,
+    name: 'Meadow.svg',
+    type: 'image/svg+xml',
+    alt: 'Green hills under a mint sky',
+  },
+];
+
+const mixed: MediaViewerItem[] = [
+  photos[0] as MediaViewerItem,
+  {
+    id: 'report',
+    src: sampleUrl,
+    name: 'Seasonal report.pdf',
+    type: 'application/pdf',
+    caption: 'Rendered by the PDF viewer.',
+    downloadUrl: sampleUrl,
+  },
+  { id: 'notes', src: 'notes.txt', name: 'Notes.txt', type: 'text/plain' },
+];
+
+const typed: MediaViewerItem[] = [
+  { ...photos[0]!, id: 1 },
+  { ...photos[1]!, id: '1' },
+];
+const sets = { photos, mixed, single: [photos[2] as MediaViewerItem], typed } as const;
+type SetName = keyof typeof sets;
+
+/** Renders the PDF of a mixed set in the library's PDF viewer; other files fall back. */
+function renderFile(item: MediaViewerItem): ReactNode {
+  if (item.type !== 'application/pdf') return null;
+  return (
+    <PdfViewer
+      source={item.src}
+      loadEngine={loadEngine}
+      workerSrc={workerSrc}
+      aria-label={item.name}
+    />
+  );
+}
+
+function Output({ name, children }: { name: string; children: ReactNode }) {
+  return (
+    <p>
+      {name}: <output data-lab-output={name}>{children}</output>
+    </p>
+  );
+}
+
+/** A button that opens the viewer on a set at its first or last item. */
+function Opener({ set, opens }: { set: SetName; opens: 'first' | 'last' }) {
+  const [isOpen, setOpen] = useState(false);
+  const items = sets[set];
+  const start = opens === 'first' ? items[0] : items.at(-1);
+  return (
+    <>
+      <Button onPress={() => setOpen(true)} data-lab-open={`${set}-${opens}`}>
+        Open {start?.name}
+      </Button>
+      <MediaViewer
+        items={items}
+        defaultSelectedKey={start?.id}
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        renderItem={renderFile}
+      />
+    </>
+  );
+}
+
+/** A gallery of thumbnails, each opening the viewer at its photo. */
+function Gallery() {
+  const [selected, setSelected] = useState<Key | null>(null);
+  const [shown, setShown] = useState<Key>('none');
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 8 }} data-lab-gallery="photos">
+        {photos.map((photo) => (
+          <Button
+            key={photo.id}
+            variant="ghost"
+            aria-label={`View ${photo.name}`}
+            onPress={() => {
+              setSelected(photo.id);
+              setShown(photo.id);
+            }}
+          >
+            <img src={photo.src} alt="" width={96} height={64} style={{ objectFit: 'cover' }} />
+          </Button>
+        ))}
+      </div>
+      <MediaViewer
+        items={photos}
+        selectedKey={selected ?? undefined}
+        isOpen={selected !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setSelected(null);
+        }}
+        onSelectionChange={(key) => {
+          setSelected(key);
+          setShown(key);
+        }}
+      />
+      <Output name="shown">{String(shown)}</Output>
+    </>
+  );
+}
+
+mountLab(
+  <>
+    <LabSection
+      title="Sets"
+      description="Photos of three shapes, a mixed set with a PDF (in the PDF viewer) and a text file without a preview, a single photo, and two photos with distinct numeric and text keys of the same spelling, opened at the first or last item."
+    >
+      <StateMatrix
+        axes={{ set: Object.keys(sets) as SetName[], opens: ['first', 'last'] }}
+        render={({ set, opens }) => <Opener set={set} opens={opens} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Gallery"
+      description="Press a photo to open it. Arrow keys move through the set, + and - zoom, the header turns and downloads, and Escape closes."
+    >
+      <Gallery />
+    </LabSection>
+  </>,
+);

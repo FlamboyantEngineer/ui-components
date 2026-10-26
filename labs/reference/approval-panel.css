@@ -1,0 +1,108 @@
+/* Approval Panel */
+
+.ui-approval-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 480px;
+  padding: 16px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-approval-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-approval-panel__title {
+  margin: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-approval-panel__outcome {
+  flex: none;
+}
+
+.ui-approval-panel__progress {
+  min-width: 0;
+}
+
+.ui-approval-panel__approvers {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-approval-panel__approver {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 4px 8px;
+  margin-inline: -8px;
+  padding: 8px;
+  border-radius: var(--ref-radius);
+}
+
+.ui-approval-panel__approver + .ui-approval-panel__approver {
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-approval-panel__approver[data-current] {
+  background: var(--ref-selected);
+}
+
+.ui-approval-panel__identity {
+  grid-row: 1;
+  grid-column: 1;
+  min-width: 0;
+}
+
+.ui-approval-panel__you {
+  margin-inline-start: 6px;
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-approval-panel__decision {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+}
+
+.ui-approval-panel__time {
+  grid-row: 1;
+  grid-column: 3;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+}
+
+.ui-approval-panel__comment {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  padding-inline-start: 32px;
+  color: var(--ref-muted);
+}
+
+.ui-approval-panel__remind,
+.ui-approval-panel__request-again {
+  grid-row: 1;
+  grid-column: 4;
+  color: var(--ref-muted);
+}
+
+.ui-approval-panel__actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--ref-border);
+}

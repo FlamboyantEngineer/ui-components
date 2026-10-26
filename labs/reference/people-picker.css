@@ -1,0 +1,31 @@
+/* People Picker */
+
+.ui-people-picker {
+  width: 280px;
+}
+
+.ui-people-picker__person {
+  flex: 1 1 auto;
+  padding-block: 2px;
+}
+
+.ui-people-picker__person[data-kind='group'] .ui-user-identity__name {
+  font-style: italic;
+}
+
+.ui-people-picker__you {
+  color: var(--ref-muted);
+  font-weight: 400;
+}
+
+/* A chip's avatar fills the combobox's chip icon box. */
+.ui-people-picker__avatar.ui-avatar {
+  width: 16px;
+  height: 16px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-people-picker .ui-combobox__chip-icon:has(.ui-people-picker__avatar) {
+  width: 16px;
+  height: 16px;
+}

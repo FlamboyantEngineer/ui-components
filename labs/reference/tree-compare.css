@@ -1,0 +1,198 @@
+/* Tree Compare */
+
+.ui-tree-compare {
+  display: grid;
+  gap: 8px;
+  min-width: 440px;
+  font-size: var(--ref-font-size-md);
+  --ref-tree-compare-marker: 24px;
+  --ref-tree-compare-actions: 28px;
+}
+
+/* Two trees side by side indent less than one tree. */
+.ui-tree-compare .ui-tree {
+  --ref-indent: 16px;
+}
+
+.ui-tree-compare__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.ui-tree-compare__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+p.ui-tree-compare__summary {
+  color: var(--ref-muted);
+}
+
+.ui-tree-compare__count {
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-inline-start-width: 3px;
+  border-radius: var(--ref-radius);
+  font-size: var(--ref-font-size-sm);
+  line-height: 20px;
+}
+
+.ui-tree-compare__count[data-change='added'] {
+  border-inline-start-color: var(--ref-success);
+}
+
+.ui-tree-compare__count[data-change='removed'] {
+  border-inline-start-color: var(--ref-danger);
+}
+
+.ui-tree-compare__count[data-change='changed'] {
+  border-inline-start-color: var(--ref-warning);
+}
+
+.ui-tree-compare__count[data-change='moved'] {
+  border-inline-start-color: var(--ref-info);
+}
+
+.ui-tree-compare__changes-only {
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-tree-compare__previous {
+  margin-inline-start: auto;
+}
+
+.ui-tree-compare__previous,
+.ui-tree-compare__next {
+  flex: none;
+}
+
+.ui-tree-compare__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--ref-tree-compare-marker) minmax(0, 1fr);
+  padding-inline: 5px calc(var(--ref-tree-compare-actions) + 5px);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
+  text-transform: uppercase;
+}
+
+.ui-tree-compare__column-label {
+  padding-inline-start: 24px;
+}
+
+.ui-tree-compare__column-label[data-side='right'] {
+  grid-column: 3;
+}
+
+.ui-tree-compare__tree {
+  padding: 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+}
+
+/* Each side indents on its own, so the row's expand button moves into the left cell. */
+.ui-tree-compare__tree .ui-tree__item {
+  position: relative;
+  padding-inline: 0 var(--ref-tree-compare-actions);
+}
+
+.ui-tree-compare__tree :is(.ui-tree__expand, .ui-tree__expand-spacer) {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: calc((var(--ui-tree-level) - 1) * var(--ref-indent) + 2px);
+  z-index: 1;
+  transform: translateY(-50%);
+}
+
+.ui-tree-compare__tree .ui-tree__label {
+  overflow: visible;
+}
+
+.ui-tree-compare__tree .ui-tree__actions {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 2px;
+  transform: translateY(-50%);
+}
+
+.ui-tree-compare__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--ref-tree-compare-marker) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.ui-tree-compare__cell {
+  position: relative;
+  min-width: 0;
+  padding-block: 2px;
+  padding-inline: calc((var(--ui-tree-level) - 1) * var(--ref-indent) + 24px) 6px;
+  overflow: hidden;
+  border-radius: var(--ref-radius-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-tree-compare__cell[data-empty] {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 4px,
+    color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent) 4px 5px
+  );
+}
+
+.ui-tree-compare__branch {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: calc((var(--ui-tree-level) - 1) * var(--ref-indent) + 4px);
+  color: var(--ref-muted);
+  transform: translateY(-50%);
+}
+
+.ui-tree-compare__row[data-change='removed'] .ui-tree-compare__cell[data-side='left'] {
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
+}
+
+.ui-tree-compare__row[data-change='added'] .ui-tree-compare__cell[data-side='right'] {
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
+}
+
+.ui-tree-compare__row[data-change='changed'] .ui-tree-compare__cell {
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+}
+
+.ui-tree-compare__row[data-change='moved'] .ui-tree-compare__cell:not([data-empty]) {
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), transparent);
+}
+
+.ui-tree-compare__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-tree-compare__marker[data-change='added'] {
+  color: var(--ref-success);
+}
+
+.ui-tree-compare__marker[data-change='removed'] {
+  color: var(--ref-danger);
+}
+
+.ui-tree-compare__marker[data-change='changed'] {
+  color: var(--ref-warning);
+}
+
+.ui-tree-compare__marker[data-change='moved'] {
+  color: var(--ref-info);
+}
+
+.ui-tree-compare__jump {
+  color: var(--ref-info);
+}

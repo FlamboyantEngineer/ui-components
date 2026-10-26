@@ -1,0 +1,122 @@
+/* Change List */
+
+.ui-change-list {
+  font-size: var(--ref-font-size-md);
+  line-height: 20px;
+}
+
+.ui-change-list[data-variant='compact'] {
+  gap: 6px 12px;
+}
+
+.ui-change-list[data-variant='detailed'] {
+  gap: 12px;
+}
+
+.ui-change-list__change {
+  min-width: 0;
+}
+
+.ui-change-list__old,
+.ui-change-list__item del {
+  color: var(--ref-danger);
+  text-decoration: line-through;
+}
+
+.ui-change-list__new,
+.ui-change-list__item ins {
+  color: var(--ref-success);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* A change list may sit on a tinted surface: its runs keep their contrast without a tint. */
+.ui-change-list .ui-inline-text-diff__removed,
+.ui-change-list .ui-inline-text-diff__added {
+  background: none;
+}
+
+.ui-change-list .ui-inline-text-diff__added {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.ui-change-list__old .ui-badge,
+.ui-change-list__new .ui-badge {
+  text-decoration: inherit;
+}
+
+.ui-change-list__arrow {
+  color: var(--ref-muted);
+}
+
+.ui-change-list__text {
+  overflow-wrap: anywhere;
+}
+
+.ui-change-list__items {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  vertical-align: top;
+}
+
+.ui-change-list__item {
+  padding: 0 6px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-change-list__item[data-change='added'] {
+  border-color: var(--ref-success);
+}
+
+.ui-change-list__item[data-change='removed'] {
+  border-color: var(--ref-danger);
+}
+
+.ui-change-list__item > ins {
+  text-decoration: none;
+}
+
+.ui-change-list__side {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 8px;
+  border-inline-start: 3px solid var(--ref-border);
+  background: var(--ref-surface);
+}
+
+.ui-change-list__side[data-side='before'] {
+  border-radius: var(--ref-radius) var(--ref-radius) 0 0;
+}
+
+.ui-change-list__side[data-side='after'] {
+  border-radius: 0 0 var(--ref-radius) var(--ref-radius);
+}
+
+.ui-change-list__caption {
+  flex: none;
+  min-width: 3.5rem;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
+  text-transform: uppercase;
+}
+
+.ui-change-list__empty {
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+.ui-change-list__attribution {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}

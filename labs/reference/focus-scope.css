@@ -1,0 +1,17 @@
+/* Focus Scope. The region lays out its content in a column; a scope that traps focus is outlined. */
+
+.ui-focus-scope {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-block: 8px;
+  padding: 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-focus-scope[data-contain] {
+  border-style: dashed;
+  border-color: var(--ref-border-strong);
+}

@@ -1,0 +1,69 @@
+/* State Machine View: rounded state boxes inside the canvas nodes; final states get a double frame. */
+
+.ui-state-machine-view .ui-diagram-canvas__node {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.ui-state-machine-view .ui-diagram-canvas__node[data-selected] .ui-state-machine-view__state {
+  border-color: var(--ref-accent);
+  box-shadow: 0 0 0 1px var(--ref-accent);
+}
+
+.ui-state-machine-view[data-orientation='vertical'] .ui-diagram-canvas__edge-label {
+  background: var(--ref-surface);
+}
+
+.ui-state-machine-view__state {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-state-machine-view__state[data-current] {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+  color: var(--ref-on-fill);
+}
+
+.ui-state-machine-view__state[data-final] {
+  outline: 1px solid var(--ref-border-strong);
+  outline-offset: 3px;
+}
+
+.ui-state-machine-view__state-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-state-machine-view__initial-marker {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--ref-text);
+  transform: translateY(-50%);
+}
+
+.ui-state-machine-view[data-orientation='vertical'] .ui-state-machine-view__initial-marker {
+  top: auto;
+  right: auto;
+  bottom: 100%;
+  left: 50%;
+  margin: 0 0 10px;
+  transform: translateX(-50%);
+}

@@ -1,0 +1,52 @@
+/* Inline Error */
+
+.ui-inline-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 8px;
+  color: var(--ref-danger);
+}
+.ui-inline-error[data-tone='warning'] {
+  color: var(--ref-warning);
+}
+.ui-inline-error[data-tone='success'] {
+  color: var(--ref-success);
+}
+.ui-inline-error[data-pending] {
+  color: var(--ref-muted);
+}
+.ui-inline-error__icon {
+  margin-block-start: 0.15em;
+}
+.ui-inline-error__spinner {
+  flex: none;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  margin-block-start: 0.15em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-inline-error__spinner {
+    animation: none;
+  }
+}
+.ui-inline-error__message {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ui-inline-error__message > p {
+  margin: 0;
+}
+.ui-inline-error__message > :is(ul, ol) {
+  margin: 0;
+  padding-inline-start: 1.25em;
+}
+.ui-inline-error__retry {
+  flex: none;
+}

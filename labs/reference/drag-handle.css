@@ -1,0 +1,32 @@
+/* Drag Handle */
+
+.ui-drag-handle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: transparent;
+  color: var(--ref-muted);
+  vertical-align: middle;
+  cursor: grab;
+  outline: none;
+}
+
+.ui-drag-handle[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-drag-handle[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-drag-handle[data-disabled] {
+  cursor: default;
+  opacity: var(--ref-disabled-opacity);
+}

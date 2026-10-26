@@ -1,0 +1,203 @@
+// @vitest-environment node
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
+
+const script = join(process.cwd(), 'scripts', 'check-reference-tokens.mjs');
+const dirs: string[] = [];
+
+const base = `:root {
+  --ref-text: #1f2328;
+  --ref-canvas: #ffffff;
+  --ref-accent: #0969da;
+  --ref-radius: 6px;
+  --ref-font-size-sm: 12px;
+}
+:root[data-theme='dark'] {
+  --ref-text: #f0f6fc;
+  --ref-canvas: #0d1117;
+}
+`;
+
+function check(partials: Record<string, string>, baseCss = base) {
+  const dir = mkdtempSync(join(tmpdir(), 'ui-tokens-'));
+  dirs.push(dir);
+  writeFileSync(join(dir, 'base.css'), baseCss);
+  for (const [name, css] of Object.entries(partials)) writeFileSync(join(dir, name), css);
+  return spawnSync(process.execPath, [script, '--dir', dir], { encoding: 'utf8' });
+}
+
+afterEach(() => {
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+});
+
+describe('reference token check', () => {
+  it('UIC-LABS-3.5 passes the repository reference stylesheet', () => {
+    const result = spawnSync(process.execPath, [script], { encoding: 'utf8' });
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.5 accepts partials that use the tokens', () => {
+    const result = check({
+      'card.css': `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); font-size: var(--ref-font-size-sm); border-color: var(--ref-accent); }`,
+    });
+    expect(result.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.5 rejects literals a token covers, unless marked exempt', () => {
+    const result = check({
+      'card.css': `.ui-card { color: #333; border-radius: 5px; font-size: 13px; transition: opacity 0.3s; }
+.ui-card[data-disabled] { opacity: 0.4; }
+.ui-card__paper { background: #ffffff; /* token-exempt: paper */ }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('literal colour in color');
+    expect(result.stderr).toContain('border-radius "5px" is not a radius token');
+    expect(result.stderr).toContain('font-size "13px" is not a type token');
+    expect(result.stderr).toContain('literal duration in transition');
+    expect(result.stderr).toContain('use --ref-disabled-opacity');
+    expect(result.stderr).not.toContain('card.css:3');
+  });
+
+  it('UIC-LABS-3.5 checks size, weight and family in font shorthands while preserving line height', () => {
+    const type = `${base}:root { --ref-font: system-ui; }`;
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); border-color: var(--ref-accent); font-size: var(--ref-font-size-sm); font-family: var(--ref-font); }`;
+    const result = check(
+      {
+        'card.css': `${common}
+.ui-card__label { font: 13px/20px var(--ref-font); }
+.ui-card__title { font: 600 var(--ref-font-size-sm)/1.3 var(--ref-font); }
+.ui-card__other { font: var(--ref-font-size-sm)/1.3 Arial; }`,
+      },
+      type,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr.match(/is not a type token shorthand/g)).toHaveLength(3);
+    const valid = check(
+      {
+        'card.css': `${common}
+.ui-card__code { font: var(--ref-font-size-sm)/20px var(--ref-font); }
+.ui-card__label { font: inherit; }`,
+      },
+      type,
+    );
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.6 UIC-LABS-3.7 checks every grouped selector without splitting functional or quoted commas', () => {
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); border-color: var(--ref-accent); font-size: var(--ref-font-size-sm); }`;
+    const result = check(
+      {
+        'card.css': `${common}
+.ui-card[data-selected],
+.ui-card__label { padding: 8px; }
+.ui-card[data-size='sm'],
+.ui-card[data-size='xs'] { height: var(--ref-control-height-sm); }`,
+      },
+      `${base}:root { --ref-control-height-sm: 24px; }`,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:3: padding changes with a state');
+    expect(result.stderr).toContain('a xs control takes --ref-control-height-xs');
+    const valid = check({
+      'card.css': `${common}
+.ui-card:not([data-dirty], [data-invalid]),
+.ui-card[data-name='selected, other'] { padding: 8px; }`,
+    });
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.5 marks a dirty field with a uniform frame, not a bar', () => {
+    const result = check({
+      'card.css': `.ui-card[data-dirty] .ui-card__frame { border-inline-start: 3px solid var(--ref-accent); }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('a dirty field marks its whole frame');
+  });
+
+  it('UIC-LABS-3.6 rejects state rules that size or place a box, unless marked exempt', () => {
+    const result = check({
+      'card.css': `.ui-card[data-selected] { font-weight: var(--ref-font-weight-strong); }
+.ui-card[data-validation='invalid'] .ui-card__message { margin-top: 4px; }
+.ui-card:hover { padding: 4px; }
+.ui-card[data-focus-within] { display: block; /* layout-exempt: a skip link */ }
+.ui-card[data-current] { color: var(--ref-text); background: var(--ref-canvas); }
+.ui-card:not([data-dirty])::after { width: 26px; }
+.ui-card[data-expanded] { height: 40px; }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:1: font-weight changes with a state');
+    expect(result.stderr).toContain('card.css:2: margin-top changes with a state');
+    expect(result.stderr).toContain('card.css:3: padding changes with a state');
+    expect(result.stderr).not.toMatch(/card\.css:[4-7]:/);
+  });
+
+  it('UIC-LABS-3.7 sizes controls from the control scale at their own step', () => {
+    const scale = base.replace(
+      '  --ref-font-size-sm: 12px;\n',
+      '  --ref-font-size-sm: 12px;\n  --ref-control-height-sm: 24px;\n  --ref-control-height-md: 28px;\n',
+    );
+    const result = check(
+      {
+        'card.css': `.ui-card { height: var(--ref-control-height-md); }
+.ui-card[data-size='sm'] { height: var(--ref-control-height-md); }
+.ui-card__chip[data-size='sm'] { height: 18px; }`,
+        'tile.css': `.ui-tile { height: var(--ref-control-height-md); }
+.ui-tile[data-size='sm'] { height: 26px; }`,
+        'pill.css': `.ui-pill { height: var(--ref-control-height-md); }
+.ui-pill[data-size='sm'] { height: calc(var(--ref-control-height-sm) - 2px); }`,
+      },
+      scale,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'card.css:2: a sm control takes --ref-control-height-sm, not --ref-control-height-md',
+    );
+    expect(result.stderr).toContain('tile.css:2: height "26px" sizes a control off the scale');
+    expect(result.stderr).not.toMatch(/card\.css:3|pill\.css/);
+  });
+
+  it('UIC-LABS-3.8 rings a focused field frame with the thin focus token, never by hand', () => {
+    const focus = `${base}:root { --ref-focus: var(--ref-accent); --ref-focus-ring-thin: 1px solid var(--ref-focus); }`;
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); font-size: var(--ref-font-size-sm); }`;
+    const result = check(
+      {
+        'card.css': `.ui-card:focus-within { border-color: var(--ref-focus); box-shadow: 0 0 0 1px var(--ref-focus); }
+.ui-card__input:focus { outline: 2px solid var(--ref-focus); }
+${common}`,
+      },
+      focus,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:1: box-shadow builds a focus ring by hand');
+    expect(result.stderr).toContain('card.css:2: outline builds a focus ring by hand');
+    const valid = check(
+      {
+        'card.css': `.ui-card:focus-within { border-color: var(--ref-focus); outline: var(--ref-focus-ring-thin); }
+${common}`,
+      },
+      focus,
+    );
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
+    const result = check(
+      {
+        'card.css': `.ui-card { --ref-gap: 4px; gap: var(--ref-gap); color: var(--ref-missing); }`,
+      },
+      base.replace('  --ref-radius: 6px;\n', '  --ref-radius: 6px;\n  --ref-ink: #0969da;\n'),
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('--ref-missing is used but never defined');
+    expect(result.stderr).toContain('--ref-ink is defined but never used');
+    expect(result.stderr).toContain('--ref-gap is scoped to card.css, so it is named --ref-card-');
+    expect(result.stderr).toMatch(/--ref-(ink|accent) repeats the value of --ref-(accent|ink)/);
+  });
+});

@@ -1,0 +1,25 @@
+/* Truncation Tooltip */
+
+.ui-truncation-tooltip {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.ui-truncation-tooltip__panel {
+  white-space: normal;
+}
+
+.ui-truncation-tooltip[data-expanded] {
+  display: inline;
+  overflow: visible;
+  white-space: normal;
+}
+
+.ui-truncation-tooltip__toggle {
+  margin-inline-start: 4px;
+  vertical-align: bottom;
+}

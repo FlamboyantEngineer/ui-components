@@ -1,0 +1,60 @@
+/* Prose Table */
+
+.ui-prose-table {
+  width: 100%;
+  margin-block: 8px;
+  border-collapse: collapse;
+  font: inherit;
+}
+
+.ui-prose-table :is(th, td) {
+  padding: 4px 8px;
+  border: 1px solid var(--ref-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.ui-prose-table th {
+  background: var(--ref-surface);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-prose-table__caption {
+  padding-block-end: 4px;
+  color: var(--ref-muted);
+  text-align: start;
+}
+
+.ui-prose-table tbody th {
+  background: transparent;
+}
+
+.ui-prose-table tfoot :is(th, td) {
+  border-top-width: 2px;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-prose-table [data-align='start'] {
+  text-align: start;
+}
+
+.ui-prose-table [data-align='center'] {
+  text-align: center;
+}
+
+.ui-prose-table [data-align='end'] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-prose-table[data-sticky-header] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ui-prose-table[data-sticky-header] {
+  margin-block-start: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}

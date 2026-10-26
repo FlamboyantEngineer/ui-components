@@ -1,0 +1,77 @@
+/* Menubar. The menus are the library menu in its popover; the bar draws only its top-level items. */
+
+.ui-menubar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  box-sizing: border-box;
+  padding: 2px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font: var(--ref-font-size-md)/1.2 var(--ref-font);
+  vertical-align: top;
+}
+
+.ui-menubar[data-orientation='vertical'] {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ui-menubar__trigger {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--ref-control-height-md);
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: default;
+  outline: none;
+}
+
+.ui-menubar[data-size='xs'] {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-menubar[data-size='xs'] .ui-menubar__trigger {
+  height: var(--ref-control-height-xs);
+  padding: 0 6px;
+}
+
+.ui-menubar[data-size='sm'] {
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-menubar[data-size='sm'] .ui-menubar__trigger {
+  height: var(--ref-control-height-sm);
+  padding: 0 8px;
+}
+
+.ui-menubar[data-size='lg'] {
+  font-size: var(--ref-font-size);
+}
+
+.ui-menubar[data-size='lg'] .ui-menubar__trigger {
+  height: var(--ref-control-height-lg);
+  padding: 0 12px;
+}
+
+.ui-menubar__trigger[data-hovered],
+.ui-menubar__trigger[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-menubar__trigger[data-open],
+.ui-menubar__trigger[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-menubar__trigger[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}

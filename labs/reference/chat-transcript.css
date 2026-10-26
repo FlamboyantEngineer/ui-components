@@ -1,0 +1,499 @@
+/* Chat Transcript */
+
+/* The transcript fills the height its container gives it; the log scrolls inside. */
+.ui-chat-transcript {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  box-sizing: border-box;
+  height: 100%;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: var(--ref-font-size)/1.45 var(--ref-font);
+}
+
+.ui-chat-transcript__log {
+  min-height: 0;
+}
+
+.ui-chat-transcript__log > .ui-scroll-region__viewport {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 12px;
+  /* The transcript keeps the reader's place itself; the browser's own anchoring would add to it. */
+  overflow-anchor: none;
+}
+
+.ui-chat-transcript__feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ui-chat-transcript__feed > :focus-visible {
+  border-radius: var(--ref-radius-lg);
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+/* A light tint on the canvas, so the muted time and markers on the message stay readable. */
+.ui-chat-transcript__feed > [data-highlighted] {
+  border-radius: var(--ref-radius-lg);
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), var(--ref-canvas));
+}
+
+/* The place above the messages keeps its height, so the indicator appearing moves nothing. */
+.ui-chat-transcript__history {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding-block-end: 12px;
+}
+
+/* In anchor mode the spacer keeps the scroll range; the transcript sets its height. */
+.ui-chat-transcript__spacer {
+  flex: none;
+}
+
+.ui-chat-transcript__unread {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.ui-chat-transcript__announcer {
+  white-space: nowrap;
+}
+
+.ui-chat-transcript__empty {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  margin: auto 0;
+  color: var(--ref-muted);
+}
+
+.ui-chat-transcript__empty p {
+  margin: 0;
+}
+
+.ui-chat-transcript__jump {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-chat-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 85%;
+}
+
+.ui-chat-message[data-origin='sent'] {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.ui-chat-message[data-origin='system'] {
+  align-self: center;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-message__avatar {
+  flex: none;
+}
+
+.ui-chat-message__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-chat-message__header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-message[data-origin='sent'] .ui-chat-message__header {
+  justify-content: flex-end;
+}
+
+.ui-chat-message__author {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-message__time {
+  color: var(--ref-muted);
+}
+
+.ui-chat-message__content {
+  padding: 6px 10px;
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-surface);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ui-chat-message[data-origin='sent'] .ui-chat-message__content {
+  background: var(--ref-selected);
+}
+
+.ui-chat-message[data-origin='system'] .ui-chat-message__content {
+  padding: 0;
+  background: none;
+}
+
+.ui-chat-message[data-status='streaming'] .ui-chat-message__content::after {
+  content: '▍';
+  color: var(--ref-muted);
+}
+
+.ui-chat-message[data-status='error'] .ui-chat-message__content {
+  outline: 1px solid var(--ref-danger);
+}
+
+.ui-chat-message__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ui-chat-message[data-origin='sent'] .ui-chat-message__actions {
+  justify-content: flex-end;
+}
+
+/* Message additions: grouping, hover and focus, quote, markers, delivery, errors, reactions and readers */
+
+.ui-chat-message__body {
+  position: relative;
+}
+
+/* A grouped message keeps its body in line with the first message's, past the avatar. */
+.ui-chat-message:is([data-group-position='middle'], [data-group-position='last']) {
+  margin-block-start: -8px;
+  padding-inline-start: 32px;
+}
+
+.ui-chat-message[data-origin='sent']:is(
+    [data-group-position='middle'],
+    [data-group-position='last']
+  ) {
+  padding-inline: 0 32px;
+}
+
+/* A grouped message's header holds only its time, shown beside the bubble on hover and focus. */
+.ui-chat-message:is([data-group-position='middle'], [data-group-position='last'])
+  .ui-chat-message__header {
+  position: absolute;
+  inset-block-end: 6px;
+  inset-inline-start: 100%;
+  padding-inline: 6px;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.ui-chat-message[data-origin='sent']:is(
+    [data-group-position='middle'],
+    [data-group-position='last']
+  )
+  .ui-chat-message__header {
+  inset-inline: auto 100%;
+}
+
+.ui-chat-message:is([data-hovered], [data-focus-within]) .ui-chat-message__header {
+  opacity: 1;
+}
+
+/* Without avatars a grouped message lines up with the first one at the edge. */
+.ui-chat-message[data-avatar-hidden]:is(
+    [data-group-position='middle'],
+    [data-group-position='last']
+  ) {
+  padding-inline: 0;
+}
+
+/* A plain message is text on the page; a plain reply takes the whole width. */
+.ui-chat-message[data-variant='plain'] .ui-chat-message__content {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.ui-chat-message[data-variant='plain'][data-origin='received'] {
+  align-self: stretch;
+  max-width: none;
+}
+
+.ui-chat-message[data-variant='plain'][data-origin='received']:is(
+    [data-group-position='middle'],
+    [data-group-position='last']
+  )
+  .ui-chat-message__header {
+  inset-block: 0 auto;
+  inset-inline: auto 0;
+}
+
+/* The actions float over the bubble's corner while the message is hovered or holds focus. */
+.ui-chat-message__actions {
+  position: absolute;
+  inset-block-start: -14px;
+  inset-inline-end: 4px;
+  padding: 2px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ui-chat-message[data-origin='sent'] .ui-chat-message__actions {
+  inset-inline: 4px auto;
+}
+
+.ui-chat-message:is([data-hovered], [data-focus-within]) .ui-chat-message__actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ui-chat-message__quote {
+  justify-self: start;
+}
+
+.ui-chat-message[data-origin='sent'] .ui-chat-message__quote {
+  justify-self: end;
+}
+
+.ui-chat-message__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-chat-message[data-origin='sent'] .ui-chat-message__footer {
+  justify-content: flex-end;
+}
+
+.ui-chat-message__edited,
+.ui-chat-message__stopped {
+  font-style: italic;
+}
+
+.ui-chat-message__delivery {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.ui-chat-message__delivery-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-chat-message__delivery-label {
+  color: inherit;
+}
+
+.ui-chat-message[data-delivery='failed'] .ui-chat-message__delivery {
+  color: var(--ref-danger);
+}
+
+.ui-chat-message[data-delivery='failed'] .ui-chat-message__content {
+  outline: 1px solid var(--ref-danger);
+}
+
+.ui-chat-message__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-message__retry {
+  flex: none;
+}
+
+.ui-chat-message[data-deleted] .ui-chat-message__content {
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+.ui-chat-message__reactions,
+.ui-chat-message__readers {
+  display: flex;
+}
+
+.ui-chat-message[data-origin='sent'] :is(.ui-chat-message__reactions, .ui-chat-message__readers) {
+  justify-content: flex-end;
+}
+
+/* Conversation parts */
+
+.ui-chat-quote {
+  display: grid;
+  gap: 1px;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-inline-start: 3px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-tint-subtle);
+  color: var(--ref-text);
+  font: var(--ref-font-size-sm) / 1.4 var(--ref-font);
+  text-align: start;
+}
+
+.ui-chat-quote:is(button) {
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-chat-quote[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-chat-quote[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-chat-quote[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+}
+
+.ui-chat-quote[data-focused] {
+  border-inline-start-color: var(--ref-accent);
+}
+
+.ui-chat-quote__author {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-quote__excerpt {
+  overflow: hidden;
+  color: var(--ref-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-date-separator,
+.ui-chat-unread-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-chat-date-separator::before,
+.ui-chat-date-separator::after,
+.ui-chat-unread-divider::before,
+.ui-chat-unread-divider::after {
+  flex: 1;
+  border-block-start: 1px solid var(--ref-border);
+  content: '';
+}
+
+.ui-chat-date-separator__label {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-unread-divider {
+  color: var(--ref-danger);
+}
+
+.ui-chat-unread-divider::before,
+.ui-chat-unread-divider::after {
+  border-color: var(--ref-danger);
+}
+
+.ui-chat-unread-divider__label {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-typing-indicator__dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.ui-chat-typing-indicator__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--ref-radius-full);
+  background: currentcolor;
+  animation: ref-chat-transcript-typing var(--ref-duration-loop) ease-in-out infinite;
+}
+
+.ui-chat-typing-indicator__dot:nth-child(2) {
+  animation-delay: calc(var(--ref-duration-loop) / 6);
+}
+
+.ui-chat-typing-indicator__dot:nth-child(3) {
+  animation-delay: calc(var(--ref-duration-loop) / 3);
+}
+
+.ui-chat-typing-indicator[data-variant='thinking'] .ui-chat-typing-indicator__text {
+  font-style: italic;
+}
+
+.ui-chat-typing-indicator__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes ref-chat-transcript-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chat-typing-indicator__dot {
+    animation: none;
+  }
+}
+
+.ui-chat-read-receipts {
+  font-size: var(--ref-font-size-xs);
+}

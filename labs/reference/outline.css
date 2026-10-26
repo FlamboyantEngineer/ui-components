@@ -1,0 +1,70 @@
+/* Outline */
+
+.ui-outline {
+  font-size: var(--ref-font-size-md);
+  line-height: 1.4;
+}
+
+.ui-outline__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-outline__list .ui-outline__list {
+  padding-inline-start: 14px;
+}
+
+.ui-outline__row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-outline__link {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  min-width: 0;
+  padding: 3px 8px;
+  border-inline-start: 2px solid transparent;
+  border-radius: 0 var(--ref-radius) var(--ref-radius) 0;
+  color: var(--ref-text);
+  text-decoration: none;
+}
+
+.ui-outline__link:hover {
+  background: var(--ref-hover);
+}
+
+.ui-outline__link:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-outline__number {
+  flex: none;
+  color: var(--ref-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-outline__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-outline__item[data-current] > .ui-outline__row > .ui-outline__link {
+  border-inline-start-color: var(--ref-accent);
+  background: var(--ref-selected);
+}
+
+.ui-outline__item[data-current-within]:not([data-expanded]) > .ui-outline__row > .ui-outline__link {
+  border-inline-start-color: var(--ref-border-strong);
+}
+
+.ui-outline__empty {
+  padding: 8px;
+}

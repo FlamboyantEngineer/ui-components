@@ -1,0 +1,208 @@
+/* Message Composer */
+
+.ui-message-composer {
+  display: grid;
+  gap: 4px;
+  box-sizing: border-box;
+  padding: 6px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: var(--ref-text);
+  font: var(--ref-font-size)/1.4 var(--ref-font);
+}
+
+.ui-message-composer:focus-within {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-message-composer[data-disabled] {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-message-composer[data-editing] {
+  border-color: var(--ref-accent);
+}
+
+/* A drag carrying files is over the composer: it shows where they will land. */
+.ui-message-composer[data-drop-target] {
+  border-style: dashed;
+  border-color: var(--ref-focus);
+  background: color-mix(in srgb, var(--ref-focus) var(--ref-tint-subtle), var(--ref-field-fill));
+}
+
+.ui-message-composer__banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 6px;
+  border-inline-start: 2px solid var(--ref-accent);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-message-composer__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/*
+ * The text area, or the rich composer's editable text box. ProseMirror needs the white-space,
+ * wrapping and ligature rules on its content element (from prosemirror-view/style/prosemirror.css).
+ */
+.ui-message-composer__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 20px;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
+}
+
+.ui-message-composer__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-message-composer__input p {
+  margin: 0;
+}
+
+.ui-message-composer__input.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ui-message-composer__input.ProseMirror-hideselection {
+  caret-color: transparent;
+}
+
+.ui-message-composer__input img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* The empty rich composer's first line shows the placeholder. */
+.ui-message-composer__placeholder::before {
+  content: attr(data-placeholder);
+  float: inline-start;
+  height: 0;
+  color: var(--ref-muted);
+  pointer-events: none;
+}
+
+/* A mention or a command: one atomic pill in the text. */
+.ui-message-composer__pill {
+  padding: 0 4px;
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-subtle), var(--ref-surface));
+  color: var(--ref-text);
+  font-weight: var(--ref-font-weight-medium);
+  white-space: nowrap;
+}
+
+.ui-message-composer__pill[data-kind='command'] {
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-surface));
+  font-family: var(--ref-mono);
+}
+
+/* A record reference: the record chip draws itself, so the pill adds nothing around it. */
+.ui-message-composer__pill[data-kind='reference'] {
+  padding: 0;
+  background: none;
+  font-weight: inherit;
+}
+
+.ui-message-composer__code-block {
+  margin: 2px 0;
+  padding: 4px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-surface);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  white-space: pre-wrap;
+}
+
+/* The tools wrap onto further lines in a narrow composer; the action button keeps the last place. */
+.ui-message-composer__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.ui-message-composer__toolbar {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-message-composer__menu-button,
+.ui-message-composer__attach,
+.ui-message-composer__emoji,
+.ui-message-composer__cancel,
+.ui-message-composer__action {
+  flex: none;
+}
+
+/*
+ * The menu the "+" button opens above the composer: categories that scroll, each item an icon, its
+ * label and a muted note after it on one line, then its shortcut, submenu arrow or toggle check.
+ */
+.ui-message-composer__menu {
+  width: min(440px, calc(100vw - 18px));
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ui-message-composer__menu .ui-menu-item {
+  flex-wrap: nowrap;
+}
+
+.ui-message-composer__menu .ui-menu-item__label {
+  flex: 0 1 auto;
+}
+
+.ui-message-composer__menu .ui-menu-item .ui-menu-item__description {
+  order: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline-start: 0;
+}
+
+/* A toggle's check sits at the end of its row, so every icon lines up. */
+.ui-message-composer__menu .ui-menu-item__check {
+  order: 1;
+}
+
+.ui-message-composer__menu .ui-menu-item__shortcut,
+.ui-message-composer__menu .ui-menu-item__submenu-indicator,
+.ui-message-composer__menu .ui-menu-item__check {
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.ui-message-composer__completions {
+  min-width: min(var(--ui-trigger-width), 360px);
+}

@@ -1,0 +1,148 @@
+/* Relative Date Field: a framed preset trigger followed by the absolute date. */
+
+/* A disabled field dims its trigger only; the date after it keeps full contrast. */
+.ui-relative-date-field[data-disabled] .ui-relative-date-field__trigger {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-relative-date-field .ui-field__control {
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-relative-date-field__select {
+  display: flex;
+  min-width: 0;
+}
+
+.ui-relative-date-field__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--ref-field-height);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-relative-date-field__trigger[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-relative-date-field__trigger[data-focus-visible],
+.ui-relative-date-field__select[data-open] .ui-relative-date-field__trigger {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-relative-date-field[data-dirty] .ui-relative-date-field__trigger {
+  border-color: var(--ref-dirty);
+}
+
+.ui-relative-date-field__select[data-invalid] .ui-relative-date-field__trigger {
+  border-color: var(--ref-danger);
+}
+
+.ui-relative-date-field[data-validation='warning'] .ui-relative-date-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+.ui-relative-date-field[data-readonly] .ui-relative-date-field__trigger {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+  cursor: default;
+}
+
+.ui-relative-date-field__trigger[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ui-relative-date-field__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-relative-date-field__value[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-relative-date-field__chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+.ui-relative-date-field__popover {
+  box-sizing: border-box;
+  min-width: var(--ui-trigger-width);
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size-md)/1.3 var(--ref-font);
+}
+
+.ui-relative-date-field__listbox {
+  display: grid;
+  gap: 1px;
+  padding: 4px;
+  outline: none;
+}
+
+/* A calendar sits beside the presets, which keep their own column. */
+.ui-relative-date-field__popover:has(> .ui-relative-date-field__calendar) {
+  display: flex;
+  align-items: flex-start;
+}
+
+.ui-relative-date-field__popover:has(> .ui-relative-date-field__calendar)
+  .ui-relative-date-field__listbox {
+  align-self: stretch;
+  min-width: 112px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-relative-date-field__calendar {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  outline: none;
+}
+
+.ui-relative-date-field__option {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-radius: var(--ref-radius-sm);
+  cursor: default;
+  outline: none;
+}
+
+.ui-relative-date-field__option[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-relative-date-field__option[data-disabled] {
+  color: var(--ref-muted);
+  text-decoration: line-through;
+}
+
+.ui-relative-date-field__preview {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+}

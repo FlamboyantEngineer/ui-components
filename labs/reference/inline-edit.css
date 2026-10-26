@@ -1,0 +1,109 @@
+/* Inline Edit */
+
+.ui-inline-edit {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ref-text);
+}
+
+.ui-inline-edit__read {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: var(--ref-control-height-md);
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: text;
+}
+
+.ui-inline-edit__read[data-hovered] {
+  border-color: var(--ref-border);
+  background: var(--ref-hover);
+}
+
+.ui-inline-edit__read[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-inline-edit__read[data-focus-visible] {
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-inline-edit__read[data-disabled] {
+  cursor: default;
+}
+
+.ui-inline-edit__value {
+  overflow-wrap: anywhere;
+}
+
+.ui-inline-edit__placeholder {
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+.ui-inline-edit__icon {
+  color: var(--ref-muted);
+  opacity: 0;
+  transition: opacity var(--ref-duration-fast);
+}
+
+.ui-inline-edit__read:is([data-hovered], [data-focus-visible]) .ui-inline-edit__icon {
+  opacity: 1;
+}
+
+.ui-inline-edit__editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 6px;
+}
+
+.ui-inline-edit__control {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.ui-inline-edit__actions {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  padding-block-start: 2px;
+}
+
+.ui-inline-edit__save,
+.ui-inline-edit__cancel {
+  flex: none;
+}
+
+.ui-inline-edit__error {
+  flex: 1 0 100%;
+}
+
+.ui-inline-edit[data-pending] .ui-inline-edit__control {
+  cursor: progress;
+}
+
+.ui-inline-edit[data-invalid] .ui-inline-edit__control .ui-text-field__box {
+  border-color: var(--ref-danger);
+}
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-inline-edit .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-inline-edit .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

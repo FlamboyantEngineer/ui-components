@@ -1,0 +1,99 @@
+/* Markdown. Prose typography for the document; tables, links and checkboxes keep their own sheets. */
+
+.ui-markdown {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ui-markdown > :first-child {
+  margin-top: 0;
+}
+
+.ui-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-markdown :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.2em 0 0.5em;
+  line-height: 1.25;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-markdown h1 {
+  font-size: 1.6em;
+}
+
+.ui-markdown h2 {
+  font-size: 1.3em;
+}
+
+.ui-markdown h3 {
+  font-size: 1.1em;
+}
+
+.ui-markdown :is(h4, h5, h6) {
+  font-size: 1em;
+}
+
+.ui-markdown :is(p, ul, ol, blockquote) {
+  margin: 0 0 0.75em;
+}
+
+.ui-markdown :is(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+
+.ui-markdown :is(ul, ol) :is(ul, ol) {
+  margin-bottom: 0;
+}
+
+.ui-markdown blockquote {
+  margin-inline: 0;
+  padding-inline-start: 12px;
+  border-inline-start: 3px solid var(--ref-border);
+  color: var(--ref-muted);
+}
+
+.ui-markdown__code,
+.ui-markdown__code-block {
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  font-family: var(--ref-mono);
+  font-size: 0.9em;
+}
+
+.ui-markdown__code {
+  padding: 0.1em 0.35em;
+}
+
+.ui-markdown__code-block {
+  margin: 0 0 0.75em;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border: 1px solid var(--ref-border);
+  line-height: 1.45;
+}
+
+.ui-markdown__task {
+  list-style: none;
+  margin-inline-start: -1.5em;
+}
+
+.ui-markdown__task > :not(.ui-checkbox) {
+  margin-inline-start: 1.5em;
+}
+
+.ui-markdown__image {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.ui-markdown .ui-separator {
+  margin-block: 1em;
+}
+
+/* A find mark inside a link keeps the text colour, which holds its contrast on the mark tint. */
+.ui-markdown .ui-link .ui-text-match {
+  color: var(--ref-text);
+}

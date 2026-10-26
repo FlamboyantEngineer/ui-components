@@ -1,0 +1,119 @@
+/* User Identity */
+
+.ui-user-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.ui-user-identity[data-size='xs'] {
+  gap: 6px;
+}
+
+.ui-user-identity[data-size='lg'] {
+  gap: 12px;
+}
+
+.ui-user-identity__avatar {
+  flex: none;
+}
+
+.ui-user-identity[data-status] {
+  position: relative;
+}
+
+/* On the corner of the vertically centred avatar, whatever the row's height. */
+.ui-user-identity__indicator {
+  --ref-user-identity-avatar: 32px;
+  --ref-user-identity-badge: 10px;
+
+  position: absolute;
+  inset-inline-start: calc(var(--ref-user-identity-avatar) - var(--ref-user-identity-badge) + 1px);
+  top: calc(50% + var(--ref-user-identity-avatar) / 2 - var(--ref-user-identity-badge) + 1px);
+  box-sizing: border-box;
+  width: var(--ref-user-identity-badge);
+  height: var(--ref-user-identity-badge);
+  border: 2px solid var(--ref-canvas);
+  border-radius: 50%;
+  background: var(--ref-muted);
+}
+
+.ui-user-identity[data-size='xs'] .ui-user-identity__indicator {
+  --ref-user-identity-avatar: 20px;
+  --ref-user-identity-badge: 8px;
+
+  border-width: 1.5px;
+}
+
+.ui-user-identity[data-size='sm'] .ui-user-identity__indicator {
+  --ref-user-identity-avatar: 24px;
+}
+
+.ui-user-identity[data-size='lg'] .ui-user-identity__indicator {
+  --ref-user-identity-avatar: 40px;
+  --ref-user-identity-badge: 12px;
+}
+
+.ui-user-identity[data-status='active'] .ui-user-identity__indicator {
+  background: var(--ref-success);
+}
+
+.ui-user-identity[data-status='away'] .ui-user-identity__indicator {
+  background: var(--ref-warning);
+}
+
+.ui-user-identity[data-status='busy'] .ui-user-identity__indicator {
+  background: var(--ref-danger);
+}
+
+.ui-user-identity[data-status='idle'] .ui-user-identity__indicator {
+  border-color: var(--ref-muted);
+  background: var(--ref-canvas);
+}
+
+.ui-user-identity__content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.ui-user-identity__title {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-user-identity__title > :not(.ui-user-identity__name) {
+  flex: none;
+}
+
+.ui-user-identity__name,
+.ui-user-identity__description {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-user-identity__name {
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-user-identity__description {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-user-identity[data-size='xs'] .ui-user-identity__name {
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-user-identity[data-size='xs'] .ui-user-identity__description {
+  font-size: var(--ref-font-size-xs);
+}

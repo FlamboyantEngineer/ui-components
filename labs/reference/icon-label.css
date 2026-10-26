@@ -1,0 +1,47 @@
+/* Icon Label */
+
+.ui-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-icon-label[data-size='sm'] {
+  gap: 4px;
+}
+
+.ui-icon-label[data-size='lg'] {
+  gap: 12px;
+}
+
+.ui-icon-label[data-grow] {
+  display: flex;
+  flex: 1 1 auto;
+}
+
+.ui-icon-label[data-truncate] .ui-icon-label__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-icon-label__icon {
+  flex: none;
+}
+
+.ui-icon-label__label {
+  min-width: 0;
+}
+
+@container (max-width: 44rem) {
+  .ui-icon-label[data-collapsible] .ui-icon-label__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

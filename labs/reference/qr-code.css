@@ -1,0 +1,18 @@
+/* QR Code: dark modules on a light ground in both themes, since readers expect that contrast. */
+
+.ui-qr-code {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: var(--ref-radius);
+  outline: 1px solid var(--ref-border);
+  background: #ffffff; /* token-exempt: scanners need a white quiet zone */
+}
+
+.ui-qr-code__modules {
+  fill: #000000; /* token-exempt: scanners need black modules */
+}
+
+.ui-qr-code[data-invalid] {
+  background: var(--ref-surface);
+  outline-style: dashed;
+}

@@ -1,0 +1,94 @@
+/* Signature Pad: a mode choice, a framed 3:1 drawing area with its buttons, or a name input. */
+
+.ui-signature-pad .ui-field__control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ui-signature-pad__modes {
+  margin-bottom: 2px;
+}
+
+.ui-signature-pad__surface {
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 100%;
+  aspect-ratio: 3 / 1;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  cursor: crosshair;
+}
+
+.ui-signature-pad__surface:focus-visible {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-signature-pad__canvas {
+  display: block;
+}
+
+.ui-signature-pad__stroke {
+  stroke-width: 2.5px;
+}
+
+.ui-signature-pad__surface[data-drawing] {
+  border-color: var(--ref-focus);
+}
+
+.ui-signature-pad__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ui-signature-pad__input {
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: italic var(--ref-font-size-xl)/1 var(--ref-script);
+}
+
+.ui-signature-pad__input::placeholder {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size);
+}
+
+.ui-signature-pad__input[data-focused] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-signature-pad[data-dirty] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  border-color: var(--ref-dirty);
+}
+
+.ui-signature-pad[data-validation='invalid']
+  :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  border-color: var(--ref-danger);
+}
+
+.ui-signature-pad[data-validation='warning']
+  :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  border-color: var(--ref-warning);
+}
+
+.ui-signature-pad[data-readonly] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+  cursor: default;
+}
+
+.ui-signature-pad[data-disabled] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  cursor: not-allowed;
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}

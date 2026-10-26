@@ -1,0 +1,96 @@
+/* Problem List: a heading, the counts and the problems, each a button to its field. */
+
+.ui-problem-list {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ref-border);
+  border-left-width: 4px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-problem-list[data-severity='error'] {
+  border-color: var(--ref-danger);
+}
+
+.ui-problem-list[data-severity='warning'] {
+  border-color: var(--ref-warning);
+}
+
+.ui-problem-list[data-empty] {
+  border-left-color: var(--ref-success);
+}
+
+.ui-problem-list__title {
+  margin: 0;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-problem-list__summary {
+  margin: 2px 0 0;
+  color: var(--ref-muted);
+}
+
+.ui-problem-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-problem-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ui-problem-list__jump {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--ref-radius);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-problem-list__jump[data-hovered] .ui-problem-list__message {
+  text-decoration: underline;
+}
+
+.ui-problem-list__jump[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-problem-list__icon {
+  align-self: center;
+  flex: none;
+}
+
+.ui-problem-list__item[data-severity='error'] .ui-problem-list__icon {
+  color: var(--ref-danger);
+}
+
+.ui-problem-list__item[data-severity='warning'] .ui-problem-list__icon {
+  color: var(--ref-warning);
+}
+
+.ui-problem-list__label {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-problem-list__label::after {
+  content: ':';
+}

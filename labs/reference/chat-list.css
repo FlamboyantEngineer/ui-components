@@ -1,0 +1,145 @@
+/* Chat List. Each row is a grid: avatar, title, muted mark and time, then the last message and count. */
+
+.ui-chat-list {
+  display: grid;
+  /* One column no wider than the list, so the header and rows shrink rather than overflow it. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  box-sizing: border-box;
+  height: 100%;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: var(--ref-font-size)/1.4 var(--ref-font);
+}
+
+.ui-chat-list__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+/* Wins over the search field's own fixed width, so the field shrinks to leave room for New chat. */
+.ui-chat-list__header > .ui-chat-list__search {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
+.ui-chat-list__new {
+  flex: none;
+}
+
+.ui-chat-list__list {
+  overflow: auto;
+  padding: 4px;
+  outline: none;
+}
+
+.ui-chat-list__list[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+
+.ui-chat-list__conversation {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    'avatar title muted time actions'
+    'avatar preview preview unread actions';
+  align-items: center;
+  column-gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--ref-radius);
+  outline: none;
+  cursor: default;
+}
+
+.ui-chat-list__conversation:is([data-hovered], [data-pressed]) {
+  background: var(--ref-hover);
+}
+
+.ui-chat-list__conversation[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-chat-list__conversation[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+
+.ui-chat-list__avatar {
+  display: inline-flex;
+  grid-area: avatar;
+}
+
+.ui-chat-list__title {
+  grid-area: title;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-list__conversation[data-unread] .ui-chat-list__title {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-list__time {
+  grid-area: time;
+  justify-self: end;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+}
+
+.ui-chat-list__preview {
+  grid-area: preview;
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-list__conversation[data-unread]:not([data-muted]) .ui-chat-list__preview {
+  color: var(--ref-text);
+}
+
+.ui-chat-list__muted {
+  grid-area: muted;
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__unread {
+  grid-area: unread;
+  justify-self: end;
+}
+
+.ui-chat-list__conversation[data-muted] .ui-chat-list__unread {
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__actions {
+  display: flex;
+  grid-area: actions;
+}
+
+.ui-chat-list__empty {
+  display: block;
+  padding: 16px 8px;
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__empty p {
+  margin: 0;
+}
+
+.ui-chat-list__skeleton {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+}

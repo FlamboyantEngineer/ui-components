@@ -1,0 +1,20 @@
+import { describe, expect, it } from 'vitest';
+import { snapNumberValue } from './snap-number-value.js';
+
+describe('snapNumberValue', () => {
+  it.each([
+    { value: 12, bounds: { minValue: 0, maxValue: 10 }, expected: 10 },
+    { value: -2, bounds: { minValue: 0, maxValue: 10 }, expected: 0 },
+    { value: 3.3, bounds: { step: 0.5 }, expected: 3.5 },
+    { value: -3.25, bounds: { step: 0.5 }, expected: -3.5 },
+    { value: 0.3, bounds: { minValue: 0.15, step: 0.1 }, expected: 0.35 },
+    { value: 10, bounds: { minValue: 1, maxValue: 10, step: 2 }, expected: 9 },
+    { value: 0.3, bounds: { maxValue: 0.3, step: 0.1 }, expected: 0.3 },
+    { value: -5, bounds: { maxValue: -5, step: 2 }, expected: -6 },
+    { value: 1.6e-7, bounds: { step: 1e-7 }, expected: 2e-7 },
+    { value: 1e-101, bounds: { step: 1e-101 }, expected: 1e-101 },
+    { value: Number.MAX_VALUE, bounds: { step: 1e-100 }, expected: Number.MAX_VALUE },
+  ])('UIC-NUMBER-FIELD-2.2 snaps $value to $expected', ({ value, bounds, expected }) => {
+    expect(snapNumberValue(value, bounds)).toBe(expected);
+  });
+});

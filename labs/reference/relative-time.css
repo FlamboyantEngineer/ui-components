@@ -1,0 +1,26 @@
+/* Relative Time */
+
+.ui-relative-time {
+  border-radius: var(--ref-radius-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A timestamp with a tooltip is a tab stop; a dotted rule hints at the absolute date. */
+.ui-relative-time[tabindex] {
+  text-decoration: underline dotted var(--ref-muted);
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+.ui-relative-time:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-relative-time[data-empty] {
+  color: var(--ref-muted);
+}
+
+.ui-relative-time__tooltip {
+  font-variant-numeric: tabular-nums;
+}

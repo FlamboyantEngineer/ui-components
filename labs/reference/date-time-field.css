@@ -1,0 +1,373 @@
+/* Date Time Field: a framed group of segments with a calendar button and popover. */
+
+.ui-date-time-field__picker {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-date-time-field__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--ref-field-height);
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
+.ui-date-time-field[data-mode='time'] .ui-date-time-field__group {
+  padding-inline-end: 8px;
+}
+
+.ui-date-time-field__group:is([data-focus-within], :focus-within) {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-date-time-field[data-dirty] .ui-date-time-field__group {
+  border-color: var(--ref-dirty);
+}
+
+.ui-date-time-field__picker[data-invalid] .ui-date-time-field__group {
+  border-color: var(--ref-danger);
+}
+
+.ui-date-time-field[data-validation='warning'] .ui-date-time-field__group {
+  border-color: var(--ref-warning);
+}
+
+.ui-date-time-field[data-readonly] .ui-date-time-field__group {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-date-time-field[data-disabled] .ui-date-time-field__group {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-date-time-field__previous {
+  flex: 0 1 auto;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-date-time-field__input {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ui-date-time-field__segment {
+  padding: 0 1px;
+  border-radius: var(--ref-radius-xs);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.ui-date-time-field__segment[data-type='literal'] {
+  padding: 0;
+}
+
+.ui-date-time-field__segment[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-date-time-field__segment[data-focused] {
+  background: var(--ref-accent);
+  color: var(--ref-on-fill);
+}
+
+.ui-date-time-field__separator {
+  padding: 0 4px;
+  color: var(--ref-muted);
+}
+
+.ui-date-time-field__button {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: calc(var(--ref-field-height) - 6px);
+  height: calc(var(--ref-field-height) - 6px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-date-time-field__button .ui-glyph {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-date-time-field__button:is([data-hovered], [data-pressed]) {
+  background: var(--ref-hover);
+}
+
+.ui-date-time-field__button[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-date-time-field__button[data-disabled] {
+  color: var(--ref-muted);
+  cursor: not-allowed;
+}
+
+.ui-date-time-field__popover {
+  box-sizing: border-box;
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size-md)/1.3 var(--ref-font);
+}
+
+.ui-date-time-field__dialog {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  outline: none;
+}
+
+/* Presets stand in a column before the calendar and its actions. */
+.ui-date-time-field__dialog:has(> .ui-date-time-field__presets) {
+  grid-template-columns: auto auto;
+}
+
+.ui-date-time-field__dialog > :not(.ui-date-time-field__presets) {
+  grid-column: -2;
+}
+
+.ui-date-time-field__presets {
+  display: flex;
+  flex-direction: column;
+  grid-row: 1 / span 2;
+  gap: 2px;
+  padding-inline-end: 8px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-date-time-field__preset.ui-button {
+  justify-content: flex-start;
+}
+
+.ui-date-time-field__calendar {
+  display: grid;
+  gap: 4px;
+}
+
+.ui-date-time-field__calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-date-time-field__calendar-heading {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
+  text-align: center;
+}
+
+/* Month and year selects stand in for the heading text. */
+.ui-date-time-field__calendar-select {
+  display: flex;
+}
+
+.ui-date-time-field__calendar-select[data-unit='month'] {
+  margin-inline-start: auto;
+}
+
+.ui-date-time-field__calendar-select[data-unit='year'] {
+  margin-inline-end: auto;
+}
+
+.ui-date-time-field__calendar-select-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  padding: 0 4px 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--ref-font-weight-strong);
+  cursor: pointer;
+}
+
+.ui-date-time-field__calendar-select-button[data-hovered] {
+  border-color: var(--ref-border);
+}
+
+.ui-date-time-field__calendar-select-button[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+}
+
+.ui-date-time-field__calendar-select-button .ui-glyph {
+  width: 14px;
+  height: 14px;
+  color: var(--ref-muted);
+}
+
+.ui-date-time-field__calendar-select-popover {
+  box-sizing: border-box;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size-md)/1.3 var(--ref-font);
+}
+
+.ui-date-time-field__calendar-select-list {
+  padding: 4px;
+  outline: none;
+}
+
+.ui-date-time-field__calendar-select-option {
+  padding: 4px 8px;
+  border-radius: var(--ref-radius-sm);
+  cursor: default;
+  outline: none;
+}
+
+.ui-date-time-field__calendar-select-option[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-date-time-field__calendar-select-option[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-date-time-field__calendar-nav.ui-button[data-content='icon'] {
+  flex: none;
+}
+
+.ui-date-time-field__calendar-months {
+  display: flex;
+  gap: 16px;
+}
+
+.ui-date-time-field__calendar-grid {
+  border-collapse: collapse;
+}
+
+.ui-date-time-field__calendar-head {
+  color: var(--ref-muted);
+}
+
+.ui-date-time-field__calendar-weekday {
+  width: 30px;
+  padding: 4px 0;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-date-time-field__calendar-body {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-date-time-field__calendar-cell {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 1px;
+  border-radius: var(--ref-radius-sm);
+  cursor: default;
+  outline: none;
+}
+
+.ui-date-time-field__calendar-cell[data-outside-month] {
+  color: var(--ref-muted);
+}
+
+.ui-date-time-field__calendar-cell[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-date-time-field__calendar-cell[data-today] {
+  font-weight: var(--ref-font-weight-strong);
+  text-decoration: underline;
+}
+
+.ui-date-time-field__calendar-cell[data-selected] {
+  background: var(--ref-accent);
+  color: var(--ref-on-fill);
+}
+
+/* Inside a picked range, only the first and last days are filled. */
+.ui-date-time-field__popover[data-trigger='DateRangePicker']
+  .ui-date-time-field__calendar-cell[data-selected]:not(
+    [data-selection-start],
+    [data-selection-end]
+  ) {
+  background: var(--ref-selected);
+  color: inherit;
+}
+
+.ui-date-time-field__calendar-cell[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-date-time-field__calendar-cell:is([data-disabled], [data-unavailable]) {
+  color: var(--ref-muted);
+  text-decoration: none;
+}
+
+.ui-date-time-field__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-date-time-field__action.ui-button {
+  flex: none;
+}
+
+.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='info'] {
+  background: var(--ref-selected);
+  color: var(--ref-text);
+  box-shadow: inset 0 -2px var(--ref-info);
+}
+.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='success'] {
+  color: var(--ref-success);
+  box-shadow: inset 0 -2px var(--ref-success);
+}
+.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='warning'] {
+  color: var(--ref-warning);
+  box-shadow: inset 0 -2px var(--ref-warning);
+}
+.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='danger'] {
+  color: var(--ref-danger);
+  box-shadow: inset 0 -2px var(--ref-danger);
+}
+.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='neutral'] {
+  background: var(--ref-hover);
+}
+.ui-date-time-field__calendar-cell[data-taken]:not([data-outside-month]) {
+  text-decoration: line-through;
+}
+.ui-date-time-field__calendar-cell[data-outside-month] {
+  opacity: var(--ref-disabled-opacity);
+  text-decoration: none;
+}
+
+.ui-date-time-field__calendar-cell[data-unavailable] {
+  opacity: var(--ref-disabled-opacity);
+}

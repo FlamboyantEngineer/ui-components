@@ -1,0 +1,72 @@
+import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FieldPreviousValue } from './field.js';
+
+describe('FieldPreviousValue', () => {
+  it('UIC-FIELD-9.1 keeps the previous value readable in a del element', () => {
+    const { container } = render(
+      <FieldPreviousValue className="caller" id="before" data-probe="marker">
+        <svg role="img" aria-label="Swatch" />
+        Apple
+      </FieldPreviousValue>,
+    );
+    const marker = screen.getByText('Apple').closest('.caller');
+    expect(marker).toHaveClass('ui-field-previous-value', 'caller');
+    expect(marker).toHaveAttribute('id', 'before');
+    expect(marker).toHaveAttribute('data-probe', 'marker');
+    const value = marker?.querySelector('del');
+    expect(value).toHaveClass('ui-field-previous-value__value');
+    expect(value).toHaveTextContent('Apple');
+    expect(value).not.toHaveAttribute('aria-hidden');
+    expect(value).toContainElement(screen.getByRole('img', { name: 'Swatch' }));
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expectHooksMatchSpec(container, 'FIELD', {
+      slots: ['ui-field-previous-value__value'],
+      callerAttributes: ['data-probe'],
+    });
+  });
+
+  it('UIC-FIELD-9.2 restores the value once per press and keeps pointer focus', async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+    render(
+      <>
+        <input aria-label="Draft" />
+        <FieldPreviousValue onRestore={onRestore}>Apple</FieldPreviousValue>
+      </>,
+    );
+    const draft = screen.getByRole('textbox', { name: 'Draft' });
+    draft.focus();
+    await user.click(screen.getByRole('button', { name: 'Restore Apple' }));
+    expect(onRestore).toHaveBeenCalledTimes(1);
+    expect(draft).toHaveFocus();
+  });
+
+  it('UIC-FIELD-9.2 names the restore button from restoreLabel and disables it when locked', async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+    render(
+      <FieldPreviousValue onRestore={onRestore} restoreLabel="Pear" isDisabled>
+        <strong>Pear</strong>
+      </FieldPreviousValue>,
+    );
+    const button = screen.getByRole('button', { name: 'Restore Pear' });
+    expect(button).toBeDisabled();
+    await user.click(button);
+    expect(onRestore).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FIELD-9.2 names the restore button from the text of content that is not plain text', async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+    render(
+      <FieldPreviousValue onRestore={onRestore}>
+        <span>Old</span>
+      </FieldPreviousValue>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Restore Old' }));
+    expect(onRestore).toHaveBeenCalledTimes(1);
+  });
+});

@@ -1,0 +1,88 @@
+/* Action Row */
+
+.ui-action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-action-row__lead {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ref-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-action-row__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin-inline-start: auto;
+}
+
+.ui-action-row[data-size='lg'] .ui-action-row__actions {
+  gap: 4px;
+}
+
+.ui-action-row__action {
+  flex: none;
+}
+
+.ui-action-row__tooltip {
+  max-width: 240px;
+  padding: 4px 8px;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  color: var(--ref-canvas);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.4;
+}
+
+/*
+ * A row collapsing into a menu gives its actions slot the room the lead leaves, whatever actions it
+ * shows, so the slot's width never depends on how many fit; each action keeps its width.
+ */
+.ui-action-row[data-overflow='menu'] .ui-action-row__lead {
+  flex: 0 1 auto;
+  max-width: 50%;
+}
+.ui-action-row[data-overflow='menu'] .ui-action-row__actions {
+  flex: 1 1 0;
+  justify-content: flex-end;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ui-action-row__overflow {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.ui-action-row[data-selection] {
+  padding: 4px 8px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-selected);
+}
+
+.ui-action-row__selection {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-action-row__clear {
+  flex: none;
+}
+
+.ui-action-row__count {
+  color: var(--ref-text);
+  font-weight: var(--ref-font-weight-strong);
+  white-space: nowrap;
+}

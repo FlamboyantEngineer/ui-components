@@ -1,0 +1,73 @@
+/* Tooltip */
+
+.ui-tooltip {
+  box-sizing: border-box;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 4px 8px;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-text);
+  color: var(--ref-canvas);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: 1.4;
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-tooltip[data-variant='info'] {
+  border: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  font-weight: 400;
+}
+
+.ui-tooltip[data-entering] {
+  animation: ref-fade var(--ref-duration-fast) ease-out;
+}
+
+.ui-tooltip[data-exiting] {
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
+}
+
+@keyframes ref-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.ui-tooltip__arrow {
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+}
+
+.ui-tooltip__arrow[data-placement='top'] {
+  border-top-color: var(--ref-text);
+}
+
+.ui-tooltip__arrow[data-placement='bottom'] {
+  border-bottom-color: var(--ref-text);
+}
+
+.ui-tooltip__arrow[data-placement='left'] {
+  border-left-color: var(--ref-text);
+}
+
+.ui-tooltip__arrow[data-placement='right'] {
+  border-right-color: var(--ref-text);
+}
+
+.ui-tooltip[data-variant='info'] .ui-tooltip__arrow {
+  border-color: transparent;
+}
+
+.ui-tooltip__content {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tooltip[data-entering],
+  .ui-tooltip[data-exiting] {
+    animation: none;
+  }
+}

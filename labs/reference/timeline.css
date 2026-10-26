@@ -1,0 +1,284 @@
+/* Timeline: a bordered chart with a pinned scale and row list, toned bars and thin connectors. */
+
+.ui-timeline {
+  --ref-indent: 16px;
+
+  max-width: 100%;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+  overflow: hidden;
+}
+
+.ui-timeline[data-view='table'] {
+  border: 0;
+}
+
+.ui-timeline__viewport {
+  max-height: 24rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.ui-timeline__canvas {
+  display: grid;
+  width: max-content;
+}
+
+.ui-timeline__corner,
+.ui-timeline__list {
+  box-sizing: border-box;
+  width: 11rem;
+  border-inline-end: 1px solid var(--ref-border);
+  background: var(--ref-surface);
+}
+
+.ui-timeline__corner,
+.ui-timeline__header {
+  border-bottom: 1px solid var(--ref-border);
+  background: var(--ref-surface);
+}
+
+.ui-timeline__scale-row {
+  height: 24px;
+}
+
+.ui-timeline__scale-row + .ui-timeline__scale-row {
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-timeline__scale-cell {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 3px 6px;
+  border-inline-start: 1px solid var(--ref-border);
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+.ui-timeline__scale-row[data-tier='major'] .ui-timeline__scale-cell {
+  color: var(--ref-text);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-timeline__row-label {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: calc(4px + (var(--ui-timeline-level) - 1) * var(--ref-indent)) 8px;
+  border-bottom: 1px solid var(--ref-border);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ui-timeline__toggle {
+  flex: none;
+}
+
+.ui-timeline__row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-timeline__row-label[data-group] .ui-timeline__row-name {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-timeline__body {
+  overflow: hidden;
+}
+
+.ui-timeline__gridline {
+  border-inline-start: 1px solid
+    color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent);
+}
+
+.ui-timeline__gridline[data-major] {
+  border-inline-start-color: var(--ref-border);
+}
+
+.ui-timeline__today {
+  z-index: 1;
+  margin-inline-start: -1px;
+  border-inline-start: 2px solid var(--ref-danger);
+  pointer-events: none;
+}
+
+.ui-timeline__connectors {
+  overflow: visible;
+}
+
+.ui-timeline__connector {
+  stroke: var(--ref-border-strong);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+}
+
+.ui-timeline__connector[data-conflict] {
+  stroke: var(--ref-danger);
+  stroke-dasharray: 4 3;
+}
+
+.ui-timeline__row {
+  box-sizing: border-box;
+  border-bottom: 1px solid color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent);
+}
+
+.ui-timeline__item {
+  --ref-timeline-tone: var(--ref-muted);
+
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  top: 7px;
+  height: 22px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid
+    color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-border), var(--ref-canvas));
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(
+    in srgb,
+    var(--ref-timeline-tone) var(--ref-tint-subtle),
+    var(--ref-canvas)
+  );
+  color: var(--ref-text);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  text-align: start;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: default;
+}
+
+.ui-timeline__item[data-tone='info'] {
+  --ref-timeline-tone: var(--ref-info);
+}
+
+.ui-timeline__item[data-tone='success'] {
+  --ref-timeline-tone: var(--ref-success);
+}
+
+.ui-timeline__item[data-tone='warning'] {
+  --ref-timeline-tone: var(--ref-warning);
+}
+
+.ui-timeline__item[data-tone='danger'] {
+  --ref-timeline-tone: var(--ref-danger);
+}
+
+.ui-timeline__item[aria-pressed] {
+  cursor: pointer;
+}
+
+.ui-timeline__item:not([data-readonly]) {
+  cursor: grab;
+}
+
+.ui-timeline__item[data-dragging] {
+  z-index: 2;
+  cursor: grabbing;
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-timeline__item[data-selected] {
+  border-color: var(--ref-accent);
+  box-shadow: 0 0 0 1px var(--ref-accent);
+}
+
+.ui-timeline__item[data-conflict] {
+  border-color: var(--ref-danger);
+}
+
+.ui-timeline__item:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-timeline__progress {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: color-mix(
+    in srgb,
+    var(--ref-timeline-tone) var(--ref-tint-strong),
+    var(--ref-canvas)
+  );
+}
+
+.ui-timeline__item-label {
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-timeline__handle {
+  position: absolute;
+  inset-block: 0;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.ui-timeline__handle[data-edge='start'] {
+  inset-inline-start: 0;
+}
+
+.ui-timeline__handle[data-edge='end'] {
+  inset-inline-end: 0;
+}
+
+.ui-timeline__item:hover .ui-timeline__handle {
+  background: color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-border), transparent);
+}
+
+/* A milestone is a diamond centred on its day, with its label beside it. */
+.ui-timeline__item[data-kind='milestone'] {
+  top: 11px;
+  width: 14px;
+  height: 14px;
+  margin-inline-start: -7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+
+.ui-timeline__item[data-kind='milestone']::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  transform: rotate(45deg);
+  border: 1px solid
+    color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-solid), var(--ref-canvas));
+  border-radius: var(--ref-radius-xs);
+  background: color-mix(
+    in srgb,
+    var(--ref-timeline-tone) var(--ref-tint-border),
+    var(--ref-canvas)
+  );
+}
+
+.ui-timeline__item[data-kind='milestone'][data-selected] {
+  box-shadow: none;
+}
+
+.ui-timeline__item[data-kind='milestone'][data-selected]::before {
+  border-color: var(--ref-accent);
+  box-shadow: 0 0 0 1px var(--ref-accent);
+}
+
+.ui-timeline__item[data-kind='milestone'] .ui-timeline__item-label {
+  position: absolute;
+  inset-inline-start: 20px;
+  overflow: visible;
+}
+
+.ui-timeline__table {
+  max-height: 24rem;
+}

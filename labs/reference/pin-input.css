@@ -1,0 +1,54 @@
+/* Pin Input: a row of centred single-character cells, a step taller than the field's controls. */
+
+.ui-pin-input__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ui-pin-input__cell {
+  box-sizing: border-box;
+  width: calc(var(--ref-field-height) + 4px);
+  height: calc(var(--ref-field-height) + 8px);
+  padding: 0;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  font-size: 1.25em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ui-pin-input__cell::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-pin-input__cell[data-focused] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-pin-input[data-dirty] .ui-pin-input__cell {
+  border-color: var(--ref-dirty);
+}
+
+.ui-pin-input__cell[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-pin-input[data-validation='warning'] .ui-pin-input__cell {
+  border-color: var(--ref-warning);
+}
+
+.ui-pin-input__group[data-readonly] .ui-pin-input__cell {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-pin-input__cell[data-disabled] {
+  cursor: not-allowed;
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}

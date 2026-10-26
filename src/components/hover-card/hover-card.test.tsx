@@ -1,0 +1,289 @@
+import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { Dialog, Link } from '../../primitives/index.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Button } from '../button/button.js';
+import { HoverCard, HoverCardTrigger, type HoverCardProps } from './hover-card.js';
+
+type TriggerOptions = Omit<Parameters<typeof HoverCardTrigger>[0], 'children'>;
+type User = ReturnType<typeof userEvent.setup>;
+
+/**
+ * Moves the pointer in the window. React Aria keeps an open card while the pointer is over the
+ * trigger, the card or the area between them; jsdom lays both out at the origin.
+ */
+async function movePointer(user: User, at: 'between' | 'away') {
+  const point = at === 'between' ? 2 : 500;
+  await user.pointer({ target: document.body, coords: { clientX: point, clientY: point } });
+}
+
+/**
+ * Rests the pointer on `element`. React Aria opens a preview only for a pointer it has seen move, and
+ * a reader's pointer crosses the page before it enters the trigger, so it moves over the page first.
+ */
+async function hover(user: User, element: Element) {
+  await user.pointer([
+    { target: document.body, coords: { clientX: 1, clientY: 1 } },
+    { target: element },
+  ]);
+}
+
+async function advance(ms: number) {
+  await act(async () => {
+    vi.advanceTimersByTime(ms);
+  });
+}
+
+function Preview({
+  triggerProps = {},
+  onPress,
+  ...props
+}: Partial<HoverCardProps> & { triggerProps?: TriggerOptions; onPress?: () => void }) {
+  return (
+    <>
+      <button type="button">Before</button>
+      <HoverCardTrigger {...triggerProps}>
+        <Button onPress={onPress}>Lisbon</Button>
+        <HoverCard aria-label="About Lisbon" {...props}>
+          {props.children ?? (
+            <>
+              <p>Capital of Portugal, on the Tagus.</p>
+              <button type="button">Save city</button>
+            </>
+          )}
+        </HoverCard>
+      </HoverCardTrigger>
+    </>
+  );
+}
+
+const card = () => document.querySelector<HTMLElement>('.ui-hover-card');
+const trigger = () => screen.getByRole('button', { name: 'Lisbon' });
+
+describe('HoverCard', () => {
+  let user: User;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    // Testing Library's async wrapper ends each user-event call on a zero-delay timer, which it only
+    // advances under Jest's fake timers; point it at Vitest's clock so no real time passes.
+    user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  });
+
+  afterEach(async () => {
+    // Let React Aria's global warm-up and cool-down timers settle between tests.
+    await advance(5000);
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('UIC-HOVER-CARD-1.1 UIC-HOVER-CARD-2.1 UIC-HOVER-CARD-2.3 opens a named card that describes its trigger', async () => {
+    const onPress = vi.fn();
+    const { container } = render(
+      <Preview
+        onPress={onPress}
+        className="extra"
+        id="lisbon-card"
+        data-lab="card"
+        showArrow
+        triggerProps={{ delay: 300 }}
+      />,
+    );
+    expect(trigger()).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(trigger()).toHaveAttribute('aria-expanded', 'false');
+    await hover(user, trigger());
+    await advance(300);
+    const dialog = screen.getByRole('dialog', { name: 'About Lisbon' });
+    expect(dialog).toBe(card());
+    expect(container.contains(dialog)).toBe(false);
+    expect(dialog).toHaveClass('ui-hover-card', 'extra');
+    expect(dialog).toHaveAttribute('data-lab', 'card');
+    expect(dialog).toHaveAttribute('data-trigger', 'PreviewTrigger');
+    expect(dialog.id).toContain('lisbon-card');
+    expect(trigger()).toHaveAttribute('aria-expanded', 'true');
+    expect(trigger()).toHaveAttribute('aria-describedby', expect.stringContaining(dialog.id));
+    expectHooksMatchSpec(document.body, 'HOVER-CARD', {
+      slots: 'all',
+      callerAttributes: ['data-lab'],
+    });
+
+    await user.click(trigger());
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(card()).not.toBeNull();
+    expect(trigger()).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await advance(1000);
+    expect(card()).toBeNull();
+  });
+
+  it('UIC-HOVER-CARD-1.2 opens after the hover delay without taking focus and cancels on leave', async () => {
+    render(<Preview />);
+    await hover(user, trigger());
+    await advance(599);
+    expect(card()).toBeNull();
+    await advance(1);
+    expect(card()).not.toBeNull();
+    expect(card()?.contains(document.activeElement)).toBe(false);
+    await user.unhover(trigger());
+    await movePointer(user, 'away');
+    await advance(1000);
+    expect(card()).toBeNull();
+
+    await advance(5000);
+    await hover(user, trigger());
+    await advance(300);
+    await user.unhover(trigger());
+    await advance(1000);
+    expect(card()).toBeNull();
+  });
+
+  it('UIC-HOVER-CARD-1.2 opens on a long touch and moves focus into the card', async () => {
+    vi.stubGlobal('ontouchstart', null);
+    render(<Preview />);
+    expect(trigger()).toHaveAccessibleDescription(/long press/i);
+    await user.pointer({ keys: '[TouchA>]', target: trigger() });
+    await advance(500);
+    expect(card()).not.toBeNull();
+    await user.pointer({ keys: '[/TouchA]', target: trigger() });
+    await advance(0);
+    expect(card()?.contains(document.activeElement)).toBe(true);
+  });
+
+  it('UIC-HOVER-CARD-1.2 opens a neighbouring card at once right after one closes', async () => {
+    render(
+      <>
+        <Preview />
+        <HoverCardTrigger>
+          <Button>Oslo</Button>
+          <HoverCard aria-label="About Oslo">Capital of Norway.</HoverCard>
+        </HoverCardTrigger>
+      </>,
+    );
+    await hover(user, trigger());
+    await advance(600);
+    expect(screen.getByRole('dialog', { name: 'About Lisbon' })).toBeInTheDocument();
+    await user.unhover(trigger());
+    await hover(user, screen.getByRole('button', { name: 'Oslo' }));
+    await advance(0);
+    expect(screen.getByRole('dialog', { name: 'About Oslo' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'About Lisbon' })).not.toBeInTheDocument();
+    await user.unhover(screen.getByRole('button', { name: 'Oslo' }));
+    await movePointer(user, 'away');
+    await advance(1000);
+    expect(card()).toBeNull();
+  });
+
+  it('UIC-HOVER-CARD-1.2 UIC-HOVER-CARD-1.3 opens on keyboard focus, lets Tab in and closes on Escape', async () => {
+    render(
+      <>
+        <Preview triggerProps={{ delay: 300 }} />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.tab();
+    await user.tab();
+    expect(trigger()).toHaveFocus();
+    expect(card()).toBeNull();
+    await advance(300);
+    expect(card()).not.toBeNull();
+    expect(trigger()).toHaveFocus();
+    // The card is portalled after the After button; Tab still moves into it first.
+    await user.tab();
+    expect(card()?.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    await advance(1000);
+    expect(card()).toBeNull();
+    // Focus returns in an animation frame once the card has gone.
+    await advance(100);
+    expect(trigger()).toHaveFocus();
+  });
+
+  it('UIC-HOVER-CARD-1.3 stays open while the pointer moves into the card, then closes after the close delay', async () => {
+    render(<Preview triggerProps={{ delay: 0, closeDelay: 400 }} />);
+    await hover(user, trigger());
+    await advance(0);
+    await user.unhover(trigger());
+    await movePointer(user, 'between');
+    await hover(user, card() as HTMLElement);
+    await advance(1000);
+    expect(card()).not.toBeNull();
+    await movePointer(user, 'away');
+    await advance(399);
+    expect(card()).not.toBeNull();
+    await advance(1);
+    expect(card()).toBeNull();
+  });
+
+  it('UIC-HOVER-CARD-1.4 follows a controlled state, opens with defaultOpen and stays closed while disabled', async () => {
+    const onOpenChange = vi.fn();
+    function Controlled() {
+      const [isOpen, setOpen] = useState(true);
+      return (
+        <Preview
+          triggerProps={{
+            isOpen,
+            onOpenChange: (next) => {
+              onOpenChange(next);
+              setOpen(next);
+            },
+          }}
+        />
+      );
+    }
+    const { unmount } = render(<Controlled />);
+    expect(card()).not.toBeNull();
+    act(() => trigger().focus());
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    await advance(1000);
+    expect(card()).toBeNull();
+    unmount();
+
+    const { unmount: unmountDefault } = render(<Preview triggerProps={{ defaultOpen: true }} />);
+    expect(card()).not.toBeNull();
+    unmountDefault();
+
+    render(<Preview triggerProps={{ isDisabled: true, delay: 0 }} />);
+    await hover(user, screen.getByRole('button', { name: 'Lisbon' }));
+    await advance(1000);
+    expect(card()).toBeNull();
+  });
+
+  it('UIC-HOVER-CARD-2.1 becomes a plain container around content with its own dialog', async () => {
+    render(
+      <HoverCardTrigger defaultOpen>
+        <Link href="#maria">Maria</Link>
+        <HoverCard>
+          <Dialog aria-label="Maria Santos">Research team</Dialog>
+        </HoverCard>
+      </HoverCardTrigger>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Maria Santos' });
+    expect(card()).not.toHaveAttribute('role');
+    expect(card()?.contains(dialog)).toBe(true);
+  });
+
+  it('UIC-HOVER-CARD-2.2 places the card, points an arrow at the trigger and stacks it on the dropdown layer', async () => {
+    const { unmount } = render(
+      <Preview
+        placement="top"
+        offset={12}
+        crossOffset={4}
+        showArrow
+        triggerProps={{ defaultOpen: true }}
+      />,
+    );
+    expect(card()).toHaveAttribute('data-placement', 'top');
+    expect(card()?.querySelector(':scope > .ui-hover-card__arrow')).toHaveAttribute(
+      'data-placement',
+      'top',
+    );
+    expect(card()?.style.zIndex).toBe('130');
+    unmount();
+    render(<Preview triggerProps={{ defaultOpen: true }} />);
+    expect(card()).toHaveAttribute('data-placement', 'bottom');
+    expect(document.querySelector('.ui-hover-card__arrow')).toBeNull();
+  });
+});

@@ -1,0 +1,203 @@
+/* Card */
+
+.ui-card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+}
+.ui-card[data-variant='panel'] {
+  background: var(--ref-surface);
+}
+.ui-card[data-selected] {
+  border-color: var(--ref-accent);
+  box-shadow: inset 0 0 0 1px var(--ref-accent);
+}
+.ui-card[data-interactive]:not([data-selected]):hover {
+  border-color: var(--ref-border-strong);
+}
+.ui-card[data-flush] {
+  border-radius: 0;
+  border-inline-width: 0;
+}
+.ui-card[data-full-width] {
+  width: 100%;
+}
+.ui-card[data-fill] {
+  height: 100%;
+}
+
+.ui-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ref-border);
+}
+.ui-card__heading {
+  display: grid;
+  flex: 1 1 10rem;
+  gap: 4px;
+  min-width: 0;
+}
+.ui-card__title {
+  margin: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-strong);
+  line-height: 1.4;
+}
+.ui-card__description {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+.ui-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ui-card__body {
+  min-width: 0;
+  padding: 12px 16px;
+}
+.ui-card[data-fill] > .ui-card__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.ui-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-card:not([data-density='default']) {
+  gap: 8px;
+  padding: 10px;
+}
+.ui-card[data-density='compact'] {
+  padding: 8px;
+}
+.ui-card[data-density='tight'] {
+  gap: 4px;
+  padding: 4px 6px;
+}
+.ui-card:not([data-density='default']) > :is(.ui-card__header, .ui-card__body, .ui-card__footer) {
+  padding: 0;
+  border: 0;
+}
+
+.ui-card__media {
+  overflow: hidden;
+  border-start-start-radius: calc(var(--ref-radius-lg) - 1px);
+  border-start-end-radius: calc(var(--ref-radius-lg) - 1px);
+  background: var(--ref-surface);
+}
+.ui-card__media > :is(img, svg, video) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ui-card:not([data-density='default']) > .ui-card__media {
+  margin: -10px -10px 0;
+}
+.ui-card[data-density='compact'] > .ui-card__media {
+  margin: -8px -8px 0;
+}
+.ui-card[data-density='tight'] > .ui-card__media {
+  margin: -4px -6px 0;
+}
+
+.ui-card__action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ui-card__action:is(:focus-visible, [data-focus-visible]) {
+  border-radius: var(--ref-radius-xs);
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+.ui-card:has(.ui-card__action) {
+  cursor: pointer;
+}
+.ui-card:has(.ui-card__action):hover .ui-card__action {
+  text-decoration: underline;
+}
+
+.ui-card__skeleton {
+  height: 52px;
+  border-radius: var(--ref-radius-sm);
+  background: repeating-linear-gradient(to bottom, var(--ref-border) 0 12px, transparent 12px 20px);
+  mask-image: linear-gradient(
+    to right,
+    #000 85%,
+    transparent
+  ); /* token-exempt: an alpha mask, not a colour */
+}
+
+.ui-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  box-sizing: border-box;
+  max-height: 100%;
+  padding: 4px;
+  overflow: auto;
+}
+.ui-card-grid[data-empty] {
+  display: block;
+  color: var(--ref-muted);
+  font-style: italic;
+}
+.ui-card-grid__loader {
+  grid-column: 1 / -1;
+  padding: 8px;
+  color: var(--ref-muted);
+}
+.ui-card-grid-item {
+  position: relative;
+  border-radius: var(--ref-radius-lg);
+  outline: none;
+}
+.ui-card-grid-item > [role='gridcell'] {
+  height: 100%;
+}
+.ui-card-grid-item .ui-card {
+  height: 100%;
+}
+.ui-card-grid-item[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+.ui-card-grid-item[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+}
+.ui-card-grid-item__checkbox {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  z-index: 1;
+}
+
+/* Hidden feedback parts keep the native hidden behaviour over their display rules. */
+
+:is(.ui-badge, .ui-banner, .ui-empty-state, .ui-inline-error, .ui-card)[hidden] {
+  display: none;
+}

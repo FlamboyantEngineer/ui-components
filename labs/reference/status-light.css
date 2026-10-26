@@ -1,0 +1,93 @@
+/* Status Light */
+
+.ui-status-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ref-font-size-md);
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.ui-status-light__dot {
+  flex: none;
+  box-sizing: border-box;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ref-muted);
+}
+
+.ui-status-light[data-size='sm'] {
+  gap: 4px;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-status-light[data-size='sm'] .ui-status-light__dot {
+  width: 6px;
+  height: 6px;
+}
+
+.ui-status-light[data-size='lg'] {
+  gap: 8px;
+  font-size: var(--ref-font-size-lg);
+}
+
+.ui-status-light[data-size='lg'] .ui-status-light__dot {
+  width: 10px;
+  height: 10px;
+}
+
+.ui-status-light__label {
+  min-width: 0;
+}
+
+.ui-status-light[data-tone='info'] .ui-status-light__dot {
+  background: var(--ref-info);
+}
+
+.ui-status-light[data-tone='success'] .ui-status-light__dot {
+  background: var(--ref-success);
+}
+
+.ui-status-light[data-tone='warning'] .ui-status-light__dot {
+  background: var(--ref-warning);
+}
+
+.ui-status-light[data-tone='danger'] .ui-status-light__dot {
+  background: var(--ref-danger);
+}
+
+/* Presence states match the presence avatar's indicator. */
+.ui-status-light[data-status='active'] .ui-status-light__dot {
+  background: var(--ref-success);
+}
+
+.ui-status-light[data-status='away'] .ui-status-light__dot {
+  background: var(--ref-warning);
+}
+
+.ui-status-light[data-status='busy'] .ui-status-light__dot {
+  background: var(--ref-danger);
+}
+
+.ui-status-light[data-status='idle'] .ui-status-light__dot {
+  border: 2px solid var(--ref-muted);
+  background: transparent;
+}
+
+.ui-status-light[data-processing] .ui-status-light__dot {
+  animation: ref-status-light-pulse var(--ref-duration-loop) ease-in-out infinite;
+}
+
+@keyframes ref-status-light-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-status-light[data-processing] .ui-status-light__dot {
+    animation: none;
+  }
+}

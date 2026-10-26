@@ -1,0 +1,118 @@
+# File Field
+
+`FileField` is a field whose value is an ordered list of stored files: references to files the owner keeps (`FileFieldItem`: an id, a name and optionally a size, a MIME type, a thumbnail and a download URL), not their bytes. It is built on the [Field](FIELD.md) base and the library's [File Upload](FILE-UPLOAD.md): the upload chooses and checks new files and hands the accepted ones to the owner, who uploads them, reports the uploads in progress and adds the stored files to the value. It serves attachment fields of any kind of file (documents, images, video, audio) with the field base's label, description, validation, dirty state, restore, undo and menu.
+
+## UIC-FILE-FIELD-1 - Field
+
+### UIC-FILE-FIELD-1.1 - Field control
+
+`FileField` shall render a `Field` (root also `ui-file-field`) around a `FileUpload` (`ui-file-field__upload`) whose command is the field's control: it is named by the field's label followed by its own text (provider string `addFile`, or `addFiles` with `allowsMultiple`), described by the field's description and message as well as the upload's own description of the accepted types and limits, and it takes focus when the field is restored or a form finds the field invalid. `variant` chooses the upload's `button` or `dropzone` command.
+
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-1.2 - One file or several
+
+Without `allowsMultiple` the field shall hold one file: the chooser offers one, `maxFiles` defaults to 1 and the command reads `addFile`. With it, the chooser offers several and there is no count limit unless `maxFiles` sets one.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`
+
+### UIC-FILE-FIELD-1.3 - Checks before upload
+
+`acceptedFileTypes`, `maxSize` and `maxFiles` shall check the chosen and dropped files as `FileUpload` does, `maxFiles` counting the held files and the uploads together; the upload reports the refusals, and `onSelect` receives the accepted files.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-1.4 - Validation
+
+The field shall validate its value as every field does: a required field with no file shows the provider's `valueRequired` message, and the caller's `validate` checks the list. While the field is invalid, the upload publishes `data-invalid`.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-1.5 - Read-only and disabled
+
+A read-only field shall list its files with their previews, download links and actions but offer no command and no removal. A disabled field disables the command and the remove buttons.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`
+
+### UIC-FILE-FIELD-1.6 - Forms
+
+With `name`, the field shall submit each held file's id in a hidden input under that name; a disabled field submits none. Numeric and text file ids remain distinct when the value is reordered, including each file row and hidden form input.
+
+Implementation: `src/components/file-field/file-field-parts.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`
+
+## UIC-FILE-FIELD-2 - Files
+
+### UIC-FILE-FIELD-2.1 - Held files
+
+Each held file shall be listed in the upload's file list, before the uploads, with its name, its size when given, its thumbnail (`previewUrl`) or the glyph of its `type`, and a download link (`ui-file-field__download`, a `Link` with the `download` glyph named by the provider string `downloadFile`) that downloads `downloadUrl` under the file's name, when it has one.
+
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-parts.tsx`, `src/core/glyphs.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-2.2 - Caller actions and previews
+
+`renderFileActions` shall add the caller's actions to a held file after its download link, and `renderFilePreview` replace its thumbnail or glyph (such as with an audio or video player); neither applies to uploads.
+
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-parts.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-2.3 - Removing a file
+
+A held file's remove button shall commit the value without the file. An upload's remove button calls `onUploadRemove` with its id, to cancel it or dismiss its error.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-2.4 - Uploads
+
+`uploads` shall be listed after the held files with their progress or error (UIC-FILE-UPLOAD-3.1). While an upload's progress is below 100 and it has no error, the field is pending, so an enclosing form waits for it.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+## UIC-FILE-FIELD-3 - Changes
+
+### UIC-FILE-FIELD-3.1 - Added files
+
+While the field is dirty, each held file that is not in the committed value shall publish `data-change="added"` (UIC-FILE-UPLOAD-3.9).
+
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-changes.ts`
+Verification: `src/components/file-field/file-field-changes.test.ts`, `src/components/file-field/file-field.test.tsx`
+
+### UIC-FILE-FIELD-3.2 - Removed files
+
+While the field is dirty, each committed file the value no longer holds shall follow the list as a `FieldPreviousValue` (`ui-file-field__removed`) with its name, whose restore button (`Restore <name>`) puts that one file back in its committed place and commits; the button is disabled while the field is full or locked.
+
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-changes.ts`, `src/components/file-field/file-field-parts.tsx`
+Verification: `src/components/file-field/file-field-changes.test.ts`, `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+## UIC-FILE-FIELD-4 - Accessibility and hooks
+
+### UIC-FILE-FIELD-4.1 - Accessible names
+
+Every control of the field shall be named in words: the command by the field's label and its own text, each download link `Download <name>` (provider string `downloadFile`), each remove button `Remove <name>` and each restore button `Restore <name>`; the type glyphs and thumbnails are decorative, since the file name stands beside them, and upload errors are announced as alerts.
+
+Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-field/file-field-parts.tsx`, `src/components/file-upload/file-upload-files.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`
+
+### UIC-FILE-FIELD-4.2 - Hooks and caller attributes
+
+`FileField` shall carry the hooks below and put the caller's `className`, `id` and `data-*` attributes on the field's root.
+
+Implementation: `src/components/file-field/file-field.tsx`
+Verification: `src/components/file-field/file-field.test.tsx`
+
+## Hooks
+
+| Hook                      | Kind | Values | Description                                                           |
+| ------------------------- | ---- | ------ | --------------------------------------------------------------------- |
+| `ui-file-field`           | root |        | The field's root (also `ui-field`).                                   |
+| `ui-file-field__upload`   | slot |        | The upload that chooses files and lists them (also `ui-file-upload`). |
+| `ui-file-field__download` | slot |        | A held file's download link (also `ui-link`).                         |
+| `ui-file-field__removed`  | slot |        | A removed committed file (also `ui-field-previous-value`).            |

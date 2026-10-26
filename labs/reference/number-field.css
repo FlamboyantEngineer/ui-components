@@ -1,0 +1,150 @@
+/* Number Field: an input between two step buttons, framed as one box. */
+
+.ui-number-field__box {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-number-field__group {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--ref-field-height);
+  overflow: hidden;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
+.ui-number-field__group[data-focus-within] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-number-field__input {
+  flex: 1 1 auto;
+  width: 6em;
+  min-width: 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.ui-number-field__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-number-field__decrement,
+.ui-number-field__increment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  /* Square inside the frame. */
+  width: calc(var(--ref-field-height) - 2px);
+  padding: 0;
+  border: 0;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  cursor: pointer;
+}
+
+.ui-number-field__decrement {
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-number-field__increment {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment)[data-hovered] {
+  background: var(--ref-hover);
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment)[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment)[data-disabled] {
+  color: var(--ref-muted);
+  cursor: default;
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment) .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-number-field[data-dirty] .ui-number-field__group {
+  border-color: var(--ref-dirty);
+}
+
+.ui-number-field[data-validation='invalid'] .ui-number-field__group {
+  border-color: var(--ref-danger);
+}
+
+.ui-number-field[data-validation='warning'] .ui-number-field__group {
+  border-color: var(--ref-warning);
+}
+
+.ui-number-field[data-disabled] .ui-number-field__group {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-number-field[data-readonly] .ui-number-field__group {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+/* The scrub handle drags sideways; literal affixes sit beside the number. */
+.ui-number-field__scrubber {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  color: var(--ref-muted);
+  cursor: ew-resize;
+}
+
+.ui-number-field__scrubber .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-number-field:is([data-readonly], [data-disabled]) .ui-number-field__scrubber {
+  cursor: default;
+}
+
+.ui-number-field__start,
+.ui-number-field__end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-number-field__start {
+  padding-inline-start: 8px;
+}
+
+.ui-number-field__end {
+  padding-inline-end: 8px;
+}
+
+.ui-number-field__start + .ui-number-field__input {
+  padding-inline-start: 4px;
+}
+
+.ui-number-field__input:has(+ .ui-number-field__end) {
+  padding-inline-end: 4px;
+}

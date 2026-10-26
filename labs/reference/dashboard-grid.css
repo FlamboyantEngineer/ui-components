@@ -1,0 +1,98 @@
+/* Dashboard Grid: a CSS grid of tiles; edit mode outlines tiles and shows corner handles. */
+
+.ui-dashboard-grid {
+  position: relative;
+  display: grid;
+  gap: 12px;
+}
+
+.ui-dashboard-grid__tile {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  transition:
+    box-shadow var(--ref-duration),
+    opacity var(--ref-duration);
+}
+
+.ui-dashboard-grid[data-editing] .ui-dashboard-grid__tile {
+  box-sizing: border-box;
+  padding-block-start: 28px;
+  outline: 1px dashed var(--ref-border-strong);
+  outline-offset: 2px;
+}
+
+.ui-dashboard-grid__tile:is([data-moving], [data-resizing]) {
+  z-index: 1;
+  box-shadow: var(--ref-shadow);
+  opacity: 0.92;
+}
+
+.ui-dashboard-grid__tile-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ui-dashboard-grid__tile-content > * {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.ui-dashboard-grid__move,
+.ui-dashboard-grid__resize {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-raised);
+  color: var(--ref-muted);
+  touch-action: none;
+}
+
+.ui-dashboard-grid__move {
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  cursor: grab;
+}
+
+.ui-dashboard-grid__tile[data-moving] .ui-dashboard-grid__move {
+  cursor: grabbing;
+}
+
+.ui-dashboard-grid__resize {
+  inset-block-end: 4px;
+  inset-inline-end: 4px;
+  cursor: nwse-resize;
+}
+
+.ui-dashboard-grid__move:hover,
+.ui-dashboard-grid__resize:hover {
+  color: var(--ref-text);
+}
+
+.ui-dashboard-grid__move:focus-visible,
+.ui-dashboard-grid__resize:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-dashboard-grid__move .ui-glyph,
+.ui-dashboard-grid__resize .ui-glyph {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-dashboard-grid__status {
+  position: absolute;
+}

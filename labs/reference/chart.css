@@ -1,0 +1,295 @@
+/* Chart: a quiet frame, muted axes and an eight-colour series palette keyed by data-series. */
+
+.ui-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-chart__title {
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chart__view-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  cursor: pointer;
+}
+
+.ui-chart__view-toggle .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-chart__view-toggle[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-chart__view-toggle[data-selected] {
+  border-color: var(--ref-accent-ink);
+  background: var(--ref-selected);
+}
+
+.ui-chart__view-toggle[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-chart__summary {
+  margin: 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-chart__body {
+  min-width: 0;
+}
+
+.ui-chart__plot {
+  display: block;
+  overflow: visible;
+}
+
+.ui-chart__empty {
+  margin: 0;
+  padding: 24px 0;
+  color: var(--ref-muted);
+  text-align: center;
+}
+
+.ui-chart__table {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chart__tooltip {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chart__tooltip-title {
+  display: block;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.ui-chart__tooltip-swatch,
+.ui-chart-legend__swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: 4px;
+  border-radius: var(--ref-radius-xs);
+  background: var(--ref-chart-series);
+  vertical-align: baseline;
+}
+
+.ui-chart__tooltip-label {
+  margin-inline-end: 6px;
+}
+
+.ui-chart__tooltip-value {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+/* The series palette: one category colour per position, replaced by a tone when the series has one. */
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series] {
+  --ref-chart-series: var(--ref-category-0);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='1'] {
+  --ref-chart-series: var(--ref-category-1);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='2'] {
+  --ref-chart-series: var(--ref-category-2);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='3'] {
+  --ref-chart-series: var(--ref-category-3);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='4'] {
+  --ref-chart-series: var(--ref-category-4);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='5'] {
+  --ref-chart-series: var(--ref-category-5);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='6'] {
+  --ref-chart-series: var(--ref-category-6);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series='7'] {
+  --ref-chart-series: var(--ref-category-7);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='neutral'] {
+  --ref-chart-series: var(--ref-border-strong);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='info'] {
+  --ref-chart-series: var(--ref-info);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='success'] {
+  --ref-chart-series: var(--ref-success);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='warning'] {
+  --ref-chart-series: var(--ref-warning);
+}
+
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='danger'] {
+  --ref-chart-series: var(--ref-danger);
+}
+
+/* Drawn values: filled marks with a canvas edge and a focus ring for keyboard focus. */
+.ui-bar-chart,
+.ui-line-chart,
+.ui-donut-chart {
+  color: var(--ref-text);
+}
+
+.ui-bar-chart__bar,
+.ui-donut-chart__slice {
+  fill: var(--ref-chart-series);
+  stroke: var(--ref-canvas);
+  stroke-width: 1px;
+}
+
+.ui-line-chart__line {
+  stroke: var(--ref-chart-series);
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ui-line-chart__line[data-tone='neutral'] {
+  stroke-dasharray: 4 4;
+}
+
+.ui-line-chart__area {
+  fill: var(--ref-chart-series);
+  fill-opacity: 0.15;
+  stroke: none;
+}
+
+.ui-line-chart__point {
+  fill: var(--ref-canvas);
+  stroke: var(--ref-chart-series);
+  stroke-width: 2px;
+}
+
+:is(.ui-bar-chart__bar, .ui-line-chart__point, .ui-donut-chart__slice) {
+  cursor: default;
+  outline: none;
+}
+
+:is(.ui-bar-chart__bar, .ui-donut-chart__slice)[data-active] {
+  fill-opacity: 0.8;
+}
+
+.ui-line-chart__point[data-active] {
+  fill: var(--ref-chart-series);
+}
+
+:is(.ui-bar-chart__bar, .ui-line-chart__point, .ui-donut-chart__slice):focus-visible {
+  stroke: var(--ref-focus);
+  stroke-width: 3px;
+}
+
+.ui-donut-chart__total {
+  pointer-events: none;
+  fill: currentColor;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+/* Axes: thin muted lines, small labels and faint grid lines. */
+.ui-chart-axis {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-chart-axis__line,
+.ui-chart-axis__tick {
+  stroke: var(--ref-border-strong);
+  stroke-width: 1px;
+}
+
+.ui-chart-axis__grid {
+  stroke: var(--ref-border);
+  stroke-width: 1px;
+  stroke-dasharray: 2 3;
+}
+
+.ui-chart-axis__label {
+  fill: currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legend: one compact toggle per series; a hidden series keeps an outlined swatch. */
+.ui-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.ui-chart-legend__item {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: var(--ref-muted);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  cursor: pointer;
+}
+
+.ui-chart-legend__item[data-selected] {
+  color: var(--ref-text);
+}
+
+.ui-chart-legend__item:not([data-selected]) .ui-chart-legend__swatch {
+  box-sizing: border-box;
+  border: 1px solid var(--ref-chart-series);
+  background: none;
+}
+
+.ui-chart-legend__item:not([data-selected]) .ui-chart-legend__label {
+  text-decoration: line-through;
+}
+
+.ui-chart-legend__item[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-chart-legend__item[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-chart-legend__label {
+  white-space: nowrap;
+}

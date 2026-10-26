@@ -1,0 +1,9 @@
+/* Built-in glyphs */
+
+:where(.ui-glyph) {
+  display: inline-block;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.25em;
+}

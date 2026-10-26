@@ -1,0 +1,232 @@
+/* Chat Tool Call: a bordered card whose header names the call and whose body shows its JSON. */
+
+.ui-chat-tool-call {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 560px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size);
+}
+
+.ui-chat-tool-call[data-status='approval-requested'] {
+  border-color: var(--ref-warning);
+}
+
+.ui-chat-tool-call[data-status='failed'] {
+  border-color: var(--ref-danger);
+}
+
+.ui-chat-tool-call__disclosure {
+  min-width: 0;
+}
+
+.ui-chat-tool-call__heading {
+  margin: 0;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-tool-call__heading .ui-disclosure__trigger {
+  padding: 6px 10px;
+}
+
+.ui-chat-tool-call__heading .ui-disclosure__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__status-glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+.ui-chat-tool-call[data-status='running'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-accent);
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
+}
+
+.ui-chat-tool-call[data-status='approval-requested'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-warning);
+}
+
+.ui-chat-tool-call[data-status='succeeded'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-success);
+}
+
+.ui-chat-tool-call[data-status='failed'] .ui-chat-tool-call__status-glyph,
+.ui-chat-tool-call[data-status='denied'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-danger);
+}
+
+.ui-chat-tool-call__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-tool-call__status,
+.ui-chat-tool-call__duration {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+  white-space: nowrap;
+}
+
+.ui-chat-tool-call__duration {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chat-tool-call__badge {
+  flex: none;
+}
+
+.ui-chat-tool-call__body {
+  padding-inline: 10px;
+}
+
+.ui-chat-tool-call__body > :last-child {
+  margin-bottom: 6px;
+}
+
+.ui-chat-tool-call__part {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__part + .ui-chat-tool-call__part {
+  margin-top: 8px;
+}
+
+.ui-chat-tool-call__part-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-chat-tool-call__part-title {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-tool-call__copy {
+  flex: none;
+}
+
+.ui-chat-tool-call__json {
+  min-width: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-canvas);
+}
+
+.ui-chat-tool-call__json > .ui-scroll-region__viewport {
+  max-height: 240px;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-chat-tool-call__json > .ui-scroll-region__viewport:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-chat-tool-call__json pre {
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 8px;
+  font: var(--ref-font-size-sm) / 1.45 var(--ref-mono);
+}
+
+.ui-chat-tool-call__empty {
+  margin: 0;
+  color: var(--ref-muted);
+}
+
+.ui-chat-tool-call__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--ref-border);
+  color: var(--ref-danger);
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-tool-call__error .ui-glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.ui-chat-tool-call__approval {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-top: 1px solid var(--ref-border);
+}
+
+/* The decision status stays mounted while empty, so it takes no space until it has text. */
+.ui-chat-tool-call__approval > * + :not(:empty) {
+  margin-top: 8px;
+}
+
+.ui-chat-tool-call__prompt {
+  margin: 0;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-tool-call__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ui-chat-tool-call__action {
+  flex: none;
+}
+
+.ui-chat-tool-call__deny-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ui-chat-tool-call__reason {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__decision {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-tool-call__approval[data-decision='approved'] .ui-chat-tool-call__decision,
+.ui-chat-tool-call__approval[data-decision='always'] .ui-chat-tool-call__decision {
+  color: var(--ref-success);
+}
+
+.ui-chat-tool-call__approval[data-decision='denied'] .ui-chat-tool-call__decision {
+  color: var(--ref-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chat-tool-call[data-status='running'] .ui-chat-tool-call__status-glyph {
+    animation: none;
+  }
+}

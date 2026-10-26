@@ -1,0 +1,305 @@
+/* PDF Viewer */
+
+.ui-pdf-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  overflow: hidden;
+  background: var(--ref-canvas);
+}
+
+.ui-pdf-viewer__toolbar {
+  flex: none;
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-pdf-viewer__group,
+.ui-pdf-viewer__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+.ui-pdf-viewer__actions {
+  margin-inline-start: auto;
+}
+
+.ui-pdf-viewer__leading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 8px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+/* Starts its own group: the zoom control after it has no group border of its own. */
+.ui-pdf-viewer__leading-actions + * {
+  margin-inline-start: 4px;
+}
+
+.ui-pdf-viewer__page-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-pdf-viewer__page-label,
+.ui-pdf-viewer__page-total {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+}
+
+.ui-pdf-viewer__page-input {
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+  color: var(--ref-text);
+  background: var(--ref-raised);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-pdf-viewer__page-input {
+  width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-pdf-viewer__page-input[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-pdf-viewer__page-input[data-disabled] {
+  color: var(--ref-muted);
+  background: var(--ref-surface);
+}
+
+/* The find row sits in the toolbar's one line: it does not wrap there. */
+.ui-pdf-viewer__group.ui-find-bar {
+  flex-wrap: nowrap;
+}
+
+.ui-pdf-viewer__group .ui-find-bar__query.ui-search-field {
+  flex-basis: 180px;
+}
+
+.ui-pdf-viewer__stage {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.ui-pdf-viewer__scroller {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  background: var(--ref-surface);
+}
+
+.ui-pdf-viewer__sidebar {
+  flex: none;
+  width: 184px;
+  overflow: auto;
+  border-inline-end: 1px solid var(--ref-border);
+  background: var(--ref-canvas);
+}
+
+.ui-pdf-viewer__thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  outline: none;
+}
+
+/* Its content width sizes the page drawn in it. */
+.ui-pdf-viewer__thumbnail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: var(--ref-radius);
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-pdf-viewer__thumbnail[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-pdf-viewer__thumbnail[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-pdf-viewer__thumbnail[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-pdf-viewer__thumbnail-canvas {
+  display: block;
+  background: #ffffff; /* token-exempt: a page is white paper in both themes */
+  box-shadow: 0 0 0 1px var(--ref-border);
+}
+
+.ui-pdf-viewer__thumbnail-label {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-pdf-viewer__outline {
+  padding: 8px 4px;
+}
+
+.ui-pdf-viewer__password {
+  position: absolute;
+  inset: 16px 16px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 320px;
+  margin-inline: auto;
+  padding: 16px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-pdf-viewer__scroller:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-pdf-viewer__pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.ui-pdf-viewer__page {
+  flex: none;
+  background: #ffffff; /* token-exempt: a page is white paper in both themes */
+  box-shadow: 0 0 0 1px var(--ref-border);
+}
+
+.ui-pdf-viewer__canvas {
+  display: block;
+}
+
+/* Caller content stays on its page. */
+.ui-pdf-viewer__overlay {
+  overflow: hidden;
+}
+
+.ui-pdf-viewer__stage > .ui-inline-error {
+  position: absolute;
+  inset: 16px 16px auto;
+}
+
+/* The engine sizes its text and annotation layers from the scale, and turns them with the page. */
+:is(.ui-pdf-viewer__text-layer, .ui-pdf-viewer__annotation-layer) {
+  --total-scale-factor: var(--ui-pdf-viewer-scale);
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+
+  transform-origin: 0 0;
+}
+
+:is(.ui-pdf-viewer__text-layer, .ui-pdf-viewer__annotation-layer)[data-main-rotation='90'] {
+  transform: rotate(90deg) translateY(-100%);
+}
+
+:is(.ui-pdf-viewer__text-layer, .ui-pdf-viewer__annotation-layer)[data-main-rotation='180'] {
+  transform: rotate(180deg) translate(-100%, -100%);
+}
+
+:is(.ui-pdf-viewer__text-layer, .ui-pdf-viewer__annotation-layer)[data-main-rotation='270'] {
+  transform: rotate(270deg) translateX(-100%);
+}
+
+/* The engine positions each text run as a percentage of the page and sets its font height, stretch
+   and rotation in custom properties; these rules turn them into transparent, selectable text over
+   the bitmap. */
+.ui-pdf-viewer__text-layer {
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+}
+
+.ui-pdf-viewer__text-layer [role='presentation'] {
+  position: absolute;
+  color: transparent;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0 0;
+  font-size: calc(var(--total-scale-factor) * var(--min-font-size) * var(--font-height, 0px));
+  transform: rotate(var(--rotate, 0deg)) scaleX(var(--scale-x, 1))
+    scale(calc(1 / var(--min-font-size)));
+}
+
+.ui-pdf-viewer__text-layer span:not([role], .ui-pdf-viewer__match) {
+  display: contents;
+}
+
+.ui-pdf-viewer__text-layer ::selection {
+  color: transparent;
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-strong), transparent);
+}
+
+.ui-pdf-viewer__match {
+  margin: -1px;
+  padding: 1px;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-highlight);
+}
+
+.ui-pdf-viewer__match[data-current] {
+  background: var(--ref-highlight-current);
+}
+
+/* The engine positions each link as a percentage of the page; the layer passes the pointer through
+   between them. */
+.ui-pdf-viewer__annotation-layer section {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: auto;
+  transform-origin: 0 0;
+}
+
+.ui-pdf-viewer__annotation-layer .linkAnnotation > a {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--ref-radius-xs);
+}
+
+.ui-pdf-viewer__annotation-layer .linkAnnotation > a:hover {
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), transparent);
+}
+
+.ui-pdf-viewer__annotation-layer .linkAnnotation > a:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}

@@ -1,0 +1,71 @@
+/* Hover Card. The card's position and z-index come from React Aria and the component. */
+
+.ui-hover-card {
+  box-sizing: border-box;
+  max-width: min(300px, calc(100vw - 24px));
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size)/1.5 var(--ref-font);
+  outline: none;
+}
+
+.ui-hover-card > p:first-of-type {
+  margin-top: 0;
+}
+
+.ui-hover-card > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-hover-card[data-entering] {
+  animation: ref-fade var(--ref-duration-fast) ease-out;
+}
+
+.ui-hover-card[data-exiting] {
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
+}
+
+/* The arrow is a bordered square turned on its corner, half of it showing past the card's edge. */
+
+.ui-hover-card__arrow {
+  width: 14px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.ui-hover-card__arrow:is([data-placement='left'], [data-placement='right']) {
+  width: 7px;
+  height: 14px;
+}
+
+.ui-hover-card__arrow::before {
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+  content: '';
+  transform: rotate(45deg);
+}
+
+.ui-hover-card__arrow[data-placement='top']::before {
+  top: -4.5px;
+}
+
+.ui-hover-card__arrow[data-placement='left']::before {
+  left: -4.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-hover-card[data-entering],
+  .ui-hover-card[data-exiting] {
+    animation: none;
+  }
+}

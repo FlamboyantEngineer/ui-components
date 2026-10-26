@@ -1,0 +1,127 @@
+/* Activity Feed */
+
+.ui-activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 36rem;
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+  line-height: 20px;
+}
+
+.ui-activity-feed__filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-activity-feed__list,
+.ui-activity-feed__entries {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-activity-feed__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-activity-feed__day {
+  margin: 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ui-activity-feed__entry {
+  position: relative;
+  display: flex;
+  gap: 10px;
+}
+
+/* The line joining each marker to the next entry of the same run. */
+.ui-activity-feed__entry:not(:last-child)::before {
+  position: absolute;
+  top: 28px;
+  bottom: -12px;
+  left: 11px;
+  width: 2px;
+  background: var(--ref-border);
+  content: '';
+}
+
+.ui-activity-feed__marker {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--ref-border);
+  border-radius: 50%;
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+}
+
+.ui-activity-feed__marker:has(.ui-avatar) {
+  border: none;
+  background: none;
+}
+
+.ui-activity-feed__marker .ui-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-activity-feed__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.ui-activity-feed__summary {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-activity-feed__actor,
+.ui-activity-feed__target {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-activity-feed__action {
+  color: var(--ref-text);
+}
+
+.ui-activity-feed__time {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-activity-feed__detail {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  overflow-wrap: anywhere;
+}
+
+.ui-activity-feed__load-more {
+  align-self: flex-start;
+}

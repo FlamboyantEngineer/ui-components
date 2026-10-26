@@ -1,0 +1,146 @@
+/* Record Label */
+
+:is(.ui-record-label[data-mode='label'], .ui-record-label__label) {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0 6px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: var(--ref-font-size-md);
+  line-height: 1.4;
+  vertical-align: bottom;
+}
+
+:is(.ui-record-label[data-mode='label'], .ui-record-label__label):not([data-truncate]) {
+  flex-wrap: wrap;
+}
+
+:is(.ui-record-label[data-mode='label'], .ui-record-label__label)[data-size='sm'] {
+  gap: 0 4px;
+  font-size: var(--ref-font-size-sm);
+}
+
+:is(.ui-record-label[data-mode='label'], .ui-record-label__label)[data-size='lg'] {
+  gap: 0 8px;
+  font-size: var(--ref-font-size-lg);
+}
+
+/* The icon and identifier never break apart. */
+.ui-record-label__identity {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.ui-record-label__icon {
+  color: var(--ref-muted);
+}
+
+.ui-record-label__identifier {
+  font-family: var(--ref-mono);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+:is(.ui-record-label[data-mode='label'], .ui-record-label__label)[data-unavailable]
+  .ui-record-label__identifier {
+  color: var(--ref-muted);
+  font-family: inherit;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.ui-record-label__name {
+  min-width: 0;
+}
+
+:is(.ui-record-label[data-mode='label'], .ui-record-label__label)[data-truncate]
+  .ui-record-label__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-record-label__accessible-label {
+  white-space: nowrap;
+}
+
+/* Record Chip */
+
+.ui-record-label[data-mode='chip'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px 4px 2px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  font-size: var(--ref-font-size-md);
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.ui-record-label[data-mode='chip'][data-layout='stacked'] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 6px 8px;
+}
+
+.ui-record-label[data-mode='chip'][data-unavailable] {
+  border-style: dashed;
+}
+
+.ui-record-label__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-record-label__label {
+  min-width: 0;
+}
+
+.ui-record-label__version {
+  flex: none;
+  padding: 0 4px;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-hover);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-record-label__type {
+  flex: none;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-record-label__state {
+  display: inline-flex;
+  flex: none;
+}
+
+.ui-record-label[data-mode='chip'] > .ui-record-label__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-record-label__remove {
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.ui-record-label__preview {
+  max-width: 280px;
+  padding: 8px 12px;
+  font-size: var(--ref-font-size-md);
+}

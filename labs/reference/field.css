@@ -1,0 +1,225 @@
+/*
+ * Field: label, control and buttons on one wrapping row; description and message below. A field keeps
+ * room for what its states add, so turning dirty, invalid or pending never moves its control or its
+ * neighbours: the restore button's place closes the control row, and the message keeps one line.
+ */
+
+.ui-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  box-sizing: border-box;
+  width: 280px;
+  max-width: 100%;
+  font-size: var(--ref-font-size-md);
+}
+
+/*
+ * Sizes. The control box takes the control height of the field's size, the buttons beside and
+ * inside it the size below, and the type the matching step; content never changes the box's height.
+ */
+.ui-field {
+  --ref-field-height: var(--ref-control-height-md);
+  --ref-field-button: var(--ref-control-height-sm);
+}
+
+.ui-field[data-size='xs'] {
+  --ref-field-height: var(--ref-control-height-xs);
+  --ref-field-button: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-field[data-size='sm'] {
+  --ref-field-height: var(--ref-control-height-sm);
+  --ref-field-button: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-field[data-size='lg'] {
+  --ref-field-height: var(--ref-control-height-lg);
+  --ref-field-button: var(--ref-control-height-md);
+  font-size: var(--ref-font-size);
+}
+
+/* Stacked by default: the label takes its own line above the control. */
+.ui-field__label {
+  flex: 0 0 100%;
+  margin-bottom: 4px;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-field:is([data-label-layout='label-colon-control'], [data-label-layout='control-label'])
+  .ui-field__label {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.ui-field__required {
+  margin-inline-start: 2px;
+  color: var(--ref-danger);
+}
+
+.ui-field__colon {
+  margin-inline-start: 1px;
+}
+
+.ui-field__control {
+  display: flex;
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+/* A plain input or text area placed in the control slot. */
+.ui-field__control > :is(input, textarea) {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--ref-field-height);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-field__control > :is(input, textarea):focus-visible {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-field[data-dirty] .ui-field__control > :is(input, textarea) {
+  border-color: var(--ref-dirty);
+}
+
+.ui-field[data-validation='invalid'] .ui-field__control > :is(input, textarea) {
+  border-color: var(--ref-danger);
+}
+
+.ui-field[data-validation='warning'] .ui-field__control > :is(input, textarea) {
+  border-color: var(--ref-warning);
+}
+
+.ui-field[data-readonly] .ui-field__control > :is(input, textarea) {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-field[data-disabled] .ui-field__control > :is(input, textarea) {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-field__help,
+.ui-field__menu,
+.ui-field-restore-button {
+  flex: none;
+}
+
+/* The restore button closes the row, and holds its place while the field is clean. */
+.ui-field > .ui-field-restore-button,
+.ui-field:not([data-dirty])::after {
+  order: 1;
+}
+
+.ui-field:not([data-dirty])::after {
+  content: '';
+  flex: none;
+  width: var(--ref-field-button);
+  height: var(--ref-field-button);
+}
+
+.ui-field__decoration {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.ui-field__description {
+  flex: 0 0 100%;
+  order: 2;
+  margin-top: 4px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+/* Small fields take smaller help and message type. */
+.ui-field:is([data-size='xs'], [data-size='sm']) :is(.ui-field__description, .ui-field__message) {
+  font-size: var(--ref-font-size-xs);
+}
+
+/* The message stays in the document as a live region, and keeps a line while empty. */
+.ui-field__message {
+  flex: 0 0 100%;
+  order: 2;
+  min-height: 1lh;
+  margin-top: 4px;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-field__message[data-severity='error'] {
+  color: var(--ref-danger);
+}
+
+.ui-field__message[data-severity='warning'] {
+  color: var(--ref-warning);
+}
+
+.ui-field[data-validation='pending'] .ui-field__message {
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+/* A previous value: struck through in a dashed frame, distinct from current chips. */
+.ui-field-previous-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-field-previous-value__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px dashed var(--ref-danger);
+  border-radius: var(--ref-radius-sm);
+  color: var(--ref-danger);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-field-previous-value .ui-field-restore-button {
+  width: 22px;
+  height: 22px;
+}
+
+/* A fieldset: a framed group under its legend. */
+.ui-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 14px 14px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-fieldset__legend {
+  padding: 0 4px;
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-fieldset[data-disabled] {
+  border-style: dashed;
+}

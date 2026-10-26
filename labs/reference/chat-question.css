@@ -1,0 +1,204 @@
+/*
+ * Chat Question: a card of questions. The options sit in a column with their descriptions under
+ * the labels, and the preview of the focused or chosen option sits beside them, or below them on
+ * a narrow card. The question tabs and the counter lead a pending card; the actions close it,
+ * after the error of a refused request.
+ */
+
+.ui-chat-question {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  max-width: 640px;
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font: var(--ref-font-size-md) / 1.45 var(--ref-font);
+}
+
+/* Focus lands on the card only by script, once it settles; it needs no ring. */
+.ui-chat-question:focus {
+  outline: none;
+}
+
+.ui-chat-question[data-status='dismissed'] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  color: var(--ref-muted);
+}
+
+/*
+ * The tabs, then the counter at the end of their row, then the shown question across the card;
+ * both classes, so it wins over the tabs' own layout, which comes later.
+ */
+.ui-chat-question__tabs.ui-tabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 8px;
+}
+
+.ui-chat-question__panel {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.ui-chat-question__progress {
+  padding-bottom: 6px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* With the style mark, an answered question's tab takes the success colour instead of a check. */
+.ui-chat-question[data-answered-mark='style'] .ui-chat-question__tab[data-answered] {
+  color: var(--ref-success);
+}
+
+.ui-chat-question__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-chat-question__question {
+  margin: 0;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-question[data-status='dismissed'] .ui-chat-question__question {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-question__answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 16px;
+}
+
+.ui-chat-question__options {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-chat-question__option {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-chat-question__recommended {
+  vertical-align: middle;
+}
+
+/* The description lines up with the label, past the radio or box before it. */
+.ui-chat-question__description {
+  padding-inline-start: 28px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-question__other,
+.ui-chat-question__text {
+  flex: 1 1 100%;
+  max-width: 360px;
+}
+
+.ui-chat-question__other {
+  order: 1;
+  padding-inline-start: 28px;
+}
+
+.ui-chat-question__preview {
+  flex: 1 1 240px;
+  box-sizing: border-box;
+  min-width: 0;
+  max-height: 240px;
+  padding: 8px 10px;
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  font-size: var(--ref-font-size-sm);
+}
+
+/*
+ * Code in a preview wraps rather than scrolling sideways: a scrolling block would be one more Tab
+ * stop between the options and the actions.
+ */
+.ui-chat-question__preview .ui-markdown__code-block {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ui-chat-question__preview > .ui-markdown > :first-child {
+  margin-top: 0;
+}
+
+.ui-chat-question__preview > .ui-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+/* Why the last request failed spans the card, just above the actions that retry it. */
+.ui-chat-question__error {
+  align-self: stretch;
+}
+
+/* The answers being sent are locked; the pending button carries its own spinner. */
+.ui-chat-question[data-submitting] .ui-chat-question__answer {
+  cursor: progress;
+}
+
+.ui-chat-question__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ui-chat-question__back {
+  margin-inline-end: auto;
+}
+
+.ui-chat-question__next,
+.ui-chat-question__submit,
+.ui-chat-question__dismiss {
+  flex: none;
+}
+
+.ui-chat-question__announcement {
+  white-space: nowrap;
+}
+
+.ui-chat-question__summary {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.ui-chat-question__summary-item {
+  display: grid;
+  gap: 1px;
+}
+
+.ui-chat-question__summary-question {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-question__summary-answer {
+  margin: 0;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-question__status {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+}

@@ -1,0 +1,369 @@
+/* Property Panel: hairline sections, rows with the label on a column beside the control. */
+
+.ui-property-panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-property-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-property-panel__body {
+  display: flex;
+  flex-direction: column;
+  padding-block: 4px;
+}
+
+/* Filtered parts carry the hidden attribute; the display values below must not show them. */
+:is(.ui-property-section, .ui-property-card, .ui-property-group, .ui-property-row)[hidden] {
+  display: none;
+}
+
+/* Sections */
+
+.ui-property-section:not([hidden]) ~ .ui-property-section {
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-property-section__header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 6px;
+}
+
+.ui-property-section__heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font: inherit;
+}
+
+.ui-property-section__trigger,
+.ui-property-card__trigger {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-property-section__trigger {
+  padding: 10px;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-property-section__trigger[data-hovered],
+.ui-property-card__trigger[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-property-section__trigger[data-focus-visible],
+.ui-property-card__trigger[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-property-section[data-disabled] .ui-property-section__trigger {
+  cursor: default;
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-property-section__chevron,
+.ui-property-card__chevron {
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+
+.ui-property-section__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-property-section__override,
+.ui-property-card__override {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ref-accent-ink);
+}
+
+.ui-property-section__count {
+  flex: none;
+  font-weight: 400;
+}
+
+.ui-property-section__meta {
+  color: var(--ref-muted);
+  font-weight: 400;
+}
+
+.ui-property-section__actions,
+.ui-property-card__actions {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+
+/* A closed panel keeps its content mounted with hidden="until-found", so it drops its padding. */
+.ui-property-section__content:not([hidden]) {
+  padding: 0 10px 12px;
+}
+
+.ui-property-section__description {
+  margin-bottom: 8px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+/* Groups */
+
+.ui-property-group + .ui-property-group,
+.ui-property-group + .ui-property-card,
+.ui-property-card + .ui-property-group {
+  margin-top: 10px;
+}
+
+.ui-property-group__heading {
+  margin-bottom: 2px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Rows: label, control and actions on one grid row; the description below the control. */
+
+.ui-property-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 32px;
+}
+
+.ui-property-row__label {
+  grid-column: 1;
+  overflow-wrap: anywhere;
+  color: var(--ref-muted);
+}
+
+.ui-property-row__required {
+  margin-inline-start: 2px;
+  color: var(--ref-danger);
+}
+
+.ui-property-row__control {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 2;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-property-row__control > .ui-field {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
+.ui-property-row[data-overridden] .ui-property-row__control :is(input, textarea) {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-property-row__unit {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-property-row__hint {
+  flex: 0 0 100%;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-property-row__actions {
+  display: flex;
+  grid-row: 1;
+  grid-column: 3;
+  gap: 2px;
+}
+
+.ui-property-row__description {
+  grid-column: 2 / -1;
+  padding-bottom: 4px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-property-row[data-wide] .ui-property-row__label {
+  grid-column: 1 / 3;
+  padding-top: 6px;
+}
+
+.ui-property-row[data-wide] .ui-property-row__control,
+.ui-property-row[data-wide] .ui-property-row__description {
+  grid-column: 1 / 3;
+}
+
+@container (min-width: 520px) {
+  .ui-property-row {
+    grid-template-columns: 128px minmax(0, 1fr) auto;
+  }
+}
+
+@container (max-width: 359.98px) {
+  .ui-property-panel[data-label-layout='responsive'] .ui-property-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-block: 4px;
+  }
+
+  .ui-property-panel[data-label-layout='responsive']
+    .ui-property-row
+    > :is(.ui-property-row__label, .ui-property-row__control, .ui-property-row__description) {
+    grid-column: 1;
+  }
+
+  .ui-property-panel[data-label-layout='responsive'] .ui-property-row__label {
+    font-size: var(--ref-font-size-sm);
+  }
+
+  .ui-property-panel[data-label-layout='responsive'] .ui-property-row__actions {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+  }
+}
+
+/* Cards */
+
+.ui-property-card {
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+}
+
+.ui-property-card + .ui-property-card {
+  margin-top: 6px;
+}
+
+.ui-property-card__header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 4px;
+}
+
+.ui-property-card[data-expanded] > .ui-property-card__header {
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-property-card__trigger {
+  padding: 6px 8px;
+  border-radius: var(--ref-radius-lg);
+}
+
+.ui-property-card__name {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-property-card__summary {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-property-card__body:not([hidden]) {
+  padding: 6px 8px 8px;
+}
+
+/* Strips and icon groups */
+
+.ui-property-strip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ui-property-strip-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-property-strip-cell__letter {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-property-strip-cell > input:focus-visible {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-property-strip-cell > input {
+  box-sizing: border-box;
+  width: 48px;
+  height: var(--ref-control-height-sm);
+  padding: 0 6px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-property-icon-group {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.ui-property-icon-group[data-variant='separate'] > * {
+  border: 1px solid var(--ref-border);
+}
+
+.ui-property-icon-group[data-variant='segmented'] {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-property-icon-group[data-variant='segmented'] > * {
+  border-radius: 0;
+}
+
+.ui-property-icon-group[data-variant='segmented'] > * + * {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-property-row .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-property-row .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

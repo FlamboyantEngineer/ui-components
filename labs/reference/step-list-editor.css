@@ -1,0 +1,105 @@
+/* Step List Editor: numbered rows of text fields under column headings, with handles and menus. */
+
+.ui-step-list-editor {
+  display: grid;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.ui-step-list-editor__header,
+.ui-step-list-editor__fields {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 6px;
+}
+
+.ui-step-list-editor__header {
+  margin-inline-start: 62px;
+  margin-inline-end: 38px;
+}
+
+.ui-step-list-editor[data-readonly] .ui-step-list-editor__header {
+  margin-inline: 34px 0;
+}
+
+.ui-step-list-editor__heading {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-step-list-editor__steps {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-step-list-editor__step {
+  display: grid;
+  grid-template-columns: 28px 28px minmax(0, 1fr) 32px;
+  align-items: start;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius);
+}
+
+.ui-step-list-editor[data-readonly] .ui-step-list-editor__step {
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.ui-step-list-editor__step[data-dirty] {
+  border-color: var(--ref-dirty);
+}
+
+.ui-step-list-editor__step[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
+
+.ui-step-list-editor__step[data-drop-target][data-position='before'] {
+  border-top-color: var(--ref-accent);
+}
+
+.ui-step-list-editor__step[data-drop-target][data-position='after'] {
+  border-bottom-color: var(--ref-accent);
+}
+
+.ui-step-list-editor__handle {
+  cursor: grab;
+}
+
+.ui-step-list-editor__number {
+  padding-top: 6px;
+  color: var(--ref-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.ui-step-list-editor__field {
+  min-width: 0;
+}
+
+.ui-step-list-editor__actions {
+  justify-self: end;
+}
+
+.ui-step-list-editor__empty {
+  justify-self: start;
+}
+
+.ui-step-list-editor__add {
+  justify-self: start;
+}
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-step-list-editor .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-step-list-editor .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

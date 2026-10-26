@@ -1,0 +1,54 @@
+/* Chat Parts */
+
+/* A message's parts, stacked; plain text keeps its breaks through <br>, so spaces collapse. */
+.ui-chat-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  white-space: normal;
+}
+
+.ui-chat-parts__text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-parts__text[data-format='plain'] {
+  line-height: 1.5;
+}
+
+/* A mention or command: a pill tinted from the text it sits in, so it reads on any bubble. */
+.ui-chat-parts__token {
+  padding: 0 4px;
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), transparent);
+  font-weight: var(--ref-font-weight-medium);
+  box-decoration-break: clone;
+}
+
+.ui-chat-parts__token[data-kind='command'] {
+  background: color-mix(in srgb, var(--ref-category-2) var(--ref-tint), transparent);
+  font-family: var(--ref-mono);
+}
+
+/* A record reference: the record chip draws itself, so the token adds nothing around it. */
+.ui-chat-parts__token[data-kind='reference'] {
+  padding: 0;
+  background: none;
+  font-weight: inherit;
+}
+
+.ui-chat-parts__diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-chat-parts__diff-title {
+  color: var(--ref-muted);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,150 @@
+/* Chat. The chat fills the height its container gives it: the header, the search, the transcript
+   (which takes the rest), who is typing and what the assistant does, the queue and the composer. */
+
+.ui-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  color: var(--ref-text);
+  font: var(--ref-font-size)/1.45 var(--ref-font);
+}
+
+.ui-chat__transcript {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}
+
+.ui-chat__search,
+.ui-chat__status,
+.ui-chat__composer {
+  flex: none;
+}
+
+/* Nobody types: the indicator stays in the page for its announcements and takes no room. */
+.ui-chat__typing {
+  flex: none;
+  padding-inline: 4px;
+}
+
+.ui-chat__typing[data-empty] {
+  min-height: 0;
+}
+
+.ui-chat__status {
+  padding-inline: 4px;
+}
+
+.ui-chat__queue {
+  display: grid;
+  flex: none;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px dashed var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-chat__queue-label {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat__queue-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-chat__queue-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding-inline-start: 6px;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-chat__queue-item[data-editing] {
+  background: var(--ref-selected);
+}
+
+.ui-chat__queue-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat__queue-edit,
+.ui-chat__queue-remove,
+.ui-chat__search-toggle {
+  flex: none;
+}
+
+.ui-chat__banner {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-chat__banner-label {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-chat__banner-cancel {
+  flex: none;
+}
+
+.ui-chat-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 4px 8px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-chat-header__avatar {
+  flex: none;
+}
+
+.ui-chat-header__text {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-chat-header__title {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-header__status {
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-header__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}

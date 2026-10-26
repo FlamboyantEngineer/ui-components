@@ -1,0 +1,28 @@
+/* Expand Toggle */
+
+.ui-expand-toggle {
+  flex: none;
+}
+
+/* A leaf holds the place of the icon button it would be, at the same size. */
+.ui-expand-toggle[data-leaf] {
+  display: inline-block;
+  width: var(--ref-control-height-sm);
+  height: var(--ref-control-height-sm);
+  vertical-align: middle;
+}
+
+.ui-expand-toggle[data-leaf][data-size='xs'] {
+  width: var(--ref-control-height-xs);
+  height: var(--ref-control-height-xs);
+}
+
+.ui-expand-toggle[data-leaf][data-size='md'] {
+  width: var(--ref-control-height-md);
+  height: var(--ref-control-height-md);
+}
+
+.ui-expand-toggle[data-leaf][data-size='lg'] {
+  width: var(--ref-control-height-lg);
+  height: var(--ref-control-height-lg);
+}

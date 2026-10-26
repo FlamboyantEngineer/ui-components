@@ -1,0 +1,159 @@
+/* Segmented Choice: segments inside one frame, which is as tall as a control of its size. */
+
+.ui-segmented-choice {
+  display: inline-flex;
+  box-sizing: border-box;
+  max-width: 100%;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  overflow: hidden;
+  vertical-align: middle;
+}
+.ui-segmented-choice[data-sizing='equal'] {
+  display: flex;
+}
+.ui-segmented-choice[data-orientation='vertical'] {
+  flex-direction: column;
+}
+.ui-segmented-choice[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-segmented-choice__segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  height: calc(var(--ref-control-height-md) - 2px);
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ref-text);
+  font: inherit;
+  font-size: var(--ref-font-size-md);
+  line-height: 1.2;
+  cursor: pointer;
+  outline: none;
+}
+.ui-segmented-choice[data-sizing='equal'] .ui-segmented-choice__segment {
+  flex: 1 1 0;
+}
+.ui-segmented-choice__segment + .ui-segmented-choice__segment {
+  border-inline-start: 1px solid var(--ref-border);
+}
+.ui-segmented-choice[data-orientation='vertical']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  border-inline-start: 0;
+  border-block-start: 1px solid var(--ref-border);
+}
+.ui-segmented-choice[data-size='xs'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-xs) - 2px);
+  padding: 0 6px;
+  font-size: var(--ref-font-size-xs);
+}
+.ui-segmented-choice[data-size='sm'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-sm) - 2px);
+  padding: 0 8px;
+  font-size: var(--ref-font-size-sm);
+}
+.ui-segmented-choice[data-size='lg'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-lg) - 2px);
+  padding: 0 12px;
+  font-size: var(--ref-font-size);
+}
+.ui-segmented-choice__segment[data-hovered] {
+  background: var(--ref-hover);
+}
+.ui-segmented-choice__segment[data-pressed] {
+  background: var(--ref-pressed);
+}
+.ui-segmented-choice[data-inherited] .ui-segmented-choice__segment[data-selected] {
+  color: var(--ref-muted);
+}
+
+/* One thumb slides between segments: React Aria animates it from the previous segment. */
+.ui-segmented-choice__indicator {
+  position: absolute;
+  inset: 0;
+  background: var(--ref-selected);
+  transition:
+    translate var(--ref-duration),
+    width var(--ref-duration),
+    height var(--ref-duration);
+}
+.ui-segmented-choice[data-inherited] .ui-segmented-choice__indicator {
+  background: var(--ref-hover);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-segmented-choice__indicator {
+    transition: none;
+  }
+}
+.ui-segmented-choice__segment[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+.ui-segmented-choice__segment[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+  cursor: not-allowed;
+}
+.ui-segmented-choice[data-readonly] .ui-segmented-choice__segment {
+  cursor: default;
+}
+
+.ui-segmented-choice__icon {
+  position: relative;
+  flex: none;
+}
+
+/* The label reserves the width of its selected weight, so selecting never resizes a segment. */
+.ui-segmented-choice__label {
+  position: relative;
+  display: inline-grid;
+  min-width: 0;
+  padding-inline: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-segmented-choice__label::after {
+  content: attr(data-label);
+  height: 0;
+  font-weight: var(--ref-font-weight-strong);
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.ui-segmented-choice__count {
+  position: relative;
+  flex: none;
+  min-width: 16px;
+  padding: 0 5px;
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-hover);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
+  line-height: 16px;
+  text-align: center;
+}
+.ui-segmented-choice__segment[data-selected] .ui-segmented-choice__count {
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+}
+
+/* A pending change: the picked segment waits, and the group takes no picks. */
+.ui-segmented-choice[data-pending] {
+  cursor: progress;
+}
+.ui-segmented-choice[data-pending] .ui-segmented-choice__segment {
+  cursor: progress;
+}
+.ui-segmented-choice[data-pending] .ui-segmented-choice__indicator {
+  opacity: 0.6;
+}

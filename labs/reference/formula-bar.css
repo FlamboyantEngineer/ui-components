@@ -1,0 +1,82 @@
+/* Formula Bar: the reference box, the cancel and confirm buttons, the glyph, the content and its result. */
+
+.ui-formula-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 3px 6px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-formula-bar__reference {
+  box-sizing: border-box;
+  flex: none;
+  width: 72px;
+  height: var(--ref-control-height-md);
+  padding: 0 6px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: var(--ref-font-size-md) var(--ref-mono);
+  text-align: center;
+}
+
+.ui-formula-bar__reference[data-focused] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-formula-bar[data-dirty] .ui-formula-bar__editor.ui-code-editor {
+  border-color: var(--ref-dirty);
+}
+
+.ui-formula-bar__reference[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-formula-bar__reference[data-disabled] {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+.ui-formula-bar__status {
+  position: absolute;
+}
+
+.ui-formula-bar__cancel,
+.ui-formula-bar__confirm {
+  flex: none;
+}
+
+.ui-formula-bar__glyph {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding-inline: 2px;
+  color: var(--ref-muted);
+}
+
+.ui-formula-bar__editor.ui-code-editor {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 96px;
+}
+
+.ui-formula-bar__result {
+  flex: none;
+  max-width: 30%;
+  padding: 0 8px;
+  border-inline-start: 1px solid var(--ref-border);
+  font-family: var(--ref-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

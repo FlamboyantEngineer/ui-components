@@ -1,0 +1,84 @@
+/* Tags Input: the tags and the text input wrap together inside one framed box. */
+
+.ui-tags-input__group {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  box-sizing: border-box;
+  /* One line at the field's height; more tags wrap onto more lines. */
+  min-height: var(--ref-field-height);
+  padding: 2px 4px 2px 6px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  cursor: text;
+}
+
+.ui-tags-input__group[data-focus-within] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-tags-input[data-dirty] .ui-tags-input__group {
+  border-color: var(--ref-dirty);
+}
+
+.ui-tags-input__group[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-tags-input[data-validation='warning'] .ui-tags-input__group {
+  border-color: var(--ref-warning);
+}
+
+.ui-tags-input__group[data-readonly] {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+  cursor: default;
+}
+
+.ui-tags-input__group[data-disabled] {
+  cursor: not-allowed;
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
+/* The tags fit inside the box at every size: one line keeps the field's height. */
+.ui-tags-input .ui-tag-group__tag {
+  height: calc(var(--ref-field-height) - 6px);
+}
+
+.ui-tags-input:is([data-size='xs'], [data-size='sm']) .ui-tag-group__tag {
+  font-size: var(--ref-font-size-2xs);
+}
+
+/* The tags take only their own width, so a press beside them reaches the frame. */
+.ui-tags-input .ui-tags-input__tags {
+  flex: 0 1 auto;
+  min-width: 0;
+  cursor: default;
+}
+
+.ui-tags-input__input {
+  flex: 1 1 80px;
+  min-width: 80px;
+  box-sizing: border-box;
+  height: calc(var(--ref-field-height) - 6px);
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ui-tags-input__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-tags-input__input[data-disabled] {
+  cursor: not-allowed;
+}

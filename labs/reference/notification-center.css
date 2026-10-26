@@ -1,0 +1,126 @@
+/* Notification Center: the inbox and the bell that opens it. */
+
+.ui-notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-notification-list__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-notification-list__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+
+.ui-notification-list__filter {
+  flex: none;
+}
+
+.ui-notification-list__mark-all-read {
+  flex: none;
+}
+
+.ui-notification-list__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ui-notification-list__group-title {
+  margin: 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ui-notification-list__list {
+  margin: 0;
+}
+
+.ui-notification-list__item {
+  flex-wrap: nowrap;
+}
+
+.ui-notification-list__item[data-unread] .ui-list-row-content__title {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-notification-list__actor {
+  flex: none;
+}
+
+.ui-notification-list__time {
+  white-space: nowrap;
+}
+
+.ui-notification-list__unread {
+  flex: none;
+}
+
+.ui-notification-list__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-notification-list__read-toggle,
+.ui-notification-list__dismiss {
+  flex: none;
+  color: var(--ref-muted);
+}
+
+.ui-notification-list__empty {
+  padding-block: 16px;
+}
+
+.ui-notification-list__load-more {
+  align-self: center;
+}
+
+.ui-notification-list__announcement {
+  white-space: nowrap;
+}
+
+.ui-notification-center {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.ui-notification-center__trigger {
+  flex: none;
+}
+
+.ui-notification-center[data-open] .ui-notification-center__trigger {
+  background: var(--ref-selected);
+}
+
+.ui-notification-center__count {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-notification-center__panel.ui-popover {
+  width: min(420px, calc(100vw - 24px));
+}
+
+.ui-notification-center__panel .ui-popover__body {
+  max-height: min(520px, 70vh);
+  overflow: auto;
+}
+
+.ui-notification-center__announcement {
+  white-space: nowrap;
+}

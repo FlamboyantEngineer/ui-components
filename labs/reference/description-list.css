@@ -1,0 +1,106 @@
+/* Description List */
+
+.ui-description-list {
+  --ref-description-list-columns: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--ref-description-list-columns), max-content minmax(0, 1fr));
+  gap: 4px 8px;
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.35;
+}
+
+.ui-description-list[data-columns='2'] {
+  --ref-description-list-columns: 2;
+}
+
+.ui-description-list[data-columns='3'] {
+  --ref-description-list-columns: 3;
+}
+
+.ui-description-list[data-columns='4'] {
+  --ref-description-list-columns: 4;
+}
+
+.ui-description-list__row {
+  --ref-description-list-span: 1;
+  display: grid;
+  grid-column: span calc(2 * var(--ref-description-list-span));
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.ui-description-list__row[data-span='2'] {
+  --ref-description-list-span: 2;
+}
+
+.ui-description-list__row[data-span='3'] {
+  --ref-description-list-span: 3;
+}
+
+.ui-description-list__row[data-span='4'] {
+  --ref-description-list-span: 4;
+}
+
+/* A row covering the whole line, or more columns than the list has, spans the full line. */
+.ui-description-list__row[data-span='full'],
+.ui-description-list[data-columns='1'] .ui-description-list__row:not([data-span='1']),
+.ui-description-list[data-columns='2']
+  .ui-description-list__row:is([data-span='3'], [data-span='4']),
+.ui-description-list[data-columns='3'] .ui-description-list__row[data-span='4'] {
+  grid-column: 1 / -1;
+}
+
+.ui-description-list__label {
+  margin: 0;
+  font-weight: var(--ref-font-weight-strong);
+  overflow-wrap: break-word;
+}
+
+.ui-description-list__value,
+.ui-description-list__secondary {
+  grid-column: 2 / -1;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-description-list__secondary {
+  color: var(--ref-muted);
+}
+
+.ui-description-list[data-layout='stacked'] {
+  grid-template-columns: repeat(var(--ref-description-list-columns), minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ui-description-list[data-layout='stacked'] .ui-description-list__row {
+  grid-column: span var(--ref-description-list-span);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.ui-description-list[data-layout='stacked'] .ui-description-list__row[data-span='full'],
+.ui-description-list[data-layout='stacked'][data-columns='1']
+  .ui-description-list__row:not([data-span='1']),
+.ui-description-list[data-layout='stacked'][data-columns='2']
+  .ui-description-list__row:is([data-span='3'], [data-span='4']),
+.ui-description-list[data-layout='stacked'][data-columns='3']
+  .ui-description-list__row[data-span='4'] {
+  grid-column: 1 / -1;
+}
+
+.ui-description-list[data-layout='stacked']
+  :is(.ui-description-list__value, .ui-description-list__secondary) {
+  grid-column: auto;
+}
+
+@media (max-width: 44rem) {
+  .ui-description-list.ui-description-list {
+    --ref-description-list-columns: 1;
+  }
+
+  .ui-description-list .ui-description-list__row.ui-description-list__row {
+    grid-column: 1 / -1;
+  }
+}

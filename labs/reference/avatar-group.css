@@ -1,0 +1,191 @@
+/* Avatar Group: avatars overlap by a third, each ringed in the canvas colour. */
+
+.ui-avatar-group {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.ui-avatar-group__trigger {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--ref-radius-full);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-avatar-group__trigger[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-avatar-group__trigger[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-avatar-group__trigger[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-avatar-group__avatar,
+.ui-avatar-group__overflow {
+  box-shadow: 0 0 0 2px var(--ref-canvas);
+}
+
+.ui-avatar-group[data-layout='stack']
+  .ui-avatar-group__avatar
+  ~ :is(.ui-avatar-group__avatar, .ui-avatar-group__overflow) {
+  margin-inline-start: -10px;
+}
+
+.ui-avatar-group__overflow {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 4px;
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+  line-height: 1;
+}
+
+.ui-avatar-group[data-size='xs'] .ui-avatar-group__overflow {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 2px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-avatar-group[data-size='sm'] .ui-avatar-group__overflow {
+  min-width: 24px;
+  height: 24px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-avatar-group[data-size='lg'] .ui-avatar-group__overflow {
+  min-width: 40px;
+  height: 40px;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-avatar-group[data-size='xs'][data-layout='stack']
+  .ui-avatar-group__avatar
+  ~ :is(.ui-avatar-group__avatar, .ui-avatar-group__overflow),
+.ui-avatar-group[data-size='sm'][data-layout='stack']
+  .ui-avatar-group__avatar
+  ~ :is(.ui-avatar-group__avatar, .ui-avatar-group__overflow) {
+  margin-inline-start: -6px;
+}
+
+.ui-avatar-group[data-size='lg'][data-layout='stack']
+  .ui-avatar-group__avatar
+  ~ :is(.ui-avatar-group__avatar, .ui-avatar-group__overflow) {
+  margin-inline-start: -12px;
+}
+
+.ui-avatar-group__popover {
+  min-width: 200px;
+}
+
+.ui-avatar-group__list {
+  display: grid;
+  gap: 8px;
+  max-height: 280px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.ui-avatar-group__item {
+  display: flex;
+  min-width: 0;
+}
+
+.ui-avatar-group[data-layout='strip'] {
+  gap: 4px;
+}
+.ui-avatar-group:not([data-layout='stack']) .ui-avatar-group__avatar {
+  box-shadow: none;
+}
+.ui-avatar-group[data-layout='stack'] .ui-avatar-group__avatar {
+  box-shadow: 0 0 0 2px var(--ref-canvas);
+}
+.ui-avatar-group .ui-avatar[data-variant='outlined'],
+.ui-avatar-group .ui-avatar[data-variant='outlined'] .ui-avatar__surface {
+  background: var(--ref-canvas);
+}
+button.ui-avatar-group__overflow {
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+button.ui-avatar-group__overflow[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+button.ui-avatar-group__overflow[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+button.ui-avatar-group__overflow[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-avatar-group__menu {
+  min-width: 180px;
+}
+
+.ui-avatar-group[data-size='xs'] .ui-avatar-group__overflow {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 2px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-avatar-group[data-size='sm'] .ui-avatar-group__overflow {
+  min-width: 24px;
+  height: 24px;
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-avatar-group[data-size='lg'] .ui-avatar-group__overflow {
+  min-width: 40px;
+  height: 40px;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-avatar-group[data-layout='dots'] {
+  gap: 3px;
+}
+
+.ui-avatar-group__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ref-avatar-color, var(--ref-muted));
+}
+
+.ui-avatar-group[data-layout='dots'] .ui-avatar-group__overflow {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
+}

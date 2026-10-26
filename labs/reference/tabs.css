@@ -1,0 +1,246 @@
+/* Tabs */
+
+.ui-tabs {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ui-tabs[data-orientation='vertical'] {
+  flex-direction: row;
+}
+
+.ui-tabs__list {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  border-bottom: 1px solid var(--ref-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ui-tabs__list[data-orientation='vertical'] {
+  flex-direction: column;
+  flex: none;
+  border-bottom: 0;
+  border-inline-end: 1px solid var(--ref-border);
+  overflow: hidden auto;
+}
+
+.ui-tabs__tab {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+.ui-tabs[data-size='sm'] .ui-tabs__tab {
+  height: 30px;
+  padding: 0 10px;
+  font-size: var(--ref-font-size-sm);
+}
+.ui-tabs[data-size='lg'] .ui-tabs__tab {
+  height: 42px;
+  padding: 0 16px;
+  font-size: var(--ref-font-size);
+}
+.ui-tabs__tab[data-hovered] {
+  background: var(--ref-hover);
+  color: var(--ref-text);
+}
+.ui-tabs__tab[data-selected] {
+  color: var(--ref-text);
+  font-weight: var(--ref-font-weight-strong); /* layout-exempt: the label reserves this width */
+}
+.ui-tabs__tab[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+.ui-tabs__tab[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.ui-tabs__indicator {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ref-accent);
+  transition:
+    translate var(--ref-duration),
+    width var(--ref-duration);
+}
+.ui-tabs__list[data-orientation='vertical'] .ui-tabs__indicator {
+  inset-block: 0;
+  inset-inline: auto 0;
+  width: 2px;
+  height: auto;
+  transition:
+    translate var(--ref-duration),
+    height var(--ref-duration);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tabs__indicator {
+    transition: none;
+  }
+}
+
+.ui-tabs__icon {
+  flex: none;
+}
+
+/* The label reserves the width of its selected weight, so selecting never resizes a tab. */
+.ui-tabs__label {
+  display: inline-grid;
+}
+.ui-tabs__label[data-label]::after {
+  content: attr(data-label);
+  height: 0;
+  font-weight: var(--ref-font-weight-strong);
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.ui-tabs__count {
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-danger-fill);
+  color: var(--ref-on-fill);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
+  line-height: 18px;
+  text-align: center;
+}
+
+.ui-tabs__panel {
+  padding: 12px;
+  outline: none;
+}
+.ui-tabs__panel[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+
+/* The bar holds a list with its scroll buttons, its "more" menu or its add button on one line. */
+.ui-tabs__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  border-bottom: 1px solid var(--ref-border);
+}
+.ui-tabs__bar > .ui-tabs__list {
+  flex: 0 1 auto;
+  border-bottom: 0;
+}
+.ui-tabs__bar[data-overflow='menu'] > .ui-tabs__list {
+  overflow: hidden;
+}
+
+.ui-tabs__scroll-button,
+.ui-tabs__add {
+  flex: none;
+}
+.ui-tabs__scroll-button[hidden] {
+  display: none;
+}
+
+.ui-tabs__overflow {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.ui-tabs__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-inline-end: -4px;
+  border-radius: var(--ref-radius-sm);
+  color: var(--ref-muted);
+}
+.ui-tabs__remove .ui-glyph {
+  width: 12px;
+  height: 12px;
+}
+.ui-tabs__remove:hover {
+  background: var(--ref-pressed);
+  color: var(--ref-text);
+}
+
+/* The name field of a tab being renamed lies over the tab; a refused name's message hangs below. */
+.ui-tabs,
+.ui-tabs__bar {
+  position: relative;
+}
+.ui-tabs__rename {
+  box-sizing: border-box;
+  display: flex;
+  min-width: 120px;
+  align-items: center;
+  padding: 0 4px;
+  background: var(--ref-canvas);
+}
+.ui-tabs__rename-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 2px 6px;
+  border: 1px solid var(--ref-accent);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: inherit;
+  font-size: var(--ref-font-size-md);
+}
+.ui-tabs__rename-input[data-invalid] {
+  border-color: var(--ref-danger);
+}
+.ui-tabs__rename-error {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 4px);
+  z-index: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--ref-danger);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-raised);
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+  box-shadow: var(--ref-shadow);
+}
+
+/* A dragged tab dims; the tab it would land beside draws a bar on that side. */
+.ui-tabs__tab[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
+.ui-tabs__tab[data-drop-position='before'] {
+  box-shadow: inset 2px 0 0 var(--ref-accent);
+}
+.ui-tabs__tab[data-drop-position='after'] {
+  box-shadow: inset -2px 0 0 var(--ref-accent);
+}
+.ui-tabs__tab[data-drop-position='before']:dir(rtl) {
+  box-shadow: inset -2px 0 0 var(--ref-accent);
+}
+.ui-tabs__tab[data-drop-position='after']:dir(rtl) {
+  box-shadow: inset 2px 0 0 var(--ref-accent);
+}
+.ui-tabs__list[data-orientation='vertical'] .ui-tabs__tab[data-drop-position='before'] {
+  box-shadow: inset 0 2px 0 var(--ref-accent);
+}
+.ui-tabs__list[data-orientation='vertical'] .ui-tabs__tab[data-drop-position='after'] {
+  box-shadow: inset 0 -2px 0 var(--ref-accent);
+}

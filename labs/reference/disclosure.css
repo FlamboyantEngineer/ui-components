@@ -1,0 +1,121 @@
+/* Disclosure: hairline-separated rows whose panels open with their measured height. */
+
+.ui-disclosure-group {
+  display: flex;
+  flex-direction: column;
+  border-block: 1px solid var(--ref-border);
+}
+
+.ui-disclosure-group > .ui-disclosure + .ui-disclosure {
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-disclosure {
+  min-width: 0;
+}
+
+.ui-disclosure__header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-disclosure__heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
+  line-height: 1.4;
+}
+
+.ui-disclosure__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-disclosure__trigger[data-indicator-position='end'] {
+  justify-content: space-between;
+}
+
+.ui-disclosure__trigger[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-disclosure__trigger[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-disclosure__trigger[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-disclosure__trigger[data-disabled] {
+  color: var(--ref-muted);
+  cursor: default;
+}
+
+.ui-disclosure__indicator {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.ui-disclosure__title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * React Aria sets the panel's measured height while it opens and closes, then auto or 0px. The
+ * spacers keep the content's breathing room inside the clipped height, so it animates with it.
+ */
+.ui-disclosure__panel {
+  height: var(--disclosure-panel-height);
+  padding-inline: 28px 6px;
+  overflow: hidden;
+  font-size: var(--ref-font-size);
+  transition: height var(--ref-duration) ease;
+}
+
+.ui-disclosure[data-indicator-position='end'] > .ui-disclosure__panel {
+  padding-inline-start: 6px;
+}
+
+.ui-disclosure__panel::before,
+.ui-disclosure__panel::after {
+  content: '';
+  display: block;
+  height: 4px;
+}
+
+.ui-disclosure__panel > :first-child {
+  margin-top: 0;
+}
+
+.ui-disclosure__panel > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-disclosure__panel .ui-disclosure-group {
+  border-block-end: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-disclosure__panel {
+    transition: none;
+  }
+}

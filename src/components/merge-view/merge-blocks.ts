@@ -1,0 +1,127 @@
+// The blocks a merge view draws from the chunks of `mergeThreeWay`: each side's numbered lines per
+// chunk, conflicts numbered in order, and the result text from the conflicts' resolutions.
+
+import type { MergeChunk } from '../../utils/three-way-merge.js';
+
+/** A side of a merge view's input: our text, the common base or their text. */
+export type MergeSide = 'ours' | 'base' | 'theirs';
+
+/** How a side's line relates to the base: left alone, changed cleanly, or part of a conflict. */
+export type MergeLineChange = 'unchanged' | 'changed' | 'conflict';
+
+/**
+ * How a conflict was resolved: not yet, by taking our lines, their lines, ours then theirs, the
+ * base's lines, or by editing its result.
+ */
+export type MergeResolution = 'unresolved' | 'ours' | 'theirs' | 'both' | 'base' | 'edited';
+
+/** A conflict's resolution, with the text the reader typed once edited. */
+export type ConflictState =
+  | { resolution: Exclude<MergeResolution, 'edited'> }
+  | { resolution: 'edited'; text: string };
+
+/** One line of a side. */
+export interface MergeLine {
+  /** Its 1-based number in the side's text. */
+  number: number;
+  text: string;
+  change: MergeLineChange;
+}
+
+/** One chunk as a merge view draws it: each side's lines and the rows the sides line up on. */
+export interface MergeBlock {
+  index: number;
+  chunk: MergeChunk;
+  /** The conflict's 0-based number, or `null` for a clean chunk. */
+  conflict: number | null;
+  lines: Readonly<Record<MergeSide, readonly MergeLine[]>>;
+  /** Rows each side draws for the chunk: the most lines any side has in it. */
+  rows: number;
+}
+
+/** The marker lines that frame an unresolved conflict's sides, named by the sides' labels. */
+export interface ConflictMarkers {
+  ours: string;
+  theirs: string;
+}
+
+const sides: readonly MergeSide[] = ['ours', 'base', 'theirs'];
+
+function lineChange(chunk: MergeChunk, side: MergeSide): MergeLineChange {
+  if (chunk.kind === 'conflict') return 'conflict';
+  if (chunk.kind === 'unchanged') return 'unchanged';
+  if (side === 'base' || chunk.kind === 'both' || chunk.kind === side) return 'changed';
+  return 'unchanged';
+}
+
+/** The blocks of a merge, each side's lines numbered through the text and conflicts in order. */
+export function createMergeBlocks(chunks: readonly MergeChunk[]): MergeBlock[] {
+  const next: Record<MergeSide, number> = { ours: 1, base: 1, theirs: 1 };
+  let conflicts = 0;
+  return chunks.map((chunk, index) => {
+    const lines = Object.fromEntries(
+      sides.map((side) => {
+        const change = lineChange(chunk, side);
+        const start = next[side];
+        next[side] += chunk[side].length;
+        return [
+          side,
+          chunk[side].map((text, offset) => ({ number: start + offset, text, change })),
+        ];
+      }),
+    ) as Record<MergeSide, MergeLine[]>;
+    const conflict = chunk.kind === 'conflict' ? conflicts : null;
+    if (conflict !== null) conflicts += 1;
+    const rows = Math.max(chunk.ours.length, chunk.base.length, chunk.theirs.length);
+    return { index, chunk, conflict, lines, rows };
+  });
+}
+
+/** The lines a clean chunk merges to: the side that changed, or the base when none did. */
+export function getCleanLines(chunk: MergeChunk): readonly string[] {
+  return chunk.kind === 'theirs' ? chunk.theirs : chunk.ours;
+}
+
+/** A conflict's result text: the lines its resolution takes, the edited text, or framed sides. */
+export function getConflictText(
+  chunk: MergeChunk,
+  state: ConflictState,
+  markers: ConflictMarkers,
+): string {
+  switch (state.resolution) {
+    case 'edited':
+      return state.text;
+    case 'unresolved':
+      return [
+        `<<<<<<< ${markers.ours}`,
+        ...chunk.ours,
+        '=======',
+        ...chunk.theirs,
+        `>>>>>>> ${markers.theirs}`,
+      ].join('\n');
+    case 'both':
+      return [...chunk.ours, ...chunk.theirs].join('\n');
+    default:
+      return chunk[state.resolution].join('\n');
+  }
+}
+
+/**
+ * The merged text: clean chunks' lines and each conflict's result text in order, ending with a
+ * line break when our text does.
+ */
+export function createMergeText(options: {
+  blocks: readonly MergeBlock[];
+  states: readonly ConflictState[];
+  markers: ConflictMarkers;
+  hasFinalBreak: boolean;
+}): string {
+  const { blocks, states, markers, hasFinalBreak } = options;
+  const parts = blocks.flatMap((block) => {
+    if (block.conflict === null) return getCleanLines(block.chunk);
+    const text = getConflictText(block.chunk, states[block.conflict]!, markers);
+    return text === '' ? [] : [text];
+  });
+  const text = parts.join('\n');
+  return hasFinalBreak && text !== '' ? `${text}\n` : text;
+}

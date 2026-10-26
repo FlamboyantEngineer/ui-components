@@ -1,0 +1,212 @@
+/* Dock Panel */
+
+.ui-dock-panel {
+  display: flex;
+  flex: none;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+}
+
+.ui-dock-panel[data-resizing] {
+  user-select: none;
+}
+
+/* The separator sits on the inner edge; the launchers on the outer edge, or on top at the bottom. */
+.ui-dock-panel[data-position='end'] {
+  border-inline-start: 1px solid var(--ref-border);
+  & > .ui-dock-panel__handle {
+    order: 0;
+  }
+  & > .ui-dock-panel__body {
+    order: 1;
+  }
+  & > .ui-dock-panel__launchers {
+    order: 2;
+  }
+}
+
+.ui-dock-panel[data-position='start'] {
+  border-inline-end: 1px solid var(--ref-border);
+  & > .ui-dock-panel__launchers {
+    order: 0;
+  }
+  & > .ui-dock-panel__body {
+    order: 1;
+  }
+  & > .ui-dock-panel__handle {
+    order: 2;
+  }
+}
+
+.ui-dock-panel[data-position='bottom'] {
+  flex-direction: column;
+  border-block-start: 1px solid var(--ref-border);
+  & > .ui-dock-panel__handle {
+    order: 0;
+  }
+  & > .ui-dock-panel__launchers {
+    order: 1;
+  }
+  & > .ui-dock-panel__body {
+    order: 2;
+  }
+}
+
+.ui-dock-panel__launchers {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 8px 6px;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.ui-dock-panel__launchers[data-orientation='vertical'] {
+  flex-direction: column;
+}
+
+.ui-dock-panel__launchers[data-orientation='horizontal'] {
+  padding: 4px 8px;
+}
+
+.ui-dock-panel[data-expanded][data-position='end'] > .ui-dock-panel__launchers {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+.ui-dock-panel[data-expanded][data-position='start'] > .ui-dock-panel__launchers {
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-dock-panel[data-expanded][data-position='bottom'] > .ui-dock-panel__launchers {
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-dock-panel__launcher {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  color: var(--ref-muted);
+}
+
+.ui-dock-panel__launcher[data-selected] {
+  color: var(--ref-text);
+}
+
+.ui-dock-panel__launcher > .ui-button[data-content='icon'] {
+  color: inherit;
+}
+
+.ui-dock-panel__launcher > [aria-expanded='true'] {
+  background: var(--ref-selected);
+  box-shadow: inset 0 -2px var(--ref-accent);
+  color: var(--ref-on-fill);
+}
+
+.ui-dock-panel__launchers[data-orientation='vertical']
+  .ui-dock-panel__launcher
+  > [aria-expanded='true'] {
+  box-shadow: inset 2px 0 var(--ref-accent);
+}
+
+.ui-dock-panel__count {
+  transform: translate(30%, -30%);
+}
+
+.ui-dock-panel__toggle {
+  flex: none;
+  color: var(--ref-muted);
+}
+
+.ui-dock-panel__launchers[data-orientation='vertical'] > .ui-dock-panel__toggle {
+  margin-block-start: auto;
+}
+
+.ui-dock-panel__launchers[data-orientation='horizontal'] > .ui-dock-panel__toggle {
+  margin-inline-start: auto;
+}
+
+.ui-resize-handle.ui-dock-panel__handle {
+  border: 0;
+  background: transparent;
+}
+
+.ui-resize-handle.ui-dock-panel__handle[data-orientation='vertical'] {
+  width: 6px;
+}
+
+.ui-resize-handle.ui-dock-panel__handle[data-orientation='horizontal'] {
+  height: 6px;
+}
+
+.ui-dock-panel__body {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ui-dock-panel__pane {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ui-dock-panel__body[hidden],
+.ui-dock-panel__pane[hidden] {
+  display: none;
+}
+
+.ui-dock-panel__pane:focus {
+  outline: none;
+}
+
+.ui-dock-panel__pane:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-dock-panel__header {
+  flex: none;
+  min-height: 28px;
+  padding: 6px 8px;
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-dock-panel__title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-dock-panel__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 8px;
+  overflow: auto;
+}
+
+/* In the drawer the pane fills the body below the drawer's own title. */
+.ui-dock-panel__drawer .ui-dock-panel__pane {
+  height: 100%;
+}
+
+.ui-dock-panel__drawer .ui-dock-panel__header {
+  padding-inline: 0;
+}
+
+.ui-dock-panel__drawer .ui-dock-panel__content {
+  padding-inline: 0;
+}

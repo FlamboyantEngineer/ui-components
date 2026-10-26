@@ -1,0 +1,252 @@
+import { useState, type ReactNode } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Form } from '../../src/components/form/form.js';
+import {
+  RangeSlider,
+  Slider,
+  type RangeValue,
+  type SliderSize,
+  type SliderValueLabel,
+} from '../../src/components/slider/slider.js';
+import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  fieldLayouts,
+  fieldStates,
+  useLabFieldState,
+  type FieldStateName,
+} from './field-states.js';
+
+// A slider always holds a value, so it has no required state.
+const sliderStates = fieldStates.filter((state) => state !== 'required');
+const sizes = ['sm', 'md', 'lg'] as const satisfies readonly SliderSize[];
+const valueLabels = ['output', 'thumb', 'none'] as const satisfies readonly SliderValueLabel[];
+
+function Output({ name, children }: { name: string; children: ReactNode }) {
+  return (
+    <p>
+      {name}: <output data-lab-output={name}>{children}</output>
+    </p>
+  );
+}
+
+function Sample({ state, size }: { state: FieldStateName; size: SliderSize }) {
+  const props = useLabFieldState<number>(state, {
+    value: 40,
+    edited: 60,
+    invalid: 90,
+    warning: 75,
+    empty: 0,
+  });
+  return <Slider label="Volume" size={size} {...props} />;
+}
+
+function RangeSample({ state }: { state: FieldStateName }) {
+  const props = useLabFieldState<RangeValue>(state, {
+    value: [20, 60],
+    edited: [30, 70],
+    invalid: [0, 90],
+    warning: [10, 80],
+    empty: [0, 100],
+  });
+  return <RangeSlider label="Price" {...props} />;
+}
+
+/** Marks with labels, a unit format and the value shown on the thumbs. */
+function Marks() {
+  return (
+    <>
+      <Slider
+        label="Temperature"
+        minValue={16}
+        maxValue={28}
+        step={0.5}
+        defaultValue={21}
+        formatOptions={{ style: 'unit', unit: 'celsius' }}
+        marks={[16, 20, 24, 28].map((value) => ({ value, label: `${value}°` }))}
+        description="From 16 to 28 °C in steps of 0.5."
+        data-lab-field="marks"
+      />
+      <Slider
+        label="Balance"
+        minValue={-50}
+        maxValue={50}
+        defaultValue={-20}
+        fillOffset={0}
+        marks={[
+          { value: -50, label: 'Left' },
+          { value: 0, label: 'Centre' },
+          { value: 50, label: 'Right' },
+        ]}
+        description="The fill starts from 0."
+        data-lab-field="balance"
+      />
+    </>
+  );
+}
+
+/** Each drag or key press commits; React Aria's onChangeEnd reports the value as well. */
+function Commit() {
+  const [value, setValue] = useState(30);
+  const [committed, setCommitted] = useState(30);
+  return (
+    <>
+      <Slider
+        label="Brightness"
+        value={value}
+        onChange={setValue}
+        onChangeEnd={setCommitted}
+        marks={[{ value: 0 }, { value: 25 }, { value: 50 }, { value: 75 }, { value: 100 }]}
+        data-lab-field="brightness"
+      />
+      <Output name="Brightness">{value}</Output>
+      <Output name="Brightness committed">{committed}</Output>
+    </>
+  );
+}
+
+/** Two thumbs that keep five steps between them, formatted as currency. */
+function Range() {
+  const [value, setValue] = useState<RangeValue>([100, 300]);
+  return (
+    <>
+      <RangeSlider
+        label="Price"
+        maxValue={500}
+        step={10}
+        minStepsBetweenThumbs={5}
+        value={value}
+        onChange={setValue}
+        formatOptions={{ style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }}
+        marks={[0, 250, 500].map((mark) => ({ value: mark, label: `€${mark}` }))}
+        description="The thumbs stay at least €50 apart."
+        data-lab-field="range"
+      />
+      <Output name="Price">{value.join(' to ')}</Output>
+    </>
+  );
+}
+
+function Vertical() {
+  return (
+    <div style={{ display: 'flex', gap: 48 }}>
+      <Slider
+        label="Level"
+        orientation="vertical"
+        defaultValue={60}
+        valueLabel="thumb"
+        marks={[
+          { value: 0, label: 'Low' },
+          { value: 100, label: 'High' },
+        ]}
+        data-lab-field="vertical"
+      />
+      <RangeSlider
+        label="Hours"
+        orientation="vertical"
+        minValue={0}
+        maxValue={24}
+        defaultValue={[9, 17]}
+        data-lab-field="vertical-range"
+      />
+    </div>
+  );
+}
+
+/** The committed value is the caller's: the fields stay dirty until Save. */
+function SavedForm() {
+  const [saved, setSaved] = useState(40);
+  const [value, setValue] = useState(40);
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <Form
+      aria-label="Sound"
+      validationBehavior="aria"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setSubmitted(
+          [...data.entries()].map(([name, entry]) => `${name}=${String(entry)}`).join(' '),
+        );
+      }}
+    >
+      <Slider
+        label="Volume"
+        name="volume"
+        value={value}
+        onChange={setValue}
+        committedValue={saved}
+        defaultValue={50}
+        menu={['set-default']}
+        data-lab-field="saved"
+      />
+      <RangeSlider
+        label="Quiet hours"
+        name="quiet"
+        minValue={0}
+        maxValue={24}
+        defaultValue={[6, 22]}
+        validate={([start, end]) =>
+          end - start > 12
+            ? { severity: 'error', message: 'Keep quiet hours to 12 or fewer.' }
+            : null
+        }
+        data-lab-field="quiet"
+      />
+      <Button onPress={() => setSaved(value)}>Save</Button>
+      <Button type="submit">Submit</Button>
+      <Output name="Submitted">{submitted}</Output>
+    </Form>
+  );
+}
+
+mountLab(
+  <>
+    <LabSection title="Sizes and states" description="Every size against every field state.">
+      <StateMatrix
+        axes={{ state: sliderStates, size: sizes }}
+        render={({ state, size }) => <Sample state={state} size={size} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Value labels and layouts"
+      description="The value in an output, on the thumb (shown while hovered, focused or dragged) or nowhere, against every label layout."
+    >
+      <StateMatrix
+        axes={{ valueLabel: valueLabels, layout: fieldLayouts }}
+        render={({ valueLabel, layout }) => (
+          <Slider label="Volume" labelLayout={layout} valueLabel={valueLabel} defaultValue={40} />
+        )}
+      />
+    </LabSection>
+    <LabSection title="Range states" description="A range slider in every field state.">
+      <StateMatrix
+        axes={{ state: sliderStates }}
+        render={({ state }) => <RangeSample state={state} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Marks and formats"
+      description="Labelled marks, a unit format and a centred fill."
+    >
+      <Marks />
+    </LabSection>
+    <LabSection
+      title="Commit"
+      description="The value follows a drag; the commit lands when it ends."
+    >
+      <Commit />
+    </LabSection>
+    <LabSection title="Range" description="The thumbs never cross and keep a minimum distance.">
+      <Range />
+    </LabSection>
+    <LabSection title="Vertical" description="Vertical sliders, one with the value on its thumb.">
+      <Vertical />
+    </LabSection>
+    <LabSection
+      title="Form value, dirty state and the field menu"
+      description="Each thumb submits under the slider's name; an invalid range blocks the submit."
+    >
+      <SavedForm />
+    </LabSection>
+  </>,
+);

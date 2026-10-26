@@ -1,0 +1,61 @@
+import { expect, test } from './fixtures.js';
+
+const cell = (id: string) => `[data-lab-cell="${id}"] .ui-record-header`;
+
+test.describe('Record Header lab', () => {
+  test('UIC-RECORD-HEADER-1.1 UIC-RECORD-HEADER-1.2 UIC-RECORD-HEADER-1.4 UIC-RECORD-HEADER-2.1 lays out the parts', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('record-header');
+    const plain = page.locator(cell('parts=identity and title title=static'));
+    await expect(plain.locator('.ui-record-header__label')).toHaveText('REQ-12');
+    await expect(plain.getByRole('heading', { level: 3 })).toHaveText('Cooling rack for bread');
+    await expect(plain.locator('.ui-record-header__status')).toHaveCount(0);
+    const complete = page.locator(cell('parts=complete title=static'));
+    await expect(complete.locator('.ui-record-header__meta')).toHaveText(
+      '2 days ago by Maria Santos · Kitchen tools',
+    );
+    await expect(complete.getByRole('button', { name: 'Delete' })).toBeVisible();
+    const identity = (await complete.locator('.ui-record-header__identity').boundingBox())!;
+    const title = (await complete.locator('.ui-record-header__title').boundingBox())!;
+    const actions = (await complete.locator('.ui-record-header__actions').boundingBox())!;
+    expect(identity.y).toBeLessThan(title.y);
+    expect(actions.x).toBeGreaterThan(title.x);
+  });
+
+  test('UIC-RECORD-HEADER-1.1 copies the identifier', async ({ page, lab, baseURL }) => {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {
+      origin: new URL(baseURL ?? 'http://127.0.0.1/').origin,
+    });
+    await lab.open('record-header');
+    const demo = page.locator('[data-lab-demo="requirement"]');
+    await demo.getByRole('button', { name: 'Copy REQ-42' }).click();
+    await expect(demo.locator('.ui-record-header__copy')).toHaveAttribute('data-copied', 'true');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('REQ-42');
+  });
+
+  test('UIC-RECORD-HEADER-1.3 renames the title in place and moves the state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('record-header');
+    const demo = page.locator('[data-lab-demo="requirement"]');
+    const heading = demo.getByRole('heading', { level: 3 });
+    await expect(demo.locator('.ui-record-header')).toHaveAttribute('data-editable', 'true');
+    await heading.getByRole('button', { name: /^Edit Title/ }).click();
+    await page.keyboard.type('Cooling rack holds sixteen loaves');
+    await page.keyboard.press('Enter');
+    await expect(heading.locator('.ui-inline-edit__value')).toHaveText(
+      'Cooling rack holds sixteen loaves',
+    );
+    await demo.getByRole('button', { name: /^Status: Open/ }).click();
+    await page.getByRole('menuitem', { name: 'Done' }).click();
+    await expect(demo.locator('.ui-transition-menu__badge')).toHaveText('Done');
+    await demo.getByRole('button', { name: 'Edit details' }).click();
+    await expect(demo.locator('[data-lab-output="log"]')).toHaveText('Last action: Edit details');
+    await lab.expectAccessible();
+    await lab.open('record-header', { theme: 'dark' });
+    await lab.expectAccessible();
+  });
+});

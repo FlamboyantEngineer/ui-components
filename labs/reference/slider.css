@@ -1,0 +1,227 @@
+/* Slider: a 4 pixel track with a round thumb per value, the output after the track, marks below. */
+
+.ui-slider {
+  --ref-slider-track: 4px;
+  --ref-slider-thumb: 16px;
+}
+
+.ui-slider[data-size='xs'] {
+  --ref-slider-track: 2px;
+  --ref-slider-thumb: 10px;
+}
+
+.ui-slider[data-size='sm'] {
+  --ref-slider-track: 2px;
+  --ref-slider-thumb: 12px;
+}
+
+.ui-slider[data-size='lg'] {
+  --ref-slider-track: 6px;
+  --ref-slider-thumb: 20px;
+}
+
+.ui-slider__box {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 8px calc(var(--ref-slider-thumb) / 2);
+}
+
+.ui-slider__box:has(.ui-slider__mark-label) {
+  padding-bottom: 24px;
+}
+
+.ui-slider__box[data-orientation='vertical'] {
+  flex: none;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  padding: calc(var(--ref-slider-thumb) / 2) 8px;
+}
+
+.ui-slider__box[data-orientation='vertical']:has(.ui-slider__mark-label) {
+  padding-bottom: calc(var(--ref-slider-thumb) / 2);
+  padding-inline-end: 56px;
+}
+
+/* A fixed width, so a longer value never shortens the track. */
+.ui-slider__output {
+  flex: none;
+  order: 1;
+  width: 6ch;
+  color: var(--ref-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ui-range-slider .ui-slider__output {
+  width: 11ch;
+}
+
+.ui-slider__box[data-orientation='vertical'] .ui-slider__output {
+  order: 0;
+  width: auto;
+}
+
+.ui-slider__track {
+  flex: 1 1 auto;
+  height: var(--ref-slider-track);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-border);
+}
+
+/* A taller press target than the drawn track. */
+.ui-slider__track::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--ref-slider-thumb) / -2) 0;
+}
+
+.ui-slider__track[data-orientation='vertical'] {
+  flex: none;
+  width: var(--ref-slider-track);
+  height: 160px;
+}
+
+.ui-slider__track[data-orientation='vertical']::after {
+  inset: 0 calc(var(--ref-slider-thumb) / -2);
+}
+
+.ui-slider__fill {
+  border-radius: inherit;
+  background: var(--ref-accent);
+}
+
+.ui-slider__mark {
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.ui-slider__mark::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -1px;
+  width: 2px;
+  height: 8px;
+  border-radius: var(--ref-radius-xs);
+  background: var(--ref-border-strong);
+}
+
+.ui-slider__mark[data-in-range]::before {
+  background: var(--ref-accent-ink);
+}
+
+.ui-slider__mark-label {
+  position: absolute;
+  top: calc(var(--ref-slider-thumb) / 2 + 4px);
+  left: 0;
+  translate: -50% 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+}
+
+.ui-slider__track[data-orientation='vertical'] .ui-slider__mark {
+  top: auto;
+  left: 50%;
+}
+
+.ui-slider__track[data-orientation='vertical'] .ui-slider__mark::before {
+  top: -1px;
+  left: -4px;
+  width: 8px;
+  height: 2px;
+}
+
+.ui-slider__track[data-orientation='vertical'] .ui-slider__mark-label {
+  top: 0;
+  left: calc(var(--ref-slider-thumb) / 2 + 6px);
+  translate: 0 -50%;
+}
+
+.ui-slider__thumb {
+  z-index: 1;
+  top: 50%;
+  box-sizing: border-box;
+  width: var(--ref-slider-thumb);
+  height: var(--ref-slider-thumb);
+  border: 2px solid var(--ref-accent);
+  border-radius: 50%;
+  background: var(--ref-canvas);
+  box-shadow: var(--ref-shadow);
+  cursor: grab;
+}
+
+.ui-slider__track[data-orientation='vertical'] .ui-slider__thumb {
+  left: 50%;
+}
+
+.ui-slider__thumb[data-hovered] {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-slider__thumb[data-dragging] {
+  border-color: var(--ref-accent-ink);
+  cursor: grabbing;
+}
+
+.ui-slider__thumb[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-slider__thumb-label {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 2px 6px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-text);
+  color: var(--ref-canvas);
+  font-size: var(--ref-font-size-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ref-duration-fast);
+}
+
+.ui-slider__track[data-orientation='vertical'] .ui-slider__thumb-label {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 6px);
+  translate: 0 -50%;
+}
+
+.ui-slider__thumb:is([data-hovered], [data-focus-visible], [data-dragging])
+  .ui-slider__thumb-label {
+  opacity: 1;
+}
+
+.ui-slider[data-dirty] .ui-slider__box {
+  outline: var(--ref-dirty-outline);
+  outline-offset: 4px;
+  border-radius: var(--ref-radius);
+}
+
+.ui-slider[data-validation='invalid'] .ui-slider__thumb {
+  border-color: var(--ref-danger);
+}
+
+.ui-slider[data-readonly] .ui-slider__thumb {
+  border-style: dashed;
+  cursor: default;
+}
+
+/* A disabled slider dims its track and output only; its label keeps full contrast. */
+.ui-slider__box[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-slider__box[data-disabled] .ui-slider__thumb {
+  cursor: not-allowed;
+}

@@ -1,0 +1,98 @@
+/*
+ * Switch: a 30 by 18 pixel track with a sliding thumb, before its label, in a row as tall as a
+ * control of its size; a label that wraps makes the row taller.
+ */
+
+.ui-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--ref-control-height-md);
+  font-size: var(--ref-font-size-md);
+  /* Its own line height, so the type around it never makes the row taller than its size. */
+  line-height: 1.25;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.ui-switch[data-size='xs'] {
+  min-height: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-switch[data-size='sm'] {
+  min-height: var(--ref-control-height-sm);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-switch[data-size='lg'] {
+  min-height: var(--ref-control-height-lg);
+  font-size: var(--ref-font-size);
+}
+
+.ui-switch + .ui-switch {
+  margin-inline-start: 16px;
+}
+
+.ui-switch__track {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: 30px;
+  height: 18px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-surface);
+}
+
+.ui-switch__thumb {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ref-border-strong);
+  transition: inset-inline-start var(--ref-duration-fast);
+}
+
+.ui-switch[data-selected] .ui-switch__track {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+}
+
+.ui-switch[data-selected] .ui-switch__thumb {
+  inset-inline-start: 15px;
+  background: var(--ref-on-fill);
+}
+
+.ui-switch[data-hovered] .ui-switch__track {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-switch[data-pressed] .ui-switch__track {
+  box-shadow: var(--ref-focus-inset);
+}
+
+.ui-switch[data-focus-visible] .ui-switch__track {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-switch[data-readonly] {
+  cursor: default;
+}
+
+.ui-switch[data-readonly] .ui-switch__track {
+  border-style: dashed;
+}
+
+.ui-switch[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.ui-switch__label {
+  color: var(--ref-text);
+}

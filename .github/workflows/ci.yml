@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    # Pushes cover branches in this repository; pull requests only add runs for forks.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Format
+        run: npm run format:check
+      - name: Typecheck
+        run: npm run typecheck
+      - name: No host references
+        run: npm run check:references
+      - name: Specs
+        run: npm run check:specs
+      - name: Labs complete
+        run: npm run check:labs
+      - name: Structure
+        run: npm run check:structure
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Build labs
+        run: npm run build:labs
+      - name: Package contents
+        run: npm run check:package
+
+  labs:
+    # The lab browser suite runs in shards beside the check job so it fits the time budget.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build labs
+        run: npm run build:labs
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Lab browser tests (shard ${{ matrix.shard }} of 3)
+        run: npx playwright test --shard=${{ matrix.shard }}/3

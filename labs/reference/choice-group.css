@@ -1,0 +1,119 @@
+/*
+ * Choice Group: radios stacked in the field's control slot, each a ring before its label in a row as
+ * tall as a control of the group's size.
+ */
+
+.ui-choice-group__box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+.ui-choice-group__box[data-orientation='horizontal'] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: 16px;
+}
+
+.ui-choice-group[data-dirty] .ui-choice-group__box {
+  outline: var(--ref-dirty-outline);
+  outline-offset: 4px;
+  border-radius: var(--ref-radius);
+}
+
+.ui-choice {
+  --ref-choice-group-size: 16px;
+  font-size: var(--ref-font-size-md);
+  /* Its own line height, so the type around it never makes the row taller than its size. */
+  line-height: 1.25;
+}
+
+.ui-choice-group[data-size='xs'] .ui-choice {
+  --ref-choice-group-size: 12px;
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-choice-group[data-size='sm'] .ui-choice {
+  --ref-choice-group-size: 14px;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-choice-group[data-size='lg'] .ui-choice {
+  --ref-choice-group-size: 18px;
+  font-size: var(--ref-font-size);
+}
+
+.ui-choice__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--ref-field-height);
+  cursor: pointer;
+}
+
+.ui-choice__indicator {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--ref-choice-group-size);
+  height: var(--ref-choice-group-size);
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 50%;
+  background: var(--ref-canvas);
+  transition: border-width var(--ref-duration-fast);
+}
+
+.ui-choice__button[data-selected] .ui-choice__indicator {
+  border: calc(var(--ref-choice-group-size) * 0.3) solid var(--ref-accent);
+  background: var(--ref-on-fill);
+}
+
+.ui-choice__button[data-hovered]:not([data-selected]) .ui-choice__indicator {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-choice__button[data-focus-visible] .ui-choice__indicator {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-choice__button[data-invalid]:not([data-selected]) .ui-choice__indicator {
+  border-color: var(--ref-danger);
+}
+
+.ui-choice__button[data-readonly] {
+  cursor: default;
+}
+
+.ui-choice__button[data-readonly]:not([data-selected]) .ui-choice__indicator {
+  border-style: dashed;
+}
+
+/* A disabled radio dims its button only; its description, which may say why, stays readable. */
+.ui-choice__button[data-disabled] {
+  opacity: var(--ref-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.ui-choice__label {
+  color: var(--ref-text);
+}
+
+.ui-choice__description {
+  display: block;
+  margin-inline-start: calc(var(--ref-choice-group-size) + 6px);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-choice-group__select-all {
+  align-self: stretch;
+  margin-bottom: 2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ref-border);
+  font-weight: var(--ref-font-weight-medium);
+}
+.ui-choice-group__box > .ui-choice .ui-checkbox {
+  margin-inline-start: 0;
+}

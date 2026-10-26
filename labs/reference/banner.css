@@ -1,0 +1,115 @@
+/* Banner */
+
+.ui-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+  line-height: 1.4;
+  transition: opacity var(--ref-duration);
+}
+.ui-banner:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+.ui-banner[data-tone='info'] {
+  border-color: color-mix(in srgb, var(--ref-info) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
+}
+.ui-banner[data-tone='success'] {
+  border-color: color-mix(in srgb, var(--ref-success) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), var(--ref-canvas));
+}
+.ui-banner[data-tone='warning'] {
+  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
+}
+.ui-banner[data-tone='danger'] {
+  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
+}
+.ui-banner[data-entering] {
+  animation: ref-banner-enter var(--ref-duration) ease-out;
+}
+.ui-banner[data-exiting] {
+  opacity: 0.75;
+}
+@keyframes ref-banner-enter {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-banner {
+    transition: none;
+  }
+  .ui-banner[data-entering] {
+    animation: none;
+  }
+}
+
+.ui-banner__icon {
+  margin-block-start: 1px;
+  color: var(--ref-muted);
+}
+.ui-banner[data-tone='info'] .ui-banner__icon {
+  color: var(--ref-info);
+}
+.ui-banner[data-tone='success'] .ui-banner__icon {
+  color: var(--ref-success);
+}
+.ui-banner[data-tone='warning'] .ui-banner__icon {
+  color: var(--ref-warning);
+}
+.ui-banner[data-tone='danger'] .ui-banner__icon {
+  color: var(--ref-danger);
+}
+
+.ui-banner__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ui-banner__title {
+  font-weight: var(--ref-font-weight-strong);
+}
+.ui-banner__description {
+  overflow-wrap: anywhere;
+}
+.ui-banner__actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.ui-banner__dismiss {
+  flex: none;
+  margin: -4px -6px -4px 0;
+}
+
+.ui-banner[data-inline] {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: inherit;
+  line-height: inherit;
+}
+.ui-banner[data-inline] .ui-banner__content {
+  display: inline;
+}
+.ui-banner[data-inline] .ui-banner__title {
+  margin-inline-end: 4px;
+}
