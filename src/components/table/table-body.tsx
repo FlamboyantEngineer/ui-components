@@ -35,7 +35,7 @@ export interface TableBodyProps<T> {
 }
 
 /** The key of the notice row, kept out of row actions. */
-export const stateRowId = 'ui-table-state-row';
+const stateRowId = 'ui-table-state-row';
 
 function TableStateRow<T>({ status, props }: { status: TableStatus; props: TableBodyProps<T> }) {
   const { message, onRetry } = props;

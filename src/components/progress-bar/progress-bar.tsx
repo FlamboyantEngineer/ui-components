@@ -81,7 +81,7 @@ export interface ProgressValues {
 }
 
 /** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
-export interface ProgressRootProps extends Omit<ProgressBarProps, 'label' | 'showValueLabel'> {
+interface ProgressRootProps extends Omit<ProgressBarProps, 'label' | 'showValueLabel'> {
   /** The hooks of the indicator that renders the root. */
   hooks: ComponentHooks<string>;
   /** Draws the indicator from its values. */
@@ -89,7 +89,7 @@ export interface ProgressRootProps extends Omit<ProgressBarProps, 'label' | 'sho
 }
 
 /** A progress indicator's visible label and value text, in its `label` and `value` slots. */
-export interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
+interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
   hooks: ComponentHooks<'label' | 'value'>;
   /** Show the value text; an indeterminate indicator never shows it. */
   showValueLabel: boolean;
@@ -125,7 +125,7 @@ function isComplete(range: ReturnType<typeof resolveProgressRange>): boolean {
 }
 
 /** The root both progress indicators render; `children` draws the indicator. */
-export function ProgressRoot({
+function ProgressRoot({
   hooks: rootHooks,
   size,
   tone,
@@ -181,12 +181,7 @@ export function ProgressRoot({
 }
 
 /** The label and value text both progress indicators show. */
-export function ProgressText({
-  hooks: textHooks,
-  label,
-  showValueLabel,
-  values,
-}: ProgressTextProps) {
+function ProgressText({ hooks: textHooks, label, showValueLabel, values }: ProgressTextProps) {
   return (
     <>
       {label != null ? <Label className={textHooks.slotClass('label')}>{label}</Label> : null}

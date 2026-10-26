@@ -25,7 +25,7 @@ interface CellPointerOptions<T> {
   write: (writes: readonly CellWrite<T>[]) => void;
 }
 
-export interface CellPointer {
+interface CellPointer {
   /** The cells a dragged fill handle would fill, while it drags. */
   fillBounds: CellBounds | null;
   rootProps: {

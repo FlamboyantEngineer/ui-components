@@ -31,7 +31,7 @@ export interface DisplayOptionsValue {
 }
 
 /** A move of properties in the list: before or after another one. */
-export interface DisplayOptionsMove {
+interface DisplayOptionsMove {
   keys: readonly Key[];
   targetKey: Key;
   position: 'before' | 'after';

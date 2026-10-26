@@ -12,7 +12,7 @@ import {
 } from './filter-model.js';
 
 /** A condition read as text, in its three parts. */
-export interface FilterConditionText {
+interface FilterConditionText {
   field: string;
   operator: string;
   /** Empty for an operator that takes no value and for a condition missing its value. */

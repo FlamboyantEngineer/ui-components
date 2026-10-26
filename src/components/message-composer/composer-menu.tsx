@@ -80,7 +80,7 @@ export interface MessageComposerMenu {
   filterable?: boolean | undefined;
 }
 
-export interface ComposerMenuProps {
+interface ComposerMenuProps {
   menu: MessageComposerMenu;
   /** The composer's root, which the menu opens against. */
   anchorRef: RefObject<HTMLElement | null>;

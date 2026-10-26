@@ -13,7 +13,7 @@ import {
   type MediaViewerItem,
 } from './media-viewer-parts.js';
 
-export interface MediaStageProps {
+interface MediaStageProps {
   item: MediaViewerItem;
   zoom: number;
   rotation: number;

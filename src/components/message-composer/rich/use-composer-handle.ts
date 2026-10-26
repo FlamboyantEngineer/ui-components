@@ -30,7 +30,7 @@ export interface MessageComposerHandle {
   getDraft: () => MessageComposerMessage;
 }
 
-export interface ComposerHandleOptions {
+interface ComposerHandleOptions {
   handleRef: Ref<MessageComposerHandle> | undefined;
   editorRef: RefObject<RichEditorHandle | null>;
   state: ComposerState<MessageComposerMessage>;

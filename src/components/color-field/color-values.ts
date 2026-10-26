@@ -7,10 +7,10 @@ import { parseColor } from '../../primitives/index.js';
 export type ColorFieldFormat = 'hex' | 'hexa' | 'rgb' | 'rgba' | 'hsl' | 'hsla' | 'hsb' | 'hsba';
 
 /** The colour space a format's channel inputs edit. */
-export type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
+type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
 
 /** A channel a colour input edits. */
-export type ColorFormatChannel =
+type ColorFormatChannel =
   | 'red'
   | 'green'
   | 'blue'
@@ -21,14 +21,14 @@ export type ColorFormatChannel =
   | 'alpha';
 
 /** The inputs a format edits with: a hex input or the channels of a colour space, then alpha. */
-export interface ColorFormatInputs {
+interface ColorFormatInputs {
   hasHex: boolean;
   space: ColorFormatSpace | undefined;
   channels: ColorFormatChannel[];
 }
 
 /** A colour that writes itself in a format, such as the one the picker reports. */
-export interface FormattableColor {
+interface FormattableColor {
   toString(format: ColorFieldFormat): string;
 }
 

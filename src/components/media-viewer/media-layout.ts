@@ -7,7 +7,7 @@ export interface MediaSize {
   height: number;
 }
 
-export interface MediaLayoutInput {
+interface MediaLayoutInput {
   /** The image's own size, in pixels. */
   natural: MediaSize;
   /** The space the stage offers, in pixels. */
@@ -18,7 +18,7 @@ export interface MediaLayoutInput {
   rotation: number;
 }
 
-export interface MediaLayout {
+interface MediaLayout {
   /** The image element's size before it turns. */
   image: MediaSize;
   /** The box the turned image fills, which the stage scrolls when it is larger. */

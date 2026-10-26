@@ -5,7 +5,7 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount } from '../../utils/count.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
-export interface TabCountProps {
+interface TabCountProps {
   id: string;
   count: number;
   countMax: number;

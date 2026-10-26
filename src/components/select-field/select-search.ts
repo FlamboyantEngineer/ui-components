@@ -19,7 +19,7 @@ export type SelectFieldLoader = (
   cursor?: string,
 ) => Promise<readonly SelectFieldOption[] | SelectFieldPage>;
 
-export interface SelectSearchOptions {
+interface SelectSearchOptions {
   loadOptions?: SelectFieldLoader | undefined;
   /** Shortest trimmed query that runs a search. Defaults to 1. */
   minSearchLength?: number | undefined;

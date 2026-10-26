@@ -7,7 +7,7 @@ import { chatHooks as hooks } from './chat-hooks.js';
 import { findMessageMatches } from './chat-model.js';
 
 /** The search within a conversation: its query, the matching messages and the current one. */
-export interface ChatSearchModel {
+interface ChatSearchModel {
   isOpen: boolean;
   query: string;
   /** The ids of the matching messages, oldest first. */

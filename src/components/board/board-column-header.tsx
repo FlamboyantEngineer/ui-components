@@ -18,7 +18,7 @@ import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardColumnDrag } from './use-board-drag.js';
 
 /** A column header's view of its column. */
-export interface BoardColumnHeaderProps {
+interface BoardColumnHeaderProps {
   columnKey: Key;
   title: string;
   /** The id of the title, which names the column's cells. */

@@ -8,7 +8,7 @@ import type { ModalAction } from './modal.js';
 /** Which built-in footer action runs. */
 export type ModalActionSlot = 'primary' | 'secondary';
 
-export interface ModalActionsOptions {
+interface ModalActionsOptions {
   primaryAction?: ModalAction | undefined;
   secondaryAction?: ModalAction | undefined;
 }

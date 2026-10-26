@@ -25,7 +25,7 @@ export interface ChoiceGroupProps<
   selectAllLabel?: string | undefined;
 }
 
-export interface ChoiceSettings {
+interface ChoiceSettings {
   selectionMode: ChoiceGroupSelectionMode;
   size: ControlSize;
   isReadOnly: boolean;

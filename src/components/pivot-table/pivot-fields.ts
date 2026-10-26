@@ -4,10 +4,10 @@
 import type { PivotAggregateName, PivotLayout, PivotValue } from '../../utils/pivot.js';
 
 /** A zone of the field chooser: unused fields, row fields, column fields or values. */
-export type PivotZone = 'fields' | 'rows' | 'columns' | 'values';
+type PivotZone = 'fields' | 'rows' | 'columns' | 'values';
 
 /** A field the pivot offers, by its id in the records. */
-export interface PivotFieldInfo {
+interface PivotFieldInfo {
   id: string;
   label: string;
   /** The aggregation the field takes when it moves into the values. Defaults to `count`. */
@@ -25,7 +25,7 @@ export interface PivotFieldCard {
 }
 
 /** A card move: the card `key` lands in the zone `column`, beside `targetKey`. */
-export interface PivotFieldMove {
+interface PivotFieldMove {
   key: string | number;
   column: string | number;
   targetKey: string | number | null;

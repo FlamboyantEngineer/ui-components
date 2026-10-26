@@ -9,7 +9,7 @@ import {
 } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 
-export interface TimelineHeaderProps {
+interface TimelineHeaderProps {
   axis: TimelineAxis;
   scale: TimelineScale;
 }

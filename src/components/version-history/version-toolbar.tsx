@@ -8,7 +8,7 @@ import { Switch } from '../switch/switch.js';
 import type { VersionHistoryFilter } from './version-model.js';
 import { versionHistoryHooks as hooks } from './version-row.js';
 
-export interface VersionToolbarProps {
+interface VersionToolbarProps {
   /** The filters, or `null` to leave them out. */
   filter: VersionHistoryFilter | null;
   onFilterChange: (filter: VersionHistoryFilter) => void;

@@ -6,7 +6,7 @@ import type { HeadingLevel } from '../section-header/section-header.js';
 export type DisclosureIndicatorPosition = 'start' | 'end';
 
 /** What a disclosure hands its title and panel. */
-export interface DisclosureParts {
+interface DisclosureParts {
   /** The title's heading level; the panel's content takes the levels below it. */
   level: HeadingLevel;
   indicatorPosition: DisclosureIndicatorPosition;

@@ -10,7 +10,7 @@ export interface LinkTarget {
   end: number;
 }
 
-export interface DelimiterFlanking {
+interface DelimiterFlanking {
   canOpen: boolean;
   canClose: boolean;
 }

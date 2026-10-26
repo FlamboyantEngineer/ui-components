@@ -2,7 +2,7 @@ import { useCallback, useLayoutEffect, useReducer, useRef, type CompositionEvent
 
 type TextControl = HTMLInputElement | HTMLTextAreaElement;
 
-export interface InputTransformOptions {
+interface InputTransformOptions {
   /** Rewrites the control's text after an edit; without it every edit goes through as typed. */
   transform: ((text: string) => string) | undefined;
   /** The value before the edit: an edit the transform reduces to it changes nothing. */

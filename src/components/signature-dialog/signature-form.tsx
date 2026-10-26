@@ -40,7 +40,7 @@ export interface SignatureDetails {
 /** Validates the form and, when it passes, signs and closes; resolves nothing when invalid. */
 export type SignatureSubmit = (close: () => void) => Promise<unknown> | undefined;
 
-export interface SignatureFormProps {
+interface SignatureFormProps {
   userName: string;
   credentials: SignatureDialogCredentials;
   meanings: readonly SignatureMeaning[];

@@ -5,7 +5,7 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { transcriptHooks as hooks } from './transcript-hooks.js';
 
 /** A message to announce: its author's name (`null` for a notice) and its text. */
-export interface MessageAnnouncement {
+interface MessageAnnouncement {
   author: string | null;
   text: string;
 }
@@ -20,7 +20,7 @@ export interface TranscriptAnnouncer {
 }
 
 /** Announcements are spaced at least this far apart, in milliseconds. */
-export const ANNOUNCE_INTERVAL = 1000;
+const ANNOUNCE_INTERVAL = 1000;
 
 /** One announcement for everything queued: the statuses, then the message or the count of them. */
 function composeAnnouncement(

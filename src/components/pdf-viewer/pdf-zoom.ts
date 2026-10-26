@@ -9,7 +9,7 @@ export interface PdfSize {
   height: number;
 }
 
-export interface ResolveZoomOptions {
+interface ResolveZoomOptions {
   zoom: PdfZoom;
   /** The page to fit, in points. */
   page: PdfSize | null;

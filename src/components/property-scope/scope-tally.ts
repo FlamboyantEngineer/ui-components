@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { textMatchesTerms } from '../text-match/text-match.js';
 
 /** What a part of a property panel reports to the level that holds it. */
-export interface PropertyTally {
+interface PropertyTally {
   /** Properties inside the part. */
   count: number;
   /** Properties that match the active query; all of them while no query is active. */
@@ -19,7 +19,7 @@ export interface PropertyTally {
 export type PropertyScopeFilter = (text: string, query: string) => boolean;
 
 /** What one level of a property panel hands to the parts inside it. */
-export interface PropertyScopeValue {
+interface PropertyScopeValue {
   /** The active query's normalized terms; empty while nothing filters. */
   terms: readonly string[];
   /** The query as typed. */
@@ -32,7 +32,7 @@ export interface PropertyScopeValue {
   report: (key: symbol, tally: PropertyTally) => () => void;
 }
 
-export interface PropertyScopeLevel {
+interface PropertyScopeLevel {
   /** The enclosing level. */
   parent: PropertyScopeValue;
   /** The value the parts inside this level receive. */

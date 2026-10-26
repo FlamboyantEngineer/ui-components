@@ -30,7 +30,7 @@ interface TriggerRange {
   query: string;
 }
 
-export interface RichCompletionsOptions {
+interface RichCompletionsOptions {
   mentions: readonly MessageComposerMention[] | undefined;
   commands: readonly MessageComposerCommand[] | undefined;
   isEditable: boolean;

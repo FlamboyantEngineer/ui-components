@@ -17,7 +17,7 @@ export interface DayGroup<T> {
   items: T[];
 }
 
-export interface GroupByDayOptions<T> {
+interface GroupByDayOptions<T> {
   /** The entry's ISO 8601 date or date and time. */
   getDate: (item: T) => string;
   /** The moment `Today` is read against. */

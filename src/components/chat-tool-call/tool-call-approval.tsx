@@ -23,7 +23,7 @@ export interface ChatToolCallApproval {
   isAutoApproved?: boolean | undefined;
 }
 
-export interface ToolCallApprovalProps {
+interface ToolCallApprovalProps {
   /** The tool call's label, which the request names. */
   label: string;
   approval: ChatToolCallApproval | undefined;

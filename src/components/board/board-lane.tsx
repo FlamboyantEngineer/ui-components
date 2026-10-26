@@ -8,7 +8,7 @@ import { BoardCell, type BoardCellOptions } from './board-cell.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardModel } from './use-board-model.js';
 
-export interface BoardCellsProps<T> {
+interface BoardCellsProps<T> {
   model: BoardModel<T>;
   /** The lane the cells belong to; `null` on a board without lanes. */
   lane: Key | null;
@@ -17,7 +17,7 @@ export interface BoardCellsProps<T> {
   options: BoardCellOptions<T>;
 }
 
-export interface BoardLaneGroupProps<T> {
+interface BoardLaneGroupProps<T> {
   model: BoardModel<T>;
   lane: BoardLane;
   index: number;

@@ -30,7 +30,7 @@ export interface DiagramNodeRenderState {
   isEditing: boolean;
 }
 
-export interface DiagramNodeViewProps<T> {
+interface DiagramNodeViewProps<T> {
   node: DiagramNode<T>;
   /**
    * The canvas's latest controller, read when the reader acts. The node renders from its other

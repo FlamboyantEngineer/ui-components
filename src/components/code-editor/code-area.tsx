@@ -18,13 +18,13 @@ export interface CodeTextAreaProps extends AriaLabellingProps, KeyboardEventProp
 }
 
 /** What locks the text area and whether it reports a required source. */
-export interface CodeAreaLocks {
+interface CodeAreaLocks {
   isReadOnly: boolean;
   isDisabled: boolean;
   isRequired: boolean | undefined;
 }
 
-export interface CodeAreaProps {
+interface CodeAreaProps {
   model: CodeEditorModel;
   value: string;
   onChange: ((value: string) => void) | undefined;

@@ -48,7 +48,7 @@ export interface ChatMessageCommandProps extends Pick<
 }
 
 /** An overlay a command opens: the feedback details, the emoji picker or the delete confirmation. */
-export type MessageOverlay = 'feedback' | 'react' | 'delete';
+type MessageOverlay = 'feedback' | 'react' | 'delete';
 
 /** The open overlay and the element it is placed against. */
 export interface OpenMessageOverlay {

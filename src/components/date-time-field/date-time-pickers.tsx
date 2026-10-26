@@ -61,7 +61,7 @@ export interface DateControlSettings extends DateValueOptions {
 }
 
 /** What every picker of a date-time field receives. */
-export interface DatePickerControlProps {
+interface DatePickerControlProps {
   control: FieldControlProps;
   state: FieldState<DateFieldValue>;
   mode: DateTimeFieldMode;

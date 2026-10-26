@@ -23,7 +23,7 @@ export interface WindowModel {
 /** What an unmeasured child is taken to be before anything is measured, in pixels. */
 const FALLBACK_HEIGHT = 64;
 /** How many children the window holds before the viewport can be measured. */
-export const INITIAL_WINDOW = 30;
+const INITIAL_WINDOW = 30;
 
 /** The last `INITIAL_WINDOW` children, where a transcript starts. */
 export function resolveTailRange(keys: readonly string[]): WindowRange | null {

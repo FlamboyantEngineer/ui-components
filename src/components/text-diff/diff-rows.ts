@@ -20,7 +20,7 @@ export interface TextDiffLine {
 }
 
 /** A run of a line's text, and whether the word diff with its paired line changed it. */
-export interface WordPart {
+interface WordPart {
   text: string;
   isChanged: boolean;
 }
@@ -48,7 +48,7 @@ export interface FoldRow {
 }
 
 /** A unified row: one line, with the change it belongs to. */
-export interface UnifiedLineRow {
+interface UnifiedLineRow {
   kind: 'line';
   key: string;
   line: DiffLine;
@@ -56,7 +56,7 @@ export interface UnifiedLineRow {
 }
 
 /** A split row: the old side's line and the new side's, either missing in a change. */
-export interface SplitLineRow {
+interface SplitLineRow {
   kind: 'line';
   key: string;
   old: DiffLine | null;

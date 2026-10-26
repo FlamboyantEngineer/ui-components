@@ -21,7 +21,7 @@ export interface ContextMenuTargetProps {
   ref?: Ref<HTMLElement> | undefined;
 }
 
-export interface ContextMenuTargetOptions {
+interface ContextMenuTargetOptions {
   controller: MenuController;
   isDisabled: boolean;
   /** The target's own props, which keep working. */

@@ -8,7 +8,7 @@ import type { DiagramController } from './use-diagram-controller.js';
 /** `canvas` draws the diagram; `outline` lists its nodes and their links. */
 export type DiagramView = 'canvas' | 'outline';
 
-export interface DiagramToolbarProps {
+interface DiagramToolbarProps {
   controller: DiagramController;
   view: DiagramView;
   onViewChange: (view: DiagramView) => void;

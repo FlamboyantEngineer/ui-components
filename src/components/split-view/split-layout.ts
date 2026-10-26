@@ -24,7 +24,7 @@ export interface SplitViewPane {
 }
 
 /** A separator of a split: the pane its value sizes, and the bounds of that value. */
-export interface SplitSeparator {
+interface SplitSeparator {
   /** The pane the value sizes: a pixel pane beside the separator, else the pane before it. */
   sized: number;
   /** The pane on the other side, which takes the complement when both are percent panes. */

@@ -17,7 +17,7 @@ import { ModalHeader } from './modal-header.js';
 import { claimPrimaryShortcut } from './modal-shortcut.js';
 import { useModalActions, type ModalActions } from './use-modal-actions.js';
 
-export type ModalDialogProps = Omit<
+type ModalDialogProps = Omit<
   ModalProps,
   | 'isOpen'
   | 'defaultOpen'

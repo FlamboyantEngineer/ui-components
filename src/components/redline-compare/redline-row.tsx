@@ -14,7 +14,7 @@ import { createRedlineWords, type RedlineSide } from './redline-text.js';
 /** A decision on one change. */
 export type RedlineDecision = 'accepted' | 'rejected';
 
-export interface RedlineRowProps {
+interface RedlineRowProps {
   row: ComparedBlockRow;
   /** The row element's id. */
   rowId: string;

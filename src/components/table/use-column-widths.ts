@@ -8,14 +8,14 @@ import {
   type TableColumnWidths,
 } from './column-sizing.js';
 
-export interface ColumnWidthsOptions {
+interface ColumnWidthsOptions {
   columns: readonly TableColumnSizing[];
   /** Storage key for the widths a resize leaves; without it they last while the table is mounted. */
   persistKey?: string | undefined;
   onColumnWidthsChange?: ((widths: TableColumnWidths) => void) | undefined;
 }
 
-export interface ColumnWidths {
+interface ColumnWidths {
   /** Widths set by resizing, by column id: live during a gesture, then the stored ones. */
   widths: TableColumnWidths;
   onResize: (widths: Map<Key, unknown>) => void;

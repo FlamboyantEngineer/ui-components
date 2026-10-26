@@ -28,7 +28,7 @@ export interface TimelineChartActions {
   onExpandedChange: (id: Key, isExpanded: boolean) => void;
 }
 
-export interface TimelineChartProps {
+interface TimelineChartProps {
   axis: TimelineAxis;
   scale: TimelineScale;
   rows: readonly VisibleRow[];

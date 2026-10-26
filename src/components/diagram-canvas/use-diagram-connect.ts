@@ -14,7 +14,7 @@ export interface DiagramConnection {
 }
 
 /** A connection in progress, from a port, with the pointer's diagram position while dragging. */
-export interface DiagramConnecting {
+interface DiagramConnecting {
   node: Key;
   port: string;
   pointer: DiagramPoint | null;

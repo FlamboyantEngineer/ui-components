@@ -87,7 +87,7 @@ export interface ToastQueue {
  * The building block's queue a library queue drives: it orders the toasts, shows the visible ones
  * and runs their timers, all of which close through `close`.
  */
-export interface ToastStore {
+interface ToastStore {
   add: (content: ToastContent, options: { timeout: number; onClose: () => void }) => string;
   close: (key: string) => void;
   clear: () => void;

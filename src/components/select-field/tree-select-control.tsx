@@ -26,7 +26,7 @@ type TreeSelectConfig<T extends TreeItemData> = Omit<
   keyof FieldInputProps<unknown> | 'selectionMode' | 'valueDisplay' | 'mode'
 > & { name?: string | undefined };
 
-export interface TreeSelectControlProps<T extends TreeItemData> extends TreeSelectConfig<T> {
+interface TreeSelectControlProps<T extends TreeItemData> extends TreeSelectConfig<T> {
   control: FieldControlProps;
   state: FieldState<Key | Key[] | null>;
   /** The field's label, which names the popover, the chips and the clear button. */

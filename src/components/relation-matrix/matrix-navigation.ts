@@ -6,7 +6,7 @@ export interface MatrixPosition {
   column: number;
 }
 
-export interface MatrixKeyOptions {
+interface MatrixKeyOptions {
   key: string;
   /** Control or Command was held: Home and End then reach the first and last rows too. */
   isPrimaryModifier: boolean;

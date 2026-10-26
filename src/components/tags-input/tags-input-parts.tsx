@@ -17,7 +17,7 @@ import type { FieldControlProps, FieldState } from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
 
 /** What the input does with text: type it, enter it as tags, or split a paste. */
-export interface TagsInputEntry {
+interface TagsInputEntry {
   /** The text in the input. */
   text: string;
   /** Takes the input's new text; a delimiter in it adds the text before it as tags. */
@@ -30,7 +30,7 @@ export interface TagsInputEntry {
   addOnBlur: boolean;
 }
 
-export interface TagsInputControlProps {
+interface TagsInputControlProps {
   control: FieldControlProps;
   state: FieldState<string[]>;
   /** The field's label, which names the tags. */

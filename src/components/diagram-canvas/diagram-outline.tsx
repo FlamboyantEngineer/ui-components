@@ -10,7 +10,7 @@ import type { DiagramLink } from './diagram-links.js';
 import { formatDiagramLink } from './diagram-links.js';
 import type { DiagramController } from './use-diagram-controller.js';
 
-export interface DiagramOutlineProps {
+interface DiagramOutlineProps {
   controller: DiagramController;
 }
 

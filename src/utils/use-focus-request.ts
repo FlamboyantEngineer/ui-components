@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 
 /** Finds the element a focus request moves focus to, once the edit that asked for it has rendered. */
-export type FocusRequestTarget = () => HTMLElement | null | undefined;
+type FocusRequestTarget = () => HTMLElement | null | undefined;
 
 /** The most frames a focus request waits for its element to take focus. */
 const focusRetryFrames = 60;

@@ -5,7 +5,7 @@ import type { TreeItemData, TreeProps } from './tree.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 import { isKey } from '../../utils/is-key.js';
 
-export type TreeExpansionOptions = Pick<
+type TreeExpansionOptions = Pick<
   TreeProps<TreeItemData>,
   'expandedKeys' | 'defaultExpandedKeys' | 'onExpandedChange' | 'persistKey'
 >;

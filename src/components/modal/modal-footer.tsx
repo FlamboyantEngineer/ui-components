@@ -6,7 +6,7 @@ import { Button, type ButtonVariant } from '../button/button.js';
 import type { ModalAction, ModalCancelAction, ModalProps, ModalTone } from './modal.js';
 import type { ModalActionSlot, ModalActions } from './use-modal-actions.js';
 
-export interface ModalFooterProps extends Pick<
+interface ModalFooterProps extends Pick<
   ModalProps,
   | 'primaryAction'
   | 'secondaryAction'

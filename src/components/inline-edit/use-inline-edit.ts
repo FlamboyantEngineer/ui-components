@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 
-export interface InlineEditStateOptions<T> {
+interface InlineEditStateOptions<T> {
   value: T;
   onSave: (value: T) => void | Promise<unknown>;
   isEditing: boolean | undefined;

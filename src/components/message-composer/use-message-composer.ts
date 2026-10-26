@@ -14,7 +14,7 @@ import type { MessageComposerProps, MessageComposerSharedProps } from './message
 import { useComposerState, type ComposerFormat } from './use-composer-state.js';
 import { attachPastedFiles } from './use-file-drop.js';
 
-export interface MessageComposerModel {
+interface MessageComposerModel {
   rootRef: RefObject<HTMLDivElement | null>;
   /** The text area's props: its value, name, limits and handlers. */
   inputProps: TextareaHTMLAttributes<HTMLTextAreaElement> & {

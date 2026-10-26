@@ -24,7 +24,7 @@ interface TableGroupingOptions<T> extends TableGroupingProps<T>, ExpansionProps 
 }
 
 /** The table body's nodes, grouped or not, and the expansion of its rows and groups. */
-export interface TableGroupedBody<T> {
+interface TableGroupedBody<T> {
   nodes: readonly TableBodyNode<T>[];
   isGrouped: boolean;
   expansion: TableExpansion;

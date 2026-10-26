@@ -9,7 +9,7 @@ import type { FieldState } from '../field/field.js';
 import { textFieldHooks as hooks, type TextFieldInputProps } from './text-field-parts.js';
 import { useInputTransform, type InputTransform } from './use-input-transform.js';
 
-export interface TextFieldInputOptions {
+interface TextFieldInputOptions {
   state: FieldState<string>;
   multiline: boolean;
   placeholder: string | undefined;

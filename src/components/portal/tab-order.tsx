@@ -11,7 +11,7 @@ interface TabOrderNodes {
   guards: Record<GuardKind, HTMLElement | null>;
 }
 
-export interface PreservedTabOrder {
+interface PreservedTabOrder {
   /** The ref for the portal wrapper. */
   wrapperRef: (node: HTMLDivElement | null) => void;
   /** The two guards rendered where the portal is declared. */

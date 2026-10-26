@@ -3,7 +3,7 @@ import { useState } from 'react';
 /** Receives a new value; a returned promise holds the change pending until it settles. */
 export type PendingChangeHandler<T> = (value: T) => void | Promise<unknown>;
 
-export interface PendingChange<T> {
+interface PendingChange<T> {
   /** The value shown: the pending one while a change settles, else the value in effect. */
   value: T;
   /** A change waits for the promise its handler returned. */

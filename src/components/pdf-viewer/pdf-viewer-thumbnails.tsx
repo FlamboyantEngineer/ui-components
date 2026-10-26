@@ -8,7 +8,7 @@ import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { drawPage, measureCanvasPixels } from './use-page-render.js';
 import { toPageRotation, type LoadedPdf } from './use-pdf-document.js';
 
-export interface PdfViewerThumbnailsProps<
+interface PdfViewerThumbnailsProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

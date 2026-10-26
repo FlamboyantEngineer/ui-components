@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 
 /** The reader's open (`true`) and closed (`false`) choices, by part id or group key. */
-export type ExpandedParts = Readonly<Record<string, boolean>>;
+type ExpandedParts = Readonly<Record<string, boolean>>;
 
-export interface PartsExpansionOptions {
+interface PartsExpansionOptions {
   expandedParts: ExpandedParts | undefined;
   onExpandedPartsChange: ((expandedParts: Record<string, boolean>) => void) | undefined;
 }

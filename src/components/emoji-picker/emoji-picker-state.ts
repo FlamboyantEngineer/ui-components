@@ -29,12 +29,12 @@ import type { EmojiGridOptions } from './emoji-grid.js';
 import { loadEmojiData, resolveEmojiLocale } from './emoji-locale.js';
 import { useEmojiSupport } from './emoji-support.js';
 
-export interface EmojiData {
+interface EmojiData {
   emoji: readonly NativeEmoji[] | null;
   failed: boolean;
 }
 
-export interface EmojiTab {
+interface EmojiTab {
   id: string;
   entries: EmojiEntry[];
 }
@@ -78,7 +78,7 @@ export interface EmojiChoiceHandlers {
   onRecentEmojiChange?: ((recent: string[]) => void) | undefined;
 }
 
-export interface EmojiSearchState {
+interface EmojiSearchState {
   query: string;
   /** Whether the query is not blank, so results replace the categories. */
   isSearching: boolean;
@@ -160,7 +160,7 @@ function buildTabs(emoji: readonly NativeEmoji[], recent: EmojiEntry[], custom: 
  * The emoji `load` returns, loaded once per `loadKey` through the latest `load`, so a host that
  * passes a new function on each render does not load again.
  */
-export function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
+function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
   const latest = useLatest(load);
   const [result, setResult] = useState<EmojiData & { loadKey?: string }>({
     emoji: null,
@@ -179,7 +179,7 @@ export function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
   return result.loadKey === loadKey ? result : { emoji: null, failed: false };
 }
 
-export function useEmojiTabs(
+function useEmojiTabs(
   emoji: readonly NativeEmoji[] | null,
   { recentEmoji = noKeys, customEmoji = noCustomEmoji }: EmojiSources,
 ) {
@@ -193,7 +193,7 @@ export function useEmojiTabs(
 }
 
 /** The search query and its best matches; every change is reported to `onSearchChange`. */
-export function useEmojiSearch(
+function useEmojiSearch(
   entries: readonly EmojiEntry[],
   onSearchChange: ((value: string) => void) | undefined,
 ): EmojiSearchState {
@@ -211,7 +211,7 @@ export function useEmojiSearch(
 }
 
 /** Reports a chosen emoji and the updated recent list, then closes the overlay around the picker. */
-export function useChooseEmoji({
+function useChooseEmoji({
   tone,
   recentEmoji = noKeys,
   onSelect,

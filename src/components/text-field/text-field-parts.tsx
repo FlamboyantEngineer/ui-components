@@ -25,7 +25,7 @@ export const textFieldHooks = createHooks('text-field', [
 
 const hooks = textFieldHooks;
 
-export interface RevealButtonProps {
+interface RevealButtonProps {
   /** The field's label, which names the button. */
   label: string;
   isRevealed: boolean;
@@ -33,7 +33,7 @@ export interface RevealButtonProps {
   onChange(isRevealed: boolean): void;
 }
 
-export interface TextFieldFrameProps {
+interface TextFieldFrameProps {
   startAdornment: ReactNode;
   endAdornment: ReactNode;
   /** The reveal button of a masked field, or `null`. */
@@ -55,7 +55,7 @@ export type TextFieldInputProps = HookProps &
     onKeyUp?: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
   };
 
-export interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {
+interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {
   /** Publishes the text area to the field. */
   controlRef: (node: HTMLElement | null) => void;
 }
@@ -123,13 +123,7 @@ export function withCharacterCount(
 }
 
 /** The text area, at least `minRows` tall, growing with its text when a row limit is set. */
-export function TextFieldArea({
-  controlRef,
-  minRows,
-  maxRows,
-  value,
-  ...rest
-}: TextFieldAreaProps) {
+function TextFieldArea({ controlRef, minRows, maxRows, value, ...rest }: TextFieldAreaProps) {
   const area = useRef<HTMLTextAreaElement | null>(null);
   const ref = useCallback(
     (node: HTMLTextAreaElement | null) => {
@@ -142,7 +136,7 @@ export function TextFieldArea({
   return <TextArea {...rest} ref={ref} rows={minRows} />;
 }
 
-export interface TextFieldControlProps extends Omit<AutoGrowOptions, 'value'> {
+interface TextFieldControlProps extends Omit<AutoGrowOptions, 'value'> {
   input: TextFieldInputProps;
   multiline: boolean;
   /** The text the control shows. */

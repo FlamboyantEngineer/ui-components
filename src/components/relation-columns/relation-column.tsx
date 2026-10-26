@@ -16,7 +16,7 @@ export interface RelationColumnContext<T> {
   onSelect: (column: RelationColumn<T>, key: Key) => void;
 }
 
-export interface RelationColumnViewProps<T> {
+interface RelationColumnViewProps<T> {
   column: RelationColumn<T>;
   context: RelationColumnContext<T>;
 }

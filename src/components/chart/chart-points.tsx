@@ -23,7 +23,7 @@ export interface ChartPoint {
 }
 
 /** The props a drawn value's element takes to join the chart's focus order and tooltip. */
-export interface ChartPointProps {
+interface ChartPointProps {
   ref: (element: SVGElement | null) => void;
   tabIndex: number;
   onFocus: (event: FocusEvent<SVGElement>) => void;
@@ -33,7 +33,7 @@ export interface ChartPointProps {
   onKeyDown: (event: KeyboardEvent<SVGElement>) => void;
 }
 
-export interface ChartPoints {
+interface ChartPoints {
   /** The value whose tooltip shows, while one is hovered or focused. */
   activeKey: string | null;
   /** The element the tooltip points at. */
@@ -199,7 +199,7 @@ interface ChartTooltipProps {
   value: ReactNode;
 }
 
-export interface ChartPlotProps {
+interface ChartPlotProps {
   width: number;
   height: number;
   /** The plot's focusable values, from `useChartPoints`. */

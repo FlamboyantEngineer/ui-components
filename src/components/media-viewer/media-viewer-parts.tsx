@@ -57,7 +57,7 @@ export function isImageItem(item: MediaViewerItem): boolean {
   return !item.type || item.type.toLowerCase().startsWith('image/');
 }
 
-export interface MediaHeaderActionsProps {
+interface MediaHeaderActionsProps {
   item: MediaViewerItem;
   position: number;
   count: number;

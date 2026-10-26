@@ -30,7 +30,7 @@ export interface TablePagination {
   rowCount?: number | undefined;
 }
 
-export interface TableRowsOptions<T extends TableRow> extends TableSortOptions {
+interface TableRowsOptions<T extends TableRow> extends TableSortOptions {
   rows: readonly T[];
   columns: readonly TableColumn<T>[];
   /** A row's child rows, for nested rows. */
@@ -44,7 +44,7 @@ export interface TableRowsOptions<T extends TableRow> extends TableSortOptions {
 }
 
 /** The current page and how to move to another. */
-export interface TablePages {
+interface TablePages {
   page: number;
   pageCount: number;
   onPageChange: (page: number) => void;

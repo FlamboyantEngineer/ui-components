@@ -3,7 +3,7 @@ import type { Key } from '../../core/props.js';
 import type { AnchoredAnnotation } from './anchor-geometry.js';
 
 /** What a margin inside a layer reads: the anchors, the active annotation and the layer element. */
-export interface AnnotationContextValue {
+interface AnnotationContextValue {
   anchors: readonly AnchoredAnnotation[];
   activeId: Key | null;
   setActiveId: (id: Key | null) => void;

@@ -2,7 +2,7 @@ import { usePersistentState } from '../../core/provider.js';
 import type { CharacterGridCategory, CharacterGridCharacter } from './character-filter.js';
 
 /** The characters chosen last, most recent first, and how to record a choice. */
-export interface RecentCharacters {
+interface RecentCharacters {
   characters: CharacterGridCharacter[];
   remember: (character: CharacterGridCharacter) => void;
 }

@@ -9,7 +9,7 @@ import {
 
 type TextControl = HTMLInputElement | HTMLTextAreaElement;
 
-export interface TextCompletionsOptions {
+interface TextCompletionsOptions {
   completions: Completions | undefined;
   inputRef: RefObject<TextControl | null>;
   /** A read-only or disabled control offers nothing. */

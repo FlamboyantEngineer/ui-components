@@ -7,7 +7,7 @@ import { mapTree } from '../../utils/map-tree.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 
-export interface TreeSelectionOptions<T extends TreeItemData> extends Pick<
+interface TreeSelectionOptions<T extends TreeItemData> extends Pick<
   TreeProps<T>,
   | 'selectedKeys'
   | 'defaultSelectedKeys'

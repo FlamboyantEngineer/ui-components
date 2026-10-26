@@ -26,7 +26,7 @@ export interface SplitSizesOptions {
   onExpand?: ((index: number) => void) | undefined;
 }
 
-export type SplitSizesPhase = 'change' | 'end' | 'set';
+type SplitSizesPhase = 'change' | 'end' | 'set';
 
 export interface SplitSizes {
   /** Every pane's size, fitted to the panes. */

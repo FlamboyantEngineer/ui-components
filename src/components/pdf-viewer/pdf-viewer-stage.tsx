@@ -14,7 +14,7 @@ import type { LoadedPdf, PdfDocumentResult } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import type { PdfSearchState } from './use-pdf-search.js';
 
-export interface PdfViewerStageProps<
+interface PdfViewerStageProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

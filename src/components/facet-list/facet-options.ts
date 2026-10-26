@@ -11,7 +11,7 @@ export interface FacetListOption {
   isDisabled?: boolean | undefined;
 }
 
-export interface FacetOptionsQuery {
+interface FacetOptionsQuery {
   options: readonly FacetListOption[];
   /** The search text; the limit does not apply while it is not blank. */
   query: string;
@@ -22,7 +22,7 @@ export interface FacetOptionsQuery {
   isExpanded: boolean;
 }
 
-export interface FacetOptions {
+interface FacetOptions {
   /** The options to draw, in order. */
   shown: FacetListOption[];
   /** How many options matching the search the fold hides. */

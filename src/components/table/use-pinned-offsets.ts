@@ -5,13 +5,13 @@ import type { TableColumnPin } from './table-rows.js';
 export type TablePinOffsets = Readonly<Record<string, number>>;
 
 /** A drawn column's key, width in pixels and pin, in display order. */
-export interface PinnedColumnWidth {
+interface PinnedColumnWidth {
   key: string;
   width: number;
   pin: TableColumnPin | undefined;
 }
 
-export interface PinnedOffsets {
+interface PinnedOffsets {
   offsets: TablePinOffsets;
   /** Takes freshly computed offsets, keeping the current ones when nothing moved. */
   report: (offsets: TablePinOffsets) => void;

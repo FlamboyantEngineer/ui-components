@@ -1,6 +1,6 @@
 import type { PdfLinkService } from './pdf-engine.js';
 
-export interface LinkServiceActions {
+interface LinkServiceActions {
   /** Sends the reader to a destination of the document. */
   followDestination(destination: unknown): void;
   /** Sends the reader to a page, zero-based. */

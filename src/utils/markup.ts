@@ -1,6 +1,6 @@
 // A DOM-free tokenizer and entity decoder shared by the markup readers (specs/MARKUP.md).
 
-export interface MarkupTextToken {
+interface MarkupTextToken {
   readonly type: 'text';
   readonly text: string;
 }
@@ -15,19 +15,19 @@ export interface MarkupOpenToken {
   readonly isSelfClosing: boolean;
 }
 
-export interface MarkupCloseToken {
+interface MarkupCloseToken {
   readonly type: 'close';
   readonly tag: string;
 }
 
-export type MarkupToken = MarkupTextToken | MarkupOpenToken | MarkupCloseToken;
+type MarkupToken = MarkupTextToken | MarkupOpenToken | MarkupCloseToken;
 
-export interface TokenizeMarkupOptions {
+interface TokenizeMarkupOptions {
   /** Lower-case names of elements whose content is raw text up to their closing tag. */
   rawTextElements?: ReadonlySet<string> | undefined;
 }
 
-export interface SkipDroppedElementsOptions {
+interface SkipDroppedElementsOptions {
   /** Whether an opening tag starts an element dropped with its content. */
   isDropped: (token: MarkupOpenToken) => boolean;
   /** Whether an opening tag has no content (self-closing, or void in HTML). Defaults to `/>`. */

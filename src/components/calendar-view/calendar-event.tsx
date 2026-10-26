@@ -16,7 +16,7 @@ export interface CalendarEventContext {
   onEventAction: ((key: Key) => void) | undefined;
 }
 
-export interface CalendarEventButtonProps {
+interface CalendarEventButtonProps {
   placed: PlacedEvent;
   context: CalendarEventContext;
   /** Whether the event is in the Tab sequence: only the focused day's events are. */
@@ -29,7 +29,7 @@ export interface CalendarEventButtonProps {
   style?: CSSProperties | undefined;
 }
 
-export interface CalendarEventLanesProps {
+interface CalendarEventLanesProps {
   /** The bars that may start in this day's column. */
   segments: readonly WeekSegment[];
   column: number;
@@ -39,7 +39,7 @@ export interface CalendarEventLanesProps {
   time: CalendarEventButtonProps['time'];
 }
 
-export interface CalendarMoreEventsProps {
+interface CalendarMoreEventsProps {
   /** The day's events, all of them. */
   events: readonly PlacedEvent[];
   /** How many of them the cell hides. */

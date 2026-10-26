@@ -23,7 +23,7 @@ export type ChangeListVariant = 'compact' | 'detailed';
 /** Draws a plain value or a list item, such as a status in a badge. */
 export type ChangeListValueRenderer = (value: string) => ReactNode;
 
-export interface ChangeValuesProps {
+interface ChangeValuesProps {
   type: ChangeListValueType;
   before: ChangeListValue;
   after: ChangeListValue;

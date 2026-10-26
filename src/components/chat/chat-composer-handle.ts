@@ -57,7 +57,7 @@ export interface ChatDraftOptions {
   onDraftChange?: ((draft: ChatDraft) => void) | undefined;
 }
 
-export interface ChatComposerHandleOptions {
+interface ChatComposerHandleOptions {
   handleRef: Ref<ChatComposerHandle> | undefined;
   composerRef: RefObject<MessageComposerHandle | null>;
   conversationId: string | undefined;

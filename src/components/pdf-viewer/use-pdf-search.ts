@@ -13,7 +13,7 @@ import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
-export interface UsePdfSearchOptions {
+interface UsePdfSearchOptions {
   loaded: Pick<LoadedPdf, 'pages' | 'getTextContent'> | null;
   pages: Pick<PdfPagesController, 'currentPage' | 'nearPages' | 'scrollToPage'>;
   /** The caller's query; `undefined` keeps the query in the viewer. */

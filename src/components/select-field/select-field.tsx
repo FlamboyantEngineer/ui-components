@@ -16,7 +16,7 @@ export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M 
   ? Key[]
   : Key | null;
 
-export interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
+interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   extends FieldInputProps<SelectFieldValue<M>>, OpenStateProps {
   /**
    * The choices, in display order, and groups of them shown as headed sections; a multiple value

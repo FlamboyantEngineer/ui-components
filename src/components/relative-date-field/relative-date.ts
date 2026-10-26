@@ -52,7 +52,7 @@ export interface RelativeDateComputedPreset<V> {
   getValue: (now: Date) => V;
 }
 
-export type RelativeDateRelation = RelativeTimeRelation;
+type RelativeDateRelation = RelativeTimeRelation;
 
 export interface RelativeDateText {
   /** The value relative to now, such as `Tomorrow` or `3 days ago`. */

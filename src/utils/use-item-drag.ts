@@ -8,7 +8,7 @@ interface ItemMove {
   position: 'before' | 'after' | 'on';
 }
 
-export interface ItemDragOptions<K extends Key, Move extends ItemMove> {
+interface ItemDragOptions<K extends Key, Move extends ItemMove> {
   ref: RefObject<HTMLElement | null>;
   key: K;
   textValue: string;
@@ -21,7 +21,7 @@ export interface ItemDragOptions<K extends Key, Move extends ItemMove> {
   onMove: (move: Move) => void;
 }
 
-export interface ItemDragState<Move extends ItemMove> {
+interface ItemDragState<Move extends ItemMove> {
   dragProps: HTMLAttributes<HTMLElement>;
   startDrag: (event: PressEvent) => void;
   /** The id of the building block's description of the drag button, for its `aria-describedby`. */

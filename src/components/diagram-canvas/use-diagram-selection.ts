@@ -1,7 +1,7 @@
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 
-export interface DiagramSelectionOptions {
+interface DiagramSelectionOptions {
   selectionMode: SelectionMode;
   selectedKeys: Iterable<Key> | 'all' | undefined;
   defaultSelectedKeys: Iterable<Key> | 'all' | undefined;

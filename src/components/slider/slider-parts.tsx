@@ -54,7 +54,7 @@ export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequire
 type SliderValue = number | [number, number];
 
 /** The props `SliderControl` passes on to the slider and its thumbs. */
-export type SliderOwnProps<T> = Pick<
+type SliderOwnProps<T> = Pick<
   SliderFieldProps<T>,
   | 'name'
   | 'onChangeEnd'
@@ -66,7 +66,7 @@ export type SliderOwnProps<T> = Pick<
   | 'aria-details'
 >;
 
-export interface SliderControlProps<T extends SliderValue> {
+interface SliderControlProps<T extends SliderValue> {
   state: FieldState<T>;
   control: FieldControlProps;
   /** The field label. It names the group, and each thumb with the thumb's own name before it. */

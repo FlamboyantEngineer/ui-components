@@ -16,13 +16,13 @@ import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { RelativeDateText } from './relative-date.js';
 
 /** One preset of the list, with whether the field's bounds refuse it. */
-export interface RelativePresetItem {
+interface RelativePresetItem {
   id: string;
   label: string;
   isDisabled: boolean;
 }
 
-export interface PresetSelectProps {
+interface PresetSelectProps {
   control: FieldControlProps;
   state: FieldState<unknown>;
   items: readonly RelativePresetItem[];

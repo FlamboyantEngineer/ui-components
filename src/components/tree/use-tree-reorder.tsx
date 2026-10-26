@@ -39,7 +39,7 @@ export interface TreeReorderOptions<T> {
 }
 
 /** What reordering reads from the tree. */
-export interface TreeReorderSource<T extends TreeItemData> {
+interface TreeReorderSource<T extends TreeItemData> {
   items: readonly T[];
   reorder: TreeReorderOptions<T> | undefined;
   disabledKeys: Iterable<Key> | undefined;

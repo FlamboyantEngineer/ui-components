@@ -4,7 +4,7 @@
 import type { QrErrorCorrection } from './qr-codewords.js';
 
 /** A square grid of modules being drawn, with the modules that belong to function patterns. */
-export interface QrGrid {
+interface QrGrid {
   size: number;
   /** Rows of modules, top to bottom; true is dark. */
   modules: boolean[][];

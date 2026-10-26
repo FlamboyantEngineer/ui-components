@@ -79,7 +79,7 @@ const selectedCells = {
 };
 
 /** The key prefix of detail rows, kept out of row actions, selection and moves. */
-export const detailRowPrefix = 'ui-table-detail:';
+const detailRowPrefix = 'ui-table-detail:';
 
 function renderCellContent<T extends TableRow>(row: T, column: TableColumn<T>): ReactNode {
   if (column.renderCell) return column.renderCell(row);

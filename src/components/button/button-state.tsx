@@ -109,7 +109,7 @@ export interface ButtonStateProps
   render?: ElementRender<'button', ButtonRenderState> | undefined;
 }
 
-export interface ButtonStateOptions {
+interface ButtonStateOptions {
   /** The tooltip only repeats the accessible name, so it adds no description. */
   isTooltipName?: boolean | undefined;
   /** The notation of `aria-keyshortcuts`; `useDetectedPlatform()` so hydration matches the server. */
@@ -117,7 +117,7 @@ export interface ButtonStateOptions {
 }
 
 /** What a button hands its building block for a `<button>`. */
-export interface ButtonElementProps extends Omit<
+interface ButtonElementProps extends Omit<
   ButtonStateProps,
   | 'ref'
   | 'role'
@@ -138,7 +138,7 @@ export interface ButtonElementProps extends Omit<
 }
 
 /** What a button with `href` hands its building block for the `<a>`. */
-export interface ButtonLinkElementProps
+interface ButtonLinkElementProps
   extends
     PressEventProps,
     HoverEventProps,

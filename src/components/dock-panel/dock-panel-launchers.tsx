@@ -30,7 +30,7 @@ export interface DockPanelOpenState {
   setOpen: (isOpen: boolean) => void;
 }
 
-export interface DockPanelLaunchersProps {
+interface DockPanelLaunchersProps {
   /** The panel's label, which names the toolbar and the toggle. */
   label: string;
   position: DockPanelPosition;

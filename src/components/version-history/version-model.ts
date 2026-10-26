@@ -10,7 +10,7 @@ import {
 import type { Key } from '../../core/props.js';
 
 /** What a version needs for the rules here: its key, name, time and person. */
-export interface VersionFacts {
+interface VersionFacts {
   id: Key;
   label?: string | undefined;
   time: string;
@@ -26,7 +26,7 @@ export interface VersionHistoryFilter {
 }
 
 /** The most versions selected at once: one to view, two to compare. */
-export const MAX_SELECTED_VERSIONS = 2;
+const MAX_SELECTED_VERSIONS = 2;
 
 /** Whether a version has a name, as opposed to an automatic version titled by its time. */
 export function isNamedVersion(version: VersionFacts): boolean {

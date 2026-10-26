@@ -4,9 +4,9 @@
 import { clamp } from './clamp.js';
 
 /** How an overlay lines up with its anchor along the anchor's edge. */
-export type AxisAlign = 'start' | 'center' | 'end';
+type AxisAlign = 'start' | 'center' | 'end';
 
-export interface CrossAxisInput {
+interface CrossAxisInput {
   anchorLow: number;
   anchorHigh: number;
   size: number;
@@ -21,7 +21,7 @@ export interface CrossAxisInput {
   clamps: boolean;
 }
 
-export interface MainAxisInput {
+interface MainAxisInput {
   anchorLow: number;
   anchorHigh: number;
   size: number;
@@ -32,7 +32,7 @@ export interface MainAxisInput {
   prefersHigh: boolean;
 }
 
-export interface MainAxisPlacement {
+interface MainAxisPlacement {
   /** The overlay opens on the high side of the anchor. */
   isHigh: boolean;
   /** The overlay's low edge. */

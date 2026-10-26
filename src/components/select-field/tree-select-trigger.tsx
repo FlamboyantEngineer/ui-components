@@ -6,7 +6,7 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import type { FieldControlProps } from '../field/field.js';
 import { Button } from '../button/button.js';
 
-export interface TreeSelectTriggerProps {
+interface TreeSelectTriggerProps {
   control: FieldControlProps;
   /** The chosen value's text, or the placeholder. */
   text: string;

@@ -27,9 +27,9 @@ export interface ActivityExpansionProps {
 }
 
 /** The slots the shared frame draws. */
-export type ActivityDisclosureSlot = 'trigger' | 'indicator' | 'label' | 'spinner' | 'panel';
+type ActivityDisclosureSlot = 'trigger' | 'indicator' | 'label' | 'spinner' | 'panel';
 
-export interface ActivityDisclosureProps extends Omit<BaseProps, 'id'>, ActivityExpansionProps {
+interface ActivityDisclosureProps extends Omit<BaseProps, 'id'>, ActivityExpansionProps {
   /** The hooks of the part that renders the frame. */
   hooks: ComponentHooks<ActivityDisclosureSlot>;
   /** The work goes on: the panel opens on its own and a busy indicator shows. */

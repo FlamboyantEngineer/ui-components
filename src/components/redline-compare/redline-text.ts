@@ -8,7 +8,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 export type RedlineSide = 'old' | 'new' | 'both';
 
 /** How a run of words fares: kept, added or removed. */
-export type RedlineWordChange = 'equal' | 'added' | 'removed';
+type RedlineWordChange = 'equal' | 'added' | 'removed';
 
 /** A piece of text under the same marks. */
 export interface MarkedRun {

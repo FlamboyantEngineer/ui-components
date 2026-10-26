@@ -5,7 +5,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import type { ModalProps } from './modal.js';
 
-export interface ModalHeaderProps extends Pick<
+interface ModalHeaderProps extends Pick<
   ModalProps,
   'title' | 'description' | 'headerActions' | 'showCloseButton'
 > {

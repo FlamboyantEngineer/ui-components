@@ -22,7 +22,7 @@ export interface TransferListItem {
 /** Which side of a transfer list: the items not chosen, or the chosen ones. */
 export type TransferListSide = 'available' | 'chosen';
 
-export interface TransferPaneProps {
+interface TransferPaneProps {
   side: TransferListSide;
   label: string;
   /** Every item on this side, before filtering. */

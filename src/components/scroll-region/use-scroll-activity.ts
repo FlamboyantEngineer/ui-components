@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } 
  */
 export type ScrollRegionScrollbarVisibility = 'auto' | 'always' | 'scroll' | 'hover';
 
-export interface ScrollActivity {
+interface ScrollActivity {
   /** From a scroll until the hide delay passes without one. */
   isScrolling: boolean;
   /** A mouse or pen pointer is over the region. */

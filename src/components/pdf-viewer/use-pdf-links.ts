@@ -6,7 +6,7 @@ import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
-export interface UsePdfLinksOptions<
+interface UsePdfLinksOptions<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

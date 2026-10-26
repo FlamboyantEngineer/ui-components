@@ -20,7 +20,7 @@ interface TableFooterProps<T> {
 }
 
 /** The key of the summary row, kept out of row actions, selection and moves. */
-export const footerRowId = 'ui-table-footer';
+const footerRowId = 'ui-table-footer';
 
 type RowElementProps = JSX.IntrinsicElements['tr' | 'div'];
 

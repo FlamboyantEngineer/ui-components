@@ -55,13 +55,13 @@ export type ComboboxOptionRenderer = (
 ) => ReactNode;
 
 /** How the list draws its options. */
-export interface ComboboxOptionDisplay {
+interface ComboboxOptionDisplay {
   /** Marks the typed text in option labels. */
   highlightMatches?: boolean | undefined;
   renderOption?: ComboboxOptionRenderer | undefined;
 }
 
-export interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
+interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
   size: ControlSize;
   /** The suggestions, in display order. */
   items: Iterable<ComboboxItem>;

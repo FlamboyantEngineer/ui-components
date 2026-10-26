@@ -11,7 +11,7 @@ import {
   type FilterField,
 } from './filter-model.js';
 
-export interface FilterChipProps {
+interface FilterChipProps {
   field: FilterField;
   condition: FilterCondition;
   isOpen: boolean;

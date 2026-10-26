@@ -70,7 +70,7 @@ export interface ActionRowCustomAction
 
 export type ActionRowAction = ActionRowVerbAction | ActionRowCustomAction;
 
-export interface ActionContent {
+interface ActionContent {
   icon: IconSource;
   label: string;
   pendingLabel?: string | undefined;

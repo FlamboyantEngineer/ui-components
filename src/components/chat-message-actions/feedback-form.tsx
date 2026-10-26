@@ -5,7 +5,7 @@ import { TextField } from '../text-field/text-field.js';
 import { actionHooks } from './message-actions-bar.js';
 import type { FeedbackDetails } from './message-commands.js';
 
-export interface FeedbackFormProps {
+interface FeedbackFormProps {
   /** The reasons offered as toggle chips, in order. */
   reasons: readonly string[];
   onSubmit: (details: FeedbackDetails) => void;

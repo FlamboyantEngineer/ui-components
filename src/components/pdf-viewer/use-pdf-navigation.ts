@@ -8,7 +8,7 @@ import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PagePixelRect, PdfPagesController } from './use-pdf-pages.js';
 
-export interface UsePdfNavigationOptions {
+interface UsePdfNavigationOptions {
   /** The page the caller wants the reader on, zero-based; `undefined` leaves the viewer in charge. */
   page?: number | undefined;
   onPageChange?: ((pageIndex: number) => void) | undefined;
@@ -26,7 +26,7 @@ export interface UsePdfNavigationOptions {
   pages: Pick<PdfPagesController, 'currentPage' | 'elements' | 'scrollToPage'>;
 }
 
-export interface UsePageViewportsOptions<
+interface UsePageViewportsOptions<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

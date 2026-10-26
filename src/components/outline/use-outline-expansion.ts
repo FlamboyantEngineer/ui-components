@@ -3,7 +3,7 @@ import type { ExpansionProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
 import type { OutlineEntry } from './outline-tree.js';
 
-export interface OutlineExpansionOptions extends ExpansionProps {
+interface OutlineExpansionOptions extends ExpansionProps {
   /** Entries at this level or deeper start collapsed, unless expanded keys say otherwise. */
   collapseBelowLevel?: number | undefined;
 }

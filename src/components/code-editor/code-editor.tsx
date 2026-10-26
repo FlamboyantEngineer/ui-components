@@ -4,7 +4,7 @@ import type { FieldInputProps } from '../field/field.js';
 import type { JsonSchema } from './json-schema.js';
 import { resolveCodeTokenizer, type CodeLanguage, type CodeSyntax } from './code-languages.js';
 
-export interface CodeLanguageOptions {
+interface CodeLanguageOptions {
   /** Basic syntax preset. Defaults to plain `text`. */
   language?: CodeLanguage | undefined;
   /** Custom syntax rules; override the preset. An explicit tokenizer overrides both. */

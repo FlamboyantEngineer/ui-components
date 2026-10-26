@@ -5,7 +5,7 @@ import { listTabbables } from '../../utils/tabbable.js';
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
 export type ModalFocusTarget = FocusTarget;
 
-export interface InitialFocusProps {
+interface InitialFocusProps {
   dialogRef: RefObject<HTMLElement | null>;
   bodyRef: RefObject<HTMLElement | null>;
   footerRef: RefObject<HTMLElement | null>;

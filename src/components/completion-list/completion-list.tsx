@@ -48,12 +48,9 @@ export interface CompletionListProps extends BaseProps, AriaLabellingProps {
 }
 
 /** Draws a completion's content instead of its label and description. */
-export type CompletionRenderer = (
-  completion: Completion,
-  state: CompletionListItemState,
-) => ReactNode;
+type CompletionRenderer = (completion: Completion, state: CompletionListItemState) => ReactNode;
 
-export interface ControlCompletionListProps {
+interface ControlCompletionListProps {
   model: CompletionsModel;
   listId: string;
   anchorRef: RefObject<Element | null>;

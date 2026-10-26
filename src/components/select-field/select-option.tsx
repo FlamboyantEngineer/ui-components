@@ -112,7 +112,7 @@ function OptionRow({
 }
 
 /** What the rows depend on beyond their own item, so a cached row is drawn again when it changes. */
-export function toDisplayDependencies(display: SelectOptionsDisplay): unknown[] {
+function toDisplayDependencies(display: SelectOptionsDisplay): unknown[] {
   return [display.isMultiple, display.blockedKeys, display.renderOption];
 }
 

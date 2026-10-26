@@ -6,13 +6,13 @@ import { createJsonCodec } from '../../utils/json-codec.js';
 import { isKey } from '../../utils/is-key.js';
 
 /** The panel state a `persistKey` saves: each value the caller does not control. */
-export interface DockPanelStoredState {
+interface DockPanelStoredState {
   selectedKey?: Key | undefined;
   isExpanded?: boolean | undefined;
   size?: number | undefined;
 }
 
-export interface DockPanelStateOptions {
+interface DockPanelStateOptions {
   /** The panes that can be selected, in order. */
   enabledKeys: readonly Key[];
   selectedKey?: Key | undefined;

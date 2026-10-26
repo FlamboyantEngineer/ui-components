@@ -14,7 +14,7 @@ import { PopoverPanel } from '../popover/popover.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */
-export interface ModalOpenState {
+interface ModalOpenState {
   readonly isOpen: boolean;
   setOpen: (isOpen: boolean) => void;
   open: () => void;
@@ -25,9 +25,9 @@ export interface ModalOpenState {
   setPoint: (point: { x: number; y: number }) => void;
 }
 
-export type ModalOpenOptions = OpenStateProps;
+type ModalOpenOptions = OpenStateProps;
 
-export interface ModalPresentationProps {
+interface ModalPresentationProps {
   state: ModalOpenState;
   /** The root's hook classes and data attributes. */
   rootProps: HookProps;
@@ -36,14 +36,14 @@ export interface ModalPresentationProps {
 }
 
 /** How the dialog may be dismissed, already narrowed by `isDismissDisabled`. */
-export type ModalDismissal = Required<
+type ModalDismissal = Required<
   Pick<OverlayDismissProps, 'isDismissable' | 'isKeyboardDismissDisabled'>
 > &
   Pick<OverlayDismissProps, 'shouldCloseOnInteractOutside'>;
 
-export interface BlockingModalProps extends ModalPresentationProps, ModalDismissal {}
+interface BlockingModalProps extends ModalPresentationProps, ModalDismissal {}
 
-export interface AnchoredModalProps extends ModalPresentationProps, ModalDismissal {
+interface AnchoredModalProps extends ModalPresentationProps, ModalDismissal {
   placement: Placement;
 }
 

@@ -9,7 +9,7 @@ import { useLocale } from '../../primitives/index.js';
 import type { CalendarViewMode } from './calendar-view.js';
 import { moveFocusedDay } from './calendar-days.js';
 
-export interface CalendarGridOptions {
+interface CalendarGridOptions {
   /** The focused day, which holds the grid's tab stop. */
   focused: string;
   setFocused: (date: string) => void;

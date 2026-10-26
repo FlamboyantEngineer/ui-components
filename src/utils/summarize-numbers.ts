@@ -1,4 +1,4 @@
-export interface NumberSummary {
+interface NumberSummary {
   count: number;
   sum: number;
   min: number;

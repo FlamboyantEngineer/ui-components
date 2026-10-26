@@ -24,7 +24,7 @@ export interface StepListEditorColumn {
 /** A step menu's actions. */
 export type StepAction = 'insert-above' | 'insert-below' | 'duplicate' | 'up' | 'down' | 'delete';
 
-export interface StepRowProps {
+interface StepRowProps {
   step: StepListEditorStep;
   index: number;
   count: number;

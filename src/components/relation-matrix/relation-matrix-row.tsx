@@ -27,7 +27,7 @@ export interface RelationMatrixRowContext {
   rowHeight: number;
 }
 
-export interface RelationMatrixRowProps {
+interface RelationMatrixRowProps {
   row: RelationMatrixItem;
   rowIndex: number;
   context: RelationMatrixRowContext;

@@ -4,7 +4,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { conditionBuilderHooks as hooks, useConditionBuilder } from './condition-context.js';
 
-export interface ConditionActionsProps {
+interface ConditionActionsProps {
   /** The rule's or the group's id. */
   id: string;
   /** Its position among its siblings. */

@@ -82,7 +82,7 @@ export const dashboardGridHooks = createHooks('dashboard-grid', [
   'status',
 ]);
 
-export const DashboardGridContext = createContext<DashboardGridTileState | null>(null);
+const DashboardGridContext = createContext<DashboardGridTileState | null>(null);
 
 /** The grid a `DashboardTile` sits in; `null` outside one. */
 export function useDashboardGridTile(): DashboardGridTileState | null {

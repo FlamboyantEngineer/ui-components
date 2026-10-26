@@ -8,7 +8,7 @@ import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
 
 /** What the overflow logic reads of a crumb. */
-export interface CrumbEntry {
+interface CrumbEntry {
   id?: Key | undefined;
   label: ReactNode;
   textValue?: string | undefined;

@@ -7,7 +7,7 @@ export type SegmentedChoiceSelectionMode = 'single' | 'multiple';
 export type SegmentedChoiceValue<M extends SegmentedChoiceSelectionMode = 'single'> =
   M extends 'multiple' ? string[] : string | null;
 
-export interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> {
+interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> {
   options: readonly { value: string }[];
   selectionMode?: M | undefined;
   value?: SegmentedChoiceValue<M> | undefined;
@@ -18,7 +18,7 @@ export interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> 
   isReadOnly: boolean;
 }
 
-export interface ChoiceSelection {
+interface ChoiceSelection {
   selectionMode: SegmentedChoiceSelectionMode;
   /** A change waits for the promise `onChange` returned. */
   isPending: boolean;

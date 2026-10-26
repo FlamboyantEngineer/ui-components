@@ -8,7 +8,7 @@ export interface GridSize {
 }
 
 /** The bounds a grid size picker keeps to. */
-export interface GridSizeBounds {
+interface GridSizeBounds {
   /** The rows and columns shown before the grid grows. */
   min: GridSize;
   /** The most rows and columns the grid grows to. */

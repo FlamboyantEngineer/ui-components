@@ -10,7 +10,7 @@ import { Tree, type TreeItemData } from '../tree/tree.js';
 import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
 import type { SelectTreeFieldProps } from './select-tree-field.js';
 
-export interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
+interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,
   'items' | 'getTextValue' | 'hasChildItems' | 'onLoadChildren'
 > {

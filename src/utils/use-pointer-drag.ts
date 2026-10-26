@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, type PointerEvent } from 'react';
 import { capturePointer, releasePointer } from './pointer-drag.js';
 
-export interface PointerDragOptions<E extends Element, T> {
+interface PointerDragOptions<E extends Element, T> {
   /** Refuse new gestures and release an active gesture without reporting a drop. */
   isDisabled?: boolean | undefined;
   /** A mode change abandons the current gesture without disabling future presses. */

@@ -8,7 +8,7 @@ import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
 
-export interface TreeFilterOptions<T extends TreeItemData> extends Pick<
+interface TreeFilterOptions<T extends TreeItemData> extends Pick<
   TreeProps<T>,
   'filterText' | 'filter'
 > {
@@ -20,7 +20,7 @@ export interface TreeFilterOptions<T extends TreeItemData> extends Pick<
 }
 
 /** The rows a filtered tree shows, how to reach their children, and their expansion. */
-export interface TreeFilter<T> {
+interface TreeFilter<T> {
   items: readonly T[];
   getChildren: (item: T) => readonly T[] | undefined;
   expansion: TreeExpansion;

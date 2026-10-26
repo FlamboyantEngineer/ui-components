@@ -21,7 +21,7 @@ import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 
 /** One column's filter: its value, where to report a new one, and the rows that list options. */
-export interface TableColumnFilterProps<T extends TableRow> {
+interface TableColumnFilterProps<T extends TableRow> {
   column: TableColumn<T>;
   /** The column's accessible name. */
   label: string;

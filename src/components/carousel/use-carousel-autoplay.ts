@@ -7,7 +7,7 @@ import {
   type RefObject,
 } from 'react';
 
-export interface CarouselAutoplayOptions {
+interface CarouselAutoplayOptions {
   /** Whether the carousel rotates on its own at all. */
   isEnabled: boolean;
   /** The time each slide shows, in milliseconds. */

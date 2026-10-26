@@ -8,7 +8,7 @@ import { measureCanvasPixels, usePageRender } from './use-page-render.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
-export interface PdfViewerPageProps<
+interface PdfViewerPageProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

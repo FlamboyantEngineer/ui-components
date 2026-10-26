@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useNearPages, type NearPages } from './use-near-pages.js';
 
-export interface UsePdfPagesOptions {
+interface UsePdfPagesOptions {
   scrollerRef: RefObject<HTMLElement | null>;
   /** The open document; a new one starts at its first page. */
   document: object | null;

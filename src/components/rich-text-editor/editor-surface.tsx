@@ -17,7 +17,7 @@ import {
 } from './rich-text-context.js';
 import { TaskItemView } from './task-item-view.js';
 
-export interface EditorSurfaceProps {
+interface EditorSurfaceProps {
   control: FieldControlProps;
   schema: Schema;
   value: RichTextDocument;

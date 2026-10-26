@@ -17,7 +17,7 @@ import { UserIdentity } from '../user-identity/user-identity.js';
 export type ApprovalPanelDecision = 'pending' | 'approved' | 'rejected' | 'abstained';
 
 /** Where the whole approval stands: approved once enough approve, rejected by any rejection. */
-export type ApprovalPanelOutcome = 'pending' | 'approved' | 'rejected';
+type ApprovalPanelOutcome = 'pending' | 'approved' | 'rejected';
 
 /** A person or a group whose decision is asked. */
 export interface ApprovalPanelApprover {

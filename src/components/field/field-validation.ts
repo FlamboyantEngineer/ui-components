@@ -31,13 +31,13 @@ export interface FieldValidation {
 }
 
 /** A validation result with every issue behind it, errors first. */
-export interface FieldValidationResult {
+interface FieldValidationResult {
   validation: FieldValidation;
   issues: readonly FieldIssue[];
 }
 
 /** When a field shows its validation, and the actions that let it. */
-export interface FieldReveal {
+interface FieldReveal {
   isRevealed: boolean;
   isTouched: boolean;
   /** Focus has left the field. */

@@ -48,7 +48,7 @@ export function toInnerControlSize(size: ControlSize): ControlSize {
   return controlSizes[Math.max(0, controlSizes.indexOf(size) - 1)] ?? 'xs';
 }
 
-export interface FieldIds {
+interface FieldIds {
   control: string;
   label: string;
   description: string;

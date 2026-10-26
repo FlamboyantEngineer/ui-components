@@ -5,7 +5,7 @@ import type { CodeToken } from './code-editor.js';
 import { stringifyJsonValue } from './json-value.js';
 
 /** Where a JSON text stops parsing, counted from 1. */
-export interface JsonErrorLocation {
+interface JsonErrorLocation {
   line: number;
   column: number;
 }

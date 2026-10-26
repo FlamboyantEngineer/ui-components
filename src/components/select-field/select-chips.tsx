@@ -10,7 +10,7 @@ import { Button } from '../button/button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 
-export interface SelectChipsProps {
+interface SelectChipsProps {
   /** The field's label, which names the group of chips. */
   label: string;
   /** The chosen options, one chip each. */

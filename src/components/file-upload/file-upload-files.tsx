@@ -37,7 +37,7 @@ export interface FileUploadItem {
 }
 
 /** What each listed file draws besides its name, size, progress and error. */
-export interface FileUploadRowOptions {
+interface FileUploadRowOptions {
   locale: string;
   onRemove: ((id: Key) => void) | undefined;
   removalFocus: RemovalFocus;
@@ -47,7 +47,7 @@ export interface FileUploadRowOptions {
   renderFilePreview: ((file: FileUploadItem) => ReactNode) | undefined;
 }
 
-export interface FileUploadFilesProps extends FileUploadRowOptions {
+interface FileUploadFilesProps extends FileUploadRowOptions {
   /** Names the list. */
   label: string;
   files: readonly FileUploadItem[];

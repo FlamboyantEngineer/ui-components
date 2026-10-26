@@ -7,7 +7,7 @@ import { parseMarkdown, type MarkdownNode } from '../markdown/markdown.js';
 import type { ChatTextToken } from './chat-part.js';
 
 /** A run of text, or a token by its position among the listed tokens. */
-export type TokenPiece = string | number;
+type TokenPiece = string | number;
 
 // Unicode keeps the interlinear annotation anchor and terminator for use inside an application:
 // Markdown reads them as ordinary text, and neither typed nor generated text contains them.
