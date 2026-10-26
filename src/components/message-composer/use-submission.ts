@@ -3,11 +3,12 @@
 
 import { useRef, useState } from 'react';
 import { useUiStorage } from '../../core/provider.js';
+import { isThenable } from '../../utils/is-thenable.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ComposerFormat } from './use-composer-state.js';
 
 export interface SubmissionOptions<T> {
-  onSubmit?: ((value: T) => void | Promise<void>) | undefined;
+  onSubmit?: ((value: T) => void | Promise<unknown>) | undefined;
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
   format: ComposerFormat<T>;
@@ -21,9 +22,6 @@ export interface Submission<T> {
   /** Sends the value; with `clearsDraft`, empties the draft once the host has accepted it. */
   send: (value: T, clearsDraft: boolean) => void;
 }
-
-const isThenable = (value: unknown): value is PromiseLike<void> =>
-  typeof (value as PromiseLike<void> | undefined)?.then === 'function';
 
 /**
  * Sends through `onSubmit`. A promise it returns holds sending from the same draft until it
@@ -64,7 +62,7 @@ export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
 
   const send = (value: T, clearsDraft: boolean) => {
     if (inFlight.current.has(scope)) return;
-    let result: void | Promise<void>;
+    let result: void | Promise<unknown>;
     try {
       result = options.onSubmit?.(value);
     } catch (error) {

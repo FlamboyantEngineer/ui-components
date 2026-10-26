@@ -1,6 +1,7 @@
 // Sending the composer's message as the chat's edit, queued text, reply or new message
 // (specs/CHAT.md, UIC-CHAT-3.7).
 
+import { isThenable } from '../../utils/is-thenable.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
 import type { ChatComposerProps } from './chat-composer.js';
 import { toDisplayTokens } from './chat-model.js';
@@ -9,8 +10,8 @@ import { toDisplayTokens } from './chat-model.js';
 type ComposerMessage = Parameters<NonNullable<RichMessageComposerProps['onSubmit']>>[0];
 
 /** Runs `onAccepted` once the host accepts: at once, or when its promise resolves. */
-function whenAccepted(result: void | Promise<void>, onAccepted: () => void) {
-  if (result instanceof Promise) return result.then(onAccepted);
+function whenAccepted(result: void | Promise<unknown>, onAccepted: () => void) {
+  if (isThenable(result)) return Promise.resolve(result).then(onAccepted);
   onAccepted();
   return undefined;
 }
@@ -23,7 +24,7 @@ function whenAccepted(result: void | Promise<void>, onAccepted: () => void) {
 export function submitMessage(
   { options, state }: ChatComposerProps,
   message: ComposerMessage,
-): void | Promise<void> {
+): void | Promise<unknown> {
   const { editing, replyingId } = state;
   const { text, tokens: composerTokens } = message;
   const tokens = toDisplayTokens(composerTokens);

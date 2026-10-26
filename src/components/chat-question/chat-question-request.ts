@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { isThenable } from '../../utils/is-thenable.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
 
 /** The requests a card sends its host: the reader's answers, or their dismissal. */
@@ -28,10 +29,6 @@ interface RequestState {
 
 function startState(scope: string | undefined): RequestState {
   return { scope, attempt: 0, running: null, failure: null };
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return typeof (value as PromiseLike<unknown> | null | undefined)?.then === 'function';
 }
 
 /**

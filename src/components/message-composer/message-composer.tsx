@@ -71,7 +71,7 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
    * Called with the text when the reader sends it; the composer then empties. A returned promise
    * holds sending until it settles, and the composer empties once it resolves.
    */
-  onSubmit?: ((value: string) => void | Promise<void>) | undefined;
+  onSubmit?: ((value: string) => void | Promise<unknown>) | undefined;
   /** The message being edited: while set, the composer shows it in place of the draft, with Save and Cancel. */
   editValue?: string | undefined;
   /** The most characters the text may hold. */

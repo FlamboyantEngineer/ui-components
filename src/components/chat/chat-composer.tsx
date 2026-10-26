@@ -35,7 +35,7 @@ export type ChatMessageTextHandler = (
   messageId: string,
   text: string,
   tokens: readonly ChatTextToken[],
-) => void | Promise<void>;
+) => void | Promise<unknown>;
 
 /** The chat props the composer reads. */
 export interface ChatComposerOptions extends Pick<
@@ -56,7 +56,9 @@ export interface ChatComposerOptions extends Pick<
    * returned promise holds the message, its tokens and the quote until it settles: they clear once
    * it resolves, and stay for another try when it rejects.
    */
-  onSend?: ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<void>) | undefined;
+  onSend?:
+    | ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>)
+    | undefined;
   /** Called when `onSend`, `onReply` or `onEdit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
   onSendError?: ((error: unknown) => void) | undefined;
   /** Sends a blank message too, as when context the host adds carries the request; a complete attachment allows it as well. */

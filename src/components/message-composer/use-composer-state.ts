@@ -15,7 +15,7 @@ export interface ComposerStateOptions<T> {
   value?: T | undefined;
   defaultValue?: T | undefined;
   onChange?: ((value: T) => void) | undefined;
-  onSubmit?: ((value: T) => void | Promise<void>) | undefined;
+  onSubmit?: ((value: T) => void | Promise<unknown>) | undefined;
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
   editValue?: T | undefined;
