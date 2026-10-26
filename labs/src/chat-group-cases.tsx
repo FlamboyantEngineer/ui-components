@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
-import { usePeopleHost } from './chat-people-host.js';
+import { useOlderHistory, usePeopleHost } from './chat-people-host.js';
 import { getLabNow, readerId, teamPeople } from './chat-samples.js';
 import {
   createLongHistory,
@@ -17,18 +17,8 @@ import { LabSection } from './chrome/index.js';
 /** The team's conversation, with older pages that load near the top. */
 function TeamDemo() {
   const host = usePeopleHost({ initialMessages: teamMessages });
-  const [pages, setPages] = useState(0);
-  const [isLoadingOlder, setLoadingOlder] = useState(false);
+  const older = useOlderHistory(teamOlderPages, host.setMessages);
   const [lastRead, setLastRead] = useState('none');
-  const loadOlder = () => {
-    setLoadingOlder(true);
-    setTimeout(() => {
-      const page = teamOlderPages[pages] ?? [];
-      host.setMessages((list) => [...page, ...list]);
-      setPages((count) => count + 1);
-      setLoadingOlder(false);
-    }, 700);
-  };
   return (
     <div style={{ height: 460 }} data-lab-demo="team">
       <Chat
@@ -42,9 +32,7 @@ function TeamDemo() {
         readPositions={teamReadPositions}
         firstUnreadId={teamFirstUnread}
         onRead={setLastRead}
-        hasOlder={pages < teamOlderPages.length}
-        isLoadingOlder={isLoadingOlder}
-        onLoadOlder={loadOlder}
+        {...older}
         headerActions={<output data-lab-output="team-read">Read up to {lastRead}</output>}
       />
     </div>

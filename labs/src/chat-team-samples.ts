@@ -10,7 +10,7 @@ function mention(text: string, id: string, label: string): ChatTextToken {
 }
 
 /** A text message with mentions of the people named. */
-function withMentions(
+export function withMentions(
   message: LabTextMessage,
   people: ReadonlyArray<[id: string, label: string]>,
 ): ChatMessageData {

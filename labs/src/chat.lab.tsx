@@ -2,6 +2,7 @@ import { Button } from '../../src/components/button/button.js';
 import { ChatHeader } from '../../src/components/chat/index.js';
 import { ChatAssistantCases } from './chat-assistant-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
+import { ChatEverythingCases } from './chat-everything-cases.js';
 import { ChatGroupCases } from './chat-group-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
 import { ana, ben, mia, planner } from './chat-samples.js';
@@ -40,6 +41,7 @@ function HeaderMatrix() {
 
 mountLab(
   <>
+    <ChatEverythingCases />
     <ChatAssistantCases />
     <ChatPeopleCases />
     <ChatGroupCases />

@@ -13,7 +13,7 @@ import {
   withModelNote,
   type AgentBehaviour,
 } from './chat-agent.js';
-import { describeModelChoice, labEfforts, labModels } from './chat-model-samples.js';
+import { createReplyHandlers, useCallbackLog, useLabModelChoice } from './chat-assistant-host.js';
 import { forecastRenderer, renderLabPart } from './chat-parts-samples.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
@@ -43,24 +43,14 @@ const commands = [
   { id: 'budget', label: 'budget', description: 'Keep an eye on costs' },
 ];
 
-const feedbackReasons = ['Accurate', 'Helpful', 'Too long', 'Out of date'];
-
-/** The callbacks the host received, newest last, for the lab to show. */
-function useCallbackLog() {
-  const [log, setLog] = useState<string[]>([]);
-  return [log, (line: string) => setLog((lines) => [...lines.slice(-5), line])] as const;
-}
-
 /** The live assistant: the behaviour picker, the chat, and what the host received. */
 function AssistantDemo() {
   const [behaviour, setBehaviour] = useState<AgentBehaviour>('answer');
   const [allowed, setAllowed] = useState<readonly string[]>([]);
-  const [model, setModel] = useState('balanced');
-  const [effort, setEffort] = useState('medium');
+  const { modelPicker, choice } = useLabModelChoice();
   const [log, record] = useCallbackLog();
   const controller = useChatController({
-    // The host reads the picker's current choice when the reader sends; the reply names it.
-    send: withModelNote(agents[behaviour], describeModelChoice(model, effort)),
+    send: withModelNote(agents[behaviour], choice),
     currentUserId: readerId,
     assistantId: plannerId,
     initialMessages,
@@ -92,29 +82,10 @@ function AssistantDemo() {
           showSearch
           placeholder="Ask the trip planner…"
           commands={commands}
-          modelPicker={{
-            models: labModels,
-            efforts: labEfforts,
-            model,
-            onModelChange: setModel,
-            effort,
-            onEffortChange: setEffort,
-          }}
+          modelPicker={modelPicker}
           toolRenderers={{ get_weather: forecastRenderer }}
           renderPart={renderLabPart}
-          onApplyCode={(code) => record(`applied ${code.split('\n').length} lines`)}
-          onCopy={(id) => record(`copied ${id}`)}
-          feedbackReasons={feedbackReasons}
-          onFeedback={(id, feedback) => {
-            record(`rated ${feedback.rating ?? 'none'} ${feedback.reasons.join(', ')}`.trim());
-            controller.setMessages((messages) =>
-              messages.map((message) =>
-                message.id === id
-                  ? { ...message, feedback: feedback.rating ?? undefined }
-                  : message,
-              ),
-            );
-          }}
+          {...createReplyHandlers(controller.setMessages, record)}
         />
       </div>
       <p>
