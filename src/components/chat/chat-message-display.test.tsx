@@ -24,20 +24,24 @@ describe('Chat message display', () => {
     for (const id of ['q1', 'a1']) {
       expect(article(id).querySelector('.ui-chat-message__avatar')).not.toBeNull();
       expect(article(id).querySelector('.ui-chat-message__author')).not.toBeNull();
+      expect(article(id).querySelector('.ui-chat-message__time')).not.toBeNull();
       expect(article(id)).toHaveAttribute('data-variant', 'bubble');
       expect(article(id)).not.toHaveAttribute('data-avatar-hidden');
     }
     expectHooksMatchSpec(container, 'CHAT');
   });
 
-  it('UIC-CHAT-1.8 hides every avatar and name and keeps each message named by its author', () => {
+  it('UIC-CHAT-1.8 hides every avatar, name and time and keeps each message named by its author', () => {
     const { container } = renderChat({
       ...assistantChat,
       showAvatars: false,
       showAuthorNames: false,
+      showTimes: false,
     });
     expect(container.querySelector('.ui-chat-message__avatar')).toBeNull();
     expect(container.querySelector('.ui-chat-message__author')).toBeNull();
+    expect(container.querySelector('.ui-chat-message__header')).toBeNull();
+    expect(container.querySelector('.ui-chat-date-separator')).not.toBeNull();
     expect(article('q1')).toHaveAttribute('data-avatar-hidden', 'true');
     expect(screen.getByRole('article', { name: /^Trip helper, / })).toBe(article('a1'));
     expect(screen.getByRole('article', { name: /^Sam Reed, / })).toBe(article('q1'));

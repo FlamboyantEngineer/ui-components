@@ -56,7 +56,7 @@ export interface ChatMessageViewProps {
   /** The reader's open and closed choices of the message's parts. */
   expandedParts: Readonly<Record<string, boolean>> | undefined;
   context: ChatMessageContext;
-  /** Whether the message shows its author's avatar and name, and its background. */
+  /** Whether the message shows its author's avatar and name, its time and its background. */
   display: ChatMessageDisplayOptions;
 }
 
@@ -114,6 +114,7 @@ export const ChatMessageView = memo(function ChatMessageView({
           author={participant ? toMessageAuthor(participant) : undefined}
           showAvatar={display.showAvatars}
           showAuthorName={display.showAuthorNames}
+          showTime={display.showTimes}
           variant={toMessageVariant(origin, display)}
           time={message.createdAt}
           getNow={context.getNow}

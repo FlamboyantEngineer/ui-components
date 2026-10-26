@@ -134,9 +134,9 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
 
-### UIC-CHAT-TRANSCRIPT-2.13 - Avatar, name and background
+### UIC-CHAT-TRANSCRIPT-2.13 - Avatar, name, time and background
 
-`showAvatar={false}` shall leave out the avatar and publish `data-avatar-hidden`, so a stylesheet lines grouped messages up without the avatar's space; `showAuthorName={false}` shall leave out the author's name, the header keeping the time. Both default to `true`, and the message's name keeps the author either way (UIC-CHAT-TRANSCRIPT-2.4). `ChatMessage` shall publish `variant` as `data-variant`: `bubble` (the default), whose content the reference stylesheet draws on a background, or `plain`, whose content it draws as text on the page without a background, a plain `received` message taking the transcript's whole width.
+`showAvatar={false}` shall leave out the avatar and publish `data-avatar-hidden`, so a stylesheet lines grouped messages up without the avatar's space; `showAuthorName={false}` shall leave out the author's name, the header keeping the time; `showTime={false}` shall leave out the time, also from a grouped message; with neither a name nor a time shown there is no header. All three default to `true`, and the message's name keeps the author and the time either way (UIC-CHAT-TRANSCRIPT-2.4). `ChatMessage` shall publish `variant` as `data-variant`: `bubble` (the default), whose content the reference stylesheet draws on a background, or `plain`, whose content it draws as text on the page without a background, a plain `received` message taking the transcript's whole width.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `labs/reference/chat-transcript.css`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-display.spec.ts`

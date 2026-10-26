@@ -1,4 +1,4 @@
-// The Chat lab's message display: avatars, author names and message backgrounds, each optional.
+// The Chat lab's message display: avatars, author names, times and message backgrounds, each optional.
 
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
@@ -47,6 +47,7 @@ function DisplayDemo() {
   });
   const [showAvatars, setShowAvatars] = useState(false);
   const [showAuthorNames, setShowAuthorNames] = useState(false);
+  const [showTimes, setShowTimes] = useState(false);
   const [sentBubble, setSentBubble] = useState(true);
   const [receivedBubble, setReceivedBubble] = useState(false);
   return (
@@ -57,6 +58,9 @@ function DisplayDemo() {
         </Checkbox>
         <Checkbox isSelected={showAuthorNames} onChange={setShowAuthorNames}>
           Names
+        </Checkbox>
+        <Checkbox isSelected={showTimes} onChange={setShowTimes}>
+          Times
         </Checkbox>
         <Checkbox isSelected={sentBubble} onChange={setSentBubble}>
           Background on my messages
@@ -74,6 +78,7 @@ function DisplayDemo() {
           placeholder="Ask the trip planner…"
           showAvatars={showAvatars}
           showAuthorNames={showAuthorNames}
+          showTimes={showTimes}
           sentVariant={sentBubble ? 'bubble' : 'plain'}
           receivedVariant={receivedBubble ? 'bubble' : 'plain'}
         />
@@ -86,7 +91,7 @@ export function ChatDisplayCases() {
   return (
     <LabSection
       title="Message display"
-      description="Avatars, author names and message backgrounds are each optional. The demo starts minimal: no avatars or names, your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Toggle the options to compare with the default look."
+      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars, names or times (the day separators stay), your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Toggle the options to compare with the default look."
     >
       <DisplayDemo />
     </LabSection>

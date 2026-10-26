@@ -155,6 +155,32 @@ describe('ChatMessage avatar, name and background', () => {
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
   });
 
+  it('UIC-CHAT-TRANSCRIPT-2.13 hides the time, also from a grouped message, while keeping it in the name', () => {
+    const { container } = render(
+      <>
+        <ChatMessage author={maria} time={time} getNow={getNow} showTime={false}>
+          Named, no time
+        </ChatMessage>
+        <ChatMessage
+          author={maria}
+          time={time}
+          getNow={getNow}
+          groupPosition="last"
+          showTime={false}
+        >
+          Grouped, no time
+        </ChatMessage>
+      </>,
+    );
+    const [named, grouped] = screen.getAllByRole('article');
+    expect(named?.querySelector('.ui-chat-message__time')).toBeNull();
+    expect(named?.querySelector('.ui-chat-message__author')).toHaveTextContent('Maria Santos');
+    expect(grouped?.querySelector('.ui-chat-message__header')).toBeNull();
+    expect(named).toHaveAccessibleName(mariaAt1025);
+    expect(grouped).toHaveAccessibleName(mariaAt1025);
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+
   it('UIC-CHAT-TRANSCRIPT-2.13 publishes the bubble variant by default and plain on request', () => {
     const { container } = render(
       <>
