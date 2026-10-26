@@ -2,6 +2,8 @@
 
 .ui-chat-list {
   display: grid;
+  /* One column no wider than the list, so the header and rows shrink rather than overflow it. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
   box-sizing: border-box;
   height: 100%;
