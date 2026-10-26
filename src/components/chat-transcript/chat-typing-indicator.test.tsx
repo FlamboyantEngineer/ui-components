@@ -8,7 +8,6 @@ describe('ChatTypingIndicator', () => {
     const { container, rerender } = render(<ChatTypingIndicator names={['Ana']} />);
     const status = screen.getByRole('status');
     expect(status).toHaveClass('ui-chat-typing-indicator');
-    expect(status).toHaveAttribute('data-variant', 'typing');
     expect(status).toHaveTextContent('Ana is typing…');
     expect(container.querySelector('.ui-chat-typing-indicator__dots')).toHaveAttribute(
       'aria-hidden',
@@ -34,19 +33,6 @@ describe('ChatTypingIndicator', () => {
     rerender(<ChatTypingIndicator />);
     expect(status).toBeEmptyDOMElement();
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
-  });
-
-  it('UIC-CHAT-TRANSCRIPT-5.4 says an assistant is thinking', () => {
-    const { container, rerender } = render(
-      <ChatTypingIndicator variant="thinking" names={['Helper']} />,
-    );
-    const status = screen.getByRole('status');
-    expect(status).toHaveAttribute('data-variant', 'thinking');
-    expect(status).toHaveTextContent('Helper is thinking…');
-    expect(status).not.toHaveAttribute('data-empty');
-    rerender(<ChatTypingIndicator variant="thinking" />);
-    expect(status).toHaveTextContent('Thinking…');
-    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['dots', 'dot', 'text'] });
   });
 
   it('UIC-CHAT-TRANSCRIPT-5.6 forwards attributes to the indicator', () => {

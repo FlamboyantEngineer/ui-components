@@ -79,6 +79,37 @@ test.describe('Chat lab', () => {
     await expect(composer(assistant)).toBeFocused();
   });
 
+  test('UIC-CHAT-4.1 UIC-CHAT-4.2 shows the assistant thinking inside its reply until the text streams in', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const thinking = section(page, 'Thinking');
+    const cell = (state: string) => thinking.locator(`[data-lab-cell="state=${state}"]`);
+    for (const [state, text] of [
+      ['before any part', 'Thinking…'],
+      ['custom text', 'Pondering…'],
+      ['custom icon', 'Pondering…'],
+      ['status text', 'Checking opening hours…'],
+      ['reasoning', 'Thinking…'],
+    ] as const) {
+      const line = lastReply(cell(state)).locator('.ui-chat__status');
+      await expect(line.locator('.ui-chat-status-line__text')).toHaveText(text);
+    }
+    await expect(
+      lastReply(cell('custom icon')).locator('.ui-chat-status-line__icon svg'),
+    ).toBeVisible();
+    await expect(
+      lastReply(cell('custom icon')).locator('.ui-chat-status-line__spinner'),
+    ).toHaveCount(0);
+    await expect(cell('writing').locator('.ui-chat__status')).toHaveCount(0);
+    await expect(cell('before any part').locator('.ui-chat__typing')).toHaveAttribute(
+      'data-empty',
+      'true',
+    );
+    await lab.expectAccessible('[data-lab-section="Thinking"]');
+  });
+
   test('UIC-CHAT-1.5 streams steps, a cited answer and its sources to the end', async ({
     page,
   }) => {

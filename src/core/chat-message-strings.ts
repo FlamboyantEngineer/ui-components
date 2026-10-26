@@ -18,8 +18,8 @@ export interface ChatMessageStrings {
   chatQuoteLabel: (authorName: string, excerpt: string) => string;
   /** Says who is typing, from their names in order (`Ana and 2 others are typing…`). */
   chatTyping: (names: readonly string[]) => string;
-  /** Says an assistant is working on its reply, from its name when known (`Helper is thinking…`). */
-  chatThinking: (name: string | undefined) => string;
+  /** Says an assistant is working on its reply, inside the reply. */
+  chatThinking: string;
   /** Says who has seen a message, from their names in order (`Seen by Ana, Ben and 3 others`). */
   chatSeenBy: (names: readonly string[]) => string;
   /** Marks where the messages the reader has not seen yet begin. */
@@ -51,7 +51,7 @@ export const chatMessageStrings: ChatMessageStrings = {
     if (names.length === 2) return `${joinNames(names)} are typing…`;
     return `${names[0] ?? ''} and ${names.length - 1} others are typing…`;
   },
-  chatThinking: (name) => (name ? `${name} is thinking…` : 'Thinking…'),
+  chatThinking: 'Thinking…',
   chatSeenBy: (names) =>
     names.length <= 3
       ? `Seen by ${joinNames(names)}`

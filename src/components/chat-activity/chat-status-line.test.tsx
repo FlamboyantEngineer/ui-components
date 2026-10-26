@@ -31,6 +31,19 @@ describe('ChatStatusLine', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('UIC-CHAT-ACTIVITY-4.1 reads "Thinking…" without text and shows an icon in place of the busy indicator', () => {
+    const { container } = render(<ChatStatusLine icon={<svg />} />);
+    expect(container.querySelector('.ui-chat-status-line__text')).toHaveTextContent('Thinking…');
+    expect(screen.getByRole('status')).toHaveTextContent('Thinking…');
+    const icon = container.querySelector('.ui-chat-status-line__icon');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    expect(icon?.querySelector('svg')).not.toBeNull();
+    expect(container.querySelector('.ui-chat-status-line__spinner')).toBeNull();
+    expectHooksMatchSpec(container, 'CHAT-ACTIVITY', {
+      slots: ['ui-chat-status-line__icon', 'ui-chat-status-line__text'],
+    });
+  });
+
   it('UIC-CHAT-ACTIVITY-4.2 announces the text as it appears and changes, at most once every two seconds', () => {
     vi.useFakeTimers();
     const { rerender } = render(<ChatStatusLine text="Searching trains…" />);

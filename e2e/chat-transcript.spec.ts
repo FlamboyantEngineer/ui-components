@@ -429,7 +429,6 @@ test.describe('Chat Transcript lab: messages and conversation parts', () => {
       ['one', 'Ana Lopez is typing…'],
       ['two', 'Ana Lopez and Ben Okoro are typing…'],
       ['three or more', 'Ana Lopez and 2 others are typing…'],
-      ['thinking', 'Helper is thinking…'],
       ['nobody', ''],
     ] as const) {
       await expect(matrixCell(page, `typing=${typing}`).getByRole('status')).toHaveText(text);

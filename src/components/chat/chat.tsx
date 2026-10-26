@@ -2,7 +2,6 @@ import { useMemo, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ChatStatusLine } from '../chat-activity/chat-activity.js';
 import type { ChatMessageData, ChatParticipant } from '../chat-parts/chat-parts.js';
 import {
   ChatDateSeparator,
@@ -20,7 +19,6 @@ import { chatHooks as hooks } from './chat-hooks.js';
 import { ChatMessageView, type ChatMessageContext } from './chat-message-view.js';
 import {
   findStatusText,
-  findThinkingAssistant,
   hasAssistant,
   indexParticipants,
   listReaders,
@@ -111,24 +109,13 @@ function useSequence(
   });
 }
 
-/** Who is typing or thinking, and what the assistant is doing, below the transcript. */
-function ChatActivity({ props, participants }: Omit<ChatModel, 'context'>) {
-  const { messages, typingIds, currentUserId } = props;
-  const thinking = findThinkingAssistant(messages, participants);
-  const statusText = findStatusText(messages);
+/** Who is typing, below the transcript. */
+function ChatTyping({ props, participants }: Omit<ChatModel, 'context'>) {
   return (
-    <>
-      <ChatTypingIndicator
-        className={hooks.slotClass('typing')}
-        variant={thinking ? 'thinking' : 'typing'}
-        names={thinking ? [thinking.name] : listTypingNames(typingIds, participants, currentUserId)}
-      />
-      <ChatStatusLine
-        className={hooks.slotClass('status')}
-        text={statusText ?? ''}
-        isRunning={statusText !== undefined}
-      />
-    </>
+    <ChatTypingIndicator
+      className={hooks.slotClass('typing')}
+      names={listTypingNames(props.typingIds, participants, props.currentUserId)}
+    />
   );
 }
 
@@ -142,9 +129,9 @@ function useHeaderStatus({ props, participants }: Omit<ChatModel, 'context'>) {
 /**
  * A whole conversation from the host's messages and callbacks: an optional header with the
  * participants, search and the host's controls; the transcript with date separators, grouping, the
- * unread divider, read receipts and each message's parts and commands; who is typing and what the
- * assistant is doing; the queue of follow-ups; and the rich composer, with an optional model
- * picker among its tools. It serves assistant chats (streaming, tool calls, approvals, questions)
+ * unread divider, read receipts and each message's parts and commands, and in a reply that streams
+ * what the assistant is thinking or doing; who is typing; the queue of follow-ups; and the rich
+ * composer, with an optional model picker among its tools. It serves assistant chats (streaming, tool calls, approvals, questions)
  * and chats between people alike, and holds no conversation state of its own: spread a
  * `useChatController`'s `props` into it, or pass your own.
  */
@@ -202,7 +189,7 @@ export function Chat(props: ChatProps) {
           {sequence}
         </ChatTranscript>
       </TextMatchProvider>
-      <ChatActivity props={props} participants={participants} />
+      <ChatTyping props={props} participants={participants} />
       <ChatComposer
         options={props}
         state={state}

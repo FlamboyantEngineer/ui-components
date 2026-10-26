@@ -9,6 +9,7 @@ import { ChatPeopleCases } from './chat-people-cases.js';
 import { ana, ben, mia, planner } from './chat-samples.js';
 import { ChatStateCases } from './chat-state-cases.js';
 import { ChatSurfaceCases } from './chat-surface-cases.js';
+import { ChatThinkingCases } from './chat-thinking-cases.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const people = {
@@ -44,6 +45,7 @@ mountLab(
   <>
     <ChatEverythingCases />
     <ChatAssistantCases />
+    <ChatThinkingCases />
     <ChatHostCases />
     <ChatPeopleCases />
     <ChatGroupCases />

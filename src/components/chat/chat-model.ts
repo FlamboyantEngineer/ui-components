@@ -150,15 +150,13 @@ export function listTypingNames(
   });
 }
 
-/** The assistant whose reply has started but shows nothing yet, while a reply runs. */
-export function findThinkingAssistant(
-  messages: readonly ChatMessageData[],
-  participants: ChatParticipantIndex,
-): ChatParticipant | undefined {
-  const last = messages.at(-1);
-  if (!last?.authorId || last.status !== 'streaming' || last.parts.length > 0) return undefined;
-  const author = participants.get(last.authorId);
-  return author?.kind === 'assistant' ? author : undefined;
+/**
+ * Whether a reply that streams is thinking or doing something rather than writing: it shows
+ * nothing yet, its latest part is not text, or it says what it is doing.
+ */
+export function isThinking(message: ChatMessageData): boolean {
+  if (toDisplayStatus(message) !== 'streaming') return false;
+  return Boolean(message.statusText) || message.parts.at(-1)?.type !== 'text';
 }
 
 /** What the assistant is doing in the reply that streams, if it says. */

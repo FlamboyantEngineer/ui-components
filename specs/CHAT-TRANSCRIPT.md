@@ -254,7 +254,7 @@ Verification: `src/components/chat-transcript/chat-unread-divider.test.tsx`, `e2
 
 ### UIC-CHAT-TRANSCRIPT-5.4 - Typing indicator
 
-`ChatTypingIndicator` shall render a `ui-chat-typing-indicator` with `role="status"`, so changes are announced politely, publishing `variant` as `data-variant`. With `typing` (the default) it says who is typing through the provider string `chatTyping` of their display names (`Ana is typing…`, `Ana and Ben are typing…`, `Ana and 2 others are typing…`); with `thinking` it says the assistant (the first name, if any) is working on its reply through `chatThinking` (`Helper is thinking…`, `Thinking…`). The text sits in `ui-chat-typing-indicator__text` after `ui-chat-typing-indicator__dots`, a decorative element holding three `ui-chat-typing-indicator__dot` elements for a stylesheet to animate. With nobody typing it stays mounted, empty, and publishes `data-empty`, so the next change is announced.
+`ChatTypingIndicator` shall render a `ui-chat-typing-indicator` with `role="status"`, so changes are announced politely. It says who is typing through the provider string `chatTyping` of their display names (`Ana is typing…`, `Ana and Ben are typing…`, `Ana and 2 others are typing…`). An assistant thinking shows inside its reply instead ([Chat Activity](CHAT-ACTIVITY.md) `ChatStatusLine`). The text sits in `ui-chat-typing-indicator__text` after `ui-chat-typing-indicator__dots`, a decorative element holding three `ui-chat-typing-indicator__dot` elements for a stylesheet to animate. With nobody typing it stays mounted, empty, and publishes `data-empty`, so the next change is announced.
 
 Implementation: `src/components/chat-transcript/chat-typing-indicator.tsx`, `src/core/chat-message-strings.ts`
 Verification: `src/components/chat-transcript/chat-typing-indicator.test.tsx`, `e2e/chat-transcript.spec.ts`
@@ -348,9 +348,8 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `ui-chat-date-separator__label`   | slot      |                                                  | The day's words (also `ui-relative-time`).                                                      |
 | `ui-chat-unread-divider`          | root      |                                                  | The marker before the first unread message.                                                     |
 | `ui-chat-unread-divider__label`   | slot      |                                                  | The divider's words.                                                                            |
-| `ui-chat-typing-indicator`        | root      |                                                  | Who is typing, or that an assistant is thinking (`role="status"`).                              |
+| `ui-chat-typing-indicator`        | root      |                                                  | Who is typing (`role="status"`).                                                                |
 | `ui-chat-typing-indicator__dots`  | slot      |                                                  | The decorative dots.                                                                            |
 | `ui-chat-typing-indicator__dot`   | slot      |                                                  | Each of the three dots.                                                                         |
 | `ui-chat-typing-indicator__text`  | slot      |                                                  | Who is typing, in words.                                                                        |
-| `data-variant`                    | attribute | `typing`, `thinking`                             | On a typing indicator: people typing or an assistant thinking.                                  |
 | `ui-chat-read-receipts`           | root      |                                                  | The readers of a message (also `ui-avatar-group`).                                              |

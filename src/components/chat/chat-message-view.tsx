@@ -1,5 +1,6 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { ChatStatusLine } from '../chat-activity/chat-activity.js';
 import { ChatMessageActionsMenu } from '../chat-message-actions/chat-message-actions.js';
 import { ChatParts, type ChatMessageData, type ChatPartsProps } from '../chat-parts/chat-parts.js';
 import {
@@ -11,7 +12,9 @@ import {
 } from '../chat-transcript/chat-transcript.js';
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
 import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
+import { chatHooks as hooks } from './chat-hooks.js';
 import {
+  isThinking,
   readMessageText,
   toDisplayStatus,
   toExcerpt,
@@ -40,6 +43,8 @@ export interface ChatMessageContext extends ChatCommandContext {
   parts: ChatPartOptions;
   getNow: (() => Date) | undefined;
   onRetry: ((messageId: string) => void) | undefined;
+  thinkingText: string | undefined;
+  thinkingIcon: ReactNode;
   onQuotePress: (messageId: string) => void;
   onExpandedPartsChange: (messageId: string, expanded: Record<string, boolean>) => void;
 }
@@ -135,6 +140,13 @@ export const ChatMessageView = memo(function ChatMessageView({
             expandedParts={expandedParts}
             onExpandedPartsChange={(expanded) => context.onExpandedPartsChange(id, expanded)}
           />
+          {participant?.kind === 'assistant' && isThinking(message) ? (
+            <ChatStatusLine
+              className={hooks.slotClass('status')}
+              text={message.statusText || context.thinkingText}
+              icon={context.thinkingIcon}
+            />
+          ) : null}
         </ChatMessage>
       )}
     </ChatMessageActionsMenu>

@@ -1,6 +1,6 @@
 # Chat Activity
 
-The activity family shows what an assistant does while it answers, as parts of a reply in a [Chat Transcript](CHAT-TRANSCRIPT.md). `ChatReasoning` is the assistant's reasoning: open while it streams in, collapsed to how long it took once complete. `ChatSteps` folds the consecutive reasoning and tool calls of one reply into one group: open while the run goes on, collapsed to a summary once it ends. `ChatPlan` is the assistant's plan, an ordered list of steps that each say where they stand. `ChatStatusLine` is one live line saying what the assistant is doing now. The family has no `ChatActivity` component; `chat-activity.ts` holds the data types the parts take (`ChatReasoningData`, `ChatPlanData`, `ChatPlanStep`) and the values they derive from them.
+The activity family shows what an assistant does while it answers, as parts of a reply in a [Chat Transcript](CHAT-TRANSCRIPT.md). `ChatReasoning` is the assistant's reasoning: open while it streams in, collapsed to how long it took once complete. `ChatSteps` folds the consecutive reasoning and tool calls of one reply into one group: open while the run goes on, collapsed to a summary once it ends. `ChatPlan` is the assistant's plan, an ordered list of steps that each say where they stand. `ChatStatusLine` is one live line saying what the assistant is thinking or doing now. The family has no `ChatActivity` component; `chat-activity.ts` holds the data types the parts take (`ChatReasoningData`, `ChatPlanData`, `ChatPlanStep`) and the values they derive from them.
 
 `ChatReasoning` and `ChatSteps` are disclosures without a heading (React Aria `Disclosure`), so a reply's activity does not add to the page's outline. Unlike a `Disclosure`, they open and close on their own as the work progresses, until the reader chooses.
 
@@ -126,7 +126,7 @@ Verification: `src/components/chat-activity/chat-plan.test.tsx`
 
 ### UIC-CHAT-ACTIVITY-4.1 - Line
 
-While `isRunning` (the default), `ChatStatusLine` shall render a `ui-chat-status-line` root holding a decorative busy indicator (`ui-chat-status-line__spinner`) and its `text` (`ui-chat-status-line__text`), such as "Searching trains…". The visible text stays out of the accessibility tree, which hears it through the announcement ([UIC-CHAT-ACTIVITY-4.2](#uic-chat-activity-42---announcements)). Once `isRunning` is false the line renders nothing.
+While `isRunning` (the default), `ChatStatusLine` shall render a `ui-chat-status-line` root holding a decorative busy indicator (`ui-chat-status-line__spinner`), or the caller's `icon` in its place (`ui-chat-status-line__icon`, hidden from assistive technology), and its `text` (`ui-chat-status-line__text`), such as "Searching trains…". Without a `text`, or with an empty one, it reads the provider string `chatThinking` ("Thinking…"). A stylesheet may animate the text, such as a shimmer of colour across it, and should stop under reduced motion. The visible text stays out of the accessibility tree, which hears it through the announcement ([UIC-CHAT-ACTIVITY-4.2](#uic-chat-activity-42---announcements)). Once `isRunning` is false the line renders nothing.
 
 Implementation: `src/components/chat-activity/chat-status-line.tsx`
 Verification: `src/components/chat-activity/chat-status-line.test.tsx`, `e2e/chat-activity.spec.ts`
@@ -173,7 +173,8 @@ Verification: `src/components/chat-activity/chat-status-line.test.tsx`
 | `ui-chat-plan__label`          | slot      |                                                                                | A step's label.                                                                    |
 | `ui-chat-status-line`          | root      |                                                                                | The status line's `<div>`.                                                         |
 | `ui-chat-status-line__spinner` | slot      |                                                                                | The decorative busy indicator.                                                     |
-| `ui-chat-status-line__text`    | slot      |                                                                                | What the assistant is doing.                                                       |
+| `ui-chat-status-line__icon`    | slot      |                                                                                | The caller's decorative icon, in place of the busy indicator.                      |
+| `ui-chat-status-line__text`    | slot      |                                                                                | What the assistant is thinking or doing.                                           |
 | `data-status`                  | attribute | `streaming`, `complete`, `pending`, `in-progress`, `done`, `failed`, `skipped` | On reasoning: whether it streams. On a plan step: where it stands.                 |
 | `data-format`                  | attribute | `markdown`, `plain`                                                            | On reasoning: how its text renders.                                                |
 | `data-running`                 | state     | `true`                                                                         | On a group of steps: the run goes on.                                              |

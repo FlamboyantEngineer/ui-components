@@ -5,9 +5,9 @@ import {
   findLastOwnText,
   findMessageMatches,
   findStatusText,
-  findThinkingAssistant,
   hasAssistant,
   indexParticipants,
+  isThinking,
   listReaders,
   listTypingNames,
   readMessageText,
@@ -92,18 +92,27 @@ describe('chat model', () => {
     expect(findLastOwnText([message('d', 'ana')], 'sam')).toBeUndefined();
   });
 
-  it('UIC-CHAT-4.1 names who types, and the assistant thinking before its first part', () => {
+  it('UIC-CHAT-4.1 names who types, the reader left out', () => {
     expect(listTypingNames(['ana', 'sam', 'nobody'], index, 'sam')).toEqual(['Ana Lopez']);
     expect(listTypingNames(undefined, index, 'sam')).toEqual([]);
-    const thinking = { ...message('r', 'helper', { status: 'streaming' }), parts: [] };
-    expect(findThinkingAssistant([thinking], index)?.name).toBe('Trip helper');
-    expect(findThinkingAssistant([{ ...thinking, authorId: 'ana' }], index)).toBeUndefined();
-    expect(findThinkingAssistant([message('m', 'helper', { status: 'streaming' })], index)).toBe(
-      undefined,
-    );
   });
 
-  it('UIC-CHAT-4.2 reads the status of the reply that streams', () => {
+  it('UIC-CHAT-4.2 thinks while a streaming reply shows nothing, ends on other parts or says what it does', () => {
+    const writing = message('r', 'helper', { status: 'streaming' });
+    expect(isThinking({ ...writing, parts: [] })).toBe(true);
+    expect(isThinking(writing)).toBe(false);
+    expect(isThinking({ ...writing, statusText: 'Searching…' })).toBe(true);
+    const reasoning = { type: 'reasoning', id: 'why', text: 'Hm', status: 'streaming' } as const;
+    expect(isThinking({ ...writing, parts: [...writing.parts, reasoning] })).toBe(true);
+    expect(isThinking({ ...writing, parts: [], status: 'complete' })).toBe(false);
+    const asking: ChatMessageData = {
+      ...writing,
+      parts: [{ type: 'question', id: 'q', status: 'pending', questions: [] }],
+    };
+    expect(isThinking(asking)).toBe(false);
+  });
+
+  it('UIC-CHAT-5.1 reads the status of the reply that streams', () => {
     const working = message('r', 'helper', { status: 'streaming', statusText: 'Searching…' });
     expect(findStatusText([working])).toBe('Searching…');
     expect(findStatusText([{ ...working, status: 'complete' }])).toBeUndefined();

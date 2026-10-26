@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ChatFeedback } from '../chat-message-actions/chat-message-actions.js';
 import type { ChatCommandHandlers } from './chat-commands.js';
@@ -18,6 +18,10 @@ export interface ChatMessageOptions
   feedbackReasons?: readonly string[] | undefined;
   onReact?: ((messageId: string, emoji: string, isReacted: boolean) => void) | undefined;
   onDelete?: ((messageId: string) => void) | undefined;
+  /** What a reply that streams says while the assistant thinks, unless it says what it is doing. Defaults to "Thinking…". */
+  thinkingText?: string | undefined;
+  /** A decorative icon in place of the busy indicator while the assistant thinks. */
+  thinkingIcon?: ReactNode;
 }
 
 /** The command handlers: each present while its callback is, calling the latest callback. */
@@ -90,11 +94,12 @@ export function useMessageContext(
     ],
   );
   const { conversationId, currentUserId, getNow, feedbackReasons } = options;
+  const { thinkingText, thinkingIcon } = options;
   const { jumpTo, setExpandedParts } = state;
   return useMemo(
     () => ({
       ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
-      ...{ conversationId, parts, getNow, onRetry },
+      ...{ conversationId, parts, getNow, onRetry, thinkingText, thinkingIcon },
       onQuotePress: jumpTo,
       onExpandedPartsChange: setExpandedParts,
     }),
@@ -108,6 +113,8 @@ export function useMessageContext(
       parts,
       getNow,
       onRetry,
+      thinkingText,
+      thinkingIcon,
       jumpTo,
       setExpandedParts,
     ],

@@ -215,7 +215,8 @@
   text-decoration: line-through;
 }
 
-/* Status line: one muted line after a turning ring. */
+/* Status line: one muted line after a turning ring or the host's icon, a brighter band of colour
+   sweeping across its text; the text holds still, muted, for reduced motion and forced colours. */
 .ui-chat-status-line {
   display: flex;
   align-items: center;
@@ -225,9 +226,44 @@
   font-size: var(--ref-font-size-sm);
 }
 
+.ui-chat-status-line__icon {
+  display: inline-flex;
+  flex: none;
+}
+
 .ui-chat-status-line__text {
   min-width: 0;
   overflow: hidden;
+  background: linear-gradient(
+      90deg,
+      var(--ref-muted) 0%,
+      var(--ref-muted) 35%,
+      var(--ref-text) 50%,
+      var(--ref-muted) 65%,
+      var(--ref-muted) 100%
+    )
+    0 0 / 300% 100%;
+  background-clip: text;
+  color: transparent;
   text-overflow: ellipsis;
   white-space: nowrap;
+  animation: ref-chat-status-shimmer calc(var(--ref-duration-loop) * 2) linear infinite;
+}
+
+@keyframes ref-chat-status-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .ui-chat-status-line__text {
+    background: none;
+    color: inherit;
+    animation: none;
+  }
 }
