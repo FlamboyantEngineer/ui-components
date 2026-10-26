@@ -7,7 +7,6 @@ import {
   findStatusText,
   hasAssistant,
   indexParticipants,
-  isThinking,
   listReaders,
   listTypingNames,
   readMessageText,
@@ -18,6 +17,7 @@ import {
   toMessageAuthor,
   toMessageOrigin,
   toMessageText,
+  toThinkingActivity,
 } from './chat-model.js';
 
 const index = indexParticipants([...people, helper]);
@@ -97,19 +97,28 @@ describe('chat model', () => {
     expect(listTypingNames(undefined, index, 'sam')).toEqual([]);
   });
 
-  it('UIC-CHAT-4.2 thinks while a streaming reply shows nothing, ends on other parts or says what it does', () => {
+  it('UIC-CHAT-4.2 thinks while a streaming reply shows nothing or says what it does, as long as asked', () => {
     const writing = message('r', 'helper', { status: 'streaming' });
-    expect(isThinking({ ...writing, parts: [] })).toBe(true);
-    expect(isThinking(writing)).toBe(false);
-    expect(isThinking({ ...writing, statusText: 'Searching…' })).toBe(true);
+    const empty = { ...writing, parts: [] };
+    const saying = { ...writing, statusText: 'Searching…' };
     const reasoning = { type: 'reasoning', id: 'why', text: 'Hm', status: 'streaming' } as const;
-    expect(isThinking({ ...writing, parts: [...writing.parts, reasoning] })).toBe(true);
-    expect(isThinking({ ...writing, parts: [], status: 'complete' })).toBe(false);
-    const asking: ChatMessageData = {
-      ...writing,
-      parts: [{ type: 'question', id: 'q', status: 'pending', questions: [] }],
-    };
-    expect(isThinking(asking)).toBe(false);
+    const reasoningLast = { ...writing, parts: [...writing.parts, reasoning] };
+    const cases = [
+      [empty, ['thinking', 'thinking', 'thinking']],
+      [saying, ['thinking', 'thinking', 'thinking']],
+      [reasoningLast, [undefined, 'thinking', 'thinking']],
+      [writing, [undefined, undefined, 'writing']],
+      [{ ...empty, status: 'complete' }, [undefined, undefined, undefined]],
+      [
+        { ...writing, parts: [{ type: 'question', id: 'q', status: 'pending', questions: [] }] },
+        [undefined, undefined, undefined],
+      ],
+    ] as const satisfies readonly (readonly [ChatMessageData, readonly unknown[]])[];
+    for (const [reply, expected] of cases) {
+      expect(
+        (['content', 'text', 'end'] as const).map((until) => toThinkingActivity(reply, until)),
+      ).toEqual(expected);
+    }
   });
 
   it('UIC-CHAT-5.1 reads the status of the reply that streams', () => {

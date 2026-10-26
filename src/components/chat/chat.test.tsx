@@ -334,6 +334,37 @@ describe('Chat', () => {
     expect(line()).toBeNull();
   });
 
+  it('UIC-CHAT-4.2 shows thinking until the first content, or writes alongside the text until the end', () => {
+    const reasoning = { type: 'reasoning', id: 'why', text: 'Hm', status: 'streaming' } as const;
+    const thinking: ChatMessageData = {
+      ...message('r', 'helper'),
+      parts: [reasoning],
+      status: 'streaming',
+    };
+    const { rerenderWith } = renderChat({
+      ...assistantChat,
+      messages: [thinking],
+      thinkingUntil: 'content',
+      expandsActivity: false,
+    });
+    const line = () => article('r').querySelector('.ui-chat__status');
+    expect(line()).toBeNull();
+    expect(screen.getByRole('button', { name: 'Thinking…' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    const writing = { ...thinking, parts: [{ type: 'text' as const, text: 'Two days' }] };
+    rerenderWith({ ...assistantChat, messages: [writing], thinkingUntil: 'end' });
+    expect(line()).toHaveAttribute('data-activity', 'writing');
+    expect(line()?.querySelector('.ui-chat-status-line__text')).toBeNull();
+    rerenderWith({
+      ...assistantChat,
+      messages: [{ ...writing, status: 'complete' }],
+      thinkingUntil: 'end',
+    });
+    expect(line()).toBeNull();
+  });
+
   it('UIC-CHAT-4.2 UIC-CHAT-5.1 shows the streaming reply’s status in the reply and the header', () => {
     const working = { ...awaiting, parts: [], statusText: 'Searching trains…' };
     const { container, rerenderWith } = renderChat({

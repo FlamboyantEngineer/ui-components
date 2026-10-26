@@ -18,6 +18,7 @@ import {
   sumStepDurations,
   toPartKey,
   type ChatPartsItem,
+  type ChatStepPart,
   type ChatStepsItem,
 } from './chat-parts-grouping.js';
 import { chatPartsHooks as hooks } from './chat-parts-hooks.js';
@@ -66,6 +67,8 @@ export interface ChatPartsProps extends BaseProps {
   isStreaming?: boolean | undefined;
   /** How text parts without their own `format` render. Defaults to `markdown`. */
   textFormat?: ChatTextFormat | undefined;
+  /** Reasoning and groups of steps open on their own while they run; without it they stay closed. Defaults to `true`. */
+  expandsActivity?: boolean | undefined;
   /** Renderers by tool name, which replace the body or the whole card of that tool's calls. */
   toolRenderers?: Readonly<Record<string, ChatToolRenderer>> | undefined;
   /** Approves a tool call; shows Approve while an approval waits. */
@@ -117,6 +120,12 @@ function listReveals(items: readonly ChatPartsItem[]): PartsReveal[] {
   );
 }
 
+/** The heading of the group's latest step when it is reasoning that streams. */
+function findStepsTitle(steps: readonly ChatStepPart[]): string | undefined {
+  const last = steps.at(-1);
+  return last?.type === 'reasoning' && last.status === 'streaming' ? last.title : undefined;
+}
+
 interface StepsViewProps {
   item: ChatStepsItem;
   isRunning: boolean;
@@ -133,10 +142,12 @@ function StepsView({ item, isRunning, context }: StepsViewProps) {
   return (
     <ChatSteps
       isRunning={isRunning}
+      title={findStepsTitle(item.steps)}
       durationMs={sumStepDurations(item.steps)}
       stepCount={item.steps.length}
       isExpanded={expansion.expanded[item.key] ?? (isCallingReader || undefined)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(item.key, isExpanded)}
+      expandsAutomatically={context.expandsActivity}
     >
       {item.steps.map((step, index) => (
         <ChatPartView key={toPartKey(step, index)} part={step} context={context} />
@@ -149,7 +160,8 @@ function StepsView({ item, isRunning, context }: StepsViewProps) {
  * The parts of one message, each drawn by the component for its type: text as Markdown (or plain
  * text) with code blocks, citations and token pills, reasoning, tool calls with their approvals and
  * renderers, questions, plans, sources, attachments, code, diffs and custom parts. Consecutive
- * reasoning and tool calls fold into a group of steps that runs while the message streams.
+ * reasoning and tool calls fold into a group of steps that runs while the message streams; both
+ * open on their own while they run, unless `expandsActivity` is false.
  */
 export function ChatParts({
   parts,

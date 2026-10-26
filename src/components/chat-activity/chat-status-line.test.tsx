@@ -44,6 +44,18 @@ describe('ChatStatusLine', () => {
     });
   });
 
+  it('UIC-CHAT-ACTIVITY-4.1 UIC-CHAT-ACTIVITY-4.2 shows the indicator alone while writing, announcing nothing', () => {
+    const { container, rerender } = render(<ChatStatusLine icon={<svg />} />);
+    const root = container.querySelector('.ui-chat-status-line');
+    expect(root).toHaveAttribute('data-activity', 'thinking');
+    rerender(<ChatStatusLine icon={<svg />} activity="writing" text="Searching trains…" />);
+    expect(root).toHaveAttribute('data-activity', 'writing');
+    expect(container.querySelector('.ui-chat-status-line__icon')).not.toBeNull();
+    expect(container.querySelector('.ui-chat-status-line__text')).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Thinking…');
+    expectHooksMatchSpec(container, 'CHAT-ACTIVITY', { slots: ['ui-chat-status-line__icon'] });
+  });
+
   it('UIC-CHAT-ACTIVITY-4.2 announces the text as it appears and changes, at most once every two seconds', () => {
     vi.useFakeTimers();
     const { rerender } = render(<ChatStatusLine text="Searching trains…" />);

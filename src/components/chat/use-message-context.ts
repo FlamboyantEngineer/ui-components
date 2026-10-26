@@ -3,7 +3,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import type { ChatFeedback } from '../chat-message-actions/chat-message-actions.js';
 import type { ChatCommandHandlers } from './chat-commands.js';
 import type { ChatComposerOptions } from './chat-composer.js';
-import type { ChatParticipantIndex } from './chat-model.js';
+import type { ChatParticipantIndex, ChatThinkingUntil } from './chat-model.js';
 import type { ChatMessageContext, ChatPartOptions } from './chat-message-view.js';
 import type { ChatState } from './use-chat-state.js';
 
@@ -22,6 +22,8 @@ export interface ChatMessageOptions
   thinkingText?: string | undefined;
   /** A decorative icon in place of the busy indicator while the assistant thinks. */
   thinkingIcon?: ReactNode;
+  /** Until what a reply's thinking line shows: its first `content`, its `text` or its `end`. Defaults to `text`. */
+  thinkingUntil?: ChatThinkingUntil | undefined;
 }
 
 /** The command handlers: each present while its callback is, calling the latest callback. */
@@ -74,11 +76,11 @@ export function useMessageContext(
     () => (hasRetry ? (id: string) => latest.current.onRetry?.(id) : undefined),
     [hasRetry, latest],
   );
-  const { textFormat, toolRenderers, renderPart, onApplyCode } = options;
+  const { textFormat, toolRenderers, renderPart, onApplyCode, expandsActivity } = options;
   const { onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion } = options;
   const parts = useMemo(
     () => ({
-      ...{ textFormat, toolRenderers, renderPart, onApplyCode },
+      ...{ textFormat, toolRenderers, renderPart, onApplyCode, expandsActivity },
       ...{ onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion },
     }),
     [
@@ -86,6 +88,7 @@ export function useMessageContext(
       toolRenderers,
       renderPart,
       onApplyCode,
+      expandsActivity,
       onApprove,
       onDeny,
       onAlwaysAllow,
@@ -94,12 +97,13 @@ export function useMessageContext(
     ],
   );
   const { conversationId, currentUserId, getNow, feedbackReasons } = options;
-  const { thinkingText, thinkingIcon } = options;
+  const { thinkingText, thinkingIcon, thinkingUntil = 'text' } = options;
   const { jumpTo, setExpandedParts } = state;
   return useMemo(
     () => ({
       ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
-      ...{ conversationId, parts, getNow, onRetry, thinkingText, thinkingIcon },
+      ...{ conversationId, parts, getNow, onRetry },
+      ...{ thinkingText, thinkingIcon, thinkingUntil },
       onQuotePress: jumpTo,
       onExpandedPartsChange: setExpandedParts,
     }),
@@ -115,6 +119,7 @@ export function useMessageContext(
       onRetry,
       thinkingText,
       thinkingIcon,
+      thinkingUntil,
       jumpTo,
       setExpandedParts,
     ],

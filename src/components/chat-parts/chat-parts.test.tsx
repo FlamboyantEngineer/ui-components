@@ -104,6 +104,22 @@ describe('ChatParts', () => {
     expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('UIC-CHAT-PARTS-5.2 labels a running group by its streaming reasoning’s title, closed without expandsActivity', () => {
+    const parts = [
+      call({ status: 'succeeded' }),
+      reasoning({ status: 'streaming', title: 'Weighing fares' }),
+    ];
+    const { container, rerender } = render(
+      <ChatParts parts={parts} isStreaming expandsActivity={false} />,
+    );
+    expect(stepsTrigger(container)).toHaveAccessibleName('Weighing fares');
+    expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatParts parts={parts} isStreaming />);
+    expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+    rerender(<ChatParts parts={[...parts.slice(0, 1), reasoning()]} isStreaming />);
+    expect(stepsTrigger(container)).toHaveAccessibleName('Working… · 2 steps');
+  });
+
   it('UIC-CHAT-PARTS-5.1 moves a single step into a group once a part follows it', () => {
     const { container, rerender } = render(
       <ChatParts parts={[reasoning({ status: 'streaming' })]} isStreaming />,

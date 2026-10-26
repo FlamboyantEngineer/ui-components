@@ -1,10 +1,10 @@
 // The Chat lab's thinking states: a reply that streams says what the assistant is thinking or
 // doing, inside the reply, until its text streams in.
 
-import type { ReactNode } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
+import { sparkle } from './chat-thinking-styles.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const states = [
@@ -29,13 +29,6 @@ const partsByState: Partial<Record<ThinkingState, ChatPart[]>> = {
   reasoning: [reasoning],
   writing: [{ type: 'text', text: 'Saturday morning suits the castle', status: 'streaming' }],
 };
-
-/** A decorative four-pointed star, standing in for a host's own icon. */
-const sparkle: ReactNode = (
-  <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" focusable="false">
-    <path d="M8 0l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" />
-  </svg>
-);
 
 /** The reader's question and the reply streaming in, with ids unique to the cell. */
 function thinkingMessages(state: ThinkingState): ChatMessageData[] {

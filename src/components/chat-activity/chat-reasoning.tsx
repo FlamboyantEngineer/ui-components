@@ -25,12 +25,13 @@ const hooks = createHooks('chat-reasoning', [
 ]);
 
 /**
- * An assistant's reasoning as a disclosure. While it streams it is open, labelled "Thinking…" and
- * busy, with the text coming in; once complete it collapses, labelled with how long it took. The
- * reader's own choice wins over both.
+ * An assistant's reasoning as a disclosure. While it streams it is open (unless it does not expand
+ * automatically), labelled by its `title` or "Thinking…" and busy, with the text coming in; once
+ * complete it collapses, labelled with how long it took. The reader's own choice wins over both.
  */
 export function ChatReasoning({
   text,
+  title,
   status,
   durationMs,
   format = 'markdown',
@@ -40,7 +41,7 @@ export function ChatReasoning({
   const strings = useUiStrings();
   const isStreaming = status === 'streaming';
   const label = isStreaming
-    ? strings.chatReasoningStreaming
+    ? title || strings.chatReasoningStreaming
     : strings.chatReasoningComplete(toWholeSeconds(durationMs));
   return (
     <ActivityDisclosure

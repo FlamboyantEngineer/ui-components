@@ -110,6 +110,40 @@ test.describe('Chat lab', () => {
     await lab.expectAccessible('[data-lab-section="Thinking"]');
   });
 
+  test('UIC-CHAT-4.2 UIC-CHAT-1.5 builds a summary style and an icon style of thinking', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const styles = section(page, 'Thinking styles');
+    const cell = (style: string, phase: string) =>
+      styles.locator(`[data-lab-cell="style=${style} phase=${phase}"]`);
+    const line = (style: string, phase: string) => cell(style, phase).locator('.ui-chat__status');
+    await expect(line('summary', 'waiting').locator('.ui-chat-status-line__text')).toHaveText(
+      'Thinking…',
+    );
+    await expect(line('summary', 'reasoning')).toHaveCount(0);
+    const reasoning = cell('summary', 'reasoning').getByRole('button', {
+      name: 'Weighing opening hours',
+    });
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'false');
+    await expect(reasoning.locator('.ui-chat-reasoning__label')).toHaveCSS(
+      'animation-name',
+      /shimmer/,
+    );
+    await expect(line('summary', 'writing')).toHaveCount(0);
+    await expect(line('icon', 'reasoning')).toHaveAttribute('data-activity', 'thinking');
+    await expect(line('icon', 'writing')).toHaveAttribute('data-activity', 'writing');
+    await expect(line('icon', 'writing').locator('.ui-chat-status-line__icon svg')).toBeVisible();
+    await expect(line('icon', 'writing').locator('.ui-chat-status-line__text')).toHaveCount(0);
+    await expect(line('icon', 'done')).toHaveCount(0);
+    const replay = page.locator('[data-lab-demo="thinking-icon"]');
+    await replay.getByRole('button', { name: 'Play icon style' }).click();
+    await expect(replay).toContainText('Phase: done', { timeout: 15_000 });
+    await expect(replay.locator('.ui-chat__status')).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-section="Thinking styles"]');
+  });
+
   test('UIC-CHAT-1.5 streams steps, a cited answer and its sources to the end', async ({
     page,
   }) => {
