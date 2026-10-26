@@ -1,6 +1,7 @@
 import { ChatParts, type ChatPart } from '../../src/components/chat-parts/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { KeptExpansion, MixedConversation, ToolRenderers } from './chat-parts-conversation.js';
+import { FailedRun, failedRunParts } from './chat-parts-failure.js';
 import {
   bookingCall,
   linesText,
@@ -13,7 +14,14 @@ import {
 } from './chat-parts-samples.js';
 import { StreamedAnswer } from './chat-parts-stream.js';
 
-const stepStates = ['running', 'answering', 'done', 'single', 'awaiting-approval'] as const;
+const stepStates = [
+  'running',
+  'answering',
+  'done',
+  'single',
+  'awaiting-approval',
+  'failed',
+] as const;
 
 const thinking: ChatPart = {
   type: 'reasoning',
@@ -41,6 +49,7 @@ const stepCases: Record<(typeof stepStates)[number], { parts: ChatPart[]; isStre
     },
     single: { parts: [{ type: 'text', text: 'Let me look.' }, running], isStreaming: true },
     'awaiting-approval': { parts: [thinking, bookingCall], isStreaming: false },
+    failed: { parts: failedRunParts, isStreaming: false },
   };
 
 const ignore = () => undefined;
@@ -87,7 +96,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps"
-      description="Consecutive reasoning and tool calls fold into a group of steps. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval. A single step that ends the message stays on its own."
+      description="Consecutive reasoning and tool calls fold into a group of steps. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval or once one in it failed. A single step that ends the message stays on its own."
     >
       <StateMatrix
         axes={{ state: stepStates, parts: ['rendered'] }}
@@ -114,6 +123,12 @@ mountLab(
       description="Press Next event (or Play) to stream a reply: the reasoning streams inside a running group of steps, a tool call runs, its sources arrive, then the answer streams with citations and the group collapses."
     >
       <StreamedAnswer />
+    </LabSection>
+    <LabSection
+      title="Failed step"
+      description="Press Next event (or Play) to stream a run whose hotel search fails between steps that succeed. The group stays open around the failure once the answer follows and the run finishes. Close the group while the hotel search runs and the failure opens it again; close it after the failure and it stays closed."
+    >
+      <FailedRun />
     </LabSection>
     <LabSection
       title="Mixed message"

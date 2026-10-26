@@ -82,3 +82,8 @@ export function isAwaitingApproval(step: ChatStepPart): boolean {
     step.approval?.decision === undefined
   );
 }
+
+/** A tool call that failed. */
+export function isFailedCall(step: ChatStepPart): boolean {
+  return step.type === 'tool-call' && step.status === 'failed';
+}

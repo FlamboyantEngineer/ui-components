@@ -1,5 +1,6 @@
 // A streamed answer, one event at a time: reasoning, a tool call and its sources, then text citing
 // them. The group of steps runs while it ends the message and collapses once the answer streams.
+// The player that steps through it also steps through the lab's other streamed replies.
 
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
@@ -12,6 +13,18 @@ import {
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { tripSources } from './chat-parts-samples.js';
+
+/** A reply after one event of its stream. */
+export type ReplyFrame = Pick<ChatMessageData, 'parts' | 'status' | 'statusText'>;
+
+export interface ReplyStreamProps {
+  /** The reply after each event. */
+  frames: readonly ReplyFrame[];
+  /** Names the demo, as its `data-lab-demo`. */
+  demo: string;
+  /** The reply's message id. */
+  messageId: string;
+}
 
 /** One tick of Play, in milliseconds. */
 const tick = 700;
@@ -55,8 +68,8 @@ const answerAt = (count: number, isDone = false): ChatPart => ({
 /** The search's sources, which arrive with its result, ahead of the answer that cites them. */
 const sources: ChatPart = { type: 'sources', id: 'sources', sources: tripSources };
 
-/** The reply after each event of the stream. */
-const frames: Array<Pick<ChatMessageData, 'parts' | 'status' | 'statusText'>> = [
+/** The answer after each event of its stream. */
+const answerFrames: ReplyFrame[] = [
   { parts: [reasoningAt(5)], status: 'streaming', statusText: 'Thinking…' },
   { parts: [reasoningAt(12)], status: 'streaming', statusText: 'Thinking…' },
   {
@@ -81,9 +94,13 @@ const frames: Array<Pick<ChatMessageData, 'parts' | 'status' | 'statusText'>> = 
   },
 ];
 
-/** The reply, streamed one event per press of Next (or per tick of Play). */
-export function StreamedAnswer() {
+/**
+ * A reply streamed one event per press of Next (or per tick of Play). Reset starts a new run, which
+ * forgets the reader's open and closed choices of the last one.
+ */
+export function ReplyStream({ frames, demo, messageId }: ReplyStreamProps) {
   const [event, setEvent] = useState(0);
+  const [run, setRun] = useState(0);
   const [isPlaying, setPlaying] = useState(false);
   const last = frames.length - 1;
   useEffect(() => {
@@ -98,7 +115,7 @@ export function StreamedAnswer() {
   const frame = frames[event]!;
   const isStreaming = frame.status === 'streaming';
   return (
-    <Stack space="sm" data-lab-demo="stream">
+    <Stack space="sm" data-lab-demo={demo}>
       <Cluster space="sm">
         <Button isDisabled={event >= last} onPress={() => setEvent(event + 1)}>
           Next event
@@ -110,6 +127,7 @@ export function StreamedAnswer() {
           onPress={() => {
             setPlaying(false);
             setEvent(0);
+            setRun(run + 1);
           }}
         >
           Reset
@@ -123,9 +141,14 @@ export function StreamedAnswer() {
         author={{ name: 'Trip planner', colorKey: 'planner' }}
         status={frame.status}
       >
-        <ChatParts parts={frame.parts} messageId="stream-reply" isStreaming={isStreaming} />
+        <ChatParts key={run} parts={frame.parts} messageId={messageId} isStreaming={isStreaming} />
       </ChatMessage>
       <ChatStatusLine text={frame.statusText ?? ''} isRunning={isStreaming} />
     </Stack>
   );
+}
+
+/** The answer, streamed one event at a time. */
+export function StreamedAnswer() {
+  return <ReplyStream frames={answerFrames} demo="stream" messageId="stream-reply" />;
 }

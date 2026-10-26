@@ -68,6 +68,60 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Streamed answer"]');
   });
 
+  test('UIC-CHAT-PARTS-5.4 keeps a failed step discoverable once the run finishes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    await expect(
+      cell(page, 'state=failed parts=rendered').locator('.ui-chat-steps'),
+    ).toHaveAttribute('data-expanded', 'true');
+    const run = demo(page, 'failed-run');
+    const next = run.getByRole('button', { name: 'Next event' });
+    const group = run.getByRole('button', { name: / · \d steps$/ });
+    await next.click();
+    await next.click();
+    await expect(group).toHaveAccessibleName('Working… · 4 steps');
+    await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
+    await next.click();
+    await expect(group).toHaveAccessibleName('Worked for 14 s · 4 steps');
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await next.click();
+    await expect(next).toBeDisabled();
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(
+      run.getByRole('button', { name: /^Search hotels in Porto Failed/ }),
+    ).toHaveAttribute('aria-expanded', 'true');
+    await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
+    await lab.expectAccessible('[data-lab-section="Failed step"]');
+  });
+
+  test('UIC-CHAT-PARTS-5.4 reopens a closed group for a new failure, then keeps the reader’s close', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const run = demo(page, 'failed-run');
+    const next = run.getByRole('button', { name: 'Next event' });
+    const group = run.getByRole('button', { name: / · \d steps$/ });
+    await next.click();
+    await expect(group).toHaveAccessibleName('Working… · 3 steps');
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await next.click();
+    await expect(group).toHaveAccessibleName('Working… · 4 steps');
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await next.click();
+    await next.click();
+    await expect(next).toBeDisabled();
+    await expect(group).toHaveAccessibleName('Worked for 14 s · 4 steps');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await expect(run.locator('.ui-chat-steps__panel')).toBeHidden();
+  });
+
   test('UIC-CHAT-PARTS-3.3 draws tool renderers in the card body and in place of the card', async ({
     page,
     lab,
