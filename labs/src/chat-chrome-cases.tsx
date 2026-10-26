@@ -6,6 +6,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { ChatList, type ChatConversation } from '../../src/components/chat-list/index.js';
 import type { ChatMessageData, ChatParticipant } from '../../src/components/chat-parts/index.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { usePeopleHost } from './chat-people-host.js';
 import { ana, ben, getLabNow, mia, reader, readerId, textMessage } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
@@ -122,7 +123,8 @@ function ConversationChat({ conversation }: { conversation: LabConversation }) {
 
 function ChromeDemo() {
   const [selectedId, setSelectedId] = useState('chrome-team');
-  const selected = conversations.find((entry) => entry.id === selectedId) ?? conversations[0]!;
+  const selected =
+    conversations.find((entry) => entry.id === selectedId) ?? requireDefined(conversations[0]);
   return (
     <div
       data-lab-demo="chrome"

@@ -12,6 +12,7 @@ import {
 } from '../../src/components/chat-parts/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { tripSources } from './chat-parts-samples.js';
 
 /** A reply after one event of its stream. */
@@ -112,7 +113,7 @@ export function ReplyStream({ frames, demo, messageId }: ReplyStreamProps) {
     const timer = window.setTimeout(() => setEvent((value) => value + 1), tick);
     return () => window.clearTimeout(timer);
   }, [event, isPlaying, last]);
-  const frame = frames[event]!;
+  const frame = requireDefined(frames[event]);
   const isStreaming = frame.status === 'streaming';
   return (
     <Stack space="sm" data-lab-demo={demo}>

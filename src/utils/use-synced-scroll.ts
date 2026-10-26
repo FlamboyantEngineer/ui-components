@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import { clamp } from './clamp.js';
 import type { Key } from '../core/props.js';
+import { requireDefined } from './require-defined.js';
 
 /** A container to keep aligned: the element, or a ref whose element is stable. */
 export type SyncedScrollTarget = HTMLElement | RefObject<HTMLElement | null> | null | undefined;
@@ -45,7 +46,7 @@ function findPair(pairs: ReadonlyArray<readonly [number, number]>, offset: numbe
   let found = -1;
   while (low <= high) {
     const middle = (low + high) >> 1;
-    if (pairs[middle]![0] <= offset) {
+    if (requireDefined(pairs[middle])[0] <= offset) {
       found = middle;
       low = middle + 1;
     } else {
@@ -74,7 +75,7 @@ export function mapScrollOffset(
   if (!first) return offset;
   const index = findPair(pairs, offset);
   if (index < 0) return first[1] - (first[0] - offset);
-  const [start, startTarget] = pairs[index]!;
+  const [start, startTarget] = requireDefined(pairs[index]);
   const next = pairs[index + 1];
   if (!next || next[0] <= start) return startTarget + (offset - start);
   return startTarget + ((offset - start) / (next[0] - start)) * (next[1] - startTarget);

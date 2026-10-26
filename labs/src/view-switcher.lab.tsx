@@ -8,6 +8,7 @@ import {
   type ViewSwitcherView,
 } from '../../src/components/view-switcher/view-switcher.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
 
@@ -57,7 +58,7 @@ function RecipeViews({ variant }: { variant: 'tabs' | 'menu' }) {
   const [selectedKey, setSelectedKey] = useState<Key>('all');
   const [defaultViewKey, setDefaultViewKey] = useState<Key>('all');
   const [drafts, setDrafts] = useState<Record<string, DisplayOptionsValue>>({});
-  const selected = views.find((view) => view.id === selectedKey) ?? views[0]!;
+  const selected = views.find((view) => view.id === selectedKey) ?? requireDefined(views[0]);
   const current = drafts[String(selected.id)] ?? selected.settings;
   const setCurrent = (settings: DisplayOptionsValue) =>
     setDrafts((all) => ({ ...all, [String(selected.id)]: settings }));
@@ -98,7 +99,7 @@ function RecipeViews({ variant }: { variant: 'tabs' | 'menu' }) {
         onDelete={(key) => {
           const rest = views.filter((view) => view.id !== key);
           setViews(rest);
-          if (key === selected.id) setSelectedKey(rest[0]!.id);
+          if (key === selected.id) setSelectedKey(requireDefined(rest[0]).id);
         }}
       >
         <DisplayOptions

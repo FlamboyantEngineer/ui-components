@@ -1,3 +1,4 @@
+import { requireDefined } from '../../utils/require-defined.js';
 // Pure geometry of drawn signatures: smoothed stroke paths and standalone SVG output.
 
 /** A signature drawn with a pointer: one SVG path per stroke, in a `width` × `height` space. */
@@ -71,11 +72,13 @@ export function formatSignatureStroke(points: readonly SignaturePoint[]): string
   if (!first) return '';
   if (rest.length === 0) return `M${formatPoint(first)} L${formatPoint(first)}`;
   const curves = rest.slice(0, -1).map((point, index) => {
-    const next = rest[index + 1]!;
+    const next = requireDefined(rest[index + 1]);
     const middle = { x: (point.x + next.x) / 2, y: (point.y + next.y) / 2 };
     return `Q${formatPoint(point)} ${formatPoint(middle)}`;
   });
-  return [`M${formatPoint(first)}`, ...curves, `L${formatPoint(rest.at(-1)!)}`].join(' ');
+  return [`M${formatPoint(first)}`, ...curves, `L${formatPoint(requireDefined(rest.at(-1)))}`].join(
+    ' ',
+  );
 }
 
 function escapeAttribute(value: string): string {

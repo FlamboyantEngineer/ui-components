@@ -1,5 +1,6 @@
 // Code completion text: the word before the caret, and snippets with their fields.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeRange } from './code-ranges.js';
 
 /** A snippet's text with its fields' defaults, and where each field sits in it. */
@@ -23,7 +24,7 @@ export function parseSnippet(snippet: string): ParsedSnippet {
   let text = '';
   let field: { start: number; source: number } | null = null;
   for (let index = 0; index < snippet.length; index += 1) {
-    const character = snippet[index]!;
+    const character = requireDefined(snippet[index]);
     if (character === '\\' && quotedCharacters.has(snippet[index + 1] ?? '')) {
       text += snippet[++index];
       continue;

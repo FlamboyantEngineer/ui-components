@@ -1,3 +1,4 @@
+import { requireDefined } from './require-defined.js';
 // Line, word and sequence diffs (specs/DIFF.md): Myers' algorithm in linear space.
 
 /** What a hunk does to the old text: keeps, inserts or deletes its content. */
@@ -79,9 +80,9 @@ function extend<T>(search: Bisection<T>, step: { d: number; k: number; isBackwar
   const { reach } = isBackward ? search.backward : search.forward;
   const index = offset + k;
   let x =
-    k === -d || (k !== d && reach[index - 1]! < reach[index + 1]!)
-      ? reach[index + 1]!
-      : reach[index - 1]! + 1;
+    k === -d || (k !== d && requireDefined(reach[index - 1]) < requireDefined(reach[index + 1]))
+      ? requireDefined(reach[index + 1])
+      : requireDefined(reach[index - 1]) + 1;
   let y = x - k;
   const at = (tokens: readonly T[], position: number) =>
     tokens[isBackward ? tokens.length - 1 - position : position];

@@ -10,6 +10,7 @@ import {
 } from '../../src/components/dashboard-grid/dashboard-grid.js';
 import { DashboardTile } from '../../src/components/dashboard-grid/dashboard-tile.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const titles: Record<string, string> = {
@@ -95,7 +96,7 @@ function EditableOverview() {
       >
         {(item) => (
           <DashboardTile
-            label={titles[item.id]!}
+            label={requireDefined(titles[item.id])}
             minColumnSpan={item.id === 'crates' || item.id === 'results' ? 3 : 2}
           >
             <TileContent id={String(item.id)} />

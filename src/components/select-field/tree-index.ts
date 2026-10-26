@@ -2,6 +2,7 @@
 // descendants, and the chosen keys read and changed against them.
 
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** A loaded node: the item, its parent's key (`null` at the top) and its place in reading order. */
 export interface TreeIndexEntry<T> {
@@ -45,7 +46,7 @@ export function indexTreeItems<T extends { id: Key }>(
   const index = new Map<Key, TreeIndexEntry<T>>();
   const stack = [{ items, parent: null as Key | null, position: 0 }];
   while (stack.length > 0) {
-    const frame = stack.at(-1)!;
+    const frame = requireDefined(stack.at(-1));
     const item = frame.items[frame.position++];
     if (!item) {
       stack.pop();

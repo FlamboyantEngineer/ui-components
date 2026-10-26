@@ -8,6 +8,7 @@ import {
   type CompareTreeNode,
   type ComparedTreeRow,
 } from '../../utils/compare-trees.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import { Tree } from '../tree/tree.js';
 import {
@@ -181,7 +182,7 @@ export function TreeCompare<T extends CompareTreeNode>(props: TreeCompareProps<T
           row.counterpartId === undefined ? null : (
             <TreeCompareJump
               isOldPosition={row.right === undefined}
-              onPress={() => navigation.reveal(row.counterpartId!)}
+              onPress={() => navigation.reveal(requireDefined(row.counterpartId))}
             />
           )
         }

@@ -60,7 +60,9 @@ describe('ChatTranscript history', () => {
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['history'] });
     rerender(<History {...props} first={11} />);
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(screen.getByRole('status')).toHaveTextContent('10 older messages loaded');
     expect(onLoadOlder).toHaveBeenCalledTimes(1);
     scrollViewport(viewport, 0);
@@ -151,7 +153,9 @@ describe('ChatTranscript history', () => {
       </ChatTranscript>
     );
     const { rerender } = render(thread());
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(onRead).toHaveBeenLastCalledWith('w-f');
     rerender(thread('w-a'));
     expect(article('w-a')).toHaveAttribute('data-highlighted', 'true');

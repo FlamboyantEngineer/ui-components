@@ -4,6 +4,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps, SelectionProps } from '../../core/events.js';
 import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { TimelineChart, type TimelineChartActions } from './timeline-chart.js';
 import {
   type TimelineDependency,
@@ -88,7 +89,7 @@ function useItemSelection(
     else next.add(id);
     setSelected(next);
   };
-  const replace = (keys: Selection) => setSelected(toKeySet(keys, items)!);
+  const replace = (keys: Selection) => setSelected(requireDefined(toKeySet(keys, items)));
   return { selectionMode, selected, toggle, replace };
 }
 

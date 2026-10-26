@@ -1,6 +1,7 @@
 // The folder tree a folder manager shows: the caller's folders, an optional root row standing for
 // "no folder", the draft row of a folder being created, and the folders a filter keeps.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { mapTree } from '../../utils/map-tree.js';
 import type { Key } from '../../core/props.js';
@@ -105,7 +106,7 @@ export function findFolderPath<T extends FolderItem>(folders: readonly T[], key:
   const levels = [folders[Symbol.iterator]()];
   const path: T[] = [];
   while (levels.length > 0) {
-    const next = levels.at(-1)!.next();
+    const next = requireDefined(levels.at(-1)).next();
     if (next.done) {
       levels.pop();
       continue;
@@ -124,7 +125,7 @@ export function getFolderHeight(folder: FolderItem): number {
   let height = 0;
   const levels = [[folder][Symbol.iterator]()];
   while (levels.length > 0) {
-    const next = levels.at(-1)!.next();
+    const next = requireDefined(levels.at(-1)).next();
     if (next.done) {
       levels.pop();
       continue;
@@ -173,7 +174,7 @@ export function listFolderDestinations<T extends FolderItem>(
   const levels = [folders[Symbol.iterator]()];
   const path: string[] = [];
   while (levels.length > 0) {
-    const next = levels.at(-1)!.next();
+    const next = requireDefined(levels.at(-1)).next();
     if (next.done) {
       levels.pop();
       continue;

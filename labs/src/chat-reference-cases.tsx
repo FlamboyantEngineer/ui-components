@@ -8,6 +8,7 @@ import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-p
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import {
   assistantPeople,
   nextLabId,
@@ -51,7 +52,10 @@ const initialMessages: Record<string, readonly ChatMessageData[]> = {
         {
           type: 'text',
           text: firstText,
-          tokens: [referenceOver(firstText, trip!), referenceOver(firstText, note!)],
+          tokens: [
+            referenceOver(firstText, requireDefined(trip)),
+            referenceOver(firstText, requireDefined(note)),
+          ],
         },
       ],
     },

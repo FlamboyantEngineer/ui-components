@@ -110,7 +110,8 @@ describe('useChatController runs', () => {
     expect(result.current.messages[1]).toMatchObject({ status: 'error', error: 'Network down.' });
 
     const silent: ChatSendFunction = () => {
-      throw 'nope';
+      const thrown: unknown = 'nope';
+      throw thrown;
     };
     const view = renderController({ send: silent });
     act(() => view.result.current.send('Plan dinner'));

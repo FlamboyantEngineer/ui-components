@@ -13,14 +13,20 @@ describe('Combobox opening', () => {
       const { rerender } = render(<Combobox label="Fruit" defaultItems={items} isOpen />);
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
       rerender(<Combobox label="Fruit" defaultItems={items} isOpen {...{ [lock]: true }} />);
-      act(() => vi.advanceTimersToNextFrame());
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
       rerender(<Combobox label="Fruit" defaultItems={items} isOpen={false} />);
-      act(() => vi.advanceTimersToNextFrame());
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
       rerender(<Combobox label="Fruit" defaultItems={items} isOpen />);
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-      act(() => vi.advanceTimersToNextFrame());
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
       expect(screen.getByRole('option', { name: 'Apple' })).toBeInTheDocument();
     },
   );

@@ -44,9 +44,13 @@ describe('useClipboard', () => {
     expect(written).toEqual(['Report.pdf']);
     expect(result.current.status).toBe('copied');
 
-    act(() => vi.advanceTimersByTime(DEFAULT_COPY_TIMEOUT - 1));
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_COPY_TIMEOUT - 1);
+    });
     expect(result.current.status).toBe('copied');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(result.current.status).toBe('idle');
   });
 
@@ -56,15 +60,21 @@ describe('useClipboard', () => {
     await act(async () => {
       await result.current.copy('Lisbon');
     });
-    act(() => vi.advanceTimersByTime(400));
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
     await act(async () => {
       await result.current.copy('Porto');
     });
-    act(() => vi.advanceTimersByTime(400));
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
     expect(result.current.status).toBe('copied');
     act(() => result.current.reset());
     expect(result.current.status).toBe('idle');
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(result.current.status).toBe('idle');
   });
 
@@ -91,13 +101,17 @@ describe('useClipboard', () => {
       expect(await latest).toBe(true);
     });
     expect(result.current.status).toBe('copied');
-    act(() => vi.advanceTimersByTime(DEFAULT_COPY_TIMEOUT - 1));
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_COPY_TIMEOUT - 1);
+    });
     await act(async () => {
       writes[0]?.reject(new Error('Denied'));
       expect(await earlier).toBe(false);
     });
     expect(result.current.status).toBe('copied');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(result.current.status).toBe('idle');
   });
 

@@ -1,6 +1,7 @@
 // JSON text read as a tree with source offsets, and the place a caret is at in text that may not
 // parse yet: the path of the value it is in and whether it is at a key or a value.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import { placeJsonTokens, type PlacedJsonToken } from './json-text.js';
 
 /** A JSON value and where its text is. */
@@ -53,7 +54,7 @@ function appendNode(node: JsonNode, frame: ReadFrame | undefined) {
   if (!frame) return;
   if (frame.node.kind === 'array') frame.node.items.push(node);
   else {
-    const key = frame.key!;
+    const key = requireDefined(frame.key);
     frame.node.properties.push({
       key: JSON.parse(key.text) as string,
       start: key.offset,
@@ -72,7 +73,7 @@ function readTree(tokens: readonly PlacedJsonToken[]): JsonNode | null {
     const frame = stack.at(-1);
     if (token.text === ':' || token.text === ',') continue;
     if (token.text === '}' || token.text === ']') {
-      frame!.node.end = token.offset + 1;
+      requireDefined(frame).node.end = token.offset + 1;
       stack.pop();
       continue;
     }

@@ -371,9 +371,13 @@ describe('LoadingOverlay presence', () => {
     expect(region).not.toHaveAttribute('data-loading');
     expect(content).not.toHaveAttribute('inert');
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
-    act(() => vi.advanceTimersByTime(299));
+    act(() => {
+      vi.advanceTimersByTime(299);
+    });
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(region).toHaveAttribute('aria-busy', 'true');
     expect(content).toHaveAttribute('inert');
     expect(region.querySelector('.ui-loading-overlay')).not.toBeNull();
@@ -389,19 +393,25 @@ describe('LoadingOverlay presence', () => {
         <button type="button">Edit</button>
       </LoadingRegion>,
     );
-    act(() => vi.advanceTimersByTime(200));
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     rerender(
       <LoadingRegion delay={300} label="Loading">
         <button type="button">Edit</button>
       </LoadingRegion>,
     );
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(region).not.toHaveAttribute('aria-busy');
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
 
     rerender(<LoadingOverlay delay={300} label="Loading" />);
     expect(container.querySelector('.ui-loading-overlay')).toBeNull();
-    act(() => vi.advanceTimersByTime(300));
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
     expect(container.querySelector('.ui-loading-overlay')).not.toBeNull();
   });
 });

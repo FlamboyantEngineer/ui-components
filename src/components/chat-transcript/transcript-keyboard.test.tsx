@@ -228,9 +228,13 @@ describe('ChatTranscript keyboard', () => {
     act(() => last.focus());
     await user.keyboard('{PageUp}');
     scrollViewport(viewport, 120);
-    act(() => vi.advanceTimersByTime(149));
+    act(() => {
+      vi.advanceTimersByTime(149);
+    });
     expect(last).toHaveFocus();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(within(feed).getByText('Message 4').closest('article')).toHaveFocus();
     expect(viewport.scrollTop).toBe(120);
   });

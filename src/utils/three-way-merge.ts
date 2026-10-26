@@ -2,6 +2,7 @@
 // walked together into clean chunks and conflicts.
 
 import { diffSequences, splitLines } from './diff.js';
+import { requireDefined } from './require-defined.js';
 
 /**
  * What a chunk of a three-way merge holds: lines no side changed (`unchanged`), a change one side
@@ -78,11 +79,11 @@ function applyChanges(
   const lines: string[] = [];
   let position = span.start;
   for (const change of changes) {
-    for (; position < change.start; position += 1) lines.push(base[position]!);
+    for (; position < change.start; position += 1) lines.push(requireDefined(base[position]));
     for (const line of change.lines) lines.push(line);
     position = change.end;
   }
-  for (; position < span.end; position += 1) lines.push(base[position]!);
+  for (; position < span.end; position += 1) lines.push(requireDefined(base[position]));
   return lines;
 }
 
@@ -115,7 +116,7 @@ function takeChunk(queues: ChangeQueues, positions: Record<keyof ChangeQueues, n
     (queues.ours[positions.ours]?.start ?? Infinity)
       ? 'theirs'
       : 'ours';
-  const first = queues[side][positions[side]++]!;
+  const first = requireDefined(queues[side][positions[side]++]);
   const taken: ChangeQueues = { ours: [], theirs: [] };
   taken[side].push(first);
   const span = { start: first.start, end: first.end };

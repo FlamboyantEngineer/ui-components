@@ -6,6 +6,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat, type ChatProps } from '../../src/components/chat/index.js';
 import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
@@ -137,7 +138,7 @@ function StyleReplay({ style }: { style: ThinkingStyle }) {
         </Button>
         <span>Phase: {phases[index]}</span>
       </Cluster>
-      <StyleChat style={style} phase={phases[index]!} id={`replay-${style}`} />
+      <StyleChat style={style} phase={requireDefined(phases[index])} id={`replay-${style}`} />
     </Stack>
   );
 }

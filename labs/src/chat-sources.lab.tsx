@@ -6,6 +6,7 @@ import {
   type ChatSource,
 } from '../../src/components/chat-sources/index.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sources: ChatSource[] = [
@@ -75,9 +76,10 @@ mountLab(
     >
       <p data-lab-demo="citations" style={{ maxWidth: 560 }}>
         Winters are mild
-        <ChatCitation source={sources[0]!} index={1} />, trains run hourly
-        <ChatCitation source={sources[1]!} index={2} />, and the notes say to pack layers
-        <ChatCitation source={sources[2]!} index={3} />.
+        <ChatCitation source={requireDefined(sources[0])} index={1} />, trains run hourly
+        <ChatCitation source={requireDefined(sources[1])} index={2} />, and the notes say to pack
+        layers
+        <ChatCitation source={requireDefined(sources[2])} index={3} />.
       </p>
     </LabSection>
     <LabSection

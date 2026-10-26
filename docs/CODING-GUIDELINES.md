@@ -26,7 +26,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **S2. A component directory contains** `index.ts`, the main module `<name>.tsx`, optional helper modules, and the unit tests `<module>.test.ts(x)` beside the modules they test. **(enforced)**
 
-**S3. `index.ts` only re-exports** the public API with named `export … from` statements. No default exports anywhere. **(enforced)**
+**S3. `index.ts` only re-exports** the public API with named `export … from` statements. No default exports anywhere (TS7). **(enforced)**
 
 **S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules. Relative imports end in `.js`; types use `import type`. **(enforced: lint)**
 
@@ -68,3 +68,67 @@ export interface ButtonProps
 **C4. Comments explain why, not what.** Document public props in one line of TSDoc; comment only non-obvious constraints and workarounds. No commented-out code, no narration, no decorative separators.
 
 **C5. No dead code.** No unused exports, parameters, branches or files. **(enforced: lint for unused code)**
+
+## TypeScript
+
+Adapted from the agent-rules TypeScript set ([coding-rules/README.md](coding-rules/README.md)). They apply to every TypeScript file. The enforced ones run in `npm run lint` through the `ui-components/typescript` configs in `eslint.config.js`, which load the TypeScript program; ESLint runs with a 6 GB heap for that reason.
+
+**TS1. `strict` stays on.** Do not weaken `tsconfig.json` to make a file compile.
+
+**TS2. No `any`.** Use `unknown` and narrow it; wrap a third-party `any` at the boundary that receives it. **(enforced: `@typescript-eslint/no-explicit-any`)**
+
+**TS3. No non-null assertions (`value!`).** Narrow the value, restructure so the type proves it, or throw an `Error` where the invariant would break. **(enforced: `@typescript-eslint/no-non-null-assertion`, except in tests for now)**
+
+**TS4. No `@ts-ignore` or `@ts-nocheck`.** A `@ts-expect-error` carries a description of what removes it. **(enforced: `@typescript-eslint/ban-ts-comment`)**
+
+**TS5. Import a type-only binding with `import type`** (S4). **(enforced: `@typescript-eslint/consistent-type-imports`)**
+
+**TS6. No `enum`.** Use a string-literal union, or an `as const` object with a derived type. **(enforced)**
+
+**TS7. Named exports only.** A default export is allowed only where a loader requires it: the Vitest and Playwright configuration files. **(enforced: `no-restricted-exports`)**
+
+**TS8. A `switch` over a union handles every member,** or ends in a `default` that handles the rest on purpose. **(enforced: `@typescript-eslint/switch-exhaustiveness-check`)**
+
+**TS9. No floating promises.** `await` a promise, return it, or mark a deliberately detached one with `void` and handle its rejection. Do not pass an async function where the callee expects a synchronous callback. **(enforced: `@typescript-eslint/no-floating-promises`, `@typescript-eslint/no-misused-promises`)**
+
+**TS10. Throw and reject with `Error` objects,** never strings or plain objects. Rethrowing a caught `unknown` value is allowed. **(enforced: `@typescript-eslint/only-throw-error`, `@typescript-eslint/prefer-promise-reject-errors`)**
+
+**TS11. When a `catch` block throws a new error, attach the caught one as `{ cause }`.** **(enforced: `preserve-caught-error`)**
+
+**TS12. Return a discriminated result for expected failures** a caller branches on (`{ ok: true, value } | { ok: false, error }`) instead of throwing.
+
+**TS13. Prefer `type` for unions and derived shapes,** and `interface` for object shapes callers extend, such as props (N4, I2).
+
+**TS14. Give an exported function an explicit return type** when the inferred one is a wide object or a promise the caller must branch on.
+
+## Node scripts
+
+Adapted from the agent-rules Node.js set. They apply to `scripts/` and the configuration files; library source runs in the browser and never reads `process.env` or Node APIs.
+
+**R1. Target the Node version in `package.json` `engines`** (Node 22).
+
+**R2. Read options from arguments,** and environment variables only at the script's entry point, with a default.
+
+**R3. Fail loudly.** A check exits non-zero with a message naming the file and the rule it broke; an unexpected failure stays an `Error` with its original `cause`.
+
+**R4. Scripts that write files can run twice with the same result,** and a script that deletes files deletes only build output.
+
+## Security
+
+Adapted from the agent-rules security set. They apply everywhere.
+
+**SEC1. Markup from the host is untrusted.** Render text as text. Markup components parse what they render through the library's sanitizer (`sanitize-html.ts`) or their own allow-list parser; never pass unsanitized input to `dangerouslySetInnerHTML`.
+
+**SEC2. No `eval`, `new Function` or string timers.**
+
+**SEC3. Component validation is a convenience for the reader, never proof.** Do not describe it as a security check; the host validates on its server.
+
+**SEC4. Keep secrets and tokens out of the repository and out of browser storage.** Persisted state goes through the provider storage adapter.
+
+**SEC5. Pass shell arguments as arrays** (`execFileSync(command, args)`), never as a concatenated command string.
+
+**SEC6. Add dependencies through `npm`** so the lockfile records them.
+
+## Design
+
+**D1. Design for less complexity.** New and touched code follows [coding-rules/a-philosophy-of-software-design.mini.md](coding-rules/a-philosophy-of-software-design.mini.md), vendored unchanged from agent-rules-books. It is review guidance, not lint. In short: measure a design by the complexity a reader must carry, prefer deep modules with small interfaces over pass-through layers, keep each decision inside the module that owns it, define invalid states away rather than making callers defend against them, and use names and comments to state contracts, not mechanics. Where it overlaps a numbered rule, the numbered rule wins.

@@ -2,6 +2,7 @@
 // the chosen keys by a drop or by one step.
 
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** A drop that places `keys` before or after `targetKey`. */
 export interface TransferDrop {
@@ -59,7 +60,7 @@ export function canStepChosenKeys(
 ): boolean {
   if (selected.size === 0) return false;
   for (let index = 0; index < chosen.length; index += 1) {
-    const key = chosen[index]!;
+    const key = requireDefined(chosen[index]);
     const neighbor = chosen[index + step];
     if (neighbor !== undefined && selected.has(key) && !selected.has(neighbor)) return true;
   }

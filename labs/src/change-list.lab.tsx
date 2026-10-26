@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { ChangeList, type ChangeListChange } from '../../src/components/change-list/change-list.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -61,7 +62,7 @@ const revisions = [
 /** The changes between two revisions of a record, one step at a time. */
 function Revisions() {
   const [step, setStep] = useState(1);
-  const [before, after] = [revisions[step - 1]!, revisions[step]!];
+  const [before, after] = [requireDefined(revisions[step - 1]), requireDefined(revisions[step])];
   const diff: ChangeListChange[] = (['title', 'servings', 'notes'] as const)
     .filter((key) => before[key] !== after[key])
     .map((key) => ({

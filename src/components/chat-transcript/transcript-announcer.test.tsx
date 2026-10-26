@@ -80,12 +80,16 @@ describe('ChatTranscript announcements', () => {
     ];
     rerender(<Conversation lines={second} />);
     expect(announcer()).toHaveTextContent('New message from Ana Lima: Booked.');
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(announcer()).toHaveTextContent(/^2 new messages$/);
     rerender(
       <Conversation lines={[...second, { id: 'n5', text: 'Ok', origin: 'sent' as const }]} />,
     );
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(announcer()).toHaveTextContent(/^2 new messages$/);
   });
 
@@ -97,13 +101,19 @@ describe('ChatTranscript announcements', () => {
     const { rerender } = render(<Conversation lines={history} />);
     rerender(<Conversation lines={reply('The train', 'streaming')} />);
     rerender(<Conversation lines={reply('The train leaves', 'streaming')} />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(announcer()).toHaveTextContent(/^$/);
     rerender(<Conversation lines={reply('The train leaves at nine.', 'complete')} />);
     expect(announcer()).toHaveTextContent('New message from Helper: The train leaves at nine.');
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     rerender(<Conversation lines={reply('The train leaves at nine.', 'complete')} />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(announcer()).toHaveTextContent('New message from Helper: The train leaves at nine.');
   });
 
@@ -112,7 +122,9 @@ describe('ChatTranscript announcements', () => {
     const { rerender } = render(<Conversation lines={history} />);
     rerender(<Conversation lines={[...history, notice]} />);
     expect(announcer()).toHaveTextContent(/^New message: Ben Okafor joined\.$/);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     rerender(<Conversation lines={[...history, notice, { ...notice, id: 'n2' }]} />);
     // The repeat differs by an invisible character, so the live region changes and reads it.
     expect(announcer()).toHaveTextContent(/^New message: Ben Okafor joined\.\u200b$/, {

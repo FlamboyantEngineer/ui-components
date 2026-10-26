@@ -2,6 +2,7 @@ import { useId, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { useSyncedScroll, type ScrollAnchor } from '../../utils/use-synced-scroll.js';
 import { Button } from '../button/button.js';
 import type { MergeSide } from './merge-blocks.js';
@@ -65,7 +66,7 @@ function usePanes(): (index: number) => (element: HTMLElement | null) => void {
     [],
   );
   useSyncedScroll(panes, { getAnchors: readChunkAnchors });
-  return (index) => setters[index]!;
+  return (index) => requireDefined(setters[index]);
 }
 
 function MergeViewHeader(props: {

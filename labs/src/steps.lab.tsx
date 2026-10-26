@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Steps, type StepsItem, type StepsStatus } from '../../src/components/steps/steps.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const importSteps: StepsItem[] = [
@@ -80,10 +81,10 @@ mountLab(
         render={({ state }) => (
           <Steps
             items={[
-              { ...importSteps[0]!, isDisabled: state === 'one disabled' },
-              { ...importSteps[1]!, status: 'error' },
-              { ...importSteps[2]!, status: 'skipped' },
-              importSteps[3]!,
+              { ...requireDefined(importSteps[0]), isDisabled: state === 'one disabled' },
+              { ...requireDefined(importSteps[1]), status: 'error' },
+              { ...requireDefined(importSteps[2]), status: 'skipped' },
+              requireDefined(importSteps[3]),
             ]}
             currentId="import"
             orientation="vertical"

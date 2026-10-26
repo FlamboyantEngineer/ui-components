@@ -3,6 +3,7 @@
 
 import type { Key, Orientation } from '../core/props.js';
 import { findMaximum } from './find-maximum.js';
+import { requireDefined } from './require-defined.js';
 
 export interface LayeredLayoutNode {
   id: Key;
@@ -51,7 +52,7 @@ function buildGraph(
     const from = index.get(edge.source);
     const to = index.get(edge.target);
     if (from === undefined || to === undefined || from === to) continue;
-    next[from]!.add(to);
+    requireDefined(next[from]).add(to);
   }
   return next.map((targets) => [...targets]);
 }
@@ -64,15 +65,15 @@ function breakCycles(graph: Graph): Graph {
     const stack: Array<{ node: number; edge: number }> = [{ node: start, edge: 0 }];
     state[start] = 1;
     while (stack.length > 0) {
-      const frame = stack.at(-1)!;
-      const to = graph[frame.node]![frame.edge++];
+      const frame = requireDefined(stack.at(-1));
+      const to = requireDefined(graph[frame.node])[frame.edge++];
       if (to === undefined) {
         state[frame.node] = 2;
         stack.pop();
       } else if (state[to] === 1) {
-        next[to]!.add(frame.node);
+        requireDefined(next[to]).add(frame.node);
       } else {
-        next[frame.node]!.add(to);
+        requireDefined(next[frame.node]).add(to);
         if (state[to] === 0) {
           state[to] = 1;
           stack.push({ node: to, edge: 0 });
@@ -90,14 +91,15 @@ function breakCycles(graph: Graph): Graph {
  */
 function assignLayers(graph: Graph): number[] {
   const incoming = new Array<number>(graph.length).fill(0);
-  for (const targets of graph) for (const to of targets) incoming[to]! += 1;
+  for (const targets of graph)
+    for (const to of targets) incoming[to] = requireDefined(incoming[to]) + 1;
   const layers = new Array<number>(graph.length).fill(0);
   const ready = incoming.flatMap((count, node) => (count === 0 ? [node] : []));
   for (let head = 0; head < ready.length; head += 1) {
-    const node = ready[head]!;
-    for (const to of graph[node]!) {
-      layers[to] = Math.max(layers[to]!, layers[node]! + 1);
-      incoming[to]! -= 1;
+    const node = requireDefined(ready[head]);
+    for (const to of requireDefined(graph[node])) {
+      layers[to] = Math.max(requireDefined(layers[to]), requireDefined(layers[node]) + 1);
+      incoming[to] = requireDefined(incoming[to]) - 1;
       if (incoming[to] === 0) ready.push(to);
     }
   }
@@ -108,12 +110,12 @@ function assignLayers(graph: Graph): number[] {
 function sortByBarycentre(layer: number[], neighbours: number[][], positions: number[]): void {
   const centre = new Map(
     layer.map((node, index) => {
-      const around = neighbours[node]!;
-      const sum = around.reduce((total, other) => total + positions[other]!, 0);
+      const around = requireDefined(neighbours[node]);
+      const sum = around.reduce((total, other) => total + requireDefined(positions[other]), 0);
       return [node, around.length > 0 ? sum / around.length : index] as const;
     }),
   );
-  layer.sort((a, b) => centre.get(a)! - centre.get(b)!);
+  layer.sort((a, b) => requireDefined(centre.get(a)) - requireDefined(centre.get(b)));
   layer.forEach((node, index) => (positions[node] = index));
 }
 
@@ -123,15 +125,17 @@ function orderLayers(graph: Graph, layers: number[]): number[][] {
   layers.forEach((layer, node) => (ordered[layer] ??= []).push(node));
   const rows = Array.from(ordered, (row) => row ?? []);
   const previous = graph.map(() => [] as number[]);
-  graph.forEach((targets, node) => targets.forEach((to) => previous[to]!.push(node)));
+  graph.forEach((targets, node) =>
+    targets.forEach((to) => requireDefined(previous[to]).push(node)),
+  );
   const positions = new Array<number>(graph.length).fill(0);
   rows.forEach((row) => row.forEach((node, index) => (positions[node] = index)));
   for (let sweep = 0; sweep < sweeps; sweep += 1) {
     for (let row = 1; row < rows.length; row += 1) {
-      sortByBarycentre(rows[row]!, previous, positions);
+      sortByBarycentre(requireDefined(rows[row]), previous, positions);
     }
     for (let row = rows.length - 2; row >= 0; row -= 1) {
-      sortByBarycentre(rows[row]!, graph, positions);
+      sortByBarycentre(requireDefined(rows[row]), graph, positions);
     }
   }
   return rows;
@@ -152,7 +156,8 @@ export function layoutLayeredGraph(options: LayeredLayoutOptions): LayeredLayout
   const breadth = (node: LayeredLayoutNode) => (isHorizontal ? node.height : node.width);
   const extents = rows.map((row) =>
     row.reduce(
-      (total, node, index) => total + breadth(nodes[node]!) + (index > 0 ? nodeGap : 0),
+      (total, node, index) =>
+        total + breadth(requireDefined(nodes[node])) + (index > 0 ? nodeGap : 0),
       0,
     ),
   );
@@ -160,16 +165,16 @@ export function layoutLayeredGraph(options: LayeredLayoutOptions): LayeredLayout
   const places = new Array<{ along: number; across: number }>(nodes.length);
   let along = 0;
   rows.forEach((row, layer) => {
-    let across = (widest - extents[layer]!) / 2;
+    let across = (widest - requireDefined(extents[layer])) / 2;
     for (const node of row) {
       places[node] = { along, across };
-      across += breadth(nodes[node]!) + nodeGap;
+      across += breadth(requireDefined(nodes[node])) + nodeGap;
     }
-    along += findMaximum(row, (node) => depth(nodes[node]!), 0) + layerGap;
+    along += findMaximum(row, (node) => depth(requireDefined(nodes[node])), 0) + layerGap;
   });
   return nodes.map((node, index) => {
-    const place = places[index]!;
+    const place = requireDefined(places[index]);
     const [x, y] = isHorizontal ? [place.along, place.across] : [place.across, place.along];
-    return { id: node.id, x, y, layer: layers[index]! };
+    return { id: node.id, x, y, layer: requireDefined(layers[index]) };
   });
 }

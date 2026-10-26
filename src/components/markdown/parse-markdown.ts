@@ -1,6 +1,7 @@
 // A dependency-free Markdown parser: CommonMark's blocks and inlines plus tables, task lists and
 // strikethrough, read into a plain, frozen tree (specs/MARKDOWN.md). It never touches the DOM.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   readAtx,
   readFencedCode,
@@ -43,7 +44,7 @@ function queueBlocks(frames: BlockFrame[], lines: readonly string[]): MarkdownBl
 
 function readBlocks(frames: BlockFrame[], context: BlockContext) {
   while (frames.length > 0) {
-    const frame = frames.at(-1)!;
+    const frame = requireDefined(frames.at(-1));
     const { lines } = frame;
     if (frame.index >= lines.length) {
       frames.pop();
@@ -63,8 +64,8 @@ function readBlocks(frames: BlockFrame[], context: BlockContext) {
     }
     // A list queues several items together: parse them in source order before resuming the parent.
     for (let first = queuedAt, last = frames.length - 1; first < last; first += 1, last -= 1) {
-      const swap = frames[first]!;
-      frames[first] = frames[last]!;
+      const swap = requireDefined(frames[first]);
+      frames[first] = requireDefined(frames[last]);
       frames[last] = swap;
     }
   }

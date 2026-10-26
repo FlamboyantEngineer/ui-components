@@ -649,11 +649,17 @@ describe('ScrollRegion', () => {
       expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
       fireEvent.scroll(document.getElementById('log')!);
       expect(container.querySelector('.ui-scroll-region__track')).not.toBeNull();
-      act(() => vi.advanceTimersByTime(399));
+      act(() => {
+        vi.advanceTimersByTime(399);
+      });
       fireEvent.scroll(document.getElementById('log')!);
-      act(() => vi.advanceTimersByTime(399));
+      act(() => {
+        vi.advanceTimersByTime(399);
+      });
       expect(container.querySelector('.ui-scroll-region__track')).not.toBeNull();
-      act(() => vi.advanceTimersByTime(1));
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
       expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
     } finally {
       vi.useRealTimers();
@@ -688,9 +694,13 @@ describe('ScrollRegion', () => {
       expect(track()).not.toBeNull();
       await user.unhover(root);
       expect(root).not.toHaveAttribute('data-hovering');
-      act(() => vi.advanceTimersByTime(599));
+      act(() => {
+        vi.advanceTimersByTime(599);
+      });
       expect(track()).not.toBeNull();
-      act(() => vi.advanceTimersByTime(1));
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
       expect(track()).toBeNull();
 
       // eslint-disable-next-line testing-library/prefer-user-event -- user-event has no pen pointer
@@ -699,7 +709,9 @@ describe('ScrollRegion', () => {
       act(() => thumb('menu')!.focus());
       // eslint-disable-next-line testing-library/prefer-user-event -- user-event has no pen pointer
       fireEvent.pointerLeave(root, { pointerType: 'pen' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(track()).not.toBeNull();
       act(() => thumb('menu')!.blur());
       expect(track()).toBeNull();
@@ -723,7 +735,9 @@ describe('ScrollRegion', () => {
       const track = () => container.querySelector('.ui-scroll-region__track');
       fireEvent.scroll(viewport);
       act(() => thumb('log')!.focus());
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(track()).not.toBeNull();
       geometry.scrollHeight = 80;
       resizeAll();
@@ -731,7 +745,9 @@ describe('ScrollRegion', () => {
       expect(viewport).toHaveFocus();
       geometry.scrollHeight = 300;
       resizeAll();
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(track()).toBeNull();
     } finally {
       vi.useRealTimers();
@@ -766,7 +782,9 @@ describe('ScrollRegion', () => {
       expect(track).toHaveAttribute('data-entering', 'true');
       await act(async () => finish());
       expect(track).not.toHaveAttribute('data-entering');
-      act(() => vi.advanceTimersByTime(600));
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
       expect(track).toHaveAttribute('data-exiting', 'true');
       expectHooksMatchSpec(container, 'SCROLL-REGION', { slots: ['viewport', 'track', 'thumb'] });
       await act(async () => finish());
@@ -926,7 +944,9 @@ describe('ScrollRegion', () => {
       const root = container.firstElementChild!;
       fireEvent.scroll(document.getElementById('busy')!);
       expect(root).toHaveAttribute('data-scrolling', 'true');
-      act(() => vi.advanceTimersByTime(200));
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
       expect(root).not.toHaveAttribute('data-scrolling');
       await user.hover(root);
       expect(root).toHaveAttribute('data-hovering', 'true');

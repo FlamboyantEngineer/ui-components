@@ -3,6 +3,7 @@
 import type { Orientation } from '../../core/props.js';
 import { createBandScale, type BandScale } from '../../utils/band-scale.js';
 import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   countTicks,
   resolvePlotBox,
@@ -137,7 +138,7 @@ export function resolveBarGeometry(input: BarGeometryInput, valueScale?: LinearS
       const start = bands.map(category) + (isGrouped ? groups.map(String(series)) : 0);
       const breadth = isGrouped ? groups.bandwidth : bands.bandwidth;
       const low = Math.min(...ends);
-      const length = Math.abs(ends[1]! - ends[0]!);
+      const length = Math.abs(requireDefined(ends[1]) - requireDefined(ends[0]));
       const box =
         input.orientation === 'vertical'
           ? { x: start, y: low, width: breadth, height: length }

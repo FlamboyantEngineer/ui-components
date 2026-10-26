@@ -5,6 +5,7 @@ import {
   type VersionHistoryVersion,
 } from '../../src/components/version-history/version-history.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -106,7 +107,7 @@ function Preview({ saved, view }: { saved: SavedVersion[]; view: Key[] }) {
       />
     );
   }
-  const shown = find(view[0]) ?? saved[0]!;
+  const shown = find(view[0]) ?? requireDefined(saved[0]);
   return (
     <p data-lab-output="viewed">
       <strong>{shown.recipe.title}</strong>: {shown.recipe.method}
@@ -119,11 +120,11 @@ function RecipeHistory() {
   const [saved, setSaved] = useState(startingVersions);
   const [selected, setSelected] = useState<Set<Key>>(new Set());
   const [compared, setCompared] = useState<Key[] | null>(null);
-  const current = saved[0]!;
+  const current = requireDefined(saved[0]);
   const restore = (key: Key) =>
     new Promise<void>((resolve) => {
       window.setTimeout(() => {
-        const source = saved.find((version) => version.id === key)!;
+        const source = requireDefined(saved.find((version) => version.id === key));
         const id = Math.max(...saved.map((version) => Number(version.id))) + 1;
         setSaved([
           {

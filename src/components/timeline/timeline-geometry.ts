@@ -2,6 +2,7 @@
 // and drags, and dependency connector paths (specs/TIMELINE.md).
 
 import type { Key, Tone } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   addTimeUnits,
   createTimeScale,
@@ -128,7 +129,7 @@ export function readTimelineItem(item: TimelineItem): ReadItem | null {
   if (!isTimelineDate(item.start)) return null;
   const kind = item.kind ?? 'bar';
   const end = kind === 'bar' && isTimelineDate(item.end) && item.end > item.start;
-  return { id: item.id, kind, start: item.start, end: end ? item.end! : item.start };
+  return { id: item.id, kind, start: item.start, end: end ? requireDefined(item.end) : item.start };
 }
 
 /**

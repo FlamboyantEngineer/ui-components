@@ -6,6 +6,7 @@ import {
 } from '../../src/components/redline-compare/redline-compare.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { DocumentBlock } from '../../src/utils/compare-blocks.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const revision3: DocumentBlock[] = [
@@ -63,7 +64,10 @@ const short: DocumentBlock[] = [
 ];
 
 const contents = {
-  edited: [short, [short[0]!, { type: 'paragraph', text: 'Open daily from eight to six.' }]],
+  edited: [
+    short,
+    [requireDefined(short[0]), { type: 'paragraph', text: 'Open daily from eight to six.' }],
+  ],
   written: [[], short],
   cleared: [short, []],
   unchanged: [short, short],
@@ -169,7 +173,11 @@ mountLab(
       <RedlineCompare
         aria-label="Typed identifiers"
         oldBlocks={typedBlocks}
-        newBlocks={[typedBlocks[1]!, typedBlocks[2]!, typedBlocks[0]!]}
+        newBlocks={[
+          requireDefined(typedBlocks[1]),
+          requireDefined(typedBlocks[2]),
+          requireDefined(typedBlocks[0]),
+        ]}
         data-lab-demo="typed"
       />
     </LabSection>

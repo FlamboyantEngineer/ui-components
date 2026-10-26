@@ -1,5 +1,6 @@
 // JSON text helpers for the JSON editor: highlighting tokens, parse checks and formatting.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeToken } from './code-editor.js';
 import { stringifyJsonValue } from './json-value.js';
 
@@ -80,7 +81,7 @@ interface GrammarFrame {
 }
 
 function readGrammarValue(stack: GrammarFrame[], token: PlacedJsonToken): boolean {
-  const frame = stack.at(-1)!;
+  const frame = requireDefined(stack.at(-1));
   frame.expects = frame.kind === 'root' ? 'done' : 'comma';
   if (token.text === '{' || token.text === '[') {
     stack.push({ kind: token.text === '{' ? 'object' : 'array', expects: 'first' });
@@ -90,7 +91,7 @@ function readGrammarValue(stack: GrammarFrame[], token: PlacedJsonToken): boolea
 }
 
 function readGrammarToken(stack: GrammarFrame[], token: PlacedJsonToken): boolean {
-  const frame = stack.at(-1)!;
+  const frame = requireDefined(stack.at(-1));
   const close = frame.kind === 'array' ? ']' : '}';
   if (frame.expects === 'first') {
     if (token.text === close) return Boolean(stack.pop());

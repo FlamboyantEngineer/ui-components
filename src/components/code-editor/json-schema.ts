@@ -2,6 +2,7 @@
 // object properties, array items and the number, string and array limits.
 
 import type { UiStrings } from '../../core/strings.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { JsonNode, JsonPathStep } from './json-tree.js';
 import { isJsonValueEqual, stringifyJsonValue } from './json-value.js';
 
@@ -133,7 +134,7 @@ function checkArray(check: Check, items: readonly JsonNode[], pending: Check[]) 
   const itemSchema = schema.items;
   if (itemSchema) {
     for (let index = items.length - 1; index >= 0; index -= 1) {
-      pending.push({ ...check, node: items[index]!, schema: itemSchema });
+      pending.push({ ...check, node: requireDefined(items[index]), schema: itemSchema });
     }
   }
 }
@@ -147,7 +148,7 @@ function checkObject(check: Check, node: Extract<JsonNode, { kind: 'object' }>, 
   }
   const entries = [...properties.values()];
   for (let index = entries.length - 1; index >= 0; index -= 1) {
-    const property = entries[index]!;
+    const property = requireDefined(entries[index]);
     const own = getPropertySchema(schema, property.key);
     const extra = schema.additionalProperties;
     if (own) pending.push({ ...check, node: property.value, schema: own });
@@ -173,7 +174,7 @@ export function validateJsonSchema(
   const issues: JsonSchemaIssue[] = [];
   const pending: Check[] = [{ node, schema, strings, issues }];
   while (pending.length > 0) {
-    const check = pending.pop()!;
+    const check = requireDefined(pending.pop());
     if (!checkValue(check)) continue;
     if (check.node.kind === 'scalar') checkScalar(check, check.node.value);
     else if (check.node.kind === 'array') checkArray(check, check.node.items, pending);

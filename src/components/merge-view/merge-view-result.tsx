@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
 import {
@@ -132,7 +133,7 @@ export function MergeResultPane(props: MergeResultPaneProps) {
               block={block}
               conflict={conflict}
               total={states.length}
-              state={states[conflict]!}
+              state={requireDefined(states[conflict])}
               labels={labels}
               id={getConflictId(baseId, conflict)}
               isCurrent={conflict === current}

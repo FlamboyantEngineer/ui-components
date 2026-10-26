@@ -62,13 +62,19 @@ describe('ChatStatusLine', () => {
     const status = screen.getByRole('status');
     expect(status).toHaveTextContent('Searching trains…');
     rerender(<ChatStatusLine text="Reading the timetable…" />);
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     rerender(<ChatStatusLine text="Comparing fares…" />);
     expect(status).toHaveTextContent('Searching trains…');
     expect(screen.getByText('Comparing fares…')).toHaveClass('ui-chat-status-line__text');
-    act(() => vi.advanceTimersByTime(1499));
+    act(() => {
+      vi.advanceTimersByTime(1499);
+    });
     expect(status).toHaveTextContent('Searching trains…');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(status).toHaveTextContent('Comparing fares…');
   });
 
@@ -77,7 +83,9 @@ describe('ChatStatusLine', () => {
     const { rerender } = render(<ChatStatusLine text="Searching trains…" />);
     rerender(<ChatStatusLine text="Searching trains…" isRunning={false} />);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(5000));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
     rerender(<ChatStatusLine text="Searching trains…" />);
     expect(screen.getByRole('status')).toHaveTextContent('Searching trains…');
   });

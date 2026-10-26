@@ -5,6 +5,7 @@ import {
   type StepListEditorColumn,
   type StepListEditorStep,
 } from '../../src/components/step-list-editor/step-list-editor.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const column: CSSProperties = { width: 760 };
@@ -29,10 +30,10 @@ const signIn: StepListEditorStep[] = [
 ];
 
 const edited: StepListEditorStep[] = [
-  signIn[0]!,
-  { id: 'name', values: { ...signIn[1]!.values, data: 'grace.hopper' } },
+  requireDefined(signIn[0]),
+  { id: 'name', values: { ...requireDefined(signIn[1]).values, data: 'grace.hopper' } },
   { id: 'remember', values: { action: 'Tick Remember me' } },
-  signIn[3]!,
+  requireDefined(signIn[3]),
 ];
 
 const states = {

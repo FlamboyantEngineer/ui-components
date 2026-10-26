@@ -1,6 +1,7 @@
 // Places the timeline's items on its visible rows and draws its dependencies (specs/TIMELINE.md).
 
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   createTimelineAxis,
@@ -102,7 +103,7 @@ export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineL
   const indexed = new Map(items.map((item) => [item.id, { item, read: readTimelineItem(item) }]));
   const placed = placeItems(axis, rows, indexed);
   const rowItems = new Map<Key, PlacedItem[]>(rows.map((entry) => [entry.row.id, []]));
-  for (const entry of placed.values()) rowItems.get(entry.item.rowId)!.push(entry);
+  for (const entry of placed.values()) requireDefined(rowItems.get(entry.item.rowId)).push(entry);
   const centre = (entry: PlacedItem) => entry.rowIndex * rowHeight + rowHeight / 2;
   const connectors = dependencies.flatMap(({ from, to }) => {
     const [source, target] = [placed.get(from), placed.get(to)];

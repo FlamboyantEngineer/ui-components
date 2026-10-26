@@ -2,6 +2,7 @@
 
 import type { ComparedBlockRow, DocumentBlock, DocumentMark } from '../../utils/compare-blocks.js';
 import type { WordDiffHunk } from '../../utils/diff.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** Which text a cell draws: the old block, the new block, or both inline. */
 export type RedlineSide = 'old' | 'new' | 'both';
@@ -45,7 +46,7 @@ export function cutAtMarks(
   }
   const points = [...cuts].sort((a, b) => a - b);
   return points.slice(1).map((to, index) => {
-    const from = points[index]!;
+    const from = requireDefined(points[index]);
     return {
       text: text.slice(from - start, to - start),
       marks: marks.filter((mark) => mark.start <= from && mark.end >= to),
@@ -63,7 +64,7 @@ function placeHunks(row: ComparedBlockRow, words: readonly WordDiffHunk[], side:
       !(side === 'old' && kind === 'insert') && !(side === 'new' && kind === 'delete');
     const isOld = kind === 'delete' || (kind === 'equal' && side === 'old');
     if (isDrawn) {
-      const block = isOld ? row.oldBlock! : row.newBlock!;
+      const block = isOld ? requireDefined(row.oldBlock) : requireDefined(row.newBlock);
       placed.push({ change: hunkChanges[kind], text, block, start: isOld ? oldOffset : newOffset });
     }
     if (kind !== 'insert') oldOffset += text.length;
