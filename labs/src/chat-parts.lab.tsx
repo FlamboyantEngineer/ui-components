@@ -24,6 +24,7 @@ const stepStates = [
   'single',
   'awaiting-approval',
   'failed',
+  'long-label',
 ] as const;
 
 const thinking: ChatPart = {
@@ -34,6 +35,11 @@ const thinking: ChatPart = {
   durationMs: 2100,
 };
 const running: ChatPart = { ...searchCall, status: 'running', durationMs: undefined };
+const longCall: ChatPart = {
+  ...searchCall,
+  id: 'call-long',
+  label: 'Search saved recipes for a lentil soup that keeps for three days and suits a slow cooker',
+};
 
 const stepCases: Record<(typeof stepStates)[number], { parts: ChatPart[]; isStreaming: boolean }> =
   {
@@ -53,6 +59,7 @@ const stepCases: Record<(typeof stepStates)[number], { parts: ChatPart[]; isStre
     single: { parts: [{ type: 'text', text: 'Let me look.' }, running], isStreaming: true },
     'awaiting-approval': { parts: [thinking, bookingCall], isStreaming: false },
     failed: { parts: failedRunParts, isStreaming: false },
+    'long-label': { parts: [thinking, longCall, searchCall], isStreaming: true },
   };
 
 const ignore = () => undefined;
@@ -104,7 +111,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps"
-      description="Consecutive reasoning and tool calls fold into a group of steps. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval or once one in it failed. A single step that ends the message stays on its own."
+      description="Consecutive reasoning and tool calls fold into a group of steps. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval or once one in it failed. A single step that ends the message stays on its own. A long tool call label wraps beside its status glyph."
     >
       <StateMatrix
         axes={{ state: stepStates, parts: ['rendered'] }}

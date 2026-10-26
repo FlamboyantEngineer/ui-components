@@ -62,30 +62,32 @@ function ToolCallDuration({ milliseconds }: { milliseconds: number }) {
 }
 
 /**
- * The trigger's content: the status glyph, the label, the status, the duration and the badge,
- * spaced so the trigger's name reads them as words.
+ * The trigger's content: the status glyph, then the summary that wraps beside it: the label, the
+ * status, the duration and the badge, spaced so the trigger's name reads them as words.
  */
 export function ToolCallTitle({ label, status, durationMs, isAutoApproved }: ToolCallTitleProps) {
   const strings = useUiStrings();
   return (
     <>
       <Glyph name={statusGlyphs[status]} className={hooks.slotClass('status-glyph')} />
-      <span {...hooks.slot('label')}>{label}</span>{' '}
-      <span {...hooks.slot('status')}>{strings.toolCallStatus(status)}</span>
-      {durationMs === undefined ? null : (
-        <>
-          {' '}
-          <ToolCallDuration milliseconds={durationMs} />
-        </>
-      )}
-      {isAutoApproved ? (
-        <>
-          {' '}
-          <Badge size="sm" className={hooks.slotClass('badge')}>
-            {strings.toolCallAutoApproved}
-          </Badge>
-        </>
-      ) : null}
+      <span {...hooks.slot('summary')}>
+        <span {...hooks.slot('label')}>{label}</span>{' '}
+        <span {...hooks.slot('status')}>{strings.toolCallStatus(status)}</span>
+        {durationMs === undefined ? null : (
+          <>
+            {' '}
+            <ToolCallDuration milliseconds={durationMs} />
+          </>
+        )}
+        {isAutoApproved ? (
+          <>
+            {' '}
+            <Badge size="sm" className={hooks.slotClass('badge')}>
+              {strings.toolCallAutoApproved}
+            </Badge>
+          </>
+        ) : null}
+      </span>
     </>
   );
 }

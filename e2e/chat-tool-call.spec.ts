@@ -181,4 +181,37 @@ test.describe('Chat Tool Call lab', () => {
     await page.keyboard.press('Enter');
     await expect(demo(page).getByRole('list', { name: 'Callbacks' })).toHaveText('onAlwaysAllow()');
   });
+
+  test('UIC-CHAT-TOOL-CALL-1.1 wraps a long label beside the glyph, which stays on the first line', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-tool-call');
+    for (const status of ['succeeded', 'running', 'failed']) {
+      const heading = page.locator(`#long-label-${status} .ui-chat-tool-call__heading`);
+      const box = async (selector: string) => {
+        const found = await heading.locator(selector).boundingBox();
+        if (!found) throw new Error(`${selector} has no box`);
+        return found;
+      };
+      const glyph = await box('.ui-chat-tool-call__status-glyph');
+      const indicator = await box('.ui-disclosure__indicator');
+      const summary = await box('.ui-chat-tool-call__summary');
+      const statusBox = await box('.ui-chat-tool-call__status');
+      const lineHeight = await heading
+        .locator('.ui-chat-tool-call__summary')
+        .evaluate((element) => parseFloat(getComputedStyle(element).lineHeight));
+      // The label wraps onto more than one line inside the summary.
+      expect(summary.height).toBeGreaterThan(lineHeight * 1.5);
+      // The glyph and the indicator are centred on the first line, beside the summary.
+      expect(Math.abs(glyph.y + glyph.height / 2 - (summary.y + lineHeight / 2))).toBeLessThan(2);
+      expect(
+        Math.abs(indicator.y + indicator.height / 2 - (glyph.y + glyph.height / 2)),
+      ).toBeLessThan(1);
+      expect(glyph.x + glyph.width).toBeLessThanOrEqual(summary.x);
+      // The status follows the label inside the summary, not on a line of its own past it.
+      expect(statusBox.x).toBeGreaterThan(summary.x);
+      expect(statusBox.y + statusBox.height).toBeLessThanOrEqual(summary.y + summary.height + 1);
+    }
+  });
 });

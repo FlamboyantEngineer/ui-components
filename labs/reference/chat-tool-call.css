@@ -31,15 +31,21 @@
   font-weight: var(--ref-font-weight-medium);
 }
 
+/* The indicator and the glyph sit on the first line, so a wrapped label keeps them in place. */
 .ui-chat-tool-call__heading .ui-disclosure__trigger {
+  align-items: flex-start;
   padding: 6px 10px;
+}
+
+.ui-chat-tool-call__heading .ui-disclosure__indicator {
+  margin-block: calc((1lh - 16px) / 2);
 }
 
 .ui-chat-tool-call__heading .ui-disclosure__title {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -47,7 +53,18 @@
   flex: none;
   width: 16px;
   height: 16px;
+  margin-block: calc((1lh - 16px) / 2);
   color: var(--ref-muted);
+}
+
+/* The label, the status, the duration and the badge flow as one paragraph beside the glyph. */
+.ui-chat-tool-call__summary {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__summary > * + * {
+  margin-inline-start: 4px;
 }
 
 .ui-chat-tool-call[data-status='running'] .ui-chat-tool-call__status-glyph {
@@ -86,7 +103,7 @@
 }
 
 .ui-chat-tool-call__badge {
-  flex: none;
+  vertical-align: text-bottom;
 }
 
 .ui-chat-tool-call__body {

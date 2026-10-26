@@ -5,6 +5,7 @@ export const toolCallHooks = createHooks('chat-tool-call', [
   'disclosure',
   'heading',
   'status-glyph',
+  'summary',
   'label',
   'status',
   'duration',
