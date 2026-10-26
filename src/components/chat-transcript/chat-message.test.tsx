@@ -112,6 +112,92 @@ describe('ChatMessage name, presence and grouping', () => {
   });
 });
 
+describe('ChatMessage avatar, name and background', () => {
+  it('UIC-CHAT-TRANSCRIPT-2.13 hides the avatar and the name while keeping the message named', () => {
+    const { container } = render(
+      <ChatMessage
+        author={maria}
+        time={time}
+        getNow={getNow}
+        showAvatar={false}
+        showAuthorName={false}
+      >
+        The samples arrived.
+      </ChatMessage>,
+    );
+    const message = messageElement(container);
+    expect(message).toHaveAttribute('data-avatar-hidden', 'true');
+    expect(container.querySelector('.ui-chat-message__avatar')).toBeNull();
+    expect(container.querySelector('.ui-chat-message__author')).toBeNull();
+    expect(container.querySelector('.ui-chat-message__time')).toHaveTextContent('5 minutes ago');
+    expect(screen.getByRole('article', { name: mariaAt1025 })).toBe(message);
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['header', 'time'] });
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.13 hides the avatar or the name on its own', () => {
+    const { container } = render(
+      <>
+        <ChatMessage author={maria} showAvatar={false}>
+          No avatar
+        </ChatMessage>
+        <ChatMessage author={maria} showAuthorName={false}>
+          No name
+        </ChatMessage>
+      </>,
+    );
+    const [noAvatar, noName] = screen.getAllByRole('article');
+    expect(noAvatar?.querySelector('.ui-chat-message__avatar')).toBeNull();
+    expect(noAvatar?.querySelector('.ui-chat-message__author')).toHaveTextContent('Maria Santos');
+    expect(noName?.querySelector('.ui-chat-message__avatar')).not.toBeNull();
+    expect(noName?.querySelector('.ui-chat-message__author')).toBeNull();
+    expect(noName).not.toHaveAttribute('data-avatar-hidden');
+    expect(noName?.querySelector('.ui-chat-message__header')).toBeNull();
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.13 hides the time, also from a grouped message, while keeping it in the name', () => {
+    const { container } = render(
+      <>
+        <ChatMessage author={maria} time={time} getNow={getNow} showTime={false}>
+          Named, no time
+        </ChatMessage>
+        <ChatMessage
+          author={maria}
+          time={time}
+          getNow={getNow}
+          groupPosition="last"
+          showTime={false}
+        >
+          Grouped, no time
+        </ChatMessage>
+      </>,
+    );
+    const [named, grouped] = screen.getAllByRole('article');
+    expect(named?.querySelector('.ui-chat-message__time')).toBeNull();
+    expect(named?.querySelector('.ui-chat-message__author')).toHaveTextContent('Maria Santos');
+    expect(grouped?.querySelector('.ui-chat-message__header')).toBeNull();
+    expect(named).toHaveAccessibleName(mariaAt1025);
+    expect(grouped).toHaveAccessibleName(mariaAt1025);
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.13 publishes the bubble variant by default and plain on request', () => {
+    const { container } = render(
+      <>
+        <ChatMessage author={maria}>Bubble</ChatMessage>
+        <ChatMessage author={maria} variant="plain">
+          Plain
+        </ChatMessage>
+      </>,
+    );
+    const [bubble, plain] = screen.getAllByRole('article');
+    expect(bubble).toHaveAttribute('data-variant', 'bubble');
+    expect(plain).toHaveAttribute('data-variant', 'plain');
+    expect(plain?.querySelector('.ui-chat-message__content')).toHaveTextContent('Plain');
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+});
+
 describe('ChatMessage status, delivery and errors', () => {
   it('UIC-CHAT-TRANSCRIPT-2.2 keeps a cancelled reply and marks it stopped', () => {
     const { container } = render(

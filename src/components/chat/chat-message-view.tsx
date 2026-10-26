@@ -11,6 +11,7 @@ import {
 } from '../chat-transcript/chat-transcript.js';
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
 import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
+import { toMessageVariant, type ChatMessageDisplayOptions } from './chat-message-display.js';
 import {
   readMessageText,
   toDisplayStatus,
@@ -55,6 +56,8 @@ export interface ChatMessageViewProps {
   /** The reader's open and closed choices of the message's parts. */
   expandedParts: Readonly<Record<string, boolean>> | undefined;
   context: ChatMessageContext;
+  /** Whether the message shows its author's avatar and name, its time and its background. */
+  display: ChatMessageDisplayOptions;
 }
 
 /** The quote of the message replied to: its author and the start of its text. */
@@ -94,19 +97,25 @@ export const ChatMessageView = memo(function ChatMessageView({
   readers,
   expandedParts,
   context,
+  display,
 }: ChatMessageViewProps) {
   const participant = context.participants.get(message.authorId ?? '');
   const quote = useQuote(quoted, context);
   const { onRetry } = context;
   const canRetry = message.status === 'error' || message.delivery === 'failed';
   const id = message.id;
+  const origin = toMessageOrigin(message, context.currentUserId);
   return (
     <ChatMessageActionsMenu {...toMessageCommands(message, context)}>
       {(actions) => (
         <ChatMessage
           id={id}
-          origin={toMessageOrigin(message, context.currentUserId)}
+          origin={origin}
           author={participant ? toMessageAuthor(participant) : undefined}
+          showAvatar={display.showAvatars}
+          showAuthorName={display.showAuthorNames}
+          showTime={display.showTimes}
+          variant={toMessageVariant(origin, display)}
           time={message.createdAt}
           getNow={context.getNow}
           status={toDisplayStatus(message)}

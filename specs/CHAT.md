@@ -55,6 +55,13 @@ The transcript shall scroll in `scrollMode`, by default `anchor` in an assistant
 Implementation: `src/components/chat/chat.tsx`
 Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
+### UIC-CHAT-1.8 - Message display
+
+`showAvatars={false}`, `showAuthorNames={false}` and `showTimes={false}` shall hide every message's avatar, author's name and time ([UIC-CHAT-TRANSCRIPT-2.13](CHAT-TRANSCRIPT.md#uic-chat-transcript-213---avatar-name-time-and-background)); all three default to `true`, and each message's name keeps its author and time. The date separators between days stay. `sentVariant` shall be the variant of the reader's messages and `receivedVariant` that of everyone else's, an assistant's included, each `bubble` (the default) or `plain`; a notice keeps the default. `receivedVariant="plain"` with avatars, names and times hidden draws an assistant chat as a column of replies on the page with the reader's messages in bubbles.
+
+Implementation: `src/components/chat/chat-message-display.ts`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/chat.tsx`
+Verification: `src/components/chat/chat-message-display.test.tsx`, `e2e/chat-display.spec.ts`
+
 ## UIC-CHAT-2 - Message commands
 
 ### UIC-CHAT-2.1 - Commands offered
