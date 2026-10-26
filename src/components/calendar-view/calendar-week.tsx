@@ -2,7 +2,11 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
-import { CalendarEventButton, type CalendarEventContext } from './calendar-event.js';
+import {
+  CalendarEventButton,
+  CalendarEventLanes,
+  type CalendarEventContext,
+} from './calendar-event.js';
 import { layoutDay, layoutWeek, type PlacedEvent, type WeekSegment } from './calendar-layout.js';
 import { getWeekDays } from './calendar-days.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
@@ -71,22 +75,14 @@ function WeekDay({
       showNumber={false}
     >
       <div {...hooks.slot('all-day')}>
-        {Array.from({ length: laneCount }, (_, lane) => {
-          const segment = segments.find((entry) => entry.lane === lane && entry.column === column);
-          if (!segment) return <div key={lane} aria-hidden="true" {...hooks.slot('spacer')} />;
-          return (
-            <CalendarEventButton
-              key={lane}
-              placed={segment.placed}
-              context={event}
-              isTabbable={isActive}
-              time="none"
-              continuesBefore={segment.continuesBefore}
-              continuesAfter={segment.continuesAfter}
-              style={{ width: `${segment.span * 100}%` }}
-            />
-          );
-        })}
+        <CalendarEventLanes
+          segments={segments}
+          column={column}
+          laneCount={laneCount}
+          context={event}
+          isTabbable={isActive}
+          time="none"
+        />
       </div>
       <div {...hooks.slot('timed')} style={{ position: 'relative' }}>
         {layoutDay(date, events, timeZone).map((block) => (

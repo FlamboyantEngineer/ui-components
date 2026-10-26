@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
 
 export interface NavigationRailState {
   /** The rail shows icons only. */
@@ -46,27 +47,17 @@ export const navigationRailHooks = createHooks('navigation-rail', [
   'group-panel',
 ]);
 
-/** A JSON codec that refuses a stored value `isValid` rejects, so the default applies. */
-function createCheckedCodec<T>(isValid: (value: unknown) => value is T): PersistCodec<T> {
-  return {
-    parse: (raw) => {
-      const value: unknown = JSON.parse(raw);
-      if (!isValid(value)) throw new TypeError('Unexpected stored value');
-      return value;
-    },
-    stringify: (value) => JSON.stringify(value),
-  };
-}
-
 /** The stored collapsed state: a boolean. */
-export const collapsedCodec = createCheckedCodec(
-  (value): value is boolean => typeof value === 'boolean',
-);
+export const collapsedCodec = createJsonCodec((value): boolean => {
+  if (typeof value !== 'boolean') throw new TypeError('Not a collapsed state');
+  return value;
+});
 
 /** The stored width: a finite number of pixels. */
-export const widthCodec = createCheckedCodec(
-  (value): value is number => typeof value === 'number' && Number.isFinite(value),
-);
+export const widthCodec = createJsonCodec((value): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError('Not a width');
+  return value;
+});
 
 export const NavigationRailContext = createContext<NavigationRailState>({
   isCollapsed: false,

@@ -185,7 +185,7 @@ export function useChartPoints(points: readonly ChartPoint[], isVertical = false
   };
 }
 
-export interface ChartTooltipProps {
+interface ChartTooltipProps {
   /** The value whose tooltip shows; `null` hides it. */
   activeKey: string | null;
   anchor: RefObject<SVGElement | null>;
@@ -199,16 +199,19 @@ export interface ChartTooltipProps {
   value: ReactNode;
 }
 
+export interface ChartPlotProps {
+  width: number;
+  height: number;
+  /** The plot's focusable values, from `useChartPoints`. */
+  points: ChartPoints;
+  /** What the active value's tooltip says. */
+  tooltip: Omit<ChartTooltipProps, 'activeKey' | 'anchor'>;
+  /** The axes and the drawn values. */
+  children: ReactNode;
+}
+
 /** The tooltip of the hovered or focused value, pointing at its element. */
-export function ChartTooltip({
-  activeKey,
-  anchor,
-  title,
-  label,
-  series,
-  tone,
-  value,
-}: ChartTooltipProps) {
+function ChartTooltip({ activeKey, anchor, title, label, series, tone, value }: ChartTooltipProps) {
   const isOpen = activeKey !== null;
   const state = useMemo<TooltipTriggerState>(
     () => ({ isOpen, shouldSkipAnimation: false, open: () => {}, close: () => {} }),
@@ -234,5 +237,23 @@ export function ChartTooltip({
         </TooltipPanel>
       ) : null}
     </TooltipTriggerStateContext.Provider>
+  );
+}
+
+/** A chart's plot: an SVG group of the axes and values, and the tooltip of the active value. */
+export function ChartPlot({ width, height, points, tooltip, children }: ChartPlotProps) {
+  return (
+    <>
+      <svg
+        {...hooks.slot('plot')}
+        role="group"
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+      >
+        {children}
+      </svg>
+      <ChartTooltip activeKey={points.activeKey} anchor={points.anchor} {...tooltip} />
+    </>
   );
 }

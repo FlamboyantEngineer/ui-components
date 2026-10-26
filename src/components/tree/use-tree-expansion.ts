@@ -1,7 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
-import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { usePersistentState } from '../../core/provider.js';
 import type { TreeItemData, TreeProps } from './tree.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
+import { isKey } from '../../utils/is-key.js';
 
 export type TreeExpansionOptions = Pick<
   TreeProps<TreeItemData>,
@@ -18,20 +20,10 @@ export interface TreeExpansion {
   expand: (key: Key) => void;
 }
 
-const keyListCodec: PersistCodec<Key[]> = {
-  parse(raw) {
-    const value: unknown = JSON.parse(raw);
-    if (!isKeyList(value)) throw new Error('Not a list of keys');
-    return value;
-  },
-  stringify: (keys) => JSON.stringify(keys),
-};
-
-function isKeyList(value: unknown): value is Key[] {
-  return (
-    Array.isArray(value) && value.every((key) => typeof key === 'string' || typeof key === 'number')
-  );
-}
+const keyListCodec = createJsonCodec((value): Key[] => {
+  if (!Array.isArray(value) || !value.every(isKey)) throw new Error('Not a list of keys');
+  return value;
+});
 
 /**
  * Expansion that is controlled by `expandedKeys`, or owned by the tree from `defaultExpandedKeys`

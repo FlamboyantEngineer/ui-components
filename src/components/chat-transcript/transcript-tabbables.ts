@@ -1,20 +1,5 @@
+import { tabbableSelector } from '../../utils/tabbable.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
-
-/** Elements that can join the tab order. */
-const TABBABLE_SELECTOR = [
-  'a[href]',
-  'area[href]',
-  'button',
-  'input',
-  'select',
-  'textarea',
-  'iframe',
-  'summary',
-  'audio[controls]',
-  'video[controls]',
-  '[contenteditable]:not([contenteditable="false"])',
-  '[tabindex]',
-].join(', ');
 
 /** A message's element and key. */
 export interface TranscriptOwner {
@@ -45,16 +30,6 @@ export function findOwner(
   return null;
 }
 
-/** The controls inside a message that Tab reaches, in document order. */
-export function listTabbable(root: Element): HTMLElement[] {
-  return [...root.querySelectorAll<HTMLElement>(TABBABLE_SELECTOR)].filter(
-    (element) =>
-      element.tabIndex >= 0 &&
-      !element.hasAttribute('disabled') &&
-      element.closest('[hidden], [inert]') === null,
-  );
-}
-
 /**
  * Creates the manager. Each control it takes out of the tab order keeps its own `tabindex`, which
  * comes back when the reader enters the message; a control that renders or changes its `tabindex`
@@ -71,10 +46,10 @@ export function createTabbablesManager(registry: TranscriptRegistry): TabbablesM
     element.setAttribute('tabindex', '-1');
   };
   const disable = (root: Element) => {
-    for (const element of root.querySelectorAll(TABBABLE_SELECTOR)) disableOne(element);
+    for (const element of root.querySelectorAll(tabbableSelector)) disableOne(element);
   };
   const enable = (root: Element) => {
-    for (const element of root.querySelectorAll(TABBABLE_SELECTOR)) {
+    for (const element of root.querySelectorAll(tabbableSelector)) {
       if (!saved.has(element)) continue;
       const value = saved.get(element) ?? null;
       saved.delete(element);
@@ -93,7 +68,7 @@ export function createTabbablesManager(registry: TranscriptRegistry): TabbablesM
       if (!(node instanceof Element)) continue;
       const owner = findOwner(node, feed, registry);
       if (!owner || owner.key === entered) continue;
-      if (node !== owner.element && node.matches(TABBABLE_SELECTOR)) disableOne(node);
+      if (node !== owner.element && node.matches(tabbableSelector)) disableOne(node);
       if (record.type === 'childList') disable(node);
     }
   };

@@ -8,7 +8,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { chartHooks, donutChartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
-import { ChartTooltip, useChartPoints } from './chart-points.js';
+import { ChartPlot, useChartPoints } from './chart-points.js';
 import { resolveDonutGeometry, type DonutGeometry } from './donut-geometry.js';
 import { toDonutTable, type DonutFormats } from './donut-table.js';
 
@@ -60,59 +60,51 @@ function DonutPlot({
   const active = slices.find((slice) => slice.key === points.activeKey);
   const centre = diameter / 2;
   return (
-    <>
-      <svg
-        {...chartHooks.slot('plot')}
-        role="group"
-        width={diameter}
-        height={diameter}
-        viewBox={`0 0 ${diameter} ${diameter}`}
+    <ChartPlot
+      width={diameter}
+      height={diameter}
+      points={points}
+      tooltip={{
+        label: active ? requireDefined(segments[active.series]).label : '',
+        series: active?.series ?? 0,
+        tone: active ? requireDefined(segments[active.series]).tone : undefined,
+        value: active
+          ? `${formats.value.format(active.value)} (${formats.share.format(active.share)})`
+          : '',
+      }}
+    >
+      {slices.map((slice) => {
+        const segment = requireDefined(segments[slice.series]);
+        return (
+          <path
+            key={slice.key}
+            {...donutChartHooks.slot('slice', {
+              series: slice.series,
+              tone: segment.tone,
+              active: slice.key === points.activeKey,
+            })}
+            {...points.getPointProps({ key: slice.key, index: slice.index, series: 0 })}
+            role="img"
+            aria-label={strings.donutSegment(
+              segment.label,
+              formats.value.format(slice.value),
+              formats.share.format(slice.share),
+            )}
+            d={slice.path}
+          />
+        );
+      })}
+      <text
+        {...donutChartHooks.slot('total')}
+        x={centre}
+        y={centre}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        aria-hidden="true"
       >
-        {slices.map((slice) => {
-          const segment = requireDefined(segments[slice.series]);
-          return (
-            <path
-              key={slice.key}
-              {...donutChartHooks.slot('slice', {
-                series: slice.series,
-                tone: segment.tone,
-                active: slice.key === points.activeKey,
-              })}
-              {...points.getPointProps({ key: slice.key, index: slice.index, series: 0 })}
-              role="img"
-              aria-label={strings.donutSegment(
-                segment.label,
-                formats.value.format(slice.value),
-                formats.share.format(slice.share),
-              )}
-              d={slice.path}
-            />
-          );
-        })}
-        <text
-          {...donutChartHooks.slot('total')}
-          x={centre}
-          y={centre}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          aria-hidden="true"
-        >
-          {strings.totalCount(formats.value.format(total))}
-        </text>
-      </svg>
-      <ChartTooltip
-        activeKey={points.activeKey}
-        anchor={points.anchor}
-        label={active ? requireDefined(segments[active.series]).label : ''}
-        series={active?.series ?? 0}
-        tone={active ? requireDefined(segments[active.series]).tone : undefined}
-        value={
-          active
-            ? `${formats.value.format(active.value)} (${formats.share.format(active.share)})`
-            : ''
-        }
-      />
-    </>
+        {strings.totalCount(formats.value.format(total))}
+      </text>
+    </ChartPlot>
   );
 }
 

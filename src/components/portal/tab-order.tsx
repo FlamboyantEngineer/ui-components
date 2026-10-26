@@ -2,6 +2,7 @@
 // it as if it sat there, through focus guards in place and at both ends of the portal wrapper.
 
 import { useMemo, useRef, type FocusEvent, type ReactNode, type RefObject } from 'react';
+import { isTabbable, tabbableSelector } from '../../utils/tabbable.js';
 
 type GuardKind = 'before' | 'after' | 'start' | 'end';
 
@@ -19,34 +20,6 @@ export interface PreservedTabOrder {
   startGuard: ReactNode;
   /** The guard rendered last in the wrapper. */
   endGuard: ReactNode;
-}
-
-const tabbableSelector = [
-  'a[href]',
-  'area[href]',
-  'button',
-  'input:not([type="hidden"])',
-  'select',
-  'textarea',
-  'iframe',
-  'summary',
-  'audio[controls]',
-  'video[controls]',
-  '[contenteditable]:not([contenteditable="false"])',
-  '[tabindex]',
-].join(', ');
-
-function isTabbable(element: HTMLElement): boolean {
-  if (
-    element.tabIndex < 0 ||
-    element.matches(':disabled') ||
-    element.closest('[inert], [hidden]')
-  ) {
-    return false;
-  }
-  return typeof element.checkVisibility === 'function'
-    ? element.checkVisibility({ visibilityProperty: true })
-    : true;
 }
 
 /** The tabbable elements of `root`'s document outside `nodes`, or inside the wrapper only. */

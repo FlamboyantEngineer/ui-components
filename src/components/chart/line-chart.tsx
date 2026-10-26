@@ -9,7 +9,7 @@ import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, lineChartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
-import { ChartTooltip, useChartPoints } from './chart-points.js';
+import { ChartPlot, useChartPoints } from './chart-points.js';
 import { useValueSummary } from './chart-summary.js';
 import {
   createLineValueScale,
@@ -86,74 +86,68 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
   const active = all.find((point) => point.key === points.activeKey);
   const activeSeries = active ? requireDefined(series[active.series]) : undefined;
   return (
-    <>
-      <svg
-        {...chartHooks.slot('plot')}
-        role="group"
-        width={width}
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
-      >
-        <ChartAxis
-          position="left"
-          offset={plot.left}
-          range={[plot.bottom, plot.top]}
-          ticks={yTicks}
-          gridLength={plot.right - plot.left}
-        />
-        <ChartAxis
-          position="bottom"
-          offset={plot.bottom}
-          range={[plot.left, plot.right]}
-          ticks={xAxis.ticks}
-        />
-        {variant === 'area'
-          ? lines.map((line) => (
-              <path
-                key={`area:${line.series}`}
-                {...lineChartHooks.slot('area', toSeriesData(series, line.series))}
-                d={line.area}
-              />
-            ))
-          : null}
-        {lines.map((line) => (
-          <path
-            key={`line:${line.series}`}
-            {...lineChartHooks.slot('line', toSeriesData(series, line.series))}
-            d={line.line}
-            fill="none"
-          />
-        ))}
-        {all.map((point) => (
-          <circle
-            key={point.key}
-            {...lineChartHooks.slot('point', {
-              ...toSeriesData(series, point.series),
-              active: point.key === points.activeKey,
-            })}
-            {...points.getPointProps(point)}
-            role="img"
-            aria-label={strings.chartValue(
-              requireDefined(series[point.series]).label,
-              xAxis.format(point.at),
-              format.format(point.value),
-            )}
-            cx={point.x}
-            cy={point.y}
-            r={3}
-          />
-        ))}
-      </svg>
-      <ChartTooltip
-        activeKey={points.activeKey}
-        anchor={points.anchor}
-        title={active ? xAxis.format(active.at) : ''}
-        label={activeSeries?.label ?? ''}
-        series={active?.series ?? 0}
-        tone={activeSeries?.tone}
-        value={active ? format.format(active.value) : ''}
+    <ChartPlot
+      width={width}
+      height={height}
+      points={points}
+      tooltip={{
+        title: active ? xAxis.format(active.at) : '',
+        label: activeSeries?.label ?? '',
+        series: active?.series ?? 0,
+        tone: activeSeries?.tone,
+        value: active ? format.format(active.value) : '',
+      }}
+    >
+      <ChartAxis
+        position="left"
+        offset={plot.left}
+        range={[plot.bottom, plot.top]}
+        ticks={yTicks}
+        gridLength={plot.right - plot.left}
       />
-    </>
+      <ChartAxis
+        position="bottom"
+        offset={plot.bottom}
+        range={[plot.left, plot.right]}
+        ticks={xAxis.ticks}
+      />
+      {variant === 'area'
+        ? lines.map((line) => (
+            <path
+              key={`area:${line.series}`}
+              {...lineChartHooks.slot('area', toSeriesData(series, line.series))}
+              d={line.area}
+            />
+          ))
+        : null}
+      {lines.map((line) => (
+        <path
+          key={`line:${line.series}`}
+          {...lineChartHooks.slot('line', toSeriesData(series, line.series))}
+          d={line.line}
+          fill="none"
+        />
+      ))}
+      {all.map((point) => (
+        <circle
+          key={point.key}
+          {...lineChartHooks.slot('point', {
+            ...toSeriesData(series, point.series),
+            active: point.key === points.activeKey,
+          })}
+          {...points.getPointProps(point)}
+          role="img"
+          aria-label={strings.chartValue(
+            requireDefined(series[point.series]).label,
+            xAxis.format(point.at),
+            format.format(point.value),
+          )}
+          cx={point.x}
+          cy={point.y}
+          r={3}
+        />
+      ))}
+    </ChartPlot>
   );
 }
 

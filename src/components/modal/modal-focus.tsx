@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
+import { listTabbables } from '../../utils/tabbable.js';
 
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
 export type ModalFocusTarget = FocusTarget;
@@ -12,15 +13,9 @@ export interface InitialFocusProps {
   target?: ModalFocusTarget | undefined;
 }
 
-const tabbableSelector =
-  'a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], [contenteditable]';
-
 function focusFirstTabbable(root: Element | null): boolean {
   if (!root) return false;
-  for (const element of root.querySelectorAll<HTMLElement>(tabbableSelector)) {
-    if (element.tabIndex < 0 || element.closest('[inert], [hidden]')) continue;
-    if ('disabled' in element && element.disabled === true) continue;
-    if (element instanceof HTMLInputElement && element.type === 'hidden') continue;
+  for (const element of listTabbables(root)) {
     element.focus();
     if (element.ownerDocument.activeElement === element) return true;
   }

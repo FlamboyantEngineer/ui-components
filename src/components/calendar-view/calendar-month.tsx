@@ -2,7 +2,7 @@ import { findMaximum } from '../../utils/find-maximum.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
 import {
-  CalendarEventButton,
+  CalendarEventLanes,
   CalendarMoreEvents,
   type CalendarEventContext,
 } from './calendar-event.js';
@@ -50,24 +50,14 @@ function MonthDay({ date, column, segments, visibleLanes, events, day, event }: 
       showNumber
     >
       <div {...hooks.slot('events')}>
-        {Array.from({ length: laneCount }, (_, lane) => {
-          const segment = shown.find((entry) => entry.lane === lane);
-          if (!segment || segment.column !== column) {
-            return <div key={lane} aria-hidden="true" {...hooks.slot('spacer')} />;
-          }
-          return (
-            <CalendarEventButton
-              key={lane}
-              placed={segment.placed}
-              context={event}
-              isTabbable={isActive}
-              time="start"
-              continuesBefore={segment.continuesBefore}
-              continuesAfter={segment.continuesAfter}
-              style={{ width: `${segment.span * 100}%` }}
-            />
-          );
-        })}
+        <CalendarEventLanes
+          segments={shown}
+          column={column}
+          laneCount={laneCount}
+          context={event}
+          isTabbable={isActive}
+          time="start"
+        />
         {covering.length > shown.length ? (
           <CalendarMoreEvents
             events={covering.map((segment) => segment.placed)}

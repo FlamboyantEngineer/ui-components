@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
+import { isKey } from '../../utils/is-key.js';
 
 /** A folder being named: a new one under `key`, or the folder `key` being renamed. */
 export interface FolderEdit {
@@ -46,10 +47,6 @@ export interface FolderActions<T extends FolderItem> {
   cancel(): void;
   /** Deletes the folders, in order, stopping at the first refusal. */
   remove(folders: readonly T[]): Promise<void>;
-}
-
-function isKey(value: unknown): value is Key {
-  return typeof value === 'string' || typeof value === 'number';
 }
 
 /**

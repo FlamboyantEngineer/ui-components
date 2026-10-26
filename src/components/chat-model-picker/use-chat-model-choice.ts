@@ -1,9 +1,10 @@
-import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { usePersistentState } from '../../core/provider.js';
 import type {
   ChatEffortOption,
   ChatModelOption,
   ChatModelPickerProps,
 } from './chat-model-picker.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
 
 /** The choices a `persistKey` keeps: each one the caller does not control. */
 interface StoredChoice {
@@ -32,15 +33,11 @@ function readText(value: unknown): string | undefined {
 }
 
 /** Reads a stored choice, keeping only its text values, so anything else falls back to the defaults. */
-const storedChoiceCodec: PersistCodec<StoredChoice> = {
-  parse(raw) {
-    const value: unknown = JSON.parse(raw);
-    if (typeof value !== 'object' || value === null) throw new TypeError('Not a stored choice');
-    const { model, effort } = value as Record<string, unknown>;
-    return { model: readText(model), effort: readText(effort) };
-  },
-  stringify: (choice) => JSON.stringify(choice),
-};
+const storedChoiceCodec = createJsonCodec((value): StoredChoice => {
+  if (typeof value !== 'object' || value === null) throw new TypeError('Not a stored choice');
+  const { model, effort } = value as Record<string, unknown>;
+  return { model: readText(model), effort: readText(effort) };
+});
 
 /** The first candidate that names one of the options. */
 function findFirst<T extends { id: string }>(

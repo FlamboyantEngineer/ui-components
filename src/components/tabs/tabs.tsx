@@ -2,12 +2,14 @@ import { useMemo, type ReactNode, type Ref } from 'react';
 import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, Orientation, Size } from '../../core/props.js';
-import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { usePersistentState } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionItemKey, toCollectionKey } from '../../utils/to-collection-key.js';
 import { TabsSharedContext, useTabsShared } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
+import { isKey } from '../../utils/is-key.js';
 
 export type TabsSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -74,14 +76,10 @@ type SelectionOptions = Pick<
   'persistKey' | 'selectedKey' | 'defaultSelectedKey' | 'onSelectionChange'
 >;
 
-const keyCodec: PersistCodec<Key | null> = {
-  parse(raw) {
-    const value: unknown = JSON.parse(raw);
-    if (typeof value !== 'string' && typeof value !== 'number') throw new Error('Not a tab key');
-    return value;
-  },
-  stringify: (key) => JSON.stringify(key),
-};
+const keyCodec = createJsonCodec((value): Key | null => {
+  if (!isKey(value)) throw new Error('Not a tab key');
+  return value;
+});
 
 /**
  * The selection props for the building block: the caller's, or, with `persistKey` and no
