@@ -41,19 +41,37 @@ function toKebabCase(key: string): string {
   return key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
+// Hook keys are a small fixed vocabulary, read on every render of every hooked element.
+const attributeNames = new Map<string, `data-${string}`>();
+
 function toAttributeName(key: string): `data-${string}` {
-  return key.startsWith('data-') ? (key as `data-${string}`) : `data-${toKebabCase(key)}`;
+  let name = attributeNames.get(key);
+  if (name === undefined) {
+    name = key.startsWith('data-') ? (key as `data-${string}`) : `data-${toKebabCase(key)}`;
+    attributeNames.set(key, name);
+  }
+  return name;
 }
 
 /** Converts hook values to data attributes: `{ variant: 'primary', disabled: true }` → `data-variant`, `data-disabled`. */
 export function dataAttributes(values: DataValues | undefined): DataAttributes {
   const attributes: DataAttributes = {};
-  if (!values) return attributes;
-  for (const [key, value] of Object.entries(values)) {
-    if (value === false || value === null || value === undefined) continue;
-    attributes[toAttributeName(key)] = value === true ? 'true' : String(value);
-  }
+  if (values) writeDataAttributes(attributes, values, false);
   return attributes;
+}
+
+/** Writes hook values onto `attributes`; with `clearEmpty`, an empty value writes `undefined`. */
+function writeDataAttributes(attributes: DataAttributes, values: DataValues, clearEmpty: boolean) {
+  for (const key in values) {
+    const value = values[key];
+    const isEmpty = value === false || value === null || value === undefined;
+    if (isEmpty && !clearEmpty) continue;
+    attributes[toAttributeName(key)] = isEmpty
+      ? undefined
+      : value === true
+        ? 'true'
+        : String(value);
+  }
 }
 
 /** Joins class names, skipping empty values. */
@@ -69,7 +87,7 @@ export function mergeClassNames(...classNames: Array<string | false | null | und
 export function pickDataAttributes(props: object): DataAttributes {
   const attributes: DataAttributes = {};
   for (const [key, value] of Object.entries(props)) {
-    if (!dataAttributeName.test(key)) continue;
+    if (!key.startsWith('data-') || !dataAttributeName.test(key)) continue;
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       attributes[key as `data-${string}`] = String(value);
     }
@@ -83,7 +101,7 @@ export function splitDataAttributes<P extends object>(
 ): [DataAttributes, Omit<P, `data-${string}`>] {
   const rest: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(props)) {
-    if (!dataAttributeName.test(key)) rest[key] = value;
+    if (!key.startsWith('data-') || !dataAttributeName.test(key)) rest[key] = value;
   }
   return [pickDataAttributes(props), rest as Omit<P, `data-${string}`>];
 }
@@ -114,12 +132,8 @@ export function createHooks<const Slot extends string = never>(
     root({ className, data, props } = {}) {
       const attributes: DataAttributes = props ? pickDataAttributes(props) : {};
       // Explicit empty values also clear caller attributes spread before these hooks.
-      for (const key of Object.keys(data ?? {})) attributes[toAttributeName(key)] = undefined;
-      return {
-        ...attributes,
-        ...dataAttributes(data),
-        className: mergeClassNames(rootClass, className),
-      };
+      if (data) writeDataAttributes(attributes, data, true);
+      return { ...attributes, className: mergeClassNames(rootClass, className) };
     },
     slot(slot, data, className) {
       return { ...dataAttributes(data), className: mergeClassNames(slotClass(slot), className) };
