@@ -69,6 +69,8 @@ export interface BoardProps<T extends { id: Key }> extends BaseProps, AriaLabell
   onColumnMove?: ((move: BoardColumnMove) => void) | undefined;
   /** Called with the key of the card the reader activates. */
   onAction?: ((key: Key) => void) | undefined;
+  /** Draws controls at the end of a column's header, such as a menu or a button, for each column. */
+  renderColumnActions?: ((column: BoardColumn) => ReactNode) | undefined;
   /** Shows an add-card button in every cell and reports which cell it was pressed in. */
   onAddCard?: ((cell: BoardCellAddress) => void) | undefined;
   /** The collapsed columns, controlled. */
@@ -164,10 +166,12 @@ function useCardKeys(options: {
 function BoardColumnHeaders<T>({
   model,
   onColumnMove,
+  renderColumnActions,
   focus,
 }: {
   model: BoardModel<T>;
   onColumnMove: ((move: BoardColumnMove) => void) | undefined;
+  renderColumnActions: ((column: BoardColumn) => ReactNode) | undefined;
   focus: FocusRequest;
 }) {
   const drag = useBoardColumnDrag({ columns: model.columnKeys, onMove: onColumnMove });
@@ -194,6 +198,7 @@ function BoardColumnHeaders<T>({
           }
           drag={drag}
           onStep={onStep}
+          actions={renderColumnActions?.(column)}
         />
       ))}
     </div>
@@ -202,7 +207,7 @@ function BoardColumnHeaders<T>({
 
 /**
  * A board: columns of cards with a header each (title, count against an optional limit, collapse
- * toggle), optionally repeated in collapsible lanes. Cards are the caller's content in a React Aria
+ * toggle, optional caller actions), optionally repeated in collapsible lanes. Cards are the caller's content in a React Aria
  * grid list per cell; with `onMove` they move within and between cells by pointer or keyboard drag
  * and drop and Alt+Arrow keys, and with `onColumnMove` columns reorder. The board never moves cards
  * or columns itself: the owner applies each reported move.
@@ -218,6 +223,7 @@ export function Board<T extends { id: Key }>({
   onMove,
   onColumnMove,
   onAction,
+  renderColumnActions,
   onAddCard,
   collapsedColumns,
   defaultCollapsedColumns,
@@ -267,7 +273,7 @@ export function Board<T extends { id: Key }>({
       {...hooks.root({ className, props: rest, data: { virtualized } })}
       onKeyDownCapture={onKeyDownCapture}
     >
-      <BoardColumnHeaders model={model} onColumnMove={onColumnMove} focus={focus} />
+      <BoardColumnHeaders {...{ model, onColumnMove, renderColumnActions, focus }} />
       {lanes ? (
         lanes.map((lane, index) => (
           <BoardLaneGroup

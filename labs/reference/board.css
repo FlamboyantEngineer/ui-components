@@ -98,6 +98,21 @@
   cursor: grab;
 }
 
+/* Compact controls (icon buttons, menu triggers) keep the header one row tall. */
+.ui-board__column-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin-inline-start: 2px;
+  cursor: default;
+}
+
+.ui-board__column[data-collapsed] .ui-board__column-actions {
+  flex-direction: column;
+  margin-inline-start: 0;
+}
+
 .ui-board__lane {
   display: flex;
   flex-direction: column;

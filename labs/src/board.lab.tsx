@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
+import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import {
   Board,
   applyBoardMove,
@@ -81,6 +82,40 @@ const states = {
   collapsed: { items: tasks, columns: columns.slice(0, 2) },
 } as const;
 
+const columnMenu = [
+  { id: 'sort', label: 'Sort by title' },
+  { id: 'clear', label: 'Clear column' },
+];
+
+/** Applies a column menu action to the owner's tasks: sorts the column's cards or removes them. */
+function applyColumnAction(items: readonly Task[], column: BoardColumn, action: Key): Task[] {
+  if (action === 'clear') return items.filter((task) => task.column !== column.id);
+  const sorted = items
+    .filter((task) => task.column === column.id)
+    .sort((a, b) => a.title.localeCompare(b.title));
+  return items.map((task) => (task.column === column.id ? (sorted.shift() as Task) : task));
+}
+
+function ColumnActions({
+  column,
+  onAction,
+}: {
+  column: BoardColumn;
+  onAction: (key: Key) => void;
+}) {
+  return (
+    <DropdownMenu
+      label={`${column.title} actions`}
+      iconOnly
+      icon="more-vertical"
+      size="sm"
+      placement="bottom end"
+      items={columnMenu}
+      onAction={onAction}
+    />
+  );
+}
+
 function describeMove(move: BoardMove, items: readonly Task[]): string {
   const title = (key: Key | null) => items.find((task) => task.id === key)?.title ?? '';
   const column = columns.find((entry) => entry.id === move.column)?.title ?? '';
@@ -114,6 +149,15 @@ function MovingBoard() {
           setOrder(applyColumnMove(order, move));
         }}
         onAction={(key) => setOutput(`Opened ${String(key)}`)}
+        renderColumnActions={(column) => (
+          <ColumnActions
+            column={column}
+            onAction={(action) => {
+              setItems(applyColumnAction(items, column, action));
+              setOutput(`${action === 'clear' ? 'Cleared' : 'Sorted'} ${column.title}`);
+            }}
+          />
+        )}
         onAddCard={({ column }) => {
           added += 1;
           const task = {
@@ -146,6 +190,12 @@ function LaneBoard() {
         renderCard={renderCard}
         persistKey="lab-board-lanes"
         onMove={(move) => setItems(applyBoardMove(items, move, place))}
+        renderColumnActions={(column) => (
+          <ColumnActions
+            column={column}
+            onAction={(action) => setItems(applyColumnAction(items, column, action))}
+          />
+        )}
       />
     </div>
   );
@@ -202,7 +252,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving cards and columns"
-      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards."
+      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards, and each column header ends with a menu that sorts or clears the column."
     >
       <MovingBoard />
     </LabSection>

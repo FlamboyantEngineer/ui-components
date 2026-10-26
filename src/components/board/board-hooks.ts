@@ -8,6 +8,7 @@ export const boardHooks = createHooks('board', [
   'column-toggle',
   'column-title',
   'column-count',
+  'column-actions',
   'lane',
   'lane-header',
   'lane-toggle',
