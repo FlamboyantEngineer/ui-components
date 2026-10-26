@@ -2,6 +2,7 @@ import { Button } from '../../src/components/button/button.js';
 import { ChatHeader } from '../../src/components/chat/index.js';
 import { ChatAssistantCases } from './chat-assistant-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
+import { ChatDisplayCases } from './chat-display-cases.js';
 import { ChatEverythingCases } from './chat-everything-cases.js';
 import { ChatGroupCases } from './chat-group-cases.js';
 import { ChatHostCases } from './chat-host-cases.js';
@@ -54,6 +55,7 @@ mountLab(
     <ChatChromeCases />
     <ChatSurfaceCases />
     <ChatStateCases />
+    <ChatDisplayCases />
     <LabSection
       title="Header"
       description="ChatHeader on its own: one participant with their presence (or a plain avatar without it; an assistant's is rounded), a stack of several that lists everyone with their presence when pressed, the title as a heading, a line saying who is typing or what the assistant does, and the host's controls."

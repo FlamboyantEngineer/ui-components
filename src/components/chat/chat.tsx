@@ -16,6 +16,7 @@ import { TextMatchProvider } from '../text-match/text-match.js';
 import { ChatComposer, type ChatComposerOptions } from './chat-composer.js';
 import { ChatHeader } from './chat-header.js';
 import { chatHooks as hooks } from './chat-hooks.js';
+import { useMessageDisplay, type ChatMessageDisplayOptions } from './chat-message-display.js';
 import { ChatMessageView, type ChatMessageContext } from './chat-message-view.js';
 import {
   findStatusText,
@@ -40,6 +41,7 @@ export interface ChatProps
     AriaLabellingProps,
     ChatComposerOptions,
     ChatMessageOptions,
+    ChatMessageDisplayOptions,
     Pick<
       ChatTranscriptProps,
       | 'emptyState'
@@ -76,7 +78,11 @@ interface ChatModel {
 
 /** The transcript's children: date separators, the unread divider and the messages. */
 function useSequence(
-  { props, context }: Omit<ChatModel, 'participants'>,
+  {
+    props,
+    context,
+    display,
+  }: Omit<ChatModel, 'participants'> & { display: ChatMessageDisplayOptions },
   expanded: ChatState['expanded'],
 ) {
   const { messages, firstUnreadId, readPositions, currentUserId } = props;
@@ -105,6 +111,7 @@ function useSequence(
         readers={readers.get(message.id)}
         expandedParts={expanded[message.id]}
         context={context}
+        display={display}
       />
     );
   });
@@ -143,7 +150,8 @@ export function Chat(props: ChatProps) {
   const state = useChatState(props.conversationId);
   const search = useChatSearch(messages);
   const context = useMessageContext(props, state, { participants, isAssistantChat });
-  const sequence = useSequence({ props, context }, state.expanded);
+  const display = useMessageDisplay(props);
+  const sequence = useSequence({ props, context, display }, state.expanded);
   const headerStatus = useHeaderStatus({ props, participants });
   const showHeader = Boolean(props.title || props.headerActions || props.showSearch);
   const others = list.filter((participant) => participant.id !== currentUserId);
