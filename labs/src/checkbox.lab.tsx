@@ -1,17 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Checkbox, cycleCheckState } from '../../src/components/checkbox/checkbox.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const values = ['empty', 'ticked', 'mixed'] as const;
 const states = ['resting', 'required', 'invalid', 'read-only', 'disabled'] as const;
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function ThreeState() {
   const [value, setValue] = useState<boolean | null>(null);
@@ -25,7 +18,7 @@ function ThreeState() {
       >
         Repeat header row
       </Checkbox>
-      <Output name="Value">{value === null ? 'inherited' : String(value)}</Output>
+      <LabOutput name="Value">{value === null ? 'inherited' : String(value)}</LabOutput>
     </>
   );
 }
@@ -42,7 +35,7 @@ function Options() {
         Match case
       </Checkbox>
       <Checkbox onChange={toggle('word')}>Whole word</Checkbox>
-      <Output name="Options">{ticked.join(', ') || 'none'}</Output>
+      <LabOutput name="Options">{ticked.join(', ') || 'none'}</LabOutput>
     </>
   );
 }

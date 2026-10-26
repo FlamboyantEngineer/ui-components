@@ -1,5 +1,5 @@
 import { multipleChoices } from './choice-group-multiple.js';
-import { useState, type JSX, type ReactNode } from 'react';
+import { useState, type JSX } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
@@ -9,6 +9,7 @@ import {
   type ChoiceRenderState,
 } from '../../src/components/choice-group/choice-group.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -18,14 +19,6 @@ import {
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ChoiceGroupSize[];
 const orientations = ['vertical', 'horizontal'] as const;
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Fruit() {
   return (
@@ -83,7 +76,7 @@ function Plans() {
           Kitchen <strong>€49 a month</strong>
         </Choice>
       </ChoiceGroup>
-      <Output name="Plan">{value ?? 'none'}</Output>
+      <LabOutput name="Plan">{value ?? 'none'}</LabOutput>
     </>
   );
 }
@@ -109,7 +102,7 @@ function Required() {
         </Choice>
       </ChoiceGroup>
       <Button type="submit">Order</Button>
-      <Output name="Delivery">{submitted}</Output>
+      <LabOutput name="Delivery">{submitted}</LabOutput>
     </Form>
   );
 }
@@ -132,7 +125,7 @@ function SavedGroup() {
         <Fruit />
       </ChoiceGroup>
       <Button onPress={() => setSaved(value)}>Save</Button>
-      <Output name="Snack">{value ?? 'none'}</Output>
+      <LabOutput name="Snack">{value ?? 'none'}</LabOutput>
     </>
   );
 }

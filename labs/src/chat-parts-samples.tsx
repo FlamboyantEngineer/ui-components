@@ -31,7 +31,7 @@ export const tripSources: ChatSource[] = [
 ];
 
 /** A token over the first occurrence of `covered` in `text`. */
-export function tokenOver(
+function tokenOver(
   text: string,
   covered: string,
   token: Omit<ChatTextToken, 'start' | 'end'>,

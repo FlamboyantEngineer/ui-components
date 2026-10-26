@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
@@ -9,6 +9,7 @@ import {
   type SliderValueLabel,
 } from '../../src/components/slider/slider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -20,14 +21,6 @@ import {
 const sliderStates = fieldStates.filter((state) => state !== 'required');
 const sizes = ['sm', 'md', 'lg'] as const satisfies readonly SliderSize[];
 const valueLabels = ['output', 'thumb', 'none'] as const satisfies readonly SliderValueLabel[];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({ state, size }: { state: FieldStateName; size: SliderSize }) {
   const props = useLabFieldState<number>(state, {
@@ -98,8 +91,8 @@ function Commit() {
         marks={[{ value: 0 }, { value: 25 }, { value: 50 }, { value: 75 }, { value: 100 }]}
         data-lab-field="brightness"
       />
-      <Output name="Brightness">{value}</Output>
-      <Output name="Brightness committed">{committed}</Output>
+      <LabOutput name="Brightness">{value}</LabOutput>
+      <LabOutput name="Brightness committed">{committed}</LabOutput>
     </>
   );
 }
@@ -121,7 +114,7 @@ function Range() {
         description="The thumbs stay at least €50 apart."
         data-lab-field="range"
       />
-      <Output name="Price">{value.join(' to ')}</Output>
+      <LabOutput name="Price">{value.join(' to ')}</LabOutput>
     </>
   );
 }
@@ -194,7 +187,7 @@ function SavedForm() {
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
       <Button type="submit">Submit</Button>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </Form>
   );
 }

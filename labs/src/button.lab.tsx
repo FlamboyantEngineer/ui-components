@@ -1,23 +1,11 @@
 import { ButtonActionCases } from './button-action-cases.js';
 import { ButtonIconCases } from './button-icon-cases.js';
 import { useState } from 'react';
-import { Button, type ButtonVariant } from '../../src/components/button/button.js';
+import { Button } from '../../src/components/button/button.js';
 import { mergeProps } from '../../src/utils/merge-props.js';
+import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const variants: ButtonVariant[] = [
-  'primary',
-  'secondary',
-  'tertiary',
-  'danger',
-  'ghost',
-  'accent',
-  'chip',
-  'link',
-  'bare',
-];
-const sizes = ['xs', 'sm', 'md', 'lg'] as const;
-const states = ['default', 'selected', 'disabled', 'focusable disabled', 'pending'] as const;
 const hints = ['tooltip', 'shortcut', 'tooltip and shortcut'] as const;
 
 function Toggles() {
@@ -40,7 +28,7 @@ mountLab(
     <div data-lab-family="button-main">
       <LabSection title="Variants and sizes">
         <StateMatrix
-          axes={{ variant: variants, size: sizes }}
+          axes={{ variant: buttonVariants, size: buttonSizes }}
           render={({ variant, size }) => (
             <Button variant={variant} size={size}>
               Save changes
@@ -53,7 +41,7 @@ mountLab(
         description="Hover, press and keyboard focus show on interaction; tab through the matrix to see focus."
       >
         <StateMatrix
-          axes={{ variant: variants, state: states }}
+          axes={{ variant: buttonVariants, state: buttonStates }}
           render={({ variant, state }) => (
             <Button
               variant={variant}
@@ -70,7 +58,7 @@ mountLab(
       </LabSection>
       <LabSection title="Icons">
         <StateMatrix
-          axes={{ icons: ['start', 'end', 'both'], size: sizes }}
+          axes={{ icons: ['start', 'end', 'both'], size: buttonSizes }}
           render={({ icons, size }) => (
             <Button
               size={size}

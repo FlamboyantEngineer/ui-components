@@ -1,8 +1,6 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-import { Field, useFieldState } from '../../src/components/field/field.js';
-
 import {
   PropertyCard,
   PropertyGroup,
@@ -13,9 +11,9 @@ import {
   PropertyStrip,
   PropertyStripCell,
   type PropertyPanelLabelLayout,
-  type PropertyRowProps,
 } from '../../src/components/property-panel/property-panel.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { TextSetting } from './property-text-setting.js';
 
 const layouts = ['responsive', 'inline'] as const;
 const widths = { narrow: 300, wide: 440 } as const;
@@ -39,31 +37,6 @@ const sectionStates = [
   'disabled',
 ] as const;
 const cardStates = ['closed', 'open', 'summary', 'overridden', 'actions'] as const;
-
-type TextSettingProps = Omit<PropertyRowProps, 'children' | 'htmlFor' | 'label'> & {
-  label: string;
-  value: string;
-};
-
-/** A row holding a field around a plain React Aria input, which commits on blur. */
-function TextSetting({ label, value, ...row }: TextSettingProps) {
-  const id = useId();
-  const state = useFieldState<string>({ defaultValue: value });
-  return (
-    <PropertyRow label={label} htmlFor={`${id}-control`} {...row}>
-      <Field id={id} state={state} label={label} labelLayout="control-only">
-        {(control) => (
-          <input
-            {...control}
-            value={state.value}
-            onChange={(event) => state.setValue(event.target.value)}
-            onBlur={() => state.commit()}
-          />
-        )}
-      </Field>
-    </PropertyRow>
-  );
-}
 
 function Panel({
   name,

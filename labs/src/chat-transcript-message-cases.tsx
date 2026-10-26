@@ -268,7 +268,7 @@ export function ChatTranscriptMessageCases() {
       </LabSection>
       <LabSection
         title="Conversation parts"
-        description="Date separators, the unread divider, typing indicators (one, two, three or more people, an assistant thinking, nobody), read receipts and quotes."
+        description="Date separators, the unread divider, typing indicators (one, two, three or more people, nobody), read receipts and quotes."
       >
         <ConversationParts />
       </LabSection>

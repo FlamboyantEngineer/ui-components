@@ -1,8 +1,9 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import { PinInput, type PinInputType } from '../../src/components/pin-input/pin-input.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -27,14 +28,6 @@ const typeSamples: Record<PinInputType, string> = {
   alphanumeric: 'K9P2',
   alphabetic: 'QXZW',
 };
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -68,8 +61,10 @@ function OneTimeCode() {
         }
         data-lab-field="otp"
       />
-      <Output name="Completed">{completions.length > 0 ? completions.join(', ') : 'none'}</Output>
-      <Output name="Verified">{completions.at(-1) === '135790' ? 'yes' : 'no'}</Output>
+      <LabOutput name="Completed">
+        {completions.length > 0 ? completions.join(', ') : 'none'}
+      </LabOutput>
+      <LabOutput name="Verified">{completions.at(-1) === '135790' ? 'yes' : 'no'}</LabOutput>
     </>
   );
 }
@@ -91,7 +86,7 @@ function DirtyAndRestore() {
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
-      <Output name="Saved">{saved}</Output>
+      <LabOutput name="Saved">{saved}</LabOutput>
     </>
   );
 }
@@ -110,7 +105,7 @@ function InForm() {
         Unlock
       </Button>
       <Button type="reset">Reset</Button>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </Form>
   );
 }

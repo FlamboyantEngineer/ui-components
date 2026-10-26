@@ -8,20 +8,9 @@ import {
   type DateTimeFieldProps,
 } from '../../src/components/date-time-field/date-time-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
-const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
 const modes = ['date', 'time', 'date-time', 'date-range', 'date-time-range'] as const;
-const states = [
-  'resting',
-  'required',
-  'dirty',
-  'invalid',
-  'warning',
-  'pending',
-  'read-only',
-  'disabled',
-] as const;
-type State = (typeof states)[number];
 type AnyValue = string | DateRangeValue | null;
 
 const samples: Record<DateTimeFieldMode, { value: AnyValue; committed: AnyValue }> = {
@@ -42,11 +31,11 @@ const samples: Record<DateTimeFieldMode, { value: AnyValue; committed: AnyValue 
 const isWeekend = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay() % 6 === 0;
 
 function stateProps(
-  state: State,
+  state: FieldStateName,
   mode: DateTimeFieldMode,
 ): Partial<DateTimeFieldProps<DateTimeFieldMode>> {
   const { value } = samples[mode];
-  const props: Record<State, Partial<DateTimeFieldProps<DateTimeFieldMode>>> = {
+  const props: Record<FieldStateName, Partial<DateTimeFieldProps<DateTimeFieldMode>>> = {
     resting: { defaultValue: value },
     required: { isRequired: true },
     dirty: {},
@@ -70,7 +59,7 @@ function MatrixField({
   mode,
   layout,
 }: {
-  state: State;
+  state: FieldStateName;
   mode: DateTimeFieldMode;
   layout: FieldLabelLayout;
 }) {
@@ -243,7 +232,7 @@ mountLab(
     </LabSection>
     <LabSection title="Modes and states" description="Each mode in every state.">
       <StateMatrix
-        axes={{ state: states, mode: modes }}
+        axes={{ state: fieldStates, mode: modes }}
         render={({ state, mode }) => (
           <MatrixField state={state} mode={mode} layout="label-control" />
         )}
@@ -251,7 +240,7 @@ mountLab(
     </LabSection>
     <LabSection title="Layouts" description="A date field in every label layout.">
       <StateMatrix
-        axes={{ layout: layouts }}
+        axes={{ layout: fieldLayouts }}
         render={({ layout }) => <MatrixField state="resting" mode="date" layout={layout} />}
       />
     </LabSection>

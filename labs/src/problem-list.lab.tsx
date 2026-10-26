@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -9,6 +9,7 @@ import {
 import { TextField } from '../../src/components/text-field/text-field.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const contents = ['empty', 'errors', 'warnings', 'mixed'] as const;
 const targets = ['plain', 'jump'] as const;
@@ -26,14 +27,6 @@ const byContent: Record<(typeof contents)[number], ProblemListItem[]> = {
   warnings,
   mixed: [...errors, ...warnings, { id: 'links', message: 'Two links are broken.' }],
 };
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 /** A form whose problem list fills on the first submit and empties as the fields are fixed. */
 function EventForm() {
@@ -62,7 +55,7 @@ function EventForm() {
           Book
         </Button>
       </Form>
-      <Output name="booked">{sent}</Output>
+      <LabOutput name="booked">{sent}</LabOutput>
     </div>
   );
 }
@@ -91,7 +84,7 @@ function DocumentChecks() {
         Risks
       </h3>
       <p>Supplier delays; data migration.</p>
-      <Output name="picked">{String(picked)}</Output>
+      <LabOutput name="picked">{String(picked)}</LabOutput>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FileField,
   type FileFieldItem,
@@ -7,6 +7,7 @@ import {
 import type { FileUploadItem } from '../../src/components/file-upload/file-upload.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -64,14 +65,6 @@ const samples: SampleValues<FileFieldItem[]> = {
   warning: [draft],
   empty: [],
 };
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function formatFiles(files: readonly FileFieldItem[]): string {
   return files.length > 0 ? files.map((file) => file.name).join(' | ') : 'none';
@@ -172,7 +165,7 @@ function Uploading(props: Partial<FileFieldProps> & { lab: string; initial: File
         data-lab-field={lab}
         {...rest}
       />
-      <Output name={`${lab}-value`}>{formatFiles(storage.value)}</Output>
+      <LabOutput name={`${lab}-value`}>{formatFiles(storage.value)}</LabOutput>
     </div>
   );
 }
@@ -206,7 +199,7 @@ function MediaFiles() {
         )}
         data-lab-field="media"
       />
-      <Output name="opened">{opened}</Output>
+      <LabOutput name="opened">{opened}</LabOutput>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
@@ -12,6 +12,7 @@ import {
 } from '../../src/components/signature-pad/signature-path.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -40,14 +41,6 @@ const modeSamples: Record<(typeof modes)[number], SignatureValue> = {
   type: { kind: 'typed', text: 'Ada Lovelace' },
   'draw only': signature,
 };
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -80,10 +73,10 @@ function LiveSignature() {
       <Button onPress={() => setReadOnly((current) => !current)}>
         {isReadOnly ? 'Unlock drawing' : 'Lock drawing'}
       </Button>
-      <Output name="Kind">{value?.kind ?? 'empty'}</Output>
-      <Output name="Strokes">{drawing ? drawing.paths.length : 0}</Output>
-      <Output name="Typed">{value?.kind === 'typed' ? value.text : 'none'}</Output>
-      <Output name="Commits">{commits}</Output>
+      <LabOutput name="Kind">{value?.kind ?? 'empty'}</LabOutput>
+      <LabOutput name="Strokes">{drawing ? drawing.paths.length : 0}</LabOutput>
+      <LabOutput name="Typed">{value?.kind === 'typed' ? value.text : 'none'}</LabOutput>
+      <LabOutput name="Commits">{commits}</LabOutput>
       {drawing ? (
         <div data-lab-previews>
           <img src={formatSignatureDataUrl(drawing)} alt="Signature as an image" width={300} />
@@ -119,7 +112,7 @@ function InForm() {
       <Button type="submit" variant="primary">
         Confirm delivery
       </Button>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </Form>
   );
 }

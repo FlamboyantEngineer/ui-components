@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ColorField, type ColorFieldFormat } from '../../src/components/color-field/color-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -20,14 +21,6 @@ const formats = [
   'hsba',
 ] as const satisfies readonly ColorFieldFormat[];
 const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d'];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -63,8 +56,8 @@ function Picking() {
       />
       <ColorField label="Highlight" isRequired defaultValue="#ffd700" data-lab-field="required" />
       <ColorField label="Border" placeholder="Same as the text" data-lab-field="placeholder" />
-      <Output name="Changed">{changed}</Output>
-      <Output name="Committed">{committed}</Output>
+      <LabOutput name="Changed">{changed}</LabOutput>
+      <LabOutput name="Committed">{committed}</LabOutput>
     </>
   );
 }
@@ -94,8 +87,8 @@ function Formats() {
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="value-format"
       />
-      <Output name="Format">{format}</Output>
-      <Output name="Format committed">{committed}</Output>
+      <LabOutput name="Format">{format}</LabOutput>
+      <LabOutput name="Format committed">{committed}</LabOutput>
     </>
   );
 }
@@ -113,7 +106,7 @@ function Presets() {
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="presets"
       />
-      <Output name="Preset committed">{committed}</Output>
+      <LabOutput name="Preset committed">{committed}</LabOutput>
     </>
   );
 }
@@ -131,7 +124,7 @@ function Typing() {
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="typing"
       />
-      <Output name="Typed committed">{committed}</Output>
+      <LabOutput name="Typed committed">{committed}</LabOutput>
     </>
   );
 }
@@ -152,7 +145,7 @@ function Saved() {
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
-      <Output name="Saved">{saved ?? 'empty'}</Output>
+      <LabOutput name="Saved">{saved ?? 'empty'}</LabOutput>
     </>
   );
 }
@@ -173,7 +166,7 @@ function FormValue() {
       <ColorField label="Brand" name="brand" defaultValue="#336699" format="rgb" />
       <ColorField label="Highlight" name="highlight" defaultValue="#e69500" allowsTyping />
       <button type="submit">Submit</button>
-      <Output name="Form">{entries}</Output>
+      <LabOutput name="Form">{entries}</LabOutput>
     </form>
   );
 }

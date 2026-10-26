@@ -25,7 +25,7 @@ export const kitchenPages = {
 
 export type KitchenPage = keyof typeof kitchenPages;
 
-export interface KitchenRailProps extends Omit<NavigationRailProps, 'children'> {
+interface KitchenRailProps extends Omit<NavigationRailProps, 'children'> {
   current: KitchenPage;
   onNavigate: (page: KitchenPage) => void;
 }

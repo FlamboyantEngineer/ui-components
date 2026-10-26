@@ -5,6 +5,7 @@ import type {
   ChatStreamEvent,
 } from '../../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts.js';
+import { sleep } from './chat-agent-stream.js';
 import { agUiSend, aiSdkSend } from './chat-controller-adapters.js';
 
 export const readerId = 'reader';
@@ -24,24 +25,8 @@ export const scenarios = {
 
 export type LabScenario = keyof typeof scenarios;
 
-/** Waits `ms`, or rejects when the reader stops the reply. */
-export function sleep(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) reject(signal.reason);
-    const timer = setTimeout(resolve, ms);
-    signal.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer);
-        reject(signal.reason);
-      },
-      { once: true },
-    );
-  });
-}
-
 /** Streams `text` a word at a time. */
-export async function* streamWords(
+async function* streamWords(
   text: string,
   signal: AbortSignal,
   pause = 90,

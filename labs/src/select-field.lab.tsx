@@ -1,6 +1,6 @@
 import { treeChoices } from './select-tree.js';
 import { iconsChoices } from './select-icons.js';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
 import {
@@ -12,19 +12,8 @@ import {
   type SelectFieldSelectionMode,
 } from '../../src/components/select-field/select-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-
-const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
-const states = [
-  'resting',
-  'required',
-  'dirty',
-  'invalid',
-  'warning',
-  'pending',
-  'read-only',
-  'disabled',
-] as const;
-type State = (typeof states)[number];
+import { LabOutput } from './lab-output.js';
+import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const fruit: SelectFieldOption[] = [
   { id: 'apple', label: 'Apple', description: 'Crisp and sweet', icon: 'plus' },
@@ -106,21 +95,13 @@ const towns = Array.from({ length: 60 }, (_, index) => ({
   label: `Town ${String(index + 1).padStart(2, '0')}`,
 }));
 
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
-
 function stateProps(
-  state: State,
+  state: FieldStateName,
   multiple: boolean,
 ): Partial<Extract<SelectFieldProps<SelectFieldSelectionMode>, { mode?: 'list' }>> {
   const value = multiple ? ['apple', 'fig'] : 'apple';
   const props: Record<
-    State,
+    FieldStateName,
     Partial<Extract<SelectFieldProps<SelectFieldSelectionMode>, { mode?: 'list' }>>
   > = {
     resting: { defaultValue: value },
@@ -147,7 +128,7 @@ function MatrixField({
   mode,
   layout,
 }: {
-  state: State;
+  state: FieldStateName;
   mode: SelectFieldSelectionMode;
   layout: FieldLabelLayout;
 }) {
@@ -178,7 +159,7 @@ function Picking() {
         onCommit={setCommitted}
         data-lab-field="single"
       />
-      <Output name="Committed">{committed === null ? 'none' : String(committed)}</Output>
+      <LabOutput name="Committed">{committed === null ? 'none' : String(committed)}</LabOutput>
     </>
   );
 }
@@ -202,7 +183,7 @@ function Chips() {
       <button type="button" onClick={() => setCommitted(value)}>
         Save
       </button>
-      <Output name="Value">{value.join(', ') || 'none'}</Output>
+      <LabOutput name="Value">{value.join(', ') || 'none'}</LabOutput>
     </>
   );
 }
@@ -225,7 +206,7 @@ function Search() {
         placeholder="Search cities"
         data-lab-field="search"
       />
-      <Output name="Searches">{calls}</Output>
+      <LabOutput name="Searches">{calls}</LabOutput>
     </>
   );
 }
@@ -250,7 +231,7 @@ function Groups() {
         description="Filtering hides the groups that no longer match."
         data-lab-field="groups-filter"
       />
-      <Output name="Group committed">{committed}</Output>
+      <LabOutput name="Group committed">{committed}</LabOutput>
     </>
   );
 }
@@ -302,7 +283,7 @@ function Limits() {
         description="At most two; the other options disable once two are chosen."
         data-lab-field="limited"
       />
-      <Output name="Basket">{basket.join(', ') || 'none'}</Output>
+      <LabOutput name="Basket">{basket.join(', ') || 'none'}</LabOutput>
     </>
   );
 }
@@ -330,7 +311,7 @@ function Paged() {
         description="Twenty towns a page; scrolling to the end loads the next page."
         data-lab-field="paged"
       />
-      <Output name="Pages">{pages}</Output>
+      <LabOutput name="Pages">{pages}</LabOutput>
     </>
   );
 }
@@ -358,7 +339,7 @@ function Form() {
         defaultValue={['apple', 'fig']}
       />
       <button type="submit">Submit</button>
-      <Output name="Form">{entries}</Output>
+      <LabOutput name="Form">{entries}</LabOutput>
     </form>
   );
 }
@@ -388,7 +369,7 @@ mountLab(
         description="A single select in every label layout and state. The dirty cell shows the previous value."
       >
         <StateMatrix
-          axes={{ state: states, layout: layouts }}
+          axes={{ state: fieldStates, layout: fieldLayouts }}
           render={({ state, layout }) => (
             <MatrixField state={state} mode="single" layout={layout} />
           )}
@@ -396,7 +377,7 @@ mountLab(
       </LabSection>
       <LabSection title="Selection modes" description="Single and multiple selects in every state.">
         <StateMatrix
-          axes={{ state: states, mode: ['single', 'multiple'] }}
+          axes={{ state: fieldStates, mode: ['single', 'multiple'] }}
           render={({ state, mode }) => (
             <MatrixField
               state={state}

@@ -467,10 +467,6 @@
   animation-delay: calc(var(--ref-duration-loop) / 3);
 }
 
-.ui-chat-typing-indicator[data-variant='thinking'] .ui-chat-typing-indicator__text {
-  font-style: italic;
-}
-
 .ui-chat-typing-indicator__text {
   overflow: hidden;
   text-overflow: ellipsis;

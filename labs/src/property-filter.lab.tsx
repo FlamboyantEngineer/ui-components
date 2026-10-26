@@ -1,42 +1,15 @@
-import { useId, useState } from 'react';
-import { Field, useFieldState } from '../../src/components/field/field.js';
+import { useState } from 'react';
 import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
 import {
   PropertyCard,
   PropertyGroup,
-  PropertyRow,
   PropertySection,
   type PropertyPanelLabelLayout,
-  type PropertyRowProps,
 } from '../../src/components/property-panel/property-panel.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { TextSetting } from './property-text-setting.js';
 
 const widths = { narrow: 300, wide: 440 } as const;
-
-type TextSettingProps = Omit<PropertyRowProps, 'children' | 'htmlFor' | 'label'> & {
-  label: string;
-  value: string;
-};
-
-/** A row holding a field around a plain native input, so a draft can outlive filtering. */
-function TextSetting({ label, value, ...row }: TextSettingProps) {
-  const id = useId();
-  const state = useFieldState<string>({ defaultValue: value });
-  return (
-    <PropertyRow label={label} htmlFor={`${id}-control`} {...row}>
-      <Field id={id} state={state} label={label} labelLayout="control-only">
-        {(control) => (
-          <input
-            {...control}
-            value={state.value}
-            onChange={(event) => state.setValue(event.target.value)}
-            onBlur={() => state.commit()}
-          />
-        )}
-      </Field>
-    </PropertyRow>
-  );
-}
 
 type FrameSettingsProps = Pick<
   Parameters<typeof PropertyFilter>[0],

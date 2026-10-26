@@ -18,7 +18,7 @@ const people = {
 };
 
 /** The first conversations: one-to-one, groups, an assistant, unread and muted. */
-export const featuredConversations: ChatConversation[] = [
+const featuredConversations: ChatConversation[] = [
   {
     id: 'ana',
     title: 'Ana Lima',

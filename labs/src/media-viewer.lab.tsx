@@ -8,6 +8,7 @@ import { PdfViewer } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import type { Key } from '../../src/core/props.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 
 /** A drawn landscape of the given size, as an SVG data URL. */
@@ -81,14 +82,6 @@ function renderFile(item: MediaViewerItem): ReactNode {
   );
 }
 
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
-
 /** A button that opens the viewer on a set at its first or last item. */
 function Opener({ set, opens }: { set: SetName; opens: 'first' | 'last' }) {
   const [isOpen, setOpen] = useState(false);
@@ -143,7 +136,7 @@ function Gallery() {
           setShown(key);
         }}
       />
-      <Output name="shown">{String(shown)}</Output>
+      <LabOutput name="shown">{String(shown)}</LabOutput>
     </>
   );
 }

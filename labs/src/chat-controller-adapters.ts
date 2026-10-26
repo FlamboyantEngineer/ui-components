@@ -97,7 +97,7 @@ export type UiMessageChunk =
   | { type: 'error'; errorText: string };
 
 /** Maps one AI SDK-style chunk; chunks without a counterpart map to nothing. */
-export function fromUiMessageChunk(chunk: UiMessageChunk): ChatStreamEvent | undefined {
+function fromUiMessageChunk(chunk: UiMessageChunk): ChatStreamEvent | undefined {
   switch (chunk.type) {
     case 'text-delta':
       return { type: 'text-delta', text: chunk.delta };

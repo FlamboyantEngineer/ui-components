@@ -12,7 +12,7 @@ import { ChatMessage } from '../../src/components/chat-transcript/chat-transcrip
 import { readerId } from './chat-controller-agents.js';
 
 /** The answers a reply's cards take, when the reader may answer them. */
-export type LabResponses = Pick<
+type LabResponses = Pick<
   ChatControllerProps,
   'onApprove' | 'onDeny' | 'onAlwaysAllow' | 'onAnswerQuestion' | 'onDismissQuestion' | 'onRetry'
 >;
