@@ -128,6 +128,8 @@ export function ContextMenu({
           {...anchorProps}
           aria-label={label}
           layer={layer}
+          // Like a platform context menu, it holds the page still while open.
+          isNonModal={false}
           isOpen={isOpen}
           onOpenChange={state.setOpen}
           onContextMenu={(event) => event.preventDefault()}

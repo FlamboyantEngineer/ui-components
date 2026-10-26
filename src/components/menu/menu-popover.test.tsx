@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
@@ -19,6 +19,31 @@ describe('MenuPopover and SubmenuTrigger', () => {
     expectHooksMatchSpec(document.body, 'MENU');
     await user.click(document.body);
     expect(document.querySelector('.ui-menu-popover')).toBeNull();
+  });
+
+  it('UIC-MENU-4.3 keeps the page scrollable and stays open as it scrolls', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <div role="region" aria-label="List">
+          <MenuButton items={fruitEntries} aria-label="Fruit" />
+        </div>
+        <p>Page text</p>
+      </>,
+    );
+    const overflow = document.documentElement.style.overflow;
+    await openMenu(user);
+    expect(document.documentElement.style.overflow).toBe(overflow);
+    expect(screen.getByText('Page text')).toBeVisible();
+    fireEvent.scroll(document);
+    fireEvent.scroll(screen.getByText('Page text'));
+    await user.keyboard('{End}{ArrowRight}');
+    await screen.findByRole('menuitem', { name: 'Cherry' });
+    fireEvent.scroll(document);
+    expect(screen.getAllByRole('menu')).toHaveLength(2);
+    // The popover cannot follow a trigger inside a scrolled element, so the menu closes.
+    fireEvent.scroll(screen.getByRole('region', { name: 'List' }));
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
   });
 
   it('UIC-MENU-4.4 stacks the popover on its layer, honouring provider z-indexes', async () => {
@@ -77,7 +102,7 @@ describe('MenuPopover and SubmenuTrigger', () => {
     expect(share).toHaveAttribute('data-has-submenu', 'true');
     expect(screen.getByRole('menuitem', { name: 'Mail' })).toHaveFocus();
     await user.keyboard('{ArrowLeft}');
-    expect(share).toHaveFocus();
+    await waitFor(() => expect(share).toHaveFocus());
     expect(screen.queryByRole('menuitem', { name: 'Mail' })).not.toBeInTheDocument();
     await user.keyboard('{ArrowRight}{Escape}');
     expect(share).toHaveFocus();
@@ -107,6 +132,6 @@ describe('MenuPopover and SubmenuTrigger', () => {
     await user.keyboard('{ArrowLeft}');
     expect(screen.getByRole('menuitem', { name: 'Cherry' })).toHaveFocus();
     await user.keyboard('{ArrowRight}');
-    expect(screen.getByRole('menuitem', { name: 'More fruit' })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'More fruit' })).toHaveFocus());
   });
 });

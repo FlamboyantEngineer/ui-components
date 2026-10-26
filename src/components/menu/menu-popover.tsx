@@ -1,7 +1,9 @@
 import {
   createContext,
   useCallback,
+  useLayoutEffect,
   useRef,
+  useState,
   useContext,
   type MouseEvent,
   type ReactNode,
@@ -10,6 +12,7 @@ import {
 } from 'react';
 import {
   Popover as AriaPopover,
+  OverlayTriggerStateContext,
   PopoverContext,
   RootMenuTriggerStateContext,
   useInteractOutside,
@@ -42,7 +45,10 @@ export interface MenuOverlayProps extends MenuPopoverProps {
   triggerRef?: RefObject<Element | null> | undefined;
   /** Places it against this viewport rectangle instead of the trigger's. */
   getTargetRect?: (() => DOMRect) | undefined;
-  /** Leaves the page outside reachable, visible to assistive technology and scrollable. */
+  /**
+   * Leaves the page outside reachable, visible to assistive technology and scrollable. Defaults to
+   * true; false blocks the page while the menu is open.
+   */
   isNonModal?: boolean | undefined;
   /** Asked with the element pressed before an outside press closes it; false keeps it open. */
   shouldCloseOnInteractOutside?: ((element: Element) => boolean) | undefined;
@@ -53,7 +59,7 @@ export interface MenuOverlayProps extends MenuPopoverProps {
 const hooks = createHooks('menu-popover');
 
 const MenuLayerContext = createContext<PortalProps['layer']>(undefined);
-const MenuNonModalContext = createContext(false);
+const MenuNonModalContext = createContext(true);
 const MenuSurfaceContext = createContext<Set<HTMLElement> | null>(null);
 
 /** Portalled submenus belong to the same outside-press boundary as their parent menu. */
@@ -85,6 +91,58 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
 }
 
 /**
+ * Keeps a nonmodal root menu open while the page scrolls, following its trigger. React Aria closes
+ * it on any scroll of the trigger's scroll containers, the page included; only a scroll of an
+ * element holding the trigger still closes it, since the popover cannot follow that.
+ */
+function usePageScrollFollow(isActive: boolean, props: MenuOverlayProps) {
+  const state = useContext(OverlayTriggerStateContext);
+  const isOpen = props.isOpen ?? state?.isOpen ?? false;
+  const setOpen = props.onOpenChange ?? state?.setOpen;
+  const isPageScrolling = useRef(false);
+  // Pausing position updates for one render makes React Aria place the popover again.
+  const [isPaused, setPaused] = useState(false);
+  useLayoutEffect(() => {
+    if (isPaused) setPaused(false);
+  }, [isPaused]);
+  useLayoutEffect(() => {
+    if (!isActive || !isOpen) return;
+    // A layout effect, so this capture listener sees each scroll before React Aria's.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let frame: number | undefined;
+    const onScroll = (event: Event) => {
+      isPageScrolling.current = !(event.target instanceof Element);
+      if (!isPageScrolling.current) return;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        isPageScrolling.current = false;
+      });
+      // A sticky or fixed trigger stays put as the page scrolls; the popover follows it.
+      frame ??= requestAnimationFrame(() => {
+        frame = undefined;
+        setPaused(true);
+      });
+    };
+    const options = { capture: true, passive: true };
+    window.addEventListener('scroll', onScroll, options);
+    return () => {
+      clearTimeout(timer);
+      if (frame !== undefined) cancelAnimationFrame(frame);
+      isPageScrolling.current = false;
+      window.removeEventListener('scroll', onScroll, options);
+    };
+  }, [isActive, isOpen]);
+  if (!isActive) return {};
+  return {
+    isOpen,
+    onOpenChange: (open: boolean) => {
+      if (open || !isPageScrolling.current) setOpen?.(open);
+    },
+    shouldUpdatePosition: !isPaused,
+  };
+}
+
+/**
  * The floating surface of a menu with the options the family's composites need (React Aria
  * `Popover`), stacked on an overlay layer. A submenu popover sits beside its trigger item,
  * overlapping the parent menu, on its layer.
@@ -107,9 +165,11 @@ export function MenuOverlay({
   const resolved = layer ?? inherited ?? 'dropdown';
   const zIndex = useLayerZIndex(resolved);
   const isSubmenu = useSlottedContext(PopoverContext)?.trigger === 'SubmenuTrigger';
+  const open = usePageScrollFollow(nonModal && !isSubmenu, rest);
   return (
     <AriaPopover
       {...rest}
+      {...open}
       ref={surface.ref}
       isNonModal={nonModal}
       {...hooks.root({ className, props: rest, data: { layer: resolved } })}

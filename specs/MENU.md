@@ -126,7 +126,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.3 - Popover
 
-`MenuPopover` shall be a popover placed against its trigger, taking the overlay position props: `placement` (a `Placement`) defaults to `bottom start`, 4 pixels away (`offset`), shifted by `crossOffset`, flipping to the other side when it does not fit unless `shouldFlip` is false, and limiting its height to the room in the viewport less 8 pixels (`containerPadding`); the popover is the scroll container of a menu taller than that room. It publishes `data-placement`, `data-trigger` (`MenuTrigger`, `SubmenuTrigger`), `data-entering` and `data-exiting`, and closes on a press outside it.
+`MenuPopover` shall be a popover placed against its trigger, taking the overlay position props: `placement` (a `Placement`) defaults to `bottom start`, 4 pixels away (`offset`), shifted by `crossOffset`, flipping to the other side when it does not fit unless `shouldFlip` is false, and limiting its height to the room in the viewport less 8 pixels (`containerPadding`); the popover is the scroll container of a menu taller than that room. It publishes `data-placement`, `data-trigger` (`MenuTrigger`, `SubmenuTrigger`), `data-entering` and `data-exiting`, and closes on a press outside it. While it is open the page outside stays scrollable, reachable and visible to assistive technology. As the page scrolls the menu stays open and keeps its place against the trigger, a sticky or fixed one included; scrolling an element that holds the trigger closes it, since the popover cannot follow that.
 
 Implementation: `src/components/menu/menu-popover.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-popover.test.tsx`, `e2e/menu.spec.ts`

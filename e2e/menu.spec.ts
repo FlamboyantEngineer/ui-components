@@ -277,6 +277,53 @@ test.describe('Menu lab', () => {
     await expect(last).toBeInViewport();
   });
 
+  test('UIC-MENU-4.3 scrolls the page under an open menu, which follows its trigger', async ({
+    page,
+    lab,
+  }) => {
+    await page.setViewportSize({ width: 800, height: 500 });
+    await lab.open('menu');
+    const area = section(page, 'Long menu');
+    const trigger = area.getByRole('button', { name: 'Cities' });
+    const popover = popovers(page);
+    /** How far the popover is from its 4 pixel offset to the trigger, on whichever side it opened. */
+    const gap = async () => {
+      const [menuBox, triggerBox] = [await popover.boundingBox(), await trigger.boundingBox()];
+      if (!menuBox || !triggerBox) return Infinity;
+      const below = menuBox.y - (triggerBox.y + triggerBox.height);
+      const above = triggerBox.y - (menuBox.y + menuBox.height);
+      return Math.abs(Math.max(below, above) - 4);
+    };
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.click();
+    const box = await popover.boundingBox();
+    const middle = (box?.y ?? 0) + (box?.height ?? 0) / 2;
+    await page.mouse.move((box?.x ?? 0) + (box?.width ?? 0) / 2, middle);
+    await page.mouse.wheel(0, 200);
+    await expect.poll(() => popover.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+    expect(await gap()).toBeLessThan(1.5);
+    const scrollY = await page.evaluate(() => window.scrollY);
+    await page.mouse.move((box?.x ?? 0) + (box?.width ?? 0) + 100, middle);
+    await page.mouse.wheel(0, -120);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(scrollY);
+    await expect(popover).toHaveCount(1);
+    await expect.poll(gap).toBeLessThan(1.5);
+    await page.keyboard.press('Escape');
+    await expect(popover).toHaveCount(0);
+
+    // A trigger that stays put as the page scrolls: the popover keeps beside it.
+    await trigger.evaluate((node) => {
+      Object.assign(node.style, { position: 'fixed', top: '120px', left: '24px' });
+    });
+    await trigger.click();
+    await expect(popover).toHaveCount(1);
+    expect(await gap()).toBeLessThan(1.5);
+    await page.mouse.move(700, 400);
+    await page.mouse.wheel(0, 150);
+    await expect(popover).toHaveCount(1);
+    await expect.poll(gap).toBeLessThan(1.5);
+  });
+
   test('UIC-MENU-4.4 stacks a menu above the modal layer and below the tooltip layer', async ({
     page,
     lab,
