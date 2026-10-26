@@ -34,7 +34,7 @@ test.describe('Chat Question lab', () => {
       );
     }
     const several = page.getByRole('group', { name: `3 questions: ${database}` }).first();
-    await expect(several.getByRole('list', { name: 'Questions' })).toBeVisible();
+    await expect(several.getByRole('tablist', { name: 'Questions' })).toBeVisible();
     await expect(cell(page, 'questions=several status=answered')).toContainText(
       'You chose Search, Export to CSV and Offline mode',
     );
@@ -70,13 +70,13 @@ test.describe('Chat Question lab', () => {
     await lab.expectAccessible('[data-lab-section="Selection modes"]');
   });
 
-  test('UIC-CHAT-QUESTION-3.1 UIC-CHAT-QUESTION-3.2 UIC-CHAT-QUESTION-3.3 UIC-CHAT-QUESTION-2.4 UIC-CHAT-QUESTION-2.2 answers a stepped card from the keyboard alone', async ({
+  test('UIC-CHAT-QUESTION-3.1 UIC-CHAT-QUESTION-3.5 UIC-CHAT-QUESTION-3.6 UIC-CHAT-QUESTION-2.4 UIC-CHAT-QUESTION-2.2 answers a stepped card from the keyboard alone', async ({
     page,
     lab,
   }) => {
     await lab.open('chat-question');
     const card = demo(page, 'interactive');
-    await expect(card.locator('.ui-chat-question__progress')).toHaveText('Question 1 of 3');
+    await expect(card.locator('.ui-chat-question__progress')).toContainText('Question 1 of 3');
     await card.getByRole('radio', { name: 'PostgreSQL Recommended' }).focus();
     await page.keyboard.press('ArrowDown');
     await expect(card.getByRole('radio', { name: 'SQLite' })).toBeChecked();
@@ -84,7 +84,7 @@ test.describe('Chat Question lab', () => {
     const next = card.getByRole('button', { name: 'Next' });
     await expect(next).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(card.locator('.ui-chat-question__progress')).toHaveText('Question 2 of 3');
+    await expect(card.locator('.ui-chat-question__progress')).toContainText('Question 2 of 3');
     await expect(card.getByRole('checkbox', { name: 'Sign-in' })).toBeFocused();
     await page.keyboard.press('Tab');
     await page.keyboard.press('Space');
@@ -96,9 +96,9 @@ test.describe('Chat Question lab', () => {
     await expect(other).toBeFocused();
     await page.keyboard.type('Offline mode');
     await page.keyboard.press('Enter');
-    await expect(card.locator('.ui-chat-question__progress')).toHaveText('Question 3 of 3');
-    await expect(card.locator('[aria-current="step"]')).toHaveText('Name');
-    await expect(card.locator('.ui-chat-question__step[data-answered]')).toHaveCount(2);
+    await expect(card.locator('.ui-chat-question__progress')).toContainText('Question 3 of 3');
+    await expect(card.getByRole('tab', { selected: true })).toHaveText('Name');
+    await expect(card.locator('.ui-chat-question__tab[data-answered]')).toHaveCount(2);
     const name = card.getByRole('textbox', { name: appName });
     await expect(name).toBeFocused();
     await page.keyboard.type('Pocket Notes');
@@ -201,7 +201,7 @@ test.describe('Chat Question lab', () => {
   }) => {
     await lab.open('chat-question');
     const single = cell(page, 'selectionMode=single');
-    await expect(single.locator('.ui-chat-question__header')).toHaveText('Servings');
+    await expect(single.getByRole('tab', { name: 'Servings', selected: true })).toBeVisible();
     await expect(single.getByRole('radiogroup')).toBeVisible();
     await expect(cell(page, 'selectionMode=multiple').getByRole('checkbox')).toHaveCount(3);
     const text = cell(page, 'selectionMode=none').getByRole('textbox');
@@ -249,7 +249,7 @@ test.describe('Chat Question lab', () => {
     await expect(record).toHaveText('Attempt 1 refused');
     await expect(card).not.toHaveAttribute('data-submitting');
     await expect(submit).toBeFocused();
-    await expect(card.locator('.ui-chat-question__progress')).toHaveText('Question 2 of 2');
+    await expect(card.locator('.ui-chat-question__progress')).toContainText('Question 2 of 2');
     await expect(name).toHaveValue('Pocket Notes');
     // Axe times itself with timers, so the clock runs again before checking the refused state.
     await page.clock.resume();
@@ -290,5 +290,54 @@ test.describe('Chat Question lab', () => {
     await expect(card.getByRole('textbox', { name: appName })).toHaveAttribute('readonly', '');
     await expect(card.getByRole('button', { name: 'Submit' })).toHaveCount(0);
     await lab.expectAccessible('[data-lab-section="Read-only"]');
+  });
+
+  test('UIC-CHAT-QUESTION-3.1 UIC-CHAT-QUESTION-3.2 UIC-CHAT-QUESTION-3.3 UIC-CHAT-QUESTION-3.4 chooses any question by its tab, with the counter and answered marks', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-question');
+    const card = demo(page, 'stepped');
+    const counter = card.locator('.ui-chat-question__progress');
+    await expect(counter.locator('[aria-hidden="true"]')).toHaveText('1/3');
+    const tabs = card.getByRole('tablist', { name: 'Questions' });
+    const counterBox = await counter.boundingBox();
+    const tabsBox = await tabs.boundingBox();
+    expect(counterBox && tabsBox && counterBox.x >= tabsBox.x + tabsBox.width - 1).toBe(true);
+    await card.getByRole('tab', { name: 'Name' }).click();
+    await expect(card.getByRole('tab', { name: 'Name' })).toBeFocused();
+    await expect(counter.locator('[aria-hidden="true"]')).toHaveText('3/3');
+    await expect(card.getByRole('textbox', { name: appName })).toBeVisible();
+    await page.keyboard.press('ArrowLeft');
+    await expect(card.getByRole('tab', { name: 'Features', selected: true })).toBeFocused();
+    await card.getByRole('tab', { name: 'Database' }).click();
+    await card.getByText('SQLite', { exact: true }).click();
+    const answered = card.getByRole('tab', { name: 'Database' });
+    await expect(answered).toHaveAttribute('data-answered', 'true');
+    await expect(answered.locator('.ui-tabs__icon[data-glyph="check"]')).toBeVisible();
+
+    const styled = demo(page, 'mark-style');
+    await styled.getByText('SQLite', { exact: true }).click();
+    const styledTab = styled.getByRole('tab', { name: 'Database' });
+    await expect(styledTab).toHaveAttribute('data-answered', 'true');
+    await expect(styledTab.locator('.ui-tabs__icon')).toHaveCount(0);
+    await expect(styledTab).not.toHaveCSS(
+      'color',
+      await styled
+        .getByRole('tab', { name: 'Features' })
+        .evaluate((element) => getComputedStyle(element).color),
+    );
+
+    const many = demo(page, 'many');
+    const forward = many.getByRole('button', { name: 'Scroll forward' });
+    await expect(forward).toBeVisible();
+    await many.getByRole('tab', { name: 'Destination' }).focus();
+    await page.keyboard.press('End');
+    await expect(many.getByRole('tab', { name: 'Activities', selected: true })).toBeInViewport();
+    await expect(many.locator('.ui-chat-question__progress [aria-hidden="true"]')).toHaveText(
+      '7/7',
+    );
+    await lab.expectAccessible('[data-lab-section="Answered marks"]');
+    await lab.expectAccessible('[data-lab-section="Many questions"]');
   });
 });

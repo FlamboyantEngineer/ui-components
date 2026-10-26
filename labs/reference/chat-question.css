@@ -1,8 +1,8 @@
 /*
  * Chat Question: a card of questions. The options sit in a column with their descriptions under
  * the labels, and the preview of the focused or chosen option sits beside them, or below them on
- * a narrow card. Chips and the progress hint lead a stepped card; the actions close it, after
- * the error of a refused request.
+ * a narrow card. The question tabs and the counter lead a pending card; the actions close it,
+ * after the error of a refused request.
  */
 
 .ui-chat-question {
@@ -31,43 +31,32 @@
   color: var(--ref-muted);
 }
 
-.ui-chat-question__steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
+/*
+ * The tabs, then the counter at the end of their row, then the shown question across the card;
+ * both classes, so it wins over the tabs' own layout, which comes later.
+ */
+.ui-chat-question__tabs.ui-tabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 8px;
+}
+
+.ui-chat-question__panel {
+  grid-column: 1 / -1;
   padding: 0;
-  list-style: none;
-}
-
-.ui-chat-question__step,
-.ui-chat-question__header {
-  padding: 1px 8px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius-full);
-  background: var(--ref-canvas);
-  color: var(--ref-muted);
-  font-size: var(--ref-font-size-sm);
-}
-
-.ui-chat-question__header {
-  align-self: flex-start;
-}
-
-.ui-chat-question__step[data-answered] {
-  border-color: var(--ref-success);
-  color: var(--ref-text);
-}
-
-.ui-chat-question__step[data-current] {
-  border-color: var(--ref-accent);
-  background: var(--ref-selected);
-  color: var(--ref-text);
 }
 
 .ui-chat-question__progress {
+  padding-bottom: 6px;
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* With the style mark, an answered question's tab takes the success colour instead of a check. */
+.ui-chat-question[data-answered-mark='style'] .ui-chat-question__tab[data-answered] {
+  color: var(--ref-success);
 }
 
 .ui-chat-question__item {

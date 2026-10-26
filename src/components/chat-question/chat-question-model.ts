@@ -69,12 +69,15 @@ export interface QuestionDraft {
 
 export const emptyDraft: QuestionDraft = { optionIds: [], isOther: false, otherText: '' };
 
+/** How a card's tabs mark an answered question: a check before the label, or the stylesheet alone. */
+export type ChatQuestionAnsweredMark = 'icon' | 'style';
+
 export const chatQuestionHooks = createHooks('chat-question', [
-  'steps',
-  'step',
+  'tabs',
+  'tab',
   'progress',
+  'panel',
   'item',
-  'header',
   'question',
   'answer',
   'options',

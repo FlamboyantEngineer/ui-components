@@ -45,15 +45,13 @@ describe('ChatQuestion', () => {
     expect(root).not.toHaveAttribute('tabindex');
     const item = root.querySelector('.ui-chat-question__item');
     expect(item).toHaveAttribute('data-selection-mode', 'single');
-    expect(item?.querySelector('.ui-chat-question__header')).toHaveTextContent('Database');
     expect(item?.querySelector('p.ui-chat-question__question')).toHaveTextContent(
       databaseQuestion.question,
     );
-    expect(root.querySelector('.ui-chat-question__steps')).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Database' })).toHaveAttribute('aria-selected', 'true');
     expectHooksMatchSpec(container, 'CHAT-QUESTION', {
       slots: [
         'item',
-        'header',
         'question',
         'answer',
         'options',
@@ -75,6 +73,8 @@ describe('ChatQuestion', () => {
     expect(group).toHaveClass('ui-chat-question__options');
     expect(within(group).getAllByRole('radio')).toHaveLength(3);
     expect(within(group).queryByRole('radio', { checked: true })).not.toBeInTheDocument();
+    // The question's tab comes first; Tab moves on into its answer.
+    await user.tab();
     await user.tab();
     const first = screen.getByRole('radio', { name: 'PostgreSQL Recommended' });
     expect(first).toHaveFocus();
@@ -97,6 +97,8 @@ describe('ChatQuestion', () => {
       'data-selection-mode',
       'multiple',
     );
+    // The question's tab comes first; Tab moves on into its answer.
+    await user.tab();
     await user.tab();
     expect(screen.getByRole('checkbox', { name: 'Sign-in' })).toHaveFocus();
     await user.tab();
@@ -203,6 +205,8 @@ describe('ChatQuestion', () => {
     const answer = container.querySelector('.ui-chat-question__answer');
     expect(answer).toHaveAttribute('data-has-preview', 'true');
     expect(container.querySelector('.ui-chat-question__preview')).toBeNull();
+    // The question's tab comes first; Tab moves on into its answer.
+    await user.tab();
     await user.tab();
     const preview = screen.getByRole('group', { name: 'Preview of PostgreSQL' });
     expect(preview).toHaveClass('ui-chat-question__preview');
