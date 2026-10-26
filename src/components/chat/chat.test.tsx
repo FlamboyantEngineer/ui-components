@@ -12,7 +12,7 @@ import {
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectImports, collectPackages } from '../../../test/module-imports.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
-import type { ChatMessageData } from '../chat-parts/chat-parts.js';
+import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
 
 installEditorDom();
 
@@ -136,6 +136,59 @@ describe('Chat', () => {
     expect(toggle()).toBeNull();
     rerenderWith({ ...assistantChat, messages: [thought] });
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('UIC-CHAT-1.5 UIC-CHAT-PARTS-5.4 keeps a failed call discoverable once the final answer arrives', async () => {
+    const steps = (hotels: 'running' | 'failed'): ChatPart[] => [
+      {
+        type: 'reasoning',
+        id: 'plan',
+        text: 'Trains first.',
+        status: 'complete',
+        durationMs: 1000,
+      },
+      {
+        type: 'tool-call',
+        id: 'trains',
+        name: 'search_trains',
+        label: 'Search trains',
+        status: 'succeeded',
+        durationMs: 1000,
+      },
+      {
+        type: 'tool-call',
+        id: 'hotels',
+        name: 'search_hotels',
+        label: 'Search hotels',
+        status: hotels,
+        error: hotels === 'failed' ? 'The hotel service timed out.' : undefined,
+      },
+    ];
+    const running = {
+      ...message('w1', 'helper'),
+      status: 'streaming' as const,
+      parts: steps('running'),
+    };
+    const final: ChatMessageData = {
+      ...running,
+      status: 'complete',
+      parts: [...steps('failed'), { type: 'text', text: 'Take the 8:05; no hotel answered.' }],
+    };
+    const { user, rerenderWith } = renderChat({ ...assistantChat, messages: [running] });
+    const group = () => within(article('w1')).getByRole('button', { name: /· 3 steps$/ });
+    expect(group()).toHaveAccessibleName('Working… · 3 steps');
+    await user.click(group());
+    expect(group()).toHaveAttribute('aria-expanded', 'false');
+    rerenderWith({ ...assistantChat, messages: [final] });
+    expect(group()).toHaveAccessibleName('Worked for 2 s · 3 steps');
+    expect(group()).toHaveAttribute('aria-expanded', 'true');
+    expect(within(article('w1')).getByRole('alert')).toHaveTextContent(
+      'The hotel service timed out.',
+    );
+    await user.click(group());
+    rerenderWith({ ...assistantChat, messages: [] });
+    rerenderWith({ ...assistantChat, messages: [final] });
+    expect(group()).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('UIC-CHAT-1.6 separates days, marks the first unread message and groups by author', () => {

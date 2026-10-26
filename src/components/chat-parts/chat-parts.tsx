@@ -13,6 +13,7 @@ import { ChatPartView, type PartContext } from './chat-part-view.js';
 import {
   groupChatParts,
   isAwaitingApproval,
+  isFailedCall,
   isStepActive,
   sumStepDurations,
   toPartKey,
@@ -21,7 +22,7 @@ import {
 } from './chat-parts-grouping.js';
 import { chatPartsHooks as hooks } from './chat-parts-hooks.js';
 import { usePartsRenderNode } from './chat-text-part.js';
-import { useApprovalReveal, usePartsExpansion, type AwaitingGroup } from './use-parts-expansion.js';
+import { usePartsExpansion, usePartsReveal, type PartsReveal } from './use-parts-expansion.js';
 
 export type {
   ChatCodePart,
@@ -89,13 +90,29 @@ export interface ChatPartsProps extends BaseProps {
   onExpandedPartsChange?: ((expandedParts: Record<string, boolean>) => void) | undefined;
 }
 
-/** The groups holding tool calls that wait for the reader's approval. */
-function listAwaitingGroups(items: readonly ChatPartsItem[]): AwaitingGroup[] {
-  return items.flatMap((item) => {
-    if (item.kind !== 'steps') return [];
-    const callIds = item.steps.filter(isAwaitingApproval).map((step) => step.id);
-    return callIds.length === 0 ? [] : [{ key: item.key, callIds }];
-  });
+/**
+ * What a tool call calls for the reader with, shown in its group (`groupKeys`): a wait for approval,
+ * which reveals even as the parts mount, or a failure, which also reveals the call's card and only
+ * once it arrives, so a group the reader closed in loaded history stays closed.
+ */
+function toReveals(part: ChatPart, groupKeys: readonly string[]): PartsReveal[] {
+  if (part.type !== 'tool-call') return [];
+  if (isAwaitingApproval(part)) {
+    return [{ id: `approval:${part.id}`, keys: groupKeys, isRevealedOnMount: true }];
+  }
+  if (isFailedCall(part)) {
+    return [{ id: `failed:${part.id}`, keys: [...groupKeys, part.id], isRevealedOnMount: false }];
+  }
+  return [];
+}
+
+/** What the message's tool calls call for the reader with. */
+function listReveals(items: readonly ChatPartsItem[]): PartsReveal[] {
+  return items.flatMap((item) =>
+    item.kind === 'steps'
+      ? item.steps.flatMap((step) => toReveals(step, [item.key]))
+      : toReveals(item.part, []),
+  );
 }
 
 interface StepsViewProps {
@@ -105,18 +122,18 @@ interface StepsViewProps {
 }
 
 /**
- * A group of steps: open while it runs or a tool call in it waits for approval, unless the reader
- * chose otherwise, and collapsed afterwards.
+ * A group of steps: open while it runs, a tool call in it waits for approval or a tool call in it
+ * failed, unless the reader chose otherwise, and collapsed afterwards.
  */
 function StepsView({ item, isRunning, context }: StepsViewProps) {
   const { expansion } = context;
-  const isAwaiting = item.steps.some(isAwaitingApproval);
+  const isCallingReader = item.steps.some((step) => isAwaitingApproval(step) || isFailedCall(step));
   return (
     <ChatSteps
       isRunning={isRunning}
       durationMs={sumStepDurations(item.steps)}
       stepCount={item.steps.length}
-      isExpanded={expansion.expanded[item.key] ?? (isAwaiting || undefined)}
+      isExpanded={expansion.expanded[item.key] ?? (isCallingReader || undefined)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(item.key, isExpanded)}
     >
       {item.steps.map((step, index) => (
@@ -146,7 +163,7 @@ export function ChatParts({
   const renderNode = usePartsRenderNode(parts, rest.onApplyCode);
   const expansion = usePartsExpansion({ expandedParts, onExpandedPartsChange });
   const items = groupChatParts(parts);
-  useApprovalReveal(listAwaitingGroups(items), expansion);
+  usePartsReveal(listReveals(items), expansion);
   const context: PartContext = {
     ...rest,
     textFormat,
