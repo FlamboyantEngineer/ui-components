@@ -11,6 +11,7 @@ import {
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
+import { ChatModelPicker } from '../chat-model-picker/chat-model-picker.js';
 import type { ChatProps } from './chat.js';
 
 installEditorDom();
@@ -117,31 +118,32 @@ describe('Chat sending', () => {
     expect(box()).toHaveTextContent('Still deciding');
   });
 
-  it('UIC-CHAT-3.8 places the host’s tools before the model picker and forwards the composer options', async () => {
+  it('UIC-CHAT-3.8 fills both ends of the composer row and forwards the composer options', async () => {
     const onSend = vi.fn();
     const { user, container, rerenderWith } = renderChat({
       participants: assistantPeople,
       messages: assistantChat,
       onSend,
-      composerToolbar: (
+      onAttach: vi.fn(),
+      composerStartControls: (
         <label>
           <input type="checkbox" />
           Allow changes
         </label>
       ),
-      modelPicker: {
-        models: [{ id: 'fast', label: 'Fast' }],
-        defaultModel: 'fast',
-      },
+      composerEndControls: <ChatModelPicker models={[{ id: 'fast', label: 'Fast' }]} />,
       submitShortcut: 'Ctrl+Enter',
       allowsEmptySubmit: true,
     });
-    const toolbar = container.querySelector('.ui-message-composer__toolbar') as HTMLElement;
-    const checkbox = within(toolbar).getByRole('checkbox', { name: 'Allow changes' });
-    const picker = within(toolbar).getByRole('button', { name: /Fast/ });
+    const start = container.querySelector('.ui-message-composer__start') as HTMLElement;
+    const end = container.querySelector('.ui-message-composer__end') as HTMLElement;
+    const checkbox = within(start).getByRole('checkbox', { name: 'Allow changes' });
+    expect(within(start).queryByRole('button')).not.toBeInTheDocument();
     expect(
-      checkbox.compareDocumentPosition(picker) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+      within(end)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['Model: Fast', 'Send']);
     await user.click(checkbox);
     expect(checkbox).toBeChecked();
     await user.click(screen.getByRole('button', { name: 'Send' }));
@@ -153,5 +155,19 @@ describe('Chat sending', () => {
     expect(onSend).toHaveBeenLastCalledWith('First line\nsecond line', []);
     rerenderWith({ participants: assistantPeople, messages: assistantChat, onSend });
     expect(screen.getByRole('button', { name: 'Send' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('UIC-CHAT-3.8 starts the row with the attach button and, between people, the emoji button', () => {
+    const { container, rerenderWith } = renderChat({ onAttach: vi.fn() });
+    const start = () => container.querySelector('.ui-message-composer__start') as HTMLElement;
+    const names = () =>
+      within(start())
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label'));
+    expect(names()).toEqual(['Attach files', 'Insert emoji']);
+    rerenderWith({ participants: assistantPeople, messages: assistantChat, onAttach: vi.fn() });
+    expect(names()).toEqual(['Attach files']);
+    rerenderWith({ participants: assistantPeople, messages: assistantChat });
+    expect(start()).toBeEmptyDOMElement();
   });
 });

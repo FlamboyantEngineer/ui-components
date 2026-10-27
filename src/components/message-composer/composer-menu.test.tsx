@@ -3,47 +3,50 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import type { MessageComposerMenu, MessageComposerMenuItem } from './composer-menu.js';
+import { MessageComposerMenuButton, type MessageComposerMenuItem } from './composer-menu.js';
+import { MessageComposerEmojiButton } from './composer-tools.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
 const trigger = () => screen.getByRole('button', { name: 'Add and more' });
 
-/** A menu of two categories: things to add, then sources with icons, notes and a submenu. */
-function createMenu(add: MessageComposerMenuItem[], filterable = false): MessageComposerMenu {
-  return {
-    filterable,
-    sections: [
-      { id: 'add', title: 'Add', items: add },
-      {
-        id: 'sources',
-        title: 'Sources',
-        items: [
-          {
-            id: 'calendar',
-            label: 'Calendar',
-            description: 'Shared schedule',
-            icon: 'calendar',
-            shortcut: 'Ctrl+Shift+K',
-          },
-          {
-            id: 'people',
-            label: 'People',
-            description: 'Mention someone',
-            icon: 'users',
-            items: [
-              {
-                id: 'maria',
-                label: 'Maria Santos',
-                onAction: (composer) =>
-                  composer.insertPill({ kind: 'mention', id: 'maria', label: 'Maria Santos' }),
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
+/** A + button whose menu has two categories: things to add, then sources with icons, notes and a submenu. */
+function createMenu(add: MessageComposerMenuItem[], filterable = false) {
+  return (
+    <MessageComposerMenuButton
+      filterable={filterable}
+      sections={[
+        { id: 'add', title: 'Add', items: add },
+        {
+          id: 'sources',
+          title: 'Sources',
+          items: [
+            {
+              id: 'calendar',
+              label: 'Calendar',
+              description: 'Shared schedule',
+              icon: 'calendar',
+              shortcut: 'Ctrl+Shift+K',
+            },
+            {
+              id: 'people',
+              label: 'People',
+              description: 'Mention someone',
+              icon: 'users',
+              items: [
+                {
+                  id: 'maria',
+                  label: 'Maria Santos',
+                  onAction: (composer) =>
+                    composer.insertPill({ kind: 'mention', id: 'maria', label: 'Maria Santos' }),
+                },
+              ],
+            },
+          ],
+        },
+      ]}
+    />
+  );
 }
 
 /** Renders a plain composer with the menu and opens it; returns the open menu. */
@@ -56,22 +59,25 @@ async function openComposerMenu(props: MessageComposerProps) {
 }
 
 describe('MessageComposer menu', () => {
-  it('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-1.5 UIC-MESSAGE-COMPOSER-2.2 puts the + button first in place of the attach button and opens the categories', async () => {
+  it('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-2.2 shows the + button where the host places it and opens the categories', async () => {
     const user = userEvent.setup();
     const { container } = render(
       <MessageComposer
-        menu={createMenu([{ id: 'note', label: 'Add a note' }])}
         onAttach={() => undefined}
-        showEmojiPicker
-        toolbar={<button>Tone</button>}
+        startControls={
+          <>
+            <button>Tone</button>
+            {createMenu([{ id: 'note', label: 'Add a note' }])}
+            <MessageComposerEmojiButton />
+          </>
+        }
       />,
     );
-    const toolbar = container.querySelector('.ui-message-composer__toolbar') as HTMLElement;
-    const names = within(toolbar)
+    const start = container.querySelector('.ui-message-composer__start') as HTMLElement;
+    const names = within(start)
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label') ?? button.textContent);
-    expect(names).toEqual(['Add and more', 'Insert emoji', 'Tone']);
-    expect(screen.queryByRole('button', { name: 'Attach files' })).not.toBeInTheDocument();
+    expect(names).toEqual(['Tone', 'Add and more', 'Insert emoji']);
     expect(trigger()).toHaveClass('ui-button', 'ui-message-composer__menu-button');
     expect(trigger()).toHaveAttribute('aria-haspopup', 'true');
     await user.click(trigger());
@@ -86,14 +92,14 @@ describe('MessageComposer menu', () => {
     );
     expect(menu.closest('.ui-menu-popover')).toHaveAttribute('data-trigger', 'MenuTrigger');
     expectHooksMatchSpec(document.body, 'MESSAGE-COMPOSER', {
-      slots: ['toolbar', 'menu-button', 'menu', 'emoji'],
+      slots: ['start', 'end', 'menu-button', 'menu', 'emoji'],
     });
   });
 
   it('UIC-MESSAGE-COMPOSER-5.2 draws items with icons, notes, shortcut hints, a disabled reason and a submenu', async () => {
     const onRecord = vi.fn();
     const { user, menu } = await openComposerMenu({
-      menu: createMenu([
+      startControls: createMenu([
         {
           id: 'record',
           label: 'Record a voice note',
@@ -139,7 +145,7 @@ describe('MessageComposer menu', () => {
       <MessageComposer
         defaultValue="Plan the  trip"
         onChange={onChange}
-        menu={createMenu([
+        startControls={createMenu([
           {
             id: 'goal',
             label: 'Insert a goal prompt',
@@ -162,7 +168,7 @@ describe('MessageComposer menu', () => {
     const user = userEvent.setup();
     render(
       <MessageComposer
-        menu={createMenu([
+        startControls={createMenu([
           {
             id: 'summarize',
             label: 'Summarize',
@@ -186,7 +192,7 @@ describe('MessageComposer menu', () => {
     const click = vi.spyOn(HTMLInputElement.prototype, 'click');
     const { user, menu, container } = await openComposerMenu({
       onAttach,
-      menu: createMenu([
+      startControls: createMenu([
         { id: 'files', label: 'Attach files', onAction: (composer) => composer.attachFiles() },
       ]),
     });
@@ -207,7 +213,7 @@ describe('MessageComposer menu', () => {
 
   it('UIC-MESSAGE-COMPOSER-5.3 moves focus to the input once the menu closes', async () => {
     const { user, menu } = await openComposerMenu({
-      menu: createMenu([
+      startControls: createMenu([
         { id: 'focus', label: 'Write', onAction: (composer) => composer.focusInput() },
       ]),
     });
@@ -222,7 +228,7 @@ describe('MessageComposer menu', () => {
       const [isPlanning, setPlanning] = useState(false);
       return (
         <MessageComposer
-          menu={createMenu([
+          startControls={createMenu([
             { id: 'note', label: 'Add a note' },
             {
               id: 'plan',
@@ -261,7 +267,7 @@ describe('MessageComposer menu', () => {
 
   it('UIC-MESSAGE-COMPOSER-5.5 narrows the items by label and note from an opt-in search field', async () => {
     const { user, menu } = await openComposerMenu({
-      menu: createMenu(
+      startControls: createMenu(
         [{ id: 'note', label: 'Add a note', description: 'Shown to everyone' }],
         true,
       ),
@@ -284,13 +290,18 @@ describe('MessageComposer menu', () => {
   });
 
   it('UIC-MESSAGE-COMPOSER-5.5 shows no search field unless asked', async () => {
-    await openComposerMenu({ menu: createMenu([{ id: 'note', label: 'Add a note' }]) });
+    await openComposerMenu({ startControls: createMenu([{ id: 'note', label: 'Add a note' }]) });
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
   });
 
   it('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-1.4 disables the + button with the composer', async () => {
     const user = userEvent.setup();
-    render(<MessageComposer isDisabled menu={createMenu([{ id: 'note', label: 'Add a note' }])} />);
+    render(
+      <MessageComposer
+        isDisabled
+        startControls={createMenu([{ id: 'note', label: 'Add a note' }])}
+      />,
+    );
     expect(trigger()).toBeDisabled();
     await user.click(trigger());
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();

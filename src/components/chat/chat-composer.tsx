@@ -2,13 +2,13 @@ import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'reac
 import { useUiStrings } from '../../core/provider.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
-import {
-  ChatModelPicker,
-  type ChatModelPickerProps,
-} from '../chat-model-picker/chat-model-picker.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import { ChatQuote, type ChatQuoteData } from '../chat-transcript/chat-transcript.js';
 import { Button } from '../button/button.js';
+import {
+  MessageComposerAttachButton,
+  MessageComposerEmojiButton,
+} from '../message-composer/message-composer.js';
 import {
   RichMessageComposer,
   type MessageComposerHandle,
@@ -69,10 +69,13 @@ export interface ChatComposerOptions
   onSendError?: ((error: unknown) => void) | undefined;
   /** Sends a blank message too, as when context the host adds carries the request; a complete attachment allows it as well. */
   allowsEmptySubmit?: boolean | undefined;
-  /** The host's controls among the composer's tools, before the model picker. */
-  composerToolbar?: ReactNode;
-  /** The composer's "+" menu, first among its tools in place of the attach button; disabled with it. */
-  composerMenu?: RichMessageComposerProps['menu'];
+  /**
+   * Controls at the start of the row below the composer's input, such as its "+" menu button.
+   * Defaults to the attach button (with `onAttach`) and, between people, the emoji button.
+   */
+  composerStartControls?: ReactNode;
+  /** Controls at the end of the row below the composer's input, such as a model picker, before Send unless they hold it. */
+  composerEndControls?: ReactNode;
   /** Names the conversation, so the composer keeps its draft in the provider's storage. */
   conversationId?: string | undefined;
   /** Messages waiting for the running reply to end, shown above the composer. */
@@ -89,8 +92,6 @@ export interface ChatComposerOptions
   onEdit?: ChatMessageTextHandler | undefined;
   /** Sends a reply quoting a message; offers Reply on every message between people, and on finished messages with text in an assistant chat. */
   onReply?: ChatMessageTextHandler | undefined;
-  /** Shows a model and effort picker among the composer's tools, disabled with the composer. */
-  modelPicker?: ChatModelPickerProps | undefined;
 }
 
 export interface ChatComposerProps {
@@ -214,16 +215,13 @@ function renderAttachments({ options, state }: ChatComposerProps) {
   );
 }
 
-/** The host's tools, then the model and effort picker, refused while the composer is. */
-function renderTools({ options }: ChatComposerProps) {
-  const { composerToolbar, modelPicker, isDisabled } = options;
-  if (!composerToolbar && !modelPicker) return undefined;
+/** The host's start controls, else the attach button and, between people, the emoji button. */
+function renderStartControls({ options, isAssistantChat }: ChatComposerProps) {
+  if (options.composerStartControls !== undefined) return options.composerStartControls;
   return (
     <>
-      {composerToolbar}
-      {modelPicker ? (
-        <ChatModelPicker {...modelPicker} isDisabled={isDisabled || modelPicker.isDisabled} />
-      ) : null}
+      <MessageComposerAttachButton />
+      {isAssistantChat ? null : <MessageComposerEmojiButton />}
     </>
   );
 }
@@ -237,8 +235,8 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
 /**
  * The queue of follow-ups, then the rich composer: mentions of the other participants, the host's
  * commands, a per-conversation draft, Up to edit the reader's last message (between people) or to
- * recall earlier prompts (with an assistant), the reply and edit banners, attachments, the "+"
- * menu, the host's tools, the model picker, and Stop.
+ * recall earlier prompts (with an assistant), the reply and edit banners, attachments, the host's
+ * controls below the input, and Stop.
  */
 export function ChatComposer(props: ChatComposerProps) {
   const { options, state, isAssistantChat } = props;
@@ -288,14 +286,13 @@ export function ChatComposer(props: ChatComposerProps) {
         banner={banner ? <ComposerBanner id={bannerId} banner={banner} /> : undefined}
         aria-describedby={banner ? bannerId : undefined}
         onAttach={options.onAttach}
-        menu={options.composerMenu}
         attachments={renderAttachments(props)}
         allowsEmptySubmit={allowsEmptySubmit(props)}
         submitShortcut={options.submitShortcut}
         minRows={options.minRows}
         maxRows={options.maxRows}
-        showEmojiPicker={!isAssistantChat}
-        toolbar={renderTools(props)}
+        startControls={renderStartControls(props)}
+        endControls={options.composerEndControls}
         onKeyDown={onKeyDown}
         onSubmit={(message) => submitMessage(props, message)}
         onSubmitError={options.onSendError}

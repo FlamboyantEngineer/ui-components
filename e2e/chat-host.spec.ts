@@ -44,24 +44,30 @@ test.describe('Chat lab host controls', () => {
     await expect(answer).toBeFocused();
   });
 
-  test('UIC-CHAT-3.8 UIC-CHAT-3.1 puts the host’s checkboxes before the model picker, wraps them, and sends blank context', async ({
+  test('UIC-CHAT-3.8 UIC-CHAT-3.1 fills both ends of the composer row, shrinks it to icons when narrow, and sends blank context', async ({
     page,
     lab,
   }) => {
     await page.setViewportSize({ width: 420, height: 900 });
     await lab.open('chat');
-    const toolbar = host(page).locator('.ui-message-composer__toolbar');
-    const text = (await toolbar.textContent()) ?? '';
-    expect(text.indexOf('Allow changes')).toBeGreaterThanOrEqual(0);
-    expect(text.indexOf('Allow changes')).toBeLessThan(text.indexOf('Balanced'));
+    const frame = host(page).locator('.ui-chat__composer');
+    const start = host(page).locator('.ui-message-composer__start');
+    const end = host(page).locator('.ui-message-composer__end');
+    await expect(start.getByRole('button')).toHaveCount(3);
+    await expect(start.getByRole('button').first()).toHaveAccessibleName('Add and more');
+    await expect(end.getByRole('button', { name: /^Model:/ })).toBeVisible();
+    await expect(end.getByRole('button').last()).toHaveAccessibleName('Send');
+    await expect(frame).toHaveAttribute('data-compact', 'true');
+    await expect(start.getByRole('button', { name: 'Plan' })).toHaveAttribute(
+      'data-content',
+      'icon',
+    );
     const send = host(page).getByRole('button', { name: 'Send' });
     await send.scrollIntoViewIfNeeded();
     await expect(send).toBeInViewport({ ratio: 1 });
-    const frame = await host(page).locator('.ui-chat__composer').boundingBox();
+    const frameBox = await frame.boundingBox();
     const button = await send.boundingBox();
-    const tools = await toolbar.boundingBox();
-    expect(button && frame && button.x + button.width <= frame.x + frame.width).toBe(true);
-    expect(tools && button && tools.height > button.height * 1.5, 'the tools wrap').toBe(true);
+    expect(button && frameBox && button.x + button.width <= frameBox.x + frameBox.width).toBe(true);
 
     await composer(page).click();
     await page.keyboard.type('First line');
@@ -71,24 +77,22 @@ test.describe('Chat lab host controls', () => {
     await page.keyboard.press('Control+a');
     await page.keyboard.press('Delete');
     await expect(send).toHaveAttribute('aria-disabled', 'true');
-    await toolbar.getByText('Ask about the selection').click();
+    await end.getByRole('button', { name: 'Ask about the selection' }).click();
     await expect(send).not.toHaveAttribute('aria-disabled');
   });
 
-  test('UIC-CHAT-3.9 UIC-CHAT-3.8 starts the tools with the + menu and sends what its items add', async ({
+  test('UIC-CHAT-3.9 UIC-CHAT-3.8 starts the row with the + menu and sends what its items add', async ({
     page,
     lab,
   }) => {
     await lab.open('chat');
     await host(page).getByText('Refuse the next message', { exact: true }).click();
-    const toolbar = host(page).locator('.ui-message-composer__toolbar');
-    await expect(toolbar.locator(':scope > *').first()).toHaveClass(
+    const start = host(page).locator('.ui-message-composer__start');
+    await expect(start.locator(':scope > *').first()).toHaveClass(
       /ui-message-composer__menu-button/,
     );
-    await expect(toolbar.getByRole('button', { name: 'Attach files' })).toHaveCount(0);
-    const text = (await toolbar.textContent()) ?? '';
-    expect(text.indexOf('Allow changes')).toBeLessThan(text.indexOf('Balanced'));
-    const plus = toolbar.getByRole('button', { name: 'Add and more' });
+    await expect(host(page).getByRole('button', { name: 'Attach files' })).toHaveCount(0);
+    const plus = start.getByRole('button', { name: 'Add and more' });
     const menu = page.getByRole('menu', { name: 'Add and more' });
     // The composer at the bottom of the window, where it sits in a conversation.
     await plus.evaluate((element) => element.scrollIntoView({ block: 'end' }));
@@ -102,6 +106,10 @@ test.describe('Chat lab host controls', () => {
     await menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ }).click();
     await expect(menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ })).toHaveAttribute(
       'aria-checked',
+      'true',
+    );
+    await expect(start.getByRole('button', { name: 'Plan' })).toHaveAttribute(
+      'aria-pressed',
       'true',
     );
     await menu.getByRole('menuitem', { name: /^Insert a goal prompt/ }).click();

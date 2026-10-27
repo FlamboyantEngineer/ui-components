@@ -7,6 +7,7 @@ import { Chat } from '../../src/components/chat/index.js';
 import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
+import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import {
@@ -69,9 +70,11 @@ const initialMessages: Record<string, readonly ChatMessageData[]> = {
   porto: [],
 };
 
-const referenceMenu = {
-  sections: [{ id: 'references', title: 'References', items: referenceMenuItems }],
-};
+const referenceMenu = (
+  <MessageComposerMenuButton
+    sections={[{ id: 'references', title: 'References', items: referenceMenuItems }]}
+  />
+);
 
 /** Waits like a request to a server, then accepts or refuses. */
 function request(refuse: boolean) {
@@ -133,7 +136,7 @@ function ReferenceDemo() {
           conversationId={`lab-references-${conversation}`}
           title="Trip planner"
           placeholder="Add references from the + menu"
-          composerMenu={referenceMenu}
+          composerStartControls={referenceMenu}
           getReference={getLabReference}
           onSend={(text, tokens) => accept(conversation, text, tokens)}
           onReply={(_id, text, tokens) => accept(conversation, text, tokens)}

@@ -1,0 +1,7 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Composers take a row of controls below the input: `startControls` and `endControls` hold any number of controls in any order at either end, with Send last unless the host places `MessageComposerSendButton` itself. The built-in controls are components to place: `MessageComposerMenuButton` (the "+" menu, taking `sections` and `filterable`), `MessageComposerAttachButton`, `MessageComposerEmojiButton` and `MessageComposerSendButton`, plus the new `MessageComposerSelect` (an icon and label that opens a list of options, such as an approval mode) and `MessageComposerToggle` (a mode turned on and off, such as planning). When the row is too narrow for their labels, the composer publishes `data-compact` and the select, the toggle and `ChatModelPicker` show their icon alone; `useMessageComposerControls()` lets a host's own control do the same. `ChatModelOption` takes an `icon`, with the new `sparkles` glyph as the picker's fallback.
+
+`MessageComposer` and `RichMessageComposer` no longer take `menu`, `toolbar` or `showEmojiPicker`, the `MessageComposerMenu` type is gone, and the `ui-message-composer__toolbar` hook is replaced by `ui-message-composer__start` and `ui-message-composer__end`. `Chat` replaces `composerMenu`, `composerToolbar` and `modelPicker` with `composerStartControls` and `composerEndControls`; without `composerStartControls` it shows the attach button (with `onAttach`) and, between people, the emoji button.

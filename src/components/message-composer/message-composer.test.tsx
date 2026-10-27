@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectPackages } from '../../../test/module-imports.js';
 import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
+import { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
@@ -191,7 +192,12 @@ describe('MessageComposer', () => {
         isDisabled
         editValue="Hello"
         onAttach={() => undefined}
-        showEmojiPicker
+        startControls={
+          <>
+            <MessageComposerAttachButton />
+            <MessageComposerEmojiButton />
+          </>
+        }
       />,
     );
     expect(root(container)).toHaveAttribute('data-disabled', 'true');
@@ -201,18 +207,24 @@ describe('MessageComposer', () => {
     }
   });
 
-  it('UIC-MESSAGE-COMPOSER-1.5 shows attachments above and tools before the button', () => {
+  it('UIC-MESSAGE-COMPOSER-1.5 shows attachments above and the row of controls below the input', () => {
     const { container } = render(
-      <MessageComposer attachments={<span>Report.pdf</span>} toolbar={<button>Attach</button>} />,
+      <MessageComposer
+        attachments={<span>Report.pdf</span>}
+        startControls={<button>Tone</button>}
+      />,
     );
     const attachments = container.querySelector('.ui-message-composer__attachments');
     expect(attachments).toHaveTextContent('Report.pdf');
     expect(attachments?.nextElementSibling).toBe(input());
     const footer = container.querySelector('.ui-message-composer__footer');
-    expect(footer?.firstElementChild).toHaveClass('ui-message-composer__toolbar');
-    expect(footer?.firstElementChild).toHaveTextContent('Attach');
+    expect(footer?.previousElementSibling).toBe(input());
+    expect(footer?.firstElementChild).toHaveClass('ui-message-composer__start');
+    expect(footer?.firstElementChild).toHaveTextContent('Tone');
+    expect(footer?.lastElementChild).toHaveClass('ui-message-composer__end');
+    expect(footer?.lastElementChild?.lastElementChild).toHaveAccessibleName('Send');
     expectHooksMatchSpec(container, 'MESSAGE-COMPOSER', {
-      slots: ['attachments', 'input', 'footer', 'toolbar', 'action'],
+      slots: ['attachments', 'input', 'footer', 'start', 'end', 'action'],
     });
   });
 

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 import { MessageComposer } from './message-composer.js';
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
@@ -25,33 +26,41 @@ function filesTransfer(files: File[]) {
 }
 
 describe('MessageComposer frame', () => {
-  it('UIC-MESSAGE-COMPOSER-3.1 UIC-MESSAGE-COMPOSER-1.5 shows the banner above the attachments and the tools in order', () => {
+  it('UIC-MESSAGE-COMPOSER-3.1 UIC-MESSAGE-COMPOSER-1.5 shows the banner above the attachments and the controls in order', () => {
     const { container } = render(
       <MessageComposer
         banner={<span>Replying to Maria</span>}
         attachments={<span>Notes.txt</span>}
         onAttach={() => undefined}
-        showEmojiPicker
-        toolbar={<button>Model</button>}
+        startControls={
+          <>
+            <MessageComposerEmojiButton />
+            <MessageComposerAttachButton />
+          </>
+        }
+        endControls={<button>Model</button>}
       />,
     );
     const banner = container.querySelector('.ui-message-composer__banner');
     expect(banner).toHaveTextContent('Replying to Maria');
     expect(banner?.nextElementSibling).toHaveClass('ui-message-composer__attachments');
-    const toolbar = container.querySelector('.ui-message-composer__toolbar');
-    const names = [...(toolbar?.querySelectorAll('button') ?? [])].map(
-      (button) => button.getAttribute('aria-label') ?? button.textContent,
-    );
-    expect(names).toEqual(['Attach files', 'Insert emoji', 'Model']);
+    const names = (group: string) =>
+      [...(container.querySelector(group)?.querySelectorAll('button') ?? [])].map(
+        (button) => button.getAttribute('aria-label') ?? button.textContent,
+      );
+    expect(names('.ui-message-composer__start')).toEqual(['Insert emoji', 'Attach files']);
+    expect(names('.ui-message-composer__end')).toEqual(['Model', 'Send']);
     expectHooksMatchSpec(container, 'MESSAGE-COMPOSER', {
-      slots: ['banner', 'attachments', 'toolbar', 'attach', 'emoji'],
+      slots: ['banner', 'attachments', 'footer', 'start', 'end', 'attach', 'emoji', 'action'],
     });
   });
 
   it('UIC-MESSAGE-COMPOSER-3.2 attaches files from the chooser, a drop and a paste', async () => {
     const user = userEvent.setup();
     const onAttach = vi.fn();
-    const { container } = render(<MessageComposer onAttach={onAttach} />);
+    const { container } = render(
+      <MessageComposer onAttach={onAttach} startControls={<MessageComposerAttachButton />} />,
+    );
     const attach = screen.getByRole('button', { name: 'Attach files' });
     expect(attach).toHaveClass('ui-button', 'ui-message-composer__attach');
     const chooser = container.querySelector<HTMLInputElement>('input[type="file"]');
@@ -84,6 +93,11 @@ describe('MessageComposer frame', () => {
     expect(onAttach).toHaveBeenCalledTimes(3);
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.2 renders no attach button without onAttach', () => {
+    render(<MessageComposer startControls={<MessageComposerAttachButton />} />);
+    expect(screen.queryByRole('button', { name: 'Attach files' })).not.toBeInTheDocument();
+  });
+
   it('UIC-MESSAGE-COMPOSER-1.4 ignores dropped and pasted files while disabled', async () => {
     const user = userEvent.setup();
     const onAttach = vi.fn();
@@ -103,7 +117,13 @@ describe('MessageComposer frame', () => {
     async () => {
       const user = userEvent.setup();
       const onChange = vi.fn();
-      render(<MessageComposer defaultValue="Lunch ?" showEmojiPicker onChange={onChange} />);
+      render(
+        <MessageComposer
+          defaultValue="Lunch ?"
+          startControls={<MessageComposerEmojiButton />}
+          onChange={onChange}
+        />,
+      );
       await user.click(input());
       input().setSelectionRange(6, 6);
       const emoji = screen.getByRole('button', { name: 'Insert emoji' });

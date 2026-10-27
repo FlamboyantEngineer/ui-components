@@ -5,11 +5,6 @@
   max-width: 100%;
 }
 
-/* Among a composer's tools, the picker sits at the end of the toolbar, beside the send button. */
-.ui-message-composer__toolbar > .ui-chat-model-picker {
-  margin-inline-start: auto;
-}
-
 .ui-chat-model-picker__model {
   font-weight: var(--ref-font-weight-medium);
 }

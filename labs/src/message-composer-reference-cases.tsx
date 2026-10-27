@@ -9,6 +9,7 @@ import {
   ChatMessage,
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
+import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';
 import {
   RichMessageComposer,
   type MessageComposerMessage,
@@ -38,9 +39,11 @@ const referenceDraft: MessageComposerMessage = {
   }),
 };
 
-const referenceMenu = {
-  sections: [{ id: 'references', title: 'References', items: referenceMenuItems }],
-};
+const referenceMenu = (
+  <MessageComposerMenuButton
+    sections={[{ id: 'references', title: 'References', items: referenceMenuItems }]}
+  />
+);
 
 /**
  * References in the rich composer: the draft starts with two chips, the "+" menu inserts more
@@ -79,7 +82,7 @@ function ReferenceComposer() {
         placeholder="Add references from the + menu"
         defaultValue={referenceDraft}
         persistKey="message-composer-lab:references"
-        menu={referenceMenu}
+        startControls={referenceMenu}
         getReference={getLabReference}
         onSubmit={submit}
         onSubmitError={(reason) => setError(String(reason))}

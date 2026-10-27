@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
+import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
@@ -82,7 +83,7 @@ function AssistantDemo() {
           showSearch
           placeholder="Ask the trip planner…"
           commands={commands}
-          modelPicker={modelPicker}
+          composerEndControls={<ChatModelPicker {...modelPicker} />}
           toolRenderers={{ get_weather: forecastRenderer }}
           renderPart={renderLabPart}
           {...createReplyHandlers(controller.setMessages, record)}

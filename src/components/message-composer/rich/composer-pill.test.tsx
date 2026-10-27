@@ -5,6 +5,7 @@ import { installEditorDom } from '../../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../../core/provider.js';
 import { createMemoryStorage } from '../../../core/storage.js';
 import type { RecordLabelResolver } from '../../record-label/record-label.js';
+import { MessageComposerMenuButton } from '../composer-menu.js';
 import type { MessageComposerMessage } from '../composer-message.js';
 import { RichMessageComposer, type RichMessageComposerProps } from './rich-message-composer.js';
 
@@ -46,19 +47,21 @@ function renderComposer(props: Partial<RichMessageComposerProps> = {}) {
     <RichMessageComposer
       getReference={getReference}
       onSubmit={onSubmit}
-      menu={{
-        sections: [
-          {
-            id: 'references',
-            title: 'References',
-            items: [trip, note].map((token) => ({
-              id: token.label,
-              label: `Reference ${token.label}`,
-              onAction: (composer) => composer.insertPill(token),
-            })),
-          },
-        ],
-      }}
+      startControls={
+        <MessageComposerMenuButton
+          sections={[
+            {
+              id: 'references',
+              title: 'References',
+              items: [trip, note].map((token) => ({
+                id: token.label,
+                label: `Reference ${token.label}`,
+                onAction: (composer) => composer.insertPill(token),
+              })),
+            },
+          ]}
+        />
+      }
       {...props}
     />,
   );

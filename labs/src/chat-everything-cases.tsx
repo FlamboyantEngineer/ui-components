@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
+import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { useCallbackLog } from './chat-assistant-host.js';
 import { useEverythingChat } from './chat-everything-host.js';
@@ -77,12 +78,13 @@ function FeatureList() {
 function EverythingDemo() {
   const [log, record] = useCallbackLog();
   const [lastRead, setLastRead] = useState('none');
-  const { allowed, chatProps } = useEverythingChat(record);
+  const { allowed, chatProps, modelPicker } = useEverythingChat(record);
   return (
     <Stack space="sm" data-lab-demo="everything">
       <div style={{ height: 680 }}>
         <Chat
           {...chatProps}
+          composerEndControls={<ChatModelPicker {...modelPicker} />}
           participants={everythingPeople}
           currentUserId={readerId}
           conversationId="lab-everything"

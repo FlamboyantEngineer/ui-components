@@ -53,7 +53,7 @@ test.describe('Message Composer lab', () => {
     const banner = await full.locator('.ui-message-composer__banner').boundingBox();
     const attachment = await full.locator('.ui-message-composer__attachments').boundingBox();
     const input = await full.getByRole('textbox').boundingBox();
-    const tools = await full.locator('.ui-message-composer__toolbar').boundingBox();
+    const tools = await full.locator('.ui-message-composer__start').boundingBox();
     const send = await full.getByRole('button', { name: 'Send' }).boundingBox();
     expect(banner && attachment && banner.y + banner.height <= attachment.y).toBe(true);
     expect(attachment && input && attachment.y + attachment.height <= input.y).toBe(true);
@@ -416,7 +416,7 @@ test.describe('Message Composer lab', () => {
     const disabled = cell(page, 'disabled', 'menu and tools');
     await expect(disabled.getByRole('button', { name: 'Add and more' })).toBeDisabled();
     const target = composer(page, 'menu');
-    const tools = target.locator('.ui-message-composer__toolbar');
+    const tools = target.locator('.ui-message-composer__start');
     await expect(tools.locator(':scope > *').first()).toHaveClass(
       /ui-message-composer__menu-button/,
     );

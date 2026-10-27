@@ -110,7 +110,7 @@ Verification: `src/components/chat/chat-commands.test.ts`
 
 ### UIC-CHAT-3.1 - Composer
 
-With `onSend`, `Chat` shall end with a `RichMessageComposer` (`ui-chat__composer`) that sends through `onSend` with the text and its tokens; without `onSend` there is no composer. It takes the chat's `placeholder`, `isDisabled`, `isPending` and `onStop`; `@` mentions the participants other than the reader and `/` inserts the chat's `commands`. With a `conversationId` it keeps its draft in the provider's storage under `chat-draft:<conversationId>`, so each conversation has its own draft. In a chat between people it offers the emoji picker. It takes the chat's `submitShortcut`, `minRows` and `maxRows`, and sends a blank message while `allowsEmptySubmit` holds, as when context the host adds carries the request, or while an attachment is complete ([UIC-CHAT-3.5](#uic-chat-35---attachments)); without them it behaves as the composer's defaults say.
+With `onSend`, `Chat` shall end with a `RichMessageComposer` (`ui-chat__composer`) that sends through `onSend` with the text and its tokens; without `onSend` there is no composer. It takes the chat's `placeholder`, `isDisabled`, `isPending` and `onStop`; `@` mentions the participants other than the reader and `/` inserts the chat's `commands`. With a `conversationId` it keeps its draft in the provider's storage under `chat-draft:<conversationId>`, so each conversation has its own draft. Its row of controls holds the chat's composer controls ([UIC-CHAT-3.8](#uic-chat-38---composer-controls)). It takes the chat's `submitShortcut`, `minRows` and `maxRows`, and sends a blank message while `allowsEmptySubmit` holds, as when context the host adds carries the request, or while an attachment is complete ([UIC-CHAT-3.5](#uic-chat-35---attachments)); without them it behaves as the composer's defaults say.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
@@ -138,14 +138,14 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.5 - Attachments
 
-With `onAttach`, the composer shall attach files from its attach button, a drop and a paste ([UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files)); without it there is no attach button. With `composerMenu`, the menu's "+" button takes the attach button's place, and the host's menu item attaches files ([UIC-CHAT-3.9](#uic-chat-39---composer-menu)). The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment`, focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
+With `onAttach`, the composer shall attach files from a drop, a paste and an attach button among its controls (the default start controls hold one, [UIC-CHAT-3.8](#uic-chat-38---composer-controls)), or from a "+" menu item ([UIC-CHAT-3.9](#uic-chat-39---composer-menu)), as [UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files) says; without it there is no attach button. The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment`, focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.6 - Model picker
 
-With `modelPicker`, the composer's tools shall end, after the "+" menu or attach button, the emoji button and the host's tools ([UIC-CHAT-3.8](#uic-chat-38---host-tools)), with a [Chat Model Picker](CHAT-MODEL-PICKER.md) taking those props, disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`. The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
+A [Chat Model Picker](CHAT-MODEL-PICKER.md) the host places among the composer's controls ([UIC-CHAT-3.8](#uic-chat-38---composer-controls)) shall be disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`, and show its icon alone while the composer is compact ([UIC-CHAT-MODEL-PICKER-1.5](CHAT-MODEL-PICKER.md#uic-chat-model-picker-15---in-a-composer)). The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
@@ -157,16 +157,16 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 Implementation: `src/components/chat/chat-submit.ts`, `src/components/chat/use-chat-state.ts`, `src/components/message-composer/use-submission.ts`
 Verification: `src/components/chat/chat-submit.test.tsx`, `src/components/message-composer/use-submission.test.tsx`
 
-### UIC-CHAT-3.8 - Host tools
+### UIC-CHAT-3.8 - Composer controls
 
-`composerToolbar` shall render the host's controls, such as a checkbox that authorizes the request, among the composer's tools after the "+" menu or attach button and the emoji button, and before the model picker, then Send or Stop, so a host adds controls without replacing the composer. The tools wrap onto further lines in a narrow composer, while Send and Stop keep their place at the end of the footer.
+`composerStartControls` and `composerEndControls` shall fill the start and end of the composer's row of controls ([UIC-MESSAGE-COMPOSER-6](MESSAGE-COMPOSER.md#uic-message-composer-6---controls)), in their order, such as a "+" menu button, an approval select, a plan toggle, a model picker or a checkbox that authorizes the request, so a host adds controls without replacing the composer. Without `composerStartControls`, the start holds the attach button (shown with `onAttach`) and, in a chat between people, the emoji button. Send or Stop ends the row unless the host placed the send button among its controls.
 
 Implementation: `src/components/chat/chat-composer.tsx`, `labs/reference/message-composer.css`
 Verification: `src/components/chat/chat-submit.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.9 - Composer menu
 
-With `composerMenu`, the composer shall show that menu ([UIC-MESSAGE-COMPOSER-5](MESSAGE-COMPOSER.md#uic-message-composer-5---menu)): its tools start with the "+" button in place of the attach button, then the emoji button (between people), the host's `composerToolbar`, the model picker, then Send or Stop. The items act on the chat's composer: the text and pills they insert are part of the message `onSend` receives, `attachFiles` hands the chosen files to `onAttach`, and toggles report to the host, which holds their state. The button is disabled while the chat's `isDisabled` holds.
+A "+" menu button ([UIC-MESSAGE-COMPOSER-5](MESSAGE-COMPOSER.md#uic-message-composer-5---menu)) the host places among the composer's controls shall act on the chat's composer: the text and pills they insert are part of the message `onSend` receives, `attachFiles` hands the chosen files to `onAttach`, and toggles report to the host, which holds their state. The button is disabled while the chat's `isDisabled` holds.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat-host.spec.ts`

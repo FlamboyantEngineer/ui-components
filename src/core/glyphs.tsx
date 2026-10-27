@@ -68,6 +68,7 @@ import {
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
+  SparklesIcon,
   StarIcon,
   StopIcon,
   TableCellsIcon,
@@ -227,6 +228,7 @@ export const defaultGlyphs = {
   terminal: CommandLineIcon,
   globe: GlobeAltIcon,
   wrench: WrenchIcon,
+  sparkles: SparklesIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

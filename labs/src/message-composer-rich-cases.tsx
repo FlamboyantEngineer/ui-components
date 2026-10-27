@@ -10,6 +10,10 @@ import {
   type MessageComposerMention,
   type MessageComposerMessage,
 } from '../../src/components/message-composer/rich/index.js';
+import {
+  MessageComposerAttachButton,
+  MessageComposerEmojiButton,
+} from '../../src/components/message-composer/index.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -159,7 +163,12 @@ function AssistantChat() {
             : undefined
         }
         onAttach={(added) => setFiles((list) => [...list, ...added.map((file) => file.name)])}
-        showEmojiPicker
+        startControls={
+          <>
+            <MessageComposerAttachButton />
+            <MessageComposerEmojiButton />
+          </>
+        }
         onSubmit={(message) => {
           setSent((list) => [...list, { ...message, files }]);
           setFiles([]);
