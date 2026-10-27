@@ -1,7 +1,9 @@
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).
 
-import { useRef, type ReactElement, type RefObject } from 'react';
+import { useRef, type ReactElement } from 'react';
+import { mergeClassNames } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import { Button } from '../button/button.js';
@@ -16,7 +18,7 @@ import {
   SubmenuTrigger,
 } from '../menu/menu.js';
 import type { ShortcutProps } from '../shortcut/shortcut.js';
-import type { ComposerFrameModel } from './composer-frame.js';
+import { useComposerControlsValue } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerToken } from './composer-message.js';
 import { attachChosenFiles } from './use-file-drop.js';
@@ -72,21 +74,11 @@ export interface MessageComposerMenuSection {
   items: readonly MessageComposerMenuItem[];
 }
 
-/** The composer's "+" menu. */
-export interface MessageComposerMenu {
-  /** The categories, in order. */
+export interface MessageComposerMenuButtonProps extends BaseProps {
+  /** The menu's categories, in order. */
   sections: readonly MessageComposerMenuSection[];
   /** Leads the menu with a search field that narrows the items by label and description. */
   filterable?: boolean | undefined;
-}
-
-interface ComposerMenuProps {
-  menu: MessageComposerMenu;
-  /** The composer's root, which the menu opens against. */
-  anchorRef: RefObject<HTMLElement | null>;
-  model: Pick<ComposerFrameModel, 'insertText' | 'insertPill' | 'focusInput'>;
-  onAttach: ((files: File[]) => void) | undefined;
-  isDisabled: boolean;
 }
 
 /** The note an item shows: why it is unavailable while it is disabled, else its description. */
@@ -134,13 +126,20 @@ function renderItem(item: MessageComposerMenuItem, helpers: MessageComposerHelpe
 }
 
 /**
- * The "+" button at the start of the toolbar and the menu it opens above the composer: the host's
+ * The "+" button among the composer's controls and the menu it opens above the composer: the host's
  * sections of items, optionally led by a search field. Insertions take focus back to the input once
  * the menu has closed and given focus back to the button. The file chooser behind `attachFiles` is a
  * hidden file input, since the press that opens it is the host's menu item rather than a button.
  */
-export function ComposerMenu({ menu, anchorRef, model, onAttach, isDisabled }: ComposerMenuProps) {
+export function MessageComposerMenuButton({
+  sections,
+  filterable,
+  ...props
+}: MessageComposerMenuButtonProps) {
   const strings = useUiStrings();
+  const composer = useComposerControlsValue('MessageComposerMenuButton');
+  const { model, rootRef, isDisabled } = composer;
+  const { onAttach } = composer.props;
   const handback = useFocusHandback(model.focusInput);
   const chooserRef = useRef<HTMLInputElement>(null);
   const helpers: MessageComposerHelpers = {
@@ -165,17 +164,18 @@ export function ComposerMenu({ menu, anchorRef, model, onAttach, isDisabled }: C
     <>
       <MenuTrigger>
         <Button
+          {...props}
           ref={handback.ref}
-          className={hooks.slotClass('menu-button')}
+          className={mergeClassNames(hooks.slotClass('menu-button'), props.className)}
           icon="plus"
           label={strings.composerMenu}
           size="sm"
           isDisabled={isDisabled}
         />
         {/* Above the whole composer, as its completion list opens, rather than over its input. */}
-        <MenuOverlay placement="top start" triggerRef={anchorRef}>
-          <Menu className={hooks.slotClass('menu')} filterable={menu.filterable}>
-            {menu.sections.map((section) => (
+        <MenuOverlay placement="top start" triggerRef={rootRef}>
+          <Menu className={hooks.slotClass('menu')} filterable={filterable}>
+            {sections.map((section) => (
               <MenuSection key={section.id} id={section.id} title={section.title}>
                 {section.items.map((item) => renderItem(item, helpers))}
               </MenuSection>

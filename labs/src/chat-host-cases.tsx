@@ -1,13 +1,20 @@
-// The Chat lab's host controls: Quote in an assistant chat, the composer's "+" menu and the host's
-// tools beside the model picker, Ctrl+Enter, blank messages carried by selected context or files,
-// and sending the host must accept.
+// The Chat lab's host controls: Quote in an assistant chat, the composer's row of controls (the "+"
+// menu, an approval select and a Plan toggle at the start, a selection toggle and the model picker
+// at the end), Ctrl+Enter, blank messages carried by selected context or files, and sending the
+// host must accept.
 
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import type { ChatAttachmentData } from '../../src/components/chat-attachment/index.js';
 import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
+import {
+  MessageComposerMenuButton,
+  MessageComposerSelect,
+  MessageComposerToggle,
+} from '../../src/components/message-composer/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { useLabModelChoice } from './chat-assistant-host.js';
 import {
@@ -20,6 +27,7 @@ import {
   textMessage,
 } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
+import { labApprovalModes } from './message-composer-controls-cases.js';
 import { createLabComposerMenu } from './message-composer-menu-cases.js';
 
 const quoteStrings = { reply: 'Quote', chatReplyingTo: 'Quoting', chatCancelReply: 'Cancel quote' };
@@ -107,16 +115,13 @@ function useLabAttachments() {
   };
 }
 
-/**
- * The assistant chat with the composer's "+" menu and the host's checkboxes beside the model
- * picker, and the host's error.
- */
+/** The assistant chat with the host's composer controls, and the host's error. */
 function HostDemo() {
   const [isPlanning, setPlanning] = useState(false);
   const host = useAcceptingHost(isPlanning);
   const files = useLabAttachments();
   const { modelPicker } = useLabModelChoice();
-  const [allowChanges, setAllowChanges] = useState(false);
+  const [approval, setApproval] = useState('ask');
   const [useSelection, setUseSelection] = useState(false);
   return (
     <Stack space="sm" data-lab-demo="host">
@@ -136,19 +141,37 @@ function HostDemo() {
             minRows={2}
             maxRows={6}
             allowsEmptySubmit={useSelection}
-            modelPicker={modelPicker}
-            composerMenu={createLabComposerMenu({ isPlanning, onPlanningChange: setPlanning })}
             attachments={files.attachments}
             onAttach={files.onAttach}
             onRemoveAttachment={files.onRemoveAttachment}
-            composerToolbar={
+            composerStartControls={
               <>
-                <Checkbox isSelected={allowChanges} onChange={setAllowChanges}>
-                  Allow changes
-                </Checkbox>
-                <Checkbox isSelected={useSelection} onChange={setUseSelection}>
-                  Ask about the selection
-                </Checkbox>
+                <MessageComposerMenuButton
+                  {...createLabComposerMenu({ isPlanning, onPlanningChange: setPlanning })}
+                />
+                <MessageComposerSelect
+                  label="Approval"
+                  options={labApprovalModes}
+                  value={approval}
+                  onChange={setApproval}
+                />
+                <MessageComposerToggle
+                  label="Plan"
+                  icon="list-task"
+                  isSelected={isPlanning}
+                  onChange={setPlanning}
+                />
+              </>
+            }
+            composerEndControls={
+              <>
+                <MessageComposerToggle
+                  label="Ask about the selection"
+                  icon="quote"
+                  isSelected={useSelection}
+                  onChange={setUseSelection}
+                />
+                <ChatModelPicker {...modelPicker} />
               </>
             }
             onSend={async (text, tokens) => {
@@ -172,7 +195,7 @@ export function ChatHostCases() {
   return (
     <LabSection
       title="Host controls"
-      description="A host's own controls around the full Chat. Copy and Quote any finished message (the provider strings name Reply Quote); Escape or Cancel quote drops it, and the quote jumps to its message. The composer's + menu comes first, in place of the attach button: attach files, insert a goal prompt, turn on Plan mode (the reply then outlines the steps first) or insert an integration's command as a pill. The host's checkboxes follow it, before the model picker, and wrap in a narrow composer, Send staying at the end. Enter breaks the line and Ctrl+Enter sends; with Ask about the selection, a blank message sends too. The host accepts each message after a moment: while it waits the composer holds the message and sends it only once, and when it refuses (the first message, or whenever Refuse the next message is on) the text, its pills and the quote stay, the host shows its error, and sending again works."
+      description="A host's own controls around the full Chat. Copy and Quote any finished message (the provider strings name Reply Quote); Escape or Cancel quote drops it, and the quote jumps to its message. The composer's row starts with the + menu (attach files, insert a goal prompt, turn on Plan mode, after which the reply outlines the steps first, or insert an integration's command as a pill), an approval select and a Plan toggle that shares the menu's state; it ends with a toggle for the selection, the model picker and Send. In a narrow composer the controls show their icons alone. Enter breaks the line and Ctrl+Enter sends; with Ask about the selection, a blank message sends too. The host accepts each message after a moment: while it waits the composer holds the message and sends it only once, and when it refuses (the first message, or whenever Refuse the next message is on) the text, its pills and the quote stay, the host shows its error, and sending again works."
     >
       <HostDemo />
     </LabSection>

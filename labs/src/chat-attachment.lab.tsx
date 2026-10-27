@@ -129,7 +129,7 @@ function ComposerStrip() {
             />
           ) : undefined
         }
-        toolbar={
+        startControls={
           <Button size="sm" startIcon="plus" onPress={uploads.add}>
             Attach a file
           </Button>

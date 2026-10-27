@@ -4,6 +4,7 @@
 import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
+import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { Cluster } from '../../src/components/layout/layout.js';
@@ -83,7 +84,9 @@ function StateSample({ state }: { state: ChatState }) {
         textFormat={state === 'plain text' ? 'plain' : undefined}
         isDisabled={state === 'disabled'}
         placeholder="Ask the trip planner…"
-        modelPicker={{ models: labModels, efforts: labEfforts, defaultModel: 'balanced' }}
+        composerEndControls={
+          <ChatModelPicker models={labModels} efforts={labEfforts} defaultModel="balanced" />
+        }
         onSend={() => undefined}
       />
     </div>

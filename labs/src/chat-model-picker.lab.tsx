@@ -59,7 +59,7 @@ function ComposerDemo() {
       <MessageComposer
         placeholder="Ask anything…"
         onSubmit={(text) => setSent(`“${text}” to ${model}`)}
-        toolbar={
+        endControls={
           <ChatModelPicker
             models={labModels}
             efforts={labEfforts}

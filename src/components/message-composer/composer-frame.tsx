@@ -1,8 +1,13 @@
-import type { ReactNode, RefObject } from 'react';
+import { useRef, type ReactNode, type RefObject } from 'react';
+import {
+  ComposerControlsContext,
+  useCompactRow,
+  useSendButtonRegistry,
+  type ComposerControlsValue,
+} from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
-import { ComposerMenu } from './composer-menu.js';
 import type { MessageComposerToken } from './composer-message.js';
-import { AttachButton, CancelButton, ComposerAction, EmojiButton } from './composer-tools.js';
+import { ComposerSendControl } from './composer-tools.js';
 import type {
   MessageComposerSharedProps,
   MessageComposerSubmitShortcut,
@@ -31,82 +36,52 @@ interface ComposerFrameProps {
   children: ReactNode;
 }
 
-function toActionMode(props: MessageComposerSharedProps, model: ComposerFrameModel) {
-  if (model.isEditing) return 'save';
-  // A composer that sends while pending offers Stop only while there is nothing to send.
-  const isSending = props.allowsPendingSubmit && model.canSubmit;
-  return props.isPending && props.onStop && !isSending ? 'stop' : 'send';
-}
-
-/** The built-in tools (the menu or the attach button, then emoji) and the caller's, before the button. */
-function ComposerToolbar({
-  props,
-  model,
-  rootRef,
-}: Pick<ComposerFrameProps, 'props' | 'model' | 'rootRef'>) {
-  const { menu, onAttach, showEmojiPicker, toolbar } = props;
-  const isDisabled = Boolean(props.isDisabled);
-  if (!menu && !onAttach && !showEmojiPicker && !toolbar) return null;
-  return (
-    <div {...hooks.slot('toolbar')}>
-      {menu ? (
-        <ComposerMenu
-          menu={menu}
-          anchorRef={rootRef}
-          model={model}
-          onAttach={onAttach}
-          isDisabled={isDisabled}
-        />
-      ) : onAttach ? (
-        <AttachButton onAttach={onAttach} isDisabled={isDisabled} />
-      ) : null}
-      {showEmojiPicker ? (
-        <EmojiButton
-          onInsert={model.insertText}
-          focusInput={model.focusInput}
-          isDisabled={isDisabled}
-        />
-      ) : null}
-      {toolbar}
-    </div>
-  );
-}
-
 /**
- * The composer around its input: the banner, the attachments, the input, then the tools, Cancel
- * while editing and the action button. Files dragged onto it, pasted or chosen go to `onAttach`.
+ * The composer around its input: the banner, the attachments, the input, then the row of the host's
+ * controls at its start and end, with the send button last unless the host placed it. Files dragged
+ * onto it, pasted or chosen go to `onAttach`.
  */
 export function ComposerFrame({ props, rootRef, model, children }: ComposerFrameProps) {
-  const { className, id, banner, attachments } = props;
+  const { className, id, banner, attachments, startControls, endControls } = props;
   const isDisabled = Boolean(props.isDisabled);
   const drop = useFileDrop(isDisabled ? undefined : props.onAttach);
+  const footerRef = useRef<HTMLDivElement>(null);
+  const startRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const isCompact = useCompactRow(footerRef, [startRef, endRef]);
+  const { hasHostSendButton, registerSendButton } = useSendButtonRegistry();
+  const controls: ComposerControlsValue = {
+    props,
+    model,
+    rootRef,
+    isCompact,
+    isDisabled,
+    registerSendButton,
+  };
   const data = {
     pending: Boolean(props.isPending),
     disabled: isDisabled,
     editing: model.isEditing,
     submitting: model.isSubmitting,
     dropTarget: drop.isDropTarget,
+    compact: isCompact,
   };
   return (
     <div {...hooks.root({ className, props, data })} id={id} ref={rootRef} {...drop.dropProps}>
       {banner ? <div {...hooks.slot('banner')}>{banner}</div> : null}
       {attachments ? <div {...hooks.slot('attachments')}>{attachments}</div> : null}
       {children}
-      <div {...hooks.slot('footer')}>
-        <ComposerToolbar props={props} model={model} rootRef={rootRef} />
-        {model.isEditing ? (
-          <CancelButton onCancel={props.onCancel} isDisabled={isDisabled} />
-        ) : null}
-        <ComposerAction
-          mode={toActionMode(props, model)}
-          canSubmit={model.canSubmit}
-          isPending={Boolean(props.isPending) && !props.allowsPendingSubmit}
-          isDisabled={isDisabled}
-          shortcut={model.shortcut}
-          onSubmit={model.submit}
-          onStop={props.onStop}
-        />
-      </div>
+      <ComposerControlsContext.Provider value={controls}>
+        <div {...hooks.slot('footer')} ref={footerRef}>
+          <div {...hooks.slot('start')} ref={startRef}>
+            {startControls}
+          </div>
+          <div {...hooks.slot('end')} ref={endRef}>
+            {endControls}
+            {hasHostSendButton ? null : <ComposerSendControl composer={controls} />}
+          </div>
+        </div>
+      </ComposerControlsContext.Provider>
     </div>
   );
 }

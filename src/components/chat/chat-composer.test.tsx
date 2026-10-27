@@ -13,7 +13,8 @@ import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
-import type { ChatProps } from './chat.js';
+import { ChatModelPicker } from '../chat-model-picker/chat-model-picker.js';
+import { MessageComposerMenuButton } from '../message-composer/index.js';
 
 installEditorDom();
 
@@ -130,26 +131,27 @@ describe('Chat composer', () => {
     own.parts = [{ type: 'text', text: 'Review TRIP-4', tokens: [{ start: 7, end: 13, ...trip }] }];
     const getReference = (reference: { id: string }) =>
       reference.id === 'trip-uuid' ? { name: 'Lisbon weekend', href: '/trips/4' } : undefined;
-    const menu = {
-      sections: [
-        {
-          id: 'references',
-          title: 'References',
-          items: [
-            {
-              id: 'note',
-              label: 'Reference NOTE-12',
-              onAction: (composer: { insertPill: (pill: typeof note) => void }) =>
-                composer.insertPill(note),
-            },
-          ],
-        },
-      ],
-    };
+    const menu = (
+      <MessageComposerMenuButton
+        sections={[
+          {
+            id: 'references',
+            title: 'References',
+            items: [
+              {
+                id: 'note',
+                label: 'Reference NOTE-12',
+                onAction: (composer) => composer.insertPill(note),
+              },
+            ],
+          },
+        ]}
+      />
+    );
     const { user, onEdit, onSend } = renderChat({
       messages: [message('a', 'ana'), own],
       getReference,
-      composerMenu: menu,
+      composerStartControls: menu,
     });
     expect(
       within(article('r1')).getByRole('link', { name: 'TRIP-4 Lisbon weekend' }),
@@ -284,67 +286,53 @@ describe('Chat composer', () => {
     expect(onSend).toHaveBeenCalledWith('', []);
   });
 
-  it('UIC-CHAT-3.6 shows the model picker beside the composer tools and disables it with the composer', async () => {
+  it('UIC-CHAT-3.6 disables a model picker among the composer controls with the chat', async () => {
     const onModelChange = vi.fn();
-    const modelPicker = {
-      models: [
-        { id: 'swift', label: 'Swift', efforts: [] },
-        { id: 'deep', label: 'Deep' },
-      ],
-      efforts: [{ id: 'high', label: 'High' }],
-      onModelChange,
-    };
-    const { user, container, rerenderWith } = renderChat({ onAttach: vi.fn(), modelPicker });
-    const toolbar = container.querySelector('.ui-message-composer__toolbar') as HTMLElement;
-    const tools = within(toolbar).getAllByRole('button');
-    expect(tools.map((tool) => tool.getAttribute('aria-label'))).toEqual([
-      'Attach files',
-      'Insert emoji',
+    const models = [
+      { id: 'swift', label: 'Swift', efforts: [] },
+      { id: 'deep', label: 'Deep' },
+    ];
+    const picker = (isDisabled?: boolean) => (
+      <ChatModelPicker models={models} onModelChange={onModelChange} isDisabled={isDisabled} />
+    );
+    const { user, container, rerenderWith } = renderChat({ composerEndControls: picker() });
+    const end = container.querySelector('.ui-message-composer__end') as HTMLElement;
+    const controls = within(end).getAllByRole('button');
+    expect(controls.map((control) => control.getAttribute('aria-label'))).toEqual([
       'Model: Swift',
+      'Send',
     ]);
-    expect(tools[2]).toHaveClass('ui-chat-model-picker');
-    await user.click(tools[2] as HTMLElement);
+    await user.click(controls[0] as HTMLElement);
     const menu = await screen.findByRole('menu');
     await user.click(within(menu).getByRole('menuitemradio', { name: 'Deep' }));
     expect(onModelChange).toHaveBeenCalledWith('deep');
-    rerenderWith({ onAttach: vi.fn(), modelPicker, isDisabled: true });
+    rerenderWith({ composerEndControls: picker(), isDisabled: true });
     expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
-    rerenderWith({ onAttach: vi.fn(), modelPicker: { ...modelPicker, isDisabled: true } });
+    rerenderWith({ composerEndControls: picker(true) });
     expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
   });
 
-  it('UIC-CHAT-3.9 forwards the + menu first among the tools in place of the attach button, disabled with the composer', async () => {
+  it('UIC-CHAT-3.9 runs a + menu among the composer controls on the chat composer, disabled with it', async () => {
     const onSelectedChange = vi.fn();
-    const composerMenu: ChatProps['composerMenu'] = {
-      sections: [
-        {
-          id: 'add',
-          title: 'Add',
-          items: [
-            {
-              id: 'goal',
-              label: 'Insert a goal prompt',
-              onAction: (composer) => composer.insertText('Goal: a calm weekend'),
-            },
-            { id: 'plan', label: 'Plan mode', isSelected: false, onSelectedChange },
-          ],
-        },
-      ],
-    };
-    const { user, container, onSend, rerenderWith } = renderChat({
-      onAttach: vi.fn(),
-      composerMenu,
-      composerToolbar: <button>Allow changes</button>,
-      modelPicker: { models: [{ id: 'swift', label: 'Swift' }] },
-    });
-    const toolbar = container.querySelector('.ui-message-composer__toolbar') as HTMLElement;
-    const tools = within(toolbar).getAllByRole('button');
-    expect(tools.map((tool) => tool.getAttribute('aria-label') ?? tool.textContent)).toEqual([
-      'Add and more',
-      'Insert emoji',
-      'Allow changes',
-      'Model: Swift',
-    ]);
+    const menuButton = (
+      <MessageComposerMenuButton
+        sections={[
+          {
+            id: 'add',
+            title: 'Add',
+            items: [
+              {
+                id: 'goal',
+                label: 'Insert a goal prompt',
+                onAction: (composer) => composer.insertText('Goal: a calm weekend'),
+              },
+              { id: 'plan', label: 'Plan mode', isSelected: false, onSelectedChange },
+            ],
+          },
+        ]}
+      />
+    );
+    const { user, onSend, rerenderWith } = renderChat({ composerStartControls: menuButton });
     await user.click(screen.getByRole('button', { name: 'Add and more' }));
     const menu = await screen.findByRole('menu', { name: 'Add and more' });
     await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Plan mode' }));
@@ -353,7 +341,7 @@ describe('Chat composer', () => {
     await waitFor(() => expect(box()).toHaveFocus());
     await user.keyboard('{Enter}');
     expect(onSend).toHaveBeenCalledWith('Goal: a calm weekend', []);
-    rerenderWith({ composerMenu, isDisabled: true });
+    rerenderWith({ composerStartControls: menuButton, isDisabled: true });
     expect(screen.getByRole('button', { name: 'Add and more' })).toBeDisabled();
   });
 });

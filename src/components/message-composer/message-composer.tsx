@@ -10,8 +10,10 @@ import {
 } from '../completion-list/completion-list.js';
 import { ComposerFrame } from './composer-frame.js';
 import { composerHooks as hooks } from './composer-hooks.js';
-import type { MessageComposerMenu } from './composer-menu.js';
 import { useMessageComposer } from './use-message-composer.js';
+
+export { useMessageComposerControls } from './composer-controls.js';
+export { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 
 /** The chord that sends: Enter (Shift+Enter breaks the line), or Ctrl+Enter (Cmd+Enter on macOS). */
 export type MessageComposerSubmitShortcut = 'Enter' | 'Ctrl+Enter';
@@ -46,17 +48,12 @@ export interface MessageComposerSharedProps
   attachments?: ReactNode;
   /** A line above everything else, such as the message being replied to or edited. */
   banner?: ReactNode;
-  /** Tools before the send button, after the built-in menu or attach button and the emoji button. */
-  toolbar?: ReactNode;
-  /**
-   * Shows a "+" button at the start of the toolbar, in place of the attach button, that opens this
-   * menu above the composer; its items act through the composer's helpers.
-   */
-  menu?: MessageComposerMenu | undefined;
+  /** Controls at the start of the row below the input, in order, such as the "+" menu button. */
+  startControls?: ReactNode;
+  /** Controls at the end of the row below the input, in order, before the send button unless they hold it. */
+  endControls?: ReactNode;
   /** Called with files chosen with the attach button or a menu item, dropped on the composer or pasted. */
   onAttach?: ((files: File[]) => void) | undefined;
-  /** Shows a button that opens the emoji picker and inserts the chosen emoji at the caret. */
-  showEmojiPicker?: boolean | undefined;
   /** Called when the reader cancels an edit, with Cancel or Escape. */
   onCancel?: (() => void) | undefined;
   /** Called on the Up arrow in an empty composer, to edit the reader's last message. */
@@ -96,8 +93,8 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
 
 /**
  * A composer for chat messages and comments: a text area that grows with its text and sends on
- * Enter (or Ctrl+Enter), with a banner, attachments above it, a "+" menu or attach button, emoji and
- * caller tools and a send button below, completions such as `@` mentions, an edit mode, recall of earlier messages,
+ * Enter (or Ctrl+Enter), with a banner and attachments above it, a row of the host's controls and
+ * the send button below, completions such as `@` mentions, an edit mode, recall of earlier messages,
  * a persisted draft, and a pending state that offers Stop while a reply streams.
  */
 export function MessageComposer(props: MessageComposerProps) {

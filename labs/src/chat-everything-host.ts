@@ -72,7 +72,6 @@ export function useEverythingChat(record: (line: string) => void) {
     ...props,
     ...older,
     ...createReplyHandlers(setMessages, record),
-    modelPicker,
     typingIds: team.typingIds,
     onSend: (text: string, tokens: readonly ChatTextToken[] = []) => {
       if (isForPlanner(tokens)) props.onSend(text, tokens);
@@ -85,5 +84,5 @@ export function useEverythingChat(record: (line: string) => void) {
       else props.onRetry(id);
     },
   };
-  return { allowed, chatProps };
+  return { allowed, chatProps, modelPicker };
 }

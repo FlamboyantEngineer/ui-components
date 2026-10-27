@@ -3,7 +3,9 @@ import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
+import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuPopover, MenuSection, MenuTrigger } from '../menu/menu.js';
+import { useMessageComposerControls } from '../message-composer/message-composer.js';
 import { MetaLine } from '../meta-line/meta-line.js';
 import { useChatModelChoice, type ChatModelChoice } from './use-chat-model-choice.js';
 
@@ -15,6 +17,8 @@ export interface ChatModelOption {
   label: string;
   /** What the model is good at, after its name in the menu. */
   description?: string | undefined;
+  /** Drawn before the name on the trigger and in the menu; alone on the trigger while the composer is compact. */
+  icon?: IconSource;
   /** A short mark after the name in the menu, such as "New". */
   badge?: string | undefined;
   /** Keeps the model listed but out of reach. */
@@ -56,7 +60,7 @@ export interface ChatModelPickerProps extends BaseProps {
   onEffortChange?: ((effort: string) => void) | undefined;
   /** Keeps the uncontrolled model and effort in the provider's storage under this key. */
   persistKey?: string | undefined;
-  /** Refuses to open the menu. */
+  /** Refuses to open the menu; the composer's own disabled state does as well. */
   isDisabled?: boolean | undefined;
 }
 
@@ -73,6 +77,7 @@ function renderModelItem(model: ChatModelOption) {
       key={model.id}
       id={modelPrefix + model.id}
       textValue={model.label}
+      icon={model.icon}
       description={
         model.isDisabled ? (model.disabledReason ?? model.description) : model.description
       }
@@ -146,41 +151,50 @@ function ChatModelMenu({
 }
 
 /**
- * A compact composer tool that shows the current model, and its effort when the model takes one,
- * and opens a menu to choose them: the models with their descriptions, badges and unavailable
- * reasons, then the efforts the chosen model takes. Each choice is controlled or held, optionally
- * in the provider's storage.
+ * A compact composer control that shows the current model, and its effort when the model takes one,
+ * or the model's icon alone while the composer is compact, and opens a menu to choose them: the
+ * models with their descriptions, badges and unavailable reasons, then the efforts the chosen model
+ * takes. Each choice is controlled or held, optionally in the provider's storage.
  */
 export function ChatModelPicker(props: ChatModelPickerProps) {
   const { models, isDisabled = false, className, id } = props;
   const strings = useUiStrings();
+  const composer = useMessageComposerControls();
   const choice = useChatModelChoice(props);
   const { model, effort } = choice;
   if (!model) return null;
+  const name = strings.chatModelTrigger(model.label, effort?.label);
+  const trigger = {
+    ...hooks.root({
+      className,
+      props,
+      data: { hasEffort: effort !== undefined, compact: composer.isCompact },
+    }),
+    id,
+    variant: 'ghost',
+    size: 'sm',
+    isDisabled: isDisabled || composer.isDisabled,
+  } as const;
   return (
     <MenuTrigger>
-      <Button
-        {...hooks.root({ className, props, data: { hasEffort: effort !== undefined } })}
-        id={id}
-        variant="ghost"
-        size="sm"
-        endIcon="chevron-down"
-        isDisabled={isDisabled}
-        aria-label={strings.chatModelTrigger(model.label, effort?.label)}
-      >
-        <MetaLine
-          items={[
-            <span key="model" {...hooks.slot('model')}>
-              {model.label}
-            </span>,
-            effort ? (
-              <span key="effort" {...hooks.slot('effort')}>
-                {effort.label}
-              </span>
-            ) : null,
-          ]}
-        />
-      </Button>
+      {composer.isCompact ? (
+        <Button {...trigger} icon={model.icon ?? 'sparkles'} label={name} tooltip={name} />
+      ) : (
+        <Button {...trigger} startIcon={model.icon} endIcon="chevron-down" aria-label={name}>
+          <MetaLine
+            items={[
+              <span key="model" {...hooks.slot('model')}>
+                {model.label}
+              </span>,
+              effort ? (
+                <span key="effort" {...hooks.slot('effort')}>
+                  {effort.label}
+                </span>
+              ) : null,
+            ]}
+          />
+        </Button>
+      )}
       <MenuPopover placement="top start">
         <ChatModelMenu models={models} choice={choice} />
       </MenuPopover>

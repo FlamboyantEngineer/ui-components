@@ -1,6 +1,6 @@
 # Chat Model Picker
 
-`ChatModelPicker` is a compact composer tool that shows the model the reader's messages go to and, when that model takes one, its reasoning effort, and opens a menu to choose them. The menu lists the models, each with its description, an optional badge and, for an unavailable model, the reason; then the efforts the chosen model takes. It builds on [Button](BUTTON.md), [Meta Line](META-LINE.md), [Badge](BADGE.md) and the [Menu](MENU.md) family (`MenuTrigger`, `MenuPopover`, `Menu`, `MenuSection`, `MenuItem`). The caller lists the models and efforts and reads the choice, controlled or not; [Chat](CHAT.md) places it among its composer's tools with `modelPicker`.
+`ChatModelPicker` is a compact composer control that shows the model the reader's messages go to and, when that model takes one, its reasoning effort, and opens a menu to choose them. The menu lists the models, each with its description, an optional badge and, for an unavailable model, the reason; then the efforts the chosen model takes. It builds on [Button](BUTTON.md), [Meta Line](META-LINE.md), [Badge](BADGE.md) and the [Menu](MENU.md) family (`MenuTrigger`, `MenuPopover`, `Menu`, `MenuSection`, `MenuItem`). The caller lists the models and efforts and reads the choice, controlled or not; a host places it among a [Message Composer](MESSAGE-COMPOSER.md)'s controls, or [Chat](CHAT.md)'s `composerEndControls`.
 
 ## UIC-CHAT-MODEL-PICKER-1 - Trigger
 
@@ -13,7 +13,7 @@ Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`
 
 ### UIC-CHAT-MODEL-PICKER-1.2 - Trigger
 
-`ChatModelPicker` shall render one small `ghost` [Button](BUTTON.md) carrying the `ui-chat-model-picker` root, ending with a `chevron-down` glyph. Its label is a [Meta Line](META-LINE.md) of the current model's `label` (`ui-chat-model-picker__model`) and, while the model takes an effort, the current effort's `label` (`ui-chat-model-picker__effort`), as in "Balanced · High". The root publishes `data-has-effort` while the model takes an effort. The button is named by the provider string `chatModelTrigger` from the model's and the effort's labels ("Model: Balanced, High effort", or "Model: Classic" without an effort), which holds the labels in the order the trigger shows them so that its name contains its visible text, and reports the menu in `aria-haspopup` and `aria-expanded`. Without models it renders nothing.
+`ChatModelPicker` shall render one small `ghost` [Button](BUTTON.md) carrying the `ui-chat-model-picker` root, starting with the current model's `icon` when it has one and ending with a `chevron-down` glyph. Its label is a [Meta Line](META-LINE.md) of the current model's `label` (`ui-chat-model-picker__model`) and, while the model takes an effort, the current effort's `label` (`ui-chat-model-picker__effort`), as in "Balanced · High". The root publishes `data-has-effort` while the model takes an effort. The button is named by the provider string `chatModelTrigger` from the model's and the effort's labels ("Model: Balanced, High effort", or "Model: Classic" without an effort), which holds the labels in the order the trigger shows them so that its name contains its visible text, and reports the menu in `aria-haspopup` and `aria-expanded`. Without models it renders nothing.
 
 Implementation: `src/components/chat-model-picker/chat-model-picker.tsx`, `src/core/chat-model-picker-strings.ts`
 Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`, `e2e/chat-model-picker.spec.ts`
@@ -32,6 +32,13 @@ Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`
 Implementation: `src/components/chat-model-picker/chat-model-picker.tsx`, `src/core/chat-model-picker-strings.ts`
 Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`
 
+### UIC-CHAT-MODEL-PICKER-1.5 - In a composer
+
+Among a composer's controls ([UIC-MESSAGE-COMPOSER-6](MESSAGE-COMPOSER.md#uic-message-composer-6---controls)), the trigger shall be disabled while the composer is, as well as with its own `isDisabled`. While the composer is compact ([UIC-MESSAGE-COMPOSER-6.4](MESSAGE-COMPOSER.md#uic-message-composer-64---compact-row)), the root publishes `data-compact` and the trigger is an icon-only button showing the current model's `icon`, else the `sparkles` glyph, named and hinted by the same `chatModelTrigger` text.
+
+Implementation: `src/components/chat-model-picker/chat-model-picker.tsx`, `src/core/glyphs.tsx`
+Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`, `e2e/message-composer-controls.spec.ts`
+
 ## UIC-CHAT-MODEL-PICKER-2 - Menu
 
 ### UIC-CHAT-MODEL-PICKER-2.1 - Sections
@@ -43,7 +50,7 @@ Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`, `e2
 
 ### UIC-CHAT-MODEL-PICKER-2.2 - Models
 
-Each model's item shall show its `label` followed, with a `badge`, by a small `info` [Badge](BADGE.md) holding it, and its `description` after them; the label is its type-to-select text. A model with `isDisabled` is unavailable: its item shows its `disabledReason` in place of its description (its description without a reason), stays reachable by keyboard with `aria-disabled="true"` and `data-disabled` so the reason can be read ([UIC-MENU-2.6](MENU.md#uic-menu-26---focusable-disabled-items)), and cannot be chosen: a press, Enter or Space changes nothing, reports nothing and leaves the menu open.
+Each model's item shall show its `icon` when it has one, its `label` followed, with a `badge`, by a small `info` [Badge](BADGE.md) holding it, and its `description` after them; the label is its type-to-select text. A model with `isDisabled` is unavailable: its item shows its `disabledReason` in place of its description (its description without a reason), stays reachable by keyboard with `aria-disabled="true"` and `data-disabled` so the reason can be read ([UIC-MENU-2.6](MENU.md#uic-menu-26---focusable-disabled-items)), and cannot be chosen: a press, Enter or Space changes nothing, reports nothing and leaves the menu open.
 
 Implementation: `src/components/chat-model-picker/chat-model-picker.tsx`
 Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`, `e2e/chat-model-picker.spec.ts`
@@ -94,3 +101,4 @@ Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`, `e2
 | `ui-chat-model-picker__effort` | slot  |        | The current effort's name on the trigger, while the model takes one. |
 | `ui-chat-model-picker__menu`   | slot  |        | The menu of models and efforts (also `ui-menu`).                     |
 | `data-has-effort`              | state | `true` | The current model takes an effort, which the trigger shows.          |
+| `data-compact`                 | state | `true` | The composer around it is compact: the trigger shows its icon alone. |

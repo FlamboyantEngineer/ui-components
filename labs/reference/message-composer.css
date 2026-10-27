@@ -2,6 +2,8 @@
 
 .ui-message-composer {
   display: grid;
+  /* The column never grows past the composer, so the row of controls can tell when it overflows. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   box-sizing: border-box;
   padding: 6px;
@@ -141,29 +143,69 @@
   white-space: pre-wrap;
 }
 
-/* The tools wrap onto further lines in a narrow composer; the action button keeps the last place. */
+/*
+ * The row of controls: the start group, then the end group pushed to the end. The row stays on one
+ * line so the composer can measure when its controls overflow; once it is compact (icons only) and
+ * still too narrow, the controls wrap.
+ */
 .ui-message-composer__footer {
   display: flex;
   align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 4px;
 }
 
-.ui-message-composer__toolbar {
+.ui-message-composer__start,
+.ui-message-composer__end {
   display: flex;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
+  flex: none;
   align-items: center;
   gap: 4px;
+}
+
+.ui-message-composer[data-compact] .ui-message-composer__footer,
+.ui-message-composer[data-compact] .ui-message-composer__start,
+.ui-message-composer[data-compact] .ui-message-composer__end {
+  flex-wrap: wrap;
+}
+
+.ui-message-composer[data-compact] .ui-message-composer__start,
+.ui-message-composer[data-compact] .ui-message-composer__end {
+  flex: 0 1 auto;
   min-width: 0;
 }
 
+.ui-message-composer__end {
+  justify-content: flex-end;
+}
+
+.ui-message-composer__start > *,
+.ui-message-composer__end > *,
 .ui-message-composer__menu-button,
 .ui-message-composer__attach,
 .ui-message-composer__emoji,
 .ui-message-composer__cancel,
 .ui-message-composer__action {
   flex: none;
+}
+
+.ui-message-composer__select {
+  max-width: 100%;
+}
+
+/* A pressed toggle reads as selected, beyond the hover wash ghost buttons share. */
+.ui-message-composer__footer .ui-message-composer__toggle.ui-button[data-selected] {
+  background: var(--ref-selected);
+  border-color: var(--ref-accent);
+}
+
+.ui-message-composer__select-menu {
+  width: min(320px, calc(100vw - 18px));
+}
+
+/* Descriptions line up with the labels, after the selection check and the icon. */
+.ui-message-composer__select-menu .ui-menu-item__description {
+  padding-inline-start: 24px;
 }
 
 /*

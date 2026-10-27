@@ -8,6 +8,7 @@ import {
   RichMessageComposer,
   type MessageComposerMessage,
 } from '../../src/components/message-composer/rich/index.js';
+import { MessageComposerEmojiButton } from '../../src/components/message-composer/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection } from './chrome/index.js';
 import { ComposerBanner, SentMessage, labPeople } from './message-composer-rich-cases.js';
@@ -115,7 +116,7 @@ function TeamChat() {
           const last = messages.at(-1);
           if (last) setFocus({ kind: 'edit', id: last.id });
         }}
-        showEmojiPicker
+        startControls={<MessageComposerEmojiButton />}
         onSubmit={send}
         data-lab-composer="team"
       />

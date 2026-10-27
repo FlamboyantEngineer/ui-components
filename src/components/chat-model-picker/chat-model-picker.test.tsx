@@ -3,10 +3,12 @@ import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { installComposerRow } from '../../../test/composer-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectPackages } from '../../../test/module-imports.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
+import { MessageComposer } from '../message-composer/message-composer.js';
 import {
   ChatModelPicker,
   type ChatEffortOption,
@@ -127,6 +129,36 @@ describe('ChatModelPicker', () => {
     expect(trigger()).toHaveAttribute('data-disabled', 'true');
     await user.click(trigger());
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-MODEL-PICKER-1.2 UIC-CHAT-MODEL-PICKER-2.2 draws a model icon on the trigger and in the menu', async () => {
+    const { user } = renderPicker({
+      models: models.map((model) => (model.id === 'swift' ? { ...model, icon: 'star' } : model)),
+    });
+    expect(trigger().querySelector('.ui-button__start-icon [data-glyph="star"]')).not.toBeNull();
+    const menu = await openMenu(user);
+    const swift = within(menu).getByRole('menuitemradio', { name: /^Swift/ });
+    expect(swift.querySelector('[data-glyph="star"]')).not.toBeNull();
+  });
+
+  it('UIC-CHAT-MODEL-PICKER-1.5 shows its icon alone while the composer is compact and is disabled with it', () => {
+    const row = installComposerRow();
+    const picker = (pickerModels: ChatModelOption[]) => (
+      <MessageComposer endControls={<ChatModelPicker models={pickerModels} efforts={efforts} />} />
+    );
+    const { container, rerender } = render(picker(models));
+    row.resize(container, 100, 300);
+    const root = container.querySelector('.ui-chat-model-picker');
+    expect(root).toBe(trigger());
+    expect(root).toHaveAttribute('data-compact', 'true');
+    expect(trigger()).toHaveAttribute('data-content', 'icon');
+    expect(trigger()).toHaveAccessibleName('Model: Swift, Low effort');
+    expect(trigger().querySelector('[data-glyph="sparkles"]')).not.toBeNull();
+    expectHooksMatchSpec(container, 'CHAT-MODEL-PICKER', { slots: [] });
+    rerender(picker([{ id: 'deep', label: 'Deep', icon: 'star' }]));
+    expect(trigger().querySelector('[data-glyph="star"]')).not.toBeNull();
+    rerender(<MessageComposer isDisabled endControls={<ChatModelPicker models={models} />} />);
+    expect(trigger()).toBeDisabled();
   });
 
   it('UIC-CHAT-MODEL-PICKER-2.1 UIC-CHAT-MODEL-PICKER-2.2 UIC-CHAT-MODEL-PICKER-2.3 lists the models, then the efforts the model takes', async () => {

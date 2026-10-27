@@ -4,8 +4,10 @@
 import { useState } from 'react';
 import {
   MessageComposer,
+  MessageComposerEmojiButton,
+  MessageComposerMenuButton,
   type MessageComposerHelpers,
-  type MessageComposerMenu,
+  type MessageComposerMenuButtonProps,
   type MessageComposerMenuItem,
 } from '../../src/components/message-composer/index.js';
 import {
@@ -52,7 +54,7 @@ function fileItem(
 export function createLabComposerMenu(plan: {
   isPlanning: boolean;
   onPlanningChange: (isPlanning: boolean) => void;
-}): MessageComposerMenu {
+}): MessageComposerMenuButtonProps {
   return {
     sections: [
       {
@@ -156,8 +158,12 @@ function MenuComposers() {
       <MessageComposer
         aria-label="Message with a menu"
         placeholder="Write a message, or press + for more"
-        menu={menu}
-        showEmojiPicker
+        startControls={
+          <>
+            <MessageComposerMenuButton {...menu} />
+            <MessageComposerEmojiButton />
+          </>
+        }
         allowsEmptySubmit={files.names.length > 0}
         attachments={files.attachments}
         onAttach={files.onAttach}
@@ -174,7 +180,7 @@ function MenuComposers() {
       <RichMessageComposer
         aria-label="Prompt with a searchable menu"
         placeholder="Ask anything, or press + and search"
-        menu={{ ...menu, filterable: true }}
+        startControls={<MessageComposerMenuButton {...menu} filterable />}
         allowsEmptySubmit={richFiles.names.length > 0}
         attachments={richFiles.attachments}
         onAttach={richFiles.onAttach}
@@ -198,7 +204,7 @@ export function ComposerMenuSection() {
   return (
     <LabSection
       title="Composer menu"
-      description="The + button, in place of the attach button, opens a menu upward from it (below it when there is no room above): Add (attach files through the system chooser, insert a goal prompt at the caret, the Plan mode toggle, which keeps the menu open, and a voice note that is unavailable and says why) and Integrations with icons and notes, a submenu of files and a shortcut hint; the list scrolls. Choosing an insertion puts focus back in the text after it. The rich composer's menu leads with a search field that narrows the items by label and note, and its commands go in as pills."
+      description="The + button, placed first among the start controls, opens a menu upward from it (below it when there is no room above): Add (attach files through the system chooser, insert a goal prompt at the caret, the Plan mode toggle, which keeps the menu open, and a voice note that is unavailable and says why) and Integrations with icons and notes, a submenu of files and a shortcut hint; the list scrolls. Choosing an insertion puts focus back in the text after it. The rich composer's menu leads with a search field that narrows the items by label and note, and its commands go in as pills."
     >
       <MenuComposers />
     </LabSection>

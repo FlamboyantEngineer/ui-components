@@ -181,7 +181,7 @@ export function ChatControllerDemo() {
                 onRetry={props.onRetryAttachment}
               />
             }
-            toolbar={
+            startControls={
               <>
                 <label>
                   Attach files{' '}

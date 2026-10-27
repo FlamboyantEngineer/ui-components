@@ -8,7 +8,14 @@ import {
   createTriggerCompletions,
   type Completion,
 } from '../../src/components/completion-list/completion-list.js';
-import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
+import {
+  MessageComposer,
+  MessageComposerAttachButton,
+  MessageComposerEmojiButton,
+  MessageComposerMenuButton,
+  MessageComposerSelect,
+  MessageComposerToggle,
+} from '../../src/components/message-composer/index.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
@@ -16,6 +23,7 @@ import {
   ComposerBanner,
   RichComposerSections,
 } from './message-composer-rich-cases.js';
+import { ComposerControlsSection, labApprovalModes } from './message-composer-controls-cases.js';
 import { createLabComposerMenu, ComposerMenuSection } from './message-composer-menu-cases.js';
 import { ReferenceComposerSection } from './message-composer-reference-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
@@ -67,10 +75,25 @@ function StateSample({
       }
       attachments={withParts ? <AttachmentChip name="Report.pdf" /> : undefined}
       onAttach={withParts || withMenu ? () => undefined : undefined}
-      menu={withMenu ? matrixMenu : undefined}
-      showEmojiPicker={withParts || withMenu}
-      toolbar={
+      startControls={
         withParts || withMenu ? (
+          <>
+            {withMenu ? (
+              <MessageComposerMenuButton {...matrixMenu} />
+            ) : (
+              <MessageComposerAttachButton />
+            )}
+            <MessageComposerEmojiButton />
+          </>
+        ) : undefined
+      }
+      endControls={
+        withMenu ? (
+          <>
+            <MessageComposerSelect label="Approval" options={labApprovalModes} />
+            <MessageComposerToggle label="Plan" icon="list-task" defaultSelected />
+          </>
+        ) : withParts ? (
           <Button size="sm" variant="ghost">
             Tone
           </Button>
@@ -119,8 +142,13 @@ function Composing() {
             : undefined
         }
         onAttach={(added) => setFiles((list) => [...list, ...added.map((file) => file.name)])}
-        showEmojiPicker
-        toolbar={
+        startControls={
+          <>
+            <MessageComposerAttachButton />
+            <MessageComposerEmojiButton />
+          </>
+        }
+        endControls={
           <Button size="sm" variant="ghost" onPress={() => setModifier((value) => !value)}>
             {modifier ? 'Send with Ctrl+Enter' : 'Send with Enter'}
           </Button>
@@ -201,7 +229,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Empty and with a draft; pending (the spinner), pending with Stop, disabled, and editing a message (Save and Cancel); with a banner, attachments above, and the attach, emoji and caller tools beside the button; or with the + menu in place of the attach button."
+      description="Empty and with a draft; pending (the spinner), pending with Stop, disabled, and editing a message (Save and Cancel); with a banner, attachments above, and the attach and emoji buttons at the start and a caller tool at the end; or with the + menu and emoji at the start and an approval select and a Plan toggle at the end."
     >
       <StateMatrix
         axes={{ state: states, part: parts }}
@@ -214,6 +242,7 @@ mountLab(
     >
       <Composing />
     </LabSection>
+    <ComposerControlsSection />
     <ComposerMenuSection />
     <LabSection
       title="Stopping a reply"

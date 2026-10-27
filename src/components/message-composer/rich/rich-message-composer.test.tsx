@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../../test/hooks.js';
 import { installEditorDom } from '../../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../../core/provider.js';
 import { createMemoryStorage } from '../../../core/storage.js';
+import { MessageComposerMenuButton } from '../composer-menu.js';
 import type { MessageComposerMessage } from '../composer-message.js';
 import {
   RichMessageComposer,
@@ -140,27 +141,29 @@ describe('RichMessageComposer', () => {
 
   it('UIC-MESSAGE-COMPOSER-5.3 inserts a pill and text from the menu at the caret and gives focus back after them', async () => {
     const { user, onSubmit } = renderComposer({
-      menu: {
-        sections: [
-          {
-            id: 'add',
-            title: 'Add',
-            items: [
-              {
-                id: 'summarize',
-                label: 'Summarize',
-                onAction: (composer) =>
-                  composer.insertPill({ kind: 'command', id: 'summarize', label: 'summarize' }),
-              },
-              {
-                id: 'notes',
-                label: 'Insert the notes',
-                onAction: (composer) => composer.insertText('the notes'),
-              },
-            ],
-          },
-        ],
-      },
+      startControls: (
+        <MessageComposerMenuButton
+          sections={[
+            {
+              id: 'add',
+              title: 'Add',
+              items: [
+                {
+                  id: 'summarize',
+                  label: 'Summarize',
+                  onAction: (composer) =>
+                    composer.insertPill({ kind: 'command', id: 'summarize', label: 'summarize' }),
+                },
+                {
+                  id: 'notes',
+                  label: 'Insert the notes',
+                  onAction: (composer) => composer.insertText('the notes'),
+                },
+              ],
+            },
+          ]}
+        />
+      ),
     });
     const choose = async (name: string) => {
       await user.click(screen.getByRole('button', { name: 'Add and more' }));
@@ -183,21 +186,23 @@ describe('RichMessageComposer', () => {
 
   it('UIC-MESSAGE-COMPOSER-5.3 inserts a pill as its text in a code block', async () => {
     const { user, onSubmit } = renderComposer({
-      menu: {
-        sections: [
-          {
-            id: 'add',
-            title: 'Add',
-            items: [
-              {
-                id: 'maria',
-                label: 'Maria Santos',
-                onAction: (composer) => composer.insertPill(maria),
-              },
-            ],
-          },
-        ],
-      },
+      startControls: (
+        <MessageComposerMenuButton
+          sections={[
+            {
+              id: 'add',
+              title: 'Add',
+              items: [
+                {
+                  id: 'maria',
+                  label: 'Maria Santos',
+                  onAction: (composer) => composer.insertPill(maria),
+                },
+              ],
+            },
+          ]}
+        />
+      ),
     });
     await user.click(box());
     await user.keyboard('```');
