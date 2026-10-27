@@ -398,7 +398,7 @@ Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-12.2 - Loading more
 
-`onLoadMore` shall be called when the end of the rows scrolls into the scroll area's view while `isLoading` is false, through React Aria's `TableLoadMoreItem` after the rows (`ui-table__loader`), virtualized or not. While `isLoading`, the loader row shows the library's loading `EmptyState` reading the provider's `loading` string.
+`onLoadMore` shall be called when the end of the rows scrolls into the scroll area's view while `isLoading` is false, through React Aria's `TableLoadMoreItem` after the rows (`ui-table__loader`), virtualized or not. While `isLoading`, the loader row shows the library's loading `EmptyState` (a polite status) reading `loadingMessage` as given, text or other content, the provider's `loading` string by default, below the rows it keeps, so a table announces the same message whether it loads its first rows or more of them.
 
 Implementation: `src/components/table/table-body.tsx`
 Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`

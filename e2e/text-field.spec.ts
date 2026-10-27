@@ -293,3 +293,32 @@ test.describe('Text Field lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test.describe('Text Field driven by an editor', () => {
+  test('UIC-TEXT-FIELD-6.1 UIC-TEXT-FIELD-6.2 runs a caller-owned suggestion list on the input', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const demo = page.locator('[data-lab-demo="editor"]');
+    const input = demo.getByRole('combobox', { name: 'Town' });
+    await input.scrollIntoViewIfNeeded();
+    await input.click();
+    await page.keyboard.type('Ber');
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    const list = demo.getByRole('listbox', { name: 'Town suggestions' });
+    await expect(list.getByRole('option')).toHaveText(['Bergen', 'Bern', 'Berlin']);
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveAttribute('aria-activedescendant', 'lab-town-1');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('Bern');
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await page.keyboard.press('Home');
+    await expect(demo.locator('[data-lab-output="Caret"]')).toHaveText('0');
+    await demo.getByRole('button', { name: 'Select the town' }).click();
+    await expect(input).toBeFocused();
+    await page.keyboard.type('Bologna');
+    await expect(input).toHaveValue('Bologna');
+    await lab.expectAccessible('[data-lab-demo="editor"]');
+  });
+});

@@ -22,7 +22,7 @@ export function resolveFocusTarget(target: FocusTarget | undefined): HTMLElement
 }
 
 /**
- * When the container leaves the page, moves focus to `finalFocus`, else to `fallback`, provided
+ * When the container leaves the page, or the component closes a container that stays, moves focus to `finalFocus`, else to `fallback`, provided
  * focus was still inside the container or on the body, so a reader who moved elsewhere keeps their
  * place. It runs while the container is removed, before React Aria's own restoration, which then
  * stands down.
@@ -41,7 +41,11 @@ export function useFocusReturn({ containerRef, finalFocus, fallback }: FocusRetu
       const target =
         resolveFocusTarget(chosen) ??
         (opener instanceof HTMLElement && opener.isConnected ? opener : null);
-      target?.focus();
+      if (!target) return;
+      // A container that stays mounted (a retained dialog) is still in the document while React
+      // commits, and React puts focus back on the element it had; move it once the commit is done.
+      if (container?.isConnected) queueMicrotask(() => target.focus());
+      else target.focus();
     };
   }, [containerRef]);
 }

@@ -442,6 +442,7 @@ export function LoadingMore() {
           size="sm"
           onLoadMore={count < allItems.length ? loadMore : undefined}
           isLoading={isLoading}
+          loadingMessage="Loading more items…"
         />
       </div>
       <output data-lab-output>{`${count} of ${allItems.length} loaded`}</output>

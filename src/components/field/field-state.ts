@@ -110,6 +110,12 @@ export interface FieldState<T> {
   touch(): void;
   /** Shows the validation now, whatever the validation mode. */
   revealValidation(): void;
+  /**
+   * Reports what the control shows that has not become a value, such as an incomplete date or
+   * unreadable text, while the value stays the last one accepted; `null` once the shown text is the
+   * value again. It comes first in the field's validation and blocks its form like any error.
+   */
+  setDraftIssue(issue: FieldIssue | null): void;
 }
 
 function firstDefined<T>(...values: Array<T | undefined>): T {
@@ -188,11 +194,16 @@ function useCommit<T>(
  * The validation of the value: external errors for the field's name, the required check, `validate`
  * and the debounced `validateAsync`, shown as the validation mode allows.
  */
-function useFieldValidation<T>(value: T, options: FieldStateOptions<T>, scope: FieldScope) {
+function useFieldValidation<T>(
+  value: T,
+  options: FieldStateOptions<T>,
+  { scope, draftIssue }: { scope: FieldScope; draftIssue: FieldIssue | null },
+) {
   const strings = useUiStrings();
   const reveal = useFieldReveal(options.validationMode ?? scope.validationMode ?? 'immediate');
   const external = useExternalIssues(scope.validationErrors, options.name, value);
-  const own = [...external, ...checkFieldValue(value, options, strings)];
+  const draft = draftIssue ? [draftIssue] : [];
+  const own = [...draft, ...external, ...checkFieldValue(value, options, strings)];
   const check = useAsyncCheck(value, {
     validateAsync: options.validateAsync,
     debounce: options.validationDebounce ?? 0,
@@ -206,6 +217,19 @@ function useFieldValidation<T>(value: T, options: FieldStateOptions<T>, scope: F
     strings,
   );
   return { reveal, realtime, shown };
+}
+
+/** The control's report on its draft, kept while it reports the same issue again. */
+function useDraftIssue() {
+  const [issue, setIssue] = useState<FieldIssue | null>(null);
+  const report = useCallback((next: FieldIssue | null) => {
+    setIssue((previous) =>
+      previous?.severity === next?.severity && previous?.message === next?.message
+        ? previous
+        : next,
+    );
+  }, []);
+  return [issue, report] as const;
 }
 
 /**
@@ -222,7 +246,8 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   const isReadOnly = Boolean(options.isReadOnly || scope.isReadOnly);
   const isLocked = isReadOnly || isDisabled;
   const latest = useLatest({ value, committedValue, options, isLocked });
-  const { reveal, realtime, shown } = useFieldValidation(value, options, scope);
+  const [draftIssue, setDraftIssue] = useDraftIssue();
+  const { reveal, realtime, shown } = useFieldValidation(value, options, { scope, draftIssue });
   const { markChanged } = reveal;
 
   let history = own.history;
@@ -287,5 +312,6 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     redo: () => step(1),
     touch: reveal.touch,
     revealValidation: reveal.revealValidation,
+    setDraftIssue,
   };
 }

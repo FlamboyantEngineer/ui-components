@@ -1,6 +1,6 @@
 # Tooltip
 
-`Tooltip` shows a short, non-interactive hint for a control, built on React Aria's `TooltipTrigger` and `Tooltip`. It opens when its trigger is hovered or keyboard focused and closes when the reader moves on. Content the reader acts on belongs in a popover or menu, never in a tooltip. Text cut short by its box uses [Truncation Tooltip](TRUNCATION-TOOLTIP.md), which shares this panel's hooks.
+`Tooltip` shows a short, non-interactive hint for a control, built on React Aria's `TooltipTrigger` and `Tooltip`. It opens when its trigger is hovered or keyboard focused and closes when the reader moves on. Content the reader acts on belongs in a popover or menu, never in a tooltip. Text cut short by its box uses [Truncation Tooltip](TRUNCATION-TOOLTIP.md), which shares this panel's hooks. `AnchoredTooltip` shows the same panel, opened by the caller, against an element it already owns or a rectangle.
 
 ## UIC-TOOLTIP-1 - Contract
 
@@ -66,6 +66,36 @@ The panel shall carry the hooks below, append the caller's `className` and forwa
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`
+
+## UIC-TOOLTIP-2 - Anchored tooltip
+
+### UIC-TOOLTIP-2.1 - Existing elements
+
+`AnchoredTooltip` shall show its `content` in the same panel and hooks as `Tooltip` (`ui-tooltip`, `role="tooltip"`, portalled on the `tooltip` layer) while `isOpen` is true and hide it when false, pointing at an `anchor` the caller already owns: an HTML or SVG element, or a ref to one. It renders no trigger and nothing around the anchor, and nothing in it opens or closes the panel: the caller owns the state. The panel takes `variant`, `placement` (default `top`, flipping when it does not fit), the caller's `id`, `className` and `data-*`, and publishes `data-placement`, `data-entering` and `data-exiting` as `Tooltip` does.
+
+Implementation: `src/components/tooltip/anchored-tooltip.tsx`
+Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.spec.ts`
+
+### UIC-TOOLTIP-2.2 - Rectangles
+
+An `anchor` with a `getBoundingClientRect()` method and no element, such as a text range or a region of a canvas, shall place the panel against that rectangle, in viewport pixels as `getBoundingClientRect` returns them, read again at each opening, scroll and resize, so a rectangle that moves takes the panel with it.
+
+Implementation: `src/components/tooltip/anchored-tooltip.tsx`
+Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.spec.ts`
+
+### UIC-TOOLTIP-2.3 - Relationships
+
+The panel's `id` is the caller's `id`, or a stable generated one. While open, `relationship="description"` (the default) shall add it to an element anchor's `aria-describedby` and `relationship="label"` to its `aria-labelledby`, after the ids already there, and take it out again on close or unmount, leaving the other ids as they were (and no attribute when none remain). `relationship="none"` shows the hint visually only: the panel is `aria-hidden` and the anchor's name and description do not change, for a hint that repeats a name readers already hear. A rectangle anchor has no element, so no relationship.
+
+Implementation: `src/components/tooltip/anchored-tooltip.tsx`
+Verification: `src/components/tooltip/anchored-tooltip.test.tsx`
+
+### UIC-TOOLTIP-2.4 - Following and cleaning up
+
+The open panel shall follow its anchor through page and container scrolling, window resizing and changes of the anchor's or the panel's size, without closing. With no anchor, a ref holding nothing, or an element no longer in the document, it shows nothing; unmounting it while open removes the panel and its relationship.
+
+Implementation: `src/components/tooltip/anchored-tooltip.tsx`
+Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ## Hooks
 

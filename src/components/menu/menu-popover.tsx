@@ -22,6 +22,7 @@ import type { OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps {
@@ -167,23 +168,26 @@ export function MenuOverlay({
   const isSubmenu = useSlottedContext(PopoverContext)?.trigger === 'SubmenuTrigger';
   const open = usePageScrollFollow(nonModal && !isSubmenu, rest);
   return (
-    <AriaPopover
-      {...rest}
-      {...open}
-      ref={surface.ref}
-      isNonModal={nonModal}
-      {...hooks.root({ className, props: rest, data: { layer: resolved } })}
-      offset={offset ?? (isSubmenu ? -2 : 4)}
-      crossOffset={crossOffset ?? (isSubmenu ? -4 : 0)}
-      containerPadding={containerPadding}
-      style={{ zIndex }}
-    >
-      <MenuSurfaceContext.Provider value={surface.group}>
-        <MenuNonModalContext.Provider value={nonModal}>
-          <MenuLayerContext.Provider value={resolved}>{children}</MenuLayerContext.Provider>
-        </MenuNonModalContext.Provider>
-      </MenuSurfaceContext.Provider>
-    </AriaPopover>
+    <>
+      <PopoverPresence />
+      <AriaPopover
+        {...rest}
+        {...open}
+        ref={surface.ref}
+        isNonModal={nonModal}
+        {...hooks.root({ className, props: rest, data: { layer: resolved } })}
+        offset={offset ?? (isSubmenu ? -2 : 4)}
+        crossOffset={crossOffset ?? (isSubmenu ? -4 : 0)}
+        containerPadding={containerPadding}
+        style={{ zIndex }}
+      >
+        <MenuSurfaceContext.Provider value={surface.group}>
+          <MenuNonModalContext.Provider value={nonModal}>
+            <MenuLayerContext.Provider value={resolved}>{children}</MenuLayerContext.Provider>
+          </MenuNonModalContext.Provider>
+        </MenuSurfaceContext.Provider>
+      </AriaPopover>
+    </>
   );
 }
 

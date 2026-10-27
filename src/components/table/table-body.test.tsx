@@ -1,7 +1,8 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
 
 interface City {
@@ -164,6 +165,65 @@ describe('Table notices', { timeout: 15_000 }, () => {
     expect(container.querySelector('.ui-table__body')?.lastElementChild).toBe(loader);
     expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toContain('Oslo');
     expectHooksMatchSpec(container, 'TABLE', { slots: ['loader'] });
+    vi.unstubAllGlobals();
+  });
+
+  it('UIC-TABLE-12.2 UIC-TABLE-6.2 announces the loading message while loading first or more rows', () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const { container, rerender } = renderCities({
+      isLoading: true,
+      loadingMessage: 'Loading matching cities…',
+    });
+    const loader = () => container.querySelector<HTMLElement>('.ui-table__loader');
+    expect(within(requireDefined(loader())).getByRole('status')).toHaveTextContent(
+      'Loading matching cities…',
+    );
+    expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toContain('Oslo');
+
+    rerender(
+      <Table
+        aria-label="Cities"
+        rows={[]}
+        columns={[{ id: 'name', header: 'Name' }]}
+        isPending
+        loadingMessage="Loading matching cities…"
+      />,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('Loading matching cities…');
+
+    rerender(
+      <Table
+        aria-label="Cities"
+        rows={cities}
+        columns={[{ id: 'name', header: 'Name' }]}
+        isLoading
+        loadingMessage={
+          <>
+            Loading <strong>more</strong> cities
+          </>
+        }
+      />,
+    );
+    const status = within(requireDefined(loader())).getByRole('status');
+    expect(status).toHaveTextContent('Loading more cities');
+    expect(within(status).getByText('more').tagName).toBe('STRONG');
+
+    rerender(
+      <Table
+        aria-label="Cities"
+        rows={cities}
+        columns={[{ id: 'name', header: 'Name' }]}
+        isLoading
+      />,
+    );
+    expect(within(requireDefined(loader())).getByRole('status')).toHaveTextContent('Loading');
     vi.unstubAllGlobals();
   });
 });

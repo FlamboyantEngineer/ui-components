@@ -1,8 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, type Ref } from 'react';
 import { TextField as AriaTextField } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import { isAutoGrowing } from '../../utils/use-auto-grow.js';
 import {
   ControlCompletionList,
@@ -26,6 +25,7 @@ import {
   TextFieldFrame,
   textFieldHooks as hooks,
   withCharacterCount,
+  type TextFieldControlProps,
 } from './text-field-parts.js';
 import { useTextFieldInput, type TextFieldInput } from './use-text-field-input.js';
 
@@ -65,11 +65,27 @@ export interface TextFieldProps
   renderCompletion?:
     | ((completion: Completion, state: CompletionListItemState) => ReactNode)
     | undefined;
+  /** Receives the single-line input while it is on the page. */
+  inputRef?: Ref<HTMLInputElement> | undefined;
+  /** Receives the multiline text area while it is on the page. */
+  textAreaRef?: Ref<HTMLTextAreaElement> | undefined;
+  /** Text events and suggestion-list ARIA for the input or text area itself. */
+  controlProps?: TextFieldControlProps | undefined;
 }
 
 /** The character count: the text as the length rules check it (trimmed with `trim`), by `getLength`. */
 function countCharacters(value: string, { trim, getLength }: StringRules): number {
   return (getLength ?? countCodePoints)(trim ? value.trim() : value);
+}
+
+/** The field state, starting and clearing to an empty string, checked against the string rules. */
+function useTextFieldControl<P extends FieldInputProps<string>>(props: P, rules: StringRules) {
+  const strings = useUiStrings();
+  return useFieldControl(props, {
+    initialValue: '',
+    emptyValue: '',
+    check: (value) => validateString(value, rules, strings),
+  });
 }
 
 /** The input shows the display value, so the value submits under the form name through a hidden input. */
@@ -123,15 +139,13 @@ export function TextField({
   completions,
   renderCompletion,
   onKeyDown,
+  inputRef,
+  textAreaRef,
+  controlProps,
   ...props
 }: TextFieldProps) {
-  const strings = useUiStrings();
   const rules = { minLength, maxLength, pattern, trim, getLength };
-  const { state, field, rest } = useFieldControl(props, {
-    initialValue: '',
-    emptyValue: '',
-    check: (value) => validateString(value, rules, strings),
-  });
+  const { state, field, rest } = useTextFieldControl(props, rules);
   const [isRevealed, setIsRevealed] = useState(false);
   const input = { placeholder, transformInput, displayValue, onKeyDown, completions };
   const edit = useTextFieldInput({ state, multiline, ...input });
@@ -169,8 +183,8 @@ export function TextField({
               reveal={reveal}
             >
               <TextFieldControl
-                {...{ multiline, minRows, maxRows, input: edit.input, value: edit.text }}
-                controlRef={mergeRefs(control.ref, edit.transform.ref, edit.controlRef)}
+                {...{ multiline, minRows, maxRows, edit, controlProps }}
+                refs={{ field: control.ref, input: inputRef, textArea: textAreaRef }}
               />
             </TextFieldFrame>
           </AriaTextField>
@@ -181,3 +195,5 @@ export function TextField({
     </Field>
   );
 }
+
+export type { TextFieldControlProps, TextFieldElement } from './text-field-parts.js';

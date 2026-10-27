@@ -8,9 +8,13 @@
 
 .ui-combobox {
   display: inline-grid;
+  /* One track the root's width bounds, so the field never takes its input's intrinsic width. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   width: 240px;
   max-width: 100%;
+  /* A flex or grid item may shrink below its content's width, to the width the row gives it. */
+  min-width: 0;
   /* Its own line height, so the type around it never makes the frame taller than its size. */
   line-height: 1.25;
   vertical-align: top;
@@ -25,6 +29,7 @@
   align-items: center;
   gap: 4px;
   box-sizing: border-box;
+  min-width: 0;
   min-height: var(--ref-combobox-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-field-border);

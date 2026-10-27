@@ -1,7 +1,10 @@
 /* Modal. The overlay's position and z-index come from the component. */
 
+/* One track exactly the overlay's padded size, so a tall panel's 100% resolves against the viewport
+   and its body scrolls instead of the panel growing past the screen. */
 .ui-modal {
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   box-sizing: border-box;
   padding: 16px;

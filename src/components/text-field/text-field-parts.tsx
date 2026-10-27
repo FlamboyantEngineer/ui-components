@@ -1,16 +1,67 @@
 import {
-  useCallback,
+  useMemo,
   useRef,
   type CompositionEvent,
+  type FormEvent,
   type KeyboardEvent,
   type ReactNode,
+  type Ref,
+  type RefObject,
+  type SyntheticEvent,
 } from 'react';
 import { Group, Input, TextArea } from '../../primitives/index.js';
 import { createHooks, type HookProps } from '../../core/hooks.js';
 import type { CompletionInputAttributes } from '../completion-list/completion-list.js';
 import { useUiStrings } from '../../core/provider.js';
+import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import { useAutoGrow, type AutoGrowOptions } from '../../utils/use-auto-grow.js';
 import { Button } from '../button/button.js';
+
+/** The element a text field edits in: an input on one line, a text area on several. */
+export type TextFieldElement = HTMLInputElement | HTMLTextAreaElement;
+
+/**
+ * Attributes and handlers for the input or text area itself, for an editor that drives it: its
+ * text events and the ARIA of a suggestion list the caller owns. The field's own handlers run
+ * first, and its own completion list's attributes win over these.
+ */
+export interface TextFieldControlProps {
+  /** `combobox` while the caller's suggestion list belongs to the control. */
+  role?: 'combobox' | undefined;
+  /** The id of the caller's suggestion list. */
+  'aria-controls'?: string | undefined;
+  /** Whether the caller's suggestion list is open. */
+  'aria-expanded'?: boolean | undefined;
+  /** How the caller's suggestions complete the text. */
+  'aria-autocomplete'?: 'list' | 'inline' | 'both' | 'none' | undefined;
+  /** The id of the caller's highlighted suggestion. */
+  'aria-activedescendant'?: string | undefined;
+  /** Called before an edit changes the text, with the native `InputEvent` in `nativeEvent`. */
+  onBeforeInput?: ((event: FormEvent<TextFieldElement>) => void) | undefined;
+  /** Called after each edit changes the text. */
+  onInput?: ((event: FormEvent<TextFieldElement>) => void) | undefined;
+  /** Called when the selection or the caret moves. */
+  onSelect?: ((event: SyntheticEvent<TextFieldElement>) => void) | undefined;
+  onCompositionStart?: ((event: CompositionEvent<TextFieldElement>) => void) | undefined;
+  onCompositionUpdate?: ((event: CompositionEvent<TextFieldElement>) => void) | undefined;
+  onCompositionEnd?: ((event: CompositionEvent<TextFieldElement>) => void) | undefined;
+}
+
+/** The field's ref to its control, and the caller's refs to either element. */
+interface TextFieldControlRefs {
+  field: (node: HTMLElement | null) => void;
+  input: Ref<HTMLInputElement> | undefined;
+  textArea: Ref<HTMLTextAreaElement> | undefined;
+}
+
+/** What the control takes from the field's edit state (`useTextFieldInput`). */
+interface TextFieldEdit {
+  input: TextFieldInputProps;
+  /** The text the control shows. */
+  text: string;
+  transform: { ref: (node: TextFieldElement | null) => void };
+  controlRef: RefObject<TextFieldElement | null>;
+}
 
 export const textFieldHooks = createHooks('text-field', [
   'box',
@@ -56,8 +107,8 @@ export type TextFieldInputProps = HookProps &
   };
 
 interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {
-  /** Publishes the text area to the field. */
-  controlRef: (node: HTMLElement | null) => void;
+  /** Publishes the text area to the field and the caller. */
+  controlRef: Ref<HTMLTextAreaElement>;
 }
 
 /**
@@ -125,28 +176,48 @@ export function withCharacterCount(
 /** The text area, at least `minRows` tall, growing with its text when a row limit is set. */
 function TextFieldArea({ controlRef, minRows, maxRows, value, ...rest }: TextFieldAreaProps) {
   const area = useRef<HTMLTextAreaElement | null>(null);
-  const ref = useCallback(
-    (node: HTMLTextAreaElement | null) => {
-      area.current = node;
-      controlRef(node);
-    },
-    [controlRef],
-  );
+  const ref = useMemo(() => mergeRefs(area, controlRef), [controlRef]);
   useAutoGrow(area, { minRows, maxRows, value });
   return <TextArea {...rest} ref={ref} rows={minRows} />;
 }
 
-interface TextFieldControlProps extends Omit<AutoGrowOptions, 'value'> {
-  input: TextFieldInputProps;
+interface TextFieldControlElementProps extends Omit<AutoGrowOptions, 'value'> {
+  edit: TextFieldEdit;
   multiline: boolean;
-  /** The text the control shows. */
-  value: string;
-  /** Publishes the input or text area to the field. */
-  controlRef: (node: HTMLElement | null) => void;
+  refs: TextFieldControlRefs;
+  /** The caller's attributes and handlers for the control. */
+  controlProps: TextFieldControlProps | undefined;
 }
 
-/** The text area of a multiline field, else the input. */
-export function TextFieldControl({ input, multiline, controlRef, ...grow }: TextFieldControlProps) {
-  if (multiline) return <TextFieldArea {...input} {...grow} controlRef={controlRef} />;
-  return <Input {...input} ref={controlRef} />;
+/** The caller's suggestion ARIA under the field's own, then the field's handlers before the caller's. */
+function withControlProps(input: TextFieldInputProps, controlProps: TextFieldControlProps = {}) {
+  const attributes: Record<string, unknown> = {};
+  const handlers: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(controlProps)) {
+    (key.startsWith('on') ? handlers : attributes)[key] = value;
+  }
+  return mergeProps(attributes, input, handlers);
+}
+
+/** The text area of a multiline field, else the input, each also handed to the caller's ref. */
+export function TextFieldControl({
+  edit,
+  multiline,
+  refs,
+  controlProps,
+  ...grow
+}: TextFieldControlElementProps) {
+  const { field, input: inputRef, textArea } = refs;
+  const transform = edit.transform.ref;
+  const own = useMemo(
+    () => mergeRefs(field, transform, edit.controlRef),
+    [field, transform, edit.controlRef],
+  );
+  const areaRef = useMemo(() => mergeRefs<HTMLTextAreaElement>(own, textArea), [own, textArea]);
+  const lineRef = useMemo(() => mergeRefs<HTMLInputElement>(own, inputRef), [own, inputRef]);
+  const props = withControlProps(edit.input, controlProps);
+  if (multiline) {
+    return <TextFieldArea {...props} {...grow} value={edit.text} controlRef={areaRef} />;
+  }
+  return <Input {...props} ref={lineRef} />;
 }

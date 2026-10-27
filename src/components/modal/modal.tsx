@@ -6,13 +6,8 @@ import type { BaseProps, Placement, Size, Tone } from '../../core/props.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
 import { ModalDialog } from './modal-dialog.js';
 import type { ModalFocusTarget } from './modal-focus.js';
-import {
-  AnchoredModal,
-  BlockingModal,
-  FloatingModal,
-  resolveDismissal,
-  useModalOpenState,
-} from './modal-presentations.js';
+import { ModalPresentation, resolveDismissal, useModalOpenState } from './modal-presentations.js';
+import { useRetention } from './modal-retained.js';
 
 /** Emphasis of the dialog: `danger` marks a destructive decision; the others its kind of news. */
 export type ModalTone = Tone;
@@ -120,6 +115,11 @@ export interface ModalProps
   isNonModal?: boolean | undefined;
   /** Anchors the dialog to its `ModalTrigger`'s trigger as a popover at this placement. */
   placement?: Placement | undefined;
+  /**
+   * Keeps the dialog mounted, hidden and inert, once it has closed, so its body keeps its state,
+   * refs and editors for the next opening. An anchored dialog (`placement`) ignores it.
+   */
+  keepMounted?: boolean | undefined;
 }
 
 const hooks = createHooks('modal');
@@ -145,10 +145,12 @@ export function Modal({
   size = 'md',
   bodyLayout = 'block',
   initialFocus = 'first',
+  keepMounted = false,
   className,
   ...rest
 }: ModalProps) {
   const ownState = useModalOpenState({ isOpen, defaultOpen, onOpenChange });
+  const isRetained = useRetention(ownState, keepMounted && !placement);
   const [, dialogProps] = splitDataAttributes(rest);
   const isFloating = isNonModal && !placement;
   const rootProps = hooks.root({
@@ -172,26 +174,16 @@ export function Modal({
       isDismissDisabled={isDismissDisabled}
       canEscape={!dismissal.isKeyboardDismissDisabled}
       isFloating={isFloating}
+      isRetained={isRetained}
     />
   );
-  if (placement) {
-    return (
-      <AnchoredModal {...dismissal} state={ownState} rootProps={rootProps} placement={placement}>
-        {dialog}
-      </AnchoredModal>
-    );
-  }
-  if (isFloating) {
-    return (
-      <FloatingModal state={ownState} rootProps={rootProps}>
-        {dialog}
-      </FloatingModal>
-    );
-  }
   return (
-    <BlockingModal {...dismissal} state={ownState} rootProps={rootProps}>
+    <ModalPresentation
+      {...dismissal}
+      {...{ state: ownState, rootProps, placement, isFloating, isRetained }}
+    >
       {dialog}
-    </BlockingModal>
+    </ModalPresentation>
   );
 }
 

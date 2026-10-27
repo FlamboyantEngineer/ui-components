@@ -13,6 +13,7 @@ import {
   sampleUrl,
   workerSrc,
 } from './pdf-viewer-cases.js';
+import { ReadingNotes } from './pdf-viewer-reading-cases.js';
 
 const notAPdf = new TextEncoder().encode('This file is not a PDF.');
 
@@ -166,6 +167,12 @@ mountLab(
       description="Marks drawn over the pages in page coordinates. Right-click selected text to copy it or mark it, right-click a mark to remove it, and reveal a mark from the list."
     >
       <AnnotatedReader />
+    </LabSection>
+    <LabSection
+      title="Following the reader"
+      description="The caller reads the last page's text before it renders, drops a pin where the reader clicks a page, keeps the finished selection to note it, and shows the page and offset at the top of the view. Opening the other copy closes the first document's handle."
+    >
+      <ReadingNotes />
     </LabSection>
     <LabSection
       title="Caller-owned find"

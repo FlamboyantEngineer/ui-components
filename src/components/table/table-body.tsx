@@ -32,6 +32,8 @@ export interface TableBodyProps<T> {
   onLoadMore?: (() => void) | undefined;
   /** More rows are loading: a loading row follows the rows. */
   isLoading?: boolean | undefined;
+  /** The loading row's text or content; the provider's `loading` string when omitted. */
+  loadingMessage?: ReactNode;
 }
 
 /** The key of the notice row, kept out of row actions. */
@@ -66,7 +68,8 @@ function TableStateRow<T>({ status, props }: { status: TableStatus; props: Table
 function TableLoader({
   onLoadMore,
   isLoading,
-}: Pick<TableBodyProps<unknown>, 'onLoadMore' | 'isLoading'>) {
+  loadingMessage,
+}: Pick<TableBodyProps<unknown>, 'onLoadMore' | 'isLoading' | 'loadingMessage'>) {
   const strings = useUiStrings();
   return (
     <TableLoadMoreItem
@@ -74,14 +77,14 @@ function TableLoader({
       onLoadMore={onLoadMore}
       isLoading={isLoading}
     >
-      <EmptyState variant="loading" size="sm" description={strings.loading} />
+      <EmptyState variant="loading" size="sm" description={loadingMessage ?? strings.loading} />
     </TableLoadMoreItem>
   );
 }
 
 /** The table body: one row per item with its child rows, or one full-width notice row. */
 export function TableBody<T extends TableRow>(props: TableBodyProps<T>) {
-  const { status, nodes, model, onLoadMore, isLoading } = props;
+  const { status, nodes, model, onLoadMore, isLoading, loadingMessage } = props;
   if (model.structure.columns.length === 0) {
     return <AriaTableBody className={hooks.slotClass('body')} />;
   }
@@ -98,7 +101,7 @@ export function TableBody<T extends TableRow>(props: TableBodyProps<T>) {
         {(node) => renderBodyNode(node, model)}
       </Collection>
       {onLoadMore || isLoading ? (
-        <TableLoader onLoadMore={onLoadMore} isLoading={isLoading} />
+        <TableLoader {...{ onLoadMore, isLoading, loadingMessage }} />
       ) : null}
     </AriaTableBody>
   );

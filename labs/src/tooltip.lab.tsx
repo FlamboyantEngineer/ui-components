@@ -3,6 +3,7 @@ import { Icon } from '../../src/components/icon/icon.js';
 
 import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { AnchoredTooltipCases } from './tooltip-anchored-cases.js';
 
 const variants: TooltipVariant[] = ['default', 'info'];
 const placements = ['top', 'bottom', 'start', 'end'] as const;
@@ -111,6 +112,12 @@ mountLab(
           </Tooltip>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Anchored tooltips"
+      description="Hints the page opens itself: on a status chip it owns, on the bars of an SVG chart, on a region of a scrolling plan with no element of its own (the hint follows it as the plan scrolls), and a visual-only hint that repeats an icon button's name."
+    >
+      <AnchoredTooltipCases />
     </LabSection>
   </>,
 );

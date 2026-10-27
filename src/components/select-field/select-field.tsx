@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import type { TreeItemData } from '../tree/tree.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 import type { OpenStateProps } from '../../core/events.js';
@@ -51,6 +52,8 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   name?: string | undefined;
   /** Focuses the trigger when the field mounts. */
   autoFocus?: boolean | undefined;
+  /** Receives the trigger button, the field's focusable control, while it is on the page. */
+  triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
 
 const hooks = createHooks('select-field');

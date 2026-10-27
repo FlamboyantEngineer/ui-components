@@ -68,6 +68,8 @@ export interface FieldStrings {
   valueUnset: string;
   /** Stands for an empty colour value. */
   noColor: string;
+  /** The message of typed text that is not a colour. */
+  colorUnreadable: string;
   /** Names the hexadecimal input of a colour picker. */
   hexColor: string;
   /** Names a colour picker's choice of format (hex, RGB, HSL). */
@@ -110,6 +112,8 @@ export interface FieldStrings {
   dateTooLate: (maxValue: string) => string;
   /** The message of a date the field does not offer, such as a holiday. */
   dateUnavailable: string;
+  /** The message of a date or time typed only in part, or of a range with one end left empty. */
+  dateIncomplete: string;
   /** A preset of the dates up to today, from a count of units such as `7 days`. */
   lastPeriod: (period: string) => string;
   /** A preset of the dates from today, from a count of units such as `7 days`. */
@@ -180,6 +184,7 @@ export const fieldStrings: FieldStrings = {
   valueFalse: 'False',
   valueUnset: 'Unset',
   noColor: 'No color',
+  colorUnreadable: 'Enter a color, such as #3366ff.',
   hexColor: 'Hex color',
   colorFormat: 'Color format',
   colorPicker: (label) => `${label} picker`,
@@ -203,6 +208,7 @@ export const fieldStrings: FieldStrings = {
   dateTooEarly: (minValue) => `Choose a value on or after ${minValue}.`,
   dateTooLate: (maxValue) => `Choose a value on or before ${maxValue}.`,
   dateUnavailable: 'Choose an available date.',
+  dateIncomplete: 'Finish entering the date.',
   lastPeriod: (period) => `Last ${period}`,
   nextPeriod: (period) => `Next ${period}`,
   rangeMinimum: 'Minimum',

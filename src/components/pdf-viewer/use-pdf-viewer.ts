@@ -5,14 +5,17 @@ import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfViewerProps } from './pdf-viewer.js';
 import type { PdfCommands } from './pdf-viewer-toolbar.js';
 import type { PdfSize } from './pdf-zoom.js';
+import { usePdfAccess } from './use-pdf-access.js';
 import { usePdfContextMenu } from './use-pdf-context-menu.js';
 import { usePdfDocument, type LoadedPdf } from './use-pdf-document.js';
+import { usePdfGestures } from './use-pdf-gestures.js';
 import { usePdfKeyboard } from './use-pdf-keyboard.js';
 import { usePdfLinks } from './use-pdf-links.js';
 import { usePageViewports, usePdfNavigation } from './use-pdf-navigation.js';
 import { usePdfPages } from './use-pdf-pages.js';
 import { usePdfRotation } from './use-pdf-rotation.js';
 import { usePdfSearch } from './use-pdf-search.js';
+import { usePdfVisiblePosition } from './use-pdf-visible-position.js';
 import { usePdfZoom } from './use-pdf-zoom.js';
 import { usePinchZoom } from './use-pinch-zoom.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -104,6 +107,16 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     scrollerRef,
     elements: pages.elements,
   });
+  const gestures = usePdfGestures({ ...props, view, scale, scrollerRef, elements: pages.elements });
+  usePdfAccess({ view, onDocumentChange: props.onDocumentChange });
+  usePdfVisiblePosition({
+    scrollerRef,
+    elements: pages.elements,
+    scale,
+    document: loaded,
+    layout: view?.rotation,
+    onVisiblePositionChange: props.onVisiblePositionChange,
+  });
   usePinchZoom({ engine: loaded?.engine ?? null, scrollerRef, pagesRef, zoom });
   const keyboard = usePdfKeyboard({ isReady, zoom, defaultZoom, pages, pageCount, findFieldRef });
   const commands = usePdfCommands({ view, rotate, source: props.source, label });
@@ -120,6 +133,7 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     search,
     links,
     menu,
+    gestures,
     keyboard,
     commands,
     sidebar,
