@@ -133,6 +133,13 @@ Verification: `src/components/table/table.test.tsx`
 Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/table.test.tsx`
 
+### UIC-TABLE-3.4 - Focus on cell controls
+
+A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell.
+
+Implementation: `src/components/table/table-row.tsx`
+Verification: `src/components/table/table-cell-focus.test.tsx`, `e2e/table.spec.ts`
+
 ## UIC-TABLE-4 - Column sizing
 
 ### UIC-TABLE-4.1 - Column widths

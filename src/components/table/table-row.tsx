@@ -1,9 +1,10 @@
-import type { CSSProperties, JSX, ReactNode } from 'react';
+import { useContext, type CSSProperties, type FocusEvent, type JSX, type ReactNode } from 'react';
 import {
   Button as AriaButton,
   Cell,
   Collection,
   Row,
+  TableStateContext,
   type CellRenderProps,
 } from '../../primitives/index.js';
 import { measuredProperty, pickDataAttributes } from '../../core/hooks.js';
@@ -68,15 +69,49 @@ export interface TableCellsView<T> extends Pick<
 
 type CellElementProps = JSX.IntrinsicElements['td' | 'div'];
 
-/** Cell elements marked selected for assistive technology, inside a range of selected cells. */
-const selectedCells = {
-  td: (props: CellElementProps) => (
-    <td {...(props as JSX.IntrinsicElements['td'])} aria-selected="true" />
-  ),
-  div: (props: CellElementProps) => (
-    <div {...(props as JSX.IntrinsicElements['div'])} aria-selected="true" />
-  ),
-};
+/**
+ * A cell's element. A control inside the cell that takes focus makes the cell the grid's focused
+ * cell, so the grid keeps focus on the control. React Aria skips that while focus is visible, and
+ * then moves focus back to the row or cell it focused last, or to the first row.
+ */
+function TableCellElement({
+  props,
+  cellKey,
+  isVirtualized,
+  isInRange,
+}: {
+  props: CellElementProps;
+  cellKey: CellRenderProps['id'];
+  isVirtualized: boolean;
+  isInRange: boolean;
+}) {
+  const state = useContext(TableStateContext);
+  const onFocus = (event: FocusEvent<HTMLTableCellElement & HTMLDivElement>) => {
+    const cell = event.currentTarget;
+    if (cellKey !== undefined && event.target !== cell && cell.contains(event.target)) {
+      state?.selectionManager.setFocusedKey(cellKey);
+    }
+    props.onFocus?.(event);
+  };
+  // Cells inside a range of selected cells are marked selected for assistive technology.
+  const selected = isInRange ? { 'aria-selected': 'true' as const } : {};
+  return isVirtualized ? (
+    <div {...(props as JSX.IntrinsicElements['div'])} {...selected} onFocus={onFocus} />
+  ) : (
+    <td {...(props as JSX.IntrinsicElements['td'])} {...selected} onFocus={onFocus} />
+  );
+}
+
+function renderCellElement(isVirtualized: boolean, isInRange = false) {
+  return (props: CellElementProps, { id }: CellRenderProps) => (
+    <TableCellElement
+      props={props}
+      cellKey={id}
+      isVirtualized={isVirtualized}
+      isInRange={isInRange}
+    />
+  );
+}
 
 /** The key prefix of detail rows, kept out of row actions, selection and moves. */
 const detailRowPrefix = 'ui-table-detail:';
@@ -154,9 +189,7 @@ function TableDataCell<T extends TableRow>(props: {
   return (
     <Cell
       style={style}
-      render={
-        range.isInRange ? selectedCells[model.structure.isVirtualized ? 'div' : 'td'] : undefined
-      }
+      render={renderCellElement(model.structure.isVirtualized, range.isInRange)}
       {...hooks.slot('cell', {
         kind: 'data',
         align: column.align ?? 'start',
@@ -215,7 +248,11 @@ function TableDetailRow<T extends TableRow>(props: {
       disabledBehavior="selection"
       className={hooks.slotClass('detail-row')}
     >
-      <Cell colSpan={countTableColumns(model.structure)} className={hooks.slotClass('detail-cell')}>
+      <Cell
+        colSpan={countTableColumns(model.structure)}
+        className={hooks.slotClass('detail-cell')}
+        render={renderCellElement(model.structure.isVirtualized)}
+      >
         {props.children}
       </Cell>
     </Row>
@@ -248,6 +285,7 @@ export function TableDataRow<T extends TableRow>({
       {structure.hasSelection ? (
         <Cell
           style={getPinStyle(selectionPin, model.pinOffsets[selectionColumnId])}
+          render={renderCellElement(structure.isVirtualized)}
           {...hooks.slot('cell', { kind: 'selection', pinned: selectionPin })}
         >
           <TableCheckbox />
@@ -265,6 +303,7 @@ export function TableDataRow<T extends TableRow>({
       {structure.hasActions && renderRowActions ? (
         <Cell
           style={getPinStyle(actionsPin, model.pinOffsets[actionsColumnId])}
+          render={renderCellElement(structure.isVirtualized)}
           {...hooks.slot('cell', { kind: 'actions', pinned: actionsPin })}
         >
           {renderRowActions(row)}
