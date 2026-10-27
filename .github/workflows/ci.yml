@@ -67,6 +67,6 @@ jobs:
       - name: Build labs
         run: npm run build:labs
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
       - name: Lab browser tests (shard ${{ matrix.shard }} of 3)
         run: npx playwright test --shard=${{ matrix.shard }}/3

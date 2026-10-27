@@ -14,6 +14,19 @@ const importSteps: StepsItem[] = [
 
 const statuses: StepsStatus[] = ['complete', 'current', 'upcoming', 'error', 'skipped'];
 
+const projectSteps: StepsItem[] = [
+  { id: 'setup', label: 'Setup', description: 'Create the workspace' },
+  { id: 'implement', label: 'Implement', status: 'error', description: 'Two checks failed' },
+  { id: 'review', label: 'Review and approve the changes', description: 'Ask two readers' },
+  { id: 'finish', label: 'Finish', isOptional: true },
+  { id: 'translate', label: 'Translate', status: 'skipped', isDisabled: true },
+  { id: 'announce', label: 'Announce', description: 'Post the release notes' },
+  { id: 'measure', label: 'Measure' },
+  { id: 'archive', label: 'Archive' },
+];
+
+const narrowWidths = { '240': 240, '264': 264, '320': 320, desktop: 960 } as const;
+
 /** An import whose steps the reader walks with Back and Next, returning to earlier steps by press. */
 function ImportProgress() {
   const [current, setCurrent] = useState<Key | null>('map');
@@ -52,7 +65,37 @@ mountLab(
       <StateMatrix
         axes={{ variant: ['default', 'compact'], orientation: ['horizontal', 'vertical'] }}
         render={({ variant, orientation }) => (
-          <Steps items={importSteps} currentId="map" variant={variant} orientation={orientation} />
+          <div style={{ width: orientation === 'horizontal' ? 520 : undefined }}>
+            <Steps
+              items={importSteps}
+              currentId="map"
+              variant={variant}
+              orientation={orientation}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Narrow containers"
+      description="Horizontal steps share the width in equal columns with their labels under the markers. Below 80px a column, and always in the compact variant, only the markers stay in the row and the current step's text takes the line below; the other labels are still read."
+    >
+      <StateMatrix
+        axes={{
+          steps: ['4', '6', '8'],
+          variant: ['default', 'compact'],
+          width: Object.keys(narrowWidths) as Array<keyof typeof narrowWidths>,
+        }}
+        render={({ steps, variant, width }) => (
+          <div style={{ width: narrowWidths[width] }} data-lab-width={width}>
+            <Steps
+              items={projectSteps.slice(0, Number(steps))}
+              currentId="review"
+              variant={variant}
+              onAction={() => {}}
+              aria-label={`Project, ${steps} steps, ${variant}, ${width}`}
+            />
+          </div>
         )}
       />
     </LabSection>
@@ -108,7 +151,9 @@ mountLab(
       <StateMatrix
         axes={{ complete: ['default', 'compact'], orientation: ['horizontal', 'vertical'] }}
         render={({ complete, orientation }) => (
-          <Steps items={importSteps} isComplete variant={complete} orientation={orientation} />
+          <div style={{ width: orientation === 'horizontal' ? 520 : undefined }}>
+            <Steps items={importSteps} isComplete variant={complete} orientation={orientation} />
+          </div>
         )}
       />
     </LabSection>

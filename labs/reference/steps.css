@@ -16,6 +16,22 @@
   gap: 0;
 }
 
+/*
+ * Horizontal steps share the list's width in equal columns, each label centred under its marker.
+ * When a column would be narrower than 80px, or in the compact variant, the list becomes a rail:
+ * markers and connectors in one row, and only the current step's text on a full-width line below.
+ * The rail reads each step's place from these properties, so it lays out lists of up to 12 steps.
+ */
+.ui-steps[data-orientation='horizontal'] {
+  container: ui-steps / inline-size;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0;
+  /* Size containment gives the list no width of its own; this keeps room for every marker. */
+  min-width: calc(var(--ref-steps-count, 1) * 28px);
+}
+
 .ui-steps__item {
   display: flex;
   flex: 1 1 0;
@@ -29,6 +45,11 @@
 .ui-steps[data-orientation='vertical'] > .ui-steps__item {
   flex-direction: column;
   gap: 4px;
+}
+.ui-steps[data-orientation='horizontal'] > .ui-steps__item {
+  position: relative;
+  flex-direction: column;
+  align-items: center;
 }
 
 .ui-steps__step {
@@ -44,6 +65,12 @@
   color: inherit;
   font: inherit;
   text-align: start;
+}
+.ui-steps[data-orientation='horizontal'] .ui-steps__step {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
 }
 .ui-steps__step:is(button) {
   cursor: pointer;
@@ -100,6 +127,10 @@
   flex-direction: column;
   min-width: 0;
 }
+.ui-steps[data-orientation='horizontal'] .ui-steps__text {
+  max-width: 100%;
+  text-align: var(--ref-steps-text-align, center);
+}
 
 .ui-steps__label {
   overflow-wrap: anywhere;
@@ -120,20 +151,19 @@
 }
 
 .ui-steps__connector {
-  flex: 1 1 auto;
-  min-width: 16px;
-  height: 1px;
+  flex: none;
   background: var(--ref-border-strong);
 }
 .ui-steps[data-orientation='horizontal'] .ui-steps__connector {
-  align-self: flex-start;
-  margin-top: 12px;
+  position: absolute;
+  top: 12px;
+  inset-inline-start: calc(50% + 13px);
+  width: calc(100% - 26px);
+  height: 1px;
 }
 .ui-steps[data-orientation='vertical'] .ui-steps__connector {
-  flex: none;
   align-self: flex-start;
   width: 1px;
-  min-width: 0;
   height: 16px;
   margin: 0 0 4px 12px;
 }
@@ -141,9 +171,167 @@
   background: var(--ref-accent);
 }
 
-.ui-steps[data-variant='compact'] {
-  gap: 4px;
+/* The rail: hide the text of every other step, still read, and widen the current text to the list. */
+.ui-steps[data-orientation='horizontal'] > .ui-steps__item {
+  --ref-steps-column: calc(100cqi / var(--ref-steps-count, 1));
+  --ref-steps-offset: calc((var(--ref-steps-index, 0) + 0.5) * var(--ref-steps-column));
 }
-.ui-steps[data-variant='compact'][data-orientation='horizontal'] .ui-steps__connector {
-  min-width: 8px;
+.ui-steps[data-orientation='horizontal'][data-variant='default']
+  > .ui-steps__item:not([data-current])
+  .ui-steps__text {
+  overflow: hidden;
+  max-height: calc((1 - var(--ref-steps-rail, 0)) * 10000px);
+  clip-path: inset(calc(var(--ref-steps-rail, 0) * 50%));
+}
+.ui-steps[data-orientation='horizontal'] > .ui-steps__item[data-current] .ui-steps__text,
+.ui-steps[data-orientation='horizontal'][data-complete]
+  > .ui-steps__item:last-child
+  .ui-steps__text {
+  min-width: calc(
+    var(--ref-steps-rail, 0) * 100cqi
+  ); /* layout-exempt: the rail's one line of text */
+  margin-inline: calc(var(--ref-steps-rail, 0) * -1 * var(--ref-steps-offset))
+    calc(var(--ref-steps-rail, 0) * (var(--ref-steps-offset) - 100cqi)); /* layout-exempt: as above */
+}
+
+.ui-steps[data-variant='compact'] > .ui-steps__item {
+  --ref-steps-rail: 1;
+  --ref-steps-text-align: start;
+}
+@container ui-steps (width < 160px) {
+  .ui-steps:has(> :nth-child(2)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 240px) {
+  .ui-steps:has(> :nth-child(3)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 320px) {
+  .ui-steps:has(> :nth-child(4)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 400px) {
+  .ui-steps:has(> :nth-child(5)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 480px) {
+  .ui-steps:has(> :nth-child(6)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 560px) {
+  .ui-steps:has(> :nth-child(7)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 640px) {
+  .ui-steps:has(> :nth-child(8)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 720px) {
+  .ui-steps:has(> :nth-child(9)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 800px) {
+  .ui-steps:has(> :nth-child(10)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 880px) {
+  .ui-steps:has(> :nth-child(11)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+@container ui-steps (width < 960px) {
+  .ui-steps:has(> :nth-child(12)) > .ui-steps__item {
+    --ref-steps-rail: 1;
+    --ref-steps-text-align: start;
+  }
+}
+
+.ui-steps__item:nth-child(2) {
+  --ref-steps-index: 1;
+}
+.ui-steps__item:nth-child(3) {
+  --ref-steps-index: 2;
+}
+.ui-steps__item:nth-child(4) {
+  --ref-steps-index: 3;
+}
+.ui-steps__item:nth-child(5) {
+  --ref-steps-index: 4;
+}
+.ui-steps__item:nth-child(6) {
+  --ref-steps-index: 5;
+}
+.ui-steps__item:nth-child(7) {
+  --ref-steps-index: 6;
+}
+.ui-steps__item:nth-child(8) {
+  --ref-steps-index: 7;
+}
+.ui-steps__item:nth-child(9) {
+  --ref-steps-index: 8;
+}
+.ui-steps__item:nth-child(10) {
+  --ref-steps-index: 9;
+}
+.ui-steps__item:nth-child(11) {
+  --ref-steps-index: 10;
+}
+.ui-steps__item:nth-child(12) {
+  --ref-steps-index: 11;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(2)) {
+  --ref-steps-count: 2;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(3)) {
+  --ref-steps-count: 3;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(4)) {
+  --ref-steps-count: 4;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(5)) {
+  --ref-steps-count: 5;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(6)) {
+  --ref-steps-count: 6;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(7)) {
+  --ref-steps-count: 7;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(8)) {
+  --ref-steps-count: 8;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(9)) {
+  --ref-steps-count: 9;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(10)) {
+  --ref-steps-count: 10;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(11)) {
+  --ref-steps-count: 11;
+}
+.ui-steps:has(> .ui-steps__item:last-child:nth-child(12)) {
+  --ref-steps-count: 12;
+}
+
+.ui-steps[data-variant='compact'][data-orientation='vertical'] {
+  gap: 4px;
 }

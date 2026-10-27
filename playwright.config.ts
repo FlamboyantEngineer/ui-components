@@ -23,5 +23,9 @@ export default defineConfig({
     url: `http://127.0.0.1:${port}/index.html`,
     reuseExistingServer: !process.env.CI,
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Layout that leans on newer CSS also runs in WebKit.
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /steps-narrow\.spec\.ts$/ },
+  ],
 });
