@@ -19,10 +19,11 @@ export interface ChatMessageDisplayOptions {
    */
   timePlacement?: ChatMessageTimePlacement | undefined;
   /**
-   * Where a message made only of tool calls shows its time, with the same choices. Defaults to
-   * `timePlacement`.
+   * Where a message without written text shows its time, with the same choices: tool calls,
+   * reasoning, plans, sources, files, custom parts or a reply that has written nothing yet.
+   * Defaults to `timePlacement`.
    */
-  toolCallTimePlacement?: ChatMessageTimePlacement | undefined;
+  activityTimePlacement?: ChatMessageTimePlacement | undefined;
   /**
    * Gives a time in the footer, alone there, no room until the message is hovered or holds focus.
    * Defaults to `false`, the time's line always kept.
@@ -39,21 +40,21 @@ export function useMessageDisplay({
   showAvatars,
   showAuthorNames,
   timePlacement,
-  toolCallTimePlacement,
+  activityTimePlacement,
   collapseFooterTime,
   sentVariant,
   receivedVariant,
 }: ChatMessageDisplayOptions): ChatMessageDisplayOptions {
   return useMemo(
     () => ({
-      ...{ showAvatars, showAuthorNames, timePlacement, toolCallTimePlacement },
+      ...{ showAvatars, showAuthorNames, timePlacement, activityTimePlacement },
       ...{ collapseFooterTime, sentVariant, receivedVariant },
     }),
     [
       showAvatars,
       showAuthorNames,
       timePlacement,
-      toolCallTimePlacement,
+      activityTimePlacement,
       collapseFooterTime,
       sentVariant,
       receivedVariant,
@@ -61,16 +62,22 @@ export function useMessageDisplay({
   );
 }
 
-/** Where `message` shows its time: a message made only of tool calls follows its own setting. */
+/** Whether `message` shows written text: a text part with words, or the deleted marker. */
+function isWritten(message: ChatMessageData): boolean {
+  return (
+    Boolean(message.isDeleted) ||
+    message.parts.some((part) => part.type === 'text' && part.text.trim() !== '')
+  );
+}
+
+/** Where `message` shows its time: a message without written text follows its own setting. */
 export function toTimePlacement(
   message: ChatMessageData,
   display: ChatMessageDisplayOptions,
 ): ChatMessageTimePlacement | undefined {
-  const isToolCalls =
-    message.parts.length > 0 && message.parts.every((part) => part.type === 'tool-call');
-  return isToolCalls
-    ? (display.toolCallTimePlacement ?? display.timePlacement)
-    : display.timePlacement;
+  return isWritten(message)
+    ? display.timePlacement
+    : (display.activityTimePlacement ?? display.timePlacement);
 }
 
 /** The variant of a message from `origin`; a notice keeps the default. */

@@ -62,23 +62,45 @@ describe('Chat message display', () => {
     expectHooksMatchSpec(container, 'CHAT');
   });
 
-  it('UIC-CHAT-1.8 places the time of a message made only of tool calls on its own, and collapses footer times on request', () => {
+  it('UIC-CHAT-1.8 places the time of a message without written text on its own, and collapses footer times on request', () => {
+    const source = { id: 's1', title: 'Cafe guide', url: 'https://example.com/cafes' };
     const messages = [
       ...assistantConversation,
       message('t1', 'helper', {
         parts: [{ type: 'tool-call', id: 'c1', name: 'search_cafes', status: 'succeeded' }],
+      }),
+      message('m1', 'helper', {
+        parts: [
+          { type: 'reasoning', id: 'r1', text: 'Cafes first.', status: 'complete' },
+          { type: 'tool-call', id: 'c2', name: 'search_cafes', status: 'failed' },
+          { type: 'plan', id: 'p1', steps: [{ id: 'st1', label: 'Find a cafe', status: 'done' }] },
+        ],
+      }),
+      message('s1', 'helper', { parts: [{ type: 'sources', sources: [source] }] }),
+      message('e1', 'helper', { status: 'streaming', parts: [{ type: 'text', text: ' ' }] }),
+      message('w1', 'helper', {
+        parts: [
+          { type: 'text', text: 'The cafe guide lists three [1].' },
+          { type: 'sources', sources: [source] },
+        ],
       }),
     ];
     const { rerenderWith } = renderChat({
       ...assistantChat,
       messages,
       timePlacement: 'footer',
-      toolCallTimePlacement: 'none',
+      activityTimePlacement: 'none',
     });
-    expect(
-      article('a1').querySelector('.ui-chat-message__footer .ui-chat-message__time'),
-    ).not.toBeNull();
-    expect(article('t1').querySelector('.ui-chat-message__time')).toBeNull();
+    for (const id of ['a1', 'q1', 'w1']) {
+      expect(
+        article(id).querySelectorAll('.ui-chat-message__footer .ui-chat-message__time'),
+      ).toHaveLength(1);
+    }
+    expect(article('w1').querySelectorAll('.ui-chat-message__time')).toHaveLength(1);
+    for (const id of ['t1', 'm1', 's1', 'e1']) {
+      expect(article(id).querySelector('.ui-chat-message__time')).toBeNull();
+      expect(article(id)).toHaveAccessibleName(/^Trip helper, .*\d/);
+    }
     expect(article('a1')).not.toHaveAttribute('data-collapse-footer-time');
     rerenderWith({ ...assistantChat, messages, timePlacement: 'footer', collapseFooterTime: true });
     expect(
