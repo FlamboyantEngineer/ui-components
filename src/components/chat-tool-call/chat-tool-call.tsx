@@ -43,7 +43,12 @@ export interface ChatToolCallData {
   approval?: ChatToolCallApproval | undefined;
 }
 
+/** How a tool call shows: a bordered `card`, or a quiet `row` among the steps of a reply. */
+export type ChatToolCallVariant = 'card' | 'row';
+
 export interface ChatToolCallProps extends Omit<BaseProps, 'id'>, ChatToolCallData {
+  /** How the call shows, published as `data-variant`: `card` (the default) or `row`. */
+  variant?: ChatToolCallVariant | undefined;
   /** Lets the call run once. Shows Approve while the approval is pending. */
   onApprove?: (() => void) | undefined;
   /** Refuses the call, with the reader's reason when they gave one. Shows Deny while pending. */
@@ -107,6 +112,7 @@ export function ChatToolCall({
   error,
   durationMs,
   approval,
+  variant = 'card',
   onApprove,
   onDeny,
   onAlwaysAllow,
@@ -132,7 +138,7 @@ export function ChatToolCall({
       {...hooks.root({
         className,
         props: rest,
-        data: { status, kind, autoApproved: approval?.isAutoApproved },
+        data: { variant, status, kind, autoApproved: approval?.isAutoApproved },
       })}
       id={id}
       ref={rootRef}

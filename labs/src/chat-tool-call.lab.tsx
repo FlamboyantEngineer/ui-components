@@ -2,6 +2,7 @@ import {
   ChatToolCall,
   type ChatToolCallApproval,
   type ChatToolCallStatus,
+  type ChatToolCallVariant,
 } from '../../src/components/chat-tool-call/chat-tool-call.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
@@ -76,6 +77,25 @@ function StatusCall({
   );
 }
 
+/** A finished or running call drawn as a card or as a quiet row. */
+function VariantCall({ variant, status }: { variant: string; status: string }) {
+  const callStatus = status as ChatToolCallStatus;
+  return (
+    <ChatToolCall
+      id={`variant-${variant}-${status}`}
+      name="read_file"
+      label="Read"
+      target="notes/menu.md"
+      kind="read"
+      variant={variant as ChatToolCallVariant}
+      status={callStatus}
+      args={{ path: 'notes/menu.md' }}
+      error={status === 'failed' ? 'The file is locked.' : undefined}
+      durationMs={status === 'running' ? undefined : 400}
+    />
+  );
+}
+
 /** A pending approval offering the decisions in `options`, with or without a named scope. */
 function OptionsCall({ options, scope }: { options: string; scope: string }) {
   const offers = new Set(options.split(' '));
@@ -127,6 +147,15 @@ mountLab(
           expansion: ['collapsed', 'expanded'],
         }}
         render={(cell) => <StatusCall {...cell} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Variants"
+      description="A card stands on its own; a row is the quiet call a reply's steps show, alone or in a group, with its status and duration kept for assistive technology once it ends. The variant changes no content or behaviour."
+    >
+      <StateMatrix
+        axes={{ variant: ['card', 'row'], status: ['running', 'succeeded', 'failed'] }}
+        render={(cell) => <VariantCall {...cell} />}
       />
     </LabSection>
     <LabSection

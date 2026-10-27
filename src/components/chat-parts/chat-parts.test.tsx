@@ -136,6 +136,26 @@ describe('ChatParts', () => {
     );
   });
 
+  it('UIC-CHAT-PARTS-3.2 draws every tool call as a row, alone or in a group', () => {
+    const { container } = render(
+      <ChatParts
+        parts={[
+          call({ id: 'c1', status: 'succeeded' }),
+          call({ id: 'c2', status: 'succeeded' }),
+          done('Now the forecast.'),
+          forecast('failed'),
+        ]}
+      />,
+    );
+    const calls = [...container.querySelectorAll('.ui-chat-tool-call')];
+    expect(calls.map((card) => card.closest('.ui-chat-steps') !== null)).toEqual([
+      true,
+      true,
+      false,
+    ]);
+    calls.forEach((card) => expect(card).toHaveAttribute('data-variant', 'row'));
+  });
+
   it('UIC-CHAT-PARTS-5.1 shows text written between tool calls as text, between their groups', () => {
     const { container } = render(
       <ChatParts
