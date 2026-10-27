@@ -159,7 +159,11 @@
   margin: -4px -6px 0 0;
 }
 
+/* The body is the containing block of what it positions, such as the visually hidden inputs of
+   checkboxes: otherwise they escape its scroll region, give the overlay scroll room, and focusing a
+   field scrolls the whole frame off screen. */
 .ui-modal__body {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   padding: 8px 16px 16px;

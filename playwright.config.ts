@@ -27,5 +27,11 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     // Layout that leans on newer CSS also runs in WebKit.
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /steps-narrow\.spec\.ts$/ },
+    // Focus scrolling that only phones show runs in mobile WebKit.
+    {
+      name: 'mobile-webkit',
+      use: { ...devices['iPhone 13'] },
+      testMatch: /modal-tall-form\.spec\.ts$/,
+    },
   ],
 });

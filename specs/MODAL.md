@@ -50,8 +50,10 @@ Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal
 
 The panel shall stay within the overlay, less its padding, whatever the height of the body: the header with its close button and the footer with its actions stay on screen, and the body scrolls inside the panel. The reference stylesheet sizes the overlay's single grid track to the padded viewport so the panel's height limit resolves against it, at every size and in both themes.
 
+The frame shall stay in place while the reader works in a tall body: focusing a field or a restore button, expanding content or resizing the viewport scrolls the body, never the overlay. The reference stylesheet makes the body the containing block of what it positions (such as the visually hidden inputs of checkboxes), so nothing in a tall body gives the overlay scroll room; the overlay keeps its own scrolling for a viewport too short for the header and footer.
+
 Implementation: `labs/reference/modal.css`
-Verification: `e2e/modal.spec.ts`
+Verification: `e2e/modal.spec.ts`, `e2e/modal-tall-form.spec.ts`
 
 ## UIC-MODAL-2 - Dismissal
 
