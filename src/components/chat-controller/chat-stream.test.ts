@@ -93,7 +93,13 @@ describe('reduceChatStream', () => {
   it('UIC-CHAT-CONTROLLER-1.3 starts a tool call running and updates it by id', () => {
     const message = fold([
       { ...search, args: { query: 'beans' } },
-      { ...search, label: 'Searched recipes', args: { query: 'black beans' } },
+      {
+        ...search,
+        label: 'Searched recipes',
+        target: 'black beans',
+        kind: 'search',
+        args: { query: 'black beans' },
+      },
     ]);
     expect(message.parts).toEqual([
       {
@@ -101,6 +107,8 @@ describe('reduceChatStream', () => {
         id: 'call-1',
         name: 'search_recipes',
         label: 'Searched recipes',
+        target: 'black beans',
+        kind: 'search',
         status: 'running',
         args: { query: 'black beans' },
       },

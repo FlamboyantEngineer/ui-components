@@ -4,10 +4,19 @@ export interface ChatActivityStrings {
   chatReasoningStreaming: string;
   /** Labels finished reasoning by how long it took in whole seconds; `0` or none reads as a moment. */
   chatReasoningComplete: (seconds?: number) => string;
-  /** Labels a group of steps while its run goes on, by the number of steps. */
-  chatStepsRunning: (count: number) => string;
-  /** Labels a group of steps once its run ended, by the number of steps and its whole seconds. */
-  chatStepsComplete: (count: number, seconds?: number) => string;
+  /** Labels a group of steps while its run goes on. */
+  chatStepsRunning: string;
+  /**
+   * Sums up a group of steps once its run ended, by how many tool calls of each kind it made, in
+   * order (`Edited files, ran a command`); without any, by its whole seconds.
+   */
+  chatStepsComplete: (
+    actions: readonly {
+      kind: 'read' | 'edit' | 'command' | 'search' | 'fetch' | 'other';
+      count: number;
+    }[],
+    seconds?: number,
+  ) => string;
   /** Names a plan without a title. */
   chatPlan: string;
   /** A plan's progress: how many of its steps are done. */
@@ -31,7 +40,14 @@ const planStepStatusNames = {
   skipped: 'Skipped',
 } as const;
 
-const stepsText = (count: number) => (count === 1 ? '1 step' : `${count} steps`);
+const actionPhrases = {
+  read: ['read a file', 'read files'],
+  edit: ['edited a file', 'edited files'],
+  command: ['ran a command', 'ran commands'],
+  search: ['ran a search', 'ran searches'],
+  fetch: ['fetched a page', 'fetched pages'],
+  other: ['used a tool', 'used tools'],
+} as const;
 
 /** A duration in whole seconds: seconds under a minute, else minutes and seconds. */
 function durationText(seconds: number): string {
@@ -48,8 +64,14 @@ const forText = (seconds: number | undefined) =>
 export const chatActivityStrings: ChatActivityStrings = {
   chatReasoningStreaming: 'Thinking…',
   chatReasoningComplete: (seconds) => `Thought ${forText(seconds)}`,
-  chatStepsRunning: (count) => `Working… · ${stepsText(count)}`,
-  chatStepsComplete: (count, seconds) => `Worked ${forText(seconds)} · ${stepsText(count)}`,
+  chatStepsRunning: 'Working…',
+  chatStepsComplete: (actions, seconds) => {
+    if (actions.length === 0) return `Worked ${forText(seconds)}`;
+    const text = actions
+      .map(({ kind, count }) => actionPhrases[kind][count === 1 ? 0 : 1])
+      .join(', ');
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  },
   chatPlan: 'Plan',
   chatPlanProgress: (done, total) => `${done} of ${total} done`,
   chatPlanStepStatus: (status) => planStepStatusNames[status],

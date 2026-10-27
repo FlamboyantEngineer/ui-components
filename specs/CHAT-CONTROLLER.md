@@ -8,25 +8,25 @@ Messages are [`ChatMessageData`](CHAT-PARTS.md) values whose content is an order
 
 `send(messages, { signal, waitFor })` returns an async iterable of plain objects, one per step of the reply:
 
-| Event              | Fields                                           | Effect on the reply                                                                                               |
-| ------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `text-delta`       | `text`                                           | Appends to the open text part, or starts a streaming text part.                                                   |
-| `reasoning-delta`  | `id`, `text`                                     | Appends to the reasoning part `id`, or starts it, streaming.                                                      |
-| `reasoning-end`    | `id`, `durationMs?`                              | Completes the reasoning part `id`.                                                                                |
-| `tool-call`        | `id`, `name`, `label?`, `args?`                  | Adds the tool call `id`, running, or updates its name, label and arguments.                                       |
-| `tool-result`      | `id`, `result?`, `error?`, `durationMs?`         | Ends the tool call `id`: `failed` with an `error`, else `succeeded`; a denied call stays denied.                  |
-| `approval-request` | `id`, `scopeLabel?`, `await?`                    | Puts the tool call `id` in `approval-requested`, or runs it auto-approved when the reader always allows its tool. |
-| `question`         | `id`, `questions`, `await?`                      | Adds a pending question card.                                                                                     |
-| `plan`             | `id`, `title?`, `steps`                          | Adds the plan `id`, or replaces its title and steps.                                                              |
-| `plan-step`        | `planId`, `stepId`, `status`                     | Moves one step of a plan.                                                                                         |
-| `source`           | `source`                                         | Adds a source to the reply's one sources part, or replaces the source with its `id`.                              |
-| `file`             | `attachment`                                     | Adds a file to the files part just before it, or starts a files part.                                             |
-| `code`             | `id?`, `code`, `language?`, `title?`, `variant?` | Adds a code block (`variant: 'terminal'` for terminal output), or replaces the one with its `id`.                 |
-| `diff`             | `id?`, `title?`, `oldText`, `newText`            | Adds a diff, or replaces the one with its `id`.                                                                   |
-| `custom`           | `id?`, `name`, `data?`                           | Adds a part the host draws itself, or replaces the one with its `id`.                                             |
-| `status`           | `text`                                           | Sets the reply's `statusText`; an empty text clears it.                                                           |
-| `finish`           |                                                  | Ends the reply.                                                                                                   |
-| `error`            | `message`                                        | Ends the reply as failed with `message`.                                                                          |
+| Event              | Fields                                              | Effect on the reply                                                                                               |
+| ------------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `text-delta`       | `text`                                              | Appends to the open text part, or starts a streaming text part.                                                   |
+| `reasoning-delta`  | `id`, `text`                                        | Appends to the reasoning part `id`, or starts it, streaming.                                                      |
+| `reasoning-end`    | `id`, `durationMs?`                                 | Completes the reasoning part `id`.                                                                                |
+| `tool-call`        | `id`, `name`, `label?`, `target?`, `kind?`, `args?` | Adds the tool call `id`, running, or updates its name, label, target, kind and arguments.                         |
+| `tool-result`      | `id`, `result?`, `error?`, `durationMs?`            | Ends the tool call `id`: `failed` with an `error`, else `succeeded`; a denied call stays denied.                  |
+| `approval-request` | `id`, `scopeLabel?`, `await?`                       | Puts the tool call `id` in `approval-requested`, or runs it auto-approved when the reader always allows its tool. |
+| `question`         | `id`, `questions`, `await?`                         | Adds a pending question card.                                                                                     |
+| `plan`             | `id`, `title?`, `steps`                             | Adds the plan `id`, or replaces its title and steps.                                                              |
+| `plan-step`        | `planId`, `stepId`, `status`                        | Moves one step of a plan.                                                                                         |
+| `source`           | `source`                                            | Adds a source to the reply's one sources part, or replaces the source with its `id`.                              |
+| `file`             | `attachment`                                        | Adds a file to the files part just before it, or starts a files part.                                             |
+| `code`             | `id?`, `code`, `language?`, `title?`, `variant?`    | Adds a code block (`variant: 'terminal'` for terminal output), or replaces the one with its `id`.                 |
+| `diff`             | `id?`, `title?`, `oldText`, `newText`               | Adds a diff, or replaces the one with its `id`.                                                                   |
+| `custom`           | `id?`, `name`, `data?`                              | Adds a part the host draws itself, or replaces the one with its `id`.                                             |
+| `status`           | `text`                                              | Sets the reply's `statusText`; an empty text clears it.                                                           |
+| `finish`           |                                                     | Ends the reply.                                                                                                   |
+| `error`            | `message`                                           | Ends the reply as failed with `message`.                                                                          |
 
 ## UIC-CHAT-CONTROLLER-1 - Reducer
 
@@ -46,7 +46,7 @@ Verification: `src/components/chat-controller/chat-stream.test.ts`
 
 ### UIC-CHAT-CONTROLLER-1.3 - Tool calls
 
-A `tool-call` shall add a running tool call, or merge its name, label and arguments into the call with its `id` without changing that call's status, so arguments can stream. A `tool-result` shall mark the call `failed` with its `error`, else `succeeded` with its `result`, and set its duration from the event, else from `context.getElapsed(id)`; a denied call keeps its status and takes the result or error.
+A `tool-call` shall add a running tool call, or merge its name, label, target, kind and arguments into the call with its `id` without changing that call's status, so arguments can stream. A `tool-result` shall mark the call `failed` with its `error`, else `succeeded` with its `result`, and set its duration from the event, else from `context.getElapsed(id)`; a denied call keeps its status and takes the result or error.
 
 Implementation: `src/components/chat-controller/chat-stream.ts`
 Verification: `src/components/chat-controller/chat-stream.test.ts`

@@ -52,6 +52,7 @@ const searchAt = (isDone: boolean): ChatPart => ({
   type: 'tool-call',
   id: 'search',
   name: 'search_trains',
+  kind: 'search',
   label: isDone ? 'Searched trains to Porto' : 'Searching trains to Porto…',
   status: isDone ? 'succeeded' : 'running',
   args: { from: 'Lisbon', to: 'Porto', date: 'Saturday' },

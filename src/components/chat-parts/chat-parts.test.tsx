@@ -19,6 +19,7 @@ const call = (overrides: Partial<ChatToolCallPart> = {}): ChatToolCallPart => ({
   id: 'c1',
   name: 'search_recipes',
   label: 'Search recipes',
+  kind: 'search',
   status: 'running',
   args: { query: 'lentil soup' },
   ...overrides,
@@ -83,9 +84,9 @@ describe('ChatParts', () => {
 
   it('UIC-CHAT-PARTS-5.1 UIC-CHAT-PARTS-5.2 runs a group at the end and collapses it once the answer follows', () => {
     const { container, rerender } = render(<ChatParts parts={[reasoning(), call()]} isStreaming />);
-    const trigger = screen.getByRole('button', { name: 'Working… · 2 steps' });
+    const trigger = screen.getByRole('button', { name: 'Working…' });
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    const panel = screen.getByRole('group', { name: 'Working… · 2 steps' });
+    const panel = screen.getByRole('group', { name: 'Working…' });
     expect(panel.querySelector('.ui-chat-reasoning')).not.toBeNull();
     expect(panel.querySelector('.ui-chat-tool-call')).not.toBeNull();
     rerender(
@@ -94,16 +95,16 @@ describe('ChatParts', () => {
         isStreaming
       />,
     );
-    expect(stepsTrigger(container)).toHaveAccessibleName('Worked for 3 s · 2 steps');
+    expect(stepsTrigger(container)).toHaveAccessibleName('Ran a search');
     expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('UIC-CHAT-PARTS-5.2 runs a group while a step in it works, and ends it with the stream', () => {
-    const parts = [reasoning({ status: 'streaming', durationMs: undefined }), answer('Soup')];
+    const parts = [call(), answer('Soup')];
     const { container, rerender } = render(<ChatParts parts={parts} isStreaming />);
-    expect(stepsTrigger(container)).toHaveAccessibleName('Working… · 1 step');
+    expect(stepsTrigger(container)).toHaveAccessibleName('Working…');
     rerender(<ChatParts parts={parts} />);
-    expect(stepsTrigger(container)).toHaveAccessibleName('Worked for a moment · 1 step');
+    expect(stepsTrigger(container)).toHaveAccessibleName('Ran a search');
     expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
   });
 
@@ -120,17 +121,42 @@ describe('ChatParts', () => {
     rerender(<ChatParts parts={parts} isStreaming />);
     expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
     rerender(<ChatParts parts={[...parts.slice(0, 1), reasoning()]} isStreaming />);
-    expect(stepsTrigger(container)).toHaveAccessibleName('Working… · 2 steps');
+    expect(stepsTrigger(container)).toHaveAccessibleName('Working…');
   });
 
   it('UIC-CHAT-PARTS-5.1 moves a single step into a group once a part follows it', () => {
-    const { container, rerender } = render(
-      <ChatParts parts={[reasoning({ status: 'streaming' })]} isStreaming />,
-    );
+    const { container, rerender } = render(<ChatParts parts={[call()]} isStreaming />);
     expect(container.querySelector('.ui-chat-steps')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Thinking…' })).toBeInTheDocument();
-    rerender(<ChatParts parts={[reasoning(), answer('Soup')]} isStreaming />);
-    expect(stepsTrigger(container)).toHaveAccessibleName('Worked for 1 s · 1 step');
+    expect(screen.getByRole('button', { name: /^Search recipes/ })).toBeInTheDocument();
+    rerender(<ChatParts parts={[call({ status: 'succeeded' }), answer('Soup')]} isStreaming />);
+    expect(stepsTrigger(container)).toHaveAccessibleName('Ran a search');
+    expect(container.querySelector('.ui-chat-steps__glyph')).toHaveAttribute(
+      'data-glyph',
+      'search',
+    );
+  });
+
+  it('UIC-CHAT-PARTS-5.1 shows text written between tool calls as text, between their groups', () => {
+    const { container } = render(
+      <ChatParts
+        parts={[
+          call({ id: 'c1', kind: 'edit', status: 'succeeded' }),
+          call({ id: 'c2', kind: 'read', status: 'succeeded' }),
+          done('The fix is in; now checking it.'),
+          call({ id: 'c3', kind: 'command', status: 'succeeded' }),
+          done('All checks pass.'),
+        ]}
+      />,
+    );
+    const root = container.querySelector('.ui-chat-parts') as HTMLElement;
+    expect([...root.children].map((child) => child.classList[0])).toEqual([
+      'ui-chat-steps',
+      'ui-markdown',
+      'ui-chat-steps',
+      'ui-markdown',
+    ]);
+    expect(screen.getByRole('button', { name: 'Edited a file, read a file' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Ran a command' })).toBeVisible();
   });
 
   it('UIC-CHAT-PARTS-5.3 opens a group whose tool call waits for approval', () => {
@@ -140,7 +166,7 @@ describe('ChatParts', () => {
         onApprove={vi.fn()}
       />,
     );
-    expect(stepsTrigger(container)).toHaveAccessibleName('Worked for 1 s · 2 steps');
+    expect(stepsTrigger(container)).toHaveAccessibleName('Ran a search');
     expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: /^Approve/ })).toBeVisible();
   });
@@ -208,7 +234,7 @@ describe('ChatParts', () => {
     const { rerender } = render(<ChatParts parts={[reasoning()]} isStreaming />);
     await user.click(screen.getByRole('button', { name: 'Thought for 1 s' }));
     rerender(<ChatParts parts={[reasoning(), call()]} isStreaming />);
-    const panel = screen.getByRole('group', { name: 'Working… · 2 steps' });
+    const panel = screen.getByRole('group', { name: 'Working…' });
     expect(within(panel).getByRole('button', { name: 'Thought for 1 s' })).toHaveAttribute(
       'aria-expanded',
       'true',
@@ -256,7 +282,7 @@ describe('ChatParts', () => {
       );
       const steps = [reasoning(), trains, hotels('failed'), forecast('succeeded')];
       rerender(<ChatParts parts={[...steps, answer('Pack a jacket')]} isStreaming />);
-      expect(stepsTrigger(container)).toHaveAccessibleName('Worked for 2 s · 4 steps');
+      expect(stepsTrigger(container)).toHaveAccessibleName('Ran searches');
       expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
       rerender(<ChatParts parts={[...steps, done('Pack a jacket.')]} />);
       expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');

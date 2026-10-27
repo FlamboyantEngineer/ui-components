@@ -58,14 +58,14 @@ test.describe('Chat Parts lab', () => {
     );
     await next.click();
     await next.click();
-    const working = stream.getByRole('button', { name: 'Working… · 2 steps' });
+    const working = stream.getByRole('button', { name: 'Working…' });
     await expect(working).toHaveAttribute('aria-expanded', 'true');
     await expect(stream.locator('.ui-chat-steps .ui-chat-tool-call')).toHaveAttribute(
       'data-status',
       'running',
     );
     await next.click();
-    const worked = stream.getByRole('button', { name: 'Worked for 4 s · 2 steps' });
+    const worked = stream.getByRole('button', { name: 'Ran a search' });
     await expect(worked).toHaveAttribute('aria-expanded', 'false');
     await expect(stream.locator('.ui-chat-steps__panel')).toBeHidden();
     await next.click();
@@ -94,13 +94,13 @@ test.describe('Chat Parts lab', () => {
     ).toHaveAttribute('data-expanded', 'true');
     const run = demo(page, 'failed-run');
     const next = run.getByRole('button', { name: 'Next event' });
-    const group = run.getByRole('button', { name: / · \d steps$/ });
+    const group = run.getByRole('button', { name: /^(Working…|Ran searches, fetched a page)$/ });
     await next.click();
     await next.click();
-    await expect(group).toHaveAccessibleName('Working… · 4 steps');
+    await expect(group).toHaveAccessibleName('Working…');
     await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
     await next.click();
-    await expect(group).toHaveAccessibleName('Worked for 14 s · 4 steps');
+    await expect(group).toHaveAccessibleName('Ran searches, fetched a page');
     await expect(group).toHaveAttribute('aria-expanded', 'true');
     await next.click();
     await expect(next).toBeDisabled();
@@ -119,13 +119,13 @@ test.describe('Chat Parts lab', () => {
     await lab.open('chat-parts');
     const run = demo(page, 'failed-run');
     const next = run.getByRole('button', { name: 'Next event' });
-    const group = run.getByRole('button', { name: / · \d steps$/ });
+    const group = run.getByRole('button', { name: /^(Working…|Ran searches, fetched a page)$/ });
     await next.click();
-    await expect(group).toHaveAccessibleName('Working… · 3 steps');
+    await expect(group).toHaveAccessibleName('Working…');
     await group.click();
     await expect(group).toHaveAttribute('aria-expanded', 'false');
     await next.click();
-    await expect(group).toHaveAccessibleName('Working… · 4 steps');
+    await expect(group).toHaveAccessibleName('Working…');
     await expect(group).toHaveAttribute('aria-expanded', 'true');
     await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
     await group.click();
@@ -133,7 +133,7 @@ test.describe('Chat Parts lab', () => {
     await next.click();
     await next.click();
     await expect(next).toBeDisabled();
-    await expect(group).toHaveAccessibleName('Worked for 14 s · 4 steps');
+    await expect(group).toHaveAccessibleName('Ran searches, fetched a page');
     await expect(group).toHaveAttribute('aria-expanded', 'false');
     await expect(run.locator('.ui-chat-steps__panel')).toBeHidden();
   });
@@ -184,15 +184,40 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Mixed message"]');
   });
 
+  test('UIC-CHAT-PARTS-5.1 UIC-CHAT-PARTS-5.2 UIC-CHAT-TOOL-CALL-1.7 sums up each run of a working session between its notes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const session = demo(page, 'working-session');
+    const groups = session.locator('.ui-chat-steps__trigger');
+    await expect(groups).toHaveText([
+      'Read files, edited files, ran commands',
+      'Read a file, edited a file, ran a command',
+      'Read a file, ran a command',
+    ]);
+    await expect(session.locator('.ui-chat-parts > .ui-markdown')).toHaveCount(3);
+    const last = session.locator('.ui-chat-steps').last();
+    await expect(last).toHaveAttribute('data-expanded', 'true');
+    await expect(last.locator('.ui-chat-steps__glyph')).toHaveAttribute('data-glyph', 'file-text');
+    const build = last.getByRole('button', { name: /^Ran npm run build Done/ });
+    await expect(
+      last.locator('[data-kind="command"] .ui-chat-tool-call__status-glyph'),
+    ).toHaveAttribute('data-glyph', 'terminal');
+    await build.click();
+    await expect(last.getByRole('group', { name: 'Result' })).toContainText('Built in 2.4 s');
+    await lab.expectAccessible('[data-lab-section="Working session"]');
+  });
+
   test('UIC-CHAT-PARTS-6.1 keeps the reader’s choices across a remount', async ({ page, lab }) => {
     await lab.open('chat-parts');
     const kept = demo(page, 'kept-expansion');
-    const group = kept.getByRole('button', { name: 'Worked for 5 s · 2 steps' });
+    const group = kept.getByRole('button', { name: 'Fetched a page' });
     await expect(group).toHaveAttribute('aria-expanded', 'true');
     await group.click();
     await expect(kept.locator('[data-lab-expanded]')).toHaveText('{"steps:r1":false,"r1":true}');
     await kept.getByRole('button', { name: 'Remount' }).click();
-    await expect(kept.getByRole('button', { name: 'Worked for 5 s · 2 steps' })).toHaveAttribute(
+    await expect(kept.getByRole('button', { name: 'Fetched a page' })).toHaveAttribute(
       'aria-expanded',
       'false',
     );

@@ -56,13 +56,20 @@ function StepsCell({ state }: { state: (typeof stepsStates)[number] }) {
   const isRunning = state === 'running' || state === 'reader-closed';
   if (state === 'one-step') {
     return (
-      <ChatSteps stepCount={1}>
+      <ChatSteps actions={[{ kind: 'search', count: 1 }]}>
         <LabToolCall label="Searched trains to Porto" />
       </ChatSteps>
     );
   }
   return (
-    <ChatSteps isRunning={isRunning} durationMs={12_300} defaultExpanded={readerChoices[state]}>
+    <ChatSteps
+      isRunning={isRunning}
+      actions={[
+        { kind: 'search', count: 1 },
+        { kind: 'read', count: 1 },
+      ]}
+      defaultExpanded={readerChoices[state]}
+    >
       <ChatReasoning text={reasoningText} status="complete" durationMs={2000} />
       <LabToolCall label="Searched trains to Porto" />
       <LabToolCall

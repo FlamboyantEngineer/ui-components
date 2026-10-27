@@ -38,6 +38,8 @@ interface ActivityDisclosureProps extends Omit<BaseProps, 'id'>, ActivityExpansi
   isPanelBusy?: boolean | undefined;
   /** The trigger's label, which also names the panel. */
   label: string;
+  /** A decorative glyph before the label. */
+  glyph?: ReactNode;
   /** The part's hook values on its root. */
   data: DataValues;
   /** The panel's content. */
@@ -69,7 +71,8 @@ function useActivityExpansion({
 }
 
 /**
- * A React Aria disclosure without a heading: a trigger holding the indicator glyph, the label and,
+ * A React Aria disclosure without a heading: a trigger holding the indicator glyph, an optional
+ * glyph, the label and,
  * while the work goes on, a decorative spinner; then the panel, a group named by the trigger.
  */
 export function ActivityDisclosure({
@@ -77,6 +80,7 @@ export function ActivityDisclosure({
   isActive,
   isPanelBusy = false,
   label,
+  glyph,
   data,
   isExpanded,
   defaultExpanded,
@@ -93,7 +97,7 @@ export function ActivityDisclosure({
     onExpandedChange,
     expandsAutomatically,
   });
-  const glyph = useExpandGlyph(expansion.isExpanded);
+  const indicator = useExpandGlyph(expansion.isExpanded);
   return (
     <Disclosure
       {...rest}
@@ -102,7 +106,8 @@ export function ActivityDisclosure({
       onExpandedChange={expansion.onExpandedChange}
     >
       <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
-        <Glyph name={glyph} className={hooks.slotClass('indicator')} />
+        <Glyph name={indicator} className={hooks.slotClass('indicator')} />
+        {glyph}
         <span {...hooks.slot('label')}>{label}</span>
         {isActive ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
       </AriaButton>

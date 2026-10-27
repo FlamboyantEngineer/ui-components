@@ -54,24 +54,24 @@ test.describe('Chat Activity lab', () => {
     await lab.open('chat-activity');
     const running = cell(page, 'state=running');
     await expect(running.locator('.ui-chat-steps')).toHaveAttribute('data-running', 'true');
-    const working = running.getByRole('button', { name: 'Working… · 3 steps' });
+    const working = running.getByRole('button', { name: 'Working…' });
     await expect(working).toHaveAttribute('aria-expanded', 'true');
-    await expect(running.getByRole('group', { name: 'Working… · 3 steps' })).toContainText(
+    await expect(running.getByRole('group', { name: 'Working…' })).toContainText(
       'Searched trains to Porto',
     );
     await expect(
-      cell(page, 'state=reader-closed').getByRole('button', { name: 'Working… · 3 steps' }),
+      cell(page, 'state=reader-closed').getByRole('button', { name: 'Working…' }),
     ).toHaveAttribute('aria-expanded', 'false');
     await expect(
-      cell(page, 'state=finished').getByRole('button', { name: 'Worked for 12 s · 3 steps' }),
+      cell(page, 'state=finished').getByRole('button', { name: 'Ran a search, read a file' }),
     ).toHaveAttribute('aria-expanded', 'false');
     await expect(
       cell(page, 'state=reader-opened').getByRole('button', {
-        name: 'Worked for 12 s · 3 steps',
+        name: 'Ran a search, read a file',
       }),
     ).toHaveAttribute('aria-expanded', 'true');
     await expect(
-      cell(page, 'state=one-step').getByRole('button', { name: 'Worked for a moment · 1 step' }),
+      cell(page, 'state=one-step').getByRole('button', { name: 'Ran a search' }),
     ).toBeVisible();
     await lab.expectAccessible('[data-lab-section="Steps"]');
   });
@@ -139,7 +139,7 @@ test.describe('Chat Activity lab', () => {
     await page.keyboard.press('Space');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     const steps = cell(page, 'state=running');
-    const working = steps.getByRole('button', { name: 'Working… · 3 steps' });
+    const working = steps.getByRole('button', { name: 'Working…' });
     await working.focus();
     await page.keyboard.press('Enter');
     await expect(working).toHaveAttribute('aria-expanded', 'false');
@@ -173,7 +173,7 @@ test.describe('Chat Activity lab', () => {
     await lab.open('chat-activity');
     await page.getByRole('button', { name: 'Run the reply' }).click();
     const steps = sim(page, 'steps');
-    const group = steps.getByRole('button', { name: 'Working… · 1 step' });
+    const group = steps.getByRole('button', { name: 'Working…' });
     await expect(group).toHaveAttribute('aria-expanded', 'true');
     await expect(sim(page, 'reasoning').getByRole('button', { name: 'Thinking…' })).toHaveAttribute(
       'aria-expanded',
@@ -185,7 +185,7 @@ test.describe('Chat Activity lab', () => {
     await expect(
       sim(page, 'reasoning').getByRole('button', { name: 'Thought for 2 s' }),
     ).toHaveAttribute('aria-expanded', 'false');
-    await expect(steps.getByRole('button', { name: 'Working… · 2 steps' })).toHaveAttribute(
+    await expect(steps.getByRole('button', { name: 'Working…' })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
@@ -197,7 +197,7 @@ test.describe('Chat Activity lab', () => {
       'Find trains to Porto: done. Check the timetable: in progress',
     );
     await page.clock.runFor(3200);
-    const summary = steps.getByRole('button', { name: 'Worked for 7 s · 4 steps' });
+    const summary = steps.getByRole('button', { name: 'Ran a search, read a file, used a tool' });
     await expect(summary).toHaveAttribute('aria-expanded', 'false');
     await expect(sim(page, 'status')).toHaveCount(0);
     await expect(sim(page, 'plan').locator('.ui-chat-plan__progress')).toHaveText('4 of 4 done');
@@ -220,7 +220,7 @@ test.describe('Chat Activity lab', () => {
     await page.keyboard.press('Enter');
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await page.clock.runFor(4400);
-    await expect(trigger).toHaveAccessibleName('Worked for 7 s · 4 steps');
+    await expect(trigger).toHaveAccessibleName('Ran a search, read a file, used a tool');
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await run.click();
     await page.clock.runFor(1200);
@@ -231,7 +231,7 @@ test.describe('Chat Activity lab', () => {
     );
     await page.clock.runFor(6000);
     await expect(sim(page, 'steps').locator('.ui-chat-steps__trigger')).toHaveAccessibleName(
-      'Worked for 7 s · 4 steps',
+      'Ran a search, read a file, used a tool',
     );
     await expect(sim(page, 'steps').locator('.ui-chat-steps__trigger')).toHaveAttribute(
       'aria-expanded',
