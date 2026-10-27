@@ -4,7 +4,6 @@
   position: fixed;
   inset-block-end: 16px;
   inset-inline-end: 16px;
-  z-index: 50;
   width: min(400px, calc(100vw - 32px));
   border-radius: var(--ref-radius);
   outline: none;

@@ -230,3 +230,74 @@ test.describe('Toast lab', () => {
     await lab.expectAccessible('.ui-toast-region');
   });
 });
+
+test.describe('Toast over overlays', () => {
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-TOAST-2.4 stacks above an open drawer and takes presses (${theme})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('toast', { theme });
+      await page.locator('[data-lab-open="drawer"]').click();
+      await expect(page.getByRole('dialog', { name: 'City list' })).toBeFocused();
+      await expect(page.locator('.ui-drawer[data-lab-drawer="toast"]')).not.toHaveAttribute(
+        'data-entering',
+      );
+      const drawer = page.locator('.ui-drawer[data-lab-drawer="toast"] .ui-drawer__panel');
+      await page.locator('[data-lab-push="drawer"]').click();
+      const region = page.locator('.ui-toast-region');
+      const toast = region.getByRole('alertdialog', { name: 'Pushed from the drawer' });
+      await expect(toast).toBeVisible();
+      const undo = toast.getByRole('button', { name: 'Undo' });
+      const [undoBox, drawerBox] = [await undo.boundingBox(), await drawer.boundingBox()];
+      // The toast's action overlaps the drawer, so a press there proves the stacking order.
+      expect(undoBox && drawerBox && undoBox.x >= drawerBox.x).toBe(true);
+      const hit = await undo.evaluate((button) => {
+        const box = button.getBoundingClientRect();
+        const element = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return button.contains(element);
+      });
+      expect(hit).toBe(true);
+      await undo.click();
+      await expect(region.getByRole('alertdialog')).toHaveCount(0);
+      await expect(drawer).toBeVisible();
+      await page.locator('[data-lab-push="drawer"]').click();
+      await toast.getByRole('button', { name: 'Dismiss' }).click();
+      await expect(region.getByRole('alertdialog')).toHaveCount(0);
+      await expect(drawer).toBeVisible();
+      await lab.expectAccessible('.ui-drawer__panel');
+    });
+  }
+
+  test('UIC-TOAST-2.4 reaches a toast with the keyboard from an open dialog', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast', { theme: 'dark' });
+    await page.locator('[data-lab-open="dialog"]').click();
+    const dialog = page.getByRole('dialog', { name: 'Edit city' });
+    await expect(dialog).toBeVisible();
+    const push = page.locator('[data-lab-push="dialog"]');
+    await push.focus();
+    await page.keyboard.press('Enter');
+    const toast = page.getByRole('alertdialog', { name: 'Pushed from the dialog' });
+    await expect(toast).toBeVisible();
+    await expect(push).toBeFocused();
+    const z = await page
+      .locator('.ui-toast-region')
+      .evaluate((region) => Number(getComputedStyle(region).zIndex));
+    expect(z).toBe(160);
+    await page.keyboard.press('F6');
+    await expect(page.locator('.ui-toast-region')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(toast).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(toast.getByRole('button', { name: 'Undo' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(toast.getByRole('button', { name: 'Dismiss' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(toast).toHaveCount(0);
+    await expect(dialog).toBeVisible();
+    await expect(push).toBeFocused();
+  });
+});

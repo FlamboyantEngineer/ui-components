@@ -33,6 +33,7 @@ export type {
   TooltipTriggerState,
 } from 'react-aria-components';
 export {
+  UNSAFE_PortalProvider,
   useInteractOutside,
   useModalOverlay,
   useOverlayPosition,
