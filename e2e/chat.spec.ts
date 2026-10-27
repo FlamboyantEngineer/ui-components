@@ -79,6 +79,28 @@ test.describe('Chat lab', () => {
     await expect(composer(assistant)).toBeFocused();
   });
 
+  test('UIC-CHAT-3.4 UIC-MESSAGE-COMPOSER-1.2 queues messages with the chosen chord and sends them in order', async ({
+    page,
+  }) => {
+    await openChat(page, 20);
+    const demo = section(page, 'Shortcuts and queue');
+    await demo.locator('label', { hasText: 'Ctrl+Enter sends' }).click();
+    await composer(demo).click();
+    await page.keyboard.type('Pick a museum');
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="queue-state"]')).toHaveText('idle');
+    await expect(demo.locator('article')).toHaveCount(0);
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(demo.locator('[data-lab-output="queue-state"]')).toHaveText('running');
+    await page.keyboard.type('And a café nearby');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    const queue = demo.getByRole('list', { name: '1 queued message' });
+    await expect(queue).toContainText('And a café nearby');
+    await expect(demo.locator('[data-lab-output="queue-count"]')).toHaveText('0');
+    await expect(lastReply(demo)).toContainText('Noted: And a café nearby');
+    await expect(demo.locator('[data-lab-output="queue-state"]')).toHaveText('idle');
+  });
+
   test('UIC-CHAT-4.1 UIC-CHAT-4.2 shows the assistant thinking inside its reply until the text streams in', async ({
     page,
     lab,
