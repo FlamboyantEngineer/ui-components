@@ -1,6 +1,6 @@
 # Message Composer
 
-`MessageComposer` writes a chat message or a comment: a text area that grows with its text and sends on Enter (Shift+Enter breaks the line) or on Ctrl+Enter, with a banner (the message being replied to or edited) and the message's attachments above it, a row of the host's controls below it, aligned at its start and end in any number and order (a "+" menu of the host's actions, the attach and emoji buttons, selects, toggles, a model picker, the send button), which shrink to their icons when the row is cramped, completions such as `@` mentions ([Completion List](COMPLETION-LIST.md)), an edit mode with Save and Cancel, recall of earlier messages with the arrows, a draft kept in the provider's storage, and a pending state that turns Send into Stop while a reply streams. It sits below a [Chat Transcript](CHAT-TRANSCRIPT.md) or a comment thread.
+`MessageComposer` writes a chat message or a comment: a text area that grows with its text and sends on the host's chords, which may differ while a reply runs (by default Enter sends, Shift+Enter breaks the line, and while a reply runs Enter queues and Ctrl+Enter sends at once), with a banner (the message being replied to or edited) and the message's attachments above it, a row of the host's controls below it, aligned at its start and end in any number and order (a "+" menu of the host's actions, the attach and emoji buttons, selects, toggles, a model picker, the send button), which shrink to their icons when the row is cramped, completions such as `@` mentions ([Completion List](COMPLETION-LIST.md)), an edit mode with Save and Cancel, recall of earlier messages with the arrows, a draft kept in the provider's storage, and a pending state that turns Send into Stop while a reply streams, or that queues and sends at once. It sits below a [Chat Transcript](CHAT-TRANSCRIPT.md) or a comment thread.
 
 `RichMessageComposer` is its rich mode, on [ProseMirror](https://prosemirror.net) and `@handlewithcare/react-prosemirror`, which stay optional peer dependencies: it is exported only from its own entry point, `@flamboyantengineer/ui-components/message-composer/rich`, so the package root and `MessageComposer` load without them. It shares the plain composer's frame, sending, attaching, editing, recall and draft, and adds mentions and commands as atomic pills, record references as atomic record chips, Markdown as typed with code blocks, and plain-text paste. It sends Markdown text with the pills' token ranges.
 
@@ -15,9 +15,9 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.2 - Sending
 
-The send button (`ui-message-composer__action`, a `Button` with the `send` glyph named by the provider string `send`) and the submit chord shall call `onSubmit` with the text and then empty the composer (through `onChange` when it is controlled). With `submitShortcut="Enter"` (the default) Enter sends and Shift+Enter breaks the line; with `Ctrl+Enter`, Enter breaks the line. Ctrl+Enter or Cmd+Enter sends with either chord. The chord shows in the button's tooltip and `aria-keyshortcuts`. Blank text is not sent, and the button is disabled (`aria-disabled`, staying focusable so focus survives the switch from Stop), unless `allowsEmptySubmit` is set, as when attachments carry the message. The submit chord never breaks the line, and a key that belongs to an input method composition (including the Enter some browsers report with key code 229 as it ends) does not send. Pressing the button keeps focus in the text area. The keys the composer uses have their default prevented and go no further.
+The send button (`ui-message-composer__action`, a `Button` with the `send` glyph named by the provider string `send`) and the sending chords shall call `onSubmit` with the text and then empty the composer (through `onChange` when it is controlled). `shortcuts` names the chords in [Shortcut](SHORTCUT.md) notation, each action as one chord or a list of chords that all do it (`Ctrl` is Command on macOS): `send` sends while no reply runs, and saves an edit (Enter and Ctrl+Enter by default); `queue` and `sendNow` apply while a reply runs ([UIC-MESSAGE-COMPOSER-3.10](#uic-message-composer-310---queueing-and-sending-now)). Each action takes its default on its own. A key press matches a chord exactly, with no other modifier held, and an Enter no chord takes breaks the line, so Shift+Enter breaks it by default. The first chord of the action that the state's sending uses shows in the button's tooltip and `aria-keyshortcuts`. Blank text is not sent, and the button is disabled (`aria-disabled`, staying focusable so focus survives the switch from Stop), unless `allowsEmptySubmit` is set, as when attachments carry the message. A key that belongs to an input method composition (including the Enter some browsers report with key code 229 as it ends) does not send. Pressing the button keeps focus in the text area. The keys the composer uses have their default prevented and go no further.
 
-Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/composer-keys.ts`, `src/components/message-composer/use-composer-state.ts`, `src/core/glyphs.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/composer-keys.ts`, `src/components/message-composer/use-composer-state.ts`, `src/components/shortcut/shortcut-match.ts`, `src/core/glyphs.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
 
 ### UIC-MESSAGE-COMPOSER-1.3 - Pending and stopping
@@ -50,7 +50,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.7 - Touch screens
 
-On a device whose primary pointer is coarse (the `(pointer: coarse)` media query, followed as it changes), Enter and Shift+Enter shall break the line and Ctrl+Enter or Cmd+Enter send, whatever `submitShortcut` says, so the on-screen keyboard's Enter key writes several lines and the send button sends; the button's tooltip and `aria-keyshortcuts` show `Ctrl+Enter`.
+On a device whose primary pointer is coarse (the `(pointer: coarse)` media query, followed as it changes), a bare Enter shall break the line whatever `shortcuts` says, so the on-screen keyboard's Enter key writes several lines and the send button sends; the other chords keep working. When that leaves `send` without a chord, Ctrl+Enter sends, so by default Ctrl+Enter or Cmd+Enter sends and the button's tooltip and `aria-keyshortcuts` show `Ctrl+Enter`. While a reply runs, the default `queue` chord is then the button alone, and Ctrl+Enter sends at once.
 
 Implementation: `src/components/message-composer/composer-keys.ts`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
@@ -124,7 +124,7 @@ Verification: `src/components/message-composer/composer-frame.test.tsx`, `e2e/me
 
 ### UIC-MESSAGE-COMPOSER-3.8 - Sending while a reply is pending
 
-With `allowsPendingSubmit`, a pending composer shall send as it does when not pending (Enter, the chord, the button), for a host that queues the message until the reply ends. Its one action button is then Send (without the pending spinner) while there is something to send, and Stop (with `onStop`) while there is not, so keyboard focus on it stays put as it switches.
+With `allowsPendingSubmit`, a pending composer shall send as it does when not pending (the `queue` chords and the button), for a host that queues the message until the reply ends. Its one action button is then Send (without the pending spinner) while there is something to send, and Stop (with `onStop`) while there is not, so keyboard focus on it stays put as it switches.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`
@@ -135,6 +135,13 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `src/
 
 Implementation: `src/components/message-composer/use-submission.ts`, `src/components/message-composer/use-composer-state.ts`, `src/components/message-composer/composer-frame.tsx`
 Verification: `src/components/message-composer/use-submission.test.tsx`
+
+### UIC-MESSAGE-COMPOSER-3.10 - Queueing and sending now
+
+While `isPending`, the composer shall answer to the `queue` and `sendNow` chords of `shortcuts` instead of `send` (an edit still saves with `send`): `queue` (Enter by default) sends through `onSubmit` as [UIC-MESSAGE-COMPOSER-3.8](#uic-message-composer-38---sending-while-a-reply-is-pending) says, for the host to queue, and `sendNow` (Ctrl+Enter by default) calls `onSubmitNow` with the message, for a host that stops the reply and sends the message ahead of its queue. A chord in both lists queues. `onSubmitNow` sends while pending even without `allowsPendingSubmit`, settles as `onSubmit` does ([UIC-MESSAGE-COMPOSER-3.9](#uic-message-composer-39---accepting-a-message)) and empties the composer; it sends nothing blank (unless `allowsEmptySubmit`), while editing, while disabled or while a sent message waits for acceptance. Without `onSubmitNow`, the `sendNow` chords send as `queue` does. Once no reply runs, only `send` sends.
+
+Implementation: `src/components/message-composer/composer-keys.ts`, `src/components/message-composer/use-composer-state.ts`, `src/components/message-composer/use-submission.ts`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/message-composer.spec.ts`
 
 ## UIC-MESSAGE-COMPOSER-4 - Rich mode
 
@@ -168,7 +175,7 @@ Verification: `src/components/message-composer/rich/rich-message-composer.test.t
 
 ### UIC-MESSAGE-COMPOSER-4.5 - Code blocks
 
-Typing ``` at the start of a line shall turn it into a code block (`ui-message-composer\_\_code-block`, a `pre`), which Backspace right after typing turns back into the backticks. In a code block, Enter and Shift+Enter add a line and keep every space; Ctrl+Enter or Cmd+Enter sends; the Down arrow at the end of the last code block leaves it for a new line below, where the chord sends again; Backspace in an empty code block turns it back into a line. Pills and completions do not occur in code.
+Typing ``` at the start of a line shall turn it into a code block (`ui-message-composer\_\_code-block`, a `pre`), which Backspace right after typing turns back into the backticks. In a code block, Enter and Shift+Enter add a line and keep every space, and only a sending chord with Ctrl or Cmd (Ctrl+Enter by default) sends; the Down arrow at the end of the last code block leaves it for a new line below, where the chord sends again; Backspace in an empty code block turns it back into a line. Pills and completions do not occur in code.
 
 Implementation: `src/components/message-composer/rich/composer-commands.ts`, `src/components/message-composer/rich/rich-content.tsx`
 Verification: `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/message-composer.spec.ts`

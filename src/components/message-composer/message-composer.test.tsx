@@ -92,7 +92,9 @@ describe('MessageComposer', () => {
   it('UIC-MESSAGE-COMPOSER-1.2 sends on Ctrl+Enter when asked, empties a controlled text and sends blank text when allowed', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
-    const { unmount } = render(<Controlled submitShortcut="Ctrl+Enter" onSubmit={onSubmit} />);
+    const { unmount } = render(
+      <Controlled shortcuts={{ send: 'Ctrl+Enter' }} onSubmit={onSubmit} />,
+    );
     expect(action()).toHaveAttribute('aria-keyshortcuts', expect.stringMatching(/Enter$/));
     await user.click(input());
     await user.keyboard('{End}{Enter}line');
@@ -119,6 +121,26 @@ describe('MessageComposer', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenCalledWith('こんにちは');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-1.2 sends on the host chords, one or several, and breaks the line on any other Enter', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const { unmount } = render(
+      <MessageComposer shortcuts={{ send: 'Shift+Enter' }} onSubmit={onSubmit} />,
+    );
+    expect(action()).toHaveAttribute('aria-keyshortcuts', 'Shift+Enter');
+    await user.click(input());
+    await user.keyboard('One{Enter}Two{Control>}{Enter}{/Control}');
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onSubmit).toHaveBeenCalledWith('One\nTwo');
+    unmount();
+    render(<MessageComposer shortcuts={{ send: ['Alt+Enter', 'Ctrl+S'] }} onSubmit={onSubmit} />);
+    expect(action()).toHaveAttribute('aria-keyshortcuts', 'Alt+Enter');
+    await user.click(input());
+    await user.keyboard('Three{Alt>}{Enter}{/Alt}Four{Control>}s{/Control}');
+    expect(onSubmit.mock.calls.slice(1)).toEqual([['Three'], ['Four']]);
   });
 
   it('UIC-MESSAGE-COMPOSER-1.7 breaks the line on Enter on a touch screen and sends on Ctrl+Enter', async () => {
@@ -183,6 +205,82 @@ describe('MessageComposer', () => {
     await user.keyboard('More');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSubmit).toHaveBeenLastCalledWith('More');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.10 queues on Enter and sends now on Ctrl+Enter while a reply runs', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onSubmitNow = vi.fn();
+    const { rerender } = render(
+      <MessageComposer
+        isPending
+        allowsPendingSubmit
+        onSubmit={onSubmit}
+        onSubmitNow={onSubmitNow}
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('Later{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('Later');
+    await user.keyboard('Right away{Control>}{Enter}{/Control}');
+    expect(onSubmitNow).toHaveBeenCalledWith('Right away');
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(input()).toHaveValue('');
+    rerender(<MessageComposer onSubmit={onSubmit} onSubmitNow={onSubmitNow} />);
+    await user.keyboard('Idle{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenLastCalledWith('Idle');
+    expect(onSubmitNow).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.10 takes the host chords for each state, and queues on the send-now chord without onSubmitNow', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onSubmitNow = vi.fn();
+    const shortcuts = { send: 'Enter', queue: 'Ctrl+Enter', sendNow: 'Ctrl+Shift+Enter' };
+    const { rerender } = render(
+      <MessageComposer
+        isPending
+        allowsPendingSubmit
+        shortcuts={shortcuts}
+        onSubmit={onSubmit}
+        onSubmitNow={onSubmitNow}
+      />,
+    );
+    expect(action()).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
+    await user.click(input());
+    await user.keyboard('A{Enter}B{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenCalledWith('A\nB');
+    await user.keyboard('C{Control>}{Shift>}{Enter}{/Shift}{/Control}');
+    expect(onSubmitNow).toHaveBeenCalledWith('C');
+    rerender(<MessageComposer isPending allowsPendingSubmit onSubmit={onSubmit} />);
+    await user.keyboard('D{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenLastCalledWith('D');
+    rerender(<MessageComposer shortcuts={shortcuts} onSubmit={onSubmit} />);
+    expect(action()).toHaveAttribute('aria-keyshortcuts', 'Enter');
+    await user.keyboard('E{Enter}');
+    expect(onSubmit).toHaveBeenLastCalledWith('E');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-1.7 UIC-MESSAGE-COMPOSER-3.10 breaks the line on Enter on a touch screen while a reply runs', async () => {
+    stubCoarsePointer();
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onSubmitNow = vi.fn();
+    render(
+      <MessageComposer
+        isPending
+        allowsPendingSubmit
+        onSubmit={onSubmit}
+        onSubmitNow={onSubmitNow}
+      />,
+    );
+    expect(action()).not.toHaveAttribute('aria-keyshortcuts');
+    await user.click(input());
+    await user.keyboard('One{Enter}Two');
+    expect(input()).toHaveValue('One\nTwo');
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSubmitNow).toHaveBeenCalledWith('One\nTwo');
   });
 
   it('UIC-MESSAGE-COMPOSER-1.4 UIC-MESSAGE-COMPOSER-2.2 disables the text area and every button', () => {

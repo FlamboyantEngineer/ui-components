@@ -2,6 +2,7 @@ import type { FocusEvent, ReactNode, Ref } from 'react';
 import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
+import type { ShortcutChord } from '../shortcut/shortcut.js';
 import {
   ControlCompletionList,
   type Completion,
@@ -15,8 +16,21 @@ import { useMessageComposer } from './use-message-composer.js';
 export { useMessageComposerControls } from './composer-controls.js';
 export { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 
-/** The chord that sends: Enter (Shift+Enter breaks the line), or Ctrl+Enter (Cmd+Enter on macOS). */
-export type MessageComposerSubmitShortcut = 'Enter' | 'Ctrl+Enter';
+/** The chords of one composer action, in Shortcut notation: one, or several that all do it. */
+export type MessageComposerChords = ShortcutChord | readonly ShortcutChord[];
+
+/**
+ * The chords that send, by the composer's state. Each defaults on its own, and an Enter no chord
+ * takes breaks the line.
+ */
+export interface MessageComposerShortcuts {
+  /** Sends, or saves an edit, while no reply runs. Defaults to Enter and Ctrl+Enter. */
+  send?: MessageComposerChords | undefined;
+  /** Sends while a reply runs, for a host that queues the message. Defaults to Enter. */
+  queue?: MessageComposerChords | undefined;
+  /** Sends at once while a reply runs, through `onSubmitNow`. Defaults to Ctrl+Enter. */
+  sendNow?: MessageComposerChords | undefined;
+}
 
 /** The props both composers take: the frame, sending, attaching, editing, recall and the draft. */
 export interface MessageComposerSharedProps
@@ -29,8 +43,11 @@ export interface MessageComposerSharedProps
   isDisabled?: boolean | undefined;
   /** Shown while the text is empty. */
   placeholder?: string | undefined;
-  /** The chord that sends. Defaults to `Enter`; on a touch screen Enter breaks the line. */
-  submitShortcut?: MessageComposerSubmitShortcut | undefined;
+  /**
+   * The chords that send while idle, queue while a reply runs and send at once. On a touch screen
+   * Enter breaks the line.
+   */
+  shortcuts?: MessageComposerShortcuts | undefined;
   /** The rows the input shows at least. Defaults to 1. */
   minRows?: number | undefined;
   /** The rows the input grows to before it scrolls. Defaults to 8. */
@@ -75,6 +92,12 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
    * holds sending until it settles, and the composer empties once it resolves.
    */
   onSubmit?: ((value: string) => void | Promise<unknown>) | undefined;
+  /**
+   * Called with the text when the reader sends it at once while a reply runs (the `sendNow` chord),
+   * for a host that stops the reply and sends it ahead of its queue; it settles as `onSubmit` does.
+   * Without it, that chord sends through `onSubmit`.
+   */
+  onSubmitNow?: ((value: string) => void | Promise<unknown>) | undefined;
   /** The message being edited: while set, the composer shows it in place of the draft, with Save and Cancel. */
   editValue?: string | undefined;
   /** The most characters the text may hold. */
@@ -93,7 +116,7 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
 
 /**
  * A composer for chat messages and comments: a text area that grows with its text and sends on
- * Enter (or Ctrl+Enter), with a banner and attachments above it, a row of the host's controls and
+ * the host's chords (Enter by default, another while a reply runs), with a banner and attachments above it, a row of the host's controls and
  * the send button below, completions such as `@` mentions, an edit mode, recall of earlier messages,
  * a persisted draft, and a pending state that offers Stop while a reply streams.
  */

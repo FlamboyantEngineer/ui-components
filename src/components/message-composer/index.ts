@@ -1,5 +1,9 @@
 export { MessageComposer } from './message-composer.js';
-export type { MessageComposerProps, MessageComposerSubmitShortcut } from './message-composer.js';
+export type {
+  MessageComposerChords,
+  MessageComposerProps,
+  MessageComposerShortcuts,
+} from './message-composer.js';
 export { useMessageComposerControls } from './message-composer.js';
 export type { MessageComposerControls } from './composer-controls.js';
 export { MessageComposerMenuButton } from './composer-menu.js';

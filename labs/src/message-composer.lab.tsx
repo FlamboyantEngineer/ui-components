@@ -26,6 +26,7 @@ import {
 import { ComposerControlsSection, labApprovalModes } from './message-composer-controls-cases.js';
 import { createLabComposerMenu, ComposerMenuSection } from './message-composer-menu-cases.js';
 import { ReferenceComposerSection } from './message-composer-reference-cases.js';
+import { ComposerShortcutSection } from './message-composer-shortcut-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
 
 const states = ['empty', 'draft', 'pending', 'stoppable', 'disabled', 'editing'] as const;
@@ -124,7 +125,7 @@ function Composing() {
       </div>
       <MessageComposer
         placeholder="Write a message, @ to mention"
-        submitShortcut={modifier ? 'Ctrl+Enter' : 'Enter'}
+        shortcuts={modifier ? { send: 'Ctrl+Enter' } : undefined}
         completions={mentions}
         renderCompletion={(person) => (
           <UserIdentity name={person.label} description={person.description} size="sm" />
@@ -186,10 +187,14 @@ function Replying() {
   );
 }
 
-/** Sending while the reply runs queues the message; the button is Stop only while empty. */
+/**
+ * Sending while the reply runs queues the message, or sends it now with Ctrl+Enter; the button is
+ * Stop only while empty.
+ */
 function Queueing() {
   const [isPending, setIsPending] = useState(false);
   const [queued, setQueued] = useState<string[]>([]);
+  const [sentNow, setSentNow] = useState<string[]>([]);
   return (
     <>
       <MessageComposer
@@ -202,10 +207,13 @@ function Queueing() {
           if (isPending) setQueued((list) => [...list, text]);
           else setIsPending(true);
         }}
+        onSubmitNow={(text) => setSentNow((list) => [...list, text])}
         data-lab-composer="queue"
       />
       <p>
         Queued: <output data-lab-output="queued">{queued.join(' · ') || 'nothing'}</output>
+        {' · '}
+        Sent now: <output data-lab-output="sent-now">{sentNow.join(' · ') || 'nothing'}</output>
       </p>
     </>
   );
@@ -238,15 +246,16 @@ mountLab(
     </LabSection>
     <LabSection
       title="Composing"
-      description="Enter sends and Shift+Enter breaks the line (or Ctrl+Enter sends, with either chord); @ mentions a person; files come from the attach button, a drop on the composer or a paste, and alone can be sent; the emoji button inserts at the caret. The text area grows up to eight rows."
+      description="Enter sends and Shift+Enter breaks the line (or, with the option, only Ctrl+Enter sends and Enter breaks the line); @ mentions a person; files come from the attach button, a drop on the composer or a paste, and alone can be sent; the emoji button inserts at the caret. The text area grows up to eight rows."
     >
       <Composing />
     </LabSection>
+    <ComposerShortcutSection />
     <ComposerControlsSection />
     <ComposerMenuSection />
     <LabSection
       title="Stopping a reply"
-      description="Sending starts a pending reply: the same button turns into Stop and keeps keyboard focus. With allowsPendingSubmit (the second composer), Enter still sends while the reply runs, for a host that queues the message; the button is Send while there is text and Stop while there is none."
+      description="Sending starts a pending reply: the same button turns into Stop and keeps keyboard focus. With allowsPendingSubmit (the second composer), Enter still sends while the reply runs, for a host that queues the message, and Ctrl+Enter sends it now through onSubmitNow; the button is Send while there is text and Stop while there is none."
     >
       <Replying />
       <Queueing />

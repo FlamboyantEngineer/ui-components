@@ -223,6 +223,38 @@ describe('Chat composer', () => {
     expect(onQueueChange).toHaveBeenLastCalledWith([queue[0]]);
   });
 
+  it('UIC-CHAT-3.4 shows a queued message’s files and keeps them when its text is saved', async () => {
+    const onQueueChange = vi.fn();
+    const photo = {
+      id: 'f1',
+      name: 'map.png',
+      mediaType: 'image/png',
+      url: 'https://example.com/map.png',
+    };
+    const queue = [
+      { id: 'q1', text: 'Which way?', attachments: [photo] },
+      { id: 'q2', text: '', attachments: [{ ...photo, id: 'f2', name: 'ticket.png' }] },
+    ];
+    const { user, container } = renderChat({
+      participants: assistantPeople,
+      isPending: true,
+      queue,
+      onQueueChange,
+    });
+    const lists = container.querySelectorAll('.ui-chat__queue-attachments');
+    expect(lists).toHaveLength(2);
+    expect(lists[0]).toHaveClass('ui-chat-attachment-list');
+    expect(lists[0]?.querySelectorAll('.ui-chat-attachment[data-kind="image"]')).toHaveLength(1);
+    expect(container.querySelectorAll('.ui-chat__queue-text')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await waitFor(() => expect(box()).toHaveFocus());
+    await user.keyboard(' Left?{Enter}');
+    expect(onQueueChange).toHaveBeenLastCalledWith([
+      { ...queue[0], text: 'Which way? Left?', tokens: [] },
+      queue[1],
+    ]);
+  });
+
   it('UIC-CHAT-3.4 keeps focus in the queue as messages are removed, then moves it to the composer', async () => {
     const user = userEvent.setup();
     function QueueHost() {
@@ -260,6 +292,45 @@ describe('Chat composer', () => {
     await user.click(box());
     await user.keyboard('Then dessert{Enter}');
     expect(onSend).toHaveBeenCalledWith('Then dessert', []);
+  });
+
+  it('UIC-CHAT-3.4 sends now with Ctrl+Enter while a reply runs, through onSendNow', async () => {
+    const onSendNow = vi.fn();
+    const { user, onSend } = renderChat({
+      participants: assistantPeople,
+      isPending: true,
+      onStop: () => undefined,
+      queue: [],
+      onQueueChange: () => undefined,
+      onSendNow,
+    });
+    await user.click(box());
+    await user.keyboard('Skip the museum{Control>}{Enter}{/Control}');
+    expect(onSendNow).toHaveBeenCalledWith('Skip the museum', []);
+    expect(onSend).not.toHaveBeenCalled();
+  });
+
+  it('UIC-CHAT-3.4 UIC-CHAT-3.3 edits the newest queued message on Up, and recalls prompts without a queue', async () => {
+    const queue = [
+      { id: 'q1', text: 'And lunch?' },
+      { id: 'q2', text: 'And dinner?' },
+    ];
+    const props = {
+      participants: assistantPeople,
+      history: ['Plan a trip'],
+      onQueueChange: () => undefined,
+    };
+    const { user, container, rerenderWith } = renderChat({ ...props, isPending: true, queue });
+    await user.click(box());
+    await user.keyboard('{ArrowUp}');
+    expect(box()).toHaveTextContent('And dinner?');
+    const items = container.querySelectorAll('.ui-chat__queue-item');
+    expect(items[1]).toHaveAttribute('data-editing', 'true');
+    await user.keyboard('{Escape}');
+    expect(box()).toHaveTextContent('');
+    rerenderWith({ ...props, queue: [] });
+    await user.keyboard('{ArrowUp}');
+    expect(box()).toHaveTextContent('Plan a trip');
   });
 
   it('UIC-CHAT-3.5 attaches files and lists the next message’s files with Remove and Retry', async () => {

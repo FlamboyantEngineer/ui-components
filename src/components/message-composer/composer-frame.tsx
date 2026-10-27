@@ -8,10 +8,8 @@ import {
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerToken } from './composer-message.js';
 import { ComposerSendControl } from './composer-tools.js';
-import type {
-  MessageComposerSharedProps,
-  MessageComposerSubmitShortcut,
-} from './message-composer.js';
+import type { ComposerKeys } from './composer-keys.js';
+import type { MessageComposerSharedProps } from './message-composer.js';
 import { useFileDrop } from './use-file-drop.js';
 
 /** What the frame needs from the composer's input, plain or rich. */
@@ -20,7 +18,8 @@ export interface ComposerFrameModel {
   canSubmit: boolean;
   isSubmitting: boolean;
   submit: () => void;
-  shortcut: MessageComposerSubmitShortcut;
+  /** The chords that send now; the first shows on the send button. */
+  keys: ComposerKeys;
   /** Inserts text at the caret, as a chosen emoji. */
   insertText: (text: string) => void;
   /** Inserts a mention or command at the caret: a pill in the rich composer, its text in the plain one. */

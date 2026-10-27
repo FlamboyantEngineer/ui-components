@@ -1,5 +1,5 @@
-// Sending the composer's message as the chat's edit, queued text, reply or new message
-// (specs/CHAT.md, UIC-CHAT-3.7).
+// Sending the composer's message as the chat's edit, queued text, reply, new message or message
+// sent now (specs/CHAT.md, UIC-CHAT-3.7).
 
 import { isThenable } from '../../utils/is-thenable.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
@@ -46,4 +46,12 @@ export function submitMessage(
     return whenAccepted(result, () => state.endReply(scope, replyingId));
   }
   return options.onSend?.(text, tokens);
+}
+
+/** Sends the composer's message at once while a reply runs, ahead of the queue. */
+export function sendMessageNow(
+  { options }: ChatComposerProps,
+  { text, tokens }: ComposerMessage,
+): void | Promise<unknown> {
+  return options.onSendNow?.(text, toDisplayTokens(tokens));
 }

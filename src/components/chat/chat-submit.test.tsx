@@ -132,7 +132,7 @@ describe('Chat sending', () => {
         </label>
       ),
       composerEndControls: <ChatModelPicker models={[{ id: 'fast', label: 'Fast' }]} />,
-      submitShortcut: 'Ctrl+Enter',
+      shortcuts: { send: 'Ctrl+Enter' },
       allowsEmptySubmit: true,
     });
     const start = container.querySelector('.ui-message-composer__start') as HTMLElement;

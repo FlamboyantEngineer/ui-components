@@ -55,6 +55,8 @@ export interface ChatControllerProps {
   isPending: boolean;
   /** Sends the reader's message, or queues it while a reply runs. */
   onSend: (text: string, tokens?: readonly ChatTextToken[]) => void;
+  /** Stops the running reply and sends the reader's message at once, ahead of the queue. */
+  onSendNow: (text: string, tokens?: readonly ChatTextToken[]) => void;
   /** Stops the running reply. */
   onStop: () => void;
   /** Runs the last turn again when `messageId` is the reply that failed. */
@@ -95,6 +97,8 @@ export interface ChatController {
   statusText: string | undefined;
   /** Sends the reader's message, or queues it while a reply runs. */
   send: (text: string, tokens?: readonly ChatTextToken[]) => void;
+  /** Stops the running reply and sends the reader's message at once, ahead of the queue. */
+  sendNow: (text: string, tokens?: readonly ChatTextToken[]) => void;
   /** Stops the running reply, keeping what it streamed. */
   stop: () => void;
   /** Runs the last turn again after its reply failed. */
@@ -119,6 +123,7 @@ function useChatProps(
       messages,
       isPending,
       onSend: engine.send,
+      onSendNow: engine.sendNow,
       onStop: engine.stop,
       onRetry: (messageId: string) => {
         if (messages.at(-1)?.id === messageId) engine.retry();
@@ -160,6 +165,7 @@ export function useChatController(options: ChatControllerOptions): ChatControlle
     queue: state.queue,
     statusText: state.isPending ? state.messages.at(-1)?.statusText : undefined,
     send: engine.send,
+    sendNow: engine.sendNow,
     stop: engine.stop,
     retry: engine.retry,
     setMessages: engine.setMessages,
