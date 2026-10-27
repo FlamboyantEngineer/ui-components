@@ -46,6 +46,13 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 Implementation: `src/components/steps/steps.tsx`, `labs/reference/steps.css`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
+### UIC-STEPS-1.8 - Narrow containers
+
+The reference stylesheet shall lay a horizontal list out in equal columns, each step's label and description under its marker, so a label wraps between words and never one letter a line. When a column would be narrower than 80px, and always in the `compact` variant, it shall become a rail: the markers and connectors stay in one row, and the current step's text (or, in a complete `compact` list, the completion words) takes a full-width line below; the other steps' text stays in the list for assistive technology, and pressable steps keep their names, keyboard order and disabled state. The list never draws markers, connectors or text over one another, from 240px wide with up to 8 steps; it reads each step's place for lists of up to 12 steps. A vertical list keeps its layout at every width.
+
+Implementation: `labs/reference/steps.css`
+Verification: `e2e/steps-narrow.spec.ts`
+
 ### UIC-STEPS-1.7 - Hooks and caller attributes
 
 `Steps` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to its root; caller attributes never replace a hook attribute.
