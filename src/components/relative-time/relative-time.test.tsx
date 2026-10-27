@@ -163,11 +163,35 @@ describe('RelativeTime', () => {
     expect(day).toHaveTextContent('Today');
     expect(vi.getTimerCount()).toBe(1);
     await advance(30_000);
-    expect(instant).toHaveTextContent('30 seconds ago');
+    expect(instant).toHaveTextContent('Now');
     expect(day).toHaveTextContent('Yesterday');
     await advance(30_000);
     expect(instant).toHaveTextContent('1 minute ago');
     unmount();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('UIC-RELATIVE-TIME-1.2 spells units in the unit style', () => {
+    render(<RelativeTime value={at(10, 25)} getNow={getNow} unitStyle="narrow" />);
+    expect(screen.getByText('5m ago')).toHaveAttribute('datetime', at(10, 25));
+  });
+
+  it('UIC-RELATIVE-TIME-1.2 counts live seconds with second precision', async () => {
+    vi.useFakeTimers({ now: new Date(2026, 4, 23, 10, 30) });
+    const value = new Date().toISOString();
+    const { container } = render(
+      <>
+        <RelativeTime value={value} precision="second" showTooltip={false} />
+        <RelativeTime value={value} showTooltip={false} />
+      </>,
+    );
+    const [live, minute] = Array.from(container.children);
+    expect(live).toHaveTextContent('Now');
+    await advance(5000);
+    expect(live).toHaveTextContent('5 seconds ago');
+    expect(minute).toHaveTextContent('Now');
+    await advance(55_000);
+    expect(live).toHaveTextContent('1 minute ago');
+    expect(minute).toHaveTextContent('1 minute ago');
   });
 });

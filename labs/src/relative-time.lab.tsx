@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   RelativeTime,
+  type RelativeTimePrecision,
   type RelativeTimeStyle,
+  type RelativeTimeUnitStyle,
 } from '../../src/components/relative-time/relative-time.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -25,18 +27,41 @@ const samples = {
   absolute: '2026-02-03',
 } as const;
 
+/** Instants near the fixed clock, where the two precisions read differently. */
+const nearSamples = {
+  'just now': instant(20, 10, 29, 48),
+  '100 seconds ago': instant(20, 10, 28, 20),
+  '25 minutes ago': instant(20, 10, 4, 40),
+  'in 40 seconds': instant(20, 10, 30, 40),
+} as const;
+
+const precisions: readonly RelativeTimePrecision[] = ['minute', 'second'];
+
+const unitStyles: readonly RelativeTimeUnitStyle[] = ['long', 'short', 'narrow'];
+
 const styles: readonly RelativeTimeStyle[] = ['full', 'long', 'medium', 'short'];
 
-/** A timestamp stamped on the real clock, which ticks on from `Now`. */
+/** A timestamp stamped on the real clock in both precisions, which tick on from `Now`. */
 function LiveStamp() {
   const [stamp, setStamp] = useState(() => new Date().toISOString());
   return (
-    <p>
-      Last saved <RelativeTime value={stamp} capitalize={false} data-lab-time="live" />.{' '}
+    <div>
+      {precisions.map((precision) => (
+        <p key={precision}>
+          Last saved{' '}
+          <RelativeTime
+            value={stamp}
+            precision={precision}
+            capitalize={false}
+            data-lab-time={precision}
+          />{' '}
+          ({precision} precision).
+        </p>
+      ))}
       <Button size="sm" onPress={() => setStamp(new Date().toISOString())}>
         Save now
       </Button>
-    </p>
+    </div>
   );
 }
 
@@ -65,7 +90,7 @@ mountLab(
   <>
     <LabSection
       title="Relative words"
-      description="Values against a clock fixed at 20 April 2026, 10:30: seconds, minutes and hours within a day, days within a week, then the absolute date. Mid-sentence keeps the words Intl gives."
+      description="Values against a clock fixed at 20 April 2026, 10:30: Now for the first minute, then minutes and hours within a day, days within a week, then the absolute date. Mid-sentence keeps the words Intl gives."
     >
       <StateMatrix
         axes={{
@@ -74,6 +99,36 @@ mountLab(
         }}
         render={({ value, casing }) => (
           <RelativeTime value={samples[value]} getNow={getNow} capitalize={casing === 'label'} />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Precision"
+      description="The default minute precision reads Now for the first minute, then whole elapsed minutes. Second precision counts live seconds and rounds minutes."
+    >
+      <StateMatrix
+        axes={{
+          value: Object.keys(nearSamples) as (keyof typeof nearSamples)[],
+          precision: precisions,
+        }}
+        render={({ value, precision }) => (
+          <RelativeTime value={nearSamples[value]} getNow={getNow} precision={precision} />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Unit styles"
+      description="How the words spell their units, as Intl gives them for the locale: long by default, short or narrow for dense places."
+    >
+      <StateMatrix
+        axes={{ value: ['seconds', 'minutes', 'in hours'] as const, unitStyle: unitStyles }}
+        render={({ value, unitStyle }) => (
+          <RelativeTime
+            value={samples[value]}
+            getNow={getNow}
+            precision="second"
+            unitStyle={unitStyle}
+          />
         )}
       />
     </LabSection>

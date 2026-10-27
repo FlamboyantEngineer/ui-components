@@ -10,7 +10,7 @@ test.describe('Relative Time lab', () => {
   }) => {
     await lab.open('relative-time');
     for (const [value, label, inline] of [
-      ['seconds', '12 seconds ago', '12 seconds ago'],
+      ['seconds', 'Now', 'now'],
       ['minutes', '12 minutes ago', '12 minutes ago'],
       ['hours', '3 hours ago', '3 hours ago'],
       ['in hours', 'In 3 hours', 'in 3 hours'],
@@ -31,6 +31,31 @@ test.describe('Relative Time lab', () => {
       'absolute',
     );
     await expect(page.locator(cell('tooltip=shown fallback=2 days'))).toHaveText('Apr 16, 2026');
+  });
+
+  test('UIC-RELATIVE-TIME-1.2 reads Now or live seconds by precision, in each unit style', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-time');
+    for (const [value, minute, second] of [
+      ['just now', 'Now', '12 seconds ago'],
+      ['100 seconds ago', '1 minute ago', '2 minutes ago'],
+      ['25 minutes ago', '25 minutes ago', '25 minutes ago'],
+      ['in 40 seconds', 'Now', 'In 40 seconds'],
+    ] as const) {
+      await expect(page.locator(cell(`value=${value} precision=minute`))).toHaveText(minute);
+      await expect(page.locator(cell(`value=${value} precision=second`))).toHaveText(second);
+    }
+    for (const [unitStyle, seconds, minutes, hours] of [
+      ['long', '12 seconds ago', '12 minutes ago', 'In 3 hours'],
+      ['short', '12 sec. ago', '12 min. ago', 'In 3 hr.'],
+      ['narrow', '12s ago', '12m ago', 'In 3h'],
+    ] as const) {
+      await expect(page.locator(cell(`value=seconds unitStyle=${unitStyle}`))).toHaveText(seconds);
+      await expect(page.locator(cell(`value=minutes unitStyle=${unitStyle}`))).toHaveText(minutes);
+      await expect(page.locator(cell(`value=in hours unitStyle=${unitStyle}`))).toHaveText(hours);
+    }
   });
 
   test('UIC-RELATIVE-TIME-3.1 UIC-RELATIVE-TIME-3.2 shows the absolute date on focus and hover', async ({
@@ -79,17 +104,21 @@ test.describe('Relative Time lab', () => {
     await page.clock.install();
     await lab.open('relative-time');
     await page.clock.pauseAt(Date.now() + 1000);
-    const live = page.locator('[data-lab-time="live"]');
+    const live = page.locator('[data-lab-time="second"]');
+    const minute = page.locator('[data-lab-time="minute"]');
     await page.getByRole('button', { name: 'Save now' }).click();
     await expect(live).toHaveText('now');
+    await expect(minute).toHaveText('now');
     // Step the clock a second at a time and wait for each render, so every render schedules its
     // next wake on the shared timer before the clock moves on.
     for (let second = 1; second < 60; second += 1) {
       await page.clock.runFor(1000);
       await expect(live).toHaveText(second === 1 ? '1 second ago' : `${second} seconds ago`);
+      await expect(minute).toHaveText('now');
     }
     for (let second = 60; second <= 80; second += 1) await page.clock.runFor(1000);
     await expect(live).toHaveText('1 minute ago');
+    await expect(minute).toHaveText('1 minute ago');
     await page.clock.resume();
   });
 
@@ -117,7 +146,7 @@ test.describe('Relative Time lab', () => {
     await demo.getByRole('button', { name: 'Mount timestamps' }).click();
     await expect(times).toHaveCount(20);
     const before = await times.first().textContent();
-    await page.clock.runFor(10_000);
+    await page.clock.runFor(30_000);
     await expect(times.first()).not.toHaveText(requireDefined(before));
     await expect(times).toHaveText(Array(20).fill(await times.first().textContent()));
     await page.clock.resume();

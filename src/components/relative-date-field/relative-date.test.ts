@@ -51,11 +51,9 @@ describe('relative date', () => {
     expect(describeRelativeDate('whenever', options)).toBeNull();
   });
 
-  it('UIC-RELATIVE-DATE-FIELD-1.2 reads date-times within a day in seconds, minutes and hours', () => {
+  it('UIC-RELATIVE-DATE-FIELD-1.2 reads date-times within a day as Now, minutes and hours', () => {
     const plain = (text: string | undefined) => text?.replace(/\s/g, ' ');
-    expect(describeRelativeDate(at(2026, 4, 23, 10, 29, 50), options)?.relative).toBe(
-      '10 seconds ago',
-    );
+    expect(describeRelativeDate(at(2026, 4, 23, 10, 29, 50), options)?.relative).toBe('Now');
     expect(describeRelativeDate(at(2026, 4, 23, 10, 25), options)?.relative).toBe('5 minutes ago');
     const instant = new Date(2026, 4, 23, 10, 25).toISOString();
     expect(describeRelativeDate(instant, options)?.relative).toBe('5 minutes ago');
