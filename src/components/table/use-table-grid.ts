@@ -195,7 +195,16 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     pinOffsets: pinned.offsets,
     onPinOffsets: pinned.report,
     onRowAction: createTableRowAction(keyIndex, onRowAction),
-    body: { nodes: grouped.nodes, model, status, message, onRetry, onLoadMore, isLoading },
+    body: {
+      nodes: grouped.nodes,
+      model,
+      status,
+      message,
+      onRetry,
+      onLoadMore,
+      isLoading,
+      loadingMessage: options.loadingMessage,
+    },
     selectionBar: resolveSelectionBar(options, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {
       reordering: activeReordering,

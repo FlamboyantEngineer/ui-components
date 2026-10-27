@@ -395,7 +395,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Loading more"
-      description="Scrolling to the end asks for the next twenty rows."
+      description="Scrolling to the end asks for the next twenty rows; the loading row reads the table's own loading message under the rows already loaded."
     >
       <LoadingMore />
     </LabSection>
