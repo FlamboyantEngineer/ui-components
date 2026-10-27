@@ -385,7 +385,7 @@ test.describe('Chat Transcript lab: messages and conversation parts', () => {
     await expect(reactions.locator('.ui-reaction-bar__count')).toHaveText('2');
     await expect(
       teamMessage(page, 'm11').getByRole('group', {
-        name: 'Seen by Ana Lopez, Dee Nolan and Eli Brandt',
+        name: 'Seen by Ana Lopez, Dee Nolan, and Eli Brandt',
       }),
     ).toBeVisible();
     await expect(

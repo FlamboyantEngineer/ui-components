@@ -36,7 +36,7 @@ test.describe('Chat Question lab', () => {
     const several = page.getByRole('group', { name: `3 questions: ${database}` }).first();
     await expect(several.getByRole('tablist', { name: 'Questions' })).toBeVisible();
     await expect(cell(page, 'questions=several status=answered')).toContainText(
-      'You chose Search, Export to CSV and Offline mode',
+      'You chose Search, Export to CSV, and Offline mode',
     );
     await expect(cell(page, 'questions=one status=answered')).toContainText('You chose PostgreSQL');
     await expect(cell(page, 'questions=several status=answered')).toContainText(

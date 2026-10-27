@@ -61,9 +61,9 @@ describe('ChatSteps', () => {
     await user.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     rerender(<Steps title="Checking opening hours" actions={actions} />);
-    expect(
-      screen.getByRole('button', { name: 'Edited files, read files, and ran a command' }),
-    ).toBe(trigger);
+    expect(screen.getByRole('button', { name: 'Edited files, read files, ran a command' })).toBe(
+      trigger,
+    );
   });
 
   it("UIC-CHAT-ACTIVITY-2.3 collapses when the run ends, summing up what it did after its first kind's glyph", () => {
@@ -74,7 +74,7 @@ describe('ChatSteps', () => {
     expect(root).not.toHaveAttribute('data-running');
     expect(root).not.toHaveAttribute('data-expanded');
     const trigger = screen.getByRole('button', {
-      name: 'Edited files, read files, and ran a command',
+      name: 'Edited files, read files, ran a command',
     });
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(container.querySelector('.ui-chat-steps__spinner')).toBeNull();
@@ -96,7 +96,7 @@ describe('ChatSteps', () => {
         ]}
       />,
     );
-    expect(trigger).toHaveAccessibleName('Ran a search, fetched pages, and used a tool');
+    expect(trigger).toHaveAccessibleName('Ran a search, fetched pages, used a tool');
     expect(trigger.querySelector('.ui-chat-steps__glyph')).toHaveAttribute('data-glyph', 'search');
   });
 

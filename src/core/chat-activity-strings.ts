@@ -51,7 +51,7 @@ export const chatActivityArguments: MessageArguments<ChatActivityStrings> = {
   chatStepsComplete: (actions, seconds) => ({
     ...toDuration(seconds),
     count: actions.length,
-    actions: capitalizeFirst(actions),
+    actions: toMessageList(capitalizeFirst(actions), 'unit'),
   }),
   chatStepsAction: (kind, count) => ({ kind, count }),
   chatPlanProgress: (done, total) => ({ done, total }),

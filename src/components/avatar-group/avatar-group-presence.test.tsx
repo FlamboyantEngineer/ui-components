@@ -123,7 +123,7 @@ describe('AvatarGroup', () => {
     );
     expect(
       within(group).getByRole('img', {
-        name: '3 more people: Priya Nair, Unnamed, and Ines Duarte',
+        name: '3 more people: Priya Nair, Unnamed, Ines Duarte',
       }),
     ).toHaveTextContent('+3');
 
@@ -217,7 +217,7 @@ describe('AvatarGroup', () => {
     );
     expect(root(container)).toHaveAttribute('data-overflow', 'menu');
     const count = screen.getByRole('button', {
-      name: '3 more people: Priya Nair, Tom Li, and Ines Duarte',
+      name: '3 more people: Priya Nair, Tom Li, Ines Duarte',
     });
     expect(count).toHaveClass('ui-avatar-group__overflow');
     expect(count).toHaveTextContent('+3');

@@ -1,4 +1,4 @@
-import { toSelectKey, type MessageArguments } from './message-format.js';
+import { toMessageList, toSelectKey, type MessageArguments } from './message-format.js';
 /** The formatted parts of a segmented progress bar's value text. */
 export interface SegmentProgressText {
   /** Completed units. */
@@ -216,7 +216,11 @@ export const commonArguments: MessageArguments<CommonStrings> = {
   labelWithCount: (label, count) => ({ label, count }),
   nameWithStatus: (name, status) => ({ name, status }),
   presenceStatus: (status) => ({ status }),
-  morePeople: (count, names) => ({ count, names, hasNames: names.length > 0 }),
+  morePeople: (count, names) => ({
+    count,
+    names: toMessageList(names, 'unit'),
+    hasNames: names.length > 0,
+  }),
   shortcutKeyName: (key) => ({ key: spokenKeys[key] ?? 'other', name: key }),
   shortcutThen: (previous, next) => ({ previous, next }),
   remainingCount: (count) => ({ count }),
