@@ -71,7 +71,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ### UIC-PROGRESS-BAR-2.2 - Standalone spinner
 
-A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, with its size, becomes an indeterminate progress bar (`role="progressbar"`, no `aria-valuenow`) named by the label, and is no longer hidden from assistive technology. Use it where no surrounding text states the busy status; a spinner that leads such a line stays decorative.
+A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, with its size, becomes an indeterminate progress bar (`role="progressbar"`, no `aria-valuenow`) named by the label, and is no longer hidden from assistive technology. It stays phrasing content, so it may sit within a sentence or any element that allows only inline content, and it renders without development warnings. Use it where no surrounding text states the busy status; a spinner that leads such a line stays decorative.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`

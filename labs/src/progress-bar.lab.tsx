@@ -138,6 +138,14 @@ mountLab(
           render={({ standalone }) => <Spinner size={standalone} label="Loading recipes" />}
         />
       </LabSection>
+      <LabSection
+        title="Named spinner in a sentence"
+        description="A labelled spinner stays an inline glyph, so it can sit within a line of text."
+      >
+        <p>
+          Fetching the next page <Spinner size="sm" label="Loading results" /> of results
+        </p>
+      </LabSection>
     </div>
 
     <LabSection

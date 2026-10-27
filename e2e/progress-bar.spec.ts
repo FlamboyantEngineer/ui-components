@@ -119,4 +119,19 @@ test.describe('Progress Bar lab', () => {
     expect(await spinner.evaluate((node: HTMLElement) => node.offsetWidth)).toBe(16);
     await lab.expectAccessible();
   });
+
+  test('UIC-PROGRESS-BAR-2.2 keeps a named spinner inline in a sentence', async ({ page, lab }) => {
+    await lab.open('progress-bar');
+    const sentence = page
+      .locator('[data-lab-family="progress-bar-main"]')
+      .getByText('Fetching the next page of results');
+    const spinner = sentence.getByRole('progressbar', { name: 'Loading results' });
+    await expect(spinner).toHaveClass(/ui-spinner/);
+    const [line, glyph] = await Promise.all([sentence.boundingBox(), spinner.boundingBox()]);
+    // The glyph sits within the sentence's line box rather than breaking onto its own line.
+    expect(
+      line && glyph && glyph.y >= line.y && glyph.y + glyph.height <= line.y + line.height,
+    ).toBe(true);
+    expect(await spinner.evaluate((node: HTMLElement) => node.offsetWidth)).toBe(12);
+  });
 });

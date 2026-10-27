@@ -1,5 +1,5 @@
 import type { ReactNode, Ref } from 'react';
-import { ProgressBar as AriaProgressBar } from '../../primitives/index.js';
+import { useProgressBar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
@@ -136,16 +136,13 @@ function RangeProgressBar({
 export function Spinner({ size = 'md', label, className, ...rest }: SpinnerProps) {
   const hookProps = spinnerHooks.root({ className, data: { size } });
   if (!label) return <span {...rest} {...hookProps} aria-hidden="true" />;
-  return (
-    <AriaProgressBar
-      {...rest}
-      {...hookProps}
-      aria-label={label}
-      isIndeterminate
-      // The glyph stays a `<span>`, so a named spinner still sits inside a line of text.
-      render={(props) => <span {...props} />}
-    />
-  );
+  return <NamedSpinner {...rest} {...hookProps} label={label} />;
+}
+
+/** The glyph stays a `<span>`, so a named spinner still sits inside a line of text. */
+function NamedSpinner({ id, label, ...rest }: SpinnerProps & { label: string }) {
+  const { progressBarProps } = useProgressBar({ id, 'aria-label': label, isIndeterminate: true });
+  return <span {...rest} {...progressBarProps} />;
 }
 
 export { resolveMeterTone } from './progress-meter.js';

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ProgressBar, Spinner } from './progress-bar.js';
 
@@ -158,10 +158,15 @@ describe('Spinner', () => {
   });
 
   it('UIC-PROGRESS-BAR-2.2 names a standalone spinner as an indeterminate progress bar', () => {
-    const { container, rerender } = render(<Spinner label="Loading recipes" size="lg" />);
+    const warn = vi.spyOn(console, 'warn');
+    const error = vi.spyOn(console, 'error');
+    const { container, rerender } = render(
+      <Spinner label="Loading recipes" size="lg" className="caller" id="busy" />,
+    );
     const spinner = screen.getByRole('progressbar', { name: 'Loading recipes' });
     expect(spinner.tagName).toBe('SPAN');
-    expect(spinner).toHaveClass('ui-spinner');
+    expect(spinner).toHaveClass('ui-spinner', 'caller');
+    expect(spinner).toHaveAttribute('id', 'busy');
     expect(spinner).toHaveAttribute('data-size', 'lg');
     expect(spinner).not.toHaveAttribute('aria-hidden');
     expect(spinner).not.toHaveAttribute('aria-valuenow');
@@ -171,6 +176,33 @@ describe('Spinner', () => {
     rerender(<Spinner label="" />);
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-spinner')).toHaveAttribute('aria-hidden', 'true');
+    expect(warn).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it('UIC-PROGRESS-BAR-2.2 keeps named and decorative spinners inline within a sentence', () => {
+    const warn = vi.spyOn(console, 'warn');
+    const error = vi.spyOn(console, 'error');
+    render(
+      <>
+        <p>
+          Saving <Spinner label="Saving draft" size="sm" /> now
+        </p>
+        <p>
+          <Spinner /> Syncing files
+        </p>
+      </>,
+    );
+    const named = screen.getByRole('progressbar', { name: 'Saving draft' });
+    expect(named.parentElement?.tagName).toBe('P');
+    expect(named.tagName).toBe('SPAN');
+    expect(screen.getAllByRole('progressbar')).toHaveLength(1);
+    expect(screen.getByText('Syncing files').querySelector('.ui-spinner')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    expect(warn).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
   });
   it('UIC-PROGRESS-BAR-3.1 combines circular appearance with bounded meter semantics', () => {
     render(

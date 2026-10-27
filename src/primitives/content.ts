@@ -9,3 +9,4 @@ export {
   Text,
   VisuallyHidden,
 } from 'react-aria-components';
+export { useProgressBar } from 'react-aria';
