@@ -55,6 +55,12 @@ export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'ge
   showAuthorName?: boolean | undefined;
   /** Where the time shows. Defaults to `header`; the message's name keeps it either way. */
   timePlacement?: ChatMessageTimePlacement | undefined;
+  /**
+   * Gives a footer that holds only the time no room until it shows: publishes
+   * `data-collapse-footer-time`, which the reference stylesheet opens on hover and focus. Defaults to
+   * `false`, the time's line always kept.
+   */
+  collapseFooterTime?: boolean | undefined;
   /** Draws the content in a `bubble` (the default) or as `plain` text. */
   variant?: ChatMessageVariant | undefined;
   /** When it was written: an ISO 8601 date and time, read relative to now. */
@@ -201,6 +207,7 @@ export function ChatMessage({
   showAvatar,
   showAuthorName,
   timePlacement,
+  collapseFooterTime = false,
   variant,
   time,
   status = 'complete',
@@ -225,15 +232,9 @@ export function ChatMessage({
   });
   const [body, own] = splitBodyProps(rest);
   const data = {
-    variant: display.variant,
-    origin,
-    status,
-    groupPosition,
-    delivery,
-    deleted: isDeleted,
-    hovered: isHovered,
-    focusWithin: isFocusWithin,
-    avatarHidden: display.avatarHidden,
+    ...{ variant: display.variant, origin, status, groupPosition, delivery },
+    ...{ deleted: isDeleted, hovered: isHovered, focusWithin: isFocusWithin },
+    ...{ avatarHidden: display.avatarHidden, collapseFooterTime },
   };
   return (
     <article

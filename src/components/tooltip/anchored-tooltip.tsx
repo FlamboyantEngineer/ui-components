@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type RefObject,
 } from 'react';
@@ -174,6 +175,24 @@ function useAnchoredPanel({
 }
 
 /**
+ * The arrow's place, as React Aria's `OverlayArrow` sets it: out of the panel's flow, on the side
+ * facing the anchor, centred on the offset the positioning measures.
+ */
+function arrowStyle(
+  placement: 'top' | 'bottom' | 'left' | 'right' | 'center' | undefined,
+  measured: CSSProperties | undefined,
+): CSSProperties {
+  const isVertical = placement === 'top' || placement === 'bottom';
+  const side = placement === 'center' ? undefined : placement;
+  return {
+    position: 'absolute',
+    transform: isVertical ? 'translateX(-50%)' : 'translateY(-50%)',
+    ...(side ? { [side]: '100%' } : {}),
+    ...measured,
+  };
+}
+
+/**
  * A tooltip the caller opens and closes, pointing at an element it already owns (an element or a
  * ref, an SVG element included) or at a rectangle, without a trigger of its own. It shares the
  * child-trigger `Tooltip`'s panel, hooks, placement and flipping, follows its anchor through
@@ -217,6 +236,7 @@ export function AnchoredTooltip({
       >
         <span
           {...position.arrowProps}
+          style={arrowStyle(resolvedPlacement, position.arrowProps.style)}
           {...hooks.slot('arrow', { placement: resolvedPlacement })}
           ref={refs.arrow}
         />
