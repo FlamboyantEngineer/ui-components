@@ -2,7 +2,8 @@
 // Packs the library and checks the tarball: built entry points and labs present, no sources or
 // tests, no styling dependency, no stylesheet import, no authored host references, and exact copies
 // of the installed PDF runtime for the standalone lab.
-// Run after `npm run build` and `npm run build:labs`.
+// Run after `npm run build` and `npm run build:labs`. Packing runs `prepare`, which rebuilds dist/ and
+// labs/build/reference.css the same way; its output is kept out of the JSON report.
 
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -19,10 +20,14 @@ const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-package-'));
 
 try {
-  const output = execFileSync('npm', ['pack', '--json', '--pack-destination', workDir], {
-    cwd: root,
-    encoding: 'utf8',
-  });
+  const output = execFileSync(
+    'npm',
+    ['pack', '--json', '--foreground-scripts=false', '--pack-destination', workDir],
+    {
+      cwd: root,
+      encoding: 'utf8',
+    },
+  );
   const [pack] = JSON.parse(output);
   const files = new Set(pack.files.map((file) => file.path));
 

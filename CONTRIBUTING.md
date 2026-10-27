@@ -37,6 +37,8 @@ Releases are git tags in this repository; nothing is published to a registry.
 2. On an up-to-date `main` with a clean tree, run `npm run release`. It builds the library and the labs, checks the package, tags `v<version>` on a release commit that adds the built `dist/` and `labs/build/` to `main`'s commit, and packs the tarball.
 3. Push the tag (`git push origin v<version>`) and create the tag's GitHub Release with the changelog entry, attaching the tarball.
 
+Hosts can also install a branch or commit before it is released: npm runs `prepare` (`npm run build:package`), which builds `dist/` and `labs/build/reference.css` but not the lab bundles. The same script runs after `npm ci` in a checkout. A change to the build or the package contents runs `npm run check:git-install`, which installs the committed `HEAD` into a clean consumer through `npm install` and then `npm ci`, and checks its imports, declarations and reference stylesheet; pass a dependency such as `"git+https://github.com/FlamboyantEngineer/ui-components.git#dev"` to check a pushed branch.
+
 ## Source rules
 
 Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, structure, composition and simplicity rules, most of them enforced by lint and `npm run check:structure`. In addition, these are enforced by lint and CI:

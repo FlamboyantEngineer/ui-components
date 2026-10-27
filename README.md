@@ -30,6 +30,8 @@ Each release is a `v<version>` tag in this repository, on a commit that holds th
 
    The lockfile records the tag's commit. The tarball is also attached to the tag's GitHub Release.
 
+To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points, their declarations and `labs/build/reference.css`; the lab bundles are not built, so the lab pages of a branch install do not run. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
+
 `react` and `react-dom` 19 are peer dependencies.
 
 ## Use

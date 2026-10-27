@@ -46,7 +46,7 @@ try {
   rmSync(indexDir, { recursive: true, force: true });
 }
 
-const [pack] = JSON.parse(run('npm', ['pack', '--json']));
+const [pack] = JSON.parse(run('npm', ['pack', '--json', '--foreground-scripts=false']));
 console.log(
   `Tagged ${tag} on ${git(['rev-parse', '--short', `${tag}^{commit}`])} and packed ${pack.filename}.`,
 );

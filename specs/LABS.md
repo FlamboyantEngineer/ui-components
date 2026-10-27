@@ -27,6 +27,13 @@ Verification: `test/package.test.ts`, `test/check-references.test.ts`
 Implementation: `scripts/start-labs.mjs`, `package.json`
 Verification: `test/start-labs.test.ts`
 
+### UIC-LABS-1.4 - Prepared from a Git branch
+
+Installing a branch or commit of this repository as an npm Git dependency shall give a working package without committed build output: the `prepare` script builds the compiled entry points, their declarations and `labs/build/reference.css`, and builds no lab bundles, so the install skips their cost. The lab pages of such an install therefore have no bundles to run; a release tag ships them (UIC-LABS-1.2). `npm run check:git-install` installs a commit into a clean consumer with `npm install` and again with its lockfile through `npm ci`, each with an empty npm cache, then imports and renders a component, type-checks against the declarations and checks the reference stylesheet.
+
+Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`
+Verification: `test/package.test.ts`
+
 ## UIC-LABS-2 - Chrome
 
 ### UIC-LABS-2.1 - Stylesheet picker

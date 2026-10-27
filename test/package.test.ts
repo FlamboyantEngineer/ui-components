@@ -1,10 +1,22 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
   files: string[];
+  scripts: Record<string, string>;
   exports: Record<string, unknown>;
   sideEffects: boolean;
   dependencies: Record<string, string>;
@@ -61,6 +73,48 @@ describe('package manifest', () => {
     for (const name of ['@testing-library/dom', '@testing-library/user-event']) {
       expect(manifest.peerDependencies[name]).toBeDefined();
       expect(manifest.peerDependenciesMeta?.[name]?.optional).toBe(true);
+    }
+  });
+});
+
+describe('Git branch install', () => {
+  it('UIC-LABS-1.4 prepares the entry points and the reference stylesheet, not the lab bundles', () => {
+    expect(manifest.scripts.prepare).toBe('npm run build:package');
+    expect(manifest.scripts['build:package']).toBe(
+      'npm run build && node scripts/build-labs.mjs --reference',
+    );
+  });
+
+  it('UIC-LABS-1.4 builds only labs/build/reference.css and keeps the rest of labs/build', () => {
+    const fixture = mkdtempSync(join(tmpdir(), 'ui-reference-build-'));
+    try {
+      for (const path of [
+        'scripts/build-labs.mjs',
+        'scripts/lib/labs.mjs',
+        'labs/reference.css',
+        'labs/reference',
+      ]) {
+        cpSync(join(process.cwd(), path), join(fixture, path), { recursive: true });
+      }
+      symlinkSync(join(process.cwd(), 'node_modules'), join(fixture, 'node_modules'), 'dir');
+      mkdirSync(join(fixture, 'labs', 'build'));
+      writeFileSync(join(fixture, 'labs', 'build', 'button.js'), 'kept');
+
+      execFileSync('node', ['scripts/build-labs.mjs', '--reference'], {
+        cwd: fixture,
+        stdio: 'pipe',
+      });
+
+      expect(readdirSync(join(fixture, 'labs', 'build')).sort()).toEqual([
+        'button.js',
+        'reference.css',
+      ]);
+      expect(readFileSync(join(fixture, 'labs', 'build', 'button.js'), 'utf8')).toBe('kept');
+      const css = readFileSync(join(fixture, 'labs', 'build', 'reference.css'), 'utf8');
+      expect(css).toContain('.ui-button');
+      expect(css).not.toContain('@import');
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
     }
   });
 });

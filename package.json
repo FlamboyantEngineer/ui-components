@@ -44,6 +44,8 @@
   ],
   "scripts": {
     "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
+    "build:package": "npm run build && node scripts/build-labs.mjs --reference",
+    "prepare": "npm run build:package",
     "build:labs": "node scripts/build-labs.mjs",
     "labs": "node scripts/start-labs.mjs",
     "lint": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js . --max-warnings=0",
@@ -59,6 +61,7 @@
     "check:labs": "node scripts/check-labs.mjs && node scripts/check-reference-tokens.mjs",
     "check:package": "node scripts/check-package.mjs",
     "check:public-types": "node scripts/check-public-types.mjs",
+    "check:git-install": "node scripts/check-git-install.mjs",
     "check": "node scripts/check.mjs",
     "new:lab": "node scripts/new-lab.mjs",
     "changeset": "changeset",
