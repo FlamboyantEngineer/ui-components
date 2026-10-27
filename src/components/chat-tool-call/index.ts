@@ -6,4 +6,5 @@ export type {
   ChatToolCallKind,
   ChatToolCallProps,
   ChatToolCallStatus,
+  ChatToolCallVariant,
 } from './chat-tool-call.js';

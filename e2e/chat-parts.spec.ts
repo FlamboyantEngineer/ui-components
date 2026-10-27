@@ -235,6 +235,32 @@ test.describe('Chat Parts lab', () => {
     );
   });
 
+  test('UIC-CHAT-PARTS-3.2 UIC-CHAT-TOOL-CALL-1.8 draws a call alone as the same quiet row as in a group', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const grouped = cell(page, 'state=failed-opened parts=rendered')
+      .locator('.ui-chat-tool-call[data-status="succeeded"]')
+      .first();
+    for (const state of ['single', 'single-done']) {
+      const alone = cell(page, `state=${state} parts=rendered`).locator('.ui-chat-tool-call');
+      await expect(alone).toHaveAttribute('data-variant', 'row');
+      await expect(alone).toHaveCSS('border-top-width', '0px');
+      await expect(alone).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      for (const property of ['font-size', 'color']) {
+        const value = await grouped.evaluate(
+          (row, name) => getComputedStyle(row).getPropertyValue(name),
+          property,
+        );
+        await expect(alone).toHaveCSS(property, value);
+      }
+    }
+    await expect(
+      cell(page, 'state=single-done parts=rendered').locator('.ui-chat-tool-call__status'),
+    ).toHaveCSS('position', 'absolute');
+  });
+
   test('UIC-CHAT-PARTS-1.1 UIC-CHAT-PARTS-5.1 passes axe on every part type and state of the steps', async ({
     page,
     lab,

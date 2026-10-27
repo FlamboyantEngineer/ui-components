@@ -17,6 +17,16 @@ const statusTexts: Record<ChatToolCallStatus, [string, string]> = {
 };
 
 describe('ChatToolCall', () => {
+  it('UIC-CHAT-TOOL-CALL-1.8 publishes its variant, a card by default', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call-1" name="search_recipes" status="succeeded" />,
+    );
+    const root = container.querySelector('.ui-chat-tool-call');
+    expect(root).toHaveAttribute('data-variant', 'card');
+    rerender(<ChatToolCall id="call-1" name="search_recipes" status="succeeded" variant="row" />);
+    expect(root).toHaveAttribute('data-variant', 'row');
+  });
+
   it('UIC-CHAT-TOOL-CALL-1.1 UIC-CHAT-TOOL-CALL-1.6 draws a card whose trigger names the call', () => {
     const { container } = render(
       <ChatToolCall

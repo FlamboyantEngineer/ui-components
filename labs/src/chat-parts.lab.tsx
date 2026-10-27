@@ -23,6 +23,7 @@ const stepStates = [
   'answering',
   'done',
   'single',
+  'single-done',
   'awaiting-approval',
   'failed',
   'failed-opened',
@@ -64,6 +65,10 @@ const stepCases: Record<(typeof stepStates)[number], StepCase> = {
     isStreaming: false,
   },
   single: { parts: [{ type: 'text', text: 'Let me look.' }, running], isStreaming: true },
+  'single-done': {
+    parts: [{ type: 'text', text: 'Let me look.' }, searchCall],
+    isStreaming: false,
+  },
   'awaiting-approval': { parts: [thinking, bookingCall], isStreaming: false },
   failed: { parts: failedRunParts, isStreaming: false },
   'failed-opened': {
@@ -123,7 +128,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps"
-      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval. A failed call is a quiet row like the others, told apart by its red ! glyph, with its error closed in its body until the reader opens it (failed-opened). A single tool call that ends the message stays on its own. A long tool call label wraps beside its status glyph."
+      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval. A failed call is a quiet row like the others, told apart by its red ! glyph, with its error closed in its body until the reader opens it (failed-opened). A single tool call that ends the message stays on its own (single, single-done), as the same quiet row as the calls in a group, so one style covers every call. A long tool call label wraps beside its status glyph."
     >
       <StateMatrix
         axes={{ state: stepStates, parts: ['rendered'] }}

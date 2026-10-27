@@ -75,7 +75,7 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
 ### UIC-CHAT-PARTS-3.2 - Tool calls
 
-A tool-call part shall render as a `ChatToolCall` card with its data. Approve, Deny and Always allow show while its approval waits only when `onApprove`, `onDeny` and `onAlwaysAllow` are given, and call them with the call's `id` (and the reader's reason, for `onDeny`).
+A tool-call part shall render as a `ChatToolCall` with its data and the `row` variant ([UIC-CHAT-TOOL-CALL-1.8](CHAT-TOOL-CALL.md#uic-chat-tool-call-18---variant)), whether it sits in a group of steps or on its own, so every call of a reply takes the same styles. Approve, Deny and Always allow show while its approval waits only when `onApprove`, `onDeny` and `onAlwaysAllow` are given, and call them with the call's `id` (and the reader's reason, for `onDeny`).
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`

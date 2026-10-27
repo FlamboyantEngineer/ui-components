@@ -53,6 +53,13 @@ The root shall publish `kind`, what the call does, as `data-kind`: `read`, `edit
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-parts.spec.ts`
 
+### UIC-CHAT-TOOL-CALL-1.8 - Variant
+
+The root shall publish `variant` as `data-variant`: `card` (the default), a call shown on its own, or `row`, a quiet call among the steps of a reply. [Chat Parts](CHAT-PARTS.md#uic-chat-parts-32---tool-calls) draws every call as a `row`, in a group of steps or alone, so styles written for the row reach every call of a reply. The variant changes no content or behaviour.
+
+Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`
+Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-parts.spec.ts`
+
 ## UIC-CHAT-TOOL-CALL-2 - Body
 
 ### UIC-CHAT-TOOL-CALL-2.1 - Arguments and result
@@ -138,36 +145,37 @@ Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/
 
 ## Hooks
 
-| Hook                              | Kind  | Values                                                                                   | Description                                                             |
-| --------------------------------- | ----- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `ui-chat-tool-call`               | root  |                                                                                          | The card's `<div>`.                                                     |
-| `ui-chat-tool-call__disclosure`   | slot  |                                                                                          | The collapsible header and body (also `ui-disclosure`).                 |
-| `ui-chat-tool-call__heading`      | slot  |                                                                                          | The heading around the trigger (also `ui-disclosure__heading`).         |
-| `ui-chat-tool-call__status-glyph` | slot  |                                                                                          | The status glyph in the trigger (also `ui-glyph`).                      |
-| `ui-chat-tool-call__summary`      | slot  |                                                                                          | The label, status, duration and badge, which wrap beside the glyph.     |
-| `ui-chat-tool-call__label`        | slot  |                                                                                          | The label in the trigger.                                               |
-| `ui-chat-tool-call__target`       | slot  |                                                                                          | What the call acted on, after the label.                                |
-| `ui-chat-tool-call__status`       | slot  |                                                                                          | The status text in the trigger.                                         |
-| `ui-chat-tool-call__duration`     | slot  |                                                                                          | The duration in the trigger.                                            |
-| `ui-chat-tool-call__badge`        | slot  |                                                                                          | The auto-approved badge (also `ui-badge`).                              |
-| `ui-chat-tool-call__body`         | slot  |                                                                                          | The collapsible body (also `ui-disclosure__panel`).                     |
-| `ui-chat-tool-call__part`         | slot  |                                                                                          | The arguments or the result.                                            |
-| `ui-chat-tool-call__part-header`  | slot  |                                                                                          | A part's title and copy button.                                         |
-| `ui-chat-tool-call__part-title`   | slot  |                                                                                          | A part's title.                                                         |
-| `ui-chat-tool-call__copy`         | slot  |                                                                                          | A part's copy button (also `ui-copy-button`).                           |
-| `ui-chat-tool-call__json`         | slot  |                                                                                          | A part's scrolling JSON text (also `ui-scroll-region`).                 |
-| `ui-chat-tool-call__empty`        | slot  |                                                                                          | The note of a body with nothing to show.                                |
-| `ui-chat-tool-call__error`        | slot  |                                                                                          | A failed call's error, at the top of the body.                          |
-| `ui-chat-tool-call__approval`     | slot  |                                                                                          | The approval request, then its decision.                                |
-| `ui-chat-tool-call__prompt`       | slot  |                                                                                          | The pending request's question.                                         |
-| `ui-chat-tool-call__actions`      | slot  |                                                                                          | The row of approval buttons.                                            |
-| `ui-chat-tool-call__action`       | slot  |                                                                                          | An approval button (also `ui-button`).                                  |
-| `ui-chat-tool-call__deny-form`    | slot  |                                                                                          | The deny reason form (also `ui-form`).                                  |
-| `ui-chat-tool-call__reason`       | slot  |                                                                                          | The deny reason field (also `ui-text-field`).                           |
-| `ui-chat-tool-call__decision`     | slot  |                                                                                          | The decision status.                                                    |
-| `data-status`                     | state | `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied`, `cancelled` | On the card: where the call stands.                                     |
-| `data-kind`                       | state | `read`, `edit`, `command`, `search`, `fetch`, `other`                                    | On the card: what the call does.                                        |
-| `data-auto-approved`              | state | `true`                                                                                   | On the card: the call ran without asking because it was always allowed. |
-| `data-part`                       | state | `arguments`, `result`                                                                    | On a part: which value it shows.                                        |
-| `data-action`                     | state | `approve`, `deny`, `always`                                                              | On an approval button: what it does.                                    |
-| `data-decision`                   | state | `approved`, `denied`, `always`                                                           | On the approval: the reader's decision, once made.                      |
+| Hook                              | Kind      | Values                                                                                   | Description                                                             |
+| --------------------------------- | --------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `ui-chat-tool-call`               | root      |                                                                                          | The card's `<div>`.                                                     |
+| `ui-chat-tool-call__disclosure`   | slot      |                                                                                          | The collapsible header and body (also `ui-disclosure`).                 |
+| `ui-chat-tool-call__heading`      | slot      |                                                                                          | The heading around the trigger (also `ui-disclosure__heading`).         |
+| `ui-chat-tool-call__status-glyph` | slot      |                                                                                          | The status glyph in the trigger (also `ui-glyph`).                      |
+| `ui-chat-tool-call__summary`      | slot      |                                                                                          | The label, status, duration and badge, which wrap beside the glyph.     |
+| `ui-chat-tool-call__label`        | slot      |                                                                                          | The label in the trigger.                                               |
+| `ui-chat-tool-call__target`       | slot      |                                                                                          | What the call acted on, after the label.                                |
+| `ui-chat-tool-call__status`       | slot      |                                                                                          | The status text in the trigger.                                         |
+| `ui-chat-tool-call__duration`     | slot      |                                                                                          | The duration in the trigger.                                            |
+| `ui-chat-tool-call__badge`        | slot      |                                                                                          | The auto-approved badge (also `ui-badge`).                              |
+| `ui-chat-tool-call__body`         | slot      |                                                                                          | The collapsible body (also `ui-disclosure__panel`).                     |
+| `ui-chat-tool-call__part`         | slot      |                                                                                          | The arguments or the result.                                            |
+| `ui-chat-tool-call__part-header`  | slot      |                                                                                          | A part's title and copy button.                                         |
+| `ui-chat-tool-call__part-title`   | slot      |                                                                                          | A part's title.                                                         |
+| `ui-chat-tool-call__copy`         | slot      |                                                                                          | A part's copy button (also `ui-copy-button`).                           |
+| `ui-chat-tool-call__json`         | slot      |                                                                                          | A part's scrolling JSON text (also `ui-scroll-region`).                 |
+| `ui-chat-tool-call__empty`        | slot      |                                                                                          | The note of a body with nothing to show.                                |
+| `ui-chat-tool-call__error`        | slot      |                                                                                          | A failed call's error, at the top of the body.                          |
+| `ui-chat-tool-call__approval`     | slot      |                                                                                          | The approval request, then its decision.                                |
+| `ui-chat-tool-call__prompt`       | slot      |                                                                                          | The pending request's question.                                         |
+| `ui-chat-tool-call__actions`      | slot      |                                                                                          | The row of approval buttons.                                            |
+| `ui-chat-tool-call__action`       | slot      |                                                                                          | An approval button (also `ui-button`).                                  |
+| `ui-chat-tool-call__deny-form`    | slot      |                                                                                          | The deny reason form (also `ui-form`).                                  |
+| `ui-chat-tool-call__reason`       | slot      |                                                                                          | The deny reason field (also `ui-text-field`).                           |
+| `ui-chat-tool-call__decision`     | slot      |                                                                                          | The decision status.                                                    |
+| `data-variant`                    | attribute | `card`, `row`                                                                            | On the card: a card on its own, or a quiet row among a reply's steps.   |
+| `data-status`                     | state     | `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied`, `cancelled` | On the card: where the call stands.                                     |
+| `data-kind`                       | state     | `read`, `edit`, `command`, `search`, `fetch`, `other`                                    | On the card: what the call does.                                        |
+| `data-auto-approved`              | state     | `true`                                                                                   | On the card: the call ran without asking because it was always allowed. |
+| `data-part`                       | state     | `arguments`, `result`                                                                    | On a part: which value it shows.                                        |
+| `data-action`                     | state     | `approve`, `deny`, `always`                                                              | On an approval button: what it does.                                    |
+| `data-decision`                   | state     | `approved`, `denied`, `always`                                                           | On the approval: the reader's decision, once made.                      |

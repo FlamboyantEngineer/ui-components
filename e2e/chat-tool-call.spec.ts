@@ -20,6 +20,20 @@ const triggerOf = (scope: ReturnType<Page['locator']>) =>
   scope.locator('.ui-chat-tool-call__heading').getByRole('button');
 
 test.describe('Chat Tool Call lab', () => {
+  test('UIC-CHAT-TOOL-CALL-1.8 draws a call as a card or a quiet row', async ({ page, lab }) => {
+    await lab.open('chat-tool-call');
+    for (const status of ['running', 'succeeded', 'failed']) {
+      const cardCall = card(page, `variant=card status=${status}`);
+      const row = card(page, `variant=row status=${status}`);
+      await expect(cardCall).toHaveAttribute('data-variant', 'card');
+      await expect(cardCall).toHaveCSS('border-top-width', '1px');
+      await expect(row).toHaveAttribute('data-variant', 'row');
+      await expect(row).toHaveCSS('border-top-width', '0px');
+      await expect(triggerOf(row)).toHaveAccessibleName(/^Read notes\/menu\.md/);
+    }
+    await lab.expectAccessible('[data-lab-section="Variants"]');
+  });
+
   test('UIC-CHAT-TOOL-CALL-1.1 UIC-CHAT-TOOL-CALL-1.3 UIC-CHAT-TOOL-CALL-1.5 UIC-CHAT-TOOL-CALL-2.5 draws every status accessibly', async ({
     page,
     lab,
