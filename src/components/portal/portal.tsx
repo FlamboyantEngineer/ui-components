@@ -107,6 +107,14 @@ export function useLayerZIndex(layer: OverlayLayer): number {
 }
 
 /**
+ * The container portals under the nearest provider render into: `undefined` for the document body,
+ * `null` while the chosen one is not ready. For components whose building block portals itself.
+ */
+export function usePortalContainer(): Element | null | undefined {
+  return useContext(PortalContext).container;
+}
+
+/**
  * The width of the element a dropdown opens from, published as `--ui-trigger-width` from the
  * building block's measurement, so stylesheets size the list without naming the building block.
  */

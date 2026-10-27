@@ -21,6 +21,7 @@ import { getCellValue, getRowText, type TableColumn, type TableRow } from './tab
 import {
   actionsColumnId,
   countTableColumns,
+  getCellWrap,
   getColumnPin,
   getPinStyle,
   getRowHeaderColumns,
@@ -193,6 +194,7 @@ function TableDataCell<T extends TableRow>(props: {
       {...hooks.slot('cell', {
         kind: 'data',
         align: column.align ?? 'start',
+        wrap: getCellWrap(model.structure, column),
         column: column.id,
         pinned: pin,
         editing: isEditing,

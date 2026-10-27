@@ -19,6 +19,7 @@ export { applyTableMove } from './table-rows.js';
 export type {
   TableCellEditor,
   TableCellValue,
+  TableCellWrap,
   TableColumn,
   TableColumnAlign,
   TableColumnPin,

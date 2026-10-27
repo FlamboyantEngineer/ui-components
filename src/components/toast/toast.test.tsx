@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { PortalContainerProvider, PortalHost } from '../portal/portal.js';
 import { ToastList, ToastRegion, createToastQueue } from './toast.js';
 
 const tones = ['info', 'success', 'warning', 'danger'] as const;
@@ -319,6 +320,51 @@ describe('ToastRegion', () => {
     act(() => screen.getByRole('alertdialog', { name: 'Newer' }).focus());
     act(() => queue.close(newer));
     expect(screen.getByRole('alertdialog', { name: 'Older' })).toHaveFocus();
+  });
+
+  it('UIC-TOAST-2.4 stacks the region on the toast layer, above drawers and dialogs', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(<ToastRegion queue={queue} />);
+    act(() => {
+      queue.add({ title: 'Saved' });
+    });
+    const region = screen.getByRole('region');
+    expect(region.style.zIndex).toBe('160');
+    expect(region).toHaveAttribute('data-react-aria-top-layer', 'true');
+  });
+
+  it('UIC-TOAST-2.4 follows the provider layer z-index and container', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    const target = document.createElement('div');
+    document.body.append(target);
+    const { unmount } = render(
+      <PortalContainerProvider container={target} layerZIndex={{ toast: 900 }}>
+        <ToastRegion queue={queue} />
+      </PortalContainerProvider>,
+    );
+    act(() => {
+      queue.add({ title: 'Saved' });
+    });
+    const region = screen.getByRole('region');
+    expect(region.parentElement).toBe(target);
+    expect(region.style.zIndex).toBe('900');
+    unmount();
+    target.remove();
+  });
+
+  it('UIC-TOAST-2.4 renders inside a portal host with its layer override', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(
+      <PortalHost layerZIndex={{ toast: 30 }}>
+        <ToastRegion queue={queue} />
+      </PortalHost>,
+    );
+    act(() => {
+      queue.add({ title: 'Saved' });
+    });
+    const region = screen.getByRole('region');
+    expect(region.parentElement).toHaveClass('ui-portal-host');
+    expect(region.style.zIndex).toBe('30');
   });
 
   it('UIC-TOAST-2.3 draws a queue in place without a landmark', () => {

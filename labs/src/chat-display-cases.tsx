@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+import type { ChatSource } from '../../src/components/chat-sources/index.js';
 import type { ChatMessageTimePlacement } from '../../src/components/chat-transcript/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
@@ -11,6 +12,20 @@ import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
 import { assistantPeople, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
+
+const cafeSource: ChatSource = {
+  id: 'cafes',
+  title: 'Cafes on Castle square',
+  url: 'https://example.com/castle-square/cafes',
+  snippet: 'Three cafes serve lunch from noon, with tables on the square.',
+};
+
+const gardenSource: ChatSource = {
+  id: 'gardens',
+  title: 'Castle gardens opening hours',
+  url: 'https://example.com/castle/gardens',
+  snippet: 'The gardens open at nine every day except Monday.',
+};
 
 const initialMessages: ChatMessageData[] = [
   textMessage({
@@ -37,6 +52,13 @@ const initialMessages: ChatMessageData[] = [
     createdAt: '2026-04-20T10:02:30',
     parts: [
       {
+        type: 'reasoning',
+        id: 'display-4-reasoning',
+        text: 'Lunch near the castle: look for cafes on the square below it.',
+        status: 'complete',
+        durationMs: 1800,
+      },
+      {
         type: 'tool-call',
         id: 'display-4-search',
         name: 'search_places',
@@ -48,12 +70,24 @@ const initialMessages: ChatMessageData[] = [
       },
     ],
   },
-  textMessage({
+  {
     id: 'display-5',
     authorId: plannerId,
-    time: '2026-04-20T10:03:00',
-    text: 'The square below the castle has a few small cafes with lunch menus.',
-  }),
+    createdAt: '2026-04-20T10:03:00',
+    parts: [
+      {
+        type: 'text',
+        text: 'The square below the castle has a few small cafes with lunch menus [1].',
+      },
+      { type: 'sources', sources: [cafeSource] },
+    ],
+  },
+  {
+    id: 'display-6',
+    authorId: plannerId,
+    createdAt: '2026-04-20T10:03:10',
+    parts: [{ type: 'sources', sources: [gardenSource] }],
+  },
 ];
 
 const timePlacements: Record<ChatMessageTimePlacement, string> = {
@@ -100,8 +134,9 @@ function DisplayDemo() {
   const [showAvatars, setShowAvatars] = useState(false);
   const [showAuthorNames, setShowAuthorNames] = useState(false);
   const [timePlacement, setTimePlacement] = useState<ChatMessageTimePlacement>('footer');
-  const [toolCallTimePlacement, setToolCallTimePlacement] =
+  const [activityTimePlacement, setActivityTimePlacement] =
     useState<ChatMessageTimePlacement>('none');
+  const [collapseFooterTime, setCollapseFooterTime] = useState(true);
   const [sentBubble, setSentBubble] = useState(true);
   const [receivedBubble, setReceivedBubble] = useState(false);
   return (
@@ -116,6 +151,9 @@ function DisplayDemo() {
         <Checkbox isSelected={sentBubble} onChange={setSentBubble}>
           Background on my messages
         </Checkbox>
+        <Checkbox isSelected={collapseFooterTime} onChange={setCollapseFooterTime}>
+          Room for the time only on hover
+        </Checkbox>
         <Checkbox isSelected={receivedBubble} onChange={setReceivedBubble}>
           Background on replies
         </Checkbox>
@@ -126,9 +164,9 @@ function DisplayDemo() {
         onChange={setTimePlacement}
       />
       <TimePlacementChoice
-        label="Tool call times"
-        value={toolCallTimePlacement}
-        onChange={setToolCallTimePlacement}
+        label="Times without written text"
+        value={activityTimePlacement}
+        onChange={setActivityTimePlacement}
       />
       <div style={{ height: 460, maxWidth: 640 }}>
         <Chat
@@ -140,7 +178,8 @@ function DisplayDemo() {
           showAvatars={showAvatars}
           showAuthorNames={showAuthorNames}
           timePlacement={timePlacement}
-          toolCallTimePlacement={toolCallTimePlacement}
+          activityTimePlacement={activityTimePlacement}
+          collapseFooterTime={collapseFooterTime}
           sentVariant={sentBubble ? 'bubble' : 'plain'}
           receivedVariant={receivedBubble ? 'bubble' : 'plain'}
           onCopy={() => undefined}
@@ -154,7 +193,7 @@ export function ChatDisplayCases() {
   return (
     <LabSection
       title="Message display"
-      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions, its line opening after a short pause (the day separators stay), and no time on the planner's tool calls, your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Messages made only of tool calls take their own time placement. A tooltip shows the time over a message after the tooltip delay. Toggle the options to compare with the default look."
+      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions, its line taking no room until it opens after a short pause (the day separators stay), and no time on the planner's entries without written text, such as its reasoning, tool calls and sources, your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Messages without written text take their own time placement; a written reply with sources keeps its one time. Without room for the time only on hover, each message keeps the time's line. A tooltip shows the time over a message after the tooltip delay. Toggle the options to compare with the default look."
     >
       <DisplayDemo />
     </LabSection>

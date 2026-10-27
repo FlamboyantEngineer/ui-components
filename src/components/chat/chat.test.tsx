@@ -284,7 +284,7 @@ describe('Chat', () => {
     expect(container.querySelector('.ui-chat-transcript__spacer')).not.toBeNull();
   });
 
-  it('UIC-CHAT-1.7 takes the scroll mode, empty state, history and virtualization of the transcript', () => {
+  it('UIC-CHAT-1.7 takes the scroll mode, presentation, empty state, history and virtualization of the transcript', () => {
     const { container, rerenderWith } = renderChat({
       participants: assistantPeople,
       scrollMode: 'follow',
@@ -295,7 +295,10 @@ describe('Chat', () => {
     const transcript = container.querySelector('.ui-chat__transcript') as HTMLElement;
     expect(container.querySelector('.ui-chat-transcript__spacer')).toBeNull();
     expect(transcript).toHaveAttribute('data-virtualized', 'true');
+    expect(transcript).toHaveAttribute('data-presentation', 'framed');
     expect(screen.getByRole('progressbar', { name: 'Loading older messages' })).toBeVisible();
+    rerenderWith({ presentation: 'embedded' });
+    expect(transcript).toHaveAttribute('data-presentation', 'embedded');
     rerenderWith({ messages: [], emptyState: <p>Ask me anything</p> });
     expect(screen.getByText('Ask me anything')).toBeVisible();
     expect(screen.queryByRole('feed')).not.toBeInTheDocument();

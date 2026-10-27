@@ -34,7 +34,7 @@ import {
   type TableHeaderModel,
 } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import type { TableColumn, TableRow } from './table-rows.js';
+import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableToolbar } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
@@ -127,6 +127,8 @@ export interface TableProps<T extends TableRow>
   persistKey?: string | undefined;
   /** Called once when a column resize ends, with the data columns' widths. */
   onColumnWidthsChange?: ((widths: TableColumnWidths) => void) | undefined;
+  /** How cells wrap their text, unless their column sets `cellWrap`. Defaults to `nowrap`. */
+  cellWrap?: TableCellWrap | undefined;
   /** Row size. Defaults to `md`. */
   size?: TableSize | undefined;
   /** Keeps the header in view while the table scrolls. */

@@ -501,3 +501,69 @@ test.describe('Chat Transcript lab: messages and conversation parts', () => {
     }
   });
 });
+
+test.describe('Chat Transcript lab: embedded in a panel', () => {
+  const transcript = (page: Page, name: string) => page.locator(`[data-lab-transcript="${name}"]`);
+  const frameOf = (target: Locator) =>
+    target.evaluate((node) => {
+      const style = getComputedStyle(node);
+      const viewport = node.querySelector('.ui-scroll-region__viewport') as HTMLElement;
+      return {
+        border: style.borderTopWidth,
+        radius: style.borderTopLeftRadius,
+        background: style.backgroundColor,
+        padding: getComputedStyle(viewport).paddingTop,
+      };
+    });
+
+  test('UIC-CHAT-TRANSCRIPT-1.7 drops the frame when embedded and keeps the transcript behaviour', async ({
+    page,
+    lab,
+  }) => {
+    for (const theme of ['light', 'dark']) {
+      await lab.open('chat-transcript', { theme });
+      for (const width of ['narrow', 'wide']) {
+        const framed = transcript(page, `framed-${width}`);
+        const embedded = transcript(page, `embedded-${width}`);
+        await expect(framed).toHaveAttribute('data-presentation', 'framed');
+        await expect(embedded).toHaveAttribute('data-presentation', 'embedded');
+        const framedStyle = await frameOf(framed);
+        expect(framedStyle.border).toBe('1px');
+        expect(framedStyle.radius).not.toBe('0px');
+        expect(framedStyle.background).not.toBe('rgba(0, 0, 0, 0)');
+        expect(await frameOf(embedded)).toEqual({
+          border: '0px',
+          radius: '0px',
+          background: 'rgba(0, 0, 0, 0)',
+          padding: framedStyle.padding,
+        });
+        const bubble = embedded.locator(
+          '.ui-chat-message[data-origin="received"] .ui-chat-message__content',
+        );
+        const panelBackground = await embedded.evaluate((node) => {
+          const panel = node.closest('[data-lab-cell]')?.firstElementChild;
+          if (!panel) throw new Error('No panel');
+          return getComputedStyle(panel).backgroundColor;
+        });
+        expect(
+          await bubble.last().evaluate((node) => getComputedStyle(node).backgroundColor),
+        ).not.toBe(panelBackground);
+      }
+      await lab.expectAccessible('[data-lab-section="Embedded in a panel"]');
+    }
+    const embedded = transcript(page, 'embedded-wide');
+    const viewport = embedded.locator('.ui-scroll-region__viewport');
+    const distanceToBottom = () =>
+      viewport.evaluate((node) => node.scrollHeight - node.clientHeight - node.scrollTop);
+    await expect.poll(distanceToBottom).toBeLessThan(2);
+    await viewport.evaluate((node) => node.scrollTo({ top: 0 }));
+    const jump = embedded.getByRole('button', { name: 'Jump to latest' });
+    await jump.click();
+    await expect.poll(distanceToBottom).toBeLessThan(2);
+    const feed = embedded.getByRole('feed', { name: 'Conversation in a wide panel, embedded' });
+    await expect(feed.locator('#embedded-wide-reply-4')).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(feed.locator('#embedded-wide-reply-3')).toBeFocused();
+    await expect(jump).toHaveCount(0);
+  });
+});

@@ -16,6 +16,12 @@ export interface TableRow {
 
 export type TableColumnAlign = 'start' | 'center' | 'end';
 
+/**
+ * How a cell's text wraps: `nowrap` keeps one line, `wrap` breaks between words and `anywhere` also
+ * breaks inside long unspaced values such as identifiers.
+ */
+export type TableCellWrap = 'nowrap' | 'wrap' | 'anywhere';
+
 /** The edge a column stays at while the table scrolls sideways. */
 export type TableColumnPin = 'start' | 'end';
 
@@ -43,6 +49,8 @@ export interface TableColumn<T> extends TableColumnSizing {
   renderCell?: ((row: T) => ReactNode) | undefined;
   /** Alignment of the header and cells. Defaults to `start`. */
   align?: TableColumnAlign | undefined;
+  /** How the column's cells wrap their text. Defaults to the table's `cellWrap`. */
+  cellWrap?: TableCellWrap | undefined;
   /** Whether a header press sorts by this column. */
   allowsSorting?: boolean | undefined;
   /** Whether the column draws a resizer. */

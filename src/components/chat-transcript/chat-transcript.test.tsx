@@ -8,7 +8,7 @@ import {
   scrollViewport,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
-import { ChatMessage, ChatTranscript } from './chat-transcript.js';
+import { ChatMessage, ChatTranscript, type ChatTranscriptPresentation } from './chat-transcript.js';
 
 let layout: ReturnType<typeof installTranscriptLayout>;
 
@@ -23,9 +23,15 @@ afterEach(() => {
 const getNow = () => new Date('2026-04-20T10:30:00');
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
 
-function Conversation({ count }: { count: number }) {
+function Conversation({
+  count,
+  presentation,
+}: {
+  count: number;
+  presentation?: ChatTranscriptPresentation;
+}) {
   return (
-    <ChatTranscript emptyState="Ask a question to start.">
+    <ChatTranscript emptyState="Ask a question to start." presentation={presentation}>
       {Array.from({ length: count }, (_, index) => (
         <ChatMessage key={index} id={`m${index + 1}`} author={maria} getNow={getNow}>
           Message {index + 1}
@@ -112,6 +118,27 @@ describe('ChatTranscript', () => {
     const named = screen.getByRole('feed', { name: 'Support chat' });
     expect(named).toHaveAttribute('aria-describedby', 'hint');
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { callerAttributes: ['data-testid'] });
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-1.7 frames itself by default and embeds without changing its behaviour', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<Conversation count={3} />);
+    const transcript = container.querySelector('.ui-chat-transcript');
+    expect(transcript).toHaveAttribute('data-presentation', 'framed');
+    rerender(<Conversation count={3} presentation="embedded" />);
+    expect(transcript).toHaveAttribute('data-presentation', 'embedded');
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['log', 'feed', 'announcer'] });
+    const viewport = getViewport();
+    expect(viewport.scrollTop).toBe(200);
+    rerender(<Conversation count={4} presentation="embedded" />);
+    expect(viewport.scrollTop).toBe(300);
+    scrollViewport(viewport, 50);
+    await user.click(screen.getByRole('button', { name: 'Jump to latest' }));
+    expect(viewport.scrollTop).toBe(300);
+    const articles = within(feed()).getAllByRole('article');
+    expect(articles.at(-1)).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(articles.at(-2)).toHaveFocus();
   });
 });
 

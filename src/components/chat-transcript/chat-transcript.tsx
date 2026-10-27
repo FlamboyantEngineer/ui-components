@@ -23,6 +23,9 @@ import { useTranscript, type TranscriptModel } from './use-transcript.js';
 
 export type { ChatTranscriptScrollMode } from './transcript-runtime.js';
 
+/** `framed` draws the transcript on its own canvas; `embedded` uses the surface it sits in. */
+export type ChatTranscriptPresentation = 'framed' | 'embedded';
+
 export interface ChatTranscriptProps extends BaseProps, AriaLabellingProps {
   /** The messages, usually `ChatMessage` elements with an `id` each, oldest first. */
   children?: ReactNode;
@@ -30,6 +33,8 @@ export interface ChatTranscriptProps extends BaseProps, AriaLabellingProps {
   emptyState?: ReactNode;
   /** `follow` (default) keeps the latest message in view; `anchor` keeps the reader's sent message at the top while the reply fills in below. */
   scrollMode?: ChatTranscriptScrollMode | undefined;
+  /** `framed` (default) gives the transcript its own frame; `embedded` drops it, for a transcript that fills a panel or tab. */
+  presentation?: ChatTranscriptPresentation | undefined;
   /** Called on Escape from a message, for example to move focus to the composer. */
   onEscape?: (() => void) | undefined;
   /** Called when the reader nears the top while `hasOlder`, to load older messages. */
@@ -78,6 +83,16 @@ function TranscriptFeed({
   );
 }
 
+/** The feed's labelling: the caller's, named by the provider's `conversation` string by default. */
+function useFeedLabelling(labelling: AriaLabellingProps): AriaLabellingProps {
+  const strings = useUiStrings();
+  const { 'aria-label': ariaLabel, 'aria-labelledby': labelledBy } = labelling;
+  return {
+    ...labelling,
+    'aria-label': labelledBy ? ariaLabel : (ariaLabel ?? strings.conversation),
+  };
+}
+
 /**
  * A conversation: a `feed` of messages, one tab stop, that follows the latest message (or
  * anchors the reader's sent message at the top), keeps the reader's place as older history loads,
@@ -88,6 +103,7 @@ export function ChatTranscript({
   children,
   emptyState,
   scrollMode = 'follow',
+  presentation = 'framed',
   onEscape,
   onLoadOlder,
   hasOlder = false,
@@ -104,21 +120,27 @@ export function ChatTranscript({
   'aria-details': details,
   ...rest
 }: ChatTranscriptProps) {
-  const strings = useUiStrings();
   const model = useTranscript({
     ...{ children, scrollMode, onEscape, onLoadOlder, hasOlder, isLoadingOlder },
     ...{ highlightedMessageId, firstUnreadId, onRead, virtualized },
   });
   const isEmpty = model.items.length === 0;
   const { ui, runtime } = model;
-  const labelling = {
-    'aria-label': labelledBy ? ariaLabel : (ariaLabel ?? strings.conversation),
+  const labelling = useFeedLabelling({
+    'aria-label': ariaLabel,
     'aria-labelledby': labelledBy,
     'aria-describedby': describedBy,
     'aria-details': details,
-  };
+  });
   return (
-    <div {...hooks.root({ className, props: rest, data: { empty: isEmpty, virtualized } })} id={id}>
+    <div
+      {...hooks.root({
+        className,
+        props: rest,
+        data: { presentation, empty: isEmpty, virtualized },
+      })}
+      id={id}
+    >
       {ui.isUnreadAbove && model.unreadCount > 0 ? (
         <TranscriptUnreadBar count={model.unreadCount} onJump={model.jumpToUnread} />
       ) : null}

@@ -172,6 +172,12 @@ test.describe('Anchored tooltip lab', () => {
       const hintBox = await hint.boundingBox();
       expect(hintBox?.y).toBeGreaterThan((chipBox?.y ?? 0) + (chipBox?.height ?? 0));
     }).toPass();
+    // The arrow stays out of the panel's flow, so the panel is as tall as its one line of text.
+    const [hintBox, contentBox] = await Promise.all([
+      hint.boundingBox(),
+      hint.locator('.ui-tooltip__content').boundingBox(),
+    ]);
+    expect((hintBox?.height ?? 0) - (contentBox?.height ?? 0)).toBeLessThan(12);
     await lab.expectAccessible('[data-lab-demo="anchored-element"]');
     await demo.getByRole('button', { name: 'Hide the hint' }).click();
     await expect(hint).toHaveCount(0);

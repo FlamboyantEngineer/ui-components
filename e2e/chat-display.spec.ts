@@ -26,8 +26,13 @@ test.describe('Chat message display', () => {
     await expect(replyFooter).toHaveAttribute('data-time-only', 'true');
     expect((await replyFooter.boundingBox())?.height).toBe(0);
     const toolCalls = demo.locator('article[id="display-4"]');
-    await expect(toolCalls.locator('.ui-chat-tool-call')).toBeVisible();
+    await expect(toolCalls.locator('.ui-chat-message__content')).toBeVisible();
     await expect(toolCalls.locator('.ui-chat-message__time')).toHaveCount(0);
+    // A written reply with sources keeps its one time; an entry of sources alone shows none.
+    await expect(demo.locator('article[id="display-5"] .ui-chat-message__time')).toHaveCount(1);
+    const sourcesOnly = demo.locator('article[id="display-6"]');
+    await sourcesOnly.locator('.ui-chat-message__content').hover();
+    await expect(sourcesOnly.locator('.ui-chat-message__time')).toHaveCount(0);
     await reply.locator('.ui-chat-message__content').hover();
     await expect(replyTime).toHaveCSS('opacity', '1');
     await expect.poll(async () => (await replyFooter.boundingBox())?.height).toBeGreaterThan(8);
@@ -60,7 +65,7 @@ test.describe('Chat message display', () => {
     await lab.expectAccessible('[data-lab-demo="display"]');
   });
 
-  test('UIC-CHAT-1.8 places the times of tool calls on their own and shows a time in a tooltip', async ({
+  test('UIC-CHAT-1.8 places the times of entries without written text on their own and shows a time in a tooltip', async ({
     page,
     lab,
   }) => {
@@ -69,24 +74,43 @@ test.describe('Chat message display', () => {
     const reply = demo.locator('article[id="display-2"]');
     const toolCalls = demo.locator('article[id="display-4"]');
     await demo
-      .getByRole('radiogroup', { name: 'Tool call times' })
+      .getByRole('radiogroup', { name: 'Times without written text' })
       .getByText('Beside the name')
       .click();
     await expect(
       toolCalls.locator('.ui-chat-message__header .ui-chat-message__time'),
     ).toBeVisible();
     await expect(reply.locator('.ui-chat-message__header')).toHaveCount(0);
+    // A collapsed footer time takes no room, so the message is as tall with the time in a tooltip.
+    const collapsedHeight = (await reply.boundingBox())?.height;
+    const roomOnHover = demo.getByRole('checkbox', { name: 'Room for the time only on hover' });
+    await roomOnHover.focus();
+    await page.keyboard.press('Space');
+    await expect(reply).not.toHaveAttribute('data-collapse-footer-time');
+    await page.mouse.move(0, 0);
+    expect((await reply.locator('.ui-chat-message__footer').boundingBox())?.height).toBeGreaterThan(
+      8,
+    );
+    await roomOnHover.focus();
+    await page.keyboard.press('Space');
+    await page.mouse.move(0, 0);
     await demo
       .getByRole('radiogroup', { name: 'Message times' })
       .getByText('In a tooltip, on hover')
       .click();
     await expect(reply.locator('.ui-chat-message__time')).toHaveCount(0);
+    expect((await reply.boundingBox())?.height).toBe(collapsedHeight);
     await reply.locator('.ui-chat-message__content').hover();
     const tooltip = page.locator('.ui-tooltip');
     await expect(tooltip).toBeVisible();
     await expect(tooltip.locator('.ui-chat-message__time')).toBeVisible();
+    const [tooltipBox, timeBox] = await Promise.all([
+      tooltip.boundingBox(),
+      tooltip.locator('.ui-chat-message__time').boundingBox(),
+    ]);
+    expect((tooltipBox?.height ?? 0) - (timeBox?.height ?? 0)).toBeLessThan(12);
     await expect(tooltip).toHaveAttribute('aria-hidden', 'true');
-    await demo.getByRole('radiogroup', { name: 'Tool call times' }).hover();
+    await demo.getByRole('radiogroup', { name: 'Times without written text' }).hover();
     await expect(tooltip).toHaveCount(0);
   });
 
