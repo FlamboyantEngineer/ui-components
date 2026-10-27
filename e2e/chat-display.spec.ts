@@ -83,3 +83,74 @@ test.describe('Chat message display', () => {
     await lab.expectAccessible('[data-lab-section="Avatar, name, time and background"]');
   });
 });
+
+test.describe('Plain reply width', () => {
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-CHAT-TRANSCRIPT-2.13 fills the row with a plain reply and keeps its width as its activity opens (${theme})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('chat-transcript', { theme });
+      const section = page.locator('[data-lab-section="Plain reply width"]');
+      await section.scrollIntoViewIfNeeded();
+      await lab.expectAccessible('[data-lab-section="Plain reply width"]');
+      const box = async (locator: Locator) => {
+        const bounds = await locator.boundingBox();
+        if (!bounds) throw new Error('not rendered');
+        return bounds;
+      };
+      for (const width of ['narrow', 'wide']) {
+        for (const avatar of ['shown', 'hidden']) {
+          const cell = (steps: string) =>
+            section.locator(`[data-lab-cell="width=${width} avatar=${avatar} steps=${steps}"]`);
+          for (const steps of ['collapsed', 'expanded', 'long output']) {
+            const feed = await box(cell(steps).locator('.ui-chat-transcript__feed'));
+            const reply = cell(steps).locator('article[id="reply"]');
+            const body = await box(reply.locator('.ui-chat-message__body'));
+            const sent = await box(cell(steps).locator('article[id="ask"]'));
+            expect(body.x + body.width).toBeCloseTo(feed.x + feed.width, 0);
+            expect(sent.x + sent.width).toBeCloseTo(feed.x + feed.width, 0);
+            expect(sent.width).toBeLessThan(feed.width);
+            const avatarCount = await reply.locator('.ui-chat-message__avatar').count();
+            expect(avatarCount).toBe(avatar === 'shown' ? 1 : 0);
+            if (avatar === 'hidden') expect(body.x).toBeCloseTo(feed.x, 0);
+          }
+
+          const collapsed = cell('collapsed').locator('article[id="reply"]');
+          const trigger = collapsed.getByRole('button', { name: /Read a file, ran a command/ });
+          const text = collapsed.getByText('The map builds.');
+          const lineHeight = (await box(text)).height;
+          const offset = async () => {
+            const [body, feed] = await Promise.all([
+              box(collapsed.locator('.ui-chat-message__body')),
+              box(cell('collapsed').locator('.ui-chat-transcript__feed')),
+            ]);
+            return { start: body.x - feed.x, width: body.width };
+          };
+          const before = await offset();
+          expect((await box(trigger)).height).toBeLessThan(lineHeight * 1.5);
+          await trigger.click();
+          await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+          await collapsed.getByRole('button', { name: /^Build/ }).click();
+          const after = await offset();
+          expect(after.start).toBeCloseTo(before.start, 0);
+          expect(after.width).toBeCloseTo(before.width, 0);
+
+          await cell('long output')
+            .getByRole('button', { name: /^Build/ })
+            .click();
+          const output = cell('long output').locator(
+            '.ui-chat-tool-call__json .ui-scroll-region__viewport',
+          );
+          const overflow = await output.evaluate(
+            (viewport) => viewport.scrollWidth - viewport.clientWidth,
+          );
+          expect(overflow).toBeGreaterThan(0);
+          const message = await box(cell('long output').locator('article[id="reply"]'));
+          const feed = await box(cell('long output').locator('.ui-chat-transcript__feed'));
+          expect(message.width).toBeCloseTo(feed.width, 0);
+        }
+      }
+    });
+  }
+});
