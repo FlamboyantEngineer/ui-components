@@ -388,3 +388,45 @@ test.describe('Modal lab', () => {
     await expect(opener).toBeFocused();
   });
 });
+
+for (const [device, viewport] of [
+  ['desktop', { width: 1440, height: 900 }],
+  ['phone', { width: 390, height: 664 }],
+] as const) {
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-MODAL-1.7 keeps tall dialogs on a ${device} screen in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await page.setViewportSize(viewport);
+      await lab.open('modal', { theme });
+      for (const size of ['sm', 'md', 'lg', 'xl', 'full']) {
+        const button = page.getByRole('button', { name: `Open the ${size} terms` });
+        await button.scrollIntoViewIfNeeded();
+        await button.click();
+        const dialog = page.getByRole('dialog', { name: 'Terms of travel' });
+        const panel = page.locator(`.ui-modal[data-lab-modal="tall-${size}"] .ui-modal__panel`);
+        await expect(async () => {
+          const box = await panel.boundingBox();
+          expect(box?.y).toBeGreaterThanOrEqual(0);
+          expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(viewport.height);
+        }).toPass();
+        for (const control of [
+          dialog.getByRole('heading', { name: 'Terms of travel' }),
+          dialog.getByRole('button', { name: 'Close' }),
+          dialog.getByRole('button', { name: 'Accept' }),
+        ]) {
+          await expect(control).toBeInViewport({ ratio: 1 });
+        }
+        const body = dialog.locator('.ui-modal__body');
+        const scrolls = await body.evaluate((node) => node.scrollHeight > node.clientHeight);
+        expect(scrolls).toBe(true);
+        await body.getByText('Section 24.', { exact: false }).scrollIntoViewIfNeeded();
+        await expect(body.getByText('Section 24.', { exact: false })).toBeInViewport();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expect(button).toBeFocused();
+      }
+    });
+  }
+}

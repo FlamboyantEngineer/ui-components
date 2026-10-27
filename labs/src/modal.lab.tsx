@@ -6,6 +6,7 @@ import { Portal } from '../../src/components/portal/portal.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
+import { ModalTallCases } from './modal-tall-cases.js';
 
 /** A save the lab holds until the reader finishes or fails it. */
 interface PendingRequest {
@@ -371,6 +372,12 @@ mountLab(
             Text <textarea rows={6} />
           </label>
         </Opener>
+      </LabSection>
+      <LabSection
+        title="Tall content"
+        description="A body taller than the viewport scrolls inside the panel, which stays on screen with its heading, close button and actions reachable."
+      >
+        <ModalTallCases />
       </LabSection>
       <LabSection
         title="Stacking"

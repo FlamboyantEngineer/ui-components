@@ -46,6 +46,13 @@ Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal-presentations.test.tsx`
 
+### UIC-MODAL-1.7 - Tall content
+
+The panel shall stay within the overlay, less its padding, whatever the height of the body: the header with its close button and the footer with its actions stay on screen, and the body scrolls inside the panel. The reference stylesheet sizes the overlay's single grid track to the padded viewport so the panel's height limit resolves against it, at every size and in both themes.
+
+Implementation: `labs/reference/modal.css`
+Verification: `e2e/modal.spec.ts`
+
 ## UIC-MODAL-2 - Dismissal
 
 ### UIC-MODAL-2.1 - Escape
