@@ -7,6 +7,7 @@ import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
 import { ModalTallCases } from './modal-tall-cases.js';
+import { RetainedLetter } from './modal-retained-cases.js';
 
 /** A save the lab holds until the reader finishes or fails it. */
 interface PendingRequest {
@@ -378,6 +379,12 @@ mountLab(
         description="A body taller than the viewport scrolls inside the panel, which stays on screen with its heading, close button and actions reachable."
       >
         <ModalTallCases />
+      </LabSection>
+      <LabSection
+        title="Retained body"
+        description="The letter keeps its body mounted while closed: close and reopen it and the draft is still there, while the closed dialog is hidden, inert and blocks nothing."
+      >
+        <RetainedLetter />
       </LabSection>
       <LabSection
         title="Stacking"

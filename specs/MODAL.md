@@ -6,7 +6,7 @@
 
 ### UIC-MODAL-1.1 - Opening and closing
 
-`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)) or a React Aria `DialogTrigger`, with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state: the trigger's `onOpenChange` reports every change, and the modal's own `onOpenChange` reports the closes the modal makes (Cancel, the close button, Escape, an outside press, an action), so a confirmation can tell a cancel inside a trigger. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
+`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed (unless retained, [UIC-MODAL-9.1](#uic-modal-91---retained-body)). Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)) or a React Aria `DialogTrigger`, with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state: the trigger's `onOpenChange` reports every change, and the modal's own `onOpenChange` reports the closes the modal makes (Cancel, the close button, Escape, an outside press, an action), so a confirmation can tell a cancel inside a trigger. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
@@ -220,6 +220,43 @@ With `placement` (a `Placement`), the dialog shall open inside a `ModalTrigger` 
 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-presentations.tsx`, `src/components/popover/popover.tsx`
 Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.spec.ts`
+
+## UIC-MODAL-9 - Retention
+
+### UIC-MODAL-9.1 - Retained body
+
+With `keepMounted`, a blocking or non-modal dialog shall stay mounted once it has opened: closing it keeps the dialog, its body and every component in it as the same React instances, so local state, drafts, element refs and editors survive until it opens again. Before its first opening it renders nothing, and without `keepMounted` closing unmounts the dialog as before. An anchored dialog (`placement`) ignores `keepMounted`.
+
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-retained.tsx`, `src/components/modal/modal-presentations.tsx`
+Verification: `src/components/modal/modal-retained.test.tsx`, `e2e/modal.spec.ts`
+
+### UIC-MODAL-9.2 - A closed retained dialog
+
+While closed, a retained dialog shall be no open modal: its overlay carries `inert` and the functional inline styles `visibility: hidden` and `pointer-events: none`, so it is out of the accessibility tree, the tab order and the way of pointers whatever the host stylesheet's display, and, fixed over the viewport, reserves no layout space. It keeps no focus trap, scroll lock or hidden page, and takes no part in Escape or outside presses.
+
+Implementation: `src/components/modal/modal-presentations.tsx`, `src/components/modal/modal-retained.tsx`
+Verification: `src/components/modal/modal-retained.test.tsx`, `e2e/modal.spec.ts`
+
+### UIC-MODAL-9.3 - Each opening
+
+Each opening of a retained dialog shall move focus in as a first opening does ([UIC-MODAL-3.1](#uic-modal-31---initial-focus)), contain it while open, and on each close return it to `finalFocus` or the element focused when it opened, once per transition, and call `onExitComplete` once, however many times it opens and closes. Its footer actions start each opening afresh ([UIC-MODAL-5.4](#uic-modal-54---separate-openings)).
+
+Implementation: `src/components/modal/modal-dialog.tsx`, `src/utils/focus-target.ts`
+Verification: `src/components/modal/modal-retained.test.tsx`
+
+### UIC-MODAL-9.4 - Other modals
+
+While a retained dialog is closed, other modals shall open, contain focus, lock scrolling, hide the page and close on Escape or outside presses as they would without it; a reopened retained dialog does the same as the topmost modal.
+
+Implementation: `src/components/modal/modal-presentations.tsx`
+Verification: `src/components/modal/modal-retained.test.tsx`
+
+### UIC-MODAL-9.5 - Control and teardown
+
+A retained dialog shall follow `isOpen`, `defaultOpen` or its `ModalTrigger` as any dialog does. Removing the `Modal` unmounts the retained body once, releasing its refs once.
+
+Implementation: `src/components/modal/modal.tsx`
+Verification: `src/components/modal/modal-retained.test.tsx`
 
 ## UIC-MODAL-21 - Decision
 

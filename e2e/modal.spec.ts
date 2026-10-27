@@ -430,3 +430,33 @@ for (const [device, viewport] of [
     });
   }
 }
+
+test('UIC-MODAL-9.1 UIC-MODAL-9.2 UIC-MODAL-9.3 keeps a draft across closing and reopening', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('modal');
+  const demo = page.locator('[data-lab-demo="retained"]');
+  const opener = demo.getByRole('button', { name: 'Write a letter' });
+  await opener.scrollIntoViewIfNeeded();
+  await opener.click();
+  const dialog = page.getByRole('dialog', { name: 'Letter' });
+  const letter = dialog.getByRole('textbox', { name: 'Letter' });
+  await expect(letter).toBeFocused();
+  await page.keyboard.type('Dear Ana,');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+  const overlay = page.locator('.ui-modal[data-lab-modal="retained"]');
+  await expect(overlay).toHaveAttribute('inert', '');
+  await expect(overlay).toBeHidden();
+  await opener.click();
+  await expect(letter).toHaveValue('Dear Ana,');
+  await expect(letter).toBeFocused();
+  await expect(demo.locator('[data-lab-output="Body mounts"]')).toHaveText('1');
+  await lab.expectAccessible('.ui-modal[data-lab-modal="retained"]');
+  await dialog.getByRole('button', { name: 'Done' }).click();
+  await expect(opener).toBeFocused();
+  await page.mouse.click(5, 5);
+  await expect(opener).not.toBeFocused();
+});

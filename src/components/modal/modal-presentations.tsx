@@ -1,9 +1,11 @@
 import { useContext, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  FocusScope,
   Modal as AriaModal,
   ModalOverlay,
   OverlayTriggerStateContext,
+  useModalOverlay,
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
@@ -12,6 +14,7 @@ import type { Placement } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { ModalShownContext, retainedStyle } from './modal-retained.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */
 interface ModalOpenState {
@@ -42,6 +45,18 @@ type ModalDismissal = Required<
   Pick<OverlayDismissProps, 'shouldCloseOnInteractOutside'>;
 
 interface BlockingModalProps extends ModalPresentationProps, ModalDismissal {}
+
+interface ModalPresentationChoiceProps extends ModalPresentationProps, ModalDismissal {
+  /** Anchors the dialog to its trigger at this placement. */
+  placement: Placement | undefined;
+  isFloating: boolean;
+  isRetained: boolean;
+}
+
+interface FloatingModalProps extends ModalPresentationProps {
+  /** Stays mounted, hidden and inert, while closed. */
+  isRetained: boolean;
+}
 
 interface AnchoredModalProps extends ModalPresentationProps, ModalDismissal {
   placement: Placement;
@@ -124,21 +139,26 @@ export function BlockingModal({ state, rootProps, children, ...overlay }: Blocki
  * the overlay lets pointer presses through to the page around the panel. It enters and exits with
  * the panel's animations.
  */
-export function FloatingModal({ state, rootProps, children }: ModalPresentationProps) {
+export function FloatingModal({ state, rootProps, children, isRetained }: FloatingModalProps) {
   const zIndex = useLayerZIndex('modal');
   const panelRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(panelRef, state.isOpen);
-  if (!isMounted || typeof document === 'undefined') return null;
+  if ((!isMounted && !isRetained) || typeof document === 'undefined') return null;
   const phase = { entering: isEntering, exiting: isExiting };
   return createPortal(
     <div
       {...rootProps}
       {...dataAttributes(phase)}
+      inert={!state.isOpen && isRetained}
       style={{ position: 'fixed', inset: 0, zIndex, pointerEvents: 'none' }}
     >
-      <div ref={panelRef} {...hooks.slot('panel', phase)} style={{ pointerEvents: 'auto' }}>
+      <div
+        ref={panelRef}
+        {...hooks.slot('panel', phase)}
+        style={{ pointerEvents: 'auto', ...retainedStyle(isMounted) }}
+      >
         <OverlayTriggerStateContext.Provider value={state}>
-          {children}
+          <ModalShownContext.Provider value={isMounted}>{children}</ModalShownContext.Provider>
         </OverlayTriggerStateContext.Provider>
       </div>
     </div>,
@@ -179,4 +199,58 @@ export function AnchoredModal({
       </OverlayTriggerStateContext.Provider>
     </PopoverPanel>
   );
+}
+
+/**
+ * A blocking dialog that stays mounted while closed (React Aria `useModalOverlay` and
+ * `FocusScope`): open, it covers the viewport, contains focus, locks scrolling and hides the page,
+ * as `BlockingModal` does; closed, it is hidden and inert, keeps no lock and is no open overlay, so
+ * its body keeps its state for the next opening.
+ */
+export function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingModalProps) {
+  const zIndex = useLayerZIndex('modal');
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const phase = useEnterExit(overlayRef, state.isOpen);
+  const { modalProps, underlayProps } = useModalOverlay(dismissal, state, panelRef);
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <div
+      {...underlayProps}
+      {...rootProps}
+      {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting })}
+      ref={overlayRef}
+      inert={!state.isOpen}
+      style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}
+    >
+      <FocusScope contain={state.isOpen}>
+        <div {...modalProps} ref={panelRef} className={hooks.slotClass('panel')}>
+          <OverlayTriggerStateContext.Provider value={state}>
+            <ModalShownContext.Provider value={phase.isMounted}>
+              {children}
+            </ModalShownContext.Provider>
+          </OverlayTriggerStateContext.Provider>
+        </div>
+      </FocusScope>
+    </div>,
+    document.body,
+  );
+}
+
+/**
+ * The overlay a dialog shows in: anchored to its trigger, floating over the page, or blocking it,
+ * staying mounted while closed when retained.
+ */
+export function ModalPresentation({
+  placement,
+  isFloating,
+  isRetained,
+  ...presentation
+}: ModalPresentationChoiceProps) {
+  if (placement) return <AnchoredModal {...presentation} placement={placement} />;
+  if (isFloating) {
+    const { state, rootProps, children } = presentation;
+    return <FloatingModal {...{ state, rootProps, children, isRetained }} />;
+  }
+  return isRetained ? <RetainedModal {...presentation} /> : <BlockingModal {...presentation} />;
 }

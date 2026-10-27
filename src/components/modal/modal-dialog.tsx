@@ -12,6 +12,7 @@ import { createHooks } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
+import { ModalShownContext } from './modal-retained.js';
 import { ModalFooter } from './modal-footer.js';
 import { ModalHeader } from './modal-header.js';
 import { claimPrimaryShortcut } from './modal-shortcut.js';
@@ -36,7 +37,15 @@ type ModalDialogProps = Omit<
     canEscape: boolean;
     /** The dialog floats over a page it does not block, so it handles Escape and focus return. */
     isFloating: boolean;
+    /** The dialog stays mounted while closed, so it returns focus itself at each close. */
+    isRetained: boolean;
   };
+
+interface ModalOpeningProps extends Pick<ModalProps, 'finalFocus' | 'onExitComplete'> {
+  /** Focus returns to the element focused at the opening when nothing else restores it. */
+  returnsToOpener: boolean;
+  dialogRef: RefObject<HTMLElement | null>;
+}
 
 interface EscapeOptions {
   canEscape: boolean;
@@ -112,6 +121,23 @@ function useExitComplete(onExitComplete: ModalProps['onExitComplete']) {
   );
 }
 
+/**
+ * The end of one opening of the dialog: when it unmounts after closing, focus returns and
+ * `onExitComplete` runs. It lives as long as the dialog, or, for a retained dialog, as long as one
+ * showing. It renders after the dialog element, so the dialog's ref is set when its effects run.
+ */
+function ModalOpening({
+  finalFocus,
+  onExitComplete,
+  returnsToOpener,
+  dialogRef,
+}: ModalOpeningProps) {
+  const [opener] = useState(() => (returnsToOpener ? document.activeElement : null));
+  useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
+  useExitComplete(onExitComplete);
+  return null;
+}
+
 /** The dialog element: header, body and footer, with its focus, Escape and shortcut handling. */
 export function ModalDialog({
   title,
@@ -124,6 +150,7 @@ export function ModalDialog({
   isDismissDisabled,
   canEscape,
   isFloating,
+  isRetained,
   shouldCloseOnEscape,
   onExitComplete,
   role,
@@ -137,11 +164,8 @@ export function ModalDialog({
   const dialogRef = useRef<HTMLElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
-  // A floating dialog returns focus itself, to the element focused when it opened.
-  const [opener] = useState(() => (isFloating ? document.activeElement : null));
+  const isShown = useContext(ModalShownContext);
   const actionState = useModalActions(footer);
-  useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
-  useExitComplete(onExitComplete);
   const hasCustomActions = footer.actions !== undefined;
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape') {
@@ -152,42 +176,47 @@ export function ModalDialog({
     if (!event.defaultPrevented) onCallerKeyDown?.(event);
   };
   return (
-    <Dialog
-      ref={dialogRef}
-      id={id}
-      role={role}
-      className={hooks.slotClass('dialog')}
-      aria-label={ariaLabel}
-      aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
-      // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
-      render={(props) => <section {...props} onKeyDown={onKeyDown} />}
-    >
-      <ModalHeader
-        title={title}
-        description={description}
-        descriptionId={descriptionId}
-        headerActions={headerActions}
-        showCloseButton={showCloseButton}
-        isDismissDisabled={isDismissDisabled}
-        onClose={actionState.close}
-      />
-      <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
-        {children}
-      </ModalBody>
-      <ModalFooter
-        {...footer}
-        ref={footerRef}
-        actionState={actionState}
-        isDismissDisabled={isDismissDisabled}
-      />
-      {initialFocus === 'dialog' ? null : (
-        <InitialFocus
-          dialogRef={dialogRef}
-          bodyRef={bodyRef}
-          footerRef={footerRef}
-          target={initialFocus === 'first' ? undefined : initialFocus}
+    <>
+      <Dialog
+        ref={dialogRef}
+        id={id}
+        role={role}
+        className={hooks.slotClass('dialog')}
+        aria-label={ariaLabel}
+        aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
+        // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
+        render={(props) => <section {...props} onKeyDown={onKeyDown} />}
+      >
+        <ModalHeader
+          {...{ title, description, descriptionId, headerActions, showCloseButton }}
+          isDismissDisabled={isDismissDisabled}
+          onClose={actionState.close}
         />
-      )}
-    </Dialog>
+        <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
+          {children}
+        </ModalBody>
+        <ModalFooter
+          {...footer}
+          ref={footerRef}
+          actionState={actionState}
+          isDismissDisabled={isDismissDisabled}
+        />
+        {initialFocus === 'dialog' || !isShown ? null : (
+          <InitialFocus
+            dialogRef={dialogRef}
+            bodyRef={bodyRef}
+            footerRef={footerRef}
+            target={initialFocus === 'first' ? undefined : initialFocus}
+          />
+        )}
+      </Dialog>
+      {isShown ? (
+        <ModalOpening
+          {...{ finalFocus, onExitComplete, dialogRef }}
+          // A floating or retained dialog returns focus itself, to the element focused at opening.
+          returnsToOpener={isFloating || isRetained}
+        />
+      ) : null}
+    </>
   );
 }
