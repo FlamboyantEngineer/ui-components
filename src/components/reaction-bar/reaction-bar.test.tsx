@@ -161,16 +161,16 @@ describe('ReactionBar', () => {
   it('UIC-REACTION-BAR-1.6 takes its names from the caller and the provider', () => {
     const { container, rerender } = render(
       <UiProvider
-        strings={{
+        messages={{
           reactions: 'Réactions',
-          reactionLabel: (emoji, count, names) => `${emoji}:${count}:${names.join('+')}`,
+          reactionLabel: '{emoji}:{count}:{names}',
         }}
       >
         <ReactionBar reactions={reactions.slice(0, 1)} />
       </UiProvider>,
     );
     expect(screen.getByRole('group', { name: 'Réactions' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '👍:2:Ana Lima+Ben Ode' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '👍:2:Ana Lima and Ben Ode' })).toBeInTheDocument();
     rerender(
       <ReactionBar
         reactions={reactions.slice(0, 1)}

@@ -39,7 +39,7 @@ describe('Chat sending', () => {
     const onReply = vi.fn();
     const { container } = render(
       <UiProvider
-        strings={{ reply: 'Quote', chatReplyingTo: 'Quoting', chatCancelReply: 'Cancel quote' }}
+        messages={{ reply: 'Quote', chatReplyingTo: 'Quoting', chatCancelReply: 'Cancel quote' }}
       >
         <TestChat
           participants={assistantPeople}

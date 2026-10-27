@@ -3,7 +3,6 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { defaultStrings } from '../../core/strings.js';
 import type { CodeToken } from '../code-editor/code-editor.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { CodeBlock } from './code-block.js';
@@ -128,11 +127,10 @@ describe('CodeBlock', () => {
   it('UIC-CODE-BLOCK-2.1 UIC-CODE-BLOCK-2.2 takes its names from the provider strings', () => {
     render(
       <UiProvider
-        strings={{
-          ...defaultStrings,
+        messages={{
           codeBlockCopy: 'Copier le code',
           codeBlockApply: 'Appliquer',
-          codeBlockTitle: () => 'Extrait',
+          codeBlockTitle: 'Extrait',
         }}
       >
         <CodeBlock code="x" onApply={() => undefined} />

@@ -62,18 +62,29 @@ Components work without any setup. `UiProvider` replaces the defaults when a hos
 
 ```tsx
 import { UiProvider, createSafeStorage } from '@flamboyantengineer/ui-components';
+import { fr } from '@flamboyantengineer/ui-components/locales';
 import { BoltIcon } from '@heroicons/react/24/outline';
 
 <UiProvider
   icons={{ close: BoltIcon }} // replace one built-in glyph
-  strings={{ close: 'Fermer' }} // replace built-in text
-  locale="fr-FR" // React Aria formatting and direction
+  messages={{ ...fr, close: 'Fermer la fenêtre' }} // a language file, with any key replaced
+  locale="fr-FR" // plurals, numbers and lists; React Aria formatting and direction
   renderLink={(props) => <RouterLink to={props.href} {...props} />} // library links
   navigate={router.navigate} // React Aria links, menu items and tabs with href
   storage={createSafeStorage(window.localStorage)} // persisted layout state
 >
   <App />
 </UiProvider>;
+```
+
+### Languages
+
+All built-in text comes from a language file: a flat JSON object of [ICU MessageFormat](https://unicode-org.github.io/icu/userguide/format_parse/messages/) messages, one per key. The package ships `en` (the default), `fr`, `es` and `ja` from `@flamboyantengineer/ui-components/locales`, and as JSON from `@flamboyantengineer/ui-components/locales/<language>.json` for translation tools. Pass another file, or part of one, as `messages`; changing `messages` and `locale` switches every component below on the fly, as a language menu does. A host formats its own messages with the same rules through `useFormatMessage()` or `formatMessage()`:
+
+```tsx
+const format = useFormatMessage();
+format('{count, plural, one {# guest} other {# guests}}: {names}', { count: 3, names });
+// 3 guests: Ana, Ben, and Chloé
 ```
 
 ### Testing helpers

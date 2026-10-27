@@ -62,7 +62,7 @@ describe('Avatar', () => {
     rerender(<Avatar name="" statusLabel="Idle" />);
     expect(screen.getByRole('img', { name: 'Unnamed, Idle' })).toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ nameWithStatus: (name, status) => `${name} (${status})` }}>
+      <UiProvider messages={{ nameWithStatus: '{name} ({status})' }}>
         <Avatar name="Maria Santos" statusLabel="Absente" />
       </UiProvider>,
     );

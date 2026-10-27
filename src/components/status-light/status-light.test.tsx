@@ -55,7 +55,7 @@ describe('StatusLight', () => {
     expect(root).toHaveTextContent('In a meeting');
     expect(root).toHaveAttribute('data-status', 'busy');
     rerender(
-      <UiProvider strings={{ presenceStatus: (status) => `[${status}]` }}>
+      <UiProvider messages={{ presenceStatus: '[{status}]' }}>
         <StatusLight status="idle" />
       </UiProvider>,
     );

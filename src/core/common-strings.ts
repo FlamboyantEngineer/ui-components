@@ -1,3 +1,4 @@
+import { toSelectKey, type MessageArguments } from './message-format.js';
 /** The formatted parts of a segmented progress bar's value text. */
 export interface SegmentProgressText {
   /** Completed units. */
@@ -102,10 +103,13 @@ export interface CommonStrings {
   presenceStatus: (status: 'active' | 'away' | 'busy' | 'idle') => string;
   /** Accessible name of an overflow count, with the names it hides when known. */
   morePeople: (count: number, names: readonly string[]) => string;
-  /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
+  /**
+   * Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`, `Command`); other keys are read as
+   * written.
+   */
   shortcutKeyName: (key: string) => string;
-  /** Joins the readable chords of a key sequence (`G, then I`). */
-  shortcutSequence: (steps: readonly string[]) => string;
+  /** Joins the readable chords of a key sequence, one step at a time (`G, then I`). */
+  shortcutThen: (previous: string, next: string) => string;
   retry: string;
   loadMore: string;
   remainingCount: (count: number) => string;
@@ -179,142 +183,55 @@ export interface CommonStrings {
   stepStatus: (status: 'complete' | 'error' | 'skipped') => string;
 }
 
-const stepStatusNames = {
-  complete: 'Completed',
-  error: 'Has errors',
-  skipped: 'Skipped',
-} as const;
-
-const spokenKeyNames: Readonly<Record<string, string>> = {
-  '↑': 'Up Arrow',
-  '↓': 'Down Arrow',
-  '←': 'Left Arrow',
-  '→': 'Right Arrow',
-  '.': 'Period',
-  ',': 'Comma',
-  '\\': 'Backslash',
-  '+': 'Plus',
-  ' ': 'Space',
+const spokenKeys: Readonly<Record<string, string>> = {
+  '↑': 'up',
+  '↓': 'down',
+  '←': 'left',
+  '→': 'right',
+  '.': 'period',
+  ',': 'comma',
+  '\\': 'backslash',
+  '+': 'plus',
+  ' ': 'space',
+  Control: 'control',
+  Option: 'option',
+  Alt: 'alt',
+  Shift: 'shift',
+  Command: 'command',
+  Meta: 'meta',
 };
 
-const presenceStatusNames = { active: 'Active', away: 'Away', busy: 'Busy', idle: 'Idle' } as const;
-
-const appFramePanelNames = {
-  start: 'Start panel',
-  end: 'End panel',
-  bottom: 'Bottom panel',
-} as const;
-
-const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
-const logicalBoxSideNames = {
-  'block-start': 'Top',
-  'block-end': 'Bottom',
-  'inline-start': 'Start',
-  'inline-end': 'End',
-} as const;
-
-export const commonStrings: CommonStrings = {
-  close: 'Close',
-  dismiss: 'Dismiss',
-  confirm: 'Confirm',
-  ok: 'OK',
-  actionFailed: 'The action could not be completed.',
-  more: 'More',
-  moreOptions: 'More options',
-  contextMenu: 'Context menu',
-  commandPalette: 'Command palette',
-  searchCommands: 'Search commands',
-  loading: 'Loading',
-  clear: 'Clear',
-  help: 'Help',
-  expand: 'Expand',
-  collapse: 'Collapse',
-  search: 'Search',
-  noResults: 'No results',
-  previous: 'Previous',
-  next: 'Next',
-  copy: 'Copy',
-  copied: 'Copied',
-  copyFailed: 'Copy failed',
-  resize: 'Resize',
-  filterRows: 'Filter rows',
-  rowActions: 'Actions',
-  scrollVertically: 'Scroll vertically',
-  scrollHorizontally: 'Scroll horizontally',
-  add: 'Add',
-  refresh: 'Refresh',
-  edit: 'Edit',
-  delete: 'Delete',
-  save: 'Save',
-  saving: 'Saving',
-  cancel: 'Cancel',
-  zoom: 'Zoom',
-  zoomLevel: 'Zoom level',
-  zoomIn: 'Zoom in',
-  zoomOut: 'Zoom out',
-  resetZoom: 'Reset zoom',
-  zoomPresets: 'Zoom presets',
-  scrollBackward: 'Scroll backward',
-  scrollForward: 'Scroll forward',
-  moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
-  addTab: 'Add tab',
-  panelPanes: (panel) => `${panel} panes`,
-  collapsePanel: (panel) => `Collapse ${panel}`,
-  expandPanel: (panel) => `Expand ${panel}`,
-  resizePanel: (panel) => `Resize ${panel}`,
-  duplicate: 'Duplicate',
-  moveItem: (direction) => `Move ${direction}`,
-  opensInNewTab: '(opens in a new tab)',
-  selectedCount: (count) => `${count} selected`,
-  clearSelection: 'Clear selection',
-  placesBeside: (name) => `Places beside ${name}`,
-  removeItem: (name) => `Remove ${name}`,
-  itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
-  labelWithCount: (label, count) => `${label}, ${count}`,
-  unnamed: 'Unnamed',
-  nameWithStatus: (name, status) => `${name}, ${status}`,
-  presenceStatus: (status) => presenceStatusNames[status],
-  morePeople: (count, names) =>
-    `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
-  shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
-  shortcutSequence: (steps) => steps.join(', then '),
-  retry: 'Retry',
-  loadMore: 'Load more',
-  remainingCount: (count) => `${count} remaining`,
-  countOrMore: (count) => `${count} or more`,
-  stepOfTotal: (current, total) => `${current} of ${total}`,
-  segmentCount: ({ completed, total, percent }) => `${completed}/${total} · ${percent}`,
-  segmentProgress: ({ completed, total, percent, current }) =>
-    `${completed} of ${total} done, ${percent}${current === undefined ? '' : `, ${current} in progress`}`,
-  totalCount: (total) => `${total} total`,
-  containsOverrides: 'Contains overridden values',
-  filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
-  noPropertyMatches: (query) => `No properties match “${query}”.`,
-  clearFilter: 'Clear filter',
-  boxSide: (side) => boxSideNames[side],
-  logicalBoxSide: (side) => logicalBoxSideNames[side],
-  linkSides: (link) => (link === 'all' ? 'Link all sides' : 'Link opposite sides'),
-  sign: 'Sign',
-  signingAs: (userName) => `Signing as ${userName}`,
-  signatureMeaning: 'Meaning of signature',
-  signatureReason: 'Reason',
-  signature: 'Signature',
-  userName: 'User name',
-  unsavedChanges: 'Unsaved changes',
-  saveBeforeLeaving: 'Save your changes before you leave?',
-  discardBeforeLeaving: 'Your changes are not saved. Leave and discard them?',
-  discard: 'Discard',
-  stay: 'Stay',
-  skipToMainContent: 'Skip to main content',
-  appFramePanel: (panel) => appFramePanelNames[panel],
-  tools: 'Tools',
-  actions: 'Actions',
-  toggleNavigation: (isCollapsed) => (isCollapsed ? 'Expand navigation' : 'Collapse navigation'),
-  resizeNavigation: 'Resize navigation',
-  back: 'Back',
-  finish: 'Finish',
-  skip: 'Skip',
-  optional: 'Optional',
-  steps: 'Steps',
-  stepStatus: (status) => stepStatusNames[status],
+/** The message values each text function reads its arguments as. */
+export const commonArguments: MessageArguments<CommonStrings> = {
+  moreItems: (count) => ({ count }),
+  panelPanes: (panel) => ({ panel }),
+  collapsePanel: (panel) => ({ panel }),
+  expandPanel: (panel) => ({ panel }),
+  resizePanel: (panel) => ({ panel }),
+  moveItem: (direction) => ({ direction }),
+  selectedCount: (count) => ({ count }),
+  placesBeside: (name) => ({ name }),
+  removeItem: (name) => ({ name }),
+  itemCount: (count) => ({ count }),
+  labelWithCount: (label, count) => ({ label, count }),
+  nameWithStatus: (name, status) => ({ name, status }),
+  presenceStatus: (status) => ({ status }),
+  morePeople: (count, names) => ({ count, names, hasNames: names.length > 0 }),
+  shortcutKeyName: (key) => ({ key: spokenKeys[key] ?? 'other', name: key }),
+  shortcutThen: (previous, next) => ({ previous, next }),
+  remainingCount: (count) => ({ count }),
+  countOrMore: (count) => ({ count }),
+  stepOfTotal: (current, total) => ({ current, total }),
+  segmentCount: (progress) => ({ ...progress }),
+  segmentProgress: (progress) => ({ ...progress, hasCurrent: progress.current !== undefined }),
+  totalCount: (total) => ({ total }),
+  filterLabel: (label) => ({ label: label.toLocaleLowerCase() }),
+  noPropertyMatches: (query) => ({ query }),
+  boxSide: (side) => ({ side }),
+  logicalBoxSide: (side) => ({ side: toSelectKey(side) }),
+  linkSides: (link) => ({ link }),
+  signingAs: (userName) => ({ userName }),
+  appFramePanel: (panel) => ({ panel }),
+  toggleNavigation: (isCollapsed) => ({ isCollapsed }),
+  stepStatus: (status) => ({ status }),
 };

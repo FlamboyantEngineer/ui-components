@@ -88,14 +88,14 @@ describe('AvatarGroup', () => {
     );
     expect(root(container)).toHaveAttribute('data-action', 'none');
     expect(
-      within(group).getByRole('img', { name: '2 more people: Priya Nair, Unnamed' }),
+      within(group).getByRole('img', { name: '2 more people: Priya Nair and Unnamed' }),
     ).toHaveTextContent('+2');
     expect(within(group).getByRole('img', { name: 'Jon Berg' })).toBeInTheDocument();
     expect(container.querySelector('button, [tabindex]')).toBeNull();
     rerender(<AvatarGroup people={people} aria-label=" Reviewers " />);
     expect(screen.getByRole('group')).toHaveAccessibleName('Reviewers');
     rerender(
-      <UiProvider strings={{ unnamed: 'Sans nom' }}>
+      <UiProvider messages={{ unnamed: 'Sans nom' }}>
         <AvatarGroup people={[{ id: 'x', name: '' }]} />
       </UiProvider>,
     );
@@ -116,7 +116,7 @@ describe('AvatarGroup', () => {
     expect(root(container)).toHaveAttribute('data-action', 'list');
     expect(screen.getByRole('group')).toHaveAccessibleName(names.join(', '));
     const trigger = screen.getByRole('button', {
-      name: 'Maria Santos, Jon Berg, Lena Ortiz, 3 more people: Sam Okafor, Priya Nair, Tom Li',
+      name: 'Maria Santos, Jon Berg, Lena Ortiz, 3 more people: Sam Okafor, Priya Nair, and Tom Li',
     });
     expect(trigger).toHaveClass('ui-avatar-group__trigger');
     expect(trigger).not.toHaveAttribute('aria-label');

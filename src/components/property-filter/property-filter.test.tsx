@@ -51,11 +51,11 @@ describe('PropertyFilter', () => {
 
   it('UIC-PROPERTY-FILTER-1.1 names the search box through the provider', () => {
     render(
-      <UiProvider strings={{ filterLabel: (label) => `Filtrer ${label}` }}>
+      <UiProvider messages={{ filterLabel: 'Filtrer {label}' }}>
         <Fruit />
       </UiProvider>,
     );
-    expect(screen.getByRole('searchbox', { name: 'Filtrer Fruit Settings' })).toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: 'Filtrer fruit settings' })).toBeInTheDocument();
   });
 
   it('UIC-PROPERTY-FILTER-1.2 clears the query from its clear button and from Escape, keeping focus in the input', async () => {

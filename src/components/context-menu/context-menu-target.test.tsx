@@ -300,7 +300,7 @@ describe('ContextMenuTrigger', () => {
     const onKeyDown = vi.fn();
     const ref = createRef<HTMLButtonElement>();
     render(
-      <UiProvider strings={{ contextMenu: 'File actions' }}>
+      <UiProvider messages={{ contextMenu: 'File actions' }}>
         <ContextMenuTrigger className="caller" data-owner="surface" id="file-menu">
           <button type="button" ref={ref} onContextMenu={onContextMenu} onKeyDown={onKeyDown}>
             Report.pdf

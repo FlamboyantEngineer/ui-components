@@ -46,9 +46,9 @@ describe('FourSidePropertyStrip', () => {
   });
 
   it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.1 takes the side names from the provider', () => {
-    const names = { top: 'Haut', bottom: 'Bas', left: 'Gauche', right: 'Droite' } as const;
+    const boxSide = '{side, select, top {Haut} bottom {Bas} left {Gauche} other {Droite}}';
     const { container } = render(
-      <UiProvider strings={{ boxSide: (side) => names[side] }}>
+      <UiProvider messages={{ boxSide }}>
         <FourSidePropertyStrip label="Marges" renderSide={(side) => <span>{side}</span>} />
       </UiProvider>,
     );

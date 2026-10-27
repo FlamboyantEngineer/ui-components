@@ -82,7 +82,7 @@ describe('AppFrame', () => {
 
   it('UIC-APP-FRAME-1.2 names the main region and panels from labels and provider strings', () => {
     render(
-      <UiProvider strings={{ appFramePanel: (panel) => `Panneau ${panel}` }}>
+      <UiProvider messages={{ appFramePanel: 'Panneau {panel}' }}>
         <AppFrame
           labels={{ main: 'Editor', 'end-panel': 'Comments' }}
           startPanel="Outline"

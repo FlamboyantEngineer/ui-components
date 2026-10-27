@@ -185,7 +185,7 @@ describe('SegmentedBar', () => {
 
   it('UIC-SEGMENTED-BAR-1.5 words the total through the provider and formats counts', () => {
     const { rerender } = render(
-      <UiProvider locale="de-DE" strings={{ totalCount: (total) => `Summe ${total}` }}>
+      <UiProvider locale="de-DE" messages={{ totalCount: 'Summe {total}' }}>
         <SegmentedBar
           aria-label="Storage"
           segments={[

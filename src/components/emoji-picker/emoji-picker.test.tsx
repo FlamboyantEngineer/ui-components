@@ -391,7 +391,7 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(screen.getByRole('dialog', { name: 'Emoji picker' })).toBeInTheDocument();
     expect(screen.getByRole('searchbox')).not.toHaveFocus();
     rerender(
-      <UiProvider strings={{ emojiPicker: 'Emoji' }}>
+      <UiProvider messages={{ emojiPicker: 'Emoji' }}>
         <EmojiPicker loadEmoji={loadFixture} />
       </UiProvider>,
     );

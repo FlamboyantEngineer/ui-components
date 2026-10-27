@@ -140,7 +140,7 @@ describe('Wizard', () => {
 
   it('UIC-WIZARD-1.3 reads its labels from the provider', () => {
     render(
-      <UiProvider strings={{ finish: 'Done' }}>
+      <UiProvider messages={{ finish: 'Done' }}>
         <Wizard steps={tripSteps().slice(2)} />
       </UiProvider>,
     );
@@ -271,7 +271,7 @@ describe('Wizard', () => {
     const onFinish = vi.fn().mockRejectedValueOnce(new Error('The booking failed.'));
     onFinish.mockRejectedValueOnce('no message');
     render(
-      <UiProvider strings={{ actionFailed: 'Something went wrong.' }}>
+      <UiProvider messages={{ actionFailed: 'Something went wrong.' }}>
         <Wizard steps={tripSteps()} defaultCurrentId="summary" onFinish={onFinish} />
       </UiProvider>,
     );

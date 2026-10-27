@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of carousels, guided tours, avatar groups and QR codes. */
 export interface PresentationStrings {
   /** Describes the role of a carousel (`carousel`), read before its name. */
@@ -24,16 +25,9 @@ export interface PresentationStrings {
   qrCodeTooLong: string;
 }
 
-export const presentationStrings: PresentationStrings = {
-  carousel: 'carousel',
-  slide: 'slide',
-  previousSlide: 'Previous slide',
-  nextSlide: 'Next slide',
-  chooseSlide: 'Choose a slide',
-  goToSlide: (position) => `Slide ${position}`,
-  startSlideRotation: 'Start automatic slide show',
-  stopSlideRotation: 'Stop automatic slide show',
-  peopleCount: (count) => (count === 1 ? '1 person' : `${count} people`),
-  qrCodeOf: (value) => `QR code: ${value}`,
-  qrCodeTooLong: 'The text is too long for a QR code.',
+/** The message values each text function reads its arguments as. */
+export const presentationArguments: MessageArguments<PresentationStrings> = {
+  goToSlide: (position) => ({ position }),
+  peopleCount: (count) => ({ count }),
+  qrCodeOf: (value) => ({ value }),
 };

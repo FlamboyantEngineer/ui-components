@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of timelines: their default name, item descriptions, scale labels and table headings. */
 export interface TimelineStrings {
   /** Default accessible name of a timeline. */
@@ -28,21 +29,12 @@ export interface TimelineStrings {
   timelineProgressColumn: string;
 }
 
-export const timelineStrings: TimelineStrings = {
-  timeline: 'Timeline',
-  timelineDates: ({ start, end }) => `${start} to ${end}`,
-  timelineMilestone: (date) => `Milestone on ${date}`,
-  timelineProgress: (percent) => `${percent} complete`,
-  timelineDependsOn: (names) => `Depends on ${names.join(', ')}`,
-  timelineConflict: 'Starts before an item it depends on ends',
-  timelineKeyboardHint: (kind) =>
-    kind === 'bar'
-      ? 'Arrow keys move it; Shift and arrow keys change its end'
-      : 'Arrow keys move it',
-  timelineQuarter: (quarter) => `Q${quarter}`,
-  timelineItemColumn: 'Item',
-  timelineRowColumn: 'Row',
-  timelineStartColumn: 'Start',
-  timelineEndColumn: 'End',
-  timelineProgressColumn: 'Progress',
+/** The message values each text function reads its arguments as. */
+export const timelineArguments: MessageArguments<TimelineStrings> = {
+  timelineDates: (dates) => ({ ...dates }),
+  timelineMilestone: (date) => ({ date }),
+  timelineProgress: (percent) => ({ percent }),
+  timelineDependsOn: (names) => ({ names }),
+  timelineKeyboardHint: (kind) => ({ kind }),
+  timelineQuarter: (quarter) => ({ quarter }),
 };

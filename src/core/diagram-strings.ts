@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of diagram canvases and the views drawn on them. */
 export interface DiagramStrings {
   /** Default accessible name of a diagram canvas. */
@@ -52,31 +53,14 @@ export interface DiagramStrings {
   stateMachineAddTransition: string;
 }
 
-export const diagramStrings: DiagramStrings = {
-  diagram: 'Diagram',
-  diagramView: 'View',
-  diagramCanvasView: 'Diagram',
-  diagramOutlineView: 'Outline',
-  diagramNode: 'node',
-  diagramFit: 'Fit to view',
-  diagramPalette: 'Palette',
-  diagramEmpty: 'No nodes',
-  diagramSelected: 'Selected.',
-  diagramLeadsTo: 'Leads to',
-  diagramComesFrom: 'Comes from',
-  diagramPortLabel: (node, port) => `${node}, ${port}`,
-  diagramOutgoing: (labels) => `Leads to ${labels}.`,
-  diagramIncoming: (labels) => `Comes from ${labels}.`,
-  diagramMoved: (label, count) => (count === 1 ? `${label} moved` : `${count} nodes moved`),
-  diagramConnecting: (port) =>
-    `Connecting from ${port}. Choose a node or port and press Enter, or press Escape to cancel.`,
-  diagramConnected: (source, target) => `Connected ${source} to ${target}`,
-  diagramConnectCancelled: 'Connection cancelled',
-  diagramRemoved: (count) => (count === 1 ? '1 item removed' : `${count} items removed`),
-  diagramRemoveConnection: (source, target) => `Remove connection from ${source} to ${target}`,
-  stateMachine: 'State machine',
-  stateMachineCurrent: 'Current state.',
-  stateMachineInitial: 'Initial state.',
-  stateMachineFinal: 'Final state.',
-  stateMachineAddTransition: 'new transition',
+/** The message values each text function reads its arguments as. */
+export const diagramArguments: MessageArguments<DiagramStrings> = {
+  diagramPortLabel: (node, port) => ({ node, port }),
+  diagramOutgoing: (labels) => ({ labels }),
+  diagramIncoming: (labels) => ({ labels }),
+  diagramMoved: (label, count) => ({ label, count }),
+  diagramConnecting: (port) => ({ port }),
+  diagramConnected: (source, target) => ({ source, target }),
+  diagramRemoved: (count) => ({ count }),
+  diagramRemoveConnection: (source, target) => ({ source, target }),
 };

@@ -44,7 +44,12 @@ function usePlanAnnouncement(steps: readonly ChatPlanStep[]): ActivityAnnouncerP
   const [announced, setAnnounced] = useState(() => mapStepStatuses(steps));
   const changes = listChangedSteps(steps, announced);
   return {
-    message: changes.length > 0 ? strings.chatPlanChanged(changes) : '',
+    message:
+      changes.length > 0
+        ? strings.chatPlanChanged(
+            changes.map(({ label, status }) => strings.chatPlanChange(label, status)),
+          )
+        : '',
     onAnnounce: () => setAnnounced(mapStepStatuses(steps)),
   };
 }

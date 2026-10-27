@@ -147,7 +147,7 @@ function ToolCallPart({ part, value }: { part: ToolCallPartName; value: unknown 
         <CopyButton
           className={hooks.slotClass('copy')}
           value={text}
-          label={strings.copyToolCallPart(title)}
+          label={strings.copyToolCallPart(part)}
           size="sm"
           variant="ghost"
         />

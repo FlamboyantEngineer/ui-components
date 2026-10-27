@@ -175,7 +175,7 @@ describe('ChatParts', () => {
       'ui-chat-steps',
       'ui-markdown',
     ]);
-    expect(screen.getByRole('button', { name: 'Edited a file, read a file' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Edited a file and read a file' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Ran a command' })).toBeVisible();
   });
 

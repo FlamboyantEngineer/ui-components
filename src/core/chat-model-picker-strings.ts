@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of the chat model picker: its trigger's name and its menu's section titles. */
 export interface ChatModelPickerStrings {
   /** Titles the menu's section of models. */
@@ -11,9 +12,7 @@ export interface ChatModelPickerStrings {
   chatModelTrigger: (model: string, effort?: string) => string;
 }
 
-export const chatModelPickerStrings: ChatModelPickerStrings = {
-  chatModel: 'Model',
-  chatEffort: 'Effort',
-  chatModelTrigger: (model, effort) =>
-    effort === undefined ? `Model: ${model}` : `Model: ${model}, ${effort} effort`,
+/** The message values each text function reads its arguments as. */
+export const chatModelPickerArguments: MessageArguments<ChatModelPickerStrings> = {
+  chatModelTrigger: (model, effort) => ({ model, effort, hasEffort: effort !== undefined }),
 };

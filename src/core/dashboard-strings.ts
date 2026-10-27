@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of charts and dashboard grids. */
 export interface DashboardStrings {
   /** Toggles a chart between its drawing and a table of its values. */
@@ -28,23 +29,14 @@ export interface DashboardStrings {
   tileResized: (tile: string, columns: number, rows: number) => string;
 }
 
-const countText = (count: number, one: string, many: string) =>
-  `${count} ${count === 1 ? one : many}`;
-
-export const dashboardStrings: DashboardStrings = {
-  showAsTable: 'Show as table',
-  chartLegend: 'Legend',
-  chartCategory: 'Category',
-  chartAmount: 'Value',
-  chartShare: 'Share',
-  chartSummary: ({ series, values, low, high }) =>
-    `${countText(series, 'series', 'series')}, ${countText(values, 'value', 'values')}, from ${low} to ${high}`,
-  chartValue: (series, at, value) => `${series}, ${at}: ${value}`,
-  donutSummary: (total, largest, share) => `Total ${total}, largest ${largest} at ${share}`,
-  donutSegment: (label, value, share) => `${label}: ${value}, ${share}`,
-  moveTile: (tile) => `Move ${tile}`,
-  resizeTile: (tile) => `Resize ${tile}`,
-  tileMoved: (tile, column, row) => `${tile} moved to column ${column}, row ${row}`,
-  tileResized: (tile, columns, rows) =>
-    `${tile} resized to ${countText(columns, 'column', 'columns')} by ${countText(rows, 'row', 'rows')}`,
+/** The message values each text function reads its arguments as. */
+export const dashboardArguments: MessageArguments<DashboardStrings> = {
+  chartSummary: (summary) => ({ ...summary }),
+  chartValue: (series, at, value) => ({ series, at, value }),
+  donutSummary: (total, largest, share) => ({ total, largest, share }),
+  donutSegment: (label, value, share) => ({ label, value, share }),
+  moveTile: (tile) => ({ tile }),
+  resizeTile: (tile) => ({ tile }),
+  tileMoved: (tile, column, row) => ({ tile, column, row }),
+  tileResized: (tile, columns, rows) => ({ tile, columns, rows }),
 };

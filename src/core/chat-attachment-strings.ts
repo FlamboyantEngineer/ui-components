@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of chat attachments and attachment lists. */
 export interface ChatAttachmentStrings {
   /** Names a list of attachments. */
@@ -10,9 +11,9 @@ export interface ChatAttachmentStrings {
   attachmentFailed: (name: string) => string;
 }
 
-export const chatAttachmentStrings: ChatAttachmentStrings = {
-  attachmentList: 'Attachments',
-  viewAttachment: (name) => `View ${name}`,
-  attachmentUploading: (name) => `Uploading ${name}`,
-  attachmentFailed: (name) => `${name} could not be uploaded.`,
+/** The message values each text function reads its arguments as. */
+export const chatAttachmentArguments: MessageArguments<ChatAttachmentStrings> = {
+  viewAttachment: (name) => ({ name }),
+  attachmentUploading: (name) => ({ name }),
+  attachmentFailed: (name) => ({ name }),
 };

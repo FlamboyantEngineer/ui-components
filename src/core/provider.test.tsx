@@ -11,12 +11,14 @@ import {
   Glyph,
   UiLink,
   UiProvider,
+  useFormatMessage,
   useGlyph,
   usePersistentState,
   useUiStorage,
   useUiStrings,
 } from './provider.js';
 import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
+import { en } from './locales/index.js';
 import { defaultStrings } from './strings.js';
 
 function Probe() {
@@ -93,10 +95,15 @@ describe('glyph replacement', () => {
   });
 });
 
-describe('strings', () => {
-  it('UIC-PROVIDER-3.1 replaces strings by key, including counted text', () => {
+describe('text', () => {
+  it('UIC-PROVIDER-3.1 UIC-PROVIDER-3.2 replaces text by key with messages, including counted text', () => {
     render(
-      <UiProvider strings={{ close: 'Fermer', itemCount: (count) => `${count} éléments` }}>
+      <UiProvider
+        messages={{
+          close: 'Fermer',
+          itemCount: '{count, plural, one {# élément} other {# éléments}}',
+        }}
+      >
         <Probe />
       </UiProvider>,
     );
@@ -105,10 +112,75 @@ describe('strings', () => {
       '2 éléments',
     );
   });
+
+  it('UIC-PROVIDER-3.3 switches every component below to a new language when the props change', () => {
+    const { rerender } = render(
+      <UiProvider locale="en-US" messages={en}>
+        <Probe />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveAttribute('data-count', '2 items');
+    rerender(
+      <UiProvider locale="ja-JP" messages={{ close: '閉じる', itemCount: '{count} 件' }}>
+        <Probe />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('button', { name: '閉じる' })).toHaveAttribute('data-count', '2 件');
+  });
+
+  it('UIC-PROVIDER-3.4 follows the locale for plurals, numbers and lists', () => {
+    function ListProbe() {
+      const strings = useUiStrings();
+      return (
+        <output>
+          {[
+            strings.itemCount(0),
+            strings.itemCount(1200),
+            strings.questionChose(['A', 'B', 'C']),
+          ].join(' | ')}
+        </output>
+      );
+    }
+    const messages = {
+      itemCount: '{count, plural, one {# élément} other {# éléments}}',
+      questionChose: 'Vous avez choisi {answers}',
+    };
+    render(
+      <UiProvider locale="fr-FR" messages={messages}>
+        <ListProbe />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '0 élément | 1\u202f200 éléments | Vous avez choisi A, B et C',
+      { normalizeWhitespace: false },
+    );
+  });
+
+  it('UIC-PROVIDER-3.6 formats host messages with the provider locale', () => {
+    function HostProbe() {
+      const format = useFormatMessage();
+      return (
+        <output>
+          {format('{count, plural, one {# guest} other {# guests}}: {names}', {
+            count: 3,
+            names: ['Ana', 'Ben', 'Chloé'],
+          })}
+        </output>
+      );
+    }
+    const { rerender } = render(<HostProbe />);
+    expect(screen.getByRole('status')).toHaveTextContent('3 guests: Ana, Ben, and Chloé');
+    rerender(
+      <UiProvider locale="es-ES">
+        <HostProbe />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('3 guests: Ana, Ben y Chloé');
+  });
 });
 
 describe('nesting', () => {
-  it('UIC-PROVIDER-1.2 merges glyphs and strings over the parent provider', () => {
+  it('UIC-PROVIDER-1.2 merges glyphs and text over the parent provider', () => {
     function CheckStar(props: GlyphComponentProps) {
       return <svg {...props} data-glyph="check-star" />;
     }
@@ -117,8 +189,12 @@ describe('nesting', () => {
       return <output>{useUiStorage().getItem('shared')}</output>;
     }
     const { container } = render(
-      <UiProvider icons={{ close: StarGlyph }} strings={{ close: 'Fermer' }} storage={outerStorage}>
-        <UiProvider icons={{ check: CheckStar }} strings={{ more: 'Plus' }}>
+      <UiProvider
+        icons={{ close: StarGlyph }}
+        messages={{ close: 'Fermer' }}
+        storage={outerStorage}
+      >
+        <UiProvider icons={{ check: CheckStar }} messages={{ more: 'Plus' }}>
           <Probe />
           <StorageProbe />
         </UiProvider>

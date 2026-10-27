@@ -75,7 +75,7 @@ describe('RelativeDateField presets', () => {
   it('UIC-RELATIVE-DATE-FIELD-2.3 names range periods from the provider and relates past ranges', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <UiProvider locale="en-US" strings={{ lastPeriod: (period) => `Previous ${period}` }}>
+      <UiProvider locale="en-US" messages={{ lastPeriod: 'Previous {period}' }}>
         <RelativeDateField
           label="Period"
           valueKind="date-range"

@@ -233,7 +233,7 @@ describe('ActivityFeed', () => {
 
   it('UIC-ACTIVITY-FEED-2.3 shows an empty state without entries', () => {
     const { container, rerender } = render(
-      <UiProvider strings={{ noActivity: 'Nothing happened.' }}>
+      <UiProvider messages={{ noActivity: 'Nothing happened.' }}>
         <ActivityFeed items={[]} getNow={getNow} />
       </UiProvider>,
     );

@@ -99,7 +99,7 @@ describe('CopyButton', () => {
   it('UIC-COPY-BUTTON-1.3 takes its name and announcements from the label and provider strings', async () => {
     const user = userEvent.setup();
     render(
-      <UiProvider strings={{ copy: 'Copier', copied: 'Copié' }}>
+      <UiProvider messages={{ copy: 'Copier', copied: 'Copié' }}>
         <CopyButton value="Lisbon" />
         <CopyButton value="Porto" label="Copy the city" />
       </UiProvider>,

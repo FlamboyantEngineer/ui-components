@@ -384,7 +384,7 @@ describe('TagGroup', () => {
 
   it('UIC-TAG-GROUP-2.2 names the remove button from the provider strings', () => {
     render(
-      <UiProvider strings={{ remove: 'Drop' }}>
+      <UiProvider messages={{ remove: 'Drop' }}>
         <Basket />
       </UiProvider>,
     );

@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of view switchers, display options, inline edits, record headers and transition menus. */
 export interface ViewStrings {
   /** Names a view switcher's list of saved views. */
@@ -64,44 +65,15 @@ export interface ViewStrings {
   transitionTo: (state: string) => string;
 }
 
-const sortDirectionNames = { ascending: 'Ascending', descending: 'Descending' } as const;
-
-const densityNames = {
-  compact: 'Compact',
-  default: 'Default',
-  comfortable: 'Comfortable',
-} as const;
-
-export const viewStrings: ViewStrings = {
-  views: 'Views',
-  viewActions: (name) => `Actions for ${name}`,
-  viewModified: 'Modified',
-  defaultView: 'Default view',
-  saveViewAs: 'Save as new view',
-  resetView: 'Reset changes',
-  setDefaultView: 'Set as default view',
-  newView: 'New view',
-  renameView: 'Rename view',
-  viewName: 'View name',
-  deleteViewTitle: (name) => `Delete ${name}?`,
-  deleteViewMessage: 'The view and its saved settings are removed.',
-  display: 'Display',
-  displayOptions: 'Display options',
-  groupBy: 'Group by',
-  noGrouping: 'No grouping',
-  sortBy: 'Sort by',
-  noSorting: 'Default order',
-  sortDirection: 'Sort direction',
-  sortDirectionName: (direction) => sortDirectionNames[direction],
-  shownProperties: 'Shown properties',
-  showProperty: (label) => `Show ${label}`,
-  density: 'Density',
-  densityName: (density) => densityNames[density],
-  editValue: (label) => `Edit ${label}`,
-  saveFailed: 'The change could not be saved.',
-  recordTitle: 'Title',
-  copyIdentifier: (identifier) => `Copy ${identifier}`,
-  status: 'Status',
-  stateTrigger: (label, state) => `${label}: ${state}`,
-  transitionTo: (state) => `Move to ${state}`,
+/** The message values each text function reads its arguments as. */
+export const viewArguments: MessageArguments<ViewStrings> = {
+  viewActions: (name) => ({ name }),
+  deleteViewTitle: (name) => ({ name }),
+  sortDirectionName: (direction) => ({ direction }),
+  showProperty: (label) => ({ label }),
+  densityName: (density) => ({ density }),
+  editValue: (label) => ({ label }),
+  copyIdentifier: (identifier) => ({ identifier }),
+  stateTrigger: (label, state) => ({ label, state }),
+  transitionTo: (state) => ({ state }),
 };

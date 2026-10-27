@@ -29,7 +29,7 @@ describe('ChatReadReceipts', () => {
     ).toBeInTheDocument();
     rerender(<ChatReadReceipts readers={readers.slice(0, 3)} maxVisible={1} />);
     expect(
-      screen.getByRole('group', { name: 'Seen by Ana Lopez, Ben Okoro and Cy Park' }),
+      screen.getByRole('group', { name: 'Seen by Ana Lopez, Ben Okoro, and Cy Park' }),
     ).toBeInTheDocument();
     expect(container.querySelectorAll('.ui-avatar-group__avatar')).toHaveLength(1);
   });

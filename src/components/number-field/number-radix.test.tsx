@@ -69,7 +69,7 @@ describe('NumberField bases', () => {
 
 it('UIC-NUMBER-FIELD-4.2 names radix step buttons with provider strings', () => {
   render(
-    <UiProvider strings={{ numberIncrease: 'Add', numberDecrease: 'Subtract' }}>
+    <UiProvider messages={{ numberIncrease: 'Add', numberDecrease: 'Subtract' }}>
       <NumberField label="Capacity" radix={16} />
     </UiProvider>,
   );

@@ -128,10 +128,10 @@ describe('ProgressBar segments', () => {
     rerender(
       <UiProvider
         locale="de-DE"
-        strings={{
-          segmentCount: ({ completed, total }) => `${completed} von ${total}`,
-          segmentProgress: ({ completed, total, percent, current }) =>
-            `${completed} von ${total} fertig (${percent}), jetzt ${current ?? '-'}`,
+        messages={{
+          segmentCount: '{completed} von {total}',
+          segmentProgress:
+            '{completed} von {total} fertig ({percent}), jetzt {hasCurrent, select, true {{current}} other {-}}',
         }}
       >
         <ProgressBar label="Stages" segments={stages('complete', 'current')} />

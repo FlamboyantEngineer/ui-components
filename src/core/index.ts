@@ -48,8 +48,9 @@ export type {
 } from './events.js';
 export { defaultGlyphs, glyphNames } from './glyphs.js';
 export type { GlyphComponent, GlyphComponentProps, GlyphMap, GlyphName } from './glyphs.js';
-export { defaultStrings } from './strings.js';
-export type { UiStrings } from './strings.js';
+export type { UiMessages, UiStrings } from './strings.js';
+export { formatMessage, toMessageList } from './message-format.js';
+export type { MessageList, MessageValue, MessageValues } from './message-format.js';
 export { createMemoryStorage, createSafeStorage } from './storage.js';
 export type { UiStorage } from './storage.js';
 export {
@@ -57,6 +58,7 @@ export {
   UiLink,
   UiProvider,
   useGlyph,
+  useFormatMessage,
   usePersistentState,
   useUiStorage,
   useUiStrings,
@@ -64,6 +66,7 @@ export {
 export type {
   GlyphProps,
   PersistCodec,
+  UiFormatMessage,
   UiHref,
   UiLinkProps,
   UiLinkRenderer,

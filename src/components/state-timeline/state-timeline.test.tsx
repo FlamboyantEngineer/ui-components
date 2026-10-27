@@ -109,7 +109,7 @@ describe('StateTimeline', () => {
 
   it('UIC-STATE-TIMELINE-1.4 marks the current state and the upcoming ones', () => {
     render(
-      <UiProvider strings={{ currentState: 'Now', upcomingState: 'Later' }}>
+      <UiProvider messages={{ currentState: 'Now', upcomingState: 'Later' }}>
         <StateTimeline entries={entries} upcoming={upcoming} getNow={getNow} />
       </UiProvider>,
     );

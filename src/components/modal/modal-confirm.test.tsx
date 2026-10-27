@@ -65,7 +65,7 @@ describe('ModalConfirmation', () => {
 
   it('UIC-MODAL-21.1 takes labels from props or the provider', async () => {
     render(
-      <UiProvider strings={{ confirm: 'Yes', cancel: 'No' }}>
+      <UiProvider messages={{ confirm: 'Yes', cancel: 'No' }}>
         <ModalConfirmation title="Leave?" isOpen />
       </UiProvider>,
     );

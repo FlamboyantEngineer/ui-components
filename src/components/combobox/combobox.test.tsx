@@ -153,7 +153,7 @@ describe('Combobox', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(
-      <UiProvider strings={{ clear: 'Clear fruit' }}>
+      <UiProvider messages={{ clear: 'Clear fruit' }}>
         <Combobox
           aria-label="Fruit"
           defaultItems={fruit}

@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of column mapping tables and step list editors. */
 export interface EditingStrings {
   /** Names a mapping table. */
@@ -40,29 +41,14 @@ export interface EditingStrings {
   noSteps: string;
 }
 
-function formatList(names: readonly string[]): string {
-  return names.join(', ');
-}
-
-export const editingStrings: EditingStrings = {
-  columnMapping: 'Column mapping',
-  sourceColumn: 'Column',
-  sampleValues: 'Sample values',
-  importAs: 'Import as',
-  importColumnAs: (column) => `Import ${column} as`,
-  doNotImport: 'Don’t import',
-  requiredTarget: 'Required',
-  suggestedTarget: 'Suggested',
-  mappedColumns: (mapped, total) =>
-    total === 1 ? `${mapped} of 1 column mapped` : `${mapped} of ${total} columns mapped`,
-  skippedColumns: (count) => `${count} not imported`,
-  unmappedRequiredTargets: (targets) => `Required fields not mapped: ${formatList(targets)}.`,
-  duplicateTarget: (target, columns) => `${target} is also mapped from ${formatList(columns)}.`,
-  stepLabel: (number) => `Step ${number}`,
-  stepActions: (number) => `Actions for step ${number}`,
-  moveStep: (number) => `Move step ${number}`,
-  addStep: 'Add step',
-  insertStepAbove: 'Insert step above',
-  insertStepBelow: 'Insert step below',
-  noSteps: 'No steps yet.',
+/** The message values each text function reads its arguments as. */
+export const editingArguments: MessageArguments<EditingStrings> = {
+  importColumnAs: (column) => ({ column }),
+  mappedColumns: (mapped, total) => ({ mapped, total }),
+  skippedColumns: (count) => ({ count }),
+  unmappedRequiredTargets: (targets) => ({ targets }),
+  duplicateTarget: (target, columns) => ({ target, columns }),
+  stepLabel: (number) => ({ number }),
+  stepActions: (number) => ({ number }),
+  moveStep: (number) => ({ number }),
 };

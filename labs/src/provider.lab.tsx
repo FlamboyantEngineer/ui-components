@@ -1,27 +1,29 @@
 import { Glyph, UiProvider, useUiStrings } from '../../src/core/provider.js';
 import { glyphNames, type GlyphComponentProps } from '../../src/core/glyphs.js';
-import { defaultStrings, type UiStrings } from '../../src/core/strings.js';
+import * as languages from '../../src/core/locales/index.js';
+import type { UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
-const replacedStrings: Partial<UiStrings> = {
-  close: 'Fermer',
-  more: 'Plus',
-  loading: 'Chargement',
-  itemCount: (count) => `${count} éléments`,
-};
+const languageLocales = { en: 'en-US', fr: 'fr-FR', es: 'es-ES', ja: 'ja-JP' } as const;
+
+const languageNames = Object.keys(languageLocales) as Array<keyof typeof languageLocales>;
 
 // Arguments for strings that are functions; anything not listed is shown for a count of 3.
 const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
-  shortcutSequence: [['G', 'I']],
+  shortcutThen: ['G', 'I'],
   stepOfTotal: [3, 5],
+  segmentCount: [{ completed: '2', total: '5', percent: '40%' }],
+  segmentProgress: [{ completed: '2', total: '5', percent: '40%', current: 'Review' }],
   heading: [2],
   filterLabel: ['Page Settings'],
   noPropertyMatches: ['zinc'],
   boxSide: ['top'],
+  logicalBoxSide: ['inline-start'],
+  seriesSummary: [{ low: '2', high: '9', last: '7' }],
   invalidJsonAt: [3, 5],
   jsonTypeMismatch: [['string', 'null']],
   jsonValueMismatch: [['"starter"', '"main"']],
@@ -119,16 +121,12 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   diagramRemoveConnection: ['Pump', 'Valve'],
   feedbackDetails: ['down'],
   chatReasoningComplete: [12],
-  chatStepsComplete: [
-    [
-      { kind: 'edit', count: 2 },
-      { kind: 'command', count: 1 },
-    ],
-    40,
-  ],
+  chatStepsComplete: [['edited files', 'ran a command'], 40],
+  chatStepsAction: ['edit', 2],
   chatPlanProgress: [2, 5],
   chatPlanStepStatus: ['in-progress'],
-  chatPlanChanged: [[{ label: 'Book the train', status: 'done' }]],
+  chatPlanChange: ['Book the train', 'done'],
+  chatPlanChanged: [['Book the train: done', 'Pack: in progress']],
   viewAttachment: ['harbour.jpg'],
   attachmentUploading: ['harbour.jpg'],
   attachmentFailed: ['harbour.jpg'],
@@ -149,7 +147,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   newMessageAnnouncement: ['Ana Lopez', 'See you at nine.'],
   toolCallStatus: ['running'],
   toolCallDuration: [1200, 'short'],
-  copyToolCallPart: ['Arguments'],
+  copyToolCallPart: ['arguments'],
   toolCallApprovalPrompt: ['Delete the draft'],
   toolCallAlwaysAllow: ['this conversation'],
   toolCallDecision: ['denied', 'Keep the draft for now'],
@@ -157,7 +155,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   removedFromMessage: ['Ana Lopez'],
 };
 
-const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
+const stringNames = Object.keys(languages.en) as Array<keyof UiStrings>;
 
 function SquareGlyph(props: GlyphComponentProps) {
   return (
@@ -198,19 +196,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Strings"
-      description="Built-in text. Strings that take values are shown with sample values (a count of 3, a step of 3 of 5, the up arrow). The replaced column overrides a few keys."
+      description="Built-in text in each shipped language file. Text that takes values is shown with sample values (a count of 3, a step of 3 of 5, the up arrow). The Languages lab switches a page of components between them."
     >
       <StateMatrix
-        axes={{ key: stringNames, source: ['default', 'replaced'] }}
-        render={({ key, source }) =>
-          source === 'default' ? (
+        axes={{ key: stringNames, language: languageNames }}
+        render={({ key, language }) => (
+          <UiProvider locale={languageLocales[language]} messages={languages[language]}>
             <StringValue name={key} />
-          ) : (
-            <UiProvider strings={replacedStrings}>
-              <StringValue name={key} />
-            </UiProvider>
-          )
-        }
+          </UiProvider>
+        )}
       />
     </LabSection>
     <LabSection

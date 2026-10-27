@@ -16,8 +16,10 @@ import { I18nProvider, RouterProvider } from '../primitives/index.js';
 import { defaultGlyphs, type GlyphComponent, type GlyphMap, type GlyphName } from './glyphs.js';
 import { mergeClassNames } from './hooks.js';
 import { OverlayPresenceScope } from './overlay-presence.js';
+import { formatMessage, type MessageValues } from './message-format.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
-import { defaultStrings, type UiStrings } from './strings.js';
+import { en } from './locales/index.js';
+import { compileStrings, defaultStrings, type UiMessages, type UiStrings } from './strings.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
 
 /** Props a link renderer receives. It must render an element that navigates to `href`. */
@@ -37,12 +39,18 @@ export type UiNavigate = (href: string, routerOptions?: unknown) => void;
 /** Maps a router href to the native href a link renders. */
 export type UiHref = (href: string) => string;
 
+/** Formats an ICU MessageFormat message with the provider's locale. */
+export type UiFormatMessage = (message: string, values?: MessageValues) => string;
+
 export interface UiProviderProps {
   /** Replaces built-in glyphs by name. Unlisted glyphs keep their default (or the outer provider's). */
   icons?: Partial<GlyphMap> | undefined;
-  /** Replaces built-in strings by key. */
-  strings?: Partial<UiStrings> | undefined;
-  /** BCP 47 locale for formatting, collation and direction. */
+  /**
+   * A language file, or part of one: built-in text by key, as ICU MessageFormat messages. Unlisted
+   * keys keep the outer provider's text, and English below every provider.
+   */
+  messages?: Partial<UiMessages> | undefined;
+  /** BCP 47 locale for the messages' plurals, numbers and lists, and for formatting, collation and direction. */
   locale?: string | undefined;
   /** Renders library links. Defaults to a plain anchor. */
   renderLink?: UiLinkRenderer | undefined;
@@ -70,6 +78,8 @@ export interface PersistCodec<T> {
 
 interface UiContextValue {
   glyphs: GlyphMap;
+  messages: UiMessages;
+  locale: string;
   strings: UiStrings;
   renderLink: UiLinkRenderer;
   storage: UiStorage;
@@ -79,6 +89,8 @@ const renderAnchor: UiLinkRenderer = (props) => <a {...props} />;
 
 const defaultContext: UiContextValue = {
   glyphs: defaultGlyphs,
+  messages: en,
+  locale: 'en-US',
   strings: defaultStrings,
   renderLink: renderAnchor,
   storage: createMemoryStorage(),
@@ -92,13 +104,14 @@ const jsonCodec: PersistCodec<never> = {
 };
 
 /**
- * Supplies glyphs, strings, locale, link rendering and storage to every component below it.
- * Components work without a provider, using Heroicons, English strings and in-memory storage.
- * Nested providers merge over their parent.
+ * Supplies glyphs, text, locale, link rendering and storage to every component below it.
+ * Components work without a provider, using Heroicons, English text and in-memory storage.
+ * Nested providers merge over their parent. Changing `messages` or `locale` re-renders the
+ * components below in the new language.
  */
 export function UiProvider({
   icons,
-  strings,
+  messages,
   locale,
   renderLink,
   navigate,
@@ -107,15 +120,19 @@ export function UiProvider({
   children,
 }: UiProviderProps) {
   const parent = useContext(UiContext);
-  const value = useMemo<UiContextValue>(
-    () => ({
+  const value = useMemo<UiContextValue>(() => {
+    const merged = messages ? { ...parent.messages, ...omitUndefined(messages) } : parent.messages;
+    const resolvedLocale = locale ?? parent.locale;
+    const isSameText = merged === parent.messages && resolvedLocale === parent.locale;
+    return {
       glyphs: icons ? { ...parent.glyphs, ...omitUndefined(icons) } : parent.glyphs,
-      strings: strings ? { ...parent.strings, ...omitUndefined(strings) } : parent.strings,
+      messages: merged,
+      locale: resolvedLocale,
+      strings: isSameText ? parent.strings : compileStrings(merged, resolvedLocale),
       renderLink: renderLink ?? parent.renderLink,
       storage: storage ?? parent.storage,
-    }),
-    [parent, icons, strings, renderLink, storage],
-  );
+    };
+  }, [parent, icons, messages, locale, renderLink, storage]);
 
   let content = (
     <OverlayPresenceScope>
@@ -138,9 +155,18 @@ export function useGlyph(name: GlyphName): GlyphComponent {
   return useContext(UiContext).glyphs[name];
 }
 
-/** The built-in strings, with provider overrides applied. */
+/** The built-in text in the provider's language. */
 export function useUiStrings(): UiStrings {
   return useContext(UiContext).strings;
+}
+
+/**
+ * Formats the host's own ICU MessageFormat messages with the provider's locale, so its sentences
+ * follow the same plural rules, numbers and lists as the built-in text.
+ */
+export function useFormatMessage(): UiFormatMessage {
+  const { locale } = useContext(UiContext);
+  return useCallback((message, values) => formatMessage(message, values, locale), [locale]);
 }
 
 /** The storage adapter for persisted layout state. */

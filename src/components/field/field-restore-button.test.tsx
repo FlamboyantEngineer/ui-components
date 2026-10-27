@@ -17,7 +17,7 @@ describe('FieldRestoreButton', () => {
     expect(button.querySelector('[data-glyph="restore"]')).not.toBeNull();
     expectHooksMatchSpec(container, 'FIELD', { callerAttributes: ['data-value'] });
     rerender(
-      <UiProvider strings={{ restoreValue: (label) => `Rétablir ${label}` }}>
+      <UiProvider messages={{ restoreValue: 'Rétablir {label}' }}>
         <FieldRestoreButton label="Pomme" size="sm" isDisabled />
       </UiProvider>,
     );

@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** What a conversation row of a chat list says about the conversation, in reading order. */
 interface ChatConversationLabelParts {
   /** The conversation's title. */
@@ -34,26 +35,12 @@ export interface ChatListStrings {
   conversationLabel: (parts: ChatConversationLabelParts) => string;
 }
 
-const unreadText = (count: number) =>
-  count === 1 ? '1 unread message' : `${count} unread messages`;
-
-export const chatListStrings: ChatListStrings = {
-  conversations: 'Conversations',
-  searchConversations: 'Search conversations',
-  newChat: 'New chat',
-  noConversations: 'No conversations yet',
-  noMatchingConversations: 'No matching conversations',
-  loadingConversations: 'Loading conversations',
-  unreadMessages: unreadText,
-  conversationMuted: 'Muted',
-  conversationLabel: ({ title, presence, unreadCount, isMuted, time }) =>
-    [
-      title,
-      presence,
-      unreadCount > 0 ? unreadText(unreadCount) : undefined,
-      isMuted ? 'muted' : undefined,
-      time,
-    ]
-      .filter(Boolean)
-      .join(', '),
+/** The message values each text function reads its arguments as. */
+export const chatListArguments: MessageArguments<ChatListStrings> = {
+  unreadMessages: (count) => ({ count }),
+  conversationLabel: (parts) => ({
+    ...parts,
+    hasPresence: Boolean(parts.presence),
+    hasTime: Boolean(parts.time),
+  }),
 };

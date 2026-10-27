@@ -129,7 +129,7 @@ function HostDemo() {
         Refuse the next message
       </Checkbox>
       <div style={{ height: 460, maxWidth: 560 }}>
-        <UiProvider strings={quoteStrings}>
+        <UiProvider messages={quoteStrings}>
           <Chat
             messages={host.messages}
             participants={assistantPeople}

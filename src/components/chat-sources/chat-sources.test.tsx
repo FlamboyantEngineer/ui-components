@@ -38,7 +38,7 @@ describe('ChatSources', () => {
     const { rerender } = render(<ChatSources sources={sources.slice(0, 1)} />);
     expect(screen.getByRole('list', { name: '1 source' })).toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ chatSourcesLabel: (count) => `Sources (${count})` }}>
+      <UiProvider messages={{ chatSourcesLabel: 'Sources ({count})' }}>
         <ChatSources sources={sources} />
       </UiProvider>,
     );

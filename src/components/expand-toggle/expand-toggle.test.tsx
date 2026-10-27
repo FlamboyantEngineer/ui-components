@@ -58,7 +58,7 @@ describe('ExpandToggle', () => {
     rerender(<ExpandToggle label="Citrus" />);
     expect(screen.getByRole('button')).toHaveAccessibleName('Citrus');
     rerender(
-      <UiProvider strings={{ expand: 'Déplier' }}>
+      <UiProvider messages={{ expand: 'Déplier' }}>
         <ExpandToggle defaultExpanded={false} />
       </UiProvider>,
     );

@@ -1,3 +1,4 @@
+import { toSelectKey, type MessageArguments } from './message-format.js';
 /** Strings of document redline compares and spreadsheet formula bars. */
 export interface RedlineStrings {
   /** Default accessible name of a redline compare. */
@@ -47,51 +48,20 @@ export interface RedlineStrings {
   formulaResult: string;
 }
 
-const typeNames = {
-  paragraph: 'Paragraph',
-  heading: 'Heading',
-  'list-item': 'List item',
-  quote: 'Quote',
-  code: 'Code block',
-} as const;
-
-const rowChanges = {
-  unchanged: 'Unchanged',
-  changed: 'Changed',
-  added: 'Added',
-  removed: 'Removed',
-  'moved-from': 'Moved away',
-  'moved-to': 'Moved here',
-} as const;
-
-export const redlineStrings: RedlineStrings = {
-  redlineComparison: 'Document comparison',
-  redlineSummary: ({ added, removed, changed, moved }) => {
-    const parts = [
-      added > 0 ? `${added} added` : null,
-      removed > 0 ? `${removed} removed` : null,
-      changed > 0 ? `${changed} changed` : null,
-      moved > 0 ? `${moved} moved` : null,
-    ].filter((part) => part !== null);
-    return parts.length === 0 ? 'No differences' : parts.join(', ');
-  },
-  redlineBlockType: (type, level) => {
-    if (type === 'heading' && level !== null) return `Heading ${level}`;
-    if (type === 'list-item' && level !== null && level > 1) return `List item, level ${level}`;
-    return typeNames[type];
-  },
-  redlineRow: (change, blockType) => `${rowChanges[change]}: ${blockType}`,
-  redlineTypeChange: (oldType, newType) => `${oldType} became ${newType}`,
-  redlineFormatChange: 'Formatting changed',
-  redlineGoToNewPosition: 'Go to new position',
-  redlineGoToOldPosition: 'Go to old position',
-  redlinePreviousChange: 'Previous change',
-  redlineNextChange: 'Next change',
-  redlineAccept: 'Accept',
-  redlineReject: 'Reject',
-  formulaBar: 'Formula bar',
-  formulaCellReference: 'Cell reference',
-  formulaCellContent: 'Cell content',
-  formulaInvalidReference: (text) => `No cell named ${text}`,
-  formulaResult: 'Result',
+/** The message values each text function reads its arguments as. */
+export const redlineArguments: MessageArguments<RedlineStrings> = {
+  redlineSummary: ({ added, removed, changed, moved }) => ({
+    added,
+    removed,
+    changed,
+    moved,
+    total: added + removed + changed + moved,
+    addedAndMore: added > 0 && removed + changed + moved > 0,
+    removedAndMore: removed > 0 && changed + moved > 0,
+    changedAndMore: changed > 0 && moved > 0,
+  }),
+  redlineBlockType: (type, level) => ({ type: toSelectKey(type), level: level ?? 0 }),
+  redlineRow: (change, blockType) => ({ change: toSelectKey(change), blockType }),
+  redlineTypeChange: (oldType, newType) => ({ oldType, newType }),
+  formulaInvalidReference: (text) => ({ text }),
 };

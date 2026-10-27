@@ -87,7 +87,7 @@ describe('LoadingCard', () => {
       expect(card()?.querySelector('.ui-loading-card__footer')).toBeNull();
     }
     rerender(
-      <UiProvider strings={{ stepOfTotal: (current, total) => `${current}/${total}` }}>
+      <UiProvider messages={{ stepOfTotal: '{current}/{total}' }}>
         <LoadingCard step={{ current: 2, total: 5 }} />
       </UiProvider>,
     );

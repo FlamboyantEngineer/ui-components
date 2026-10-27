@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of code blocks. */
 export interface CodeStrings {
   /** The heading of a code block without a title or language, by its variant (`code`, `terminal`). */
@@ -12,10 +13,8 @@ export interface CodeStrings {
   codeBlockApply: string;
 }
 
-export const codeStrings: CodeStrings = {
-  codeBlockTitle: (variant) => (variant === 'terminal' ? 'Terminal' : 'Code'),
-  codeBlockCopy: 'Copy code',
-  codeBlockCopyCommands: (count) => (count === 1 ? 'Copy command' : 'Copy commands'),
-  codeBlockCopyOutput: 'Copy output',
-  codeBlockApply: 'Apply',
+/** The message values each text function reads its arguments as. */
+export const codeArguments: MessageArguments<CodeStrings> = {
+  codeBlockTitle: (variant) => ({ variant }),
+  codeBlockCopyCommands: (count) => ({ count }),
 };

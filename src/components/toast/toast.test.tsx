@@ -404,7 +404,7 @@ describe('Toast', () => {
     const onClose = vi.fn();
     const queue = createToastQueue({ defaultTimeout: 0 });
     render(
-      <UiProvider strings={{ dismiss: 'Close message' }}>
+      <UiProvider messages={{ dismiss: 'Close message' }}>
         <ToastRegion queue={queue} />
       </UiProvider>,
     );

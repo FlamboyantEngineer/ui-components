@@ -122,7 +122,9 @@ describe('AvatarGroup', () => {
       'Maria Santos, Jon Berg, Lena Ortiz, Sam Okafor, Priya Nair, Unnamed, Ines Duarte',
     );
     expect(
-      within(group).getByRole('img', { name: '3 more people: Priya Nair, Unnamed, Ines Duarte' }),
+      within(group).getByRole('img', {
+        name: '3 more people: Priya Nair, Unnamed, and Ines Duarte',
+      }),
     ).toHaveTextContent('+3');
 
     rerender(
@@ -136,7 +138,7 @@ describe('AvatarGroup', () => {
     expect(screen.getByRole('img', { name: '2 more people' })).toBeInTheDocument();
 
     rerender(
-      <UiProvider strings={{ morePeople: (count) => `${count} de plus` }}>
+      <UiProvider messages={{ morePeople: '{count} de plus' }}>
         <AvatarGroup layout="strip" people={people} maxVisible={1} aria-label="Ici" />
       </UiProvider>,
     );
@@ -215,7 +217,7 @@ describe('AvatarGroup', () => {
     );
     expect(root(container)).toHaveAttribute('data-overflow', 'menu');
     const count = screen.getByRole('button', {
-      name: '3 more people: Priya Nair, Tom Li, Ines Duarte',
+      name: '3 more people: Priya Nair, Tom Li, and Ines Duarte',
     });
     expect(count).toHaveClass('ui-avatar-group__overflow');
     expect(count).toHaveTextContent('+3');

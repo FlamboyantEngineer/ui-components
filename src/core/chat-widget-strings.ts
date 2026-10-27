@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of the `Chat` widget: its search, the reply and edit banners and the queue. */
 export interface ChatWidgetStrings {
   /** Names the button that opens the search within a conversation, and its find box. */
@@ -18,13 +19,9 @@ export interface ChatWidgetStrings {
   chatRemoveQueued: (position: number) => string;
 }
 
-export const chatWidgetStrings: ChatWidgetStrings = {
-  chatSearch: 'Search this conversation',
-  chatReplyingTo: 'Replying to',
-  chatCancelReply: 'Cancel reply',
-  chatEditingMessage: 'Editing your message',
-  chatEditingQueued: 'Editing a queued message',
-  chatQueuedMessages: (count) => (count === 1 ? '1 queued message' : `${count} queued messages`),
-  chatEditQueued: (position) => `Edit queued message ${position}`,
-  chatRemoveQueued: (position) => `Remove queued message ${position}`,
+/** The message values each text function reads its arguments as. */
+export const chatWidgetArguments: MessageArguments<ChatWidgetStrings> = {
+  chatQueuedMessages: (count) => ({ count }),
+  chatEditQueued: (position) => ({ position }),
+  chatRemoveQueued: (position) => ({ position }),
 };

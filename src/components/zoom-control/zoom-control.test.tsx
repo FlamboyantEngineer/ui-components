@@ -54,7 +54,7 @@ describe('ZoomControl', () => {
     );
     expect(screen.getByRole('group', { name: 'Canvas' })).toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ zoom: 'Agrandissement', zoomIn: 'Agrandir' }}>
+      <UiProvider messages={{ zoom: 'Agrandissement', zoomIn: 'Agrandir' }}>
         <ZoomControl />
       </UiProvider>,
     );
@@ -341,7 +341,7 @@ describe('ZoomControl', () => {
     const { rerender } = render(<ZoomControl presets={[]} />);
     expect(screen.queryByRole('button', { name: 'Zoom presets' })).not.toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ zoomPresets: 'Preset zooms' }}>
+      <UiProvider messages={{ zoomPresets: 'Preset zooms' }}>
         <ZoomControl presets={[100]} size="lg" isDisabled />
       </UiProvider>,
     );

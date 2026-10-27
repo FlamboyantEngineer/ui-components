@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of a conversation's transcript: its announcements, history and unread messages. */
 export interface ChatStrings {
   /** Announces one new message, from its author's name (`null` for a notice) and its text. */
@@ -14,13 +15,10 @@ export interface ChatStrings {
   olderMessagesLoaded: (count: number) => string;
 }
 
-export const chatStrings: ChatStrings = {
-  newMessageAnnouncement: (author, text) =>
-    author === null ? `New message: ${text}` : `New message from ${author}: ${text}`,
-  newMessageCount: (count) => (count === 1 ? '1 new message' : `${count} new messages`),
-  unreadMessageCount: (count) => `${count} unread`,
-  jumpToUnread: 'Jump',
-  loadingOlderMessages: 'Loading older messages',
-  olderMessagesLoaded: (count) =>
-    count === 1 ? '1 older message loaded' : `${count} older messages loaded`,
+/** The message values each text function reads its arguments as. */
+export const chatArguments: MessageArguments<ChatStrings> = {
+  newMessageAnnouncement: (author, text) => ({ author, text, hasAuthor: author !== null }),
+  newMessageCount: (count) => ({ count }),
+  unreadMessageCount: (count) => ({ count }),
+  olderMessagesLoaded: (count) => ({ count }),
 };

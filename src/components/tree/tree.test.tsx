@@ -155,7 +155,7 @@ describe('Tree', () => {
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();
     render(
-      <UiProvider strings={{ expand: 'Open', collapse: 'Close' }}>
+      <UiProvider messages={{ expand: 'Open', collapse: 'Close' }}>
         <FoodTree onExpandedChange={onExpandedChange} />
       </UiProvider>,
     );

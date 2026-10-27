@@ -273,7 +273,7 @@ describe('ChatList', () => {
 
   it('UIC-CHAT-LIST-1.1 takes its names from the labelling props and the provider', () => {
     const { rerender } = render(
-      <UiProvider strings={{ conversations: 'Unterhaltungen', newChat: 'Neu' }}>
+      <UiProvider messages={{ conversations: 'Unterhaltungen', newChat: 'Neu' }}>
         <ChatList conversations={[]} onNew={() => {}} />
       </UiProvider>,
     );

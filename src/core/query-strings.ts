@@ -1,3 +1,4 @@
+import { toSelectKey, type MessageArguments } from './message-format.js';
 /** How a filter condition compares a record's value with the condition's value. */
 export type FilterOperator =
   | 'contains'
@@ -65,46 +66,11 @@ export interface QueryStrings {
   showMoreValues: (count: number) => string;
 }
 
-const operatorNames: Readonly<Record<FilterOperator, string>> = {
-  contains: 'contains',
-  'not-contains': 'does not contain',
-  'starts-with': 'starts with',
-  equals: 'is',
-  'not-equals': 'is not',
-  'less-than': 'is less than',
-  'at-most': 'is at most',
-  'greater-than': 'is greater than',
-  'at-least': 'is at least',
-  before: 'is before',
-  after: 'is after',
-  between: 'is between',
-  'any-of': 'is any of',
-  'none-of': 'is none of',
-  empty: 'is empty',
-  'not-empty': 'is not empty',
-};
-
-export const queryStrings: QueryStrings = {
-  filters: 'Filters',
-  addFilter: 'Add filter',
-  clearAllFilters: 'Clear all',
-  removeFilter: (filter) => `Remove filter ${filter}`,
-  filterOperator: (operator) => operatorNames[operator],
-  filterField: 'Field',
-  filterCondition: 'Condition',
-  filterValue: 'Value',
-  filterRange: (start, end) => `${start} and ${end}`,
-  conditionIncomplete: 'Enter a value.',
-  conditions: 'Conditions',
-  conditionGroup: 'Group',
-  conditionRule: (position) => `Rule ${position}`,
-  conditionCombinator: 'Match',
-  combinatorAnd: 'All',
-  combinatorOr: 'Any',
-  addRule: 'Add rule',
-  addGroup: 'Add group',
-  noRules: 'No rules yet.',
-  conditionActions: 'Actions',
-  runQuery: 'Run query',
-  showMoreValues: (count) => `Show ${count} more`,
+/** The message values each text function reads its arguments as. */
+export const queryArguments: MessageArguments<QueryStrings> = {
+  removeFilter: (filter) => ({ filter }),
+  filterOperator: (operator) => ({ operator: toSelectKey(operator) }),
+  filterRange: (start, end) => ({ start, end }),
+  conditionRule: (position) => ({ position }),
+  showMoreValues: (count) => ({ count }),
 };

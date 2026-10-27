@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of the cards in which an agent asks the reader questions in a chat. */
 export interface ChatQuestionStrings {
   /** Sends the reader's answers to an agent's questions. */
@@ -40,31 +41,13 @@ export interface ChatQuestionStrings {
   questionDismissed: string;
 }
 
-/** `A`, `A and B`, `A, B and C`. */
-function joinAnswers(answers: readonly string[]): string {
-  if (answers.length < 2) return answers.join('');
-  return `${answers.slice(0, -1).join(', ')} and ${answers.at(-1)}`;
-}
-
-export const chatQuestionStrings: ChatQuestionStrings = {
-  questionSubmit: 'Submit',
-  questionOther: 'Other',
-  questionOtherAnswer: 'Other answer',
-  questionAnswerPlaceholder: 'Type your answer',
-  questionRecommended: 'Recommended',
-  questionSteps: 'Questions',
-  questionStep: (position) => `Question ${position}`,
-  questionProgress: (position, count) => `Question ${position} of ${count}`,
-  questionCounter: (position, count) => `${position}/${count}`,
-  questionAnsweredTab: 'Answered',
-  questionAnswerToContinue: 'Answer this question to continue.',
-  questionAnswerAllToSubmit: 'Answer every question to submit.',
-  questionSubmitFailed: 'The answers could not be sent. Try again.',
-  questionPreview: (label) => `Preview of ${label}`,
-  questionAsked: (question, count) =>
-    count === 1 ? `Question: ${question}` : `${count} questions: ${question}`,
-  questionChose: (answers) => `You chose ${joinAnswers(answers)}`,
-  questionAnsweredText: (text) => `You answered: ${text}`,
-  questionNoAnswer: 'No answer',
-  questionDismissed: 'Dismissed',
+/** The message values each text function reads its arguments as. */
+export const chatQuestionArguments: MessageArguments<ChatQuestionStrings> = {
+  questionStep: (position) => ({ position }),
+  questionProgress: (position, count) => ({ position, count }),
+  questionCounter: (position, count) => ({ position, count }),
+  questionPreview: (label) => ({ label }),
+  questionAsked: (question, count) => ({ question, count }),
+  questionChose: (answers) => ({ answers }),
+  questionAnsweredText: (text) => ({ text }),
 };

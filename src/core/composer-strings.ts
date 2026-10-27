@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of the message composer's tools, edit mode and rich mode. */
 export interface ComposerStrings {
   /** Opens the file chooser that attaches files to a message. */
@@ -12,10 +13,8 @@ export interface ComposerStrings {
   removedFromMessage: (label: string) => string;
 }
 
-export const composerStrings: ComposerStrings = {
-  attachFiles: 'Attach files',
-  insertEmoji: 'Insert emoji',
-  composerMenu: 'Add and more',
-  composerSelectTrigger: (label, value) => `${label}: ${value}`,
-  removedFromMessage: (label) => `${label} removed`,
+/** The message values each text function reads its arguments as. */
+export const composerArguments: MessageArguments<ComposerStrings> = {
+  composerSelectTrigger: (label, value) => ({ label, value }),
+  removedFromMessage: (label) => ({ label }),
 };

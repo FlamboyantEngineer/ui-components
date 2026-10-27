@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of activity feeds, change lists and version histories. */
 export interface HistoryStrings {
   /** Default accessible name of an activity feed. */
@@ -48,28 +49,9 @@ export interface HistoryStrings {
   noMatchingVersions: string;
 }
 
-export const historyStrings: HistoryStrings = {
-  activity: 'Activity',
-  noActivity: 'No activity yet.',
-  noChanges: 'No changes.',
-  changedTo: 'changed to',
-  valueBefore: 'Before',
-  valueAfter: 'After',
-  emptyValue: 'Empty',
-  versionHistory: 'Version history',
-  currentVersion: 'Current',
-  compareVersions: 'Compare',
-  namedVersionsOnly: 'Named versions only',
-  versionsBy: (name) => `Edited by ${name ?? 'anyone'}`,
-  anyone: 'Anyone',
-  versionActions: (name) => `Actions for ${name}`,
-  restoreVersion: 'Restore this version',
-  restoreVersionTitle: (name) => `Restore ${name}?`,
-  restoreVersionMessage: 'Its content replaces the current content.',
-  restore: 'Restore',
-  nameVersion: 'Name this version',
-  renameVersion: 'Rename version',
-  versionName: 'Version name',
-  noVersions: 'No versions yet.',
-  noMatchingVersions: 'No versions match the filters.',
+/** The message values each text function reads its arguments as. */
+export const historyArguments: MessageArguments<HistoryStrings> = {
+  versionsBy: (name) => ({ name, hasName: name !== null }),
+  versionActions: (name) => ({ name }),
+  restoreVersionTitle: (name) => ({ name }),
 };

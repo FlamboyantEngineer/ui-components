@@ -121,7 +121,7 @@ describe('key sequences', () => {
     expect(
       formatShortcutAccessibleText(['G', 'I'], {
         platform: 'linux',
-        sequence: (steps) => steps.join(' puis '),
+        joinSteps: (previous, next) => `${previous} puis ${next}`,
       }),
     ).toBe('G puis I');
   });

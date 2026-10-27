@@ -188,7 +188,7 @@ describe('Badge', () => {
     expect(spoken()?.textContent).toBe('12 or more');
 
     rerender(
-      <UiProvider strings={{ countOrMore: (count) => `au moins ${count}` }}>
+      <UiProvider messages={{ countOrMore: 'au moins {count}' }}>
         <Badge count={12} more />
       </UiProvider>,
     );

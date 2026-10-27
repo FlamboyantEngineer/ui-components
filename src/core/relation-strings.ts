@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of relation matrices, permission matrices and relation columns. */
 export interface RelationStrings {
   /** Names the column of row headers in a relation matrix, shown in its corner. */
@@ -30,23 +31,12 @@ export interface RelationStrings {
   relationPath: string;
 }
 
-export const relationStrings: RelationStrings = {
-  relationItems: 'Items',
-  related: 'Related',
-  relationCount: (count) => {
-    if (count === 0) return 'No relations';
-    return count === 1 ? '1 relation' : `${count} relations`;
-  },
-  permissions: 'Permissions',
-  permissionGrant: (permission, role, isInherited) =>
-    `${permission} for ${role}${isInherited ? ', inherited' : ''}`,
-  permissionGroupGrant: (group, role) => `All ${group} for ${role}`,
-  readOnlyRole: 'Read only',
-  relationItem: 'Item',
-  upstreamOf: (item) => `Upstream of ${item}`,
-  downstreamOf: (item) => `Downstream of ${item}`,
-  noUpstream: 'No upstream items',
-  noDownstream: 'No downstream items',
-  relatedCount: (count, direction) => `${count} ${direction}`,
-  relationPath: 'Relation path',
+/** The message values each text function reads its arguments as. */
+export const relationArguments: MessageArguments<RelationStrings> = {
+  relationCount: (count) => ({ count }),
+  permissionGrant: (permission, role, isInherited) => ({ permission, role, isInherited }),
+  permissionGroupGrant: (group, role) => ({ group, role }),
+  upstreamOf: (item) => ({ item }),
+  downstreamOf: (item) => ({ item }),
+  relatedCount: (count, direction) => ({ count, direction }),
 };
