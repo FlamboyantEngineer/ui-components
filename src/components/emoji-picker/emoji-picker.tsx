@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react';
-import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
+import { Dialog, DialogTrigger } from '../../primitives/index.js';
+import { InteractivePopover } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -122,9 +123,9 @@ export function EmojiPickerTrigger({ children, ...props }: EmojiPickerTriggerPro
   return (
     <DialogTrigger>
       {children}
-      <Popover className={hooks.slotClass('popover')}>
+      <InteractivePopover className={hooks.slotClass('popover')}>
         <EmojiPicker autoFocus {...props} />
-      </Popover>
+      </InteractivePopover>
     </DialogTrigger>
   );
 }

@@ -15,6 +15,7 @@ import {
 import { I18nProvider, RouterProvider } from '../primitives/index.js';
 import { defaultGlyphs, type GlyphComponent, type GlyphMap, type GlyphName } from './glyphs.js';
 import { mergeClassNames } from './hooks.js';
+import { OverlayPresenceScope } from './overlay-presence.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
 import { defaultStrings, type UiStrings } from './strings.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
@@ -116,7 +117,11 @@ export function UiProvider({
     [parent, icons, strings, renderLink, storage],
   );
 
-  let content = <UiContext.Provider value={value}>{children}</UiContext.Provider>;
+  let content = (
+    <OverlayPresenceScope>
+      <UiContext.Provider value={value}>{children}</UiContext.Provider>
+    </OverlayPresenceScope>
+  );
   if (navigate) {
     content = (
       <RouterProvider navigate={navigate} {...(useHref ? { useHref } : {})}>

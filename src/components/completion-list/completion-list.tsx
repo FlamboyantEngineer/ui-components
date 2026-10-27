@@ -1,5 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { Popover, useLocale, type Placement } from '../../primitives/index.js';
+import { useLocale, type Placement } from '../../primitives/index.js';
+import { InteractivePopover } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
@@ -156,7 +157,7 @@ export function CompletionList(props: CompletionListProps) {
   const { className, ...rest } = props;
   const label = props['aria-labelledby'] ? undefined : (props['aria-label'] ?? strings.suggestions);
   return (
-    <Popover
+    <InteractivePopover
       {...hooks.root({ className, props: rest })}
       isOpen={isShown}
       onOpenChange={(open) => onOpenChange?.(open)}
@@ -205,7 +206,7 @@ export function CompletionList(props: CompletionListProps) {
           {footer}
         </div>
       ) : null}
-    </Popover>
+    </InteractivePopover>
   );
 }
 

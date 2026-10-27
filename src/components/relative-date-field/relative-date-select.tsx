@@ -3,11 +3,11 @@ import {
   Button as AriaButton,
   ListBox,
   ListBoxItem,
-  Popover,
   Select as AriaSelect,
   SelectValueContext,
   useSlottedContext,
 } from '../../primitives/index.js';
+import { InteractivePopover } from '../popover/popover.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
@@ -106,7 +106,7 @@ export function PresetSelect({
       validationBehavior="aria"
     >
       <RelativeTrigger control={control} text={text} placeholder={placeholder} />
-      <Popover
+      <InteractivePopover
         {...hooks.slot('popover', { layer: 'dropdown' })}
         offset={4}
         style={{ ...triggerWidthProperty, zIndex }}
@@ -124,7 +124,7 @@ export function PresetSelect({
           )}
         </ListBox>
         {aside}
-      </Popover>
+      </InteractivePopover>
     </AriaSelect>
   );
 }

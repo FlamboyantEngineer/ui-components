@@ -1,6 +1,6 @@
 # Provider
 
-`UiProvider` supplies the services components need from their host: glyphs, strings, locale, link rendering and storage. The library never reaches host services any other way. Every component works without a provider.
+`UiProvider` supplies the services components need from their host: glyphs, strings, locale, link rendering and storage, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
 
 ## UIC-PROVIDER-1 - Defaults
 
@@ -83,6 +83,29 @@ A stored value that cannot be parsed shall fall back to the component's initial 
 
 Implementation: `src/core/provider.tsx`, `src/core/storage.ts`
 Verification: `src/core/provider.test.tsx`
+
+## UIC-PROVIDER-7 - Overlay presence
+
+### UIC-PROVIDER-7.1 - Interactive overlays
+
+The library shall count each interactive overlay while it is open: a menu and each open submenu, the popups of select, combobox, completion, date and time (calendar and its month and year lists), relative date, color and emoji fields, and every popover, including an anchored modal. The count starts when the overlay opens and ends when it closes, before any exit animation. Tooltips, hover cards, a code editor's hover hint, a rich text editor's selection toolbar and toasts never count. `useOverlayPresence()` shall return an `OverlayPresence` for synchronous reads (`isActive()`, `getCount()`) and `subscribe(listener)`, and `useIsOverlayActive()` shall return whether one is open and re-render when that changes. Every library overlay counts through one popover building block, so no component registers itself and nothing scans the page.
+
+Implementation: `src/core/overlay-presence.tsx`, `src/components/popover/interactive-popover.tsx`
+Verification: `src/core/overlay-presence.test.tsx`, `e2e/provider.spec.ts`
+
+### UIC-PROVIDER-7.2 - Exact registrations
+
+An overlay shall be counted once however it opens (a trigger, `isOpen`, a submenu) and released exactly once however it closes: Escape, an action, an outside press, a controlled `isOpen` turning false, or unmount, including in Strict Mode. React Aria's hidden copy of a collection's content counts with the overlay it copies. Listeners are called after the count changes, once for changes made together, so overlays that replace one another in one update report no gap; nested overlays keep the presence active until the last one closes.
+
+Implementation: `src/core/overlay-presence.tsx`, `src/components/popover/interactive-popover.tsx`
+Verification: `src/core/overlay-presence.test.tsx`
+
+### UIC-PROVIDER-7.3 - Scope
+
+The outermost `UiProvider` shall hold one overlay presence for every component below it, its portals and nested providers included; separate provider trees, such as separate React roots or documents, keep separate counts. Components outside any provider share one page-wide presence. A presence ends with its provider; overlays that unmount with it release their counts.
+
+Implementation: `src/core/overlay-presence.tsx`, `src/core/provider.tsx`
+Verification: `src/core/overlay-presence.test.tsx`
 
 ## Hooks
 

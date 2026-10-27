@@ -11,7 +11,6 @@ import {
   type RefObject,
 } from 'react';
 import {
-  Popover as AriaPopover,
   OverlayTriggerStateContext,
   PopoverContext,
   RootMenuTriggerStateContext,
@@ -22,6 +21,7 @@ import type { OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { InteractivePopover } from '../popover/popover.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps {
@@ -167,7 +167,7 @@ export function MenuOverlay({
   const isSubmenu = useSlottedContext(PopoverContext)?.trigger === 'SubmenuTrigger';
   const open = usePageScrollFollow(nonModal && !isSubmenu, rest);
   return (
-    <AriaPopover
+    <InteractivePopover
       {...rest}
       {...open}
       ref={surface.ref}
@@ -183,7 +183,7 @@ export function MenuOverlay({
           <MenuLayerContext.Provider value={resolved}>{children}</MenuLayerContext.Provider>
         </MenuNonModalContext.Provider>
       </MenuSurfaceContext.Provider>
-    </AriaPopover>
+    </InteractivePopover>
   );
 }
 

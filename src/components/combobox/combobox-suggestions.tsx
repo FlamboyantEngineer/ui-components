@@ -8,11 +8,11 @@ import {
   ListBoxLoadMoreItem,
   ListBoxSection,
   ListLayout,
-  Popover,
   PopoverContext,
   useSlottedContext,
   Virtualizer,
 } from '../../primitives/index.js';
+import { InteractivePopover } from '../popover/popover.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
@@ -273,7 +273,7 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const { inputText, completion, listHeader, inputRef } = props;
   const filterText = completion?.text === inputText ? completion.typed : inputText;
   return (
-    <Popover
+    <InteractivePopover
       {...hooks.slot('popover', { layer: 'dropdown', size: props.size })}
       isOpen={isShown}
       onOpenChange={(open) => {
@@ -294,6 +294,6 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
         </div>
       ) : null}
       <OptionList {...props} filterText={filterText} />
-    </Popover>
+    </InteractivePopover>
   );
 }

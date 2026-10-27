@@ -5,7 +5,6 @@ import {
   ListBox,
   ListBoxLoadMoreItem,
   ListLayout,
-  Popover,
   PopoverContext,
   SearchField,
   useFilter,
@@ -13,6 +12,7 @@ import {
   Virtualizer,
   type AutocompleteProps,
 } from '../../primitives/index.js';
+import { InteractivePopover } from '../popover/popover.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -119,7 +119,7 @@ export function SelectList(props: SelectListProps) {
     return contains(text, query) || Boolean(description && contains(description, query));
   };
   return (
-    <Popover
+    <InteractivePopover
       {...hooks.slot('popover', { layer: 'dropdown' })}
       offset={4}
       containerPadding={8}
@@ -144,6 +144,6 @@ export function SelectList(props: SelectListProps) {
       ) : (
         <OptionList {...props} />
       )}
-    </Popover>
+    </InteractivePopover>
   );
 }

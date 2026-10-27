@@ -49,6 +49,7 @@ export function HoverCard({ showArrow = false, className, children, ...rest }: H
       {...rest}
       {...hooks.root({ className, props: rest })}
       arrowClassName={showArrow ? hooks.slotClass('arrow') : undefined}
+      isHint
     >
       {children}
     </PopoverPanel>
