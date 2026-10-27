@@ -34,8 +34,12 @@ test.describe('Chat Tool Call lab', () => {
       'aria-busy',
       'true',
     );
+    const failed = card(page, 'status=failed details=none expansion=collapsed');
+    await expect(failed.locator('.ui-chat-tool-call__error')).toBeHidden();
     await expect(
-      card(page, 'status=failed details=none expansion=collapsed').getByRole('alert'),
+      card(page, 'status=failed details=none expansion=expanded').locator(
+        '.ui-chat-tool-call__error',
+      ),
     ).toHaveText('The recipe service did not answer in time.');
     await expect(card(page, 'status=succeeded').locator('.ui-chat-tool-call__badge')).toHaveText(
       'Auto-approved',

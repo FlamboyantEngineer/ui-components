@@ -122,10 +122,10 @@ export function ToolCallTitle({
   );
 }
 
-/** A failed call's error, announced as an alert. */
+/** A failed call's error, at the top of the body. */
 export function ToolCallError({ message }: { message: string }) {
   return (
-    <div {...hooks.slot('error')} role="alert">
+    <div {...hooks.slot('error')}>
       <Glyph name="error" />
       {message}
     </div>

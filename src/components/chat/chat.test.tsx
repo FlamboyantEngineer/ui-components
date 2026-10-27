@@ -198,7 +198,7 @@ describe('Chat', () => {
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('UIC-CHAT-1.5 UIC-CHAT-PARTS-5.4 keeps a failed call discoverable once the final answer arrives', async () => {
+  it('UIC-CHAT-1.5 UIC-CHAT-PARTS-5.4 keeps a failed call a collapsed row as the final answer arrives', async () => {
     const steps = (hotels: 'running' | 'failed'): ChatPart[] => [
       {
         type: 'reasoning',
@@ -237,19 +237,22 @@ describe('Chat', () => {
     const { user, rerenderWith } = renderChat({ ...assistantChat, messages: [running] });
     const group = () =>
       within(article('w1')).getByRole('button', { name: /^(Working…|Used tools)$/ });
+    const hotels = () => within(article('w1')).getByRole('button', { name: /^Search hotels/ });
+    const error = () => within(article('w1')).getByText('The hotel service timed out.');
     expect(group()).toHaveAccessibleName('Working…');
-    await user.click(group());
-    expect(group()).toHaveAttribute('aria-expanded', 'false');
+    expect(group()).toHaveAttribute('aria-expanded', 'true');
     rerenderWith({ ...assistantChat, messages: [final] });
     expect(group()).toHaveAccessibleName('Used tools');
-    expect(group()).toHaveAttribute('aria-expanded', 'true');
-    expect(within(article('w1')).getByRole('alert')).toHaveTextContent(
-      'The hotel service timed out.',
-    );
+    expect(group()).toHaveAttribute('aria-expanded', 'false');
     await user.click(group());
+    expect(hotels()).toHaveAttribute('aria-expanded', 'false');
+    expect(error()).not.toBeVisible();
+    await user.click(hotels());
+    expect(error()).toBeVisible();
     rerenderWith({ ...assistantChat, messages: [] });
     rerenderWith({ ...assistantChat, messages: [final] });
-    expect(group()).toHaveAttribute('aria-expanded', 'false');
+    expect(group()).toHaveAttribute('aria-expanded', 'true');
+    expect(error()).toBeVisible();
   });
 
   it('UIC-CHAT-1.6 separates days, marks the first unread message and groups by author', () => {

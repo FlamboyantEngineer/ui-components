@@ -17,7 +17,6 @@ import { ChatPartView, type PartContext } from './chat-part-view.js';
 import {
   groupChatParts,
   isAwaitingApproval,
-  isFailedCall,
   isStepActive,
   summarizeSteps,
   toPartKey,
@@ -104,19 +103,12 @@ export interface ChatPartsProps extends BaseProps {
 }
 
 /**
- * What a tool call calls for the reader with, shown in its group (`groupKeys`): a wait for approval,
- * which reveals even as the parts mount, or a failure, which also reveals the call's card and only
- * once it arrives, so a group the reader closed in loaded history stays closed.
+ * What a tool call calls for the reader with, shown in its group (`groupKeys`): a wait for approval.
+ * A failure does not: it shows as a quiet row whose error waits in its closed body.
  */
 function toReveals(part: ChatPart, groupKeys: readonly string[]): PartsReveal[] {
-  if (part.type !== 'tool-call') return [];
-  if (isAwaitingApproval(part)) {
-    return [{ id: `approval:${part.id}`, keys: groupKeys, isRevealedOnMount: true }];
-  }
-  if (isFailedCall(part)) {
-    return [{ id: `failed:${part.id}`, keys: [...groupKeys, part.id], isRevealedOnMount: false }];
-  }
-  return [];
+  if (part.type !== 'tool-call' || !isAwaitingApproval(part)) return [];
+  return [{ id: `approval:${part.id}`, keys: groupKeys }];
 }
 
 /** What the message's tool calls call for the reader with. */
@@ -141,12 +133,12 @@ interface StepsViewProps {
 }
 
 /**
- * A group of steps: open while it runs, a tool call in it waits for approval or a tool call in it
- * failed, unless the reader chose otherwise, and collapsed afterwards.
+ * A group of steps: open while it runs or a tool call in it waits for approval, unless the reader
+ * chose otherwise, and collapsed afterwards.
  */
 function StepsView({ item, isRunning, context }: StepsViewProps) {
   const { expansion } = context;
-  const isCallingReader = item.steps.some((step) => isAwaitingApproval(step) || isFailedCall(step));
+  const isCallingReader = item.steps.some(isAwaitingApproval);
   return (
     <ChatSteps
       isRunning={isRunning}

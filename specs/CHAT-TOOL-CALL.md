@@ -1,6 +1,6 @@
 # Chat Tool Call
 
-`ChatToolCall` is one call of a tool by an assistant, shown in a conversation as a collapsible card built on [Disclosure](DISCLOSURE.md): a trigger with the call's status, label and duration, and a body with the arguments and result as formatted, copyable JSON, or a custom body the host draws for that tool. A failed call shows its error. A call that asks for the reader's approval shows what it will do with Approve, Deny (with an optional reason) and Always allow, each offered only when the host handles it, with keyboard shortcuts; once decided, the card keeps the decision. The card takes its data as plain props (`ChatToolCallData`): `id`, `name`, `label`, `target`, `kind`, `status`, `args`, `result`, `error`, `durationMs` and `approval`.
+`ChatToolCall` is one call of a tool by an assistant, shown in a conversation as a collapsible card built on [Disclosure](DISCLOSURE.md): a trigger with the call's status, label and duration, and a body with the arguments and result as formatted, copyable JSON, or a custom body the host draws for that tool. A failed call keeps its error in the body. A call that asks for the reader's approval shows what it will do with Approve, Deny (with an optional reason) and Always allow, each offered only when the host handles it, with keyboard shortcuts; once decided, the card keeps the decision. The card takes its data as plain props (`ChatToolCallData`): `id`, `name`, `label`, `target`, `kind`, `status`, `args`, `result`, `error`, `durationMs` and `approval`.
 
 ## UIC-CHAT-TOOL-CALL-1 - Card
 
@@ -85,7 +85,7 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`
 
 ### UIC-CHAT-TOOL-CALL-2.5 - Error
 
-A `failed` call with an `error` shall show the error in a `ui-chat-tool-call__error` element with `role="alert"`, after the disclosure, with a decorative `error` glyph.
+A `failed` call with an `error` shall show the error in a `ui-chat-tool-call__error` element at the top of the body, before the arguments and result or the custom body, with a decorative `error` glyph. Like the rest of the body, it shows only while the card is expanded, so collapsing the card hides all of the error; the trigger keeps the label, the `error` status glyph and the `Failed` status.
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-tool-call.spec.ts`
@@ -94,7 +94,7 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat
 
 ### UIC-CHAT-TOOL-CALL-3.1 - Expanded state
 
-Pressing the trigger shall toggle the body as [UIC-DISCLOSURE-1.2](DISCLOSURE.md#uic-disclosure-12---expanding-and-collapsing) does. Uncontrolled, the card follows its status, open while it is `approval-requested` or `failed` and closed otherwise, until the reader toggles it; from then on the reader's choice holds. `defaultExpanded` sets the state at first instead, and it then holds until the reader toggles it. `isExpanded` controls the state, and `onExpandedChange` receives each requested state, also while controlled.
+Pressing the trigger shall toggle the body as [UIC-DISCLOSURE-1.2](DISCLOSURE.md#uic-disclosure-12---expanding-and-collapsing) does. Uncontrolled, the card follows its status, open while it is `approval-requested` and closed otherwise, until the reader toggles it; a `failed` call starts closed, whether it is loaded failed or fails while shown; from then on the reader's choice holds. `defaultExpanded` sets the state at first instead, and it then holds until the reader toggles it. `isExpanded` controls the state, and `onExpandedChange` receives each requested state, also while controlled.
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-tool-call.spec.ts`
@@ -157,7 +157,7 @@ Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/
 | `ui-chat-tool-call__copy`         | slot  |                                                                                          | A part's copy button (also `ui-copy-button`).                           |
 | `ui-chat-tool-call__json`         | slot  |                                                                                          | A part's scrolling JSON text (also `ui-scroll-region`).                 |
 | `ui-chat-tool-call__empty`        | slot  |                                                                                          | The note of a body with nothing to show.                                |
-| `ui-chat-tool-call__error`        | slot  |                                                                                          | A failed call's error.                                                  |
+| `ui-chat-tool-call__error`        | slot  |                                                                                          | A failed call's error, at the top of the body.                          |
 | `ui-chat-tool-call__approval`     | slot  |                                                                                          | The approval request, then its decision.                                |
 | `ui-chat-tool-call__prompt`       | slot  |                                                                                          | The pending request's question.                                         |
 | `ui-chat-tool-call__actions`      | slot  |                                                                                          | The row of approval buttons.                                            |

@@ -17,10 +17,6 @@
   border-color: var(--ref-warning);
 }
 
-.ui-chat-tool-call[data-status='failed'] {
-  border-color: var(--ref-danger);
-}
-
 .ui-chat-tool-call__disclosure {
   min-width: 0;
 }
@@ -176,10 +172,12 @@
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  padding: 8px 10px;
-  border-top: 1px solid var(--ref-border);
   color: var(--ref-danger);
   overflow-wrap: anywhere;
+}
+
+.ui-chat-tool-call__error + * {
+  margin-top: 8px;
 }
 
 .ui-chat-tool-call__error .ui-glyph {
@@ -249,10 +247,10 @@
 }
 
 /* In a group of steps a call is a quiet row: its kind's glyph and label, the status and duration
-   kept for assistive technology, and a chevron after the label on hover and while open. A call
-   that waits for approval or failed keeps its card. */
-.ui-chat-steps__panel
-  .ui-chat-tool-call:not([data-status='approval-requested'], [data-status='failed']) {
+   kept for assistive technology, and a chevron after the label on hover and while open. A failed
+   call is a row like the others, told apart by its danger glyph. A call that waits for approval
+   keeps its card. */
+.ui-chat-steps__panel .ui-chat-tool-call:not([data-status='approval-requested']) {
   max-width: none;
   border: 0;
   background: none;
@@ -261,14 +259,14 @@
 }
 
 .ui-chat-steps__panel
-  .ui-chat-tool-call:not([data-status='approval-requested'], [data-status='failed'])
+  .ui-chat-tool-call:not([data-status='approval-requested'])
   .ui-chat-tool-call__heading {
   font-size: var(--ref-font-size-sm);
   font-weight: normal;
 }
 
 .ui-chat-steps__panel
-  .ui-chat-tool-call:not([data-status='approval-requested'], [data-status='failed'])
+  .ui-chat-tool-call:not([data-status='approval-requested'])
   .ui-disclosure__trigger {
   width: auto;
   max-width: 100%;
@@ -282,7 +280,7 @@
 }
 
 .ui-chat-steps__panel
-  .ui-chat-tool-call:not([data-status='approval-requested'], [data-status='failed'])
+  .ui-chat-tool-call:not([data-status='approval-requested'])
   .ui-disclosure__indicator {
   order: 1;
   width: 14px;
@@ -306,8 +304,9 @@
   color: inherit;
 }
 
-.ui-chat-steps__panel .ui-chat-tool-call[data-status='succeeded'] .ui-chat-tool-call__status,
-.ui-chat-steps__panel .ui-chat-tool-call[data-status='succeeded'] .ui-chat-tool-call__duration {
+.ui-chat-steps__panel
+  .ui-chat-tool-call:is([data-status='succeeded'], [data-status='failed'])
+  :is(.ui-chat-tool-call__status, .ui-chat-tool-call__duration) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -317,10 +316,11 @@
 }
 
 .ui-chat-steps__panel
-  .ui-chat-tool-call:not([data-status='approval-requested'], [data-status='failed'])
+  .ui-chat-tool-call:not([data-status='approval-requested'])
   .ui-chat-tool-call__body {
   margin-block: 4px;
   padding-inline: 0;
+  font-size: var(--ref-font-size-sm);
   padding-inline-start: 22px;
 }
 

@@ -270,7 +270,9 @@ describe('ChatParts', () => {
   });
 
   describe('failures in a group', () => {
-    it('UIC-CHAT-PARTS-5.4 keeps a group open around a failure among successful calls once the answer follows', () => {
+    const hotelsError = () => screen.getByText('The hotel service timed out.');
+
+    it('UIC-CHAT-PARTS-5.4 collapses a group around a failure once the answer follows, with the error closed', () => {
       const { container, rerender } = render(
         <ChatParts parts={[reasoning(), trains, hotels('running')]} isStreaming />,
       );
@@ -280,17 +282,19 @@ describe('ChatParts', () => {
           isStreaming
         />,
       );
+      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+      expect(hotelsTrigger()).toHaveAttribute('aria-expanded', 'false');
+      expect(hotelsTrigger()).toHaveAccessibleName(/Failed/);
+      expect(hotelsError()).not.toBeVisible();
       const steps = [reasoning(), trains, hotels('failed'), forecast('succeeded')];
       rerender(<ChatParts parts={[...steps, answer('Pack a jacket')]} isStreaming />);
       expect(stepsTrigger(container)).toHaveAccessibleName('Ran searches');
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
       rerender(<ChatParts parts={[...steps, done('Pack a jacket.')]} />);
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
-      expect(hotelsTrigger()).toHaveAttribute('aria-expanded', 'true');
-      expect(screen.getByRole('alert')).toHaveTextContent('The hotel service timed out.');
+      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
     });
 
-    it('UIC-CHAT-PARTS-5.4 reveals the group and card the reader closed when a failure arrives as the run ends', async () => {
+    it('UIC-CHAT-PARTS-5.4 keeps the group and card the reader closed when a failure arrives as the run ends', async () => {
       const user = userEvent.setup();
       const onExpandedPartsChange = vi.fn();
       const { container, rerender } = render(
@@ -300,59 +304,35 @@ describe('ChatParts', () => {
           onExpandedPartsChange={onExpandedPartsChange}
         />,
       );
-      await user.click(hotelsTrigger());
-      await user.click(hotelsTrigger());
       await user.click(stepsTrigger(container));
-      expect(onExpandedPartsChange).toHaveBeenLastCalledWith({ c2: false, 'steps:r1': false });
+      expect(onExpandedPartsChange).toHaveBeenCalledExactlyOnceWith({ 'steps:r1': false });
       rerender(
         <ChatParts
           parts={[reasoning(), trains, hotels('failed'), done('Pack a jacket.')]}
           onExpandedPartsChange={onExpandedPartsChange}
         />,
       );
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
-      expect(hotelsTrigger()).toHaveAttribute('aria-expanded', 'true');
-      expect(screen.getByRole('alert')).toHaveTextContent('The hotel service timed out.');
-      expect(onExpandedPartsChange).toHaveBeenLastCalledWith({ c2: true, 'steps:r1': true });
-    });
-
-    it('UIC-CHAT-PARTS-5.4 keeps the group closed over later renders once the reader closes it', async () => {
-      const user = userEvent.setup();
-      const onExpandedPartsChange = vi.fn();
-      const view = (parts: ChatPart[], isStreaming = true) => (
-        <ChatParts
-          parts={parts}
-          isStreaming={isStreaming}
-          onExpandedPartsChange={onExpandedPartsChange}
-        />
-      );
-      const { container, rerender } = render(view([reasoning(), trains, hotels('running')]));
-      rerender(view([reasoning(), trains, hotels('failed'), forecast('running')]));
-      await user.click(stepsTrigger(container));
-      const steps = [reasoning(), trains, hotels('failed'), forecast('succeeded')];
-      rerender(view([...steps, answer('Pack')]));
-      rerender(view([...steps, answer('Pack a jacket')]));
-      rerender(view([...steps, done('Pack a jacket.')], false));
       expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
       expect(onExpandedPartsChange).toHaveBeenCalledTimes(1);
     });
 
-    it('UIC-CHAT-PARTS-5.4 reveals the closed group again for another new failure', async () => {
+    it('UIC-CHAT-PARTS-5.4 shows the error when the reader opens the failed row and hides it again on close', async () => {
       const user = userEvent.setup();
-      const steps = [reasoning(), trains, hotels('failed')];
-      const { container, rerender } = render(
-        <ChatParts parts={[...steps, forecast('running')]} isStreaming />,
-      );
+      const parts = [reasoning(), trains, hotels('failed'), done('Pack a jacket.')];
+      const { container, rerender } = render(<ChatParts parts={parts} />);
       await user.click(stepsTrigger(container));
-      rerender(<ChatParts parts={[...steps, forecast('failed')]} isStreaming />);
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
-      expect(screen.getByRole('button', { name: /^Check the forecast/ })).toHaveAttribute(
-        'aria-expanded',
-        'true',
-      );
-      await user.click(stepsTrigger(container));
-      rerender(<ChatParts parts={[...steps, forecast('failed'), done('Sorry.')]} />);
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
+      expect(hotelsError()).not.toBeVisible();
+      await user.click(hotelsTrigger());
+      expect(hotelsError()).toBeVisible();
+      rerender(<ChatParts parts={[...parts]} />);
+      expect(hotelsError()).toBeVisible();
+      hotelsTrigger().focus();
+      await user.keyboard('{Enter}');
+      expect(hotelsTrigger()).toHaveAttribute('aria-expanded', 'false');
+      expect(hotelsTrigger()).toHaveFocus();
+      expect(hotelsError()).not.toBeVisible();
+      const card = requireDefined(container.querySelector<HTMLElement>('#c2'));
+      expect(within(card).getByText('Arguments')).not.toBeVisible();
     });
 
     it('UIC-CHAT-PARTS-5.4 keeps a group of successful, denied and cancelled calls compact', () => {
@@ -371,7 +351,7 @@ describe('ChatParts', () => {
       expect(onExpandedPartsChange).not.toHaveBeenCalled();
     });
 
-    it('UIC-CHAT-PARTS-5.3 UIC-CHAT-PARTS-5.4 reveals an approval and a failure that arrive together in one update', async () => {
+    it('UIC-CHAT-PARTS-5.3 UIC-CHAT-PARTS-5.4 reveals an approval but not a failure that arrive together', async () => {
       const user = userEvent.setup();
       const onExpandedPartsChange = vi.fn();
       const view = (first: ChatToolCallPart['status'], second: ChatToolCallPart['status']) => (
@@ -396,14 +376,14 @@ describe('ChatParts', () => {
       await user.click(requireDefined(second));
       rerender(view('approval-requested', 'failed'));
       expect(first).toHaveAttribute('aria-expanded', 'true');
-      expect(second).toHaveAttribute('aria-expanded', 'true');
+      expect(second).toHaveAttribute('aria-expanded', 'false');
       expect(onExpandedPartsChange).toHaveBeenLastCalledWith({
         'steps:r1': true,
-        'steps:r2': true,
+        'steps:r2': false,
       });
     });
 
-    it('UIC-CHAT-PARTS-5.4 UIC-CHAT-PARTS-6.1 leaves a failure in loaded history to the kept record', () => {
+    it('UIC-CHAT-PARTS-5.4 UIC-CHAT-PARTS-6.1 loads a failure in history collapsed, then follows the kept record', () => {
       const onExpandedPartsChange = vi.fn();
       const history = [reasoning(), trains, hotels('failed'), done('Pack a jacket.')];
       const view = (expandedParts: Record<string, boolean>) => (
@@ -414,29 +394,13 @@ describe('ChatParts', () => {
         />
       );
       const { container, unmount } = render(view({}));
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
-      unmount();
-      const { container: remounted } = render(view({ 'steps:r1': false }));
-      expect(stepsTrigger(remounted)).toHaveAttribute('aria-expanded', 'false');
-      expect(onExpandedPartsChange).not.toHaveBeenCalled();
-    });
-
-    it('UIC-CHAT-PARTS-5.4 UIC-CHAT-PARTS-6.1 reveals a new failure through a controlled record', () => {
-      const onExpandedPartsChange = vi.fn();
-      const view = (status: ChatToolCallPart['status'], expandedParts: Record<string, boolean>) => (
-        <ChatParts
-          parts={[reasoning(), trains, hotels(status), done('Pack a jacket.')]}
-          isStreaming
-          expandedParts={expandedParts}
-          onExpandedPartsChange={onExpandedPartsChange}
-        />
-      );
-      const { container, rerender } = render(view('running', { 'steps:r1': false }));
-      rerender(view('failed', { 'steps:r1': false }));
-      expect(onExpandedPartsChange).toHaveBeenCalledExactlyOnceWith({ 'steps:r1': true });
       expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'false');
-      rerender(view('failed', { 'steps:r1': true }));
-      expect(stepsTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+      unmount();
+      const { container: remounted } = render(view({ 'steps:r1': true, c2: true }));
+      expect(stepsTrigger(remounted)).toHaveAttribute('aria-expanded', 'true');
+      expect(hotelsTrigger()).toHaveAttribute('aria-expanded', 'true');
+      expect(hotelsError()).toBeVisible();
+      expect(onExpandedPartsChange).not.toHaveBeenCalled();
     });
   });
 });

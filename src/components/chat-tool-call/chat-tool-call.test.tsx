@@ -262,18 +262,44 @@ describe('ChatToolCall', () => {
     expect(container.querySelector('.ui-chat-tool-call__empty')).toHaveTextContent('No details');
   });
 
-  it('UIC-CHAT-TOOL-CALL-2.5 shows the error of a failed call as an alert outside the body', () => {
+  it('UIC-CHAT-TOOL-CALL-2.5 shows the error of a failed call at the top of the body', async () => {
+    const user = userEvent.setup();
     const { container, rerender } = render(
-      <ChatToolCall id="call" name="get_weather" status="failed" error="The service timed out." />,
+      <ChatToolCall
+        id="call"
+        name="get_weather"
+        status="failed"
+        error="The service timed out."
+        args={{ city: 'Lyon' }}
+      />,
     );
-    const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('ui-chat-tool-call__error');
-    expect(alert).toHaveTextContent('The service timed out.');
-    expect(alert.querySelector('[data-glyph="error"]')).toHaveAttribute('aria-hidden', 'true');
-    expect(alert.closest('.ui-chat-tool-call__disclosure')).toBeNull();
+    const error = screen.getByText('The service timed out.');
+    expect(error).toHaveClass('ui-chat-tool-call__error');
+    expect(error.querySelector('[data-glyph="error"]')).toHaveAttribute('aria-hidden', 'true');
+    expect(error.closest('.ui-chat-tool-call__body')).not.toBeNull();
+    expect(error.nextElementSibling).toHaveClass('ui-chat-tool-call__part');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(error).not.toBeVisible();
+    await user.click(getToolCallTrigger(container));
+    expect(error).toBeVisible();
     expectHooksMatchSpec(container, 'CHAT-TOOL-CALL', { slots: ['error'] });
     rerender(<ChatToolCall id="call" name="get_weather" status="succeeded" error="Stale" />);
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByText('Stale')).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-TOOL-CALL-2.5 hides the error with a custom body when the reader collapses it', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ChatToolCall id="call" name="get_weather" status="failed" error="Timed out." defaultExpanded>
+        <p>Retry later.</p>
+      </ChatToolCall>,
+    );
+    expect(screen.getByText('Timed out.')).toBeVisible();
+    expect(screen.getByText('Retry later.')).toBeVisible();
+    await user.click(getToolCallTrigger(container));
+    expect(screen.getByText('Timed out.')).not.toBeVisible();
+    expect(screen.getByText('Retry later.')).not.toBeVisible();
+    expect(getToolCallTrigger(container)).toHaveAccessibleName(/Failed/);
   });
 
   it('UIC-CHAT-TOOL-CALL-3.1 follows the status until the reader toggles it', async () => {
@@ -287,10 +313,12 @@ describe('ChatToolCall', () => {
     rerender(<ChatToolCall {...props} status="running" />);
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     rerender(<ChatToolCall {...props} status="failed" />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatToolCall {...props} status="approval-requested" />);
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await user.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    rerender(<ChatToolCall {...props} status="approval-requested" />);
+    rerender(<ChatToolCall {...props} status="failed" />);
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 

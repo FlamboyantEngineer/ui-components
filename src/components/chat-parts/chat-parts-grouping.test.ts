@@ -3,7 +3,6 @@ import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.
 import {
   groupChatParts,
   isAwaitingApproval,
-  isFailedCall,
   isStepActive,
   summarizeSteps,
   toPartKey,
@@ -112,15 +111,5 @@ describe('isAwaitingApproval', () => {
     ).toBe(false);
     expect(isAwaitingApproval(call('c1', { status: 'running' }))).toBe(false);
     expect(isAwaitingApproval(reasoning('r1'))).toBe(false);
-  });
-});
-
-describe('isFailedCall', () => {
-  it('UIC-CHAT-PARTS-5.4 finds failed calls only', () => {
-    expect(isFailedCall(call('c1', { status: 'failed' }))).toBe(true);
-    expect(isFailedCall(call('c1'))).toBe(false);
-    expect(isFailedCall(call('c1', { status: 'denied' }))).toBe(false);
-    expect(isFailedCall(call('c1', { status: 'cancelled' }))).toBe(false);
-    expect(isFailedCall(reasoning('r1'))).toBe(false);
   });
 });

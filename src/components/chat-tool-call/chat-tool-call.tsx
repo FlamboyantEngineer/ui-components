@@ -35,7 +35,7 @@ export interface ChatToolCallData {
   args?: unknown;
   /** What the tool returned, shown as JSON. */
   result?: unknown;
-  /** Why a `failed` call failed. */
+  /** Why a `failed` call failed, shown in the body above the details. */
   error?: string | undefined;
   /** How long the call ran, in milliseconds. */
   durationMs?: number | undefined;
@@ -52,7 +52,7 @@ export interface ChatToolCallProps extends Omit<BaseProps, 'id'>, ChatToolCallDa
   onAlwaysAllow?: (() => void) | undefined;
   /** Whether the body shows (controlled). */
   isExpanded?: boolean | undefined;
-  /** Whether the body shows at first. Defaults to following the status. */
+  /** Whether the body shows at first. Defaults to following the status: open while an approval waits. */
   defaultExpanded?: boolean | undefined;
   /** Receives each requested expanded state, also while controlled. */
   onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
@@ -67,7 +67,7 @@ type ExpansionOptions = Pick<
 
 /**
  * The card's expanded state. Uncontrolled, it follows the status (open while an approval is
- * requested or the call failed) until the reader toggles it or `defaultExpanded` sets it.
+ * requested) until the reader toggles it or `defaultExpanded` sets it. A failure stays closed.
  */
 function useToolCallExpansion({
   status,
@@ -76,8 +76,7 @@ function useToolCallExpansion({
   onExpandedChange,
 }: ExpansionOptions): [boolean, (next: boolean) => void] {
   const [toggled, setToggled] = useState<boolean>();
-  const followed = status === 'approval-requested' || status === 'failed';
-  const shown = isExpanded ?? toggled ?? defaultExpanded ?? followed;
+  const shown = isExpanded ?? toggled ?? defaultExpanded ?? status === 'approval-requested';
   const setExpanded = (next: boolean) => {
     if (isExpanded === undefined) setToggled(next);
     onExpandedChange?.(next);
@@ -92,8 +91,8 @@ function findTrigger(root: HTMLElement | null): HTMLElement | null {
 
 /**
  * One call of a tool by an assistant, as a collapsible card: a trigger with the status, the label
- * and the duration, a body with the arguments and result as JSON (or a custom body), the error of
- * a failed call, and, when the call asks for approval, Approve, Deny with a reason and Always
+ * and the duration, a body with the error of a failed call and the arguments and result as JSON
+ * (or a custom body), and, when the call asks for approval, Approve, Deny with a reason and Always
  * allow, with keyboard shortcuts, then the decision.
  */
 export function ChatToolCall({
@@ -154,12 +153,12 @@ export function ChatToolCall({
           isAutoApproved={approval?.isAutoApproved ?? false}
         />
         <DisclosurePanel className={hooks.slotClass('body')}>
+          {status === 'failed' && error ? <ToolCallError message={error} /> : null}
           <ToolCallBody args={args} result={result}>
             {children}
           </ToolCallBody>
         </DisclosurePanel>
       </Disclosure>
-      {status === 'failed' && error ? <ToolCallError message={error} /> : null}
       {isPending || approval?.decision !== undefined ? (
         <ToolCallApproval
           label={title}
