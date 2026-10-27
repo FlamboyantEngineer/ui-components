@@ -140,8 +140,9 @@ export function ChatMessageFooter({
 >) {
   const strings = useUiStrings();
   if (!time && !isEdited && !isCancelled && !delivery) return null;
+  const timeOnly = !isEdited && !isCancelled && !delivery;
   return (
-    <div {...hooks.slot('footer')}>
+    <div {...hooks.slot('footer', { timeOnly })}>
       <MessageTime time={time} getNow={getNow} />
       {isEdited ? <span {...hooks.slot('edited')}>{strings.edited}</span> : null}
       {isCancelled ? <span {...hooks.slot('stopped')}>{strings.chatStopped}</span> : null}

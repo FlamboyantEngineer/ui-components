@@ -147,6 +147,11 @@
   color: var(--ref-muted);
 }
 
+/* A time in a tooltip takes the tooltip's colour. */
+.ui-tooltip .ui-chat-message__time {
+  color: inherit;
+}
+
 .ui-chat-message__content {
   padding: 6px 10px;
   border-radius: var(--ref-radius-lg);
@@ -302,16 +307,36 @@
   justify-content: flex-end;
 }
 
-/* A time placed in the footer shows with the actions, while the message is hovered or holds focus. */
+/*
+ * A time placed in the footer shows with the actions, while the message is hovered or holds focus,
+ * after a short pause, so a pointer passing over the chat opens nothing.
+ */
 .ui-chat-message__footer .ui-chat-message__time {
   opacity: 0;
-  transition: opacity var(--ref-duration-fast) ease-out;
+  transition: opacity var(--ref-duration) ease-out;
 }
 
 .ui-chat-message:is([data-hovered], [data-focus-within])
   .ui-chat-message__footer
   .ui-chat-message__time {
   opacity: 1;
+  transition-delay: var(--ref-duration);
+}
+
+/* A footer holding only the time takes no room until it shows, then slides open. */
+.ui-chat-message__footer[data-time-only] {
+  max-block-size: 0;
+  margin-block-start: -2px;
+  overflow: hidden;
+  transition:
+    max-block-size var(--ref-duration) ease-out,
+    margin-block-start var(--ref-duration) ease-out;
+}
+
+.ui-chat-message:is([data-hovered], [data-focus-within]) .ui-chat-message__footer[data-time-only] {
+  max-block-size: 1lh; /* layout-exempt: the time's line opens on purpose, after a pause */
+  margin-block-start: 0; /* layout-exempt: as above */
+  transition-delay: var(--ref-duration);
 }
 
 .ui-chat-message__edited,
@@ -506,8 +531,9 @@
     animation: none;
   }
 
-  .ui-chat-message__footer .ui-chat-message__time {
-    transition: none;
+  /* The pause stays, so the chat still does not jump under a passing pointer. */
+  :is(.ui-chat-message__footer[data-time-only], .ui-chat-message__footer .ui-chat-message__time) {
+    transition-duration: 0s;
   }
 }
 

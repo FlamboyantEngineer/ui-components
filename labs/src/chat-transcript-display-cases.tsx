@@ -9,7 +9,12 @@ import { at, getNow, helper, maria } from './chat-transcript-message-samples.js'
 
 const variants = ['bubble', 'plain'] as const satisfies readonly ChatMessageVariant[];
 const authors = ['avatar and name', 'avatar only', 'name only', 'neither'] as const;
-const times = ['header', 'footer', 'none'] as const satisfies readonly ChatMessageTimePlacement[];
+const times = [
+  'header',
+  'footer',
+  'tooltip',
+  'none',
+] as const satisfies readonly ChatMessageTimePlacement[];
 
 function DisplayMessage({
   variant,
@@ -43,7 +48,7 @@ export function ChatTranscriptDisplayCases() {
   return (
     <LabSection
       title="Avatar, name, time and background"
-      description="A message in a bubble or as plain text, with or without its author's avatar and name, and its time in the header, in the footer (shown with the actions while the message is hovered or holds focus) or left out. A plain received message takes the whole width; the accessible name keeps the author and the time either way."
+      description="A message in a bubble or as plain text, with or without its author's avatar and name, and its time in the header, in the footer (shown with the actions while the message is hovered or holds focus, its line opening only then), in a tooltip over the message while it is hovered or holds focus, or left out. A plain received message takes the whole width; the accessible name keeps the author and the time either way."
     >
       <StateMatrix
         axes={{ variant: variants, author: authors, time: times, from: ['received', 'sent'] }}
