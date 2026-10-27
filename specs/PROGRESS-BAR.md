@@ -76,6 +76,71 @@ A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, wit
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
 
+## UIC-PROGRESS-BAR-4 - Segmented progress
+
+### UIC-PROGRESS-BAR-4.1 - Segments
+
+With `segments`, an ordered list of work units (`id`, `label`, and `state`: `complete`, `current` or `pending`), `ProgressBar` shall stay one `role="progressbar"` element and publish `data-segmented`. Its `ui-progress-bar__track` holds one `ui-progress-bar__segment` per unit, in the caller's order and with no fill, each publishing its drawn state as `data-state`. Segments are plain decorative elements, so the bar has no nested progress bars or semantic descendants.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`, `labs/reference/progress-bar.css`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/progress-bar-segments.spec.ts`
+
+### UIC-PROGRESS-BAR-4.2 - Value
+
+The bar's range shall be 0 to the number of units and its value the number of `complete` units. The current unit does not count as completed: one completed unit of seven is `aria-valuenow="1"` and 14%, with the second segment current. The visible value text is the provider's `segmentCount` string (`1/7 · 14%`), with counts and percentage formatted for the locale.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`, `src/core/common-strings.ts`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`
+
+### UIC-PROGRESS-BAR-4.3 - Current unit
+
+The bar's `aria-valuetext` shall be the provider's `segmentProgress` string, which names the current unit by its `label` (`1 of 7 done, 14%, Draft in progress`), so the current unit never depends on colour alone. The reference sheet also draws the current segment striped, a shape cue beside its colour.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`, `labs/reference/progress-bar.css`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/progress-bar-segments.spec.ts`
+
+### UIC-PROGRESS-BAR-4.4 - Read-only aggregate
+
+A sequence with no `current` unit shall read as aggregate progress: the spoken value states only the count and percentage (`3 of 7 done, 43%`) and no segment is current.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`
+
+### UIC-PROGRESS-BAR-4.5 - Empty and completed sequences
+
+An empty list shall draw an empty track with a range of 0 to 0 and `0 of 0 done, 0%`, never completion. When every unit is `complete`, the bar publishes `data-complete` as an ordinary bar at its maximum does ([UIC-PROGRESS-BAR-1.8](#uic-progress-bar-18---completion-and-status)).
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/progress-bar-segments.spec.ts`
+
+### UIC-PROGRESS-BAR-4.6 - Invalid input
+
+With `segments`, the bar shall ignore `value`, `minValue`, `maxValue`, `formatOptions`, `isIndeterminate`, `shape` and `mode`: it is always a determinate linear progress bar whose value comes from the units. Only the first `current` unit is current; later `current` units and units with an unknown state draw as `pending` and do not count.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`
+
+### UIC-PROGRESS-BAR-4.7 - Value text overrides
+
+`valueLabel` shall replace both the visible and the spoken value text, as on an ordinary bar, so a host that sets it names the current unit itself. `showValueLabel={false}` hides the visible text and keeps the spoken one. A provider can replace `segmentCount` and `segmentProgress`.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`
+
+### UIC-PROGRESS-BAR-4.8 - Size, tone and caller attributes
+
+A segmented bar shall publish `data-size` and `data-tone` and forward the caller's `className`, `id`, `ref` and `data-*` attributes as an ordinary bar does. The reference sheet colours completed segments with the tone (success once every unit is complete), keeps the label and value on one row above the track, and narrows the gaps between segments when there are many, so a long sequence fits a narrow container without overflowing.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`, `labs/reference/progress-bar.css`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/progress-bar-segments.spec.ts`
+
+### UIC-PROGRESS-BAR-4.9 - Identity
+
+A segment shall keep its element across renders by its `id`. Numeric and text ids, such as `1` and `'1'`, identify distinct units.
+
+Implementation: `src/components/progress-bar/progress-segments.tsx`
+Verification: `src/components/progress-bar/progress-segments.test.tsx`
+
 ## UIC-PROGRESS-BAR-11 - Contract
 
 ### UIC-PROGRESS-BAR-11.1 - Element and name
@@ -212,18 +277,21 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/unified-
 
 ## Hooks
 
-| Hook                     | Kind      | Values                                    | Description                                                  |
-| ------------------------ | --------- | ----------------------------------------- | ------------------------------------------------------------ |
-| `ui-progress-bar`        | root      |                                           | The progress bar (`role="progressbar"`).                     |
-| `ui-progress-bar__label` | slot      |                                           | The visible label, when `label` is set.                      |
-| `ui-progress-bar__value` | slot      |                                           | The visible value text, when determinate and shown.          |
-| `ui-progress-bar__track` | slot      |                                           | The track.                                                   |
-| `ui-progress-bar__fill`  | slot      |                                           | The fill; inline `width` is the percentage when determinate. |
-| `ui-spinner`             | root      |                                           | The decorative busy glyph (`<span>`).                        |
-| `data-size`              | attribute | `sm`, `md`, `lg`                          | Track thickness, or the spinner's box size.                  |
-| `data-tone`              | attribute | `neutral`, `success`, `warning`, `danger` | The work's status.                                           |
-| `data-indeterminate`     | state     | `true`                                    | Unmeasured progress.                                         |
-| `data-complete`          | state     | `true`                                    | Measured progress reached the maximum.                       |
+| Hook                       | Kind      | Values                                    | Description                                                  |
+| -------------------------- | --------- | ----------------------------------------- | ------------------------------------------------------------ |
+| `ui-progress-bar`          | root      |                                           | The progress bar (`role="progressbar"`).                     |
+| `ui-progress-bar__label`   | slot      |                                           | The visible label, when `label` is set.                      |
+| `ui-progress-bar__value`   | slot      |                                           | The visible value text, when determinate and shown.          |
+| `ui-progress-bar__track`   | slot      |                                           | The track.                                                   |
+| `ui-progress-bar__fill`    | slot      |                                           | The fill; inline `width` is the percentage when determinate. |
+| `ui-progress-bar__segment` | slot      |                                           | One unit of a segmented bar.                                 |
+| `data-state`               | attribute | `complete`, `current`, `pending`          | A segment's drawn state.                                     |
+| `data-segmented`           | state     | `true`                                    | The bar draws `segments` instead of a fill.                  |
+| `ui-spinner`               | root      |                                           | The decorative busy glyph (`<span>`).                        |
+| `data-size`                | attribute | `sm`, `md`, `lg`                          | Track thickness, or the spinner's box size.                  |
+| `data-tone`                | attribute | `neutral`, `success`, `warning`, `danger` | The work's status.                                           |
+| `data-indeterminate`       | state     | `true`                                    | Unmeasured progress.                                         |
+| `data-complete`            | state     | `true`                                    | Measured progress reached the maximum.                       |
 
 | `ui-progress-bar__ring` | slot | | The decorative `<svg>` ring. |
 | `data-shape` | attribute | `linear`, `circular` | Track appearance. |

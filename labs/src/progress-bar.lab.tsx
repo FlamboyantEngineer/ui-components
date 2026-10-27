@@ -1,5 +1,6 @@
 import { ProgressMeterCases } from './progress-meter-cases.js';
 import { ProgressRingCases } from './progress-ring-cases.js';
+import { ProgressSegmentCases } from './progress-segment-cases.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ProgressBar, Spinner } from '../../src/components/progress-bar/progress-bar.js';
@@ -161,6 +162,7 @@ mountLab(
         )}
       />
     </LabSection>
+    <ProgressSegmentCases />
     <ProgressRingCases />
     <ProgressMeterCases />
   </>,
