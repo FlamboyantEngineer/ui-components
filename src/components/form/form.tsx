@@ -24,9 +24,14 @@ import {
 import {
   FormProblemContext,
   createFormProblemStore,
-  inDocumentOrder,
   type FormProblemStore,
 } from './form-problems.js';
+import {
+  FormValidityContext,
+  createFormValidityStore,
+  type FormBlocker,
+  type FormValidityStore,
+} from './form-validity.js';
 
 /** The HTTP method a native submit uses. */
 export type FormMethod = 'get' | 'post' | 'dialog';
@@ -47,6 +52,11 @@ export interface FormProps extends BaseProps, AriaLabellingProps {
   action?: string | undefined;
   /** The HTTP method of a native submit. */
   method?: FormMethod | undefined;
+  /**
+   * Called with the blocking fields whenever the form's verdict on its fields as they stand changes
+   * (an empty list once nothing blocks), without revealing their validation. See `useFormValidity`.
+   */
+  onValidityChange?: ((blockers: readonly FormBlocker[]) => void) | undefined;
   /** Called with the submit event once every field inside passes; prevent its default to stay. */
   onSubmit?: ((event: FormEvent<HTMLFormElement>) => void) | undefined;
   children?: ReactNode;
@@ -69,12 +79,26 @@ function toErrorLists(errors: FieldValidationErrors | undefined) {
  * Notifies the problem store once for all the fields that register or change their issues in one
  * commit (a mount, a submit that reveals every field), rather than once for each field.
  */
-function useBatchedNotify(problems: FormProblemStore) {
+function useBatchedNotify(store: Pick<FormProblemStore | FormValidityStore, 'notify'>) {
   const [requests, setRequests] = useState(0);
   useEffect(() => {
-    if (requests > 0) problems.notify();
-  }, [requests, problems]);
+    if (requests > 0) store.notify();
+  }, [requests, store]);
   return useCallback(() => setRequests((count) => count + 1), []);
+}
+
+/** The form's verdict on its fields, told to `onValidityChange` as it changes. */
+function useValidity(
+  fields: Set<FieldRegistration>,
+  onValidityChange: FormProps['onValidityChange'],
+) {
+  const [validity] = useState(() => createFormValidityStore(fields));
+  const latest = useRef(onValidityChange);
+  useEffect(() => {
+    latest.current = onValidityChange;
+  });
+  useEffect(() => validity.subscribe(() => latest.current?.(validity.getBlockers())), [validity]);
+  return { validity, notifyValidity: useBatchedNotify(validity) };
 }
 
 /**
@@ -110,6 +134,7 @@ export function Form({
   validationMode = 'submit',
   validationBehavior = 'native',
   validationErrors,
+  onValidityChange,
   onSubmit,
   className,
   children,
@@ -120,16 +145,19 @@ export function Form({
   const [fields] = useState(() => new Set<FieldRegistration>());
   const [problems] = useState(() => createFormProblemStore(fields));
   const notify = useBatchedNotify(problems);
+  const { validity, notifyValidity } = useValidity(fields, onValidityChange);
   const register = useCallback(
     (field: FieldRegistration) => {
       fields.add(field);
       notify();
+      notifyValidity();
       return () => {
         fields.delete(field);
         notify();
+        notifyValidity();
       };
     },
-    [fields, notify],
+    [fields, notify, notifyValidity],
   );
   const scope = useMemo(
     () => ({
@@ -139,19 +167,24 @@ export function Form({
       validationErrors,
       register,
       onIssuesChange: notify,
+      onValidityChange: notifyValidity,
     }),
-    [parent, validationMode, validationBehavior, validationErrors, register, notify],
+    [
+      parent,
+      validationMode,
+      validationBehavior,
+      validationErrors,
+      register,
+      notify,
+      notifyValidity,
+    ],
   );
   const form = useInvalidFocus(fields);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
   const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
-    const ordered = inDocumentOrder(fields);
-    for (const field of ordered) field.revealValidation();
-    const blocking = ordered.find((field) => field.isBlocking());
-    if (!blocking) return onSubmit?.(event);
+    if (validity.validate()) return onSubmit?.(event);
     event.preventDefault();
-    blocking.focus();
   };
   return (
     <AriaForm
@@ -163,11 +196,15 @@ export function Form({
       onSubmit={submit}
     >
       <FieldScopeContext.Provider value={scope}>
-        <FormProblemContext.Provider value={problems}>{children}</FormProblemContext.Provider>
+        <FormProblemContext.Provider value={problems}>
+          <FormValidityContext.Provider value={validity}>{children}</FormValidityContext.Provider>
+        </FormProblemContext.Provider>
       </FieldScopeContext.Provider>
     </AriaForm>
   );
 }
 
 export { useFormProblems } from './form-problems.js';
+export { useFormValidity } from './form-validity.js';
+export type { FormBlocker, FormValidity } from './form-validity.js';
 export type { FormProblem, FormProblemSource } from './form-problems.js';

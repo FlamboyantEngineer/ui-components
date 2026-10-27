@@ -10,7 +10,6 @@ import {
   DateInput,
   DatePicker,
   DateRangePicker,
-  DateSegment,
   Group,
   RangeCalendar,
   TimeField,
@@ -26,6 +25,7 @@ import {
   type FieldControlProps,
   type FieldState,
 } from '../field/field.js';
+import { DateDraftScope, DraftAwareSegment } from './date-draft.js';
 import {
   CalendarBody,
   CalendarPopover,
@@ -152,13 +152,14 @@ function PreviousValue({ previous }: { previous: string | null }) {
 /** A picker's framed group: the previous value while dirty, the segments and the button. */
 function DateGroup({
   control,
+  state,
   previous,
   children,
 }: DatePickerControlProps & { children: ReactNode }) {
   return (
     <Group className={hooks.slotClass('group')} ref={control.ref}>
       <PreviousValue previous={previous} />
-      {children}
+      <DateDraftScope state={state}>{children}</DateDraftScope>
     </Group>
   );
 }
@@ -166,7 +167,9 @@ function DateGroup({
 function Segments({ slot }: { slot?: 'start' | 'end' }) {
   return (
     <DateInput slot={slot} className={hooks.slotClass('input')}>
-      {(segment) => <DateSegment segment={segment} className={hooks.slotClass('segment')} />}
+      {(segment) => (
+        <DraftAwareSegment segment={segment} slot={slot} className={hooks.slotClass('segment')} />
+      )}
     </DateInput>
   );
 }
@@ -278,7 +281,9 @@ export function TimeControl(props: DatePickerControlProps) {
     >
       <div {...hooks.slot('group')} ref={props.control.ref}>
         <PreviousValue previous={props.previous} />
-        <Segments />
+        <DateDraftScope state={state}>
+          <Segments />
+        </DateDraftScope>
       </div>
     </TimeField>
   );

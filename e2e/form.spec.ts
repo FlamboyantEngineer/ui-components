@@ -129,4 +129,65 @@ test.describe('Form lab', () => {
     await expect(output(page, 'Delivery')).toHaveText('nothing');
     await lab.expectAccessible();
   });
+
+  test('UIC-FORM-2.1 UIC-FORM-2.2 UIC-FORM-2.3 UIC-DATE-TIME-FIELD-4.5 UIC-COLOR-FIELD-4.4 refuses an outside save while a draft does not read', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const record = page.locator('[data-lab-form="external-save"]');
+    const save = record.getByRole('button', { name: 'Save' });
+    const saved = output(page, 'Saved');
+    const blocking = output(page, 'Blocking');
+    const day = record.locator('.ui-date-time-field').nth(0);
+    const stay = record.locator('.ui-date-time-field').nth(1);
+    await expect(blocking).toHaveText('nothing');
+
+    await day.getByRole('spinbutton', { name: /^day/ }).click();
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    await expect(blocking).toHaveText('Day (invalid)');
+    await save.click();
+    await expect(saved).toHaveText('refused');
+    await expect(day).toHaveAttribute('data-validation', 'valid');
+    await day.getByRole('spinbutton', { name: /^day/ }).click();
+    await page.keyboard.type('20');
+    await expect(blocking).toHaveText('nothing');
+    await save.click();
+    await expect(saved).toHaveText('{"title":"Spring fair","day":"2026-04-20","colour":"#336699"}');
+
+    await stay
+      .getByRole('spinbutton', { name: /^month/ })
+      .first()
+      .click();
+    await page.keyboard.type('05012026');
+    await expect(blocking).toHaveText('Stay (invalid)');
+    await stay
+      .getByRole('spinbutton', { name: /^month/ })
+      .last()
+      .click();
+    await page.keyboard.type('05042026');
+    await expect(blocking).toHaveText('nothing');
+
+    const colour = record.getByRole('textbox', { name: 'Badge colour' });
+    await colour.fill('not a colour');
+    await expect(blocking).toHaveText('Badge colour (invalid)');
+    await expect(record.locator('.ui-color-field')).toHaveAttribute('data-validation', 'valid');
+    // Leaving the input puts back text that does not read, so the save takes the colour shown.
+    await save.click();
+    await expect(colour).toHaveValue('#336699');
+    await expect(blocking).toHaveText('nothing');
+    await expect(saved).toContainText('"colour":"#336699"');
+
+    await day.getByRole('spinbutton', { name: /^year/ }).click();
+    for (let count = 0; count < 4; count += 1) await page.keyboard.press('Backspace');
+    await expect(blocking).toHaveText('Day (invalid)');
+    await record.getByRole('button', { name: 'Check' }).click();
+    await expect(day).toHaveAttribute('data-validation', 'invalid');
+    await expect
+      .poll(() => day.evaluate((element) => element.contains(document.activeElement)))
+      .toBe(true);
+    await expect(saved).toContainText('"colour":"#336699"');
+    await lab.expectAccessible();
+  });
 });

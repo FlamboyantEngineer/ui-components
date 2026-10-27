@@ -18,6 +18,23 @@ function isFieldBlocking(state: FieldState<unknown>): boolean {
   return !state.isDisabled && (status === 'invalid' || status === 'pending');
 }
 
+const focusableSelector = [
+  'input:not([disabled])',
+  'textarea:not([disabled])',
+  'select:not([disabled])',
+  'button:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+/** Focuses the control, or its first focusable element when it is a group, such as date segments. */
+function focusControl(control: HTMLElement | null) {
+  if (!control) return;
+  const target = control.matches(focusableSelector)
+    ? control
+    : (control.querySelector<HTMLElement>(focusableSelector) ?? control);
+  target.focus();
+}
+
 function isValidatable(element: HTMLElement | null): element is ValidatableElement {
   return element !== null && 'setCustomValidity' in element;
 }
@@ -69,12 +86,18 @@ export function useFieldFormBinding(
   slots: FieldSlots,
   label: string,
 ): void {
-  const { register, onIssuesChange } = useFieldScope();
+  const { register, onIssuesChange, onValidityChange } = useFieldScope();
   const latest = useRef({ state, label });
   latest.current = { state, label };
   const issuesKey = JSON.stringify([
     label,
     state.issues.map(({ severity, message }) => [severity, message]),
+  ]);
+  const validityKey = JSON.stringify([
+    label,
+    isFieldBlocking(state),
+    state.realtimeValidation.status,
+    state.realtimeValidation.message,
   ]);
   const isInForm = Boolean(register);
   const validity =
@@ -90,15 +113,20 @@ export function useFieldFormBinding(
       getElement: () => slots.read('root'),
       isBlocking: () => isFieldBlocking(latest.current.state),
       revealValidation: () => latest.current.state.revealValidation(),
-      focus: () => slots.read('control')?.focus(),
+      focus: () => focusControl(slots.read('control')),
       getLabel: () => latest.current.label,
       getIssues: () => latest.current.state.issues,
+      getRealtimeValidation: () => latest.current.state.realtimeValidation,
     });
   }, [register, slots]);
 
   useEffect(() => {
     onIssuesChange?.();
   }, [issuesKey, onIssuesChange]);
+
+  useEffect(() => {
+    onValidityChange?.();
+  }, [validityKey, onValidityChange]);
 
   // Runs after every commit: the control element can change while the message stays the same.
   useEffect(() => {

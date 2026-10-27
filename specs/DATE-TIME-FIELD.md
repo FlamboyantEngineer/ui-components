@@ -147,6 +147,13 @@ Verification: `src/components/date-time-field/date-time-form.test.tsx`
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`, `src/components/date-time-field/date-values.ts`
 Verification: `src/components/date-time-field/date-states.test.tsx`, `e2e/date-states.spec.ts`
 
+### UIC-DATE-TIME-FIELD-4.5 - Incomplete drafts
+
+While a segment group is typed in part, or one end of a range has segments filled and the other none, the field shall report a draft issue (UIC-FIELD-3.11) with the provider's `dateIncomplete` string, whatever value it last accepted, and withdraw it once every group is complete or empty.
+
+Implementation: `src/components/date-time-field/date-draft.tsx`, `src/components/date-time-field/date-time-pickers.tsx`
+Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
+
 ## Hooks
 
 | Hook                                          | Kind      | Values                                                                                            | Description                                                             |
