@@ -13,6 +13,7 @@ import {
 } from '../../src/components/select-field/select-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
+import { TriggerRefField } from './select-field-trigger-cases.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const fruit: SelectFieldOption[] = [
@@ -475,6 +476,12 @@ mountLab(
       </LabSection>
       <LabSection title="Forms" description="A named select publishes its values to its form.">
         <Form />
+      </LabSection>
+      <LabSection
+        title="Trigger ref"
+        description="The button returns focus to the select's trigger through its ref."
+      >
+        <TriggerRefField />
       </LabSection>
     </div>
   </>,

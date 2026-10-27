@@ -188,6 +188,7 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
     <>
       <TreeSelectTrigger
         control={control}
+        triggerRef={props.triggerRef}
         text={text ?? props.placeholder ?? strings.selectPlaceholder}
         isPlaceholder={text === undefined}
         isMissing={nodes.isMissing}

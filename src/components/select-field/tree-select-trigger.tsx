@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, type ReactNode } from 'react';
+import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
@@ -8,6 +8,8 @@ import { Button } from '../button/button.js';
 
 interface TreeSelectTriggerProps {
   control: FieldControlProps;
+  /** The caller's ref to the trigger. */
+  triggerRef: Ref<HTMLButtonElement> | undefined;
   /** The chosen value's text, or the placeholder. */
   text: string;
   /** Nothing is chosen: `text` is the placeholder. */
@@ -32,6 +34,7 @@ const hooks = createHooks('select-field', ['frame', 'trigger', 'value', 'chevron
  */
 export function TreeSelectTrigger({
   control,
+  triggerRef: callerRef,
   text,
   isPlaceholder,
   isMissing,
@@ -43,7 +46,10 @@ export function TreeSelectTrigger({
 }: TreeSelectTriggerProps) {
   const valueId = useId();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const ref = useMemo(() => mergeRefs(triggerRef, control.ref), [control.ref]);
+  const ref = useMemo(
+    () => mergeRefs(triggerRef, control.ref, callerRef),
+    [control.ref, callerRef],
+  );
   const name = control['aria-labelledby'] ?? control.id;
   return (
     <div {...hooks.slot('frame')}>

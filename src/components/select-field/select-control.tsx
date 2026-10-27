@@ -79,7 +79,10 @@ function useTrigger(
 ) {
   const strings = useUiStrings();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const ref = useMemo(() => mergeRefs(triggerRef, control.ref), [control.ref]);
+  const ref = useMemo(
+    () => mergeRefs(triggerRef, control.ref, props.triggerRef),
+    [control.ref, props.triggerRef],
+  );
   const placeholder = props.placeholder ?? strings.selectPlaceholder;
   const options = flattenSelectItems(props.options);
   const count = model.keys.length;

@@ -1,4 +1,4 @@
-import { useId, useState, type KeyboardEvent } from 'react';
+import { useId, useState, type KeyboardEvent, type Ref } from 'react';
 import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { FieldState } from '../field/field.js';
@@ -35,6 +35,7 @@ export interface SelectConfig {
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
   name?: string | undefined;
   autoFocus?: boolean | undefined;
+  triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
 
 interface SelectModelProps extends SelectConfig {

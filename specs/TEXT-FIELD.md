@@ -131,6 +131,22 @@ Verification: `src/components/text-field/use-text-field-input.test.tsx`, `e2e/te
 Implementation: `src/components/text-field/text-field.tsx`
 Verification: `src/components/text-field/use-text-field-input.test.tsx`, `e2e/text-field.spec.ts`
 
+## UIC-TEXT-FIELD-6 - The control itself
+
+### UIC-TEXT-FIELD-6.1 - Control refs
+
+`inputRef` shall receive the single-line input and `textAreaRef` the multiline text area while that element is on the page, joined to the field's own refs: object and callback refs both work, a ref receives `null` (or runs its cleanup) when its element leaves, including when `multiline` swaps one element for the other, and a re-render with the same ref does not re-attach it. A caller can focus the control and select its text through them.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`
+Verification: `src/components/text-field/text-field-parts.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-6.2 - Control events and suggestion ARIA
+
+`controlProps` shall put on the input or text area, not on the field's root, the caller's `onBeforeInput`, `onInput`, `onSelect` and composition handlers and the ARIA of a suggestion list the caller owns (`role="combobox"`, `aria-controls`, `aria-expanded`, `aria-autocomplete`, `aria-activedescendant`). The field's own handlers run first, so the input transform, caret handling, Enter, Escape and composition keep working (an `input` event carries the browser's edit, which the transform then rewrites), and with `completions` the field's own completion attributes win. The control keeps its id, label and description. The caller's key and focus handlers are the field's `onKeyDown`, `onKeyUp`, `onFocus` and `onBlur`, which already reach the control.
+
+Implementation: `src/components/text-field/text-field-parts.tsx`
+Verification: `src/components/text-field/text-field-parts.test.tsx`, `e2e/text-field.spec.ts`
+
 ## Hooks
 
 | Hook                         | Kind  | Values | Description                                                           |
