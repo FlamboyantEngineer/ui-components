@@ -52,7 +52,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-2.1 - Landmark
 
-`ToastRegion` shall render nothing while its queue is empty and, while it has toasts, portal a `ui-toast-region` landmark (`role="region"`, named by `aria-label` or by React Aria's localised count of notifications) into the document body, holding the toasts in an ordered list (`ui-toast-list`). The landmark is reachable with React Aria's landmark navigation (F6). Showing a toast never moves focus.
+`ToastRegion` shall render nothing while its queue is empty and, while it has toasts, portal a `ui-toast-region` landmark (`role="region"`, named by `aria-label` or by React Aria's localised count of notifications) into the overlay container ([UIC-TOAST-2.4](#uic-toast-24---overlay-layer)), holding the toasts in an ordered list (`ui-toast-list`). The landmark is reachable with React Aria's landmark navigation (F6). Showing a toast never moves focus.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -69,6 +69,13 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 `ToastList` shall draw a queue's visible toasts in place as a `ui-toast-list`, with the same toast markup, but without the portal, the landmark and the pausing of a region.
 
 Implementation: `src/components/toast/toast.tsx`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+
+### UIC-TOAST-2.4 - Overlay layer
+
+`ToastRegion` shall sit on the shared `toast` overlay layer ([Portal](PORTAL.md)): it portals into the container that a `Portal` below the same `PortalContainerProvider` or `PortalHost` would use (the document body unless one chooses another, and nothing while the chosen one is not ready), and carries the `toast` layer's z-index in effect there (160 unless `layerZIndex` replaces it) as a functional inline style. Toasts therefore stack above drawers, dialogs, menus and tooltips whatever order they mount in, and their actions and dismiss buttons take pointer presses where they overlap one. The region is a React Aria top layer, so while a modal or drawer is open its toasts stay exposed to assistive technology, focus can move into them (F6, then Tab), and pressing them does not dismiss the open overlay.
+
+Implementation: `src/components/toast/toast.tsx`, `src/components/portal/portal.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ## UIC-TOAST-3 - Toast

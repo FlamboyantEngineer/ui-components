@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import {
   ToastList,
   ToastRegion,
@@ -107,6 +109,51 @@ function ProgressControls() {
   );
 }
 
+/** Adds a toast that stays until dismissed, with an action, from inside an open overlay. */
+function PushFromOverlay({ from }: { from: 'drawer' | 'dialog' }) {
+  return (
+    <Button
+      size="sm"
+      data-lab-push={from}
+      onPress={() =>
+        liveQueue.add(
+          {
+            title: `Pushed from the ${from}`,
+            description: 'The toast stays above it.',
+            action: { label: 'Undo', onAction: () => {} },
+          },
+          { timeout: 0 },
+        )
+      }
+    >
+      Push a toast
+    </Button>
+  );
+}
+
+function OverlayDemo() {
+  return (
+    <p data-lab-demo="overlays">
+      <DrawerTrigger>
+        <Button size="sm" data-lab-open="drawer">
+          Open drawer
+        </Button>
+        <Drawer title="City list" size="lg" showCloseButton data-lab-drawer="toast">
+          <PushFromOverlay from="drawer" />
+        </Drawer>
+      </DrawerTrigger>{' '}
+      <ModalTrigger>
+        <Button size="sm" data-lab-open="dialog">
+          Open dialog
+        </Button>
+        <Modal title="Edit city" data-lab-modal="toast">
+          <PushFromOverlay from="dialog" />
+        </Modal>
+      </ModalTrigger>
+    </p>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -189,6 +236,12 @@ mountLab(
       description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
     >
       <LiveDemo />
+    </LabSection>
+    <LabSection
+      title="Over drawers and dialogs"
+      description="Open the drawer or the dialog and push a toast from inside it: the region sits on the toast overlay layer, so the toast stacks above the open overlay, its Undo and Dismiss buttons take presses where they overlap the drawer, F6 then Tab reach them from the open overlay, and using them leaves the overlay open."
+    >
+      <OverlayDemo />
     </LabSection>
   </>,
 );
