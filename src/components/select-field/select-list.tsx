@@ -11,8 +11,9 @@ import {
   useSlottedContext,
   Virtualizer,
   type AutocompleteProps,
+  Popover,
 } from '../../primitives/index.js';
-import { InteractivePopover } from '../popover/popover.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -119,31 +120,38 @@ export function SelectList(props: SelectListProps) {
     return contains(text, query) || Boolean(description && contains(description, query));
   };
   return (
-    <InteractivePopover
-      {...hooks.slot('popover', { layer: 'dropdown' })}
-      offset={4}
-      containerPadding={8}
-      style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
-    >
-      {props.isLoading && props.items.length > 0 ? (
-        <div {...hooks.slot('loading')} role="status">
-          {strings.loading}
-        </div>
-      ) : null}
-      {props.isFilterable ? (
-        <Autocomplete
-          inputValue={props.filterText}
-          onInputChange={props.onFilterTextChange}
-          filter={props.filtersLocally ? filter : undefined}
-        >
-          <SearchField className={hooks.slotClass('search')} aria-label={strings.search} autoFocus>
-            <Input className={hooks.slotClass('search-input')} onFocus={moveCaretToEnd} />
-          </SearchField>
+    <>
+      <PopoverPresence />
+      <Popover
+        {...hooks.slot('popover', { layer: 'dropdown' })}
+        offset={4}
+        containerPadding={8}
+        style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
+      >
+        {props.isLoading && props.items.length > 0 ? (
+          <div {...hooks.slot('loading')} role="status">
+            {strings.loading}
+          </div>
+        ) : null}
+        {props.isFilterable ? (
+          <Autocomplete
+            inputValue={props.filterText}
+            onInputChange={props.onFilterTextChange}
+            filter={props.filtersLocally ? filter : undefined}
+          >
+            <SearchField
+              className={hooks.slotClass('search')}
+              aria-label={strings.search}
+              autoFocus
+            >
+              <Input className={hooks.slotClass('search-input')} onFocus={moveCaretToEnd} />
+            </SearchField>
+            <OptionList {...props} />
+          </Autocomplete>
+        ) : (
           <OptionList {...props} />
-        </Autocomplete>
-      ) : (
-        <OptionList {...props} />
-      )}
-    </InteractivePopover>
+        )}
+      </Popover>
+    </>
   );
 }

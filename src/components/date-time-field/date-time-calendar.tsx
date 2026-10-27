@@ -9,8 +9,9 @@ import {
   Dialog,
   Heading,
   OverlayTriggerStateContext,
+  Popover,
 } from '../../primitives/index.js';
-import { InteractivePopover } from '../popover/popover.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -222,17 +223,20 @@ function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'chi
 export function CalendarPopover({ mode, settings, onPick, children }: CalendarPopoverProps) {
   const zIndex = useLayerZIndex('dropdown');
   return (
-    <InteractivePopover
-      {...hooks.slot('popover', { layer: 'dropdown' })}
-      offset={4}
-      containerPadding={8}
-      style={{ zIndex }}
-    >
-      <Dialog className={hooks.slotClass('dialog')}>
-        <DatePresets settings={settings} onPick={onPick} />
-        {children}
-        <DateActions mode={mode} settings={settings} onPick={onPick} />
-      </Dialog>
-    </InteractivePopover>
+    <>
+      <PopoverPresence />
+      <Popover
+        {...hooks.slot('popover', { layer: 'dropdown' })}
+        offset={4}
+        containerPadding={8}
+        style={{ zIndex }}
+      >
+        <Dialog className={hooks.slotClass('dialog')}>
+          <DatePresets settings={settings} onPick={onPick} />
+          {children}
+          <DateActions mode={mode} settings={settings} onPick={onPick} />
+        </Dialog>
+      </Popover>
+    </>
   );
 }

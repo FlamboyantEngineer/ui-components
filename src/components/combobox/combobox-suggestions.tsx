@@ -11,8 +11,9 @@ import {
   PopoverContext,
   useSlottedContext,
   Virtualizer,
+  Popover,
 } from '../../primitives/index.js';
-import { InteractivePopover } from '../popover/popover.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
@@ -273,27 +274,30 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const { inputText, completion, listHeader, inputRef } = props;
   const filterText = completion?.text === inputText ? completion.typed : inputText;
   return (
-    <InteractivePopover
-      {...hooks.slot('popover', { layer: 'dropdown', size: props.size })}
-      isOpen={isShown}
-      onOpenChange={(open) => {
-        if (!open) state?.close();
-      }}
-      offset={4}
-      containerPadding={8}
-      style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
-      // Focus leaving the popover closes it, unless it returns to the input from the list header.
-      shouldCloseOnInteractOutside={(element) => element !== inputRef.current}
-    >
-      {listHeader ? (
-        // Focus moved into the popover keeps the list open; giving it back to the input keeps the
-        // keyboard on the list after a filter control is pressed. Pressable controls stop the click
-        // from bubbling, so it is caught on the way down.
-        <div {...hooks.slot('list-header')} onClickCapture={() => inputRef.current?.focus()}>
-          {listHeader}
-        </div>
-      ) : null}
-      <OptionList {...props} filterText={filterText} />
-    </InteractivePopover>
+    <>
+      <PopoverPresence isOpen={isShown} triggerRef={props.inputRef} />
+      <Popover
+        {...hooks.slot('popover', { layer: 'dropdown', size: props.size })}
+        isOpen={isShown}
+        onOpenChange={(open) => {
+          if (!open) state?.close();
+        }}
+        offset={4}
+        containerPadding={8}
+        style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
+        // Focus leaving the popover closes it, unless it returns to the input from the list header.
+        shouldCloseOnInteractOutside={(element) => element !== inputRef.current}
+      >
+        {listHeader ? (
+          // Focus moved into the popover keeps the list open; giving it back to the input keeps the
+          // keyboard on the list after a filter control is pressed. Pressable controls stop the click
+          // from bubbling, so it is caught on the way down.
+          <div {...hooks.slot('list-header')} onClickCapture={() => inputRef.current?.focus()}>
+            {listHeader}
+          </div>
+        ) : null}
+        <OptionList {...props} filterText={filterText} />
+      </Popover>
+    </>
   );
 }

@@ -18,7 +18,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
-import { InteractivePopover } from './interactive-popover.js';
+import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
 
 /** A pressable trigger and the `Popover` it opens. */
@@ -126,20 +126,22 @@ export function PopoverPanel({
   const zIndex = useLayerZIndex('dropdown');
   const [panel, setPanel] = useState<HTMLElement | null>(null);
   const gutter = usePopoverGutter(panel);
-  const Surface = isHint ? AriaPopover : InteractivePopover;
   return (
-    <Surface
-      {...rest}
-      style={({ placement }) => ({
-        ...style,
-        zIndex,
-        translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
-      })}
-      ref={setPanel}
-    >
-      {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
-      {children}
-    </Surface>
+    <>
+      {isHint ? null : <PopoverPresence isOpen={rest.isOpen} triggerRef={rest.triggerRef} />}
+      <AriaPopover
+        {...rest}
+        style={({ placement }) => ({
+          ...style,
+          zIndex,
+          translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
+        })}
+        ref={setPanel}
+      >
+        {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
+        {children}
+      </AriaPopover>
+    </>
   );
 }
 
@@ -188,4 +190,4 @@ export function Popover({
   );
 }
 
-export { InteractivePopover } from './interactive-popover.js';
+export { PopoverPresence } from './popover-presence.js';

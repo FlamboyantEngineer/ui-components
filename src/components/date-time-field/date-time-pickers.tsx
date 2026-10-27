@@ -8,6 +8,7 @@ import {
   Button as AriaButton,
   Calendar,
   DateInput,
+  DateSegment,
   DatePicker,
   DateRangePicker,
   Group,
@@ -168,7 +169,9 @@ function Segments({ slot }: { slot?: 'start' | 'end' }) {
   return (
     <DateInput slot={slot} className={hooks.slotClass('input')}>
       {(segment) => (
-        <DraftAwareSegment segment={segment} slot={slot} className={hooks.slotClass('segment')} />
+        <DraftAwareSegment segment={segment} slot={slot}>
+          <DateSegment segment={segment} className={hooks.slotClass('segment')} />
+        </DraftAwareSegment>
       )}
     </DateInput>
   );

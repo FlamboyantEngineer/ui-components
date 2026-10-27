@@ -107,21 +107,26 @@ describe('Overlay presence', () => {
 
   it('UIC-PROVIDER-7.1 counts field popups: a select, a combobox and a calendar', async () => {
     const user = userEvent.setup();
-    const { status } = renderWithProbe(
+    const { status, count } = renderWithProbe(
       <>
         <SelectField label="Fruit" options={[{ id: 1, label: 'Apple' }]} />
         <Combobox label="Colour" defaultItems={[{ id: 1, label: 'Red' }]} />
         <DateTimeField label="Due" defaultValue="2026-04-13" />
       </>,
     );
+    // React Aria renders each list once more, hidden, while closed: that copy never counts.
+    await act(() => Promise.resolve());
+    expect(status()).toHaveTextContent('idle');
     await user.click(screen.getByRole('button', { name: /Fruit/ }));
     await waitFor(() => expect(status()).toHaveTextContent('active'));
+    expect(count()).toBe(1);
     await user.keyboard('{Escape}');
     await waitFor(() => expect(status()).toHaveTextContent('idle'));
 
     await user.click(screen.getByRole('combobox', { name: 'Colour' }));
     await user.keyboard('{ArrowDown}');
     await waitFor(() => expect(status()).toHaveTextContent('active'));
+    expect(count()).toBe(1);
     await user.keyboard('{Escape}');
     await waitFor(() => expect(status()).toHaveTextContent('idle'));
 

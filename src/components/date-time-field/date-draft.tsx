@@ -7,22 +7,20 @@ import {
   useContext,
   useLayoutEffect,
   useState,
-  type ComponentProps,
   type ReactNode,
 } from 'react';
-import {
-  DateFieldStateContext,
-  DateSegment,
-  TimeFieldStateContext,
-} from '../../primitives/index.js';
+import { DateFieldStateContext, TimeFieldStateContext } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { FieldState } from '../field/field.js';
 
 /** How much of one segment group the reader has filled. */
 type DraftFill = 'empty' | 'partial' | 'complete';
 
-/** A segment as the building block lays it out. */
-type DraftSegment = ComponentProps<typeof DateSegment>['segment'];
+/** What the draft reads of a segment as the building block lays it out. */
+interface DraftSegment {
+  isEditable: boolean;
+  isPlaceholder: boolean;
+}
 
 /** Records the fill of a segment group by its slot, and returns the function that removes it. */
 type ReportFill = (slot: string, fill: DraftFill) => () => void;
@@ -42,17 +40,18 @@ function isIncomplete(fills: readonly DraftFill[]): boolean {
 }
 
 /**
- * One segment of a group. The group's first editable segment also reports how much of the group
- * is filled, read from the group's own state, so each group reports once.
+ * Wraps one segment of a group. The group's first editable segment also reports how much of the
+ * group is filled, read from the group's own state, so each group reports once.
  */
 export function DraftAwareSegment({
   segment,
   slot = 'value',
-  className,
+  children,
 }: {
   segment: DraftSegment;
   slot?: string | undefined;
-  className: string;
+  /** The segment itself. */
+  children: ReactNode;
 }) {
   const dateState = useContext(DateFieldStateContext);
   const timeState = useContext(TimeFieldStateContext);
@@ -64,7 +63,7 @@ export function DraftAwareSegment({
     if (!isReporter || !report) return undefined;
     return report(slot, fill);
   }, [isReporter, report, slot, fill]);
-  return <DateSegment segment={segment} className={className} />;
+  return children;
 }
 
 /** Collects the fill of a picker's segment groups into the field's draft issue. */

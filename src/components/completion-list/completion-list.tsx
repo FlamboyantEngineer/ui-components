@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { useLocale, type Placement } from '../../primitives/index.js';
-import { InteractivePopover } from '../popover/popover.js';
+import { useLocale, type Placement, Popover } from '../../primitives/index.js';
+import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
@@ -157,56 +157,59 @@ export function CompletionList(props: CompletionListProps) {
   const { className, ...rest } = props;
   const label = props['aria-labelledby'] ? undefined : (props['aria-label'] ?? strings.suggestions);
   return (
-    <InteractivePopover
-      {...hooks.root({ className, props: rest })}
-      isOpen={isShown}
-      onOpenChange={(open) => onOpenChange?.(open)}
-      isNonModal
-      triggerRef={anchorRef}
-      placement={placement}
-      offset={2}
-      style={{ ...triggerWidthProperty, zIndex }}
-    >
-      {items.length > 0 ? (
-        <div
-          {...hooks.slot('listbox')}
-          id={listId}
-          role="listbox"
-          aria-label={label}
-          aria-labelledby={props['aria-labelledby']}
-          aria-describedby={props['aria-describedby']}
-          aria-details={props['aria-details']}
-        >
-          {items.map((item) => (
-            <CompletionOption
-              key={toKeyIdentity(item.id)}
-              item={item}
-              listId={listId}
-              props={props}
-              documentationId={documentationId}
-            />
-          ))}
-        </div>
-      ) : (
-        <div {...hooks.slot('empty')} id={listId} role="status">
-          {renderEmptyState?.()}
-        </div>
-      )}
-      {documentation ? (
-        <div
-          {...hooks.slot('documentation')}
-          id={documentationId}
-          onPointerDown={(event) => event.preventDefault()}
-        >
-          {documentation}
-        </div>
-      ) : null}
-      {footer ? (
-        <div {...hooks.slot('footer')} onPointerDown={(event) => event.preventDefault()}>
-          {footer}
-        </div>
-      ) : null}
-    </InteractivePopover>
+    <>
+      <PopoverPresence isOpen={isShown} triggerRef={anchorRef} />
+      <Popover
+        {...hooks.root({ className, props: rest })}
+        isOpen={isShown}
+        onOpenChange={(open) => onOpenChange?.(open)}
+        isNonModal
+        triggerRef={anchorRef}
+        placement={placement}
+        offset={2}
+        style={{ ...triggerWidthProperty, zIndex }}
+      >
+        {items.length > 0 ? (
+          <div
+            {...hooks.slot('listbox')}
+            id={listId}
+            role="listbox"
+            aria-label={label}
+            aria-labelledby={props['aria-labelledby']}
+            aria-describedby={props['aria-describedby']}
+            aria-details={props['aria-details']}
+          >
+            {items.map((item) => (
+              <CompletionOption
+                key={toKeyIdentity(item.id)}
+                item={item}
+                listId={listId}
+                props={props}
+                documentationId={documentationId}
+              />
+            ))}
+          </div>
+        ) : (
+          <div {...hooks.slot('empty')} id={listId} role="status">
+            {renderEmptyState?.()}
+          </div>
+        )}
+        {documentation ? (
+          <div
+            {...hooks.slot('documentation')}
+            id={documentationId}
+            onPointerDown={(event) => event.preventDefault()}
+          >
+            {documentation}
+          </div>
+        ) : null}
+        {footer ? (
+          <div {...hooks.slot('footer')} onPointerDown={(event) => event.preventDefault()}>
+            {footer}
+          </div>
+        ) : null}
+      </Popover>
+    </>
   );
 }
 

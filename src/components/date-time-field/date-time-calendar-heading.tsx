@@ -7,8 +7,9 @@ import {
   Select,
   SelectValue,
   type Key,
+  Popover,
 } from '../../primitives/index.js';
-import { InteractivePopover } from '../popover/popover.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { useLayerZIndex } from '../portal/portal.js';
@@ -38,7 +39,8 @@ function HeadingSelect({ unit, items, ...select }: HeadingSelectProps) {
         <SelectValue />
         <Glyph name="chevron-down" />
       </AriaButton>
-      <InteractivePopover
+      <PopoverPresence />
+      <Popover
         {...hooks.slot('calendar-select-popover', { layer: 'dropdown' })}
         offset={2}
         style={{ zIndex }}
@@ -54,7 +56,7 @@ function HeadingSelect({ unit, items, ...select }: HeadingSelectProps) {
             </ListBoxItem>
           )}
         </ListBox>
-      </InteractivePopover>
+      </Popover>
     </Select>
   );
 }
