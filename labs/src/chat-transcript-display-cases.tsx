@@ -1,6 +1,7 @@
 import {
   ChatMessage,
   type ChatMessageOrigin,
+  type ChatMessageTimePlacement,
   type ChatMessageVariant,
 } from '../../src/components/chat-transcript/index.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
@@ -8,7 +9,7 @@ import { at, getNow, helper, maria } from './chat-transcript-message-samples.js'
 
 const variants = ['bubble', 'plain'] as const satisfies readonly ChatMessageVariant[];
 const authors = ['avatar and name', 'avatar only', 'name only', 'neither'] as const;
-const times = ['shown', 'hidden'] as const;
+const times = ['header', 'footer', 'none'] as const satisfies readonly ChatMessageTimePlacement[];
 
 function DisplayMessage({
   variant,
@@ -18,7 +19,7 @@ function DisplayMessage({
 }: {
   variant: ChatMessageVariant;
   author: (typeof authors)[number];
-  time: (typeof times)[number];
+  time: ChatMessageTimePlacement;
   from: Exclude<ChatMessageOrigin, 'system'>;
 }) {
   return (
@@ -30,7 +31,7 @@ function DisplayMessage({
       variant={variant}
       showAvatar={author === 'avatar and name' || author === 'avatar only'}
       showAuthorName={author === 'avatar and name' || author === 'name only'}
-      showTime={time === 'shown'}
+      timePlacement={time}
     >
       The ridge trail reopened this morning.
     </ChatMessage>
@@ -42,7 +43,7 @@ export function ChatTranscriptDisplayCases() {
   return (
     <LabSection
       title="Avatar, name, time and background"
-      description="A message in a bubble or as plain text, with or without its author's avatar, name and time. A plain received message takes the whole width; the accessible name keeps the author either way."
+      description="A message in a bubble or as plain text, with or without its author's avatar and name, and its time in the header, in the footer (shown with the actions while the message is hovered or holds focus) or left out. A plain received message takes the whole width; the accessible name keeps the author and the time either way."
     >
       <StateMatrix
         axes={{ variant: variants, author: authors, time: times, from: ['received', 'sent'] }}

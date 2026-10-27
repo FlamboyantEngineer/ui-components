@@ -36,7 +36,7 @@ describe('Chat message display', () => {
       ...assistantChat,
       showAvatars: false,
       showAuthorNames: false,
-      showTimes: false,
+      timePlacement: 'none',
     });
     expect(container.querySelector('.ui-chat-message__avatar')).toBeNull();
     expect(container.querySelector('.ui-chat-message__author')).toBeNull();
@@ -45,6 +45,20 @@ describe('Chat message display', () => {
     expect(article('q1')).toHaveAttribute('data-avatar-hidden', 'true');
     expect(screen.getByRole('article', { name: /^Trip helper, / })).toBe(article('a1'));
     expect(screen.getByRole('article', { name: /^Sam Reed, / })).toBe(article('q1'));
+    expectHooksMatchSpec(container, 'CHAT');
+  });
+
+  it('UIC-CHAT-1.8 places every time in the footer, under the message', () => {
+    const { container } = renderChat({ ...assistantChat, timePlacement: 'footer' });
+    for (const id of ['q1', 'a1']) {
+      expect(
+        article(id).querySelector('.ui-chat-message__footer .ui-chat-message__time'),
+      ).not.toBeNull();
+      expect(
+        article(id).querySelector('.ui-chat-message__header .ui-chat-message__time'),
+      ).toBeNull();
+      expect(article(id).querySelector('.ui-chat-message__author')).not.toBeNull();
+    }
     expectHooksMatchSpec(container, 'CHAT');
   });
 
