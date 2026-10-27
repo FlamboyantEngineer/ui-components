@@ -45,6 +45,13 @@ Verification: `src/components/table/table.test.tsx`
 Implementation: `src/components/table/table.tsx`, `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 
+### UIC-TABLE-1.6 - Cell wrapping
+
+`cellWrap` shall set how the table's cells wrap their text: `nowrap` (the default) keeps one line, `wrap` breaks between words and `anywhere` also breaks inside long unspaced values such as identifiers. A column's own `cellWrap` overrides it. Every data cell, summary cell and group aggregate cell of a data column publishes its resolved mode as `data-wrap` in every row, nested rows included, whatever its content, so the stylesheet draws the mode, for example with `white-space` and `overflow-wrap`. The mode changes no value, content, selection, action, focus or editing behaviour of the cell, and columns keep their widths and resizing. A virtualized table keeps its fixed row height, so its stylesheet clips wrapped text.
+
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-footer.tsx`, `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`
+Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
+
 ## UIC-TABLE-2 - Sorting and filtering
 
 ### UIC-TABLE-2.1 - Sort cycle
@@ -595,6 +602,7 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `data-align`                     | attribute | `start`, `center`, `end`       | A data column's alignment, on its header and cells.                       |
 | `data-column`                    | attribute |                                | A data column's id, on its header and cells.                              |
 | `data-pinned`                    | attribute | `start`, `end`                 | The edge a pinned column's header and cells stay at.                      |
+| `data-wrap`                      | attribute | `nowrap`, `wrap`, `anywhere`   | How a data column's cells, summary and aggregate cells wrap their text.   |
 | `data-sort-priority`             | attribute |                                | A sorted header's place in a sort by several columns, from 1.             |
 | `data-count`                     | attribute |                                | The number of dragged rows, on the drag preview.                          |
 | `data-variant`                   | attribute | `loading`, `empty`, `error`    | Which notice the notice row shows.                                        |

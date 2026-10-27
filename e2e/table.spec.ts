@@ -129,6 +129,46 @@ test.describe('Table lab', () => {
     await expect(grid.getByRole('row', { name: 'Date' })).toHaveAttribute('aria-selected', 'false');
   });
 
+  test('UIC-TABLE-1.6 wraps prose, breaks identifiers and keeps nowrap cells on one line', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'cell-wrap');
+    const row = root.getByRole('row', { name: /^First sample/ });
+    const name = row.getByRole('rowheader');
+    const note = row.getByRole('gridcell', { name: /^Collected/ });
+    const reference = row.getByRole('gridcell', { name: /^sample-0001/ });
+    await expect(name).toHaveAttribute('data-wrap', 'nowrap');
+    await expect(note).toHaveAttribute('data-wrap', 'wrap');
+    await expect(reference).toHaveAttribute('data-wrap', 'anywhere');
+    const overflows = (cell: Locator) =>
+      cell.evaluate((element) => element.scrollWidth > element.clientWidth);
+    const height = async (cell: Locator) => Math.round((await cell.boundingBox())?.height ?? 0);
+    expect(await overflows(name)).toBe(true);
+    expect(await overflows(note)).toBe(false);
+    expect(await overflows(reference)).toBe(false);
+    expect(await height(row)).toBeGreaterThan(40);
+    const scroll = root.locator('.ui-table__scroll');
+    expect(await overflows(scroll)).toBe(false);
+
+    const header = root.getByRole('columnheader', { name: /^Reference/ });
+    const before = await height(row);
+    const resizer = header.locator('.ui-table__resizer');
+    await resizer.scrollIntoViewIfNeeded();
+    const box = await resizer.boundingBox();
+    if (!box) throw new Error('no resizer');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x - 40, box.y + box.height / 2, { steps: 4 });
+    await page.mouse.up();
+    expect(await width(header)).toBeLessThan(130);
+    await expect(reference).toHaveAttribute('data-wrap', 'anywhere');
+    expect(await overflows(reference)).toBe(false);
+    expect(await height(row)).toBeGreaterThan(before);
+    await lab.expectAccessible('[data-lab="cell-wrap"]');
+  });
+
   test('UIC-TABLE-4.1 UIC-TABLE-4.2 UIC-TABLE-4.3 resizes within bounds and keeps widths', async ({
     page,
     lab,

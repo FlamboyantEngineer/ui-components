@@ -92,6 +92,7 @@ function useStructure<T extends TableRow>(
   isGrouped: boolean,
 ): TableStructure<T> {
   const { selectionMode, renderRowActions, actionsColumnWidth = 44, virtualized = false } = options;
+  const { cellWrap = 'nowrap' } = options;
   const isExpandable =
     isGrouped || options.getChildRows !== undefined || options.renderRowDetail !== undefined;
   const treeColumn = resolveTreeColumn(columns, options.treeColumn, isExpandable);
@@ -104,10 +105,11 @@ function useStructure<T extends TableRow>(
       hasSelection,
       hasActions,
       actionsColumnWidth,
+      cellWrap,
       treeColumn,
       isVirtualized: virtualized,
     }),
-    [columns, hasSelection, hasActions, actionsColumnWidth, treeColumn, virtualized],
+    [columns, hasSelection, hasActions, actionsColumnWidth, cellWrap, treeColumn, virtualized],
   );
 }
 

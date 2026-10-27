@@ -5,6 +5,7 @@ import { tableHooks as hooks } from './table-hooks.js';
 import type { TableRow } from './table-rows.js';
 import {
   actionsColumnId,
+  getCellWrap,
   getColumnPin,
   getPinStyle,
   selectionColumnId,
@@ -80,6 +81,7 @@ export function TableFooter<T extends TableRow>({
               {...hooks.slot('footer-cell', {
                 kind: 'data',
                 align: column.align ?? 'start',
+                wrap: getCellWrap(structure, column),
                 column: column.id,
                 pinned: pin,
               })}

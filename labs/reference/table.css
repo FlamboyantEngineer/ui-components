@@ -117,6 +117,17 @@
 .ui-table[data-size='sm'] :is(.ui-table__column, .ui-table__cell, .ui-table__footer-cell) {
   height: 32px;
 }
+:is(.ui-table__cell, .ui-table__footer-cell, .ui-table__aggregate-cell):is(
+  [data-wrap='wrap'],
+  [data-wrap='anywhere']
+) {
+  padding-block: 8px;
+  text-overflow: clip;
+  white-space: normal;
+}
+:is(.ui-table__cell, .ui-table__footer-cell, .ui-table__aggregate-cell)[data-wrap='anywhere'] {
+  overflow-wrap: anywhere;
+}
 :is(.ui-table__column, .ui-table__cell, .ui-table__footer-cell)[data-align='center'] {
   text-align: center;
 }
