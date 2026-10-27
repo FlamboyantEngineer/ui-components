@@ -12,7 +12,15 @@ import { ChatQuote } from './chat-quote.js';
 
 type ChatMessageBodyProps = Pick<
   ChatMessageProps,
-  'quote' | 'onQuotePress' | 'error' | 'isEdited' | 'reactions' | 'actions' | 'children'
+  | 'quote'
+  | 'onQuotePress'
+  | 'error'
+  | 'isEdited'
+  | 'reactions'
+  | 'actions'
+  | 'children'
+  | 'time'
+  | 'getNow'
 > & {
   isCancelled: boolean;
   delivery: ChatMessageDelivery | undefined;
@@ -76,6 +84,13 @@ export function ChatMessageAvatar({ author }: { author: ChatMessageAuthor }) {
   );
 }
 
+/** The message's time, read relative to now. */
+function MessageTime({ time, getNow }: Pick<ChatMessageProps, 'time' | 'getNow'>) {
+  return time ? (
+    <RelativeTime value={time} getNow={getNow} className={hooks.slotClass('time')} />
+  ) : null;
+}
+
 /** The author's name (at the start of a group) and the time, when either is shown. */
 export function ChatMessageHeader({
   authorName,
@@ -86,9 +101,7 @@ export function ChatMessageHeader({
   return (
     <div {...hooks.slot('header')}>
       {authorName === undefined ? null : <span {...hooks.slot('author')}>{authorName}</span>}
-      {time ? (
-        <RelativeTime value={time} getNow={getNow} className={hooks.slotClass('time')} />
-      ) : null}
+      <MessageTime time={time} getNow={getNow} />
     </div>
   );
 }
@@ -108,17 +121,28 @@ function RetryButton({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/** The edited marker, the stopped marker and the delivery status, with Retry for a failed send. */
-function ChatMessageFooter({
+/**
+ * The time placed in the footer, the edited marker, the stopped marker and the delivery status,
+ * with Retry for a failed send.
+ */
+export function ChatMessageFooter({
+  time,
+  getNow,
   isEdited,
   isCancelled,
   delivery,
   onRetry,
-}: Pick<ChatMessageBodyProps, 'isEdited' | 'isCancelled' | 'delivery' | 'onRetry'>) {
+}: Partial<
+  Pick<
+    ChatMessageBodyProps,
+    'time' | 'getNow' | 'isEdited' | 'isCancelled' | 'delivery' | 'onRetry'
+  >
+>) {
   const strings = useUiStrings();
-  if (!isEdited && !isCancelled && !delivery) return null;
+  if (!time && !isEdited && !isCancelled && !delivery) return null;
   return (
     <div {...hooks.slot('footer')}>
+      <MessageTime time={time} getNow={getNow} />
       {isEdited ? <span {...hooks.slot('edited')}>{strings.edited}</span> : null}
       {isCancelled ? <span {...hooks.slot('stopped')}>{strings.chatStopped}</span> : null}
       {delivery ? (
@@ -158,6 +182,8 @@ export function ChatMessageBody({
   reactions,
   actions,
   children,
+  time,
+  getNow,
 }: ChatMessageBodyProps) {
   const quotedId = quote?.messageId;
   return (
@@ -172,6 +198,8 @@ export function ChatMessageBody({
       ) : null}
       <div {...hooks.slot('content')}>{children}</div>
       <ChatMessageFooter
+        time={time}
+        getNow={getNow}
         isEdited={isEdited}
         isCancelled={isCancelled}
         delivery={delivery}

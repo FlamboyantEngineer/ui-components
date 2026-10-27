@@ -1,10 +1,12 @@
-// The Chat lab's message display: avatars, author names, times and message backgrounds, each optional.
+// The Chat lab's message display: avatars, author names, time placement and message backgrounds.
 
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+import type { ChatMessageTimePlacement } from '../../src/components/chat-transcript/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
 import { assistantPeople, plannerId, readerId, textMessage } from './chat-samples.js';
@@ -37,6 +39,12 @@ const initialMessages: ChatMessageData[] = [
   }),
 ];
 
+const timePlacements: Record<ChatMessageTimePlacement, string> = {
+  none: 'Hidden',
+  header: 'Beside the name',
+  footer: 'Under the message, on hover',
+};
+
 /** A trip planner with every display option under the reader's control; it starts with the minimal look. */
 function DisplayDemo() {
   const controller = useChatController({
@@ -47,7 +55,7 @@ function DisplayDemo() {
   });
   const [showAvatars, setShowAvatars] = useState(false);
   const [showAuthorNames, setShowAuthorNames] = useState(false);
-  const [showTimes, setShowTimes] = useState(false);
+  const [timePlacement, setTimePlacement] = useState<ChatMessageTimePlacement>('footer');
   const [sentBubble, setSentBubble] = useState(true);
   const [receivedBubble, setReceivedBubble] = useState(false);
   return (
@@ -59,9 +67,6 @@ function DisplayDemo() {
         <Checkbox isSelected={showAuthorNames} onChange={setShowAuthorNames}>
           Names
         </Checkbox>
-        <Checkbox isSelected={showTimes} onChange={setShowTimes}>
-          Times
-        </Checkbox>
         <Checkbox isSelected={sentBubble} onChange={setSentBubble}>
           Background on my messages
         </Checkbox>
@@ -69,6 +74,18 @@ function DisplayDemo() {
           Background on replies
         </Checkbox>
       </Cluster>
+      <ChoiceGroup
+        label="Times"
+        orientation="horizontal"
+        value={timePlacement}
+        onChange={(value) => setTimePlacement((value ?? 'footer') as ChatMessageTimePlacement)}
+      >
+        {Object.entries(timePlacements).map(([value, label]) => (
+          <Choice key={value} value={value}>
+            {label}
+          </Choice>
+        ))}
+      </ChoiceGroup>
       <div style={{ height: 460, maxWidth: 640 }}>
         <Chat
           {...controller.props}
@@ -78,9 +95,10 @@ function DisplayDemo() {
           placeholder="Ask the trip planner…"
           showAvatars={showAvatars}
           showAuthorNames={showAuthorNames}
-          showTimes={showTimes}
+          timePlacement={timePlacement}
           sentVariant={sentBubble ? 'bubble' : 'plain'}
           receivedVariant={receivedBubble ? 'bubble' : 'plain'}
+          onCopy={() => undefined}
         />
       </div>
     </Stack>
@@ -91,7 +109,7 @@ export function ChatDisplayCases() {
   return (
     <LabSection
       title="Message display"
-      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars, names or times (the day separators stay), your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Toggle the options to compare with the default look."
+      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions (the day separators stay), your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Toggle the options to compare with the default look."
     >
       <DisplayDemo />
     </LabSection>
