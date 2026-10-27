@@ -9,6 +9,7 @@ import {
 } from '../../src/components/combobox/combobox.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { NarrowRows } from './combobox-narrow-cases.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['resting', 'with value', 'disabled', 'read-only', 'invalid', 'pending'] as const;
@@ -371,6 +372,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Narrow rows"
+      description="Comboboxes in flex and grid rows 300 pixels wide, beside a text field, empty and with a chosen value and its clear button: each field stays inside the width it is given."
+    >
+      <NarrowRows />
     </LabSection>
     <LabSection
       title="Picking"

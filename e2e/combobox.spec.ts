@@ -443,3 +443,46 @@ test.describe('Combobox lab', () => {
     await lab.expectAccessible('[data-lab-demo="remembered-chips"]');
   });
 });
+
+for (const [device, viewport] of [
+  ['desktop', { width: 1440, height: 900 }],
+  ['phone', { width: 390, height: 664 }],
+] as const) {
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-COMBOBOX-1.5 keeps the field inside a narrow row on a ${device} screen in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await page.setViewportSize(viewport);
+      await lab.open('combobox', { theme });
+      for (const name of ['flex, empty', 'flex, chosen', 'grid, empty', 'grid, chosen']) {
+        const row = page.locator(`[data-lab-row="${name}"]`);
+        await row.scrollIntoViewIfNeeded();
+        const combobox = row.locator('.ui-combobox');
+        const rootBox = await combobox.boundingBox();
+        const fieldBox = await combobox.locator('.ui-combobox__field').boundingBox();
+        const noteBox = await row.getByRole('textbox', { name: `Note (${name})` }).boundingBox();
+        if (!rootBox || !fieldBox || !noteBox) throw new Error(`${name} is not laid out`);
+        expect(fieldBox.x + fieldBox.width).toBeLessThanOrEqual(rootBox.x + rootBox.width + 0.5);
+        expect(fieldBox.x + fieldBox.width).toBeLessThanOrEqual(noteBox.x);
+        const toggle = combobox.locator('.ui-combobox__button');
+        await expect(toggle).toBeVisible();
+        const toggleBox = await toggle.boundingBox();
+        expect((toggleBox?.x ?? 0) + (toggleBox?.width ?? 0)).toBeLessThanOrEqual(
+          fieldBox.x + fieldBox.width + 0.5,
+        );
+        if (name.endsWith('chosen')) {
+          await expect(combobox.getByRole('button', { name: 'Clear' })).toBeInViewport({
+            ratio: 1,
+          });
+        }
+        const input = combobox.getByRole('combobox');
+        await input.click();
+        await input.fill('Ch');
+        await expect(page.getByRole('option', { name: 'Cherry' })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Escape');
+      }
+    });
+  }
+}
