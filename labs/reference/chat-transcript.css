@@ -14,6 +14,13 @@
   font: var(--ref-font-size)/1.45 var(--ref-font);
 }
 
+/* Embedded in a panel or tab: the surrounding surface shows through, with no frame of its own. */
+.ui-chat-transcript[data-presentation='embedded'] {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .ui-chat-transcript__log {
   min-height: 0;
 }
@@ -162,6 +169,13 @@
 
 .ui-chat-message[data-origin='sent'] .ui-chat-message__content {
   background: var(--ref-selected);
+}
+
+/* Embedded on a panel's surface, a received bubble is raised off it, so it does not disappear. */
+.ui-chat-transcript[data-presentation='embedded']
+  .ui-chat-message[data-origin='received'][data-variant='bubble']
+  .ui-chat-message__content {
+  background: var(--ref-raised);
 }
 
 .ui-chat-message[data-origin='system'] .ui-chat-message__content {

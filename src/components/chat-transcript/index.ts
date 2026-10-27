@@ -3,6 +3,7 @@ export type {
   ChatMessageOrigin,
   ChatMessageProps,
   ChatMessageStatus,
+  ChatTranscriptPresentation,
   ChatTranscriptProps,
   ChatTranscriptScrollMode,
 } from './chat-transcript.js';

@@ -446,6 +446,26 @@ test.describe('Chat lab', () => {
     await expect(popover.getByRole('textbox', { name: 'Message' })).toBeVisible();
     await lab.expectAccessible('[data-lab-surface="popover"]');
   });
+
+  test('UIC-CHAT-1.7 embeds the transcript in a tab panel in both themes', async ({
+    page,
+    lab,
+  }) => {
+    for (const theme of ['light', 'dark']) {
+      await lab.open('chat', { theme });
+      const tab = page.locator('[data-lab-demo="tab"]');
+      const transcript = tab.locator('.ui-chat__transcript');
+      await expect(transcript).toHaveAttribute('data-presentation', 'embedded');
+      expect(
+        await transcript.evaluate((node) => {
+          const style = getComputedStyle(node);
+          return [style.borderTopWidth, style.backgroundColor];
+        }),
+      ).toEqual(['0px', 'rgba(0, 0, 0, 0)']);
+      await expect(tab.getByText('Ask about trains, weather or where to eat.')).toBeVisible();
+      await lab.expectAccessible('[data-lab-demo="tab"]');
+    }
+  });
 });
 
 test.describe('Chat lab, everything in one chat', () => {

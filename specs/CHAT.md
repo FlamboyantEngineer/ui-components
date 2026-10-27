@@ -50,7 +50,7 @@ Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-1.7 - Transcript behaviour
 
-The transcript shall scroll in `scrollMode`, by default `anchor` in an assistant chat and `follow` otherwise, and take `virtualized`, `emptyState`, `onLoadOlder`, `hasOlder`, `isLoadingOlder`, `firstUnreadId` and `onRead` as [Chat Transcript](CHAT-TRANSCRIPT.md) does. Escape from a focused message (the transcript's second Escape) moves focus to the composer.
+The transcript shall scroll in `scrollMode`, by default `anchor` in an assistant chat and `follow` otherwise, and take `presentation`, `virtualized`, `emptyState`, `onLoadOlder`, `hasOlder`, `isLoadingOlder`, `firstUnreadId` and `onRead` as [Chat Transcript](CHAT-TRANSCRIPT.md) does. Escape from a focused message (the transcript's second Escape) moves focus to the composer.
 
 Implementation: `src/components/chat/chat.tsx`
 Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
