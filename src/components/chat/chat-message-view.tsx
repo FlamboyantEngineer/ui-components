@@ -13,7 +13,11 @@ import {
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
 import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
 import { chatHooks as hooks } from './chat-hooks.js';
-import { toMessageVariant, type ChatMessageDisplayOptions } from './chat-message-display.js';
+import {
+  toMessageVariant,
+  toTimePlacement,
+  type ChatMessageDisplayOptions,
+} from './chat-message-display.js';
 import {
   readMessageText,
   toDisplayStatus,
@@ -137,7 +141,7 @@ export const ChatMessageView = memo(function ChatMessageView({
           author={participant ? toMessageAuthor(participant) : undefined}
           showAvatar={display.showAvatars}
           showAuthorName={display.showAuthorNames}
-          timePlacement={display.timePlacement}
+          timePlacement={toTimePlacement(message, display)}
           variant={toMessageVariant(origin, display)}
           time={message.createdAt}
           getNow={context.getNow}

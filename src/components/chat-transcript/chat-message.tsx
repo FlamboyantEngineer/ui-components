@@ -1,10 +1,12 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useFocusWithin, useHover } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { getDisplayName, type AvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
-import type { RelativeTimeProps } from '../relative-time/relative-time.js';
+import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
+import { AnchoredTooltip, TOOLTIP_DELAY } from '../tooltip/tooltip.js';
+import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import {
   ChatMessageAvatar,
   ChatMessageBody,
@@ -30,9 +32,10 @@ export type ChatMessageVariant = 'bubble' | 'plain';
 
 /**
  * Where a message shows its time: in the `header` beside the author's name, in the `footer` under
- * the content (which a stylesheet shows with the actions, on hover and focus), or `none`.
+ * the content (which a stylesheet shows with the actions, on hover and focus), in a `tooltip` while
+ * the message is hovered or holds focus, or `none`.
  */
-export type ChatMessageTimePlacement = 'header' | 'footer' | 'none';
+export type ChatMessageTimePlacement = 'header' | 'footer' | 'tooltip' | 'none';
 
 /** A message's place in a run of messages by one author: alone, or first, middle or last. */
 export type ChatMessageGroupPosition = 'single' | 'first' | 'middle' | 'last';
@@ -102,7 +105,10 @@ function splitBodyProps({
   ] as const;
 }
 
-/** What the message shows: the author's avatar and name lead a group, and the time, unless hidden. */
+/**
+ * What the message shows: the author's avatar and name lead a group, and the time in its place,
+ * unless hidden.
+ */
 function resolveDisplay({
   author,
   groupPosition,
@@ -110,17 +116,22 @@ function resolveDisplay({
   showAuthorName = true,
   timePlacement = 'header',
   variant = 'bubble',
+  time,
 }: Pick<
   ChatMessageProps,
-  'author' | 'showAvatar' | 'showAuthorName' | 'timePlacement' | 'variant'
+  'author' | 'showAvatar' | 'showAuthorName' | 'timePlacement' | 'variant' | 'time'
 > & {
   groupPosition: ChatMessageGroupPosition;
 }) {
   const startsGroup = groupPosition === 'single' || groupPosition === 'first';
+  const timeIn = (placement: ChatMessageTimePlacement) =>
+    timePlacement === placement ? time : undefined;
   return {
     avatar: startsGroup && showAvatar ? author : undefined,
     showsName: startsGroup && showAuthorName,
-    timePlacement,
+    headerTime: timeIn('header'),
+    footerTime: timeIn('footer'),
+    tooltipTime: timeIn('tooltip'),
     variant,
     avatarHidden: !showAvatar,
   };
@@ -132,6 +143,50 @@ function useMessageInteraction() {
   const [isFocusWithin, setFocusWithin] = useState(false);
   const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocusWithin });
   return { isHovered, isFocusWithin, interactionProps: mergeProps(hoverProps, focusWithinProps) };
+}
+
+/** The message's hidden name: its author and absolute time. */
+function MessageLabel({ id, label }: { id: string; label: string | undefined }) {
+  return label ? (
+    <span id={id} hidden>
+      {label}
+    </span>
+  ) : null;
+}
+
+/**
+ * The time in a tooltip over the message's body once it has been hovered or held focus for the
+ * tooltip delay, so a pointer passing over the chat opens nothing.
+ */
+function MessageTimeTooltip({
+  time,
+  getNow,
+  isOpen,
+  anchor,
+}: Pick<ChatMessageProps, 'time' | 'getNow'> & {
+  isOpen: boolean;
+  anchor: RefObject<HTMLDivElement | null>;
+}) {
+  const isShown = useActiveAfter(isOpen && Boolean(time), TOOLTIP_DELAY);
+  if (!time) return null;
+  return (
+    <AnchoredTooltip
+      isOpen={isShown}
+      anchor={anchor}
+      // The message's name already holds the absolute time.
+      relationship="none"
+      placement="top"
+      content={
+        // The tooltip takes no focus, so the time opens no tooltip of its own.
+        <RelativeTime
+          value={time}
+          getNow={getNow}
+          showTooltip={false}
+          className={hooks.slotClass('time')}
+        />
+      }
+    />
+  );
 }
 
 /**
@@ -160,15 +215,15 @@ export function ChatMessage({
   const strings = useUiStrings();
   const { isHovered, isFocusWithin, interactionProps } = useMessageInteraction();
   const labelId = useId();
+  const bodyRef = useRef<HTMLDivElement>(null);
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
   const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
   const display = resolveDisplay({
-    ...{ author, groupPosition, variant },
+    ...{ author, groupPosition, variant, time },
     ...{ showAvatar, showAuthorName, timePlacement },
   });
   const [body, own] = splitBodyProps(rest);
-  const footerTime = display.timePlacement === 'footer' ? time : undefined;
   const data = {
     variant: display.variant,
     origin,
@@ -187,34 +242,36 @@ export function ChatMessage({
       aria-busy={status === 'streaming' || undefined}
       aria-labelledby={label ? labelId : undefined}
     >
-      {label ? (
-        <span id={labelId} hidden>
-          {label}
-        </span>
-      ) : null}
+      <MessageLabel id={labelId} label={label} />
       {display.avatar ? <ChatMessageAvatar author={display.avatar} /> : null}
-      <div {...hooks.slot('body')}>
+      <div ref={bodyRef} {...hooks.slot('body')}>
         <ChatMessageHeader
           authorName={display.showsName ? authorName : undefined}
-          time={display.timePlacement === 'header' ? time : undefined}
+          time={display.headerTime}
           getNow={getNow}
         />
         {isDeleted ? (
           <>
             <div {...hooks.slot('content')}>{strings.chatMessageDeleted}</div>
-            <ChatMessageFooter time={footerTime} getNow={getNow} />
+            <ChatMessageFooter time={display.footerTime} getNow={getNow} />
           </>
         ) : (
           <ChatMessageBody
             {...body}
             isCancelled={status === 'cancelled'}
             delivery={delivery}
-            time={footerTime}
+            time={display.footerTime}
             getNow={getNow}
           />
         )}
         {readers ? <div {...hooks.slot('readers')}>{readers}</div> : null}
       </div>
+      <MessageTimeTooltip
+        time={display.tooltipTime}
+        getNow={getNow}
+        isOpen={isHovered || isFocusWithin}
+        anchor={bodyRef}
+      />
     </article>
   );
 }

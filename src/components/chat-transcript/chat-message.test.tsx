@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -215,6 +215,45 @@ describe('ChatMessage avatar, name and background', () => {
     await user.tab();
     expect(named?.querySelector('.ui-chat-message__time')).toHaveFocus();
     expect(named).toHaveAttribute('data-focus-within', 'true');
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.13 marks a footer that holds only the time', () => {
+    render(
+      <>
+        <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="footer">
+          Time only
+        </ChatMessage>
+        <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="footer" isEdited>
+          With a marker
+        </ChatMessage>
+      </>,
+    );
+    const [timeOnly, marked] = screen.getAllByRole('article');
+    const footer = (message: HTMLElement | undefined) =>
+      message?.querySelector('.ui-chat-message__footer');
+    expect(footer(timeOnly)).toHaveAttribute('data-time-only', 'true');
+    expect(footer(marked)).not.toHaveAttribute('data-time-only');
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.13 shows the time in a tooltip once the message is hovered for the delay', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="tooltip">
+        Tooltip time
+      </ChatMessage>,
+    );
+    const article = screen.getByRole('article', { name: mariaAt1025 });
+    expect(container.querySelector('.ui-chat-message__time')).toBeNull();
+    await user.hover(within(article).getByText('Tooltip time'));
+    expect(document.querySelector('.ui-tooltip')).toBeNull();
+    const tooltip = await screen.findByRole('tooltip', { hidden: true }, { timeout: 2000 });
+    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+    expect(within(tooltip).getByText('5 minutes ago')).toHaveClass('ui-chat-message__time');
+    await user.unhover(article);
+    await waitFor(() =>
+      expect(screen.queryByRole('tooltip', { hidden: true })).not.toBeInTheDocument(),
+    );
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
   });
 

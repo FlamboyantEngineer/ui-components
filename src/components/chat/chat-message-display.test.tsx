@@ -62,6 +62,29 @@ describe('Chat message display', () => {
     expectHooksMatchSpec(container, 'CHAT');
   });
 
+  it('UIC-CHAT-1.8 places the time of a message made only of tool calls on its own', () => {
+    const messages = [
+      ...assistantConversation,
+      message('t1', 'helper', {
+        parts: [{ type: 'tool-call', id: 'c1', name: 'search_cafes', status: 'succeeded' }],
+      }),
+    ];
+    const { rerenderWith } = renderChat({
+      ...assistantChat,
+      messages,
+      timePlacement: 'footer',
+      toolCallTimePlacement: 'none',
+    });
+    expect(
+      article('a1').querySelector('.ui-chat-message__footer .ui-chat-message__time'),
+    ).not.toBeNull();
+    expect(article('t1').querySelector('.ui-chat-message__time')).toBeNull();
+    rerenderWith({ ...assistantChat, messages, timePlacement: 'footer' });
+    expect(
+      article('t1').querySelector('.ui-chat-message__footer .ui-chat-message__time'),
+    ).not.toBeNull();
+  });
+
   it('UIC-CHAT-1.8 draws each side in its own variant and leaves notices at the default', () => {
     const { rerenderWith } = renderChat({ ...assistantChat, receivedVariant: 'plain' });
     expect(article('q1')).toHaveAttribute('data-variant', 'bubble');

@@ -1,4 +1,4 @@
-// The Chat lab's message display: avatars, author names, time placement and message backgrounds.
+// The Chat lab's message display: avatars, author names, time placements and message backgrounds.
 
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
@@ -31,8 +31,25 @@ const initialMessages: ChatMessageData[] = [
     time: '2026-04-20T10:02:00',
     text: 'And where should we eat after?',
   }),
-  textMessage({
+  {
     id: 'display-4',
+    authorId: plannerId,
+    createdAt: '2026-04-20T10:02:30',
+    parts: [
+      {
+        type: 'tool-call',
+        id: 'display-4-search',
+        name: 'search_places',
+        label: 'Searched cafes near the castle',
+        kind: 'search',
+        status: 'succeeded',
+        args: { near: 'Castle square', type: 'cafe' },
+        result: { count: 3 },
+      },
+    ],
+  },
+  textMessage({
+    id: 'display-5',
     authorId: plannerId,
     time: '2026-04-20T10:03:00',
     text: 'The square below the castle has a few small cafes with lunch menus.',
@@ -43,7 +60,34 @@ const timePlacements: Record<ChatMessageTimePlacement, string> = {
   none: 'Hidden',
   header: 'Beside the name',
   footer: 'Under the message, on hover',
+  tooltip: 'In a tooltip, on hover',
 };
+
+/** A row of time placements for one kind of message. */
+function TimePlacementChoice({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: ChatMessageTimePlacement;
+  onChange: (value: ChatMessageTimePlacement) => void;
+}) {
+  return (
+    <ChoiceGroup
+      label={label}
+      orientation="horizontal"
+      value={value}
+      onChange={(next) => onChange((next ?? value) as ChatMessageTimePlacement)}
+    >
+      {Object.entries(timePlacements).map(([placement, placementLabel]) => (
+        <Choice key={placement} value={placement}>
+          {placementLabel}
+        </Choice>
+      ))}
+    </ChoiceGroup>
+  );
+}
 
 /** A trip planner with every display option under the reader's control; it starts with the minimal look. */
 function DisplayDemo() {
@@ -56,6 +100,8 @@ function DisplayDemo() {
   const [showAvatars, setShowAvatars] = useState(false);
   const [showAuthorNames, setShowAuthorNames] = useState(false);
   const [timePlacement, setTimePlacement] = useState<ChatMessageTimePlacement>('footer');
+  const [toolCallTimePlacement, setToolCallTimePlacement] =
+    useState<ChatMessageTimePlacement>('none');
   const [sentBubble, setSentBubble] = useState(true);
   const [receivedBubble, setReceivedBubble] = useState(false);
   return (
@@ -74,18 +120,16 @@ function DisplayDemo() {
           Background on replies
         </Checkbox>
       </Cluster>
-      <ChoiceGroup
-        label="Times"
-        orientation="horizontal"
+      <TimePlacementChoice
+        label="Message times"
         value={timePlacement}
-        onChange={(value) => setTimePlacement((value ?? 'footer') as ChatMessageTimePlacement)}
-      >
-        {Object.entries(timePlacements).map(([value, label]) => (
-          <Choice key={value} value={value}>
-            {label}
-          </Choice>
-        ))}
-      </ChoiceGroup>
+        onChange={setTimePlacement}
+      />
+      <TimePlacementChoice
+        label="Tool call times"
+        value={toolCallTimePlacement}
+        onChange={setToolCallTimePlacement}
+      />
       <div style={{ height: 460, maxWidth: 640 }}>
         <Chat
           {...controller.props}
@@ -96,6 +140,7 @@ function DisplayDemo() {
           showAvatars={showAvatars}
           showAuthorNames={showAuthorNames}
           timePlacement={timePlacement}
+          toolCallTimePlacement={toolCallTimePlacement}
           sentVariant={sentBubble ? 'bubble' : 'plain'}
           receivedVariant={receivedBubble ? 'bubble' : 'plain'}
           onCopy={() => undefined}
@@ -109,7 +154,7 @@ export function ChatDisplayCases() {
   return (
     <LabSection
       title="Message display"
-      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions (the day separators stay), your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Toggle the options to compare with the default look."
+      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions, its line opening after a short pause (the day separators stay), and no time on the planner's tool calls, your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Messages made only of tool calls take their own time placement. A tooltip shows the time over a message after the tooltip delay. Toggle the options to compare with the default look."
     >
       <DisplayDemo />
     </LabSection>

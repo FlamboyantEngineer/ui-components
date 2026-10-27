@@ -21,9 +21,16 @@ test.describe('Chat message display', () => {
     await expect(demo.locator('.ui-chat-message__avatar')).toHaveCount(0);
     await expect(demo.locator('.ui-chat-message__author')).toHaveCount(0);
     await expect(demo.locator('.ui-chat-message__header')).toHaveCount(0);
+    const replyFooter = reply.locator('.ui-chat-message__footer');
     await expect(replyTime).toHaveCSS('opacity', '0');
+    await expect(replyFooter).toHaveAttribute('data-time-only', 'true');
+    expect((await replyFooter.boundingBox())?.height).toBe(0);
+    const toolCalls = demo.locator('article[id="display-4"]');
+    await expect(toolCalls.locator('.ui-chat-tool-call')).toBeVisible();
+    await expect(toolCalls.locator('.ui-chat-message__time')).toHaveCount(0);
     await reply.locator('.ui-chat-message__content').hover();
     await expect(replyTime).toHaveCSS('opacity', '1');
+    await expect.poll(async () => (await replyFooter.boundingBox())?.height).toBeGreaterThan(8);
     await expect(reply.locator('.ui-chat-message__actions')).toHaveCSS('opacity', '1');
     await expect(reply).toHaveAccessibleName(/^Trip planner, /);
     expect(await background(question)).not.toBe(transparent);
@@ -40,16 +47,47 @@ test.describe('Chat message display', () => {
       await page.keyboard.press('Space');
       await expect(option).toBeChecked();
     }
-    await demo.getByText('Beside the name').click();
-    await expect(demo.getByRole('radio', { name: 'Beside the name' })).toBeChecked();
+    const messageTimes = demo.getByRole('radiogroup', { name: 'Message times' });
+    await messageTimes.getByText('Beside the name').click();
+    await expect(messageTimes.getByRole('radio', { name: 'Beside the name' })).toBeChecked();
     await expect(reply.locator('.ui-chat-message__avatar')).toBeVisible();
     await expect(reply.locator('.ui-chat-message__author')).toHaveText('Trip planner');
     await expect(reply.locator('.ui-chat-message__header .ui-chat-message__time')).toBeVisible();
     await expect(reply.locator('.ui-chat-message__footer')).toHaveCount(0);
     expect(await background(reply)).not.toBe(transparent);
-    await demo.getByText('Hidden', { exact: true }).click();
+    await messageTimes.getByText('Hidden', { exact: true }).click();
     await expect(demo.locator('.ui-chat-message__time')).toHaveCount(0);
     await lab.expectAccessible('[data-lab-demo="display"]');
+  });
+
+  test('UIC-CHAT-1.8 places the times of tool calls on their own and shows a time in a tooltip', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const demo = display(page);
+    const reply = demo.locator('article[id="display-2"]');
+    const toolCalls = demo.locator('article[id="display-4"]');
+    await demo
+      .getByRole('radiogroup', { name: 'Tool call times' })
+      .getByText('Beside the name')
+      .click();
+    await expect(
+      toolCalls.locator('.ui-chat-message__header .ui-chat-message__time'),
+    ).toBeVisible();
+    await expect(reply.locator('.ui-chat-message__header')).toHaveCount(0);
+    await demo
+      .getByRole('radiogroup', { name: 'Message times' })
+      .getByText('In a tooltip, on hover')
+      .click();
+    await expect(reply.locator('.ui-chat-message__time')).toHaveCount(0);
+    await reply.locator('.ui-chat-message__content').hover();
+    const tooltip = page.locator('.ui-tooltip');
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip.locator('.ui-chat-message__time')).toBeVisible();
+    await expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+    await demo.getByRole('radiogroup', { name: 'Tool call times' }).hover();
+    await expect(tooltip).toHaveCount(0);
   });
 
   test('UIC-CHAT-TRANSCRIPT-2.13 places or hides the time and draws a plain message without a background', async ({
