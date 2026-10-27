@@ -99,6 +99,62 @@
   }
 }
 
+/* Segmented Progress */
+
+.ui-progress-bar[data-segmented] .ui-progress-bar__track {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  border-radius: var(--ref-radius-full);
+  background: none;
+}
+
+/* Many units share a narrow track: thinner gaps first, then none. */
+.ui-progress-bar[data-segmented]
+  .ui-progress-bar__track:has(> .ui-progress-bar__segment:nth-child(24)) {
+  gap: 1px;
+}
+
+.ui-progress-bar[data-segmented]
+  .ui-progress-bar__track:has(> .ui-progress-bar__segment:nth-child(60)) {
+  gap: 0;
+}
+
+.ui-progress-bar__segment {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--ref-border);
+  transition: background-color var(--ref-duration);
+}
+
+.ui-progress-bar__segment[data-state='complete'] {
+  background: var(--ref-accent);
+}
+
+.ui-progress-bar[data-complete] .ui-progress-bar__segment[data-state='complete'] {
+  background: var(--ref-success);
+}
+
+.ui-progress-bar:is([data-tone='success'], [data-tone='warning'], [data-tone='danger'])
+  .ui-progress-bar__segment[data-state='complete'] {
+  background: var(--ref-tone);
+}
+
+/* Stripes mark the unit under way by shape as well as colour. */
+.ui-progress-bar__segment[data-state='current'] {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ref-accent) 0 3px,
+    color-mix(in srgb, var(--ref-accent) 35%, var(--ref-border)) 3px 6px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-progress-bar__segment {
+    transition: none;
+  }
+}
+
 /* Circular Progress */
 
 .ui-progress-bar[data-shape='circular'] {

@@ -1,3 +1,15 @@
+/** The formatted parts of a segmented progress bar's value text. */
+export interface SegmentProgressText {
+  /** Completed units. */
+  completed: string;
+  /** All units. */
+  total: string;
+  /** Completed units as a percentage of all units. */
+  percent: string;
+  /** The label of the unit under way, when there is one. */
+  current?: string | undefined;
+}
+
 /** Strings shared by actions, navigation, overlays, collections and people. */
 export interface CommonStrings {
   close: string;
@@ -100,6 +112,10 @@ export interface CommonStrings {
   countOrMore: (count: number) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
+  /** A segmented progress bar's visible value (`1/7 · 14%`), from its formatted parts. */
+  segmentCount: (progress: SegmentProgressText) => string;
+  /** A segmented progress bar's spoken value, naming the unit under way when there is one. */
+  segmentProgress: (progress: SegmentProgressText) => string;
   /** A total beside the parts it sums, from the formatted total (`30 total`). */
   totalCount: (total: string) => string;
   /** Names the mark of a group holding a value that overrides an inherited one. */
@@ -267,6 +283,9 @@ export const commonStrings: CommonStrings = {
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
   stepOfTotal: (current, total) => `${current} of ${total}`,
+  segmentCount: ({ completed, total, percent }) => `${completed}/${total} · ${percent}`,
+  segmentProgress: ({ completed, total, percent, current }) =>
+    `${completed} of ${total} done, ${percent}${current === undefined ? '' : `, ${current} in progress`}`,
   totalCount: (total) => `${total} total`,
   containsOverrides: 'Contains overridden values',
   filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,

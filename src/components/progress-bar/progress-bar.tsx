@@ -1,16 +1,12 @@
 import type { ReactNode, Ref } from 'react';
-import {
-  Label,
-  ProgressBar as AriaProgressBar,
-  Meter as AriaMeter,
-} from '../../primitives/index.js';
+import { ProgressBar as AriaProgressBar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks, type ComponentHooks } from '../../core/hooks.js';
+import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { ProgressRing } from './progress-ring.js';
-import { resolveMeterTone } from './progress-meter.js';
-import { clamp } from '../../utils/clamp.js';
+import { ProgressRoot, ProgressText } from './progress-root.js';
+import { SegmentedProgressBar, type ProgressSegment } from './progress-segments.js';
 
 export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -57,6 +53,12 @@ export interface ProgressBarProps extends BaseProps, AriaLabellingProps, Progres
   size?: ProgressBarSize | undefined;
   /** The work's status, such as `success` once done or `danger` when it failed. Defaults to `neutral`. */
   tone?: ProgressBarTone | undefined;
+  /**
+   * One equal segment per unit of work, in order. The bar then counts completed units of all units,
+   * so `value`, `minValue`, `maxValue`, `formatOptions`, `isIndeterminate`, `shape` and `mode` do not
+   * apply.
+   */
+  segments?: readonly ProgressSegment[] | undefined;
   /** The root element. */
   ref?: Ref<HTMLDivElement> | undefined;
 }
@@ -80,120 +82,20 @@ export interface ProgressValues {
   isIndeterminate: boolean;
 }
 
-/** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
-interface ProgressRootProps extends Omit<ProgressBarProps, 'label' | 'showValueLabel'> {
-  /** The hooks of the indicator that renders the root. */
-  hooks: ComponentHooks<string>;
-  /** Draws the indicator from its values. */
-  children: (values: ProgressValues) => ReactNode;
-}
-
-/** A progress indicator's visible label and value text, in its `label` and `value` slots. */
-interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
-  hooks: ComponentHooks<'label' | 'value'>;
-  /** Show the value text; an indeterminate indicator never shows it. */
-  showValueLabel: boolean;
-  /** The indicator's values. */
-  values: ProgressValues;
-}
-
 const hooks = createHooks('progress-bar', ['label', 'value', 'track', 'fill', 'ring']);
 const spinnerHooks = createHooks('spinner');
 
-function toFinite(value: number | undefined, fallback: number): number {
-  return value !== undefined && Number.isFinite(value) ? value : fallback;
-}
-
-/**
- * Bounds a range so it never claims more than it measured: non-finite numbers fall back to the
- * minimum, the maximum is never below the minimum and the value stays inside the range.
- */
-export function resolveProgressRange(
-  range: Pick<ProgressBarProps, 'value' | 'minValue' | 'maxValue'>,
-): { value: number; minValue: number; maxValue: number } {
-  const minValue = toFinite(range.minValue, 0);
-  const maxValue = Math.max(
-    minValue,
-    range.maxValue === undefined ? 100 : toFinite(range.maxValue, minValue),
-  );
-  return { value: clamp(toFinite(range.value, minValue), minValue, maxValue), minValue, maxValue };
-}
-
-/** Whether measured progress reached the end of a range that has one. */
-function isComplete(range: ReturnType<typeof resolveProgressRange>): boolean {
-  return range.maxValue > range.minValue && range.value === range.maxValue;
-}
-
-/** The root both progress indicators render; `children` draws the indicator. */
-function ProgressRoot({
-  hooks: rootHooks,
-  size,
-  tone,
-  mode = 'progress',
-  shape = 'linear',
-  low,
-  high,
-  optimum,
-  isIndeterminate = false,
-  value,
-  minValue,
-  maxValue,
-  className,
-  render,
-  children,
-  ...rest
-}: ProgressRootProps) {
-  const range = resolveProgressRange({ value, minValue, maxValue });
-  const indeterminate = mode === 'progress' && isIndeterminate;
-  const complete = mode === 'progress' && !indeterminate && isComplete(range);
-  const judged =
-    tone ??
-    (mode === 'meter' ? resolveMeterTone(range, { low, high, optimum }) : undefined) ??
-    'neutral';
-  const data = { size, tone: judged, mode, shape, indeterminate, complete };
-  const Root = mode === 'meter' ? AriaMeter : AriaProgressBar;
-  return (
-    <Root
-      {...rest}
-      {...rootHooks.root({ className, data })}
-      {...range}
-      {...(mode === 'progress' ? { isIndeterminate: indeterminate } : {})}
-      render={
-        render
-          ? (props, state) =>
-              render(props, {
-                percentage: state.percentage,
-                valueText: state.valueText,
-                isIndeterminate: indeterminate,
-              })
-          : undefined
-      }
-    >
-      {(state: Pick<ProgressValues, 'percentage' | 'valueText'>) =>
-        children({
-          percentage: state.percentage,
-          valueText: state.valueText,
-          isIndeterminate: indeterminate,
-        })
-      }
-    </Root>
-  );
-}
-
-/** The label and value text both progress indicators show. */
-function ProgressText({ hooks: textHooks, label, showValueLabel, values }: ProgressTextProps) {
-  return (
-    <>
-      {label != null ? <Label className={textHooks.slotClass('label')}>{label}</Label> : null}
-      {showValueLabel && !values.isIndeterminate ? (
-        <span {...textHooks.slot('value')}>{values.valueText}</span>
-      ) : null}
-    </>
-  );
-}
-
 /** A bar showing how much of a known amount of work is done, or that work is under way. */
-export function ProgressBar({
+export function ProgressBar(props: ProgressBarProps) {
+  return props.segments ? (
+    <SegmentedProgressBar {...props} segments={props.segments} />
+  ) : (
+    <RangeProgressBar {...props} />
+  );
+}
+
+/** A linear or circular bar filled to a share of its range. */
+function RangeProgressBar({
   label,
   shape = 'linear',
   showValueLabel = shape === 'linear',
@@ -247,3 +149,4 @@ export function Spinner({ size = 'md', label, className, ...rest }: SpinnerProps
 }
 
 export { resolveMeterTone } from './progress-meter.js';
+export { resolveProgressRange } from './progress-root.js';
