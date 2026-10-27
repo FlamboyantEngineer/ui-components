@@ -6,6 +6,7 @@ import type { GlyphName } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
+import { DisclosureTitle } from '../disclosure/disclosure.js';
 import { CopyButton } from '../copy-button/copy-button.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { formatToolValue } from './format-tool-call.js';
@@ -21,11 +22,16 @@ export type ChatToolCallStatus =
   | 'denied'
   | 'cancelled';
 
+/** What a tool call does, which picks its glyph and how a group of steps sums it up. */
+export type ChatToolCallKind = 'read' | 'edit' | 'command' | 'search' | 'fetch' | 'other';
+
 /** A part of a tool call the body shows as JSON. */
 type ToolCallPartName = 'arguments' | 'result';
 
 interface ToolCallTitleProps {
   label: string;
+  target: string | undefined;
+  kind: ChatToolCallKind;
   status: ChatToolCallStatus;
   durationMs: number | undefined;
   isAutoApproved: boolean;
@@ -48,6 +54,16 @@ const statusGlyphs: Readonly<Record<ChatToolCallStatus, GlyphName>> = {
   cancelled: 'x-circle',
 };
 
+/** The glyph of each kind of call, shown once the call succeeded and by groups of steps. */
+export const toolCallKindGlyphs: Readonly<Record<ChatToolCallKind, GlyphName>> = {
+  read: 'file-text',
+  edit: 'edit',
+  command: 'terminal',
+  search: 'search',
+  fetch: 'globe',
+  other: 'wrench',
+};
+
 /** How long the call ran: the short form shown, the long one read by assistive technology. */
 function ToolCallDuration({ milliseconds }: { milliseconds: number }) {
   const strings = useUiStrings();
@@ -62,16 +78,30 @@ function ToolCallDuration({ milliseconds }: { milliseconds: number }) {
 }
 
 /**
- * The trigger's content: the status glyph, then the summary that wraps beside it: the label, the
- * status, the duration and the badge, spaced so the trigger's name reads them as words.
+ * The title heading, whose trigger holds the status glyph (the kind's once the call succeeded), then
+ * the summary that wraps beside it: the label, the target, the status, the duration and the badge,
+ * spaced so the trigger's name reads them as words.
  */
-export function ToolCallTitle({ label, status, durationMs, isAutoApproved }: ToolCallTitleProps) {
+export function ToolCallTitle({
+  label,
+  target,
+  kind,
+  status,
+  durationMs,
+  isAutoApproved,
+}: ToolCallTitleProps) {
   const strings = useUiStrings();
+  const glyph = status === 'succeeded' ? toolCallKindGlyphs[kind] : statusGlyphs[status];
   return (
-    <>
-      <Glyph name={statusGlyphs[status]} className={hooks.slotClass('status-glyph')} />
+    <DisclosureTitle className={hooks.slotClass('heading')}>
+      <Glyph name={glyph} className={hooks.slotClass('status-glyph')} />
       <span {...hooks.slot('summary')}>
         <span {...hooks.slot('label')}>{label}</span>{' '}
+        {target ? (
+          <>
+            <span {...hooks.slot('target')}>{target}</span>{' '}
+          </>
+        ) : null}
         <span {...hooks.slot('status')}>{strings.toolCallStatus(status)}</span>
         {durationMs === undefined ? null : (
           <>
@@ -88,7 +118,7 @@ export function ToolCallTitle({ label, status, durationMs, isAutoApproved }: Too
           </>
         ) : null}
       </span>
-    </>
+    </DisclosureTitle>
   );
 }
 

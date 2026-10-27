@@ -61,6 +61,7 @@ const answerTrip: ChatSendFunction = async function* (messages, { signal }) {
     id: weather,
     name: 'get_weather',
     label: 'Checked the forecast',
+    kind: 'fetch',
     args: { city: 'Lisbon' },
   };
   await sleep(agentTiming.word * 8, signal);
@@ -72,6 +73,7 @@ const answerTrip: ChatSendFunction = async function* (messages, { signal }) {
     id: trains,
     name: 'search_trains',
     label: 'Searched trains to Lisbon',
+    kind: 'search',
     args: { from: 'Porto', to: 'Lisbon', day: 'Saturday' },
   };
   await sleep(agentTiming.word * 8, signal);

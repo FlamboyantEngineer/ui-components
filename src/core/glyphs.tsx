@@ -26,6 +26,7 @@ import {
   CheckCircleIcon,
   CheckIcon,
   ClockIcon,
+  CommandLineIcon,
   DocumentDuplicateIcon,
   DocumentIcon,
   DocumentTextIcon,
@@ -48,6 +49,7 @@ import {
   FilmIcon,
   FolderIcon,
   FunnelIcon,
+  GlobeAltIcon,
   HandThumbDownIcon,
   HandThumbUpIcon,
   InformationCircleIcon,
@@ -73,6 +75,7 @@ import {
   UsersIcon,
   VariableIcon,
   ViewColumnsIcon,
+  WrenchIcon,
   XMarkIcon,
   Bars3BottomLeftIcon,
   BoldIcon,
@@ -221,6 +224,9 @@ export const defaultGlyphs = {
   'thumbs-down': HandThumbDownIcon,
   reply: ArrowUturnLeftIcon,
   'bell-slash': BellSlashIcon,
+  terminal: CommandLineIcon,
+  globe: GlobeAltIcon,
+  wrench: WrenchIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

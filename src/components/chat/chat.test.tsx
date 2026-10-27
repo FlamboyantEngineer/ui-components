@@ -235,12 +235,13 @@ describe('Chat', () => {
       parts: [...steps('failed'), { type: 'text', text: 'Take the 8:05; no hotel answered.' }],
     };
     const { user, rerenderWith } = renderChat({ ...assistantChat, messages: [running] });
-    const group = () => within(article('w1')).getByRole('button', { name: /· 3 steps$/ });
-    expect(group()).toHaveAccessibleName('Working… · 3 steps');
+    const group = () =>
+      within(article('w1')).getByRole('button', { name: /^(Working…|Used tools)$/ });
+    expect(group()).toHaveAccessibleName('Working…');
     await user.click(group());
     expect(group()).toHaveAttribute('aria-expanded', 'false');
     rerenderWith({ ...assistantChat, messages: [final] });
-    expect(group()).toHaveAccessibleName('Worked for 2 s · 3 steps');
+    expect(group()).toHaveAccessibleName('Used tools');
     expect(group()).toHaveAttribute('aria-expanded', 'true');
     expect(within(article('w1')).getByRole('alert')).toHaveTextContent(
       'The hotel service timed out.',

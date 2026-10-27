@@ -1,6 +1,6 @@
 # Chat Activity
 
-The activity family shows what an assistant does while it answers, as parts of a reply in a [Chat Transcript](CHAT-TRANSCRIPT.md). `ChatReasoning` is the assistant's reasoning: open while it streams in, collapsed to how long it took once complete. `ChatSteps` folds the consecutive reasoning and tool calls of one reply into one group: open while the run goes on, collapsed to a summary once it ends. `ChatPlan` is the assistant's plan, an ordered list of steps that each say where they stand. `ChatStatusLine` is one live line saying what the assistant is thinking or doing now. The family has no `ChatActivity` component; `chat-activity.ts` holds the data types the parts take (`ChatReasoningData`, `ChatPlanData`, `ChatPlanStep`) and the values they derive from them.
+The activity family shows what an assistant does while it answers, as parts of a reply in a [Chat Transcript](CHAT-TRANSCRIPT.md). `ChatReasoning` is the assistant's reasoning: open while it streams in, collapsed to how long it took once complete. `ChatSteps` folds the consecutive reasoning and tool calls of one reply into one group: open while the run goes on, collapsed to one line summing up what it did ("Edited files, ran a command") once it ends. `ChatPlan` is the assistant's plan, an ordered list of steps that each say where they stand. `ChatStatusLine` is one live line saying what the assistant is thinking or doing now. The family has no `ChatActivity` component; `chat-activity.ts` holds the data types the parts take (`ChatReasoningData`, `ChatPlanData`, `ChatPlanStep`) and the values they derive from them.
 
 `ChatReasoning` and `ChatSteps` are disclosures without a heading (React Aria `Disclosure`), so a reply's activity does not add to the page's outline. Unlike a `Disclosure`, they open and close on their own as the work progresses, until the reader chooses.
 
@@ -52,21 +52,21 @@ Verification: `src/components/chat-activity/chat-reasoning.test.tsx`
 
 ### UIC-CHAT-ACTIVITY-2.1 - Group
 
-`ChatSteps` shall render a `ui-chat-steps` root (React Aria `Disclosure`) holding a trigger button (`ui-chat-steps__trigger`) with the indicator glyph (`ui-chat-steps__indicator`) and its label (`ui-chat-steps__label`), then the panel (`ui-chat-steps__panel`, a `group` named by the trigger) holding the children: the consecutive reasoning and tool-call parts of one reply. The root publishes `data-expanded` while it is open and `data-running` while `isRunning`.
+`ChatSteps` shall render a `ui-chat-steps` root (React Aria `Disclosure`) holding a trigger button (`ui-chat-steps__trigger`) with the indicator glyph (`ui-chat-steps__indicator`), the glyph of its first action's kind (`ui-chat-steps__glyph`, [UIC-CHAT-TOOL-CALL-1.7](CHAT-TOOL-CALL.md#uic-chat-tool-call-17---kind)) when it has `actions`, and its label (`ui-chat-steps__label`), then the panel (`ui-chat-steps__panel`, a `group` named by the trigger) holding the children: the consecutive reasoning and tool-call parts of one reply. The root publishes `data-expanded` while it is open and `data-running` while `isRunning`.
 
 Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/components/chat-activity/activity-disclosure.tsx`
 Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-2.2 - Running
 
-While `isRunning`, `ChatSteps` shall be open, with a decorative busy indicator (`ui-chat-steps__spinner`) after its label, which is its `title` (what the run is doing now), else the provider string `chatStepsRunning` with the number of steps ("Working… · 3 steps", "Working… · 1 step"). The number of steps is `stepCount`, else the number of children. With `expandsAutomatically` false it stays closed while it runs, until the reader opens it.
+While `isRunning`, `ChatSteps` shall be open, with a decorative busy indicator (`ui-chat-steps__spinner`) after its label, which is its `title` (what the run is doing now), else the provider string `chatStepsRunning` ("Working…"). With `expandsAutomatically` false it stays closed while it runs, until the reader opens it.
 
 Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/core/chat-activity-strings.ts`
 Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-2.3 - End of the run
 
-Once the run ends (`isRunning` is false, the default), `ChatSteps` shall collapse, drop the busy indicator and be labelled by the provider string `chatStepsComplete` with the number of steps and `durationMs` in whole seconds, rounded ("Worked for 12 s · 3 steps"), or "Worked for a moment · 3 steps" without a duration.
+Once the run ends (`isRunning` is false, the default), `ChatSteps` shall collapse, drop the busy indicator and be labelled by the provider string `chatStepsComplete` with its `actions`: how many tool calls of each kind it made, kinds in order, each as a phrase in the singular for one call and the plural for more (`read` "read a file" or "read files", `edit` "edited a file", `command` "ran a command", `search` "ran a search", `fetch` "fetched a page", `other` "used a tool"), joined by commas with the first letter in upper case ("Edited files, read files, ran a command"). Without `actions`, the label is how long the run took, `durationMs` in whole seconds, rounded ("Worked for 12 s"), or "Worked for a moment" without a duration.
 
 Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/chat-activity-strings.ts`
 Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-activity.spec.ts`
@@ -159,7 +159,8 @@ Verification: `src/components/chat-activity/chat-status-line.test.tsx`
 | `ui-chat-steps`                | root      |                                                                                | A group of steps' disclosure `<div>` (React Aria `Disclosure`).                    |
 | `ui-chat-steps__trigger`       | slot      |                                                                                | The trigger button.                                                                |
 | `ui-chat-steps__indicator`     | slot      |                                                                                | The disclosure chevron (also `ui-glyph`).                                          |
-| `ui-chat-steps__label`         | slot      |                                                                                | The label: "Working…" or how long the run took, with the number of steps.          |
+| `ui-chat-steps__glyph`         | slot      |                                                                                | The glyph of the first action's kind (also `ui-glyph`).                            |
+| `ui-chat-steps__label`         | slot      |                                                                                | The label: "Working…" or what the run did.                                         |
 | `ui-chat-steps__spinner`       | slot      |                                                                                | The decorative busy indicator while the run goes on.                               |
 | `ui-chat-steps__panel`         | slot      |                                                                                | The panel holding the steps (React Aria `DisclosurePanel`).                        |
 | `ui-chat-plan`                 | root      |                                                                                | A plan's `<div>`.                                                                  |

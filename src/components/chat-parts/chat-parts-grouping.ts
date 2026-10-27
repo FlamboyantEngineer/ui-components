@@ -1,6 +1,7 @@
 // Folds the consecutive reasoning and tool calls of a message into groups of steps, and reads
 // how a group stands (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5).
 
+import type { ChatStepsAction } from '../chat-activity/chat-activity.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.js';
 
@@ -37,9 +38,15 @@ function toStepsKey(first: ChatStepPart): string {
   return `steps:${first.id}`;
 }
 
+/** Whether a run of steps folds into a group: it holds a tool call, and a second step or a part after it. */
+function isGroupedRun(steps: readonly ChatStepPart[], isFollowed: boolean): boolean {
+  return steps.some((step) => step.type === 'tool-call') && (steps.length > 1 || isFollowed);
+}
+
 /**
- * The parts to render in order. A run of consecutive steps becomes one group when it holds two or
- * more steps, or one step that further parts follow; a single step that ends the message stays alone.
+ * The parts to render in order. A run of consecutive steps becomes one group when it holds a tool
+ * call and either two or more steps or one step that further parts follow; otherwise its steps
+ * stay alone.
  */
 export function groupChatParts(parts: readonly ChatPart[]): ChatPartsItem[] {
   const items: ChatPartsItem[] = [];
@@ -49,10 +56,12 @@ export function groupChatParts(parts: readonly ChatPart[]): ChatPartsItem[] {
     while (end < parts.length && isStepPart(requireDefined(parts[end]))) end += 1;
     const steps = parts.slice(start, end) as ChatStepPart[];
     const [first] = steps;
-    if (first && (steps.length > 1 || end < parts.length)) {
+    if (first && isGroupedRun(steps, end < parts.length)) {
       items.push({ kind: 'steps', key: toStepsKey(first), steps });
-    } else if (first) {
-      items.push({ kind: 'part', key: toPartKey(first, start), part: first });
+    } else {
+      steps.forEach((step, offset) => {
+        items.push({ kind: 'part', key: toPartKey(step, start + offset), part: step });
+      });
     }
     const next = parts[end];
     if (next) items.push({ kind: 'part', key: toPartKey(next, end), part: next });
@@ -61,12 +70,17 @@ export function groupChatParts(parts: readonly ChatPart[]): ChatPartsItem[] {
   return items;
 }
 
-/** The sum of the steps' durations, or `undefined` when none has one. */
-export function sumStepDurations(steps: readonly ChatStepPart[]): number | undefined {
-  const durations = steps.flatMap((step) =>
-    step.durationMs === undefined ? [] : [step.durationMs],
-  );
-  return durations.length === 0 ? undefined : durations.reduce((sum, ms) => sum + ms, 0);
+/** How many tool calls of each kind the steps made, kinds in the order they first appear. */
+export function summarizeSteps(steps: readonly ChatStepPart[]): ChatStepsAction[] {
+  const actions: ChatStepsAction[] = [];
+  for (const step of steps) {
+    if (step.type !== 'tool-call') continue;
+    const kind = step.kind ?? 'other';
+    const action = actions.find((entry) => entry.kind === kind);
+    if (action) action.count += 1;
+    else actions.push({ kind, count: 1 });
+  }
+  return actions;
 }
 
 /** A step still at work: reasoning that streams, or a tool call that waits to run or runs. */

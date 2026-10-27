@@ -19,7 +19,7 @@ import {
   isAwaitingApproval,
   isFailedCall,
   isStepActive,
-  sumStepDurations,
+  summarizeSteps,
   toPartKey,
   type ChatPartsItem,
   type ChatStepPart,
@@ -151,8 +151,7 @@ function StepsView({ item, isRunning, context }: StepsViewProps) {
     <ChatSteps
       isRunning={isRunning}
       title={findStepsTitle(item.steps)}
-      durationMs={sumStepDurations(item.steps)}
-      stepCount={item.steps.length}
+      actions={summarizeSteps(item.steps)}
       isExpanded={expansion.expanded[item.key] ?? (isCallingReader || undefined)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(item.key, isExpanded)}
       expandsAutomatically={context.expandsActivity}

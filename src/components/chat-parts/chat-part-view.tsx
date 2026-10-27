@@ -85,6 +85,8 @@ function ToolCallView({ part, context }: PartViewProps<ChatToolCallPart>) {
       id={context.toDomId(part.id)}
       name={part.name}
       label={part.label}
+      target={part.target}
+      kind={part.kind}
       status={part.status}
       args={part.args}
       result={part.result}

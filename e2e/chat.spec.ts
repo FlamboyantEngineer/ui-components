@@ -150,7 +150,7 @@ test.describe('Chat lab', () => {
     await openChat(page, 8);
     const assistant = await ask(page, 'Answer with tools and sources', 'Plan a weekend');
     const reply = assistant.locator('article[data-status="complete"]').last();
-    await expect(reply.getByRole('button', { name: /^Worked for/ })).toBeVisible();
+    await expect(reply.getByRole('button', { name: 'Fetched a page, ran a search' })).toBeVisible();
     await expect(
       reply.getByRole('link', { name: 'Source 1: Lisbon weather in spring' }),
     ).toBeVisible();
@@ -436,7 +436,7 @@ test.describe('Chat lab, everything in one chat', () => {
     await expect(reply).toHaveAttribute('data-status', 'complete');
     await expect(reply).toContainText('Sent to Deep, medium effort.');
     await expect(reply).toContainText('You chose /summarize, so here it is in short.');
-    await expect(reply.getByRole('button', { name: /^Worked for/ })).toBeVisible();
+    await expect(reply.getByRole('button', { name: 'Fetched a page, ran a search' })).toBeVisible();
     await expect(reply.getByRole('table')).toBeVisible();
     await expect(
       reply.getByRole('link', { name: 'Source 1: Lisbon weather in spring' }),
