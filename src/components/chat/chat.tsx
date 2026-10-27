@@ -51,6 +51,7 @@ export interface ChatProps
     Pick<
       ChatTranscriptProps,
       | 'emptyState'
+      | 'presentation'
       | 'virtualized'
       | 'onLoadOlder'
       | 'hasOlder'
@@ -191,6 +192,7 @@ export function Chat(props: ChatProps) {
           aria-describedby={describedBy}
           aria-details={details}
           emptyState={props.emptyState}
+          presentation={props.presentation}
           scrollMode={props.scrollMode ?? (isAssistantChat ? 'anchor' : 'follow')}
           onEscape={props.onSend ? () => state.composerRef.current?.focus() : undefined}
           onLoadOlder={props.onLoadOlder}

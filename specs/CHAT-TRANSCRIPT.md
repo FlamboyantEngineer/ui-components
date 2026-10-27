@@ -48,6 +48,13 @@ With `virtualized`, the root shall publish `data-virtualized` and mount only the
 Implementation: `src/components/chat-transcript/transcript-window.ts`, `src/components/chat-transcript/transcript-parts.tsx`, `src/components/chat-transcript/use-transcript.ts`
 Verification: `src/components/chat-transcript/transcript-virtual.test.tsx`, `e2e/chat-transcript.spec.ts`
 
+### UIC-CHAT-TRANSCRIPT-1.7 - Presentation
+
+`presentation` shall publish `data-presentation` on the root: `framed` (the default), where the transcript draws its own canvas inside a border with rounded corners, or `embedded`, for a transcript that fills a panel or tab, where the reference stylesheet draws no border, corners or background, so the surrounding surface shows through, and raises a received bubble off that surface so it stays distinct. Only the frame changes: the log keeps its padding and its scrolling, and following, anchoring, the keyboard model, history, unread, jump controls and announcements work alike in both.
+
+Implementation: `src/components/chat-transcript/chat-transcript.tsx`, `labs/reference/chat-transcript.css`
+Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/chat-transcript.spec.ts`
+
 ## UIC-CHAT-TRANSCRIPT-2 - Message
 
 ### UIC-CHAT-TRANSCRIPT-2.1 - Parts
@@ -318,6 +325,7 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `ui-chat-transcript__announcer`   | slot      |                                                  | The visually hidden live region.                                                                |
 | `data-empty`                      | state     | `true`                                           | On the transcript: there are no messages. On a typing indicator: nobody is typing.              |
 | `data-virtualized`                | state     | `true`                                           | On the transcript: it mounts only messages near view.                                           |
+| `data-presentation`               | attribute | `framed`, `embedded`                             | On the transcript: its own frame, or the surface it sits in.                                    |
 | `data-highlighted`                | state     | `true`                                           | On a message: the transcript's highlighted message.                                             |
 | `ui-chat-message`                 | root      |                                                  | A message (`<article>`).                                                                        |
 | `ui-chat-message__avatar`         | slot      |                                                  | The author's avatar (also `ui-avatar`).                                                         |

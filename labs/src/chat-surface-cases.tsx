@@ -1,10 +1,11 @@
-// The Chat lab's surfaces: the chat is inline, so a host places it in a drawer or a popover.
+// The Chat lab's surfaces: the chat is inline, so a host places it in a drawer, a popover or a tab.
 
 import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
+import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
 import { agents } from './chat-agent.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
@@ -70,14 +71,51 @@ function LauncherDemo() {
   );
 }
 
+function TabDemo() {
+  const controller = useSurfaceAssistant();
+  return (
+    <div
+      data-lab-demo="tab"
+      style={{
+        maxWidth: 560,
+        border: '1px solid var(--ref-border)',
+        borderRadius: 'var(--ref-radius)',
+        background: 'var(--ref-surface)',
+      }}
+    >
+      <Tabs defaultSelectedKey="planner">
+        <TabList aria-label="Side panel">
+          <Tab id="planner">Trip planner</Tab>
+          <Tab id="notes">Notes</Tab>
+        </TabList>
+        <TabPanel id="planner">
+          <div style={{ height: 380, padding: '0 8px 8px' }}>
+            <Chat
+              {...controller.props}
+              aria-label="Conversation with the trip planner in a tab"
+              participants={assistantPeople}
+              currentUserId={readerId}
+              placeholder="Ask the trip planner…"
+              emptyState={emptyHint}
+              presentation="embedded"
+            />
+          </div>
+        </TabPanel>
+        <TabPanel id="notes">Notes for the trip.</TabPanel>
+      </Tabs>
+    </div>
+  );
+}
+
 export function ChatSurfaceCases() {
   return (
     <LabSection
       title="Surfaces"
-      description="Chat is inline: the host places it. Here the same trip planner opens in a side Drawer, and from a floating launcher button as a Popover; each conversation lives in the host's controller, so closing the surface keeps it. The small launcher follows the latest message (scrollMode follow) instead of anchoring your question at the top."
+      description="Chat is inline: the host places it. Here the same trip planner opens in a side Drawer, and from a floating launcher button as a Popover; each conversation lives in the host's controller, so closing the surface keeps it. The small launcher follows the latest message (scrollMode follow) instead of anchoring your question at the top. In a panel's tab the chat is embedded (presentation embedded): its transcript draws no frame of its own, so the panel's surface shows through."
     >
       <DrawerDemo />
       <LauncherDemo />
+      <TabDemo />
     </LabSection>
   );
 }
