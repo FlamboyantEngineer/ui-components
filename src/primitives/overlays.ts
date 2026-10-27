@@ -32,4 +32,9 @@ export type {
   ToastState,
   TooltipTriggerState,
 } from 'react-aria-components';
-export { useInteractOutside, useModalOverlay, useTooltipTrigger } from 'react-aria';
+export {
+  useInteractOutside,
+  useModalOverlay,
+  useOverlayPosition,
+  useTooltipTrigger,
+} from 'react-aria';

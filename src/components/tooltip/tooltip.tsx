@@ -127,3 +127,12 @@ export function Tooltip({
     </TooltipTrigger>
   );
 }
+
+export { AnchoredTooltip } from './anchored-tooltip.js';
+export type {
+  AnchoredTooltipProps,
+  AnchoredTooltipRelationship,
+  TooltipAnchor,
+  TooltipRect,
+  TooltipVirtualAnchor,
+} from './anchored-tooltip.js';
