@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
-import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
+import {
+  toAriaControlProps,
+  type FieldControlProps,
+  type FieldIssue,
+  type FieldState,
+} from '../field/field.js';
 import { colorFieldHooks as hooks } from './color-field-panel.js';
 import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
 
@@ -15,6 +21,29 @@ interface ColorEntryProps {
   format: ColorFieldFormat;
   valueFormat: ColorFieldFormat;
   placeholder: string;
+}
+
+/**
+ * The problem with typed text that cannot become the value: empty text in a required field, or
+ * text that is no colour. Untouched text (`null`) is the value itself.
+ */
+function findDraftIssue(
+  draft: string | null,
+  {
+    valueFormat,
+    isRequired,
+    strings,
+  }: { valueFormat: ColorFieldFormat; isRequired: boolean; strings: UiStrings },
+): FieldIssue | null {
+  if (draft === null) return null;
+  if (!draft.trim()) {
+    return isRequired
+      ? { severity: 'error', message: strings.valueRequired, validity: 'valueMissing' }
+      : null;
+  }
+  return storeColorText(draft, valueFormat) === null
+    ? { severity: 'error', message: strings.colorUnreadable }
+    : null;
 }
 
 /**
@@ -34,6 +63,11 @@ export function ColorEntry({
 }: ColorEntryProps) {
   const strings = useUiStrings();
   const [draft, setDraft] = useState<string | null>(null);
+  // Text that cannot become the value blocks the form until it is corrected or put back.
+  const draftIssue = findDraftIssue(draft, { valueFormat, isRequired: state.isRequired, strings });
+  const { setDraftIssue } = state;
+  // After every commit: the field keeps the issue it has while the report says the same.
+  useLayoutEffect(() => setDraftIssue(draftIssue));
   // Leaving the input only applies the text: the field commits once focus leaves it, so Tab
   // reaches its restore button.
   const apply = ({ shouldCommit }: { shouldCommit: boolean }) => {

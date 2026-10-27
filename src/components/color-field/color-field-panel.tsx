@@ -3,9 +3,10 @@ import {
   ColorSlider,
   ColorThumb,
   Dialog,
-  Popover,
   SliderTrack,
+  Popover,
 } from '../../primitives/index.js';
+import { PopoverPresence } from '../popover/popover.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -72,47 +73,54 @@ export function ColorFieldPanel({
 }: ColorFieldPanelProps) {
   const strings = useUiStrings();
   return (
-    <Popover {...hooks.slot('popover')} placement="bottom start" offset={4}>
-      <Dialog {...hooks.slot('dialog')} aria-label={label}>
-        {({ close }) => (
-          <>
-            <ColorFormatChoice format={format} formats={formats} onFormatChange={onFormatChange} />
-            <ColorArea
-              {...hooks.slot('area')}
-              colorSpace="hsb"
-              xChannel="saturation"
-              yChannel="brightness"
-            >
-              <ColorThumb {...hooks.slot('thumb')} />
-            </ColorArea>
-            <ChannelSlider channel="hue" />
-            {hasAlpha(format) ? <ChannelSlider channel="alpha" /> : null}
-            <ColorChannelInputs format={format} />
-            {swatches.length > 0 ? (
-              <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
-                {swatches.map((swatch) => (
-                  <ColorSwatchPickerItem key={swatch} color={swatch} />
-                ))}
-              </ColorSwatchPicker>
-            ) : null}
-            {state.isRequired ? null : (
-              <Button
-                className={hooks.slotClass('clear')}
-                variant="ghost"
-                size="sm"
-                isDisabled={!state.canClear}
-                onPress={() => {
-                  state.clear();
-                  close();
-                }}
+    <>
+      <PopoverPresence />
+      <Popover {...hooks.slot('popover')} placement="bottom start" offset={4}>
+        <Dialog {...hooks.slot('dialog')} aria-label={label}>
+          {({ close }) => (
+            <>
+              <ColorFormatChoice
+                format={format}
+                formats={formats}
+                onFormatChange={onFormatChange}
+              />
+              <ColorArea
+                {...hooks.slot('area')}
+                colorSpace="hsb"
+                xChannel="saturation"
+                yChannel="brightness"
               >
-                {strings.clear}
-              </Button>
-            )}
-            {allowsEyeDropper ? <ColorFieldEyeDropper /> : null}
-          </>
-        )}
-      </Dialog>
-    </Popover>
+                <ColorThumb {...hooks.slot('thumb')} />
+              </ColorArea>
+              <ChannelSlider channel="hue" />
+              {hasAlpha(format) ? <ChannelSlider channel="alpha" /> : null}
+              <ColorChannelInputs format={format} />
+              {swatches.length > 0 ? (
+                <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
+                  {swatches.map((swatch) => (
+                    <ColorSwatchPickerItem key={swatch} color={swatch} />
+                  ))}
+                </ColorSwatchPicker>
+              ) : null}
+              {state.isRequired ? null : (
+                <Button
+                  className={hooks.slotClass('clear')}
+                  variant="ghost"
+                  size="sm"
+                  isDisabled={!state.canClear}
+                  onPress={() => {
+                    state.clear();
+                    close();
+                  }}
+                >
+                  {strings.clear}
+                </Button>
+              )}
+              {allowsEyeDropper ? <ColorFieldEyeDropper /> : null}
+            </>
+          )}
+        </Dialog>
+      </Popover>
+    </>
   );
 }

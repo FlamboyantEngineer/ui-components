@@ -11,6 +11,7 @@ function registration(label: string, issues: FieldIssue[], element: HTMLElement 
     focus: vi.fn(),
     getLabel: () => label,
     getIssues: () => issues,
+    getRealtimeValidation: () => ({ status: 'valid' as const }),
   } satisfies FieldRegistration;
 }
 

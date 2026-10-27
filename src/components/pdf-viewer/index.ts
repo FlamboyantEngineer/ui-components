@@ -1,5 +1,7 @@
 export { PdfViewer, findBoxAtPoint } from './pdf-viewer.js';
 export type {
+  PdfDocumentAccess,
+  PdfPageContent,
   PdfPageGeometry,
   PdfPagePoint,
   PdfPageRect,
@@ -9,6 +11,7 @@ export type {
   PdfSearchOptions,
   PdfSelection,
   PdfViewerProps,
+  PdfVisiblePosition,
 } from './pdf-viewer.js';
 export type {
   PdfDocumentOptions,

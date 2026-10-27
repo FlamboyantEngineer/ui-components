@@ -70,3 +70,5 @@ export type {
   UiNavigate,
   UiProviderProps,
 } from './provider.js';
+export { useIsOverlayActive, useOverlayPresence } from './overlay-presence.js';
+export type { OverlayPresence } from './overlay-presence.js';

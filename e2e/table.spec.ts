@@ -512,6 +512,9 @@ test.describe('Table lab', () => {
     await root
       .locator('.ui-table__scroll')
       .evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await expect(root.locator('.ui-table__loader [role="status"]')).toHaveText(
+      'Loading more items…',
+    );
     await expect(output).toHaveText('40 of 60 loaded');
     await root
       .locator('.ui-table__scroll')

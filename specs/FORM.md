@@ -53,6 +53,29 @@ Verification: `src/components/form/form.test.tsx`
 Implementation: `src/components/form/form.tsx`, `src/components/form/form-problems.ts`, `src/components/field/field-form.ts`, `src/components/field/field-scope.ts`
 Verification: `src/components/form/form-problems.test.tsx`, `src/components/form/form.test.tsx`, `src/components/problem-list/problem-list.test.tsx`
 
+## UIC-FORM-2 - Validity
+
+### UIC-FORM-2.1 - Drafts block
+
+The form's verdict shall count what its fields show, not only their values: a field whose control shows a draft that has not become a value (a date typed in part, a range with one end empty, typed text that is no colour, UIC-FIELD-3.11) blocks the form until the draft is corrected or put back, even while the field's value is the last one it accepted.
+
+Implementation: `src/components/form/form-validity.ts`, `src/components/field/field-form.ts`
+Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
+
+### UIC-FORM-2.2 - Reading the verdict
+
+`useFormValidity()` shall return the enclosing form's `FormValidity` (`null` outside a form): `isBlocked()` and `getBlockers()` read, at the moment they are called, the fields that a submit would block on, in document order, each a `FormBlocker` with its label, `invalid` or `pending` status, error message and `focus()`; `subscribe(listener)` calls the listener after that list changes, once for changes made in one commit; and `onValidityChange` receives the list as it changes. A field blocks as it blocks a submit (UIC-FORM-1.2): an error, including a required value, or a check in progress; a warning never blocks and a disabled field never counts. Fields that mount, unmount, reset, become disabled or enabled, or finish a check update the verdict. Reading or subscribing reveals no validation, moves no focus, touches no field and submits nothing, in every validation mode.
+
+Implementation: `src/components/form/form-validity.ts`, `src/components/form/form.tsx`, `src/components/field/field-form.ts`
+Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
+
+### UIC-FORM-2.3 - Deliberate check
+
+`validate()` shall do what a submit does before it goes through: show every field's validation and focus the first blocking field (its control, or the control's first focusable element when the control is a group, such as date segments). It returns whether the form passes and submits nothing.
+
+Implementation: `src/components/form/form-validity.ts`
+Verification: `src/components/form/form-validity.test.tsx`
+
 ## Hooks
 
 | Hook      | Kind | Values | Description           |

@@ -18,6 +18,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
 
 /** A pressable trigger and the `Popover` it opens. */
@@ -39,6 +40,8 @@ interface PopoverPanelProps
   isNonModal?: boolean | undefined;
   /** The arrow's hook class; when given, an arrow pointing at the trigger leads the panel. */
   arrowClassName?: string | undefined;
+  /** A hint shown on hover, such as a hover card: not counted as an open interactive overlay. */
+  isHint?: boolean | undefined;
   /** Measured properties for the panel, such as a dropdown's `--ui-trigger-width`. */
   style?: CSSProperties | undefined;
   'aria-label'?: string | undefined;
@@ -113,23 +116,32 @@ export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) 
  * The floating panel the library's anchored overlays share: a React Aria popover on the `dropdown`
  * layer, with an optional arrow. It adds no hooks of its own; the caller passes them.
  */
-export function PopoverPanel({ arrowClassName, children, style, ...rest }: PopoverPanelProps) {
+export function PopoverPanel({
+  arrowClassName,
+  isHint = false,
+  children,
+  style,
+  ...rest
+}: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
   const [panel, setPanel] = useState<HTMLElement | null>(null);
   const gutter = usePopoverGutter(panel);
   return (
-    <AriaPopover
-      {...rest}
-      style={({ placement }) => ({
-        ...style,
-        zIndex,
-        translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
-      })}
-      ref={setPanel}
-    >
-      {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
-      {children}
-    </AriaPopover>
+    <>
+      {isHint ? null : <PopoverPresence isOpen={rest.isOpen} triggerRef={rest.triggerRef} />}
+      <AriaPopover
+        {...rest}
+        style={({ placement }) => ({
+          ...style,
+          zIndex,
+          translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
+        })}
+        ref={setPanel}
+      >
+        {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
+        {children}
+      </AriaPopover>
+    </>
   );
 }
 
@@ -177,3 +189,5 @@ export function Popover({
     </PopoverPanel>
   );
 }
+
+export { PopoverPresence } from './popover-presence.js';

@@ -624,6 +624,102 @@ test.describe('PDF Viewer lab', () => {
     await expect(page.locator('body > iframe')).toHaveCount(0);
   });
 
+  test('UIC-PDF-VIEWER-11.1 reads an unrendered page and closes the handle on a new source', async ({
+    page,
+    lab,
+  }) => {
+    const reading = await openCase(page, lab, 'reading');
+    const scroller = reading.locator('.ui-pdf-viewer__scroller');
+    const pages = reading.locator('[data-lab-output="pages"]');
+    const lastPage = reading.locator('[data-lab-output="last-page"]');
+    await expect(pages).toHaveText('3 pages');
+    await reading.getByRole('button', { name: 'Read the last page' }).click();
+    await expect(lastPage).toHaveText('Markets');
+    expect(await scroller.evaluate((element) => element.scrollTop)).toBe(0);
+
+    await reading.getByRole('button', { name: 'Open the other copy' }).click();
+    await expect(lastPage).toHaveText('');
+    await expect(pages).toHaveText('3 pages', { timeout: 30_000 });
+    await reading.getByRole('button', { name: 'Read the last page' }).click();
+    await expect(lastPage).toHaveText('Markets');
+  });
+
+  test('UIC-PDF-VIEWER-11.2 UIC-PDF-VIEWER-11.3 reports clicks and finished selections at any zoom and rotation', async ({
+    page,
+    lab,
+  }) => {
+    const reading = await openCase(page, lab, 'reading');
+    const first = reading.locator('.ui-pdf-viewer__page').first();
+    const pins = reading.locator('[data-lab-pin]');
+    await reading.locator('.ui-pdf-viewer').scrollIntoViewIfNeeded();
+    const clickAndCheck = async (count: number) => {
+      const bounds = await box(first);
+      const spot = { x: bounds.x + bounds.width * 0.7, y: bounds.y + bounds.height * 0.3 };
+      await page.mouse.click(spot.x, spot.y);
+      await expect(pins).toHaveCount(count);
+      const pin = await box(pins.last());
+      expectNear(pin.x + pin.width / 2, spot.x, 2);
+      expectNear(pin.y + pin.height / 2, spot.y, 2);
+    };
+    await clickAndCheck(1);
+    await reading.getByRole('button', { name: 'Zoom in' }).click();
+    await clickAndCheck(2);
+    await reading.getByRole('button', { name: 'More options' }).click();
+    await page.getByRole('menuitem', { name: 'Rotate clockwise' }).click();
+    await clickAndCheck(3);
+    await expect(reading.locator('[data-lab-output="pins"]')).toHaveText('page 1, page 1, page 1');
+
+    const line = first.locator('[role="presentation"]', { hasText: 'Orchards across' });
+    await reading.getByRole('button', { name: 'Zoom out' }).click();
+    await reading.getByRole('button', { name: 'More options' }).click();
+    await page.getByRole('menuitem', { name: 'Rotate counterclockwise' }).click();
+    await selectRun(page, line);
+    const selection = reading.locator('[data-lab-output="selection"]');
+    await expect(selection).toHaveText('Orchards across the valley had a strong year.');
+    await expect(pins).toHaveCount(3);
+    await expect(page.locator('.ui-menu-popover')).toHaveCount(0);
+    await reading.getByRole('button', { name: 'Note the selection' }).click();
+    await expect(reading.locator('[data-lab-output="notes"]')).toHaveText(
+      'Orchards across the valley had a strong year.',
+    );
+    await page.evaluate(() => window.getSelection()?.removeAllRanges());
+    await expect(selection).toHaveText('');
+  });
+
+  test('UIC-PDF-VIEWER-11.4 reports the top of the view through scrolling and zoom', async ({
+    page,
+    lab,
+  }) => {
+    const reading = await openCase(page, lab, 'reading');
+    const position = reading.locator('[data-lab-output="position"]');
+    const scroller = reading.locator('.ui-pdf-viewer__scroller');
+    await expect(position).toHaveText('page 1, 0 pt down');
+    const second = reading.locator('.ui-pdf-viewer__page').nth(1);
+    // Scrolls the second page's top 150 pixels above the view.
+    await scroller.evaluate(
+      (element, offset) => {
+        element.scrollTop += offset;
+      },
+      (await box(second)).y - (await box(scroller)).y + 150,
+    );
+    const scale = await reading
+      .locator('.ui-pdf-viewer')
+      .evaluate((element) =>
+        Number(getComputedStyle(element).getPropertyValue('--ui-pdf-viewer-scale')),
+      );
+    const expected = Math.round(150 / scale);
+    await expect(position).toHaveText(
+      new RegExp(`^page 2, (${expected - 1}|${expected}|${expected + 1}) pt down$`),
+    );
+
+    await reading.getByRole('button', { name: 'Zoom in' }).click();
+    await expect(position).toHaveText(/^page 2, \d+ pt down$/);
+    await scroller.evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await expect(position).toHaveText('page 1, 0 pt down');
+  });
+
   test.describe('on a touch screen', () => {
     test.use({ hasTouch: true });
 

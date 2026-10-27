@@ -297,6 +297,18 @@
   justify-content: flex-end;
 }
 
+/* A time placed in the footer shows with the actions, while the message is hovered or holds focus. */
+.ui-chat-message__footer .ui-chat-message__time {
+  opacity: 0;
+  transition: opacity var(--ref-duration-fast) ease-out;
+}
+
+.ui-chat-message:is([data-hovered], [data-focus-within])
+  .ui-chat-message__footer
+  .ui-chat-message__time {
+  opacity: 1;
+}
+
 .ui-chat-message__edited,
 .ui-chat-message__stopped {
   font-style: italic;
@@ -487,6 +499,10 @@
 @media (prefers-reduced-motion: reduce) {
   .ui-chat-typing-indicator__dot {
     animation: none;
+  }
+
+  .ui-chat-message__footer .ui-chat-message__time {
+    transition: none;
   }
 }
 

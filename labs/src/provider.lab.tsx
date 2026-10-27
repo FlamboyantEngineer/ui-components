@@ -2,6 +2,7 @@ import { Glyph, UiProvider, useUiStrings } from '../../src/core/provider.js';
 import { glyphNames, type GlyphComponentProps } from '../../src/core/glyphs.js';
 import { defaultStrings, type UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { PausedShortcut } from './provider-overlay-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -211,6 +212,12 @@ mountLab(
           )
         }
       />
+    </LabSection>
+    <LabSection
+      title="Overlay presence"
+      description="Press N anywhere to add a note. The shortcut reads the provider's overlay presence and pauses while the menu, its submenu, the select or the calendar is open; the tooltip does not pause it."
+    >
+      <PausedShortcut />
     </LabSection>
   </>,
 );

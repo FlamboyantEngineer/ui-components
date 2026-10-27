@@ -31,6 +31,8 @@ interface PdfViewerStageProps<
     controller: ContextMenuProps['controller'];
     onContextMenu(event: MouseEvent<HTMLElement>): void;
   };
+  /** Reports a primary click on a page. */
+  onPageClick(event: MouseEvent<HTMLElement>): void;
   links: { linkService: PdfLinkService; followDestination(destination: unknown): void };
   isSidebarOpen: boolean;
   onKeyDown(event: KeyboardEvent<HTMLElement>): void;
@@ -64,6 +66,7 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
   scrollerRef,
   pagesRef,
   menu,
+  onPageClick,
   links,
   isSidebarOpen,
   onKeyDown,
@@ -89,6 +92,7 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
         onScroll={pages.handleScroll}
         onKeyDown={onScrollerKeyDown}
         onContextMenu={menu.onContextMenu}
+        onClick={onPageClick}
       >
         <div {...hooks.slot('pages')} ref={pagesRef} style={{ position: 'relative' }}>
           {view?.pages.map((_, pageIndex) => (

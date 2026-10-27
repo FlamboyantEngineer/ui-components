@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -40,6 +41,8 @@ export interface SelectTreeFieldProps<
   isClearable?: boolean | undefined;
   /** The form name the chosen ids are submitted under, one entry each. */
   name?: string | undefined;
+  /** Receives the trigger button, the field's focusable control, while it is on the page. */
+  triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
 
 const hooks = createHooks('select-field');

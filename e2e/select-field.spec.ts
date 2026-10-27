@@ -309,3 +309,17 @@ test.describe('Select Field lab', () => {
     await expect(listbox.getByRole('option')).toHaveCount(15);
   });
 });
+
+test.describe('Select Field trigger ref', () => {
+  test('UIC-SELECT-FIELD-2.4 returns focus to the trigger through its ref', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const demo = page.locator('[data-lab-demo="trigger-ref"]');
+    const back = demo.getByRole('button', { name: 'Back to the size' });
+    await back.scrollIntoViewIfNeeded();
+    await back.click();
+    await expect(demo.getByRole('button', { name: /Size$/ })).toBeFocused();
+  });
+});

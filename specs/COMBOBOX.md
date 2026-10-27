@@ -32,6 +32,13 @@ While the input holds text and the combobox is neither disabled nor read-only, t
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-field.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
 
+### UIC-COMBOBOX-1.5 - Narrow rows
+
+The reference stylesheet shall keep the field inside the width a flex or grid row gives the combobox, however narrow, empty or with a chosen value and its clear button: the root may shrink below its usual width, its single grid track never grows to the input's intrinsic width, and the input shrinks while the toggle and clear buttons keep their size, in both themes. The field's look at ordinary widths, its popover and its keyboard behaviour are unchanged.
+
+Implementation: `labs/reference/combobox.css`
+Verification: `e2e/combobox.spec.ts`
+
 ## UIC-COMBOBOX-2 - Suggestions
 
 ### UIC-COMBOBOX-2.1 - Options and sections

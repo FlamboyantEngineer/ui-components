@@ -62,6 +62,13 @@ While a single select is dirty and its committed value had a choice, the frame s
 Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`
 
+### UIC-SELECT-FIELD-2.4 - Trigger ref
+
+`triggerRef` shall receive the trigger button, the field's focusable control, in list and tree mode, joined to the field's own ref: object and callback refs both work, it receives `null` (or runs its cleanup) when the trigger leaves, and a re-render with the same ref does not re-attach it. A caller can restore focus to the trigger through it.
+
+Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/tree-select-trigger.tsx`
+Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select-field.spec.ts`
+
 ## UIC-SELECT-FIELD-3 - List
 
 ### UIC-SELECT-FIELD-3.1 - Opening

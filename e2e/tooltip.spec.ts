@@ -154,3 +154,75 @@ test.describe('Tooltip lab', () => {
     await expect(undo).toHaveAccessibleName('Undo');
   });
 });
+
+test.describe('Anchored tooltip lab', () => {
+  test('UIC-TOOLTIP-2.1 UIC-TOOLTIP-2.3 shows a hint the page opens on an element it owns', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const demo = page.locator('[data-lab-demo="anchored-element"]');
+    const chip = demo.getByRole('status', { name: 'Build status' });
+    await demo.getByRole('button', { name: 'Show the hint' }).click();
+    const hint = page.getByRole('tooltip', { name: 'All 48 checks passed' });
+    await expect(hint).toBeVisible();
+    await expect(chip).toHaveAccessibleDescription('All 48 checks passed');
+    await expect(async () => {
+      const chipBox = await chip.boundingBox();
+      const hintBox = await hint.boundingBox();
+      expect(hintBox?.y).toBeGreaterThan((chipBox?.y ?? 0) + (chipBox?.height ?? 0));
+    }).toPass();
+    await lab.expectAccessible('[data-lab-demo="anchored-element"]');
+    await demo.getByRole('button', { name: 'Hide the hint' }).click();
+    await expect(hint).toHaveCount(0);
+    await expect(chip).not.toHaveAttribute('aria-describedby');
+  });
+
+  test('UIC-TOOLTIP-2.1 opens hints on the bars of an SVG chart', async ({ page, lab }) => {
+    await lab.open('tooltip');
+    const demo = page.locator('[data-lab-demo="anchored-svg"]');
+    const bar = demo.getByRole('img', { name: 'Tue' });
+    await bar.hover();
+    const hint = page.getByRole('tooltip', { name: '30 visits' });
+    await expect(hint).toBeVisible();
+    await expect(bar).toHaveAccessibleDescription('30 visits');
+    await page.mouse.move(0, 0);
+    await expect(hint).toHaveCount(0);
+  });
+
+  test('UIC-TOOLTIP-2.2 UIC-TOOLTIP-2.4 follows a rectangle as its box scrolls', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const demo = page.locator('[data-lab-demo="anchored-region"]');
+    const open = demo.getByRole('button', { name: 'Show the region hint' });
+    await open.scrollIntoViewIfNeeded();
+    await open.click();
+    const hint = page.getByRole('tooltip', { name: 'Meeting room' });
+    await expect(hint).toBeVisible();
+    const before = await hint.boundingBox();
+    await demo.locator('[data-lab-region]').evaluate((box) => {
+      box.scrollTop = 40;
+    });
+    await expect(async () => {
+      const after = await hint.boundingBox();
+      expect((before?.y ?? 0) - (after?.y ?? 0)).toBeCloseTo(40, 0);
+    }).toPass();
+    await expect(hint).toBeVisible();
+  });
+
+  test('UIC-TOOLTIP-2.3 repeats an icon button name without describing it again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const button = page
+      .locator('[data-lab-demo="anchored-visual"]')
+      .getByRole('button', { name: 'Add a row' });
+    await button.hover();
+    await expect(page.locator('.ui-tooltip[aria-hidden="true"]')).toHaveText('Add a row');
+    await expect(button).toHaveAccessibleDescription('');
+    await expect(button).toHaveAccessibleName('Add a row');
+  });
+});

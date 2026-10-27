@@ -199,6 +199,13 @@ Verification: `src/components/field/field-validation.test.tsx`, `src/components/
 Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/field/field-form.test.tsx`
 
+### UIC-FIELD-3.11 - Draft issues
+
+A control that shows something that has not become the value, such as a date typed in part or text that is no colour, shall report it with `FieldState.setDraftIssue(issue)`, and `null` once what it shows is the value again. The draft issue comes first in the field's validation, shown as the validation mode allows (UIC-FIELD-3.7), and blocks the form like any error, while the value stays the last one accepted. A report that repeats the current issue changes nothing.
+
+Implementation: `src/components/field/field-state.ts`
+Verification: `src/components/field/field-state.test.tsx`, `src/components/form/form-validity.test.tsx`
+
 ## UIC-FIELD-4 - Restore
 
 ### UIC-FIELD-4.1 - Restoring a field

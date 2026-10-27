@@ -115,6 +115,13 @@ With `allowsTyping`, the control shall be a group (`ui-color-field__group`) of a
 Implementation: `src/components/color-field/color-field-entry.tsx`, `src/components/color-field/color-field.tsx`, `src/core/strings.ts`
 Verification: `src/components/color-field/color-field-entry.test.tsx`, `e2e/color-field.spec.ts`
 
+### UIC-COLOR-FIELD-4.4 - Unreadable drafts
+
+While the typed text of UIC-COLOR-FIELD-4.3 is no colour, the field shall report a draft issue (UIC-FIELD-3.11) with the provider's `colorUnreadable` string, and while it is empty in a required field, the `valueRequired` string; the issue ends when the text is corrected, applied or put back.
+
+Implementation: `src/components/color-field/color-field-entry.tsx`
+Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
+
 ## Hooks
 
 | Hook                          | Kind  | Values                                                                                 | Description                                                                       |

@@ -11,6 +11,35 @@ function renderField<T>(options: FieldStateOptions<T>) {
 }
 
 describe('useFieldState', () => {
+  it('UIC-FIELD-3.11 puts a draft issue first in the realtime validation, keeping the value', () => {
+    const onChange = vi.fn();
+    const { result } = renderField({
+      defaultValue: 'Apple',
+      validationMode: 'submit',
+      validate: () => ({ severity: 'warning', message: 'Seasonal' }),
+      onChange,
+    });
+    const draft = { severity: 'error' as const, message: 'Finish entering the date.' };
+    act(() => result.current.setDraftIssue(draft));
+    expect(result.current.realtimeValidation).toEqual({
+      status: 'invalid',
+      message: 'Finish entering the date.',
+    });
+    expect(result.current.validation.status).toBe('valid');
+    expect(result.current.value).toBe('Apple');
+    const shown = result.current;
+    act(() => result.current.setDraftIssue({ ...draft }));
+    expect(result.current.realtimeValidation).toBe(shown.realtimeValidation);
+    act(() => result.current.revealValidation());
+    expect(result.current.issues.map((issue) => issue.message)).toEqual([
+      'Finish entering the date.',
+      'Seasonal',
+    ]);
+    act(() => result.current.setDraftIssue(null));
+    expect(result.current.realtimeValidation.status).toBe('warning');
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-FIELD-2.1 holds an uncontrolled value from the committed value, else the default', () => {
     const onChange = vi.fn();
     const { result: fresh } = renderField({ defaultValue: 'Apple', onChange });

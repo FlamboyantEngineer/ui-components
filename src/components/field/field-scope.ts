@@ -1,7 +1,7 @@
 // What an enclosing form or fieldset gives the fields inside it.
 
 import { createContext, useContext } from 'react';
-import type { FieldIssue } from './field-validation.js';
+import type { FieldIssue, FieldValidation } from './field-validation.js';
 
 /**
  * When a field shows its validation: from the start (`immediate`), once its value changes
@@ -33,6 +33,8 @@ export interface FieldRegistration {
   getLabel(): string;
   /** The issues the field shows, errors first. */
   getIssues(): readonly FieldIssue[];
+  /** The validation of the value and draft the field shows, whether it shows it or not. */
+  getRealtimeValidation(): FieldValidation;
 }
 
 export interface FieldScope {
@@ -50,6 +52,8 @@ export interface FieldScope {
   register?: ((field: FieldRegistration) => () => void) | undefined;
   /** Called after the issues a registered field shows, or its label, change. */
   onIssuesChange?: (() => void) | undefined;
+  /** Called after a registered field's realtime validation, or whether it is disabled, changes. */
+  onValidityChange?: (() => void) | undefined;
 }
 
 /** The scope of the nearest form or fieldset; empty outside both. */

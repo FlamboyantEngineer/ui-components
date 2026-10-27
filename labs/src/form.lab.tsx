@@ -8,6 +8,7 @@ import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ExternalSave } from './form-validity-cases.js';
 import { LabOutput } from './lab-output.js';
 
 const modes = [
@@ -202,6 +203,12 @@ mountLab(
       description="The form's ref lets a button outside it submit it, as a dialog's footer action does."
     >
       <OutsideSubmit />
+    </LabSection>
+    <LabSection
+      title="Saving from a toolbar"
+      description="Save asks the form whether what its fields show can be saved, without showing their validation: a date typed in part, a range with one end empty or a colour that does not read refuses it. Check shows every message and focuses the first."
+    >
+      <ExternalSave />
     </LabSection>
   </>,
 );
