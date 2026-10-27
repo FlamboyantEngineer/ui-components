@@ -447,6 +447,40 @@ test.describe('Table lab', () => {
     await lab.expectAccessible('[data-lab="nested"]');
   });
 
+  test('UIC-TABLE-3.4 keeps focus on a nested row action by keyboard and pointer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = section(page, 'nested-actions');
+    const output = demo.locator('[data-lab-output]');
+    const porto = demo.getByRole('button', { name: 'Add after Porto' });
+    await porto.focus();
+    await expect(porto).toBeFocused();
+
+    // From the row, ArrowRight walks its cells to the action.
+    await demo.getByRole('row', { name: /Lisbon$/ }).focus();
+    for (const _cell of ['name', 'people', 'actions']) await page.keyboard.press('ArrowRight');
+    const lisbon = demo.getByRole('button', { name: 'Add after Lisbon' });
+    await expect(lisbon).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(lisbon).toHaveAttribute('aria-disabled', 'true');
+    await expect(lisbon).toBeFocused();
+    await expect(output).toHaveText('Added after Lisbon');
+    await expect(demo.getByRole('row', { name: /Town 1$/ })).toBeVisible();
+    await expect(lisbon).not.toHaveAttribute('aria-disabled');
+    await expect(lisbon).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(porto).toBeFocused();
+
+    await demo.getByRole('button', { name: 'Add after Town 1' }).click();
+    await expect(demo.getByRole('button', { name: 'Add after Town 1' })).toBeFocused();
+    await expect(output).toHaveText('Added after Town 1');
+    await expect(demo.getByRole('row', { name: /Town 2$/ })).toBeVisible();
+    await expect(demo.getByRole('button', { name: 'Add after Town 1' })).toBeFocused();
+    await lab.expectAccessible('[data-lab="nested-actions"]');
+  });
+
   test('UIC-TABLE-10.1 pages rows under a page navigation', async ({ page, lab }) => {
     await lab.open('table');
     const root = section(page, 'pages');

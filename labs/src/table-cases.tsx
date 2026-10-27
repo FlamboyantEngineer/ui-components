@@ -2,7 +2,7 @@
 // nested and detail rows, pagination, editing, the summary row and loading more.
 
 import { useRef, useState } from 'react';
-import type { SortDescriptor } from '../../src/core/props.js';
+import type { Key, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Table } from '../../src/components/table/table.js';
 import type {
@@ -284,6 +284,67 @@ export function NestedRows() {
         filterLabel="Filter places"
         size="sm"
       />
+    </div>
+  );
+}
+
+const actionPlaces: Place[] = [
+  {
+    id: 'pt',
+    name: 'Portugal',
+    people: 10_400,
+    area: 92_212,
+    places: [
+      { id: 'lisbon', name: 'Lisbon', people: 545, area: 100 },
+      { id: 'porto', name: 'Porto', people: 232, area: 41 },
+    ],
+  },
+];
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export function NestedRowActions() {
+  const [rows, setRows] = useState(actionPlaces);
+  const [expanded, setExpanded] = useState<Iterable<Key>>(['pt']);
+  const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState('None');
+  const add = async (place: Place) => {
+    setBusy(true);
+    await wait(400);
+    const id = `region-${rows.length}`;
+    const town = { id: `town-${rows.length}`, name: `Town ${rows.length}`, people: 1, area: 1 };
+    setRows((current) => [
+      ...current,
+      { id, name: `Region ${rows.length}`, people: 1, area: 1, places: [town] },
+    ]);
+    setExpanded((current) => [...current, id]);
+    setBusy(false);
+    setLast(`Added after ${place.name}`);
+  };
+  return (
+    <div data-lab="nested-actions">
+      <Table
+        aria-label="Places, with actions"
+        rows={rows}
+        columns={placeColumns.slice(0, 2)}
+        getChildRows={(place) => place.places}
+        expandedKeys={expanded}
+        onExpandedChange={setExpanded}
+        renderRowActions={(place) =>
+          place.places ? null : (
+            <Button
+              icon="plus"
+              label={`Add after ${place.name}`}
+              tooltip={`Add after ${place.name}`}
+              focusableWhenDisabled
+              isDisabled={busy}
+              onPress={() => add(place)}
+            />
+          )
+        }
+        size="sm"
+      />
+      <output data-lab-output>{last}</output>
     </div>
   );
 }

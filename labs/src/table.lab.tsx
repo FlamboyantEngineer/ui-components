@@ -15,6 +15,7 @@ import {
   LoadingMore,
   MultipleSort,
   NestedRows,
+  NestedRowActions,
   Pages,
   Summary,
 } from './table-cases.js';
@@ -365,6 +366,12 @@ mountLab(
       description="Expand with the chevron or ArrowRight; sorting keeps sibling order stable, and filtering retains the places above a deep match."
     >
       <NestedRows />
+    </LabSection>
+    <LabSection
+      title="Nested row actions"
+      description="Each action keeps focus while it runs, while the others are unavailable and when a region is appended."
+    >
+      <NestedRowActions />
     </LabSection>
     <LabSection title="Detail rows" description="An expanded row shows a full-width detail.">
       <DetailRows />
