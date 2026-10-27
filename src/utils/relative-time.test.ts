@@ -3,6 +3,7 @@ import { capitalizeText, describeRelativeTime } from './relative-time.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
 const options = { now, locale: 'en-US', fallbackAfterDays: 7 };
+const seconds = { ...options, precision: 'second' as const };
 const minute = 60_000;
 const hour = 60 * minute;
 /** A local moment as a UTC ISO text, as a server would send it. */
@@ -11,58 +12,112 @@ const at = (hours: number, minutes: number, seconds = 0) =>
 const plain = (text: string | undefined) => text?.replace(/\s/g, ' ');
 
 describe('describeRelativeTime', () => {
-  it('UIC-RELATIVE-TIME-2.1 words instants within a day and says when the words change', () => {
-    expect(describeRelativeTime(at(10, 29, 50), options)).toMatchObject({
+  it('UIC-RELATIVE-TIME-2.1 words instants within a day in seconds and says when the words change', () => {
+    expect(describeRelativeTime(at(10, 29, 50), seconds)).toMatchObject({
       relative: '10 seconds ago',
       relation: 'past',
       isRelative: true,
       nextChange: 501,
     });
-    expect(describeRelativeTime(at(10, 25), options)).toMatchObject({
+    expect(describeRelativeTime(at(10, 25), seconds)).toMatchObject({
       relative: '5 minutes ago',
       nextChange: 30 * 1000 + 1,
     });
-    expect(describeRelativeTime(at(10, 30), options)).toMatchObject({
+    expect(describeRelativeTime(at(10, 30), seconds)).toMatchObject({
       relative: 'now',
       relation: 'present',
     });
-    expect(describeRelativeTime('2026-05-23T12:30', options)).toMatchObject({
+    expect(describeRelativeTime('2026-05-23T12:30', seconds)).toMatchObject({
       relative: 'in 2 hours',
       relation: 'future',
       nextChange: 30 * minute + 1,
     });
     // 23.4 hours ago reads in hours until its rounded hours would reach 24.
     const late = new Date(now.getTime() - 23.4 * hour).toISOString();
-    expect(describeRelativeTime(late, options)).toMatchObject({
+    expect(describeRelativeTime(late, seconds)).toMatchObject({
       relative: '23 hours ago',
       nextChange: 0.1 * hour + 1,
     });
   });
 
-  it('UIC-RELATIVE-TIME-1.2 moves to the next unit when the rounded count reaches it', () => {
+  it('UIC-RELATIVE-TIME-1.2 moves to the next unit when the rounded second count reaches it', () => {
     const offset = (milliseconds: number) => new Date(now.getTime() + milliseconds).toISOString();
-    expect(describeRelativeTime(offset(-59_700), options)?.relative).toBe('1 minute ago');
-    expect(describeRelativeTime(offset(-(59 * minute + 40_000)), options)?.relative).toBe(
+    expect(describeRelativeTime(offset(-59_700), seconds)?.relative).toBe('1 minute ago');
+    expect(describeRelativeTime(offset(-(59 * minute + 40_000)), seconds)?.relative).toBe(
       '1 hour ago',
     );
-    expect(describeRelativeTime(offset(-23.7 * hour), options)).toMatchObject({
+    expect(describeRelativeTime(offset(-23.7 * hour), seconds)).toMatchObject({
       relative: 'yesterday',
       nextChange: 13.5 * hour,
     });
     // A future instant says when it comes near enough to read in the smaller unit.
-    expect(describeRelativeTime(offset(90_000), options)).toMatchObject({
+    expect(describeRelativeTime(offset(90_000), seconds)).toMatchObject({
       relative: 'in 2 minutes',
       nextChange: 1,
     });
-    expect(describeRelativeTime(offset(80_000), options)).toMatchObject({
+    expect(describeRelativeTime(offset(80_000), seconds)).toMatchObject({
       relative: 'in 1 minute',
       nextChange: 20_500 + 1,
     });
-    expect(describeRelativeTime(offset(59_000), options)?.relative).toBe('in 59 seconds');
-    expect(describeRelativeTime(offset(23.7 * hour), options)).toMatchObject({
+    expect(describeRelativeTime(offset(59_000), seconds)?.relative).toBe('in 59 seconds');
+    expect(describeRelativeTime(offset(23.7 * hour), seconds)).toMatchObject({
       relative: 'tomorrow',
       nextChange: 0.2 * hour + 1,
     });
+  });
+
+  it('UIC-RELATIVE-TIME-1.2 reads Now for the first minute, then whole minutes, by default', () => {
+    const offset = (milliseconds: number) => new Date(now.getTime() + milliseconds).toISOString();
+    expect(describeRelativeTime(at(10, 29, 50), options)).toMatchObject({
+      relative: 'now',
+      relation: 'present',
+      isRelative: true,
+      nextChange: 50_000,
+    });
+    expect(describeRelativeTime(offset(-59_999), options)?.relative).toBe('now');
+    expect(describeRelativeTime(offset(-minute), options)).toMatchObject({
+      relative: '1 minute ago',
+      relation: 'past',
+      nextChange: minute,
+    });
+    expect(describeRelativeTime(offset(-(59 * minute + 59_000)), options)).toMatchObject({
+      relative: '59 minutes ago',
+      nextChange: 1000,
+    });
+    expect(describeRelativeTime(offset(-hour), options)?.relative).toBe('1 hour ago');
+    expect(describeRelativeTime(offset(-(hour + 29 * minute)), options)?.relative).toBe(
+      '1 hour ago',
+    );
+    // A future instant counts the whole minutes left, then reads now for its last minute.
+    expect(describeRelativeTime(offset(90_000), options)).toMatchObject({
+      relative: 'in 1 minute',
+      relation: 'future',
+      nextChange: 30_000 + 1,
+    });
+    expect(describeRelativeTime(offset(30_000), options)).toMatchObject({
+      relative: 'now',
+      nextChange: 90_000,
+    });
+    expect(describeRelativeTime(offset(hour + minute), options)).toMatchObject({
+      relative: 'in 1 hour',
+      nextChange: minute + 1,
+    });
+  });
+
+  it('UIC-RELATIVE-TIME-1.2 spells units in the unit style', () => {
+    const value = at(10, 25);
+    expect(describeRelativeTime(value, { ...options, unitStyle: 'short' })?.relative).toBe(
+      '5 min. ago',
+    );
+    expect(describeRelativeTime(value, { ...options, unitStyle: 'narrow' })?.relative).toBe(
+      '5m ago',
+    );
+    expect(describeRelativeTime(at(10, 29, 55), { ...seconds, unitStyle: 'short' })?.relative).toBe(
+      '5 sec. ago',
+    );
+    expect(describeRelativeTime(at(10, 29, 55), { ...options, unitStyle: 'short' })?.relative).toBe(
+      'now',
+    );
   });
 
   it('UIC-RELATIVE-TIME-2.1 counts calendar days until midnight, then falls back to the date', () => {

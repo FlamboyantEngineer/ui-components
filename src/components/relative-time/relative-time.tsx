@@ -4,18 +4,31 @@ import type { BaseProps } from '../../core/props.js';
 import {
   capitalizeText,
   describeRelativeTime,
+  type RelativeTimePrecision,
   type RelativeTimeStyle,
+  type RelativeTimeUnitStyle,
 } from '../../utils/relative-time.js';
 import { useClockTick } from './relative-time-clock.js';
 import { TimeWithTooltip } from './relative-time-tooltip.js';
 
-export type { RelativeTimeStyle } from '../../utils/relative-time.js';
+export type {
+  RelativeTimePrecision,
+  RelativeTimeStyle,
+  RelativeTimeUnitStyle,
+} from '../../utils/relative-time.js';
 
 export interface RelativeTimeProps extends BaseProps {
   /** An ISO 8601 date (`YYYY-MM-DD`) or date and time, local or with an offset. */
   value: string | null | undefined;
   /** Values this many calendar days away or more read as the absolute date. Defaults to 7. */
   fallbackAfterDays?: number | undefined;
+  /**
+   * How finely an instant within a minute reads: `minute` shows `Now`, then `1 minute ago`;
+   * `second` counts live seconds (`5 seconds ago`). Defaults to `minute`.
+   */
+  precision?: RelativeTimePrecision | undefined;
+  /** How the words spell their units: `long` (`5 minutes ago`), `short` or `narrow`. Defaults to `long`. */
+  unitStyle?: RelativeTimeUnitStyle | undefined;
   /** The absolute date's style. Defaults to `medium`. */
   dateStyle?: RelativeTimeStyle | undefined;
   /** The absolute time's style, for a date and time. Defaults to `short`. */
@@ -35,13 +48,15 @@ const hooks = createHooks('relative-time', ['tooltip']);
 const currentTime = () => new Date();
 
 /**
- * A timestamp read relative to now (`5 minutes ago`, `Yesterday`) in a `<time>` element, which
+ * A timestamp read relative to now (`Now`, `5 minutes ago`, `Yesterday`) in a `<time>` element, which
  * updates on one clock shared by every timestamp on the page and shows the absolute date in a
  * tooltip. Past `fallbackAfterDays` it reads as the absolute date.
  */
 export function RelativeTime({
   value,
   fallbackAfterDays = 7,
+  precision,
+  unitStyle,
   dateStyle,
   timeStyle,
   getNow = currentTime,
@@ -52,7 +67,15 @@ export function RelativeTime({
   ...rest
 }: RelativeTimeProps) {
   const { locale } = useLocale();
-  const options = { now: getNow(), locale, fallbackAfterDays, dateStyle, timeStyle };
+  const options = {
+    now: getNow(),
+    locale,
+    fallbackAfterDays,
+    precision,
+    unitStyle,
+    dateStyle,
+    timeStyle,
+  };
   const text = value ? describeRelativeTime(value, options) : null;
   useClockTick(text?.nextChange ?? null);
   const finish = (words: string) => (capitalize ? capitalizeText(words, locale) : words);
