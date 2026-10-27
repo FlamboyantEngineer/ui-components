@@ -46,6 +46,23 @@ const dataNames = () =>
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table row groups', { timeout: 20_000 }, () => {
+  it('UIC-TABLE-1.6 publishes resolved wrapping on aggregate cells and grouped rows', () => {
+    renderItems({
+      cellWrap: 'wrap',
+      columns: columns.map((column) =>
+        column.id === 'note' ? { ...column, cellWrap: 'anywhere' } : column,
+      ),
+    });
+    const wraps = (selector: string) =>
+      [...document.querySelectorAll(`${selector}[data-column="note"]`)].map((cell) =>
+        cell.getAttribute('data-wrap'),
+      );
+    expect(wraps('.ui-table__aggregate-cell')).toEqual(['anywhere', 'anywhere', 'anywhere']);
+    expect(wraps('.ui-table__cell')).toEqual(['anywhere', 'anywhere', 'anywhere', 'anywhere']);
+    const city = document.querySelector('.ui-table__aggregate-cell[data-column="city"]');
+    expect(city).toHaveAttribute('data-wrap', 'wrap');
+  });
+
   it('UIC-TABLE-13.1 UIC-TABLE-13.2 UIC-TABLE-13.3 draws group header rows with counts and aggregates', () => {
     const { container } = renderItems({ selectionMode: 'multiple', renderRowActions: () => 'act' });
     expect(screen.getByRole('treegrid', { name: 'Items' })).toBeInTheDocument();

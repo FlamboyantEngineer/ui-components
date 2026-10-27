@@ -23,6 +23,7 @@ import { TableDataRow, TableExpandButton, type TableRowModel } from './table-row
 import { getCellValue, type TableColumn, type TableRow } from './table-rows.js';
 import {
   actionsColumnId,
+  getCellWrap,
   getColumnPin,
   getPinStyle,
   selectionColumnId,
@@ -137,6 +138,7 @@ function TableGroupRow<T extends TableRow>({
             {...hooks.slot('aggregate-cell', {
               kind: 'data',
               align: column.align ?? 'start',
+              wrap: getCellWrap(structure, column),
               column: column.id,
               pinned: pin,
             })}

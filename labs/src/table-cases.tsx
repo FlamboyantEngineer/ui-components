@@ -1,5 +1,5 @@
 // Cases of the table lab for sorting by several columns, column filters, the column layout,
-// nested and detail rows, pagination, editing, the summary row and loading more.
+// nested and detail rows, pagination, editing, the summary row, loading more and cell wrapping.
 
 import { useRef, useState } from 'react';
 import type { Key, SortDescriptor } from '../../src/core/props.js';
@@ -507,6 +507,64 @@ export function LoadingMore() {
         />
       </div>
       <output data-lab-output>{`${count} of ${allItems.length} loaded`}</output>
+    </div>
+  );
+}
+
+interface Sample {
+  id: string;
+  name: string;
+  note: string;
+  reference: string;
+}
+
+const samples: Sample[] = [
+  {
+    id: 'one',
+    name: 'First sample with a long name',
+    note: 'Collected in the morning and kept cool until it was weighed in the afternoon.',
+    reference: 'sample-0001-a7f3c9e2b4d6f8a0c1e3b5d7f9a2c4e6',
+  },
+  {
+    id: 'two',
+    name: 'Second sample',
+    note: 'Short note.',
+    reference: 'sample-0002-0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
+  },
+];
+
+const wrapColumns: TableColumn<Sample>[] = [
+  {
+    id: 'name',
+    header: 'Name',
+    cellWrap: 'nowrap',
+    width: 140,
+    minWidth: 80,
+    allowsResizing: true,
+  },
+  {
+    id: 'reference',
+    header: 'Reference',
+    cellWrap: 'anywhere',
+    width: 150,
+    minWidth: 100,
+    allowsResizing: true,
+    renderCell: (row) => <code>{row.reference}</code>,
+  },
+  { id: 'note', header: 'Note', width: '1fr', minWidth: 160, allowsResizing: true },
+];
+
+/** Prose wraps by the table's default; the name keeps one line and the reference breaks anywhere. */
+export function CellWrapping() {
+  return (
+    <div data-lab="cell-wrap" style={{ maxWidth: 520 }}>
+      <Table
+        aria-label="Samples, wrapped"
+        rows={samples}
+        columns={wrapColumns}
+        cellWrap="wrap"
+        selectionMode="multiple"
+      />
     </div>
   );
 }

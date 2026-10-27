@@ -130,6 +130,48 @@ describe('Table', { timeout: 15_000 }, () => {
     expect(weight).toHaveAttribute('data-column', 'weight');
   });
 
+  it('UIC-TABLE-1.6 publishes nowrap on every data cell by default', () => {
+    render(<Table aria-label="Fruit" rows={fruit} columns={columns} />);
+    for (const cell of screen.getAllByRole('gridcell')) {
+      expect(cell).toHaveAttribute('data-wrap', 'nowrap');
+    }
+    expect(header('Name')).not.toHaveAttribute('data-wrap');
+  });
+
+  it('UIC-TABLE-1.6 resolves column overrides over the table default in every row', async () => {
+    const user = userEvent.setup();
+    const onRowAction = vi.fn();
+    render(
+      <Table
+        aria-label="Fruit"
+        rows={fruit}
+        cellWrap="wrap"
+        selectionMode="multiple"
+        onRowAction={onRowAction}
+        renderRowActions={() => null}
+        columns={[
+          { id: 'name', header: 'Name', cellWrap: 'nowrap' },
+          { id: 'colour', header: 'Colour', renderCell: (row) => <em>{row.colour}</em> },
+          { id: 'id', header: 'Id', cellWrap: 'anywhere', renderFooter: () => 'All' },
+        ]}
+      />,
+    );
+    const wraps = (columnId: string) =>
+      [...document.querySelectorAll(`.ui-table__cell[data-column="${columnId}"]`)].map((cell) =>
+        cell.getAttribute('data-wrap'),
+      );
+    expect(wraps('name')).toEqual(['nowrap', 'nowrap', 'nowrap']);
+    expect(wraps('colour')).toEqual(['wrap', 'wrap', 'wrap']);
+    expect(wraps('id')).toEqual(['anywhere', 'anywhere', 'anywhere']);
+    expect(screen.getByRole('gridcell', { name: 'All' })).toHaveAttribute('data-wrap', 'anywhere');
+    const selection = document.querySelector('.ui-table__cell[data-kind="selection"]');
+    expect(selection).not.toHaveAttribute('data-wrap');
+    const yellow = screen.getByRole('gridcell', { name: 'Yellow' });
+    expect(yellow.querySelector('em')).toHaveTextContent('Yellow');
+    await user.click(yellow);
+    expect(onRowAction).toHaveBeenCalledWith('banana');
+  });
+
   it('UIC-TABLE-1.3 names columns from their header text or textValue', async () => {
     const user = userEvent.setup();
     render(

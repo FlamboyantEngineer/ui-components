@@ -8,6 +8,7 @@ import { sortTableRows } from '../../src/components/table/table-sort.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   CallerFilter,
+  CellWrapping,
   ColumnFilters,
   ColumnLayout,
   DetailRows,
@@ -299,6 +300,12 @@ mountLab(
       description="Bounded widths, persisted under a key across remounts."
     >
       <Resizing />
+    </LabSection>
+    <LabSection
+      title="Cell wrapping"
+      description="Prose wraps, the name keeps one line, the reference breaks anywhere."
+    >
+      <CellWrapping />
     </LabSection>
     <LabSection
       title="Reordering"
