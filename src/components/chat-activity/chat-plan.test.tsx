@@ -108,21 +108,21 @@ describe('ChatPlan', () => {
     });
     expect(status).toHaveTextContent('');
     rerender(<ChatPlan steps={withStatuses('done', 'in-progress', 'pending')} />);
-    expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
+    expect(status).toHaveTextContent('Book the hotel: done, Compare trains: in progress');
     rerender(<ChatPlan steps={withStatuses('done', 'done', 'pending')} />);
     act(() => {
       vi.advanceTimersByTime(1000);
     });
     rerender(<ChatPlan steps={withStatuses('done', 'done', 'in-progress')} />);
-    expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
+    expect(status).toHaveTextContent('Book the hotel: done, Compare trains: in progress');
     act(() => {
       vi.advanceTimersByTime(999);
     });
-    expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
+    expect(status).toHaveTextContent('Book the hotel: done, Compare trains: in progress');
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(status).toHaveTextContent('Compare trains: done. Pack the bags: in progress');
+    expect(status).toHaveTextContent('Compare trains: done, Pack the bags: in progress');
   });
 
   it('UIC-CHAT-ACTIVITY-3.4 announces nothing for steps added as pending, and reads a repeated change again', () => {

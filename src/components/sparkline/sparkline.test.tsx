@@ -142,10 +142,7 @@ describe('Sparkline', () => {
 
   it('UIC-SPARKLINE-2.2 formats the summary for the locale through the provider', () => {
     render(
-      <UiProvider
-        locale="de-DE"
-        strings={{ seriesSummary: ({ low, high, last }) => `${low} bis ${high}, zuletzt ${last}` }}
-      >
+      <UiProvider locale="de-DE" messages={{ seriesSummary: '{low} bis {high}, zuletzt {last}' }}>
         <Sparkline
           aria-label="Quote"
           values={[0.125, 0.5, 0.25]}

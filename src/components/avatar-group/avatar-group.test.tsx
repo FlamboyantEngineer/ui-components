@@ -95,7 +95,7 @@ describe('AvatarGroup', () => {
     rerender(<AvatarGroup people={people} aria-label=" Reviewers " />);
     expect(screen.getByRole('group')).toHaveAccessibleName('Reviewers');
     rerender(
-      <UiProvider strings={{ unnamed: 'Sans nom' }}>
+      <UiProvider messages={{ unnamed: 'Sans nom' }}>
         <AvatarGroup people={[{ id: 'x', name: '' }]} />
       </UiProvider>,
     );

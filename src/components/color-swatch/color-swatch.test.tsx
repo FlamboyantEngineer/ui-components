@@ -29,7 +29,7 @@ describe('ColorSwatch', () => {
       <>
         <ColorSwatch />
         <ColorSwatch color="" />
-        <UiProvider strings={{ noColor: 'Aucune couleur' }}>
+        <UiProvider messages={{ noColor: 'Aucune couleur' }}>
           <ColorSwatch color={null} />
         </UiProvider>
       </>,

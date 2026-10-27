@@ -37,8 +37,8 @@ export interface ShortcutTextOptions {
   platform?: ShortcutPlatform | undefined;
   /** Names each key. Defaults to the built-in English key names. */
   keyName?: ShortcutKeyNamer | undefined;
-  /** Joins the readable chords of a sequence. Defaults to the built-in English `G, then I`. */
-  sequence?: ((steps: readonly string[]) => string) | undefined;
+  /** Joins the readable chords of a sequence one step at a time. Defaults to the built-in English `G, then I`. */
+  joinSteps?: ((previous: string, next: string) => string) | undefined;
 }
 
 type PhysicalModifier = Exclude<ShortcutModifier, 'primary'>;
@@ -180,7 +180,7 @@ export function formatShortcutAccessibleText(
   {
     platform = getShortcutPlatform(),
     keyName = defaultStrings.shortcutKeyName,
-    sequence = defaultStrings.shortcutSequence,
+    joinSteps = defaultStrings.shortcutThen,
   }: ShortcutTextOptions = {},
 ): string {
   const names = spokenModifiers[platform === 'mac' ? 'mac' : 'other'];
@@ -189,7 +189,7 @@ export function formatShortcutAccessibleText(
     if (!key) return [];
     return [[...modifiers.map((modifier) => names[modifier]), key].map(keyName).join(' ')];
   });
-  return steps.length > 1 ? sequence(steps) : (steps[0] ?? '');
+  return steps.length > 0 ? steps.reduce((text, step) => joinSteps(text, step)) : '';
 }
 
 /**

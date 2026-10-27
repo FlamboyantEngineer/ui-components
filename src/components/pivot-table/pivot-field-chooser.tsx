@@ -66,7 +66,7 @@ export function PivotFieldChooser({ fields, layout, onLayoutChange }: PivotField
   const labelOf = (card: PivotFieldCard) =>
     card.value ? getValueLabel(card.value.value, card.field, strings) : card.field.label;
   return (
-    <UiProvider strings={{ noCards: strings.pivotNoFields }}>
+    <UiProvider messages={{ noCards: strings.pivotNoFields }}>
       <Board
         className={hooks.slotClass('chooser')}
         aria-label={strings.pivotFieldChooser}

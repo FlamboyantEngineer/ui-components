@@ -1,3 +1,4 @@
+import { toSelectKey, type MessageArguments } from './message-format.js';
 /** Strings of a chat's tool calls and their approvals. */
 export interface ChatToolStrings {
   /** A tool call's status, shown beside its label. */
@@ -19,8 +20,8 @@ export interface ChatToolStrings {
   toolCallArguments: string;
   /** Titles a tool call's result. */
   toolCallResult: string;
-  /** Names the button that copies a tool call's arguments or result, from that part's title. */
-  copyToolCallPart: (part: string) => string;
+  /** Names the button that copies a tool call's arguments or result. */
+  copyToolCallPart: (part: 'arguments' | 'result') => string;
   /** Shown in an expanded tool call that has neither arguments nor a result. */
   toolCallNoDetails: string;
   /** Asks the reader to let a tool run, from the tool call's label. */
@@ -38,55 +39,31 @@ export interface ChatToolStrings {
   ) => string;
 }
 
-const statusNames = {
-  pending: 'Pending',
-  running: 'Running',
-  'approval-requested': 'Needs approval',
-  succeeded: 'Done',
-  failed: 'Failed',
-  denied: 'Denied',
-  cancelled: 'Cancelled',
-} as const;
-
-/** A count with its unit, singular for one. */
-function formatUnit(count: number, unit: string): string {
-  return `${count} ${unit}${count === 1 ? '' : 's'}`;
-}
-
-/** Seconds with at most one decimal, without a trailing `.0`. */
-function formatSeconds(milliseconds: number): string {
-  return (milliseconds / 1000).toFixed(1).replace(/\.0$/, '');
-}
-
-function formatDuration(milliseconds: number, style: 'short' | 'long'): string {
-  const short = style === 'short';
+/**
+ * A duration in whole milliseconds under a second, in seconds with one decimal under a minute, and
+ * else in whole minutes and seconds.
+ */
+function toDurationParts(milliseconds: number) {
   const rounded = Math.max(0, Math.round(milliseconds));
-  if (rounded < 1000) return short ? `${rounded} ms` : formatUnit(rounded, 'millisecond');
+  if (rounded < 1000) return { unit: 'ms', milliseconds: rounded, seconds: 0, minutes: 0 };
   if (rounded < 60_000) {
-    const seconds = formatSeconds(rounded);
-    return short ? `${seconds} s` : `${seconds} second${seconds === '1' ? '' : 's'}`;
+    return {
+      unit: 'seconds',
+      milliseconds: rounded,
+      seconds: Math.round(rounded / 100) / 10,
+      minutes: 0,
+    };
   }
-  const minutes = Math.floor(rounded / 60_000);
   const seconds = Math.round((rounded % 60_000) / 1000);
-  if (short) return seconds === 0 ? `${minutes} min` : `${minutes} min ${seconds} s`;
-  const spoken = formatUnit(minutes, 'minute');
-  return seconds === 0 ? spoken : `${spoken} ${formatUnit(seconds, 'second')}`;
+  return { unit: 'minutes', milliseconds: rounded, seconds, minutes: Math.floor(rounded / 60_000) };
 }
 
-const decisionNames = { approved: 'Approved', denied: 'Denied', always: 'Always allowed' } as const;
-
-export const chatToolStrings: ChatToolStrings = {
-  toolCallStatus: (status) => statusNames[status],
-  toolCallDuration: formatDuration,
-  toolCallAutoApproved: 'Auto-approved',
-  toolCallArguments: 'Arguments',
-  toolCallResult: 'Result',
-  copyToolCallPart: (part) => `Copy ${part.toLowerCase()}`,
-  toolCallNoDetails: 'No details',
-  toolCallApprovalPrompt: (label) => `Allow “${label}”?`,
-  toolCallDeny: 'Deny',
-  toolCallAlwaysAllow: (scope) => (scope ? `Always allow in ${scope}` : 'Always allow'),
-  toolCallDenyReason: 'Reason (optional)',
-  toolCallDecision: (decision, reason) =>
-    decision === 'denied' && reason ? `Denied: ${reason}` : decisionNames[decision],
+/** The message values each text function reads its arguments as. */
+export const chatToolArguments: MessageArguments<ChatToolStrings> = {
+  toolCallStatus: (status) => ({ status: toSelectKey(status) }),
+  toolCallDuration: (milliseconds, style) => ({ style, ...toDurationParts(milliseconds) }),
+  copyToolCallPart: (part) => ({ part }),
+  toolCallApprovalPrompt: (label) => ({ label }),
+  toolCallAlwaysAllow: (scope) => ({ scope, hasScope: Boolean(scope) }),
+  toolCallDecision: (decision, reason) => ({ decision, reason, hasReason: Boolean(reason) }),
 };

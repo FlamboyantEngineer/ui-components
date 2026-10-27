@@ -267,7 +267,7 @@ describe('Avatar', () => {
     rerender(<Avatar name=" " />);
     expect(screen.getByRole('img', { name: 'Unnamed' })).toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ unnamed: 'Sans nom' }}>
+      <UiProvider messages={{ unnamed: 'Sans nom' }}>
         <Avatar name="" kind="group" />
       </UiProvider>,
     );

@@ -58,7 +58,7 @@ describe('Attribution', () => {
     expect(root(container)).toHaveTextContent(/^Yesterday$/);
     expect(container.querySelector('.ui-attribution__person')).toBeNull();
     rerender(
-      <UiProvider strings={{ attribution: '{person} · {time}' }}>
+      <UiProvider messages={{ attribution: '{person} · {time}' }}>
         <Attribution time="2026-05-22" getNow={getNow} person={maria} />
       </UiProvider>,
     );

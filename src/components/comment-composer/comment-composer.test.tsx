@@ -190,7 +190,7 @@ describe('CommentComposer', () => {
 
   it('UIC-COMMENT-COMPOSER-1.7 focuses on mount, and forwards caller attributes', () => {
     const { container } = render(
-      <UiProvider strings={{ addComment: 'Kommentieren', comment: 'Senden' }}>
+      <UiProvider messages={{ addComment: 'Kommentieren', comment: 'Senden' }}>
         <CommentComposer
           onSubmit={() => {}}
           autoFocus

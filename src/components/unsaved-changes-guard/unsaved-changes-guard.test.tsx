@@ -172,7 +172,7 @@ describe('UnsavedChangesGuard', () => {
   it('UIC-UNSAVED-CHANGES-GUARD-2.2 takes the text from props, each call and the provider', async () => {
     let guard!: UnsavedChangesGuardState;
     render(
-      <UiProvider strings={{ unsavedChanges: 'Changements non enregistrés' }}>
+      <UiProvider messages={{ unsavedChanges: 'Changements non enregistrés' }}>
         <UnsavedChangesGuard message="Switching sections drops your edits.">
           <Source isDirty />
           <Probe onState={(state) => (guard = state)} />

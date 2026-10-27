@@ -168,7 +168,7 @@ describe('Combobox suggestions', () => {
     expect(document.querySelector('.ui-combobox__empty')).toHaveTextContent('No results');
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['empty'] });
     rerender(
-      <UiProvider strings={{ noResults: 'Nothing grows here' }}>
+      <UiProvider messages={{ noResults: 'Nothing grows here' }}>
         <Combobox aria-label="Fruit" defaultItems={fruit} />
       </UiProvider>,
     );

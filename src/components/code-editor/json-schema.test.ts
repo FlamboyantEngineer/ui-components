@@ -46,7 +46,7 @@ describe('JSON Schema subset', () => {
     ).toEqual([
       ['Expected string.', '7'],
       ['Expected integer.', '2.5'],
-      ['Expected one of "starter", "main", "dessert".', '"brunch"'],
+      ['Expected one of "starter", "main", or "dessert".', '"brunch"'],
       ['Expected "fan".', '"gas"'],
       ['Property "size" is not allowed.', '"size"'],
     ]);

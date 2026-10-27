@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of media viewers and attached file lists. */
 export interface MediaStrings {
   /** Names a link that downloads a file, from the file name. */
@@ -10,9 +11,8 @@ export interface MediaStrings {
   mediaStage: (name: string) => string;
 }
 
-export const mediaStrings: MediaStrings = {
-  downloadFile: (name) => `Download ${name}`,
-  previewUnavailable: 'No preview is available for this file.',
-  thumbnails: 'Thumbnails',
-  mediaStage: (name) => `${name}, viewer`,
+/** The message values each text function reads its arguments as. */
+export const mediaArguments: MessageArguments<MediaStrings> = {
+  downloadFile: (name) => ({ name }),
+  mediaStage: (name) => ({ name }),
 };

@@ -41,7 +41,7 @@ describe('SelectField clear button', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     render(
-      <UiProvider strings={{ clearValue: (label) => `Vider ${label}` }}>
+      <UiProvider messages={{ clearValue: 'Vider {label}' }}>
         <SelectField
           label="Basket"
           selectionMode="multiple"

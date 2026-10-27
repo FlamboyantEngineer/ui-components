@@ -54,7 +54,7 @@ describe('ColorField eye dropper', () => {
     const open = vi.fn(() => Promise.reject(new DOMException('Canceled', 'AbortError')));
     stubEyeDropper(open);
     render(
-      <UiProvider strings={{ pickScreenColor: 'Pipette' }}>
+      <UiProvider messages={{ pickScreenColor: 'Pipette' }}>
         <ColorField label="Accent" defaultValue="#336699" allowsEyeDropper onChange={onChange} />
       </UiProvider>,
     );

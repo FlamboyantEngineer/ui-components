@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of merge views and pivot tables. */
 export interface AnalysisStrings {
   /** Names our side of a three-way merge. */
@@ -52,48 +53,14 @@ export interface AnalysisStrings {
   pivotAggregationOf: (field: string) => string;
 }
 
-const conflictsText = (count: number) => (count === 1 ? '1 conflict' : `${count} conflicts`);
-
-const aggregateNames = {
-  sum: 'Sum',
-  count: 'Count',
-  min: 'Minimum',
-  max: 'Maximum',
-  average: 'Average',
-} as const;
-
-const lineChanges = { unchanged: null, changed: 'Changed', conflict: 'Conflict' } as const;
-
-export const analysisStrings: AnalysisStrings = {
-  mergeViewOurs: 'Ours',
-  mergeViewBase: 'Base',
-  mergeViewTheirs: 'Theirs',
-  mergeViewResult: 'Result',
-  mergeViewConflictCount: (unresolved, total) => {
-    if (total === 0) return 'No conflicts';
-    if (unresolved === 0)
-      return total === 1 ? 'Conflict resolved' : `All ${total} conflicts resolved`;
-    return `${unresolved} of ${conflictsText(total)} unresolved`;
-  },
-  mergeViewConflict: (index, total) => `Conflict ${index} of ${total}`,
-  mergeViewConflictResult: (index) => `Result of conflict ${index}`,
-  mergeViewUnresolved: 'Unresolved',
-  mergeViewResolved: 'Resolved',
-  mergeViewTake: (side) => `Take ${side}`,
-  mergeViewTakeBoth: 'Take both',
-  mergeViewPreviousConflict: 'Previous conflict',
-  mergeViewNextConflict: 'Next conflict',
-  mergeViewLine: (change, number) =>
-    lineChanges[change] === null ? `Line ${number}` : `${lineChanges[change]}, line ${number}`,
-  pivotFields: 'Fields',
-  pivotRows: 'Rows',
-  pivotColumns: 'Columns',
-  pivotValues: 'Values',
-  pivotTotal: 'Total',
-  pivotEmptyKey: '(empty)',
-  pivotNoFields: 'No fields',
-  pivotFieldChooser: 'Pivot fields',
-  pivotAggregate: (aggregate) => aggregateNames[aggregate],
-  pivotValueLabel: (aggregate, field) => `${aggregate} of ${field}`,
-  pivotAggregationOf: (field) => `Aggregation of ${field}`,
+/** The message values each text function reads its arguments as. */
+export const analysisArguments: MessageArguments<AnalysisStrings> = {
+  mergeViewConflictCount: (unresolved, total) => ({ unresolved, total }),
+  mergeViewConflict: (index, total) => ({ index, total }),
+  mergeViewConflictResult: (index) => ({ index }),
+  mergeViewTake: (side) => ({ side }),
+  mergeViewLine: (change, number) => ({ change, number: String(number) }),
+  pivotAggregate: (aggregate) => ({ aggregate }),
+  pivotValueLabel: (aggregate, field) => ({ aggregate, field }),
+  pivotAggregationOf: (field) => ({ field }),
 };

@@ -73,7 +73,9 @@ describe('ChatSteps', () => {
     const root = rootOf(container);
     expect(root).not.toHaveAttribute('data-running');
     expect(root).not.toHaveAttribute('data-expanded');
-    const trigger = screen.getByRole('button', { name: 'Edited files, read files, ran a command' });
+    const trigger = screen.getByRole('button', {
+      name: 'Edited files, read files, ran a command',
+    });
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(container.querySelector('.ui-chat-steps__spinner')).toBeNull();
     expectHooksMatchSpec(container, 'CHAT-ACTIVITY', {

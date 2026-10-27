@@ -69,7 +69,7 @@ describe('AppFrameBand', () => {
     expect(screen.getByRole('toolbar', { name: 'Formatting' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Document actions' })).toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ tools: 'Outils', actions: 'Actions du document' }}>
+      <UiProvider messages={{ tools: 'Outils', actions: 'Actions du document' }}>
         <AppFrameBand aria-label="Band" actions="A">
           <Button>Bold</Button>
         </AppFrameBand>

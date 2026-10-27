@@ -84,9 +84,9 @@ describe('Shortcut', () => {
   });
 
   it('UIC-SHORTCUT-1.3 UIC-SHORTCUT-2.2 reads key names from the provider strings', () => {
-    const names: Record<string, string> = { Control: 'Contrôle', '↓': 'Flèche bas' };
+    const shortcutKeyName = '{key, select, control {Contrôle} down {Flèche bas} other {{name}}}';
     render(
-      <UiProvider strings={{ shortcutKeyName: (key) => names[key] ?? key }}>
+      <UiProvider messages={{ shortcutKeyName }}>
         <Shortcut chord="Ctrl+↓" platform="linux" />
       </UiProvider>,
     );
@@ -137,7 +137,7 @@ describe('Shortcut', () => {
 
   it('UIC-SHORTCUT-2.4 joins a sequence with the provider string', () => {
     render(
-      <UiProvider strings={{ shortcutSequence: (steps) => steps.join(' puis ') }}>
+      <UiProvider messages={{ shortcutThen: '{previous} puis {next}' }}>
         <Shortcut chord={['G', 'I']} platform="linux" />
       </UiProvider>,
     );

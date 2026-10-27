@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of chat sources and citations. */
 export interface ChatSourcesStrings {
   /** Names a list of sources, by their count. */
@@ -6,7 +7,8 @@ export interface ChatSourcesStrings {
   chatCitationLabel: (index: number, title: string) => string;
 }
 
-export const chatSourcesStrings: ChatSourcesStrings = {
-  chatSourcesLabel: (count) => (count === 1 ? '1 source' : `${count} sources`),
-  chatCitationLabel: (index, title) => `Source ${index}: ${title}`,
+/** The message values each text function reads its arguments as. */
+export const chatSourcesArguments: MessageArguments<ChatSourcesStrings> = {
+  chatSourcesLabel: (count) => ({ count }),
+  chatCitationLabel: (index, title) => ({ index, title }),
 };

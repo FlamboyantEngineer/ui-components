@@ -329,7 +329,7 @@ describe('ChatMessageActions', () => {
 
   it('UIC-CHAT-MESSAGE-ACTIONS-1.1 takes its strings from the provider', () => {
     render(
-      <UiProvider strings={{ messageActions: 'Aktionen', goodResponse: 'Gut' }}>
+      <UiProvider messages={{ messageActions: 'Aktionen', goodResponse: 'Gut' }}>
         <ChatMessageActions onFeedback={() => {}} />
       </UiProvider>,
     );

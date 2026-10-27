@@ -316,7 +316,7 @@ describe('ScrollRegion', () => {
       height: 20,
     } as DOMRect);
     const { container } = render(
-      <UiProvider strings={{ scrollVertically: 'Faire défiler' }}>
+      <UiProvider messages={{ scrollVertically: 'Faire défiler' }}>
         <ScrollRegion id="first" scrollbar="overlay" scrollbarInset="header">
           {table()}
         </ScrollRegion>

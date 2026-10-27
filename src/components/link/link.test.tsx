@@ -141,7 +141,7 @@ describe('Link', () => {
 
   it('UIC-LINK-2.2 treats a caller target of _blank as a new tab and lets target override isExternal', () => {
     render(
-      <UiProvider strings={{ opensInNewTab: '(new window)' }}>
+      <UiProvider messages={{ opensInNewTab: '(new window)' }}>
         <Link href="/print" target="_blank" rel="noopener">
           Printable list
         </Link>

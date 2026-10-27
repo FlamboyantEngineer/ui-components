@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of grid size pickers, character grids, transfer lists and tree select fields. */
 export interface PickerStrings {
   /** Names a grid size picker that has no label of its own. */
@@ -24,17 +25,10 @@ export interface PickerStrings {
   moveAllTo: (label: string) => string;
 }
 
-export const pickerStrings: PickerStrings = {
-  gridSizePicker: 'Table size',
-  gridSize: (rows, columns) => `${rows} × ${columns}`,
-  gridSizeCell: (rows, columns) =>
-    `${rows === 1 ? '1 row' : `${rows} rows`} by ${columns === 1 ? '1 column' : `${columns} columns`}`,
-  characterGrid: 'Special characters',
-  searchCharacters: 'Search characters',
-  recentCharacters: 'Recently used',
-  availableItems: 'Available',
-  chosenItems: 'Chosen',
-  noItems: 'No items',
-  moveSelectedTo: (label) => `Move selected to ${label.toLocaleLowerCase()}`,
-  moveAllTo: (label) => `Move all to ${label.toLocaleLowerCase()}`,
+/** The message values each text function reads its arguments as. */
+export const pickerArguments: MessageArguments<PickerStrings> = {
+  gridSize: (rows, columns) => ({ rows, columns }),
+  gridSizeCell: (rows, columns) => ({ rows, columns }),
+  moveSelectedTo: (label) => ({ label: label.toLocaleLowerCase() }),
+  moveAllTo: (label) => ({ label: label.toLocaleLowerCase() }),
 };

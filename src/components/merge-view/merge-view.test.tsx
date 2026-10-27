@@ -1,10 +1,17 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { UiProvider } from '../../core/provider.js';
+import { en } from '../../core/locales/index.js';
+import type * as messageFormat from '../../core/message-format.js';
+import { formatMessage } from '../../core/message-format.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { MergeView } from './merge-view.js';
+
+vi.mock('../../core/message-format.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof messageFormat>();
+  return { ...actual, formatMessage: vi.fn(actual.formatMessage) };
+});
 
 const base = ['flour', 'sugar', 'eggs', 'milk', 'salt', 'bake'].join('\n');
 const ours = ['flour', 'brown sugar', 'eggs', 'oat milk', 'salt', 'bake'].join('\n');
@@ -238,20 +245,17 @@ describe('MergeView', { timeout: 15_000 }, () => {
 
   it('UIC-MERGE-VIEW-2.4 does not redraw the input sides while a result is typed', async () => {
     const user = userEvent.setup();
-    const drawLine = vi.fn((change: string, number: number) => `${change} line ${number}`);
-    render(
-      <UiProvider strings={{ mergeViewLine: drawLine }}>
-        <MergeView base={base} ours={ours} theirs={theirs} />
-      </UiProvider>,
-    );
+    const drawsLine = () =>
+      vi.mocked(formatMessage).mock.calls.some(([message]) => message === en.mergeViewLine);
+    render(<MergeView base={base} ours={ours} theirs={theirs} />);
     const editor = within(
       screen.getByRole('group', { name: 'Conflict 1 of 1' }),
     ).getByRole<HTMLTextAreaElement>('textbox');
     await user.type(editor, 'x');
-    drawLine.mockClear();
+    vi.mocked(formatMessage).mockClear();
     await user.type(editor, 'yz');
     expect(editor.value).toMatch(/xyz$/);
-    expect(drawLine).not.toHaveBeenCalled();
+    expect(drawsLine()).toBe(false);
   });
 
   it('UIC-MERGE-VIEW-3.1 counts the unresolved conflicts', async () => {

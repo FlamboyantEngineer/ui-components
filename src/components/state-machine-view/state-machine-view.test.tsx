@@ -99,7 +99,7 @@ describe('StateMachineView', () => {
     expect(screen.getByRole('group', { name: 'Orders' })).toHaveAttribute('data-view', 'outline');
     expect(screen.getByRole('list', { name: 'Outline' })).toHaveTextContent('Paid (pay)');
     rerender(
-      <UiProvider strings={{ stateMachine: 'Automate' }}>
+      <UiProvider messages={{ stateMachine: 'Automate' }}>
         <StateMachineView states={states} transitions={transitions} />
       </UiProvider>,
     );

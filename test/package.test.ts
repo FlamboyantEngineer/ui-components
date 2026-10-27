@@ -75,6 +75,15 @@ describe('package manifest', () => {
       expect(manifest.peerDependenciesMeta?.[name]?.optional).toBe(true);
     }
   });
+
+  it('UIC-PROVIDER-3.5 exports the shipped language files as modules and as JSON', () => {
+    expect(manifest.exports['./locales']).toEqual({
+      types: './dist/core/locales/index.d.ts',
+      import: './dist/core/locales/index.js',
+    });
+    expect(manifest.exports['./locales/*.json']).toBe('./dist/core/locales/*.json');
+    expect(manifest.dependencies['intl-messageformat']).toBeDefined();
+  });
 });
 
 describe('Git branch install', () => {

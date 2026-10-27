@@ -58,7 +58,7 @@ describe('imperative dialogs', () => {
   it('UIC-MODAL-22.2 labels the action from the provider', async () => {
     const controller = createModalController();
     render(
-      <UiProvider strings={{ ok: 'Entendu' }}>
+      <UiProvider messages={{ ok: 'Entendu' }}>
         <ModalHost controller={controller} />
       </UiProvider>,
     );

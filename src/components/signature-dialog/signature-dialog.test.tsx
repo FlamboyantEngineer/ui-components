@@ -109,7 +109,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     expect(document.querySelector('.ui-signature-dialog__summary')).toBeNull();
     unmount();
     render(
-      <UiProvider strings={{ sign: 'Signer' }}>
+      <UiProvider messages={{ sign: 'Signer' }}>
         <SignatureDialog title="Sign" userName="Ada" meanings={approve} onSign={vi.fn()} isOpen />
       </UiProvider>,
     );

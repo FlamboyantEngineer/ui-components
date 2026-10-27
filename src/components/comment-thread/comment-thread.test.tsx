@@ -177,7 +177,7 @@ describe('CommentThread', () => {
 
   it('UIC-COMMENT-THREAD-1.8 takes its name from the caller and the provider', () => {
     const { container, rerender } = render(
-      <UiProvider strings={{ commentThread: 'Fil de discussion' }}>
+      <UiProvider messages={{ commentThread: 'Fil de discussion' }}>
         <CommentThread>{replies(1)}</CommentThread>
       </UiProvider>,
     );

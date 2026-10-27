@@ -96,7 +96,7 @@ export function Shortcut({ chord, platform, decorative, className, ...rest }: Sh
           {formatShortcutAccessibleText(chord, {
             platform: resolved,
             keyName: strings.shortcutKeyName,
-            sequence: strings.shortcutSequence,
+            joinSteps: strings.shortcutThen,
           })}
         </VisuallyHidden>
       )}

@@ -11,7 +11,7 @@ test.describe('Reaction Bar lab', () => {
     const bar = page.locator(cell('mode=interactive reactions=several'));
     await expect(bar.locator('.ui-reaction-bar__reaction')).toHaveCount(4);
     await expect(
-      bar.getByRole('button', { name: '👍 3, reacted by You, Maria Santos and Jon Berg' }),
+      bar.getByRole('button', { name: '👍 3, reacted by You, Maria Santos, and Jon Berg' }),
     ).toBeVisible();
     const custom = bar.getByRole('button', { name: 'Ship it 2, reacted by Tom Li and Jon Berg' });
     await expect(custom.locator('img.ui-reaction-bar__image')).toBeVisible();

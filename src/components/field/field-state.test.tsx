@@ -222,7 +222,7 @@ describe('useFieldState', () => {
   it('UIC-FIELD-3.1 takes its messages from the provider strings', () => {
     const { result } = renderHook(() => useFieldState({ value: '', isRequired: true }), {
       wrapper: ({ children }) => (
-        <UiProvider strings={{ valueRequired: 'Obligatoire.' }}>{children}</UiProvider>
+        <UiProvider messages={{ valueRequired: 'Obligatoire.' }}>{children}</UiProvider>
       ),
     });
     expect(result.current.validation.message).toBe('Obligatoire.');

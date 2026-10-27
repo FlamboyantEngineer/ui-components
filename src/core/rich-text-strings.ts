@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of the rich-text editor and its toolbars and menus. */
 export interface RichTextStrings {
   /** Names a rich-text editor's formatting toolbar. */
@@ -43,33 +44,7 @@ export interface RichTextStrings {
   taskDone: string;
 }
 
-export const richTextStrings: RichTextStrings = {
-  textFormatting: 'Text formatting',
-  selectionFormatting: 'Selection formatting',
-  bold: 'Bold',
-  italic: 'Italic',
-  underline: 'Underline',
-  strikethrough: 'Strikethrough',
-  inlineCode: 'Code',
-  link: 'Link',
-  linkAddress: 'Link address',
-  removeLink: 'Remove link',
-  blockType: 'Block type',
-  paragraph: 'Text',
-  heading: (level) => `Heading ${level}`,
-  codeBlock: 'Code block',
-  quote: 'Quote',
-  bulletList: 'Bulleted list',
-  numberedList: 'Numbered list',
-  taskList: 'Task list',
-  divider: 'Divider',
-  undo: 'Undo',
-  redo: 'Redo',
-  insert: 'Insert',
-  insertCommands: 'Insert commands',
-  blockActions: 'Block actions',
-  turnInto: 'Turn into',
-  moveUp: 'Move up',
-  moveDown: 'Move down',
-  taskDone: 'Done',
+/** The message values each text function reads its arguments as. */
+export const richTextArguments: MessageArguments<RichTextStrings> = {
+  heading: (level) => ({ level }),
 };

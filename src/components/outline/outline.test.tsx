@@ -60,7 +60,7 @@ describe('Outline', () => {
     );
     expect(screen.getByRole('navigation', { name: 'Contents' })).not.toHaveAttribute('aria-label');
     rerender(
-      <UiProvider strings={{ outline: 'Sommaire' }}>
+      <UiProvider messages={{ outline: 'Sommaire' }}>
         <Outline headings={headings} />
       </UiProvider>,
     );

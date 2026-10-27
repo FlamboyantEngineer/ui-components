@@ -144,7 +144,7 @@ describe('SplitView', () => {
     expectHooksMatchSpec(container, 'SPLIT-VIEW', { slots: ['pane', 'grip'] });
 
     rerender(
-      <UiProvider strings={{ resize: 'Redimensionner' }}>
+      <UiProvider messages={{ resize: 'Redimensionner' }}>
         <SplitView panes={[{}, {}]} separatorLabel="Resize fruit list">
           {[<p key="a">Apples</p>, <p key="b">Bananas</p>]}
         </SplitView>
@@ -155,7 +155,7 @@ describe('SplitView', () => {
     expect(document.getElementById(requireDefined(firstId))).toHaveTextContent('Apples');
     expect(document.getElementById(requireDefined(secondId))).toHaveTextContent('Bananas');
     rerender(
-      <UiProvider strings={{ resize: 'Redimensionner' }}>
+      <UiProvider messages={{ resize: 'Redimensionner' }}>
         <SplitView panes={[{}, {}]}>{[<p key="a">Apples</p>, <p key="b">Bananas</p>]}</SplitView>
       </UiProvider>,
     );

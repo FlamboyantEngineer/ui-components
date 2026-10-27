@@ -89,7 +89,7 @@ describe('ChangeList', () => {
     expect(list).toHaveAttribute('data-layout', 'inline');
     expect(container.querySelector('.ui-change-list__side')).toBeNull();
     rerender(
-      <UiProvider strings={{ valueBefore: 'Was', valueAfter: 'Now', emptyValue: 'None' }}>
+      <UiProvider messages={{ valueBefore: 'Was', valueAfter: 'Now', emptyValue: 'None' }}>
         <ChangeList changes={changes} variant="detailed" />
       </UiProvider>,
     );

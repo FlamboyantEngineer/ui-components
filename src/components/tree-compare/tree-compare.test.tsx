@@ -130,7 +130,7 @@ describe('TreeCompare', () => {
 
   it('UIC-TREE-COMPARE-2.1 UIC-TREE-COMPARE-2.2 takes column labels, labels and equality from the caller', () => {
     render(
-      <UiProvider strings={{ treeChangedRow: (label) => `${label} (edited)` }}>
+      <UiProvider messages={{ treeChangedRow: '{label} (edited)' }}>
         <Compare
           leftLabel="Version 1"
           rightLabel="Version 2"

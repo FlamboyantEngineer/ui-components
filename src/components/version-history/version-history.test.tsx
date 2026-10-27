@@ -410,7 +410,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
 
   it('UIC-VERSION-HISTORY-2.1 names the list and moves through it by keyboard', async () => {
     const { rerender } = render(
-      <UiProvider strings={{ versionHistory: 'Saved versions' }}>
+      <UiProvider messages={{ versionHistory: 'Saved versions' }}>
         <VersionHistory versions={versions} showFilters={false} onRestore={() => {}} />
       </UiProvider>,
     );

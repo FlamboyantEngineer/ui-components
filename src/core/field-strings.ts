@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of the field base and the field controls. */
 export interface FieldStrings {
   /** Opens a file chooser. */
@@ -136,90 +137,38 @@ export interface FieldStrings {
   rangeMaximum: string;
 }
 
-export const fieldStrings: FieldStrings = {
-  browse: 'Browse',
-  fileSizeLimit: (size) => `Up to ${size}`,
-  rejectedFileType: (count) =>
-    count === 1 ? '1 file is not an accepted type.' : `${count} files are not an accepted type.`,
-  rejectedFileSize: (count) =>
-    count === 1 ? '1 file is too large.' : `${count} files are too large.`,
-  rejectedFileSmall: (count) =>
-    count === 1 ? '1 file is too small.' : `${count} files are too small.`,
-  rejectedFileCount: (count) =>
-    count === 1 ? '1 file is over the file limit.' : `${count} files are over the file limit.`,
-  rejectedFileReason: (name, reason) => `${name}: ${reason}`,
-  fileCountLimit: (count) => (count === 1 ? 'One file' : `Up to ${count} files`),
-  addFile: 'Add a file',
-  addFiles: 'Add files',
-  problems: 'Problems',
-  problemCount: (errors, warnings) =>
-    [
-      errors > 0 && (errors === 1 ? '1 error' : `${errors} errors`),
-      warnings > 0 && (warnings === 1 ? '1 warning' : `${warnings} warnings`),
-    ]
-      .filter(Boolean)
-      .join(', ') || 'No problems',
-  problemSeverity: (severity) => (severity === 'error' ? 'Error' : 'Warning'),
-  setDefault: 'Set to default',
-  valueRequired: 'A value is required.',
-  validating: 'Validating',
-  tooShort: (minLength) =>
-    minLength === 1 ? 'Use at least 1 character.' : `Use at least ${minLength} characters.`,
-  tooLong: (maxLength) =>
-    maxLength === 1 ? 'Use 1 character or fewer.' : `Use ${maxLength} characters or fewer.`,
-  patternMismatch: 'Enter a value in the expected format.',
-  restoreValue: (label) => `Restore ${label}`,
-  fieldHelp: (label) => `Help for ${label}`,
-  fieldActions: (label) => `${label} actions`,
-  rangeUnderflow: (minimum) => `Enter ${minimum} or more.`,
-  numberIncrease: 'Increase',
-  numberDecrease: 'Decrease',
-  rangeOverflow: (maximum) => `Enter ${maximum} or less.`,
-  stepMismatch: (step) => `Enter a value in steps of ${step}.`,
-  clearSearch: 'Clear search',
-  revealValue: (label) => `Show ${label}`,
-  characterCount: (count, maxLength) =>
-    maxLength === undefined ? String(count) : `${count}/${maxLength}`,
-  valueTrue: 'True',
-  valueFalse: 'False',
-  valueUnset: 'Unset',
-  noColor: 'No color',
-  colorUnreadable: 'Enter a color, such as #3366ff.',
-  hexColor: 'Hex color',
-  colorFormat: 'Color format',
-  colorPicker: (label) => `${label} picker`,
-  pickScreenColor: 'Pick a color from the screen',
-  remove: 'Remove',
-  clearValue: (label) => `Clear ${label}`,
-  selectPlaceholder: 'Select an option',
-  selectedValues: (label) => `${label} selected values`,
-  createOption: (text) => `Add “${text}”`,
-  typeToSearch: (minLength) =>
-    minLength === 1 ? 'Type to search.' : `Type at least ${minLength} characters to search.`,
-  searchFailed: 'Search is unavailable.',
-  recentPeople: 'Recent',
-  currentPerson: '(you)',
-  duplicateValue: (value) => `“${value}” is already added.`,
-  tooManyValues: (maxValues) =>
-    maxValues === 1 ? 'Add up to 1 value.' : `Add up to ${maxValues} values.`,
-  characterPosition: (position, length) => `Character ${position} of ${length}`,
-  today: 'Today',
-  now: 'Now',
-  dateTooEarly: (minValue) => `Choose a value on or after ${minValue}.`,
-  dateTooLate: (maxValue) => `Choose a value on or before ${maxValue}.`,
-  dateUnavailable: 'Choose an available date.',
-  dateIncomplete: 'Finish entering the date.',
-  lastPeriod: (period) => `Last ${period}`,
-  nextPeriod: (period) => `Next ${period}`,
-  rangeMinimum: 'Minimum',
-  signatureMethod: 'Signature method',
-  signatureDraw: 'Draw',
-  signatureType: 'Type',
-  signatureTypePlaceholder: 'Type your name',
-  signatureStrokes: (count) =>
-    count === 0
-      ? 'Drawing area, empty'
-      : `Drawing area, ${count} ${count === 1 ? 'stroke' : 'strokes'}`,
-  undoStroke: 'Undo stroke',
-  rangeMaximum: 'Maximum',
+/** The message values each text function reads its arguments as. */
+export const fieldArguments: MessageArguments<FieldStrings> = {
+  fileSizeLimit: (size) => ({ size }),
+  rejectedFileType: (count) => ({ count }),
+  rejectedFileSize: (count) => ({ count }),
+  rejectedFileSmall: (count) => ({ count }),
+  rejectedFileCount: (count) => ({ count }),
+  rejectedFileReason: (name, reason) => ({ name, reason }),
+  fileCountLimit: (count) => ({ count }),
+  problemCount: (errors, warnings) => ({ errors, warnings }),
+  problemSeverity: (severity) => ({ severity }),
+  tooShort: (minLength) => ({ minLength }),
+  tooLong: (maxLength) => ({ maxLength }),
+  restoreValue: (label) => ({ label }),
+  fieldHelp: (label) => ({ label }),
+  fieldActions: (label) => ({ label }),
+  rangeUnderflow: (minimum) => ({ minimum }),
+  rangeOverflow: (maximum) => ({ maximum }),
+  stepMismatch: (step) => ({ step }),
+  revealValue: (label) => ({ label }),
+  characterCount: (count, maxLength) => ({ count, maxLength, hasLimit: maxLength !== undefined }),
+  colorPicker: (label) => ({ label }),
+  clearValue: (label) => ({ label }),
+  selectedValues: (label) => ({ label }),
+  createOption: (text) => ({ text }),
+  typeToSearch: (minLength) => ({ minLength }),
+  duplicateValue: (value) => ({ value }),
+  tooManyValues: (maxValues) => ({ maxValues }),
+  characterPosition: (position, length) => ({ position, length }),
+  dateTooEarly: (minValue) => ({ minValue }),
+  dateTooLate: (maxValue) => ({ maxValue }),
+  lastPeriod: (period) => ({ period }),
+  nextPeriod: (period) => ({ period }),
+  signatureStrokes: (count) => ({ count }),
 };

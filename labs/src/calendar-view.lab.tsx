@@ -7,7 +7,7 @@ import {
   type CalendarViewMode,
 } from '../../src/components/calendar-view/calendar-view.js';
 import { UiProvider } from '../../src/core/provider.js';
-import type { UiStrings } from '../../src/core/strings.js';
+import { fr } from '../../src/core/locales/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 /** A fixed clock, so today reads the same on every day: 18 March 2026, 10:30. */
@@ -41,18 +41,6 @@ const crowded: CalendarViewEvent[] = [
   { id: '1', title: 'Interview', start: '2026-03-18T11:00', end: '2026-03-18T12:00' },
   { id: 'retro', title: 'Retrospective', start: '2026-03-18T15:00', end: '2026-03-18T16:00' },
 ];
-
-const frenchStrings: Partial<UiStrings> = {
-  today: "Aujourd'hui",
-  month: 'Mois',
-  week: 'Semaine',
-  calendarViews: 'Vue',
-  previousRange: (unit) => (unit === 'month' ? 'Mois précédent' : 'Semaine précédente'),
-  nextRange: (unit) => (unit === 'month' ? 'Mois suivant' : 'Semaine suivante'),
-  allDay: 'Journée',
-  moreEvents: (count) => `+${count} autres`,
-  calendarEvent: (title, when) => `${title}, ${when}`,
-};
 
 const holidays = new Set(['2026-03-17', '2026-04-03']);
 
@@ -132,7 +120,7 @@ mountLab(
       description="A French locale and strings: the week starts on Monday, and days, months, times and controls read in French."
     >
       <div style={frame(900)} data-lab-demo="locale" lang="fr">
-        <UiProvider locale="fr-FR" strings={frenchStrings}>
+        <UiProvider locale="fr-FR" messages={fr}>
           <CalendarView
             events={events}
             timeZone="UTC"

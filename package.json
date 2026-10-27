@@ -26,6 +26,11 @@
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.js"
     },
+    "./locales": {
+      "types": "./dist/core/locales/index.d.ts",
+      "import": "./dist/core/locales/index.js"
+    },
+    "./locales/*.json": "./dist/core/locales/*.json",
     "./*": {
       "types": "./dist/components/*/index.d.ts",
       "import": "./dist/components/*/index.js"
@@ -133,6 +138,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@internationalized/date": "^3.12.4",
+    "intl-messageformat": "^12.1.4",
     "react-aria": "^3.53.1",
     "react-aria-components": "^1.22.1"
   },

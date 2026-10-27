@@ -261,7 +261,7 @@ describe('ChatQuestion', () => {
     const answers = screen.getAllByRole('definition').map((answer) => answer.textContent);
     expect(answers).toEqual([
       'You chose PostgreSQL',
-      'You chose Sign-in, Export to CSV and Offline',
+      'You chose Sign-in, Export to CSV, and Offline',
       'You answered: Notebook',
     ]);
     expectHooksMatchSpec(container, 'CHAT-QUESTION', {
@@ -327,12 +327,12 @@ describe('ChatQuestion', () => {
     const user = userEvent.setup();
     render(
       <UiProvider
-        strings={{
+        messages={{
           questionOther: 'Something else',
           questionOtherAnswer: 'Your words',
           questionRecommended: 'Suggested',
           questionSubmit: 'Send answers',
-          questionPreview: (label) => `${label}, preview`,
+          questionPreview: '{label}, preview',
           dismiss: 'Not now',
         }}
       >

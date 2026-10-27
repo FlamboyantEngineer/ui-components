@@ -565,7 +565,7 @@ describe('Modal', () => {
 
       const onOpenChange = vi.fn();
       render(
-        <UiProvider strings={{ close: 'Shut' }}>
+        <UiProvider messages={{ close: 'Shut' }}>
           <Modal
             title="Import"
             isOpen
@@ -654,7 +654,7 @@ describe('Modal', () => {
       unmount();
 
       render(
-        <UiProvider strings={{ cancel: 'Back' }}>
+        <UiProvider messages={{ cancel: 'Back' }}>
           <Modal
             title="Plain"
             isOpen
@@ -832,7 +832,7 @@ describe('Modal', () => {
 
       const offline: unknown = 'offline';
       rerender(
-        <UiProvider strings={{ actionFailed: 'Something went wrong.' }}>
+        <UiProvider messages={{ actionFailed: 'Something went wrong.' }}>
           <Modal
             title="Save"
             isOpen

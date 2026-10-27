@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of notification lists and centres, approval panels and decision controls. */
 export interface ReviewStrings {
   /** Names a notification list and the bell that opens it. */
@@ -51,42 +52,12 @@ export interface ReviewStrings {
   decisionFailed: string;
 }
 
-const approvalDecisionNames = {
-  pending: 'Pending',
-  approved: 'Approved',
-  rejected: 'Rejected',
-  abstained: 'Abstained',
-} as const;
-
-export const reviewStrings: ReviewStrings = {
-  notifications: 'Notifications',
-  notificationsWithCount: (unread) =>
-    unread > 0 ? `Notifications, ${unread} unread` : 'Notifications',
-  notificationFilter: 'Show',
-  allNotifications: 'All',
-  unread: 'Unread',
-  markAllRead: 'Mark all as read',
-  markRead: 'Mark as read',
-  markUnread: 'Mark as unread',
-  noNotifications: 'No notifications',
-  noUnreadNotifications: 'Nothing unread',
-  notificationsEmpty: 'New notifications appear here.',
-  unreadNotificationsEmpty: 'You are all caught up.',
-  newNotifications: (count, title) =>
-    count === 1 ? `New notification: ${title}` : `${count} new notifications`,
-  earlier: 'Earlier',
-  approvals: 'Approvals',
-  approvalProgress: (approved, required) =>
-    required === 1 ? `${approved} of 1 approval` : `${approved} of ${required} approvals`,
-  approvalDecision: (decision) => approvalDecisionNames[decision],
-  approvers: 'Approvers',
-  you: 'You',
-  remindApprover: (name) => `Remind ${name}`,
-  requestApprovalAgain: (name) => `Request again from ${name}`,
-  yourDecision: 'Your decision',
-  approve: 'Approve',
-  reject: 'Reject',
-  submitDecision: 'Submit',
-  signDecision: 'Sign your decision',
-  decisionFailed: 'The decision could not be submitted.',
+/** The message values each text function reads its arguments as. */
+export const reviewArguments: MessageArguments<ReviewStrings> = {
+  notificationsWithCount: (unread) => ({ unread }),
+  newNotifications: (count, title) => ({ count, title }),
+  approvalProgress: (approved, required) => ({ approved, required }),
+  approvalDecision: (decision) => ({ decision }),
+  remindApprover: (name) => ({ name }),
+  requestApprovalAgain: (name) => ({ name }),
 };

@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /**
  * Strings of chat messages and the parts around them: message names, delivery, markers, quotes,
  * typing, read receipts and the unread divider.
@@ -26,35 +27,21 @@ export interface ChatMessageStrings {
   chatNewMessages: string;
 }
 
-const deliveryLabels = {
-  sending: 'Sending',
-  sent: 'Sent',
-  delivered: 'Delivered',
-  read: 'Read',
-  failed: 'Not sent',
-} as const;
-
-/** `A`, `A and B`, or `A, B and C`. */
-function joinNames(names: readonly string[]): string {
-  if (names.length < 2) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} and ${names.at(-1) ?? ''}`;
-}
-
-export const chatMessageStrings: ChatMessageStrings = {
-  chatMessageLabel: (author, time) => [author, time].filter(Boolean).join(', '),
-  chatDelivery: (delivery) => deliveryLabels[delivery],
-  chatMessageDeleted: 'Message deleted',
-  chatStopped: 'Stopped',
-  chatQuoteLabel: (authorName, excerpt) => `Quote from ${authorName}: ${excerpt}`,
-  chatTyping: (names) => {
-    if (names.length <= 1) return `${names[0] ?? ''} is typing…`;
-    if (names.length === 2) return `${joinNames(names)} are typing…`;
-    return `${names[0] ?? ''} and ${names.length - 1} others are typing…`;
-  },
-  chatThinking: 'Thinking…',
-  chatSeenBy: (names) =>
-    names.length <= 3
-      ? `Seen by ${joinNames(names)}`
-      : `Seen by ${names[0] ?? ''}, ${names[1] ?? ''} and ${names.length - 2} others`,
-  chatNewMessages: 'New messages',
+/** The message values each text function reads its arguments as. */
+export const chatMessageArguments: MessageArguments<ChatMessageStrings> = {
+  chatMessageLabel: (author, time) => ({ author, time, hasBoth: Boolean(author) && Boolean(time) }),
+  chatDelivery: (delivery) => ({ delivery }),
+  chatQuoteLabel: (authorName, excerpt) => ({ authorName, excerpt }),
+  chatTyping: (names) => ({
+    names,
+    count: names.length,
+    first: names[0],
+    others: names.length - 1,
+  }),
+  chatSeenBy: (names) => ({
+    names,
+    first: names[0],
+    second: names[1],
+    others: names.length > 3 ? names.length - 2 : 0,
+  }),
 };

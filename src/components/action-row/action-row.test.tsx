@@ -44,7 +44,7 @@ describe('ActionRow', () => {
     const add = screen.getByRole('button', { name: 'Add comment' });
     expect(add.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'plus');
     rerender(
-      <UiProvider strings={{ edit: 'Modifier' }}>
+      <UiProvider messages={{ edit: 'Modifier' }}>
         <ActionRow actions={[{ verb: 'edit', onPress: noop }]} />
       </UiProvider>,
     );

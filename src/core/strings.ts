@@ -1,46 +1,49 @@
-import { analysisStrings, type AnalysisStrings } from './analysis-strings.js';
-import { chatStrings, type ChatStrings } from './chat-strings.js';
-import { chatActionsStrings, type ChatActionsStrings } from './chat-actions-strings.js';
-import { chatActivityStrings, type ChatActivityStrings } from './chat-activity-strings.js';
-import { chatAttachmentStrings, type ChatAttachmentStrings } from './chat-attachment-strings.js';
-import { chatControllerStrings, type ChatControllerStrings } from './chat-controller-strings.js';
-import { chatListStrings, type ChatListStrings } from './chat-list-strings.js';
-import { chatMessageStrings, type ChatMessageStrings } from './chat-message-strings.js';
+import { en } from './locales/index.js';
+import { formatMessage, type MessageValues } from './message-format.js';
+import { analysisArguments, type AnalysisStrings } from './analysis-strings.js';
+import { chatArguments, type ChatStrings } from './chat-strings.js';
+import { chatActionsArguments, type ChatActionsStrings } from './chat-actions-strings.js';
+import { chatActivityArguments, type ChatActivityStrings } from './chat-activity-strings.js';
+import { chatAttachmentArguments, type ChatAttachmentStrings } from './chat-attachment-strings.js';
+import type { ChatControllerStrings } from './chat-controller-strings.js';
+import { chatListArguments, type ChatListStrings } from './chat-list-strings.js';
+import { chatMessageArguments, type ChatMessageStrings } from './chat-message-strings.js';
 import {
-  chatModelPickerStrings,
+  chatModelPickerArguments,
   type ChatModelPickerStrings,
 } from './chat-model-picker-strings.js';
-import { chatQuestionStrings, type ChatQuestionStrings } from './chat-question-strings.js';
-import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
-import { chatToolStrings, type ChatToolStrings } from './chat-tool-strings.js';
-import { chatWidgetStrings, type ChatWidgetStrings } from './chat-widget-strings.js';
-import { codeStrings, type CodeStrings } from './code-strings.js';
-import { commonStrings, type CommonStrings } from './common-strings.js';
-import { composerStrings, type ComposerStrings } from './composer-strings.js';
-import { contentStrings, type ContentStrings } from './content-strings.js';
-import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
-import { diagramStrings, type DiagramStrings } from './diagram-strings.js';
-import { diffStrings, type DiffStrings } from './diff-strings.js';
-import { editingStrings, type EditingStrings } from './editing-strings.js';
-import { fieldStrings, type FieldStrings } from './field-strings.js';
-import { historyStrings, type HistoryStrings } from './history-strings.js';
-import { mediaStrings, type MediaStrings } from './media-strings.js';
-import { pickerStrings, type PickerStrings } from './picker-strings.js';
-import { planningStrings, type PlanningStrings } from './planning-strings.js';
-import { presentationStrings, type PresentationStrings } from './presentation-strings.js';
-import { queryStrings, type QueryStrings } from './query-strings.js';
-import { redlineStrings, type RedlineStrings } from './redline-strings.js';
-import { relationStrings, type RelationStrings } from './relation-strings.js';
-import { reviewStrings, type ReviewStrings } from './review-strings.js';
-import { richTextStrings, type RichTextStrings } from './rich-text-strings.js';
-import { structureStrings, type StructureStrings } from './structure-strings.js';
-import { tableStrings, type TableStrings } from './table-strings.js';
-import { timelineStrings, type TimelineStrings } from './timeline-strings.js';
-import { viewStrings, type ViewStrings } from './view-strings.js';
+import { chatQuestionArguments, type ChatQuestionStrings } from './chat-question-strings.js';
+import { chatSourcesArguments, type ChatSourcesStrings } from './chat-sources-strings.js';
+import { chatToolArguments, type ChatToolStrings } from './chat-tool-strings.js';
+import { chatWidgetArguments, type ChatWidgetStrings } from './chat-widget-strings.js';
+import { codeArguments, type CodeStrings } from './code-strings.js';
+import { commonArguments, type CommonStrings } from './common-strings.js';
+import { composerArguments, type ComposerStrings } from './composer-strings.js';
+import { contentArguments, type ContentStrings } from './content-strings.js';
+import { dashboardArguments, type DashboardStrings } from './dashboard-strings.js';
+import { diagramArguments, type DiagramStrings } from './diagram-strings.js';
+import { diffArguments, type DiffStrings } from './diff-strings.js';
+import { editingArguments, type EditingStrings } from './editing-strings.js';
+import { fieldArguments, type FieldStrings } from './field-strings.js';
+import { historyArguments, type HistoryStrings } from './history-strings.js';
+import { mediaArguments, type MediaStrings } from './media-strings.js';
+import { pickerArguments, type PickerStrings } from './picker-strings.js';
+import { planningArguments, type PlanningStrings } from './planning-strings.js';
+import { presentationArguments, type PresentationStrings } from './presentation-strings.js';
+import { queryArguments, type QueryStrings } from './query-strings.js';
+import { redlineArguments, type RedlineStrings } from './redline-strings.js';
+import { relationArguments, type RelationStrings } from './relation-strings.js';
+import { reviewArguments, type ReviewStrings } from './review-strings.js';
+import { richTextArguments, type RichTextStrings } from './rich-text-strings.js';
+import { structureArguments, type StructureStrings } from './structure-strings.js';
+import { tableArguments, type TableStrings } from './table-strings.js';
+import { timelineArguments, type TimelineStrings } from './timeline-strings.js';
+import { viewArguments, type ViewStrings } from './view-strings.js';
 
 /**
- * Built-in text every component draws from. Hosts override any entry through `UiProvider`. The
- * entries live in several modules so each stays readable.
+ * Built-in text every component draws from, compiled from a language file for one locale. Text
+ * without arguments is a string; text with arguments is a function of them. The entries live in
+ * several modules so each stays readable.
  */
 export interface UiStrings
   extends
@@ -81,41 +84,61 @@ export interface UiStrings
     TimelineStrings,
     ViewStrings {}
 
-export const defaultStrings: UiStrings = {
-  ...analysisStrings,
-  ...chatStrings,
-  ...chatActionsStrings,
-  ...chatActivityStrings,
-  ...chatAttachmentStrings,
-  ...chatControllerStrings,
-  ...chatListStrings,
-  ...chatMessageStrings,
-  ...chatModelPickerStrings,
-  ...chatQuestionStrings,
-  ...chatSourcesStrings,
-  ...chatToolStrings,
-  ...chatWidgetStrings,
-  ...codeStrings,
-  ...commonStrings,
-  ...composerStrings,
-  ...contentStrings,
-  ...dashboardStrings,
-  ...diagramStrings,
-  ...diffStrings,
-  ...editingStrings,
-  ...fieldStrings,
-  ...historyStrings,
-  ...mediaStrings,
-  ...pickerStrings,
-  ...planningStrings,
-  ...presentationStrings,
-  ...queryStrings,
-  ...redlineStrings,
-  ...relationStrings,
-  ...reviewStrings,
-  ...richTextStrings,
-  ...structureStrings,
-  ...tableStrings,
-  ...timelineStrings,
-  ...viewStrings,
+/**
+ * A language file: every built-in text as an ICU MessageFormat message, keyed like `UiStrings`. Text
+ * without arguments is used as written.
+ */
+export type UiMessages = Record<keyof UiStrings, string>;
+
+type ToMessageValues = (...args: never[]) => MessageValues;
+
+const messageArguments: Readonly<Record<string, ToMessageValues>> = {
+  ...analysisArguments,
+  ...chatArguments,
+  ...chatActionsArguments,
+  ...chatActivityArguments,
+  ...chatAttachmentArguments,
+  ...chatListArguments,
+  ...chatMessageArguments,
+  ...chatModelPickerArguments,
+  ...chatQuestionArguments,
+  ...chatSourcesArguments,
+  ...chatToolArguments,
+  ...chatWidgetArguments,
+  ...codeArguments,
+  ...commonArguments,
+  ...composerArguments,
+  ...contentArguments,
+  ...dashboardArguments,
+  ...diagramArguments,
+  ...diffArguments,
+  ...editingArguments,
+  ...fieldArguments,
+  ...historyArguments,
+  ...mediaArguments,
+  ...pickerArguments,
+  ...planningArguments,
+  ...presentationArguments,
+  ...queryArguments,
+  ...redlineArguments,
+  ...relationArguments,
+  ...reviewArguments,
+  ...richTextArguments,
+  ...structureArguments,
+  ...tableArguments,
+  ...timelineArguments,
+  ...viewArguments,
 };
+
+/** Compiles a language file into the text components draw for `locale`. */
+export function compileStrings(messages: UiMessages, locale: string): UiStrings {
+  const strings: Record<string, unknown> = { ...messages };
+  for (const [key, toValues] of Object.entries(messageArguments)) {
+    const message = messages[key as keyof UiMessages];
+    strings[key] = (...args: never[]) => formatMessage(message, toValues(...args), locale);
+  }
+  return strings as unknown as UiStrings;
+}
+
+/** The built-in English text. */
+export const defaultStrings: UiStrings = compileStrings(en, 'en-US');

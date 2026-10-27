@@ -194,7 +194,7 @@ test.describe('Chat Activity lab', () => {
     );
     await page.clock.runFor(1200);
     await expect(sim(page, 'plan').getByRole('status')).toHaveText(
-      'Find trains to Porto: done. Check the timetable: in progress',
+      'Find trains to Porto: done, Check the timetable: in progress',
     );
     await page.clock.runFor(3200);
     const summary = steps.getByRole('button', { name: 'Ran a search, read a file, used a tool' });

@@ -58,7 +58,7 @@ describe('InlineError', () => {
     expectHooksMatchSpec(container, 'INLINE-ERROR', { slots: ['icon', 'message', 'retry'] });
 
     rerender(
-      <UiProvider strings={{ retry: 'Réessayer' }}>
+      <UiProvider messages={{ retry: 'Réessayer' }}>
         <InlineError onRetry={onRetry}>Indisponible</InlineError>
         <InlineError onRetry={onRetry} retryLabel="Reload versions">
           Unavailable

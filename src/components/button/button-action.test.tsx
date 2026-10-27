@@ -140,7 +140,7 @@ describe('Button', () => {
     expect(screen.getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument();
 
     rerender(
-      <UiProvider strings={{ loading: 'Working' }}>
+      <UiProvider messages={{ loading: 'Working' }}>
         <Button isPending>Export</Button>
       </UiProvider>,
     );

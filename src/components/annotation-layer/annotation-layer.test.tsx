@@ -267,7 +267,7 @@ describe('AnnotationMargin', () => {
 
   it('UIC-ANNOTATION-LAYER-2.1 takes a caller name and refuses to render outside a layer', () => {
     render(
-      <UiProvider strings={{ annotations: 'Notes' }}>
+      <UiProvider messages={{ annotations: 'Notes' }}>
         <Notes />
       </UiProvider>,
     );

@@ -183,7 +183,7 @@ describe('TextDiff', () => {
   it('UIC-TEXT-DIFF-1.6 repeats the fold on the old side and focuses the new side when it opens', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <UiProvider strings={{ textDiffShowLines: (count) => `${count} hidden` }}>
+      <UiProvider messages={{ textDiffShowLines: '{count} hidden' }}>
         <TextDiff oldText={longOld} newText={longNew} layout="split" />
       </UiProvider>,
     );

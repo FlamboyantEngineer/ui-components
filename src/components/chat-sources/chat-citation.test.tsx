@@ -71,7 +71,7 @@ describe('ChatCitation', () => {
 
   it('UIC-CHAT-SOURCES-2.1 names the marker from the provider strings and keeps relative links in the page', () => {
     render(
-      <UiProvider strings={{ chatCitationLabel: (index, title) => `[${index}] ${title}` }}>
+      <UiProvider messages={{ chatCitationLabel: '[{index}] {title}' }}>
         <ChatCitation source={{ ...weather, url: '/weather' }} index={1} />
       </UiProvider>,
     );

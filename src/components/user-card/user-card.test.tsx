@@ -45,7 +45,7 @@ describe('UserCard', () => {
     expect(container.querySelector('b')).toBeNull();
     expect(screen.getByText('<b>Jon</b>')).toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ unnamed: 'Someone' }}>
+      <UiProvider messages={{ unnamed: 'Someone' }}>
         <UserCard name="  " />
       </UiProvider>,
     );

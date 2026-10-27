@@ -103,7 +103,7 @@ describe('Steps', () => {
 
   it('UIC-STEPS-1.5 renders descriptions and optional marks', () => {
     render(
-      <UiProvider strings={{ optional: 'May skip' }}>
+      <UiProvider messages={{ optional: 'May skip' }}>
         <Steps items={items} currentId="upload" />
       </UiProvider>,
     );
@@ -245,7 +245,7 @@ describe('Steps', () => {
 
   it('UIC-STEPS-3.2 reads status words and describes pressable steps', () => {
     render(
-      <UiProvider strings={{ stepStatus: (status) => `[${status}]` }}>
+      <UiProvider messages={{ stepStatus: '[{status}]' }}>
         <Steps
           items={[
             requireDefined(items[0]),

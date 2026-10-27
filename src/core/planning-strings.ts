@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of boards and calendar views. */
 export interface PlanningStrings {
   /** The command that adds a card to a board column. */
@@ -26,23 +27,18 @@ export interface PlanningStrings {
   calendarEvent: (title: string, when: string) => string;
 }
 
-const cardsText = (count: number) => (count === 1 ? '1 card' : `${count} cards`);
+/** Whether a count is over its limit, within it, or has none. */
+function getLimitState(count: number, limit: number | undefined) {
+  if (limit === undefined) return 'none';
+  return count > limit ? 'over' : 'within';
+}
 
-export const planningStrings: PlanningStrings = {
-  addCard: 'Add card',
-  noCards: 'No cards',
-  cardCount: (count, limit) => {
-    if (limit === undefined) return cardsText(count);
-    if (count > limit) return `${cardsText(count)}, over the limit of ${limit}`;
-    return `${cardsText(count)}, limit ${limit}`;
-  },
-  moveColumn: (column) => `Move column ${column}`,
-  month: 'Month',
-  week: 'Week',
-  calendarViews: 'View',
-  previousRange: (unit) => `Previous ${unit}`,
-  nextRange: (unit) => `Next ${unit}`,
-  allDay: 'All day',
-  moreEvents: (count) => `+${count} more`,
-  calendarEvent: (title, when) => `${title}, ${when}`,
+/** The message values each text function reads its arguments as. */
+export const planningArguments: MessageArguments<PlanningStrings> = {
+  cardCount: (count, limit) => ({ count, limit, state: getLimitState(count, limit) }),
+  moveColumn: (column) => ({ column }),
+  previousRange: (unit) => ({ unit }),
+  nextRange: (unit) => ({ unit }),
+  moreEvents: (count) => ({ count }),
+  calendarEvent: (title, when) => ({ title, when }),
 };

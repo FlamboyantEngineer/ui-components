@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of a table's row groups and bulk edit. */
 export interface TableStrings {
   /** A group header's label, from the grouping's name and the group's value (`Colour: Red`). */
@@ -12,10 +13,8 @@ export interface TableStrings {
   apply: string;
 }
 
-export const tableStrings: TableStrings = {
-  groupHeading: (grouping, value) => `${grouping}: ${value}`,
-  editSelected: 'Edit selected',
-  editRows: (count) => (count === 1 ? 'Edit 1 row' : `Edit ${count} rows`),
-  field: 'Field',
-  apply: 'Apply',
+/** The message values each text function reads its arguments as. */
+export const tableArguments: MessageArguments<TableStrings> = {
+  groupHeading: (grouping, value) => ({ grouping, value }),
+  editRows: (count) => ({ count }),
 };

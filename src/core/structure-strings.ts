@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of structure comparisons. */
 export interface StructureStrings {
   /** Default accessible name of a tree comparison. */
@@ -34,22 +35,15 @@ export interface StructureStrings {
   treeMovedHereRow: (label: string) => string;
 }
 
-export const structureStrings: StructureStrings = {
-  treeComparison: 'Comparison',
-  treeChangesOnly: 'Only differences',
-  treePreviousChange: 'Previous difference',
-  treeNextChange: 'Next difference',
-  treeGoToNewPosition: 'Go to new position',
-  treeGoToOldPosition: 'Go to old position',
-  treeNoDifferences: 'No differences',
-  treeAddedCount: (count) => `${count} added`,
-  treeRemovedCount: (count) => `${count} removed`,
-  treeChangedCount: (count) => `${count} changed`,
-  treeMovedCount: (count) => `${count} moved`,
-  treeAddedRow: (label) => `${label}, added`,
-  treeRemovedRow: (label) => `${label}, removed`,
-  treeChangedRow: (label, previous) =>
-    previous === null ? `${label}, changed` : `${label}, changed from ${previous}`,
-  treeMovedAwayRow: (label) => `${label}, moved away`,
-  treeMovedHereRow: (label) => `${label}, moved here`,
+/** The message values each text function reads its arguments as. */
+export const structureArguments: MessageArguments<StructureStrings> = {
+  treeAddedCount: (count) => ({ count }),
+  treeRemovedCount: (count) => ({ count }),
+  treeChangedCount: (count) => ({ count }),
+  treeMovedCount: (count) => ({ count }),
+  treeAddedRow: (label) => ({ label }),
+  treeRemovedRow: (label) => ({ label }),
+  treeChangedRow: (label, previous) => ({ label, previous, hasPrevious: previous !== null }),
+  treeMovedAwayRow: (label) => ({ label }),
+  treeMovedHereRow: (label) => ({ label }),
 };

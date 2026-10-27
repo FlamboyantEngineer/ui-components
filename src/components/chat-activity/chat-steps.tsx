@@ -52,7 +52,10 @@ export function ChatSteps({
   const strings = useUiStrings();
   const label = isRunning
     ? title || strings.chatStepsRunning
-    : strings.chatStepsComplete(actions, toWholeSeconds(durationMs));
+    : strings.chatStepsComplete(
+        actions.map(({ kind, count }) => strings.chatStepsAction(kind, count)),
+        toWholeSeconds(durationMs),
+      );
   const [first] = actions;
   return (
     <ActivityDisclosure

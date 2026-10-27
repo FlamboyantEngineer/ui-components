@@ -1,19 +1,19 @@
 # Provider
 
-`UiProvider` supplies the services components need from their host: glyphs, strings, locale, link rendering and storage, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
+`UiProvider` supplies the services components need from their host: glyphs, text, locale, link rendering and storage, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
 
 ## UIC-PROVIDER-1 - Defaults
 
 ### UIC-PROVIDER-1.1 - Working without a provider
 
-A component rendered with no `UiProvider` above it shall work with the defaults: Heroicons glyphs, English strings, plain anchor links and in-memory storage.
+A component rendered with no `UiProvider` above it shall work with the defaults: Heroicons glyphs, English text, plain anchor links and in-memory storage.
 
 Implementation: `src/core/provider.tsx`, `src/core/glyphs.tsx`, `src/core/strings.ts`, `src/core/storage.ts`
 Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-1.2 - Nested providers
 
-A provider inside another shall merge its glyphs and strings over its parent's and replace the parent's link renderer and storage only when it sets them.
+A provider inside another shall merge its glyphs and messages over its parent's and replace the parent's link renderer and storage only when it sets them.
 
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`
@@ -34,14 +34,49 @@ Verification: `src/core/provider.test.tsx`
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`
 
-## UIC-PROVIDER-3 - Strings
+## UIC-PROVIDER-3 - Text
 
-### UIC-PROVIDER-3.1 - Built-in strings
+### UIC-PROVIDER-3.1 - Language files
 
-Components shall take the text they render themselves (button labels such as Close, live announcements, empty-state text) from the provider's strings, which default to English. `UiProvider`'s `strings` prop replaces entries by key. Counted text is a function of the count.
+Every piece of text a component renders itself (button labels such as Close, live announcements, empty-state text, counted and listed text) shall come from a language file: a flat JSON object of ICU MessageFormat messages, one per text key, that defaults to English. Components read the compiled text through `useUiStrings()`. A message names its values (`{count}`, `{name}`), counts them with `plural`, picks words with `select`, and keeps apostrophes and angle brackets as written. A malformed message throws when it is formatted.
 
-Implementation: `src/core/strings.ts`, `src/core/provider.tsx`
+Implementation: `src/core/message-format.ts`, `src/core/strings.ts`, `src/core/locales/`, `src/core/provider.tsx`
+Verification: `src/core/provider.test.tsx`, `src/core/message-format.test.ts`
+
+### UIC-PROVIDER-3.2 - Replacing text
+
+`UiProvider`'s `messages` prop shall replace messages by key, with any subset of a language file. Keys it leaves out keep the parent's message.
+
+Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`
+
+### UIC-PROVIDER-3.3 - Switching language on the fly
+
+Changing a provider's `messages` or `locale` shall rerender every component below it in the new language without remounting it, so a language menu can switch a running page. The provider compiles messages again only when its messages or locale change.
+
+Implementation: `src/core/provider.tsx`
+Verification: `src/core/provider.test.tsx`, `e2e/languages.spec.ts`
+
+### UIC-PROVIDER-3.4 - Locale rules
+
+Messages shall format with the provider's locale, defaulting to `en-US`: plural categories follow the locale's rules (including languages without plural forms, such as Japanese), `#` and `{n, number}` group digits by locale, and a list value joins with the locale's own words and punctuation (`A, B, and C`, `A, B et C`, `A、B、C`). Line and column numbers and other identifiers pass as text, so they never group.
+
+Implementation: `src/core/message-format.ts`
+Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`, `e2e/languages.spec.ts`
+
+### UIC-PROVIDER-3.5 - Shipped languages
+
+The package shall ship English (`en`), French (`fr`), Spanish (`es`) and Japanese (`ja`) language files from `@flamboyantengineer/ui-components/locales`, and as JSON from `@flamboyantengineer/ui-components/locales/<language>.json` for hosts that load or edit them as data. Every shipped file has every English key, and each message uses only values its English message provides.
+
+Implementation: `src/core/locales/`, `package.json`
+Verification: `src/core/locales/index.test.ts`, `e2e/languages.spec.ts`
+
+### UIC-PROVIDER-3.6 - Host messages
+
+`formatMessage(message, values, locale)` and `useFormatMessage()` shall format a host's own ICU messages with the same rules, the hook with the provider's locale, so a host builds its sentences, counts and lists the way the library does. `toMessageList(items, 'or')` and `toMessageList(items, 'unit')` join a list with "or" or with commas only.
+
+Implementation: `src/core/message-format.ts`, `src/core/provider.tsx`
+Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`
 
 ## UIC-PROVIDER-4 - Locale
 

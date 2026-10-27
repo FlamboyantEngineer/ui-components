@@ -88,7 +88,7 @@ describe('Banner', () => {
     expectHooksMatchSpec(container, 'BANNER', { slots: ['dismiss'] });
 
     rerender(
-      <UiProvider strings={{ dismiss: 'Ignorer' }}>
+      <UiProvider messages={{ dismiss: 'Ignorer' }}>
         <Banner description="Note" onDismiss={onDismiss} />
         <Banner description="Note" onDismiss={onDismiss} dismissLabel="Dismiss template warning" />
       </UiProvider>,

@@ -48,7 +48,7 @@ describe('SaveStatus', () => {
     rerender(<SaveStatus phase="saved" labels={{ error: 'Not saved: the server is busy' }} />);
     expect(label(container)).toHaveTextContent('Saved');
     rerender(
-      <UiProvider strings={{ saveStatus: (phase) => `État : ${phase}` }}>
+      <UiProvider messages={{ saveStatus: 'État : {phase}' }}>
         <SaveStatus phase="saving" />
       </UiProvider>,
     );

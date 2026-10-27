@@ -9,8 +9,12 @@ function output(page: Page, name: string): Locator {
   return page.locator(`[data-lab-output="${name}"]`);
 }
 
-function cellName(rows: number, columns: number): string {
-  return `${rows === 1 ? '1 row' : `${rows} rows`} by ${columns === 1 ? '1 column' : `${columns} columns`}`;
+/** A cell's English name, with its numbers written in the provider locale. */
+function cellName(rows: number, columns: number, locale = 'en-US'): string {
+  const digits = new Intl.NumberFormat(locale);
+  const count = (value: number, unit: string) =>
+    `${digits.format(value)} ${unit}${value === 1 ? '' : 's'}`;
+  return `${count(rows, 'row')} by ${count(columns, 'column')}`;
 }
 
 test.describe('Grid Size Picker lab', () => {
@@ -82,11 +86,15 @@ test.describe('Grid Size Picker lab', () => {
   }) => {
     await lab.open('grid-size-picker');
     const picker = field(page, 'rtl');
-    await picker.getByRole('gridcell', { name: cellName(1, 1) }).focus();
+    await picker.getByRole('gridcell', { name: cellName(1, 1, 'ar-EG') }).focus();
     await page.keyboard.press('ArrowLeft');
-    await expect(picker.getByRole('gridcell', { name: cellName(1, 2) })).toBeFocused();
-    const first = await picker.getByRole('gridcell', { name: cellName(1, 1) }).boundingBox();
-    const second = await picker.getByRole('gridcell', { name: cellName(1, 2) }).boundingBox();
+    await expect(picker.getByRole('gridcell', { name: cellName(1, 2, 'ar-EG') })).toBeFocused();
+    const first = await picker
+      .getByRole('gridcell', { name: cellName(1, 1, 'ar-EG') })
+      .boundingBox();
+    const second = await picker
+      .getByRole('gridcell', { name: cellName(1, 2, 'ar-EG') })
+      .boundingBox();
     expect((second?.x ?? 0) < (first?.x ?? 0)).toBe(true);
   });
 

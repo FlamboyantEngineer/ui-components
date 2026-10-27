@@ -91,7 +91,7 @@ describe('QrCode', () => {
     );
     expect(screen.getByRole('img')).toHaveAccessibleName('Wi-Fi details');
     rerender(
-      <UiProvider strings={{ qrCodeOf: (value) => `Code QR : ${value}` }}>
+      <UiProvider messages={{ qrCodeOf: 'Code QR : {value}' }}>
         <QrCode value="abc" />
       </UiProvider>,
     );

@@ -321,7 +321,7 @@ describe('TruncationTooltip', () => {
     );
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     rerender(
-      <UiProvider strings={{ showLess: 'Moins' }}>
+      <UiProvider messages={{ showLess: 'Moins' }}>
         <TruncationTooltip expandable id="notes" isExpanded>
           Fits
         </TruncationTooltip>

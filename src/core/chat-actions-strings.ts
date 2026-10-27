@@ -1,3 +1,4 @@
+import type { MessageArguments } from './message-format.js';
 /** Strings of a chat message's actions: the action bar, its context menu, feedback and deleting. */
 export interface ChatActionsStrings {
   /** Names a message's action bar and its context menu. */
@@ -21,15 +22,7 @@ export interface ChatActionsStrings {
   deleteMessageDescription: string;
 }
 
-export const chatActionsStrings: ChatActionsStrings = {
-  messageActions: 'Message actions',
-  goodResponse: 'Good response',
-  badResponse: 'Bad response',
-  messageFeedback: 'Feedback',
-  feedbackDetails: (rating) => (rating === 'up' ? 'What went well?' : 'What went wrong?'),
-  feedbackReasons: 'Reasons',
-  feedbackComment: 'Comment (optional)',
-  submitFeedback: 'Submit',
-  deleteMessage: 'Delete message?',
-  deleteMessageDescription: 'The message will be removed from the conversation.',
+/** The message values each text function reads its arguments as. */
+export const chatActionsArguments: MessageArguments<ChatActionsStrings> = {
+  feedbackDetails: (rating) => ({ rating }),
 };

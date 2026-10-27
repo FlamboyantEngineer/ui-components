@@ -570,7 +570,7 @@ describe('Timeline', () => {
 
   it('UIC-TIMELINE-4.2 names predecessors and conflicts through the provider', () => {
     render(
-      <UiProvider locale="en-GB" strings={{ timelineConflict: 'Too early' }}>
+      <UiProvider locale="en-GB" messages={{ timelineConflict: 'Too early' }}>
         <Timeline
           rows={rows}
           items={items}
@@ -583,7 +583,7 @@ describe('Timeline', () => {
       </UiProvider>,
     );
     expect(item('Paint walls')).toHaveAccessibleDescription(
-      '10 Mar 2026 to 20 Mar 2026. Depends on Measure rooms, Get quotes. Too early',
+      '10 Mar 2026 to 20 Mar 2026. Depends on Measure rooms and Get quotes. Too early',
     );
   });
 });
