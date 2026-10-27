@@ -26,7 +26,7 @@ import {
   type ChatParticipantIndex,
 } from './chat-model.js';
 import { ChatQueue } from './chat-queue.js';
-import { submitMessage } from './chat-submit.js';
+import { sendMessageNow, submitMessage } from './chat-submit.js';
 import type { ChatState } from './use-chat-state.js';
 
 /**
@@ -52,7 +52,7 @@ export interface ChatComposerOptions
       | 'commands'
       | 'history'
       | 'onAttach'
-      | 'submitShortcut'
+      | 'shortcuts'
       | 'minRows'
       | 'maxRows'
       | 'getReference'
@@ -65,7 +65,15 @@ export interface ChatComposerOptions
   onSend?:
     | ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>)
     | undefined;
-  /** Called when `onSend`, `onReply` or `onEdit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
+  /**
+   * Sends the reader's message at once while a reply runs (the composer's `sendNow` chord, Ctrl+Enter
+   * by default), for a host that stops the reply and sends the message ahead of its queue. It
+   * settles as `onSend` does. Without it, that chord queues the message.
+   */
+  onSendNow?:
+    | ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>)
+    | undefined;
+  /** Called when `onSend`, `onSendNow`, `onReply` or `onEdit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
   onSendError?: ((error: unknown) => void) | undefined;
   /** Sends a blank message too, as when context the host adds carries the request; a complete attachment allows it as well. */
   allowsEmptySubmit?: boolean | undefined;
@@ -189,7 +197,10 @@ function useMentions({ participants, currentUserId }: ChatComposerProps) {
   );
 }
 
-/** Up in an empty composer edits the reader's last message, between people with `onEdit`. */
+/**
+ * Up in an empty composer edits the newest queued message while there is one, else the reader's
+ * last message, between people with `onEdit`.
+ */
 function toEditLast({
   options,
   state,
@@ -197,6 +208,8 @@ function toEditLast({
   currentUserId,
   isAssistantChat,
 }: ChatComposerProps) {
+  const queued = options.onQueueChange ? options.queue?.at(-1) : undefined;
+  if (queued) return () => state.startEdit({ kind: 'queued', id: queued.id });
   if (isAssistantChat || !options.onEdit) return undefined;
   const last = findLastOwnText(messages, currentUserId);
   return last ? () => state.startEdit({ kind: 'message', id: last.id }) : undefined;
@@ -234,8 +247,9 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
 
 /**
  * The queue of follow-ups, then the rich composer: mentions of the other participants, the host's
- * commands, a per-conversation draft, Up to edit the reader's last message (between people) or to
- * recall earlier prompts (with an assistant), the reply and edit banners, attachments, the host's
+ * commands, a per-conversation draft, Up to edit the newest queued message, the reader's last
+ * message (between people) or to recall earlier prompts (with an assistant), sending now while a
+ * reply runs, the reply and edit banners, attachments, the host's
  * controls below the input, and Stop.
  */
 export function ChatComposer(props: ChatComposerProps) {
@@ -288,13 +302,14 @@ export function ChatComposer(props: ChatComposerProps) {
         onAttach={options.onAttach}
         attachments={renderAttachments(props)}
         allowsEmptySubmit={allowsEmptySubmit(props)}
-        submitShortcut={options.submitShortcut}
+        shortcuts={options.shortcuts}
         minRows={options.minRows}
         maxRows={options.maxRows}
         startControls={renderStartControls(props)}
         endControls={options.composerEndControls}
         onKeyDown={onKeyDown}
         onSubmit={(message) => submitMessage(props, message)}
+        onSubmitNow={options.onSendNow && ((message) => sendMessageNow(props, message))}
         onSubmitError={options.onSendError}
       />
     </>

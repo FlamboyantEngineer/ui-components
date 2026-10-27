@@ -4,7 +4,7 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import { useAutoGrow } from '../../utils/use-auto-grow.js';
 import { useTextCompletions, type TextCompletions } from '../completion-list/completion-list.js';
 import type { ComposerFrameModel } from './composer-frame.js';
-import { resolveSubmitShortcut, runComposerKey, useCoarsePointer } from './composer-keys.js';
+import { runComposerKey, useComposerKeys } from './composer-keys.js';
 import {
   createMessageCodec,
   tokenTriggers,
@@ -78,7 +78,7 @@ function useCaretInsertion(
 
 /**
  * The plain composer: its text, the growing text area, its completions and its keys. The
- * completion list's keys come first, then the send chord, Escape and the recall arrows, then the
+ * completion list's keys come first, then the sending chords, Escape and the recall arrows, then the
  * caller's keys.
  */
 export function useMessageComposer(props: MessageComposerProps): MessageComposerModel {
@@ -87,9 +87,10 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
   const state = useComposerState({
     ...props,
     isBlocked: isDisabled || (isPending && !props.allowsPendingSubmit),
+    onSubmitNow: isPending && !isDisabled ? props.onSubmitNow : undefined,
     format: plainFormat,
   });
-  const shortcut = resolveSubmitShortcut(props.submitShortcut, useCoarsePointer());
+  const keys = useComposerKeys(props.shortcuts, { isPending, isEditing: state.isEditing });
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   useAutoGrow(inputRef, { minRows, maxRows, value: state.value });
@@ -101,7 +102,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
   });
   const model = completions ? completion.model : null;
   const caret = useCaretInsertion(inputRef, state);
-  const keys = { ...state, shortcut, onCancel: props.onCancel };
+  const actions = { ...state, keys, onCancel: props.onCancel };
   const inputProps: MessageComposerModel['inputProps'] = {
     ...(completions ? completion.inputProps : {}),
     ...toComposerLabelling(props, strings.message),
@@ -117,7 +118,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
     },
     onKeyDown: (event) => {
       if (model?.handleKeyDown(event)) return;
-      if (!runComposerKey(event.nativeEvent, keys)) return props.onKeyDown?.(event);
+      if (!runComposerKey(event.nativeEvent, actions)) return props.onKeyDown?.(event);
       event.preventDefault();
     },
     onKeyUp: (event) => {
@@ -131,5 +132,5 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
       props.onBlur?.(event);
     },
   };
-  return { rootRef, inputProps, completion, frame: { ...state, shortcut, ...caret } };
+  return { rootRef, inputProps, completion, frame: { ...state, keys, ...caret } };
 }

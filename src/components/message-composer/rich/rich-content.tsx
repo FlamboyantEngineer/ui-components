@@ -78,7 +78,7 @@ function stop(event: KeyboardEvent): true {
 
 /**
  * The editor's keys, in order: nothing during an input method composition; the completion list's
- * while it is open; Enter alone in a code block adds a line; then the send chord, Escape and the
+ * while it is open; Enter alone in a code block adds a line; then the sending chords, Escape and the
  * recall arrows; then Backspace or Delete next to a pill removes it whole and says so. Each key
  * first reads a selection change the editor has not heard of yet.
  */
@@ -159,7 +159,7 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   useRowLimits(contentRef, props.minRows ?? 1, props.maxRows ?? 8);
   useEditorHandle(editor.handleRef);
-  const actions = { ...state, shortcut: editor.shortcut, onCancel: props.onCancel };
+  const actions = { ...state, keys: editor.keys, onCancel: props.onCancel };
   useRichKeys(completions, actions, (label) => setStatus(strings.removedFromMessage(label)));
   const focus = useFocusRing({ isTextInput: true });
   const hover = useHover({ isDisabled: !isEditable });

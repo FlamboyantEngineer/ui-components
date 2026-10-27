@@ -7,8 +7,11 @@ import { isThenable } from '../../utils/is-thenable.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ComposerFormat } from './use-composer-state.js';
 
+/** Hands a value to the host, which may accept it later through a promise. */
+export type Submitter<T> = (value: T) => void | Promise<unknown>;
+
 interface SubmissionOptions<T> {
-  onSubmit?: ((value: T) => void | Promise<unknown>) | undefined;
+  onSubmit?: Submitter<T> | undefined;
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
   format: ComposerFormat<T>;
@@ -19,12 +22,15 @@ interface SubmissionOptions<T> {
 interface Submission<T> {
   /** A message sent from this draft waits for the host to accept it. */
   isSubmitting: boolean;
-  /** Sends the value; with `clearsDraft`, empties the draft once the host has accepted it. */
-  send: (value: T, clearsDraft: boolean) => void;
+  /**
+   * Sends the value through `submitter` (`onSubmit` by default); with `clearsDraft`, empties the
+   * draft once the host has accepted it.
+   */
+  send: (value: T, clearsDraft: boolean, submitter?: Submitter<T>) => void;
 }
 
 /**
- * Sends through `onSubmit`. A promise it returns holds sending from the same draft until it
+ * Sends through `onSubmit`, or the submitter a send names. A promise it returns holds sending from the same draft until it
  * settles: once it resolves the draft empties, unless the reader has changed it since, and where
  * the draft was another key's (the conversation changed) only that key's stored draft empties. A
  * throw or a rejection keeps the draft and goes to `onSubmitError`, or is rethrown without it.
@@ -60,11 +66,11 @@ export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
     });
   };
 
-  const send = (value: T, clearsDraft: boolean) => {
+  const send = (value: T, clearsDraft: boolean, submitter = options.onSubmit) => {
     if (inFlight.current.has(scope)) return;
     let result: void | Promise<unknown>;
     try {
-      result = options.onSubmit?.(value);
+      result = submitter?.(value);
     } catch (error) {
       fail(error);
       return;

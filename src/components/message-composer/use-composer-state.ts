@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
-import { useSubmission } from './use-submission.js';
+import { useSubmission, type Submitter } from './use-submission.js';
 
 /** How a composer reads its value as text and turns text back into its value. */
 export interface ComposerFormat<T> {
@@ -15,7 +15,9 @@ interface ComposerStateOptions<T> {
   value?: T | undefined;
   defaultValue?: T | undefined;
   onChange?: ((value: T) => void) | undefined;
-  onSubmit?: ((value: T) => void | Promise<unknown>) | undefined;
+  onSubmit?: Submitter<T> | undefined;
+  /** Sends at once while a reply runs; set only while that is allowed. Without it, sending now sends. */
+  onSubmitNow?: Submitter<T> | undefined;
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
   editValue?: T | undefined;
@@ -43,6 +45,8 @@ export interface ComposerState<T> {
   isSubmitting: boolean;
   /** Sends the value when it can be sent, then empties the draft (an edit stays for the host). */
   submit: () => void;
+  /** Sends the draft through `onSubmitNow` when it can be sent, then empties it; else submits. */
+  submitNow: () => void;
   /** Steps through the history, or asks to edit the last message; whether the key was used. */
   recall: (direction: RecallDirection) => boolean;
 }
@@ -118,10 +122,9 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   const isEditing = editValue !== undefined;
   const value = isEditing ? edit : draft;
   const text = format.toText(value);
-  const canSubmit =
-    !options.isBlocked &&
-    !submission.isSubmitting &&
-    (Boolean(options.allowsEmptySubmit) || text.trim() !== '');
+  const hasContent = Boolean(options.allowsEmptySubmit) || text.trim() !== '';
+  const canSubmit = !options.isBlocked && !submission.isSubmitting && hasContent;
+  const canSubmitNow = !isEditing && !submission.isSubmitting && hasContent;
   const recall = (direction: RecallDirection): boolean => {
     const current = recalled && text === recalled.text ? recalled : null;
     if (isEditing || (!current && text !== '')) return false;
@@ -135,6 +138,11 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
     setDraft(next ? format.fromText(next.text) : format.empty);
     return true;
   };
+  const submit = () => {
+    if (!canSubmit) return;
+    setRecalled(null);
+    submission.send(value, !isEditing);
+  };
   return {
     value,
     draft,
@@ -142,10 +150,12 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
     isEditing,
     canSubmit,
     isSubmitting: submission.isSubmitting,
-    submit: () => {
-      if (!canSubmit) return;
+    submit,
+    submitNow: () => {
+      if (!options.onSubmitNow) return submit();
+      if (!canSubmitNow) return;
       setRecalled(null);
-      submission.send(value, !isEditing);
+      submission.send(value, true, options.onSubmitNow);
     },
     recall,
   };

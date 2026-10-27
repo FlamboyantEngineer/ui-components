@@ -117,7 +117,7 @@ export function ComposerSendControl({
         icon={mode}
         label={strings[mode]}
         variant={isStop ? 'secondary' : 'primary'}
-        shortcut={isStop ? undefined : model.shortcut}
+        shortcut={isStop ? undefined : model.keys.submit[0]}
         // A tooltip in both states keeps one button, so keyboard focus on it survives the switch.
         tooltip={isStop ? strings.stop : undefined}
         isPending={!isStop && isPending}

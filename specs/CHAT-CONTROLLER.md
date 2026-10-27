@@ -1,6 +1,6 @@
 # Chat Controller
 
-`useChatController(options)` turns a host's `send` function, which streams an assistant's reply as library events, into the state and callbacks of a chat: the messages with their streaming reply, stop, retry, errors, a queue of follow-ups, approvals, questions, the reader's prompt history and uploads. It has no backend of its own: `send` talks to whatever service the host uses, and an adapter of a few lines maps that service's stream onto the events below. The hook returns the state, imperative `send`, `stop`, `retry` and `setMessages`, and `props`, everything a chat needs to spread into it. `reduceChatStream`, the pure reducer the hook folds events with, is exported for hosts that keep the conversation themselves.
+`useChatController(options)` turns a host's `send` function, which streams an assistant's reply as library events, into the state and callbacks of a chat: the messages with their streaming reply, stop, retry, errors, a queue of follow-ups, approvals, questions, the reader's prompt history and uploads. It has no backend of its own: `send` talks to whatever service the host uses, and an adapter of a few lines maps that service's stream onto the events below. The hook returns the state, imperative `send`, `sendNow`, `stop`, `retry` and `setMessages`, and `props`, everything a chat needs to spread into it. `reduceChatStream`, the pure reducer the hook folds events with, is exported for hosts that keep the conversation themselves.
 
 Messages are [`ChatMessageData`](CHAT-PARTS.md) values whose content is an ordered list of typed parts ([Chat Parts](CHAT-PARTS.md)). The reader's messages carry `authorId: currentUserId`, the replies `authorId: assistantId`.
 
@@ -118,7 +118,7 @@ Verification: `src/components/chat-controller/chat-controller.test.tsx`, `src/co
 
 ### UIC-CHAT-CONTROLLER-2.5 - Queue
 
-A message sent while a reply runs shall wait in `queue` (`{ id, text, tokens?, attachments? }`), which `props.onQueueChange` replaces so the reader can edit, reorder or remove queued messages. When a reply finishes, the first queued message goes out as the next turn, and so on in order. A stopped or failed reply holds the queue: the reader's next message joins its end and the first queued message goes out, and a retried reply that finishes resumes it.
+A message sent while a reply runs shall wait in `queue` (`{ id, text, tokens?, attachments? }`), which `props.onQueueChange` replaces so the reader can edit, reorder or remove queued messages. When a reply finishes, the first queued message goes out as the next turn, and so on in order. A stopped or failed reply holds the queue: the reader's next message joins its end and the first queued message goes out, and a retried reply that finishes resumes it. `sendNow(text, tokens?)` (and `props.onSendNow`) stops the running reply, keeping what it streamed, and sends the message at once as the next turn, ahead of the queue, with the complete attachments as `send` takes them; the queue goes on once that reply finishes. Without a running reply it sends the message as the next turn too, and it sends nothing blank.
 
 Implementation: `src/components/chat-controller/chat-engine.ts`
 Verification: `src/components/chat-controller/chat-controller.test.tsx`, `e2e/chat-controller.spec.ts`
@@ -194,7 +194,7 @@ Verification: `src/components/chat-controller/chat-uploads.test.ts`
 
 ### UIC-CHAT-CONTROLLER-5.1 - Chat props
 
-`props` shall hold everything a chat needs, with these signatures: `messages`, `isPending`, `onSend(text, tokens?)`, `onStop()`, `onRetry(messageId)`, `onApprove(callId)`, `onDeny(callId, reason?)`, `onAlwaysAllow(callId)`, `onAnswerQuestion(questionId, answers)`, `onDismissQuestion(questionId)`, `queue`, `onQueueChange(queue)`, `history`, `attachments`, `onAttach(files)`, `onRemoveAttachment(id)` and `onRetryAttachment(id)`. The callbacks keep their identity across renders, and `props` keeps its identity while the state does not change.
+`props` shall hold everything a chat needs, with these signatures: `messages`, `isPending`, `onSend(text, tokens?)`, `onSendNow(text, tokens?)`, `onStop()`, `onRetry(messageId)`, `onApprove(callId)`, `onDeny(callId, reason?)`, `onAlwaysAllow(callId)`, `onAnswerQuestion(questionId, answers)`, `onDismissQuestion(questionId)`, `queue`, `onQueueChange(queue)`, `history`, `attachments`, `onAttach(files)`, `onRemoveAttachment(id)` and `onRetryAttachment(id)`. The callbacks keep their identity across renders, and `props` keeps its identity while the state does not change.
 
 Implementation: `src/components/chat-controller/chat-controller.ts`
 Verification: `src/components/chat-controller/chat-controller.test.tsx`, `e2e/chat-controller.spec.ts`

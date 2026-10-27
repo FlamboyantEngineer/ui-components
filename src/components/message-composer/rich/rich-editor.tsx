@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState, type RefObject } from 'react';
 import { useLatest } from '../../../utils/use-latest.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
 import { isSameMessage, type MessageComposerMessage } from '../composer-message.js';
-import type { MessageComposerSubmitShortcut } from '../message-composer.js';
+import type { ComposerKeys } from '../composer-keys.js';
 import type { ComposerState } from '../use-composer-state.js';
 import { attachPastedFiles } from '../use-file-drop.js';
 import { createComposerPlugins, createComposerState, pastePlainText } from './composer-commands.js';
@@ -27,7 +27,7 @@ export interface RichEditorHandle {
 export interface RichComposerEditorProps {
   props: RichMessageComposerProps;
   state: ComposerState<MessageComposerMessage>;
-  shortcut: MessageComposerSubmitShortcut;
+  keys: ComposerKeys;
   rootRef: RefObject<HTMLDivElement | null>;
   handleRef: RefObject<RichEditorHandle | null>;
 }

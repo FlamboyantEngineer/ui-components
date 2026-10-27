@@ -137,7 +137,7 @@ function HostDemo() {
             conversationId="lab-host"
             title="Trip planner"
             placeholder="Ask about the trains… (Ctrl+Enter sends)"
-            submitShortcut="Ctrl+Enter"
+            shortcuts={{ send: 'Ctrl+Enter' }}
             minRows={2}
             maxRows={6}
             allowsEmptySubmit={useSelection}

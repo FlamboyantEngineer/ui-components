@@ -83,6 +83,26 @@
   white-space: nowrap;
 }
 
+/* A queued message's files sit small beside its text, without their download buttons. */
+.ui-chat__queue-item .ui-chat__queue-attachments {
+  flex: none;
+  gap: 4px;
+  margin-inline-end: auto;
+  padding-block: 2px;
+}
+
+.ui-chat__queue-attachments .ui-chat-attachment[data-display='thumbnail'] {
+  width: 56px;
+}
+
+.ui-chat__queue-attachments .ui-chat-attachment__thumbnail {
+  height: 40px;
+}
+
+.ui-chat__queue-attachments .ui-chat-attachment__download {
+  display: none;
+}
+
 .ui-chat__queue-edit,
 .ui-chat__queue-remove,
 .ui-chat__search-toggle {

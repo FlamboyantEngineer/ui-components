@@ -383,6 +383,24 @@ describe('RichMessageComposer', () => {
     expect(onStop).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.10 sends now on Ctrl+Enter while pending, with its pills', async () => {
+    const onSubmitNow = vi.fn();
+    const { user, onSubmit } = renderComposer({
+      defaultValue: { text: 'Ask @Maria Santos', tokens: [{ ...maria, start: 4, end: 17 }] },
+      isPending: true,
+      allowsPendingSubmit: true,
+      onSubmitNow,
+    });
+    await user.click(box());
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSubmitNow).toHaveBeenCalledWith({
+      text: 'Ask @Maria Santos',
+      tokens: [{ ...maria, start: 4, end: 17 }],
+    });
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(box()).toHaveTextContent('');
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.5 recalls earlier prompts as text until the reader edits one', async () => {
     const onChange = vi.fn();
     const { user } = renderComposer({ history: ['Plan a trip', '```\nls\n```'], onChange });

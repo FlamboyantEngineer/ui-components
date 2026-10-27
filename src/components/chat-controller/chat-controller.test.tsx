@@ -182,6 +182,27 @@ describe('useChatController runs', () => {
     expect(result.current.queue.map((entry) => entry.text)).toEqual(['Second', 'Fourth']);
   });
 
+  it('UIC-CHAT-CONTROLLER-2.5 sends a message now, stopping the reply, ahead of the queue', async () => {
+    const { result, at, send } = renderController();
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Second'));
+    act(() => result.current.sendNow('Now'));
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Now' }]);
+    expect(result.current.messages.map((message) => message.status)).toEqual([
+      undefined,
+      'cancelled',
+      undefined,
+      'streaming',
+    ]);
+    expect(result.current.queue.map((entry) => entry.text)).toEqual(['Second']);
+    await push(at(), { type: 'finish' });
+    expect(send).toHaveBeenCalledTimes(3);
+    expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Second' }]);
+    act(() => result.current.sendNow('   '));
+    expect(send).toHaveBeenCalledTimes(3);
+  });
+
   it('UIC-CHAT-CONTROLLER-2.6 lists the reader prompts for recall', async () => {
     const { result, at } = renderController({
       initialMessages: [
@@ -241,6 +262,7 @@ describe('useChatController props', () => {
         'onRetry',
         'onRetryAttachment',
         'onSend',
+        'onSendNow',
         'onStop',
         'queue',
       ].sort(),
@@ -248,6 +270,7 @@ describe('useChatController props', () => {
     rerender({ upload: vi.fn() });
     expect(result.current.props).toBe(first);
     expect(result.current.props.onSend).toBe(result.current.send);
+    expect(result.current.props.onSendNow).toBe(result.current.sendNow);
     expect(result.current.props.onStop).toBe(result.current.stop);
   });
 

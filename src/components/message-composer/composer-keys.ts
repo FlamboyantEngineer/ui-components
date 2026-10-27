@@ -1,23 +1,49 @@
-// The composer's own keys: the send chord, Escape in edit mode and the arrows that recall.
+// The composer's own keys: the send, queue and send-now chords, Escape in edit mode and the arrows
+// that recall.
 
 import { useSyncExternalStore } from 'react';
-import type { MessageComposerSubmitShortcut } from './message-composer.js';
+import { formatAriaKeyShortcuts, matchesChord, type ShortcutChord } from '../shortcut/shortcut.js';
+import type { MessageComposerChords, MessageComposerShortcuts } from './message-composer.js';
 import type { RecallDirection } from './use-composer-state.js';
 
 /** What the composer reads from a native key event. */
 type ComposerKey = Pick<
   KeyboardEvent,
-  'key' | 'keyCode' | 'altKey' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'isComposing'
+  'key' | 'code' | 'keyCode' | 'altKey' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'isComposing'
 >;
+
+/** The chords the composer answers to in its current state. */
+export interface ComposerKeys {
+  /** Sends: `send`'s chords while idle or editing, `queue`'s while a reply runs. The first shows on the button. */
+  submit: readonly ShortcutChord[];
+  /** Sends at once while a reply runs: `sendNow`'s chords. */
+  submitNow: readonly ShortcutChord[];
+}
 
 /** What the composer does with its keys. */
 export interface ComposerKeyActions {
-  shortcut: MessageComposerSubmitShortcut;
+  keys: ComposerKeys;
   submit: () => void;
+  submitNow: () => void;
   isEditing: boolean;
   onCancel: (() => void) | undefined;
   recall: (direction: RecallDirection) => boolean;
 }
+
+interface ComposerKeyState {
+  /** A reply is running. */
+  isPending: boolean;
+  isEditing: boolean;
+}
+
+const defaultShortcuts = {
+  send: ['Enter', 'Ctrl+Enter'],
+  queue: ['Enter'],
+  sendNow: ['Ctrl+Enter'],
+} as const satisfies Required<MessageComposerShortcuts>;
+
+/** What sends on a touch screen once the bare Enter is a line break and nothing else sends. */
+const touchSend: readonly ShortcutChord[] = ['Ctrl+Enter'];
 
 const coarsePointer = '(pointer: coarse)';
 
@@ -32,12 +58,20 @@ function subscribeToPointer(onChange: () => void): () => void {
   return () => query.removeEventListener('change', onChange);
 }
 
-/** Whether a key sends: Ctrl+Enter or Cmd+Enter always, Enter alone with the Enter chord. */
-function isSubmitKey(event: ComposerKey, shortcut: MessageComposerSubmitShortcut): boolean {
-  if (event.key !== 'Enter' || event.altKey || event.shiftKey || isComposingKey(event)) {
-    return false;
-  }
-  return event.ctrlKey || event.metaKey || shortcut === 'Enter';
+function isChordList(chords: MessageComposerChords): chords is readonly ShortcutChord[] {
+  return Array.isArray(chords);
+}
+
+function toChordList(chords: MessageComposerChords): readonly ShortcutChord[] {
+  return isChordList(chords) ? chords : [chords];
+}
+
+function isBareEnter(chord: ShortcutChord): boolean {
+  return formatAriaKeyShortcuts(chord) === 'Enter';
+}
+
+function matchesAny(event: ComposerKey, chords: readonly ShortcutChord[]): boolean {
+  return chords.some((chord) => matchesChord(event, chord));
 }
 
 function toRecallDirection(event: ComposerKey): RecallDirection | null {
@@ -61,22 +95,53 @@ export function useCoarsePointer(): boolean {
   return useSyncExternalStore(subscribeToPointer, readCoarsePointer, () => false);
 }
 
-/** The chord that sends: on a touch screen Enter breaks the line, so Ctrl+Enter sends. */
-export function resolveSubmitShortcut(
-  shortcut: MessageComposerSubmitShortcut | undefined,
+/**
+ * The chords for the composer's state: `send`'s while idle or editing, `queue`'s and `sendNow`'s
+ * while a reply runs, each defaulting on its own. On a touch screen a bare Enter breaks the line,
+ * and Ctrl+Enter sends when that leaves nothing to send with.
+ */
+export function resolveComposerKeys(
+  shortcuts: MessageComposerShortcuts | undefined,
+  { isPending, isEditing }: ComposerKeyState,
   isCoarsePointer: boolean,
-): MessageComposerSubmitShortcut {
-  return isCoarsePointer ? 'Ctrl+Enter' : (shortcut ?? 'Enter');
+): ComposerKeys {
+  const pick = (chords: MessageComposerChords) => {
+    const list = toChordList(chords);
+    return isCoarsePointer ? list.filter((chord) => !isBareEnter(chord)) : list;
+  };
+  if (!isPending || isEditing) {
+    const submit = pick(shortcuts?.send ?? defaultShortcuts.send);
+    return { submit: submit.length === 0 && isCoarsePointer ? touchSend : submit, submitNow: [] };
+  }
+  return {
+    submit: pick(shortcuts?.queue ?? defaultShortcuts.queue),
+    submitNow: pick(shortcuts?.sendNow ?? defaultShortcuts.sendNow),
+  };
+}
+
+/** The chords for the composer's state, on this device. */
+export function useComposerKeys(
+  shortcuts: MessageComposerShortcuts | undefined,
+  state: ComposerKeyState,
+): ComposerKeys {
+  return resolveComposerKeys(shortcuts, state, useCoarsePointer());
 }
 
 /**
- * Runs the composer's own key: the send chord, Escape to cancel an edit, and the arrows that
- * recall earlier messages; returns whether it used the key.
+ * Runs the composer's own key: a chord that sends or sends now (the sending chords come first),
+ * Escape to cancel an edit, and the arrows that recall earlier messages; returns whether it used
+ * the key. A key that belongs to an input method composition never sends.
  */
 export function runComposerKey(event: ComposerKey, actions: ComposerKeyActions): boolean {
-  if (isSubmitKey(event, actions.shortcut)) {
-    actions.submit();
-    return true;
+  if (!isComposingKey(event)) {
+    if (matchesAny(event, actions.keys.submit)) {
+      actions.submit();
+      return true;
+    }
+    if (matchesAny(event, actions.keys.submitNow)) {
+      actions.submitNow();
+      return true;
+    }
   }
   if (event.key === 'Escape' && actions.isEditing && !event.isComposing) {
     actions.onCancel?.();

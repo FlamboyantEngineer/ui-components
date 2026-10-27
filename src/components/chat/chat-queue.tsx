@@ -3,6 +3,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { Button } from '../button/button.js';
+import { ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 
 interface ChatQueueProps {
@@ -18,8 +19,8 @@ interface ChatQueueProps {
 }
 
 /**
- * The messages waiting for the running reply to end, in the order they will go out, each with Edit
- * (in the composer) and Remove. Focus stays in the list as messages are removed.
+ * The messages waiting for the running reply to end, in the order they will go out, each with its
+ * text and files, Edit (in the composer) and Remove. Focus stays in the list as messages are removed.
  */
 export function ChatQueue({
   queue,
@@ -40,7 +41,13 @@ export function ChatQueue({
       <ol {...hooks.slot('queue-list')} aria-labelledby={labelId}>
         {queue.map((entry, index) => (
           <li key={entry.id} {...hooks.slot('queue-item', { editing: entry.id === editingId })}>
-            <span {...hooks.slot('queue-text')}>{entry.text}</span>
+            {entry.text ? <span {...hooks.slot('queue-text')}>{entry.text}</span> : null}
+            {entry.attachments?.length ? (
+              <ChatAttachmentList
+                attachments={entry.attachments}
+                className={hooks.slotClass('queue-attachments')}
+              />
+            ) : null}
             {onQueueChange ? (
               <>
                 <Button

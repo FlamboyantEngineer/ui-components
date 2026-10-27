@@ -100,15 +100,25 @@ function settle(engine: ChatEngineContext, settled: ChatSettled) {
   }
 }
 
-function send(engine: ChatEngineContext, text: string, tokens?: readonly ChatTextToken[]) {
-  if (!text.trim() && !hasUploadedFiles(engine)) return;
+/** The reader's message with the uploaded files, which leave the composer; nothing when it is blank. */
+function takeOutgoing(
+  engine: ChatEngineContext,
+  text: string,
+  tokens: readonly ChatTextToken[] | undefined,
+): ChatQueuedMessage | undefined {
+  if (!text.trim() && !hasUploadedFiles(engine)) return undefined;
   const attachments = takeUploadedFiles(engine);
-  const outgoing: ChatQueuedMessage = {
+  return {
     id: engine.createId(),
     text,
     ...(tokens?.length ? { tokens } : {}),
     ...(attachments.length ? { attachments } : {}),
   };
+}
+
+function send(engine: ChatEngineContext, text: string, tokens?: readonly ChatTextToken[]) {
+  const outgoing = takeOutgoing(engine, text, tokens);
+  if (!outgoing) return;
   dismissWaiting(engine);
   const { queue } = engine.store.get();
   if (!engine.run && queue.length === 0) {
@@ -117,6 +127,17 @@ function send(engine: ChatEngineContext, text: string, tokens?: readonly ChatTex
   }
   patchState(engine, { queue: [...queue, outgoing] });
   if (!engine.run) sendNextQueued(engine);
+}
+
+/**
+ * Stops the running reply, keeping what it streamed, and sends the reader's message at once, ahead
+ * of the queue, which goes on once the new reply finishes.
+ */
+function sendNow(engine: ChatEngineContext, text: string, tokens?: readonly ChatTextToken[]) {
+  const outgoing = takeOutgoing(engine, text, tokens);
+  if (!outgoing) return;
+  if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
+  startTurn(engine, outgoing);
 }
 
 /** Runs the last turn again after its reply failed: as it stood before, or from scratch. */
@@ -178,6 +199,7 @@ export function createChatEngine(
   return {
     store: engine.store,
     send: (text: string, tokens?: readonly ChatTextToken[]) => send(engine, text, tokens),
+    sendNow: (text: string, tokens?: readonly ChatTextToken[]) => sendNow(engine, text, tokens),
     stop: () => {
       if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
     },

@@ -16,8 +16,8 @@ import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { useLayerZIndex } from '../portal/portal.js';
-import type { ShortcutChord } from '../shortcut/shortcut.js';
-import { isChordPress, useDocumentShortcut } from './command-palette-shortcut.js';
+import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
+import { useDocumentShortcut } from './command-palette-shortcut.js';
 
 /** Whether a command whose text is `textValue` matches the typed `inputValue`. */
 export type CommandPaletteFilter = (textValue: string, inputValue: string) => boolean;

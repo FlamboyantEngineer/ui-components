@@ -2,7 +2,7 @@ import { useCallback, useRef, type FocusEvent, type Ref } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
 import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { ComposerFrame } from '../composer-frame.js';
-import { resolveSubmitShortcut, useCoarsePointer } from '../composer-keys.js';
+import { useComposerKeys } from '../composer-keys.js';
 import {
   createMessageCodec,
   emptyMessage,
@@ -49,6 +49,12 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
    * promise holds sending until it settles, and the composer empties once it resolves.
    */
   onSubmit?: ((value: MessageComposerMessage) => void | Promise<unknown>) | undefined;
+  /**
+   * Called with the message when the reader sends it at once while a reply runs (the `sendNow`
+   * chord), for a host that stops the reply and sends it ahead of its queue; it settles as
+   * `onSubmit` does. Without it, that chord sends through `onSubmit`.
+   */
+  onSubmitNow?: ((value: MessageComposerMessage) => void | Promise<unknown>) | undefined;
   /** The message being edited: while set, the composer shows it in place of the draft, with Save and Cancel. */
   editValue?: MessageComposerMessage | undefined;
   /** The people `@` mentions. */
@@ -87,9 +93,10 @@ export function RichMessageComposer(props: RichMessageComposerProps) {
   const state = useComposerState({
     ...props,
     isBlocked: isDisabled || (isPending && !props.allowsPendingSubmit),
+    onSubmitNow: isPending && !isDisabled ? props.onSubmitNow : undefined,
     format: richFormat,
   });
-  const shortcut = resolveSubmitShortcut(props.submitShortcut, useCoarsePointer());
+  const keys = useComposerKeys(props.shortcuts, { isPending, isEditing: state.isEditing });
   const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<RichEditorHandle | null>(null);
   const insertText = useCallback((text: string) => handleRef.current?.insertText(text), []);
@@ -100,12 +107,12 @@ export function RichMessageComposer(props: RichMessageComposerProps) {
     <ComposerFrame
       props={props}
       rootRef={rootRef}
-      model={{ ...state, shortcut, insertText, insertPill, focusInput }}
+      model={{ ...state, keys, insertText, insertPill, focusInput }}
     >
       <RichComposerEditor
         props={props}
         state={state}
-        shortcut={shortcut}
+        keys={keys}
         rootRef={rootRef}
         handleRef={handleRef}
       />

@@ -32,6 +32,42 @@ function fileTransfer(page: Page, name: string) {
 }
 
 test.describe('Message Composer lab', () => {
+  test('UIC-MESSAGE-COMPOSER-1.2 UIC-MESSAGE-COMPOSER-3.10 sends, queues and sends now on the chords typed in', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const demo = page.locator('[data-lab-demo="shortcuts"]');
+    const box = composer(page, 'shortcuts').getByRole('textbox');
+    const log = demo.locator('[data-lab-output="shortcut-log"]');
+    await box.click();
+    await page.keyboard.type('Later');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('Right away');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(log).toHaveText('Queued: Later · Sent now: Right away');
+    await demo.getByRole('textbox', { name: 'Send while idle' }).fill('Alt+S');
+    await demo.getByText('A reply is running').click();
+    await expect(composer(page, 'shortcuts').getByRole('button', { name: 'Send' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Alt+S',
+    );
+    await box.click();
+    await page.keyboard.type('Idle');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('note');
+    await page.keyboard.press('Alt+s');
+    await expect(log).toHaveText(/Sent: Idle\nnote$/);
+    const queue = composer(page, 'queue').getByRole('textbox');
+    await composer(page, 'queue').getByRole('textbox').click();
+    await page.keyboard.type('First');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('Now');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(page.locator('[data-lab-output="sent-now"]')).toHaveText('Now');
+    await expect(queue).toHaveValue('');
+  });
+
   test('UIC-MESSAGE-COMPOSER-1.1 UIC-MESSAGE-COMPOSER-1.3 UIC-MESSAGE-COMPOSER-1.5 UIC-MESSAGE-COMPOSER-2.2 UIC-MESSAGE-COMPOSER-3.1 UIC-MESSAGE-COMPOSER-4.2 draws each state', async ({
     page,
     lab,
