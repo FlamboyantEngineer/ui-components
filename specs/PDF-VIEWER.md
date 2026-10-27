@@ -1,6 +1,6 @@
 # PDF Viewer
 
-`PdfViewer` reads a PDF: it draws each page on a canvas with the page's text laid over it as a transparent, selectable text layer and its links over that, and offers zoom with fit modes, page navigation, find with its options, a sidebar of page thumbnails and outline, and commands to rotate, print and save the document in one toolbar above the pages, with a context menu that copies selected text. It asks for the password of a protected document, and answers the keyboard and touch gestures of a document reader. A caller can draw its own content over the pages, add entries to the context menu, send the reader to a page, a named destination or a rectangle, own the find, and place controls at either end of the toolbar or render the toolbar elsewhere. The PDF engine (pdf.js, the `pdfjs-dist` package, an optional peer dependency) is injected by the host through `loadEngine`, so the library never imports it and a host that shows no PDF never loads it. The viewer is data-driven: it takes a source and callbacks and calls no host service.
+`PdfViewer` reads a PDF: it draws each page on a canvas with the page's text laid over it as a transparent, selectable text layer and its links over that, and offers zoom with fit modes, page navigation, find with its options, a sidebar of page thumbnails and outline, and commands to rotate, print and save the document in one toolbar above the pages, with a context menu that copies selected text. It asks for the password of a protected document, and answers the keyboard and touch gestures of a document reader. A caller can draw its own content over the pages, add entries to the context menu, send the reader to a page, a named destination or a rectangle, own the find, read the text of any page, follow the reader's clicks, selections and position in the document, and place controls at either end of the toolbar or render the toolbar elsewhere. The PDF engine (pdf.js, the `pdfjs-dist` package, an optional peer dependency) is injected by the host through `loadEngine`, so the library never imports it and a host that shows no PDF never loads it. The viewer is data-driven: it takes a source and callbacks and calls no host service.
 
 ## UIC-PDF-VIEWER-1 - Document
 
@@ -366,6 +366,36 @@ The outline shall be a [Tree](TREE.md) (`ui-pdf-viewer__outline`) named with the
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/use-pdf-document.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
+## UIC-PDF-VIEWER-11 - Document access and reading gestures
+
+### UIC-PDF-VIEWER-11.1 - Document access
+
+With `onDocumentChange`, the viewer shall hand the caller a handle on each document once it opens, and `null` once it closes: on a new source, on a failure and on unmount. The handle's `pageCount` is the document's, and `getPageText(pageIndex)` shall resolve with a page's `text` (its runs joined, a line break after each run that ends a line), the engine's own text `content`, whose runs carry their geometry in PDF user space, and the engine's `viewport` of the page at 100% zoom and the reader's rotation at the time of the read, which maps that geometry to page coordinates (UIC-PDF-VIEWER-7.4). Reading a page shall neither draw it nor scroll to it. `getPageText` shall reject with a `RangeError` for a page the document does not have, with the engine's error when the engine cannot read the page, and with an error once its document has closed, including a read in flight when it closes. The handle lasts through zoom and rotation.
+
+Implementation: `src/components/pdf-viewer/use-pdf-access.ts`
+Verification: `src/components/pdf-viewer/use-pdf-access.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
+### UIC-PDF-VIEWER-11.2 - Page clicks
+
+With `onPageClick`, a primary-button click on a page shall report its page index, the clicked spot in page coordinates and the page's viewport at the applied zoom. A click inside a link, a control or any other interactive or focusable element on the page, a click whose default the caller's own handler prevented, and the click that ends a text selection shall not be reported. The viewer never prevents the click itself, so text selection, links, annotations and the caller's overlay controls keep their own behaviour.
+
+Implementation: `src/components/pdf-viewer/use-pdf-gestures.ts`
+Verification: `src/components/pdf-viewer/use-pdf-gestures.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
+### UIC-PDF-VIEWER-11.3 - Selection changes
+
+With `onSelectionChange`, when the reader releases the pointer or a key with text selected inside the viewer, the viewer shall report that selection located as the selection context menu locates it (UIC-PDF-VIEWER-8.3): its text, the page where it starts, its first line in page coordinates and the page's viewport at the applied zoom. It shall report `null` once the selection is gone or leaves the viewer, and when the document closes. A selection is reported once, however many releases repeat it. Reporting it opens no menu and changes no selection.
+
+Implementation: `src/components/pdf-viewer/use-pdf-gestures.ts`
+Verification: `src/components/pdf-viewer/use-pdf-gestures.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
+### UIC-PDF-VIEWER-11.4 - Visible position
+
+With `onVisiblePositionChange`, the viewer shall report where the top edge of the view falls: the page there (the next page when the edge falls between two pages) and how far down it the edge falls, in points from the page's top as displayed, 0 above its first line of pixels. It shall measure at most once a frame, after a scroll, a zoom, a turn of the pages, a resize of the scroller and a new document, and report only a position that differs from the last one by at least a hundredth of a point; a new document reports its position even where the last one stood.
+
+Implementation: `src/components/pdf-viewer/use-pdf-visible-position.ts`
+Verification: `src/components/pdf-viewer/use-pdf-visible-position.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ## Hooks
 

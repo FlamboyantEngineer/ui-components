@@ -16,7 +16,9 @@ import type { PdfSearchOptions } from './pdf-search.js';
 import { PdfViewerStage } from './pdf-viewer-stage.js';
 import { PdfViewerToolbar } from './pdf-viewer-toolbar.js';
 import type { PdfZoom } from './pdf-zoom.js';
+import type { PdfDocumentAccess } from './use-pdf-access.js';
 import type { PdfSearchControls } from './use-pdf-search.js';
+import type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 import { usePdfViewer } from './use-pdf-viewer.js';
 
 export { findBoxAtPoint } from './page-geometry.js';
@@ -29,6 +31,8 @@ export type {
   PdfSelection,
 } from './page-geometry.js';
 export type { PdfSearchOptions } from './pdf-search.js';
+export type { PdfDocumentAccess, PdfPageContent } from './use-pdf-access.js';
+export type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 export type { PdfSearchControls } from './use-pdf-search.js';
 
 export interface PdfViewerProps<
@@ -96,6 +100,25 @@ export interface PdfViewerProps<
   getSelectionMenuItems?: ((selection: PdfSelection<V>) => readonly MenuEntry[]) | undefined;
   /** Context menu entries for a secondary click on a page without a selection. */
   getPageMenuItems?: ((target: PdfPagePoint<V>) => readonly MenuEntry[]) | undefined;
+  /**
+   * Called with a handle on each document that opens, for reading the text of any page without
+   * drawing or scrolling to it, and with `null` when the document closes: on a new source, a
+   * failure or unmount, after which the old handle refuses reads.
+   */
+  onDocumentChange?: ((document: PdfDocumentAccess<V, C> | null) => void) | undefined;
+  /**
+   * Called with the spot of a primary click on a page, in points from its top-left as displayed.
+   * Clicks on links, controls and other interactive content, clicks the caller's own handlers
+   * prevented, and the click that ends a text selection are not reported.
+   */
+  onPageClick?: ((target: PdfPagePoint<V>) => void) | undefined;
+  /**
+   * Called with the text the reader finishes selecting on the pages, on releasing the pointer or a
+   * key, located as the selection context menu locates it, and with `null` once it is gone.
+   */
+  onSelectionChange?: ((selection: PdfSelection<V> | null) => void) | undefined;
+  /** Called with where the top edge of the view falls whenever it moves, at most once a frame. */
+  onVisiblePositionChange?: ((position: PdfVisiblePosition) => void) | undefined;
 }
 
 /**
@@ -154,6 +177,7 @@ export function PdfViewer<
         scrollerRef={refs.scrollerRef}
         pagesRef={refs.pagesRef}
         menu={viewer.menu}
+        onPageClick={viewer.gestures.onClick}
         links={viewer.links}
         isSidebarOpen={viewer.sidebar.isOpen}
         onKeyDown={keyboard.onViewerKeyDown}
