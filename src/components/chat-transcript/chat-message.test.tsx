@@ -158,7 +158,7 @@ describe('ChatMessage avatar, name and background', () => {
   it('UIC-CHAT-TRANSCRIPT-2.13 hides the time, also from a grouped message, while keeping it in the name', () => {
     const { container } = render(
       <>
-        <ChatMessage author={maria} time={time} getNow={getNow} showTime={false}>
+        <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="none">
           Named, no time
         </ChatMessage>
         <ChatMessage
@@ -166,7 +166,7 @@ describe('ChatMessage avatar, name and background', () => {
           time={time}
           getNow={getNow}
           groupPosition="last"
-          showTime={false}
+          timePlacement="none"
         >
           Grouped, no time
         </ChatMessage>
@@ -178,6 +178,43 @@ describe('ChatMessage avatar, name and background', () => {
     expect(grouped?.querySelector('.ui-chat-message__header')).toBeNull();
     expect(named).toHaveAccessibleName(mariaAt1025);
     expect(grouped).toHaveAccessibleName(mariaAt1025);
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.13 places the time in the footer, also for a grouped or deleted message', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <>
+        <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="footer" isEdited>
+          Footer time
+        </ChatMessage>
+        <ChatMessage
+          author={maria}
+          time={time}
+          getNow={getNow}
+          groupPosition="last"
+          timePlacement="footer"
+        >
+          Grouped
+        </ChatMessage>
+        <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="footer" isDeleted>
+          Gone
+        </ChatMessage>
+      </>,
+    );
+    const [named, grouped, deleted] = screen.getAllByRole('article');
+    for (const message of [named, grouped, deleted]) {
+      const footerTime = message?.querySelector('.ui-chat-message__footer .ui-chat-message__time');
+      expect(footerTime).toHaveTextContent('5 minutes ago');
+      expect(message?.querySelector('.ui-chat-message__header .ui-chat-message__time')).toBeNull();
+      expect(message).toHaveAccessibleName(mariaAt1025);
+    }
+    expect(named?.querySelector('.ui-chat-message__author')).toHaveTextContent('Maria Santos');
+    expect(named?.querySelector('.ui-chat-message__footer')).toHaveTextContent(/Edited/);
+    expect(grouped?.querySelector('.ui-chat-message__header')).toBeNull();
+    await user.tab();
+    expect(named?.querySelector('.ui-chat-message__time')).toHaveFocus();
+    expect(named).toHaveAttribute('data-focus-within', 'true');
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
   });
 

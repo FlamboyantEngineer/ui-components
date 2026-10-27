@@ -115,7 +115,7 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-2.10 - Edited and deleted
 
-`isEdited` shall show the provider string `edited` in `ui-chat-message__edited` in the footer. `isDeleted` shall publish `data-deleted` and replace the content with the provider string `chatMessageDeleted` (`Message deleted`) in `ui-chat-message__content`, leaving out the quote, the footer, the error, the reactions and the actions; the avatar, the header and the readers stay.
+`isEdited` shall show the provider string `edited` in `ui-chat-message__edited` in the footer. `isDeleted` shall publish `data-deleted` and replace the content with the provider string `chatMessageDeleted` (`Message deleted`) in `ui-chat-message__content`, leaving out the quote, the footer's markers, the error, the reactions and the actions; the avatar, the header, a time placed in the footer and the readers stay.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/chat-message-strings.ts`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
@@ -136,9 +136,9 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-2.13 - Avatar, name, time and background
 
-`showAvatar={false}` shall leave out the avatar and publish `data-avatar-hidden`, so a stylesheet lines grouped messages up without the avatar's space; `showAuthorName={false}` shall leave out the author's name, the header keeping the time; `showTime={false}` shall leave out the time, also from a grouped message; with neither a name nor a time shown there is no header. All three default to `true`, and the message's name keeps the author and the time either way (UIC-CHAT-TRANSCRIPT-2.4). `ChatMessage` shall publish `variant` as `data-variant`: `bubble` (the default), whose content the reference stylesheet draws on a background, or `plain`, whose content it draws as text on the page without a background, a plain `received` message taking the transcript's whole width.
+`showAvatar={false}` shall leave out the avatar and publish `data-avatar-hidden`, so a stylesheet lines grouped messages up without the avatar's space; `showAuthorName={false}` shall leave out the author's name, the header keeping the time; both default to `true`. `timePlacement` shall place the time: in the header (`header`, the default); in `ui-chat-message__footer`, before the markers, under the content (`footer`), also for a grouped or deleted message, so a stylesheet shows it with the actions while the message is hovered or holds focus (UIC-CHAT-TRANSCRIPT-2.7), as the reference stylesheet does; or nowhere (`none`), also not in a grouped message. With neither a name nor a time in the header there is no header. The message's name keeps the author and the time either way (UIC-CHAT-TRANSCRIPT-2.4). `ChatMessage` shall publish `variant` as `data-variant`: `bubble` (the default), whose content the reference stylesheet draws on a background, or `plain`, whose content it draws as text on the page without a background, a plain `received` message taking the transcript's whole width.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `labs/reference/chat-transcript.css`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `labs/reference/chat-transcript.css`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-display.spec.ts`
 
 ## UIC-CHAT-TRANSCRIPT-3 - Navigation and announcements
@@ -324,7 +324,7 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `ui-chat-message__body`           | slot      |                                                  | The header, content and actions.                                                                |
 | `ui-chat-message__header`         | slot      |                                                  | The author's name and the time.                                                                 |
 | `ui-chat-message__author`         | slot      |                                                  | The author's name.                                                                              |
-| `ui-chat-message__time`           | slot      |                                                  | The time (also `ui-relative-time`).                                                             |
+| `ui-chat-message__time`           | slot      |                                                  | The time (also `ui-relative-time`), in the header or the footer.                                |
 | `ui-chat-message__content`        | slot      |                                                  | The message's content.                                                                          |
 | `ui-chat-message__actions`        | slot      |                                                  | The message's actions.                                                                          |
 | `data-origin`                     | attribute | `sent`, `received`, `system`                     | On a message: who it is from, relative to the reader.                                           |
@@ -332,7 +332,7 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `data-variant`                    | attribute | `bubble`, `plain`                                | On a message: its content on a background, or as plain text.                                    |
 | `data-avatar-hidden`              | state     | `true`                                           | On a message: the caller hides the author's avatar.                                             |
 | `ui-chat-message__quote`          | slot      |                                                  | The quoted message (also `ui-chat-quote`).                                                      |
-| `ui-chat-message__footer`         | slot      |                                                  | The edited and stopped markers and the delivery status, after the content.                      |
+| `ui-chat-message__footer`         | slot      |                                                  | A time placed in the footer, the markers and the delivery status, after the content.            |
 | `ui-chat-message__edited`         | slot      |                                                  | The edited marker.                                                                              |
 | `ui-chat-message__stopped`        | slot      |                                                  | The stopped marker of a cancelled message.                                                      |
 | `ui-chat-message__delivery`       | slot      |                                                  | The delivery status of a message the reader sent.                                               |

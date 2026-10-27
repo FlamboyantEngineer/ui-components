@@ -8,6 +8,7 @@ import type { RelativeTimeProps } from '../relative-time/relative-time.js';
 import {
   ChatMessageAvatar,
   ChatMessageBody,
+  ChatMessageFooter,
   ChatMessageHeader,
   chatMessageHooks as hooks,
   useAbsoluteTime,
@@ -27,6 +28,12 @@ export type ChatMessageDelivery = 'sending' | 'sent' | 'delivered' | 'read' | 'f
 /** How a message's content is drawn: in a `bubble` with a background, or `plain` text on the page. */
 export type ChatMessageVariant = 'bubble' | 'plain';
 
+/**
+ * Where a message shows its time: in the `header` beside the author's name, in the `footer` under
+ * the content (which a stylesheet shows with the actions, on hover and focus), or `none`.
+ */
+export type ChatMessageTimePlacement = 'header' | 'footer' | 'none';
+
 /** A message's place in a run of messages by one author: alone, or first, middle or last. */
 export type ChatMessageGroupPosition = 'single' | 'first' | 'middle' | 'last';
 
@@ -43,8 +50,8 @@ export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'ge
   showAvatar?: boolean | undefined;
   /** Shows the author's name at the start of a group. Defaults to `true`; the message's name keeps it. */
   showAuthorName?: boolean | undefined;
-  /** Shows the time in the header. Defaults to `true`; the message's name keeps it. */
-  showTime?: boolean | undefined;
+  /** Where the time shows. Defaults to `header`; the message's name keeps it either way. */
+  timePlacement?: ChatMessageTimePlacement | undefined;
   /** Draws the content in a `bubble` (the default) or as `plain` text. */
   variant?: ChatMessageVariant | undefined;
   /** When it was written: an ISO 8601 date and time, read relative to now. */
@@ -101,16 +108,19 @@ function resolveDisplay({
   groupPosition,
   showAvatar = true,
   showAuthorName = true,
-  showTime = true,
+  timePlacement = 'header',
   variant = 'bubble',
-}: Pick<ChatMessageProps, 'author' | 'showAvatar' | 'showAuthorName' | 'showTime' | 'variant'> & {
+}: Pick<
+  ChatMessageProps,
+  'author' | 'showAvatar' | 'showAuthorName' | 'timePlacement' | 'variant'
+> & {
   groupPosition: ChatMessageGroupPosition;
 }) {
   const startsGroup = groupPosition === 'single' || groupPosition === 'first';
   return {
     avatar: startsGroup && showAvatar ? author : undefined,
     showsName: startsGroup && showAuthorName,
-    showsTime: showTime,
+    timePlacement,
     variant,
     avatarHidden: !showAvatar,
   };
@@ -135,7 +145,7 @@ export function ChatMessage({
   author,
   showAvatar,
   showAuthorName,
-  showTime,
+  timePlacement,
   variant,
   time,
   status = 'complete',
@@ -155,9 +165,10 @@ export function ChatMessage({
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
   const display = resolveDisplay({
     ...{ author, groupPosition, variant },
-    ...{ showAvatar, showAuthorName, showTime },
+    ...{ showAvatar, showAuthorName, timePlacement },
   });
   const [body, own] = splitBodyProps(rest);
+  const footerTime = display.timePlacement === 'footer' ? time : undefined;
   const data = {
     variant: display.variant,
     origin,
@@ -185,13 +196,22 @@ export function ChatMessage({
       <div {...hooks.slot('body')}>
         <ChatMessageHeader
           authorName={display.showsName ? authorName : undefined}
-          time={display.showsTime ? time : undefined}
+          time={display.timePlacement === 'header' ? time : undefined}
           getNow={getNow}
         />
         {isDeleted ? (
-          <div {...hooks.slot('content')}>{strings.chatMessageDeleted}</div>
+          <>
+            <div {...hooks.slot('content')}>{strings.chatMessageDeleted}</div>
+            <ChatMessageFooter time={footerTime} getNow={getNow} />
+          </>
         ) : (
-          <ChatMessageBody {...body} isCancelled={status === 'cancelled'} delivery={delivery} />
+          <ChatMessageBody
+            {...body}
+            isCancelled={status === 'cancelled'}
+            delivery={delivery}
+            time={footerTime}
+            getNow={getNow}
+          />
         )}
         {readers ? <div {...hooks.slot('readers')}>{readers}</div> : null}
       </div>

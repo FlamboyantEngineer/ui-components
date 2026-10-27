@@ -151,6 +151,7 @@ export type {
   ChatMessageDelivery,
   ChatMessageGroupPosition,
   ChatMessageVariant,
+  ChatMessageTimePlacement,
   ChatMessageOrigin,
   ChatMessageProps,
   ChatMessageStatus,
