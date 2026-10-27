@@ -119,7 +119,13 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   diagramRemoveConnection: ['Pump', 'Valve'],
   feedbackDetails: ['down'],
   chatReasoningComplete: [12],
-  chatStepsComplete: [6, 40],
+  chatStepsComplete: [
+    [
+      { kind: 'edit', count: 2 },
+      { kind: 'command', count: 1 },
+    ],
+    40,
+  ],
   chatPlanProgress: [2, 5],
   chatPlanStepStatus: ['in-progress'],
   chatPlanChanged: [[{ label: 'Book the train', status: 'done' }]],

@@ -14,6 +14,7 @@ import {
   textTokens,
   tokenText,
 } from './chat-parts-samples.js';
+import { WorkingSession } from './chat-parts-session.js';
 import { StreamedAnswer } from './chat-parts-stream.js';
 import { getLabReference } from './reference-samples.js';
 
@@ -111,7 +112,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps"
-      description="Consecutive reasoning and tool calls fold into a group of steps. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval or once one in it failed. A single step that ends the message stays on its own. A long tool call label wraps beside its status glyph."
+      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval or once one in it failed. A single tool call that ends the message stays on its own. A long tool call label wraps beside its status glyph."
     >
       <StateMatrix
         axes={{ state: stepStates, parts: ['rendered'] }}
@@ -126,6 +127,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Working session"
+      description="Each run of tool calls collapses to one line summing up what it did by kind (Read files, edited files, ran commands), led by the glyph of its first kind. Text the assistant writes between tool calls shows as part of the message and splits the runs. The last run is open: its calls are quiet rows with their kind's glyph and target, and a row with details opens them below."
+    >
+      <WorkingSession />
     </LabSection>
     <LabSection
       title="Tool renderers"

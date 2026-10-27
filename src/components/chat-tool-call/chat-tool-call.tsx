@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
-import { Disclosure, DisclosurePanel, DisclosureTitle } from '../disclosure/disclosure.js';
+import { Disclosure, DisclosurePanel } from '../disclosure/disclosure.js';
 import { formatToolName } from './format-tool-call.js';
 import { ToolCallApproval, type ChatToolCallApproval } from './tool-call-approval.js';
 import { toolCallHooks as hooks } from './tool-call-hooks.js';
@@ -8,12 +8,14 @@ import {
   ToolCallBody,
   ToolCallError,
   ToolCallTitle,
+  type ChatToolCallKind,
   type ChatToolCallStatus,
 } from './tool-call-parts.js';
 import { useToolCallApproval } from './use-tool-call-approval.js';
 
 export type { ChatToolCallApproval, ChatToolCallDecision } from './tool-call-approval.js';
-export type { ChatToolCallStatus } from './tool-call-parts.js';
+export { toolCallKindGlyphs } from './tool-call-parts.js';
+export type { ChatToolCallKind, ChatToolCallStatus } from './tool-call-parts.js';
 
 /** A tool call as data: what a host stores for one call of a tool by an assistant. */
 export interface ChatToolCallData {
@@ -23,6 +25,10 @@ export interface ChatToolCallData {
   name: string;
   /** A readable title, such as `Searched recipes`. Defaults to one derived from `name`. */
   label?: string | undefined;
+  /** What the call acted on, such as a file path or a command; shown after the label. */
+  target?: string | undefined;
+  /** What the call does: its glyph once it succeeded, and how a group of steps sums it up. Defaults to `other`. */
+  kind?: ChatToolCallKind | undefined;
   /** Where the call stands. */
   status: ChatToolCallStatus;
   /** The arguments the tool takes, shown as JSON. */
@@ -94,6 +100,8 @@ export function ChatToolCall({
   id,
   name,
   label,
+  target,
+  kind = 'other',
   status,
   args,
   result,
@@ -125,7 +133,7 @@ export function ChatToolCall({
       {...hooks.root({
         className,
         props: rest,
-        data: { status, autoApproved: approval?.isAutoApproved },
+        data: { status, kind, autoApproved: approval?.isAutoApproved },
       })}
       id={id}
       ref={rootRef}
@@ -137,14 +145,14 @@ export function ChatToolCall({
         isExpanded={expanded}
         onExpandedChange={setExpanded}
       >
-        <DisclosureTitle className={hooks.slotClass('heading')}>
-          <ToolCallTitle
-            label={title}
-            status={status}
-            durationMs={durationMs}
-            isAutoApproved={approval?.isAutoApproved ?? false}
-          />
-        </DisclosureTitle>
+        <ToolCallTitle
+          label={title}
+          target={target}
+          kind={kind}
+          status={status}
+          durationMs={durationMs}
+          isAutoApproved={approval?.isAutoApproved ?? false}
+        />
         <DisclosurePanel className={hooks.slotClass('body')}>
           <ToolCallBody args={args} result={result}>
             {children}

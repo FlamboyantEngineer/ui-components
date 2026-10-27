@@ -3,6 +3,7 @@ export type {
   ChatToolCallApproval,
   ChatToolCallData,
   ChatToolCallDecision,
+  ChatToolCallKind,
   ChatToolCallProps,
   ChatToolCallStatus,
 } from './chat-tool-call.js';

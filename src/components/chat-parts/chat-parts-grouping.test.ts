@@ -5,16 +5,15 @@ import {
   isAwaitingApproval,
   isFailedCall,
   isStepActive,
-  sumStepDurations,
+  summarizeSteps,
   toPartKey,
 } from './chat-parts-grouping.js';
 
-const reasoning = (id: string, durationMs?: number): ChatReasoningPart => ({
+const reasoning = (id: string): ChatReasoningPart => ({
   type: 'reasoning',
   id,
   text: 'Comparing options.',
   status: 'complete',
-  durationMs,
 });
 const call = (id: string, overrides: Partial<ChatToolCallPart> = {}): ChatToolCallPart => ({
   type: 'tool-call',
@@ -41,16 +40,22 @@ describe('groupChatParts', () => {
   });
 
   it('UIC-CHAT-PARTS-5.1 groups a single step only when further parts follow it', () => {
-    expect(shape([reasoning('r1')])).toEqual(['reasoning:r1']);
     expect(shape([text('Looking'), call('c1')])).toEqual(['text@0', 'tool-call:c1']);
-    expect(shape([reasoning('r1'), text('Answer')])).toEqual(['steps(r1)', 'text@1']);
-    expect(shape([call('c1'), text('a'), reasoning('r2'), text('b')])).toEqual([
+    expect(shape([call('c1'), text('a'), call('c2'), text('b')])).toEqual([
       'steps(c1)',
       'text@1',
-      'steps(r2)',
+      'steps(c2)',
       'text@3',
     ]);
     expect(shape([])).toEqual([]);
+  });
+
+  it('UIC-CHAT-PARTS-5.1 leaves reasoning without a tool call alone', () => {
+    expect(shape([reasoning('r1')])).toEqual(['reasoning:r1']);
+    expect(shape([reasoning('r1'), text('Answer')])).toEqual(['reasoning:r1', 'text@1']);
+    expect(
+      shape([reasoning('r1'), reasoning('r2'), text('a'), reasoning('r3'), call('c1')]),
+    ).toEqual(['reasoning:r1', 'reasoning:r2', 'text@2', 'steps(r3,c1)']);
   });
 
   it('UIC-CHAT-PARTS-5.1 keys a group by its first step', () => {
@@ -67,11 +72,22 @@ describe('toPartKey', () => {
   });
 });
 
-describe('sumStepDurations', () => {
-  it('UIC-CHAT-PARTS-5.2 sums the durations the steps have', () => {
-    expect(sumStepDurations([reasoning('r1', 1200), call('c1', { durationMs: 800 })])).toBe(2000);
-    expect(sumStepDurations([reasoning('r1', 1200), call('c1')])).toBe(1200);
-    expect(sumStepDurations([reasoning('r1'), call('c1')])).toBeUndefined();
+describe('summarizeSteps', () => {
+  it('UIC-CHAT-PARTS-5.2 counts the tool calls of each kind, in the order kinds first appear', () => {
+    expect(
+      summarizeSteps([
+        reasoning('r1'),
+        call('c1', { kind: 'edit' }),
+        call('c2', { kind: 'read' }),
+        call('c3', { kind: 'edit' }),
+        call('c4'),
+      ]),
+    ).toEqual([
+      { kind: 'edit', count: 2 },
+      { kind: 'read', count: 1 },
+      { kind: 'other', count: 1 },
+    ]);
+    expect(summarizeSteps([reasoning('r1')])).toEqual([]);
   });
 });
 

@@ -10,7 +10,7 @@ const statusTexts: Record<ChatToolCallStatus, [string, string]> = {
   pending: ['Pending', 'clock'],
   running: ['Running', 'refresh'],
   'approval-requested': ['Needs approval', 'hand-raised'],
-  succeeded: ['Done', 'success'],
+  succeeded: ['Done', 'wrench'],
   failed: ['Failed', 'error'],
   denied: ['Denied', 'no-symbol'],
   cancelled: ['Cancelled', 'x-circle'],
@@ -99,6 +99,52 @@ describe('ChatToolCall', () => {
     const { container } = render(<ChatToolCall id="call-2" name="getWeather" status="pending" />);
     expect(container.querySelector('.ui-chat-tool-call__label')).toHaveTextContent('Get weather');
     expect(getToolCallTrigger(container)).toHaveAccessibleName('Get weather Pending');
+  });
+
+  it("UIC-CHAT-TOOL-CALL-1.1 UIC-CHAT-TOOL-CALL-1.7 shows the target after the label and the kind's glyph once the call succeeded", () => {
+    const { container, rerender } = render(
+      <ChatToolCall
+        id="call"
+        name="read_file"
+        label="Read"
+        target="notes.txt"
+        kind="read"
+        status="running"
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-kind', 'read');
+    const trigger = getToolCallTrigger(container);
+    expect(trigger).toHaveAccessibleName('Read notes.txt Running');
+    expect(root.querySelector('.ui-chat-tool-call__target')).toHaveTextContent('notes.txt');
+    const glyph = () => root.querySelector('.ui-chat-tool-call__status-glyph');
+    expect(glyph()).toHaveAttribute('data-glyph', 'refresh');
+    const kindGlyphs = {
+      read: 'file-text',
+      edit: 'edit',
+      command: 'terminal',
+      search: 'search',
+      fetch: 'globe',
+      other: 'wrench',
+    } as const;
+    for (const [kind, name] of Object.entries(kindGlyphs)) {
+      rerender(
+        <ChatToolCall
+          id="call"
+          name="read_file"
+          label="Read"
+          target="notes.txt"
+          kind={kind as keyof typeof kindGlyphs}
+          status="succeeded"
+        />,
+      );
+      expect(root).toHaveAttribute('data-kind', kind);
+      expect(glyph()).toHaveAttribute('data-glyph', name);
+    }
+    expectHooksMatchSpec(container, 'CHAT-TOOL-CALL', { slots: ['target'] });
+    rerender(<ChatToolCall id="call" name="read_file" status="succeeded" />);
+    expect(root).toHaveAttribute('data-kind', 'other');
+    expect(root.querySelector('.ui-chat-tool-call__target')).toBeNull();
   });
 
   it('UIC-CHAT-TOOL-CALL-1.3 publishes each status with its text and glyph, busy while running', () => {

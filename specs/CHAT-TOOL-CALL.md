@@ -1,12 +1,12 @@
 # Chat Tool Call
 
-`ChatToolCall` is one call of a tool by an assistant, shown in a conversation as a collapsible card built on [Disclosure](DISCLOSURE.md): a trigger with the call's status, label and duration, and a body with the arguments and result as formatted, copyable JSON, or a custom body the host draws for that tool. A failed call shows its error. A call that asks for the reader's approval shows what it will do with Approve, Deny (with an optional reason) and Always allow, each offered only when the host handles it, with keyboard shortcuts; once decided, the card keeps the decision. The card takes its data as plain props (`ChatToolCallData`): `id`, `name`, `label`, `status`, `args`, `result`, `error`, `durationMs` and `approval`.
+`ChatToolCall` is one call of a tool by an assistant, shown in a conversation as a collapsible card built on [Disclosure](DISCLOSURE.md): a trigger with the call's status, label and duration, and a body with the arguments and result as formatted, copyable JSON, or a custom body the host draws for that tool. A failed call shows its error. A call that asks for the reader's approval shows what it will do with Approve, Deny (with an optional reason) and Always allow, each offered only when the host handles it, with keyboard shortcuts; once decided, the card keeps the decision. The card takes its data as plain props (`ChatToolCallData`): `id`, `name`, `label`, `target`, `kind`, `status`, `args`, `result`, `error`, `durationMs` and `approval`.
 
 ## UIC-CHAT-TOOL-CALL-1 - Card
 
 ### UIC-CHAT-TOOL-CALL-1.1 - Parts
 
-`ChatToolCall` shall render a `ui-chat-tool-call` element whose `id` is the call's `id`, holding a [Disclosure](DISCLOSURE.md) (`ui-chat-tool-call__disclosure`) whose title heading (`ui-chat-tool-call__heading`) holds the trigger and whose panel (`ui-chat-tool-call__body`) holds the body ([UIC-CHAT-TOOL-CALL-2](#uic-chat-tool-call-2---body)). The trigger holds a decorative status glyph (`ui-chat-tool-call__status-glyph`) and then the summary (`ui-chat-tool-call__summary`), which holds, in order, the label (`ui-chat-tool-call__label`), the status (`ui-chat-tool-call__status`), the duration (`ui-chat-tool-call__duration`) when `durationMs` is given, and the auto-approved badge (`ui-chat-tool-call__badge`) when it applies, separated by spaces, so the trigger's name reads the label, the status, the duration and the badge, and a label too long for one line wraps inside the summary, beside the glyph. The error ([UIC-CHAT-TOOL-CALL-2.5](#uic-chat-tool-call-25---error)) and the approval ([UIC-CHAT-TOOL-CALL-4](#uic-chat-tool-call-4---approval)) follow the disclosure, outside its panel, so collapsing the card never hides them.
+`ChatToolCall` shall render a `ui-chat-tool-call` element whose `id` is the call's `id`, holding a [Disclosure](DISCLOSURE.md) (`ui-chat-tool-call__disclosure`) whose title heading (`ui-chat-tool-call__heading`) holds the trigger and whose panel (`ui-chat-tool-call__body`) holds the body ([UIC-CHAT-TOOL-CALL-2](#uic-chat-tool-call-2---body)). The trigger holds a decorative status glyph (`ui-chat-tool-call__status-glyph`) and then the summary (`ui-chat-tool-call__summary`), which holds, in order, the label (`ui-chat-tool-call__label`), the `target` (`ui-chat-tool-call__target`) when given, the status (`ui-chat-tool-call__status`), the duration (`ui-chat-tool-call__duration`) when `durationMs` is given, and the auto-approved badge (`ui-chat-tool-call__badge`) when it applies, separated by spaces, so the trigger's name reads the label, the target, the status, the duration and the badge, and a label too long for one line wraps inside the summary, beside the glyph. The error ([UIC-CHAT-TOOL-CALL-2.5](#uic-chat-tool-call-25---error)) and the approval ([UIC-CHAT-TOOL-CALL-4](#uic-chat-tool-call-4---approval)) follow the disclosure, outside its panel, so collapsing the card never hides them.
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-tool-call.spec.ts`
@@ -20,7 +20,7 @@ Verification: `src/components/chat-tool-call/format-tool-call.test.ts`, `src/com
 
 ### UIC-CHAT-TOOL-CALL-1.3 - Status
 
-The root shall publish `status` as `data-status`: `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied` or `cancelled`. The status shows as text from the provider's `toolCallStatus` (`Pending`, `Running`, `Needs approval`, `Done`, `Failed`, `Denied`, `Cancelled`), which is part of the trigger's name, beside a status glyph: `clock`, `refresh`, `hand-raised`, `success`, `error`, `no-symbol` and `x-circle` in that order. A `running` call is busy: the root carries `aria-busy="true"`.
+The root shall publish `status` as `data-status`: `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied` or `cancelled`. The status shows as text from the provider's `toolCallStatus` (`Pending`, `Running`, `Needs approval`, `Done`, `Failed`, `Denied`, `Cancelled`), which is part of the trigger's name, beside a status glyph: `clock`, `refresh`, `hand-raised`, the kind's glyph ([UIC-CHAT-TOOL-CALL-1.7](#uic-chat-tool-call-17---kind)), `error`, `no-symbol` and `x-circle` in that order. A `running` call is busy: the root carries `aria-busy="true"`.
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/chat-tool-strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-tool-call.spec.ts`
@@ -45,6 +45,13 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`
+
+### UIC-CHAT-TOOL-CALL-1.7 - Kind
+
+The root shall publish `kind`, what the call does, as `data-kind`: `read`, `edit`, `command`, `search`, `fetch` or `other` (the default). Once the call `succeeded`, its status glyph is its kind's: `file-text`, `edit`, `terminal`, `search`, `globe` and `wrench` in that order, so a finished call shows what it did. A group of steps sums its calls up by kind ([Chat Parts](CHAT-PARTS.md#uic-chat-parts-52---running-and-summary)).
+
+Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/glyphs.tsx`
+Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ## UIC-CHAT-TOOL-CALL-2 - Body
 
@@ -139,6 +146,7 @@ Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/
 | `ui-chat-tool-call__status-glyph` | slot  |                                                                                          | The status glyph in the trigger (also `ui-glyph`).                      |
 | `ui-chat-tool-call__summary`      | slot  |                                                                                          | The label, status, duration and badge, which wrap beside the glyph.     |
 | `ui-chat-tool-call__label`        | slot  |                                                                                          | The label in the trigger.                                               |
+| `ui-chat-tool-call__target`       | slot  |                                                                                          | What the call acted on, after the label.                                |
 | `ui-chat-tool-call__status`       | slot  |                                                                                          | The status text in the trigger.                                         |
 | `ui-chat-tool-call__duration`     | slot  |                                                                                          | The duration in the trigger.                                            |
 | `ui-chat-tool-call__badge`        | slot  |                                                                                          | The auto-approved badge (also `ui-badge`).                              |
@@ -158,6 +166,7 @@ Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/
 | `ui-chat-tool-call__reason`       | slot  |                                                                                          | The deny reason field (also `ui-text-field`).                           |
 | `ui-chat-tool-call__decision`     | slot  |                                                                                          | The decision status.                                                    |
 | `data-status`                     | state | `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied`, `cancelled` | On the card: where the call stands.                                     |
+| `data-kind`                       | state | `read`, `edit`, `command`, `search`, `fetch`, `other`                                    | On the card: what the call does.                                        |
 | `data-auto-approved`              | state | `true`                                                                                   | On the card: the call ran without asking because it was always allowed. |
 | `data-part`                       | state | `arguments`, `result`                                                                    | On a part: which value it shows.                                        |
 | `data-action`                     | state | `approve`, `deny`, `always`                                                              | On an approval button: what it does.                                    |

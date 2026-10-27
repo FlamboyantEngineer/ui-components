@@ -5,6 +5,7 @@ import type { ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
 import type { ChatQuestionItem } from '../chat-question/chat-question.js';
 import type { ChatSource } from '../chat-sources/chat-sources.js';
+import type { ChatToolCallKind } from '../chat-tool-call/chat-tool-call.js';
 import type { CodeBlockData } from '../code-block/code-block.js';
 import {
   addPart,
@@ -26,8 +27,16 @@ export type ChatStreamEvent =
   | { type: 'reasoning-delta'; id: string; text: string }
   /** Completes the reasoning part `id`, timed by the controller when `durationMs` is missing. */
   | { type: 'reasoning-end'; id: string; durationMs?: number | undefined }
-  /** Starts the tool call `id`, running, or updates its name, label and arguments. */
-  | { type: 'tool-call'; id: string; name: string; label?: string | undefined; args?: unknown }
+  /** Starts the tool call `id`, running, or updates its name, label, target, kind and arguments. */
+  | {
+      type: 'tool-call';
+      id: string;
+      name: string;
+      label?: string | undefined;
+      target?: string | undefined;
+      kind?: ChatToolCallKind | undefined;
+      args?: unknown;
+    }
   /** Ends the tool call `id`: failed with an `error`, else succeeded with its `result`. */
   | {
       type: 'tool-result';

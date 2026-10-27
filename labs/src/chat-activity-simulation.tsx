@@ -14,6 +14,7 @@ import {
   ChatSteps,
 } from '../../src/components/chat-activity/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
+import type { ChatToolCallKind } from '../../src/components/chat-tool-call/chat-tool-call.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
 import { LabToolCall, reasoningText } from './chat-activity-samples.js';
@@ -27,10 +28,10 @@ const reasoningWords = reasoningText.split(' ');
 const reasoningEnd = Math.ceil(reasoningWords.length / 5);
 
 /** The tool calls, each running for three ticks after the one before. */
-const tools = [
-  { running: 'Searching trains to Porto', done: 'Searched trains to Porto' },
-  { running: 'Reading the timetable', done: 'Read the timetable' },
-  { running: 'Comparing the fares', done: 'Compared the fares' },
+const tools: readonly { running: string; done: string; kind: ChatToolCallKind }[] = [
+  { running: 'Searching trains to Porto', done: 'Searched trains to Porto', kind: 'search' },
+  { running: 'Reading the timetable', done: 'Read the timetable', kind: 'read' },
+  { running: 'Comparing the fares', done: 'Compared the fares', kind: 'other' },
 ];
 
 const toolStart = (index: number) => reasoningEnd + index * 3;
@@ -76,8 +77,7 @@ function ReplyAt({ now }: { now: number }) {
       <ChatPlan title="Saturday in Porto" steps={plan} data-lab-sim="plan" />
       <ChatSteps
         isRunning={isRunning}
-        durationMs={runEnd * tick}
-        stepCount={1 + startedTools.length}
+        actions={startedTools.map((tool) => ({ kind: tool.kind, count: 1 }))}
         data-lab-sim="steps"
       >
         <ChatReasoning
