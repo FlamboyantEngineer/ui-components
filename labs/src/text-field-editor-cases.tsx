@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabOutput } from './lab-output.js';
@@ -74,6 +74,46 @@ export function EditorDrivenField() {
         Select the town
       </Button>
       <LabOutput name="Caret">{caret}</LabOutput>
+    </div>
+  );
+}
+
+const people = ['Ada Lovelace', 'Alan Turing', 'Grace Hopper', 'Katherine Johnson'];
+
+/**
+ * An editor whose suggestions open in a dialog and load after a pause: the input declares the
+ * dialog popup (`aria-haspopup`) and is busy (`aria-busy`) while the people load.
+ */
+export function DialogSuggestingField() {
+  const [query, setQuery] = useState('');
+  const [loaded, setLoaded] = useState('');
+  const isBusy = query !== loaded;
+  const matches = loaded === '' ? [] : people.filter((person) => person.includes(loaded));
+  const isOpen = !isBusy && matches.length > 0;
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(query), 400);
+    return () => clearTimeout(timer);
+  }, [query]);
+  return (
+    <div data-lab-demo="dialog-suggestions">
+      <TextField
+        label="Person"
+        controlProps={{
+          role: 'combobox',
+          'aria-haspopup': 'dialog',
+          'aria-controls': 'lab-people',
+          'aria-expanded': isOpen,
+          'aria-busy': isBusy,
+          onInput: (event) => setQuery(event.currentTarget.value),
+        }}
+      />
+      <div id="lab-people" role="dialog" aria-label="People" hidden={!isOpen}>
+        <ul>
+          {matches.map((person) => (
+            <li key={person}>{person}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

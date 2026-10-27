@@ -6,7 +6,7 @@ import { TextField } from '../../src/components/text-field/text-field.js';
 import { Glyph } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
-import { EditorDrivenField } from './text-field-editor-cases.js';
+import { DialogSuggestingField, EditorDrivenField } from './text-field-editor-cases.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -303,6 +303,12 @@ mountLab(
       description="The caller owns the suggestion list: the input is its combobox, typing opens it, Arrow Down moves and Enter picks. The button focuses the input and selects its text through its ref."
     >
       <EditorDrivenField />
+    </LabSection>
+    <LabSection
+      title="Suggestions in a dialog"
+      description="The caller's suggestions open in a dialog after a short load: the input declares a dialog popup and stays busy until the people arrive."
+    >
+      <DialogSuggestingField />
     </LabSection>
   </>,
 );

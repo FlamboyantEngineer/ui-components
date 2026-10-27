@@ -322,3 +322,24 @@ test.describe('Text Field driven by an editor', () => {
     await lab.expectAccessible('[data-lab-demo="editor"]');
   });
 });
+
+test.describe('Text Field with a dialog of suggestions', () => {
+  test('UIC-TEXT-FIELD-6.2 declares the dialog popup and the busy load on the input', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const demo = page.locator('[data-lab-demo="dialog-suggestions"]');
+    const input = demo.getByRole('combobox', { name: 'Person' });
+    await expect(input).toHaveAttribute('aria-haspopup', 'dialog');
+    await expect(input).toHaveAttribute('aria-busy', 'false');
+    await input.scrollIntoViewIfNeeded();
+    await input.click();
+    await page.keyboard.type('Gr');
+    await expect(input).toHaveAttribute('aria-busy', 'true');
+    await expect(input).toHaveAttribute('aria-busy', 'false');
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    await expect(demo.getByRole('dialog', { name: 'People' })).toContainText('Grace Hopper');
+    await lab.expectAccessible('[data-lab-demo="dialog-suggestions"]');
+  });
+});
