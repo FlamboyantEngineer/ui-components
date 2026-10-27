@@ -1,5 +1,6 @@
 import {
   useMemo,
+  type AriaAttributes,
   useRef,
   type CompositionEvent,
   type FormEvent,
@@ -22,7 +23,7 @@ export type TextFieldElement = HTMLInputElement | HTMLTextAreaElement;
 
 /**
  * Attributes and handlers for the input or text area itself, for an editor that drives it: its
- * text events and the ARIA of a suggestion list the caller owns. The field's own handlers run
+ * text events and the ARIA of a suggestion surface the caller owns. The field's own handlers run
  * first, and its own completion list's attributes win over these.
  */
 export interface TextFieldControlProps {
@@ -36,6 +37,10 @@ export interface TextFieldControlProps {
   'aria-autocomplete'?: 'list' | 'inline' | 'both' | 'none' | undefined;
   /** The id of the caller's highlighted suggestion. */
   'aria-activedescendant'?: string | undefined;
+  /** The kind of the caller's suggestion surface, such as `dialog`; a combobox defaults to `listbox`. */
+  'aria-haspopup'?: AriaAttributes['aria-haspopup'] | undefined;
+  /** Whether the caller's suggestions are still loading. */
+  'aria-busy'?: boolean | undefined;
   /** Called before an edit changes the text, with the native `InputEvent` in `nativeEvent`. */
   onBeforeInput?: ((event: FormEvent<TextFieldElement>) => void) | undefined;
   /** Called after each edit changes the text. */

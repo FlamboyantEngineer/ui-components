@@ -141,4 +141,40 @@ describe('TextField control access', () => {
     expect(input.getAttribute('aria-controls')).not.toBe('elsewhere');
     expect(input).not.toHaveAttribute('aria-autocomplete', 'none');
   });
+
+  it('UIC-TEXT-FIELD-6.2 puts a dialog popup and a toggled busy state on the input and the text area', () => {
+    const field = (multiline: boolean, isBusy: boolean) => (
+      <TextField
+        label="Person"
+        multiline={multiline}
+        controlProps={{ role: 'combobox', 'aria-haspopup': 'dialog', 'aria-busy': isBusy }}
+      />
+    );
+    const { container, rerender } = render(field(false, true));
+    const input = screen.getByRole('combobox', { name: 'Person' });
+    expect(input.tagName).toBe('INPUT');
+    expect(input).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(input).toHaveAttribute('aria-busy', 'true');
+    rerender(field(false, false));
+    expect(input).toHaveAttribute('aria-busy', 'false');
+    rerender(field(true, true));
+    const area = screen.getByRole('combobox', { name: 'Person' });
+    expect(area.tagName).toBe('TEXTAREA');
+    expect(area).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(area).toHaveAttribute('aria-busy', 'true');
+    expect(container.querySelector('.ui-field')).not.toHaveAttribute('aria-haspopup');
+  });
+
+  it('UIC-TEXT-FIELD-6.2 keeps the field completion popup kind over the caller and passes its busy state', () => {
+    render(
+      <TextField
+        label="Fruit"
+        completions={[{ label: 'Apple' }]}
+        controlProps={{ 'aria-haspopup': 'dialog', 'aria-busy': true }}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    expect(input).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(input).toHaveAttribute('aria-busy', 'true');
+  });
 });
