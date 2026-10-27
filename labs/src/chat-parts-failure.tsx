@@ -1,6 +1,6 @@
 // A run with a failure among successful steps, one event at a time: a hotel search fails between
-// searches that succeed, then the run finishes with an answer. The group of steps stays open around
-// the failure once the answer follows; closing it holds until another call newly fails.
+// searches that succeed, then the run finishes with an answer. The failure is a quiet row with its
+// error closed, and opens nothing: the group collapses once the answer follows.
 
 import type { ChatPart, ChatToolCallPart } from '../../src/components/chat-parts/index.js';
 import { ReplyStream, type ReplyFrame } from './chat-parts-stream.js';

@@ -118,7 +118,7 @@ mountLab(
   <>
     <LabSection
       title="Statuses"
-      description="Every status, with no details or with arguments (and a result once done), closed or open at first. A running call is busy, a failed one shows its error, and one that asks for approval opens by default."
+      description="Every status, with no details or with arguments (and a result once done), closed or open at first. A running call is busy, a failed one starts closed with its error at the top of its body, and one that asks for approval opens by default."
     >
       <StateMatrix
         axes={{

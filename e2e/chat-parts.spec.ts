@@ -84,35 +84,51 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Streamed answer"]');
   });
 
-  test('UIC-CHAT-PARTS-5.4 keeps a failed step discoverable once the run finishes', async ({
+  test('UIC-CHAT-PARTS-5.4 shows a failed step as a quiet row with its error closed', async ({
     page,
     lab,
   }) => {
     await lab.open('chat-parts');
     await expect(
       cell(page, 'state=failed parts=rendered').locator('.ui-chat-steps'),
-    ).toHaveAttribute('data-expanded', 'true');
+    ).not.toHaveAttribute('data-expanded', 'true');
+    const opened = cell(page, 'state=failed-opened parts=rendered');
+    const failedRow = opened.locator('.ui-chat-tool-call[data-status="failed"]');
+    const quietRow = opened.locator('.ui-chat-tool-call[data-status="succeeded"]').first();
+    await expect(failedRow).toHaveCSS('border-top-width', '0px');
+    await expect(failedRow).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    const rowFont = await quietRow.evaluate((row) => getComputedStyle(row).fontSize);
+    await expect(failedRow).toHaveCSS('font-size', rowFont);
+    await expect(failedRow.locator('.ui-chat-tool-call__status')).toHaveCSS('position', 'absolute');
+    await expect(failedRow.locator('.ui-chat-tool-call__error')).toBeVisible();
     const run = demo(page, 'failed-run');
     const next = run.getByRole('button', { name: 'Next event' });
     const group = run.getByRole('button', { name: /^(Working…|Ran searches, fetched a page)$/ });
+    const hotels = run.getByRole('button', { name: /^Search hotels in Porto Failed/ });
+    const error = run.getByText('did not answer within 10 seconds');
     await next.click();
     await next.click();
     await expect(group).toHaveAccessibleName('Working…');
-    await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
+    await expect(hotels).toHaveAttribute('aria-expanded', 'false');
+    await expect(error).toBeHidden();
     await next.click();
     await expect(group).toHaveAccessibleName('Ran searches, fetched a page');
-    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
     await next.click();
     await expect(next).toBeDisabled();
-    await expect(group).toHaveAttribute('aria-expanded', 'true');
-    await expect(
-      run.getByRole('button', { name: /^Search hotels in Porto Failed/ }),
-    ).toHaveAttribute('aria-expanded', 'true');
-    await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await group.click();
+    await hotels.focus();
+    await page.keyboard.press('Enter');
+    await expect(hotels).toHaveAttribute('aria-expanded', 'true');
+    await expect(error).toBeVisible();
     await lab.expectAccessible('[data-lab-section="Failed step"]');
+    await page.keyboard.press('Enter');
+    await expect(error).toBeHidden();
+    await expect(hotels).toBeFocused();
   });
 
-  test('UIC-CHAT-PARTS-5.4 reopens a closed group for a new failure, then keeps the reader’s close', async ({
+  test('UIC-CHAT-PARTS-5.4 keeps a group the reader closed closed when a call fails', async ({
     page,
     lab,
   }) => {
@@ -125,10 +141,6 @@ test.describe('Chat Parts lab', () => {
     await group.click();
     await expect(group).toHaveAttribute('aria-expanded', 'false');
     await next.click();
-    await expect(group).toHaveAccessibleName('Working…');
-    await expect(group).toHaveAttribute('aria-expanded', 'true');
-    await expect(run.getByRole('alert')).toContainText('did not answer within 10 seconds');
-    await group.click();
     await expect(group).toHaveAttribute('aria-expanded', 'false');
     await next.click();
     await next.click();

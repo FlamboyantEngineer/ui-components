@@ -25,6 +25,7 @@ const stepStates = [
   'single',
   'awaiting-approval',
   'failed',
+  'failed-opened',
   'long-label',
 ] as const;
 
@@ -42,26 +43,36 @@ const longCall: ChatPart = {
   label: 'Search saved recipes for a lentil soup that keeps for three days and suits a slow cooker',
 };
 
-const stepCases: Record<(typeof stepStates)[number], { parts: ChatPart[]; isStreaming: boolean }> =
-  {
-    running: { parts: [thinking, running], isStreaming: true },
-    answering: {
-      parts: [
-        thinking,
-        searchCall,
-        { type: 'text', text: 'Here are three **soups**', status: 'streaming' },
-      ],
-      isStreaming: true,
-    },
-    done: {
-      parts: [thinking, searchCall, { type: 'text', text: 'Here are three **soups**.' }],
-      isStreaming: false,
-    },
-    single: { parts: [{ type: 'text', text: 'Let me look.' }, running], isStreaming: true },
-    'awaiting-approval': { parts: [thinking, bookingCall], isStreaming: false },
-    failed: { parts: failedRunParts, isStreaming: false },
-    'long-label': { parts: [thinking, longCall, searchCall], isStreaming: true },
-  };
+interface StepCase {
+  parts: ChatPart[];
+  isStreaming: boolean;
+  expandedParts?: Record<string, boolean>;
+}
+
+const stepCases: Record<(typeof stepStates)[number], StepCase> = {
+  running: { parts: [thinking, running], isStreaming: true },
+  answering: {
+    parts: [
+      thinking,
+      searchCall,
+      { type: 'text', text: 'Here are three **soups**', status: 'streaming' },
+    ],
+    isStreaming: true,
+  },
+  done: {
+    parts: [thinking, searchCall, { type: 'text', text: 'Here are three **soups**.' }],
+    isStreaming: false,
+  },
+  single: { parts: [{ type: 'text', text: 'Let me look.' }, running], isStreaming: true },
+  'awaiting-approval': { parts: [thinking, bookingCall], isStreaming: false },
+  failed: { parts: failedRunParts, isStreaming: false },
+  'failed-opened': {
+    parts: failedRunParts,
+    isStreaming: false,
+    expandedParts: { 'steps:plan': true, hotels: true },
+  },
+  'long-label': { parts: [thinking, longCall, searchCall], isStreaming: true },
+};
 
 const ignore = () => undefined;
 
@@ -112,7 +123,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps"
-      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval or once one in it failed. A single tool call that ends the message stays on its own. A long tool call label wraps beside its status glyph."
+      description="Consecutive reasoning and tool calls fold into a group of steps, summed up by the kinds of its calls once it ends. It runs while it ends a streaming message, collapses once the answer streams after it or the message completes, and stays open while a tool call in it waits for approval. A failed call is a quiet row like the others, told apart by its red ! glyph, with its error closed in its body until the reader opens it (failed-opened). A single tool call that ends the message stays on its own. A long tool call label wraps beside its status glyph."
     >
       <StateMatrix
         axes={{ state: stepStates, parts: ['rendered'] }}
@@ -148,7 +159,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Failed step"
-      description="Press Next event (or Play) to stream a run whose hotel search fails between steps that succeed. The group stays open around the failure once the answer follows and the run finishes. Close the group while the hotel search runs and the failure opens it again; close it after the failure and it stays closed."
+      description="Press Next event (or Play) to stream a run whose hotel search fails between steps that succeed. The failed search shows as a quiet row with a red ! glyph and its error closed; the failure opens nothing, so the group collapses once the answer follows, and a group closed during the run stays closed. Open the row to read the error, close it to hide it again."
     >
       <FailedRun />
     </LabSection>
