@@ -119,7 +119,7 @@ export function useModalOpenState({
  * viewport on the `modal` layer, focus stays inside, and the page is hidden and inert. The overlay
  * follows the dialog's open state, so every close goes through it.
  */
-export function BlockingModal({ state, rootProps, children, ...overlay }: BlockingModalProps) {
+function BlockingModal({ state, rootProps, children, ...overlay }: BlockingModalProps) {
   const zIndex = useLayerZIndex('modal');
   return (
     <ModalOverlay
@@ -139,7 +139,7 @@ export function BlockingModal({ state, rootProps, children, ...overlay }: Blocki
  * the overlay lets pointer presses through to the page around the panel. It enters and exits with
  * the panel's animations.
  */
-export function FloatingModal({ state, rootProps, children, isRetained }: FloatingModalProps) {
+function FloatingModal({ state, rootProps, children, isRetained }: FloatingModalProps) {
   const zIndex = useLayerZIndex('modal');
   const panelRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(panelRef, state.isOpen);
@@ -171,7 +171,7 @@ export function FloatingModal({ state, rootProps, children, isRetained }: Floati
  * layer (React Aria `Popover`), which traps focus, hides the page from assistive technology and
  * returns focus on close.
  */
-export function AnchoredModal({
+function AnchoredModal({
   state,
   rootProps,
   placement,
@@ -207,7 +207,7 @@ export function AnchoredModal({
  * as `BlockingModal` does; closed, it is hidden and inert, keeps no lock and is no open overlay, so
  * its body keeps its state for the next opening.
  */
-export function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingModalProps) {
+function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingModalProps) {
   const zIndex = useLayerZIndex('modal');
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);

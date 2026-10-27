@@ -15,6 +15,7 @@ import {
 import {
   capitalizeText,
   describeRelativeTime,
+  getRelativeFormat,
   type RelativeTimeRelation,
 } from '../../utils/relative-time.js';
 
@@ -128,8 +129,7 @@ export function describeRelativeRange(
 /** A preset's label: its own, or one such as `Today`, `Next week` or `In 3 days`. */
 export function formatRelativePreset(preset: RelativeDatePreset, locale: string): string {
   if (preset.label) return preset.label;
-  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  return capitalizeText(formatter.format(preset.amount, preset.unit), locale);
+  return capitalizeText(getRelativeFormat(locale).format(preset.amount, preset.unit), locale);
 }
 
 /** A range preset's count of units, such as `7 days`, for the `Last …` and `Next …` labels. */

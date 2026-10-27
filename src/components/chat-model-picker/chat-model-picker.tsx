@@ -2,10 +2,12 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
-import { Button } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuPopover, MenuSection, MenuTrigger } from '../menu/menu.js';
-import { useMessageComposerControls } from '../message-composer/message-composer.js';
+import {
+  ComposerControlButton,
+  useMessageComposerControls,
+} from '../message-composer/message-composer.js';
 import { MetaLine } from '../meta-line/meta-line.js';
 import { useChatModelChoice, type ChatModelChoice } from './use-chat-model-choice.js';
 
@@ -164,37 +166,34 @@ export function ChatModelPicker(props: ChatModelPickerProps) {
   const { model, effort } = choice;
   if (!model) return null;
   const name = strings.chatModelTrigger(model.label, effort?.label);
-  const trigger = {
-    ...hooks.root({
-      className,
-      props,
-      data: { hasEffort: effort !== undefined, compact: composer.isCompact },
-    }),
-    id,
-    variant: 'ghost',
-    size: 'sm',
-    isDisabled: isDisabled || composer.isDisabled,
-  } as const;
   return (
     <MenuTrigger>
-      {composer.isCompact ? (
-        <Button {...trigger} icon={model.icon ?? 'sparkles'} label={name} tooltip={name} />
-      ) : (
-        <Button {...trigger} startIcon={model.icon} endIcon="chevron-down" aria-label={name}>
-          <MetaLine
-            items={[
-              <span key="model" {...hooks.slot('model')}>
-                {model.label}
-              </span>,
-              effort ? (
-                <span key="effort" {...hooks.slot('effort')}>
-                  {effort.label}
-                </span>
-              ) : null,
-            ]}
-          />
-        </Button>
-      )}
+      <ComposerControlButton
+        {...hooks.root({
+          className,
+          props,
+          data: { hasEffort: effort !== undefined, compact: composer.isCompact },
+        })}
+        id={id}
+        icon={model.icon}
+        compactIcon={model.icon ?? 'sparkles'}
+        name={name}
+        hasMenu
+        isDisabled={isDisabled}
+      >
+        <MetaLine
+          items={[
+            <span key="model" {...hooks.slot('model')}>
+              {model.label}
+            </span>,
+            effort ? (
+              <span key="effort" {...hooks.slot('effort')}>
+                {effort.label}
+              </span>
+            ) : null,
+          ]}
+        />
+      </ComposerControlButton>
       <MenuPopover placement="top start">
         <ChatModelMenu models={models} choice={choice} />
       </MenuPopover>

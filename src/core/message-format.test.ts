@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatMessage, toMessageList, toSelectKey } from './message-format.js';
+import { formatMessage, toSelectKey } from './message-format.js';
 
 describe('formatMessage', () => {
   it('UIC-PROVIDER-3.4 picks plural branches by the locale rules, exact values first', () => {
@@ -18,12 +18,10 @@ describe('formatMessage', () => {
   it('UIC-PROVIDER-3.4 reads lists, booleans and missing values', () => {
     const items = ['Ana', 'Ben', 'Chloé'];
     expect(formatMessage('{names}', { names: items })).toBe('Ana, Ben, and Chloé');
-    expect(formatMessage('{names}', { names: toMessageList(items, 'or') }, 'es-ES')).toBe(
+    expect(formatMessage('{names}', { names: { items, type: 'or' } }, 'es-ES')).toBe(
       'Ana, Ben o Chloé',
     );
-    expect(formatMessage('{names}', { names: toMessageList(items, 'unit') })).toBe(
-      'Ana, Ben, Chloé',
-    );
+    expect(formatMessage('{names}', { names: { items, type: 'unit' } })).toBe('Ana, Ben, Chloé');
     expect(formatMessage('{names}', { names: items }, 'ja-JP')).toBe('Ana、Ben、Chloé');
     const muted = '{isMuted, select, true {muted} other {on}}';
     expect([true, false].map((isMuted) => formatMessage(muted, { isMuted }))).toEqual([

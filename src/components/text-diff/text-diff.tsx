@@ -13,7 +13,6 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useSyncedScroll, type ScrollAnchor } from '../../utils/use-synced-scroll.js';
-import { Button } from '../button/button.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
@@ -26,6 +25,7 @@ import {
   type FoldRow,
   type TextDiffLine,
 } from './diff-rows.js';
+import { ChangeNavigation } from './change-navigation.js';
 import { textDiffHooks as hooks } from './text-diff-hooks.js';
 import {
   SplitTable,
@@ -35,6 +35,7 @@ import {
   type TableOptions,
 } from './text-diff-table.js';
 
+export { ChangeNavigation } from './change-navigation.js';
 export type { TextDiffChange, TextDiffLine } from './diff-rows.js';
 
 /** `unified` draws both texts in one column; `split` draws the old text beside the new one. */
@@ -99,24 +100,19 @@ function TextDiffHeader({ added, removed, previous, next, changes, onMove }: Hea
           {strings.textDiffSummary(added, removed)}
         </VisuallyHidden>
       </span>
-      <span {...hooks.slot('navigation')}>
-        <Button
-          icon="chevron-up"
-          size="sm"
-          label={strings.textDiffPreviousChange}
-          className={hooks.slotClass('previous')}
-          isDisabled={previous < 0}
-          onPress={() => onMove(previous)}
-        />
-        <Button
-          icon="chevron-down"
-          size="sm"
-          label={strings.textDiffNextChange}
-          className={hooks.slotClass('next')}
-          isDisabled={next >= changes}
-          onPress={() => onMove(next)}
-        />
-      </span>
+      <ChangeNavigation
+        hooks={hooks}
+        previous={{
+          label: strings.textDiffPreviousChange,
+          isDisabled: previous < 0,
+          onPress: () => onMove(previous),
+        }}
+        next={{
+          label: strings.textDiffNextChange,
+          isDisabled: next >= changes,
+          onPress: () => onMove(next),
+        }}
+      />
     </div>
   );
 }

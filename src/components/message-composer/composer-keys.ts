@@ -91,7 +91,7 @@ export function isComposingKey(event: ComposerKey): boolean {
 }
 
 /** Whether the primary pointer is coarse (a touch screen), followed as it changes. */
-export function useCoarsePointer(): boolean {
+function useCoarsePointer(): boolean {
   return useSyncExternalStore(subscribeToPointer, readCoarsePointer, () => false);
 }
 
@@ -100,7 +100,7 @@ export function useCoarsePointer(): boolean {
  * while a reply runs, each defaulting on its own. On a touch screen a bare Enter breaks the line,
  * and Ctrl+Enter sends when that leaves nothing to send with.
  */
-export function resolveComposerKeys(
+function resolveComposerKeys(
   shortcuts: MessageComposerShortcuts | undefined,
   { isPending, isEditing }: ComposerKeyState,
   isCoarsePointer: boolean,

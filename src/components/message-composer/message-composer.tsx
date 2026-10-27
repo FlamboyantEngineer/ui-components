@@ -13,6 +13,7 @@ import { ComposerFrame } from './composer-frame.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import { useMessageComposer } from './use-message-composer.js';
 
+export { ComposerControlButton } from './composer-control-button.js';
 export { useMessageComposerControls } from './composer-controls.js';
 export { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 

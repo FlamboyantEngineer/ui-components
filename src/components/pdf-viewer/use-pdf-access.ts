@@ -44,7 +44,7 @@ interface UsePdfAccessOptions<V extends PdfViewport, C extends PdfTextContent> {
  * A handle on one open document: `read` gives the document as the reader turns it now, or `null`
  * once it has closed, after which every read is refused.
  */
-export function createDocumentAccess<V extends PdfViewport, C extends PdfTextContent>(
+function createDocumentAccess<V extends PdfViewport, C extends PdfTextContent>(
   pageCount: number,
   read: () => LoadedPdf<V, C> | null,
 ): PdfDocumentAccess<V, C> {

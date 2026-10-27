@@ -8,7 +8,7 @@ import {
   parseIsoDateTime,
   toCalendarDate,
 } from '../primitives/index.js';
-import { capitalizeText } from './relative-time.js';
+import { capitalizeText, getRelativeFormat } from './relative-time.js';
 
 /** The local calendar day a value falls on, read against today. */
 export interface CalendarDay {
@@ -45,6 +45,6 @@ export function createCalendarDayReader(now: Date): (value: string) => CalendarD
 
 /** A day `offset` days from today as Intl words it with `numeric: 'auto'`, capitalized: `Today`. */
 export function formatRelativeDay(offset: number, locale: string): string {
-  const words = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(offset, 'day');
+  const words = getRelativeFormat(locale).format(offset, 'day');
   return capitalizeText(words, locale);
 }

@@ -1,4 +1,4 @@
-import { toMessageList, toSelectKey, type MessageArguments } from './message-format.js';
+import { toSelectKey, type MessageArguments } from './message-format.js';
 
 type ChatPlanStepStatus = 'pending' | 'in-progress' | 'done' | 'failed' | 'skipped';
 
@@ -51,11 +51,11 @@ export const chatActivityArguments: MessageArguments<ChatActivityStrings> = {
   chatStepsComplete: (actions, seconds) => ({
     ...toDuration(seconds),
     count: actions.length,
-    actions: toMessageList(capitalizeFirst(actions), 'unit'),
+    actions: { items: capitalizeFirst(actions), type: 'unit' },
   }),
   chatStepsAction: (kind, count) => ({ kind, count }),
   chatPlanProgress: (done, total) => ({ done, total }),
   chatPlanStepStatus: (status) => ({ status: toSelectKey(status) }),
   chatPlanChange: (label, status) => ({ label, status: toSelectKey(status) }),
-  chatPlanChanged: (changes) => ({ changes: toMessageList(changes, 'unit') }),
+  chatPlanChanged: (changes) => ({ changes: { items: changes, type: 'unit' } }),
 };

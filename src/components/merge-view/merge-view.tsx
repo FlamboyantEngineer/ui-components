@@ -4,7 +4,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useSyncedScroll, type ScrollAnchor } from '../../utils/use-synced-scroll.js';
-import { Button } from '../button/button.js';
+import { ChangeNavigation } from '../text-diff/text-diff.js';
 import type { MergeSide } from './merge-blocks.js';
 import { mergeViewHooks as hooks } from './merge-view-hooks.js';
 import { getConflictId, MergeResultPane, type MergeLabels } from './merge-view-result.js';
@@ -84,24 +84,19 @@ function MergeViewHeader(props: {
       <span role="status" {...hooks.slot('status')}>
         {strings.mergeViewConflictCount(unresolved, total)}
       </span>
-      <span {...hooks.slot('navigation')}>
-        <Button
-          icon="chevron-up"
-          size="sm"
-          label={strings.mergeViewPreviousConflict}
-          className={hooks.slotClass('previous')}
-          isDisabled={previous < 0}
-          onPress={() => onMove(previous)}
-        />
-        <Button
-          icon="chevron-down"
-          size="sm"
-          label={strings.mergeViewNextConflict}
-          className={hooks.slotClass('next')}
-          isDisabled={next >= total}
-          onPress={() => onMove(next)}
-        />
-      </span>
+      <ChangeNavigation
+        hooks={hooks}
+        previous={{
+          label: strings.mergeViewPreviousConflict,
+          isDisabled: previous < 0,
+          onPress: () => onMove(previous),
+        }}
+        next={{
+          label: strings.mergeViewNextConflict,
+          isDisabled: next >= total,
+          onPress: () => onMove(next),
+        }}
+      />
     </div>
   );
 }

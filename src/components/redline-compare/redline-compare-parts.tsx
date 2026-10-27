@@ -4,7 +4,7 @@ import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { BlockChangeCounts, DocumentBlock, DocumentMark } from '../../utils/compare-blocks.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
-import { Button } from '../button/button.js';
+import { ChangeNavigation } from '../text-diff/text-diff.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { MarkedRun, RedlineWords } from './redline-text.js';
 
@@ -106,24 +106,19 @@ export function RedlineCompareHeader(props: {
   return (
     <div {...hooks.slot('header')}>
       <p {...hooks.slot('summary')}>{strings.redlineSummary(props.counts)}</p>
-      <span {...hooks.slot('navigation')}>
-        <Button
-          icon="chevron-up"
-          size="sm"
-          label={strings.redlinePreviousChange}
-          className={hooks.slotClass('previous')}
-          isDisabled={!props.canMove.previous}
-          onPress={() => props.onMove(-1)}
-        />
-        <Button
-          icon="chevron-down"
-          size="sm"
-          label={strings.redlineNextChange}
-          className={hooks.slotClass('next')}
-          isDisabled={!props.canMove.next}
-          onPress={() => props.onMove(1)}
-        />
-      </span>
+      <ChangeNavigation
+        hooks={hooks}
+        previous={{
+          label: strings.redlinePreviousChange,
+          isDisabled: !props.canMove.previous,
+          onPress: () => props.onMove(-1),
+        }}
+        next={{
+          label: strings.redlineNextChange,
+          isDisabled: !props.canMove.next,
+          onPress: () => props.onMove(1),
+        }}
+      />
     </div>
   );
 }
