@@ -26,7 +26,7 @@ interface UsePdfVisiblePositionOptions {
 const precision = 100;
 
 /** The page under the scroller's top edge and how far down it the edge is. */
-export function measureVisiblePosition(
+function measureVisiblePosition(
   scroller: HTMLElement,
   elements: ReadonlyMap<number, HTMLElement>,
   scale: number,

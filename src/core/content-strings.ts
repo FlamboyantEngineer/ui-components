@@ -1,4 +1,4 @@
-import { toMessageList, toSelectKey, type MessageArguments } from './message-format.js';
+import { toSelectKey, type MessageArguments } from './message-format.js';
 /**
  * Strings of the folder manager, code and JSON editors, completions, conversations, emoji picker,
  * PDF viewer, data tables, timestamps, save status, record labels, outlines, state histories,
@@ -181,8 +181,8 @@ export const contentArguments: MessageArguments<ContentStrings> = {
   renameItem: (name) => ({ name }),
   folderDepthLimit: (depth) => ({ depth }),
   invalidJsonAt: (line, column) => ({ line: String(line), column: String(column) }),
-  jsonTypeMismatch: (types) => ({ types: toMessageList(types, 'or') }),
-  jsonValueMismatch: (values) => ({ values: toMessageList(values, 'or'), count: values.length }),
+  jsonTypeMismatch: (types) => ({ types: { items: types, type: 'or' } }),
+  jsonValueMismatch: (values) => ({ values: { items: values, type: 'or' }, count: values.length }),
   jsonMissingProperty: (name) => ({ name }),
   jsonUnknownProperty: (name) => ({ name }),
   jsonTooFewItems: (count) => ({ count }),
@@ -208,7 +208,7 @@ export const contentArguments: MessageArguments<ContentStrings> = {
     emoji,
     count,
     names,
-    nameList: toMessageList(names, 'unit'),
+    nameList: { items: names, type: 'unit' },
     named: names.length,
     others: Math.max(0, count - names.length),
   }),

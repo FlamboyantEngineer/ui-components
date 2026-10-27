@@ -54,11 +54,6 @@ function toArgument(value: MessageValue | null, locale: string): string | number
   return value as string | number;
 }
 
-/** Reads `items` as a locale-aware list of the given type in a message. */
-export function toMessageList(items: readonly string[], type: MessageList['type']): MessageList {
-  return { items, type };
-}
-
 /**
  * Formats an ICU MessageFormat message, such as
  * `{count, plural, =0 {No files} one {# file} other {# files}}`, with the locale's plural rules,

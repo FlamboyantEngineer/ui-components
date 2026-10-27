@@ -49,7 +49,7 @@ export type {
 export { defaultGlyphs, glyphNames } from './glyphs.js';
 export type { GlyphComponent, GlyphComponentProps, GlyphMap, GlyphName } from './glyphs.js';
 export type { UiMessages, UiStrings } from './strings.js';
-export { formatMessage, toMessageList } from './message-format.js';
+export { formatMessage } from './message-format.js';
 export type { MessageList, MessageValue, MessageValues } from './message-format.js';
 export { createMemoryStorage, createSafeStorage } from './storage.js';
 export type { UiStorage } from './storage.js';

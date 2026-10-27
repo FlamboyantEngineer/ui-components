@@ -232,7 +232,6 @@ export function Button({
   return withTooltip(element, { tooltip: presentation.hint, shortcut: rest.shortcut });
 }
 
-export { toAriaButtonProps, toAriaLinkProps, useButtonSelection } from './button-state.js';
 export type { ButtonRenderState } from './button-state.js';
 
 export { runPendingAction, usePendingAction } from './button-action.js';

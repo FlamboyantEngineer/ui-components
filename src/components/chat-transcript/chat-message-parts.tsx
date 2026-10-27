@@ -3,7 +3,7 @@ import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { describeRelativeTime } from '../../utils/relative-time.js';
+import { formatAbsoluteTime } from '../../utils/relative-time.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
@@ -59,14 +59,9 @@ const deliveryGlyphs: Record<ChatMessageDelivery, GlyphName> = {
 };
 
 /** A message's time as the absolute date and time, for its accessible name. */
-export function useAbsoluteTime(
-  time: string | undefined,
-  getNow: (() => Date) | undefined,
-): string | undefined {
+export function useAbsoluteTime(time: string | undefined): string | undefined {
   const { locale } = useLocale();
-  if (!time) return undefined;
-  const now = getNow?.() ?? new Date();
-  return describeRelativeTime(time, { now, locale, fallbackAfterDays: 7 })?.absolute;
+  return time ? (formatAbsoluteTime(time, locale) ?? undefined) : undefined;
 }
 
 /** The author's avatar, marked and named with their presence when they have one. */

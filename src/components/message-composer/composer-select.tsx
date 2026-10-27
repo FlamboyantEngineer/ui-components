@@ -5,10 +5,9 @@ import { useControllableState } from '../../core/controllable-state.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
-import { useMessageComposerControls } from './composer-controls.js';
+import { ComposerControlButton } from './composer-control-button.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 
 /** An option of a composer select. */
@@ -84,7 +83,6 @@ export function MessageComposerSelect({
   ...props
 }: MessageComposerSelectProps) {
   const strings = useUiStrings();
-  const composer = useMessageComposerControls();
   // An id no option has falls back to the first available option.
   const [value, setValue] = useControllableState(valueProp, defaultValue ?? '', onChange);
   const current = findCurrent(options, value);
@@ -94,22 +92,18 @@ export function MessageComposerSelect({
     const id = String(key);
     if (id !== current.id) setValue(id);
   };
-  const trigger = {
-    ...props,
-    className: mergeClassNames(hooks.slotClass('select'), props.className),
-    variant: 'ghost',
-    size: 'sm',
-    isDisabled: isDisabled || composer.isDisabled,
-  } as const;
   return (
     <MenuTrigger>
-      {composer.isCompact ? (
-        <Button {...trigger} icon={current.icon} label={name} tooltip={name} />
-      ) : (
-        <Button {...trigger} startIcon={current.icon} endIcon="chevron-down" aria-label={name}>
-          {current.label}
-        </Button>
-      )}
+      <ComposerControlButton
+        {...props}
+        className={mergeClassNames(hooks.slotClass('select'), props.className)}
+        icon={current.icon}
+        name={name}
+        hasMenu
+        isDisabled={isDisabled}
+      >
+        {current.label}
+      </ComposerControlButton>
       <MenuPopover placement="top start">
         <Menu
           className={hooks.slotClass('select-menu')}

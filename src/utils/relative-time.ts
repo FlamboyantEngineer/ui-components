@@ -26,7 +26,15 @@ export type RelativeTimeUnitStyle = 'long' | 'short' | 'narrow';
 /** An `Intl.DateTimeFormat` date or time style. */
 export type RelativeTimeStyle = 'full' | 'long' | 'medium' | 'short';
 
-interface RelativeTimeOptions {
+/** The absolute text's styles. */
+interface AbsoluteTimeStyles {
+  /** The absolute date's style. Defaults to `medium`. */
+  dateStyle?: RelativeTimeStyle | undefined;
+  /** The absolute time's style, for a date and time. Defaults to `short`. */
+  timeStyle?: RelativeTimeStyle | undefined;
+}
+
+interface RelativeTimeOptions extends AbsoluteTimeStyles {
   /** The moment the value is read against. */
   now: Date;
   locale: string;
@@ -36,10 +44,6 @@ interface RelativeTimeOptions {
   precision?: RelativeTimePrecision | undefined;
   /** How the relative words spell their units. Defaults to `long`. */
   unitStyle?: RelativeTimeUnitStyle | undefined;
-  /** The absolute date's style. Defaults to `medium`. */
-  dateStyle?: RelativeTimeStyle | undefined;
-  /** The absolute time's style, for a date and time. Defaults to `short`. */
-  timeStyle?: RelativeTimeStyle | undefined;
 }
 
 interface RelativeTimeText {
@@ -174,6 +178,47 @@ function describeInstant(
   };
 }
 
+const relativeFormats = new Map<string, Intl.RelativeTimeFormat>();
+
+/** The relative words (`numeric: 'auto'`) for a locale and unit style, built once and shared. */
+export function getRelativeFormat(
+  locale: string,
+  style: RelativeTimeUnitStyle = 'long',
+): Intl.RelativeTimeFormat {
+  const key = `${locale}\u0000${style}`;
+  let format = relativeFormats.get(key);
+  if (!format) {
+    format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style });
+    relativeFormats.set(key, format);
+  }
+  return format;
+}
+
+/** The value's absolute text, given its parsed date and instant. */
+function formatAbsolute(
+  parsed: ParsedValue,
+  locale: string,
+  { dateStyle = 'medium', timeStyle = 'short' }: AbsoluteTimeStyles,
+): string {
+  return new DateFormatter(locale, {
+    dateStyle,
+    timeStyle: parsed.instant ? timeStyle : undefined,
+  }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
+}
+
+/**
+ * An ISO 8601 date (`YYYY-MM-DD`) or date and time as a localized date, or date and time; `null`
+ * when the value is not a date.
+ */
+export function formatAbsoluteTime(
+  value: string,
+  locale: string,
+  styles: AbsoluteTimeStyles = {},
+): string | null {
+  const parsed = parseValue(value);
+  return parsed ? formatAbsolute(parsed, locale, styles) : null;
+}
+
 /** Upper-cases the first letter, for relative text that starts a label or a sentence. */
 export function capitalizeText(text: string, locale: string): string {
   return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
@@ -193,14 +238,8 @@ export function describeRelativeTime(
   if (!parsed) return null;
   const { locale, now } = options;
   const days = parsed.date.compare(toDay(now));
-  const formatter = new Intl.RelativeTimeFormat(locale, {
-    numeric: 'auto',
-    style: options.unitStyle ?? 'long',
-  });
-  const absolute = new DateFormatter(locale, {
-    dateStyle: options.dateStyle ?? 'medium',
-    timeStyle: parsed.instant ? (options.timeStyle ?? 'short') : undefined,
-  }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
+  const formatter = getRelativeFormat(locale, options.unitStyle);
+  const absolute = formatAbsolute(parsed, locale, options);
   const offset = parsed.instant ? parsed.instant.getTime() - now.getTime() : 0;
   const time = parsed.instant ? describeInstant(offset, formatter, options.precision) : null;
   if (time) return { ...time, absolute, isRelative: true };

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { capitalizeText, describeRelativeTime } from './relative-time.js';
+import {
+  capitalizeText,
+  describeRelativeTime,
+  formatAbsoluteTime,
+  getRelativeFormat,
+} from './relative-time.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
 const options = { now, locale: 'en-US', fallbackAfterDays: 7 };
@@ -173,5 +178,23 @@ describe('describeRelativeTime', () => {
     expect(capitalizeText('yesterday', 'en-US')).toBe('Yesterday');
     expect(capitalizeText('il y a 5 minutes', 'fr-FR')).toBe('Il y a 5 minutes');
     expect(capitalizeText('', 'en-US')).toBe('');
+  });
+});
+
+describe('formatAbsoluteTime', () => {
+  it('UIC-RELATIVE-TIME-1.3 formats the absolute text alone, without reading the clock', () => {
+    expect(plain(formatAbsoluteTime('2026-05-21T09:00', 'en-US') ?? undefined)).toBe(
+      'May 21, 2026, 9:00 AM',
+    );
+    expect(formatAbsoluteTime('2026-05-21', 'en-US', { dateStyle: 'long' })).toBe('May 21, 2026');
+    expect(formatAbsoluteTime('soon', 'en-US')).toBeNull();
+  });
+});
+
+describe('getRelativeFormat', () => {
+  it('UIC-RELATIVE-TIME-1.2 shares one formatter per locale and unit style', () => {
+    expect(getRelativeFormat('en-US')).toBe(getRelativeFormat('en-US', 'long'));
+    expect(getRelativeFormat('en-US', 'short')).not.toBe(getRelativeFormat('en-US'));
+    expect(getRelativeFormat('fr-FR').format(-1, 'day')).toBe('hier');
   });
 });

@@ -225,7 +225,7 @@ export function ChatMessage({
   const bodyRef = useRef<HTMLDivElement>(null);
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
   const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
-  const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
+  const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time));
   const display = resolveDisplay({
     ...{ author, groupPosition, variant, time },
     ...{ showAvatar, showAuthorName, timePlacement },

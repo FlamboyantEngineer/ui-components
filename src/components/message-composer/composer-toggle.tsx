@@ -3,9 +3,8 @@
 
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { Button } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
-import { useMessageComposerControls } from './composer-controls.js';
+import { ComposerControlButton } from './composer-control-button.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 
 export interface MessageComposerToggleProps extends BaseProps {
@@ -27,27 +26,19 @@ export interface MessageComposerToggleProps extends BaseProps {
  * A composer control that turns a mode on and off: a toggle button with its icon and label, or its
  * icon alone while the composer is compact.
  */
-export function MessageComposerToggle({
-  label,
-  icon,
-  isDisabled = false,
-  ...props
-}: MessageComposerToggleProps) {
-  const composer = useMessageComposerControls();
-  const button = {
-    ...props,
-    className: mergeClassNames(hooks.slotClass('toggle'), props.className),
-    variant: 'ghost',
-    size: 'sm',
-    // Without either, a press would not flip the button.
-    defaultSelected: props.isSelected === undefined ? (props.defaultSelected ?? false) : undefined,
-    isDisabled: isDisabled || composer.isDisabled,
-  } as const;
-  return composer.isCompact ? (
-    <Button {...button} icon={icon} label={label} tooltip={label} />
-  ) : (
-    <Button {...button} startIcon={icon}>
+export function MessageComposerToggle({ label, icon, ...props }: MessageComposerToggleProps) {
+  return (
+    <ComposerControlButton
+      {...props}
+      className={mergeClassNames(hooks.slotClass('toggle'), props.className)}
+      icon={icon}
+      name={label}
+      // Without either, a press would not flip the button.
+      defaultSelected={
+        props.isSelected === undefined ? (props.defaultSelected ?? false) : undefined
+      }
+    >
       {label}
-    </Button>
+    </ComposerControlButton>
   );
 }
