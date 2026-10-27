@@ -23,6 +23,11 @@ export interface ChatMessageDisplayOptions {
    * `timePlacement`.
    */
   toolCallTimePlacement?: ChatMessageTimePlacement | undefined;
+  /**
+   * Gives a time in the footer, alone there, no room until the message is hovered or holds focus.
+   * Defaults to `false`, the time's line always kept.
+   */
+  collapseFooterTime?: boolean | undefined;
   /** Draws the reader's own messages in a `bubble` (the default) or `plain`. */
   sentVariant?: ChatMessageVariant | undefined;
   /** Draws everyone else's messages, an assistant's too, in a `bubble` (the default) or `plain`. */
@@ -35,19 +40,21 @@ export function useMessageDisplay({
   showAuthorNames,
   timePlacement,
   toolCallTimePlacement,
+  collapseFooterTime,
   sentVariant,
   receivedVariant,
 }: ChatMessageDisplayOptions): ChatMessageDisplayOptions {
   return useMemo(
     () => ({
       ...{ showAvatars, showAuthorNames, timePlacement, toolCallTimePlacement },
-      ...{ sentVariant, receivedVariant },
+      ...{ collapseFooterTime, sentVariant, receivedVariant },
     }),
     [
       showAvatars,
       showAuthorNames,
       timePlacement,
       toolCallTimePlacement,
+      collapseFooterTime,
       sentVariant,
       receivedVariant,
     ],

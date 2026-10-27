@@ -76,15 +76,34 @@ test.describe('Chat message display', () => {
       toolCalls.locator('.ui-chat-message__header .ui-chat-message__time'),
     ).toBeVisible();
     await expect(reply.locator('.ui-chat-message__header')).toHaveCount(0);
+    // A collapsed footer time takes no room, so the message is as tall with the time in a tooltip.
+    const collapsedHeight = (await reply.boundingBox())?.height;
+    const roomOnHover = demo.getByRole('checkbox', { name: 'Room for the time only on hover' });
+    await roomOnHover.focus();
+    await page.keyboard.press('Space');
+    await expect(reply).not.toHaveAttribute('data-collapse-footer-time');
+    await page.mouse.move(0, 0);
+    expect((await reply.locator('.ui-chat-message__footer').boundingBox())?.height).toBeGreaterThan(
+      8,
+    );
+    await roomOnHover.focus();
+    await page.keyboard.press('Space');
+    await page.mouse.move(0, 0);
     await demo
       .getByRole('radiogroup', { name: 'Message times' })
       .getByText('In a tooltip, on hover')
       .click();
     await expect(reply.locator('.ui-chat-message__time')).toHaveCount(0);
+    expect((await reply.boundingBox())?.height).toBe(collapsedHeight);
     await reply.locator('.ui-chat-message__content').hover();
     const tooltip = page.locator('.ui-tooltip');
     await expect(tooltip).toBeVisible();
     await expect(tooltip.locator('.ui-chat-message__time')).toBeVisible();
+    const [tooltipBox, timeBox] = await Promise.all([
+      tooltip.boundingBox(),
+      tooltip.locator('.ui-chat-message__time').boundingBox(),
+    ]);
+    expect((tooltipBox?.height ?? 0) - (timeBox?.height ?? 0)).toBeLessThan(12);
     await expect(tooltip).toHaveAttribute('aria-hidden', 'true');
     await demo.getByRole('radiogroup', { name: 'Tool call times' }).hover();
     await expect(tooltip).toHaveCount(0);

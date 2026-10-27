@@ -323,19 +323,32 @@
   transition-delay: var(--ref-duration);
 }
 
-/* A footer holding only the time takes no room until it shows, then slides open. */
-.ui-chat-message__footer[data-time-only] {
+/*
+ * With `collapseFooterTime`, a footer holding only the time takes no room until it shows, then
+ * slides open. Its empty grid row keeps the body's gap, which a grid track cannot give back, so the
+ * body takes it back.
+ */
+.ui-chat-message[data-collapse-footer-time] .ui-chat-message__footer[data-time-only] {
   max-block-size: 0;
-  margin-block-start: -2px;
   overflow: hidden;
-  transition:
-    max-block-size var(--ref-duration) ease-out,
-    margin-block-start var(--ref-duration) ease-out;
+  transition: max-block-size var(--ref-duration) ease-out;
 }
 
-.ui-chat-message:is([data-hovered], [data-focus-within]) .ui-chat-message__footer[data-time-only] {
+.ui-chat-message[data-collapse-footer-time]
+  .ui-chat-message__body:has(> .ui-chat-message__footer[data-time-only]) {
+  margin-block-end: -2px;
+  transition: margin-block-end var(--ref-duration) ease-out;
+}
+
+.ui-chat-message[data-collapse-footer-time]:is([data-hovered], [data-focus-within])
+  .ui-chat-message__footer[data-time-only] {
   max-block-size: 1lh; /* layout-exempt: the time's line opens on purpose, after a pause */
-  margin-block-start: 0; /* layout-exempt: as above */
+  transition-delay: var(--ref-duration);
+}
+
+.ui-chat-message[data-collapse-footer-time]:is([data-hovered], [data-focus-within])
+  .ui-chat-message__body:has(> .ui-chat-message__footer[data-time-only]) {
+  margin-block-end: 0; /* layout-exempt: as above */
   transition-delay: var(--ref-duration);
 }
 
@@ -532,7 +545,12 @@
   }
 
   /* The pause stays, so the chat still does not jump under a passing pointer. */
-  :is(.ui-chat-message__footer[data-time-only], .ui-chat-message__footer .ui-chat-message__time) {
+  .ui-chat-message__footer .ui-chat-message__time,
+  .ui-chat-message[data-collapse-footer-time]
+    :is(
+      .ui-chat-message__footer[data-time-only],
+      .ui-chat-message__body:has(> .ui-chat-message__footer[data-time-only])
+    ) {
     transition-duration: 0s;
   }
 }

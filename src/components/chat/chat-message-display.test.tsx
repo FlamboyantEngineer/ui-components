@@ -62,7 +62,7 @@ describe('Chat message display', () => {
     expectHooksMatchSpec(container, 'CHAT');
   });
 
-  it('UIC-CHAT-1.8 places the time of a message made only of tool calls on its own', () => {
+  it('UIC-CHAT-1.8 places the time of a message made only of tool calls on its own, and collapses footer times on request', () => {
     const messages = [
       ...assistantConversation,
       message('t1', 'helper', {
@@ -79,10 +79,12 @@ describe('Chat message display', () => {
       article('a1').querySelector('.ui-chat-message__footer .ui-chat-message__time'),
     ).not.toBeNull();
     expect(article('t1').querySelector('.ui-chat-message__time')).toBeNull();
-    rerenderWith({ ...assistantChat, messages, timePlacement: 'footer' });
+    expect(article('a1')).not.toHaveAttribute('data-collapse-footer-time');
+    rerenderWith({ ...assistantChat, messages, timePlacement: 'footer', collapseFooterTime: true });
     expect(
       article('t1').querySelector('.ui-chat-message__footer .ui-chat-message__time'),
     ).not.toBeNull();
+    expect(article('t1')).toHaveAttribute('data-collapse-footer-time', 'true');
   });
 
   it('UIC-CHAT-1.8 draws each side in its own variant and leaves notices at the default', () => {

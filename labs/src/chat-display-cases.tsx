@@ -102,6 +102,7 @@ function DisplayDemo() {
   const [timePlacement, setTimePlacement] = useState<ChatMessageTimePlacement>('footer');
   const [toolCallTimePlacement, setToolCallTimePlacement] =
     useState<ChatMessageTimePlacement>('none');
+  const [collapseFooterTime, setCollapseFooterTime] = useState(true);
   const [sentBubble, setSentBubble] = useState(true);
   const [receivedBubble, setReceivedBubble] = useState(false);
   return (
@@ -115,6 +116,9 @@ function DisplayDemo() {
         </Checkbox>
         <Checkbox isSelected={sentBubble} onChange={setSentBubble}>
           Background on my messages
+        </Checkbox>
+        <Checkbox isSelected={collapseFooterTime} onChange={setCollapseFooterTime}>
+          Room for the time only on hover
         </Checkbox>
         <Checkbox isSelected={receivedBubble} onChange={setReceivedBubble}>
           Background on replies
@@ -141,6 +145,7 @@ function DisplayDemo() {
           showAuthorNames={showAuthorNames}
           timePlacement={timePlacement}
           toolCallTimePlacement={toolCallTimePlacement}
+          collapseFooterTime={collapseFooterTime}
           sentVariant={sentBubble ? 'bubble' : 'plain'}
           receivedVariant={receivedBubble ? 'bubble' : 'plain'}
           onCopy={() => undefined}
@@ -154,7 +159,7 @@ export function ChatDisplayCases() {
   return (
     <LabSection
       title="Message display"
-      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions, its line opening after a short pause (the day separators stay), and no time on the planner's tool calls, your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Messages made only of tool calls take their own time placement. A tooltip shows the time over a message after the tooltip delay. Toggle the options to compare with the default look."
+      description="Avatars, author names, times and message backgrounds are each optional. The demo starts minimal: no avatars or names, each time under its message only while the message is hovered or holds focus, with its actions, its line taking no room until it opens after a short pause (the day separators stay), and no time on the planner's tool calls, your messages in bubbles and the planner's replies as plain text across the width. Each message keeps its author and time in its accessible name. Messages made only of tool calls take their own time placement. Without room for the time only on hover, each message keeps the time's line. A tooltip shows the time over a message after the tooltip delay. Toggle the options to compare with the default look."
     >
       <DisplayDemo />
     </LabSection>

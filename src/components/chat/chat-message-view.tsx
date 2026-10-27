@@ -142,6 +142,7 @@ export const ChatMessageView = memo(function ChatMessageView({
           showAvatar={display.showAvatars}
           showAuthorName={display.showAuthorNames}
           timePlacement={toTimePlacement(message, display)}
+          collapseFooterTime={display.collapseFooterTime}
           variant={toMessageVariant(origin, display)}
           time={message.createdAt}
           getNow={context.getNow}

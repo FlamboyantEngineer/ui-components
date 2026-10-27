@@ -218,7 +218,7 @@ describe('ChatMessage avatar, name and background', () => {
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
   });
 
-  it('UIC-CHAT-TRANSCRIPT-2.13 marks a footer that holds only the time', () => {
+  it('UIC-CHAT-TRANSCRIPT-2.13 marks a footer that holds only the time, and collapses it on request', () => {
     render(
       <>
         <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="footer">
@@ -227,13 +227,24 @@ describe('ChatMessage avatar, name and background', () => {
         <ChatMessage author={maria} time={time} getNow={getNow} timePlacement="footer" isEdited>
           With a marker
         </ChatMessage>
+        <ChatMessage
+          author={maria}
+          time={time}
+          getNow={getNow}
+          timePlacement="footer"
+          collapseFooterTime
+        >
+          Collapsed
+        </ChatMessage>
       </>,
     );
-    const [timeOnly, marked] = screen.getAllByRole('article');
+    const [timeOnly, marked, collapsed] = screen.getAllByRole('article');
     const footer = (message: HTMLElement | undefined) =>
       message?.querySelector('.ui-chat-message__footer');
     expect(footer(timeOnly)).toHaveAttribute('data-time-only', 'true');
     expect(footer(marked)).not.toHaveAttribute('data-time-only');
+    expect(timeOnly).not.toHaveAttribute('data-collapse-footer-time');
+    expect(collapsed).toHaveAttribute('data-collapse-footer-time', 'true');
   });
 
   it('UIC-CHAT-TRANSCRIPT-2.13 shows the time in a tooltip once the message is hovered for the delay', async () => {
