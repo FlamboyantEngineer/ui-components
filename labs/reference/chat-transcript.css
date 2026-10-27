@@ -244,6 +244,11 @@
   max-width: none;
 }
 
+/* Its body fills the row past the avatar, so opening its activity changes no width. */
+.ui-chat-message[data-variant='plain'][data-origin='received'] > .ui-chat-message__body {
+  flex: 1;
+}
+
 .ui-chat-message[data-variant='plain'][data-origin='received']:is(
     [data-group-position='middle'],
     [data-group-position='last']
