@@ -175,10 +175,17 @@ Verification: `src/components/markdown/markdown-streaming.test.ts`, `src/compone
 
 ### UIC-MARKDOWN-2.12 - Finished blocks
 
-A top-level block the previous render drew in the same rendering context shall keep its element, so React skips it and `renderNode` is not called for its nodes again: without streaming, the same block of the same parsed source; while `isStreaming`, a block whose content (signed without recursive calls) and position match, so each chunk renders only the blocks it changed, usually the last. A new `renderNode`, `headingIdPrefix` or set of heading ids renders every block again, so callers keep `renderNode` stable while streaming (`useMemo` or `useCallback`). The element tree has the same shape with and without streaming, so ending a stream keeps the rendered elements, and focus within them.
+A top-level block the previous render drew in the same rendering context shall keep its element, so React skips it and `renderNode` is not called for its nodes again: the same block object, and while `isStreaming`, a block parsed afresh whose content (signed without recursive calls) and position match, so each chunk renders only the blocks it changed, usually the last. Settled blocks ([UIC-MARKDOWN-2.13](#uic-markdown-213---streaming-settled-blocks)) are the same objects, so they are not signed again. A new `renderNode`, `headingIdPrefix` or set of heading ids renders every block again, so callers keep `renderNode` stable while streaming (`useMemo` or `useCallback`). The element tree has the same shape with and without streaming, so ending a stream keeps the rendered elements, and focus within them.
 
 Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-block-cache.ts`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown-block-cache.test.tsx`, `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
+
+### UIC-MARKDOWN-2.13 - Streaming: settled blocks
+
+While `isStreaming`, a text `source` that continues the previous one shall not be parsed again up to its last settled point: the start of a whole line, with more after it, that follows a blank line, sits outside every fence and begins in the first column with a letter, a digit that is not a list marker, `#`, `|`, `!` or `(`, so that no block before it can take it. The blocks before that point keep the objects they were parsed as, and only the rest of the source is parsed for each chunk, so a long reply costs each chunk about as much as its last blocks. A piece that would leave a fence open (one a list item opened, say) does not settle. The document equals `parseMarkdown` of the prepared source at every chunk, heading ids included. A source with a link reference definition (`]:`) or a carriage return is parsed whole, since either can change what came before.
+
+Implementation: `src/components/markdown/parse-streaming-markdown.ts`, `src/components/markdown/parse-markdown.ts`, `src/components/markdown/markdown.tsx`
+Verification: `src/components/markdown/parse-streaming-markdown.test.ts`, `src/components/markdown/markdown-block-cache.test.tsx`
 
 ## UIC-MARKDOWN-3 - Accessibility
 

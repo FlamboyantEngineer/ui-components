@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import type {
   ChatMessageOrigin,
@@ -45,21 +45,10 @@ export function useMessageDisplay({
   sentVariant,
   receivedVariant,
 }: ChatMessageDisplayOptions): ChatMessageDisplayOptions {
-  return useMemo(
-    () => ({
-      ...{ showAvatars, showAuthorNames, timePlacement, activityTimePlacement },
-      ...{ collapseFooterTime, sentVariant, receivedVariant },
-    }),
-    [
-      showAvatars,
-      showAuthorNames,
-      timePlacement,
-      activityTimePlacement,
-      collapseFooterTime,
-      sentVariant,
-      receivedVariant,
-    ],
-  );
+  return useShallowStable({
+    ...{ showAvatars, showAuthorNames, timePlacement, activityTimePlacement },
+    ...{ collapseFooterTime, sentVariant, receivedVariant },
+  });
 }
 
 /** Whether `message` shows written text: a text part with words, or the deleted marker. */

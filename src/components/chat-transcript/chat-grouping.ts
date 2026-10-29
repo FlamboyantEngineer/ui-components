@@ -46,11 +46,28 @@ interface Placed<M extends ChatGroupableMessage> {
 
 const defaultMaxGap = 5 * 60 * 1000;
 
+/** The most moments kept between groupings before the cache starts over. */
+const momentCacheSize = 10_000;
+
+/**
+ * Moments by time zone and text. A conversation groups again on every streamed chunk, and
+ * reading a date is most of what grouping costs.
+ */
+const moments = new Map<string, Moment | null>();
+
 /** The instant of a date and time and its calendar day in `timeZone`; `null` when unreadable. */
 function readMoment(text: string, timeZone: string): Moment | null {
+  const key = `${timeZone} ${text}`;
+  const cached = moments.get(key);
+  if (cached !== undefined) return cached;
   const dateTime = parseIsoDateTime(text, timeZone);
-  if (!dateTime || !('timeZone' in dateTime)) return null;
-  return { instant: dateTime.toDate().getTime(), day: toCalendarDate(dateTime).toString() };
+  const moment =
+    dateTime && 'timeZone' in dateTime
+      ? { instant: dateTime.toDate().getTime(), day: toCalendarDate(dateTime).toString() }
+      : null;
+  if (moments.size >= momentCacheSize) moments.clear();
+  moments.set(key, moment);
+  return moment;
 }
 
 function isGroupable(message: ChatGroupableMessage): boolean {

@@ -10,6 +10,7 @@ import {
   type PdfSearchOptions,
 } from './pdf-search.js';
 import type { LoadedPdf } from './use-pdf-document.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
@@ -142,17 +143,17 @@ function useCurrentMatch(options: UsePdfSearchOptions, matches: readonly PdfMatc
 
 /** The find options, kept by the viewer or by the caller. */
 function useSearchOptions({ searchOptions, onSearchOptionsChange }: UsePdfSearchOptions) {
-  const [own, setOwn] = useState(noOptions);
-  const resolved = resolveSearchOptions(searchOptions ?? own);
+  const [current, setOptions] = useControllableState(
+    searchOptions,
+    noOptions,
+    onSearchOptionsChange,
+  );
+  const resolved = resolveSearchOptions(current);
   const { highlightAll, matchCase, ignoreAccents, wholeWords } = resolved;
   const options = useMemo(
     () => ({ highlightAll, matchCase, ignoreAccents, wholeWords }),
     [highlightAll, matchCase, ignoreAccents, wholeWords],
   );
-  const setOptions = (next: PdfSearchOptions) => {
-    if (searchOptions === undefined) setOwn(next);
-    onSearchOptionsChange?.(next);
-  };
   return { options, setOptions };
 }
 
@@ -164,8 +165,7 @@ function useSearchOptions({ searchOptions, onSearchOptionsChange }: UsePdfSearch
 export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
   const { loaded, pages, onSearchQueryChange } = options;
   const { nearPages, scrollToPage } = pages;
-  const [ownQuery, setOwnQuery] = useState('');
-  const query = options.searchQuery ?? ownQuery;
+  const [query, setQuery] = useControllableState(options.searchQuery, '', onSearchQueryChange);
   const isSearching = query.trim() !== '';
   const texts = usePageTexts(loaded, isSearching);
   const search = useSearchOptions(options);
@@ -194,10 +194,7 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
   return {
     ...search,
     query,
-    setQuery(next) {
-      if (options.searchQuery === undefined) setOwnQuery(next);
-      onSearchQueryChange?.(next);
-    },
+    setQuery,
     isPending: isSearching && texts === null,
     total: matches.length,
     current,

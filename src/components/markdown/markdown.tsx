@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useRef, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { useMarkdownBlocks } from './markdown-block-cache.js';
 import { listMarkdownHeadings } from './markdown-headings.js';
@@ -6,6 +6,7 @@ import type { MarkdownDocument, MarkdownNode } from './markdown-nodes.js';
 import { markdownHooks as hooks } from './markdown-render.js';
 import { prepareStreamingMarkdown } from './markdown-streaming.js';
 import { parseMarkdown } from './parse-markdown.js';
+import { parseStreamingMarkdown, type StreamingMarkdownParse } from './parse-streaming-markdown.js';
 
 export type { MarkdownNode } from './markdown-nodes.js';
 export { parseMarkdown } from './parse-markdown.js';
@@ -41,9 +42,12 @@ export function Markdown({
   className,
   ...rest
 }: MarkdownProps) {
+  const stream = useRef<StreamingMarkdownParse | null>(null);
   const tree = useMemo(() => {
     if (typeof source !== 'string') return source;
-    return parseMarkdown(isStreaming ? prepareStreamingMarkdown(source) : source);
+    if (!isStreaming) return parseMarkdown(source);
+    stream.current = parseStreamingMarkdown(prepareStreamingMarkdown(source), stream.current);
+    return stream.current.document;
   }, [source, isStreaming]);
   const headingKey = useMemo(
     () =>

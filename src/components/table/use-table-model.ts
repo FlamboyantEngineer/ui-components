@@ -10,6 +10,7 @@ import { useCellSelection } from './use-cell-selection.js';
 import type { TableGridOptions } from './use-table-grid.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
 import type { TableReorder } from './use-table-reorder.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { TableSelection } from './use-table-selection.js';
 
 /** The parts of the grid every row and cell renders from. */
@@ -32,39 +33,20 @@ export function useRowModel<T extends TableRow>(
     options;
   const { structure, status, reordering, isGrouped, pinOffsets, cells } = parts;
   const { editing, commit, cancel, release, dismiss } = parts.editing;
-  return useMemo<TableRowModel<T>>(
-    () => ({
-      structure,
-      renderRowActions,
-      renderRowDetail,
-      getRowAttributes,
-      renderGroupLabel,
-      isReorderable: reorder !== undefined && status === null && !isGrouped,
-      isMovable: reordering.isMovable,
-      dragTrigger: reorder?.dragTrigger ?? 'row',
-      pinOffsets,
-      editing: { editing, commit, cancel, release, dismiss },
-      cells,
-    }),
-    [
-      structure,
-      renderRowActions,
-      renderRowDetail,
-      getRowAttributes,
-      renderGroupLabel,
-      reorder,
-      status,
-      isGrouped,
-      reordering.isMovable,
-      pinOffsets,
-      editing,
-      commit,
-      cancel,
-      release,
-      dismiss,
-      cells,
-    ],
-  );
+  const editingModel = useShallowStable({ editing, commit, cancel, release, dismiss });
+  return useShallowStable<TableRowModel<T>>({
+    structure,
+    renderRowActions,
+    renderRowDetail,
+    getRowAttributes,
+    renderGroupLabel,
+    isReorderable: reorder !== undefined && status === null && !isGrouped,
+    isMovable: reordering.isMovable,
+    dragTrigger: reorder?.dragTrigger ?? 'row',
+    pinOffsets,
+    editing: editingModel,
+    cells,
+  });
 }
 
 /** Spreadsheet mode's view of the cells, for the visible rows and the drawn columns. */
