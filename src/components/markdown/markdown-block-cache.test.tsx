@@ -45,7 +45,7 @@ function createCounter() {
 }
 
 describe('useMarkdownBlocks', () => {
-  it('UIC-MARKDOWN-2.12 renders only the last block for each chunk of a stream', () => {
+  it('UIC-MARKDOWN-2.12 UIC-MARKDOWN-2.13 renders only the last block for each chunk of a stream', () => {
     const chunks = streamChunks();
     const { counts, renderNode } = createCounter();
     const { rerender } = render(

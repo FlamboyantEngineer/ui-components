@@ -1,11 +1,14 @@
 // Which reasoning, tool calls and groups of steps of a message are open, as the reader chose
 // (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5.3, UIC-CHAT-PARTS-5.4 and UIC-CHAT-PARTS-6.1).
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import { useLatest } from '../../utils/use-latest.js';
 
 /** The reader's open (`true`) and closed (`false`) choices, by part id or group key. */
 type ExpandedParts = Readonly<Record<string, boolean>>;
+
+const noParts: ExpandedParts = {};
 
 interface PartsExpansionOptions {
   expandedParts: ExpandedParts | undefined;
@@ -33,12 +36,11 @@ export function usePartsExpansion({
   expandedParts,
   onExpandedPartsChange,
 }: PartsExpansionOptions): PartsExpansion {
-  const [own, setOwn] = useState<ExpandedParts>({});
-  const expanded = expandedParts ?? own;
-  const update = (next: Record<string, boolean>) => {
-    if (expandedParts === undefined) setOwn(next);
-    onExpandedPartsChange?.(next);
-  };
+  const [expanded, update] = useControllableState<ExpandedParts>(
+    expandedParts,
+    noParts,
+    onExpandedPartsChange,
+  );
   return {
     expanded,
     setExpanded: (key, isExpanded) => update({ ...expanded, [key]: isExpanded }),

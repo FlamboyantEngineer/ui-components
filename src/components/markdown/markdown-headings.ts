@@ -31,9 +31,14 @@ function slugifyHeading(text: string): string {
   return slug || 'section';
 }
 
-/** Hands out heading slugs, suffixing repeats `-2`, `-3`, … so they stay unique in a document. */
-export function createHeadingIdAllocator(): (text: string) => string {
-  const used = new Set<string>();
+/**
+ * Hands out heading slugs, suffixing repeats `-2`, `-3`, … so they stay unique in a document whose
+ * earlier headings hold `takenIds`.
+ */
+export function createHeadingIdAllocator(
+  takenIds: readonly string[] = [],
+): (text: string) => string {
+  const used = new Set(takenIds);
   const nextSuffix = new Map<string, number>();
   return (text) => {
     const base = slugifyHeading(text);

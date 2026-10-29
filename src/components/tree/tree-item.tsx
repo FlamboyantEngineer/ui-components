@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type JSX, type ReactElement, type ReactNode } from 'react';
+import { useCallback, type JSX, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
   TreeItem,
@@ -12,6 +12,7 @@ import { measuredProperty } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import type { TreeExpandGlyph, TreeItemData, TreeItemState, TreeProps } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';
@@ -121,40 +122,19 @@ export function TreeEmptyState(props: { isPending: boolean; emptyMessage: ReactN
   );
 }
 
+const isNeverMovable = () => false;
+
 /** The options every row's content reads, kept while none of them changes. */
 function useRowContentOptions<T extends TreeItemData>(options: TreeRowOptions<T>) {
   const { getTextValue, getIcon, renderLabel, renderMeta, renderActions, expandGlyph } = options;
   const { checkboxSelection, isIndeterminate, rename, loads } = options;
   const isMovable = options.reordering?.isMovable;
-  return useMemo<RowContentOptions<T>>(
-    () => ({
-      getTextValue,
-      getIcon,
-      renderLabel,
-      renderMeta,
-      renderActions,
-      expandGlyph,
-      checkboxSelection,
-      isIndeterminate,
-      rename,
-      loads,
-      isMovable: isMovable ?? (() => false),
-      hasReorder: isMovable !== undefined,
-    }),
-    [
-      getTextValue,
-      getIcon,
-      renderLabel,
-      renderMeta,
-      renderActions,
-      expandGlyph,
-      checkboxSelection,
-      isIndeterminate,
-      rename,
-      loads,
-      isMovable,
-    ],
-  );
+  return useShallowStable<RowContentOptions<T>>({
+    ...{ getTextValue, getIcon, renderLabel, renderMeta, renderActions, expandGlyph },
+    ...{ checkboxSelection, isIndeterminate, rename, loads },
+    isMovable: isMovable ?? isNeverMovable,
+    hasReorder: isMovable !== undefined,
+  });
 }
 
 /** The loading row of a branch whose children are not loaded, asking for them unless they came. */

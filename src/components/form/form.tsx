@@ -13,6 +13,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import {
   FieldScopeContext,
   useFieldScope,
@@ -159,26 +160,15 @@ export function Form({
     },
     [fields, notify, notifyValidity],
   );
-  const scope = useMemo(
-    () => ({
-      ...parent,
-      validationMode,
-      validationBehavior,
-      validationErrors,
-      register,
-      onIssuesChange: notify,
-      onValidityChange: notifyValidity,
-    }),
-    [
-      parent,
-      validationMode,
-      validationBehavior,
-      validationErrors,
-      register,
-      notify,
-      notifyValidity,
-    ],
-  );
+  const scope = useShallowStable({
+    ...parent,
+    validationMode,
+    validationBehavior,
+    validationErrors,
+    register,
+    onIssuesChange: notify,
+    onValidityChange: notifyValidity,
+  });
   const form = useInvalidFocus(fields);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
   const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);

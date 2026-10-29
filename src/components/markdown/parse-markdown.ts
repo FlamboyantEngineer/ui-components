@@ -82,11 +82,20 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
+/** Top-level blocks and the heading ids they hand out, from a document or a piece of one. */
+export interface ParsedBlocks {
+  blocks: readonly MarkdownBlock[];
+  headingIds: readonly string[];
+}
+
 /**
- * Parses Markdown into a frozen document tree. Raw HTML is not interpreted: it stays text. Links
- * and images with an unsafe URL keep only their text. Headings get unique slug ids.
+ * Parses Markdown into frozen top-level blocks, giving headings slug ids that none of `takenIds`
+ * (the ids of the blocks before them) already holds.
  */
-export function parseMarkdown(source: string): MarkdownDocument {
+export function parseMarkdownBlocks(
+  source: string,
+  takenIds: readonly string[] = [],
+): ParsedBlocks {
   const lines = source
     .replaceAll('\u0000', '\ufffd')
     .split(/\r\n?|\n/)
@@ -98,12 +107,20 @@ export function parseMarkdown(source: string): MarkdownDocument {
     headings: [],
     parseBlocks: (inner) => queueBlocks(frames, inner),
   };
-  const children = queueBlocks(frames, lines);
+  const blocks = queueBlocks(frames, lines);
   readBlocks(frames, context);
   for (const { target, text } of context.inlines) {
     for (const inline of parseMarkdownInlines(text, context.definitions)) target.push(inline);
   }
-  const allocateId = createHeadingIdAllocator();
+  const allocateId = createHeadingIdAllocator(takenIds);
   for (const heading of context.headings) heading.id = allocateId(toPlainText(heading.children));
-  return deepFreeze({ type: 'document', children });
+  return { blocks: deepFreeze(blocks), headingIds: context.headings.map((heading) => heading.id) };
+}
+
+/**
+ * Parses Markdown into a frozen document tree. Raw HTML is not interpreted: it stays text. Links
+ * and images with an unsafe URL keep only their text. Headings get unique slug ids.
+ */
+export function parseMarkdown(source: string): MarkdownDocument {
+  return Object.freeze({ type: 'document', children: parseMarkdownBlocks(source).blocks });
 }

@@ -8,8 +8,10 @@ import { renderMarkdownBlock, type RenderContext } from './markdown-render.js';
 interface BlockCache {
   context: RenderContext;
   isStreaming: boolean;
-  /** Elements by block (or while streaming, by position and signature). */
-  elements: Map<unknown, ReactNode>;
+  /** Elements by block. */
+  elements: Map<MarkdownBlock, ReactNode>;
+  /** While streaming, elements of the blocks parsed afresh, by position and signature. */
+  signed: Map<string, ReactNode>;
 }
 
 /** Closes the fields of an object or an array in a signature. */
@@ -42,7 +44,7 @@ export function signMarkdownNode(node: object): string {
  * The elements of the document's top-level blocks. A block the previous render drew in the same
  * rendering context reuses its element, so React skips it and `renderNode` is not called for its
  * nodes again: the same block object, or while streaming, a block of the same content at the same
- * position.
+ * position. Only blocks parsed afresh are signed, so the settled start of a stream costs nothing.
  */
 export function useMarkdownBlocks(
   blocks: readonly MarkdownBlock[],
@@ -52,18 +54,24 @@ export function useMarkdownBlocks(
   const cache = useRef<BlockCache | null>(null);
   const previous = cache.current;
   const reusable =
-    previous?.context === context && previous.isStreaming === isStreaming
-      ? previous.elements
-      : undefined;
-  const elements = new Map<unknown, ReactNode>();
+    previous?.context === context && previous.isStreaming === isStreaming ? previous : undefined;
+  const next: BlockCache = { context, isStreaming, elements: new Map(), signed: new Map() };
   const rendered = blocks.map((block, index) => {
-    const key = isStreaming ? `${index}:${signMarkdownNode(block)}` : block;
-    const element = reusable?.has(key)
-      ? reusable.get(key)
-      : renderMarkdownBlock(block, index, context);
-    elements.set(key, element);
+    let element: ReactNode;
+    if (reusable?.elements.has(block)) {
+      element = reusable.elements.get(block);
+    } else if (isStreaming) {
+      const key = `${index}:${signMarkdownNode(block)}`;
+      element = reusable?.signed.has(key)
+        ? reusable.signed.get(key)
+        : renderMarkdownBlock(block, index, context);
+      next.signed.set(key, element);
+    } else {
+      element = renderMarkdownBlock(block, index, context);
+    }
+    next.elements.set(block, element);
     return element;
   });
-  cache.current = { context, isStreaming, elements };
+  cache.current = next;
   return rendered;
 }

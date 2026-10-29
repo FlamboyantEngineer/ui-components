@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { ChatFeedback } from '../chat-message-actions/chat-message-actions.js';
 import type { ChatCommandHandlers } from './chat-commands.js';
 import type { ChatComposerOptions } from './chat-composer.js';
@@ -79,53 +80,18 @@ export function useMessageContext(
   const { textFormat, toolRenderers, renderPart, onApplyCode, expandsActivity } = options;
   const { onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion } = options;
   const { questionAnsweredMark, getReference } = options;
-  const parts = useMemo(
-    () => ({
-      ...{ textFormat, toolRenderers, renderPart, onApplyCode, expandsActivity },
-      ...{ onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion },
-      ...{ questionAnsweredMark, getReference },
-    }),
-    [
-      textFormat,
-      toolRenderers,
-      renderPart,
-      onApplyCode,
-      expandsActivity,
-      onApprove,
-      onDeny,
-      onAlwaysAllow,
-      onAnswerQuestion,
-      onDismissQuestion,
-      questionAnsweredMark,
-      getReference,
-    ],
-  );
+  const parts = useShallowStable({
+    ...{ textFormat, toolRenderers, renderPart, onApplyCode, expandsActivity },
+    ...{ onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion },
+    ...{ questionAnsweredMark, getReference },
+  });
   const { conversationId, currentUserId, getNow, feedbackReasons } = options;
   const { thinkingText, thinkingIcon, thinkingUntil = 'text' } = options;
-  const { jumpTo, setExpandedParts } = state;
-  return useMemo(
-    () => ({
-      ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
-      ...{ conversationId, parts, getNow, onRetry },
-      ...{ thinkingText, thinkingIcon, thinkingUntil },
-      onQuotePress: jumpTo,
-      onExpandedPartsChange: setExpandedParts,
-    }),
-    [
-      handlers,
-      currentUserId,
-      isAssistantChat,
-      participants,
-      feedbackReasons,
-      conversationId,
-      parts,
-      getNow,
-      onRetry,
-      thinkingText,
-      thinkingIcon,
-      thinkingUntil,
-      jumpTo,
-      setExpandedParts,
-    ],
-  );
+  return useShallowStable({
+    ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
+    ...{ conversationId, parts, getNow, onRetry },
+    ...{ thinkingText, thinkingIcon, thinkingUntil },
+    onQuotePress: state.jumpTo,
+    onExpandedPartsChange: state.setExpandedParts,
+  });
 }
