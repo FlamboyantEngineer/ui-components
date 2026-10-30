@@ -25,6 +25,28 @@ test.describe('Completion List lab', () => {
     await expect(note).toHaveValue('Ask @jon ');
   });
 
+  test('UIC-COMPLETION-LIST-2.6 drops an answer for text the host reloaded', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('completion-list');
+    const field = page
+      .locator('[data-lab-demo="reloaded"]')
+      .getByRole('textbox', { name: 'Document' });
+    await field.focus();
+    await field.press('End');
+    await field.press('Control+Space');
+    await page.clock.runFor(2000);
+    await expect(field).toHaveValue('Reloaded from the server');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await field.press('Control+Space');
+    await page.clock.runFor(2000);
+    await expect(page.getByRole('option', { name: 'alpha' })).toBeVisible();
+    await field.press('Enter');
+    await expect(field).toHaveValue('Reloaded from the alpha');
+  });
+
   test('UIC-COMPLETION-LIST-1.1 UIC-COMPLETION-LIST-1.2 UIC-COMPLETION-LIST-1.4 opens below the editor with the active documentation', async ({
     page,
     lab,

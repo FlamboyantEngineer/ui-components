@@ -1,6 +1,14 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type KeyboardEvent,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 import { isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -90,7 +98,13 @@ interface Lookup {
   reason: CompletionReason;
 }
 
-type CompletionSession = ReturnType<typeof useCompletionState>;
+interface CompletionSession {
+  state: CompletionState;
+  setState: Dispatch<SetStateAction<CompletionState>>;
+  request: RefObject<number>;
+  text: RefObject<string | null>;
+  latest: RefObject<{ state: CompletionState; options: CompletionsOptions }>;
+}
 
 const NAVIGATION_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
 
@@ -160,17 +174,31 @@ function toPendingState(state: CompletionState, lookup: Lookup): CompletionState
   };
 }
 
+/** Whether the control still holds the text the session completes. */
+function holdsSessionText(session: CompletionSession): boolean {
+  return session.latest.current.options.inputRef.current?.value === session.text.current;
+}
+
 function useCompletionState(options: CompletionsOptions) {
   const [state, setState] = useState<CompletionState>(closed);
   const request = useRef(0);
+  // The text the pending lookup or open list completes, or null while there is neither.
+  const text = useRef<string | null>(null);
   // Every commit: callers pass a fresh options object each render.
   const latest = useLatest({ state, options });
+  const session = { state, setState, request, text, latest };
   const isLocked = options.isLocked || options.completions === undefined;
   useLayoutEffect(() => {
     if (!isLocked) return;
     request.current += 1;
+    text.current = null;
     setState(hideCompletionState);
   }, [isLocked]);
+  // A value the control was given from outside, such as a controlled replacement, ends the session:
+  // its answer and range belong to the text it was looked up for.
+  useLayoutEffect(() => {
+    if (text.current !== null && !holdsSessionText(session)) closeCompletions(session);
+  });
   useLayoutEffect(
     () => () => {
       request.current += 1;
@@ -178,11 +206,12 @@ function useCompletionState(options: CompletionsOptions) {
     },
     [latest],
   );
-  return { state, setState, request, latest };
+  return session;
 }
 
 function closeCompletions(session: CompletionSession) {
   session.request.current += 1;
+  session.text.current = null;
   session.latest.current.state = hideCompletionState(session.latest.current.state);
   session.setState(hideCompletionState);
 }
@@ -196,6 +225,7 @@ function applyCompletion(session: CompletionSession, option: Completion) {
     !current.state.options.includes(option)
   )
     return;
+  if (!holdsSessionText(session)) return closeCompletions(session);
   const { start, end } = current.state;
   current.state = hideCompletionState(current.state);
   try {
@@ -218,9 +248,11 @@ function trackCompletions(session: CompletionSession, reason: CompletionReason) 
     reason,
   };
   const id = (session.request.current += 1);
+  session.text.current = lookup.value;
   const show = (answer: CompletionAnswer) => {
-    if (id === session.request.current && !session.latest.current.options.isLocked)
-      session.setState((state) => toState(answer, lookup, state.revision + 1));
+    if (id !== session.request.current || session.latest.current.options.isLocked) return;
+    if (!holdsSessionText(session)) return closeCompletions(session);
+    session.setState((state) => toState(answer, lookup, state.revision + 1));
   };
   const answer = lookUp(current.completions, lookup);
   if (!isThenable(answer)) return show(answer);
@@ -232,7 +264,7 @@ function trackCompletions(session: CompletionSession, reason: CompletionReason) 
  * Completion for a text control that keeps focus: the options for the place at the caret, from a
  * vocabulary or a source, ranked against the typed text; an active option moved with the arrow
  * keys; Enter or Tab inserts it, Escape closes the list and Ctrl+Space asks for it. Only the latest
- * lookup's answer shows.
+ * lookup's answer shows, and only while the control holds the text it was looked up for.
  */
 export function useCompletions(options: CompletionsOptions): CompletionsModel {
   const { completions, isLocked } = options;
