@@ -71,7 +71,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Submitting"
-      description="An approval recorded after a short wait, and one that fails and shows why."
+      description="An approval recorded after a short wait, one recorded after 1.5 seconds (a comment typed meanwhile stays once it is recorded), and ones that fail and show why."
     >
       <Recorded
         name="submit"
@@ -80,6 +80,18 @@ mountLab(
             label="Submit and record"
             onSubmit={(details) =>
               new Promise<void>((resolve) => setTimeout(resolve, 300)).then(() => record(details))
+            }
+          />
+        )}
+      />
+      <Recorded
+        name="slow"
+        render={(record) => (
+          <DecisionControl
+            label="Submit slowly"
+            defaultValue="approve"
+            onSubmit={(details) =>
+              new Promise<void>((resolve) => setTimeout(resolve, 1500)).then(() => record(details))
             }
           />
         )}

@@ -15,6 +15,8 @@ import {
   type SignatureDialogEntry,
 } from '../signature-dialog/signature-dialog.js';
 import { TextField } from '../text-field/text-field.js';
+import { useIsMounted } from '../../utils/use-is-mounted.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** One decision the reader can make: approve, reject, or a score on a vote. */
 export interface DecisionControlOption {
@@ -57,7 +59,10 @@ interface DecisionSubmission {
   error: string | null;
   /** Submits the decision, or opens the signature dialog first when the decision is signed. */
   start: () => void;
-  /** Hands the decision to `onSubmit`, clearing the comment once it succeeds. */
+  /**
+   * Hands the decision to `onSubmit`; once it succeeds, clears the comment if the decision and
+   * comment are still the ones submitted.
+   */
   submit: (signature: SignatureDetails | null) => Promise<unknown>;
 }
 
@@ -66,6 +71,7 @@ interface DecisionSubmissionOptions {
   isSigned: boolean;
   isDisabled: boolean;
   onSubmit: (details: DecisionControlDetails) => void | Promise<unknown>;
+  /** Called once a submission succeeds while its decision and comment are unchanged. */
   onSubmitted: () => void;
 }
 
@@ -81,7 +87,11 @@ export const decisionControlHooks = createHooks('decision-control', [
 
 const hooks = decisionControlHooks;
 
-/** Submitting a decision: pending and failed while unsigned, through the signature dialog when signed. */
+/**
+ * Submitting a decision: pending and failed while unsigned, through the signature dialog when
+ * signed. A success settles only in the mounted control, and only while the reader has not changed
+ * the decision or the comment since submitting, so later edits stay.
+ */
 export function useDecisionSubmission({
   details,
   isSigned,
@@ -94,15 +104,20 @@ export function useDecisionSubmission({
   const [isSigning, setSigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const running = useRef(false);
+  const latest = useLatest(details);
+  const isMounted = useIsMounted();
   useEffect(() => {
     if (isDisabled) setSigning(false);
   }, [isDisabled]);
   const submit = async (signature: SignatureDetails | null) => {
     if (isDisabled || running.current) return;
     running.current = true;
+    const sent = details;
     try {
-      await onSubmit({ ...details, signature });
-      onSubmitted();
+      await onSubmit({ ...sent, signature });
+      const current = latest.current;
+      const isUnchanged = current.decision === sent.decision && current.comment === sent.comment;
+      if (isMounted.current && isUnchanged) onSubmitted();
     } finally {
       running.current = false;
     }
