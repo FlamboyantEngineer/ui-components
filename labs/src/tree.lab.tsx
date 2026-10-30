@@ -5,6 +5,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
 import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LockedRenameTree } from './tree-rename-lock.js';
 import {
   CheckboxTree,
   FilterTree,
@@ -413,6 +414,12 @@ mountLab(
       description="F2 renames the focused country or city; Enter or leaving the field keeps the name, Escape drops it. Continents cannot be renamed."
     >
       <InPlaceRenameTree />
+    </LabSection>
+    <LabSection
+      title="Locked while renaming"
+      description="Press the lock button, then F2 on Review and type: when the row locks, its field closes without renaming and focus stays in the tree. Unlock to rename it again."
+    >
+      <LockedRenameTree />
     </LabSection>
   </>,
 );
