@@ -54,7 +54,34 @@ test.describe('SVG Markup lab', () => {
     );
     await expect(stop.first()).toHaveAttribute('stop-color', '#f59e0b');
     const circle = page.locator('[data-lab-cell="markup=gradient placement=standalone"] circle');
-    await expect(circle).toHaveAttribute('fill', /^url\(#sunrise-/);
+    await expect(circle).toHaveAttribute('fill', /^url\(#.+-sunrise\)$/);
+  });
+
+  test("UIC-SVG-MARKUP-1.4 keeps each drawing's references away from the page and other drawings", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('svg-markup');
+    const host = page.locator('#lab-host-status');
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    expect(await host.evaluate((element) => getComputedStyle(element).opacity)).toBe('1');
+    const drawing = page.getByRole('img', { name: 'Drawing aimed at the page' });
+    await expect(drawing.locator('set')).toHaveCount(0);
+    await expect(drawing.locator('[href], [fill*="url"]')).toHaveCount(0);
+    for (const [name, color] of [
+      ['Blue tone', 'rgb(37, 99, 235)'],
+      ['Pink tone', 'rgb(219, 39, 119)'],
+    ] as const) {
+      const svg = page.getByRole('img', { name });
+      const gradient = await svg.locator('linearGradient').getAttribute('id');
+      await expect(svg.locator('rect')).toHaveAttribute('fill', `url(#${gradient ?? ''})`);
+      expect(await page.locator(`[id="${gradient ?? ''}"]`).count()).toBe(1);
+      const stop = svg.locator('stop').first();
+      expect(await stop.evaluate((element) => getComputedStyle(element).stopColor)).toBe(color);
+    }
+    await lab.expectAccessible();
   });
 
   test('UIC-SVG-MARKUP-2.3 exposes only labelled drawings', async ({ page, lab }) => {
@@ -110,5 +137,40 @@ test.describe('SVG Markup lab', () => {
     expect(requests.filter((url) => !url.startsWith('about:') && !url.startsWith('data:'))).toEqual(
       [],
     );
+  });
+
+  test('UIC-SVG-MARKUP-1.4 server-rendered drawings cannot reach the page or each other', async ({
+    page,
+  }) => {
+    const toneMarkup = (color: string) =>
+      `<svg viewBox="0 0 4 4"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/></linearGradient></defs><rect width="4" height="4" fill="url(#tone)"/></svg>`;
+    const drawings = renderToStaticMarkup(
+      createElement(
+        'div',
+        null,
+        createElement(SvgMarkup, {
+          markup:
+            '<svg><set href="#host-status" attributeName="opacity" to="0" begin="0s" dur="indefinite"/></svg>',
+        }),
+        createElement(SvgMarkup, { markup: toneMarkup('red') }),
+        createElement(SvgMarkup, { markup: toneMarkup('blue') }),
+      ),
+    );
+    await page.setContent(
+      `<!doctype html><body><svg><rect id="host-status" width="100" height="100" fill="green"/></svg>${drawings}</body>`,
+    );
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    const host = page.locator('#host-status');
+    expect(await host.evaluate((element) => getComputedStyle(element).opacity)).toBe('1');
+    const fills = await page
+      .locator('.ui-svg-markup rect')
+      .evaluateAll((rects) => rects.map((rect) => rect.getAttribute('fill')));
+    expect(new Set(fills).size).toBe(2);
+    for (const fill of fills) {
+      const id = /#([^)]+)/.exec(fill ?? '')?.[1] ?? '';
+      expect(await page.locator(`[id="${id}"]`).count()).toBe(1);
+    }
   });
 });

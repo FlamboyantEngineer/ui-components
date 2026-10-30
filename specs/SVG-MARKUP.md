@@ -27,6 +27,13 @@ Verification: `src/components/svg-markup/parse-svg-markup.test.ts`, `src/compone
 Implementation: `src/components/svg-markup/parse-svg-markup.ts`, `src/utils/markup.ts`
 Verification: `src/components/svg-markup/parse-svg-markup.test.ts`
 
+### UIC-SVG-MARKUP-1.4 - Isolated references
+
+Browsers resolve a fragment reference against the whole document, so a drawing's references shall reach only that drawing. Each rendered `SvgMarkup` shall prefix the IDs its drawing defines with a prefix of its own, taken from `useId` so server and client render the same IDs, and rewrite every reference to them: `href` and `xlink:href`, `url()` in attributes, `style` declarations and animation values, syncbase and event timing in `begin` and `end` (`id.end`, `id.click+1s`), and ARIA ID lists (`aria-labelledby`, `aria-describedby` and the like). A reference to an ID the drawing does not define (on the host page, in another drawing, or absent) is dropped: the attribute, the `style` declaration or the ID-list token goes; an animation whose `href` names it is dropped, since without a link it would target its parent; and a `begin` left with no timing becomes `indefinite`. Local gradients, clip paths, masks, `use`, `mpath` and animation keep working, and two drawings that define the same ID keep their own targets. The parsed tree, cached and shared between instances, is never changed.
+
+Implementation: `src/components/svg-markup/svg-references.ts`, `src/components/svg-markup/svg-markup.tsx`
+Verification: `src/components/svg-markup/svg-markup.test.tsx`, `e2e/svg-markup.spec.ts`
+
 ## UIC-SVG-MARKUP-2 - Rendering
 
 ### UIC-SVG-MARKUP-2.1 - React elements

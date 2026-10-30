@@ -1,9 +1,10 @@
-import { createElement, type ReactNode } from 'react';
+import { createElement, useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { mapTree } from '../../utils/map-tree.js';
 import { toImageProps } from '../icon/icon.js';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
+import { createSvgReferenceScope, type SvgReferenceScope } from './svg-references.js';
 
 export interface SvgMarkupProps extends BaseProps {
   /** SVG markup with a root `<svg>` element, for example an entry of a host icon registry. */
@@ -69,14 +70,34 @@ function toElementProps(
   return props;
 }
 
-function renderChildren(node: SvgElementNode): ReactNode[] {
+function renderChildren(node: SvgElementNode, scope: SvgReferenceScope): ReactNode[] {
   return mapTree<SvgNode, ReactNode>(
     node.children,
     (child) => (child.type === 'element' ? child.children : undefined),
-    (child, children, key) =>
-      child.type === 'text'
-        ? child.text
-        : createElement(child.tag, { ...toElementProps(child.attributes), key }, children),
+    (child, children, key) => {
+      if (child.type === 'text') return child.text;
+      const attributes = scope(child.tag, child.attributes);
+      if (attributes === null) return null;
+      return createElement(child.tag, { ...toElementProps(attributes), key }, children);
+    },
+  );
+}
+
+/**
+ * The drawing's root `<svg>` as a React element, with its IDs and references scoped to
+ * `instanceId` and the caller's `props` over the markup's root attributes.
+ */
+export function renderSvgTree(
+  tree: SvgElementNode,
+  instanceId: string,
+  props: Record<string, unknown>,
+): ReactNode {
+  const scope = createSvgReferenceScope(tree, instanceId);
+  const rootAttributes = scope('svg', tree.attributes) ?? {};
+  return createElement(
+    'svg',
+    { ...toElementProps(rootAttributes, (name) => !ownedRootAttribute.test(name)), ...props },
+    renderChildren(tree, scope),
   );
 }
 
@@ -91,20 +112,18 @@ function tryParse(markup: string): SvgElementNode | null {
 /**
  * Renders SVG markup as React elements, without innerHTML. The root keeps the markup's drawing
  * attributes (`viewBox`, `fill`, `stroke`, …); the stylesheet sizes it. Decorative unless labelled.
+ * Each instance prefixes the drawing's IDs, so its references never reach the host page or another
+ * drawing.
  * Renders nothing when the markup has no `<svg>` root.
  */
 export function SvgMarkup({ markup, label, className, ...rest }: SvgMarkupProps) {
+  const instanceId = useId();
   const tree = tryParse(markup);
   if (!tree) return null;
-  return createElement(
-    'svg',
-    {
-      ...toElementProps(tree.attributes, (name) => !ownedRootAttribute.test(name)),
-      ...rest,
-      ...hooks.root({ className }),
-      focusable: 'false',
-      ...toImageProps(label),
-    },
-    renderChildren(tree),
-  );
+  return renderSvgTree(tree, instanceId, {
+    ...rest,
+    ...hooks.root({ className }),
+    focusable: 'false',
+    ...toImageProps(label),
+  });
 }
