@@ -72,6 +72,37 @@ describe('useChatController attachments', () => {
     expect(result.current.props.attachments[0]?.status).toBe('complete');
   });
 
+  it('UIC-CHAT-CONTROLLER-4.1 fails a file whose upload throws, starts the rest, and retries it', async () => {
+    const { upload: deferredUpload, calls } = createTestUpload();
+    const refusals = ['Too large.', 'Still too large.'];
+    const upload = vi.fn((file: File, context: ChatUploadContext) => {
+      const refusal = file.name === 'soup.png' ? refusals.shift() : undefined;
+      if (refusal) throw new Error(refusal);
+      return deferredUpload(file, context);
+    });
+    const { result } = renderController({ upload });
+    act(() => result.current.props.onAttach?.([photo(), notes()]));
+    expect(upload).toHaveBeenCalledTimes(2);
+    await settle();
+    const [first, second] = result.current.props.attachments;
+    expect(first).toMatchObject({ status: 'error', error: 'Too large.' });
+    expect(second).toMatchObject({ status: 'uploading' });
+    calls[0]?.resolve({ url: 'https://example.com/notes.txt' });
+    await settle();
+    expect(result.current.props.attachments[1]?.status).toBe('complete');
+
+    act(() => result.current.props.onRetryAttachment?.(first?.id ?? ''));
+    await settle();
+    expect(result.current.props.attachments[0]).toMatchObject({
+      status: 'error',
+      error: 'Still too large.',
+    });
+    act(() => result.current.props.onRetryAttachment?.(first?.id ?? ''));
+    calls[1]?.resolve({ url: 'https://example.com/soup.png' });
+    await settle();
+    expect(result.current.props.attachments[0]?.status).toBe('complete');
+  });
+
   it('UIC-CHAT-CONTROLLER-4.1 removes a file and aborts its upload', async () => {
     const { upload, calls } = createTestUpload();
     const { result } = renderController({ upload });

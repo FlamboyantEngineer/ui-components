@@ -207,10 +207,17 @@ export const agents: Record<AgentBehaviour, ChatSendFunction> = {
   failure,
 };
 
-/** Uploads in a second, a quarter at a time; a file named `broken…` fails its first upload. */
+/**
+ * Uploads in a second, a quarter at a time; a file named `broken…` fails its first upload, and one
+ * named `huge…` is refused at once, before any upload starts, the first time.
+ */
 const failedOnce = new Set<string>();
-export const fakeUpload: ChatUploadFunction = (file, { signal, onProgress }) =>
-  new Promise((resolve, reject) => {
+export const fakeUpload: ChatUploadFunction = (file, { signal, onProgress }) => {
+  if (file.name.startsWith('huge') && !failedOnce.has(file.name)) {
+    failedOnce.add(file.name);
+    throw new Error(`${file.name} is too large. Try again.`);
+  }
+  return new Promise((resolve, reject) => {
     let progress = 0;
     const timer = setInterval(() => {
       progress += 0.25;
@@ -227,3 +234,4 @@ export const fakeUpload: ChatUploadFunction = (file, { signal, onProgress }) =>
     }, 250);
     signal.addEventListener('abort', () => clearInterval(timer));
   });
+};
