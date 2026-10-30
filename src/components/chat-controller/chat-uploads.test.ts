@@ -135,4 +135,16 @@ describe('useChatController attachments', () => {
       { type: 'files', attachments: [expect.objectContaining({ name: 'soup.png' })] },
     ]);
   });
+
+  it('UIC-CHAT-CONTROLLER-5.3 cancels uploads when the conversation resets', async () => {
+    const { upload, calls } = createTestUpload();
+    const { result } = renderController({ upload });
+    act(() => result.current.props.onAttach?.([photo()]));
+    act(() => result.current.resetConversation());
+    expect(calls[0]?.context.signal.aborted).toBe(true);
+    expect(result.current.props.attachments).toEqual([]);
+    calls[0]?.resolve({ url: 'https://example.com/soup.png' });
+    await settle();
+    expect(result.current.props.attachments).toEqual([]);
+  });
 });

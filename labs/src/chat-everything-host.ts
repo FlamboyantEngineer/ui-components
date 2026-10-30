@@ -65,13 +65,13 @@ export function useEverythingChat(record: (line: string) => void) {
     alwaysAllowed: allowed,
     onAlwaysAllowedChange: setAllowed,
   });
-  const { props, setMessages } = controller;
-  const team = usePeopleCallbacks({ setMessages, replier: teamReplier });
-  const older = useOlderHistory(everythingOlderPages, setMessages);
+  const { props, updateMessages } = controller;
+  const team = usePeopleCallbacks({ setMessages: updateMessages, replier: teamReplier });
+  const older = useOlderHistory(everythingOlderPages, updateMessages);
   const chatProps = {
     ...props,
     ...older,
-    ...createReplyHandlers(setMessages, record),
+    ...createReplyHandlers(updateMessages, record),
     typingIds: team.typingIds,
     onSend: (text: string, tokens: readonly ChatTextToken[] = []) => {
       if (isForPlanner(tokens)) props.onSend(text, tokens);
