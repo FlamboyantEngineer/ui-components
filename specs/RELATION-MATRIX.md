@@ -43,7 +43,7 @@ Verification: `src/components/relation-matrix/relation-matrix.test.tsx`
 
 ### UIC-RELATION-MATRIX-2.1 - Keyboard grid navigation
 
-The grid shall hold one tab stop, on its focused cell (the first body cell at first). ArrowUp, ArrowDown, ArrowLeft and ArrowRight move it one cell (left and right swap in right-to-left text) through the body cells, the row headers and the header row; PageUp and PageDown move it by the rows a page of the matrix shows; Home and End move it to the row header or the last cell of its row, and with Control or Command to the corner header or the last cell of the last row. The moved-to cell takes focus and scrolls into view clear of the pinned headers. A cell focused by pointer becomes the focused cell. While focus is in the grid, the row header of the focused cell's row and the header of its column publish `data-current`, for a crosshair highlight. The focused cell is kept inside the grid when rows or columns go away.
+The grid shall hold one tab stop, on its focused cell (the first body cell at first). ArrowUp, ArrowDown, ArrowLeft and ArrowRight move it one cell (left and right swap in right-to-left text) through the body cells, the row headers and the header row; PageUp and PageDown move it by the rows a page of the matrix shows; Home and End move it to the row header or the last cell of its row, and with Control or Command to the corner header or the last cell of the last row. The moved-to cell takes focus and scrolls into view clear of the pinned headers. A cell focused by pointer becomes the focused cell. While focus is in the grid, the row header of the focused cell's row and the header of its column publish `data-current`, for a crosshair highlight.
 
 Implementation: `src/components/relation-matrix/use-matrix-navigation.ts`, `src/components/relation-matrix/matrix-navigation.ts`
 Verification: `src/components/relation-matrix/matrix-navigation.test.ts`, `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/relation-matrix.spec.ts`
@@ -56,6 +56,13 @@ Numeric and text keys with the same characters shall remain separate row and col
 
 Implementation: `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-row.tsx`, `src/components/relation-matrix/use-matrix-navigation.ts`, `src/components/relation-matrix/relation-matrix-model.ts`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `src/components/relation-matrix/relation-matrix-model.test.ts`, `e2e/relation-matrix.spec.ts`
+
+### UIC-RELATION-MATRIX-2.3 - Focus across row and column changes
+
+The focused cell shall belong to its row and column items, not to their places: when `rows` or `columns` reorder, grow or are filtered, the tab stop and the `data-current` headers follow those items, and DOM focus stays on their cell. Keys act from the cell that holds focus: Enter and Space report its row and column, and arrows and the other movement keys start from it. When the focused cell's row or column item goes away, the cell now at its place takes the tab stop (the last one when the axis got shorter, the header when the axis is empty), and takes focus when the cell that went held it. Virtualized matrices keep the focused cell rendered at its item's new place.
+
+Implementation: `src/components/relation-matrix/use-matrix-navigation.ts`, `src/components/relation-matrix/matrix-navigation.ts`, `src/components/relation-matrix/relation-matrix.tsx`
+Verification: `src/components/relation-matrix/matrix-navigation.test.ts`, `src/components/relation-matrix/relation-matrix-focus.test.tsx`, `e2e/relation-matrix.spec.ts`
 
 ## UIC-RELATION-MATRIX-3 - Large matrices
 

@@ -106,7 +106,9 @@ export function RelationMatrix({
     onCellAction({ row: rowItem.id, column: columnItem.id, relation });
   };
   const counts = { rowCount: rows.length, columnCount: columns.length };
-  const navigation = useMatrixNavigation({ root, ...counts, onCellAction: onCellPress });
+  const rowIds = useMemo(() => rows.map((row) => toKeyIdentity(row.id)), [rows]);
+  const columnIds = useMemo(() => columns.map((column) => toKeyIdentity(column.id)), [columns]);
+  const navigation = useMatrixNavigation({ root, rowIds, columnIds, onCellAction: onCellPress });
   const view = useMatrixWindow({
     ...{ root, header, corner, virtualized, ...counts, rowHeight, columnWidth },
     focus: navigation.focus,

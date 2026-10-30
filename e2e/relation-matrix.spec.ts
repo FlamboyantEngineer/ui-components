@@ -68,6 +68,35 @@ test.describe('Relation Matrix lab', () => {
     await expect(matrix.getByRole('columnheader').last()).toBeFocused();
   });
 
+  test('UIC-RELATION-MATRIX-2.3 keeps acting on the focused cell as its row moves', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relation-matrix');
+    const section = demo(page, 'sorted');
+    const matrix = section.getByRole('grid', { name: 'Least covered requirements first' });
+    const output = section.locator('[data-lab-output]');
+    // Requirement 5 has no relation, so it comes first; adding one moves it after the other
+    // requirements with one relation.
+    await expect(matrix.getByRole('rowheader').first()).toContainText('Requirement 5');
+    await cell(matrix, 0, 0).click();
+    await expect(output).toHaveText('Added Requirement 5 × Test 1 (verifies)');
+    await expect(matrix.getByRole('rowheader').nth(3)).toContainText('Requirement 5');
+    const moved = cell(matrix, 3, 0);
+    await expect(moved).toBeFocused();
+    await expect(moved).toHaveAttribute('data-related', 'true');
+    await expect(moved).toHaveAttribute('tabindex', '0');
+    await expect(matrix.getByRole('rowheader').nth(3)).toHaveAttribute('data-current', 'true');
+    await page.keyboard.press('Enter');
+    await expect(output).toHaveText('Removed Requirement 5 × Test 1');
+    await expect(matrix.getByRole('rowheader').first()).toContainText('Requirement 5');
+    await expect(cell(matrix, 0, 0)).toBeFocused();
+    await expect(cell(matrix, 0, 0)).not.toHaveAttribute('data-related');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(output).toHaveText('Added Requirement 2 × Test 1 (verifies)');
+  });
+
   test('UIC-RELATION-MATRIX-3.1 windows both axes of a large matrix', async ({ page, lab }) => {
     await lab.open('relation-matrix');
     const matrix = demo(page, 'large').getByRole('grid', { name: 'Large matrix' });

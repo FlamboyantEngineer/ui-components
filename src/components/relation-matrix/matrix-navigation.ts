@@ -59,13 +59,54 @@ export function moveMatrixFocus(
   }
 }
 
-/** `position` moved inside a grid that shrank to `rowCount` rows and `columnCount` columns. */
-export function clampMatrixPosition(
+/**
+ * The focused cell by the identities of its row and column items, with the position it was last
+ * seen at: null is the header row or the row header column, and undefined a place no item held,
+ * which the item that arrives there takes.
+ */
+export interface MatrixFocus {
+  row: string | null | undefined;
+  column: string | null | undefined;
+  at: MatrixPosition;
+}
+
+/** The focus on the cell at `position`, by the identities of its items. */
+export function toMatrixFocus(
   position: MatrixPosition,
-  rowCount: number,
-  columnCount: number,
-): MatrixPosition {
-  const row = clamp(position.row, -1, rowCount - 1);
-  const column = clamp(position.column, -1, columnCount - 1);
-  return row === position.row && column === position.column ? position : { row, column };
+  rowIds: readonly string[],
+  columnIds: readonly string[],
+): MatrixFocus {
+  return {
+    row: position.row < 0 ? null : rowIds[position.row],
+    column: position.column < 0 ? null : columnIds[position.column],
+    at: position,
+  };
+}
+
+/** Where an item is now: its index, or for an item that went, the index it held, kept in range. */
+function resolveAxis(id: string | null | undefined, ids: readonly string[], at: number) {
+  if (id === null) return { index: -1, isLost: false };
+  if (id === undefined) return { index: clamp(at, -1, ids.length - 1), isLost: false };
+  const index = ids.indexOf(id);
+  return index >= 0
+    ? { index, isLost: false }
+    : { index: clamp(at, -1, ids.length - 1), isLost: true };
+}
+
+/**
+ * Where the focused cell is now that its items may have moved: it follows its row and column items.
+ * An item that went leaves focus on the item now at its place, or the last one, or the header when
+ * none is left; `isLost` then tells the focus to move there.
+ */
+export function resolveMatrixFocus(
+  focus: MatrixFocus,
+  rowIds: readonly string[],
+  columnIds: readonly string[],
+): { position: MatrixPosition; isLost: boolean } {
+  const row = resolveAxis(focus.row, rowIds, focus.at.row);
+  const column = resolveAxis(focus.column, columnIds, focus.at.column);
+  return {
+    position: { row: row.index, column: column.index },
+    isLost: row.isLost || column.isLost,
+  };
 }
