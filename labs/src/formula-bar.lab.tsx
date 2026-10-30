@@ -60,6 +60,7 @@ function Spreadsheet() {
     focus: { rowKey: 'row-2', columnId: 'D' },
   });
   const [last, setLast] = useState('none');
+  const [isLocked, setLocked] = useState(false);
   const cells = collectCells(rows);
   const focus = range?.focus;
   const row = focus ? rows.findIndex((entry) => entry.id === focus.rowKey) : -1;
@@ -97,6 +98,7 @@ function Spreadsheet() {
         completions={formulaFunctions}
         evaluate={(content, at) => evaluateAt(content, cells, at)}
         onCommit={(value, at) => write(at, value)}
+        isDisabled={isLocked}
         onCellChange={(at) => {
           const position = {
             rowKey: requireDefined(rows[at.row]).id,
@@ -120,6 +122,14 @@ function Spreadsheet() {
         }
         size="sm"
       />
+      <label>
+        <input
+          type="checkbox"
+          checked={isLocked}
+          onChange={(event) => setLocked(event.target.checked)}
+        />{' '}
+        Lock the bar
+      </label>{' '}
       <output data-lab-output>{`Last commit: ${last}`}</output>
     </div>
   );
@@ -161,7 +171,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Spreadsheet"
-      description="Wired to a table in spreadsheet mode: the bar follows the selected cell, typing a reference such as C4 and Enter selects that cell, and Enter in the content commits it. The table shows evaluated values and edits raw contents; Escape restores the content and SUM, AVERAGE, MIN and MAX complete as you type."
+      description="Wired to a table in spreadsheet mode: the bar follows the selected cell, typing a reference such as C4 and Enter selects that cell, and Enter in the content commits it. The table shows evaluated values and edits raw contents; Escape restores the content and SUM, AVERAGE, MIN and MAX complete as you type. Lock the bar with a draft open: Cancel and Confirm turn off, and the draft waits, uncommitted, until you unlock it."
     >
       <Spreadsheet />
     </LabSection>

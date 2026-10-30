@@ -141,9 +141,9 @@ function FormulaBarReference({
   );
 }
 
-/** The buttons that restore and commit the content, enabled while it differs from the cell's. */
+/** The buttons that restore and commit the content, enabled while the bar may do so. */
 function FormulaBarButtons(props: {
-  isDirty: boolean;
+  canCancel: boolean;
   canCommit: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -156,7 +156,7 @@ function FormulaBarButtons(props: {
         size="sm"
         label={strings.cancel}
         className={hooks.slotClass('cancel')}
-        isDisabled={!props.isDirty}
+        isDisabled={!props.canCancel}
         onPress={props.onCancel}
       />
       <Button
@@ -169,6 +169,42 @@ function FormulaBarButtons(props: {
       />
     </>
   );
+}
+
+/**
+ * The content's draft and what the bar may do with it. A locked bar (disabled, or without a cell)
+ * keeps its draft for when it unlocks, but neither commits nor drops it meanwhile.
+ */
+function useFormulaDraft({
+  cell,
+  value,
+  onCommit,
+  isReadOnly,
+  isDisabled,
+}: Pick<FormulaBarProps, 'cell' | 'value' | 'onCommit'> & {
+  isReadOnly: boolean;
+  isDisabled: boolean;
+}) {
+  const [draft, setDraft] = useSourceState<string | null>(describeSource(cell, value), null);
+  const text = draft ?? value;
+  const isDirty = draft !== null && draft !== value;
+  const isLocked = isDisabled || cell === null;
+  const canCancel = isDirty && !isLocked;
+  const canCommit = canCancel && !isReadOnly;
+  return {
+    text,
+    setDraft,
+    isDirty,
+    isLocked,
+    canCancel,
+    canCommit,
+    commit: () => {
+      if (canCommit && cell) onCommit?.(text, cell);
+    },
+    cancel: () => {
+      if (canCancel) setDraft(null);
+    },
+  };
 }
 
 /**
@@ -195,14 +231,8 @@ export function FormulaBar({
 }: FormulaBarProps) {
   const strings = useUiStrings();
   const resultId = useId();
-  const [draft, setDraft] = useSourceState<string | null>(describeSource(cell, value), null);
-  const text = draft ?? value;
-  const isDirty = draft !== null && draft !== value;
-  const isLocked = isDisabled || cell === null;
-  const commit = () => {
-    if (cell && !isReadOnly) onCommit?.(text, cell);
-  };
-  const cancel = () => setDraft(null);
+  const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel } =
+    useFormulaDraft({ cell, value, onCommit, isReadOnly, isDisabled });
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.nativeEvent.isComposing) return;
     if (event.key === 'Enter') commit();
@@ -226,8 +256,8 @@ export function FormulaBar({
         isDisabled={isDisabled}
       />
       <FormulaBarButtons
-        isDirty={isDirty}
-        canCommit={isDirty && !isReadOnly}
+        canCancel={canCancel}
+        canCommit={canCommit}
         onCancel={cancel}
         onConfirm={commit}
       />
