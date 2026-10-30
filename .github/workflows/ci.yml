@@ -25,32 +25,48 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Format
-        run: npm run format:check
-      - name: Typecheck
-        run: npm run typecheck
-      - name: No host references
-        run: npm run check:references
-      - name: Specs
-        run: npm run check:specs
-      - name: Labs complete
-        run: npm run check:labs
-      - name: Structure
-        run: npm run check:structure
-      - name: Client boundaries
-        run: npm run check:client-boundaries
-      - name: Unit tests
-        run: npm test
-      - name: Build
-        run: npm run build
-      - name: Build labs
-        run: npm run build:labs
-      - name: Standalone labs archive
-        run: npm run pack:labs
-      - name: Package contents
-        run: npm run check:package
+      # scripts/check.mjs is the one list of gates, shared with `npm run check` locally: lint,
+      # format, types, references, specs, labs, structure, client boundaries, builds, unit tests,
+      # public types against the real build, the labs archive and the package contents.
+      - name: Checks
+        run: npm run check
+
+  git-install:
+    # A clean consumer installs the commit as a Git dependency through npm install and npm ci, with
+    # the minimum supported React, then the rich-text peers (scripts/check-git-install.mjs).
+    # It runs when a change can reach installation: the manifest, lockfile, build setup or entry points.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            install:
+              - package.json
+              - package-lock.json
+              - .nvmrc
+              - tsconfig.json
+              - tsconfig.build.json
+              - scripts/clean.mjs
+              - scripts/check-git-install.mjs
+              - src/index.ts
+              - src/*/index.ts
+              - src/components/*/index.ts
+              - src/core/locales/**
+              - .github/workflows/ci.yml
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.install == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install from Git
+        if: steps.changes.outputs.install == 'true'
+        run: npm ci && npm run check:git-install
 
   server-components:
     # An installed-package Next.js consumer: production build, server rendering and hydration.
