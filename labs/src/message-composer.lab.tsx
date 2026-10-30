@@ -29,6 +29,7 @@ import { createLabComposerMenu, ComposerMenuSection } from './message-composer-m
 import { ReferenceComposerSection } from './message-composer-reference-cases.js';
 import { ComposerShortcutSection } from './message-composer-shortcut-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
+import { WorkspaceComposerSection } from './message-composer-workspace-cases.js';
 
 const states = ['empty', 'draft', 'pending', 'stoppable', 'disabled', 'editing'] as const;
 const parts = ['text only', 'attachments and tools', 'menu and tools'] as const;
@@ -270,6 +271,7 @@ mountLab(
     <RichComposerSections />
     <ReferenceComposerSection />
     <TeamChatSection />
+    <WorkspaceComposerSection />
     <LabSection
       title="Touch screens"
       description="On a touch screen (a coarse pointer) the on-screen keyboard's Enter breaks the line, so a message can hold several lines, and the send button sends; Ctrl+Enter still sends from a hardware keyboard. The send button's tooltip shows the chord in effect. Open this lab on a phone or tablet to try it."

@@ -118,7 +118,12 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   const [draft, setDraft] = useDraft(options);
   const [edit, setEdit] = useEditedMessage(editValue, format.empty);
   const [recalled, setRecalled] = useState<Recalled | null>(null);
-  const submission = useSubmission({ ...options, draft, setDraft });
+  const submission = useSubmission({
+    ...options,
+    isControlled: options.value !== undefined,
+    draft,
+    setDraft,
+  });
   const isEditing = editValue !== undefined;
   const value = isEditing ? edit : draft;
   const text = format.toText(value);
