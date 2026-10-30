@@ -99,6 +99,12 @@ interface SaveAttempt<T> {
   value: T;
 }
 
+/**
+ * What a save request saves: a value the editor chose, kept apart from `undefined` and `null`
+ * (both valid values), or, when null, the value being edited when the save starts.
+ */
+type SaveRequest<T> = { value: T } | null;
+
 interface SaveQueueOptions<T> {
   session: number;
   /** The saved value and the value being edited. */
@@ -112,16 +118,19 @@ interface SaveQueueOptions<T> {
 }
 
 /**
- * Saves the value being edited, one save at a time per session. A save asked for while one runs
- * waits for it, then saves the newer value; edits made without asking keep the editor open once the
- * save ends. A save whose session has ended, or whose inline edit has unmounted, changes nothing
- * when it settles.
+ * Saves the value being edited, one save at a time per session. A save never changes the value
+ * being edited: a value the editor chooses becomes the value being edited when it is asked for, so
+ * later edits replace it as usual. A save asked for while one runs waits for it, then saves what it
+ * asked for (the value it chose, else the value being edited by then). The editor closes once the
+ * last save ends only if the value being edited is the one saved; otherwise it stays open with the
+ * unsaved edits. A save whose session has ended, or whose inline edit has unmounted, changes
+ * nothing when it settles.
  */
 function useSaveQueue<T>(options: SaveQueueOptions<T>) {
   const { session, setDraft, setError } = options;
   const [pending, setPending] = useState<SaveAttempt<T> | null>(null);
   const saving = useRef<SaveAttempt<T> | null>(null);
-  const queued = useRef<{ value: T | undefined; focusReturn: FocusReturn } | null>(null);
+  const queued = useRef<{ request: SaveRequest<T>; focusReturn: FocusReturn } | null>(null);
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -149,7 +158,6 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     const attempt = { session, value: next };
     saving.current = attempt;
     queued.current = null;
-    setDraft({ value: next });
     setError(null);
     setPending(attempt);
     try {
@@ -159,17 +167,25 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
       return;
     }
     if (!settle(attempt, null)) return;
-    const request = takeQueued();
-    const newer = request?.value ?? latest.current.current;
-    if (isSameValue(newer, next)) latest.current.close(request?.focusReturn ?? focusReturn);
-    else if (request) void save(newer, request.focusReturn);
+    const queuedSave = takeQueued();
+    if (queuedSave) {
+      const newer = queuedSave.request ? queuedSave.request.value : latest.current.current;
+      if (!isSameValue(newer, next)) {
+        void save(newer, queuedSave.focusReturn);
+        return;
+      }
+    }
+    if (isSameValue(latest.current.current, next)) {
+      latest.current.close(queuedSave?.focusReturn ?? focusReturn);
+    }
   };
-  const commit = (next: T | undefined, focusReturn: FocusReturn = 'read') => {
+  const commit = (request: SaveRequest<T>, focusReturn: FocusReturn = 'read') => {
+    if (request) setDraft({ value: request.value });
     if (saving.current?.session === session && isMounted.current) {
-      queued.current = { value: next, focusReturn };
+      queued.current = { request, focusReturn };
       return;
     }
-    const target = next === undefined ? options.current : next;
+    const target = request ? request.value : options.current;
     if (isSameValue(target, options.value)) options.close(focusReturn);
     else void save(target, focusReturn);
   };
@@ -231,7 +247,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
       } else if (event.key === 'Enter' && !isOwnEnter(event)) {
         event.preventDefault();
         event.stopPropagation();
-        commit(undefined);
+        commit(null);
       }
     },
     // Focus moving into an overlay the editor opened (a list, a calendar) comes back through React.
@@ -239,7 +255,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     onBlur: (event: FocusEvent<HTMLDivElement>) => {
       if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
       window.clearTimeout(blurTimer.current);
-      blurTimer.current = window.setTimeout(() => commit(undefined, 'none'), 0);
+      blurTimer.current = window.setTimeout(() => commit(null, 'none'), 0);
     },
   };
 
@@ -251,7 +267,8 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     setCurrent: (next: T) => setDraft({ value: next }),
     open,
     cancel: () => cancel(),
-    commit: (next?: T) => commit(next),
+    /** Saves the value being edited, or the value given, which may be `undefined` or `null`. */
+    commit: (...value: [] | [T]) => commit(value.length > 0 ? { value: value[0] as T } : null),
     editorHandlers,
     editorRef: focus.editorRef,
     readRef: focus.readRef,

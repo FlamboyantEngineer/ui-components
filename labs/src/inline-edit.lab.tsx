@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
 import { InlineEdit } from '../../src/components/inline-edit/inline-edit.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -49,7 +50,7 @@ function MatrixCell({ state, actions }: { state: MatrixState; actions: boolean }
 function RecipeDetails() {
   const [title, setTitle] = useState('Seeded rye loaf');
   const [servings, setServings] = useState(8);
-  const [cuisine, setCuisine] = useState('nordic');
+  const [cuisine, setCuisine] = useState<string | null>('nordic');
   const [bakeOn, setBakeOn] = useState<string | null>('2026-05-02');
   const [notes, setNotes] = useState('Rest the dough overnight.');
   return (
@@ -87,20 +88,26 @@ function RecipeDetails() {
       </dd>
       <dt>Cuisine</dt>
       <dd>
-        <InlineEdit
+        <InlineEdit<string | null>
           label="Cuisine"
           value={cuisine}
-          onSave={saveLater<string>(setCuisine)}
-          renderValue={(id) => cuisines.find((option) => option.id === id)?.label}
+          onSave={saveLater<string | null>(setCuisine)}
+          placeholder="No cuisine"
+          renderValue={(id) => cuisines.find((option) => option.id === id)?.label ?? ''}
           renderEditor={({ value, commit, label }) => (
-            <SelectField
-              label={label}
-              labelLayout="control-only"
-              options={cuisines}
-              value={value}
-              committedValue={value}
-              onChange={(next) => commit(String(next ?? value))}
-            />
+            <>
+              <SelectField
+                label={label}
+                labelLayout="control-only"
+                options={cuisines}
+                value={value}
+                committedValue={value}
+                onChange={(next) => commit(next === null ? value : String(next))}
+              />
+              <Button size="sm" variant="ghost" onPress={() => commit(null)}>
+                Clear cuisine
+              </Button>
+            </>
           )}
           data-lab-field="cuisine"
         />
@@ -170,7 +177,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A recipe's details"
-      description="Text, number, select, date and multiline editors. Each save waits half a second; an empty title is refused. Typing while a save runs keeps the newer text, and Enter meanwhile saves it once the first save ends. A select saves on a choice; Enter saves the others, and Control+Enter the notes."
+      description="Text, number, select, date and multiline editors. Each save waits half a second; an empty title is refused. Typing while a save runs keeps the newer text, and Enter meanwhile saves it once the first save ends. A select saves on a choice, and clearing the cuisine saves no cuisine, even while a choice is still saving; Enter saves the others, and Control+Enter the notes."
     >
       <RecipeDetails />
     </LabSection>
