@@ -43,6 +43,43 @@ function checkHandle(value: string, signal: AbortSignal): Promise<FieldIssues> {
   });
 }
 
+/** The stricter server check: short handles are reserved too. */
+function checkHandleStrictly(value: string, signal: AbortSignal): Promise<FieldIssues> {
+  return checkHandle(value, signal).then(
+    (issues) =>
+      issues ??
+      (value.trim().length < 4
+        ? { severity: 'error', message: 'Short handles are reserved.' }
+        : null),
+  );
+}
+
+/** Switching to the stricter validator checks the unchanged handle again. */
+function AsyncHandle() {
+  const [isStrict, setStrict] = useState(false);
+  return (
+    <>
+      <SampleField
+        label="Handle"
+        options={{
+          defaultValue: 'lin',
+          validateAsync: isStrict ? checkHandleStrictly : checkHandle,
+          validationDebounce: 300,
+        }}
+        data-lab-field="async"
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={isStrict}
+          onChange={(event) => setStrict(event.target.checked)}
+        />{' '}
+        Reserve short handles
+      </label>
+    </>
+  );
+}
+
 /** A password's rules, all reported at once, each tagged with its validity state when it has one. */
 function checkPassword(value: string): FieldIssue[] {
   const issues: FieldIssue[] = [];
@@ -415,17 +452,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Asynchronous check"
-      description="Checked 300 ms after typing stops and answered after 500 ms; ada and grace are taken."
+      description="Checked 300 ms after typing stops and answered after 500 ms; ada and grace are taken. Returning to a value or switching validators checks again."
     >
-      <SampleField
-        label="Handle"
-        options={{
-          defaultValue: 'lin',
-          validateAsync: checkHandle,
-          validationDebounce: 300,
-        }}
-        data-lab-field="async"
-      />
+      <AsyncHandle />
     </LabSection>
   </>,
 );

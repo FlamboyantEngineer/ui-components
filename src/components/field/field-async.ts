@@ -1,4 +1,4 @@
-// The asynchronous check of a field: debounced, aborted when the value moves on.
+// The asynchronous check of a field: debounced, aborted when the value or the validator moves on.
 
 import { useEffect, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
@@ -23,37 +23,65 @@ interface AsyncCheck {
   isRunning: boolean;
 }
 
+/** One check: the value and validator it is for, and its issues once it settles. */
+interface Attempt<T> {
+  key: string;
+  validateAsync: FieldAsyncValidate<T> | undefined;
+  isEnabled: boolean;
+  issues: FieldIssue[] | null;
+}
+
 /**
- * Runs `validateAsync` once the value has stayed unchanged for `debounce` milliseconds. A result
- * counts only for the value it checked: a newer value aborts the older check. A check that rejects
+ * Runs `validateAsync` once the value has stayed unchanged for `debounce` milliseconds. Each value,
+ * validator and enabling starts a new attempt, pending until its own check settles: a result counts
+ * only for the attempt that asked for it, so returning to a value checked before, or replacing the
+ * validator, waits for a fresh check. A newer attempt aborts the older check. A check that rejects
  * reports no issue.
  */
 export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): AsyncCheck {
   const { validateAsync, debounce, isSkipped } = options;
   const key = toFieldValueKey(value);
-  const [result, setResult] = useState<{ key: string; issues: FieldIssue[] } | null>(null);
-  const latest = useLatest({ value, validateAsync });
   const isEnabled = Boolean(validateAsync) && !isSkipped;
+  const [attempt, setAttempt] = useState<Attempt<T>>(() => ({
+    key,
+    validateAsync,
+    isEnabled,
+    issues: null,
+  }));
+  const latest = useLatest(value);
+  let current = attempt;
+  if (
+    attempt.key !== key ||
+    attempt.validateAsync !== validateAsync ||
+    attempt.isEnabled !== isEnabled
+  ) {
+    // A new attempt starts pending, during this render, so no earlier result shows for it.
+    current = { key, validateAsync, isEnabled, issues: null };
+    setAttempt(current);
+  }
 
   useEffect(() => {
-    if (!isEnabled) return;
+    if (!isEnabled || !validateAsync) return;
     const controller = new AbortController();
     const settle = (issues: FieldIssues) => {
-      if (!controller.signal.aborted) setResult({ key, issues: toIssueList(issues) });
+      if (controller.signal.aborted) return;
+      setAttempt((previous) =>
+        previous.key === key && previous.validateAsync === validateAsync && previous.isEnabled
+          ? { ...previous, issues: toIssueList(issues) }
+          : previous,
+      );
     };
     const timer = setTimeout(() => {
-      const check = latest.current;
-      check.validateAsync?.(check.value, controller.signal).then(settle, () => settle(null));
+      validateAsync(latest.current, controller.signal).then(settle, () => settle(null));
     }, debounce);
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [key, isEnabled, debounce, latest]);
+  }, [key, isEnabled, validateAsync, debounce, latest]);
 
-  const isCurrent = result?.key === key;
   return {
-    issues: isEnabled && isCurrent ? result.issues : [],
-    isRunning: isEnabled && !isCurrent,
+    issues: isEnabled ? (current.issues ?? []) : [],
+    isRunning: isEnabled && current.issues === null,
   };
 }

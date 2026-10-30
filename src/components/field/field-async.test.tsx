@@ -72,4 +72,52 @@ describe('asynchronous validation', () => {
     await act(() => vi.advanceTimersByTimeAsync(10));
     expect(result.current.validation.status).toBe('valid');
   });
+
+  it('UIC-FIELD-3.8 stays pending when the value returns to one checked before', async () => {
+    const validateAsync = createCheck();
+    const { result } = renderField({ defaultValue: 'free', validateAsync });
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.validation.status).toBe('valid');
+    act(() => result.current.setValue('taken'));
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    act(() => result.current.setValue('free'));
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(99));
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(result.current.realtimeValidation.status).toBe('valid');
+    expect(validateAsync).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-FIELD-3.8 checks the unchanged value again with a replacement validator', async () => {
+    const first = createCheck();
+    const { result, rerender } = renderField({ defaultValue: 'free', validateAsync: first });
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.realtimeValidation.status).toBe('valid');
+    const stricter = vi.fn(() =>
+      Promise.resolve<FieldIssues>({ severity: 'error', message: 'Reserved.' }),
+    );
+    rerender({ defaultValue: 'free', validateAsync: stricter });
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(stricter).toHaveBeenCalledWith('free', expect.any(AbortSignal));
+    expect(result.current.realtimeValidation).toEqual({ status: 'invalid', message: 'Reserved.' });
+    rerender({ defaultValue: 'free', validateAsync: stricter });
+    await act(() => vi.advanceTimersByTimeAsync(500));
+    expect(stricter).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-FIELD-3.8 checks again once a skipped check is enabled, ignoring a superseded result', async () => {
+    const validateAsync = createCheck();
+    const { result } = renderField({ defaultValue: 'free', isRequired: true, validateAsync });
+    await act(() => vi.advanceTimersByTimeAsync(50));
+    act(() => result.current.setValue(''));
+    await act(() => vi.advanceTimersByTimeAsync(200));
+    expect(result.current.realtimeValidation.message).toBe('A value is required.');
+    act(() => result.current.setValue('free'));
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.realtimeValidation.status).toBe('valid');
+    expect(validateAsync).toHaveBeenCalledTimes(2);
+  });
 });

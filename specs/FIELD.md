@@ -180,10 +180,10 @@ Verification: `src/components/field/field-validation.test.tsx`, `src/components/
 
 ### UIC-FIELD-3.8 - Asynchronous validation
 
-`validateAsync(value, signal)` shall run once the value has stayed unchanged for `validationDebounce` milliseconds (0 by default), unless the value already has an error. Until its result for the current value arrives the field is `pending`; its issues then join the field's, and a check that rejects reports none. A newer value aborts the older check through `signal`, and a result counts only for the value it checked. A check runs with the validator of the last committed render.
+`validateAsync(value, signal)` shall run once the value has stayed unchanged for `validationDebounce` milliseconds (0 by default), unless the value already has an error. Until its result for the current value arrives the field is `pending`; its issues then join the field's, and a check that rejects reports none. Each value, validator and enabling of the check starts a new attempt, pending until its own check settles: a result counts only for the attempt that asked for it, so a value the field returns to, or an unchanged value under a replacement `validateAsync`, is pending again until checked again, and a superseded or aborted check changes nothing. A newer attempt aborts the older check through `signal`. A new function is a new validator, so a host keeps `validateAsync` stable (defined outside render or memoized). A check runs with the validator of the last committed render.
 
 Implementation: `src/components/field/field-async.ts`, `src/components/field/field-state.ts`
-Verification: `src/components/field/field-async.test.tsx`, `src/components/field/field-state.test.tsx`
+Verification: `src/components/field/field-async.test.tsx`, `src/components/field/field-state.test.tsx`, `src/components/form/form-validity.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-3.9 - External errors
 

@@ -99,6 +99,8 @@ describe('Form validity', () => {
 
   it('UIC-FORM-2.2 follows required, pending and warning checks, disabled fields and unmount', async () => {
     let finish: (issues: null) => void = () => undefined;
+    // A stable validator: a new function would be a new validator, checking the value again.
+    const checkCode = () => new Promise<null>((resolve) => (finish = resolve));
     function Fields() {
       const [isDisabled, setDisabled] = useState(false);
       const [isShown, setShown] = useState(true);
@@ -106,13 +108,7 @@ describe('Form validity', () => {
         <>
           <TextField label="Name" isRequired isDisabled={isDisabled} />
           <TextField label="Note" validate={() => ({ severity: 'warning', message: 'Short' })} />
-          {isShown ? (
-            <TextField
-              label="Code"
-              defaultValue="A1"
-              validateAsync={() => new Promise<null>((resolve) => (finish = resolve))}
-            />
-          ) : null}
+          {isShown ? <TextField label="Code" defaultValue="A1" validateAsync={checkCode} /> : null}
           <button type="button" onClick={() => setDisabled((value) => !value)}>
             Toggle name
           </button>
@@ -135,6 +131,30 @@ describe('Form validity', () => {
     await waitFor(() => expect(verdict()).toHaveTextContent('ready'));
     await user.click(screen.getByRole('button', { name: 'Drop code' }));
     expect(verdict()).toHaveTextContent('ready');
+  });
+
+  it('UIC-FORM-2.2 UIC-FIELD-3.8 blocks Save while a value checked before is checked again', async () => {
+    const pending: Array<(issues: null) => void> = [];
+    const checkCode = () => new Promise<null>((resolve) => pending.push(resolve));
+    const user = userEvent.setup();
+    const { verdict, onSave } = renderForm(
+      <TextField label="Code" defaultValue="A" validateAsync={checkCode} />,
+    );
+    await waitFor(() => expect(pending).toHaveLength(1));
+    await act(async () => pending[0]?.(null));
+    await waitFor(() => expect(verdict()).toHaveTextContent('ready'));
+    const input = screen.getByRole('textbox', { name: 'Code' });
+    await user.type(input, 'B');
+    await user.type(input, '{Backspace}');
+    expect(input).toHaveValue('A');
+    expect(verdict()).toHaveTextContent('Code: pending');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave).not.toHaveBeenCalled();
+    await waitFor(() => expect(pending.length).toBeGreaterThan(1));
+    await act(async () => pending.at(-1)?.(null));
+    await waitFor(() => expect(verdict()).toHaveTextContent('ready'));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-FORM-2.3 checks deliberately: reveals every field and focuses the first blocker', async () => {
