@@ -222,6 +222,24 @@ test.describe('Field lab', () => {
     await expect(input).toHaveValue('');
   });
 
+  test('UIC-FIELD-3.8 settles a check that throws, then checks the next value', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('field');
+    const handle = page.locator('[data-lab-field="async"]');
+    const input = handle.getByRole('textbox', { name: 'Handle' });
+    await input.fill('two words');
+    await expect(handle).toHaveAttribute('data-validation', 'pending');
+    await page.clock.runFor(300);
+    await expect(handle).toHaveAttribute('data-validation', 'valid');
+    await input.fill('ada');
+    await page.clock.runFor(800);
+    await expect(handle).toHaveAttribute('data-validation', 'invalid');
+    await expect(handle.locator('.ui-field__message')).toHaveText('ada is taken.');
+  });
+
   test('UIC-FIELD-3.2 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('field', { theme: 'dark' });
     await expect(cell(page, 'invalid', 'label-control').locator('.ui-field__message')).toHaveCSS(

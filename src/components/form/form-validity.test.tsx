@@ -157,6 +157,19 @@ describe('Form validity', () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-FORM-2.2 UIC-FIELD-3.8 stops blocking once a check throws before returning its promise', async () => {
+    const user = userEvent.setup();
+    const checkCode = (): Promise<null> => {
+      throw new Error('Invalid endpoint');
+    };
+    const { verdict, onSave } = renderForm(
+      <TextField label="Code" defaultValue="A" validateAsync={checkCode} />,
+    );
+    await waitFor(() => expect(verdict()).toHaveTextContent('ready'));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-FORM-2.3 checks deliberately: reveals every field and focuses the first blocker', async () => {
     const user = userEvent.setup();
     const { onSubmit, container } = renderForm(

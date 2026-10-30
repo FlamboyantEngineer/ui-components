@@ -35,6 +35,8 @@ const takenHandles = ['ada', 'grace'];
 
 /** A server check that answers after 500 ms: ada and grace are taken. */
 function checkHandle(value: string, signal: AbortSignal): Promise<FieldIssues> {
+  // A handle with a space cannot form the request, so the check throws before it starts.
+  if (value.trim().includes(' ')) throw new Error('No request for a handle with a space.');
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
       const isTaken = takenHandles.includes(value.trim().toLowerCase());
@@ -454,7 +456,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Asynchronous check"
-      description="Checked 300 ms after typing stops and answered after 500 ms; ada and grace are taken. Returning to a value or switching validators checks again."
+      description="Checked 300 ms after typing stops and answered after 500 ms; ada and grace are taken. Returning to a value or switching validators checks again. A handle with a space makes the check throw before it starts: the field stops validating and shows no message."
     >
       <AsyncHandle />
     </LabSection>

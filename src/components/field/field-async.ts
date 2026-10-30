@@ -40,8 +40,8 @@ interface Attempt<T> {
  * Runs `validateAsync` once the value has stayed unchanged for `debounce` milliseconds. Each value,
  * validator and enabling starts a new attempt, pending until its own check settles: a result counts
  * only for the attempt that asked for it, so returning to a value checked before, or replacing the
- * validator, waits for a fresh check. A newer attempt aborts the older check. A check that rejects
- * reports no issue.
+ * validator, waits for a fresh check. A newer attempt aborts the older check. A check that rejects,
+ * or throws before returning its promise, reports no issue.
  */
 export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): AsyncCheck {
   const { validateAsync, debounce, isSkipped, isEqual } = options;
@@ -76,7 +76,10 @@ export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): Async
       );
     };
     const timer = setTimeout(() => {
-      validateAsync(latest.current, controller.signal).then(settle, () => settle(null));
+      // A throw before the check returns its promise settles it as a rejection does.
+      new Promise<FieldIssues>((resolve) => {
+        resolve(validateAsync(latest.current, controller.signal));
+      }).then(settle, () => settle(null));
     }, debounce);
     return () => {
       clearTimeout(timer);
