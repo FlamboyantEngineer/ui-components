@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { useAsyncList } from '../primitives/index.js';
+import { useEffect, useRef, useState } from 'react';
+import { useLatest } from './use-latest.js';
 
 /** One page of a search's results; a `cursor` means another page follows. */
 interface RemoteSearchPage<T> {
@@ -67,50 +67,99 @@ function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
 }
 
 /**
+ * One search: its query and the pages it has loaded so far. A `cursor` belongs to the search whose
+ * page returned it, and `scope` (aborted when a newer search starts) is that search's lifetime.
+ */
+interface SearchState<T> {
+  query: string;
+  items: readonly T[];
+  cursor: string | undefined;
+  status: 'idle' | 'loading' | 'loadingMore' | 'failed';
+  scope: AbortController;
+}
+
+/** Whether the shown results may load their next page: not while searching or after a failure. */
+const canPage = (status: SearchState<unknown>['status']) =>
+  status === 'idle' || status === 'loadingMore';
+
+function createState<T>(query: string, items: readonly T[] = []): SearchState<T> {
+  return { query, items, cursor: undefined, status: 'idle', scope: new AbortController() };
+}
+
+/** The search state, read synchronously by the handlers and rendered from React state. */
+function useSearchState<T>() {
+  const [state, setState] = useState<SearchState<T>>(() => createState(''));
+  const current = useRef(state);
+  const commit = (next: SearchState<T>) => {
+    current.current = next;
+    setState(next);
+  };
+  useEffect(() => () => current.current.scope.abort(), []);
+  return { state, current, commit };
+}
+
+/**
  * Searches through the caller's loader as the query changes, after a pause in typing, and loads the
- * next page of the results on request. React Aria's async list aborts a superseded search, so only
- * the latest results show.
+ * next page of the results on request. Each search owns its pages: starting another aborts it, and
+ * whatever it returns after that is dropped, so only the latest search's pages show and its cursor
+ * is only ever passed back with its own query. While a search runs the previous results stay in
+ * view without a next page; a failed search lists nothing and reports the failure until the next
+ * search, and a failed next page keeps the pages already shown.
  */
 export function useRemoteSearch<T>({
   load,
   minSearchLength = 1,
   searchDelay = defaultSearchDelay,
 }: RemoteSearchOptions<T>): RemoteSearch<T> {
-  const [hasMore, setHasMore] = useState(false);
-  const immediate = useRef(false);
-  const list = useAsyncList<T, string>({
-    async load({ signal, filterText = '', cursor }) {
-      // The async list calls this synchronously, so the flag belongs to this search.
-      const isImmediate = immediate.current;
-      immediate.current = false;
-      const query = filterText.trim();
-      if (!load || query.length < minSearchLength) return { items: [] };
-      if (cursor === undefined && !isImmediate) await wait(searchDelay, signal);
+  const { state, current, commit } = useSearchState<T>();
+  const loader = useLatest(load);
+  const isCurrent = (scope: AbortController) =>
+    current.current.scope === scope && !scope.signal.aborted;
+  const start = async (query: string, isImmediate: boolean) => {
+    if (!load) return;
+    current.current.scope.abort();
+    const trimmed = query.trim();
+    if (trimmed.length < minSearchLength) return commit(createState(query));
+    const next = { ...createState(query, current.current.items), status: 'loading' as const };
+    commit(next);
+    const { signal } = next.scope;
+    try {
+      if (!isImmediate) await wait(searchDelay, signal);
       // A first page is asked for with the query alone, as a loader without pages expects.
-      const page =
-        cursor === undefined ? await load(query, signal) : await load(query, signal, cursor);
-      if (!signal.aborted) setHasMore(Boolean(page.cursor));
-      return { items: page.items, cursor: page.cursor };
-    },
-  });
-  const isTooShort = list.filterText.trim().length < minSearchLength;
-  const isLoading = list.loadingState === 'loading' || list.loadingState === 'filtering';
+      const page = await (loader.current ?? load)(trimmed, signal);
+      if (isCurrent(next.scope))
+        commit({ ...next, items: page.items, cursor: page.cursor, status: 'idle' });
+    } catch {
+      if (isCurrent(next.scope)) commit({ ...next, items: [], status: 'failed' });
+    }
+  };
+  const loadMore = async () => {
+    const from = current.current;
+    const run = loader.current;
+    if (!run || from.status !== 'idle' || from.cursor === undefined) return;
+    commit({ ...from, status: 'loadingMore' });
+    try {
+      const page = await run(from.query.trim(), from.scope.signal, from.cursor);
+      if (!isCurrent(from.scope)) return;
+      commit({ ...from, items: [...from.items, ...page.items], cursor: page.cursor });
+    } catch {
+      if (isCurrent(from.scope)) commit({ ...from, status: 'failed' });
+    }
+  };
+  // Like a list that loads as it mounts, the empty query searches at once where it is long enough.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- the first search runs once
+  useEffect(() => void start('', false), []);
+  const isTooShort = state.query.trim().length < minSearchLength;
   return {
-    results: list.items,
-    isLoading: Boolean(load) && isLoading && !isTooShort,
-    isLoadingMore: list.loadingState === 'loadingMore',
-    hasMore: hasMore && !isTooShort,
-    hasFailed: list.loadingState === 'error',
+    results: state.items,
+    isLoading: Boolean(load) && state.status === 'loading' && !isTooShort,
+    isLoadingMore: state.status === 'loadingMore',
+    hasMore: state.cursor !== undefined && canPage(state.status) && !isTooShort,
+    hasFailed: state.status === 'failed',
     isTooShort,
     minSearchLength,
-    search: (query) => {
-      if (load) list.setFilterText(query);
-    },
-    searchNow: (query) => {
-      if (!load) return;
-      immediate.current = true;
-      list.setFilterText(query);
-    },
-    loadMore: () => list.loadMore(),
+    search: (query) => void start(query, false),
+    searchNow: (query) => void start(query, true),
+    loadMore: () => void loadMore(),
   };
 }
