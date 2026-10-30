@@ -258,25 +258,42 @@ function Console() {
 }
 
 function Narrow() {
+  const [isWide, setWide] = useState(false);
   return (
-    <Frame
-      position="end"
-      width={480}
-      height={260}
-      data-lab-frame="narrow"
-      panel={
-        <DockPanel label="Helper" overlayBelow={600}>
-          <DockPanelPane id="tips" label="Tips" icon={HelpGlyph} title="Tips">
-            <p>Press a launcher to open its pane in a drawer.</p>
-          </DockPanelPane>
-          <DockPanelPane id="links" label="Links" icon={LinkGlyph} count={2}>
-            <p>Two linked records.</p>
-          </DockPanelPane>
-        </DockPanel>
-      }
-    >
-      <p>This frame is narrower than 600 pixels, so the panel keeps only its launchers.</p>
-    </Frame>
+    <>
+      <p>
+        <button type="button" onClick={() => setWide(!isWide)}>
+          {isWide ? 'Narrow the frame' : 'Widen the frame'}
+        </button>
+      </p>
+      <Frame
+        position="end"
+        width={isWide ? 800 : 480}
+        height={260}
+        data-lab-frame="narrow"
+        panel={
+          <DockPanel label="Helper" overlayBelow={600}>
+            <DockPanelPane id="tips" label="Tips" icon={HelpGlyph} title="Tips">
+              <p>Press a launcher to open its pane in a drawer.</p>
+              <label>
+                Tip draft <input />
+              </label>
+            </DockPanelPane>
+            <DockPanelPane id="links" label="Links" icon={LinkGlyph} count={2}>
+              <p>Two linked records.</p>
+              <label>
+                Link draft <input />
+              </label>
+            </DockPanelPane>
+          </DockPanel>
+        }
+      >
+        <p>
+          Below 600 pixels the panel keeps only its launchers. The drafts survive opening and
+          closing the drawer and widening the frame.
+        </p>
+      </Frame>
+    </>
   );
 }
 
@@ -317,7 +334,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Narrow frame"
-      description="Below overlayBelow the open pane shows in a drawer; Escape closes it and focus returns to the launcher."
+      description="Below overlayBelow the open pane shows in a drawer; Escape closes it and focus returns to the launcher. The panes move between the drawer and the docked panel without mounting again, so a draft typed in either survives the frame changing width."
     >
       <Narrow />
     </LabSection>

@@ -1,12 +1,12 @@
 # Dock Panel
 
-`DockPanel` is a panel docked against an edge of an application frame, beside its main content: a toolbar of pane launchers that stays visible while the panel is collapsed, one open pane at a time, a window splitter that resizes it, and a [Drawer](DRAWER.md) over the page when its frame is narrow. `DockPanelPane` is one pane: the launcher's label, icon and count, an optional header row (a title and [Action Row](ACTION-ROW.md) actions) and the content. Panes stay mounted while hidden, so their state survives switching; the selection, expanded state and size persist through the provider storage ([PROVIDER.md](PROVIDER.md)). The separator is [Split View](SPLIT-VIEW.md)'s `ResizeHandle`.
+`DockPanel` is a panel docked against an edge of an application frame, beside its main content: a toolbar of pane launchers that stays visible while the panel is collapsed, one open pane at a time, a window splitter that resizes it, and a [Drawer](DRAWER.md) over the page when its frame is narrow. `DockPanelPane` is one pane: the launcher's label, icon and count, an optional header row (a title and [Action Row](ACTION-ROW.md) actions) and the content. Panes stay mounted while hidden and when they move between the docked body and the drawer, so their state survives switching, collapsing and resizing the frame; the selection, expanded state and size persist through the provider storage ([PROVIDER.md](PROVIDER.md)). The separator is [Split View](SPLIT-VIEW.md)'s `ResizeHandle`.
 
 ## UIC-DOCK-PANEL-1 - Structure
 
 ### UIC-DOCK-PANEL-1.1 - Panel and panes
 
-`DockPanel` shall render a `<section>` region named by `label`, holding the launcher toolbar, the separator while it shows, and a `ui-dock-panel__body` element holding the panes. Its panes are its `DockPanelPane` children, in order; other children are ignored. The root publishes `position` in `data-position`: `end` (the default), `start` or `bottom`, with `start` and `end` following the reading direction.
+`DockPanel` shall render a `<section>` region named by `label`, holding the launcher toolbar, the separator while it shows, and a `ui-dock-panel__body` element. The panes render, through a portal, into one `ui-dock-panel__panes` element that the body holds, and the drawer while it is open (UIC-DOCK-PANEL-4.1); on the server and until the page hydrates they render in place in the body. Its panes are its `DockPanelPane` children, in order; other children are ignored. The root publishes `position` in `data-position`: `end` (the default), `start` or `bottom`, with `start` and `end` following the reading direction.
 
 Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-parts.tsx`, `labs/reference/dock-panel.css`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
@@ -50,9 +50,9 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-2.3 - Mounted panes
 
-Every pane shall stay mounted while the panel is docked. Each pane other than the open one, and every pane while the panel is collapsed, is `hidden` and `inert`, so its content keeps its state (form values, scroll position, loaded data) without taking focus or reaching assistive technology.
+Every pane shall stay mounted for as long as the panel is: through switching panes, collapsing and expanding, opening and closing the drawer, and crossing `overlayBelow` either way, as many times as it happens. The panes are never rendered twice; the one `ui-dock-panel__panes` element moves between the body and the drawer. Each pane other than the shown one (the open pane while docked, the selected pane while an overlay) is `hidden` and `inert`, and every pane is hidden while the body is, so its content keeps its state (form values, scroll position, loaded data) without taking focus or reaching assistive technology. Only hydrating a server-rendered page mounts the panes once more, as they move from the body into the portal.
 
-Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-pane.tsx`
+Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-parts.tsx`, `src/components/dock-panel/dock-panel-pane.tsx`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
 
 ### UIC-DOCK-PANEL-2.4 - Keyboard and focus
@@ -89,30 +89,32 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-4.1 - Drawer below a width
 
-While its parent's client width is below `overlayBelow` pixels, the panel shall publish `data-overlay`, render no body or separator and take no inline size, so only its launchers stay in the frame. A launcher press then selects its pane and opens it, alone, in a `Drawer` (`ui-dock-panel__drawer` on its overlay) at the panel's `position`, titled by the pane's `title` or else its `label`, with a close button; the toggle opens the selected pane the same way. The drawer never opens by itself, whatever the expanded state, and leaves that state unchanged; Escape, an outside press, the close button or the open pane's launcher close it, focus returns to the launcher, and it closes when the panel docks again. Launchers and the toggle report the drawer in `aria-expanded`, and launchers announce the dialog they open (`aria-haspopup="dialog"`) instead of naming a pane element. Panes mount again when the panel docks.
+While its parent's client width is below `overlayBelow` pixels, the panel shall publish `data-overlay`, keep its body hidden, render no separator and take no inline size, so only its launchers stay in the frame. A launcher press then selects its pane and opens it in a `Drawer` (`ui-dock-panel__drawer` on its overlay) at the panel's `position`, titled by the pane's `title` or else its `label`, with a close button. The drawer's body holds a `ui-dock-panel__drawer-body` element, which holds the panes element while the drawer is open; there only the selected pane shows, the others stay hidden and inert, and the drawer's modal focus containment and dismissal cover the pane. Closing the drawer, or docking, moves the panes element back into the body, keeping every pane mounted. The toggle opens the selected pane the same way. The drawer never opens by itself, whatever the expanded state, and leaves that state unchanged; Escape, an outside press, the close button or the open pane's launcher close it, focus returns to the launcher, and it closes when the panel docks again. Launchers and the toggle report the drawer in `aria-expanded`, and launchers announce the dialog they open (`aria-haspopup="dialog"`) instead of naming a pane element. When the panel docks while focus is in the pane, the pane keeps it once docked and shown.
 
-Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-parts.tsx`, `src/components/dock-panel/dock-panel-launchers.tsx`
+Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-parts.tsx`, `src/components/dock-panel/dock-panel-launchers.tsx`, `labs/reference/dock-panel.css`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
 
 ## Hooks
 
-| Hook                       | Kind      | Values                   | Description                                                                        |
-| -------------------------- | --------- | ------------------------ | ---------------------------------------------------------------------------------- |
-| `ui-dock-panel`            | root      |                          | The panel's `<section>`.                                                           |
-| `ui-dock-panel__launchers` | slot      |                          | The launcher toolbar, with the toggle last.                                        |
-| `ui-dock-panel__launcher`  | slot      |                          | A launcher: its button (also `ui-button`) and its count.                           |
-| `ui-dock-panel__count`     | slot      |                          | A launcher's count (also `ui-badge`).                                              |
-| `ui-dock-panel__toggle`    | slot      |                          | The collapse and expand button (also `ui-button`).                                 |
-| `ui-dock-panel__handle`    | slot      |                          | The separator (also `ui-resize-handle`).                                           |
-| `ui-dock-panel__body`      | slot      |                          | The docked panes' container.                                                       |
-| `ui-dock-panel__drawer`    | slot      |                          | The overlay of the drawer that holds the open pane (also `ui-drawer`).             |
-| `ui-dock-panel__pane`      | slot      |                          | A pane's `<section>`.                                                              |
-| `ui-dock-panel__header`    | slot      |                          | A pane's header row (also `ui-action-row`).                                        |
-| `ui-dock-panel__title`     | slot      |                          | A pane's heading.                                                                  |
-| `ui-dock-panel__content`   | slot      |                          | A pane's content.                                                                  |
-| `data-position`            | attribute | `start`, `end`, `bottom` | The frame edge the panel docks against.                                            |
-| `data-orientation`         | attribute | `horizontal`, `vertical` | The launcher toolbar's direction.                                                  |
-| `data-expanded`            | state     | `true`                   | The docked panel shows its selected pane.                                          |
-| `data-overlay`             | state     | `true`                   | The parent is narrower than `overlayBelow`: the open pane shows in a drawer.       |
-| `data-resizing`            | state     | `true`                   | A pointer drag on the separator is in progress.                                    |
-| `data-selected`            | state     | `true`                   | On a launcher, its pane is the selected one, whether or not the panel is expanded. |
+| Hook                         | Kind      | Values                   | Description                                                                        |
+| ---------------------------- | --------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| `ui-dock-panel`              | root      |                          | The panel's `<section>`.                                                           |
+| `ui-dock-panel__launchers`   | slot      |                          | The launcher toolbar, with the toggle last.                                        |
+| `ui-dock-panel__launcher`    | slot      |                          | A launcher: its button (also `ui-button`) and its count.                           |
+| `ui-dock-panel__count`       | slot      |                          | A launcher's count (also `ui-badge`).                                              |
+| `ui-dock-panel__toggle`      | slot      |                          | The collapse and expand button (also `ui-button`).                                 |
+| `ui-dock-panel__handle`      | slot      |                          | The separator (also `ui-resize-handle`).                                           |
+| `ui-dock-panel__body`        | slot      |                          | The docked panel's body, which holds the panes element while no drawer does.       |
+| `ui-dock-panel__panes`       | slot      |                          | The one element every pane renders into, in the body or in the drawer.             |
+| `ui-dock-panel__drawer`      | slot      |                          | The overlay of the drawer that holds the panes while open (also `ui-drawer`).      |
+| `ui-dock-panel__drawer-body` | slot      |                          | The element in the drawer's body that holds the panes element while it is open.    |
+| `ui-dock-panel__pane`        | slot      |                          | A pane's `<section>`.                                                              |
+| `ui-dock-panel__header`      | slot      |                          | A pane's header row (also `ui-action-row`).                                        |
+| `ui-dock-panel__title`       | slot      |                          | A pane's heading.                                                                  |
+| `ui-dock-panel__content`     | slot      |                          | A pane's content.                                                                  |
+| `data-position`              | attribute | `start`, `end`, `bottom` | The frame edge the panel docks against.                                            |
+| `data-orientation`           | attribute | `horizontal`, `vertical` | The launcher toolbar's direction.                                                  |
+| `data-expanded`              | state     | `true`                   | The docked panel shows its selected pane.                                          |
+| `data-overlay`               | state     | `true`                   | The parent is narrower than `overlayBelow`: the open pane shows in a drawer.       |
+| `data-resizing`              | state     | `true`                   | A pointer drag on the separator is in progress.                                    |
+| `data-selected`              | state     | `true`                   | On a launcher, its pane is the selected one, whether or not the panel is expanded. |

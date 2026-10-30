@@ -8,7 +8,9 @@ import {
 } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
+import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -179,6 +181,7 @@ describe('DockPanel structure', () => {
         'toggle',
         'handle',
         'body',
+        'panes',
         'pane',
         'header',
         'title',
@@ -284,6 +287,24 @@ describe('DockPanel structure', () => {
     expect(alone).toBeVisible();
     expect(alone).not.toHaveAttribute('tabindex');
     expectHooksMatchSpec(container, 'DOCK-PANEL', { callerAttributes: ['data-kind'] });
+  });
+  it('UIC-DOCK-PANEL-1.1 renders the panes in place on the server and hydrates without errors', async () => {
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToString returns an HTML string, not a render result
+    const markup = renderToString(<Panel />);
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = markup;
+    expect(host.querySelectorAll('.ui-dock-panel__body > .ui-dock-panel__pane')).toHaveLength(3);
+    const hydrateErrors: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, <Panel />, {
+        onRecoverableError: (error) => hydrateErrors.push(error),
+      });
+    });
+    expect(hydrateErrors).toEqual([]);
+    expect(host.querySelectorAll('.ui-dock-panel__panes > .ui-dock-panel__pane')).toHaveLength(3);
+    act(() => app?.unmount());
+    host.remove();
   });
 });
 
@@ -574,7 +595,7 @@ describe('DockPanel overlay', () => {
     expect(panel).toHaveAttribute('data-overlay', 'true');
     expect(panel).not.toHaveAttribute('data-expanded');
     expect(panel.style.width).toBe('');
-    expect(container.querySelector('.ui-dock-panel__body')).toBeNull();
+    expect(container.querySelector('.ui-dock-panel__body')).not.toBeVisible();
     expect(screen.queryByRole('separator')).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     const people = screen.getByRole('button', { name: 'People' });
@@ -593,7 +614,14 @@ describe('DockPanel overlay', () => {
     expect(within(dialog).queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
     expect(people).toHaveAttribute('aria-expanded', 'true');
     expect(onExpandedChange).not.toHaveBeenCalled();
+    // Every pane moved into the drawer, the others hidden and inert.
     expect(container.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(0);
+    expect(dialog.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(3);
+    expect(pane('Files')).toHaveAttribute('inert');
+    expect(pane('People')).not.toHaveAttribute('inert');
+    expectHooksMatchSpec(document.body, 'DOCK-PANEL', {
+      slots: ['drawer', 'drawer-body', 'panes'],
+    });
   });
 
   it('UIC-DOCK-PANEL-4.1 titles the drawer by the pane title, opens from the toggle and closes when docked', async () => {
@@ -615,5 +643,58 @@ describe('DockPanel overlay', () => {
     resizeFrame(900, 400);
     expect(root(document.body)).not.toHaveAttribute('data-overlay');
     expect(pane('Files')).toBeVisible();
+  });
+
+  it('UIC-DOCK-PANEL-2.3 UIC-DOCK-PANEL-4.1 keeps every pane mounted across the drawer and the width', async () => {
+    stubObserver();
+    stubSheet();
+    const mounts = vi.fn();
+    function Draft({ label }: { label: string }) {
+      const [value, setValue] = useState('');
+      useEffect(() => mounts(label), [label]);
+      return (
+        <input
+          aria-label={label}
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+        />
+      );
+    }
+    render(
+      <Frame>
+        <DockPanel label="Details" overlayBelow={600}>
+          <DockPanelPane id="notes" label="Notes" icon={EditGlyph}>
+            <Draft label="Note draft" />
+          </DockPanelPane>
+          <DockPanelPane id="files" label="Files" icon={FolderGlyph}>
+            <Draft label="File draft" />
+          </DockPanelPane>
+        </DockPanel>
+      </Frame>,
+    );
+    resizeFrame(800, 400);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Note draft' }), 'Unsaved note');
+    await userEvent.click(screen.getByRole('button', { name: 'Files' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'File draft' }), 'Unsaved file');
+    await userEvent.click(screen.getByRole('button', { name: 'Notes' }));
+    expect(mounts.mock.calls).toEqual([['Note draft'], ['File draft']]);
+
+    for (const _crossing of [1, 2]) {
+      resizeFrame(500, 400);
+      await userEvent.click(screen.getByRole('button', { name: 'Notes' }));
+      await settleDrawer();
+      const dialog = screen.getByRole('dialog', { name: 'Notes' });
+      expect(within(dialog).getByRole('textbox', { name: 'Note draft' })).toHaveValue(
+        'Unsaved note',
+      );
+      await userEvent.keyboard('{Escape}');
+      await settleDrawer();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      resizeFrame(800, 400);
+    }
+    expect(screen.getByRole('textbox', { name: 'Note draft' })).toHaveValue('Unsaved note');
+    await userEvent.click(screen.getByRole('button', { name: 'Files' }));
+    expect(screen.getByRole('textbox', { name: 'File draft' })).toHaveValue('Unsaved file');
+    expect(mounts).toHaveBeenCalledTimes(2);
   });
 });
