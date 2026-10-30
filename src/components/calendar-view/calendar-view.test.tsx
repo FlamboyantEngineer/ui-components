@@ -261,6 +261,44 @@ describe('CalendarView', () => {
     );
   });
 
+  it('UIC-CALENDAR-VIEW-2.5 keeps events under their hour labels on clock-change days', () => {
+    const { container } = render(
+      <Calendar
+        defaultView="week"
+        defaultDate="2026-11-01"
+        timeZone="America/New_York"
+        events={[
+          {
+            id: 'first',
+            title: 'First pass',
+            start: '2026-11-01T01:30-04:00',
+            end: '2026-11-01T01:45-04:00',
+          },
+          {
+            id: 'second',
+            title: 'Second pass',
+            start: '2026-11-01T01:30-05:00',
+            end: '2026-11-01T01:45-05:00',
+          },
+          { id: 'noon', title: 'Noon', start: '2026-11-01T12:00', end: '2026-11-01T13:00' },
+        ]}
+      />,
+    );
+    const day = cell('Sunday, November 1, 2026');
+    const button = (text: string) =>
+      within(day).getByRole('button', { name: (name) => plain(name).startsWith(text) });
+    const noonLabel = container.querySelectorAll<HTMLElement>('.ui-calendar-view__hour')[12];
+    expect(button('Noon').style.top).toBe(noonLabel?.style.top);
+    expect(
+      within(day).getByRole('button', { name: named('First pass, 1:30 AM EDT – 1:45 AM EDT') }),
+    ).toBe(button('First pass'));
+    expect(
+      within(day).getByRole('button', { name: named('Second pass, 1:30 AM EST – 1:45 AM EST') }),
+    ).toBe(button('Second pass'));
+    expect(button('First pass').style.top).toBe(button('Second pass').style.top);
+    expect(button('First pass').style.left).not.toBe(button('Second pass').style.left);
+  });
+
   it('UIC-CALENDAR-VIEW-2.4 lists a crowded day behind a more button', async () => {
     const crowded = Array.from({ length: 5 }, (_, index) => ({
       id: `talk-${index}`,

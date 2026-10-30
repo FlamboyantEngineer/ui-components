@@ -13,6 +13,8 @@ const day = (text: string) => text;
 const ids = (segments: ReturnType<typeof layoutWeek>['segments']) =>
   segments.map((segment) => [segment.placed.event.id, segment.column, segment.span, segment.lane]);
 
+const rounded = (value: number) => Math.round(value * 1000) / 1000;
+
 describe('calendar layout', () => {
   it('UIC-CALENDAR-VIEW-2.1 UIC-CALENDAR-VIEW-1.5 reads all-day and timed events in a time zone', () => {
     const events: CalendarViewEvent[] = [
@@ -106,7 +108,6 @@ describe('calendar layout', () => {
       'UTC',
     );
     const blocks = layoutDay(day('2026-03-18'), placed, 'UTC');
-    const rounded = (value: number) => Math.round(value * 1000) / 1000;
     expect(
       blocks.map((block) => [
         block.placed.event.id,
@@ -125,18 +126,31 @@ describe('calendar layout', () => {
     expect(next[0]?.continuesBefore).toBe(true);
   });
 
-  it('UIC-CALENDAR-VIEW-2.5 places events by elapsed time on a day that changes clock time', () => {
-    // New York moves its clocks forward on 8 March 2026: the day lasts 23 hours.
+  it('UIC-CALENDAR-VIEW-2.5 places events at their wall-clock time on a day that skips an hour', () => {
+    // New York moves its clocks forward at 2 AM on 8 March 2026: the day lasts 23 hours.
+    const timeZone = 'America/New_York';
     const placed = readEvents(
-      [{ id: 'noon', title: 'Noon', start: '2026-03-08T12:00', end: '2026-03-08T13:00' }],
-      'America/New_York',
+      [
+        { id: 'noon', title: 'Noon', start: '2026-03-08T12:00', end: '2026-03-08T13:00' },
+        { id: 'gap', title: 'Gap', start: '2026-03-08T01:30', end: '2026-03-08T03:30' },
+        { id: 'next', title: 'Next', start: '2026-03-09T12:00', end: '2026-03-09T13:00' },
+      ],
+      timeZone,
     );
-    const [block] = layoutDay(day('2026-03-08'), placed, 'America/New_York');
-    expect(block?.top).toBeCloseTo((11 / 23) * 100);
-    expect(block?.height).toBeCloseTo((1 / 23) * 100);
+    const blocks = layoutDay(day('2026-03-08'), placed, timeZone);
+    expect(
+      blocks.map((block) => [block.placed.event.id, rounded(block.top), rounded(block.height)]),
+    ).toEqual([
+      // One elapsed hour across the skipped hour spans 1:30 to 3:30 on the ruler.
+      ['gap', 6.25, 8.333],
+      ['noon', 50, 4.167],
+    ]);
+    // Noon sits where the hour labels and the next, ordinary day put it.
+    const [next] = layoutDay(day('2026-03-09'), placed, timeZone);
+    expect([next?.top, rounded(next?.height ?? 0)]).toEqual([50, 4.167]);
   });
 
-  it('UIC-CALENDAR-VIEW-2.5 distinguishes repeated hours and clips a 25-hour day', () => {
+  it('UIC-CALENDAR-VIEW-2.5 shares a repeated hour between its passes and clips a 25-hour day', () => {
     const timeZone = 'America/New_York';
     const placed = readEvents(
       [
@@ -151,6 +165,12 @@ describe('calendar layout', () => {
           title: 'Late',
           start: '2026-11-01T01:30-05:00',
           end: '2026-11-01T01:45-05:00',
+        },
+        {
+          id: 'back',
+          title: 'Back',
+          start: '2026-11-01T01:40-04:00',
+          end: '2026-11-01T01:10-05:00',
         },
         {
           id: 'before',
@@ -174,17 +194,34 @@ describe('calendar layout', () => {
       timeZone,
     );
     const blocks = layoutDay('2026-11-01', placed, timeZone);
-    const rounded = (value: number) => Math.round(value * 1000) / 1000;
     expect(
-      blocks.map((block) => [block.placed.event.id, rounded(block.top), rounded(block.height)]),
+      blocks.map((block) => [
+        block.placed.event.id,
+        rounded(block.top),
+        rounded(block.height),
+        rounded(block.left),
+      ]),
     ).toEqual([
-      ['before', 0, 4],
-      ['early', 6, 1],
-      ['late', 10, 1],
-      ['zero', 96, 0],
-      ['after', 98, 2],
+      ['before', 0, 4.167, 0],
+      ['early', 6.25, 1.042, 0],
+      // It ends at an earlier wall-clock time than it starts, so it keeps its 30 elapsed minutes.
+      ['back', 6.944, 2.083, 33.333],
+      ['late', 6.25, 1.042, 66.667],
+      ['zero', 95.833, 0, 0],
+      ['after', 97.917, 2.083, 0],
     ]);
     expect(blocks[0]?.continuesBefore).toBe(true);
     expect(blocks.at(-1)?.continuesAfter).toBe(true);
+  });
+
+  it('UIC-CALENDAR-VIEW-2.5 follows a half-hour clock change', () => {
+    // Lord Howe Island moves its clocks forward half an hour at 2 AM on 4 October 2026.
+    const timeZone = 'Australia/Lord_Howe';
+    const placed = readEvents(
+      [{ id: 'ten', title: 'Ten', start: '2026-10-04T10:00', end: '2026-10-04T11:00' }],
+      timeZone,
+    );
+    const [block] = layoutDay('2026-10-04', placed, timeZone);
+    expect([rounded(block?.top ?? 0), rounded(block?.height ?? 0)]).toEqual([41.667, 4.167]);
   });
 });

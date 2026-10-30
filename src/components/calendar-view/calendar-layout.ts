@@ -2,9 +2,8 @@
 // a week, and timed events placed within a day. Days are `YYYY-MM-DD` texts (calendar-days.ts).
 
 import { parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
-import { createLinearScale } from '../../utils/linear-scale.js';
 import type { CalendarViewEvent } from './calendar-view.js';
-import { compareDays, getDayOf, getDayStart, shiftDay } from './calendar-days.js';
+import { compareDays, getDayOf, getDayStart, getWallHours, shiftDay } from './calendar-days.js';
 
 /** An event read in the view's time zone. */
 export interface PlacedEvent {
@@ -179,22 +178,24 @@ function packColumns(blocks: Array<Omit<DayBlock, 'left' | 'width'>>): DayBlock[
   return result;
 }
 
+const dayMs = 86_400_000;
+
 /**
- * The timed events of one day (those that are not bars), each clipped to the day and placed by a
- * time scale over the day's real length, with overlapping events side by side.
+ * The timed events of one day (those that are not bars), each clipped to the day and placed on
+ * the day's 24-hour wall-clock ruler, with overlapping events side by side. An instant sits at its
+ * wall-clock time, so a skipped hour stays empty and both passes of a repeated hour share its
+ * place; an event whose end reads earlier than its start, running back through a repeated hour,
+ * keeps its elapsed length from its start.
  */
 export function layoutDay(
   day: string,
   events: readonly PlacedEvent[],
   timeZone: string,
 ): DayBlock[] {
-  const next = shiftDay(day, { days: 1 });
   const from = getDayStart(day, timeZone);
-  const to = getDayStart(next, timeZone);
-  const scale = createLinearScale({
-    domain: [from, to],
-    range: [0, 100],
-  });
+  const to = getDayStart(shiftDay(day, { days: 1 }), timeZone);
+  const place = (instant: number) =>
+    instant >= to ? 100 : (getWallHours(instant, timeZone) / 24) * 100;
   const blocks = events
     .filter(
       (placed) =>
@@ -202,12 +203,15 @@ export function layoutDay(
     )
     .sort((first, second) => first.start - second.start || second.end - first.end)
     .map((placed) => {
-      const top = scale.map(Math.max(placed.start, from));
-      const bottom = scale.map(Math.min(placed.end, to));
+      const start = Math.max(placed.start, from);
+      const end = Math.min(placed.end, to);
+      const top = place(start);
+      const bottom = place(end);
+      const elapsed = ((end - start) / dayMs) * 100;
       return {
         placed,
         top,
-        height: Math.max(0, bottom - top),
+        height: bottom >= top ? bottom - top : Math.min(100 - top, elapsed),
         continuesBefore: placed.start < from,
         continuesAfter: placed.end > to,
       };

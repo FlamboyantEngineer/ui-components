@@ -6,6 +6,7 @@ import {
   parseIsoDate,
   startOfWeek,
   toCalendarDate,
+  toCalendarDateTime,
   toZoned,
   type CalendarDate,
 } from '../../primitives/index.js';
@@ -44,6 +45,18 @@ export function getDayOf(instant: number, timeZone: string): string {
 /** The epoch milliseconds a day starts at in `timeZone`. */
 export function getDayStart(day: string, timeZone: string): number {
   return toZoned(readDay(day), timeZone).toDate().getTime();
+}
+
+/** An instant's wall-clock time of day in `timeZone`, in hours since midnight, as clocks read it. */
+export function getWallHours(instant: number, timeZone: string): number {
+  const zoned = fromDate(new Date(instant), timeZone);
+  return zoned.hour + zoned.minute / 60 + zoned.second / 3600 + zoned.millisecond / 3_600_000;
+}
+
+/** Whether an instant's wall-clock time occurs twice in `timeZone`, as when clocks go back. */
+export function isRepeatedTime(instant: number, timeZone: string): boolean {
+  const wall = toCalendarDateTime(fromDate(new Date(instant), timeZone));
+  return toZoned(wall, timeZone, 'earlier').compare(toZoned(wall, timeZone, 'later')) !== 0;
 }
 
 /** The days of the week holding `day`, from the locale's first day of the week. */
