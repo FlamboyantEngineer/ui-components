@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tree, type TreeProps } from './tree.js';
 
@@ -72,5 +73,18 @@ describe('Tree renaming', () => {
     await userEvent.tab();
     await userEvent.keyboard('{F2}');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('UIC-TREE-7.1 leaves Enter and Escape to an input method while it composes', async () => {
+    const onRename = vi.fn();
+    render(<FoodTree onRename={onRename} />);
+    await userEvent.tab();
+    await userEvent.keyboard('{F2}{Control>}a{/Control}Nuts and seeds');
+    const field = screen.getByRole('textbox', { name: 'Rename Fruit' });
+    pressComposingKeys(field);
+    expect(onRename).not.toHaveBeenCalled();
+    expect(field).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(onRename).toHaveBeenCalledWith(FOOD[0], 'Nuts and seeds');
   });
 });

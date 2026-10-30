@@ -27,14 +27,14 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edi
 
 ### UIC-INLINE-EDIT-1.4 - Saving
 
-Enter in the editor shall save the value being edited, except on a button, on a control whose list is expanded, in a text area without Control or Meta, or while an input method composes; focus leaving the editor, and any overlay the editor opened, shall save it too. Saving a value equal to the saved one (by structure) only closes the editor; a changed value calls `onSave` with it and closes the editor once saved. Closing after Enter, `commit` or the save button returns focus to the read view; closing because focus left keeps focus where it went.
+Enter in the editor shall save the value being edited, except on a button, on a control whose list is expanded, in a text area without Control or Meta, or while an input method composes, including the Enter reported with key code 229 as a composition ends; focus leaving the editor, and any overlay the editor opened, shall save it too. Saving a value equal to the saved one (by structure) only closes the editor; a changed value calls `onSave` with it and closes the editor once saved. Closing after Enter, `commit` or the save button returns focus to the read view; closing because focus left keeps focus where it went.
 
 Implementation: `src/components/inline-edit/use-inline-edit.ts`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`
 
 ### UIC-INLINE-EDIT-1.5 - Cancelling
 
-Escape in the editor, except in an overlay the editor opened or on a control whose list is expanded, shall close the editor without saving, discarding the value being edited, prevent the key's default and stop it there, so an enclosing dialog stays open; focus returns to the read view.
+Escape in the editor, except in an overlay the editor opened, on a control whose list is expanded or while an input method composes, shall close the editor without saving, discarding the value being edited, prevent the key's default and stop it there, so an enclosing dialog stays open; focus returns to the read view.
 
 Implementation: `src/components/inline-edit/use-inline-edit.ts`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`

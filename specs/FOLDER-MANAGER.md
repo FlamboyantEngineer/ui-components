@@ -50,9 +50,9 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 ### UIC-FOLDER-MANAGER-2.3 - Renaming a folder
 
-Rename, F2 on a folder row or the context menu's Rename shall turn the selected folder's label into the name field, seeded with its name and selected, named by the provider string `renameItem` with the name. Enter, or leaving the field, calls `onRename` with the folder's key and the trimmed name; an unchanged or blank name abandons the edit. Focus then returns to the folder's row.
+Rename, F2 on a folder row or the context menu's Rename shall turn the selected folder's label into the name field, seeded with its name and selected, named by the provider string `renameItem` with the name. Enter, or leaving the field, calls `onRename` with the folder's key and the trimmed name; an unchanged or blank name abandons the edit. Focus then returns to the folder's row. An Enter or Escape that an input method composition owns (pressed while it composes, or the Enter reported with key code 229 as it ends) is left to the input method and neither renames nor abandons.
 
-Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager-parts.tsx`
+Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager-parts.tsx`, `src/utils/is-composing-key.ts`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
 
 ### UIC-FOLDER-MANAGER-2.4 - Keys in the name field

@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from './tabs.js';
@@ -82,6 +83,19 @@ describe('Tab renaming', { timeout: 15_000 }, () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(tab('Plantain')).toHaveFocus();
     expect(tab('Plantain')).not.toHaveAttribute('data-renaming');
+  });
+
+  it('UIC-TABS-3.1 leaves Enter and Escape to an input method while it composes', async () => {
+    const onRename = vi.fn();
+    render(<Renameable onRename={onRename} />);
+    await userEvent.dblClick(tab('Banana'));
+    await userEvent.keyboard('{Control>}a{/Control}Plantain');
+    const input = screen.getByRole('textbox', { name: 'Rename Banana' });
+    pressComposingKeys(input);
+    expect(onRename).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(onRename).toHaveBeenCalledWith('banana', 'Plantain');
   });
 
   it('UIC-TABS-3.1 renames the focused tab with F2 and keeps its keys from the list', async () => {

@@ -2,6 +2,7 @@
 
 import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Input, TableStateContext } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { getColumnText } from './table-column.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import { readCellText, type CellReading } from './table-cell-writes.js';
@@ -52,6 +53,11 @@ function useKeyboardNavigationLock() {
 /** Ends the edit of an Escape key, keeping the key from the grid. */
 function handleEscape(event: KeyboardEvent, cancel: () => void): void {
   if (event.key !== 'Escape') return;
+  // An input method's Escape cancels its candidate, not the edit, and stays inside the editor.
+  if (isComposingKey(event.nativeEvent)) {
+    event.stopPropagation();
+    return;
+  }
   event.preventDefault();
   event.stopPropagation();
   cancel();
@@ -99,7 +105,9 @@ function DefaultCellEditor(props: DefaultEditorProps) {
         autoFocus
         onChange={(event) => setText(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' || (event.key === 'Tab' && movesOnCommit)) commit(event);
+          // Enter confirms an input method's candidate, not the edit.
+          const isCommitKey = event.key === 'Enter' || (event.key === 'Tab' && movesOnCommit);
+          if (isCommitKey && !isComposingKey(event.nativeEvent)) commit(event);
           handleEscape(event, () => {
             isDone.current = true;
             props.onCancel();
