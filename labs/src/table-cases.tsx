@@ -456,6 +456,7 @@ export function Pages() {
 export function Editing() {
   const [rows, setRows] = useState(produce.slice(0, 4));
   const [last, setLast] = useState('None');
+  const [isLocked, setLocked] = useState(false);
   const columns: TableColumn<Produce>[] = [
     { id: 'name', header: 'Name', allowsEditing: true },
     { id: 'weight', header: 'Weight (g)', align: 'end', allowsEditing: true },
@@ -479,10 +480,21 @@ export function Editing() {
   ];
   return (
     <div data-lab="editing">
+      <Button
+        size="sm"
+        onPress={() => {
+          // The delay leaves time to open an editor on the row before it is disabled.
+          if (isLocked) setLocked(false);
+          else window.setTimeout(() => setLocked(true), 1000);
+        }}
+      >
+        {isLocked ? 'Enable the Apple row' : 'Disable the Apple row in a second'}
+      </Button>
       <Table
         aria-label="Produce, editable"
         rows={rows}
         columns={columns}
+        disabledKeys={isLocked ? ['apple'] : undefined}
         onCellEdit={({ row, columnId, value }) => {
           setRows((current) =>
             current.map((item) => (item.id === row.id ? { ...item, [columnId]: value } : item)),

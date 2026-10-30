@@ -1,11 +1,14 @@
 import {
   useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
   type MouseEvent,
+  type RefObject,
 } from 'react';
+import type { Key } from '../../core/props.js';
 import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -52,6 +55,8 @@ export interface CellEditing<T> {
 interface CellEditingOptions<T> {
   columns: readonly TableColumn<T>[];
   onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
+  /** The ids of disabled rows, whose cells never open an editor or report an edit. */
+  disabledKeys?: Iterable<Key> | undefined;
   /** Spreadsheet mode: typing a character on an editable cell opens its editor with it. */
   typeToEdit: boolean;
 }
@@ -125,22 +130,8 @@ export function isEditingCell<T extends TableRow>(
   return editing?.rowKey === toCollectionKey(row.id) && editing.columnId === columnId;
 }
 
-/**
- * Cell editing: one cell at a time opens an editor from F2, Enter or a double click, and a commit
- * reports the new value through `onCellEdit`. The table never changes its rows itself.
- */
-export function useCellEditing<T extends TableRow>({
-  columns,
-  onCellEdit,
-  typeToEdit,
-}: CellEditingOptions<T>): CellEditing<T> {
-  const [editing, setEditing] = useState<TableEditingCell | null>(null);
-  // The open cell as events see it: a blur that follows a commit must not report twice.
-  const open = useRef<TableEditingCell | null>(null);
-  const root = useRef<HTMLElement | null>(null);
-  const refocus = useRef<Refocus | null>(null);
-  const latest = useLatest(onCellEdit);
-
+/** After an editor closes, focuses its cell or the next one, unless focus moved elsewhere. */
+function useRefocus(root: RefObject<HTMLElement | null>, refocus: RefObject<Refocus | null>) {
   useLayoutEffect(() => {
     const target = refocus.current;
     refocus.current = null;
@@ -155,6 +146,32 @@ export function useCellEditing<T extends TableRow>({
       (next ?? element).focus();
     }
   });
+}
+
+/**
+ * Cell editing: one cell at a time of an enabled row opens an editor from F2, Enter or a double
+ * click, and a commit reports the new value through `onCellEdit`. An editor whose row becomes
+ * disabled closes without reporting. The table never changes its rows itself.
+ */
+export function useCellEditing<T extends TableRow>({
+  columns,
+  onCellEdit,
+  disabledKeys,
+  typeToEdit,
+}: CellEditingOptions<T>): CellEditing<T> {
+  const [editing, setEditing] = useState<TableEditingCell | null>(null);
+  const disabledRowKeys = useMemo(
+    () => new Set(Array.from(disabledKeys ?? [], toCollectionKey)),
+    [disabledKeys],
+  );
+  const disabled = useLatest(disabledRowKeys);
+  // The open cell as events see it: a blur that follows a commit must not report twice.
+  const open = useRef<TableEditingCell | null>(null);
+  const root = useRef<HTMLElement | null>(null);
+  const refocus = useRef<Refocus | null>(null);
+  const latest = useLatest(onCellEdit);
+
+  useRefocus(root, refocus);
 
   const end = useCallback((restoreFocus: boolean, move?: CellMove): boolean => {
     const cell = open.current;
@@ -165,26 +182,33 @@ export function useCellEditing<T extends TableRow>({
   }, []);
   const commit = useCallback(
     (edit: TableCellEdit<T>, move?: CellMove) => {
-      if (end(true, move)) latest.current?.(edit);
+      if (end(true, move) && !disabled.current.has(toCollectionKey(edit.row.id))) {
+        latest.current?.(edit);
+      }
     },
-    [end, latest],
+    [end, latest, disabled],
   );
   const release = useCallback(
     (edit: TableCellEdit<T>) => {
-      if (end(false)) latest.current?.(edit);
+      if (end(false) && !disabled.current.has(toCollectionKey(edit.row.id))) latest.current?.(edit);
     },
-    [end, latest],
+    [end, latest, disabled],
   );
   const cancel = useCallback(() => {
     end(true);
   }, [end]);
+
+  // A row disabled while its cell is open closes the editor, discarding the draft.
+  useLayoutEffect(() => {
+    if (editing && disabledRowKeys.has(editing.rowKey)) end(true);
+  }, [editing, disabledRowKeys, end]);
   const dismiss = useCallback(() => {
     end(false);
   }, [end]);
 
   const start = (event: KeyboardEvent<HTMLElement> | MouseEvent<HTMLElement>, text?: string) => {
     const cell = findEditableCell(event.target, event.currentTarget, columns);
-    if (!cell || open.current) return;
+    if (!cell || open.current || disabledRowKeys.has(cell.rowKey)) return;
     const opened = text === undefined ? cell : { ...cell, text };
     root.current = event.currentTarget;
     open.current = opened;
