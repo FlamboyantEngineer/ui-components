@@ -34,7 +34,8 @@ jobs:
   git-install:
     # A clean consumer installs the commit as a Git dependency through npm install and npm ci, with
     # the minimum supported React, then the rich-text peers (scripts/check-git-install.mjs).
-    # It runs when a change can reach installation: the manifest, lockfile, build setup or entry points.
+    # It runs when a change can reach installation: the manifest, lockfile, build setup, entry points or
+    # the reference stylesheet the package ships.
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -58,6 +59,10 @@ jobs:
               - src/*/index.ts
               - src/components/*/index.ts
               - src/core/locales/**
+              - labs/reference.css
+              - labs/reference/**
+              - scripts/build-labs.mjs
+              - scripts/lib/reference-stylesheet.mjs
               - .github/workflows/ci.yml
       - uses: actions/setup-node@v4
         if: steps.changes.outputs.install == 'true'

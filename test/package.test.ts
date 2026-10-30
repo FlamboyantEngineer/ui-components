@@ -17,7 +17,9 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
 
 describe('package manifest', () => {
   it('UIC-LABS-1.2 distributes runnable labs separately from the installed library', () => {
-    expect(manifest.files.some((entry) => entry.startsWith('labs'))).toBe(false);
+    expect(manifest.files.filter((entry) => entry.startsWith('labs'))).toEqual([
+      'labs/build/reference.css',
+    ]);
     expect(manifest.files).toContain('dist');
     expect(manifest.scripts['pack:labs']).toBe('node scripts/pack-labs.mjs');
   });
@@ -81,8 +83,12 @@ describe('source maps', () => {
 });
 
 describe('Git branch install', () => {
-  it('UIC-LABS-1.4 prepares the library entry points without building labs', () => {
-    expect(manifest.scripts.prepare).toBe('npm run build');
+  it('UIC-LABS-1.4 UIC-LABS-1.6 prepares the entry points and the reference stylesheet, not the labs', () => {
+    expect(manifest.scripts.prepare).toBe('npm run build:package');
+    expect(manifest.scripts['build:package']).toBe(
+      'npm run build && node scripts/build-labs.mjs --reference',
+    );
+    expect(manifest.exports['./reference.css']).toBe('./labs/build/reference.css');
   });
 });
 
@@ -108,6 +114,7 @@ describe('hosted CI', () => {
       'tsconfig.build.json',
       'src/index.ts',
       'src/components/*/index.ts',
+      'labs/reference/**',
     ]) {
       expect(filters).toContain(`- ${path}\n`);
     }

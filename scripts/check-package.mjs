@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const STYLING_DEPENDENCY =
@@ -35,11 +36,14 @@ try {
     'dist/index.d.ts',
     'dist/testing/index.js',
     'dist/testing/index.d.ts',
+    REFERENCE_STYLESHEET,
   ]) {
     if (!files.has(required)) problems.push(`tarball is missing ${required}`);
   }
   for (const file of files) {
-    if (file.startsWith('labs/')) problems.push(`library tarball must not contain ${file}`);
+    if (file.startsWith('labs/') && file !== REFERENCE_STYLESHEET) {
+      problems.push(`library tarball must not contain ${file}`);
+    }
     if (
       /\.test\.|(^|\/)(src|e2e|test|scripts|labs\/src)\//.test(file) &&
       !file.startsWith('dist/') &&
@@ -66,6 +70,10 @@ try {
   execFileSync('tar', ['-xzf', join(workDir, pack.filename), '-C', extractDir]);
 
   const installed = join(extractDir, 'package');
+  if (files.has(REFERENCE_STYLESHEET)) {
+    const css = readFileSync(join(installed, REFERENCE_STYLESHEET), 'utf8');
+    problems.push(...referenceStylesheetProblems(css));
+  }
   let mapSources = 0;
   const unresolved = [];
   for (const file of files) {
