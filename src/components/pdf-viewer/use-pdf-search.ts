@@ -9,8 +9,9 @@ import {
   type PdfPageText,
   type PdfSearchOptions,
 } from './pdf-search.js';
-import type { LoadedPdf } from './use-pdf-document.js';
+import { pdfRequestLimit, type LoadedPdf } from './use-pdf-document.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { mapBounded } from '../../utils/map-bounded.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
@@ -85,10 +86,10 @@ function usePageTexts(
   useEffect(() => {
     if (!loaded || !isNeeded || texts) return undefined;
     let isCancelled = false;
-    void Promise.all(
-      loaded.pages.map((_, pageIndex) =>
-        loaded.getTextContent(pageIndex).then(createPageText, () => emptyText),
-      ),
+    void mapBounded(
+      loaded.pages.length,
+      (pageIndex) => loaded.getTextContent(pageIndex).then(createPageText, () => emptyText),
+      { limit: pdfRequestLimit, isCancelled: () => isCancelled },
     ).then((pageTexts) => {
       if (!isCancelled) setExtracted({ loaded, texts: pageTexts });
     });

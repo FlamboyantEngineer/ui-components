@@ -84,4 +84,68 @@ describe('PdfViewer document', () => {
     await screen.findByText('The password is incorrect. Try again.');
     expect(screen.getByRole('button', { name: 'Open' })).not.toHaveAttribute('aria-disabled');
   });
+
+  it('UIC-PDF-VIEWER-1.1 loads a document again when the viewer returns to it, never reusing a destroyed one', async () => {
+    const engine = createEngine();
+    const open = engine.getDocument.getMockImplementation();
+    engine.getDocument.mockImplementation((params) => {
+      const task = requireDefined(open)(params);
+      if (!('url' in params) || params.url !== '/files/Other.pdf') return task;
+      return { ...task, promise: new Promise<never>(() => undefined) };
+    });
+    const { root, update, unmount, container } = renderViewer({}, engine);
+    const pageCount = () => container.querySelectorAll('[role="presentation"]').length;
+    await waitFor(() => expect(pageCount()).toBe(7));
+    update({ source: '/files/Other.pdf' });
+    await waitFor(() => expect(engine.destroy).toHaveBeenCalledTimes(1));
+    expect(root).toHaveAttribute('data-loading');
+    update({ source: '/files/Report.pdf' });
+    expect(root).toHaveAttribute('data-loading');
+    expect(pageCount()).toBe(0);
+    await waitFor(() => expect(engine.getDocument).toHaveBeenCalledTimes(3));
+    expect(engine.destroy).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(pageCount()).toBe(7));
+    expect(root).not.toHaveAttribute('data-loading');
+    update({ source: null });
+    expect(root).toHaveAttribute('data-loading');
+    update({ source: '/files/Report.pdf' });
+    expect(root).toHaveAttribute('data-loading');
+    await waitFor(() => expect(pageCount()).toBe(7));
+    expect(engine.getDocument).toHaveBeenCalledTimes(4);
+    unmount();
+    expect(engine.destroy).toHaveBeenCalledTimes(4);
+  });
+
+  it('UIC-PDF-VIEWER-1.6 drops the password request of a document the viewer left', async () => {
+    const engine = createEngine({ password: 'orchard' });
+    const { root, update } = renderViewer({}, engine);
+    await screen.findByLabelText('Password');
+    update({ source: '/files/Other.pdf' });
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+    expect(root).toHaveAttribute('data-loading');
+    update({ source: '/files/Report.pdf' });
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+    await screen.findByLabelText('Password');
+    expect(engine.getDocument).toHaveBeenLastCalledWith({ url: '/files/Report.pdf' });
+  });
+
+  it('UIC-PDF-VIEWER-1.7 opens a 250-page document with at most 8 page requests in flight', async () => {
+    const engine = createEngine({
+      lines: Array.from({ length: 250 }, (_, index) => [`Page ${index + 1}`]),
+    });
+    const getPage = engine.pdf.getPage;
+    let inFlight = 0;
+    let peak = 0;
+    engine.pdf.getPage = async (pageNumber: number) => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      inFlight -= 1;
+      return getPage(pageNumber);
+    };
+    const { root } = renderViewer({}, engine);
+    await waitFor(() => expect(root).not.toHaveAttribute('data-loading'), { timeout: 5000 });
+    expect(peak).toBe(8);
+    expect(root.querySelectorAll('.ui-pdf-viewer__page')).toHaveLength(250);
+  });
 });
