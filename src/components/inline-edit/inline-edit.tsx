@@ -19,8 +19,12 @@ export interface InlineEditEditorProps<T> {
   value: T;
   /** Changes the value being edited. */
   onChange: (value: T) => void;
-  /** Saves the value being edited, or `value` when given, and closes the editor once saved. */
-  commit: (value?: T) => void;
+  /**
+   * Saves the value being edited, or `value` when given (an explicit `null` or `undefined`
+   * included), which becomes the value being edited. Closes the editor once saved, unless it was
+   * edited again meanwhile.
+   */
+  commit: (...value: [] | [T]) => void;
   /** Closes the editor without saving. */
   cancel: () => void;
   /** The inline edit's label, which names the editor's control. */

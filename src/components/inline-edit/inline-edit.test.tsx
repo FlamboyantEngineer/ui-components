@@ -342,6 +342,111 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(read()).toHaveFocus();
   });
 
+  /** A custom editor whose buttons commit chosen values and change the value being edited. */
+  function ChoiceEditor({
+    onSave,
+    value = 'start',
+  }: {
+    onSave: (next: string | null) => Promise<unknown> | undefined;
+    value?: string | null;
+  }) {
+    return (
+      <InlineEdit<string | null>
+        label="Title"
+        value={value}
+        onSave={onSave}
+        defaultEditing
+        renderValue={(saved) => saved ?? 'none'}
+        renderEditor={({ value: current, onChange, commit }) => (
+          <>
+            <output aria-label="Draft">{String(current)}</output>
+            <button onClick={() => commit('first')}>Commit first</button>
+            <button onClick={() => commit('second')}>Commit second</button>
+            <button onClick={() => commit(null)}>Commit none</button>
+            <button onClick={() => commit()}>Commit draft</button>
+            <button onClick={() => onChange('third')}>Type third</button>
+          </>
+        )}
+      />
+    );
+  }
+
+  const draft = () => screen.getByRole('status', { name: 'Draft' });
+
+  it('UIC-INLINE-EDIT-1.6 keeps an edit made after a queued commit when the queue runs', async () => {
+    const user = userEvent.setup();
+    const saves: Array<ReturnType<typeof deferred>> = [];
+    const onSave = vi.fn((_next: string | null) => {
+      saves.push(deferred());
+      return saves.at(-1)?.promise;
+    });
+    render(<ChoiceEditor onSave={onSave} />);
+    await user.click(screen.getByRole('button', { name: 'Commit first' }));
+    await user.click(screen.getByRole('button', { name: 'Commit second' }));
+    expect(draft()).toHaveTextContent('second');
+    await user.click(screen.getByRole('button', { name: 'Type third' }));
+    await act(async () => saves[0]?.resolve());
+    expect(onSave.mock.calls).toEqual([['first'], ['second']]);
+    expect(draft()).toHaveTextContent('third');
+    await act(async () => saves[1]?.resolve());
+    expect(draft()).toHaveTextContent('third');
+    await user.click(screen.getByRole('button', { name: 'Commit draft' }));
+    expect(onSave).toHaveBeenLastCalledWith('third');
+    await act(async () => saves[2]?.resolve());
+    expect(screen.queryByRole('status', { name: 'Draft' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-INLINE-EDIT-1.4 UIC-INLINE-EDIT-1.6 saves an explicit null, at once or queued', async () => {
+    const user = userEvent.setup();
+    const saves: Array<ReturnType<typeof deferred>> = [];
+    const onSave = vi.fn((_next: string | null) => {
+      saves.push(deferred());
+      return saves.at(-1)?.promise;
+    });
+    const { unmount } = render(<ChoiceEditor onSave={onSave} />);
+    await user.click(screen.getByRole('button', { name: 'Commit first' }));
+    await user.click(screen.getByRole('button', { name: 'Commit none' }));
+    await act(async () => saves[0]?.resolve());
+    expect(onSave.mock.calls).toEqual([['first'], [null]]);
+    expect(draft()).toHaveTextContent('null');
+    await act(async () => saves[1]?.resolve());
+    expect(screen.queryByRole('status', { name: 'Draft' })).not.toBeInTheDocument();
+    unmount();
+
+    onSave.mockClear();
+    render(<ChoiceEditor onSave={onSave} />);
+    await user.click(screen.getByRole('button', { name: 'Commit none' }));
+    expect(onSave.mock.calls).toEqual([[null]]);
+  });
+
+  it('UIC-INLINE-EDIT-1.6 keeps later edits when a queued commit fails, under an owner that follows saves', async () => {
+    const user = userEvent.setup();
+    const saves: Array<ReturnType<typeof deferred>> = [];
+    function Owner() {
+      const [value, setValue] = useState<string | null>('start');
+      return (
+        <ChoiceEditor
+          value={value}
+          onSave={async (next) => {
+            saves.push(deferred());
+            await saves.at(-1)?.promise;
+            setValue(next);
+          }}
+        />
+      );
+    }
+    const { container } = render(<Owner />);
+    await user.click(screen.getByRole('button', { name: 'Commit first' }));
+    await user.click(screen.getByRole('button', { name: 'Commit second' }));
+    await user.click(screen.getByRole('button', { name: 'Type third' }));
+    await act(async () => saves[0]?.resolve());
+    expect(draft()).toHaveTextContent('third');
+    await act(async () => saves[1]?.reject(new Error('Offline.')));
+    expect(draft()).toHaveTextContent('third');
+    expect(container.firstElementChild).toHaveAttribute('data-invalid');
+    expect(screen.getByText('Offline.')).toBeInTheDocument();
+  });
+
   it('UIC-INLINE-EDIT-1.2 UIC-INLINE-EDIT-1.6 ignores a save that settles after its session ended', async () => {
     const user = userEvent.setup();
     let save = deferred();

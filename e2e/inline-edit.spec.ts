@@ -88,6 +88,21 @@ test.describe('Inline Edit lab', () => {
     await expect(cuisine.locator('.ui-inline-edit__value')).toHaveText('Japanese');
   });
 
+  test('UIC-INLINE-EDIT-1.6 saves a cleared choice queued behind a pending choice', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-edit');
+    const cuisine = page.locator(field('cuisine'));
+    await cuisine.getByRole('button', { name: /^Edit Cuisine/ }).click();
+    await page.keyboard.press('Enter');
+    await page.getByRole('option', { name: 'Italian' }).click();
+    await expect(cuisine).toHaveAttribute('data-pending');
+    await cuisine.getByRole('button', { name: 'Clear cuisine' }).click();
+    await expect(cuisine.locator('.ui-inline-edit__placeholder')).toHaveText('No cuisine');
+    await expect(cuisine).not.toHaveAttribute('data-pending');
+  });
+
   test('UIC-INLINE-EDIT-1.7 saves a date with the save button', async ({ page, lab }) => {
     await lab.open('inline-edit');
     const bakeOn = page.locator(field('bake-on'));
