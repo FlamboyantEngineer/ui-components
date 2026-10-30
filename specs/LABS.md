@@ -91,7 +91,7 @@ Verification: `e2e/lab-harness.spec.ts`, `e2e/accessibility.spec.ts`
 
 ### UIC-LABS-3.3 - Browser fixture
 
-The Playwright fixture `lab` shall open a lab with a given stylesheet and theme, wait until it has rendered and its stylesheet has loaded, fail the test on any page or console error, and run axe on the lab content.
+The Playwright fixture `lab` shall open a lab with a given stylesheet and theme, wait until it has rendered and its stylesheet has loaded, fail the test on any page or console error, and run axe on the lab content after finite running animations settle. Infinite animations such as spinners shall not delay the scan.
 
 Implementation: `e2e/fixtures.ts`
 Verification: `e2e/lab-harness.spec.ts`

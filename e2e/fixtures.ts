@@ -31,6 +31,18 @@ export const test = base.extend<{ lab: LabFixture }>({
         await waitForLab(page);
       },
       async expectAccessible(selector = '#lab-root') {
+        // Entrance fades temporarily lower contrast; inspect the settled drawing without waiting
+        // for perpetual spinners or other infinite animations.
+        await page.evaluate(async () => {
+          const animations = document
+            .getAnimations()
+            .filter(
+              (animation) =>
+                animation.playState === 'running' &&
+                Number.isFinite(animation.effect?.getComputedTiming().endTime),
+            );
+          await Promise.allSettled(animations.map((animation) => animation.finished));
+        });
         // Keep every violation; trim node details we do not inspect in other results. A page
         // without embedded frames runs axe in place, several times faster than the default, which
         // finishes each run in a second page; a page with frames keeps the default, which also
