@@ -4,6 +4,7 @@ import type { KeyboardEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 import { useDraftSubmission } from '../../utils/use-draft-submission.js';
 import { Button } from '../button/button.js';
@@ -114,8 +115,12 @@ function useComposerActions({
   };
 }
 
-/** Submits on the chord, and cancels on Escape while there is something to cancel. */
+/**
+ * Submits on the chord, and cancels on Escape while there is something to cancel. A key that
+ * belongs to an input method composition is left to the input method and the surface around.
+ */
 function handleComposerKey(event: KeyboardEvent, actions: ComposerActions) {
+  if (isComposingKey(event.nativeEvent)) return;
   if (isSubmitChord(event)) {
     event.preventDefault();
     actions.submit();
