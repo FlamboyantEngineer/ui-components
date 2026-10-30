@@ -90,19 +90,68 @@ const allowedFunctions: ReadonlySet<string> = new Set(
 
 const presentationProperties: ReadonlySet<string> = new Set(presentationNames.split(/\s+/));
 const functionPattern = /([a-z-][\w-]*)\s*\(/gi;
-const urlPattern = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
+const urlStart = /url\s*\(\s*/iy;
 const rasterDataUrl = /^data:image\/(?:png|jpeg|gif|webp|avif);base64,[\w+/=\s]*$/i;
+
+/** The end of a `url()` argument starting at `start`, with its target, or null when malformed. */
+function readUrl(value: string, start: number): { end: number; target: string } | null {
+  const quote = value[start];
+  if (quote === '"' || quote === "'") {
+    const close = value.indexOf(quote, start + 1);
+    if (close === -1) return null;
+    const paren = /\s*\)/y;
+    paren.lastIndex = close + 1;
+    if (!paren.test(value)) return null;
+    return { end: paren.lastIndex, target: value.slice(start + 1, close) };
+  }
+  const close = value.indexOf(')', start);
+  if (close === -1) return null;
+  const target = value.slice(start, close).trimEnd();
+  if (/[\s"'(]/.test(target)) return null;
+  return { end: close + 1, target };
+}
+
+/**
+ * Every `url()` target in a value, or null when the value cannot be read unambiguously: an
+ * unterminated string or `url()`, unbalanced brackets, or a malformed `url()` argument. Browsers
+ * recover a value cut short at its end, so an unclosed `url(` would still load.
+ */
+function readUrlTargets(value: string): string[] | null {
+  const targets: string[] = [];
+  let depth = 0;
+  let index = 0;
+  while (index < value.length) {
+    urlStart.lastIndex = index;
+    if (urlStart.test(value)) {
+      const url = readUrl(value, urlStart.lastIndex);
+      if (url === null) return null;
+      targets.push(url.target);
+      index = url.end;
+      continue;
+    }
+    const char = value[index];
+    if (char === '"' || char === "'") {
+      const close = value.indexOf(char, index + 1);
+      if (close === -1) return null;
+      index = close + 1;
+      continue;
+    }
+    if (char === '(') depth += 1;
+    if (char === ')') depth -= 1;
+    if (depth < 0) return null;
+    index += 1;
+  }
+  return depth === 0 ? targets : null;
+}
 
 /** A value that loads nothing and runs nothing: known functions, and `url()` of a fragment only. */
 function isSafeValue(value: string): boolean {
-  if (/[\\<>]|@|javascript:|expression/i.test(value)) return false;
+  if (/[\\<>]|\/\*|@|javascript:|expression/i.test(value)) return false;
   for (const [, name = ''] of value.matchAll(functionPattern)) {
     if (!allowedFunctions.has(name.toLowerCase())) return false;
   }
-  for (const [, , target = ''] of value.matchAll(urlPattern)) {
-    if (!target.trim().startsWith('#')) return false;
-  }
-  return true;
+  const targets = readUrlTargets(value);
+  return targets !== null && targets.every((target) => target.startsWith('#'));
 }
 
 /** A link to a fragment of the same drawing; `<image>` may also embed a raster data URL. */

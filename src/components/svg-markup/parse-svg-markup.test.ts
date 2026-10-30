@@ -168,6 +168,49 @@ describe('parseSvgMarkup', () => {
     });
   });
 
+  it('UIC-SVG-MARKUP-1.2 drops values whose url() or strings are not closed or are malformed', () => {
+    const dropped = [
+      'url(https://example.com/x.svg#g',
+      "url('https://example.com/x.svg#g'",
+      'url("https://example.com/x.svg#g',
+      "url('#g",
+      'url(#g',
+      'url(#a url(https://example.com/x.svg)',
+      'url(#a) url(https://example.com/x.svg',
+      'url(#a "x)',
+      'url(# a)',
+      'URL ( https://example.com/x.svg )',
+      'url(/**/https://example.com/x.svg)',
+      'rgb(1 2 3',
+      'red)',
+      "'unclosed",
+    ];
+    const tree = parseSvgMarkup(
+      `<svg>${dropped.map((value) => `<rect fill="${value.replace(/"/g, '&quot;')}"/>`).join('')}</svg>`,
+    );
+    expect(tree.children.map((node) => element(node).attributes)).toEqual(dropped.map(() => ({})));
+  });
+
+  it('UIC-SVG-MARKUP-1.2 checks style declarations, custom properties and animation values alike', () => {
+    const tree = parseSvgMarkup(
+      [
+        '<svg>',
+        '<rect style="fill: url(https://example.com/a.svg#p; stroke: red"/>',
+        '<rect style="--paint: url(#fade) ; stroke: url( &quot;#edge&quot; ); fill: url(\'#x\'"/>',
+        '<rect><animate attributeName="fill" values="url(#a);url(https://example.com/a.svg#p" dur="1s"/>',
+        '<animate attributeName="fill" values="url(#a);url(#b)" dur="1s"/></rect>',
+        '</svg>',
+      ].join(''),
+    );
+    const [first, second, third] = tree.children.map(element);
+    expect(first?.attributes).toEqual({ style: 'stroke: red' });
+    expect(second?.attributes).toEqual({ style: '--paint: url(#fade); stroke: url( "#edge" )' });
+    expect(third?.children.map((node) => element(node).attributes)).toEqual([
+      { attributeName: 'fill', dur: '1s' },
+      { attributeName: 'fill', values: 'url(#a);url(#b)', dur: '1s' },
+    ]);
+  });
+
   it('UIC-SVG-MARKUP-1.2 drops animations that target links, styles or dropped attributes', () => {
     const tree = parseSvgMarkup(
       [
