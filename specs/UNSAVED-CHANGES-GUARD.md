@@ -64,10 +64,10 @@ Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.t
 
 ### UIC-UNSAVED-CHANGES-GUARD-2.6 - One question at a time
 
-A `confirmLeave` made while the dialog is open shall resolve the earlier one `false` and show its own question. Unmounting the guard resolves an open question `false`. Each promise settles once.
+A `confirmLeave` made while the dialog is open shall resolve the earlier one `false` and show its own question in a dialog of its own, with no action running. A Save or Discard still running for the earlier question finishes its work, but its success, failure or pending state never closes, answers or marks the new question, which the reader answers as any other. Unmounting the guard resolves an open question `false`, also while its action runs. Each promise settles once, and none is left unsettled once its dialog is gone.
 
 Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`
-Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`
+Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
 
 ## UIC-UNSAVED-CHANGES-GUARD-3 - Nesting
 
