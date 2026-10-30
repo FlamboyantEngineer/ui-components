@@ -190,4 +190,29 @@ test.describe('Form lab', () => {
     await expect(saved).toContainText('"colour":"#336699"');
     await lab.expectAccessible();
   });
+
+  test('UIC-FIELD-2.6 keeps edits through a cancelled native reset and restores them otherwise', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const form = page.getByRole('form', { name: 'Pantry' });
+    const shelf = form.getByRole('textbox', { name: 'Shelf' });
+    const jars = form.getByRole('textbox', { name: 'Jars' });
+    await shelf.fill('Baking');
+    await jars.fill('7');
+    await jars.press('Tab');
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('cancelled');
+    await expect(shelf).toHaveValue('Baking');
+    await expect(jars).toHaveValue('7');
+    const keepsEdits = page.getByRole('switch', { name: 'Keep edits' });
+    await keepsEdits.focus();
+    await page.keyboard.press('Space');
+    await expect(keepsEdits).not.toBeChecked();
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('done');
+    await expect(shelf).toHaveValue('Spices');
+    await expect(jars).toHaveValue('12');
+  });
 });

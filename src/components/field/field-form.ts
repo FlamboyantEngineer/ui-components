@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useFieldScope } from './field-scope.js';
-import type { FieldState } from './field-state.js';
+import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
 
 type FieldSlots = SlotRegistry<'root' | 'control'>;
@@ -47,30 +47,45 @@ function findForm(slots: FieldSlots): HTMLFormElement | null {
   return slots.read('root')?.closest('form') ?? null;
 }
 
+/** The hold the field state keeps for a native reset, when the state has one. */
+function readHold(state: FieldState<unknown>): FieldChangeHold | undefined {
+  return (state as FieldState<unknown> & { [fieldChangeHold]?: FieldChangeHold })[fieldChangeHold];
+}
+
 /**
  * A native form reset puts back the value the field had when it mounted, as the browser does for its
- * own controls, so every field control resets alike whatever element it renders. It runs once the
- * reset is over, so a control whose building block already reset the value is left alone.
+ * own controls, so every field control resets alike whatever element it renders. The field holds
+ * its changes from the moment the reset starts (the document's capture phase) until every listener
+ * has seen it, so a building block that resets itself waits too; then a reset a listener cancelled
+ * (`preventDefault`) changes nothing, and any other puts the initial value back.
  */
 function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
   const latest = useLatest(state);
   const [initial] = useState(() => state.value);
   useEffect(() => {
     const form = findForm(slots);
-    const view = form?.ownerDocument.defaultView;
-    if (!form || !view) return undefined;
+    const document = form?.ownerDocument;
+    const view = document?.defaultView;
+    if (!form || !document || !view) return undefined;
+    // The same hold for the field's whole life.
+    const hold = readHold(latest.current);
     let timer: number | undefined;
-    const restore = () => {
+    const restore = (event: Event) => {
+      if (hold) hold.isHeld = false;
+      if (event.defaultPrevented) return;
       if (!isFieldValueEqual(latest.current.value, initial)) latest.current.setValue(initial);
     };
-    const onReset = () => {
+    const onReset = (event: Event) => {
+      if (event.target !== form) return;
+      if (hold) hold.isHeld = true;
       view.clearTimeout(timer);
-      timer = view.setTimeout(restore, 0);
+      timer = view.setTimeout(() => restore(event), 0);
     };
-    form.addEventListener('reset', onReset);
+    document.addEventListener('reset', onReset, true);
     return () => {
       view.clearTimeout(timer);
-      form.removeEventListener('reset', onReset);
+      if (hold) hold.isHeld = false;
+      document.removeEventListener('reset', onReset, true);
     };
   }, [slots, initial, latest]);
 }

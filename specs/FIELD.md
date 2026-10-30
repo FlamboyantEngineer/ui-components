@@ -122,10 +122,10 @@ Verification: `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-2.6 - Native reset
 
-A native reset of the form the field's control belongs to (or the form around the field) shall put back the value the field had when it mounted, through `setValue`, as the browser does for its own controls, whatever element the control renders. It runs once the reset is over, so a control whose building block already reset the value is left alone.
+A native reset of the form the field's control belongs to (or the form around the field) shall put back the value the field had when it mounted, through `setValue`, as the browser does for its own controls, whatever element the control renders. The field holds its changes from the moment the reset starts until every listener has seen it, so a building block that resets itself (as React Aria's controls do) waits too. A reset that any listener cancels with `preventDefault`, such as while asking whether to discard edits, changes nothing: the value, `onChange` and the field's other state stay as they were. Any other reset then puts the initial value back once.
 
-Implementation: `src/components/field/field-form.ts`
-Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/tags-input/tags-input.test.tsx`
+Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/tags-input/tags-input.test.tsx`, `e2e/form.spec.ts`
 
 ## UIC-FIELD-3 - Validation
 
