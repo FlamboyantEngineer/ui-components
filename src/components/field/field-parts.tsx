@@ -10,6 +10,13 @@ import { Button } from '../button/button.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type { FieldSeverity, FieldState, FieldValidation } from './field-state.js';
 
+/**
+ * How much room a field keeps for what its states add: `default` keeps a line for the message and a
+ * place for the restore button while it has neither, so its neighbours never move; `compact` keeps
+ * neither, for dense filter, tool and action rows.
+ */
+export type FieldDensity = 'default' | 'compact';
+
 export type FieldLabelLayout =
   | 'control-label'
   | 'label-control'
