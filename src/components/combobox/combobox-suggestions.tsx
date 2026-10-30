@@ -18,7 +18,7 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
-import type { ControlSize } from '../../core/props.js';
+import type { ControlSize, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
@@ -33,27 +33,8 @@ import {
   type ComboboxOption,
 } from './combobox-options.js';
 
-/** The state of an option row that `renderOption` draws for. */
-export interface ComboboxOptionState {
-  /** The option is picked. */
-  isSelected: boolean;
-  /** The option is highlighted, from the keyboard or the pointer. */
-  isFocused: boolean;
-  /** The option is highlighted from the keyboard. */
-  isFocusVisible: boolean;
-  /** The pointer is over the option. */
-  isHovered: boolean;
-  /** The option is being pressed. */
-  isPressed: boolean;
-  /** The option cannot be picked. */
-  isDisabled: boolean;
-}
-
 /** Draws an option's content in the list, from the option and its row's state. */
-export type ComboboxOptionRenderer = (
-  option: ComboboxOption,
-  state: ComboboxOptionState,
-) => ReactNode;
+export type ComboboxOptionRenderer = (option: ComboboxOption, state: SelectableState) => ReactNode;
 
 /** How the list draws its options. */
 interface ComboboxOptionDisplay {

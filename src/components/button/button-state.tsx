@@ -8,7 +8,7 @@ import type {
   PressEvent,
   PressEventProps,
 } from '../../core/events.js';
-import type { NativeProps } from '../../core/props.js';
+import type { InteractionState, NativeProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { renderLinkElement } from '../link/link.js';
 import {
@@ -18,17 +18,7 @@ import {
 } from '../shortcut/shortcut.js';
 
 /** The states a button passes to `render` with the `<button>`'s props. */
-export interface ButtonRenderState {
-  /** The pointer is over the button. */
-  isHovered: boolean;
-  /** The button is being pressed. */
-  isPressed: boolean;
-  /** The button has focus. */
-  isFocused: boolean;
-  /** The button has keyboard focus. */
-  isFocusVisible: boolean;
-  /** The button is natively disabled. */
-  isDisabled: boolean;
+export interface ButtonRenderState extends InteractionState {
   /** The button is pending and refuses presses. */
   isPending: boolean;
 }

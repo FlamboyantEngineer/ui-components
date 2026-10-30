@@ -1,13 +1,9 @@
 // Pure rules of a version history: filtering, the people to filter by, the two-version selection
 // and the order a comparison reports.
 
-import {
-  DateFormatter,
-  getLocalTimeZone,
-  parseIsoDate,
-  parseIsoDateTime,
-} from '../../primitives/index.js';
+import { getLocalTimeZone, parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
+import { getDateFormatter } from '../../utils/intl-format.js';
 
 /** What a version needs for the rules here: its key, name, time and person. */
 interface VersionFacts {
@@ -81,13 +77,13 @@ export function orderForComparison(
 export function formatVersionTime(value: string, locale: string): string | null {
   const date = parseIsoDate(value);
   if (date) {
-    return new DateFormatter(locale, { dateStyle: 'medium' }).format(
+    return getDateFormatter(locale, { dateStyle: 'medium' }).format(
       date.toDate(getLocalTimeZone()),
     );
   }
   const dateTime = parseIsoDateTime(value);
   if (!dateTime) return null;
-  return new DateFormatter(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
+  return getDateFormatter(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
     dateTime.toDate(getLocalTimeZone()),
   );
 }

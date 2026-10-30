@@ -121,6 +121,6 @@ export type { SelectFieldValueDisplay } from './select-tree-field.js';
 
 export { SelectControl } from './select-control.js';
 export type { SelectKeysValue } from './select-control.js';
-export type { SelectFieldOptionRenderer, SelectFieldOptionState } from './select-option.js';
+export type { SelectFieldOptionRenderer } from './select-option.js';
 export type { SelectFieldGroup, SelectFieldItem, SelectFieldOption } from './select-options.js';
 export type { SelectFieldLoader, SelectFieldPage } from './select-search.js';

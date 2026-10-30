@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  capitalizeText,
-  describeRelativeTime,
-  formatAbsoluteTime,
-  getRelativeFormat,
-} from './relative-time.js';
+import { capitalizeText, describeRelativeTime, formatAbsoluteTime } from './relative-time.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
 const options = { now, locale: 'en-US', fallbackAfterDays: 7 };
@@ -188,13 +183,5 @@ describe('formatAbsoluteTime', () => {
     );
     expect(formatAbsoluteTime('2026-05-21', 'en-US', { dateStyle: 'long' })).toBe('May 21, 2026');
     expect(formatAbsoluteTime('soon', 'en-US')).toBeNull();
-  });
-});
-
-describe('getRelativeFormat', () => {
-  it('UIC-RELATIVE-TIME-1.2 shares one formatter per locale and unit style', () => {
-    expect(getRelativeFormat('en-US')).toBe(getRelativeFormat('en-US', 'long'));
-    expect(getRelativeFormat('en-US', 'short')).not.toBe(getRelativeFormat('en-US'));
-    expect(getRelativeFormat('fr-FR').format(-1, 'day')).toBe('hier');
   });
 });

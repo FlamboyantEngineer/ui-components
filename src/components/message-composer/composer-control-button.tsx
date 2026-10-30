@@ -6,7 +6,7 @@ import { Button, type ButtonProps } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import { useMessageComposerControls } from './composer-controls.js';
 
-export interface ComposerControlButtonProps extends Omit<
+interface ComposerControlButtonProps extends Omit<
   ButtonProps,
   'variant' | 'size' | 'icon' | 'startIcon' | 'endIcon' | 'label' | 'tooltip' | 'children'
 > {

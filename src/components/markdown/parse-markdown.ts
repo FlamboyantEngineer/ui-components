@@ -83,7 +83,7 @@ function deepFreeze<T>(value: T): T {
 }
 
 /** Top-level blocks and the heading ids they hand out, from a document or a piece of one. */
-export interface ParsedBlocks {
+interface ParsedBlocks {
   blocks: readonly MarkdownBlock[];
   headingIds: readonly string[];
 }

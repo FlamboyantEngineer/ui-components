@@ -11,7 +11,7 @@ import {
 import { SelectionIndicator, Tab as AriaTab } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { dataAttributes, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps } from '../../core/props.js';
+import type { BaseProps, Key, NativeProps, SelectableState } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { normalizeCount } from '../../utils/count.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
@@ -29,16 +29,6 @@ import { useTabMenuTarget } from './tab-menu.js';
 import { joinIds, TabCount, TabRemoveMark } from './tab-parts.js';
 import { useTabDrag, type TabDropPosition, type TabReorder } from './tab-reorder.js';
 
-/** The states a `Tab` passes to `render` with its element's props. */
-export interface TabRenderState {
-  isSelected: boolean;
-  isHovered: boolean;
-  isPressed: boolean;
-  isFocused: boolean;
-  isFocusVisible: boolean;
-  isDisabled: boolean;
-}
-
 export interface TabProps extends Omit<BaseProps, 'id'>, AriaLabellingProps {
   /** Pairs the tab with the `TabPanel` of the same `id`. */
   id?: Key | undefined;
@@ -54,7 +44,7 @@ export interface TabProps extends Omit<BaseProps, 'id'>, AriaLabellingProps {
    * Replaces the tab's element with the caller's own, given its props and state. A tab with `href`
    * receives an anchor's props and the replacement renders an `<a>`.
    */
-  render?: ElementRender<'div', TabRenderState> | undefined;
+  render?: ElementRender<'div', SelectableState> | undefined;
   /** The tab's label. */
   children?: ReactNode;
   /** The tab's text in an overflow menu, a rename field and a drag, when its label is not plain text. */
@@ -112,7 +102,7 @@ function readTabText(textValue: string | undefined, children: ReactNode): string
 /** The building block draws a tab with `href` as an `<a>`; its props reach the caller's `render`. */
 function toTabRender(render: TabRender | undefined) {
   return render
-    ? (props: TabElementProps, state: TabRenderState) =>
+    ? (props: TabElementProps, state: SelectableState) =>
         render(props as JSX.IntrinsicElements['div'], state)
     : undefined;
 }

@@ -159,7 +159,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-4.4 - Custom option content
 
-`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and the row's state (`ComboboxOptionState`: `isFocused`, `isFocusVisible`, `isSelected`, `isHovered`, `isPressed` and `isDisabled`). The row keeps its `option` role, its hook and its label as the text that the filter matches and the input shows once picked.
+`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and the row's state (the shared `SelectableState`: `isFocused`, `isFocusVisible`, `isSelected`, `isHovered`, `isPressed` and `isDisabled`). The row keeps its `option` role, its hook and its label as the text that the filter matches and the input shows once picked.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`

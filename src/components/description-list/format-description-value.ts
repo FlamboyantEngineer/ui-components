@@ -1,6 +1,7 @@
 // Locale-aware text for the values a description row formats itself.
 
 import { readTimeInstant } from '../../utils/read-time-instant.js';
+import { getDateTimeFormat, getListFormat, getNumberFormat } from '../../utils/intl-format.js';
 
 /** Both ends of a range of numbers or dates. */
 export interface DescriptionRange<T extends number | string> {
@@ -46,7 +47,7 @@ function isRange(
  * calendar date stays that date; a text that is not a date shows as written.
  */
 function formatDate(value: DateValue, { locale, formatOptions }: DescriptionFormatInput) {
-  const format = new Intl.DateTimeFormat(
+  const format = getDateTimeFormat(
     locale,
     (formatOptions as Intl.DateTimeFormatOptions | undefined) ?? defaultDateOptions,
   );
@@ -67,10 +68,7 @@ function formatNumber(
   value: number | DescriptionRange<number>,
   { locale, formatOptions }: DescriptionFormatInput,
 ) {
-  const format = new Intl.NumberFormat(
-    locale,
-    formatOptions as Intl.NumberFormatOptions | undefined,
-  );
+  const format = getNumberFormat(locale, formatOptions as Intl.NumberFormatOptions | undefined);
   return typeof value === 'number'
     ? format.format(value)
     : format.formatRange(value.start, value.end);
@@ -93,5 +91,5 @@ export function formatDescriptionValue(
       : formatDate(value as DescriptionRange<string>, input);
   }
   const options = input.formatOptions as Intl.ListFormatOptions | undefined;
-  return new Intl.ListFormat(input.locale, options ?? { type: 'conjunction' }).format(value);
+  return getListFormat(input.locale, options ?? { type: 'conjunction' }).format(value);
 }

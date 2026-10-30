@@ -1,6 +1,6 @@
 import { toSelectKey, type MessageArguments } from './message-format.js';
 /** The formatted parts of a segmented progress bar's value text. */
-export interface SegmentProgressText {
+interface SegmentProgressText {
   /** Completed units. */
   completed: string;
   /** All units. */

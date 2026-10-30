@@ -2,6 +2,7 @@
 
 import { createLinearScale, type ScaleTick } from '../../utils/linear-scale.js';
 import { createTimeScale } from '../../utils/time-scale.js';
+import { getDateTimeFormat, getNumberFormat } from '../../utils/intl-format.js';
 import { readTimeInstant } from '../../utils/read-time-instant.js';
 
 /** Where a value sits along a line chart's x axis: an ISO 8601 date or date-time, or a number. */
@@ -56,8 +57,8 @@ function createTimeAxis(options: LineXAxisOptions): LineXAxis {
     typeof value === 'string' ? readTimeInstant(value, timeZone) : Number.NaN;
   const extent = findExtent(options.values, read) as readonly [string, string] | undefined;
   const scale = createTimeScale({ domain: extent ?? ['', ''], range, timeZone, locale });
-  const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone });
-  const dateTime = new Intl.DateTimeFormat(locale, {
+  const date = getDateTimeFormat(locale, { dateStyle: 'medium', timeZone });
+  const dateTime = getDateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone,
@@ -83,7 +84,7 @@ function createNumberAxis(options: LineXAxisOptions): LineXAxis {
     tickCount: options.tickCount,
     locale: options.locale,
   });
-  const labels = new Intl.NumberFormat(options.locale);
+  const labels = getNumberFormat(options.locale);
   return {
     read,
     map: (value) => scale.map(read(value)),

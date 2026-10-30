@@ -2,7 +2,6 @@
 // Intl for the reader's locale.
 
 import {
-  DateFormatter,
   formatIsoDate,
   fromDate,
   getLocalTimeZone,
@@ -15,9 +14,13 @@ import {
 import {
   capitalizeText,
   describeRelativeTime,
-  getRelativeFormat,
   type RelativeTimeRelation,
 } from '../../utils/relative-time.js';
+import {
+  getDateFormatter,
+  getNumberFormat,
+  getRelativeTimeFormat,
+} from '../../utils/intl-format.js';
 
 /**
  * `date` values are `YYYY-MM-DD` texts, `date-time` values local `YYYY-MM-DDTHH:mm` texts and
@@ -115,7 +118,7 @@ export function describeRelativeRange(
   if (!start || !end || !startDate || !endDate) return null;
   const zone = getLocalTimeZone();
   const today = toLocalDay(options.now);
-  const absolute = new DateFormatter(options.locale, { dateStyle: 'medium' }).formatRange(
+  const absolute = getDateFormatter(options.locale, { dateStyle: 'medium' }).formatRange(
     startDate.toDate(zone),
     endDate.toDate(zone),
   );
@@ -129,12 +132,15 @@ export function describeRelativeRange(
 /** A preset's label: its own, or one such as `Today`, `Next week` or `In 3 days`. */
 export function formatRelativePreset(preset: RelativeDatePreset, locale: string): string {
   if (preset.label) return preset.label;
-  return capitalizeText(getRelativeFormat(locale).format(preset.amount, preset.unit), locale);
+  return capitalizeText(
+    getRelativeTimeFormat(locale, { numeric: 'auto' }).format(preset.amount, preset.unit),
+    locale,
+  );
 }
 
 /** A range preset's count of units, such as `7 days`, for the `Last …` and `Next …` labels. */
 export function formatRelativePeriod(preset: RelativeDatePreset, locale: string): string {
-  const formatter = new Intl.NumberFormat(locale, {
+  const formatter = getNumberFormat(locale, {
     style: 'unit',
     unit: preset.unit,
     unitDisplay: 'long',

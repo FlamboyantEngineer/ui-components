@@ -2,7 +2,6 @@
 // formatted through Intl for the reader's locale. Relative Time and Relative Date Field share it.
 
 import {
-  DateFormatter,
   fromDate,
   getLocalTimeZone,
   parseIsoDate,
@@ -10,6 +9,7 @@ import {
   toCalendarDate,
   type CalendarDate,
 } from '../primitives/index.js';
+import { getDateFormatter, getRelativeTimeFormat } from './intl-format.js';
 
 /** Whether a value lies before, at or after now. */
 export type RelativeTimeRelation = 'past' | 'present' | 'future';
@@ -178,29 +178,13 @@ function describeInstant(
   };
 }
 
-const relativeFormats = new Map<string, Intl.RelativeTimeFormat>();
-
-/** The relative words (`numeric: 'auto'`) for a locale and unit style, built once and shared. */
-export function getRelativeFormat(
-  locale: string,
-  style: RelativeTimeUnitStyle = 'long',
-): Intl.RelativeTimeFormat {
-  const key = `${locale}\u0000${style}`;
-  let format = relativeFormats.get(key);
-  if (!format) {
-    format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style });
-    relativeFormats.set(key, format);
-  }
-  return format;
-}
-
 /** The value's absolute text, given its parsed date and instant. */
 function formatAbsolute(
   parsed: ParsedValue,
   locale: string,
   { dateStyle = 'medium', timeStyle = 'short' }: AbsoluteTimeStyles,
 ): string {
-  return new DateFormatter(locale, {
+  return getDateFormatter(locale, {
     dateStyle,
     timeStyle: parsed.instant ? timeStyle : undefined,
   }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
@@ -238,7 +222,7 @@ export function describeRelativeTime(
   if (!parsed) return null;
   const { locale, now } = options;
   const days = parsed.date.compare(toDay(now));
-  const formatter = getRelativeFormat(locale, options.unitStyle);
+  const formatter = getRelativeTimeFormat(locale, { numeric: 'auto', style: options.unitStyle });
   const absolute = formatAbsolute(parsed, locale, options);
   const offset = parsed.instant ? parsed.instant.getTime() - now.getTime() : 0;
   const time = parsed.instant ? describeInstant(offset, formatter, options.precision) : null;

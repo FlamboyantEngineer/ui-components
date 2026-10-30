@@ -7,7 +7,7 @@ import type {
   PressEventProps,
 } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, InteractionState, NativeProps } from '../../core/props.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -19,19 +19,9 @@ export type LinkVariant = 'primary' | 'secondary';
 export type LinkUnderline = 'always' | 'hover' | 'none';
 
 /** The states a link passes to `render` with its element's props. */
-interface LinkRenderState {
+interface LinkRenderState extends InteractionState {
   /** The link has `aria-current`. */
   isCurrent: boolean;
-  /** The pointer is over the link. */
-  isHovered: boolean;
-  /** The link is being pressed. */
-  isPressed: boolean;
-  /** The link has focus. */
-  isFocused: boolean;
-  /** The link has keyboard focus. */
-  isFocusVisible: boolean;
-  /** The link is disabled. */
-  isDisabled: boolean;
 }
 
 export interface LinkProps

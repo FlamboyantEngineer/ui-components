@@ -3,7 +3,7 @@
 import { formatAriaKeyShortcuts, type ShortcutChord } from './shortcut-format.js';
 
 /** What matching reads from a native key event. */
-export type ChordKeyEvent = Pick<
+type ChordKeyEvent = Pick<
   KeyboardEvent,
   'key' | 'code' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'
 >;

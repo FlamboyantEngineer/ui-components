@@ -2,7 +2,6 @@
 // the localized text it shows for a value.
 
 import {
-  DateFormatter,
   formatIsoDate,
   getLocalTimeZone,
   now,
@@ -13,6 +12,7 @@ import {
   toCalendarDateTime,
   today,
 } from '../../primitives/index.js';
+import { getDateFormatter } from '../../utils/intl-format.js';
 
 /**
  * `date` (`YYYY-MM-DD`), `time` (`HH:mm`), `date-time` (`YYYY-MM-DDTHH:mm`, or zoned with
@@ -157,7 +157,7 @@ export function formatDateValue(
   options: DateValueOptions & { locale: string },
 ): string {
   const single = toSingleMode(mode);
-  const formatter = new DateFormatter(options.locale, formatOptions(single, options));
+  const formatter = getDateFormatter(options.locale, formatOptions(single, options));
   if (typeof value !== 'string') {
     const start = toDate(value.start, single, options);
     const end = toDate(value.end, single, options);

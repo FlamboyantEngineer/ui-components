@@ -1,6 +1,7 @@
 // Linear scales: numbers to positions, round tick values and their labels (specs/SCALES.md).
 
 import { clamp } from './clamp.js';
+import { getNumberFormat } from './intl-format.js';
 
 /** A labelled mark on a scale. */
 export interface ScaleTick<Value> {
@@ -132,16 +133,16 @@ function createLabelFormat(
   step: number | undefined,
 ): Intl.NumberFormat {
   if (options.formatOptions || step === undefined) {
-    return new Intl.NumberFormat(options.locale, options.formatOptions);
+    return getNumberFormat(options.locale, options.formatOptions);
   }
   const decimals = countDecimals(step);
   if (decimals > 100) {
-    return new Intl.NumberFormat(options.locale, {
+    return getNumberFormat(options.locale, {
       notation: 'scientific',
       maximumSignificantDigits: 15,
     });
   }
-  return new Intl.NumberFormat(options.locale, {
+  return getNumberFormat(options.locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });

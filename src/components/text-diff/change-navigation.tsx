@@ -11,7 +11,7 @@ interface ChangeNavigationMove {
   onPress: () => void;
 }
 
-export interface ChangeNavigationProps {
+interface ChangeNavigationProps {
   /** The compare view's hooks, which name the `navigation`, `previous` and `next` slots. */
   hooks: ComponentHooks<'navigation' | 'previous' | 'next'>;
   previous: ChangeNavigationMove;
