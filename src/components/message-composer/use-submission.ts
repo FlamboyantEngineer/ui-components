@@ -1,8 +1,9 @@
 // Sending a composer's value: at once, or once the host accepts it (specs/MESSAGE-COMPOSER.md,
 // UIC-MESSAGE-COMPOSER-3.9).
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUiStorage } from '../../core/provider.js';
+import type { UiStorage } from '../../core/storage.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ComposerFormat } from './use-composer-state.js';
@@ -15,6 +16,8 @@ interface SubmissionOptions<T> {
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
   format: ComposerFormat<T>;
+  /** The host holds the draft, so the provider's storage does not. */
+  isControlled: boolean;
   draft: T;
   setDraft: (next: T) => void;
 }
@@ -30,44 +33,63 @@ interface Submission<T> {
 }
 
 /**
+ * Whose draft a message was sent from: the key, and the storage adapter that holds the draft under
+ * it. A draft without a key, or one the host controls, belongs to no adapter.
+ */
+interface DraftOwner {
+  key: string | undefined;
+  storage: UiStorage | undefined;
+}
+
+const isSameOwner = (a: DraftOwner, b: DraftOwner) => a.key === b.key && a.storage === b.storage;
+
+/**
  * Sends through `onSubmit`, or the submitter a send names. A promise it returns holds sending from the same draft until it
  * settles: once it resolves the draft empties, unless the reader has changed it since, and where
- * the draft was another key's (the conversation changed) only that key's stored draft empties. A
- * throw or a rejection keeps the draft and goes to `onSubmitError`, or is rethrown without it.
+ * the draft is another owner's now (the key or the storage adapter changed, or the composer
+ * unmounted) only the stored draft it was sent from empties. A throw or a rejection keeps the draft
+ * and goes to `onSubmitError`, or is rethrown without it.
  */
 export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
-  const storage = useUiStorage();
+  const adapter = useUiStorage();
   const latest = useLatest(options);
-  const scope = options.persistKey ?? '';
-  const [waiting, setWaiting] = useState<ReadonlySet<string>>(() => new Set());
-  const inFlight = useRef(new Set<string>());
+  const owner: DraftOwner = {
+    key: options.persistKey,
+    storage: options.persistKey === undefined || options.isControlled ? undefined : adapter,
+  };
+  const latestOwner = useLatest(owner);
+  const [waiting, setWaiting] = useState<readonly DraftOwner[]>([]);
+  const inFlight = useRef<DraftOwner[]>([]);
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const fail = (error: unknown) => {
     const onSubmitError = latest.current.onSubmitError;
     if (!onSubmitError) throw error;
     onSubmitError(error);
   };
-  const clear = (key: string | undefined, sent: string) => {
-    const { format, persistKey, draft, setDraft } = latest.current;
-    if (persistKey === key) {
+  const clear = (from: DraftOwner, sent: string) => {
+    const { format, draft, setDraft } = latest.current;
+    if (isMounted.current && isSameOwner(latestOwner.current, from)) {
       if (format.codec.stringify(draft) === sent) setDraft(format.empty);
-    } else if (key !== undefined && storage.getItem(key) === sent) {
-      storage.setItem(key, format.codec.stringify(format.empty));
+    } else if (from.key !== undefined && from.storage?.getItem(from.key) === sent) {
+      from.storage.setItem(from.key, format.codec.stringify(format.empty));
     }
   };
-  const track = (isWaiting: boolean) => {
-    if (isWaiting) inFlight.current.add(scope);
-    else inFlight.current.delete(scope);
-    setWaiting((current) => {
-      const next = new Set(current);
-      if (isWaiting) next.add(scope);
-      else next.delete(scope);
-      return next;
-    });
+  const track = (from: DraftOwner, isWaiting: boolean) => {
+    const update = (current: readonly DraftOwner[]) =>
+      isWaiting ? [...current, from] : current.filter((entry) => entry !== from);
+    inFlight.current = update(inFlight.current);
+    setWaiting(update);
   };
 
   const send = (value: T, clearsDraft: boolean, submitter = options.onSubmit) => {
-    if (inFlight.current.has(scope)) return;
+    if (inFlight.current.some((entry) => isSameOwner(entry, owner))) return;
     let result: void | Promise<unknown>;
     try {
       result = submitter?.(value);
@@ -79,19 +101,18 @@ export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
       if (clearsDraft) options.setDraft(options.format.empty);
       return;
     }
-    const key = options.persistKey;
     const sent = options.format.codec.stringify(value);
-    track(true);
+    track(owner, true);
     void Promise.resolve(result).then(
       () => {
-        track(false);
-        if (clearsDraft) clear(key, sent);
+        track(owner, false);
+        if (clearsDraft) clear(owner, sent);
       },
       (error: unknown) => {
-        track(false);
+        track(owner, false);
         fail(error);
       },
     );
   };
-  return { isSubmitting: waiting.has(scope), send };
+  return { isSubmitting: waiting.some((entry) => isSameOwner(entry, owner)), send };
 }

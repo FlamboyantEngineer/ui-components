@@ -7,6 +7,8 @@ import { MessageComposer, type MessageComposerProps } from './message-composer.j
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
 const send = () => screen.getByRole('button', { name: 'Send' });
+/** A draft as the composer stores it. */
+const stored = (text: string) => JSON.stringify({ text, tokens: [] });
 
 /** A promise the test settles. */
 function deferred() {
@@ -116,5 +118,100 @@ describe('MessageComposer sending', () => {
     rerenderWith({ persistKey: 'first', onSubmit });
     expect(input()).toHaveValue('');
     expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.9 settles a message with the storage it was sent from, not another holding the same text', async () => {
+    const user = userEvent.setup();
+    const first = createMemoryStorage();
+    const second = createMemoryStorage();
+    first.setItem('draft', stored('Same text'));
+    second.setItem('draft', stored('Same text'));
+    const accepted = deferred();
+    const onSubmit = vi.fn(() => accepted.promise);
+    const props = { persistKey: 'draft', onSubmit };
+    const view = render(
+      <UiProvider storage={first}>
+        <MessageComposer {...props} />
+      </UiProvider>,
+    );
+    await user.click(send());
+    view.rerender(
+      <UiProvider storage={second}>
+        <MessageComposer {...props} />
+      </UiProvider>,
+    );
+    expect(input()).toHaveValue('Same text');
+    expect(send()).not.toHaveAttribute('aria-disabled');
+    await act(async () => accepted.resolve());
+    expect(input()).toHaveValue('Same text');
+    expect(second.getItem('draft')).toBe(stored('Same text'));
+    expect(first.getItem('draft')).toBe(stored(''));
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.9 keeps the draft a message left when it is refused after the storage changed', async () => {
+    const user = userEvent.setup();
+    const first = createMemoryStorage();
+    const second = createMemoryStorage();
+    const refused = deferred();
+    const failure = new Error('Offline');
+    const onSubmitError = vi.fn();
+    const props = { persistKey: 'draft', onSubmit: () => refused.promise, onSubmitError };
+    const view = render(
+      <UiProvider storage={first}>
+        <MessageComposer {...props} />
+      </UiProvider>,
+    );
+    await user.type(input(), 'Hello{Enter}');
+    view.rerender(
+      <UiProvider storage={second}>
+        <MessageComposer {...props} />
+      </UiProvider>,
+    );
+    await act(async () => refused.reject(failure));
+    expect(onSubmitError).toHaveBeenCalledWith(failure);
+    expect(first.getItem('draft')).toBe(stored('Hello'));
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.9 empties the stored draft of a composer that unmounted while its message waited', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage();
+    const accepted = deferred();
+    const { unmount } = renderInStorage(storage, {
+      persistKey: 'draft',
+      onSubmit: () => accepted.promise,
+    });
+    await user.type(input(), 'Hello{Enter}');
+    unmount();
+    await act(async () => accepted.resolve());
+    expect(storage.getItem('draft')).toBe(stored(''));
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.9 holds a controlled draft by its key whatever the storage', async () => {
+    const user = userEvent.setup();
+    const accepted = deferred();
+    const onChange = vi.fn();
+    const props = {
+      value: 'Hello',
+      onChange,
+      persistKey: 'draft',
+      onSubmit: () => accepted.promise,
+    };
+    const first = createMemoryStorage();
+    const second = createMemoryStorage();
+    const view = render(
+      <UiProvider storage={first}>
+        <MessageComposer {...props} />
+      </UiProvider>,
+    );
+    await user.click(send());
+    view.rerender(
+      <UiProvider storage={second}>
+        <MessageComposer {...props} />
+      </UiProvider>,
+    );
+    expect(send()).toHaveAttribute('aria-disabled', 'true');
+    await act(async () => accepted.resolve());
+    expect(onChange).toHaveBeenLastCalledWith('');
+    expect(second.getItem('draft')).toBeNull();
   });
 });

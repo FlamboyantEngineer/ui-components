@@ -444,6 +444,23 @@ test.describe('Message Composer lab', () => {
     );
   });
 
+  test('UIC-MESSAGE-COMPOSER-3.9 settles a message in the storage it was sent from', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const workspace = composer(page, 'workspace');
+    const sendButton = workspace.getByRole('button', { name: 'Send' });
+    await sendButton.click();
+    await expect(sendButton).toHaveAttribute('aria-disabled', 'true');
+    await page.getByRole('radio', { name: 'South' }).click();
+    await expect(sendButton).not.toHaveAttribute('aria-disabled');
+    await expect(page.locator('[data-lab-workspace-sent]')).toHaveText('North: Same text in both');
+    await expect(workspace.getByRole('textbox')).toHaveValue('Same text in both');
+    await page.getByRole('radio', { name: 'North' }).click();
+    await expect(workspace.getByRole('textbox')).toHaveValue('');
+  });
+
   test('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-5.2 opens the + menu above the composer with its categories', async ({
     page,
     lab,
