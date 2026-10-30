@@ -108,6 +108,22 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.output).toHaveText('Last commit: D2 = =B2*C2+1');
   });
 
+  test('UIC-FORMULA-BAR-3.1 discards a draft left behind when another cell is selected', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const sheet = spreadsheet(page);
+    await sheet.content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('+1');
+    await sheet.cell(3, 'B').click();
+    await expect(sheet.content).toHaveValue('6');
+    await sheet.cell(2, 'D').click();
+    await expect(sheet.content).toHaveValue('=B2*C2');
+    await expect(sheet.root.locator('.ui-formula-bar')).not.toHaveAttribute('data-dirty');
+  });
+
   test('UIC-FORMULA-BAR-4.1 passes axe in both themes', async ({ page, lab }) => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();

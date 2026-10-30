@@ -72,10 +72,19 @@ function isInGrid(
   return cell.row < (bounds.rowCount ?? Infinity) && cell.column < (bounds.columnCount ?? Infinity);
 }
 
-/** The state of one source: the value set for it, or the initial one. */
+/**
+ * State that belongs to one source: a new source drops what was set for the old one, so returning
+ * to the old source starts from `initial` again.
+ */
 function useSourceState<T>(source: string, initial: T): [T, (value: T) => void] {
   const [state, setState] = useState<{ source: string; value: T }>({ source, value: initial });
-  return [state.source === source ? state.value : initial, (value) => setState({ source, value })];
+  let current = state;
+  if (state.source !== source) {
+    // Reset during render, so this render and every later one show the new source's state.
+    current = { source, value: initial };
+    setState(current);
+  }
+  return [current.value, (value) => setState({ source, value })];
 }
 
 /** The reference box: the active cell's reference, which the reader edits to move to another. */
