@@ -85,7 +85,7 @@ Verification: `src/components/field/field-focus.test.tsx`, `src/components/code-
 
 ### UIC-FIELD-2.1 - Value
 
-`useFieldState` shall take a controlled `value` with `onChange`, or hold the value itself. An uncontrolled field starts at its `committedValue` when given and otherwise at its `defaultValue`. `setValue` changes the value and calls `onChange`.
+`useFieldState` shall take a controlled `value` with `onChange`, or hold the value itself. An uncontrolled field starts at its `committedValue` when given and otherwise at its `defaultValue`. `setValue` changes the value and calls `onChange`. Actions and checks read the options of the last committed render: while a transition to new options suspends, the field still shown keeps its own value, callbacks, validators and lock.
 
 Implementation: `src/components/field/field-state.ts`
 Verification: `src/components/field/field-state.test.tsx`
@@ -180,10 +180,10 @@ Verification: `src/components/field/field-validation.test.tsx`, `src/components/
 
 ### UIC-FIELD-3.8 - Asynchronous validation
 
-`validateAsync(value, signal)` shall run once the value has stayed unchanged for `validationDebounce` milliseconds (0 by default), unless the value already has an error. Until its result for the current value arrives the field is `pending`; its issues then join the field's, and a check that rejects reports none. A newer value aborts the older check through `signal`, and a result counts only for the value it checked.
+`validateAsync(value, signal)` shall run once the value has stayed unchanged for `validationDebounce` milliseconds (0 by default), unless the value already has an error. Until its result for the current value arrives the field is `pending`; its issues then join the field's, and a check that rejects reports none. A newer value aborts the older check through `signal`, and a result counts only for the value it checked. A check runs with the validator of the last committed render.
 
 Implementation: `src/components/field/field-async.ts`, `src/components/field/field-state.ts`
-Verification: `src/components/field/field-async.test.tsx`
+Verification: `src/components/field/field-async.test.tsx`, `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-3.9 - External errors
 

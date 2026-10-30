@@ -1,5 +1,5 @@
 import { PlusGlyph, RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
-import { useState } from 'react';
+import { Suspense, use, useState, useTransition } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -84,6 +84,71 @@ function SampleField({ options, start, ...field }: SampleFieldProps) {
         />
       )}
     </Field>
+  );
+}
+
+type RecordName = 'North' | 'South';
+
+interface LoadingRecord {
+  name: RecordName;
+  /** Settles once the record has loaded; the field suspends until then. */
+  loaded: Promise<void>;
+}
+
+function RecordFruitField({
+  record,
+  value,
+  onEdit,
+}: {
+  record: LoadingRecord;
+  value: string;
+  onEdit: (name: RecordName, value: string) => void;
+}) {
+  const state = useFieldState<string>({
+    value,
+    onChange: (next) => onEdit(record.name, next),
+  });
+  use(record.loaded);
+  return (
+    <Field state={state} label={`${record.name} fruit`}>
+      {(control) => (
+        <input
+          {...control}
+          value={state.value}
+          onChange={(event) => state.setValue(event.target.value)}
+        />
+      )}
+    </Field>
+  );
+}
+
+/** Loading the other record takes 2 s in a transition; edits meanwhile go to the record shown. */
+function RecordSwitch() {
+  const [values, setValues] = useState<Record<RecordName, string>>({
+    North: 'Plum',
+    South: 'Quince',
+  });
+  const [record, setRecord] = useState<LoadingRecord>({ name: 'North', loaded: Promise.resolve() });
+  const [edited, setEdited] = useState('none');
+  const [isLoading, startTransition] = useTransition();
+  const other: RecordName = record.name === 'North' ? 'South' : 'North';
+  const onEdit = (name: RecordName, value: string) => {
+    setValues((previous) => ({ ...previous, [name]: value }));
+    setEdited(name);
+  };
+  const load = () =>
+    startTransition(() =>
+      setRecord({ name: other, loaded: new Promise((resolve) => setTimeout(resolve, 2000)) }),
+    );
+  return (
+    <>
+      <Suspense fallback="Loading">
+        <RecordFruitField record={record} value={values[record.name]} onEdit={onEdit} />
+      </Suspense>
+      <Button onPress={load}>Load {other}</Button>
+      <LabOutput name="Loading">{isLoading ? 'yes' : 'no'}</LabOutput>
+      <LabOutput name="Edited">{edited}</LabOutput>
+    </>
   );
 }
 
@@ -341,6 +406,12 @@ mountLab(
         )}
         data-lab-field="issues"
       />
+    </LabSection>
+    <LabSection
+      title="Switching records"
+      description="While the next record loads in a transition, edits still reach the record the field shows."
+    >
+      <RecordSwitch />
     </LabSection>
     <LabSection
       title="Asynchronous check"

@@ -274,4 +274,20 @@ test.describe('Field lab', () => {
     await expect(handle).toHaveAttribute('data-validation', 'invalid');
     await expect(handle.locator('.ui-field__message')).toHaveText('ada is taken.');
   });
+
+  test('UIC-FIELD-2.1 sends edits to the shown record while the next one loads', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    await page.getByRole('button', { name: 'Load South' }).click();
+    await expect(page.locator('[data-lab-output="Loading"]')).toHaveText('yes');
+    const north = page.getByRole('textbox', { name: 'North fruit' });
+    await north.fill('Pear');
+    await expect(page.locator('[data-lab-output="Edited"]')).toHaveText('North');
+    await expect(north).toHaveValue('Pear');
+    await expect(page.getByRole('textbox', { name: 'South fruit' })).toHaveValue('Quince', {
+      timeout: 5000,
+    });
+  });
 });

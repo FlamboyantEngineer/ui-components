@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useAsyncCheck, type FieldAsyncValidate } from './field-async.js';
 import {
   canStepFieldHistory,
@@ -142,6 +143,10 @@ function useOwnValues<T>({ value, committedValue, defaultValue }: FieldStateOpti
   return { draft, setDraft, committed, setCommitted, history, setHistory };
 }
 
+/**
+ * The committed render's value, committed value, options and lock. Actions in one event update it so
+ * they see each other; a render that has not committed (a suspended transition) never replaces it.
+ */
 interface LatestSnapshot<T> {
   value: T;
   committedValue: T;
@@ -149,13 +154,6 @@ interface LatestSnapshot<T> {
   isLocked: boolean;
   /** A controlled value changed in this event: the value to commit is the one the caller renders. */
   isUnsettled?: boolean;
-}
-
-/** The latest value, committed value, options and lock, so actions in one event see each other. */
-function useLatest<T>(snapshot: LatestSnapshot<T>) {
-  const latest = useRef(snapshot);
-  latest.current = snapshot;
-  return latest;
 }
 
 /**
@@ -245,7 +243,7 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   const isDisabled = Boolean(options.isDisabled || scope.isDisabled);
   const isReadOnly = Boolean(options.isReadOnly || scope.isReadOnly);
   const isLocked = isReadOnly || isDisabled;
-  const latest = useLatest({ value, committedValue, options, isLocked });
+  const latest = useLatest<LatestSnapshot<T>>({ value, committedValue, options, isLocked });
   const [draftIssue, setDraftIssue] = useDraftIssue();
   const { reveal, realtime, shown } = useFieldValidation(value, options, { scope, draftIssue });
   const { markChanged } = reveal;
