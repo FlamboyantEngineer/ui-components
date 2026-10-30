@@ -1,6 +1,6 @@
 // Shared fixtures for the PDF viewer's unit tests: a stand-in engine with three pages of text.
 
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { expect, vi } from 'vitest';
 import {
   isTextItem,
@@ -215,6 +215,30 @@ export function createEngine({
 }
 
 export type TestEngine = ReturnType<typeof createEngine>;
+
+/**
+ * Holds every named destination lookup of the engine until the test settles it, so lookups can
+ * finish in any order.
+ */
+export function holdDestinations(engine: TestEngine) {
+  const lookups = new Map<string, (destination: unknown[] | null) => void>();
+  engine.pdf.getDestination.mockImplementation(
+    (name: string) =>
+      new Promise<unknown[] | null>((resolve) => {
+        lookups.set(name, resolve);
+      }),
+  );
+  return {
+    /** Finishes the pending lookup of `name` with `destination`. */
+    async settle(name: string, destination: unknown[] | null) {
+      await waitFor(() => expect(lookups.has(name)).toBe(true));
+      await act(async () => {
+        requireDefined(lookups.get(name))(destination);
+        await Promise.resolve();
+      });
+    },
+  };
+}
 
 export function renderViewer(props: Partial<PdfViewerProps> = {}, engine = createEngine()) {
   const viewer = (next: Partial<PdfViewerProps>) => (

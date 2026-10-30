@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   createEngine,
+  holdDestinations,
   pointsToPixels,
   renderReady,
   stubLayout,
@@ -73,5 +74,21 @@ describe('PdfViewer links', () => {
     expect(scroller.scrollTop).toBe(0);
     await press.click(screen.getByRole('link', { name: 'NextPage' }));
     expect(scroller.scrollTop).toBe(800);
+  });
+
+  it('UIC-PDF-VIEWER-2.4 drops a link destination still being looked up once another link moves the reader', async () => {
+    stubLayout();
+    const engine = createEngine({ links });
+    const lookups = holdDestinations(engine);
+    await renderReady({ defaultZoom: 100 }, engine);
+    const press = userEvent.setup({ pointerEventsCheck: 0 });
+    const scroller = screen.getByRole('document');
+
+    await press.click(await screen.findByRole('link', { name: 'markets' }));
+    await press.click(screen.getByRole('link', { name: 'NextPage' }));
+    expect(scroller.scrollTop).toBe(800);
+    await lookups.settle('markets', [{ num: 2, gen: 0 }, { name: 'Fit' }]);
+    expect(scroller.scrollTop).toBe(800);
+    expect(screen.getByLabelText('Page')).toHaveValue('2');
   });
 });

@@ -199,7 +199,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Bytes source, sidebar and destinations"
-      description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy at its second page. The sidebar opens on the outline beside thumbnails, and the buttons go to destinations the document names."
+      description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy at its second page. The sidebar opens on the outline beside thumbnails, and the buttons go to destinations the document names. Only the latest navigation counts: a destination still being looked up is dropped once the reader follows another one or goes to a page."
     >
       <SidebarReader />
     </LabSection>

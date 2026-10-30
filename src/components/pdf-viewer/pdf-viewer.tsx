@@ -142,7 +142,7 @@ export function PdfViewer<
       zoom={zoom}
       pageCount={viewer.pageCount}
       currentPage={pages.currentPage}
-      onPageChange={pages.scrollToPage}
+      onPageChange={viewer.links.goToPage}
       search={search}
       findFieldRef={refs.findFieldRef}
       sidebar={viewer.sidebar}

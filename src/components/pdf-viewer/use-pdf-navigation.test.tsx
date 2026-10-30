@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createEngine,
+  holdDestinations,
   pointsToPixels,
   renderReady,
   renderViewer,
@@ -152,6 +153,33 @@ describe('PdfViewer navigation', () => {
     await waitFor(() => expect(scroller().scrollTop).toBe(800));
     view.update({ defaultZoom: 100, destination: 'orchards' });
     await waitFor(() => expect(engine.pdf.getDestination).toHaveBeenLastCalledWith('orchards'));
+    expect(scroller().scrollTop).toBe(800);
+    expect(pageField()).toHaveValue('2');
+  });
+
+  it('UIC-PDF-VIEWER-4.5 goes to the latest destination when earlier lookups finish last', async () => {
+    stubLayout();
+    const engine = createEngine();
+    const lookups = holdDestinations(engine);
+    const view = await renderReady({ defaultZoom: 100, destination: 'markets' }, engine);
+    view.update({ defaultZoom: 100, destination: 'varieties' });
+
+    await lookups.settle('varieties', [{ num: 2, gen: 0 }, { name: 'Fit' }]);
+    await waitFor(() => expect(scroller().scrollTop).toBe(1600));
+    await lookups.settle('markets', [{ num: 1, gen: 0 }, { name: 'Fit' }]);
+    expect(scroller().scrollTop).toBe(1600);
+    expect(pageField()).toHaveValue('3');
+  });
+
+  it('UIC-PDF-VIEWER-4.5 drops a destination still being looked up once the reader goes to a page', async () => {
+    stubLayout();
+    const engine = createEngine();
+    const lookups = holdDestinations(engine);
+    await renderReady({ defaultZoom: 100, destination: 'markets' }, engine);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(scroller().scrollTop).toBe(800);
+    await lookups.settle('markets', [{ num: 2, gen: 0 }, { name: 'Fit' }]);
     expect(scroller().scrollTop).toBe(800);
     expect(pageField()).toHaveValue('2');
   });
