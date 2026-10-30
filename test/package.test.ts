@@ -73,6 +73,13 @@ describe('package manifest', () => {
   });
 });
 
+describe('source maps', () => {
+  it('UIC-LABS-1.5 ships the sources the maps point at, without their tests', () => {
+    expect(manifest.files).toEqual(expect.arrayContaining(['dist', 'src', '!src/**/*.test.*']));
+    expect(manifest.scripts['check:package']).toBe('node scripts/check-package.mjs');
+  });
+});
+
 describe('Git branch install', () => {
   it('UIC-LABS-1.4 prepares the library entry points without building labs', () => {
     expect(manifest.scripts.prepare).toBe('npm run build');
