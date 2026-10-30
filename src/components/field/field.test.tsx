@@ -170,6 +170,41 @@ describe('Field', () => {
     expect(sizesOf('lg')).toEqual(['lg', 'md', 'md', 'md']);
   });
 
+  it('UIC-FIELD-1.12 publishes its density and keeps every part in a compact field', async () => {
+    const user = userEvent.setup();
+    const { container, unmount } = render(<TextField />);
+    expect(root(container)).toHaveAttribute('data-density', 'default');
+    unmount();
+    const view = render(
+      <TextField
+        density="compact"
+        labelLayout="label-colon-control"
+        description="Pick one."
+        options={{
+          defaultValue: 'Stone',
+          committedValue: 'Stone',
+          validate: (value) =>
+            value === 'Stone' ? { severity: 'error', message: 'Not a fruit.' } : null,
+        }}
+      />,
+    );
+    expect(root(view.container)).toHaveAttribute('data-density', 'compact');
+    expectHooksMatchSpec(view.container, 'FIELD');
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    const message = view.container.querySelector('.ui-field__message');
+    expect(message).toHaveAttribute('aria-live', 'polite');
+    expect(message).toHaveTextContent('Not a fruit.');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    await user.clear(input);
+    await user.type(input, 'Pear');
+    expect(message).toBeEmptyDOMElement();
+    expect(root(view.container)).toHaveAttribute('data-dirty', 'true');
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Fruit' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(input).toHaveValue('Stone');
+  });
+
   it('UIC-FIELD-2.3 publishes dirty state while the value differs from the committed value', async () => {
     const user = userEvent.setup();
     const { container } = render(<TextField options={{ committedValue: 'Fig' }} />);

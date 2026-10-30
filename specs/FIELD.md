@@ -81,6 +81,13 @@ With `commitOnBlur`, a field whose control commits on blur shall commit its valu
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-focus.ts`, `src/components/field/field-control.ts`
 Verification: `src/components/field/field-focus.test.tsx`, `src/components/code-editor/code-json.test.tsx`, `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/signature-pad/signature-pad.test.tsx`, `src/components/color-field/color-field-entry.test.tsx`, `e2e/text-field.spec.ts`, `e2e/pin-input.spec.ts`, `e2e/number-field.spec.ts`, `e2e/code-json.spec.ts`, `e2e/rich-text-editor.spec.ts`, `e2e/signature-pad.spec.ts`, `e2e/color-field.spec.ts`
 
+### UIC-FIELD-1.12 - Density
+
+`density` shall publish `data-density` on the field's root: `default` keeps room for what the field's states add, and `compact` takes it only while they show, for dense filter, tool and action rows where a field sits beside buttons. The field's parts, names, descriptions, live message region, restore button and its keyboard access, dirty, disabled and validation states and form participation are the same in both; only the room the reference sheet keeps differs. With `default`, the reference sheet keeps a line below the control for the message and the restore button's place at the end of the control row while the field is clean, and sizes the field to a form column, so turning dirty, invalid or pending never moves the control or its neighbours. With `compact`, the field is as wide as its label and control, keeps no message line while the message is empty and no restore place while clean: a message takes a line below the control, as wide as the field and wrapping within it, and the restore button takes its place after the control while the field is dirty, so the row may move as they come and go. Every field control built on `Field` takes `density` with the field's props.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`, `labs/reference/field.css`
+Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
+
 ## UIC-FIELD-2 - Value and commit
 
 ### UIC-FIELD-2.1 - Value
@@ -383,6 +390,7 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
 | `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
 | `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
+| `data-density`                   | attribute | `default`, `compact`                                                    | The room the field keeps for its message and restore button.     |
 | `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
 | `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
 | `data-required`                  | state     | `true`                                                                  | A value is required.                                             |

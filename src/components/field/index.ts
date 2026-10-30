@@ -18,6 +18,7 @@ export type {
   FieldInputProps,
   FieldIssue,
   FieldIssues,
+  FieldDensity,
   FieldLabelLayout,
   FieldLayoutProps,
   FieldMenuAction,

@@ -395,7 +395,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editing"
-      description="F2, Enter or a double click opens a cell's editor; Enter commits and Escape cancels."
+      description="F2, Enter or a double click opens a cell's editor; Enter commits and Escape cancels. A disabled row opens no editor, and disabling the row of an open editor closes it without an edit."
     >
       <Editing />
     </LabSection>

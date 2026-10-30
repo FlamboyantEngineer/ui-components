@@ -36,10 +36,10 @@ Verification: `test/primitives.test.ts`
 
 ### UIC-PRIMITIVES-2.1 - Public declarations expose no building block
 
-No public type declaration shall import from `src/primitives/` or from React Aria and its companion packages: component props, values, events, render states and helpers are declared by the library. `npm run check:public-types` scans the built declarations (every `.d.ts` under `dist/` except `dist/primitives/`) and fails on any such import, so a caller can never depend on the implementation behind a component.
+No public type declaration shall import from `src/primitives/` or from React Aria and its companion packages: component props, values, events, render states and helpers are declared by the library. `npm run check:public-types` scans the built declarations (every `.d.ts` under `dist/` except `dist/primitives/`) and fails on any such import, so a caller can never depend on the implementation behind a component. `npm run check` runs it after the build, and hosted CI runs `npm run check` itself, so both use one gate list.
 
-Implementation: `scripts/check-public-types.mjs`, `package.json`
-Verification: `test/public-types.test.ts`
+Implementation: `scripts/check-public-types.mjs`, `scripts/check.mjs`, `.github/workflows/ci.yml`, `package.json`
+Verification: `test/public-types.test.ts`, `test/package.test.ts`
 
 ### UIC-PRIMITIVES-2.2 - A shared vocabulary the primitives satisfy
 

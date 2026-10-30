@@ -70,6 +70,7 @@ describe('useFieldControl', () => {
         description="Pick one."
         className="extra"
         data-test="sample"
+        density="compact"
         placeholder="Apple"
         onCommit={onCommit}
         onParts={(next) => (parts = next)}
@@ -79,6 +80,7 @@ describe('useFieldControl', () => {
     expect(root).toHaveAttribute('id', 'fruit');
     expect(root).toHaveClass('ui-field', 'extra');
     expect(root).toHaveAttribute('data-test', 'sample');
+    expect(root).toHaveAttribute('data-density', 'compact');
     expect(parts?.rest).toEqual({ placeholder: 'Apple' });
     const input = screen.getByRole('textbox', { name: 'Fruit' });
     expect(input).toHaveAttribute('placeholder', 'Apple');

@@ -389,7 +389,7 @@ Verification: `src/components/table/use-table-rows.test.tsx`
 
 ### UIC-TABLE-11.1 - Opening an editor
 
-A cell of a column with `allowsEditing` shall open its editor on F2 or Enter while the cell has focus, or on a double click, and publish `data-editing` while it is open. One cell is edited at a time. While the editor is open the grid's arrow-key navigation and type-ahead are off, so the editor keeps its keys.
+A cell of a column with `allowsEditing` in an enabled row (UIC-TABLE-11.4) shall open its editor on F2 or Enter while the cell has focus, or on a double click, and publish `data-editing` while it is open. One cell is edited at a time. While the editor is open the grid's arrow-key navigation and type-ahead are off, so the editor keeps its keys.
 
 Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-cell-editor.tsx`
 Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
@@ -407,6 +407,13 @@ Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.
 
 Implementation: `src/components/table/table-cell-editor.tsx`, `src/components/table/use-cell-editing.ts`
 Verification: `src/components/table/use-cell-editing.test.tsx`
+
+### UIC-TABLE-11.4 - Disabled rows
+
+A row in `disabledKeys` shall never be edited: F2, Enter, a double click and spreadsheet type-to-edit open no editor on its cells, whatever their column's `allowsEditing`, and no commit, focus loss or custom editor reports an `onCellEdit` for it. A row that becomes disabled while one of its cells is being edited closes the editor, discarding its draft without an edit, and focus returns to the cell. Pasting, filling and clearing cells skip disabled rows the same way (UIC-TABLE-14.3).
+
+Implementation: `src/components/table/use-cell-editing.ts`
+Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`
 
 ## UIC-TABLE-12 - Summary and loading more
 
@@ -510,7 +517,7 @@ Verification: `src/components/table/use-cell-selection.test.tsx`, `src/component
 
 ### UIC-TABLE-14.6 - Typing and moving
 
-In spreadsheet mode, typing a character other than Space on an editable cell shall open its editor holding that character. In the default editor Enter commits and moves focus to the cell below, Tab to the next cell along the row, and Shift with either moves back; at the edge of the rows or cells focus stays on the cell. Without spreadsheet mode Enter returns focus to the cell and Tab leaves the editor as the browser does.
+In spreadsheet mode, typing a character other than Space on an editable cell of an enabled row shall open its editor holding that character. In the default editor Enter commits and moves focus to the cell below, Tab to the next cell along the row, and Shift with either moves back; at the edge of the rows or cells focus stays on the cell. Without spreadsheet mode Enter returns focus to the cell and Tab leaves the editor as the browser does.
 
 Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-cell-editor.tsx`
 Verification: `src/components/table/use-cell-selection.test.tsx`, `e2e/table.spec.ts`

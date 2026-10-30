@@ -16,6 +16,49 @@ async function box(locator: Locator) {
 }
 
 test.describe('Field lab', () => {
+  test('UIC-FIELD-1.12 fits compact text and select fields in a row of small buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const compact = page.locator('[data-lab-filter-row="compact"]');
+    const roomy = page.locator('[data-lab-filter-row="default"]');
+    const apply = await box(compact.getByRole('button', { name: 'Apply' }));
+    for (const name of ['Search', 'Owner']) {
+      const fieldBox = await box(
+        compact.locator('.ui-field').filter({ has: page.getByRole('textbox', { name }) }),
+      );
+      expect(fieldBox.height, name).toBeLessThanOrEqual(apply.height + 1);
+      expect(Math.abs(fieldBox.y - apply.y), name).toBeLessThanOrEqual(1);
+    }
+    const roomyOwner = await box(roomy.locator('.ui-field').nth(2));
+    expect(roomyOwner.height).toBeGreaterThan(apply.height + 8);
+
+    const status = compact.locator('.ui-field').nth(1);
+    expect((await box(status)).height).toBeLessThanOrEqual(apply.height + 1);
+    await status.getByRole('button').first().click();
+    await page.getByRole('option', { name: 'Open' }).click();
+    await expect(status).toHaveAttribute('data-dirty', 'true');
+    await expect(status.getByRole('button', { name: 'Restore Status' })).toBeVisible();
+    expect((await box(status)).height).toBeLessThanOrEqual(apply.height + 1);
+
+    const owner = compact.locator('.ui-field').nth(2);
+    const ownerWidth = (await box(owner)).width;
+    await owner.getByRole('textbox', { name: 'Owner' }).fill('Maria 2');
+    await expect(owner.locator('.ui-field__message')).toHaveText('Names have no digits.');
+    expect((await box(owner)).height).toBeGreaterThan(apply.height + 4);
+    expect((await box(owner)).width).toBeLessThanOrEqual(ownerWidth + 30);
+    await owner.getByRole('button', { name: 'Restore Owner' }).press('Enter');
+    await expect(owner.locator('.ui-field__message')).toBeEmpty();
+
+    const narrow = page.locator('[data-lab-filter-row="compact-narrow"]');
+    const row = await box(narrow);
+    for (const part of await narrow.locator('.ui-field, .ui-button').all()) {
+      const rect = await box(part);
+      expect(rect.x + rect.width).toBeLessThanOrEqual(row.x + row.width + 1);
+    }
+  });
+
   test('UIC-FIELD-1.1 UIC-FIELD-1.2 places the label for each layout and names the control', async ({
     page,
     lab,
