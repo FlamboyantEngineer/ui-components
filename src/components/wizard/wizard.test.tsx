@@ -282,6 +282,86 @@ describe('Wizard', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong.');
   });
 
+  it('UIC-WIZARD-2.6 never finishes from a check the wizard left by unmounting', async () => {
+    let settle: (value: boolean) => void = () => {};
+    let signal: AbortSignal | undefined;
+    const validate = (next: AbortSignal) => {
+      signal = next;
+      return new Promise<boolean>((resolve) => (settle = resolve));
+    };
+    const onFinish = vi.fn();
+    const { unmount } = renderWizard({
+      steps: tripSteps({ summary: { validate } }),
+      defaultCurrentId: 'summary',
+      onFinish,
+    });
+    await userEvent.click(action('Finish'));
+    expect(signal?.aborted).toBe(false);
+    unmount();
+    expect(signal?.aborted).toBe(true);
+    await act(async () => settle(true));
+    expect(onFinish).not.toHaveBeenCalled();
+  });
+
+  it('UIC-WIZARD-2.6 drops a pending check once a controlled wizard shows another step', async () => {
+    const checks: { settle: (value: boolean | string) => void; signal: AbortSignal }[] = [];
+    const validate = (signal: AbortSignal) =>
+      new Promise<boolean | string>((resolve) => checks.push({ settle: resolve, signal }));
+    const onCurrentIdChange = vi.fn();
+    const steps = tripSteps({ note: { validate } });
+    const { rerender, container } = render(
+      <Wizard steps={steps} currentId="note" onCurrentIdChange={onCurrentIdChange} />,
+    );
+    await userEvent.click(action('Next'));
+    rerender(<Wizard steps={steps} currentId="city" onCurrentIdChange={onCurrentIdChange} />);
+    expect(checks[0]?.signal.aborted).toBe(true);
+    expect(container.querySelector('.ui-wizard')).not.toHaveAttribute('data-pending');
+    expect(action('Next')).not.toHaveAttribute('data-pending');
+    await act(async () => checks[0]?.settle(true));
+    expect(onCurrentIdChange).not.toHaveBeenCalled();
+    rerender(<Wizard steps={steps} currentId="note" onCurrentIdChange={onCurrentIdChange} />);
+    await userEvent.click(action('Next'));
+    expect(checks).toHaveLength(2);
+    await act(async () => checks[1]?.settle(true));
+    expect(onCurrentIdChange).toHaveBeenCalledWith('summary');
+  });
+
+  it('UIC-WIZARD-2.6 ignores a late refusal or error from a check whose workflow was replaced', async () => {
+    let refuse: (error: Error) => void = () => {};
+    const validate = () => new Promise<boolean>((_, reject) => (refuse = reject));
+    const onFinish = vi.fn();
+    const { rerender } = render(
+      <Wizard
+        steps={tripSteps({ summary: { validate } })}
+        defaultCurrentId="summary"
+        onFinish={onFinish}
+      />,
+    );
+    await userEvent.click(action('Finish'));
+    const replaced = [
+      { id: 'review', label: 'Review', content: <p>Look it over.</p> },
+      { id: 'summary', label: 'Summary', content: <p>All set.</p> },
+    ];
+    rerender(<Wizard steps={replaced} defaultCurrentId="summary" onFinish={onFinish} />);
+    expect(action('Finish')).not.toHaveAttribute('data-pending');
+    await act(async () => refuse(new Error('Too late.')));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(statuses()).toEqual(['complete', 'current']);
+    await userEvent.click(action('Finish'));
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-WIZARD-2.6 lets a started finish run while ignoring its outcome after the wizard leaves it', async () => {
+    let fail: (error: Error) => void = () => {};
+    const onFinish = vi.fn(() => new Promise<void>((_, reject) => (fail = reject)));
+    const { unmount } = renderWizard({ defaultCurrentId: 'summary', onFinish });
+    await userEvent.click(action('Finish'));
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    unmount();
+    await act(async () => fail(new Error('The booking failed.')));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('UIC-WIZARD-2.4 goes back without checking, and returns through the list of steps', async () => {
     const validate = vi.fn(() => true);
     render(<Wizard steps={tripSteps({ note: { validate } })} />);

@@ -105,6 +105,25 @@ test.describe('Wizard lab', () => {
     await expect(demo.locator('[data-lab-result]')).toHaveText('Created Hermes');
   });
 
+  test('UIC-WIZARD-2.6 sends nothing once the panel closes during the check', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('wizard');
+    const demo = page.locator('[data-lab-demo="closing"]');
+    const log = demo.locator('[data-lab-log]');
+    await demo.getByRole('button', { name: 'Send' }).click();
+    await page.clock.runFor(500);
+    await demo.getByRole('button', { name: 'Close panel' }).click();
+    await page.clock.runFor(2000);
+    await expect(log).toHaveText('Check aborted');
+    await demo.getByRole('button', { name: 'Open panel' }).click();
+    await demo.getByRole('button', { name: 'Send' }).click();
+    await page.clock.runFor(2000);
+    await expect(log).toHaveText('Check aborted · Report sent');
+  });
+
   test('UIC-WIZARD-3.2 runs inside a modal', async ({ page, lab }) => {
     await page.clock.install();
     await lab.open('wizard');

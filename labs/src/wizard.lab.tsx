@@ -127,6 +127,46 @@ function NewProjectModal() {
   );
 }
 
+/**
+ * A panel holding a one-step wizard whose check takes two seconds: closing the panel meanwhile
+ * aborts the check, and its late answer sends nothing.
+ */
+function ClosingPanel() {
+  const [isOpen, setOpen] = useState(true);
+  const [log, setLog] = useState<string[]>([]);
+  const note = (line: string) => setLog((lines) => [...lines, line]);
+  const steps: WizardStep[] = [
+    {
+      id: 'send',
+      label: 'Send the report',
+      content: <p>The report goes to the team once the check passes.</p>,
+      validate: (signal) =>
+        new Promise<boolean>((resolve) => {
+          signal.addEventListener('abort', () => note('Check aborted'));
+          setTimeout(() => resolve(true), 2000);
+        }),
+    },
+  ];
+  return (
+    <div data-lab-demo="closing">
+      {isOpen ? (
+        <>
+          <Wizard
+            aria-label="Send the report"
+            steps={steps}
+            finishLabel="Send"
+            onFinish={() => note('Report sent')}
+          />
+          <Button onPress={() => setOpen(false)}>Close panel</Button>
+        </>
+      ) : (
+        <Button onPress={() => setOpen(true)}>Open panel</Button>
+      )}
+      <p data-lab-log>{log.join(' · ') || 'Nothing yet'}</p>
+    </div>
+  );
+}
+
 const staticSteps: WizardStep[] = [
   { id: 'one', label: 'Choose a file', content: <p>Pick the spreadsheet to read.</p> },
   { id: 'two', label: 'Map columns', isOptional: true, content: <p>Match each column.</p> },
@@ -158,6 +198,12 @@ mountLab(
       description="Next checks the required name, then asks a pretend server whether the name is free (Apollo and Atlas are taken). Members can be skipped; Finish creates the project."
     >
       <NewProject />
+    </LabSection>
+    <LabSection
+      title="Leaving while it checks"
+      description="Send waits two seconds for its check. Close the panel meanwhile: the check is aborted, and its late answer sends nothing. Leave it open and the report is sent."
+    >
+      <ClosingPanel />
     </LabSection>
     <LabSection
       title="In a modal"
