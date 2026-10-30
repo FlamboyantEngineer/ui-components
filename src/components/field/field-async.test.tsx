@@ -73,6 +73,32 @@ describe('asynchronous validation', () => {
     expect(result.current.validation.status).toBe('valid');
   });
 
+  it('UIC-FIELD-3.8 settles a check that throws before returning its promise, and checks the next value', async () => {
+    const validateAsync = vi.fn((value: string): Promise<FieldIssues> => {
+      if (value.includes(' ')) throw new Error('Invalid endpoint');
+      return Promise.resolve(value === 'taken' ? { severity: 'error', message: 'Taken.' } : null);
+    });
+    const { result, unmount } = renderField({
+      defaultValue: 'a user',
+      validateAsync,
+      validationDebounce: 100,
+    });
+    act(() => result.current.setValue('the user'));
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(validateAsync).toHaveBeenCalledTimes(1);
+    expect(validateAsync).toHaveBeenLastCalledWith('the user', expect.any(AbortSignal));
+    expect(result.current.validation.status).toBe('valid');
+    expect(result.current.realtimeValidation.status).toBe('valid');
+    act(() => result.current.setValue('taken'));
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.validation).toEqual({ status: 'invalid', message: 'Taken.' });
+    act(() => result.current.setValue('one more'));
+    unmount();
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(validateAsync).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-FIELD-3.8 stays pending when the value returns to one checked before', async () => {
     const validateAsync = createCheck();
     const { result } = renderField({ defaultValue: 'free', validateAsync });
