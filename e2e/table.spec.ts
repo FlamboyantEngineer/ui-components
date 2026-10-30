@@ -583,6 +583,28 @@ test.describe('Table lab', () => {
     await expect(output).toHaveText('Last edit: Apple kind: Vegetable');
   });
 
+  test('UIC-TABLE-11.4 opens no editor on a disabled row and closes one when its row is disabled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'editing');
+    const output = root.locator('[data-lab-output]');
+    await root.getByRole('button', { name: 'Disable the Apple row in a second' }).click();
+    await root.getByRole('gridcell', { name: '180' }).dblclick();
+    await page.keyboard.type('9');
+    await expect(root.getByRole('button', { name: 'Enable the Apple row' })).toBeVisible();
+    await expect(root.getByRole('textbox')).toHaveCount(0);
+    await expect(root.getByRole('gridcell', { name: '180' })).toBeFocused();
+    // The cell is marked disabled, so Playwright's actionability check must be skipped.
+    await root.getByRole('gridcell', { name: '180' }).dblclick({ force: true });
+    await expect(root.getByRole('textbox')).toHaveCount(0);
+    await expect(output).toHaveText('Last edit: None');
+    await root.getByRole('button', { name: 'Enable the Apple row' }).click();
+    await root.getByRole('gridcell', { name: '180' }).dblclick();
+    await expect(root.getByRole('textbox', { name: 'Weight (g)' })).toBeFocused();
+  });
+
   test('UIC-TABLE-12.1 UIC-TABLE-12.2 sums the rows and loads more at the end', async ({
     page,
     lab,

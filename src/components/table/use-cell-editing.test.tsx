@@ -40,13 +40,21 @@ const columns: TableColumn<Fruit>[] = [
   },
 ];
 
-function Fruits({ onCellEdit }: { onCellEdit: (edit: TableCellEdit<Fruit>) => void }) {
+interface FruitsProps {
+  onCellEdit: (edit: TableCellEdit<Fruit>) => void;
+  disabledKeys?: readonly string[];
+  cellSelection?: 'cell';
+}
+
+function Fruits({ onCellEdit, disabledKeys, cellSelection }: FruitsProps) {
   const [rows, setRows] = useState(fruit);
   return (
     <Table
       aria-label="Fruit"
       rows={rows}
       columns={columns}
+      disabledKeys={disabledKeys}
+      cellSelection={cellSelection}
       onCellEdit={(edit) => {
         onCellEdit(edit);
         setRows((current) =>
@@ -156,5 +164,41 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     await user.click(screen.getByRole('button', { name: 'Blue for Colour' }));
     expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[0], columnId: 'colour', value: 'Blue' });
     expect(cell('Blue')).toBeInTheDocument();
+  });
+
+  it('UIC-TABLE-11.4 opens no editor on a disabled row by pointer, keyboard or typing', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    render(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} cellSelection="cell" />);
+    await user.dblClick(cell('30'));
+    await user.dblClick(cell('Red'));
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    for (const key of ['{F2}', '{Enter}', '7']) {
+      cell('30').focus();
+      await user.keyboard(key);
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    }
+    expect(onCellEdit).not.toHaveBeenCalled();
+    cell('60').focus();
+    await user.keyboard('7{Enter}');
+    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[1], columnId: 'weight', value: 7 });
+  });
+
+  it('UIC-TABLE-11.4 closes an open editor without an edit when its row becomes disabled', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    const { rerender } = render(<Fruits onCellEdit={onCellEdit} />);
+    await user.dblClick(cell('30'));
+    await user.keyboard('{Control>}a{/Control}45');
+    rerender(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(cell('30')).toHaveFocus();
+    await user.dblClick(cell('Red'));
+    expect(screen.queryByRole('textbox', { name: 'Apple colour' })).not.toBeInTheDocument();
+    rerender(<Fruits onCellEdit={onCellEdit} />);
+    await user.dblClick(cell('Red'));
+    rerender(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} />);
+    expect(screen.queryByRole('button', { name: 'Blue for Colour' })).not.toBeInTheDocument();
+    expect(onCellEdit).not.toHaveBeenCalled();
   });
 });
