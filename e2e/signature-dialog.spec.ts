@@ -72,6 +72,35 @@ test.describe('Signature Dialog lab', () => {
     );
   });
 
+  test('UIC-SIGNATURE-DIALOG-1.2 follows meanings that change while open', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-dialog');
+    await page.locator('[data-lab-open="changing"]').click();
+    const dialog = page.getByRole('dialog', { name: 'Sign the updated plan' });
+    await settled(page);
+    await dialog.getByText('Reviewed', { exact: true }).click();
+    const load = dialog.getByRole('button', { name: 'Load the next meanings' });
+    await load.click();
+    await expect(dialog.getByRole('radio', { name: 'Reviewed' })).toHaveCount(0);
+    await expect(dialog.getByRole('radio', { checked: true })).toHaveCount(0);
+    await dialog.locator('input[type="password"]').fill('orchard');
+    const sign = dialog.getByRole('button', { name: 'Sign', exact: true });
+    await sign.click();
+    await expect(dialog.getByRole('radio', { name: 'Approved' })).toBeFocused();
+    await expect(page.locator('[data-lab-output="changing"]')).toHaveText('none');
+    await load.click();
+    await expect(dialog.locator('.ui-signature-dialog__meaning')).toHaveText(
+      'Meaning of signature: Reviewed',
+    );
+    await sign.click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('[data-lab-output="changing"]')).toHaveText(
+      'Ada Lovelace, review, no reason',
+    );
+  });
+
   test('UIC-SIGNATURE-DIALOG-1.3 asks for a required reason and drawing', async ({ page, lab }) => {
     await lab.open('signature-dialog');
     const cell = page.locator('[data-lab-cell="reason=required drawing=required"]');

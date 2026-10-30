@@ -1,7 +1,6 @@
 'use client';
 
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
-import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -96,6 +95,17 @@ function MeaningChoice({
   );
 }
 
+/**
+ * The meaning a signature gives, by key identity, from the current meanings: the sole meaning when
+ * one is stated, otherwise the signer's pick while it is still listed, and none once it is gone, so
+ * a removed meaning is never signed with and the signer must choose again.
+ */
+function resolveMeaning(meanings: readonly SignatureMeaning[], picked: string | null) {
+  const [only] = meanings;
+  if (only && meanings.length === 1) return toKeyIdentity(only.id);
+  return meanings.some((entry) => toKeyIdentity(entry.id) === picked) ? picked : null;
+}
+
 /** Who signs, then the user name when it is asked and the password. */
 function SignerCredentials({
   userName,
@@ -155,15 +165,15 @@ export function SignatureForm({
   const isValid = useRef(false);
   const [typedUserName, setTypedUserName] = useState('');
   const [password, setPassword] = useState('');
-  const [meaning, setMeaning] = useState(
-    meanings.length === 1 ? toKeyIdentity(requireDefined(meanings[0]).id) : null,
-  );
+  const [picked, setPicked] = useState<string | null>(null);
+  const meaning = resolveMeaning(meanings, picked);
   const [reasonText, setReasonText] = useState('');
   const [signature, setSignature] = useState<SignatureValue | null>(null);
   useImperativeHandle(submitRef, () => (close: () => void) => {
     isValid.current = false;
     form.current?.requestSubmit();
     const chosen = meanings.find((entry) => toKeyIdentity(entry.id) === meaning);
+    // Validation refuses a missing choice, so this only guards against a list without meanings.
     if (!isValid.current || !chosen) return undefined;
     const details: SignatureDetails = {
       userName: credentials === 'username-password' ? typedUserName : userName,
@@ -189,7 +199,7 @@ export function SignatureForm({
         isValid.current = true;
       }}
     >
-      <MeaningChoice meanings={meanings} value={meaning} onChange={setMeaning} />
+      <MeaningChoice meanings={meanings} value={meaning} onChange={setPicked} />
       {reason === 'none' ? null : (
         <TextField
           label={strings.signatureReason}
