@@ -6,7 +6,7 @@
 
 ### UIC-PDF-VIEWER-1.1 - Source and engine
 
-`source` shall be the document's URL (a string or a `URL`) or its bytes (an `ArrayBuffer` or a `Uint8Array`). The viewer shall call `loadEngine` when a document starts loading and open the source with the engine's `getDocument`: a URL as `{ url }`, bytes as `{ data }` holding a copy, because the engine transfers the buffer it is given to its worker; the caller's array stays readable. A new source, including a new array with the same bytes, is a new document; a URL is the same document while its address is the same, whether it comes as a string or as a new `URL` object. The previous document's loading task shall be destroyed when the source changes and when the viewer unmounts, which also stops its worker. The engine is described by the structural `PdfEngine` type, which the `pdfjs-dist` module satisfies.
+`source` shall be the document's URL (a string or a `URL`) or its bytes (an `ArrayBuffer` or a `Uint8Array`). The viewer shall call `loadEngine` when a document starts loading and open the source with the engine's `getDocument`: a URL as `{ url }`, bytes as `{ data }` holding a copy, because the engine transfers the buffer it is given to its worker; the caller's array stays readable. A new source, including a new array with the same bytes, is a new document; a URL is the same document while its address is the same, whether it comes as a string or as a new `URL` object. The previous document's loading task shall be destroyed when the source changes and when the viewer unmounts, which also stops its worker. Each source and each retry is a new document lifetime: when a lifetime ends, what it opened and any password it asked for are dropped, so a viewer that returns to an earlier source (A, B, then A again) loads it again and stays loading until the new load opens, never showing the destroyed document, and a late result or password request of an ended lifetime changes nothing. The engine is described by the structural `PdfEngine` type, which the `pdfjs-dist` module satisfies.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer.tsx`, `src/components/pdf-viewer/pdf-engine.ts`, `src/components/pdf-viewer/use-pdf-document.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/pdf-engine.test.ts`, `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-viewer.spec.ts`
@@ -45,6 +45,13 @@ When the engine asks for the document's password (its loading task's `onPassword
 
 Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/pdf-viewer-password.tsx`, `src/components/pdf-viewer/pdf-viewer-stage.tsx`
 Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-viewer.spec.ts`
+
+### UIC-PDF-VIEWER-1.7 - Long documents
+
+The viewer shall open documents of at least 250 pages. It keeps at most 8 page requests (`getPage`) in flight while opening a document, and at most 8 page-text requests while extracting the text for a search, and starts no further request once the document's lifetime ends. Only the pages near the view draw (UIC-PDF-VIEWER-2.1); the others keep empty canvases. The lab's 250-page report is built in the lab and times its opening; in the browser test it shows its first page, reaches its last page and finds a word on page 248.
+
+Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/utils/map-bounded.ts`
+Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/utils/map-bounded.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ## UIC-PDF-VIEWER-2 - Pages
 

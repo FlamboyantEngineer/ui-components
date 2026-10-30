@@ -13,6 +13,8 @@ import {
   sampleUrl,
   workerSrc,
 } from './pdf-viewer-cases.js';
+import { LabOutput } from './lab-output.js';
+import { createLongPdf, longSampleMarkedPage } from './pdf-long-sample.js';
 import { ReadingNotes } from './pdf-viewer-reading-cases.js';
 
 const notAPdf = new TextEncoder().encode('This file is not a PDF.');
@@ -33,6 +35,39 @@ function Frame({ height = 360, children }: { height?: number; children: ReactNod
 
 // Sent with the sample's requests, as a host would send its credentials.
 const documentOptions = { httpHeaders: { 'X-Lab-Sample': 'seasonal-report' } };
+
+/** A 250-page report, opened on demand so the rest of the lab loads first; it times the opening. */
+function LongDocument() {
+  const [source, setSource] = useState<{ bytes: Uint8Array; start: number } | null>(null);
+  const [openedIn, setOpenedIn] = useState<number | null>(null);
+  return (
+    <div data-lab-case="long">
+      <Button
+        size="sm"
+        isDisabled={source !== null}
+        onPress={() => setSource({ bytes: createLongPdf(250), start: performance.now() })}
+      >
+        Open the long report
+      </Button>
+      <LabOutput name="Opened in">
+        {openedIn === null ? '—' : `${Math.round(openedIn)} ms`}
+      </LabOutput>
+      {source ? (
+        <div style={{ height: 480, maxWidth: 720 }}>
+          <PdfViewer
+            aria-label="Long report"
+            source={source.bytes}
+            loadEngine={loadEngine}
+            workerSrc={workerSrc}
+            onDocumentChange={(document) => {
+              if (document) setOpenedIn(performance.now() - source.start);
+            }}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function Reader() {
   const [zoom, setZoom] = useState<number | null>(null);
@@ -149,6 +184,12 @@ mountLab(
       description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus (including Shift + equals), minus and 0, pinch (cancelled if the document closes)), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu, and a caller action at the end of the toolbar. Scrolling follows the current page and zoom keeps the reading position, including in an embedded window. The sample is requested with a header of the caller's."
     >
       <Reader />
+    </LabSection>
+    <LabSection
+      title="Long document"
+      description={`A 250-page report built in the lab. The viewer asks for at most 8 pages or page texts at a time, renders only the pages near the view, and finds the word quinceberry on page ${longSampleMarkedPage}.`}
+    >
+      <LongDocument />
     </LabSection>
     <LabSection
       title="Annotations switched off"

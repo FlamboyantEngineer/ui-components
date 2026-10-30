@@ -771,4 +771,54 @@ test.describe('PDF Viewer lab', () => {
     ).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-PDF-VIEWER-1.7 opens, scrolls and searches a 250-page document', async ({
+    page,
+    lab,
+  }, testInfo) => {
+    await lab.open('pdf-viewer');
+    const long = page.locator('[data-lab-case="long"]');
+    await long.scrollIntoViewIfNeeded();
+    const started = Date.now();
+    await long.getByRole('button', { name: 'Open the long report' }).click();
+    const firstText = long.locator('.ui-pdf-viewer__text-layer [role="presentation"]').first();
+    await expect(firstText).toBeVisible({ timeout: 30_000 });
+    const firstPageMs = Date.now() - started;
+    await expect(long.locator('.ui-pdf-viewer__page')).toHaveCount(250);
+    await expect(long.locator('.ui-pdf-viewer__page-total')).toHaveText('of 250');
+    // Only the pages near the view draw; the others keep an empty canvas.
+    const drawnPages = () =>
+      long
+        .locator('.ui-pdf-viewer__page canvas')
+        .evaluateAll(
+          (canvases) => canvases.filter((canvas) => (canvas as HTMLCanvasElement).width > 0).length,
+        );
+    expect(await drawnPages()).toBeLessThan(10);
+
+    const field = long.getByLabel('Page', { exact: true });
+    const scrollStart = Date.now();
+    await field.fill('250');
+    await field.press('Enter');
+    await expect(field).toHaveValue('250');
+    await expect(long.locator('.ui-pdf-viewer__page').last().locator('canvas')).not.toHaveAttribute(
+      'width',
+      '0',
+    );
+    const lastPageMs = Date.now() - scrollStart;
+
+    const searchStart = Date.now();
+    const find = long.getByRole('searchbox', { name: 'Find in document' });
+    await find.fill('quinceberry');
+    await expect(long.locator('.ui-find-bar__status')).toHaveText('1 of 1', { timeout: 30_000 });
+    await expect(field).toHaveValue('248');
+    await expect(long.locator('.ui-pdf-viewer__match[data-current]')).toHaveText('quinceberry');
+    const searchMs = Date.now() - searchStart;
+
+    testInfo.annotations.push({
+      type: 'measurement',
+      description: `first page ${firstPageMs} ms, last page ${lastPageMs} ms, search ${searchMs} ms`,
+    });
+    expect(firstPageMs).toBeLessThan(15_000);
+    expect(await drawnPages()).toBeLessThan(10);
+  });
 });

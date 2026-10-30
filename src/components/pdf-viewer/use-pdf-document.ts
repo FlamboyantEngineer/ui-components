@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { mapBounded } from '../../utils/map-bounded.js';
 import {
   toDocumentParams,
   type PdfDocument,
@@ -87,6 +88,9 @@ interface LoadResult<V extends PdfViewport, C extends PdfTextContent> extends Lo
 
 type PasswordState = LoadKey & PdfPasswordRequest;
 
+/** How many page or text requests the viewer keeps in flight at once (UIC-PDF-VIEWER-1.7). */
+export const pdfRequestLimit = 8;
+
 function createTextCache<V extends PdfViewport, C extends PdfTextContent>(
   pages: readonly PdfPage<V, C>[],
 ): LoadedPdf<V, C>['getTextContent'] {
@@ -113,11 +117,13 @@ async function loadPdf<V extends PdfViewport, C extends PdfTextContent>(
     control.onPassword(update, reason === engine.PasswordResponses.INCORRECT_PASSWORD);
   const document = await task.promise;
   const [pages, outline] = await Promise.all([
-    Promise.all(
-      Array.from({ length: document.numPages }, (_, index) => document.getPage(index + 1)),
-    ),
+    mapBounded(document.numPages, (index) => document.getPage(index + 1), {
+      limit: pdfRequestLimit,
+      isCancelled: () => control.isCancelled,
+    }),
     document.getOutline().catch(() => null),
   ]);
+  if (control.isCancelled) return null;
   const sizes = pages.map((page) => {
     const { width, height } = page.getViewport({ scale: 1 });
     return { width, height };
@@ -198,7 +204,9 @@ export function createViewportCache<V extends PdfViewport, C extends PdfTextCont
  * Opens `source` with the injected engine and keeps it open until the source changes or the viewer
  * unmounts, when the engine's loading task (and its worker) is destroyed. A `null` source stays
  * loading. A new array is a new document; a URL, as text or a `URL`, is the same document while its
- * address is. A document that needs its password waits for it.
+ * address is. A document that needs its password waits for it. Each source and retry is a new
+ * document lifetime: what an earlier lifetime opened or asked is dropped as it ends, so a document
+ * the viewer returns to loads again rather than showing one already destroyed.
  */
 export function usePdfDocument<V extends PdfViewport, C extends PdfTextContent>(
   options: UsePdfDocumentOptions<V, C>,
@@ -208,6 +216,12 @@ export function usePdfDocument<V extends PdfViewport, C extends PdfTextContent>(
   const [result, setResult] = useState<LoadResult<V, C> | null>(null);
   const [password, setPassword] = useState<PasswordState | null>(null);
   const latest = useLatest(options);
+  const [lifetime, setLifetime] = useState({ source, attempt });
+  if (lifetime.source !== source || lifetime.attempt !== attempt) {
+    setLifetime({ source, attempt });
+    setResult(null);
+    setPassword(null);
+  }
 
   useEffect(() => {
     if (source === null) return undefined;
