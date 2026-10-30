@@ -141,6 +141,105 @@
   text-decoration: underline;
 }
 
+/* Header regions, the expand and collapse control and the More panel. */
+
+.ui-card__leading {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+.ui-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+.ui-card__toggle,
+.ui-card__more {
+  flex: none;
+}
+.ui-card__toggle svg {
+  transition: rotate var(--ref-duration-fast) ease;
+}
+.ui-card__toggle[data-expanded] svg {
+  rotate: 180deg;
+}
+.ui-card__more-panel {
+  display: grid;
+  gap: 10px;
+  max-width: min(320px, 90vw);
+}
+.ui-card__more-panel > .ui-card__actions {
+  justify-content: flex-start;
+}
+.ui-card__summary {
+  min-width: 0;
+  padding: 0 16px 12px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+.ui-card__more-panel > .ui-card__summary {
+  padding: 0;
+}
+.ui-card:not([data-density='default']) > .ui-card__summary {
+  padding: 0;
+}
+.ui-card[data-collapsible]:not([data-expanded]) > .ui-card__header {
+  border-bottom: 0;
+}
+.ui-card[data-collapsible]:not([data-expanded]) > .ui-card__header + .ui-card__summary {
+  padding-top: 0;
+}
+
+/* Smaller presentations: one header line that gives up width before it wraps. */
+
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal']) > .ui-card__header {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+}
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal']) .ui-card__heading {
+  flex: 1 1 0;
+  min-width: 2ch;
+}
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
+  .ui-card__title
+  > .ui-truncation-tooltip {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-card[data-presentation='minimal'] > .ui-card__header {
+  gap: 2px;
+  padding: 2px 3px;
+}
+.ui-card[data-presentation='minimal'] .ui-card__more {
+  min-width: 20px;
+  height: 20px;
+  padding: 0;
+}
+.ui-card[data-presentation='minimal'] .ui-card__title {
+  font-size: var(--ref-font-size-md);
+}
+.ui-card[data-presentation='minimal'] > :is(.ui-card__media, .ui-card__body, .ui-card__footer) {
+  overflow-x: auto;
+}
+.ui-card__abbreviation {
+  display: block;
+  overflow: hidden;
+  font-weight: var(--ref-font-weight-strong);
+  text-overflow: clip;
+  white-space: nowrap;
+}
+.ui-card__header > .ui-card__abbreviation {
+  flex: 1 1 0;
+  min-width: 2ch;
+}
+
 .ui-card__skeleton {
   height: 52px;
   border-radius: var(--ref-radius-sm);
@@ -198,6 +297,8 @@
 
 /* Hidden feedback parts keep the native hidden behaviour over their display rules. */
 
-:is(.ui-badge, .ui-banner, .ui-empty-state, .ui-inline-error, .ui-card)[hidden] {
+:is(.ui-badge, .ui-banner, .ui-empty-state, .ui-inline-error, .ui-card)[hidden],
+.ui-card > :is(.ui-card__media, .ui-card__body, .ui-card__footer)[hidden],
+.ui-card__header > .ui-card__heading[hidden] {
   display: none;
 }

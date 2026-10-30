@@ -1,5 +1,12 @@
 export { Card } from './card.js';
-export type { CardDensity, CardProps, CardVariant } from './card.js';
+export type {
+  CardBreakpoint,
+  CardDensity,
+  CardPresentation,
+  CardPresentationSteps,
+  CardProps,
+  CardVariant,
+} from './card.js';
 export type { CardActionOptions } from './card-action.js';
 export { CardAction, CardTitle } from './card-parts.js';
 export type { CardActionProps, CardTitleProps } from './card-parts.js';
