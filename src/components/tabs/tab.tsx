@@ -19,7 +19,8 @@ import { normalizeCount } from '../../utils/count.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import type { ElementRender } from '../../utils/render-element.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import {
   isTabDisabled,
   TabActionsContext,

@@ -9,6 +9,11 @@
 // writes a function into JSX (an event handler, a render function). A module that renders a client
 // component needs the client too, since the props it passes may hold functions. A client module
 // must not use `export *`, which a framework cannot resolve across the boundary.
+//
+// An entry point (`index.ts`) exports a value through a client module only when the value is client
+// code: a component, a hook or a helper in CLIENT_HELPERS, which needs the browser. Every other
+// helper is defined in a server-safe module and exported from there, so a server component can call
+// it rather than receive a client reference.
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -46,6 +51,22 @@ const SERVER_REACT = new Set([
 const CLIENT_PACKAGE =
   /^(react-dom(\/client)?|react-aria|react-aria\/.+|react-aria-components|react-stately|@react-aria\/.+|@react-stately\/.+|@handlewithcare\/react-prosemirror)$/;
 const HOOK = /^use[A-Z]/;
+const COMPONENT = /^[A-Z](?=.*[a-z])[A-Za-z0-9]*$/;
+// Public helpers that need the browser: they open overlays, keep client state or read the DOM.
+const CLIENT_HELPERS = new Set([
+  'alert',
+  'armHandleDrag',
+  'confirm',
+  'createCitationOverride',
+  'createCodeBlockOverride',
+  'createMenuController',
+  'createModalController',
+  'createToastQueue',
+  'getFieldUndo',
+  'keepHandleCellDraggable',
+  'prompt',
+  'resolveScrollSpy',
+]);
 const SERVER_HOOKS = new Set(['useCallback', 'useDebugValue', 'useId', 'useMemo']);
 const fix = process.argv.includes('--fix');
 
@@ -228,6 +249,33 @@ for (const { path, text, source, reason } of modules.values()) {
     problems.push(`${name}: ${reason}, so it starts with ${DIRECTIVE}`);
   } else {
     problems.push(`${name}: runs on the server, so it drops ${DIRECTIVE}`);
+  }
+}
+
+for (const { path, source } of modules.values()) {
+  if (!path.endsWith(`${'/'}index.ts`)) continue;
+  for (const statement of source.statements) {
+    if (!ts.isExportDeclaration(statement) || statement.isTypeOnly || !statement.moduleSpecifier) {
+      continue;
+    }
+    const target = resolveModule(path, statement.moduleSpecifier.text);
+    const clause = statement.exportClause;
+    if (!target || !modules.get(target)?.reason || !clause || !ts.isNamedExports(clause)) continue;
+    for (const element of clause.elements) {
+      if (element.isTypeOnly) continue;
+      const name = (element.propertyName ?? element.name).text;
+      const origin = definingModule(target, name);
+      const entry = relative(root, path);
+      if (origin && !modules.get(origin)?.reason) {
+        problems.push(
+          `${entry}: exports ${name} through client ${relative(root, target)}; export it from ${relative(root, origin)}`,
+        );
+      } else if (!COMPONENT.test(name) && !HOOK.test(name) && !CLIENT_HELPERS.has(name)) {
+        problems.push(
+          `${entry}: ${name} is defined in client ${relative(root, target)}; move it to a server-safe module`,
+        );
+      }
+    }
   }
 }
 

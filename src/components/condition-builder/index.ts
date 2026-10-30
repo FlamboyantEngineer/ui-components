@@ -1,4 +1,4 @@
-export { ConditionBuilder, matchesConditionGroup } from './condition-builder.js';
+export { ConditionBuilder } from './condition-builder.js';
 export type {
   ConditionBuilderProps,
   ConditionCombinator,
@@ -7,3 +7,4 @@ export type {
   ConditionRule,
   ConditionRuleValidator,
 } from './condition-builder.js';
+export { matchesConditionGroup } from './condition-tree.js';

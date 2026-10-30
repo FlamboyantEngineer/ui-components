@@ -4,13 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
-import {
-  Avatar,
-  DEFAULT_AVATAR_COLOR_COUNT,
-  getDisplayName,
-  resolveAvatarColor,
-  splitAvatarIdentity,
-} from './avatar.js';
+import { Avatar, getDisplayName, splitAvatarIdentity } from './avatar.js';
+import { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';
 
 function root(container: HTMLElement): HTMLElement {
   return container.firstElementChild as HTMLElement;

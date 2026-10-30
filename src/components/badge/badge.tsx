@@ -7,7 +7,8 @@ import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 
 export type BadgeTone = Tone;
 

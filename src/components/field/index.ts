@@ -4,10 +4,8 @@ export {
   FieldRestoreButton,
   Fieldset,
   getFieldUndo,
-  toAriaControlProps,
   useFieldControl,
   useFieldState,
-  validateString,
 } from './field.js';
 export type {
   FieldAsyncValidate,
@@ -42,3 +40,5 @@ export type {
   StringRuleMessages,
   StringRules,
 } from './field.js';
+export { toAriaControlProps } from './aria-control-props.js';
+export { validateString } from './string-rules.js';

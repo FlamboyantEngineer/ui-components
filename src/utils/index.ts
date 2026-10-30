@@ -8,7 +8,8 @@ export type { ElementRender, RenderElementOptions } from './render-element.js';
 export { copyRichText, copyText } from './clipboard.js';
 export { formatTsv, parseTsv } from './tsv.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
-export { DEFAULT_COPY_TIMEOUT, useClipboard } from './use-clipboard.js';
+export { useClipboard } from './use-clipboard.js';
+export { DEFAULT_COPY_TIMEOUT } from './copy-timeout.js';
 export type { ClipboardOptions, ClipboardState, CopyStatus } from './use-clipboard.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';
 export {
@@ -73,7 +74,7 @@ export type {
   ScrollOverviewSegment,
 } from './scroll-overview.js';
 export { useScrollStripOverflow } from './use-scroll-strip-overflow.js';
-export { resolveOverflowCount, useOverflowItems } from './use-overflow-items.js';
+export { useOverflowItems } from './use-overflow-items.js';
 export type {
   OverflowCollapseFrom,
   OverflowCountInput,
@@ -153,8 +154,10 @@ export type {
 } from './compare-blocks.js';
 export { formatCellReference, parseCellReference } from './cell-reference.js';
 export type { CellCoordinates } from './cell-reference.js';
-export { mapScrollOffset, useSyncedScroll } from './use-synced-scroll.js';
-export type { ScrollAnchor, SyncedScrollOptions, SyncedScrollTarget } from './use-synced-scroll.js';
+export { useSyncedScroll } from './use-synced-scroll.js';
+export { mapScrollOffset } from './scroll-offset-map.js';
+export type { SyncedScrollOptions, SyncedScrollTarget } from './use-synced-scroll.js';
+export type { ScrollAnchor } from './scroll-offset-map.js';
 export { formatOutlineNumber } from './outline-number.js';
 export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';
 export { createLinearScale } from './linear-scale.js';
@@ -173,3 +176,4 @@ export type {
   LayeredLayoutOptions,
   LayeredLayoutPosition,
 } from './layered-layout.js';
+export { resolveOverflowCount } from './overflow-measure.js';

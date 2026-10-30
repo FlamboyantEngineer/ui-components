@@ -5,7 +5,8 @@ import { Switch, ToggleButton, type Key } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
-import { Checkbox, cycleCheckState } from '../checkbox/checkbox.js';
+import { Checkbox } from '../checkbox/checkbox.js';
+import { cycleCheckState } from '../checkbox/checkbox.js';
 import {
   FieldPreviousValue,
   toAriaControlProps,

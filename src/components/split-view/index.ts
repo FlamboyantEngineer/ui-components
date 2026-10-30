@@ -8,12 +8,12 @@ export type {
   SplitViewProps,
   SplitViewRatio,
 } from './split-view.js';
+export { ResizeHandle } from './resize-handle.js';
 export {
   RESIZE_KEYBOARD_FINE_STEP,
   RESIZE_KEYBOARD_STEP,
-  ResizeHandle,
   resolveResizeKeyboardValue,
-} from './resize-handle.js';
+} from './resize-keyboard.js';
 export type {
   ResizeHandleProps,
   ResizeHandleSizedPane,

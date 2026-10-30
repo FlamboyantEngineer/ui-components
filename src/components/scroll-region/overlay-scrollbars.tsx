@@ -18,6 +18,7 @@ import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { scrollRegionHooks as hooks } from './styling-hooks.js';
 import type { OverlayMeasurement } from './use-overlay-metrics.js';
 import { useThumbWheel } from './use-thumb-wheel.js';
+import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
 
 interface OverlayScrollbarsProps {
   /** Tab order of the thumbs; native editable viewports already provide keyboard scrolling. */
@@ -73,11 +74,6 @@ interface ThumbDrag {
   start: number;
   value: number;
 }
-
-/** Smallest thumb length, so a thumb over very long content stays easy to grab. */
-export const MIN_THUMB_SIZE = 24;
-/** Arrow keys on a thumb scroll this many pixels. */
-export const THUMB_ARROW_STEP = 40;
 
 const arrowKeys: Readonly<Record<string, { orientation: Orientation; step: number }>> = {
   ArrowUp: { orientation: 'vertical', step: -THUMB_ARROW_STEP },

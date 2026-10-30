@@ -14,7 +14,8 @@ import { useStateFor } from '../../utils/use-state-for.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useSyncedScroll, type ScrollAnchor } from '../../utils/use-synced-scroll.js';
+import { useSyncedScroll } from '../../utils/use-synced-scroll.js';
+import { type ScrollAnchor } from '../../utils/scroll-offset-map.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {

@@ -5,7 +5,8 @@ import { Button as AriaButton, Link as AriaLink, ProgressBar } from '../../primi
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { useButtonAction, type ButtonActionProps } from './button-action.js';
@@ -236,5 +237,7 @@ export function Button({
 
 export type { ButtonRenderState } from './button-state.js';
 
-export { runPendingAction, usePendingAction } from './button-action.js';
+export { usePendingAction } from './button-action.js';
 export { ScrollStripButton } from './scroll-strip-button.js';
+
+export { runPendingAction } from './pending-action.js';

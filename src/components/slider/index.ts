@@ -1,4 +1,4 @@
-export { RangeSlider, Slider, keepThumbsApart } from './slider.js';
+export { RangeSlider, Slider } from './slider.js';
 export type {
   RangeSliderProps,
   RangeValue,
@@ -8,3 +8,4 @@ export type {
   SliderSize,
   SliderValueLabel,
 } from './slider.js';
+export { keepThumbsApart } from './thumb-spacing.js';

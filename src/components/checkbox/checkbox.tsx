@@ -40,15 +40,6 @@ export interface CheckboxProps extends BaseProps, AriaLabellingProps {
 
 const hooks = createHooks('checkbox', ['box', 'glyph', 'label']);
 
-/**
- * The state after a press of a three-state box: unset (`null`, drawn mixed) becomes ticked, ticked
- * becomes empty and empty becomes unset again.
- */
-export function cycleCheckState(value: boolean | null): boolean | null {
-  if (value === null) return true;
-  return value ? false : null;
-}
-
 /** A tick box on a native checkbox input, with an optional visible label. */
 export function Checkbox({ children, size = 'md', className, ...rest }: CheckboxProps) {
   return (
@@ -69,3 +60,5 @@ export function Checkbox({ children, size = 'md', className, ...rest }: Checkbox
     </AriaCheckbox>
   );
 }
+
+export { cycleCheckState } from './check-state.js';

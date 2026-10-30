@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { getColorIndex } from '../../utils/color-index.js';
 import { getInitials } from '../../utils/initials.js';
 import type { PressEvent } from '../../core/events.js';
 import { toImageProps } from '../icon/icon.js';
 import { AvatarRoot } from './avatar-root.js';
+import { resolveAvatarColor } from './avatar-color.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import type { UserCardTriggerType } from '../user-card/user-card.js';
 
@@ -88,16 +88,7 @@ interface AvatarPicture {
   imageRef: (image: HTMLImageElement | null) => void;
 }
 
-/** The number of colour slots a derived colour is spread over unless `colorCount` says otherwise. */
-export const DEFAULT_AVATAR_COLOR_COUNT = 8;
-
 const hooks = createHooks('avatar', ['image', 'initials', 'glyph', 'surface', 'indicator']);
-
-function paletteSize(colorCount: number | undefined): number {
-  return colorCount !== undefined && Number.isFinite(colorCount) && colorCount >= 1
-    ? Math.trunc(colorCount)
-    : DEFAULT_AVATAR_COLOR_COUNT;
-}
 
 /** The picture an identity draws: its trimmed `src`, or none for a group or a blank address. */
 function pictureOf({ src, kind }: Pick<AvatarIdentity, 'src' | 'kind'>): string {
@@ -179,24 +170,6 @@ export function splitAvatarIdentity<P extends AvatarIdentity>(
 ): [AvatarIdentity, Omit<P, keyof AvatarIdentity>] {
   const { name, src, imageProps, initials, colorKey, colorIndex, kind, shape, ...rest } = props;
   return [{ name, src, imageProps, initials, colorKey, colorIndex, kind, shape }, rest];
-}
-
-/**
- * The colour slot an avatar publishes: the explicit `colorIndex` wrapped into the palette, otherwise
- * the slot derived from `colorKey` (or `name` when the key is blank). Groups have no derived colour.
- */
-export function resolveAvatarColor(
-  identity: Pick<AvatarIdentity, 'name' | 'colorKey' | 'colorIndex' | 'kind'>,
-  colorCount?: number,
-): number | undefined {
-  const slots = paletteSize(colorCount);
-  const { colorIndex } = identity;
-  if (colorIndex !== undefined && Number.isFinite(colorIndex)) {
-    return ((Math.trunc(colorIndex) % slots) + slots) % slots;
-  }
-  if (identity.kind === 'group') return undefined;
-  const key = identity.colorKey?.trim() ? identity.colorKey : identity.name;
-  return getColorIndex(key, slots);
 }
 
 /** The full name, including optional status, is shared by the root and its name tooltip. */
@@ -282,3 +255,5 @@ export function Avatar(props: AvatarProps) {
   );
   return hasTooltip ? <Tooltip content={accessibleName}>{element}</Tooltip> : element;
 }
+
+export { resolveAvatarColor, DEFAULT_AVATAR_COLOR_COUNT } from './avatar-color.js';

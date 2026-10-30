@@ -30,6 +30,38 @@ describe('client boundaries', () => {
     expect(isMarked('src/components/meta-line/meta-line.tsx')).toBe(false);
   });
 
+  it('UIC-SERVER-COMPONENTS-1.4 exports server-safe helpers from server modules', () => {
+    const helpers = {
+      'rich-text-editor': [
+        'createRichTextSchema',
+        'serializeRichTextHtml',
+        'serializeRichTextText',
+      ],
+      'chat-controller': ['isAwaitingReader', 'reduceChatStream'],
+      'pdf-viewer': ['findBoxAtPoint'],
+      avatar: ['resolveAvatarColor'],
+      checkbox: ['cycleCheckState'],
+      'zoom-control': ['findNextZoomLevel'],
+    };
+    for (const [component, names] of Object.entries(helpers)) {
+      const entry = `src/components/${component}/index.ts`;
+      const source = ts.createSourceFile(entry, read(entry), ts.ScriptTarget.Latest, true);
+      for (const name of names) {
+        const statement = source.statements.find(
+          (item): item is ts.ExportDeclaration =>
+            ts.isExportDeclaration(item) &&
+            item.exportClause !== undefined &&
+            ts.isNamedExports(item.exportClause) &&
+            item.exportClause.elements.some((element) => element.name.text === name),
+        );
+        const specifier = statement?.moduleSpecifier;
+        if (!specifier || !ts.isStringLiteral(specifier)) throw new Error(`${entry} lacks ${name}`);
+        const module = `src/components/${component}/${specifier.text.replace(/^\.\/|\.js$/g, '')}.ts`;
+        expect(isMarked(module), `${name} from ${module}`).toBe(false);
+      }
+    }
+  });
+
   it('UIC-SERVER-COMPONENTS-1.2 leaves every entry point on the server', () => {
     const entries = walk(join(root, 'src')).filter((path) => path.endsWith('/index.ts'));
     expect(entries.length).toBeGreaterThan(100);

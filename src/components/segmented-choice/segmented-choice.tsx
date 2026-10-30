@@ -8,7 +8,8 @@ import type { BaseProps, NativeProps, Orientation, Size } from '../../core/props
 import { useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import {
   useChoiceSelection,

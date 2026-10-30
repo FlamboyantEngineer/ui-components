@@ -4,7 +4,8 @@ import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { GridList, GridListItem } from '../../primitives/index.js';
-import { Checkbox, cycleCheckState } from './checkbox.js';
+import { Checkbox } from './checkbox.js';
+import { cycleCheckState } from './check-state.js';
 
 function ThreeState() {
   const [value, setValue] = useState<boolean | null>(null);

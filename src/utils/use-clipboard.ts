@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { copyText, type CopyOptions } from './clipboard.js';
+import { DEFAULT_COPY_TIMEOUT } from './copy-timeout.js';
 
 /** The outcome of the last copy, until `timeout` returns it to `idle`. */
 export type CopyStatus = 'idle' | 'copied' | 'failed';
@@ -18,9 +19,6 @@ export interface ClipboardState {
   /** Returns to `idle` at once. */
   reset: () => void;
 }
-
-/** How long the outcome of a copy shows before it returns to idle. */
-export const DEFAULT_COPY_TIMEOUT = 2000;
 
 /**
  * Copies text and keeps the outcome as `status` (`copied` or `failed`) for `timeout` milliseconds,

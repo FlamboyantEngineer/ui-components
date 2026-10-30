@@ -6,7 +6,8 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import type { ModalController } from '../modal-controller/modal-controller.js';
 import { Modal, type ModalAction, type ModalProps, type ModalTone } from './modal.js';
 

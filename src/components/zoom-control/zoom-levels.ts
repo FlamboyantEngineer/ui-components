@@ -19,3 +19,24 @@ export function resolveZoomLevels(levels: readonly number[], value: number) {
   });
   return { index, previous, next };
 }
+
+/** The zoom levels, in percent, a control steps through when the caller gives none. */
+export const defaultZoomLevels: readonly number[] = [25, 50, 75, 100, 125, 150, 200, 300, 400];
+
+/** Index of the closest level after sorting and deduplicating finite levels; lower wins a tie. */
+export function findNearestZoomLevelIndex(levels: readonly number[], value: number): number {
+  return resolveZoomLevels(sortZoomLevels(levels), value).index;
+}
+
+/**
+ * The next level above (`1`) or below (`-1`) `value`, or `undefined` past the last or first level.
+ * A value between levels steps to the neighbouring level on that side.
+ */
+export function findNextZoomLevel(
+  levels: readonly number[],
+  value: number,
+  direction: 1 | -1,
+): number | undefined {
+  const targets = resolveZoomLevels(sortZoomLevels(levels), value);
+  return direction === 1 ? targets.next : targets.previous;
+}

@@ -30,7 +30,8 @@ import { mergeProps } from '../../utils/merge-props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { getToneGlyph } from '../banner/banner.js';
 import { Button } from '../button/button.js';
-import { Icon, toIconProps } from '../icon/icon.js';
+import { Icon } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
 import {
   createQueueOverStore,

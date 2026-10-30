@@ -11,7 +11,8 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { Icon, toIconProps, toImageProps } from './icon.js';
+import { Icon } from './icon.js';
+import { toIconProps, toImageProps } from './icon-props.js';
 
 describe('Icon', () => {
   it('UIC-ICON-1.1 draws a built-in glyph in the glyph slot', () => {

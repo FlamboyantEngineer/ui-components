@@ -1,4 +1,5 @@
-export { Avatar, DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar.js';
+export { Avatar } from './avatar.js';
+export { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';
 export type {
   AvatarIdentity,
   AvatarImageProps,

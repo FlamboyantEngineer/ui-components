@@ -3,7 +3,8 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { Icon, toIconProps, type IconSize, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSize, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
 export interface IconLabelProps extends BaseProps, Pick<HTMLAttributes<HTMLSpanElement>, 'hidden'> {

@@ -1,7 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ClipboardWriter } from './clipboard.js';
-import { DEFAULT_COPY_TIMEOUT, useClipboard } from './use-clipboard.js';
+import { useClipboard } from './use-clipboard.js';
+import { DEFAULT_COPY_TIMEOUT } from './copy-timeout.js';
 
 function createClipboard(fails = false) {
   const written: string[] = [];

@@ -4,7 +4,8 @@ import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button, runPendingAction } from '../button/button.js';
+import { Button } from '../button/button.js';
+import { runPendingAction } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {

@@ -1,4 +1,4 @@
-export { isAwaitingReader, reduceChatStream, useChatController } from './chat-controller.js';
+export { useChatController } from './chat-controller.js';
 export type {
   ChatApprovalResponse,
   ChatController,
@@ -16,3 +16,5 @@ export type {
   ChatUploadContext,
   ChatUploadFunction,
 } from './chat-controller.js';
+export { isAwaitingReader } from './chat-reply.js';
+export { reduceChatStream } from './chat-stream.js';
