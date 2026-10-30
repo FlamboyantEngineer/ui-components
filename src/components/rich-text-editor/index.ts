@@ -1,10 +1,4 @@
-export {
-  RichTextEditor,
-  createRichTextSchema,
-  serializeRichTextHtml,
-  serializeRichTextText,
-  useRichTextController,
-} from './rich-text-editor.js';
+export { RichTextEditor, useRichTextController } from './rich-text-editor.js';
 export type {
   RichTextAttributes,
   RichTextAttributeSpec,
@@ -33,3 +27,5 @@ export { InsertMenu, InsertMenuButton } from './insert-menu.js';
 export type { InsertMenuButtonProps, InsertMenuItem, InsertMenuProps } from './insert-menu.js';
 export { BlockHandle } from './block-handle.js';
 export type { BlockHandleProps } from './block-handle.js';
+export { createRichTextSchema } from './rich-text-schema.js';
+export { serializeRichTextHtml, serializeRichTextText } from './rich-text-export.js';

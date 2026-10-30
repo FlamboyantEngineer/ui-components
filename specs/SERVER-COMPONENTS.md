@@ -25,11 +25,18 @@ The build shall emit each module's directive as the first statement of its JavaS
 Implementation: `tsconfig.build.json`
 Verification: `test/client-boundaries.test.ts`
 
+### UIC-SERVER-COMPONENTS-1.4 - Helpers are exported from server modules
+
+An entry point shall export a value through a client module only when the value is client code: a component, a hook, or a helper that needs the browser because it opens an overlay, keeps client state or reads the DOM (`confirm`, `alert`, `prompt`, `createToastQueue`, `createModalController`, `createMenuController`, `armHandleDrag`, `keepHandleCellDraggable`, `getFieldUndo`, `resolveScrollSpy`, `createCitationOverride`, `createCodeBlockOverride`). Every other exported helper or constant, such as `serializeRichTextHtml`, `reduceChatStream`, `findBoxAtPoint`, `resolveAvatarColor` or `findNextZoomLevel`, shall be defined in a server-safe module and exported from that module, so a server component calls it rather than receiving a client reference. `npm run check:client-boundaries` enforces the rule.
+
+Implementation: `scripts/check-client-boundaries.mjs`, `scripts/check-server-components.mjs`, `src/components/rich-text-editor/index.ts`, `src/components/chat-controller/index.ts`, `src/components/pdf-viewer/index.ts`
+Verification: `test/client-boundaries.test.ts`
+
 ## UIC-SERVER-COMPONENTS-2 - An installed-package consumer
 
 ### UIC-SERVER-COMPONENTS-2.1 - A framework builds, serves and hydrates the package
 
-`npm run check:server-components` shall pack the library and install it in a Next.js app router application with React and React DOM only, so no optional peer is installed. It shall build two server pages for production, one importing the root entry point and one importing component and core subpaths, each rendering client components and calling server-safe utilities. It shall then serve them, check their server markup, open each page in a browser, check that an interactive component responds after hydration with no error reported, and check that the client code holds none of the components the pages do not render. CI runs it on every pull request; it needs the npm registry.
+`npm run check:server-components` shall pack the library and install it in a Next.js app router application with React and React DOM only, so no optional peer is installed. It shall build three server pages for production: one importing the root entry point, one importing component and core subpaths, each rendering client components and calling server-safe utilities, and one calling server-safe helpers of interactive components (chat controller, PDF viewer, avatar, checkbox, slider, zoom control) through their entry points. It shall then add the rich text editor's optional peers and build a server page that calls `serializeRichTextHtml` and `serializeRichTextText`. It shall then serve them, check their server markup, open each interactive page in a browser, check that an interactive component responds after hydration with no error reported, and check that the client code holds none of the components the pages do not render. CI runs it on every pull request; it needs the npm registry.
 
 Implementation: `scripts/check-server-components.mjs`, `.github/workflows/ci.yml`
 Verification: `test/client-boundaries.test.ts`

@@ -4,7 +4,8 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 
 /** `empty`: loaded with nothing to show. `loading`: being fetched. `error`: could not load. */

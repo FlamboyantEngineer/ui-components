@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // Checks the installed package in a server-component framework (specs/SERVER-COMPONENTS.md): packs
-// the library, installs it with Next.js and React alone, so no optional peer is present, builds two
-// server pages for production (one importing the root entry point, one importing subpaths), then
-// serves them and checks the server markup, server-safe utilities, hydration and tree shaking.
+// the library, installs it with Next.js and React alone, so no optional peer is present, builds
+// server pages for production (one importing the root entry point, one importing subpaths, one
+// calling server-safe helpers through their entry points), then serves them and checks the server
+// markup, server-safe utilities, hydration and tree shaking. Last, it installs the rich-text peers
+// and builds a page that calls the rich-text helpers on the server.
 // Needs the npm registry. `CHROMIUM_PATH` points Playwright at a browser of its own.
 
 import { execFileSync, spawn } from 'node:child_process';
@@ -70,6 +72,57 @@ export default function Page() {
 }
 `;
 
+// Server-safe helpers called through their public entry points, which must not hand the server a
+// client reference (UIC-SERVER-COMPONENTS-1.4).
+const HELPERS_PAGE = `import { resolveAvatarColor } from '${manifest.name}/avatar';
+import { cycleCheckState } from '${manifest.name}/checkbox';
+import { reduceChatStream } from '${manifest.name}/chat-controller';
+import { findBoxAtPoint } from '${manifest.name}/pdf-viewer';
+import { keepThumbsApart } from '${manifest.name}/slider';
+import { findNextZoomLevel } from '${manifest.name}/zoom-control';
+
+export default function Page() {
+  const reply = reduceChatStream(
+    { id: 'reply', createdAt: '2026-01-01T00:00:00Z', parts: [] },
+    { type: 'text-delta', text: 'Streamed' },
+  );
+  const box = findBoxAtPoint([{ left: 0, top: 0, width: 10, height: 10, name: 'box' }], { left: 5, top: 5 });
+  const values = [
+    reply.parts.map((part) => part.text).join(''),
+    box?.name,
+    resolveAvatarColor({ name: 'x', colorIndex: 9 }, 4),
+    String(cycleCheckState(null)),
+    findNextZoomLevel([50, 100, 200], 100, 1),
+    keepThumbsApart([40, 45], [40, 60], { distance: 10, minValue: 0, maxValue: 100 }).join('-'),
+  ];
+  return <p id="helpers">{values.join(' ')}</p>;
+}
+`;
+const RICH_TEXT_PAGE = `import { serializeRichTextHtml, serializeRichTextText } from '${manifest.name}/rich-text-editor';
+
+const doc = {
+  type: 'doc',
+  content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }],
+};
+
+export default function Page() {
+  return (
+    <main>
+      <pre id="html">{serializeRichTextHtml(doc)}</pre>
+      <p id="text">{\`Plain \${serializeRichTextText(doc)}\`}</p>
+    </main>
+  );
+}
+`;
+const RICH_TEXT_PEERS = Object.keys(manifest.peerDependencies).filter(
+  (name) =>
+    name === '@handlewithcare/react-prosemirror' ||
+    name === 'react-reconciler' ||
+    name.startsWith('prosemirror-'),
+);
+const installedVersion = (name) =>
+  JSON.parse(readFileSync(join(root, 'node_modules', name, 'package.json'), 'utf8')).version;
+
 const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-server-components-'));
 const appDir = join(workDir, 'app');
@@ -131,8 +184,37 @@ async function checkPage(browser, origin, path, expected) {
   await page.close();
 }
 
+/** Checks a served page's server markup only, for a page without interactive parts. */
+async function checkMarkup(origin, path, expected) {
+  const html = await (await fetch(`${origin}${path}`)).text();
+  for (const text of expected) {
+    if (!html.includes(text)) problems.push(`${path}: the server markup lacks ${text}`);
+  }
+}
+
+const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
 let server;
 let browser;
+
+/** Serves the built app on a free port, in its own process group, and returns its origin. */
+async function serve() {
+  const port = await freePort();
+  const origin = `http://localhost:${port}`;
+  // Its own process group, so stopping it stops the server process Next starts.
+  server = spawn('npx', ['next', 'start', '-p', String(port)], {
+    cwd: appDir,
+    env,
+    detached: true,
+  });
+  await waitForServer(`${origin}/`);
+  return origin;
+}
+
+function stopServer() {
+  if (server?.pid) process.kill(-server.pid);
+  server = undefined;
+}
+
 try {
   const output = execFileSync(
     'npm',
@@ -144,6 +226,7 @@ try {
   write('app/layout.js', LAYOUT);
   write('app/page.js', ROOT_PAGE);
   write('app/subpaths/page.js', SUBPATH_PAGE);
+  write('app/helpers/page.js', HELPERS_PAGE);
   run('npm', [
     'install',
     '--no-audit',
@@ -153,7 +236,6 @@ try {
     `react-dom@${reactVersion}`,
     join(workDir, pack.filename),
   ]);
-  const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
   execFileSync('npx', ['next', 'build'], { cwd: appDir, env, stdio: 'inherit' });
 
   // Tree shaking: the client code holds the components the pages render and no others.
@@ -166,15 +248,7 @@ try {
     if (client.includes(`"${name}"`)) problems.push(`the client code includes the unused ${name}`);
   }
 
-  // Its own process group, so stopping it stops the server process Next starts.
-  const port = await freePort();
-  const origin = `http://localhost:${port}`;
-  server = spawn('npx', ['next', 'start', '-p', String(port)], {
-    cwd: appDir,
-    env,
-    detached: true,
-  });
-  await waitForServer(`${origin}/`);
+  const origin = await serve();
   const executablePath = process.env.CHROMIUM_PATH;
   browser = await chromium.launch(executablePath ? { executablePath } : {});
   await checkPage(browser, origin, '/', [
@@ -183,11 +257,24 @@ try {
     'class="ui-badge',
   ]);
   await checkPage(browser, origin, '/subpaths', ['Added new']);
+  await checkMarkup(origin, '/helpers', ['Streamed box 1 true 200 40-50']);
+  stopServer();
+
+  // The rich-text helpers, with the optional peers they need.
+  run('npm', [
+    'install',
+    '--no-audit',
+    '--no-fund',
+    ...RICH_TEXT_PEERS.map((name) => `${name}@${installedVersion(name)}`),
+  ]);
+  write('app/rich-text/page.js', RICH_TEXT_PAGE);
+  execFileSync('npx', ['next', 'build'], { cwd: appDir, env, stdio: 'inherit' });
+  await checkMarkup(await serve(), '/rich-text', ['&lt;p&gt;Hello&lt;/p&gt;', 'Plain Hello']);
 } catch (error) {
   problems.push(error instanceof Error ? error.message : String(error));
 } finally {
   await browser?.close();
-  if (server?.pid) process.kill(-server.pid);
+  stopServer();
   rmSync(workDir, { recursive: true, force: true });
 }
 

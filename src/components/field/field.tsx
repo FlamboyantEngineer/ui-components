@@ -227,7 +227,8 @@ export function Field<T>({
 }
 
 export type { FieldControlProps, FieldDensity, FieldLabelLayout } from './field-parts.js';
-export { toAriaControlProps, useFieldControl } from './field-control.js';
+export { useFieldControl } from './field-control.js';
+export { toAriaControlProps } from './aria-control-props.js';
 export type {
   FieldControl,
   FieldControlOptions,

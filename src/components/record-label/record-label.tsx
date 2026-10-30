@@ -7,7 +7,8 @@ import { createHooks, mergeClassNames, type HookProps } from '../../core/hooks.j
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../../primitives/index.js';
-import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Icon, type IconSource } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { RecordChipParts } from './record-chip-parts.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';

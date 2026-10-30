@@ -1,4 +1,4 @@
-export { Modal, ModalTrigger, isModalPrimaryShortcut } from './modal.js';
+export { Modal, ModalTrigger } from './modal.js';
 export type {
   ModalAction,
   ModalBodyLayout,
@@ -15,3 +15,4 @@ export type {
 
 export { confirm, alert, prompt } from './modal.js';
 export type { ConfirmOptions, AlertOptions, PromptOptions } from './modal.js';
+export { isModalPrimaryShortcut } from './modal-shortcut.js';

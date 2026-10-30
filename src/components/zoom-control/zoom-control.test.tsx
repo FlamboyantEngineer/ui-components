@@ -6,12 +6,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import {
-  ZoomControl,
-  defaultZoomLevels,
-  findNearestZoomLevelIndex,
-  findNextZoomLevel,
-} from './zoom-control.js';
+import { ZoomControl } from './zoom-control.js';
+import { defaultZoomLevels, findNearestZoomLevelIndex, findNextZoomLevel } from './zoom-levels.js';
 
 const levels = [50, 75, 100, 125, 150];
 

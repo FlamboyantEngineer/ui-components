@@ -1,4 +1,4 @@
-export { DiagramCanvas, DiagramPaletteItem, routeDiagramEdge } from './diagram-canvas.js';
+export { DiagramCanvas, DiagramPaletteItem } from './diagram-canvas.js';
 export type {
   DiagramCanvasProps,
   DiagramConnection,
@@ -18,3 +18,4 @@ export type {
   DiagramView,
   DiagramViewport,
 } from './diagram-canvas.js';
+export { routeDiagramEdge } from './edge-route.js';

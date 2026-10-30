@@ -1,4 +1,4 @@
-export { MappingTable, suggestMapping, summarizeMapping } from './mapping-table.js';
+export { MappingTable } from './mapping-table.js';
 export type {
   MappingSummary,
   MappingTableColumn,
@@ -7,3 +7,4 @@ export type {
   MappingTableTarget,
   MappingTableValue,
 } from './mapping-table.js';
+export { suggestMapping, summarizeMapping } from './mapping.js';

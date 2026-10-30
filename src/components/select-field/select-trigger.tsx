@@ -12,7 +12,8 @@ import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
 import { Button } from '../button/button.js';
-import { Icon, toIconProps } from '../icon/icon.js';
+import { Icon } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 
 interface SelectTriggerProps {

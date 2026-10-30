@@ -5,8 +5,6 @@ export {
   PropertyPanel,
   PropertyRow,
   PropertySection,
-  PropertyStrip,
-  PropertyStripCell,
 } from './property-panel.js';
 export type {
   PropertyCardProps,
@@ -20,3 +18,4 @@ export type {
   PropertyStripCellProps,
   PropertyStripProps,
 } from './property-panel.js';
+export { PropertyStrip, PropertyStripCell } from './property-strip.js';

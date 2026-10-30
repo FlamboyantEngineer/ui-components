@@ -31,6 +31,7 @@ import {
   type OverlayMetrics,
 } from './use-overlay-metrics.js';
 import { useScrollOverview, type ScrollOverviewPaint } from './use-scroll-overview.js';
+import { DEFAULT_SCROLLBAR_HIDE_DELAY } from './scroll-region-defaults.js';
 
 export type ScrollRegionAxis = 'x' | 'y' | 'both' | 'none';
 export type ScrollRegionOverscroll = 'contain' | 'auto';
@@ -69,9 +70,6 @@ export interface ScrollRegionProps extends NativeProps<'div'>, BaseProps, Layout
   /** Grid cell alignment, with `columns`. Defaults to `stretch`. */
   align?: LayoutAlign | undefined;
 }
-
-/** Scrollbars stay shown this long after scrolling or after the pointer leaves, in milliseconds. */
-export const DEFAULT_SCROLLBAR_HIDE_DELAY = 600;
 
 const HeaderContext = createContext<HeaderRegistration | undefined>(undefined);
 
@@ -325,3 +323,9 @@ export { useScrollSpy } from './use-scroll-spy.js';
 
 export { OverlayScrollbars } from './overlay-scrollbars.js';
 export { useOverlayMetrics } from './use-overlay-metrics.js';
+
+export {
+  DEFAULT_SCROLLBAR_HIDE_DELAY,
+  MIN_THUMB_SIZE,
+  THUMB_ARROW_STEP,
+} from './scroll-region-defaults.js';

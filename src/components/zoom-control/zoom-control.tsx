@@ -10,7 +10,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
 import { Button } from '../button/button.js';
 import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
-import { resolveZoomLevels, sortZoomLevels } from './zoom-levels.js';
+import { defaultZoomLevels, resolveZoomLevels, sortZoomLevels } from './zoom-levels.js';
 
 export interface ZoomControlProps
   extends Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>, BaseProps {
@@ -63,9 +63,6 @@ interface ZoomSliderProps {
   isDisabled: boolean;
   onRequest: (value: number) => void;
 }
-
-/** The zoom levels, in percent, a control steps through when the caller gives none. */
-export const defaultZoomLevels: readonly number[] = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
 // Levels and values are compared with a tolerance, so floating-point zoom values match their level.
 const tolerance = 1e-9;
@@ -132,24 +129,6 @@ function ZoomSlider({ id, levels, targets, valueText, isDisabled, onRequest }: Z
       }}
     />
   );
-}
-
-/** Index of the closest level after sorting and deduplicating finite levels; lower wins a tie. */
-export function findNearestZoomLevelIndex(levels: readonly number[], value: number): number {
-  return resolveZoomLevels(sortZoomLevels(levels), value).index;
-}
-
-/**
- * The next level above (`1`) or below (`-1`) `value`, or `undefined` past the last or first level.
- * A value between levels steps to the neighbouring level on that side.
- */
-export function findNextZoomLevel(
-  levels: readonly number[],
-  value: number,
-  direction: 1 | -1,
-): number | undefined {
-  const targets = resolveZoomLevels(sortZoomLevels(levels), value);
-  return direction === 1 ? targets.next : targets.previous;
 }
 
 /**
@@ -239,3 +218,5 @@ export function ZoomControl({
 }
 
 export type { ZoomPreset } from './zoom-presets.js';
+
+export { defaultZoomLevels, findNearestZoomLevelIndex, findNextZoomLevel } from './zoom-levels.js';

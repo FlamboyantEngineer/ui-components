@@ -7,12 +7,12 @@ import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type * as splitViewApi from './index.js';
+import { ResizeHandle } from './resize-handle.js';
 import {
   RESIZE_KEYBOARD_FINE_STEP,
   RESIZE_KEYBOARD_STEP,
-  ResizeHandle,
   resolveResizeKeyboardValue,
-} from './resize-handle.js';
+} from './resize-keyboard.js';
 import { SplitView, type SplitViewHandle, type SplitViewPane } from './split-view.js';
 
 const fruit = ['Apples', 'Bananas', 'Cherries'];

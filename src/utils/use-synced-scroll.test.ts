@@ -1,7 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { requireDefined } from './require-defined.js';
-import { mapScrollOffset, useSyncedScroll, type ScrollAnchor } from './use-synced-scroll.js';
+import { useSyncedScroll } from './use-synced-scroll.js';
+import { mapScrollOffset, type ScrollAnchor } from './scroll-offset-map.js';
 
 function createContainer(scrollHeight: number, clientHeight = 100): HTMLElement {
   const element = document.createElement('div');

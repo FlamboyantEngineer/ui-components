@@ -7,7 +7,8 @@ import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key, SelectableState } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
-import { Icon, toIconProps } from '../icon/icon.js';
+import { Icon } from '../icon/icon.js';
+import { toIconProps } from '../icon/icon.js';
 import {
   isSelectFieldGroup,
   type SelectFieldItem,

@@ -3,7 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { Button, runPendingAction } from './button.js';
+import { Button } from './button.js';
+import { runPendingAction } from './pending-action.js';
 
 function deferred() {
   let resolve!: () => void;

@@ -1,10 +1,11 @@
 'use client';
 
-import { isValidElement, type ReactElement, type ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import type { GlyphComponent } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import { toImageProps } from './icon-props.js';
 
 /** A fixed box size, or `inherit`: a 1em box that scales with the surrounding font. */
 export type IconSize = Extract<Size, 'sm' | 'md' | 'lg'> | 'inherit';
@@ -25,18 +26,6 @@ export interface IconProps extends BaseProps {
 
 const hooks = createHooks('icon', ['glyph']);
 
-/** Image semantics for a drawing: an image named by `label`, or hidden from assistive technology. */
-export function toImageProps(
-  label: string | undefined,
-): { role: 'img'; 'aria-label': string } | { 'aria-hidden': true } {
-  return label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
-}
-
-/** Passes components as `icon` and rendered elements as `children`. */
-export function toIconProps(source: IconSource): Pick<IconProps, 'icon' | 'children'> {
-  return !source || isValidElement(source) ? { children: source } : { icon: source };
-}
-
 /** One icon box: an imported component or any icon node, decorative unless it has a label. */
 export function Icon({ icon, children, size = 'md', label, className, ...rest }: IconProps) {
   return (
@@ -49,3 +38,5 @@ export function Icon({ icon, children, size = 'md', label, className, ...rest }:
     </span>
   );
 }
+
+export { toImageProps, toIconProps } from './icon-props.js';

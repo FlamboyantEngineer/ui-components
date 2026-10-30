@@ -5,6 +5,7 @@ import type { PressEvent } from '../../core/events.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import type { ButtonProps, ButtonRenderState } from './button.js';
+import { runPendingAction, type PendingAction } from './pending-action.js';
 
 /** The pending lifecycle shared by buttons and controls that run work. */
 export interface ButtonActionProps {
@@ -12,34 +13,6 @@ export interface ButtonActionProps {
   onError?: ((error: unknown) => void) | undefined;
   /** Milliseconds before showing pending, while repeat presses are already refused. Defaults to zero. */
   pendingDelay?: number | undefined;
-}
-
-type PendingAction = (() => unknown) | undefined;
-
-/**
- * Runs `action` unless `blocked`, keeping `setPending(true)` until it settles. Resolves to whether the
- * action ran. A rejection reaches `onError`, or is rethrown.
- */
-export async function runPendingAction(options: {
-  blocked: boolean;
-  setPending: (pending: boolean) => void;
-  action?: PendingAction;
-  onError?: ((error: unknown) => void) | undefined;
-}): Promise<boolean> {
-  if (options.blocked) return false;
-  options.setPending(true);
-  try {
-    await options.action?.();
-    return true;
-  } catch (error) {
-    if (options.onError) {
-      options.onError(error);
-      return false;
-    }
-    throw error;
-  } finally {
-    options.setPending(false);
-  }
 }
 
 /**

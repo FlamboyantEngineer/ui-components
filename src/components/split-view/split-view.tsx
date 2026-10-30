@@ -124,3 +124,9 @@ export function SplitView(props: SplitViewProps) {
 }
 
 export { ResizeHandle } from './resize-handle.js';
+
+export {
+  RESIZE_KEYBOARD_STEP,
+  RESIZE_KEYBOARD_FINE_STEP,
+  resolveResizeKeyboardValue,
+} from './resize-keyboard.js';

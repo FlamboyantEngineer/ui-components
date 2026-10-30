@@ -1,4 +1,4 @@
-export { PdfViewer, findBoxAtPoint } from './pdf-viewer.js';
+export { PdfViewer } from './pdf-viewer.js';
 export type {
   PdfDocumentAccess,
   PdfPageContent,
@@ -22,3 +22,4 @@ export type {
   PdfViewport,
 } from './pdf-engine.js';
 export type { PdfZoom } from './pdf-zoom.js';
+export { findBoxAtPoint } from './page-geometry.js';

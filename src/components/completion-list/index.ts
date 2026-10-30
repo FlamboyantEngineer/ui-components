@@ -1,8 +1,4 @@
-export {
-  CompletionList,
-  createTriggerCompletions,
-  getCompletionOptionId,
-} from './completion-list.js';
+export { CompletionList } from './completion-list.js';
 export type {
   Completion,
   CompletionAnswer,
@@ -14,3 +10,5 @@ export type {
   CompletionSource,
   CompletionTrigger,
 } from './completion-list.js';
+export { createTriggerCompletions } from './trigger-completions.js';
+export { getCompletionOptionId } from './completion-option-id.js';
