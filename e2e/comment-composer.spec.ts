@@ -107,6 +107,29 @@ test.describe('Comment Composer lab', () => {
     await expect(composer.getByRole('textbox', { name: 'Reply in Orchard' })).toHaveValue('');
   });
 
+  test('UIC-COMMENT-COMPOSER-1.2 UIC-COMMENT-COMPOSER-1.4 leaves composing keys to the input method', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const box = page.locator('[data-lab-composer="pending"]').getByRole('textbox');
+    await box.fill('Composing');
+    for (const key of ['Enter', 'Escape']) {
+      await box.evaluate((element, key) => {
+        const init = {
+          key,
+          ctrlKey: key === 'Enter',
+          isComposing: true,
+          bubbles: true,
+          cancelable: true,
+        };
+        element.dispatchEvent(new KeyboardEvent('keydown', init));
+      }, key);
+    }
+    await expect(page.locator('[data-lab-output="status"]')).toHaveText('idle');
+    await expect(box).toHaveValue('Composing');
+  });
+
   test('UIC-COMMENT-COMPOSER-1.7 passes axe in both themes', async ({ lab }) => {
     await lab.open('comment-composer');
     await lab.expectAccessible();

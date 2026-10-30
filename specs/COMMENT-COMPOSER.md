@@ -13,10 +13,10 @@ Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/
 
 ### UIC-COMMENT-COMPOSER-1.2 - Submitting
 
-Pressing the submit button, or Ctrl+Enter or Command+Enter in the composer, shall call `onSubmit` once with the draft trimmed, then clear the draft. Enter alone starts a new line. A blank draft submits nothing.
+Pressing the submit button, or Ctrl+Enter or Command+Enter in the composer, shall call `onSubmit` once with the draft trimmed, then clear the draft. Enter alone starts a new line. A blank draft submits nothing. A key that belongs to an input method composition (pressed while composing, or reported with key code 229) shall neither submit nor cancel ([UIC-COMMENT-COMPOSER-1.4](#uic-comment-composer-14---cancelling)): the composer leaves it to the input method and to the surface around it, so an enclosing dialog does not close on it either.
 
-Implementation: `src/components/comment-composer/comment-composer.tsx`
-Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`
+Implementation: `src/components/comment-composer/comment-composer.tsx`, `src/utils/is-composing-key.ts`
+Verification: `src/components/comment-composer/comment-composer.test.tsx`, `src/components/comment-composer/comment-composer-keys.test.tsx`, `e2e/comment-composer.spec.ts`
 
 ### UIC-COMMENT-COMPOSER-1.3 - Pending submits
 

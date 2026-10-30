@@ -130,7 +130,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Pending submits"
-      description="Ctrl+Enter or Command+Enter sends; the composer stays pending for 1.5 seconds and keeps the draft when the submit fails. Text typed while it sends stays once the submit succeeds."
+      description="Ctrl+Enter or Command+Enter sends; the composer stays pending for 1.5 seconds and keeps the draft when the submit fails. Text typed while it sends stays once the submit succeeds. Keys that confirm or cancel an input method composition neither send nor cancel."
     >
       <PendingComposer />
     </LabSection>
