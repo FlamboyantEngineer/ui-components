@@ -46,7 +46,8 @@ export interface DecisionControlProps extends BaseProps {
   submitLabel?: ReactNode;
   /**
    * Submits the decision. A returned promise keeps Submit pending; a rejection shows its error and
-   * keeps the comment. The comment clears once it succeeds.
+   * keeps the comment. Once it succeeds the comment clears, unless the reader has changed the
+   * decision or the comment since submitting.
    */
   onSubmit: (details: DecisionControlDetails) => void | Promise<unknown>;
   /** Refuses picking and submitting. */
