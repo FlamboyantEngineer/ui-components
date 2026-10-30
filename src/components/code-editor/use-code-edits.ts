@@ -9,25 +9,45 @@ interface CodeEditsOptions {
   onChange: ((value: string) => void) | undefined;
 }
 
+/** Gives focus back to `element`, with the selection its field held, once a borrow ends. */
+function holdFocus(element: Element | null): () => void {
+  if (!(element instanceof HTMLElement)) return () => {};
+  const isField = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+  const start = isField ? element.selectionStart : null;
+  const end = isField ? element.selectionEnd : null;
+  return () => {
+    element.focus({ preventScroll: true });
+    if (isField && start !== null && end !== null) element.setSelectionRange(start, end);
+  };
+}
+
 /**
- * Edits the focused text area through the browser's own editing, which keeps the edit on its undo
- * stack and reports it as input; `false` when the browser offers none.
+ * Edits the text area through the browser's own editing, which keeps the edit on its undo stack
+ * as one step and reports it as input; `false` when the browser offers none. An edit made while
+ * focus is elsewhere, such as a replacement from the search bar, borrows focus for the edit and
+ * hands it back with its selection.
  */
 function editNatively(input: HTMLTextAreaElement, edit: CodeEdit, next: string): boolean {
-  if (input.ownerDocument.activeElement !== input) return false;
-  if (typeof input.ownerDocument.execCommand !== 'function') return false;
-  input.setSelectionRange(edit.start, edit.end);
+  const document = input.ownerDocument;
+  if (typeof document.execCommand !== 'function') return false;
+  const owner = document.activeElement;
+  const restore = owner === input ? null : holdFocus(owner);
+  if (restore) input.focus({ preventScroll: true });
   try {
-    input.ownerDocument.execCommand(edit.text ? 'insertText' : 'delete', false, edit.text);
+    if (document.activeElement !== input) return false;
+    input.setSelectionRange(edit.start, edit.end);
+    document.execCommand(edit.text ? 'insertText' : 'delete', false, edit.text);
   } catch {
     return false;
+  } finally {
+    restore?.();
   }
   return input.value === next;
 }
 
 /**
- * Applies the editor's own edits (indentation, pairs, completions, replacements): through the
- * browser's editing when the text area has focus, so undo keeps working, or else through
+ * Applies the editor's own edits (indentation, pairs, completions, replacements) through the
+ * browser's editing, so undo keeps working wherever focus is, or else, without it, through
  * `onChange`, selecting the edit's selection once the new value is rendered.
  */
 export function useCodeEdits({ inputRef, value, onChange }: CodeEditsOptions) {

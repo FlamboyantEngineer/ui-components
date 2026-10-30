@@ -61,6 +61,14 @@ export function useCodeSearch({ value, inputRef, applyEdit }: CodeSearchOptions)
   const current = firstFrom(matches, anchor);
   const match = matches[current];
 
+  // A replacement that leaves nothing to match disables the bar's Replace buttons, so focus
+  // moves to the find box rather than falling out of the bar.
+  const replaceWith = (edit: CodeEdit) => {
+    applyEdit(edit);
+    const next = `${value.slice(0, edit.start)}${edit.text}${value.slice(edit.end)}`;
+    if (findMatches(next, query).length === 0) findRef.current?.focus();
+  };
+
   const setQuery = (next: string) => {
     setAnchor(inputRef.current?.selectionStart ?? 0);
     setQueryState(next);
@@ -94,7 +102,7 @@ export function useCodeSearch({ value, inputRef, applyEdit }: CodeSearchOptions)
     replace() {
       if (!match) return;
       const end = match.start + replacement.length;
-      applyEdit({ ...match, text: replacement, selection: { start: end, end } });
+      replaceWith({ ...match, text: replacement, selection: { start: end, end } });
       setAnchor(end);
     },
     replaceAll() {
@@ -108,7 +116,7 @@ export function useCodeSearch({ value, inputRef, applyEdit }: CodeSearchOptions)
         )
         .join('');
       const end = first.start + text.length;
-      applyEdit({ start: first.start, end: last.end, text, selection: { start: end, end } });
+      replaceWith({ start: first.start, end: last.end, text, selection: { start: end, end } });
     },
   };
 }

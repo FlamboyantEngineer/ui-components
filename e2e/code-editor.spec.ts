@@ -334,6 +334,50 @@ test.describe('Code Editor lab', () => {
     await expect(input).toBeFocused();
   });
 
+  test('UIC-CODE-EDITOR-6.1 UIC-CODE-EDITOR-7.4 undoes and redoes replacements made from the search bar', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const editing = editor(page, 'editing');
+    const input = editing.getByRole('textbox', { name: 'Editable source' });
+    const original = await input.inputValue();
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type(' // ok');
+    const typed = `${original} // ok`;
+    await expect(input).toHaveValue(typed);
+
+    await page.keyboard.press('Control+f');
+    const find = editing.getByRole('searchbox', { name: 'Find' });
+    await page.keyboard.type('basket');
+    await editing.getByRole('textbox', { name: 'Replace with' }).fill('crate');
+    const replace = editing.getByRole('button', { name: 'Replace', exact: true });
+    await replace.click();
+    const once = typed.replace('basket', 'crate');
+    await expect(input).toHaveValue(once);
+    await expect(replace).toBeFocused();
+    const replaceAll = editing.getByRole('button', { name: 'Replace all' });
+    await replaceAll.click();
+    const all = typed.replaceAll('basket', 'crate');
+    await expect(input).toHaveValue(all);
+    // Nothing is left to replace, so the disabled buttons hand focus to the find box.
+    await expect(replaceAll).toBeDisabled();
+    await expect(find).toBeFocused();
+    await expect(find).toHaveValue('basket');
+
+    await find.press('Escape');
+    await expect(input).toBeFocused();
+    await page.keyboard.press('Control+z');
+    await expect(input).toHaveValue(once);
+    await page.keyboard.press('Control+z');
+    await expect(input).toHaveValue(typed);
+    await page.keyboard.press('Control+Shift+z');
+    await expect(input).toHaveValue(once);
+    await page.keyboard.press('Control+Shift+z');
+    await expect(input).toHaveValue(all);
+  });
+
   test('UIC-CODE-EDITOR-3.4 UIC-CODE-EDITOR-3.5 UIC-CODE-EDITOR-3.6 underlines problems with hover tips and F8', async ({
     page,
     lab,

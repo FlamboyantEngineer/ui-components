@@ -118,6 +118,8 @@ describe('CodeEditor find and replace', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(input()).toHaveValue('fig apple fig\nfig');
     expect(screen.getByRole('status')).toHaveTextContent('No results');
+    // The disabled buttons hand focus to the find box, keeping it in the bar.
+    expect(screen.getByRole('searchbox', { name: 'Find' })).toHaveFocus();
   });
 
   it('UIC-CODE-EDITOR-7.3 finds without replacing in a read-only editor', async () => {

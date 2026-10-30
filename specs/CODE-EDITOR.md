@@ -191,7 +191,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 
 ### UIC-CODE-EDITOR-6.1 - Editor edits
 
-The editor's own edits (line breaks, indentation, pairs, completions and replacements) shall go through the browser's editing when the text area has focus, so undo reverts them one at a time and `onChange` reports them, and otherwise through `onChange`, restoring the edit's selection once the new value is rendered. A read-only or disabled editor makes none of them.
+The editor's own edits (line breaks, indentation, pairs, completions and replacements) shall go through the browser's editing, so undo and redo in the text area revert and repeat them one at a time among the reader's own typing, and `onChange` reports them. An edit made while focus is elsewhere, such as Replace or Replace all from the search bar, briefly moves focus to the text area for the edit and gives it back to the control that had it, with that field's selection. Without browser editing the edit goes through `onChange`, restoring the edit's selection once the new value is rendered. A read-only or disabled editor makes none of them.
 
 Implementation: `src/components/code-editor/use-code-edits.ts`, `src/components/code-editor/use-code-keys.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -242,7 +242,7 @@ Verification: `src/components/code-editor/code-ranges.test.ts`, `src/components/
 
 ### UIC-CODE-EDITOR-7.3 - Replacing
 
-In an editable editor the bar shall also hold its replacement box (provider string `replaceWith`), a Replace button that replaces the current match and moves to the next one, and a Replace all button that replaces every match in one edit; Enter in the replacement box replaces. A read-only or disabled editor shows none of them.
+In an editable editor the bar shall also hold its replacement box (provider string `replaceWith`), a Replace button that replaces the current match and moves to the next one, and a Replace all button that replaces every match in one edit, one undo step (UIC-CODE-EDITOR-6.1); Enter in the replacement box replaces. Focus stays on the control that replaced, unless no match is left and the Replace buttons turn disabled, when it moves to the find box. A read-only or disabled editor shows none of them.
 
 Implementation: `src/components/code-editor/code-search.tsx`, `src/components/code-editor/use-code-search.ts`
 Verification: `src/components/code-editor/code-search.test.tsx`, `e2e/code-editor.spec.ts`
