@@ -116,8 +116,10 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagra
 
 With `isEditing`, which publishes `data-editing` on the root, dragging a node shall move it, with the rest of the selection when it is selected, its position snapping to multiples of `gridSize` (10 pixels by default; `0` turns snapping off). While dragging, the moved nodes show where they would go and publish `data-moving`; on release `onNodesChange` receives every node with the new positions and the live region reads the provider's `diagramMoved` string. Cancellation, lost capture or leaving edit mode shall release capture and discard the preview without calling `onNodesChange`. Returning to edit mode requires a fresh press; selecting nodes and panning remain available in viewing mode.
 
-Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`
-Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
+Controls and editable content that `renderNode` puts in a node (links, buttons, fields, selects, labels, editable content and elements with a control role) shall own their presses: a press on one, or a press its own handler already prevented, starts no selection, move, pointer capture, connection completion or background pan, so the control activates and a drag in a field selects its text. A press on the rest of the node's content still selects and moves it.
+
+Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/utils/is-interactive-target.ts`
+Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `src/utils/is-interactive-target.test.ts`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-4.4 - Moving by keyboard
 

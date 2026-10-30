@@ -166,6 +166,40 @@ test.describe('Diagram Canvas lab', () => {
     await expect(plant(page).locator('.ui-diagram-canvas__status')).toHaveText('Pump moved');
   });
 
+  test('UIC-DIAGRAM-CANVAS-4.3 leaves presses and text selection to controls inside nodes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    const notes = page.locator('[data-lab-field="notes"]');
+    await notes.scrollIntoViewIfNeeded();
+    const positions = output(page, 'note-nodes');
+    await expect(positions).toHaveText('Intake 20,20; Outlet 320,60');
+    await notes.getByRole('button', { name: 'Flag Intake' }).click();
+    await expect(output(page, 'flagged')).toHaveText('Intake');
+
+    const field = notes.getByRole('textbox', { name: 'Intake note' });
+    const box = requireDefined(await field.boundingBox());
+    await page.mouse.move(box.x + 4, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 74, box.y + box.height / 2, { steps: 6 });
+    await page.mouse.up();
+    const selected = await field.evaluate(
+      (input: HTMLInputElement) => (input.selectionEnd ?? 0) - (input.selectionStart ?? 0),
+    );
+    expect(selected).toBeGreaterThan(0);
+    await expect(positions).toHaveText('Intake 20,20; Outlet 320,60');
+
+    const title = notes.getByText('Intake', { exact: true });
+    const start = await centreOf(title);
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x + 40, start.y + 20, { steps: 4 });
+    await page.mouse.up();
+    await expect(positions).not.toHaveText('Intake 20,20; Outlet 320,60');
+    await expect(positions).toContainText('Outlet 320,60');
+  });
+
   test('UIC-DIAGRAM-CANVAS-5.1 UIC-DIAGRAM-CANVAS-5.2 connects ports by drag and by keyboard', async ({
     page,
     lab,

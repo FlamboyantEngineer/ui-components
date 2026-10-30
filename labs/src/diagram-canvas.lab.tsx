@@ -268,6 +268,64 @@ function Plant() {
   );
 }
 
+interface Note {
+  text: string;
+}
+
+const noteNodes: DiagramNode<Note>[] = [
+  {
+    id: 'intake',
+    x: 20,
+    y: 20,
+    width: 220,
+    height: 96,
+    label: 'Intake',
+    data: { text: 'Check filters' },
+  },
+  {
+    id: 'outlet',
+    x: 320,
+    y: 60,
+    width: 220,
+    height: 96,
+    label: 'Outlet',
+    data: { text: 'Open slowly' },
+  },
+];
+
+function NoteContent({ node, onFlag }: { node: DiagramNode<Note>; onFlag: () => void }) {
+  return (
+    <>
+      <strong>{node.label}</strong>
+      <input aria-label={`${node.label} note`} defaultValue={node.data?.text} />
+      <button type="button" onClick={onFlag}>{`Flag ${node.label}`}</button>
+    </>
+  );
+}
+
+function NodeControls() {
+  const [nodes, setNodes] = useState(noteNodes);
+  const [flagged, setFlagged] = useState('None');
+  return (
+    <>
+      <DiagramCanvas<Note>
+        aria-label="Notes"
+        data-lab-field="notes"
+        nodes={nodes}
+        edges={[]}
+        isEditing
+        renderNode={(node) => <NoteContent node={node} onFlag={() => setFlagged(node.label)} />}
+        onNodesChange={setNodes}
+      />
+      <Output name="flagged" value={flagged} />
+      <Output
+        name="note-nodes"
+        value={nodes.map((node) => `${node.label} ${node.x},${node.y}`).join('; ')}
+      />
+    </>
+  );
+}
+
 function Modules() {
   const [selection, setSelection] = useState<Selection>(new Set<Key>());
   return (
@@ -302,6 +360,12 @@ mountLab(
       description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections; selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
     >
       <Plant />
+    </LabSection>
+    <LabSection
+      title="Controls in nodes"
+      description="Each node holds a text field and a button. Pressing the button runs its action and dragging in the field selects text; neither moves the node. Drag the node by its title to move it."
+    >
+      <NodeControls />
     </LabSection>
     <LabSection
       title="Read only graph"
