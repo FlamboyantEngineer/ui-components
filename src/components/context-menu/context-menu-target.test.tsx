@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent, type UserEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
+import { createRef, StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -324,5 +324,43 @@ describe('ContextMenuTrigger', () => {
     expect(surface).toHaveAttribute('data-layer', 'context-menu');
     expect(surface).toHaveAttribute('id', 'file-menu');
     expectHooksMatchSpec(document.body, 'MENU', { callerAttributes: ['data-owner'] });
+  });
+
+  it('UIC-CONTEXT-MENU-1.6 UIC-COMPOSITION-2.2 runs the target ref cleanup once per attachment', () => {
+    const attached: Array<HTMLElement | null> = [];
+    const cleanups = vi.fn();
+    const callbackRef = (node: HTMLElement | null) => {
+      attached.push(node);
+      return cleanups;
+    };
+    function Target({ targetRef }: { targetRef: (node: HTMLElement | null) => () => void }) {
+      return (
+        <StrictMode>
+          <ContextMenuTrigger>
+            <button type="button" ref={targetRef}>
+              Report.pdf
+            </button>
+            <FileMenu />
+          </ContextMenuTrigger>
+        </StrictMode>
+      );
+    }
+    const { rerender, unmount } = render(<Target targetRef={callbackRef} />);
+    const target = screen.getByRole('button', { name: 'Report.pdf' });
+    expect(attached.length).toBeGreaterThan(0);
+    expect(cleanups).toHaveBeenCalledTimes(attached.length - 1);
+
+    const nextCleanup = vi.fn();
+    const nextRef = vi.fn((node: HTMLElement | null) => {
+      void node;
+      return nextCleanup;
+    });
+    rerender(<Target targetRef={nextRef} />);
+    expect(cleanups).toHaveBeenCalledTimes(attached.length);
+    expect(nextRef).toHaveBeenLastCalledWith(target);
+    unmount();
+    expect(nextCleanup).toHaveBeenCalledTimes(nextRef.mock.calls.length);
+    expect(attached).not.toContain(null);
+    expect(nextRef).not.toHaveBeenCalledWith(null);
   });
 });
