@@ -183,7 +183,7 @@
   background: none;
 }
 
-.ui-chat-message[data-status='streaming'] .ui-chat-message__content::after {
+.ui-chat-message[data-streaming-caret] .ui-chat-message__content::after {
   content: '▍';
   color: var(--ref-muted);
 }

@@ -31,6 +31,11 @@ export interface ChatMessageDisplayOptions {
    * Defaults to `false`, the time's line always kept.
    */
   collapseFooterTime?: boolean | undefined;
+  /**
+   * Shows a caret after an assistant's reply while its text streams in: only once the reply's
+   * latest part is text with words and no thinking or status line shows. Defaults to `false`.
+   */
+  streamingCaret?: boolean | undefined;
   /** Draws the reader's own messages in a `bubble` (the default) or `plain`. */
   sentVariant?: ChatMessageVariant | undefined;
   /** Draws everyone else's messages, an assistant's too, in a `bubble` (the default) or `plain`. */
@@ -44,12 +49,13 @@ export function useMessageDisplay({
   timePlacement,
   activityTimePlacement,
   collapseFooterTime,
+  streamingCaret,
   sentVariant,
   receivedVariant,
 }: ChatMessageDisplayOptions): ChatMessageDisplayOptions {
   return useShallowStable({
     ...{ showAvatars, showAuthorNames, timePlacement, activityTimePlacement },
-    ...{ collapseFooterTime, sentVariant, receivedVariant },
+    ...{ collapseFooterTime, streamingCaret, sentVariant, receivedVariant },
   });
 }
 
@@ -69,6 +75,20 @@ export function toTimePlacement(
   return isWritten(message)
     ? display.timePlacement
     : (display.activityTimePlacement ?? display.timePlacement);
+}
+
+/**
+ * Whether `message` shows the streaming caret: the chat asks for it, and text is what streams in
+ * now, its latest part text with words, while no thinking or status line shows.
+ */
+export function showsStreamingCaret(
+  message: ChatMessageData,
+  display: ChatMessageDisplayOptions,
+  hasThinkingLine: boolean,
+): boolean {
+  if (!display.streamingCaret || hasThinkingLine || message.statusText) return false;
+  const last = message.parts.at(-1);
+  return last?.type === 'text' && last.text.trim() !== '';
 }
 
 /** The variant of a message from `origin`; a notice keeps the default. */

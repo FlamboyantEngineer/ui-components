@@ -63,6 +63,12 @@ export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'ge
    * `false`, the time's line always kept.
    */
   collapseFooterTime?: boolean | undefined;
+  /**
+   * Shows a caret after the content while a received message streams: publishes
+   * `data-streaming-caret`, which the reference stylesheet draws as `▍`. Defaults to `false`; the
+   * message stays busy either way. Turn it on only while text streams into the content.
+   */
+  streamingCaret?: boolean | undefined;
   /** Draws the content in a `bubble` (the default) or as `plain` text. */
   variant?: ChatMessageVariant | undefined;
   /** When it was written: an ISO 8601 date and time, read relative to now. */
@@ -105,6 +111,7 @@ function splitBodyProps({
   reactions,
   actions,
   children,
+  streamingCaret: _streamingCaret,
   ...own
 }: Omit<ChatMessageProps, 'className'>) {
   return [
@@ -143,6 +150,14 @@ function resolveDisplay({
     variant,
     avatarHidden: !showAvatar,
   };
+}
+
+/** Whether the caret shows: asked for, on a received message that streams and is not deleted. */
+function showsCaret(
+  message: Pick<ChatMessageProps, 'streamingCaret' | 'status' | 'origin' | 'isDeleted'>,
+): boolean {
+  const { streamingCaret = false, status, origin, isDeleted } = message;
+  return streamingCaret && status === 'streaming' && origin === 'received' && !isDeleted;
 }
 
 /** Whether the pointer is over the message and whether focus is inside it, for its hooks. */
@@ -237,6 +252,7 @@ export function ChatMessage({
     ...{ variant: display.variant, origin, status, groupPosition, delivery },
     ...{ deleted: isDeleted, hovered: isHovered, focusWithin: isFocusWithin },
     ...{ avatarHidden: display.avatarHidden, collapseFooterTime },
+    streamingCaret: showsCaret({ streamingCaret: rest.streamingCaret, status, origin, isDeleted }),
   };
   return (
     <article

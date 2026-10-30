@@ -454,3 +454,43 @@ describe('ChatMessage markers, quote and slots', () => {
     expect(bare.querySelector('.ui-chat-message__readers')).toBeNull();
   });
 });
+
+describe('ChatMessage streaming caret', () => {
+  it('UIC-CHAT-TRANSCRIPT-2.13 publishes the caret only when asked, on a received message that streams', () => {
+    const caretOf = (props: Parameters<typeof ChatMessage>[0]) => {
+      const { container, unmount } = render(
+        <ChatMessage author={maria} time={time} getNow={getNow} {...props}>
+          Saturday suits
+        </ChatMessage>,
+      );
+      const message = messageElement(container);
+      const result = {
+        caret: message.hasAttribute('data-streaming-caret'),
+        busy: message.getAttribute('aria-busy'),
+      };
+      unmount();
+      return result;
+    };
+    expect(caretOf({ status: 'streaming' })).toEqual({ caret: false, busy: 'true' });
+    expect(caretOf({ status: 'streaming', streamingCaret: true })).toEqual({
+      caret: true,
+      busy: 'true',
+    });
+    for (const props of [
+      { status: 'complete' },
+      { status: 'cancelled' },
+      { status: 'error' },
+      { status: 'streaming', origin: 'sent' },
+      { status: 'streaming', origin: 'system' },
+      { status: 'streaming', isDeleted: true },
+    ] as const) {
+      expect(caretOf({ ...props, streamingCaret: true }).caret).toBe(false);
+    }
+    const { container } = render(
+      <ChatMessage status="streaming" streamingCaret>
+        Saturday
+      </ChatMessage>,
+    );
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT');
+  });
+});

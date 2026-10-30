@@ -16,6 +16,7 @@ import { ReactionBar } from '../reaction-bar/reaction-bar.js';
 import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
+  showsStreamingCaret,
   toMessageVariant,
   toTimePlacement,
   type ChatMessageDisplayOptions,
@@ -145,6 +146,12 @@ export const ChatMessageView = memo(function ChatMessageView({
           showAuthorName={display.showAuthorNames}
           timePlacement={toTimePlacement(message, display)}
           collapseFooterTime={display.collapseFooterTime}
+          streamingCaret={showsStreamingCaret(
+            message,
+            display,
+            participant?.kind === 'assistant' &&
+              toThinkingActivity(message, context.thinkingUntil) !== undefined,
+          )}
           variant={toMessageVariant(origin, display)}
           time={message.createdAt}
           getNow={context.getNow}
