@@ -10,6 +10,7 @@ import {
   CustomSchemaEditor,
   FullEditor,
   LockedChromeEditor,
+  LongDocumentEditor,
   shortNote,
 } from './rich-text-editor-cases.js';
 
@@ -62,6 +63,12 @@ mountLab(
     </LabSection>
     <LabSection title="Controlled value">
       <ControlledEditor />
+    </LabSection>
+    <LabSection
+      title="Long document"
+      description="A thousand paragraphs. Each change reports a document that keeps every block it left alone. Edit, press Restore, then Ctrl+Z: the one undo history brings the edit back."
+    >
+      <LongDocumentEditor />
     </LabSection>
   </>,
 );

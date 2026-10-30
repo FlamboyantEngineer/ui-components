@@ -21,6 +21,7 @@ import type { Key } from '../../src/core/props.js';
 import { useUiStrings } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
+import { CompactFieldsSection } from './field-compact-cases.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const modes = [
@@ -383,6 +384,7 @@ mountLab(
         data-lab-field="parts"
       />
     </LabSection>
+    <CompactFieldsSection />
     <LabSection title="Dirty and restore" description="Restore puts the committed value back.">
       <DirtyAndRestore />
     </LabSection>

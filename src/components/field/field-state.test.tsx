@@ -5,6 +5,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { useFieldState, type FieldStateOptions } from './field-state.js';
 
+/** Lets debounced checks start and settle. */
+const settle = () => act(() => new Promise((done) => setTimeout(done, 10)));
+
 function renderField<T>(options: FieldStateOptions<T>) {
   return renderHook((props: FieldStateOptions<T>) => useFieldState(props), {
     initialProps: options,
@@ -220,6 +223,27 @@ describe('useFieldState', () => {
     expect(dates.current.isDirty).toBe(false);
   });
 
+  it("UIC-FIELD-2.3 UIC-FIELD-3.8 compares by the control's own comparison when it gives one", async () => {
+    const byId = (left: { id: number }, right: { id: number }) => left.id === right.id;
+    const validateAsync = vi.fn(() => Promise.resolve(null));
+    const committedValue = { id: 1, label: 'One' };
+    const { result, rerender } = renderHook(
+      (value: { id: number; label: string }) =>
+        useFieldState({ value, committedValue, validateAsync }, { isEqual: byId }),
+      { initialProps: { id: 1, label: 'Renamed' } },
+    );
+    expect(result.current.isDirty).toBe(false);
+    await settle();
+    expect(validateAsync).toHaveBeenCalledTimes(1);
+    rerender({ id: 1, label: 'Renamed again' });
+    await settle();
+    expect(validateAsync).toHaveBeenCalledTimes(1);
+    rerender({ id: 2, label: 'Two' });
+    expect(result.current.isDirty).toBe(true);
+    await settle();
+    expect(validateAsync).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-FIELD-2.4 refuses every change while read-only or disabled', () => {
     for (const lock of [{ isReadOnly: true }, { isDisabled: true }]) {
       const onChange = vi.fn();
@@ -366,5 +390,15 @@ describe('useFieldState', () => {
     expect(result.current.field.canRedo).toBe(false);
     act(() => result.current.field.undo());
     expect(result.current.field.value).toBe('One');
+  });
+
+  it('UIC-FIELD-5.1 keeps no history for a control that keeps its own', () => {
+    const { result } = renderHook(() =>
+      useFieldState({ defaultValue: 'A' }, { hasOwnHistory: true }),
+    );
+    act(() => result.current.setValue('AB'));
+    expect([result.current.canUndo, result.current.canRedo]).toEqual([false, false]);
+    act(() => result.current.undo());
+    expect(result.current.value).toBe('AB');
   });
 });

@@ -81,6 +81,13 @@ With `commitOnBlur`, a field whose control commits on blur shall commit its valu
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-focus.ts`, `src/components/field/field-control.ts`
 Verification: `src/components/field/field-focus.test.tsx`, `src/components/code-editor/code-json.test.tsx`, `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/signature-pad/signature-pad.test.tsx`, `src/components/color-field/color-field-entry.test.tsx`, `e2e/text-field.spec.ts`, `e2e/pin-input.spec.ts`, `e2e/number-field.spec.ts`, `e2e/code-json.spec.ts`, `e2e/rich-text-editor.spec.ts`, `e2e/signature-pad.spec.ts`, `e2e/color-field.spec.ts`
 
+### UIC-FIELD-1.12 - Density
+
+`density` shall publish `data-density` on the field's root: `default` keeps room for what the field's states add, and `compact` takes it only while they show, for dense filter, tool and action rows where a field sits beside buttons. The field's parts, names, descriptions, live message region, restore button and its keyboard access, dirty, disabled and validation states and form participation are the same in both; only the room the reference sheet keeps differs. With `default`, the reference sheet keeps a line below the control for the message and the restore button's place at the end of the control row while the field is clean, and sizes the field to a form column, so turning dirty, invalid or pending never moves the control or its neighbours. With `compact`, the field is as wide as its label and control, keeps no message line while the message is empty and no restore place while clean: a message takes a line below the control, as wide as the field and wrapping within it, and the restore button takes its place after the control while the field is dirty, so the row may move as they come and go. Every field control built on `Field` takes `density` with the field's props.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`, `labs/reference/field.css`
+Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
+
 ## UIC-FIELD-2 - Value and commit
 
 ### UIC-FIELD-2.1 - Value
@@ -101,7 +108,7 @@ Verification: `src/components/field/field-state.test.tsx`
 
 A field shall be dirty while its value differs from its committed value by structure (key order and object identity do not count) and publish `data-dirty` on its root. A read-only or disabled field is never dirty.
 
-Values are compared as immutable data: an object or array value is read once, however often it is compared, so a large value costs one walk per change; a value changed in place is not seen as changed.
+Values are compared as immutable data: an object or array value is read once, however often it is compared, so a large value costs one walk per change; a value changed in place is not seen as changed. A control may give its own comparison (`useFieldState`'s second argument, a `FieldValueContract`, or `isEqual` in `useFieldControl`'s options), which the field then uses for dirty state, history, actions, commits, external errors and the asynchronous check, so a control with large values, such as a document, compares them by the parts they share instead of walking them whole.
 
 Implementation: `src/components/field/field-state.ts`, `src/components/field/field-value.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-state.test.tsx`, `src/components/field/field.test.tsx`, `src/components/field/field-value.test.ts`
@@ -226,7 +233,7 @@ Verification: `src/components/field/field-restore-button.test.tsx`
 
 ### UIC-FIELD-5.1 - History
 
-`useFieldState` shall record every distinct value the field shows, from edits, actions and controlled changes alike (`undefined` included), keeping the last 100. `undo()` and `redo()` step back and forward through them, each followed by a commit; a new value after an undo drops the values that could be redone. `canUndo` and `canRedo` tell whether a step is possible; a read-only or disabled field has none.
+`useFieldState` shall record every distinct value the field shows, from edits, actions and controlled changes alike (`undefined` included), keeping the last 100. A control that keeps the history of its values itself (`hasOwnHistory`, as the rich text editor does, UIC-RICH-TEXT-EDITOR-3.4) gets a field that records none: `canUndo` and `canRedo` stay false and `undo` and `redo` do nothing until the control puts its own history in their place. `undo()` and `redo()` step back and forward through them, each followed by a commit; a new value after an undo drops the values that could be redone. `canUndo` and `canRedo` tell whether a step is possible; a read-only or disabled field has none.
 
 Implementation: `src/components/field/field-state.ts`, `src/components/field/field-history.ts`
 Verification: `src/components/field/field-history.test.ts`, `src/components/field/field-state.test.tsx`
@@ -316,7 +323,7 @@ Verification: `src/components/field/string-rules.test.ts`
 
 ### UIC-FIELD-8.1 - Control props
 
-Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `validateAsync`, `validationDebounce`, `validationMode`, `validationBehavior`, `name`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, decoration, menu, `onMenuAction`, `renderMessage`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins. The form `name` goes to both the field state (UIC-FIELD-3.9) and the control's own props, so the control still submits under it.
+Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `validateAsync`, `validationDebounce`, `validationMode`, `validationBehavior`, `name`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, decoration, menu, `onMenuAction`, `renderMessage`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins; the control's `isEqual` and `hasOwnHistory` go to the field state (UIC-FIELD-2.3, UIC-FIELD-5.1). The form `name` goes to both the field state (UIC-FIELD-3.9) and the control's own props, so the control still submits under it.
 
 Implementation: `src/components/field/field-control.ts`
 Verification: `src/components/field/field-control.test.tsx`
@@ -383,6 +390,7 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
 | `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
 | `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
+| `data-density`                   | attribute | `default`, `compact`                                                    | The room the field keeps for its message and restore button.     |
 | `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
 | `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
 | `data-required`                  | state     | `true`                                                                  | A value is required.                                             |

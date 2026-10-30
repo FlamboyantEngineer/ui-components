@@ -29,9 +29,9 @@ Verification: `test/start-labs.test.ts`
 
 ### UIC-LABS-1.4 - Prepared from a Git branch
 
-Installing a branch or commit shall run `prepare` (`npm run build`) to compile the library entry points and declarations. It shall not build or install labs. `npm run check:git-install` verifies a clean consumer through `npm install` and `npm ci`, checks rendering and public declarations, and rejects installed lab files.
+Installing a branch or commit shall run `prepare` (`npm run build`) to compile the library entry points and declarations. It shall not build or install labs. `npm run check:git-install` verifies a clean consumer through `npm install` and `npm ci`, checks rendering and public declarations, and rejects installed lab files. Hosted CI runs it whenever a change reaches installation: the manifest, lockfile, Node version, TypeScript build setup, the clean script or an entry point.
 
-Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`
+Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`, `.github/workflows/ci.yml`
 Verification: `test/package.test.ts`
 
 ## UIC-LABS-2 - Chrome

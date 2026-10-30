@@ -20,6 +20,7 @@ import {
   toInnerControlSize,
   useFieldIds,
   type FieldControlProps,
+  type FieldDensity,
   type FieldLabelLayout,
 } from './field-parts.js';
 import { useFieldFocus } from './field-focus.js';
@@ -40,6 +41,11 @@ export interface FieldProps<T> extends BaseProps {
    * buttons with it. Defaults to `md`.
    */
   size?: ControlSize | undefined;
+  /**
+   * Whether the field keeps room for its message and restore button while it has neither
+   * (`default`), or only takes it while it shows them (`compact`), for dense rows.
+   */
+  density?: FieldDensity | undefined;
   /** Help text below the control, which describes it. */
   description?: ReactNode;
   /** Help shown in a tooltip from a help button after the control. */
@@ -87,9 +93,16 @@ function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
   state.restore();
 }
 
-/** The states the root publishes from the field state. */
-function toFieldStates(state: FieldState<unknown>) {
+/** What the root publishes: its layout, and its states from the field state and its focus. */
+function toFieldData(
+  layout: { labelLayout: FieldLabelLayout; size: ControlSize; density: FieldDensity | undefined },
+  state: FieldState<unknown>,
+  focused: boolean,
+) {
   return {
+    ...layout,
+    density: layout.density ?? 'default',
+    focused,
     validation: state.validation.status,
     dirty: state.isDirty,
     required: state.isRequired,
@@ -140,6 +153,7 @@ export function Field<T>({
   label,
   labelLayout = 'label-control',
   size = 'md',
+  density,
   description,
   help,
   decoration,
@@ -169,12 +183,11 @@ export function Field<T>({
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
-  const data = {
-    labelLayout,
-    size,
-    ...toFieldStates(state as FieldState<unknown>),
-    focused: focus.isFocused,
-  };
+  const data = toFieldData(
+    { labelLayout, size, density },
+    state as FieldState<unknown>,
+    focus.isFocused,
+  );
   return (
     <FieldContextMenu model={menuModel}>
       <div
@@ -213,7 +226,7 @@ export function Field<T>({
   );
 }
 
-export type { FieldControlProps, FieldLabelLayout } from './field-parts.js';
+export type { FieldControlProps, FieldDensity, FieldLabelLayout } from './field-parts.js';
 export { toAriaControlProps, useFieldControl } from './field-control.js';
 export type {
   FieldControl,
@@ -242,6 +255,7 @@ export type {
   FieldValidationErrors,
   FieldValidationMode,
   FieldValidity,
+  FieldValueContract,
 } from './field-state.js';
 export { FieldScopeContext, useFieldScope } from './field-scope.js';
 export type { FieldRegistration, FieldScope } from './field-scope.js';
