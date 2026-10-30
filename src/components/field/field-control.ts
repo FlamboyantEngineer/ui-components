@@ -88,6 +88,7 @@ const layoutKeys = new Set<string>([
   'label',
   'labelLayout',
   'size',
+  'density',
   'description',
   'help',
   'decoration',

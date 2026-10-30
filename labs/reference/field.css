@@ -2,6 +2,7 @@
  * Field: label, control and buttons on one wrapping row; description and message below. A field keeps
  * room for what its states add, so turning dirty, invalid or pending never moves its control or its
  * neighbours: the restore button's place closes the control row, and the message keeps one line.
+ * A compact field keeps neither, for dense rows.
  */
 
 .ui-field {
@@ -169,6 +170,32 @@
 .ui-field[data-validation='pending'] .ui-field__message {
   color: var(--ref-muted);
   font-style: italic;
+}
+
+/*
+ * Compact: as wide as the label and control, with no message line while it is empty and no restore
+ * place while clean. A message wraps within the field's width instead of widening it.
+ */
+.ui-field[data-density='compact'] {
+  width: auto;
+}
+
+/* The control shrinks before it leaves its label's line. */
+.ui-field[data-density='compact'] .ui-field__control {
+  flex: 1 1 0;
+}
+
+.ui-field[data-density='compact']:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-field[data-density='compact'] .ui-field__message {
+  contain: inline-size;
+}
+
+.ui-field[data-density='compact'] .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
 }
 
 /* A previous value: struck through in a dashed frame, distinct from current chips. */
