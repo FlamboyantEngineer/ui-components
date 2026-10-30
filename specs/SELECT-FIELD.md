@@ -161,10 +161,10 @@ Verification: `src/components/select-field/select-search.test.tsx`
 
 ### UIC-SELECT-FIELD-5.4 - Paged results
 
-`loadOptions` may return a page, `{ options, cursor }`, instead of a list. While the latest results have a `cursor`, the list shall end with React Aria's load-more row (`ui-select-field__load-more`); when it scrolls into view the select calls `loadOptions(query, signal, cursor)` without waiting for `searchDelay`, appends that page's options (remembered as in UIC-SELECT-FIELD-5.3) and, while the page loads, shows the provider string `loading` in the row. A page without a `cursor` ends the list. A first page is asked for with the query and signal alone, and a loader that returns a list has one page.
+`loadOptions` may return a page, `{ options, cursor }`, instead of a list. While the latest results have a `cursor`, the list shall end with React Aria's load-more row (`ui-select-field__load-more`); when it scrolls into view the select calls `loadOptions(query, signal, cursor)` without waiting for `searchDelay`, appends that page's options (remembered as in UIC-SELECT-FIELD-5.3) and, while the page loads, shows the provider string `loading` in the row. A page without a `cursor` ends the list. A first page is asked for with the query and signal alone, and a loader that returns a list has one page. A cursor belongs to the search whose page returned it: it is passed back only with that search's query, and only while that search is the latest. While a newer search runs, after a search fails and after a next page fails, the select offers no next page; a failed search lists no earlier results, and a page or search that a newer search replaced is dropped whenever it settles, leaving the latest search's pages and pagination as they are.
 
-Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-control.tsx`
-Verification: `src/components/select-field/select-search.test.tsx`, `e2e/select-field.spec.ts`
+Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-control.tsx`, `src/utils/use-remote-search.ts`
+Verification: `src/components/select-field/select-search.test.tsx`, `src/components/select-field/select-search-pages.test.tsx`, `src/utils/use-remote-search.test.ts`, `e2e/select-field.spec.ts`
 
 ## UIC-SELECT-FIELD-6 - Forms
 

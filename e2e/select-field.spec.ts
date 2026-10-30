@@ -308,6 +308,24 @@ test.describe('Select Field lab', () => {
     await page.keyboard.type('1');
     await expect(listbox.getByRole('option')).toHaveCount(15);
   });
+
+  test('UIC-SELECT-FIELD-5.4 offers no earlier page after a failed search', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    await field(page, 'paged').locator('.ui-select-field__trigger').click();
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option')).toHaveCount(20);
+    await page.keyboard.type('offline');
+    await expect(listbox).toContainText('Search is unavailable.');
+    await expect(output(page, 'Last request')).toHaveText('"offline" from the start');
+    await expect(
+      listbox.getByRole('option').filter({ hasNotText: 'Search is unavailable.' }),
+    ).toHaveCount(0);
+    await expect(page.locator('.ui-select-field__load-more')).toHaveCount(0);
+    await expect(output(page, 'Last request')).toHaveText('"offline" from the start');
+  });
 });
 
 test.describe('Select Field trigger ref', () => {

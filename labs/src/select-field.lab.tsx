@@ -292,8 +292,11 @@ function Limits() {
 
 function Paged() {
   const [pages, setPages] = useState(0);
+  const [request, setRequest] = useState('none');
   const loadOptions: SelectFieldLoader = async (query, _signal, cursor) => {
     setPages((count) => count + 1);
+    setRequest(`"${query}" from ${cursor ?? 'the start'}`);
+    if (query === 'offline') throw new Error('The town list is offline.');
     const matches = towns.filter((town) => town.label.toLowerCase().includes(query.toLowerCase()));
     const start = Number(cursor ?? 0);
     const end = start + 20;
@@ -310,10 +313,11 @@ function Paged() {
         loadOptions={loadOptions}
         minSearchLength={0}
         searchDelay={0}
-        description="Twenty towns a page; scrolling to the end loads the next page."
+        description='Twenty towns a page; scrolling to the end loads the next page. Searching "offline" fails, and the failed search offers no page of the search before it.'
         data-lab-field="paged"
       />
       <LabOutput name="Pages">{pages}</LabOutput>
+      <LabOutput name="Last request">{request}</LabOutput>
     </>
   );
 }
