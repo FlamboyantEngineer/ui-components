@@ -64,6 +64,7 @@
     "check:git-install": "node scripts/check-git-install.mjs",
     "check:client-boundaries": "node scripts/check-client-boundaries.mjs",
     "check:server-components": "node scripts/check-server-components.mjs",
+    "bench:rich-text": "npm run build && node --expose-gc scripts/bench-rich-text.mjs",
     "check": "node scripts/check.mjs",
     "new:lab": "node scripts/new-lab.mjs",
     "changeset": "changeset",

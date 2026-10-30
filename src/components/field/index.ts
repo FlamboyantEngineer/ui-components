@@ -37,6 +37,7 @@ export type {
   FieldValidationErrors,
   FieldValidationMode,
   FieldValidity,
+  FieldValueContract,
   FieldsetProps,
   StringRuleMessages,
   StringRules,

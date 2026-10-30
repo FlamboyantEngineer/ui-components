@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { getFieldUndo } from '../field/field.js';
 import {
   ViewProbe,
   getContent,
@@ -20,6 +22,7 @@ import {
   type RichTextController,
   type RichTextDocument,
 } from './rich-text-editor.js';
+import { isRichTextEqual } from './rich-text-document.js';
 
 installEditorDom();
 
@@ -100,6 +103,26 @@ describe('RichTextEditor', () => {
       type: 'doc',
       content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Plums' }] }],
     });
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-1.3 reports documents that keep every block an edit leaves alone', async () => {
+    const blocks = ['Plums', 'Figs', 'Quinces'].map((text) => ({
+      type: 'paragraph',
+      content: [{ type: 'text', text }],
+    }));
+    const start: RichTextDocument = { type: 'doc', content: blocks };
+    const { user, value } = renderEditor({ defaultValue: start, children: <ViewProbe /> });
+    selectRange(6);
+    await user.keyboard('!');
+    const first = value();
+    expect(first?.content?.[0]?.content?.[0]?.text).toBe('Plums!');
+    expect(first?.content?.slice(1)).toEqual(blocks.slice(1));
+    expect(first?.content?.[1]).toBe(blocks[1]);
+    expect(first?.content?.[2]).toBe(blocks[2]);
+    await user.keyboard('?');
+    expect(value()?.content?.[2]).toBe(blocks[2]);
+    expect(isRichTextEqual(start, { content: blocks.slice(), type: 'doc' })).toBe(true);
+    expect(isRichTextEqual(start, requireDefined(first))).toBe(false);
   });
 
   it('UIC-RICH-TEXT-EDITOR-1.3 throws on a document the schema cannot read', () => {
@@ -251,13 +274,15 @@ describe('RichTextEditor', () => {
     expect(value()?.content?.[0]?.content?.[0]?.text).toBe('Pick pears now');
   });
 
-  it('UIC-RICH-TEXT-EDITOR-3.4 leaves the chord to the field undo when its history is empty', async () => {
+  it('UIC-RICH-TEXT-EDITOR-3.4 UIC-FIELD-5.3 keeps one history for edits, outside changes and the field undo', async () => {
     const user = userEvent.setup();
     function Controlled() {
       const [value, setValue] = useState(note);
       return (
         <>
-          <RichTextEditor label="Notes" value={value} onChange={setValue} />
+          <RichTextEditor label="Notes" value={value} onChange={setValue}>
+            <ViewProbe />
+          </RichTextEditor>
           <button type="button" onClick={() => setValue(sampleDocument)}>
             Load
           </button>
@@ -270,6 +295,23 @@ describe('RichTextEditor', () => {
     await user.click(getContent());
     await user.keyboard('{Control>}z{/Control}');
     expect(getContent()).toHaveTextContent(/^Pick pears$/);
+    const undo = getFieldUndo(getContent());
+    expect([undo?.canUndo, undo?.canRedo]).toEqual([false, true]);
+    act(() => undo?.redo());
+    expect(getContent().querySelector('h1')).toHaveTextContent('Harvest notes');
+    act(() => getFieldUndo(getContent())?.undo());
+    expect(getContent()).toHaveTextContent(/^Pick pears$/);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-3.4 UIC-RICH-TEXT-EDITOR-4.2 undoes a restore, bringing the edits back', async () => {
+    const { user } = renderEditor({ defaultValue: note, children: <ViewProbe /> });
+    selectRange(11);
+    await user.keyboard('!');
+    await user.click(screen.getByRole('button', { name: 'Restore Notes' }));
+    expect(getContent()).toHaveTextContent(/^Pick pears$/);
+    act(() => getFieldUndo(getContent())?.undo());
+    expect(getContent()).toHaveTextContent(/^Pick pears!$/);
+    expect(getContent().closest('.ui-field')).toHaveAttribute('data-dirty', 'true');
   });
 
   it('UIC-RICH-TEXT-EDITOR-4.1 refuses edits while read-only and leaves a disabled editor out of the tab order', async () => {
@@ -308,7 +350,7 @@ describe('RichTextEditor', () => {
     expect(getContent().closest('.ui-field')).toHaveAttribute('data-validation', 'invalid');
   });
 
-  it('UIC-RICH-TEXT-EDITOR-4.2 replaces the document when the value changes from outside, off the history', async () => {
+  it('UIC-RICH-TEXT-EDITOR-4.2 replaces the document when the value changes from outside, as one undo step', async () => {
     const user = userEvent.setup();
     const { seen, Probe } = controllerProbe();
     function Controlled() {
@@ -328,7 +370,7 @@ describe('RichTextEditor', () => {
     const paragraph = getContent().querySelector('p');
     await user.click(screen.getByRole('button', { name: 'Load' }));
     expect(getContent().querySelector('h1')).toHaveTextContent('Harvest notes');
-    expect(seen.current?.can({ type: 'undo' })).toBe(false);
+    expect(seen.current?.can({ type: 'undo' })).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Load' }));
     expect(getContent().querySelector('h1')).toHaveTextContent('Harvest notes');
     expect(paragraph?.isConnected).toBe(false);

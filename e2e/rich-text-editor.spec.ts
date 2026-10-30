@@ -385,6 +385,27 @@ test.describe('Rich Text Editor lab', () => {
     await expect(editor(page, 'controlled')).not.toHaveAttribute('data-dirty', 'true');
   });
 
+  test('UIC-RICH-TEXT-EDITOR-1.3 UIC-RICH-TEXT-EDITOR-3.4 edits a long document in place and undoes a restore', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'long');
+    const box = content(page, 'long');
+    await expect(box.locator('p')).toHaveCount(1000);
+    const first = box.locator('p').first();
+    await first.click();
+    await page.keyboard.type(' Picked.');
+    await expect(first).toContainText('Picked.');
+    await expect(output(page, 'kept')).toHaveText('999 of 1000');
+    await expect(field).toHaveAttribute('data-dirty', 'true');
+    await field.getByRole('button', { name: 'Restore Orchard log' }).click();
+    await expect(first).not.toContainText('Picked.');
+    await page.keyboard.press('Control+z');
+    await expect(first).toContainText('Picked.');
+    await expect(field).toHaveAttribute('data-dirty', 'true');
+  });
+
   test('UIC-FIELD-1.11 UIC-RICH-TEXT-EDITOR-4.2 reaches the restore button by Tab and commits on leaving the field', async ({
     page,
     lab,

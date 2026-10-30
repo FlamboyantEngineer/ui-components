@@ -6,6 +6,7 @@ import {
   type FieldIssue,
   type FieldState,
   type FieldStateOptions,
+  type FieldValueContract,
 } from './field-state.js';
 import type { FieldProps } from './field.js';
 
@@ -49,7 +50,7 @@ export interface FieldTextInputProps {
   autoFocus?: boolean | undefined;
 }
 
-export interface FieldControlOptions<T> {
+export interface FieldControlOptions<T> extends FieldValueContract<T> {
   /** The value a field starts at, and its default, when the caller gives neither. */
   initialValue: T;
   /** The Clear target when the caller gives none. */
@@ -131,13 +132,16 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
 ): FieldControl<T, FieldControlRest<T, P>> {
   const buckets = splitFieldProps(props);
   const own = buckets.state as FieldStateOptions<T>;
-  const { check } = options;
-  const state = useFieldState<T>({
-    ...own,
-    defaultValue: own.defaultValue !== undefined ? own.defaultValue : options.initialValue,
-    emptyValue: own.emptyValue !== undefined ? own.emptyValue : options.emptyValue,
-    validate: (value) => check?.(value) ?? own.validate?.(value) ?? null,
-  });
+  const { check, isEqual, hasOwnHistory } = options;
+  const state = useFieldState<T>(
+    {
+      ...own,
+      defaultValue: own.defaultValue !== undefined ? own.defaultValue : options.initialValue,
+      emptyValue: own.emptyValue !== undefined ? own.emptyValue : options.emptyValue,
+      validate: (value) => check?.(value) ?? own.validate?.(value) ?? null,
+    },
+    { isEqual, hasOwnHistory },
+  );
   return {
     state,
     field: buckets.field as unknown as FieldLayoutProps,

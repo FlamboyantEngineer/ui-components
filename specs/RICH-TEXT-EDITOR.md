@@ -24,7 +24,9 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 The value shall be the document as JSON (`RichTextDocument`: `{ type: 'doc', content }` with nodes of `type`, `attrs`, `content`, `text` and `marks`), controlled with `value` or uncontrolled with `defaultValue`; each edit calls `onChange` with the new document. Without either the document starts as the schema's empty document (one empty paragraph), which is also the field's empty value. A document the schema cannot read throws.
 
-Implementation: `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/rich-text-document.ts`
+Each reported document shall keep, as the same objects, every part the edit left alone, from the previous report or from the document the editor was given when it is already in the engine's form, so an edit costs as much as its path rather than the document. The field compares documents with `isRichTextEqual`, which stops at shared parts, instead of a serialized key, and keeps no history of them (UIC-RICH-TEXT-EDITOR-3.4). `npm run bench:rich-text` measures 20 edits at 20,000, 200,000 and 1,000,000 characters; at 1,000,000 characters the median edit went from about 20 ms to 0.2 ms and the heap the 20 values retain from about 145 MiB to 3 MiB.
+
+Implementation: `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/rich-text-document.ts`, `scripts/bench-rich-text.mjs`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-1.4 - Placeholder
@@ -89,9 +91,9 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-3.4 - History
 
-The editor shall keep an undo history of edits (typing grouped by ProseMirror), undone and redone by the shortcuts and the `undo` and `redo` commands. A document replaced from outside (UIC-RICH-TEXT-EDITOR-4.2) stays off the history. When the history has nothing to undo, the field's own undo (`getFieldUndo`) takes the chord.
+The editor shall keep the field's one undo history: edits (typing grouped by ProseMirror) and each document replaced from outside (UIC-RICH-TEXT-EDITOR-4.2), one step each. The shortcuts, the `undo` and `redo` commands and the field's undo (its chords pressed anywhere in the field and `getFieldUndo`, UIC-FIELD-5.3) all step through it, so undoing a restore, a clear or a controlled change brings the earlier document back. The field keeps no history of its own (UIC-FIELD-5.1).
 
-Implementation: `src/components/rich-text-editor/rich-text-keys.ts`, `src/components/rich-text-editor/editor-state.ts`
+Implementation: `src/components/rich-text-editor/rich-text-keys.ts`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/editor-surface.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-4 - Field behaviour
@@ -105,7 +107,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/
 
 ### UIC-RICH-TEXT-EDITOR-4.2 - Value changes from outside, commit and restore
 
-When the value changes to a document other than the one shown (a controlled change, the field's restore or undo), the editor shall replace its document in one step that keeps it off the undo history; an unchanged document is left alone. The field commits when focus leaves it (UIC-FIELD-1.11), so Tab from the edited content reaches the restore button without committing, and focus in the editor's own chrome or popovers commits nothing; while the value differs from the committed value the field is dirty and its restore button puts the committed document back.
+When the value changes to a document other than the one shown (a controlled change, the field's restore, clear or set to default), the editor shall replace its document in one step of its own in the undo history (UIC-RICH-TEXT-EDITOR-3.4); an unchanged document is left alone. The field commits when focus leaves it (UIC-FIELD-1.11), so Tab from the edited content reaches the restore button without committing, and focus in the editor's own chrome or popovers commits nothing; while the value differs from the committed value the field is dirty and its restore button puts the committed document back.
 
 Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/rich-text-editor.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
