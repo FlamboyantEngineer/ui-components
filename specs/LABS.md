@@ -15,7 +15,7 @@ Verification: `e2e/lab-harness.spec.ts`, `test/serve-labs.test.ts`
 
 ### UIC-LABS-1.2 - Standalone release archive
 
-`npm run pack:labs`, after `npm run build:labs`, shall create `ui-components-labs-<version>.tgz` containing the lab pages, `labs/reference.css` and the built bundles, including the PDF engine, its worker, its upstream license and both sample documents, so a host can serve them without building this repository or fetching lab dependencies from another server. Archive checks shall verify the engine and worker byte for byte against the installed `pdfjs-dist` dependency and reject modified copies. The library package shall exclude labs and their assets; the release attaches the library tarball and standalone lab archive.
+`npm run pack:labs`, after `npm run build:labs`, shall create `ui-components-labs-<version>.tgz` containing the lab pages, `labs/reference.css` and the built bundles, including the PDF engine, its worker, its upstream license and both sample documents, so a host can serve them without building this repository or fetching lab dependencies from another server. Archive checks shall verify the engine and worker byte for byte against the installed `pdfjs-dist` dependency and reject modified copies. The library package shall exclude labs and their assets, except the built reference stylesheet (UIC-LABS-1.6); the release attaches the library tarball and standalone lab archive.
 
 Implementation: `package.json`, `scripts/pack-labs.mjs`, `scripts/check-package.mjs`, `scripts/check-references.mjs`
 Verification: `test/package.test.ts`, `test/check-references.test.ts`
@@ -29,7 +29,7 @@ Verification: `test/start-labs.test.ts`
 
 ### UIC-LABS-1.4 - Prepared from a Git branch
 
-Installing a branch or commit shall run `prepare` (`npm run build`) to compile the library entry points and declarations. It shall not build or install labs. `npm run check:git-install` verifies a clean consumer through `npm install` and `npm ci`, checks rendering and public declarations, and rejects installed lab files. Hosted CI runs it whenever a change reaches installation: the manifest, lockfile, Node version, TypeScript build setup, the clean script or an entry point.
+Installing a branch or commit shall run `prepare` (`npm run build:package`) to compile the library entry points and declarations and bundle the reference stylesheet (UIC-LABS-1.6). It shall not build or install the labs themselves. `npm run check:git-install` verifies a clean consumer through `npm install` and `npm ci`, checks rendering, public declarations and the installed reference stylesheet, and rejects any other installed lab file. Hosted CI runs it whenever a change reaches installation: the manifest, lockfile, Node version, TypeScript build setup, the clean script or an entry point.
 
 Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`, `.github/workflows/ci.yml`
 Verification: `test/package.test.ts`
@@ -39,6 +39,13 @@ Verification: `test/package.test.ts`
 The installed package shall ship the JavaScript source maps and declaration maps the build emits together with the TypeScript sources they point at (`src/`, without tests), so a debugger shows the original code and an editor's go to definition opens it. `npm run check:package` resolves every source of every map in the packed tarball and fails when one is neither shipped nor embedded in the map.
 
 Implementation: `package.json`, `tsconfig.build.json`, `scripts/check-package.mjs`
+Verification: `test/package.test.ts`
+
+### UIC-LABS-1.6 - Packaged reference stylesheet
+
+The installed package shall ship the reference stylesheet at `labs/build/reference.css`, also exported as `@flamboyantengineer/ui-components/reference.css`, so a host copies or imports the current reference styles without building the labs or fetching a separate file. `prepare` bundles it with `node scripts/build-labs.mjs --reference`, which builds only that file and leaves any other lab build in place. The file shall be self-contained: no `@import` and no `url()` other than a data URL or a fragment, so it can be copied into a host's assets and served alone. `npm run check:package` and `npm run check:git-install` check that it is present, carries current rules (such as the compact `Field` and `Card` densities) and loads nothing.
+
+Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/lib/reference-stylesheet.mjs`, `scripts/check-package.mjs`, `scripts/check-git-install.mjs`
 Verification: `test/package.test.ts`
 
 ## UIC-LABS-2 - Chrome

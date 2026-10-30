@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Installs the package as an npm Git dependency into a clean temporary consumer, as a host installs a
 // branch, and checks what npm prepared: the root and component entry points import and render with
-// the minimum supported React, the public declarations type-check, labs are excluded and no optional
-// rich-text peer is installed. Then it deletes node_modules and repeats the checks through `npm ci`
+// the minimum supported React, the public declarations type-check, the reference stylesheet is
+// built, self-contained and exported, the rest of labs is excluded and no optional rich-text peer is
+// installed. Then it deletes node_modules and repeats the checks through `npm ci`
 // with the consumer's lockfile. Last, it adds the rich-text peers at their minimum versions, without
 // relaxing npm's peer resolution, and renders the rich text editor. Each install
 // uses an empty npm cache, so npm clones and prepares the package from source both times.
@@ -17,6 +18,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -24,6 +26,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PACKAGE = '@flamboyantengineer/ui-components';
@@ -62,6 +65,9 @@ import { Button } from '${PACKAGE}/button';
 const markup = renderToStaticMarkup(createElement(Button, null, 'Save'));
 if (library.Button !== Button || !markup.includes('ui-button') || !markup.includes('Save')) {
   throw new Error('Button rendered ' + markup);
+}
+if (!import.meta.resolve('${PACKAGE}/reference.css').endsWith('/${REFERENCE_STYLESHEET}')) {
+  throw new Error('${PACKAGE}/reference.css does not resolve to ${REFERENCE_STYLESHEET}');
 }
 `,
   'render-rich-text.mjs': `
@@ -110,14 +116,25 @@ function npm(args) {
 
 function check(phase) {
   const installed = join(consumer, 'node_modules', ...PACKAGE.split('/'));
-  for (const file of ['dist/index.js', 'dist/index.d.ts']) {
+  for (const file of ['dist/index.js', 'dist/index.d.ts', REFERENCE_STYLESHEET]) {
     const path = join(installed, file);
     if (!existsSync(path) || statSync(path).size === 0) {
       problems.push(`${phase}: the installed package is missing ${file}`);
     }
   }
-  if (existsSync(join(installed, 'labs')))
-    problems.push(`${phase}: the installed package contains labs`);
+  const stylesheet = join(installed, REFERENCE_STYLESHEET);
+  if (existsSync(stylesheet)) {
+    const css = readFileSync(stylesheet, 'utf8');
+    for (const problem of referenceStylesheetProblems(css)) problems.push(`${phase}: ${problem}`);
+  }
+  const labFiles = existsSync(join(installed, 'labs'))
+    ? readdirSync(join(installed, 'labs'), { recursive: true })
+        .map((name) => `labs/${String(name)}`)
+        .filter((path) => statSync(join(installed, path)).isFile() && path !== REFERENCE_STYLESHEET)
+    : [];
+  if (labFiles.length > 0) {
+    problems.push(`${phase}: the installed package contains labs, such as ${labFiles[0]}`);
+  }
   for (const name of richTextPeers) {
     if (existsSync(join(consumer, 'node_modules', ...name.split('/')))) {
       problems.push(`${phase}: the optional rich-text peer ${name} was installed`);
