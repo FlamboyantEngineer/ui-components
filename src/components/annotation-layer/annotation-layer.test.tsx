@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { createRef, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
@@ -10,6 +10,7 @@ import {
   AnnotationLayer,
   AnnotationMargin,
   type Annotation,
+  type AnnotationLayerHandle,
   type AnnotationLayerProps,
 } from './annotation-layer.js';
 
@@ -105,6 +106,11 @@ function Notes(props: Partial<AnnotationLayerProps> & { withMargin?: boolean }) 
   );
 }
 
+/** Lets the scheduled measurement of the next animation frame run. */
+async function nextFrame() {
+  await act(() => new Promise((resolve) => requestAnimationFrame(() => resolve(undefined))));
+}
+
 const marks = (container: HTMLElement) => [
   ...container.querySelectorAll<HTMLElement>('.ui-annotation-layer__mark'),
 ];
@@ -148,6 +154,85 @@ describe('AnnotationLayer', () => {
     resize();
     expect(marks(container)).toHaveLength(2);
     expect(marks(container)[1]).toHaveStyle({ top: '100px', left: '10px', width: '120px' });
+  });
+
+  it('UIC-ANNOTATION-LAYER-1.4 follows a target moved by a child render and by a nested scroll', async () => {
+    const user = userEvent.setup();
+    const onActiveChange = vi.fn();
+    function Article() {
+      const [isLong, setLong] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setLong(true)}>
+            Add a paragraph
+          </button>
+          <section aria-label="Article" style={{ overflow: 'auto' }}>
+            {isLong ? <p>Wash the apples first.</p> : null}
+            <span id="phrase">slice them thin</span>
+          </section>
+        </>
+      );
+    }
+    const { container } = render(
+      <AnnotationLayer
+        annotations={[{ id: 'phrase', targetId: 'phrase' }]}
+        onActiveChange={onActiveChange}
+        data-box="layer"
+      >
+        <Article />
+      </AnnotationLayer>,
+    );
+    expect(marks(container)[0]).toHaveStyle({ top: '40px' });
+    targetRects.phrase = [{ top: 180, left: 90, width: 200, height: 20 }];
+    await user.click(screen.getByRole('button', { name: 'Add a paragraph' }));
+    await nextFrame();
+    expect(marks(container)[0]).toHaveStyle({ top: '80px' });
+    targetRects.phrase = [{ top: 120, left: 90, width: 200, height: 20 }];
+    act(() => {
+      screen.getByRole('region', { name: 'Article' }).dispatchEvent(new Event('scroll'));
+    });
+    expect(marks(container)[0]).toHaveStyle({ top: '80px' });
+    await nextFrame();
+    expect(marks(container)[0]).toHaveStyle({ top: '20px' });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: screen.getByText('slice them thin'),
+      coords: { clientX: 100, clientY: 125 },
+    });
+    expect(onActiveChange).toHaveBeenCalledWith('phrase');
+  });
+
+  it('UIC-ANNOTATION-LAYER-1.4 measures once a frame, ignores its own scroll and output, and stops on unmount', async () => {
+    const getClientRects = vi.mocked(Element.prototype.getClientRects);
+    const { container, unmount } = render(<Notes withMargin={false} />);
+    const layer = requireDefined(container.querySelector<HTMLElement>('.ui-annotation-layer'));
+    const article = requireDefined(container.querySelector('p'));
+    getClientRects.mockClear();
+    act(() => {
+      for (let index = 0; index < 5; index += 1) article.dispatchEvent(new Event('scroll'));
+      layer.dispatchEvent(new Event('scroll'));
+      article.append(' More.');
+    });
+    await nextFrame();
+    expect(getClientRects).toHaveBeenCalledOnce();
+    getClientRects.mockClear();
+    act(() => {
+      layer.dispatchEvent(new Event('scroll'));
+    });
+    await nextFrame();
+    expect(getClientRects).not.toHaveBeenCalled();
+    unmount();
+    article.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+    expect(getClientRects).not.toHaveBeenCalled();
+  });
+
+  it('UIC-ANNOTATION-LAYER-1.4 measures again on demand through its handle', () => {
+    const handle = createRef<AnnotationLayerHandle>();
+    const { container } = render(<Notes withMargin={false} handleRef={handle} />);
+    targetRects.phrase = [{ top: 300, left: 50, width: 10, height: 20 }];
+    act(() => requireDefined(handle.current).remeasure());
+    expect(marks(container)[1]).toHaveStyle({ top: '200px', left: '0px', width: '10px' });
   });
 
   it('UIC-ANNOTATION-LAYER-1.3 activates the annotation under a press, the last listed on top', async () => {

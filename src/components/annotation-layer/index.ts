@@ -2,6 +2,7 @@ export { AnnotationLayer, AnnotationMargin } from './annotation-layer.js';
 export type {
   Annotation,
   AnnotationCardState,
+  AnnotationLayerHandle,
   AnnotationLayerProps,
   AnnotationMarginProps,
   AnnotationRect,
