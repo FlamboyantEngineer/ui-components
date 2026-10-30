@@ -39,6 +39,13 @@ Verification: `src/components/relative-date-field/relative-date-field.test.tsx`
 Implementation: `src/components/relative-date-field/relative-date-field.tsx`
 Verification: `src/components/relative-date-field/relative-date-field.test.tsx`
 
+### UIC-RELATIVE-DATE-FIELD-1.6 - Form value
+
+With `name`, the field shall submit its value with its form through a hidden input under that name: a date as `YYYY-MM-DD`, a date and time as `YYYY-MM-DDTHH:mm`, a range as an ISO 8601 interval of its ends (`2026-04-13/2026-04-20`), and an empty text while there is no value, never a preset's position. The input follows every change of the value, from a pick, a controlled value, Clear, undo, restore or a native form reset (UIC-FIELD-2.6). A read-only field submits its value; a disabled field, or one inside a disabled `<fieldset>`, submits nothing, and a field without `name` adds no entry.
+
+Implementation: `src/components/relative-date-field/relative-date-field.tsx`
+Verification: `src/components/relative-date-field/relative-date-field.test.tsx`, `e2e/relative-date-field.spec.ts`
+
 ## UIC-RELATIVE-DATE-FIELD-2 - Calendar, labels, ranges and bounds
 
 ### UIC-RELATIVE-DATE-FIELD-2.1 - Calendar beside the presets

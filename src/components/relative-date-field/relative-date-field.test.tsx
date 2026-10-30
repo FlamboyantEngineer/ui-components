@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -246,5 +246,110 @@ describe('RelativeDateField', () => {
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expectHooksMatchSpec(container, 'RELATIVE-DATE-FIELD', { callerAttributes: ['data-testid'] });
+  });
+
+  describe('UIC-RELATIVE-DATE-FIELD-1.6 form value', () => {
+    function form() {
+      return screen.getByRole<HTMLFormElement>('form', { name: 'Plan' });
+    }
+
+    function ControlledDue() {
+      const [due, setDue] = useState<string | null>('2026-05-24');
+      return (
+        <form aria-label="Plan">
+          <RelativeDateField label="Due" name="due" value={due} getNow={getNow} />
+          <button type="button" onClick={() => setDue('2026-06-01')}>
+            Move
+          </button>
+        </form>
+      );
+    }
+
+    it('submits the date under its name, following picks, clear, undo and reset', async () => {
+      const user = userEvent.setup();
+      renderInLocale(
+        <form aria-label="Plan">
+          <RelativeDateField
+            label="Due"
+            name="due"
+            defaultValue="2026-05-24"
+            getNow={getNow}
+            menu={['clear']}
+          />
+          <RelativeDateField label="Start" defaultValue="2026-05-20" getNow={getNow} />
+          <button type="reset">Reset</button>
+        </form>,
+      );
+      expect([...new FormData(form())]).toEqual([['due', '2026-05-24']]);
+      await user.click(screen.getByRole('button', { name: 'Tomorrow Due' }));
+      await user.click(screen.getByRole('option', { name: 'Yesterday' }));
+      expect(new FormData(form()).get('due')).toBe('2026-05-22');
+      await user.click(screen.getByRole('button', { name: 'Due actions' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+      expect(new FormData(form()).get('due')).toBe('');
+      act(() => screen.getByRole('button', { name: 'Due actions' }).focus());
+      await user.keyboard('{Control>}z{/Control}');
+      expect(new FormData(form()).get('due')).toBe('2026-05-22');
+      await user.click(screen.getByRole('button', { name: 'Reset' }));
+      await waitFor(() => expect(new FormData(form()).get('due')).toBe('2026-05-24'));
+    });
+
+    it('follows a controlled value', async () => {
+      const user = userEvent.setup();
+      renderInLocale(<ControlledDue />);
+      expect(new FormData(form()).get('due')).toBe('2026-05-24');
+      await user.click(screen.getByRole('button', { name: 'Move' }));
+      expect(new FormData(form()).get('due')).toBe('2026-06-01');
+    });
+
+    it('submits a date and time, and a range as an ISO 8601 interval', () => {
+      renderInLocale(
+        <form aria-label="Plan">
+          <RelativeDateField
+            label="Call"
+            name="call"
+            valueKind="date-time"
+            defaultValue="2026-05-24T09:15"
+            getNow={getNow}
+          />
+          <RelativeDateField
+            label="Trip"
+            name="trip"
+            valueKind="date-range"
+            defaultValue={{ start: '2026-05-20', end: '2026-05-27' }}
+            getNow={getNow}
+          />
+        </form>,
+      );
+      expect([...new FormData(form())]).toEqual([
+        ['call', '2026-05-24T09:15'],
+        ['trip', '2026-05-20/2026-05-27'],
+      ]);
+    });
+
+    it('submits a read-only field and leaves out a disabled one, or one in a disabled fieldset', () => {
+      renderInLocale(
+        <form aria-label="Plan">
+          <RelativeDateField
+            label="Due"
+            name="due"
+            defaultValue="2026-05-24"
+            isReadOnly
+            getNow={getNow}
+          />
+          <RelativeDateField
+            label="Start"
+            name="start"
+            defaultValue="2026-05-20"
+            isDisabled
+            getNow={getNow}
+          />
+          <fieldset disabled>
+            <RelativeDateField label="End" name="end" defaultValue="2026-05-30" getNow={getNow} />
+          </fieldset>
+        </form>,
+      );
+      expect([...new FormData(form())]).toEqual([['due', '2026-05-24']]);
+    });
   });
 });

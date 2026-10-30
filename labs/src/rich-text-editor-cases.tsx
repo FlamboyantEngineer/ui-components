@@ -263,6 +263,25 @@ export function ControlledEditor() {
   );
 }
 
+/** A named editor in a form: Submit shows the JSON the form sends, Reset puts the note back. */
+export function FormEditor() {
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted(String(new FormData(event.currentTarget).get('notes')));
+      }}
+    >
+      <RichTextEditor label="Notes" name="notes" defaultValue={shortNote} data-lab-editor="form" />
+      <button type="submit">Submit</button> <button type="reset">Reset</button>
+      <p>
+        Submitted: <output data-lab-output="form">{submitted}</output>
+      </p>
+    </form>
+  );
+}
+
 const longLine =
   'Rows of plums, figs and quinces ripen in turn along the orchard wall, one week apart. ';
 /** A thousand paragraphs of about 200 characters each. */
