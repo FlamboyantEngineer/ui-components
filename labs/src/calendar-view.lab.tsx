@@ -61,6 +61,27 @@ const states = {
   empty: { events: [], maxEvents: 3 },
 } as const;
 
+// New York changes its clocks in the weeks of 8 March (forward at 2 AM) and 1 November 2026 (back at 2 AM).
+const clockChanges: CalendarViewEvent[] = [
+  { id: 'spring-noon', title: 'Noon call', start: '2026-03-08T12:00', end: '2026-03-08T13:00' },
+  { id: 'spring-gap', title: 'Night shift', start: '2026-03-08T01:30', end: '2026-03-08T03:30' },
+  { id: 'spring-next', title: 'Noon call', start: '2026-03-09T12:00', end: '2026-03-09T13:00' },
+  { id: 'fall-noon', title: 'Noon call', start: '2026-11-01T12:00', end: '2026-11-01T13:00' },
+  {
+    id: 'fall-first',
+    title: 'First pass',
+    start: '2026-11-01T01:30-04:00',
+    end: '2026-11-01T01:45-04:00',
+  },
+  {
+    id: 'fall-second',
+    title: 'Second pass',
+    start: '2026-11-01T01:30-05:00',
+    end: '2026-11-01T01:45-05:00',
+  },
+  { id: 'fall-next', title: 'Noon call', start: '2026-11-02T12:00', end: '2026-11-02T13:00' },
+];
+
 function InteractiveCalendar() {
   const [date, setDate] = useState('2026-03-18');
   const [view, setView] = useState<CalendarViewMode>('month');
@@ -87,7 +108,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="The month and week views with events, with a crowded day and empty. Week events follow elapsed time and clip at midnight when they continue into another day. The crowded cases include distinct numeric and text event keys with the same spelling. The clock is fixed at 18 March 2026, 10:30 UTC."
+      description="The month and week views with events, with a crowded day and empty. Week events sit at their wall-clock times under the hour labels and clip at midnight when they continue into another day. The crowded cases include distinct numeric and text event keys with the same spelling. The clock is fixed at 18 March 2026, 10:30 UTC."
     >
       <StateMatrix
         axes={{
@@ -114,6 +135,25 @@ mountLab(
       description="Move by month or week, back to today and between views; arrow keys, Home, End, PageUp and PageDown move between days. Press an event to open it, or +n more to list a crowded day. Each day shows its workload or a holiday."
     >
       <InteractiveCalendar />
+    </LabSection>
+    <LabSection
+      title="Clock changes"
+      description="Weeks in New York when the clocks go forward (8 March) and back (1 November). Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST)."
+    >
+      <div style={{ display: 'grid', gap: 16 }}>
+        {(['2026-03-08', '2026-11-01'] as const).map((date) => (
+          <div key={date} style={frame(900)} data-lab-demo={`clock-change-${date}`}>
+            <CalendarView
+              events={clockChanges}
+              timeZone="America/New_York"
+              getNow={getNow}
+              defaultDate={date}
+              defaultView="week"
+              views={['week']}
+            />
+          </div>
+        ))}
+      </div>
     </LabSection>
     <LabSection
       title="Week starting Monday"

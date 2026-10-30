@@ -62,6 +62,53 @@ test.describe('Calendar View lab', () => {
     expect((auditBox?.height ?? 0) / (timed?.height ?? 1)).toBeCloseTo(3 / 24, 2);
   });
 
+  test('UIC-CALENDAR-VIEW-2.5 keeps events under their hour labels on clock-change days', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const offset = async (demo: string, date: string, name: RegExp) => {
+      const week = page.locator(`[data-lab-demo="clock-change-${demo}"]`);
+      const timed = await week
+        .locator(`[data-date="${date}"] .ui-calendar-view__timed`)
+        .boundingBox();
+      const box = await week.getByRole('button', { name }).first().boundingBox();
+      return ((box?.y ?? 0) - (timed?.y ?? 0)) / (timed?.height ?? 1);
+    };
+    const label = async (demo: string, text: string) => {
+      const week = page.locator(`[data-lab-demo="clock-change-${demo}"]`);
+      const timed = await week
+        .locator('.ui-calendar-view__gutter .ui-calendar-view__timed')
+        .boundingBox();
+      const hour = await week
+        .locator('.ui-calendar-view__hour', { hasText: new RegExp(`^${text}$`) })
+        .boundingBox();
+      return ((hour?.y ?? 0) - (timed?.y ?? 0)) / (timed?.height ?? 1);
+    };
+    for (const [demo, day, next] of [
+      ['2026-03-08', '2026-03-08', '2026-03-09'],
+      ['2026-11-01', '2026-11-01', '2026-11-02'],
+    ] as const) {
+      const noon = await label(demo, '12 PM');
+      expect(noon).toBeCloseTo(0.5, 2);
+      expect(await offset(demo, day, /^Noon call/)).toBeCloseTo(noon, 2);
+      expect(await offset(demo, next, /^Noon call/)).toBeCloseTo(noon, 2);
+    }
+    expect(await offset('2026-03-08', '2026-03-08', /^Night shift/)).toBeCloseTo(
+      (await label('2026-03-08', '1 AM')) + 0.5 / 24,
+      2,
+    );
+    const fall = page.locator('[data-lab-demo="clock-change-2026-11-01"]');
+    const first = await fall
+      .getByRole('button', { name: /^First pass, 1:30\sAM EDT/ })
+      .boundingBox();
+    const second = await fall
+      .getByRole('button', { name: /^Second pass, 1:30\sAM EST/ })
+      .boundingBox();
+    expect(first?.y).toBeCloseTo(second?.y ?? 0, 0);
+    expect((second?.x ?? 0) > (first?.x ?? 0)).toBe(true);
+  });
+
   test('UIC-CALENDAR-VIEW-1.3 UIC-CALENDAR-VIEW-2.2 navigates periods and views and opens events', async ({
     page,
     lab,

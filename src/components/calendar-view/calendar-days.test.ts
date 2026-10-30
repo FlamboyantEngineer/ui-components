@@ -4,7 +4,9 @@ import {
   getDayOf,
   getDayStart,
   getMonthWeeks,
+  getWallHours,
   getWeekDays,
+  isRepeatedTime,
   isSameMonth,
   moveFocusedDay,
   shiftDay,
@@ -63,5 +65,18 @@ describe('calendar days', () => {
     expect(isSameMonth('2026-03-01', '2026-03-31')).toBe(true);
     expect(isSameMonth('2026-03-31', '2026-04-01')).toBe(false);
     expect(() => shiftDay('soon', { days: 1 })).toThrow(RangeError);
+  });
+
+  it('UIC-CALENDAR-VIEW-2.5 reads wall-clock times and repeated times across clock changes', () => {
+    const timeZone = 'America/New_York';
+    const at = (text: string) => new Date(text).getTime();
+    expect(getWallHours(at('2026-03-08T03:30-04:00'), timeZone)).toBe(3.5);
+    expect(getWallHours(at('2026-11-01T01:30-04:00'), timeZone)).toBe(1.5);
+    expect(getWallHours(at('2026-11-01T01:30-05:00'), timeZone)).toBe(1.5);
+    expect(isRepeatedTime(at('2026-11-01T01:30-04:00'), timeZone)).toBe(true);
+    expect(isRepeatedTime(at('2026-11-01T01:30-05:00'), timeZone)).toBe(true);
+    expect(isRepeatedTime(at('2026-11-01T02:30-05:00'), timeZone)).toBe(false);
+    expect(isRepeatedTime(at('2026-03-08T01:30-05:00'), timeZone)).toBe(false);
+    expect(isRepeatedTime(at('2026-04-05T01:45+10:30'), 'Australia/Lord_Howe')).toBe(true);
   });
 });

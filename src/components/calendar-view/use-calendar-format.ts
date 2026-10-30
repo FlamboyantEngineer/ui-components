@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 import type { CalendarViewMode } from './calendar-view.js';
-import { getDayStart } from './calendar-days.js';
+import { getDayStart, isRepeatedTime } from './calendar-days.js';
 import type { PlacedEvent } from './calendar-layout.js';
 
 /** The texts a calendar view shows and reads out, in the provider's locale and the view's time zone. */
@@ -41,6 +41,16 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
     const dayNumber = make({ day: 'numeric' });
     const time = make({ hour: 'numeric', minute: '2-digit' });
     const dateTime = make({ month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    // A repeated wall-clock time names its offset, so the two passes of the hour read apart.
+    const zonedTime = make({ hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+    const zonedDateTime = make({
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    });
+    const isRepeated = (instant: number) => isRepeatedTime(instant, timeZone);
     const hour = getDateFormatter(locale, { hour: 'numeric', timeZone: 'UTC' });
     const toDate = (date: string) => new Date(getDayStart(date, timeZone));
     const formatWhen = (placed: PlacedEvent) => {
@@ -48,8 +58,16 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
         if (placed.startDay === placed.endDay) return shortDay.format(toDate(placed.startDay));
         return shortDay.formatRange(toDate(placed.startDay), toDate(placed.endDay));
       }
-      const formatter = placed.startDay === placed.endDay ? time : dateTime;
-      return formatter.formatRange(new Date(placed.start), new Date(placed.end));
+      const isSameDay = placed.startDay === placed.endDay;
+      if (isRepeated(placed.start) || isRepeated(placed.end)) {
+        // A range format names one zone for both ends; each end names its own instead.
+        const zoned = isSameDay ? zonedTime : zonedDateTime;
+        return `${zoned.format(new Date(placed.start))} – ${zoned.format(new Date(placed.end))}`;
+      }
+      return (isSameDay ? time : dateTime).formatRange(
+        new Date(placed.start),
+        new Date(placed.end),
+      );
     };
     return {
       locale,
@@ -65,7 +83,7 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
         long: weekdayLong.format(toDate(date)),
       }),
       formatDayNumber: (date) => dayNumber.format(toDate(date)),
-      formatTime: (instant) => time.format(new Date(instant)),
+      formatTime: (instant) => (isRepeated(instant) ? zonedTime : time).format(new Date(instant)),
       formatHour: (value) => hour.format(new Date(Date.UTC(2000, 0, 1, value))),
       formatWhen,
     };
