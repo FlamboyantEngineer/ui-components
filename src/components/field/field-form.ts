@@ -1,8 +1,9 @@
 // How a field takes part in its form: submit validation, the browser's constraint validation and
 // a native reset.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useFieldScope } from './field-scope.js';
 import type { FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
@@ -52,8 +53,7 @@ function findForm(slots: FieldSlots): HTMLFormElement | null {
  * reset is over, so a control whose building block already reset the value is left alone.
  */
 function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
-  const latest = useRef(state);
-  latest.current = state;
+  const latest = useLatest(state);
   const [initial] = useState(() => state.value);
   useEffect(() => {
     const form = findForm(slots);
@@ -72,7 +72,7 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
       view.clearTimeout(timer);
       form.removeEventListener('reset', onReset);
     };
-  }, [slots, initial]);
+  }, [slots, initial, latest]);
 }
 
 /**
@@ -87,8 +87,7 @@ export function useFieldFormBinding(
   label: string,
 ): void {
   const { register, onIssuesChange, onValidityChange } = useFieldScope();
-  const latest = useRef({ state, label });
-  latest.current = { state, label };
+  const latest = useLatest({ state, label });
   const issuesKey = JSON.stringify([
     label,
     state.issues.map(({ severity, message }) => [severity, message]),
@@ -118,7 +117,7 @@ export function useFieldFormBinding(
       getIssues: () => latest.current.state.issues,
       getRealtimeValidation: () => latest.current.state.realtimeValidation,
     });
-  }, [register, slots]);
+  }, [register, slots, latest]);
 
   useEffect(() => {
     onIssuesChange?.();
@@ -148,5 +147,5 @@ export function useFieldFormBinding(
     };
     root.addEventListener('invalid', onInvalid, true);
     return () => root.removeEventListener('invalid', onInvalid, true);
-  }, [slots, isInForm]);
+  }, [slots, isInForm, latest]);
 }

@@ -1,6 +1,7 @@
 // The asynchronous check of a field: debounced, aborted when the value moves on.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { toFieldValueKey } from './field-value.js';
 import { toIssueList, type FieldIssue, type FieldIssues } from './field-validation.js';
 
@@ -31,8 +32,7 @@ export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): Async
   const { validateAsync, debounce, isSkipped } = options;
   const key = toFieldValueKey(value);
   const [result, setResult] = useState<{ key: string; issues: FieldIssue[] } | null>(null);
-  const latest = useRef({ value, validateAsync });
-  latest.current = { value, validateAsync };
+  const latest = useLatest({ value, validateAsync });
   const isEnabled = Boolean(validateAsync) && !isSkipped;
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): Async
       clearTimeout(timer);
       controller.abort();
     };
-  }, [key, isEnabled, debounce]);
+  }, [key, isEnabled, debounce, latest]);
 
   const isCurrent = result?.key === key;
   return {

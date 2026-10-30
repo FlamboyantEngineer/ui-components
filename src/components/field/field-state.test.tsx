@@ -1,5 +1,6 @@
-import { act, renderHook } from '@testing-library/react';
-import { useState } from 'react';
+import { act, render, renderHook, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { StrictMode, Suspense, startTransition, use, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { useFieldState, type FieldStateOptions } from './field-state.js';
@@ -10,7 +11,94 @@ function renderField<T>(options: FieldStateOptions<T>) {
   });
 }
 
+interface SampleRecord {
+  name: string;
+  /** Settles once the record has loaded; until then the record suspends its render. */
+  loaded?: Promise<void>;
+  onChange: (value: string) => void;
+  onCommit: (value: string) => void;
+  validateAsync?: (value: string) => Promise<null>;
+}
+
+function RecordField({ record }: { record: SampleRecord }) {
+  const state = useFieldState({
+    value: record.name,
+    committedValue: record.name,
+    onChange: record.onChange,
+    onCommit: record.onCommit,
+    validateAsync: record.validateAsync,
+    validationDebounce: 20,
+  });
+  if (record.loaded) use(record.loaded);
+  return (
+    <input
+      aria-label="Name"
+      value={state.value}
+      onChange={(event) => state.setValue(event.target.value)}
+      onBlur={state.commit}
+    />
+  );
+}
+
+let showRecord: (record: SampleRecord) => void = () => undefined;
+
+function RecordEditor({ initial }: { initial: SampleRecord }) {
+  const [record, setRecord] = useState(initial);
+  showRecord = setRecord;
+  return (
+    <Suspense fallback="Loading">
+      <RecordField record={record} />
+    </Suspense>
+  );
+}
+
 describe('useFieldState', () => {
+  it('UIC-FIELD-2.1 keeps the visible field on its committed callbacks while a transition suspends', async () => {
+    const user = userEvent.setup();
+    const first: SampleRecord = {
+      name: 'Atlas',
+      onChange: vi.fn(),
+      onCommit: vi.fn(),
+    };
+    render(
+      <StrictMode>
+        <RecordEditor initial={first} />
+      </StrictMode>,
+    );
+    const input = screen.getByRole('textbox', { name: 'Name' });
+    const second: SampleRecord = {
+      name: 'Borealis',
+      loaded: new Promise<void>(() => undefined),
+      onChange: vi.fn(),
+      onCommit: vi.fn(),
+    };
+    act(() => startTransition(() => showRecord(second)));
+    expect(input).toHaveValue('Atlas');
+    await user.type(input, 's');
+    await user.tab();
+    expect(first.onChange).toHaveBeenCalledWith('Atlass');
+    expect(second.onChange).not.toHaveBeenCalled();
+    expect(second.onCommit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FIELD-3.8 checks the visible value with its own validator while a transition suspends', async () => {
+    const sample = (name: string, loaded?: Promise<void>): SampleRecord => ({
+      name,
+      loaded,
+      onChange: vi.fn(),
+      onCommit: vi.fn(),
+      validateAsync: vi.fn(() => Promise.resolve(null)),
+    });
+    const first = sample('Atlas');
+    render(<RecordEditor initial={first} />);
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Atlas');
+    const second = sample('Borealis', new Promise<void>(() => undefined));
+    act(() => startTransition(() => showRecord(second)));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    expect(first.validateAsync).toHaveBeenCalledWith('Atlas', expect.any(AbortSignal));
+    expect(second.validateAsync).not.toHaveBeenCalled();
+  });
+
   it('UIC-FIELD-3.11 puts a draft issue first in the realtime validation, keeping the value', () => {
     const onChange = vi.fn();
     const { result } = renderField({

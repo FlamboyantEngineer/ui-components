@@ -1,6 +1,7 @@
 // Whether focus is inside a field, and the moment it leaves.
 
 import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 
 interface FieldFocusOptions {
   getRoot: () => HTMLElement | null;
@@ -49,8 +50,7 @@ function useFocusedPartRecovery(
 export function useFieldFocus(options: FieldFocusOptions): FieldFocus {
   const { getRoot, onLeave } = options;
   const [isFocused, setIsFocused] = useState(false);
-  const latest = useRef(onLeave);
-  latest.current = onLeave;
+  const latest = useLatest(onLeave);
   const pending = useRef<(() => void) | null>(null);
   const cancelPending = () => {
     pending.current?.();
