@@ -248,4 +248,4 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
 
 export type { ComboboxItem, ComboboxOption, ComboboxSection } from './combobox-options.js';
 export type { ComboboxLoader, ComboboxPage } from './combobox-search.js';
-export type { ComboboxOptionRenderer, ComboboxOptionState } from './combobox-suggestions.js';
+export type { ComboboxOptionRenderer } from './combobox-suggestions.js';

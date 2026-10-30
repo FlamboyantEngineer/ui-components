@@ -15,6 +15,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import type { TableProps } from '../table/table.js';
 import { findField } from './pivot-fields.js';
 import { pivotTableHooks as hooks } from './pivot-table-hooks.js';
+import { getNumberFormat } from '../../utils/intl-format.js';
 
 /** A field the pivot table offers, by its id in the records. */
 export interface PivotTableField {
@@ -111,7 +112,7 @@ export function getValueLabel(
 }
 
 function createFormatter(value: PivotValue, field: PivotTableField, locale: string) {
-  const format = new Intl.NumberFormat(
+  const format = getNumberFormat(
     locale,
     value.aggregate === 'count' ? undefined : field.formatOptions,
   );

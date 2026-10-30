@@ -1,11 +1,11 @@
 // Groups timed entries by the local calendar day they happened on, with a heading per day.
 
-import { DateFormatter } from '../../primitives/index.js';
 import {
   createCalendarDayReader,
   formatRelativeDay,
   type CalendarDay,
 } from '../../utils/calendar-day.js';
+import { getDateFormatter } from '../../utils/intl-format.js';
 
 /** A run of entries from one calendar day. */
 interface DayGroup<T> {
@@ -27,7 +27,7 @@ interface DayGroupOptions {
 /** `Today`, `Yesterday` and `Tomorrow` as Intl words them; the full date further away. */
 function formatDayLabel(day: CalendarDay, locale: string): string {
   if (Math.abs(day.offset) <= 1) return formatRelativeDay(day.offset, locale);
-  return new DateFormatter(locale, { dateStyle: 'full' }).format(day.start);
+  return getDateFormatter(locale, { dateStyle: 'full' }).format(day.start);
 }
 
 /**

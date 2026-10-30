@@ -5,7 +5,6 @@ export type {
   ComboboxMenuTrigger,
   ComboboxOption,
   ComboboxOptionRenderer,
-  ComboboxOptionState,
   ComboboxPage,
   ComboboxProps,
   ComboboxSection,

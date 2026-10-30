@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { DateFormatter, useLocale } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { getDateFormatter } from '../../utils/intl-format.js';
 import type { CalendarViewMode } from './calendar-view.js';
 import { getDayStart } from './calendar-days.js';
 import type { PlacedEvent } from './calendar-layout.js';
@@ -28,7 +29,7 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
   const { locale } = useLocale();
   return useMemo(() => {
     const make = (options: Intl.DateTimeFormatOptions) =>
-      new DateFormatter(locale, { timeZone, ...options });
+      getDateFormatter(locale, { timeZone, ...options });
     const month = make({ month: 'long', year: 'numeric' });
     const weekRange = make({ month: 'short', day: 'numeric', year: 'numeric' });
     const day = make({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -38,7 +39,7 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
     const dayNumber = make({ day: 'numeric' });
     const time = make({ hour: 'numeric', minute: '2-digit' });
     const dateTime = make({ month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-    const hour = new DateFormatter(locale, { hour: 'numeric', timeZone: 'UTC' });
+    const hour = getDateFormatter(locale, { hour: 'numeric', timeZone: 'UTC' });
     const toDate = (date: string) => new Date(getDayStart(date, timeZone));
     const formatWhen = (placed: PlacedEvent) => {
       if (placed.isAllDay) {

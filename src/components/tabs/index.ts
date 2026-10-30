@@ -9,7 +9,6 @@ export type {
   TabPanelProps,
   TabPanelRenderState,
   TabProps,
-  TabRenderState,
   TabsKeyboardActivation,
   TabsProps,
   TabsRenderState,

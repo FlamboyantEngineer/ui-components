@@ -71,6 +71,25 @@ export type Placement =
   | 'end top'
   | 'end bottom';
 
+/** The interaction states an element hands to `render` or to custom content. */
+export interface InteractionState {
+  /** The pointer is over the element. */
+  isHovered: boolean;
+  /** The element is being pressed. */
+  isPressed: boolean;
+  /** The element has focus, from the keyboard or the pointer. */
+  isFocused: boolean;
+  /** The element has keyboard focus. */
+  isFocusVisible: boolean;
+  /** The element cannot be used. */
+  isDisabled: boolean;
+}
+
+/** The interaction states of an element that can be selected: a tab, an option, a menu item. */
+export interface SelectableState extends InteractionState {
+  isSelected: boolean;
+}
+
 export type SortDirection = 'ascending' | 'descending';
 
 /** The column a collection is sorted by and the direction. */

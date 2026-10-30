@@ -1,5 +1,5 @@
-import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useId, useRef, type ReactNode, type Ref } from 'react';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -111,11 +111,7 @@ function toRatio(progress: LoadingProgress): number {
 
 /** The whole, locale-formatted percentage, hidden from assistive technology (the bar has it). */
 function LoadingCardValue({ progress }: { progress: LoadingProgress }) {
-  const { locale } = useLocale();
-  const percent = useMemo(
-    () => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }),
-    [locale],
-  );
+  const percent = useNumberFormatter({ style: 'percent', maximumFractionDigits: 0 });
   return (
     <span {...cardHooks.slot('value')} aria-hidden="true">
       {percent.format(toRatio(progress))}

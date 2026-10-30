@@ -43,7 +43,7 @@ Verification: `src/components/tabs/tabs.test.tsx`
 
 ### UIC-TABS-1.6 - Swapping elements
 
-`Tabs`, `TabList`, `Tab` and `TabPanel` shall take `render(props, state)`, typed `ElementRender<'div', State>`, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, handlers and ref, and a library state: `TabsRenderState` and `TabListRenderState` (`orientation`), `TabRenderState` (`isSelected`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`) and `TabPanelRenderState` (`isFocused`, `isFocusVisible`, `isInert`, `isEntering`, `isExiting`). A tab with `href` receives an anchor's props, and its replacement renders an `<a>`.
+`Tabs`, `TabList`, `Tab` and `TabPanel` shall take `render(props, state)`, typed `ElementRender<'div', State>`, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, handlers and ref, and a library state: `TabsRenderState` and `TabListRenderState` (`orientation`), the shared `SelectableState` for `Tab` (`isSelected`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`) and `TabPanelRenderState` (`isFocused`, `isFocusVisible`, `isInert`, `isEntering`, `isExiting`). A tab with `href` receives an anchor's props, and its replacement renders an `<a>`.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`
 Verification: `src/components/tabs/tab-list.test.tsx`

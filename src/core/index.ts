@@ -25,6 +25,8 @@ export type {
   SelectionMode,
   Size,
   ControlSize,
+  InteractionState,
+  SelectableState,
   SortDescriptor,
   SortDirection,
   Tone,

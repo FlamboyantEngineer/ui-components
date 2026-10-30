@@ -1,9 +1,4 @@
-import {
-  DateFormatter,
-  getLocalTimeZone,
-  parseIsoDate,
-  useLocale,
-} from '../../primitives/index.js';
+import { getLocalTimeZone, parseIsoDate, useLocale } from '../../primitives/index.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -34,6 +29,7 @@ import {
   type RelativeDateRange,
   type RelativeDateValue,
 } from './relative-date.js';
+import { getDateFormatter } from '../../utils/intl-format.js';
 
 /** A `YYYY-MM-DD` date or local `YYYY-MM-DDTHH:mm` date and time, or a `{ start, end }` range of dates. */
 export type RelativeDateFieldValue<K extends RelativeDateKind = 'date'> = K extends 'date-range'
@@ -124,7 +120,7 @@ function describeValue(value: RelativeDateValue | null, options: PresetContext &
 function formatDay(text: string, locale: string): string {
   const date = parseIsoDate(text);
   if (!date) return text;
-  return new DateFormatter(locale, { dateStyle: 'medium' }).format(date.toDate(getLocalTimeZone()));
+  return getDateFormatter(locale, { dateStyle: 'medium' }).format(date.toDate(getLocalTimeZone()));
 }
 
 /** The field's own check: a value outside the bounds is invalid, with the bound in the message. */

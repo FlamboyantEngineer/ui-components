@@ -9,6 +9,7 @@ import {
   toZoned,
   type CalendarDate,
 } from '../primitives/index.js';
+import { getDateTimeFormat } from './intl-format.js';
 import { createLinearScale, type ScaleInterval, type ScaleTick } from './linear-scale.js';
 import { readTimeInstant } from './read-time-instant.js';
 
@@ -123,7 +124,7 @@ function addUnit(date: CalendarDate, plan: TickPlan, locale: string): CalendarDa
  */
 export function floorToTimeUnit(date: string, unit: TimeScaleUnit, locale?: string): string {
   const parsed = parseIsoDate(date);
-  const weekLocale = locale ?? new Intl.DateTimeFormat().resolvedOptions().locale;
+  const weekLocale = locale ?? getDateTimeFormat(undefined).resolvedOptions().locale;
   return parsed ? floorToUnit(parsed, { unit, step: 1 }, weekLocale).toString() : '';
 }
 
@@ -145,26 +146,20 @@ export function addTimeUnits(date: string, unit: TimeScaleUnit, count: number): 
  */
 export function createTimeScale(options: TimeScaleOptions): TimeScale {
   const timeZone = options.timeZone ?? getLocalTimeZone();
-  const locale = options.locale ?? new Intl.DateTimeFormat().resolvedOptions().locale;
+  const locale = options.locale ?? getDateTimeFormat(undefined).resolvedOptions().locale;
   const [start, end] = options.domain.map((text) => readTimeInstant(text, timeZone)) as [
     number,
     number,
   ];
   const isReadable = Number.isFinite(start) && Number.isFinite(end);
   const linear = createLinearScale({ domain: [start, end], range: options.range });
-  const labels = new Map<TimeScaleUnit, Intl.DateTimeFormat>();
   const instantOf = (date: CalendarDate) => toZoned(date, timeZone).toDate().getTime();
   const map = (value: string) =>
     isReadable ? linear.map(readTimeInstant(value, timeZone)) : Number.NaN;
   const format = (value: string, unit: TimeScaleUnit) => {
     const instant = readTimeInstant(value, timeZone);
     if (!Number.isFinite(instant)) return '';
-    let formatter = labels.get(unit);
-    if (!formatter) {
-      formatter = new Intl.DateTimeFormat(locale, { timeZone, ...labelFormats[unit] });
-      labels.set(unit, formatter);
-    }
-    return formatter.format(instant);
+    return getDateTimeFormat(locale, { timeZone, ...labelFormats[unit] }).format(instant);
   };
   const ticks = (tickOptions: TimeTickOptions = {}) => {
     if (!isReadable) return [];

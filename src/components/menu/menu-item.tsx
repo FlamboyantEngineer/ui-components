@@ -8,7 +8,7 @@ import {
 } from '../../primitives/index.js';
 import type { PressEventProps, SelectionProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, SelectionMode, Tone } from '../../core/props.js';
+import type { BaseProps, Key, SelectableState, SelectionMode, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
@@ -22,13 +22,7 @@ import { MenuSizeContext } from './menu-context.js';
 export type MenuItemTone = Extract<Tone, 'neutral' | 'danger'>;
 
 /** The state a menu item hands to custom content (`children` as a function). */
-export interface MenuItemRenderState {
-  isHovered: boolean;
-  isFocused: boolean;
-  isFocusVisible: boolean;
-  isPressed: boolean;
-  isSelected: boolean;
-  isDisabled: boolean;
+export interface MenuItemRenderState extends SelectableState {
   /** The selection of the menu or section the item belongs to. */
   selectionMode: SelectionMode;
   /** The item opens a submenu. */

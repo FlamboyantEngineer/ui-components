@@ -1,4 +1,5 @@
 import { IntlMessageFormat } from 'intl-messageformat';
+import { getListFormat } from '../utils/intl-format.js';
 
 /** Items a message reads as one locale-aware list: `a, b and c`, `a, b or c`, or `a, b, c`. */
 export interface MessageList {
@@ -19,7 +20,6 @@ export type MessageValue = string | number | boolean | readonly string[] | Messa
 export type MessageValues = Readonly<Record<string, MessageValue | null>>;
 
 const formats = new Map<string, IntlMessageFormat>();
-const lists = new Map<string, Intl.ListFormat>();
 
 function getFormat(message: string, locale: string): IntlMessageFormat {
   const key = `${locale}\u0000${message}`;
@@ -33,13 +33,7 @@ function getFormat(message: string, locale: string): IntlMessageFormat {
 }
 
 function formatList(list: MessageList, locale: string): string {
-  const key = `${locale}\u0000${list.type}`;
-  let format = lists.get(key);
-  if (!format) {
-    format = new Intl.ListFormat(locale, { type: listTypes[list.type] });
-    lists.set(key, format);
-  }
-  return format.format(list.items);
+  return getListFormat(locale, { type: listTypes[list.type] }).format(list.items);
 }
 
 function isMessageList(value: MessageValue): value is MessageList {

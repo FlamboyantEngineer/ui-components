@@ -163,7 +163,7 @@ export function TabPanel({ className, id, ...rest }: TabPanelProps) {
 }
 
 export { Tab } from './tab.js';
-export type { TabProps, TabRenderState } from './tab.js';
+export type { TabProps } from './tab.js';
 export { TabList } from './tab-list.js';
 export type {
   TabListOverflow,

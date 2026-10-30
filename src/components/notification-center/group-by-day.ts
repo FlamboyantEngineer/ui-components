@@ -1,12 +1,12 @@
 // Groups dated entries under the local calendar day they fall on, labelled `Today`, `Yesterday` or
 // the date, for lists read newest first.
 
-import { DateFormatter } from '../../primitives/index.js';
 import {
   createCalendarDayReader,
   formatRelativeDay,
   type CalendarDay,
 } from '../../utils/calendar-day.js';
+import { getDateFormatter } from '../../utils/intl-format.js';
 
 /** Entries that fall on one day, in the order they were given. */
 export interface DayGroup<T> {
@@ -29,7 +29,7 @@ interface GroupByDayOptions<T> {
 
 function labelDay(day: CalendarDay, locale: string) {
   if (day.offset === 0 || day.offset === -1) return formatRelativeDay(day.offset, locale);
-  const formatter = new DateFormatter(locale, {
+  const formatter = getDateFormatter(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',

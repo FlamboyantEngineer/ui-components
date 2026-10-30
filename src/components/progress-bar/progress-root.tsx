@@ -10,7 +10,7 @@ import type { ProgressBarProps, ProgressValues } from './progress-bar.js';
 import { resolveMeterTone } from './progress-meter.js';
 
 /** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
-export interface ProgressRootProps extends Omit<
+interface ProgressRootProps extends Omit<
   ProgressBarProps,
   'label' | 'showValueLabel' | 'segments'
 > {
@@ -23,7 +23,7 @@ export interface ProgressRootProps extends Omit<
 }
 
 /** A progress indicator's visible label and value text, in its `label` and `value` slots. */
-export interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
+interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
   hooks: ComponentHooks<'label' | 'value'>;
   /** Show the value text; an indeterminate indicator never shows it. */
   showValueLabel: boolean;

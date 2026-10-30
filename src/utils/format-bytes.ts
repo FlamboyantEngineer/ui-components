@@ -1,5 +1,7 @@
 // Byte sizes as readers see them, for file pickers and size limits (specs/FORMAT-BYTES.md).
 
+import { getNumberFormat } from './intl-format.js';
+
 const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
 
 const STEP = 1024;
@@ -14,7 +16,7 @@ export function formatBytes(bytes: number, locale?: string): string {
   let exponent = 0;
   while (size >= STEP ** (exponent + 1) && exponent < UNITS.length - 1) exponent += 1;
   const digits = exponent === 0 ? 0 : 1;
-  const number = new Intl.NumberFormat(locale, {
+  const number = getNumberFormat(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(size / STEP ** exponent);
