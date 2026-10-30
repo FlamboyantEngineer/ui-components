@@ -5,9 +5,9 @@ import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import { createEmptyDocument, isDocumentEmpty } from './editor-state.js';
-import { EditorSurface } from './editor-surface.js';
+import { EditorSurface, useSyncedEditorState, withEditorHistory } from './editor-surface.js';
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
-import type { RichTextDocument } from './rich-text-document.js';
+import { isRichTextEqual, type RichTextDocument } from './rich-text-document.js';
 import { getEngineSchema } from './engine-schema.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
 
@@ -32,14 +32,23 @@ export function RichTextEditor(props: RichTextEditorProps) {
   const schema = props.schema ?? getDefaultRichTextSchema();
   const engine = getEngineSchema(schema);
   const empty = useMemo(() => createEmptyDocument(engine), [engine]);
-  const { state, field, rest } = useFieldControl<RichTextDocument, RichTextEditorProps>(props, {
+  const fieldControl = useFieldControl<RichTextDocument, RichTextEditorProps>(props, {
     initialValue: empty,
     emptyValue: empty,
     check: (value) =>
       props.isRequired && isDocumentEmpty(value, engine)
         ? { severity: 'error', message: strings.valueRequired, validity: 'valueMissing' }
         : null,
+    isEqual: isRichTextEqual,
+    hasOwnHistory: true,
   });
+  const { field, rest } = fieldControl;
+  const editor = useSyncedEditorState(
+    engine,
+    fieldControl.state.value,
+    fieldControl.state.setValue,
+  );
+  const state = withEditorHistory(fieldControl.state, editor);
   return (
     <Field
       state={state}
@@ -50,9 +59,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
       {(control) => (
         <EditorSurface
           control={control}
-          schema={engine}
-          value={state.value}
-          onChange={state.setValue}
+          editor={editor}
           placeholder={rest.placeholder}
           toolbar={rest.toolbar}
         >

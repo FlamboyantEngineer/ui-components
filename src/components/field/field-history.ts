@@ -14,8 +14,12 @@ export function createFieldHistory<T>(value: T): FieldHistory<T> {
 }
 
 /** Adds `value` after the current entry, dropping redo entries; an unchanged value adds nothing. */
-export function recordFieldHistory<T>(history: FieldHistory<T>, value: T): FieldHistory<T> {
-  if (isFieldValueEqual(history.entries[history.index], value)) return history;
+export function recordFieldHistory<T>(
+  history: FieldHistory<T>,
+  value: T,
+  isEqual: (left: T, right: T) => boolean = isFieldValueEqual,
+): FieldHistory<T> {
+  if (isEqual(history.entries[history.index] as T, value)) return history;
   const entries = [...history.entries.slice(0, history.index + 1), value].slice(-historyLimit);
   return { entries, index: entries.length - 1 };
 }

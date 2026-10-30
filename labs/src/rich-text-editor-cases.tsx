@@ -262,3 +262,41 @@ export function ControlledEditor() {
     </>
   );
 }
+
+const longLine =
+  'Rows of plums, figs and quinces ripen in turn along the orchard wall, one week apart. ';
+/** A thousand paragraphs of about 200 characters each. */
+const longDocument: RichTextDocument = {
+  type: 'doc',
+  content: Array.from({ length: 1000 }, (_, index) =>
+    paragraph(text(`${index + 1}. ${longLine.repeat(3).slice(0, 195)}`)),
+  ),
+};
+
+/** How many top-level blocks of `next` are the very objects of `previous`. */
+function countKeptBlocks(previous: RichTextDocument, next: RichTextDocument): number {
+  const before = new Set(previous.content);
+  return (next.content ?? []).filter((block) => before.has(block)).length;
+}
+
+/** A long document whose changes report how many blocks they kept from the previous value. */
+export function LongDocumentEditor() {
+  const [value, setValue] = useState(longDocument);
+  const [kept, setKept] = useState<string>('none yet');
+  return (
+    <>
+      <RichTextEditor
+        label="Orchard log"
+        data-lab-editor="long"
+        value={value}
+        onChange={(next) => {
+          setKept(`${countKeptBlocks(value, next)} of ${next.content?.length ?? 0}`);
+          setValue(next);
+        }}
+      />
+      <p>
+        Blocks kept by the last change: <output data-lab-output="kept">{kept}</output>
+      </p>
+    </>
+  );
+}

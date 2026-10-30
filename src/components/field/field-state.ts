@@ -80,6 +80,25 @@ export interface FieldStateOptions<T> {
   isPending?: boolean | undefined;
 }
 
+/**
+ * How a control's values behave, which the control decides rather than its caller: how two values
+ * compare, and whether the control keeps the undo history itself.
+ */
+export interface FieldValueContract<T> {
+  /**
+   * Whether two values are the same value: for dirty state, history, actions, commits and checks.
+   * Defaults to `isFieldValueEqual`, which compares by structure. A control with large values gives
+   * a comparison that stops at shared parts, such as a document's unchanged blocks.
+   */
+  isEqual?: ((left: T, right: T) => boolean) | undefined;
+  /**
+   * The control keeps the history of its values (as a document editor does), so the field records
+   * none: `canUndo` and `canRedo` stay false and `undo` and `redo` do nothing until the control
+   * puts its own in their place.
+   */
+  hasOwnHistory?: boolean | undefined;
+}
+
 /** A field's value, committed value, validation and history, with the actions that change them. */
 export interface FieldState<T> {
   value: T;
@@ -140,24 +159,47 @@ function firstDefined<T>(...values: Array<T | undefined>): T {
   return values.find((value) => value !== undefined) as T;
 }
 
+type ValueEquality<T> = (left: T, right: T) => boolean;
+
 /** Whether a menu action has something to do: the field is editable and the target differs. */
-function canApply<T>(value: T, target: T | undefined, isLocked: boolean): boolean {
-  return !isLocked && target !== undefined && !isFieldValueEqual(value, target);
+function canApply<T>(
+  value: T,
+  target: T | undefined,
+  { isLocked, isEqual }: { isLocked: boolean; isEqual: ValueEquality<T> },
+): boolean {
+  return !isLocked && target !== undefined && !isEqual(value, target);
 }
 
 /**
  * The uncontrolled value and committed value (starting from the first of the committed value, the
- * controlled value and the default), and the history, which records every value the field shows.
+ * controlled value and the default).
  */
 function useOwnValues<T>({ value, committedValue, defaultValue }: FieldStateOptions<T>) {
   const [draft, setDraft] = useState(() => firstDefined(committedValue, defaultValue));
   const [committed, setCommitted] = useState(() =>
     firstDefined(committedValue, value, defaultValue),
   );
-  const [history, setHistory] = useState<FieldHistory<T>>(() =>
-    createFieldHistory(firstDefined(value, committedValue, defaultValue)),
+  return { draft, setDraft, committed, setCommitted };
+}
+
+/**
+ * The history of the values the field shows, recording the value during render when it is new,
+ * unless the control keeps its own history.
+ */
+function useShownHistory<T>(
+  value: T,
+  { value: controlled, committedValue, defaultValue }: FieldStateOptions<T>,
+  { isEqual, hasOwnHistory }: { isEqual: ValueEquality<T>; hasOwnHistory: boolean },
+) {
+  const [recorded, setHistory] = useState<FieldHistory<T>>(() =>
+    createFieldHistory(firstDefined(controlled, committedValue, defaultValue)),
   );
-  return { draft, setDraft, committed, setCommitted, history, setHistory };
+  let history = recorded;
+  if (!hasOwnHistory && !isEqual(history.entries[history.index] as T, value)) {
+    history = recordFieldHistory(history, value, isEqual);
+    setHistory(history);
+  }
+  return [history, setHistory] as const;
 }
 
 /**
@@ -169,6 +211,7 @@ interface LatestSnapshot<T> {
   committedValue: T;
   options: FieldStateOptions<T>;
   isLocked: boolean;
+  isEqual: ValueEquality<T>;
   /** A controlled value changed in this event: the value to commit is the one the caller renders. */
   isUnsettled?: boolean;
 }
@@ -192,7 +235,7 @@ function useCommit<T>(
       rerender();
       return;
     }
-    if (isFieldValueEqual(current.value, current.committedValue)) return;
+    if (current.isEqual(current.value, current.committedValue)) return;
     current.committedValue = current.value;
     if (current.options.committedValue === undefined) setCommitted(current.value);
     current.options.onCommit?.(current.value);
@@ -212,17 +255,26 @@ function useCommit<T>(
 function useFieldValidation<T>(
   value: T,
   options: FieldStateOptions<T>,
-  { scope, draftIssue }: { scope: FieldScope; draftIssue: FieldIssue | null },
+  {
+    scope,
+    draftIssue,
+    isEqual,
+  }: { scope: FieldScope; draftIssue: FieldIssue | null; isEqual: ValueEquality<T> },
 ) {
   const strings = useUiStrings();
   const reveal = useFieldReveal(options.validationMode ?? scope.validationMode ?? 'immediate');
-  const external = useExternalIssues(scope.validationErrors, options.name, value);
+  const external = useExternalIssues(value, {
+    errors: scope.validationErrors,
+    name: options.name,
+    isEqual,
+  });
   const draft = draftIssue ? [draftIssue] : [];
   const own = [...draft, ...external, ...checkFieldValue(value, options, strings)];
   const check = useAsyncCheck(value, {
     validateAsync: options.validateAsync,
     debounce: options.validationDebounce ?? 0,
     isSkipped: own.some((issue) => issue.severity === 'error'),
+    isEqual,
   });
   const isPending = Boolean(options.isPending) || check.isRunning;
   const realtime = resolveFieldValidation([...own, ...check.issues], isPending, strings);
@@ -252,24 +304,27 @@ function useDraftIssue() {
  * validates, tracks dirty state and keeps a per-field undo history of every value the field shows.
  * A read-only or disabled field refuses every change.
  */
-export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
+export function useFieldState<T>(
+  options: FieldStateOptions<T>,
+  contract: FieldValueContract<T> = {},
+): FieldState<T> {
+  const isEqual = contract.isEqual ?? isFieldValueEqual;
   const scope = useFieldScope();
-  const { draft, setDraft, committed, setCommitted, ...own } = useOwnValues(options);
+  const { draft, setDraft, committed, setCommitted } = useOwnValues(options);
   const value = options.value !== undefined ? options.value : draft;
   const committedValue = options.committedValue !== undefined ? options.committedValue : committed;
   const isDisabled = Boolean(options.isDisabled || scope.isDisabled);
   const isReadOnly = Boolean(options.isReadOnly || scope.isReadOnly);
   const isLocked = isReadOnly || isDisabled;
-  const latest = useLatest<LatestSnapshot<T>>({ value, committedValue, options, isLocked });
+  const snapshot = { value, committedValue, options, isLocked, isEqual };
+  const latest = useLatest<LatestSnapshot<T>>(snapshot);
   const [draftIssue, setDraftIssue] = useDraftIssue();
-  const { reveal, realtime, shown } = useFieldValidation(value, options, { scope, draftIssue });
+  const validationContext = { scope, draftIssue, isEqual };
+  const { reveal, realtime, shown } = useFieldValidation(value, options, validationContext);
   const { markChanged } = reveal;
 
-  let history = own.history;
-  if (!isFieldValueEqual(history.entries[history.index], value)) {
-    history = recordFieldHistory(history, value);
-    own.setHistory(history);
-  }
+  const hasOwnHistory = Boolean(contract.hasOwnHistory);
+  const [history, setHistory] = useShownHistory(value, options, { isEqual, hasOwnHistory });
 
   const hold = useRef<FieldChangeHold>({ isHeld: false });
   const setValue = useCallback(
@@ -286,8 +341,9 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   );
   const commit = useCommit(latest, setCommitted);
 
+  const lock = { isLocked, isEqual };
   const apply = (target: T | undefined) => {
-    if (!canApply(latest.current.value, target, isLocked)) return;
+    if (!canApply(latest.current.value, target, lock)) return;
     setValue(target as T);
     commit();
   };
@@ -295,13 +351,13 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   const step = (direction: -1 | 1) => {
     if (isLocked || !canStepFieldHistory(history, direction)) return;
     const next = stepFieldHistory(history, direction);
-    own.setHistory(next);
+    setHistory(next);
     const target = next.entries[next.index] as T;
-    if (isFieldValueEqual(latest.current.value, target)) return;
+    if (isEqual(latest.current.value, target)) return;
     setValue(target);
     commit();
   };
-  const canClear = !options.isRequired && canApply(value, options.emptyValue, isLocked);
+  const canClear = !options.isRequired && canApply(value, options.emptyValue, lock);
 
   const state: FieldState<T> = {
     value,
@@ -309,7 +365,7 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     validation: shown.validation,
     realtimeValidation: realtime.validation,
     issues: shown.issues,
-    isDirty: canApply(value, committedValue, isLocked),
+    isDirty: canApply(value, committedValue, lock),
     isTouched: reveal.isTouched,
     isRequired: Boolean(options.isRequired),
     isReadOnly,
@@ -318,7 +374,7 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     canUndo: !isLocked && canStepFieldHistory(history, -1),
     canRedo: !isLocked && canStepFieldHistory(history, 1),
     canClear,
-    canSetDefault: canApply(value, options.defaultValue, isLocked),
+    canSetDefault: canApply(value, options.defaultValue, lock),
     setValue,
     commit,
     restore: () => apply(committedValue),

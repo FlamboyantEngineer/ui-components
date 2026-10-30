@@ -242,6 +242,7 @@ export type {
   FieldValidationErrors,
   FieldValidationMode,
   FieldValidity,
+  FieldValueContract,
 } from './field-state.js';
 export { FieldScopeContext, useFieldScope } from './field-scope.js';
 export type { FieldRegistration, FieldScope } from './field-scope.js';

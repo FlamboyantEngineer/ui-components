@@ -6,7 +6,6 @@ import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useState } from 'react';
 import type { UiStrings } from '../../core/strings.js';
 import type { FieldValidationErrors, FieldValidationMode } from './field-scope.js';
-import { isFieldValueEqual } from './field-value.js';
 
 export type FieldSeverity = 'error' | 'warning';
 
@@ -142,16 +141,24 @@ function toErrorList(entry: string | readonly string[] | undefined): FieldIssue[
  * once the value changes from the value they were given for.
  */
 export function useExternalIssues<T>(
-  errors: FieldValidationErrors | undefined,
-  name: string | undefined,
   value: T,
+  {
+    errors,
+    name,
+    isEqual,
+  }: {
+    errors: FieldValidationErrors | undefined;
+    name: string | undefined;
+    /** Whether the value is still the one the errors were given for. */
+    isEqual: (left: T, right: T) => boolean;
+  },
 ): FieldIssue[] {
   const [shown, setShown] = useState({ errors, value, isCleared: false });
   let current = shown;
   if (errors !== shown.errors) {
     current = { errors, value, isCleared: false };
     setShown(current);
-  } else if (!shown.isCleared && !isFieldValueEqual(value, shown.value)) {
+  } else if (!shown.isCleared && !isEqual(value, shown.value)) {
     current = { ...shown, isCleared: true };
     setShown(current);
   }
