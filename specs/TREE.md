@@ -173,9 +173,9 @@ Verification: `src/components/tree/use-tree-filter.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-7.1 - Renaming in place
 
-With `onRename`, F2 on a row that `canRename` accepts (every row by default) shall replace its label with a text field (`ui-tree__rename-input`) named by the provider's `renameItem` string, holding the row's text value selected. Keys typed in the field edit it and never reach the tree. Enter, and focus leaving the field, call `onRename` with the item and the trimmed name when it is not blank and differs from the text value; Escape abandons the edit. Enter and Escape return focus to the row.
+With `onRename`, F2 on a row that `canRename` accepts (every row by default) shall replace its label with a text field (`ui-tree__rename-input`) named by the provider's `renameItem` string, holding the row's text value selected. Keys typed in the field edit it and never reach the tree. Enter, and focus leaving the field, call `onRename` with the item and the trimmed name when it is not blank and differs from the text value; Escape abandons the edit. Enter and Escape return focus to the row. An Enter or Escape that an input method composition owns (pressed while it composes, or the Enter reported with key code 229 as it ends) is left to the input method and neither renames nor abandons.
 
-Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree-row.tsx`
+Implementation: `src/components/tree/use-tree-rename.tsx`, `src/utils/is-composing-key.ts`, `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
 
 ## Hooks

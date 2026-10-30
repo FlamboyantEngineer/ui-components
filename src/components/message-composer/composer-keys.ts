@@ -4,6 +4,7 @@
 // that recall.
 
 import { useSyncExternalStore } from 'react';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { formatAriaKeyShortcuts, matchesChord, type ShortcutChord } from '../shortcut/shortcut.js';
 import type { MessageComposerChords, MessageComposerShortcuts } from './message-composer.js';
 import type { RecallDirection } from './use-composer-state.js';
@@ -82,14 +83,6 @@ function toRecallDirection(event: ComposerKey): RecallDirection | null {
   }
   if (event.key === 'ArrowUp') return 'older';
   return event.key === 'ArrowDown' ? 'newer' : null;
-}
-
-/**
- * Whether a key is part of an input method composition: during it, or the Enter that some
- * browsers report (as key code 229) right after it ends.
- */
-export function isComposingKey(event: ComposerKey): boolean {
-  return event.isComposing || event.keyCode === 229;
 }
 
 /** Whether the primary pointer is coarse (a touch screen), followed as it changes. */

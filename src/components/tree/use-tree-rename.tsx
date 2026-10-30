@@ -14,6 +14,7 @@ import {
 import { Input } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 
@@ -88,6 +89,7 @@ export function useTreeRename<T extends TreeItemData>(
       onEditorKeyDown(event: KeyboardEvent<HTMLElement>) {
         event.stopPropagation();
         if (event.key !== 'Enter' && event.key !== 'Escape') return;
+        if (isComposingKey(event.nativeEvent)) return;
         event.preventDefault();
         const row = inputRef.current?.closest<HTMLElement>('[role="row"]');
         finish(event.key === 'Enter');

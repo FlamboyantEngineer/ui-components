@@ -3,6 +3,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { NumberField } from '../number-field/number-field.js';
 import { InlineEdit, type InlineEditProps } from './inline-edit.js';
@@ -158,6 +159,19 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     await user.keyboard('{Enter}');
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(read()).toHaveFocus();
+  });
+
+  it('UIC-INLINE-EDIT-1.4 UIC-INLINE-EDIT-1.5 leaves Enter and Escape to an input method while it composes', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<InlineEdit label="Title" value="Rye loaf" onSave={onSave} />);
+    await user.click(read());
+    await user.keyboard('Seeded rye');
+    pressComposingKeys(textbox());
+    expect(onSave).not.toHaveBeenCalled();
+    expect(textbox()).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onSave).toHaveBeenCalledWith('Seeded rye');
   });
 
   it('UIC-INLINE-EDIT-1.4 saves when focus leaves the editor', async () => {

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { applyTreeMove } from '../../utils/tree-reorder.js';
@@ -230,6 +231,20 @@ describe('FolderManager', () => {
     await user.keyboard('Lemons{Enter}');
     expect(onRename).toHaveBeenCalledWith({ key: 'citrus', name: 'Lemons' });
     await waitFor(() => expect(row('Citrus')).toHaveFocus());
+  });
+
+  it('UIC-FOLDER-MANAGER-2.3 leaves Enter and Escape to an input method while it composes', async () => {
+    const user = userEvent.setup();
+    const onRename = vi.fn();
+    render(<Manager onRename={onRename} />);
+    await user.click(row('Citrus'));
+    await user.keyboard('{F2}Lemons');
+    const input = screen.getByRole('textbox', { name: 'Rename Citrus' });
+    pressComposingKeys(input);
+    expect(onRename).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onRename).toHaveBeenCalledWith({ key: 'citrus', name: 'Lemons' });
   });
 
   it('UIC-FOLDER-MANAGER-2.4 keeps every key typed in the name field out of the tree', async () => {

@@ -13,6 +13,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 
 interface InlineEditStateOptions<T> {
@@ -222,7 +223,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
 
   const editorHandlers = {
     onKeyDownCapture: (event: KeyboardEvent<HTMLDivElement>) => {
-      if (!isEditorKey(event) || event.nativeEvent.isComposing) return;
+      if (!isEditorKey(event) || isComposingKey(event.nativeEvent)) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();

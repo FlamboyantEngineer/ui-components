@@ -396,10 +396,10 @@ Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.
 
 ### UIC-TABLE-11.2 - Default editor
 
-Without `renderEditor` the editor shall be a text input (`ui-table__editor`) named by the column's name, holding the cell's text and focused. Enter commits; focus leaving it commits; Escape cancels. A commit calls `onCellEdit({ row, columnId, value })` with the text, or a number when the cell held a number and the text reads as one. After Enter or Escape focus returns to the cell. The table never changes its rows itself.
+Without `renderEditor` the editor shall be a text input (`ui-table__editor`) named by the column's name, holding the cell's text and focused. Enter commits; focus leaving it commits; Escape cancels. A commit calls `onCellEdit({ row, columnId, value })` with the text, or a number when the cell held a number and the text reads as one. After Enter or Escape focus returns to the cell. An Enter or Escape that an input method composition owns (pressed while it composes, or the Enter reported with key code 229 as it ends) is left to the input method and neither commits nor cancels, in the default editor and in a custom one. The table never changes its rows itself.
 
-Implementation: `src/components/table/table-cell-editor.tsx`, `src/components/table/use-cell-editing.ts`
-Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table-cell-editor.tsx`, `src/components/table/use-cell-editing.ts`, `src/utils/is-composing-key.ts`
+Verification: `src/components/table/use-cell-editing.test.tsx`, `src/utils/is-composing-key.test.ts`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-11.3 - Custom editors
 

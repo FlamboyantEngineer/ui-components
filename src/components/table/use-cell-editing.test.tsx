@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Table } from './table.js';
@@ -200,5 +201,24 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     rerender(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} />);
     expect(screen.queryByRole('button', { name: 'Blue for Colour' })).not.toBeInTheDocument();
     expect(onCellEdit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-TABLE-11.2 UIC-TABLE-11.3 leaves Enter and Escape to an input method while it composes', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    render(<Fruits onCellEdit={onCellEdit} />);
+    await user.dblClick(cell('30'));
+    const input = screen.getByRole('textbox', { name: 'Weight' });
+    await user.keyboard('{Control>}a{/Control}45');
+    pressComposingKeys(input);
+    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[0], columnId: 'weight', value: 45 });
+    await user.dblClick(cell('Red'));
+    pressComposingKeys(screen.getByRole('textbox', { name: 'Apple colour' }));
+    expect(screen.getByRole('textbox', { name: 'Apple colour' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 });

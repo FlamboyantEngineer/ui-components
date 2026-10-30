@@ -583,6 +583,31 @@ test.describe('Table lab', () => {
     await expect(output).toHaveText('Last edit: Apple kind: Vegetable');
   });
 
+  test('UIC-TABLE-11.2 leaves Enter and Escape to an input method while it composes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'editing');
+    await root.getByRole('gridcell', { name: '180' }).dblclick();
+    const input = root.getByRole('textbox', { name: 'Weight (g)' });
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('210');
+    await input.evaluate((element) => {
+      const press = (init: KeyboardEventInit) =>
+        element.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, ...init }));
+      element.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+      press({ key: 'Enter', isComposing: true });
+      press({ key: 'Escape', isComposing: true });
+      element.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }));
+      press({ key: 'Enter', keyCode: 229 });
+    });
+    await expect(input).toBeFocused();
+    await expect(root.locator('[data-lab-output]')).toHaveText('Last edit: None');
+    await page.keyboard.press('Enter');
+    await expect(root.locator('[data-lab-output]')).toHaveText('Last edit: Apple weight: 210');
+  });
+
   test('UIC-TABLE-11.4 opens no editor on a disabled row and closes one when its row is disabled', async ({
     page,
     lab,

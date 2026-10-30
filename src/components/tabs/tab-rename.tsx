@@ -18,6 +18,7 @@ import { Input } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import {
   findTabElement,
   isTabDisabled,
@@ -157,7 +158,9 @@ function TabRenameField({ tabKey, name, rename, listRef }: TabRenameFieldProps) 
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     event.stopPropagation();
-    if (event.key !== 'Enter' && event.key !== 'Escape') return;
+    if ((event.key !== 'Enter' && event.key !== 'Escape') || isComposingKey(event.nativeEvent)) {
+      return;
+    }
     event.preventDefault();
     const refused = event.key === 'Enter' ? check(event.currentTarget.value) : null;
     if (refused) setError(refused);

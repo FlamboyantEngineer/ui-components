@@ -12,6 +12,7 @@ import { InlineError } from '../inline-error/inline-error.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import { Tree, type TreeProps } from '../tree/tree.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { FolderNameInput, folderManagerHooks as hooks } from './folder-manager-parts.js';
 import {
   findFolderPath,
@@ -125,6 +126,7 @@ function useFolderKeys<T extends FolderItem>(model: FolderManagerModel<T>, entri
       const input = nameRef.current;
       if (!input || event.target !== input) return;
       event.stopPropagation();
+      if (isComposingKey(event.nativeEvent)) return;
       if (event.key === 'Enter') void actions.submit(input.value);
       else if (event.key === 'Escape') actions.cancel();
       else return;

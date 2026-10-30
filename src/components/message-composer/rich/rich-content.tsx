@@ -13,7 +13,8 @@ import { CompletionList, type CompletionListItem } from '../../completion-list/c
 import { UserIdentity } from '../../user-identity/user-identity.js';
 import { VisuallyHidden } from '../../visually-hidden/visually-hidden.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
-import { isComposingKey, runComposerKey, type ComposerKeyActions } from '../composer-keys.js';
+import { isComposingKey } from '../../../utils/is-composing-key.js';
+import { runComposerKey, type ComposerKeyActions } from '../composer-keys.js';
 import { toComposerLabelling } from '../use-message-composer.js';
 import {
   findAdjacentPill,
