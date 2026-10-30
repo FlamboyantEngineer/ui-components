@@ -246,6 +246,32 @@ function PickFolder() {
   );
 }
 
+/** A panel closed while its manager waits: the slow answer selects nothing once it is gone. */
+function ClosingPanel() {
+  const [isOpen, setOpen] = useState(true);
+  const [selected, setSelected] = useState<Key | null>('fruit');
+  const [last, setLast] = useState('none');
+  const { folders, callbacks } = useFolders(1500, setLast);
+  return (
+    <div data-lab-demo="closing">
+      <Button onPress={() => setOpen((open) => !open)}>
+        {isOpen ? 'Close panel' : 'Open panel'}
+      </Button>
+      {isOpen ? (
+        <FolderManager
+          aria-label="Panel folders"
+          folders={folders}
+          selectedKey={selected}
+          onSelectionChange={setSelected}
+          {...callbacks}
+        />
+      ) : null}
+      <LabOutput name="Panel selection">{selected === null ? 'none' : String(selected)}</LabOutput>
+      <LabOutput name="Panel action">{last}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -297,6 +323,12 @@ mountLab(
         rowHeight={28}
         data-lab-manager="virtualized"
       />
+    </LabSection>
+    <LabSection
+      title="Closing while saving"
+      description="Answers take 1.5 seconds. Create or delete a folder, then close the panel before the answer: the folder is still created or deleted, but the closed panel selects nothing."
+    >
+      <ClosingPanel />
     </LabSection>
     <LabSection
       title="Picking in a modal"

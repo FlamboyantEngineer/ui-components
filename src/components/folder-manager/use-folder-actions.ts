@@ -6,6 +6,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
 import { isKey } from '../../utils/is-key.js';
+import { useIsMounted } from '../../utils/use-is-mounted.js';
 
 /** A folder being named: a new one under `key`, or the folder `key` being renamed. */
 export interface FolderEdit {
@@ -51,10 +52,25 @@ export interface FolderActions<T extends FolderItem> {
   remove(folders: readonly T[]): Promise<void>;
 }
 
+/** Runs an edit's callback; resolves to the folder to select and focus once it ends. */
+async function runEdit(
+  current: FolderEdit,
+  name: string,
+  { onCreate, onRename }: Pick<FolderCallbacks<FolderItem>, 'onCreate' | 'onRename'>,
+): Promise<Key | null> {
+  if (current.kind === 'rename' && current.key !== null) {
+    await onRename?.({ key: current.key, name });
+    return current.key;
+  }
+  const created = await onCreate?.({ name, parentKey: current.key });
+  return isKey(created) ? created : current.key;
+}
+
 /**
  * The folder manager's edits and deletes. Each runs the caller's callback, which may return a
  * promise: while it is pending the edit ignores further submits, and a refusal keeps the edit open
- * with the typed name and shows the error's message.
+ * with the typed name and shows the error's message. Once the manager unmounts, a pending action
+ * settles nothing: it neither selects, moves focus nor reports its refusal.
  */
 export function useFolderActions<T extends FolderItem>({
   folders,
@@ -70,6 +86,7 @@ export function useFolderActions<T extends FolderItem>({
   const [isDeleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const latest = useRef<FolderEdit | null>(null);
+  const isMounted = useIsMounted();
   const setEdit = (next: FolderEdit | null) => {
     latest.current = next;
     setEditState(next);
@@ -83,15 +100,6 @@ export function useFolderActions<T extends FolderItem>({
     onSettle(current.kind === 'rename' ? current.key : key);
   };
 
-  const run = async (current: FolderEdit, name: string): Promise<Key | null> => {
-    if (current.kind === 'rename' && current.key !== null) {
-      await onRename?.({ key: current.key, name });
-      return current.key;
-    }
-    const created = await onCreate?.({ name, parentKey: current.key });
-    return isKey(created) ? created : current.key;
-  };
-
   const submit = async (text: string) => {
     const current = latest.current;
     if (!current || current.isPending) return;
@@ -99,11 +107,13 @@ export function useFolderActions<T extends FolderItem>({
     if (!name || name === current.original) return finish(current, current.key);
     setEdit({ ...current, name, isPending: true });
     try {
-      const key = await run(current, name);
+      const key = await runEdit(current, name, { onCreate, onRename });
+      if (!isMounted.current) return;
       setMessage(null);
       if (current.kind === 'create') select(key);
       finish(current, key);
     } catch (error) {
+      if (!isMounted.current) return;
       setEdit({ ...current, name, isPending: false });
       setMessage(toErrorMessage(error, strings.actionFailed));
     }
@@ -117,12 +127,13 @@ export function useFolderActions<T extends FolderItem>({
     setMessage(null);
     try {
       for (const folder of targets) await onDelete?.(folder.id);
+      if (!isMounted.current) return;
       select(parentKey);
       onSettle(parentKey);
     } catch (error) {
-      setMessage(toErrorMessage(error, strings.actionFailed));
+      if (isMounted.current) setMessage(toErrorMessage(error, strings.actionFailed));
     } finally {
-      setDeleting(false);
+      if (isMounted.current) setDeleting(false);
     }
   };
 
