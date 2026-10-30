@@ -2,8 +2,8 @@
 
 import { isThenable } from '../../utils/is-thenable.js';
 
-/** Why an offered file was refused. */
-export type FileRejectionReason = 'type' | 'size' | 'min-size' | 'count' | 'invalid';
+/** Why an offered file was refused; `unchecked` when `validate` failed (its promise rejected). */
+export type FileRejectionReason = 'type' | 'size' | 'min-size' | 'count' | 'invalid' | 'unchecked';
 
 /** An offered file the upload refused, and why. */
 export interface FileRejection {
@@ -72,7 +72,8 @@ function checkFileRules(file: File, rules: FileRules): FileRejectionReason | nul
 /**
  * Sorts offered files into the accepted ones and the refusals, keeping their order: a file must
  * match the types, fit the size limits, pass `validate` and fit within `maxFiles`, where `held`
- * files are already listed. The result is immediate unless `validate` answers with a promise.
+ * files are already listed. The result is immediate unless `validate` answers with a promise; a
+ * promise that rejects refuses its file as `unchecked`, so the result never rejects.
  */
 export function partitionFiles(
   files: readonly File[],
@@ -94,10 +95,16 @@ export function partitionFiles(
       if (reason) partition.rejections.push({ file, reason });
       const verdict = reason ? null : rules.validate?.(file, [...partition.accepted]);
       if (isThenable(verdict)) {
-        return verdict.then((message) => {
-          admit(file, message);
-          return sortFrom(at + 1);
-        });
+        return verdict.then(
+          (message) => {
+            admit(file, message);
+            return sortFrom(at + 1);
+          },
+          () => {
+            partition.rejections.push({ file, reason: 'unchecked' });
+            return sortFrom(at + 1);
+          },
+        );
       }
       if (!reason) admit(file, verdict);
     }

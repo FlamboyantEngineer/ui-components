@@ -399,6 +399,7 @@
   "rejectedFileSmall": "{count, plural, one {# fichier est trop petit.} other {# fichiers sont trop petits.}}",
   "rejectedFileCount": "{count, plural, one {# fichier dépasse la limite de fichiers.} other {# fichiers dépassent la limite de fichiers.}}",
   "rejectedFileReason": "{name} : {reason}",
+  "rejectedFileUnchecked": "{count, plural, one {# fichier n’a pas pu être vérifié.} other {# fichiers n’ont pas pu être vérifiés.}}",
   "fileCountLimit": "{count, plural, =1 {Un fichier} other {Jusqu’à # fichiers}}",
   "addFile": "Ajouter un fichier",
   "addFiles": "Ajouter des fichiers",

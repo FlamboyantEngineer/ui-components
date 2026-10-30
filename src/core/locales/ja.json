@@ -399,6 +399,7 @@
   "rejectedFileSmall": "{count} 個のファイルが小さすぎます。",
   "rejectedFileCount": "{count} 個のファイルが上限を超えています。",
   "rejectedFileReason": "{name}: {reason}",
+  "rejectedFileUnchecked": "{count} 個のファイルを確認できませんでした。",
   "fileCountLimit": "{count, plural, =1 {ファイル 1 個} other {最大 # 個のファイル}}",
   "addFile": "ファイルを追加",
   "addFiles": "ファイルを追加",

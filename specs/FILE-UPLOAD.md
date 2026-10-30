@@ -27,7 +27,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.4 - Disabled
 
-`isDisabled` shall disable the buttons (the listed files' remove buttons included) and the drop zone, which refuses drops, and publish `data-disabled` on the root.
+`isDisabled` shall disable the buttons (the listed files' remove buttons included) and the drop zone, which refuses drops, abandon offers still waiting for the owner's check (UIC-FILE-UPLOAD-2.7), and publish `data-disabled` on the root.
 
 Implementation: `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -41,10 +41,10 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.6 - Read-only
 
-`isReadOnly` shall list the files without the command, the refusal message or the remove buttons, keeping each file's preview and actions, and publish `data-readonly` on the root.
+`isReadOnly` shall list the files without the command, the refusal message or the remove buttons, keeping each file's preview and actions, abandon offers still waiting for the owner's check (UIC-FILE-UPLOAD-2.7), and publish `data-readonly` on the root.
 
 Implementation: `src/components/file-upload/file-upload.tsx`
-Verification: `src/components/file-upload/file-upload-files.test.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`, `src/components/file-upload/file-upload.test.tsx`
 
 ### UIC-FILE-UPLOAD-1.7 - Owner naming and focus
 
@@ -71,7 +71,7 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.3 - Refusals
 
-`onReject` shall receive each refused file with its reason (`type`, `size`, `min-size`, `count`, or `invalid` with the owner's `message`), and an `InlineError` alert (`ui-file-upload__rejections`) below the command counts the refusals of each reason (provider strings `rejectedFileType`, `rejectedFileSize`, `rejectedFileSmall` and `rejectedFileCount`) and gives each `invalid` file's name and message (`rejectedFileReason`). The next offer of files replaces the message, and one whose files all pass removes it.
+`onReject` shall receive each refused file with its reason (`type`, `size`, `min-size`, `count`, `invalid` with the owner's `message`, or `unchecked` when the owner's check failed), and an `InlineError` alert (`ui-file-upload__rejections`) below the command counts the refusals of each reason (provider strings `rejectedFileType`, `rejectedFileSize`, `rejectedFileSmall`, `rejectedFileCount` and `rejectedFileUnchecked`) and gives each `invalid` file's name and message (`rejectedFileReason`). The next offer of files replaces the message, and one whose files all pass removes it.
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -99,7 +99,7 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.7 - Owner's check
 
-`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise; the offer is then handed on once every answer has come. An offer made while an earlier one still waits for its answers is checked after the earlier one is handed on, so overlapping offers never pass `maxFiles` together and the refusals shown are the latest offer's. The checks run in this order: type, size, `validate`, count.
+`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise; the offer is then handed on once every answer has come. An offer made while an earlier one still waits for its answers is checked after the earlier one is handed on, so overlapping offers never pass `maxFiles` together and the refusals shown are the latest offer's. A promise that rejects refuses its file as `unchecked` and the offer goes on, so no rejection escapes. An answer reaches the `onSelect` and `onReject` the upload last rendered with. When the upload unmounts, or becomes disabled or read-only, while offers wait for their answers, they are abandoned with the offers queued behind them: their answers call nothing and show nothing, and an offer made after the upload is enabled again is checked on its own. The checks run in this order: type, size, `validate`, count.
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

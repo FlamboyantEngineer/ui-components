@@ -154,6 +154,56 @@ function UploadForm() {
   );
 }
 
+/** A server check that answers after 1.5 s; a file named "offline…" makes the check fail. */
+function checkSlowly(file: File): Promise<string | null> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (file.name.startsWith('offline')) reject(new Error('The check is offline.'));
+      else resolve(null);
+    }, 1500);
+  });
+}
+
+/** The upload can be disabled or closed while its check runs; an abandoned offer lists nothing. */
+function SlowCheck() {
+  const upload = useSimulatedUpload();
+  const [refused, setRefused] = useState('none');
+  const [isDisabled, setDisabled] = useState(false);
+  const [isOpen, setOpen] = useState(true);
+  return (
+    <>
+      <label>
+        <input
+          type="checkbox"
+          checked={isDisabled}
+          onChange={(event) => setDisabled(event.target.checked)}
+        />{' '}
+        Disable the upload
+      </label>{' '}
+      <button type="button" onClick={() => setOpen((open) => !open)}>
+        {isOpen ? 'Close the editor' : 'Open the editor'}
+      </button>
+      {isOpen ? (
+        <FileUpload
+          label="Attach checked files"
+          allowsMultiple
+          validate={checkSlowly}
+          isDisabled={isDisabled}
+          files={upload.files}
+          onSelect={upload.add}
+          onReject={(rejections: FileRejection[]) => setRefused(describeRefusals(rejections))}
+          onRemove={upload.remove}
+          data-lab-upload="slow"
+        />
+      ) : null}
+      <p>
+        Listed: <output data-lab-output="slow-listed">{upload.files.length}</output>; refused:{' '}
+        <output data-lab-output="slow-refused">{refused}</output>
+      </p>
+    </>
+  );
+}
+
 function FolderUpload() {
   const upload = useSimulatedUpload();
   return (
@@ -198,6 +248,12 @@ mountLab(
       description="The upload holds four files, refuses empty files, and the host refuses a name already chosen."
     >
       <Uploads variant="rules" />
+    </LabSection>
+    <LabSection
+      title="Slow check"
+      description='The host checks each file for 1.5 s; a file named "offline…" fails its check and is refused as unchecked. Disabling the upload or closing the editor while a check runs abandons the offer: nothing is listed or refused.'
+    >
+      <SlowCheck />
     </LabSection>
     <LabSection
       title="Drop zone"
