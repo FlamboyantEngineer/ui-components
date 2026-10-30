@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { TableColumnPin } from './table-rows.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** How far each pinned column sits from its edge, in pixels, by column key. */
 export type TablePinOffsets = Readonly<Record<string, number>>;
@@ -30,11 +31,6 @@ function sumWidths(columns: readonly PinnedColumnWidth[], pin: TableColumnPin) {
   return offsets;
 }
 
-function isSameOffsets(left: TablePinOffsets, right: TablePinOffsets): boolean {
-  const keys = Object.keys(left);
-  return keys.length === Object.keys(right).length && keys.every((key) => left[key] === right[key]);
-}
-
 /**
  * Each pinned column's distance from its edge: the summed widths of the columns pinned to the
  * same edge between it and that edge.
@@ -47,7 +43,7 @@ export function computePinOffsets(columns: readonly PinnedColumnWidth[]): TableP
 export function usePinnedOffsets(isActive: boolean): PinnedOffsets {
   const [offsets, setOffsets] = useState(noOffsets);
   const report = useCallback((next: TablePinOffsets) => {
-    setOffsets((current) => (isSameOffsets(current, next) ? current : next));
+    setOffsets((current) => (isShallowEqual(current, next) ? current : next));
   }, []);
   return { offsets: isActive ? offsets : noOffsets, report };
 }

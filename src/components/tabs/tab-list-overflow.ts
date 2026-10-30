@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { clamp } from '../../utils/clamp.js';
+import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 
 interface ListScrollOptions {
   orientation: Orientation;
   selectedKey: Key | null;
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof window.matchMedia === 'function'
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false;
 }
 
 function isOverflowing(list: HTMLElement, orientation: Orientation): boolean {
@@ -37,7 +33,7 @@ function centerTab(list: HTMLElement, tab: HTMLElement, orientation: Orientation
     : tabBox.left + tabBox.width / 2 - (listBox.left + list.clientLeft + list.clientWidth / 2);
   const rtl = !vertical && getComputedStyle(list).direction === 'rtl';
   const [min, max] = rtl ? [-range, 0] : [0, range];
-  const target = Math.min(Math.max(position + delta, min), max);
+  const target = clamp(position + delta, min, max);
   const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
   if (typeof list.scrollTo === 'function') {
     list.scrollTo(vertical ? { top: target, behavior } : { left: target, behavior });

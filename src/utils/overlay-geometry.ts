@@ -12,6 +12,7 @@ import {
   type OverlaySide,
   type OverlaySize,
 } from './overlay-position.js';
+import { isShallowEqual } from './is-shallow-equal.js';
 
 /** The boundary an overlay is solved against, measured by `getOverlayBoundary`. */
 export interface OverlayBoundary {
@@ -336,7 +337,5 @@ export function isSameOverlayGeometry(
   a: OverlayGeometry | null | undefined,
   b: OverlayGeometry | null | undefined,
 ): boolean {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  return (Object.keys(a) as Array<keyof OverlayGeometry>).every((key) => a[key] === b[key]);
+  return isShallowEqual(a, b);
 }

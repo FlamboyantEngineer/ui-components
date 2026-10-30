@@ -1,9 +1,10 @@
-import { useLayoutEffect, useMemo, useRef, type HTMLAttributes, type RefObject } from 'react';
+import { useMemo, useRef, type HTMLAttributes, type RefObject } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import { useItemDrag } from '../../utils/use-item-drag.js';
 import { useDragType } from '../../utils/use-drag-type.js';
 import { armElementDrag } from '../../utils/pointer-drag.js';
 import { resolveStepDrop, type StepListEditorStep, type StepMove } from './step-list.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** What every step's drag and drop shares: the editor's media type, the dragged step and the move. */
 export interface StepDrag {
@@ -22,10 +23,7 @@ interface StepDragSource {
 
 /** The editor's step drag and drop, each drop checked against the steps last rendered. */
 export function useStepDrag(source: StepDragSource): StepDrag {
-  const latest = useRef(source);
-  useLayoutEffect(() => {
-    latest.current = source;
-  });
+  const latest = useLatest(source);
   const dragType = useDragType('step');
   const dragging = useRef<string | null>(null);
   return useMemo(
@@ -38,7 +36,7 @@ export function useStepDrag(source: StepDragSource): StepDrag {
       },
       onMove: (move) => latest.current.onMove(move),
     }),
-    [dragType],
+    [dragType, latest],
   );
 }
 

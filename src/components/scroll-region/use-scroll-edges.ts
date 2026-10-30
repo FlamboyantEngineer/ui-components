@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** How far the content reaches past each edge of the viewport, in whole pixels. */
 export interface ScrollEdges {
@@ -24,10 +26,6 @@ interface ScrollEdgesOptions {
 }
 
 const noEdges: ScrollEdges = { yStart: 0, yEnd: 0, xStart: 0, xEnd: 0 };
-
-function isSameEdges(left: ScrollEdges, right: ScrollEdges): boolean {
-  return (Object.keys(left) as Array<keyof ScrollEdges>).every((key) => left[key] === right[key]);
-}
 
 /** The distances from the viewport's edges to the content's, in whole pixels. */
 export function readScrollEdges(element: HTMLElement): ScrollEdges {
@@ -58,10 +56,7 @@ export function useScrollEdges(
   const [edges, setEdges] = useState(noEdges);
   const previous = useRef(noEdges);
   const isPinned = useRef(true);
-  const latest = useRef({ stickToBottom, onTopReached, onBottomReached });
-  useLayoutEffect(() => {
-    latest.current = { stickToBottom, onTopReached, onBottomReached };
-  });
+  const latest = useLatest({ stickToBottom, onTopReached, onBottomReached });
 
   const read = useCallback(
     (fromScroll: boolean) => {
@@ -75,9 +70,9 @@ export function useScrollEdges(
         if (before.yStart > 0 && next.yStart === 0) latest.current.onTopReached?.();
         if (before.yEnd > 0 && next.yEnd === 0) latest.current.onBottomReached?.();
       }
-      setEdges((current) => (isSameEdges(current, next) ? current : next));
+      setEdges((current) => (isShallowEqual(current, next) ? current : next));
     },
-    [viewport],
+    [viewport, latest],
   );
 
   useEffect(() => {
@@ -106,7 +101,7 @@ export function useScrollEdges(
       resize?.disconnect();
       mutations.disconnect();
     };
-  }, [enabled, read, viewport]);
+  }, [enabled, read, viewport, latest]);
 
   const onScroll = useCallback(() => read(true), [read]);
   return { edges: enabled ? edges : noEdges, onScroll };

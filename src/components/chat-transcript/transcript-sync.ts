@@ -5,24 +5,12 @@ import {
   type TranscriptSettings,
   type TranscriptUi,
 } from './transcript-runtime.js';
-import type { WindowRange } from './transcript-window.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** How long the newest message in view must stay the newest before `onRead` hears of it. */
 const READ_DELAY = 500;
 /** How long scrolling must pause after Page Up or Page Down before focus follows. */
 const PAGE_SETTLE_DELAY = 150;
-
-function isSameRange(left: WindowRange | null, right: WindowRange | null): boolean {
-  return left?.first === right?.first && left?.last === right?.last;
-}
-
-function isSameUi(left: TranscriptUi, right: TranscriptUi): boolean {
-  return (
-    left.isAway === right.isAway &&
-    left.unseenCount === right.unseenCount &&
-    left.isUnreadAbove === right.isUnreadAbove
-  );
-}
 
 /** Whether at least half of an element, or of the view when the element is taller, is in view. */
 function isMostlyVisible(element: Element, viewport: HTMLElement): boolean {
@@ -51,7 +39,7 @@ function updateWindow(runtime: TranscriptRuntime, settings: TranscriptSettings) 
   const feed = runtime.feed.current;
   if (!settings.virtualized || !viewport || !feed || !runtime.keys) return;
   const next = runtime.windowModel.range(viewport, feed, runtime.keys);
-  settings.setRange((current) => (isSameRange(current, next) ? current : next));
+  settings.setRange((current) => (isShallowEqual(current, next) ? current : next));
 }
 
 /** Shows or hides the jump button, its count and the unread bar. */
@@ -65,7 +53,7 @@ function updateUi(runtime: TranscriptRuntime, settings: TranscriptSettings) {
     unseenCount: runtime.unseen.size,
     isUnreadAbove: resolveUnreadAbove(runtime, settings.firstUnreadId),
   };
-  settings.setUi((current) => (isSameUi(current, next) ? current : next));
+  settings.setUi((current) => (isShallowEqual(current, next) ? current : next));
 }
 
 /** Asks for older messages once the reader is within a view's height of the top. */

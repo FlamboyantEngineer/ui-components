@@ -1,7 +1,8 @@
 // The palette's document-wide shortcut.
 
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { formatAriaKeyShortcuts, isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /**
  * Calls `onPress` when the chord is pressed anywhere in the document and no one handled the key
@@ -9,10 +10,7 @@ import { formatAriaKeyShortcuts, isChordPress, type ShortcutChord } from '../sho
  */
 export function useDocumentShortcut(chord: ShortcutChord | null, onPress: () => void): void {
   const keys = chord ? formatAriaKeyShortcuts(chord) : '';
-  const latest = useRef({ chord, onPress });
-  useLayoutEffect(() => {
-    latest.current = { chord, onPress };
-  });
+  const latest = useLatest({ chord, onPress });
   useEffect(() => {
     if (!keys) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -23,5 +21,5 @@ export function useDocumentShortcut(chord: ShortcutChord | null, onPress: () => 
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [keys]);
+  }, [keys, latest]);
 }

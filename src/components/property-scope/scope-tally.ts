@@ -4,6 +4,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { textMatchesTerms } from '../text-match/text-match.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** What a part of a property panel reports to the level that holds it. */
 interface PropertyTally {
@@ -51,15 +52,6 @@ export const PropertyScopeContext = createContext<PropertyScopeValue>({
   report: () => () => undefined,
 });
 
-function isSameTally(left: PropertyTally | undefined, right: PropertyTally): boolean {
-  return (
-    left !== undefined &&
-    left.count === right.count &&
-    left.matches === right.matches &&
-    left.isOverridden === right.isOverridden
-  );
-}
-
 function sumTallies(tallies: Iterable<PropertyTally>): PropertyTally {
   const total: PropertyTally = { count: 0, matches: 0, isOverridden: false };
   for (const tally of tallies) {
@@ -82,7 +74,7 @@ export function usePropertyTallies(): Pick<PropertyScopeValue, 'report'> & {
   const [tallies, setTallies] = useState<ReadonlyMap<symbol, PropertyTally>>(() => new Map());
   const report = useCallback((key: symbol, tally: PropertyTally) => {
     setTallies((previous) =>
-      isSameTally(previous.get(key), tally) ? previous : new Map(previous).set(key, tally),
+      isShallowEqual(previous.get(key), tally) ? previous : new Map(previous).set(key, tally),
     );
     return () =>
       setTallies((previous) => {

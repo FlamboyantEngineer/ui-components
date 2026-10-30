@@ -1,14 +1,5 @@
 import { useRef } from 'react';
-
-function isShallowEqual(left: object, right: object): boolean {
-  const keys = Object.keys(left);
-  if (keys.length !== Object.keys(right).length) return false;
-  return keys.every(
-    (key) =>
-      Object.hasOwn(right, key) &&
-      Object.is((left as Record<string, unknown>)[key], (right as Record<string, unknown>)[key]),
-  );
-}
+import { isShallowEqual } from './is-shallow-equal.js';
 
 /**
  * `value`, or the object an earlier render returned while every field of `value` is the same

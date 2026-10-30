@@ -1,6 +1,7 @@
 import { findMaximum } from '../../utils/find-maximum.js';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { observeViewport } from './observe-viewport.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** Registers a sticky header to keep the vertical thumb below; returns its unregistration. */
 export type HeaderRegistration = (element: HTMLElement | null) => (() => void) | undefined;
@@ -59,12 +60,6 @@ const emptyMetrics: OverlayMetrics = {
   trackX: 0,
   trackY: 0,
 };
-
-function isSameMetrics(left: OverlayMetrics, right: OverlayMetrics): boolean {
-  return (Object.keys(left) as Array<keyof OverlayMetrics>).every(
-    (key) => left[key] === right[key],
-  );
-}
 
 /** Space below content shorter than the viewport, which the horizontal thumb rises over. */
 function measureLift(element: HTMLElement): number {
@@ -141,7 +136,7 @@ export function useOverlayMetrics({
     const measure = () => {
       const header = headerInset ? measureHeaders(headers.current) : 0;
       const next = readMetrics(element, tracks.current, header);
-      setMetrics((previous) => (isSameMetrics(previous, next) ? previous : next));
+      setMetrics((previous) => (isShallowEqual(previous, next) ? previous : next));
     };
     const getExtraTargets = () => [...headers.current, tracks.current.x, tracks.current.y];
     const current = observeViewport(element, view, { measure, getExtraTargets, subtree: true });

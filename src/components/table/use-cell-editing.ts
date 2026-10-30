@@ -8,6 +8,7 @@ import {
 } from 'react';
 import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** A finished cell edit: the row, the column and the cell's new value. */
 export interface TableCellEdit<T> {
@@ -138,10 +139,7 @@ export function useCellEditing<T extends TableRow>({
   const open = useRef<TableEditingCell | null>(null);
   const root = useRef<HTMLElement | null>(null);
   const refocus = useRef<Refocus | null>(null);
-  const latest = useRef(onCellEdit);
-  useLayoutEffect(() => {
-    latest.current = onCellEdit;
-  });
+  const latest = useLatest(onCellEdit);
 
   useLayoutEffect(() => {
     const target = refocus.current;
@@ -169,13 +167,13 @@ export function useCellEditing<T extends TableRow>({
     (edit: TableCellEdit<T>, move?: CellMove) => {
       if (end(true, move)) latest.current?.(edit);
     },
-    [end],
+    [end, latest],
   );
   const release = useCallback(
     (edit: TableCellEdit<T>) => {
       if (end(false)) latest.current?.(edit);
     },
-    [end],
+    [end, latest],
   );
   const cancel = useCallback(() => {
     end(true);

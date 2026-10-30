@@ -6,6 +6,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
+import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 
 interface CarouselAutoplayOptions {
   /** Whether the carousel rotates on its own at all. */
@@ -34,14 +35,6 @@ export interface CarouselAutoplay {
     onFocus: (event: FocusEvent) => void;
     onBlur: (event: FocusEvent) => void;
   };
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
 }
 
 /**

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, type PointerEvent } from 'react';
 import { capturePointer, releasePointer } from './pointer-drag.js';
+import { useLatest } from './use-latest.js';
 
 interface PointerDragOptions<E extends Element, T> {
   /** Refuse new gestures and release an active gesture without reporting a drop. */
@@ -30,10 +31,7 @@ interface PointerDrag<E extends Element, T> {
  */
 export function usePointerDrag<E extends Element, T>(options: PointerDragOptions<E, T>) {
   const active = useRef<PointerDrag<E, T> | null>(null);
-  const onCancel = useRef(options.onCancel);
-  useLayoutEffect(() => {
-    onCancel.current = options.onCancel;
-  });
+  const onCancel = useLatest(options.onCancel);
   const isDisabled = options.isDisabled ?? false;
   const cancel = useCallback(() => {
     const drag = active.current;
@@ -52,7 +50,7 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
     if (!drag || (!isDisabled && Object.is(drag.resetKey, options.resetKey))) return;
     cancel();
     onCancel.current?.(drag.state);
-  }, [cancel, isDisabled, options.resetKey]);
+  }, [cancel, isDisabled, options.resetKey, onCancel]);
 
   const finish = (event: PointerEvent<E>, isCancelled: boolean) => {
     const drag = active.current;
