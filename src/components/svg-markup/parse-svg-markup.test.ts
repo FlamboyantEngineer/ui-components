@@ -67,9 +67,8 @@ describe('parseSvgMarkup', () => {
     );
     expect(tree.tag).toBe('svg');
     expect(tree.attributes).toEqual({ viewBox: '0 0 10 10' });
-    const [title, style, group, text] = tree.children.map(element);
+    const [title, group, text] = tree.children.map(element);
     expect(title?.children).toEqual([{ type: 'text', text: 'Sun & moon ☀ ☾' }]);
-    expect(style?.children).toEqual([{ type: 'text', text: ' .ray > path { stroke: gold } ' }]);
     expect(group?.children.map((child) => element(child).tag)).toEqual(['path']);
     expect(text?.attributes['font-family']).toBe('"Serif"');
     expect(text?.children[0]).toEqual({ type: 'text', text: 'A ' });
@@ -83,50 +82,119 @@ describe('parseSvgMarkup', () => {
     expect(() => parseSvgMarkup('')).toThrow(/root <svg>/);
   });
 
-  it('UIC-SVG-MARKUP-1.2 drops scripts, embedded HTML, event handlers and script URLs', () => {
+  it('UIC-SVG-MARKUP-1.2 drops scripts, styles, embedded HTML, event handlers and unknown elements', () => {
     const tree = parseSvgMarkup(
       [
         '<svg onload="steal()" viewBox="0 0 4 4">',
         '<script>steal()</script>',
         '<SCRIPT type="text/javascript"><![CDATA[ steal() ]]></SCRIPT>',
+        '<style>@import url(https://example.com/x.css); path { fill: red }</style>',
         '<foreignObject><iframe src="https://example.com"></iframe></foreignObject>',
-        '<a href=" java\tscript:steal()" xlink:href="javascript:steal()"><path d="M0 0"/></a>',
-        '<a href="#ring"><circle onclick="steal()" ONMOUSEOVER="steal()" r="1"/></a>',
-        '<image src="vbscript:steal()" href="tile.png"/>',
+        '<html:iframe srcdoc="&lt;script&gt;steal()&lt;/script&gt;"></html:iframe>',
+        '<p><circle r="9"/></p>',
+        '<circle onclick="steal()" ONMOUSEOVER="steal()" tabindex="0" r="1"/>',
         '</svg>',
       ].join(''),
     );
     expect(tree.attributes).toEqual({ viewBox: '0 0 4 4' });
-    const [unsafeLink, safeLink, image] = tree.children.map(element);
-    expect(tree.children).toHaveLength(3);
-    expect(unsafeLink?.attributes).toEqual({});
-    expect(safeLink?.attributes).toEqual({ href: '#ring' });
-    expect(element(safeLink?.children[0]).attributes).toEqual({ r: '1' });
-    expect(image?.attributes).toEqual({ href: 'tile.png' });
+    expect(tree.children.map(element)).toEqual([
+      { type: 'element', tag: 'circle', attributes: { r: '1' }, children: [] },
+    ]);
   });
 
-  it('UIC-SVG-MARKUP-1.2 drops animations that could set a link to a script URL', () => {
+  it('UIC-SVG-MARKUP-1.2 keeps title and description as text only', () => {
+    const tree = parseSvgMarkup(
+      [
+        '<svg>',
+        '<desc>Plan<iframe srcdoc="&lt;script&gt;steal()&lt;/script&gt;"></iframe> view</desc>',
+        '<title>Map<img src="x" onerror="steal()"/><![CDATA[ & key]]></title>',
+        '</svg>',
+      ].join(''),
+    );
+    const [desc, title] = tree.children.map(element);
+    expect(desc?.children).toEqual([
+      { type: 'text', text: 'Plan' },
+      { type: 'text', text: ' view' },
+    ]);
+    expect(title?.children).toEqual([
+      { type: 'text', text: 'Map' },
+      { type: 'text', text: ' & key' },
+    ]);
+  });
+
+  it('UIC-SVG-MARKUP-1.2 unwraps links and keeps only fragment links and raster data images', () => {
+    const tree = parseSvgMarkup(
+      [
+        '<svg>',
+        '<a href=" java\tscript:steal()" xlink:href="javascript:steal()"><path d="M0 0"/></a>',
+        '<use href="#ring" xlink:href="https://example.com/sprite.svg#ring"/>',
+        '<use href="data:image/svg+xml,&lt;svg onload=steal()&gt;"/>',
+        '<image href="https://example.com/tile.png"/>',
+        '<image href="data:image/png;base64,iVBORw0KGgo="/>',
+        '<image href="data:image/svg+xml;base64,PHN2Zz4="/>',
+        '<feImage href="data:image/png;base64,iVBORw0KGgo="/>',
+        '</svg>',
+      ].join(''),
+    );
+    expect(tree.children.map(element).map(({ tag, attributes }) => ({ tag, attributes }))).toEqual([
+      { tag: 'path', attributes: { d: 'M0 0' } },
+      { tag: 'use', attributes: { href: '#ring' } },
+      { tag: 'use', attributes: {} },
+      { tag: 'image', attributes: {} },
+      { tag: 'image', attributes: { href: 'data:image/png;base64,iVBORw0KGgo=' } },
+      { tag: 'image', attributes: {} },
+    ]);
+  });
+
+  it('UIC-SVG-MARKUP-1.2 drops values and declarations that load or run anything', () => {
+    const tree = parseSvgMarkup(
+      [
+        '<svg xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">',
+        '<rect fill="url(#fade)" stroke="url(https://example.com/x.svg#p)" class="ui-root tile"',
+        ' filter="expression(steal())" mask="url( \'#m\' )" data-part="tile" aria-label="Tile"',
+        ' style="fill: url(https://example.com/a); stroke: red; position: fixed; --tone: 3;',
+        ' -webkit-transform: none; background: url(#x); opacity: image-set(x)"/>',
+        '</svg>',
+      ].join(''),
+    );
+    expect(tree.attributes).toEqual({ 'xmlns:xlink': 'http://www.w3.org/1999/xlink' });
+    expect(element(tree.children[0]).attributes).toEqual({
+      fill: 'url(#fade)',
+      class: 'tile',
+      mask: "url( '#m' )",
+      'data-part': 'tile',
+      'aria-label': 'Tile',
+      style: 'stroke: red; --tone: 3; -webkit-transform: none',
+    });
+  });
+
+  it('UIC-SVG-MARKUP-1.2 drops animations that target links, styles or dropped attributes', () => {
     const tree = parseSvgMarkup(
       [
         '<svg viewBox="0 0 10 10">',
         '<a><set attributeName="href" to="javascript:steal()"/><rect width="10"/></a>',
-        '<a><animate attributeName="xlink:href" values="#a;#b" dur="1s"/></a>',
-        '<a><animate attribute-name="href" values="#ring; javascript:steal()"/></a>',
-        '<a><animate attributeName="title" from=" JavaScript:steal()" to="#b"/></a>',
-        '<a><animateMotion by="vbscript:steal()"><set attributeName="href"/></animateMotion></a>',
-        '<a><set attributeName="x:href" to="#ring"><set to="#a"/></set><circle r="1"/></a>',
+        '<use><animate attributeName="xlink:href" values="#a;#b" dur="1s"/></use>',
+        '<use><animate attribute-name="href" values="#ring; javascript:steal()"/></use>',
+        '<g><animate attributeName="onclick" to="steal()"/></g>',
+        '<g><animate attributeName="STYLE" to="fill: red"/></g>',
+        '<g><animateMotion by="vbscript:steal()"><set attributeName="href"/></animateMotion></g>',
+        '<g><set attributeName="x:href" to="#ring"><set to="#a"/></set><circle r="1"/></g>',
         '<path xlink-href="javascript:steal()" XLINK:HREF="javascript:steal()" d="M0 0"/>',
         '<rect><set attributeName="fill" to="red"/><animate attributeName="x" values="0;5"/></rect>',
         '</svg>',
       ].join(''),
     );
-    const [first, second, third, fourth, fifth, sixth, path, rect] = tree.children.map(element);
-    expect(tree.children).toHaveLength(8);
-    expect(first?.children.map((child) => element(child).tag)).toEqual(['rect']);
-    for (const link of [second, third, fourth, fifth]) expect(link?.children).toEqual([]);
+    const [rect, first, second, third, fourth, fifth, sixth, path, animated] =
+      tree.children.map(element);
+    expect(tree.children).toHaveLength(9);
+    expect(rect?.tag).toBe('rect');
+    expect(first?.children).toEqual([]);
+    expect(second?.children.map((child) => element(child).attributes)).toEqual([{}]);
+    for (const group of [third, fourth]) expect(group?.children).toEqual([]);
+    expect(element(fifth?.children[0]).children).toEqual([]);
     expect(sixth?.children.map((child) => element(child).tag)).toEqual(['circle']);
     expect(path?.attributes).toEqual({ d: 'M0 0' });
-    expect(rect?.children.map((child) => element(child).attributes)).toEqual([
+    expect(animated?.children.map((child) => element(child).attributes)).toEqual([
       { attributeName: 'fill', to: 'red' },
       { attributeName: 'x', values: '0;5' },
     ]);

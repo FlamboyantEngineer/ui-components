@@ -10,6 +10,24 @@ const placements = ['standalone', 'icon sm', 'icon md', 'icon lg'] as const;
 
 const unsafeMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" onload="window.unsafe = true"><script>window.unsafe = true</script><a href="javascript:window.unsafe = true"><rect x="4" y="4" width="16" height="16" rx="3"/></a></svg>`;
 
+const attack = 'window.unsafe = true';
+
+/** Adversarial drawings: each would run script or load a remote resource if rendered unfiltered. */
+const adversarialMarkups: Record<string, string> = {
+  'iframe in description': `<desc><iframe srcdoc="&lt;script&gt;parent.${attack}&lt;/script&gt;"></iframe></desc>`,
+  'image in title': `<title><img src="x" onerror="${attack}"/></title>`,
+  'foreign object': `<foreignObject width="24" height="24"><img src="x" onerror="${attack}"/></foreignObject>`,
+  'style import': `<style>@import url(https://remote.invalid/sheet.css);</style>`,
+  'script link': `<a href="javascript:${attack}"><rect width="4" height="4"/></a>`,
+  'remote use': `<use href="https://remote.invalid/sprite.svg#icon"/><use href="data:image/svg+xml,&lt;svg onload='${attack}'/&gt;"/>`,
+  'animated link': `<a><set attributeName="href" to="javascript:${attack}"/><rect width="4" height="4"/></a>`,
+  'remote image': `<image href="https://remote.invalid/tile.png" width="4" height="4"/><feImage href="https://remote.invalid/tile.png"/>`,
+  'remote paint': `<rect width="4" height="4" fill="url(https://remote.invalid/paint.svg#p)" style="fill: url(https://remote.invalid/a.svg#p)"/>`,
+  'HTML breakout': `<html:iframe src="javascript:${attack}"/><p><img src="x" onerror="${attack}"/></p>`,
+  'CDATA in description': `<desc><![CDATA[</desc><img src="x" onerror="${attack}">]]></desc>`,
+  'event handler': `<circle cx="12" cy="12" r="4" onload="${attack}" onclick="${attack}"/>`,
+};
+
 /** A small registry of drawings kept as markup strings, as a host icon registry would. */
 function registry(suffix: string): Record<string, string> {
   return {
@@ -61,11 +79,22 @@ mountLab(
     </LabSection>
     <LabSection
       title="Unsafe and missing markup"
-      description="Scripts, event handlers and script links are dropped; markup without a drawing renders nothing."
+      description="Markup is untrusted: only drawing elements, attributes and fragment links survive, so nothing runs or loads. Markup without a drawing renders nothing."
     >
       <p data-lab-unsafe="">
         Sanitised: <SvgMarkup markup={unsafeMarkup} label="Sanitised square" />
       </p>
+      <ul data-lab-adversarial="">
+        {Object.entries(adversarialMarkups).map(([name, content]) => (
+          <li key={name}>
+            {name}:{' '}
+            <SvgMarkup
+              markup={`<svg ${svgNamespace} viewBox="0 0 24 24" fill="currentColor">${content}<circle cx="12" cy="12" r="2"/></svg>`}
+              label={`Sanitised ${name}`}
+            />
+          </li>
+        ))}
+      </ul>
       <p data-lab-missing="">
         Missing: <SvgMarkup markup="" />
         (nothing)
