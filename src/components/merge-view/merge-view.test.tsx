@@ -243,6 +243,85 @@ describe('MergeView', { timeout: 15_000 }, () => {
     );
   });
 
+  it('UIC-MERGE-VIEW-2.5 starts conflict editors over, undo history included, when a text changes', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const merges = {
+      base: { base: 'Base B', ours: 'Ours A', theirs: 'Theirs A' },
+      ours: { base: 'Base A', ours: 'Ours B', theirs: 'Theirs A' },
+      theirs: { base: 'Base A', ours: 'Ours A', theirs: 'Theirs B' },
+      all: { base: 'Base B', ours: 'Ours B', theirs: 'Theirs B' },
+    };
+    for (const next of Object.values(merges)) {
+      const { rerender, unmount } = render(
+        <MergeView base="Base A" ours="Ours A" theirs="Theirs A" onChange={onChange} />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Take Ours' }));
+      expect(screen.getByRole('textbox')).toHaveValue('Ours A');
+      rerender(<MergeView {...next} onChange={onChange} />);
+      onChange.mockClear();
+      const conflict = screen.getByRole('group', { name: 'Conflict 1 of 1' });
+      const editor = within(conflict).getByRole('textbox');
+      const fresh = (editor as HTMLTextAreaElement).value;
+      await user.click(editor);
+      await user.keyboard('{Control>}z{/Control}');
+      expect(editor).toHaveValue(fresh);
+      expect(conflict).toHaveAttribute('data-resolution', 'unresolved');
+      expect(onChange).not.toHaveBeenCalled();
+      unmount();
+    }
+  });
+
+  it('UIC-MERGE-VIEW-2.5 starts over when the number or order of conflicts changes', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <MergeView base="Base A" ours="Ours A" theirs="Theirs A" onChange={onChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Take Theirs' }));
+    const two = ['a', 'b', 'c'].join('\n');
+    rerender(
+      <MergeView
+        base={two}
+        ours={['x', 'b', 'y'].join('\n')}
+        theirs={['z', 'b', 'w'].join('\n')}
+        onChange={onChange}
+      />,
+    );
+    onChange.mockClear();
+    for (const name of ['Conflict 1 of 2', 'Conflict 2 of 2']) {
+      const conflict = screen.getByRole('group', { name });
+      expect(conflict).toHaveAttribute('data-resolution', 'unresolved');
+      await user.click(within(conflict).getByRole('textbox'));
+      await user.keyboard('{Control>}z{/Control}');
+      expect(conflict).toHaveAttribute('data-resolution', 'unresolved');
+    }
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('UIC-MERGE-VIEW-2.4 undoes takes and edits within one merge, and keeps them on other rerenders', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <MergeView base={base} ours={ours} theirs={theirs} onChange={onChange} />,
+    );
+    const conflict = screen.getByRole('group', { name: 'Conflict 1 of 1' });
+    const editor = within(conflict).getByRole('textbox');
+    await user.click(within(conflict).getByRole('button', { name: 'Take Ours' }));
+    await user.type(editor, '!');
+    expect(editor).toHaveValue('oat milk!');
+    await user.keyboard('{Control>}z{/Control}');
+    expect(editor).toHaveValue('oat milk');
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ unresolved: 0 }));
+    rerender(
+      <MergeView base={base} ours={ours} theirs={theirs} oursLabel="Mine" onChange={() => {}} />,
+    );
+    const kept = screen.getByRole('group', { name: 'Conflict 1 of 1' });
+    expect(within(kept).getByRole('textbox')).toBe(editor);
+    expect(editor).toHaveValue('oat milk');
+    expect(kept).not.toHaveAttribute('data-resolution', 'unresolved');
+  });
+
   it('UIC-MERGE-VIEW-2.4 does not redraw the input sides while a result is typed', async () => {
     const user = userEvent.setup();
     const drawsLine = () =>

@@ -45,7 +45,7 @@ Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/
 
 Pressing a take action shall resolve the conflict with that action, and its editor then holds our lines (`ours`), their lines (`theirs`), our lines followed by theirs (`both`) or the base's lines (`base`). Another take action replaces the resolution.
 
-Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-blocks.ts`
+Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-blocks.ts`, `src/components/merge-view/use-merge-state.ts`, `src/components/merge-view/merge-view-result.tsx`
 Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ### UIC-MERGE-VIEW-2.4 - Editable result
@@ -57,9 +57,9 @@ Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.s
 
 ### UIC-MERGE-VIEW-2.5 - Result and resolution state
 
-After each take action or edit, `onChange` shall be called with `text`, the clean chunks' lines and each conflict's result in order (an empty result adding no line), ending with a line break when `ours` does; `resolutions`, each conflict's resolution in order; and `unresolved`, how many are still unresolved. When `base`, `ours` or `theirs` changes, every conflict starts over unresolved.
+After each take action or edit, `onChange` shall be called with `text`, the clean chunks' lines and each conflict's result in order (an empty result adding no line), ending with a line break when `ours` does; `resolutions`, each conflict's resolution in order; and `unresolved`, how many are still unresolved. When `base`, `ours` or `theirs` changes, every conflict starts over unresolved, and each conflict's editor starts over too: its undo history holds nothing from the earlier texts, so undo never brings back an earlier merge's text or resolves a conflict of the new one. Other changes, such as labels, `onChange` or the locale, keep the current resolutions, edits and history.
 
-Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-blocks.ts`
+Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-blocks.ts`, `src/components/merge-view/use-merge-state.ts`, `src/components/merge-view/merge-view-result.tsx`
 Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ## UIC-MERGE-VIEW-3 - Conflicts

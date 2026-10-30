@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { MergeView, type MergeViewResult } from '../../src/components/merge-view/merge-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -102,6 +103,45 @@ function RecipeMerge() {
   );
 }
 
+/** Two unrelated merges in turn, as a panel reused for the next file shows them. */
+const queuedMerges = [
+  { name: 'Pancakes', base: 'Use 2 eggs.', ours: 'Use 3 eggs.', theirs: 'Use 1 egg.' },
+  {
+    name: 'Flatbread',
+    base: 'Rest for 1 hour.',
+    ours: 'Rest for 2 hours.',
+    theirs: 'Rest overnight.',
+  },
+];
+
+function QueuedMerge() {
+  const [index, setIndex] = useState(0);
+  const [result, setResult] = useState<MergeViewResult | null>(null);
+  const merge = queuedMerges[index % queuedMerges.length] ?? queuedMerges[0];
+  if (!merge) return null;
+  return (
+    <>
+      <Button
+        onPress={() => {
+          setIndex(index + 1);
+          setResult(null);
+        }}
+      >
+        Next merge
+      </Button>
+      <MergeView
+        aria-label={`${merge.name} merge`}
+        base={merge.base}
+        ours={merge.ours}
+        theirs={merge.theirs}
+        onChange={setResult}
+        data-lab-field="queued"
+      />
+      <pre data-lab-output="queued-text">{result?.text ?? ''}</pre>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -129,6 +169,12 @@ mountLab(
       description="Take a side, both or the base for each conflict, or edit its result; Next conflict and Previous conflict move between them and the count announces what is left. The result text updates below."
     >
       <RecipeMerge />
+    </LabSection>
+    <LabSection
+      title="Replacing the texts"
+      description="Next merge shows another set of texts in the same view: every conflict starts over unresolved, and undo in its editor never brings back the previous merge's text."
+    >
+      <QueuedMerge />
     </LabSection>
     <LabSection
       title="Scrolling together"

@@ -170,6 +170,7 @@ export function MergeView({
       <MergeResultPane
         label={strings.mergeViewResult}
         blocks={blocks}
+        generation={merge.generation}
         states={merge.states}
         labels={labels}
         current={current}

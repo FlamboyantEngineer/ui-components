@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { mergeThreeWay } from '../../utils/three-way-merge.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import {
@@ -55,8 +55,21 @@ function countUnresolved(states: readonly ConflictState[]): number {
 }
 
 /**
+ * Counts the sets of texts a merge view has shown, so the conflict editors of one merge are new
+ * elements for the next: their undo history never carries an earlier merge's text.
+ */
+function useGeneration(blocks: readonly MergeBlock[]): number {
+  const [seen, setSeen] = useState({ blocks, generation: 0 });
+  if (seen.blocks === blocks) return seen.generation;
+  const next = { blocks, generation: seen.generation + 1 };
+  setSeen(next);
+  return next.generation;
+}
+
+/**
  * A merge view's blocks and conflict states for its texts: resolving a conflict makes it current
- * and reports the result; every conflict starts over unresolved when a text changes.
+ * and reports the result; every conflict, and its editor's history, starts over when a text
+ * changes.
  */
 export function useMergeState({ base, ours, theirs, markers, onChange }: MergeStateOptions) {
   const blocks = useMemo(
@@ -65,6 +78,7 @@ export function useMergeState({ base, ours, theirs, markers, onChange }: MergeSt
   );
   const initial = useMemo(() => createInitialState(blocks), [blocks]);
   const [state, setState] = useStateFor(blocks, initial);
+  const generation = useGeneration(blocks);
   const resolve = (conflict: number, next: ConflictState) => {
     const states = state.states.map((entry, index) => (index === conflict ? next : entry));
     setState({ states, current: conflict });
@@ -76,6 +90,7 @@ export function useMergeState({ base, ours, theirs, markers, onChange }: MergeSt
   };
   return {
     blocks,
+    generation,
     states: state.states,
     current: state.current,
     unresolved: countUnresolved(state.states),
