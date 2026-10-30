@@ -40,6 +40,8 @@
   "files": [
     "dist",
     "!dist/**/*.test.*",
+    "src",
+    "!src/**/*.test.*",
     "specs",
     "CHANGELOG.md"
   ],
