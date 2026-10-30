@@ -362,6 +362,77 @@ describe('Wizard', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('UIC-WIZARD-2.6 finishes a passed check through the workflow it checked, not a replacement', async () => {
+    let settleA: (value: boolean) => void = () => {};
+    const validateA = () => new Promise<boolean>((resolve) => (settleA = resolve));
+    const validateB = vi.fn(() => false);
+    const onFinishA = vi.fn();
+    const onFinishB = vi.fn();
+    const record = (validate: WizardStep['validate'], text: string): WizardStep[] => [
+      { id: 'confirm', label: 'Confirm', content: <p>{text}</p>, validate },
+    ];
+    const { rerender } = render(
+      <Wizard steps={record(validateA, 'Record A')} onFinish={onFinishA} />,
+    );
+    await userEvent.click(action('Finish'));
+    rerender(<Wizard steps={record(validateB, 'Record B')} onFinish={onFinishB} />);
+    await act(async () => settleA(true));
+    expect(onFinishB).not.toHaveBeenCalled();
+    expect(validateB).not.toHaveBeenCalled();
+    expect(onFinishA).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-WIZARD-2.6 aborts a check once a keyed wizard moves to another record', async () => {
+    const checks: {
+      settle: (value: boolean) => void;
+      fail: (error: Error) => void;
+      signal: AbortSignal;
+    }[] = [];
+    const validate = (signal: AbortSignal) =>
+      new Promise<boolean>((settle, fail) => checks.push({ settle, fail, signal }));
+    const onFinish = vi.fn();
+    const record = (id: string) => (
+      <Wizard
+        key={id}
+        steps={[{ id: 'confirm', label: 'Confirm', content: <p>{id}</p>, validate }]}
+        onFinish={() => onFinish(id)}
+      />
+    );
+    const { rerender } = render(record('A'));
+    await userEvent.click(action('Finish'));
+    rerender(record('B'));
+    expect(checks[0]?.signal.aborted).toBe(true);
+    expect(action('Finish')).not.toHaveAttribute('data-pending');
+    await act(async () => checks[0]?.settle(true));
+    expect(onFinish).not.toHaveBeenCalled();
+    await userEvent.click(action('Finish'));
+    rerender(record('C'));
+    await act(async () => checks[1]?.fail(new Error('Too late.')));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await userEvent.click(action('Finish'));
+    await act(async () => checks[2]?.settle(true));
+    expect(onFinish).toHaveBeenCalledExactlyOnceWith('C');
+  });
+
+  it('UIC-WIZARD-2.6 keeps a check running through ordinary rerenders with new steps and callbacks', async () => {
+    let settle: (value: boolean) => void = () => {};
+    const validate = () => new Promise<boolean>((resolve) => (settle = resolve));
+    const finishes: number[] = [];
+    const view = (round: number) => (
+      <Wizard
+        steps={tripSteps({ summary: { validate } })}
+        defaultCurrentId="summary"
+        onFinish={() => void finishes.push(round)}
+      />
+    );
+    const { rerender } = render(view(1));
+    await userEvent.click(action('Finish'));
+    rerender(view(2));
+    expect(action('Finish')).toHaveAttribute('data-pending', 'true');
+    await act(async () => settle(true));
+    expect(finishes).toEqual([1]);
+  });
+
   it('UIC-WIZARD-2.4 goes back without checking, and returns through the list of steps', async () => {
     const validate = vi.fn(() => true);
     render(<Wizard steps={tripSteps({ note: { validate } })} />);

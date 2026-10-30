@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Wizard, type WizardStep } from '../../src/components/wizard/wizard.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -167,6 +168,53 @@ function ClosingPanel() {
   );
 }
 
+const records = [
+  { value: 'north', label: 'North office' },
+  { value: 'south', label: 'South office' },
+];
+
+/**
+ * One wizard per record, keyed by it: both records share the step ID `confirm`, and switching record
+ * while a check runs aborts it instead of saving the other record.
+ */
+function RecordSwitcher() {
+  const [record, setRecord] = useState('north');
+  const [log, setLog] = useState<string[]>([]);
+  const note = (line: string) => setLog((lines) => [...lines, line]);
+  const label = records.find((item) => item.value === record)?.label ?? record;
+  return (
+    <div data-lab-demo="records">
+      <SegmentedChoice
+        aria-label="Record"
+        options={records}
+        value={record}
+        onChange={(value) => {
+          if (value) setRecord(value);
+        }}
+      />
+      <Wizard
+        key={record}
+        aria-label={`Confirm ${label}`}
+        steps={[
+          {
+            id: 'confirm',
+            label: 'Confirm',
+            content: <p>Save the changes to {label}.</p>,
+            validate: (signal) =>
+              new Promise<boolean>((resolve) => {
+                signal.addEventListener('abort', () => note(`${label} check aborted`));
+                setTimeout(() => resolve(true), 2000);
+              }),
+          },
+        ]}
+        finishLabel="Save"
+        onFinish={() => note(`${label} saved`)}
+      />
+      <p data-lab-log>{log.join(' · ') || 'Nothing yet'}</p>
+    </div>
+  );
+}
+
 const staticSteps: WizardStep[] = [
   { id: 'one', label: 'Choose a file', content: <p>Pick the spreadsheet to read.</p> },
   { id: 'two', label: 'Map columns', isOptional: true, content: <p>Match each column.</p> },
@@ -204,6 +252,12 @@ mountLab(
       description="Send waits two seconds for its check. Close the panel meanwhile: the check is aborted, and its late answer sends nothing. Leave it open and the report is sent."
     >
       <ClosingPanel />
+    </LabSection>
+    <LabSection
+      title="Switching records"
+      description="Both records use the same step, and the wizard is keyed by the record. Press Save, then switch record before the two-second check ends: the check is aborted and neither record is saved. Wait it out and the record shown is saved."
+    >
+      <RecordSwitcher />
     </LabSection>
     <LabSection
       title="In a modal"

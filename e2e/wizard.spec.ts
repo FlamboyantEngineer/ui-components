@@ -124,6 +124,24 @@ test.describe('Wizard lab', () => {
     await expect(log).toHaveText('Check aborted · Report sent');
   });
 
+  test('UIC-WIZARD-2.6 aborts the check of a record the reader switched away from', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('wizard');
+    const demo = page.locator('[data-lab-demo="records"]');
+    const log = demo.locator('[data-lab-log]');
+    await demo.getByRole('button', { name: 'Save' }).click();
+    await page.clock.runFor(500);
+    await demo.getByRole('radio', { name: 'South office' }).click();
+    await page.clock.runFor(2000);
+    await expect(log).toHaveText('North office check aborted');
+    await demo.getByRole('button', { name: 'Save' }).click();
+    await page.clock.runFor(2000);
+    await expect(log).toHaveText('North office check aborted · South office saved');
+  });
+
   test('UIC-WIZARD-3.2 runs inside a modal', async ({ page, lab }) => {
     await page.clock.install();
     await lab.open('wizard');
