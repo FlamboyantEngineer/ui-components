@@ -215,4 +215,29 @@ test.describe('Plain reply width', () => {
       }
     });
   }
+
+  test('UIC-CHAT-1.8 UIC-CHAT-TRANSCRIPT-2.13 draws the streaming caret only when asked and only while text streams', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const caret = async (option: string, reply: string) => {
+      const message = page
+        .locator(`[aria-label="Conversation (${option}, ${reply})"]`)
+        .locator('article')
+        .last();
+      return message
+        .locator('.ui-chat-message__content')
+        .evaluate((content) => getComputedStyle(content, '::after').content);
+    };
+    const replies = ['writing', 'thinking', 'tool call', 'complete', 'cancelled'];
+    for (const reply of replies) expect(await caret('default', reply)).toBe('none');
+    expect(await caret('streamingCaret', 'writing')).toBe('"▍"');
+    for (const reply of replies.slice(1)) expect(await caret('streamingCaret', reply)).toBe('none');
+    const writing = page
+      .locator('[aria-label="Conversation (default, writing)"]')
+      .locator('article')
+      .last();
+    await expect(writing).toHaveAttribute('aria-busy', 'true');
+  });
 });

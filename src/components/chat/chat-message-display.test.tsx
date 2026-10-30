@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { article, assistantPeople, message, renderChat } from '../../../test/chat-fixtures.js';
+import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 
@@ -117,5 +118,69 @@ describe('Chat message display', () => {
     rerenderWith({ ...assistantChat, sentVariant: 'plain', receivedVariant: 'bubble' });
     expect(article('q1')).toHaveAttribute('data-variant', 'plain');
     expect(article('a1')).toHaveAttribute('data-variant', 'bubble');
+  });
+});
+
+describe('Chat streaming caret', () => {
+  const reply = (parts: ChatPart[], fields: Partial<ChatMessageData> = {}) =>
+    ({
+      id: 'a2',
+      authorId: 'helper',
+      createdAt: '2026-04-20T10:00:05',
+      parts,
+      ...fields,
+    }) as ChatMessageData;
+  const caret = () => article('a2').hasAttribute('data-streaming-caret');
+  const streaming = { status: 'streaming' } as const;
+  const text: ChatPart = { type: 'text', text: 'The lakeside cafe', status: 'streaming' };
+  const tool: ChatPart = {
+    type: 'tool-call',
+    id: 'search',
+    name: 'search',
+    label: 'Searching',
+    status: 'running',
+  };
+  const reasoning: ChatPart = { type: 'reasoning', id: 'why', text: 'Lunch', status: 'streaming' };
+
+  it('UIC-CHAT-1.8 shows no caret by default while a reply streams', () => {
+    renderChat({
+      ...assistantChat,
+      messages: [...assistantConversation, reply([text], streaming)],
+    });
+    expect(caret()).toBe(false);
+    expect(article('a2')).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('UIC-CHAT-1.8 shows the caret only while text streams in when asked', () => {
+    const { rerenderWith } = renderChat({
+      ...assistantChat,
+      streamingCaret: true,
+      messages: [...assistantConversation, reply([text], streaming)],
+    });
+    expect(caret()).toBe(true);
+    const cases: Array<[ChatPart[], Partial<ChatMessageData>]> = [
+      [[], streaming],
+      [[reasoning], streaming],
+      [[text, tool], streaming],
+      [[text], { ...streaming, statusText: 'Checking the menu…' }],
+      [[{ ...text, text: '  ' }], streaming],
+      [[text], { status: 'complete' }],
+      [[text], { status: 'cancelled' }],
+    ];
+    for (const [parts, fields] of cases) {
+      rerenderWith({
+        ...assistantChat,
+        streamingCaret: true,
+        messages: [...assistantConversation, reply(parts, fields)],
+      });
+      expect(caret()).toBe(false);
+    }
+    rerenderWith({
+      ...assistantChat,
+      streamingCaret: true,
+      thinkingUntil: 'end',
+      messages: [...assistantConversation, reply([text], streaming)],
+    });
+    expect(caret()).toBe(false);
   });
 });
