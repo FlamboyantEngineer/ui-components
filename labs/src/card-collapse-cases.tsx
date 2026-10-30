@@ -42,6 +42,7 @@ function RowCard({
         <>
           <Button size="sm">Water</Button>
           <Link href="#rows">Open log</Link>
+          <TextField label="Crates" defaultValue="" />
         </>
       }
       footer="Last picked on Friday"
@@ -137,6 +138,19 @@ export function ResizablePane() {
         {paneRows.map((row) => (
           <RowCard key={row.name} row={row} presentationSteps={paneSteps} defaultExpanded={false} />
         ))}
+        <Card
+          presentationSteps={paneSteps}
+          abbreviation="P9"
+          header={
+            <>
+              <CardTitle>Plum row 9</CardTitle>
+              <Button size="sm">Archive row 9</Button>
+            </>
+          }
+          fullWidth
+        >
+          <p>Six young trees by the gate.</p>
+        </Card>
       </div>
     </div>
   );

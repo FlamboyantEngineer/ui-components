@@ -1,41 +1,28 @@
 'use client';
 
 // The card's header: the title block, metadata and actions, the expand and collapse control, and
-// the More button that holds what an adaptive card leaves out of a smaller presentation.
+// the More button that reveals what an adaptive card leaves out of a smaller presentation.
 
-import { Fragment, useId, useMemo, type ReactNode } from 'react';
-import { ChevronDownGlyph, MoreGlyph } from '../../core/glyphs.js';
-import { createHooks } from '../../core/hooks.js';
+import { useId, useMemo, type ReactNode } from 'react';
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
-import { Popover, PopoverTrigger } from '../popover/popover.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CardActionTitle, type CardActionOptions } from './card-action.js';
 import { CardHeaderContext, type CardHeaderParts } from './card-parts.js';
+import { cardHooks } from './card-hooks.js';
+import {
+  MoreControl,
+  useMoreEscape,
+  useRegions,
+  type CardMore,
+  type MovableRegion,
+} from './card-more.js';
 import type { CardPresentation } from './card-presentation.js';
 
-export const cardHooks = createHooks('card', [
-  'media',
-  'header',
-  'leading',
-  'heading',
-  'title',
-  'abbreviation',
-  'action',
-  'description',
-  'meta',
-  'actions',
-  'toggle',
-  'more',
-  'more-panel',
-  'summary',
-  'body',
-  'skeleton',
-  'footer',
-]);
 const hooks = cardHooks;
 
 /** The expand and collapse control of a collapsible card. */
@@ -56,9 +43,10 @@ export interface CardHeaderProps {
   meta: ReactNode;
   /** Shown in place of the title in the minimal presentation. */
   abbreviation: string | undefined;
-  /** The collapsed card's preview, which the minimal presentation moves into the More panel. */
-  summary: ReactNode;
+  /** The id of the summary when the minimal presentation moved it, which More also reveals. */
+  movedSummaryId: string | null;
   presentation: CardPresentation;
+  more: CardMore;
   toggle: CardToggle | null;
   headingLevel: HeadingLevel;
   titleId: string;
@@ -146,42 +134,19 @@ function ToggleButton({ toggle, titleId }: { toggle: CardToggle; titleId: string
   );
 }
 
-/** One region of the header. */
-function Region({ slot, children }: { slot: 'leading' | 'meta' | 'summary'; children: ReactNode }) {
-  return <div {...hooks.slot(slot)}>{children}</div>;
-}
-
-/** The More button and its panel, which hold the regions a smaller presentation leaves out. */
-function MoreButton({
-  title,
+/** The toggle, in a wrapper that hides it while a presentation moved it. */
+function Toggle({
+  toggle,
   titleId,
-  children,
+  regions,
 }: {
-  title: ReactNode;
+  toggle: CardToggle;
   titleId: string;
-  children: ReactNode;
+  regions: ReturnType<typeof useRegions>;
 }) {
-  const strings = useUiStrings();
-  const id = useId();
-  return (
-    <PopoverTrigger>
-      <Button
-        id={id}
-        variant="ghost"
-        size="sm"
-        icon={MoreGlyph}
-        label={strings.more}
-        aria-labelledby={`${id} ${titleId}`}
-        className={hooks.slotClass('more')}
-      />
-      <Popover
-        {...(isEmptyNode(title) ? { 'aria-labelledby': titleId } : { title })}
-        placement="bottom end"
-      >
-        <div {...hooks.slot('more-panel')}>{children}</div>
-      </Popover>
-    </PopoverTrigger>
-  );
+  const button = <ToggleButton toggle={toggle} titleId={titleId} />;
+  if (!regions.moved.has('toggle')) return button;
+  return <div {...regions.place('toggle')}>{button}</div>;
 }
 
 /** What the custom header's `CardTitle` and `CardAction` take from the card. */
@@ -212,123 +177,89 @@ function useHeaderParts({
   );
 }
 
-/**
- * The regions of the props header by presentation: `shown` in the header, `moved` into the More
- * panel. The full presentation shows every region; the compact one keeps the leading content and
- * the title and moves the description, metadata and actions; the minimal one keeps the title and
- * moves the rest, the toggle and the summary included.
- */
-function placeRegions(props: CardHeaderProps) {
-  const { presentation } = props;
-  const description = isEmptyNode(props.description) ? null : (
-    <div {...hooks.slot('description')}>{props.description}</div>
-  );
-  const meta = isEmptyNode(props.meta) ? null : <Region slot="meta">{props.meta}</Region>;
-  const actions = isEmptyNode(props.actions) ? null : (
-    <div {...hooks.slot('actions')}>{props.actions}</div>
-  );
-  const leading = isEmptyNode(props.leading) ? null : (
-    <Region slot="leading">{props.leading}</Region>
-  );
-  const toggle = props.toggle ? (
-    <ToggleButton toggle={props.toggle} titleId={props.titleId} />
-  ) : null;
-  if (presentation === 'full') {
-    return { leading, description, meta, actions, toggle, moved: [] as ReactNode[] };
-  }
-  const isMinimal = presentation === 'minimal';
-  const summary = isEmptyNode(props.summary) ? null : (
-    <Region slot="summary">{props.summary}</Region>
-  );
-  const moved = [
-    isMinimal ? leading : null,
-    description,
-    meta,
-    isMinimal ? summary : null,
-    actions,
-    isMinimal ? toggle : null,
-  ].flatMap((node, index) => (node ? [<Fragment key={index}>{node}</Fragment>] : []));
-  return {
-    leading: isMinimal ? null : leading,
-    description: null,
-    meta: null,
-    actions: null,
-    toggle: isMinimal ? null : toggle,
-    moved,
-  };
-}
-
 /** A custom header: the caller's content, which names the card through its `CardTitle`. */
 function CustomHeader(props: CardHeaderProps) {
   const parts = useHeaderParts(props);
-  const { presentation, abbreviation, toggle, titleId } = props;
-  const isMinimal = presentation === 'minimal';
-  const isAbbreviated = isMinimal && abbreviation !== undefined;
-  const moved = [
-    isMinimal && !isEmptyNode(props.summary) ? (
-      <Region key="summary" slot="summary">
-        {props.summary}
-      </Region>
-    ) : null,
-    isMinimal && toggle ? <ToggleButton key="toggle" toggle={toggle} titleId={titleId} /> : null,
-  ].filter(Boolean);
+  const regions = useRegions(props);
+  const onKeyDown = useMoreEscape(props.more, regions.ids.more);
+  const { abbreviation, toggle, titleId } = props;
+  const isAbbreviated = props.presentation === 'minimal' && abbreviation !== undefined;
+  // Without an abbreviation the content keeps the title on screen, so it stays in place.
+  const heading = isAbbreviated
+    ? regions.place('heading')
+    : { id: regions.ids.heading, 'data-moved': undefined, hidden: undefined };
+  const present: MovableRegion[] = [
+    ...(isAbbreviated ? ['heading' as const] : []),
+    ...(toggle ? ['toggle' as const] : []),
+  ];
   return (
-    <header {...hooks.slot('header')}>
+    <header {...hooks.slot('header')} onKeyDown={onKeyDown}>
       {isAbbreviated ? (
         <span {...hooks.slot('abbreviation')} aria-hidden="true">
           {abbreviation}
         </span>
       ) : null}
-      {/* The content stays mounted while abbreviated, so its title still names the card. */}
-      <div {...hooks.slot('heading')} hidden={isAbbreviated || undefined}>
+      {/* The content stays mounted while moved, so its title still names the card. */}
+      <div {...hooks.slot('heading')} {...heading}>
         <CardHeaderContext value={parts}>{props.header}</CardHeaderContext>
       </div>
-      {toggle && !isMinimal ? <ToggleButton toggle={toggle} titleId={titleId} /> : null}
-      {moved.length > 0 ? (
-        <MoreButton title={props.title} titleId={titleId}>
-          {moved}
-        </MoreButton>
-      ) : null}
+      {toggle ? <Toggle toggle={toggle} titleId={titleId} regions={regions} /> : null}
+      <MoreControl header={props} regions={regions} present={present} />
     </header>
   );
 }
 
 /**
  * The `<header>`: custom content, or the regions of the title block; nothing when all are empty.
- * Custom content's `CardTitle` and `CardAction` take the title's and the action's props from the
- * card.
+ * Every region keeps its place in every presentation, so its content stays mounted with its state;
+ * a smaller presentation hides the regions it moves until the More button opens them. Custom
+ * content's `CardTitle` and `CardAction` take the title's and the action's props from the card.
  */
 export function CardHeader(props: CardHeaderProps) {
+  const regions = useRegions(props);
+  const onKeyDown = useMoreEscape(props.more, regions.ids.more);
   if (!isEmptyNode(props.header)) return <CustomHeader {...props} />;
-  const { title, titleId } = props;
-  const regions = placeRegions(props);
-  const hasHeading = !isEmptyNode(title) || regions.description || regions.meta;
-  if (
-    !hasHeading &&
-    !regions.leading &&
-    !regions.actions &&
-    !regions.toggle &&
-    regions.moved.length === 0
-  ) {
-    return null;
-  }
+  const { title, titleId, toggle } = props;
+  const has = {
+    leading: !isEmptyNode(props.leading),
+    description: !isEmptyNode(props.description),
+    meta: !isEmptyNode(props.meta),
+    actions: !isEmptyNode(props.actions),
+    toggle: toggle !== null,
+    heading: false,
+  };
+  const present = (Object.keys(has) as MovableRegion[]).filter((region) => has[region]);
+  const hasHeading = !isEmptyNode(title) || has.description || has.meta;
+  if (!hasHeading && present.length === 0 && !props.movedSummaryId) return null;
   return (
-    <header {...hooks.slot('header')}>
-      {regions.leading}
+    <header {...hooks.slot('header')} onKeyDown={onKeyDown}>
+      {has.leading ? (
+        <div {...hooks.slot('leading')} {...regions.place('leading')}>
+          {props.leading}
+        </div>
+      ) : null}
       {hasHeading ? (
         <div {...hooks.slot('heading')}>
           {isEmptyNode(title) ? null : <CardTitleHeading {...props} />}
-          {regions.description}
-          {regions.meta}
+          {has.description ? (
+            <div {...hooks.slot('description')} {...regions.place('description')}>
+              {props.description}
+            </div>
+          ) : null}
+          {has.meta ? (
+            <div {...hooks.slot('meta')} {...regions.place('meta')}>
+              {props.meta}
+            </div>
+          ) : null}
         </div>
       ) : null}
-      {regions.actions}
-      {regions.toggle}
-      {regions.moved.length > 0 ? (
-        <MoreButton title={title} titleId={titleId}>
-          {regions.moved}
-        </MoreButton>
+      {has.actions ? (
+        <div {...hooks.slot('actions')} {...regions.place('actions')}>
+          {props.actions}
+        </div>
       ) : null}
+      {toggle ? <Toggle toggle={toggle} titleId={titleId} regions={regions} /> : null}
+      <MoreControl header={props} regions={regions} present={present} />
     </header>
   );
 }

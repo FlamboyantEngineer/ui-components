@@ -1,11 +1,11 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Board } from '../board/board.js';
-import { Card, CardGrid, CardGridItem, CardTitle } from './index.js';
+import { Card, CardAction, CardGrid, CardGridItem, CardTitle } from './index.js';
 
 /** A fake `ResizeObserver` whose `resize` reports a new border box for an observed element. */
 function installResizeObserver() {
@@ -90,7 +90,7 @@ describe('Card collapse', () => {
     expect(cardRoot()).toHaveAttribute('data-expanded', 'true');
     expect(container.querySelector('.ui-card__leading')).toHaveTextContent('Active');
     expect(container.querySelector('.ui-card__meta')).toHaveTextContent('Updated Monday');
-    expect(container.querySelector('.ui-card__summary')).toBeNull();
+    expect(container.querySelector('.ui-card__summary')).toHaveAttribute('hidden');
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
     const controlled = requireDefined(toggle().getAttribute('aria-controls')).split(' ');
     expect(controlled).toHaveLength(3);
@@ -104,6 +104,7 @@ describe('Card collapse', () => {
     for (const id of controlled) expect(document.getElementById(id)).toHaveAttribute('hidden');
     expect(screen.queryByRole('textbox', { name: 'Notes' })).not.toBeInTheDocument();
     expect(container.querySelector('.ui-card__summary')).toHaveTextContent('Harvest 40% done');
+    expect(container.querySelector('.ui-card__summary')).not.toHaveAttribute('hidden');
     expectHooksMatchSpec(container, 'CARD');
 
     await user.click(toggle());
@@ -243,25 +244,94 @@ describe('Card adaptive presentation', () => {
     expect(screen.getByRole('button', { name: 'Water' })).toBeInTheDocument();
   });
 
-  it('UIC-CARD-7.2 moves secondary regions and actions into the More panel when compact', async () => {
+  it('UIC-CARD-7.2 hides secondary regions and actions behind More when compact', async () => {
     const user = userEvent.setup();
     const { container } = render(<RecordCard presentationSteps={steps} />);
     await resize(cardRoot(), 400);
+    expect(screen.queryByRole('button', { name: 'More Orchard row' })).not.toBeInTheDocument();
     const water = screen.getByRole('button', { name: 'Water' });
     act(() => water.focus());
     await resize(cardRoot(), 260);
     const more = screen.getByRole('button', { name: 'More Orchard row' });
     expect(more).toHaveFocus();
+    expect(more).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: 'Water' })).not.toBeInTheDocument();
-    expect(container.querySelector('.ui-card__description')).toBeNull();
-    expect(container.querySelector('.ui-card__leading')).toHaveTextContent('Active');
+    expect(container.querySelector('.ui-card__description')).toHaveAttribute('hidden');
+    expect(container.querySelector('.ui-card__leading')).not.toHaveAttribute('hidden');
     expect(toggle()).toBeInTheDocument();
+    const controls = requireDefined(more.getAttribute('aria-controls')).split(' ');
+    expect(controls.map((id) => document.getElementById(id)?.className)).toEqual([
+      'ui-card__description',
+      'ui-card__meta',
+      'ui-card__actions',
+    ]);
     await user.click(more);
-    const panel = screen.getByRole('dialog', { name: 'Orchard row' });
-    expect(within(panel).getByText('Twelve trees')).toBeInTheDocument();
-    expect(within(panel).getByText('Updated Monday')).toBeInTheDocument();
-    expect(within(panel).getAllByRole('button', { name: 'Water' })).toHaveLength(1);
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Twelve trees')).toBeVisible();
+    expect(screen.getByText('Updated Monday')).toBeVisible();
     expect(screen.getAllByRole('button', { name: 'Water' })).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Water' }));
+    await user.keyboard('{Escape}');
+    expect(more).toHaveFocus();
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Water' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CARD-7.2 keeps moved header content mounted with its state across presentations', async () => {
+    const user = userEvent.setup();
+    const finish = vi.fn<(done: () => void) => void>();
+    function Counter() {
+      const [count, setCount] = useState(0);
+      const [isSaving, setSaving] = useState(false);
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            setSaving(true);
+            finish.mockImplementationOnce((done) => done());
+            setTimeout(() =>
+              finish(() => {
+                setSaving(false);
+                setCount((value) => value + 1);
+              }),
+            );
+          }}
+        >
+          {isSaving ? 'Saving' : `Saved ${count}`}
+        </button>
+      );
+    }
+    render(
+      <RecordCard
+        presentationSteps={steps}
+        abbreviation="OR"
+        actions={
+          <>
+            <label>
+              Draft <input />
+            </label>
+            <Counter />
+          </>
+        }
+      />,
+    );
+    await resize(cardRoot(), 400);
+    await user.type(screen.getByRole('textbox', { name: 'Draft' }), 'Unsaved');
+    const draft = screen.getByRole('textbox', { name: 'Draft' });
+    await user.click(screen.getByRole('button', { name: 'Saved 0' }));
+    await resize(cardRoot(), 260);
+    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
+    expect(draft).toHaveValue('Unsaved');
+    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    await resize(cardRoot(), 90);
+    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
+    await resize(cardRoot(), 400);
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
+    expect(draft).toHaveValue('Unsaved');
+    expect(screen.getByRole('button', { name: 'Saved 1' })).toBeInTheDocument();
+    expect(screen.getAllByRole('textbox', { name: 'Draft' })).toHaveLength(1);
   });
 
   it('UIC-CARD-7.2 shows the abbreviation and moves the rest, the toggle too, when minimal', async () => {
@@ -277,14 +347,13 @@ describe('Card adaptive presentation', () => {
     );
     expect(screen.getByRole('heading', { name: 'Orchard row' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Orchard row' })).toBe(cardRoot());
-    expect(container.querySelector('.ui-card__leading')).toBeNull();
-    expect(container.querySelector(':scope .ui-card > .ui-card__summary')).toBeNull();
+    expect(container.querySelector('.ui-card__leading')).toHaveAttribute('hidden');
+    expect(container.querySelector('.ui-card__summary')).toHaveAttribute('hidden');
     expect(screen.queryByRole('button', { name: 'Details Orchard row' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
-    const panel = screen.getByRole('dialog', { name: 'Orchard row' });
-    expect(within(panel).getByText('Harvest 40% done')).toBeInTheDocument();
-    expect(within(panel).getByText('Active')).toBeInTheDocument();
-    expect(within(panel).getByRole('button', { name: 'Details Orchard row' })).toHaveAttribute(
+    expect(screen.getByText('Harvest 40% done')).toBeVisible();
+    expect(screen.getByText('Active')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Details Orchard row' })).toHaveAttribute(
       'aria-expanded',
       'false',
     );
@@ -309,4 +378,55 @@ describe('Card adaptive presentation', () => {
     expect(screen.getByRole('region', { name: 'Quarterly report' })).toBe(cardRoot());
     expect(screen.getByRole('button', { name: 'More Quarterly report' })).toBeInTheDocument();
   });
+
+  it.each([true, false])(
+    'UIC-CARD-7.2 reveals a minimal custom header with its own actions (collapsible: %s)',
+    async (isCollapsible) => {
+      const user = userEvent.setup();
+      const archive = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Card
+          presentationSteps={steps}
+          isCollapsible={isCollapsible}
+          abbreviation="RC"
+          onAction={onAction}
+          header={
+            <>
+              <CardTitle>
+                <CardAction>Record</CardAction>
+              </CardTitle>
+              <label>
+                Note <input />
+              </label>
+              <button type="button" onClick={archive}>
+                Archive record
+              </button>
+            </>
+          }
+        >
+          Body
+        </Card>,
+      );
+      await resize(cardRoot(), 400);
+      await user.type(screen.getByRole('textbox', { name: 'Note' }), 'Keep');
+      const note = screen.getByRole('textbox', { name: 'Note' });
+      await resize(cardRoot(), 90);
+      expect(screen.queryByRole('button', { name: 'Archive record' })).not.toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Record' })).toBe(cardRoot());
+      const more = screen.getByRole('button', { name: 'More Record' });
+      await user.click(more);
+      await user.click(screen.getByRole('button', { name: 'Archive record' }));
+      expect(archive).toHaveBeenCalledOnce();
+      expect(onAction).not.toHaveBeenCalled();
+      expect(screen.getByRole('textbox', { name: 'Note' })).toBe(note);
+      expect(note).toHaveValue('Keep');
+      expect(screen.getAllByRole('button', { name: 'Archive record' })).toHaveLength(1);
+      expect(screen.queryAllByRole('button', { name: 'Details Record' }).length).toBe(
+        isCollapsible ? 1 : 0,
+      );
+      await user.click(screen.getByRole('button', { name: 'Record' }));
+      expect(onAction).toHaveBeenCalledOnce();
+    },
+  );
 });

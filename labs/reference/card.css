@@ -167,12 +167,15 @@
 .ui-card__toggle[data-expanded] svg {
   rotate: 180deg;
 }
-.ui-card__more-panel {
-  display: grid;
-  gap: 10px;
-  max-width: min(320px, 90vw);
+/* More reveals the moved regions where they stand: the header wraps them onto lines after it. */
+.ui-card__header:has(> .ui-card__more[data-expanded]) {
+  flex-wrap: wrap;
 }
-.ui-card__more-panel > .ui-card__actions {
+.ui-card__header > [data-moved] {
+  flex: 1 1 100%;
+  order: 1;
+}
+.ui-card__header > .ui-card__actions[data-moved] {
   justify-content: flex-start;
 }
 .ui-card__summary {
@@ -181,8 +184,8 @@
   color: var(--ref-muted);
   font-size: var(--ref-font-size-md);
 }
-.ui-card__more-panel > .ui-card__summary {
-  padding: 0;
+.ui-card[data-presentation='minimal'] > .ui-card__summary[data-moved] {
+  padding: 2px 3px;
 }
 .ui-card:not([data-density='default']) > .ui-card__summary {
   padding: 0;
@@ -299,6 +302,7 @@
 
 :is(.ui-badge, .ui-banner, .ui-empty-state, .ui-inline-error, .ui-card)[hidden],
 .ui-card > :is(.ui-card__media, .ui-card__body, .ui-card__footer)[hidden],
-.ui-card__header > .ui-card__heading[hidden] {
+.ui-card__header > .ui-card__heading[hidden],
+.ui-card [data-moved][hidden] {
   display: none;
 }
