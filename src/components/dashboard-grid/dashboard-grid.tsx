@@ -64,15 +64,17 @@ export interface DashboardGridTileState {
   /** The handle to focus again after a keyboard move, once the tiles have rendered. */
   refocus: RefObject<{ id: Key; kind: TileMoveKind } | null>;
   measureStep: () => CellStep;
-  preview: (next: DashboardGridItem, kind: TileMoveKind) => void;
+  /** Shows where a gesture that started from `origin` would put the tile. */
+  preview: (gesture: TileGesture) => void;
   /** Keeps the previewed layout and returns the moved tile, if a preview changed the layout. */
   commit: (isKeyboard: boolean) => DashboardGridItem | undefined;
   announce: (message: string) => void;
 }
 
-interface Preview {
-  layout: DashboardGridItem[];
-  item: DashboardGridItem;
+/** A move or resize in progress: the tile as it started, where it is asked to go, and how. */
+export interface TileGesture {
+  origin: DashboardGridItem;
+  next: DashboardGridItem;
   kind: TileMoveKind;
 }
 
@@ -96,22 +98,29 @@ function readGap(element: Element, property: 'columnGap' | 'rowGap'): number {
   return Number.isFinite(value) ? value : 0;
 }
 
+function isSameCells(a: DashboardGridItem, b: DashboardGridItem): boolean {
+  return a.id === b.id && a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
+}
+
 /** Whether two layouts place the same tiles in the same order on the same cells. */
 function isSameLayout(a: readonly DashboardGridItem[], b: readonly DashboardGridItem[]): boolean {
-  return (
-    a.length === b.length &&
-    a.every((item, index) => {
-      const other = b[index];
-      return (
-        other !== undefined &&
-        other.id === item.id &&
-        other.x === item.x &&
-        other.y === item.y &&
-        other.w === item.w &&
-        other.h === item.h
-      );
-    })
-  );
+  return a.length === b.length && a.every((item, index) => isSameCells(item, b[index] ?? item));
+}
+
+/**
+ * The layout a gesture makes from the committed `layout`, placed again on whatever the layout now
+ * holds, so tiles added, removed or moved meanwhile are kept. `null` once the gesture's own tile
+ * was removed or changed under it: the gesture no longer describes the current layout.
+ */
+function resolveGesture(
+  gesture: TileGesture,
+  layout: readonly DashboardGridItem[],
+  columns: number,
+): { layout: DashboardGridItem[]; item: DashboardGridItem } | null {
+  const current = layout.find((item) => item.id === gesture.origin.id);
+  if (!current || !isSameCells(current, gesture.origin)) return null;
+  const placed = placeDashboardItem(layout, gesture.next, columns);
+  return { layout: placed, item: placed.find((item) => item.id === current.id) ?? current };
 }
 
 /** The layout shown: the committed one, or the preview while a tile moves. */
@@ -152,17 +161,18 @@ function useTileMoves({
   rowHeight: number;
   isEditing: boolean;
 }) {
-  const [preview, setPreview] = useState<Preview | null>(null);
-  const latest = useRef<Preview | null>(null);
+  const [gesture, setGesture] = useState<TileGesture | null>(null);
+  const latest = useRef<TileGesture | null>(null);
   const refocus = useRef<{ id: Key; kind: TileMoveKind } | null>(null);
-  if (!isEditing && preview) {
+  const shown = gesture && resolveGesture(gesture, committed.layout, columns);
+  if (gesture && (!isEditing || !shown)) {
     latest.current = null;
-    setPreview(null);
+    setGesture(null);
   }
   return {
-    previewLayout: preview?.layout,
+    previewLayout: shown?.layout,
     refocus,
-    moving: preview ? { id: preview.item.id, kind: preview.kind } : null,
+    moving: gesture && shown ? { id: gesture.origin.id, kind: gesture.kind } : null,
     measureStep: (): CellStep => {
       if (!element) return { column: 1, row: 1 };
       const width = element.getBoundingClientRect().width;
@@ -170,20 +180,19 @@ function useTileMoves({
       const row = rowHeight + readGap(element, 'rowGap');
       return { column: Math.max(1, column), row: Math.max(1, row) };
     },
-    preview: (next: DashboardGridItem, kind: TileMoveKind) => {
-      const layout = placeDashboardItem(committed.layout, next, columns);
-      const item = layout.find((candidate) => candidate.id === next.id) ?? next;
-      latest.current = { layout, item, kind };
-      setPreview(latest.current);
+    preview: (next: TileGesture) => {
+      latest.current = next;
+      setGesture(next);
     },
     commit: (isKeyboard: boolean) => {
       const last = latest.current;
       latest.current = null;
-      setPreview(null);
-      if (!last || isSameLayout(last.layout, committed.layout)) return undefined;
-      if (isKeyboard) refocus.current = { id: last.item.id, kind: last.kind };
-      committed.commit(last.layout);
-      return last.item;
+      setGesture(null);
+      const result = last && resolveGesture(last, committed.layout, columns);
+      if (!last || !result || isSameLayout(result.layout, committed.layout)) return undefined;
+      if (isKeyboard) refocus.current = { id: result.item.id, kind: last.kind };
+      committed.commit(result.layout);
+      return result.item;
     },
   };
 }
