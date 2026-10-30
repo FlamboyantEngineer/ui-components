@@ -320,7 +320,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Project plan"
-      description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates."
+      description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates, and so does switching to the table or collapsing the bar's group while dragging."
     >
       <PlanDemo />
     </LabSection>

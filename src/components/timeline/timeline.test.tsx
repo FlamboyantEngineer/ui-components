@@ -409,6 +409,48 @@ describe('Timeline', () => {
     },
   );
 
+  it.each([
+    ['a switch to the table', { view: 'table' as const }, { view: 'chart' as const }],
+    ['a collapsed group', { expandedKeys: [] }, { expandedKeys: ['plan'] }],
+    ['a removed row', { items: items.slice(1) }, { items }],
+  ])(
+    'UIC-TIMELINE-2.1 drops the draft when the dragged item leaves the chart through %s',
+    async (_, away, back) => {
+      const user = userEvent.setup();
+      const onItemChange = vi.fn();
+      const props = {
+        rows,
+        items,
+        range: march,
+        scale: 'day' as const,
+        expandedKeys: ['plan'],
+        onItemChange,
+      };
+      const { rerender } = render(<Timeline {...props} aria-label="Plan" />);
+      const bar = item('Measure rooms');
+      capturePointer(bar);
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: bar, coords: { clientX: 100 } },
+        { coords: { clientX: 164 } },
+      ]);
+      expect(bar.style.left).toBe('96px');
+      rerender(<Timeline {...props} {...away} aria-label="Plan" />);
+      await user.pointer({ keys: '[/MouseLeft]', target: document.body });
+      rerender(<Timeline {...props} {...back} aria-label="Plan" />);
+      const restored = item('Measure rooms');
+      expect(restored).not.toHaveAttribute('data-dragging');
+      expect(restored.style.left).toBe('32px');
+      expect(onItemChange).not.toHaveBeenCalled();
+      restored.focus();
+      await user.keyboard('{ArrowRight}');
+      expect(onItemChange).toHaveBeenCalledExactlyOnceWith({
+        id: 'measure',
+        start: '2026-03-03',
+        end: '2026-03-07',
+      });
+    },
+  );
+
   it('UIC-TIMELINE-2.1 drops a cancelled drag and ignores a press that does not move', async () => {
     const user = userEvent.setup();
     const onItemChange = vi.fn();

@@ -80,6 +80,44 @@ test.describe('Timeline lab', () => {
     );
   });
 
+  for (const away of ['table', 'collapse'] as const) {
+    test(`UIC-TIMELINE-2.1 drops a drag whose bar leaves the chart (${away})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('timeline');
+      const plan = page.locator('[data-lab-demo="plan"]');
+      const lastChange = plan.locator('[data-lab-demo="last-change"]');
+      const bar = plan.getByRole('button', { name: 'Strip kitchen' });
+      await bar.scrollIntoViewIfNeeded();
+      const box = requireDefined(await bar.boundingBox());
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + 35, box.y + box.height / 2, { steps: 5 });
+      await expect(bar).toHaveAttribute('data-dragging', 'true');
+      const group = plan.getByRole('button', { name: 'Build', exact: true });
+      if (away === 'table') {
+        await plan.getByRole('radio', { name: 'Table' }).press('Space');
+        await expect(plan.locator('.ui-timeline')).toHaveAttribute('data-view', 'table');
+      } else {
+        await group.press('Enter');
+      }
+      await expect(bar).toHaveCount(0);
+      await page.mouse.up();
+      if (away === 'table') await plan.getByRole('radio', { name: 'Chart' }).press('Space');
+      else await group.press('Enter');
+      await expect(bar).not.toHaveAttribute('data-dragging');
+      await bar.scrollIntoViewIfNeeded();
+      expect(Math.round(requireDefined(await bar.boundingBox()).width)).toBe(Math.round(box.width));
+      await expect(lastChange).toHaveText('Last change: None yet');
+      await bar.focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(lastChange).toHaveText(
+        'Last change: Strip kitchen: Mar 23, 2026 to Mar 27, 2026',
+      );
+    });
+  }
+
   test('UIC-TIMELINE-2.2 UIC-TIMELINE-2.4 edits by keyboard and selects items', async ({
     page,
     lab,

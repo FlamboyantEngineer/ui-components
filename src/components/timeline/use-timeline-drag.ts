@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type PointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
   resolveDragChange,
@@ -48,6 +48,27 @@ export function useTimelineDrag({
 }: TimelineDragOptions) {
   const moved = useRef(false);
   const [isDragging, setDragging] = useState(false);
+  // The draft lives above this item. When the item leaves the chart mid-drag (a switch to the
+  // table, a collapsed group, a removed row), the pointer helper ends the gesture silently, so the
+  // item drops its own draft as it unmounts and the chart comes back to the source dates.
+  const owned = useRef<{ hasDraft: boolean; onDraft: TimelineDragOptions['onDraft'] }>({
+    hasDraft: false,
+    onDraft,
+  });
+  useLayoutEffect(() => {
+    owned.current.onDraft = onDraft;
+  });
+  useLayoutEffect(() => {
+    const current = owned.current;
+    return () => {
+      if (current.hasDraft) current.onDraft(null);
+      current.hasDraft = false;
+    };
+  }, []);
+  const showDraft = (change: TimelineItemChange | null) => {
+    owned.current.hasDraft = change !== null;
+    onDraft(change);
+  };
 
   const move = (event: PointerEvent<HTMLElement>, active: Drag) => {
     const travel = event.clientX - active.originX;
@@ -55,13 +76,13 @@ export function useTimelineDrag({
     const days = Math.round(travel / dayWidth);
     if (days === active.days) return;
     active.days = days;
-    onDraft(resolveDragChange(active.origin, active.edge, days));
+    showDraft(resolveDragChange(active.origin, active.edge, days));
   };
   const handlers = usePointerDrag<HTMLElement, Drag>({
     isDisabled: !isEditable,
     onCancel: () => {
       setDragging(false);
-      onDraft(null);
+      showDraft(null);
     },
     onStart: (event) => {
       moved.current = false;
@@ -83,7 +104,7 @@ export function useTimelineDrag({
       if (!isCancelled && active.days !== 0) {
         onCommit(resolveDragChange(active.origin, active.edge, active.days));
       }
-      onDraft(null);
+      showDraft(null);
     },
   });
 
