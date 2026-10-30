@@ -43,7 +43,7 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
     minColumnSpan,
     minRowSpan,
     measureStep: grid.measureStep,
-    onPreview: (next) => grid.preview(next, kind),
+    onPreview: (next, origin) => grid.preview({ origin, next, kind }),
     onCommit: (isKeyboard) => {
       const item = grid.commit(isKeyboard);
       if (!item) return;

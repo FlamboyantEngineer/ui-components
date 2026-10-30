@@ -23,8 +23,8 @@ interface TileMoveOptions {
   minRowSpan: number;
   /** Reads the cell step when a pointer move starts. */
   measureStep: () => CellStep;
-  /** Shows where the tile would go. */
-  onPreview: (next: DashboardGridItem) => void;
+  /** Shows where the tile would go, from the tile as it was when the gesture started. */
+  onPreview: (next: DashboardGridItem, origin: DashboardGridItem) => void;
   /** Keeps the last preview; `isKeyboard` for a move made with the arrow keys. */
   onCommit: (isKeyboard: boolean) => void;
 }
@@ -96,7 +96,7 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
       };
       if (active.cells?.x === cells.x && active.cells.y === cells.y) return;
       active.cells = cells;
-      options.onPreview(resolveMovedItem({ origin: active.origin, cells }, options));
+      options.onPreview(resolveMovedItem({ origin: active.origin, cells }, options), active.origin);
     },
     onMoveEnd: (event) => {
       start.current = null;

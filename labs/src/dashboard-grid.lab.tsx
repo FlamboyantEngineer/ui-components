@@ -110,6 +110,48 @@ function EditableOverview() {
   );
 }
 
+const shared: DashboardGridItem[] = [
+  { id: 'a', x: 0, y: 0, w: 2, h: 1 },
+  { id: 'b', x: 2, y: 0, w: 2, h: 1 },
+];
+
+/**
+ * A layout another source changes during a drag: hold a handle, then use a button with the
+ * keyboard. The drag keeps the tiles added or removed meanwhile, and stops if its own tile goes.
+ */
+function SharedLayout() {
+  const [layout, setLayout] = useState(shared);
+  const [added, setAdded] = useState(0);
+  return (
+    <div data-lab-demo="shared">
+      <Button
+        onPress={() => {
+          setAdded(added + 1);
+          setLayout([...layout, { id: `n${added + 1}`, x: 4, y: 0, w: 2, h: 1 }]);
+        }}
+      >
+        Add a tile
+      </Button>
+      <Button onPress={() => setLayout(layout.slice(0, 1))}>Keep only the first tile</Button>
+      <div style={frame(360)}>
+        <DashboardGrid
+          aria-label="Shared"
+          layout={layout}
+          onLayoutChange={setLayout}
+          columns={6}
+          rowHeight={48}
+          isEditing
+        >
+          {(item) => <DashboardTile label={`Shared ${item.id}`}>Shared {item.id}</DashboardTile>}
+        </DashboardGrid>
+      </div>
+      <p data-lab-output="layout">
+        {layout.map(({ id, x, y, w, h }) => `${id} ${x},${y} ${w}×${h}`).join('; ')}
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -143,6 +185,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Changes during a drag"
+      description="Hold a handle, then press a button with the keyboard. A tile added or removed meanwhile stays in the layout the drag reports; a drag whose own tile was removed or moved stops and reports nothing."
+    >
+      <SharedLayout />
     </LabSection>
     <LabSection
       title="Remembered layout"
