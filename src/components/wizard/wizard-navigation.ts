@@ -2,6 +2,7 @@
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -59,12 +60,41 @@ function toStatuses(
   });
 }
 
+/** Names the steps in order, so a replaced workflow differs from the one a check started in. */
+function toWorkflowKey(steps: readonly WizardStep[]): string {
+  return JSON.stringify(steps.map((step) => [typeof step.id, step.id]));
+}
+
+/**
+ * The Next or Finish under way and whether it is pending. Leaving the step or workflow it started in,
+ * or unmounting, aborts it and ends the pending state.
+ */
+function useAttempts(shownId: Key | undefined, workflowKey: string) {
+  const [isPending, setPending] = useState(false);
+  // Refuses a second submit in the same turn, before the pending state renders.
+  const runningRef = useRef(false);
+  const attemptRef = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      attemptRef.current?.abort();
+      attemptRef.current = null;
+      runningRef.current = false;
+      setPending(false);
+    },
+    [shownId, workflowKey],
+  );
+  return { isPending, setPending, runningRef, attemptRef };
+}
+
 /**
  * The navigation of a wizard: the shown step (controlled or not), the steps skipped on the way, the
- * pending check and its failure, and focus moving to the step's heading after each move.
+ * pending check and its failure, and focus moving to the step's heading after each move. A Next or
+ * Finish belongs to the step and workflow it started in: once the wizard shows another step, its
+ * steps change or it unmounts, the attempt is aborted and its outcome changes nothing.
  */
 export function useWizardNavigation(options: NavigationOptions): WizardNavigation {
-  const { steps, onFinish } = options;
+  const { steps } = options;
+  const latest = useLatest(options);
   const strings = useUiStrings();
   const [currentId, setCurrentId] = useControllableState<Key | undefined>(
     options.currentId,
@@ -73,14 +103,15 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
   );
   const [skipped, setSkipped] = useState<ReadonlySet<Key>>(() => new Set());
   const [failure, setFailure] = useState<WizardNavigation['failure']>(null);
-  const [isPending, setPending] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const movedRef = useRef(false);
-  // Refuses a second submit in the same turn, before the pending state renders.
-  const runningRef = useRef(false);
   const index = Math.max(
     0,
     steps.findIndex((step) => step.id === currentId),
+  );
+  const { isPending, setPending, runningRef, attemptRef } = useAttempts(
+    steps[index]?.id,
+    toWorkflowKey(steps),
   );
 
   useEffect(() => {
@@ -94,26 +125,34 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     movedRef.current = true;
     setCurrentId(id);
   };
-  const advance = async (step: WizardStep) => {
-    const stay = toFailure(await step.validate?.());
+  const advance = async (step: WizardStep, signal: AbortSignal) => {
+    const stay = toFailure(await step.validate?.(signal));
+    if (signal.aborted) return;
     if (stay) return setFailure(stay);
     setSkipped((keys) => withMark(keys, step.id, false));
     const next = steps[index + 1];
     if (next) goTo(next.id);
-    else await onFinish?.();
+    else await latest.current.onFinish?.();
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const step = steps[index];
+    const attempt = new AbortController();
     void runPendingAction({
       blocked: runningRef.current || !step,
       setPending: (pending) => {
+        if (pending) attemptRef.current = attempt;
+        else if (attemptRef.current === attempt) attemptRef.current = null;
+        else return;
         runningRef.current = pending;
         setPending(pending);
         if (pending) setFailure(null);
       },
-      action: step ? () => advance(step) : undefined,
-      onError: (error) => setFailure({ message: toErrorMessage(error, strings.actionFailed) }),
+      action: step ? () => advance(step, attempt.signal) : undefined,
+      onError: (error) => {
+        if (attempt.signal.aborted) return;
+        setFailure({ message: toErrorMessage(error, strings.actionFailed) });
+      },
     });
   };
   const skip = () => {

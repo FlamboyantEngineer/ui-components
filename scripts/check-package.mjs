@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Checks the installed library independently from the standalone labs archive.
-// Packing runs prepare to build the entry points from source.
+// Packing runs prepare to build the entry points from source. Every source map in the tarball must
+// resolve each of its sources to a file the tarball ships, or embed it (UIC-LABS-1.5).
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -41,7 +42,8 @@ try {
     if (file.startsWith('labs/')) problems.push(`library tarball must not contain ${file}`);
     if (
       /\.test\.|(^|\/)(src|e2e|test|scripts|labs\/src)\//.test(file) &&
-      !file.startsWith('dist/')
+      !file.startsWith('dist/') &&
+      !(file.startsWith('src/') && !file.includes('.test.'))
     ) {
       problems.push(`tarball must not contain ${file}`);
     }
@@ -62,6 +64,29 @@ try {
   const extractDir = join(workDir, 'extract');
   mkdirSync(extractDir);
   execFileSync('tar', ['-xzf', join(workDir, pack.filename), '-C', extractDir]);
+
+  const installed = join(extractDir, 'package');
+  let mapSources = 0;
+  const unresolved = [];
+  for (const file of files) {
+    if (!file.endsWith('.map')) continue;
+    const map = JSON.parse(readFileSync(join(installed, file), 'utf8'));
+    const base = resolve(installed, dirname(file), map.sourceRoot ?? '');
+    for (const [index, source] of map.sources.entries()) {
+      mapSources += 1;
+      const target = resolve(base, source);
+      const isShipped = !relative(installed, target).startsWith('..') && existsSync(target);
+      if (!isShipped && typeof map.sourcesContent?.[index] !== 'string') {
+        unresolved.push(`${file} -> ${source}`);
+      }
+    }
+  }
+  if (unresolved.length > 0) {
+    problems.push(
+      `${unresolved.length} source map references point at sources the tarball neither ships nor embeds, such as ${unresolved.slice(0, 3).join(', ')}`,
+    );
+  }
+
   try {
     execFileSync(
       'node',
@@ -76,7 +101,7 @@ try {
 
   if (problems.length === 0) {
     console.log(
-      `${pack.filename}: ${files.size} files, ${(pack.size / 1024).toFixed(0)} KiB packed.`,
+      `${pack.filename}: ${files.size} files, ${(pack.size / 1024).toFixed(0)} KiB packed, ${mapSources} source map references resolved.`,
     );
   }
 } finally {

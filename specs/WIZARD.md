@@ -76,6 +76,13 @@ Skip shall move to the next step without checking the shown one and mark it `ski
 Implementation: `src/components/wizard/wizard.tsx`, `src/components/wizard/wizard-navigation.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 
+### UIC-WIZARD-2.6 - Leaving a pending step
+
+A Next or Finish shall belong to the step it was pressed on and the workflow it ran in (the steps' IDs, in order). `validate` receives an `AbortSignal` that aborts once the wizard shows another step (a controlled `currentId` that changes, or the reader's move), its steps are replaced by others, or it unmounts. From then the attempt is over: the wizard stops being pending and accepts a new submit at once, and the check's late answer, success or failure, neither moves, nor shows a failure, nor calls `onFinish`. An `onFinish` that has already started is the host's own operation: leaving it ends the pending state and ignores its outcome, but does not stop it. A second submit in the same turn is still refused while an attempt runs.
+
+Implementation: `src/components/wizard/wizard.tsx`, `src/components/wizard/wizard-navigation.ts`
+Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
+
 ## UIC-WIZARD-3 - Accessibility
 
 ### UIC-WIZARD-3.1 - Focus follows the step

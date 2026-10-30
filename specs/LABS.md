@@ -34,6 +34,13 @@ Installing a branch or commit shall run `prepare` (`npm run build`) to compile t
 Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`, `.github/workflows/ci.yml`
 Verification: `test/package.test.ts`
 
+### UIC-LABS-1.5 - Usable source maps
+
+The installed package shall ship the JavaScript source maps and declaration maps the build emits together with the TypeScript sources they point at (`src/`, without tests), so a debugger shows the original code and an editor's go to definition opens it. `npm run check:package` resolves every source of every map in the packed tarball and fails when one is neither shipped nor embedded in the map.
+
+Implementation: `package.json`, `tsconfig.build.json`, `scripts/check-package.mjs`
+Verification: `test/package.test.ts`
+
 ## UIC-LABS-2 - Chrome
 
 ### UIC-LABS-2.1 - Stylesheet picker
