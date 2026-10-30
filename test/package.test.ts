@@ -78,3 +78,31 @@ describe('Git branch install', () => {
     expect(manifest.scripts.prepare).toBe('npm run build');
   });
 });
+
+describe('hosted CI', () => {
+  const workflow = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf8');
+  const checks = readFileSync(join(process.cwd(), 'scripts/check.mjs'), 'utf8');
+
+  it('UIC-PRIMITIVES-2.1 runs the shared gate list, which checks public types after the build', () => {
+    expect(workflow).toMatch(/^\s+run: npm run check$/m);
+    const build = checks.indexOf("'build',");
+    const publicTypes = checks.indexOf("'check:public-types'");
+    expect(build).toBeGreaterThan(-1);
+    expect(publicTypes).toBeGreaterThan(checks.indexOf('],', build));
+  });
+
+  it('UIC-LABS-1.4 installs from Git when the manifest, lockfile, build setup or entry points change', () => {
+    expect(workflow).toContain('npm run check:git-install');
+    const start = workflow.indexOf('\n            install:');
+    const filters = workflow.slice(start, workflow.indexOf('- uses:', start));
+    for (const path of [
+      'package.json',
+      'package-lock.json',
+      'tsconfig.build.json',
+      'src/index.ts',
+      'src/components/*/index.ts',
+    ]) {
+      expect(filters).toContain(`- ${path}\n`);
+    }
+  });
+});
