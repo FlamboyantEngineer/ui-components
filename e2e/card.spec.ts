@@ -234,7 +234,7 @@ test.describe('Card lab', () => {
     const toggle = card.getByRole('button', { name: 'Details Orchard row 4' });
     await card.getByRole('textbox', { name: 'Notes' }).fill('Prune the low branches');
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(card.locator('.ui-card__summary')).toHaveCount(0);
+    await expect(card.locator('.ui-card__summary')).toBeHidden();
     await toggle.press('Enter');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(page.locator('[data-lab-output="expanded"]')).toHaveText('false');
@@ -264,6 +264,8 @@ test.describe('Card lab', () => {
     const thumb = demo.getByRole('slider', { name: 'Pane width' });
     await expect(card).toHaveAttribute('data-presentation', 'full');
     await expect(card.getByRole('button', { name: 'Water' })).toBeVisible();
+    const crates = card.getByRole('textbox', { name: 'Crates' });
+    await crates.fill('Unsaved');
 
     await thumb.focus();
     await page.keyboard.press('Home');
@@ -274,6 +276,11 @@ test.describe('Card lab', () => {
     await expect(card).toHaveAttribute('data-presentation', 'compact');
     await expect(card.getByRole('button', { name: 'Water' })).toHaveCount(0);
     await expect(card.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
+    const compactMore = card.getByRole('button', { name: 'More Plum row 7' });
+    await compactMore.click();
+    await expect(crates).toHaveValue('Unsaved');
+    await compactMore.click();
+    await thumb.focus();
 
     await page.keyboard.press('Home');
     await expect(card).toHaveAttribute('data-presentation', 'minimal');
@@ -288,16 +295,27 @@ test.describe('Card lab', () => {
     const more = card.getByRole('button', { name: 'More Plum row 7' });
     await expect(more).toBeVisible();
     await more.click();
-    const panel = page.getByRole('dialog', { name: 'Plum row 7' });
-    await expect(panel.getByRole('button', { name: 'Water' })).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    await expect(card.getByRole('button', { name: 'Water' })).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
+    await expect(crates).toHaveValue('Unsaved');
+    await card.getByRole('button', { name: 'Water' }).focus();
     await page.keyboard.press('Escape');
     await expect(more).toBeFocused();
+    await expect(card.getByRole('button', { name: 'Water' })).toHaveCount(0);
+
+    const custom = demo.getByRole('region', { name: 'Plum row 9' });
+    await expect(custom).toHaveAttribute('data-presentation', 'minimal');
+    await expect(custom.getByRole('button', { name: 'Archive row 9' })).toHaveCount(0);
+    await custom.getByRole('button', { name: 'More Plum row 9' }).click();
+    await expect(custom.getByRole('button', { name: 'Archive row 9' })).toBeVisible();
+    await lab.expectAccessible('[data-lab-demo="pane"]');
 
     await thumb.focus();
     await page.keyboard.press('End');
     await expect(card).toHaveAttribute('data-presentation', 'full');
     await expect(card.getByRole('button', { name: 'Water' })).toBeVisible();
+    await expect(crates).toHaveValue('Unsaved');
     const toggle = card.getByRole('button', { name: 'Details Plum row 7' });
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await toggle.click();

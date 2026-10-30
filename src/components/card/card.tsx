@@ -12,7 +12,9 @@ import {
 import { Skeleton } from '../skeleton/skeleton.js';
 import { useCardAction, type CardActionOptions } from './card-action.js';
 import { useFocusRescue } from './card-focus.js';
-import { CardHeader, cardHooks as hooks, type CardToggle } from './card-header.js';
+import { CardHeader, type CardToggle } from './card-header.js';
+import { cardHooks as hooks } from './card-hooks.js';
+import { CardSummary, useCardMore } from './card-more.js';
 import {
   useCardPresentation,
   type CardPresentation,
@@ -244,6 +246,10 @@ export function Card(props: CardProps) {
   const { isActionable, actionRef, onClick } = useCardAction(options);
   const collapse = useCardCollapse(props);
   const presentation = useCardPresentation(root, props.presentationSteps);
+  const { more, summary } = useCardMore(presentation, {
+    isPresent: !isEmptyNode(props.summary),
+    isExpanded: collapse.isExpanded,
+  });
   useFocusRescue(root, presentation, collapse.isExpanded);
   const rest = toRootProps(props);
   const labelledBy = toLabelledBy(
@@ -251,7 +257,6 @@ export function Card(props: CardProps) {
     { id: titleId, hasSlottedTitle: slottedTitle !== null },
   );
   const isHidden = !collapse.isExpanded || undefined;
-  const showsSummary = !collapse.isExpanded && presentation !== 'minimal';
 
   return (
     <section
@@ -278,17 +283,18 @@ export function Card(props: CardProps) {
         leading={props.leading}
         meta={props.meta}
         abbreviation={props.abbreviation}
-        summary={collapse.isExpanded ? null : props.summary}
+        movedSummaryId={summary.movedId}
         presentation={presentation}
+        more={more}
         toggle={collapse.toggle}
         headingLevel={level}
         titleId={titleId}
         titleRef={setSlottedTitle}
         action={{ options, isActionable, ref: actionRef }}
       />
-      {showsSummary && !isEmptyNode(props.summary) ? (
-        <div {...hooks.slot('summary')}>{props.summary}</div>
-      ) : null}
+      <CardSummary id={summary.id} isMoved={summary.isMoved} isHidden={summary.isHidden}>
+        {props.summary}
+      </CardSummary>
       <div {...hooks.slot('body')} id={collapse.ids.body} hidden={isHidden}>
         {isLoading ? (
           <Skeleton className={hooks.slotClass('skeleton')} />
