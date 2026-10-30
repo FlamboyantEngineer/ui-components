@@ -45,7 +45,7 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 
 ### UIC-FORMULA-BAR-3.2 - Committing and cancelling
 
-Enter in the editor, when no completion list is open, and the `ui-formula-bar__confirm` icon button (the provider's `confirm` string, enabled while the draft differs) shall call `onCommit(content, cell)` with the draft and the active cell, unless the bar is read-only; the caller stores it, and the bar never changes the content itself. Escape in the editor, while the draft differs, and the `ui-formula-bar__cancel` icon button (the provider's `cancel` string, enabled while the draft differs) restore `value`.
+Enter in the editor, when no completion list is open, and the `ui-formula-bar__confirm` icon button (the provider's `confirm` string, enabled while the draft differs and the bar is neither locked nor read-only) shall call `onCommit(content, cell)` with the draft and the active cell, unless the bar is read-only; the caller stores it, and the bar never changes the content itself. Escape in the editor, while the draft differs, and the `ui-formula-bar__cancel` icon button (the provider's `cancel` string, enabled while the draft differs) restore `value`. While the bar is locked (`isDisabled`, or no active `cell`) both buttons are disabled and neither commits nor cancels, by pointer or keyboard, even with focus already on one of them; the draft stays as it was and returns, still uncommitted, once the bar is enabled again. A read-only bar keeps Cancel, which drops a draft made before it turned read-only, and disables Confirm.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`

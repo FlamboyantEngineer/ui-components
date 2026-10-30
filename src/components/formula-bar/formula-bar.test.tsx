@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -164,6 +164,47 @@ describe('FormulaBar', () => {
     await user.click(contentBox());
     await user.keyboard('{Enter}');
     expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FORMULA-BAR-3.2 neither commits nor cancels a draft while disabled, and keeps it for later', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const cell = { row: 0, column: 0 };
+    const { rerender } = render(<FormulaBar cell={cell} value="=1" onCommit={onCommit} />);
+    await user.click(contentBox());
+    await user.keyboard('{End}{Backspace}2');
+    const confirm = screen.getByRole('button', { name: 'Confirm' });
+    const cancel = screen.getByRole('button', { name: 'Cancel' });
+    act(() => confirm.focus());
+    rerender(<FormulaBar cell={cell} value="=1" onCommit={onCommit} isDisabled />);
+    expect(confirm).toBeDisabled();
+    expect(cancel).toBeDisabled();
+    await user.keyboard('{Enter}');
+    await user.click(confirm);
+    await user.click(cancel);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(contentBox()).toHaveValue('=2');
+    rerender(<FormulaBar cell={cell} value="=1" onCommit={onCommit} />);
+    expect(contentBox()).toHaveValue('=2');
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('=2', cell);
+  });
+
+  it('UIC-FORMULA-BAR-3.2 keeps Cancel and disables Confirm on a read-only bar', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const cell = { row: 0, column: 0 };
+    const { rerender } = render(<FormulaBar cell={cell} value="=1" onCommit={onCommit} />);
+    await user.click(contentBox());
+    await user.keyboard('{End}{Backspace}2');
+    rerender(<FormulaBar cell={cell} value="=1" onCommit={onCommit} isReadOnly />);
+    expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+    await user.click(contentBox());
+    await user.keyboard('{Enter}');
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(contentBox()).toHaveValue('=1');
   });
 
   it('UIC-FORMULA-BAR-3.1 completes words from the caller', async () => {

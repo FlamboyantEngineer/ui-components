@@ -141,9 +141,9 @@ function FormulaBarReference({
   );
 }
 
-/** The buttons that restore and commit the content, enabled while it differs from the cell's. */
+/** The buttons that restore and commit the content, enabled while the bar may do so. */
 function FormulaBarButtons(props: {
-  isDirty: boolean;
+  canCancel: boolean;
   canCommit: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -156,7 +156,7 @@ function FormulaBarButtons(props: {
         size="sm"
         label={strings.cancel}
         className={hooks.slotClass('cancel')}
-        isDisabled={!props.isDirty}
+        isDisabled={!props.canCancel}
         onPress={props.onCancel}
       />
       <Button
@@ -199,10 +199,15 @@ export function FormulaBar({
   const text = draft ?? value;
   const isDirty = draft !== null && draft !== value;
   const isLocked = isDisabled || cell === null;
+  // A locked bar keeps its draft for when it unlocks, but neither commits nor drops it meanwhile.
+  const canCancel = isDirty && !isLocked;
+  const canCommit = canCancel && !isReadOnly;
   const commit = () => {
-    if (cell && !isReadOnly) onCommit?.(text, cell);
+    if (canCommit && cell) onCommit?.(text, cell);
   };
-  const cancel = () => setDraft(null);
+  const cancel = () => {
+    if (canCancel) setDraft(null);
+  };
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.nativeEvent.isComposing) return;
     if (event.key === 'Enter') commit();
@@ -226,8 +231,8 @@ export function FormulaBar({
         isDisabled={isDisabled}
       />
       <FormulaBarButtons
-        isDirty={isDirty}
-        canCommit={isDirty && !isReadOnly}
+        canCancel={canCancel}
+        canCommit={canCommit}
         onCancel={cancel}
         onConfirm={commit}
       />

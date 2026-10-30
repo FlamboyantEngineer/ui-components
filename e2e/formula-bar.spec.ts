@@ -87,6 +87,27 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.content).toHaveValue('=B2*C2+1');
   });
 
+  test('UIC-FORMULA-BAR-3.2 keeps a draft uncommitted while the bar is locked', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('formula-bar');
+    const sheet = spreadsheet(page);
+    await sheet.content.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('+1');
+    const confirm = sheet.root.getByRole('button', { name: 'Confirm' });
+    const lock = sheet.root.getByRole('checkbox', { name: 'Lock the bar' });
+    await lock.check();
+    await expect(confirm).toBeDisabled();
+    await expect(sheet.root.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    await expect(sheet.output).toHaveText('Last commit: none');
+    await lock.uncheck();
+    await expect(sheet.content).toHaveValue('=B2*C2+1');
+    await confirm.click();
+    await expect(sheet.output).toHaveText('Last commit: D2 = =B2*C2+1');
+  });
+
   test('UIC-FORMULA-BAR-4.1 passes axe in both themes', async ({ page, lab }) => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();
