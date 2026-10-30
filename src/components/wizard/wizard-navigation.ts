@@ -2,7 +2,6 @@
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
-import { useLatest } from '../../utils/use-latest.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -89,12 +88,12 @@ function useAttempts(shownId: Key | undefined, workflowKey: string) {
 /**
  * The navigation of a wizard: the shown step (controlled or not), the steps skipped on the way, the
  * pending check and its failure, and focus moving to the step's heading after each move. A Next or
- * Finish belongs to the step and workflow it started in: once the wizard shows another step, its
- * steps change or it unmounts, the attempt is aborted and its outcome changes nothing.
+ * Finish belongs to the step and workflow it started in, and finishes through the `onFinish` of that
+ * render: once the wizard shows another step, its steps change or it unmounts, the attempt is
+ * aborted and its outcome changes nothing.
  */
 export function useWizardNavigation(options: NavigationOptions): WizardNavigation {
   const { steps } = options;
-  const latest = useLatest(options);
   const strings = useUiStrings();
   const [currentId, setCurrentId] = useControllableState<Key | undefined>(
     options.currentId,
@@ -125,6 +124,9 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     movedRef.current = true;
     setCurrentId(id);
   };
+  // The attempt keeps the step, steps and `onFinish` it started with, so a check's answer only ever
+  // finishes the workflow it checked.
+  const { onFinish } = options;
   const advance = async (step: WizardStep, signal: AbortSignal) => {
     const stay = toFailure(await step.validate?.(signal));
     if (signal.aborted) return;
@@ -132,7 +134,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     setSkipped((keys) => withMark(keys, step.id, false));
     const next = steps[index + 1];
     if (next) goTo(next.id);
-    else await latest.current.onFinish?.();
+    else await onFinish?.();
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
