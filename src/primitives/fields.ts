@@ -1,3 +1,5 @@
+'use client';
+
 // Inputs, text, number and search fields, choices, sliders, selects, comboboxes and forms.
 
 export {

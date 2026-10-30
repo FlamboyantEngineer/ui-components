@@ -1,3 +1,5 @@
+'use client';
+
 import { EyeGlyph, EyeSlashGlyph } from '../../core/glyphs.js';
 import {
   useMemo,

@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 import {

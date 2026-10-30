@@ -1,3 +1,5 @@
+'use client';
+
 // The composer's bottom row of controls: what the controls read from the composer, and when the row
 // is too narrow for their labels (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-6).
 

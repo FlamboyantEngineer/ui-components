@@ -1,3 +1,5 @@
+'use client';
+
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 

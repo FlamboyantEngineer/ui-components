@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { SelectionMode } from '../../core/props.js';

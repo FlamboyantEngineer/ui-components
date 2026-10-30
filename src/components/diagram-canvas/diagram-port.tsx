@@ -1,3 +1,5 @@
+'use client';
+
 import type { CSSProperties, RefCallback, RefObject } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { useUiStrings } from '../../core/provider.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import type { JSX, ReactElement, Ref } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type {

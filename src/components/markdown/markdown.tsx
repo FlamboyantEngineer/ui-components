@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { useMarkdownBlocks } from './markdown-block-cache.js';

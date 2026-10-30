@@ -1,3 +1,5 @@
+'use client';
+
 // The values of one change: old → new on one line (compact), or the old and the new value under
 // their captions (detailed), drawn per value type.
 

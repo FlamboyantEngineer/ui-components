@@ -1,3 +1,5 @@
+'use client';
+
 // The menubar's shared state: which menu is open, which top-level item is the tab stop, and the
 // keys and pointer moves that pass from one menu to another.
 

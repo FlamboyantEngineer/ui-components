@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronLeftGlyph, ChevronRightGlyph, PauseGlyph, PlayGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';

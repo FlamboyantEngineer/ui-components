@@ -1,3 +1,5 @@
+'use client';
+
 import { SparklesGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';

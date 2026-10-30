@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useState } from 'react';
 import { Button as AriaButton, ColorPicker, DialogTrigger } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

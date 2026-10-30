@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key, Selection } from '../../core/props.js';

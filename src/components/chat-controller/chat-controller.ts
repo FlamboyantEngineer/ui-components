@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useLatest } from '../../utils/use-latest.js';

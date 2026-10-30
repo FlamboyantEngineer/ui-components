@@ -1,3 +1,5 @@
+'use client';
+
 import type { Ref } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useId, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';

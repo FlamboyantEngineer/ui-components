@@ -1,3 +1,5 @@
+'use client';
+
 // How a field takes part in its form: submit validation, the browser's constraint validation and
 // a native reset.
 

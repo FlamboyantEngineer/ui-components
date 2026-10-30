@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { UiStrings } from '../../core/strings.js';
 import { useLatest } from '../../utils/use-latest.js';

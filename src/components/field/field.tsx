@@ -1,3 +1,5 @@
+'use client';
+
 import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useState, type ReactNode } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';

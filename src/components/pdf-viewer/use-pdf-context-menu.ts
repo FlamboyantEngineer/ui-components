@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, type MouseEvent, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { copyText } from '../../utils/clipboard.js';

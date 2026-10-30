@@ -1,3 +1,5 @@
+'use client';
+
 import { ExternalLinkGlyph } from '../../core/glyphs.js';
 import type { JSX, ReactElement, ReactNode, Ref } from 'react';
 import { Link as AriaLink } from '../../primitives/index.js';

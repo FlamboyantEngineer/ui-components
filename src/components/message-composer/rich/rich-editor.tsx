@@ -1,3 +1,5 @@
+'use client';
+
 import { ProseMirror } from '@handlewithcare/react-prosemirror';
 import type { EditorState, Transaction } from 'prosemirror-state';
 import { Decoration, DecorationSet, type EditorView } from 'prosemirror-view';

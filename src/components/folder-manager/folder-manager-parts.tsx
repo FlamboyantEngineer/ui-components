@@ -1,3 +1,5 @@
+'use client';
+
 import { DeleteGlyph, EditGlyph, PlusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import type { Ref } from 'react';
 import { Input } from '../../primitives/index.js';

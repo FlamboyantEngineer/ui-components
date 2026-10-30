@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';

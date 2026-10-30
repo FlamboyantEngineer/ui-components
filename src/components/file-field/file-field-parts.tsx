@@ -1,3 +1,5 @@
+'use client';
+
 import { DownloadGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

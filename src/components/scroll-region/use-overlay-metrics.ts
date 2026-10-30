@@ -1,3 +1,5 @@
+'use client';
+
 import { findMaximum } from '../../utils/find-maximum.js';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { observeViewport } from './observe-viewport.js';

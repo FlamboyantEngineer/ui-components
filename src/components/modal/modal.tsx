@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { DialogTrigger } from '../../primitives/index.js';
 import type { KeyboardEventProps, OpenStateProps, OverlayDismissProps } from '../../core/events.js';

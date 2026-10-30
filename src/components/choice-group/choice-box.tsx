@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   CheckboxGroup as AriaCheckboxGroup,

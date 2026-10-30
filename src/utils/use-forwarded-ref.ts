@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type Ref, type RefCallback, type RefObject } from 'react';
 import { mergeRefs } from './merge-props.js';
 

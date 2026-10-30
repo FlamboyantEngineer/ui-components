@@ -1,3 +1,5 @@
+'use client';
+
 import { useLocale } from '../../primitives/index.js';
 import type { Tone } from '../../core/props.js';
 import type { OpenStateProps } from '../../core/events.js';

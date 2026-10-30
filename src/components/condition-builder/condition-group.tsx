@@ -1,3 +1,5 @@
+'use client';
+
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';

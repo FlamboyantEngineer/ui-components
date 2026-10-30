@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback } from 'react';
 import type { FilterOperator } from '../../core/query-strings.js';
 import { useUiStrings } from '../../core/provider.js';

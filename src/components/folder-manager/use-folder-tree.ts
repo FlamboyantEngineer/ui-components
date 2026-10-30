@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';

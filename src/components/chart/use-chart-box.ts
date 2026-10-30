@@ -1,3 +1,5 @@
+'use client';
+
 import { findMaximum } from '../../utils/find-maximum.js';
 import { useMemo, useState, type Ref, type RefCallback } from 'react';
 import { mergeRefs } from '../../utils/merge-props.js';

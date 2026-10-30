@@ -1,3 +1,5 @@
+'use client';
+
 // Buttons, links, toolbars, keyboard hints, press events and hover.
 
 export {

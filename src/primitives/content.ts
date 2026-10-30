@@ -1,3 +1,5 @@
+'use client';
+
 // Headings, text, labels, hidden text and value indicators.
 
 export {

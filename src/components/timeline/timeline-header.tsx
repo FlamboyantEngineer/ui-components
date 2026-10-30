@@ -1,3 +1,5 @@
+'use client';
+
 import { useDateFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TimeScaleUnit } from '../../utils/time-scale.js';

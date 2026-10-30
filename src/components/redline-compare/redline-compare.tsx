@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo, useRef, type KeyboardEvent } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';

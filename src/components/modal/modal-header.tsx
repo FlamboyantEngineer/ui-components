@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import { Heading } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState, type MouseEvent, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key } from '../../core/props.js';

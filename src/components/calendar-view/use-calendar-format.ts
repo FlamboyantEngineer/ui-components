@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { getDateFormatter } from '../../utils/intl-format.js';

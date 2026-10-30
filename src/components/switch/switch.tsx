@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode, Ref } from 'react';
 import { Switch as AriaSwitch } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { Disclosure, DisclosurePanel } from '../disclosure/disclosure.js';

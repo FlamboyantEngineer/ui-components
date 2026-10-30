@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useLayoutEffect, useRef, type PointerEvent } from 'react';
 import { capturePointer, releasePointer } from './pointer-drag.js';
 import { useLatest } from './use-latest.js';

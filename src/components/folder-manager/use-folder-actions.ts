@@ -1,3 +1,5 @@
+'use client';
+
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';

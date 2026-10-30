@@ -1,3 +1,5 @@
+'use client';
+
 import { Fragment } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { Avatar, resolveAvatarColor, splitAvatarIdentity } from '../avatar/avatar.js';

@@ -14,6 +14,7 @@ const STAGES = [
     'check:specs',
     'check:labs',
     'check:structure',
+    'check:client-boundaries',
     'build',
     'build:labs',
   ],

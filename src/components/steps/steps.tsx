@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, ErrorGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import {

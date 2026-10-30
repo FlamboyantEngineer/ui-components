@@ -1,3 +1,5 @@
+'use client';
+
 import { EmojiGlyph } from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // Walks relations upstream and downstream of an item in Miller columns: choosing an item in a
 // column opens the column of its related items beyond it.
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, ChevronUpGlyph } from '../../core/glyphs.js';
 // The Previous and Next buttons that move between the changes of a compare view: the text diff,
 // the merge view and the redline compare.

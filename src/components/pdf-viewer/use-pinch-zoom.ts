@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, type RefObject } from 'react';
 import type { PdfEngine } from './pdf-engine.js';
 import { resolveZoomPercent } from './pdf-zoom.js';

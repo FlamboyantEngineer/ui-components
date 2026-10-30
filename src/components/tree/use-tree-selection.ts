@@ -1,3 +1,5 @@
+'use client';
+
 // Selection that cascades through a tree: a row's selection reaches its loaded descendants, and a
 // row follows its children, all selected or not.
 

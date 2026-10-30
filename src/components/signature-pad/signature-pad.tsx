@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Input } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';

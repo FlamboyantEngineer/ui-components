@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { ListBox, ListBoxItem, type Selection } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';

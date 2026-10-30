@@ -1,3 +1,5 @@
+'use client';
+
 import { getLocalTimeZone, parseIsoDate, useLocale } from '../../primitives/index.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useRef } from 'react';
 
 /** Finds the element a focus request moves focus to, once the edit that asked for it has rendered. */

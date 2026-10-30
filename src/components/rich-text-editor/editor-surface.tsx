@@ -1,3 +1,5 @@
+'use client';
+
 import { ProseMirror, ProseMirrorDoc } from '@handlewithcare/react-prosemirror';
 import type { Schema } from 'prosemirror-model';
 import type { EditorState, Transaction } from 'prosemirror-state';

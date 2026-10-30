@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { clamp } from '../../utils/clamp.js';

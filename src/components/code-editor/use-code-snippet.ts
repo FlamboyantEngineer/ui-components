@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, type KeyboardEvent, type RefObject } from 'react';
 import type { CodeRange } from './code-ranges.js';
 

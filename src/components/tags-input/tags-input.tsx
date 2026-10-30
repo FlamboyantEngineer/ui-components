@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';

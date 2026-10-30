@@ -1,3 +1,5 @@
+'use client';
+
 // A compact choice among the composer's controls, such as how the reader's requests are approved
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-7).
 

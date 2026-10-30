@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { HeadingLevel } from '../section-header/section-header.js';

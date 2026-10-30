@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useMemo, useState, type RefCallback } from 'react';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { indexDiagramLinks, type DiagramLinks } from './diagram-links.js';

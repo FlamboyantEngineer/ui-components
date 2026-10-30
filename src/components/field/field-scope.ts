@@ -1,3 +1,5 @@
+'use client';
+
 // What an enclosing form or fieldset gives the fields inside it.
 
 import { createContext, useContext } from 'react';

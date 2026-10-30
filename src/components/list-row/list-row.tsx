@@ -1,3 +1,5 @@
+'use client';
+
 import type { MouseEvent, ReactNode, Ref } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

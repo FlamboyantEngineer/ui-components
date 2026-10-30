@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
 import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primitives/index.js';

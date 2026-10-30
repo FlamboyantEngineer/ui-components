@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import {
   findPageIndex,

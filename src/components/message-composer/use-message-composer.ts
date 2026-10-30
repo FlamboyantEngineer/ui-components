@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, type RefObject, type TextareaHTMLAttributes } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';

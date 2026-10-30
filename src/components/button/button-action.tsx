@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useRef, useState, type MouseEvent } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import type { ElementRender } from '../../utils/render-element.js';

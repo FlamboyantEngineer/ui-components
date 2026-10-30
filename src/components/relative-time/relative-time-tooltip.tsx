@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import {
   TooltipContext,

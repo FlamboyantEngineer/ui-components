@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode, Ref } from 'react';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import {

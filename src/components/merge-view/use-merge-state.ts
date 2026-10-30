@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import { mergeThreeWay } from '../../utils/three-way-merge.js';
 import { useStateFor } from '../../utils/use-state-for.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // The whole-card action: the card's title is a link or a button, and a click anywhere on the card
 // that is not meant for an inner control or a text selection activates it.
 

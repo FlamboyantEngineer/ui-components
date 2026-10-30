@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, type RefObject } from 'react';
 import { findOverlayScrollContainer } from '../../utils/overlay-geometry.js';
 import type { Key } from '../../core/props.js';

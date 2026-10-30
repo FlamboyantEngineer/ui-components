@@ -1,3 +1,5 @@
+'use client';
+
 // A Markdown node override that renders fenced and indented code through `CodeBlock`
 // (specs/CODE-BLOCK.md, UIC-MARKDOWN-2.8).
 

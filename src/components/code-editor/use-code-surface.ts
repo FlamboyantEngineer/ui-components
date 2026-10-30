@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useId, useLayoutEffect, useRef, type Ref, type RefObject } from 'react';
 import { splitDataAttributes } from '../../core/hooks.js';
 import { useElementSize } from '../../utils/use-element-size.js';

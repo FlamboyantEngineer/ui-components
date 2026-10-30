@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowDownGlyph, ArrowUpGlyph, ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, RefObject } from 'react';
 import { Input } from '../../primitives/index.js';

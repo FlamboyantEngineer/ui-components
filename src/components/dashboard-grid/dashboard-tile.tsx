@@ -1,3 +1,5 @@
+'use client';
+
 import { DragHandleGlyph, ResizeGlyph } from '../../core/glyphs.js';
 import { useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // One timer for every relative time on the page: each subscriber asks to be woken at a moment, and
 // the clock keeps a single timeout for the earliest one.
 

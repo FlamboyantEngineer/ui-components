@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // The problems a form's fields show, kept for a problem list that summarises them.
 
 import { createContext, useContext } from 'react';

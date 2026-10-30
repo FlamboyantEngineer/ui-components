@@ -39,6 +39,8 @@ jobs:
         run: npm run check:labs
       - name: Structure
         run: npm run check:structure
+      - name: Client boundaries
+        run: npm run check:client-boundaries
       - name: Unit tests
         run: npm test
       - name: Build
@@ -49,6 +51,23 @@ jobs:
         run: npm run pack:labs
       - name: Package contents
         run: npm run check:package
+
+  server-components:
+    # An installed-package Next.js consumer: production build, server rendering and hydration.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Server components consumer
+        run: npm run check:server-components
 
   labs:
     # The lab browser suite runs in shards beside the check job so it fits the time budget.

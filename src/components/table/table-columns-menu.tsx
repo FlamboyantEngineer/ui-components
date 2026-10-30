@@ -1,3 +1,5 @@
+'use client';
+
 import type { Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';

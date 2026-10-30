@@ -1,3 +1,5 @@
+'use client';
+
 import type { JSX } from 'react';
 import { Cell, Row, TableFooter as AriaTableFooter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, type RefObject } from 'react';
 import { resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
 import { listTabbables } from '../../utils/tabbable.js';

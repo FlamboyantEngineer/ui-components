@@ -1,3 +1,5 @@
+'use client';
+
 // The dialogs a view switcher opens from a view's actions: naming a view, and confirming a deletion.
 
 import { useState } from 'react';

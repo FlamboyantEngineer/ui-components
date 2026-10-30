@@ -1,3 +1,5 @@
+'use client';
+
 // The palette's document-wide shortcut.
 
 import { useEffect } from 'react';

@@ -1,3 +1,5 @@
+'use client';
+
 // Words the notifications that arrive while a list is shown, for a polite live region.
 
 import { createContext, useContext, useState } from 'react';

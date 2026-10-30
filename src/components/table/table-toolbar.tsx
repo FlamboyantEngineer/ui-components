@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { orderColumns } from './table-columns.js';
 import { TableColumnsMenu } from './table-columns-menu.js';

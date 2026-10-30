@@ -1,3 +1,5 @@
+'use client';
+
 // Renaming a row in place: F2 swaps its label for a text field, Enter or leaving the field renames
 // the row, and Escape keeps the old name.
 

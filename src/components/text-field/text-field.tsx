@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type ReactNode, type Ref } from 'react';
 import { TextField as AriaTextField } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import type { CSSProperties } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';

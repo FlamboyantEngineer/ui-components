@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, type ReactNode } from 'react';
 import { PopoverContext, useSlottedContext } from '../../primitives/index.js';
 import { capturePointer, releasePointer } from '../../utils/pointer-drag.js';

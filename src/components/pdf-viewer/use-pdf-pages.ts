@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useNearPages, type NearPages } from './use-near-pages.js';
 

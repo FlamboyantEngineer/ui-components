@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';

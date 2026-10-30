@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, CloseGlyph, EditGlyph } from '../../core/glyphs.js';
 import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useId, type ReactNode } from 'react';

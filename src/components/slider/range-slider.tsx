@@ -1,3 +1,5 @@
+'use client';
+
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Field, useFieldControl } from '../field/field.js';

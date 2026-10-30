@@ -1,3 +1,5 @@
+'use client';
+
 import type { FocusEvent, Ref, RefObject, TextareaHTMLAttributes } from 'react';
 import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';

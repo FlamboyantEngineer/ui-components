@@ -1,3 +1,5 @@
+'use client';
+
 // Card collections: React Aria's grid list in its grid layout, one item per card.
 
 import { useMemo, type ReactElement, type ReactNode } from 'react';

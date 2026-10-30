@@ -1,3 +1,5 @@
+'use client';
+
 // A board of cards in columns, optionally repeated in lanes: each cell is a React Aria grid list,
 // and cards move within and between cells by drag and drop or Alt+Arrow keys.
 

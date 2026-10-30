@@ -1,3 +1,5 @@
+'use client';
+
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { GridList, useFilter } from '../../primitives/index.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // Dialogs, modals, popovers, sheets, tooltips, previews and toasts.
 
 export {

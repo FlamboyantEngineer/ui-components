@@ -1,3 +1,5 @@
+'use client';
+
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { useCallback, useMemo } from 'react';

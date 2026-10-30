@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';

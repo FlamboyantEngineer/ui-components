@@ -1,3 +1,5 @@
+'use client';
+
 import { createElement, useMemo, useRef, useState, type JSX, type KeyboardEvent } from 'react';
 import type { Key } from '../core/props.js';
 import { useLatest } from './use-latest.js';

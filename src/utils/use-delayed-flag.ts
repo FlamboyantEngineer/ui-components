@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 
 /** True once an active flag's delay elapses; an absent delay disables the timer. */

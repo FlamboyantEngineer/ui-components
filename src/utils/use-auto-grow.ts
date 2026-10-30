@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, type RefObject } from 'react';
 import { clamp } from './clamp.js';
 import { useElementSize } from './use-element-size.js';

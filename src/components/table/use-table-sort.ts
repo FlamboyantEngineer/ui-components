@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import type { SortDescriptor } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';

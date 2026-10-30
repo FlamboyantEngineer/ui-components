@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode, Ref } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';

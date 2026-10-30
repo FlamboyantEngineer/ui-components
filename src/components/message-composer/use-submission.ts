@@ -1,3 +1,5 @@
+'use client';
+
 // Sending a composer's value: at once, or once the host accepts it (specs/MESSAGE-COMPOSER.md,
 // UIC-MESSAGE-COMPOSER-3.9).
 

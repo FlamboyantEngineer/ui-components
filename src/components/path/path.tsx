@@ -1,3 +1,5 @@
+'use client';
+
 import { createHooks } from '../../core/hooks.js';
 import { formatPath } from '../../utils/path.js';
 import {

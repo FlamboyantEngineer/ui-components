@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, type ReactNode } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph, EnvelopeGlyph, EnvelopeOpenGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';

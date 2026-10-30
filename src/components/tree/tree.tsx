@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import {
   Tree as AriaTree,

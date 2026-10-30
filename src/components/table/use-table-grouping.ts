@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import { walkTree } from '../../utils/walk-tree.js';

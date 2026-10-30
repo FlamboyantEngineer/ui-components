@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { CollectionSelectionProps } from '../../core/events.js';
 import type { Key, Selection } from '../../core/props.js';

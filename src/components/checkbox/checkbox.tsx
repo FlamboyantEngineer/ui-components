@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode, Ref } from 'react';
 import { Checkbox as AriaCheckbox } from '../../primitives/index.js';

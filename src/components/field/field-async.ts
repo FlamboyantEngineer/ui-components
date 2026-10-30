@@ -1,3 +1,5 @@
+'use client';
+
 // The asynchronous check of a field: debounced, aborted when the value or the validator moves on.
 
 import { useEffect, useState } from 'react';

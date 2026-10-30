@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { CodeEdit, CodeSelection } from './code-editing.js';
 

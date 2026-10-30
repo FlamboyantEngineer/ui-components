@@ -1,3 +1,5 @@
+'use client';
+
 // The engine state behind the editor: created from a document, replaced when the value changes.
 
 import { reactKeys } from '@handlewithcare/react-prosemirror';
