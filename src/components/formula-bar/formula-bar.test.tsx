@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { CellCoordinates } from '../../utils/cell-reference.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -143,6 +143,56 @@ describe('FormulaBar', () => {
     rerender(<FormulaBar cell={{ row: 1, column: 0 }} value="1" />);
     expect(contentBox()).toHaveValue('1');
     expect(referenceBox()).toHaveValue('A2');
+  });
+
+  it.each([
+    ['another cell', { row: 0, column: 1 }, 'B'],
+    ['no active cell', null, ''],
+    ['another value', { row: 0, column: 0 }, 'A from elsewhere'],
+  ])(
+    'UIC-FORMULA-BAR-3.1 discards an abandoned draft after %s, and returns to the value',
+    async (_, through, throughValue) => {
+      const user = userEvent.setup();
+      const a1 = { row: 0, column: 0 };
+      const { rerender } = render(
+        <StrictMode>
+          <FormulaBar cell={a1} value="A" />
+        </StrictMode>,
+      );
+      await user.click(contentBox());
+      await user.keyboard('{End} changed');
+      rerender(
+        <StrictMode>
+          <FormulaBar cell={a1} value="A" placeholder="Content" />
+        </StrictMode>,
+      );
+      expect(contentBox()).toHaveValue('A changed');
+      rerender(
+        <StrictMode>
+          <FormulaBar cell={through} value={throughValue} />
+        </StrictMode>,
+      );
+      rerender(
+        <StrictMode>
+          <FormulaBar cell={a1} value="A" />
+        </StrictMode>,
+      );
+      expect(contentBox()).toHaveValue('A');
+      expect(screen.getByRole('group')).not.toHaveAttribute('data-dirty');
+      expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+    },
+  );
+
+  it('UIC-FORMULA-BAR-2.2 drops a refused reference once another cell is active', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<FormulaBar cell={{ row: 0, column: 0 }} value="" rowCount={5} />);
+    await user.click(referenceBox());
+    await user.keyboard('A99{Enter}');
+    expect(referenceBox()).toHaveAttribute('aria-invalid', 'true');
+    rerender(<FormulaBar cell={{ row: 0, column: 1 }} value="" rowCount={5} />);
+    rerender(<FormulaBar cell={{ row: 0, column: 0 }} value="" rowCount={5} />);
+    expect(referenceBox()).toHaveValue('A1');
+    expect(referenceBox()).not.toHaveAttribute('aria-invalid');
   });
 
   it('UIC-FORMULA-BAR-3.1 UIC-FORMULA-BAR-3.2 locks the content without a cell, disabled or read-only', async () => {
