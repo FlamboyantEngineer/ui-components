@@ -5,7 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { UiProvider } from '../../core/provider.js';
-import { SignatureDialog, type SignatureDialogProps } from './signature-dialog.js';
+import {
+  SignatureDialog,
+  type SignatureDialogProps,
+  type SignatureMeaning,
+} from './signature-dialog.js';
 
 const approve = [{ id: 'approve', label: 'Approved' }];
 const meanings = [
@@ -77,6 +81,93 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     await user.click(screen.getByRole('button', { name: 'Sign' }));
     await waitFor(() => expect(onSign).toHaveBeenCalledOnce());
     expect(onSign).toHaveBeenCalledWith(expect.objectContaining({ meaning: '1' }));
+  });
+
+  describe('UIC-SIGNATURE-DIALOG-1.2 meanings that change while open', () => {
+    function renderOpen(list: readonly SignatureMeaning[]) {
+      const user = userEvent.setup();
+      const onSign = vi.fn();
+      const dialog = (next: readonly SignatureMeaning[]) => (
+        <SignatureDialog
+          title="Sign"
+          userName="Ada"
+          meanings={next}
+          reason="none"
+          onSign={onSign}
+          isOpen
+        />
+      );
+      const view = render(dialog(list));
+      return {
+        user,
+        onSign,
+        change: (next: readonly SignatureMeaning[]) => view.rerender(dialog(next)),
+        sign: async () => {
+          if (!(passwordInput() as HTMLInputElement).value)
+            await user.type(passwordInput(), 'orchard');
+          await user.click(screen.getByRole('button', { name: 'Sign' }));
+        },
+      };
+    }
+
+    it('signs with the sole meaning shown, after it replaces another', async () => {
+      const { change, sign, onSign } = renderOpen(approve);
+      change([{ id: 'review', label: 'Reviewed' }]);
+      expect(screen.getByText('Meaning of signature: Reviewed')).toBeInTheDocument();
+      await sign();
+      await waitFor(() => expect(onSign).toHaveBeenCalledOnce());
+      expect(onSign).toHaveBeenCalledWith(expect.objectContaining({ meaning: 'review' }));
+    });
+
+    it('keeps a pick that is still listed', async () => {
+      const { user, change, sign, onSign } = renderOpen(meanings);
+      await user.click(screen.getByRole('radio', { name: 'Reviewed' }));
+      change(meanings.slice(1));
+      expect(screen.getByRole('radio', { name: 'Reviewed' })).toBeChecked();
+      await sign();
+      await waitFor(() => expect(onSign).toHaveBeenCalledOnce());
+      expect(onSign).toHaveBeenCalledWith(expect.objectContaining({ meaning: 'review' }));
+    });
+
+    it('asks for a new choice once the picked meaning is gone', async () => {
+      const { user, change, sign, onSign } = renderOpen(meanings);
+      await user.click(screen.getByRole('radio', { name: 'Reviewed' }));
+      change([
+        { id: 'approve', label: 'Approved' },
+        { id: '7', label: 'Text seven' },
+        { id: 7, label: 'Authored' },
+      ]);
+      const radios = screen.getAllByRole('radio');
+      expect(radios.some((radio) => (radio as HTMLInputElement).checked)).toBe(false);
+      await sign();
+      expect(onSign).not.toHaveBeenCalled();
+      expect(screen.getByRole('radio', { name: 'Approved' })).toHaveFocus();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      await user.click(screen.getByRole('radio', { name: 'Authored' }));
+      await sign();
+      await waitFor(() => expect(onSign).toHaveBeenCalledOnce());
+      expect(onSign).toHaveBeenCalledWith(expect.objectContaining({ meaning: 7 }));
+    });
+
+    it('takes meanings that arrive after an empty list', async () => {
+      const { user, change, sign, onSign } = renderOpen([]);
+      change(meanings);
+      await sign();
+      expect(onSign).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('radio', { name: 'Approved' }));
+      change(approve);
+      await sign();
+      await waitFor(() => expect(onSign).toHaveBeenCalledOnce());
+      expect(onSign).toHaveBeenCalledWith(expect.objectContaining({ meaning: 'approve' }));
+    });
+
+    it('asks for a choice when one stated meaning becomes several', async () => {
+      const { change, sign, onSign } = renderOpen([{ id: 'review', label: 'Reviewed' }]);
+      change(meanings);
+      expect(screen.getByRole('radio', { name: 'Reviewed' })).not.toBeChecked();
+      await sign();
+      expect(onSign).not.toHaveBeenCalled();
+    });
   });
 
   it('UIC-SIGNATURE-DIALOG-1.1 renders a modal with the summary, Cancel and Sign', async () => {

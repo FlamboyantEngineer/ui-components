@@ -97,6 +97,57 @@ function SignChange() {
   );
 }
 
+/** The meanings a host might load in turn while its dialog stays open. */
+const meaningStages = [
+  meaningSets.several,
+  meaningSets.several.filter((meaning) => meaning.id !== 'review'),
+  [{ id: 'review', label: 'Reviewed' }],
+] as const;
+
+/** A dialog whose meanings change while it is open, one stage per press of Load. */
+function ChangingMeanings() {
+  const [open, setOpen] = useState(false);
+  const [stage, setStage] = useState(0);
+  const [signed, setSigned] = useState('none');
+  return (
+    <>
+      <Button
+        data-lab-open="changing"
+        onPress={() => {
+          setStage(0);
+          setOpen(true);
+        }}
+      >
+        Sign with changing meanings
+      </Button>
+      <p>
+        Signed: <output data-lab-output="changing">{signed}</output>
+      </p>
+      <SignatureDialog
+        isOpen={open}
+        onOpenChange={setOpen}
+        title="Sign the updated plan"
+        userName="Ada Lovelace"
+        meanings={meaningStages[stage] ?? meaningSets.one}
+        reason="none"
+        onSign={(details) => setSigned(describeSignature(details))}
+        data-lab-modal="changing"
+      >
+        <p>
+          Meanings loaded: {stage + 1} of {meaningStages.length}.{' '}
+          <Button
+            size="sm"
+            isDisabled={stage === meaningStages.length - 1}
+            onPress={() => setStage((current) => current + 1)}
+          >
+            Load the next meanings
+          </Button>
+        </p>
+      </SignatureDialog>
+    </>
+  );
+}
+
 function Entries({
   reason,
   drawing,
@@ -145,6 +196,12 @@ mountLab(
       description="Sign without entries to see the messages, with a wrong password to see the error, then with orchard."
     >
       <SignChange />
+    </LabSection>
+    <LabSection
+      title="Meanings that change while open"
+      description="Pick Reviewed, then load the next meanings: Reviewed is gone, so Sign asks for a new choice. Load again: the sole meaning stated, Reviewed, is the one signed."
+    >
+      <ChangingMeanings />
     </LabSection>
     <LabSection
       title="Reason and drawn signature"
