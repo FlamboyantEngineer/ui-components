@@ -1,3 +1,4 @@
+import { CheckGlyph, HandRaisedGlyph, LockGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -11,12 +12,12 @@ import {
 import { MessageComposer } from './message-composer.js';
 
 const options: MessageComposerSelectOption[] = [
-  { id: 'ask', label: 'Ask first', icon: 'hand-raised', description: 'Approve each change' },
-  { id: 'auto', label: 'Run on its own', icon: 'check' },
+  { id: 'ask', label: 'Ask first', icon: HandRaisedGlyph, description: 'Approve each change' },
+  { id: 'auto', label: 'Run on its own', icon: CheckGlyph },
   {
     id: 'locked',
     label: 'Read only',
-    icon: 'lock',
+    icon: LockGlyph,
     description: 'Changes nothing',
     isDisabled: true,
     disabledReason: 'Needs an owner',

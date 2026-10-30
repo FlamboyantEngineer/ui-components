@@ -27,7 +27,7 @@ function Notes({
   onModel,
   onInsert,
 }: {
-  completions: readonly Completion[] | CompletionSource;
+  completions: readonly Completion[] | CompletionSource | undefined;
   isLocked?: boolean;
   onKeyDown?: () => void;
   onModel?: (model: CompletionsModel) => void;
@@ -191,6 +191,41 @@ describe('Completions engine', () => {
     await user.keyboard('{Control>} {/Control}');
     await act(async () => answers.at(-1)?.([{ label: 'apricot' }]));
     await waitFor(() => expect(optionTexts()).toEqual(['apricot']));
+  });
+
+  it('UIC-COMPLETION-LIST-2.2 discards pending answers when completions are removed', async () => {
+    const user = userEvent.setup();
+    const answers: Array<(options: Completion[]) => void> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve));
+    const { rerender } = render(<Notes completions={source} />);
+    await user.type(input(), 'ap');
+    rerender(<Notes completions={undefined} />);
+    await act(async () => answers.at(-1)?.([{ label: 'apple' }]));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    rerender(<Notes completions={source} />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await user.keyboard('{Control>} {/Control}');
+    await act(async () => answers.at(-1)?.([{ label: 'apricot' }]));
+    expect(await screen.findByRole('option', { name: 'apricot' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMPLETION-LIST-2.4 refuses a captured insertion after completions are removed', async () => {
+    const user = userEvent.setup();
+    let model: CompletionsModel | undefined;
+    const onInsert = vi.fn();
+    const onModel = (current: CompletionsModel) => (model = current);
+    const { rerender } = render(
+      <Notes completions={fruit} onInsert={onInsert} onModel={onModel} />,
+    );
+    await user.type(input(), 'ap');
+    const choose = requireDefined(model).apply;
+    const option = requireDefined(requireDefined(model).options[0]);
+    rerender(<Notes completions={undefined} onInsert={onInsert} onModel={onModel} />);
+    act(() => choose(option));
+    expect(onInsert).not.toHaveBeenCalled();
+    expect(input()).toHaveValue('ap');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.4 refuses a captured insertion callback after locking and keeps the old list closed', async () => {

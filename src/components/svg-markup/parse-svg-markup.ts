@@ -3,6 +3,7 @@
 
 import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
 import { walkTree } from '../../utils/walk-tree.js';
+import { createLruCache } from '../../utils/lru-cache.js';
 
 export interface SvgElementNode {
   readonly type: 'element';
@@ -49,8 +50,7 @@ const animationValueAttributes: ReadonlySet<string> = new Set(['to', 'from', 'by
 /** An animated attribute that holds a link, however it is prefixed (`href`, `xlink:href`). */
 const linkTarget = /(?:href|(?:^|:)src)$/i;
 
-const cacheLimit = 256;
-const cache = new Map<string, SvgElementNode>();
+const cache = createLruCache<string, SvgElementNode>(256);
 
 function isUnsafeUrl(value: string): boolean {
   // Browsers ignore control characters and whitespace inside a scheme.
@@ -161,17 +161,8 @@ function parseTree(markup: string): SvgElementNode {
  */
 export function parseSvgMarkup(markup: string): SvgElementNode {
   const cached = cache.get(markup);
-  if (cached) {
-    cache.delete(markup);
-    cache.set(markup, cached);
-    return cached;
-  }
+  if (cached) return cached;
   const tree = parseTree(markup);
   cache.set(markup, tree);
-  while (cache.size > cacheLimit) {
-    const oldest = cache.keys().next();
-    if (oldest.done) break;
-    cache.delete(oldest.value);
-  }
   return tree;
 }

@@ -1,5 +1,5 @@
+import { CheckGlyph, ErrorGlyph, OfflineGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useRef } from 'react';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -31,10 +31,10 @@ export interface SaveStatusProps extends BaseProps {
 
 const hooks = createHooks('save-status', ['message', 'icon', 'label', 'retry']);
 
-const phaseGlyphs: Partial<Record<SaveStatusPhase, GlyphName>> = {
-  saved: 'check',
-  error: 'error',
-  offline: 'offline',
+const phaseGlyphs: Partial<Record<SaveStatusPhase, GlyphComponent>> = {
+  saved: CheckGlyph,
+  error: ErrorGlyph,
+  offline: OfflineGlyph,
 };
 
 /**
@@ -67,7 +67,7 @@ export function SaveStatus({
       <span {...hooks.slot('message')} role="status">
         {showLabel ? (
           <>
-            {glyph ? <Icon glyph={glyph} className={hooks.slotClass('icon')} /> : null}
+            {glyph ? <Icon icon={glyph} className={hooks.slotClass('icon')} /> : null}
             <TruncationTooltip className={hooks.slotClass('label')}>
               {labels?.[phase] ?? strings.saveStatus(phase)}
             </TruncationTooltip>

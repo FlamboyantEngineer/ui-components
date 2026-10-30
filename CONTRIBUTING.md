@@ -5,7 +5,7 @@
 - `dev` is the integration branch. Work happens on short-lived branches cut from `dev` and merged back into `dev` by pull request.
 - `main` is always releasable. It is updated only from `dev`, through a reviewed release pull request once the full checks pass on `dev`.
 - Before a pull request merges, both check runs must pass:
-  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, unit tests, build, public types, labs build and package contents. `scripts/check.mjs` runs them side by side in two stages and prints each one's output when it fails; Prettier and the typecheck keep caches in `node_modules/.cache/`.
+  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, unit tests, build, public types, labs build, standalone lab archive and package contents. `scripts/check.mjs` runs them side by side in two stages and prints each one's output when it fails; Prettier and the typecheck keep caches in `node_modules/.cache/`.
   - `npm run test:labs`: Playwright against the built labs (run `npm run build:labs` first).
 - Locally, run the checks that cover your change ([AGENTS.md](AGENTS.md#gates) lists them): `npm run test:changed` runs only the unit tests related to your changes since `origin/dev`, and each changed component's browser tests run by name.
 - Every pull request that changes the published package adds a changeset (`npx changeset`).
@@ -34,10 +34,10 @@ The `1.0.0` release establishes the stable API and styling contract.
 Releases are git tags in this repository; nothing is published to a registry.
 
 1. On a branch from `dev`, run `npx changeset version`. It sets the version in `package.json`, writes `CHANGELOG.md` and removes the consumed changesets. Merge it into `dev`, then merge `dev` into `main` through the release pull request.
-2. On an up-to-date `main` with a clean tree, run `npm run release`. It builds the library and the labs, checks the package, tags `v<version>` on a release commit that adds the built `dist/` and `labs/build/` to `main`'s commit, and packs the tarball.
-3. Push the tag (`git push origin v<version>`) and create the tag's GitHub Release with the changelog entry, attaching the tarball.
+2. On an up-to-date `main` with a clean tree, run `npm run release`. It builds the library and the labs, checks the package, tags `v<version>` on a release commit that adds the built `dist/` to `main`'s commit, and packs the library tarball and standalone labs archive.
+3. Push the tag (`git push origin v<version>`) and create the tag's GitHub Release with the changelog entry, attaching both archives.
 
-Hosts can also install a branch or commit before it is released: npm runs `prepare` (`npm run build:package`), which builds `dist/` and `labs/build/reference.css` but not the lab bundles. The same script runs after `npm ci` in a checkout. A change to the build or the package contents runs `npm run check:git-install`, which installs the committed `HEAD` into a clean consumer through `npm install` and then `npm ci`, and checks its imports, declarations and reference stylesheet; pass a dependency such as `"git+https://github.com/FlamboyantEngineer/ui-components.git#dev"` to check a pushed branch.
+Hosts can also install a branch or commit before it is released: npm runs `prepare` (`npm run build`), which builds `dist/` without building labs. The same script runs after `npm ci` in a checkout. A change to the build or the package contents runs `npm run check:git-install`, which installs the committed `HEAD` into a clean consumer through `npm install` and then `npm ci`, and checks its imports and declarations, and verifies that labs are excluded; pass a dependency such as `"git+https://github.com/FlamboyantEngineer/ui-components.git#dev"` to check a pushed branch.
 
 ## Source rules
 

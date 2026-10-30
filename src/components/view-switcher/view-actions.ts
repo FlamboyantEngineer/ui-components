@@ -1,3 +1,11 @@
+import {
+  DeleteGlyph,
+  EditGlyph,
+  PlusGlyph,
+  SaveGlyph,
+  StarGlyph,
+  UndoGlyph,
+} from '../../core/glyphs.js';
 import { joinMenuGroups } from '../menu/menu.js';
 // The actions a view switcher offers for a view, as menu entries for the actions menu and each
 // tab's own menu.
@@ -36,13 +44,13 @@ function listSettingsActions(key: Key, context: ViewActionContext): MenuItemEntr
   const entries: MenuItemEntry[] = [];
   const { onSave, onSaveAs, onReset } = handlers;
   if (onSave && isDirty) {
-    entries.push({ id: 'save', label: strings.save, icon: 'save', onAction: () => onSave(key) });
+    entries.push({ id: 'save', label: strings.save, icon: SaveGlyph, onAction: () => onSave(key) });
   }
   if (onSaveAs) {
     entries.push({
       id: 'save-as',
       label: strings.saveViewAs,
-      icon: 'plus',
+      icon: PlusGlyph,
       onAction: () =>
         context.openDialog({ type: 'save-as', label: '', isOpen: true, onSubmit: onSaveAs }),
     });
@@ -51,7 +59,7 @@ function listSettingsActions(key: Key, context: ViewActionContext): MenuItemEntr
     entries.push({
       id: 'reset',
       label: strings.resetView,
-      icon: 'undo',
+      icon: UndoGlyph,
       onAction: () => onReset(key),
     });
   }
@@ -67,7 +75,7 @@ export function listViewActions(key: Key, label: string, context: ViewActionCont
     naming.push({
       id: 'rename',
       label: strings.rename,
-      icon: 'edit',
+      icon: EditGlyph,
       onAction: () =>
         openDialog({
           type: 'rename',
@@ -81,7 +89,7 @@ export function listViewActions(key: Key, label: string, context: ViewActionCont
     naming.push({
       id: 'set-default',
       label: strings.setDefaultView,
-      icon: 'star',
+      icon: StarGlyph,
       onAction: () => onDefaultViewChange(key),
     });
   }
@@ -90,7 +98,7 @@ export function listViewActions(key: Key, label: string, context: ViewActionCont
         {
           id: 'delete',
           label: strings.delete,
-          icon: 'delete',
+          icon: DeleteGlyph,
           tone: 'danger',
           isDisabled: !context.canDelete,
           onAction: () =>

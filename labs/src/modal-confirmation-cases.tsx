@@ -1,3 +1,4 @@
+import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -9,7 +10,6 @@ import {
   ModalTrigger,
 } from '../../src/components/modal/modal.js';
 import { Icon } from '../../src/components/icon/icon.js';
-
 import {
   ModalHost,
   createModalController,
@@ -138,14 +138,14 @@ function News({ tone, icon }: { tone: ModalTone; icon: (typeof icons)[number] })
           <>
             {icon !== 'none' && (icon === 'error' || tone !== 'danger') ? (
               <Icon
-                glyph={
+                icon={
                   icon === 'error'
-                    ? 'error'
+                    ? ErrorGlyph
                     : tone === 'success'
-                      ? 'success'
+                      ? SuccessGlyph
                       : tone === 'warning'
-                        ? 'warning'
-                        : 'info'
+                        ? WarningGlyph
+                        : InfoGlyph
                 }
                 className="ui-modal__confirmation-icon"
               />

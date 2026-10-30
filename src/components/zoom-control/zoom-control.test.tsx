@@ -1,3 +1,4 @@
+import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -258,8 +259,8 @@ describe('ZoomControl', () => {
       <ZoomControl
         levels={levels}
         value={100}
-        zoomOutButton={<Button icon="minus" label="Shrink" id="shrink" />}
-        zoomInButton={<Button icon="plus" label="Grow" id="grow" />}
+        zoomOutButton={<Button icon={MinusGlyph} label="Shrink" id="shrink" />}
+        zoomInButton={<Button icon={PlusGlyph} label="Grow" id="grow" />}
       />,
     );
     const group = screen.getByRole('group');

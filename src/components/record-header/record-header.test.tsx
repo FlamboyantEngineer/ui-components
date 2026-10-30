@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -11,7 +12,7 @@ describe('RecordHeader', { timeout: 15_000 }, () => {
     const { container } = render(
       <RecordHeader
         identifier="REQ-12"
-        icon="folder"
+        icon={FolderGlyph}
         title="Cooling rack"
         className="extra"
         id="record"

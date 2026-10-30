@@ -1,3 +1,4 @@
+import { PlusGlyph, RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
@@ -15,7 +16,6 @@ import {
   type FieldStateOptions,
   type FieldValidationMode,
 } from '../../src/components/field/field.js';
-
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import type { Key } from '../../src/core/props.js';
 import { useUiStrings } from '../../src/core/provider.js';
@@ -156,8 +156,8 @@ function UndoToolbar() {
   return (
     <>
       <div role="toolbar" aria-label="Edit">
-        <Button icon="undo" label="Undo" preventFocusOnPress onPress={() => run('undo')} />
-        <Button icon="redo" label="Redo" preventFocusOnPress onPress={() => run('redo')} />
+        <Button icon={UndoGlyph} label="Undo" preventFocusOnPress onPress={() => run('undo')} />
+        <Button icon={RedoGlyph} label="Redo" preventFocusOnPress onPress={() => run('redo')} />
       </div>
       <SampleField label="Fruit" options={{ defaultValue: 'Fig' }} data-lab-field="fruit" />
       <SampleField label="City" options={{ defaultValue: 'Oslo' }} data-lab-field="city" />
@@ -171,7 +171,7 @@ const menu: FieldMenuEntry[] = [
   'set-default',
   'help',
   { type: 'separator', id: 'rule' },
-  { id: 'copy', label: 'Copy value', icon: 'plus' },
+  { id: 'copy', label: 'Copy value', icon: PlusGlyph },
 ];
 
 function MenuField() {

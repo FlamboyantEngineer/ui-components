@@ -106,7 +106,7 @@ export function ActivityDisclosure({
       onExpandedChange={expansion.onExpandedChange}
     >
       <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
-        <Glyph name={indicator} className={hooks.slotClass('indicator')} />
+        <Glyph icon={indicator} className={hooks.slotClass('indicator')} />
         {glyph}
         <span {...hooks.slot('label')}>{label}</span>
         {isActive ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}

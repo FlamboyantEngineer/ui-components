@@ -1,3 +1,4 @@
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -44,7 +45,7 @@ export function ZoomPresetMenu({
     <DropdownMenu
       {...trigger}
       iconOnly
-      icon="chevron-down"
+      icon={ChevronDownGlyph}
       label={strings.zoomPresets}
       placement="bottom end"
       items={items}

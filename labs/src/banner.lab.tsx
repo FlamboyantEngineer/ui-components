@@ -1,3 +1,4 @@
+import { RestoreGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Banner, type BannerTone } from '../../src/components/banner/banner.js';
 import { Button } from '../../src/components/button/button.js';
@@ -161,7 +162,7 @@ mountLab(
               isPending={state === 'pending'}
               isExiting={state === 'exiting'}
               {...(state === 'no icon' ? { icon: null } : {})}
-              {...(state === 'custom icon' ? { icon: 'restore' as const } : {})}
+              {...(state === 'custom icon' ? { icon: RestoreGlyph } : {})}
             />
           );
           return presentation === 'inline' ? <p>Status: {banner} for Report.pdf</p> : banner;

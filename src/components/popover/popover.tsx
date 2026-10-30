@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useContext, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Dialog,
@@ -96,7 +97,7 @@ function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) 
       )}
       {showCloseButton ? (
         <Button
-          icon="close"
+          icon={CloseGlyph}
           label={strings.close}
           size="sm"
           className={hooks.slotClass('close')}

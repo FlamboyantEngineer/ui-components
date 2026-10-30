@@ -1,8 +1,8 @@
+import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { findMaximum } from '../../utils/find-maximum.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { Key, BaseProps } from '../../core/props.js';
-
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { InlineError } from '../inline-error/inline-error.js';
@@ -138,13 +138,13 @@ function menuOf<T extends FolderItem>(
   const { props, strings } = context;
   const entries: MenuEntry[] = [];
   if (props.onRename) {
-    entries.push({ id: 'rename', label: strings.rename, icon: 'edit', isDisabled: !canRename });
+    entries.push({ id: 'rename', label: strings.rename, icon: EditGlyph, isDisabled: !canRename });
   }
   if (props.onDelete) {
     entries.push({
       id: 'delete',
       label: strings.delete,
-      icon: 'delete',
+      icon: DeleteGlyph,
       tone: 'danger',
       isDisabled: !canDelete,
       description: deleteReason ?? undefined,

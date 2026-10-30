@@ -76,7 +76,7 @@ export interface TreeProps<T extends TreeItemData>
   getHref?: ((item: T) => string | undefined) | undefined;
   /** Whether the row is the current page or item: `aria-current` and `data-current`. */
   isItemCurrent?: ((item: T) => boolean) | undefined;
-  /** A built-in glyph name or icon node before the label. */
+  /** An imported icon component or rendered element before the label. */
   getIcon?: ((item: T, state: TreeItemState) => IconSource) | undefined;
   /** The label. Defaults to the text value. */
   renderLabel?: ((item: T, state: TreeItemState) => ReactNode) | undefined;

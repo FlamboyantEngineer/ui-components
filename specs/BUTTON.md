@@ -34,7 +34,7 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-1.5 - Icons
 
-`startIcon` and `endIcon` shall draw a built-in glyph name or any icon node as a decorative [Icon](ICON.md) in the `ui-button__start-icon` and `ui-button__end-icon` slots, before and after the label.
+`startIcon` and `endIcon` shall draw an imported icon component or rendered element as a decorative [Icon](ICON.md) in the `ui-button__start-icon` and `ui-button__end-icon` slots, before and after the label.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button.test.tsx`
@@ -122,7 +122,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-11.1 - Icon and name
 
-`Button` shall draw its `icon` (a built-in glyph name or any icon node) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error.
+`Button` shall draw its `icon` (an imported icon component or rendered element) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`

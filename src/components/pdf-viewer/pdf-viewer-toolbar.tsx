@@ -1,6 +1,14 @@
+import {
+  ChevronDownGlyph,
+  ChevronUpGlyph,
+  FitPageGlyph,
+  FitWidthGlyph,
+  MoreVerticalGlyph,
+  SidebarGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import { Input, Label, NumberField } from '../../primitives/index.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Button } from '../button/button.js';
@@ -46,15 +54,15 @@ type PdfViewerPageNavProps = Pick<
 
 interface PdfFitMode {
   zoom: 'page-width' | 'page-fit';
-  glyph: GlyphName;
+  glyph: GlyphComponent;
   /** The provider string that names the button. */
   stringKey: 'fitWidth' | 'fitPage';
 }
 
 const wholePercent: Intl.NumberFormatOptions = { maximumFractionDigits: 0 };
 const fitModes: readonly PdfFitMode[] = [
-  { zoom: 'page-width', glyph: 'fit-width', stringKey: 'fitWidth' },
-  { zoom: 'page-fit', glyph: 'fit-page', stringKey: 'fitPage' },
+  { zoom: 'page-width', glyph: FitWidthGlyph, stringKey: 'fitWidth' },
+  { zoom: 'page-fit', glyph: FitPageGlyph, stringKey: 'fitPage' },
 ];
 
 /**
@@ -95,7 +103,7 @@ function PdfViewerCommands({ isReady, commands }: { isReady: boolean; commands: 
   return (
     <DropdownMenu
       iconOnly
-      icon="more-vertical"
+      icon={MoreVerticalGlyph}
       label={strings.moreOptions}
       size="sm"
       isDisabled={!isReady}
@@ -128,7 +136,7 @@ function PdfViewerPageNav({
   return (
     <div {...hooks.slot('group')}>
       <Button
-        icon="chevron-up"
+        icon={ChevronUpGlyph}
         label={strings.previousPage}
         size="sm"
         isDisabled={!isReady || currentPage <= 0}
@@ -151,7 +159,7 @@ function PdfViewerPageNav({
       </NumberField>
       <span {...hooks.slot('page-total')}>{strings.ofTotal(pageCount)}</span>
       <Button
-        icon="chevron-down"
+        icon={ChevronDownGlyph}
         label={strings.nextPage}
         size="sm"
         isDisabled={!isReady || currentPage >= pageCount - 1}
@@ -185,7 +193,7 @@ export function PdfViewerToolbar({
       <ToolbarScroller aria-label={strings.controlsFor(label)}>
         {leadingActions ? <div {...hooks.slot('leading-actions')}>{leadingActions}</div> : null}
         <Button
-          icon="sidebar"
+          icon={SidebarGlyph}
           label={strings.sidebar}
           size="sm"
           isSelected={sidebar.isOpen}

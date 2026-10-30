@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../src/core/glyphs.js';
 // Cases of the table lab for sorting by several columns, column filters, the column layout,
 // nested and detail rows, pagination, editing, the summary row, loading more and cell wrapping.
 
@@ -333,7 +334,7 @@ export function NestedRowActions() {
         renderRowActions={(place) =>
           place.places ? null : (
             <Button
-              icon="plus"
+              icon={PlusGlyph}
               label={`Add after ${place.name}`}
               tooltip={`Add after ${place.name}`}
               focusableWhenDisabled

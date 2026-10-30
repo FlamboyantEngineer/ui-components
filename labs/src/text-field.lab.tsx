@@ -1,6 +1,6 @@
+import { InfoGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-
 import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Glyph } from '../../src/core/provider.js';
@@ -103,11 +103,20 @@ function Adornments() {
         defaultValue="example.com"
         startAdornment="https://"
         endAdornment={
-          <Button icon="plus" label="Copy address" size="xs" onPress={() => setCopied('yes')} />
+          <Button
+            icon={PlusGlyph}
+            label="Copy address"
+            size="xs"
+            onPress={() => setCopied('yes')}
+          />
         }
         data-lab-field="website"
       />
-      <TextField label="Weight note" startAdornment={<Glyph name="info" />} endAdornment="kg" />
+      <TextField
+        label="Weight note"
+        startAdornment={<Glyph icon={InfoGlyph} />}
+        endAdornment="kg"
+      />
       <LabOutput name="Copied">{copied}</LabOutput>
     </>
   );

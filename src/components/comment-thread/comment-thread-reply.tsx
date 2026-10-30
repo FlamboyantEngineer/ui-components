@@ -1,3 +1,4 @@
+import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { useContext, useRef, useState, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -82,9 +83,9 @@ function useMenuEntries({
   const strings = useUiStrings();
   return [
     ...actions,
-    ...(onEdit ? [{ id: editKey, label: strings.edit, icon: 'edit' as const }] : []),
+    ...(onEdit ? [{ id: editKey, label: strings.edit, icon: EditGlyph }] : []),
     ...(onDelete
-      ? [{ id: deleteKey, label: strings.delete, icon: 'delete' as const, tone: 'danger' as const }]
+      ? [{ id: deleteKey, label: strings.delete, icon: DeleteGlyph, tone: 'danger' as const }]
       : []),
   ];
 }

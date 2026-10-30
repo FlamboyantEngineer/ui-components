@@ -1,3 +1,4 @@
+import { StarGlyph } from '../../core/glyphs.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -23,7 +24,7 @@ export interface ViewSwitcherView {
   id: Key;
   /** The view's name. */
   label: string;
-  /** A glyph name or icon node before the name, such as the view's layout. Decorative. */
+  /** A icon component or rendered element before the name, such as the view's layout. Decorative. */
   icon?: IconSource;
 }
 
@@ -79,7 +80,7 @@ function ViewLabel({
         <>
           {' '}
           <span {...hooks.slot('default')}>
-            <Glyph name="star" />
+            <Glyph icon={StarGlyph} />
             <VisuallyHidden elementType="span">{strings.defaultView}</VisuallyHidden>
           </span>
         </>

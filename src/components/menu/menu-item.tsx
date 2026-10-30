@@ -1,3 +1,4 @@
+import { CheckGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useContext, type ComponentPropsWithRef, type ReactNode } from 'react';
 import {
   Header,
@@ -211,7 +212,7 @@ function MenuItemContent({
     <>
       {!hasCheck ? null : (
         <span {...itemHooks.slot('check')} aria-hidden="true">
-          {state.isSelected ? <Glyph name="check" /> : null}
+          {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
         </span>
       )}
       {isPending ? <span {...itemHooks.slot('spinner')} aria-hidden="true" /> : iconBox}
@@ -231,7 +232,7 @@ function MenuItemContent({
       ) : null}
       {state.hasSubmenu ? (
         <Glyph
-          name={direction === 'rtl' ? 'chevron-left' : 'chevron-right'}
+          icon={direction === 'rtl' ? ChevronLeftGlyph : ChevronRightGlyph}
           className={itemHooks.slotClass('submenu-indicator')}
         />
       ) : null}

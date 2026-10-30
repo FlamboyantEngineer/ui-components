@@ -1,7 +1,12 @@
+import {
+  FileArchiveGlyph,
+  FilePdfGlyph,
+  FileTextGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 // The attachment data contract and what is derived from it: the kind of file (from its media type
 // or, for a generic type, its name), its glyph, its status and the URLs it may show.
 
-import type { GlyphName } from '../../core/glyphs.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 
@@ -78,10 +83,10 @@ const extensionKinds: Readonly<Record<string, ChatAttachmentKind>> = {
   yml: 'text',
 };
 
-const kindGlyphs: Readonly<Partial<Record<ChatAttachmentKind, GlyphName>>> = {
-  pdf: 'file-pdf',
-  archive: 'file-archive',
-  text: 'file-text',
+const kindGlyphs: Readonly<Partial<Record<ChatAttachmentKind, GlyphComponent>>> = {
+  pdf: FilePdfGlyph,
+  archive: FileArchiveGlyph,
+  text: FileTextGlyph,
 };
 
 /** The schemes an attachment's thumbnail and download URLs may use, besides relative URLs. */
@@ -108,7 +113,7 @@ export function getAttachmentKind(mediaType: string, name: string): ChatAttachme
 }
 
 /** The glyph of a kind; other files take the glyph of their media family (video, audio, file). */
-export function getAttachmentGlyph(kind: ChatAttachmentKind, mediaType: string): GlyphName {
+export function getAttachmentGlyph(kind: ChatAttachmentKind, mediaType: string): GlyphComponent {
   return kindGlyphs[kind] ?? getFileGlyph(kind === 'image' ? 'image/' : mediaType);
 }
 

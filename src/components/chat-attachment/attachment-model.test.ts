@@ -1,3 +1,11 @@
+import {
+  AudioGlyph,
+  FileArchiveGlyph,
+  FileGlyph,
+  FilePdfGlyph,
+  FileTextGlyph,
+  ImageGlyph,
+} from '../../core/glyphs.js';
 import { describe, expect, it } from 'vitest';
 import {
   getAttachmentGlyph,
@@ -33,12 +41,12 @@ describe('attachment model', () => {
   });
 
   it('UIC-CHAT-ATTACHMENT-1.3 picks the glyph of the kind, else of the media family', () => {
-    expect(getAttachmentGlyph('pdf', 'application/pdf')).toBe('file-pdf');
-    expect(getAttachmentGlyph('archive', 'application/zip')).toBe('file-archive');
-    expect(getAttachmentGlyph('text', 'text/plain')).toBe('file-text');
-    expect(getAttachmentGlyph('image', '')).toBe('image');
-    expect(getAttachmentGlyph('file', 'audio/ogg')).toBe('audio');
-    expect(getAttachmentGlyph('file', 'application/x-unknown')).toBe('file');
+    expect(getAttachmentGlyph('pdf', 'application/pdf')).toBe(FilePdfGlyph);
+    expect(getAttachmentGlyph('archive', 'application/zip')).toBe(FileArchiveGlyph);
+    expect(getAttachmentGlyph('text', 'text/plain')).toBe(FileTextGlyph);
+    expect(getAttachmentGlyph('image', '')).toBe(ImageGlyph);
+    expect(getAttachmentGlyph('file', 'audio/ogg')).toBe(AudioGlyph);
+    expect(getAttachmentGlyph('file', 'application/x-unknown')).toBe(FileGlyph);
   });
 
   it('UIC-CHAT-ATTACHMENT-1.8 keeps relative URLs and the http, https, blob and data schemes only', () => {

@@ -1,3 +1,11 @@
+import {
+  CheckGlyph,
+  CloseGlyph,
+  MinusGlyph,
+  PlusGlyph,
+  RestoreGlyph,
+  UndoGlyph,
+} from '../../src/core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -81,7 +89,7 @@ function RowSample({ state }: { state: (typeof rowStates)[number] }) {
       description={state === 'description and actions' ? 'The width of the frame.' : undefined}
       actions={
         state === 'description and actions' ? (
-          <Button icon="restore" label="Reset width" size="sm" />
+          <Button icon={RestoreGlyph} label="Reset width" size="sm" />
         ) : undefined
       }
     />
@@ -99,7 +107,7 @@ function SectionSample({ state, name }: { state: (typeof sectionStates)[number];
       meta={state === 'description and meta' ? 'shared' : undefined}
       actions={
         state === 'actions' ? (
-          <Button icon="plus" label={`Add colour to ${name}`} size="sm" />
+          <Button icon={PlusGlyph} label={`Add colour to ${name}`} size="sm" />
         ) : undefined
       }
     >
@@ -124,7 +132,7 @@ function CardSample({ state, name }: { state: (typeof cardStates)[number]; name:
       isOverridden={state === 'overridden'}
       actions={
         state === 'actions' ? (
-          <Button icon="undo" label={`Reset heading in ${name}`} size="sm" />
+          <Button icon={UndoGlyph} label={`Reset heading in ${name}`} size="sm" />
         ) : undefined
       }
     >
@@ -138,9 +146,9 @@ function StripSample({ variant, name }: { variant: 'separate' | 'segmented'; nam
     <>
       <PropertyRow label="Style">
         <PropertyIconGroup aria-label={`Style in ${name}`} variant={variant}>
-          <Button icon="check" label="Checked" size="sm" isSelected />
-          <Button icon="minus" label="Mixed" size="sm" />
-          <Button icon="close" label="Cleared" size="sm" />
+          <Button icon={CheckGlyph} label="Checked" size="sm" isSelected />
+          <Button icon={MinusGlyph} label="Mixed" size="sm" />
+          <Button icon={CloseGlyph} label="Cleared" size="sm" />
         </PropertyIconGroup>
       </PropertyRow>
       <PropertyRow label="Spacing" unit="pt" keywords={['Before', 'After']}>

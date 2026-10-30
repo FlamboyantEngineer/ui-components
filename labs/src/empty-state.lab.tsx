@@ -1,3 +1,4 @@
+import { SearchGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   EmptyState,
@@ -92,7 +93,7 @@ mountLab(
             <EmptyState
               variant={variant}
               size={size}
-              icon={variant === 'error' ? 'warning' : 'search'}
+              icon={variant === 'error' ? WarningGlyph : SearchGlyph}
               title={copy[variant].title}
               description={copy[variant].description}
               actions={

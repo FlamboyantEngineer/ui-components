@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -6,7 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const fruit: SelectFieldOption[] = [
-  { id: 'apple', label: 'Apple', description: 'Crisp', icon: 'plus' },
+  { id: 'apple', label: 'Apple', description: 'Crisp', icon: PlusGlyph },
   { id: 'pear', label: 'Pear' },
   { id: 'plum', label: 'Plum', isDisabled: true },
   { id: 'fig', label: 'Fig' },

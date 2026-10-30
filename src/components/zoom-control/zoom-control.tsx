@@ -1,7 +1,7 @@
+import { MinusGlyph, PlusGlyph, RestoreGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useId, useMemo, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -43,7 +43,7 @@ export interface ZoomControlProps
 
 interface ZoomButtonProps {
   slot: 'zoom-out' | 'zoom-in' | 'reset';
-  icon: GlyphName;
+  icon: GlyphComponent;
   label: string;
   /** The zoom the button requests, or `undefined` while it has none to request. */
   target: number | undefined;
@@ -191,7 +191,7 @@ export function ZoomControl({
         <ZoomButton
           {...buttonProps}
           slot="zoom-out"
-          icon="minus"
+          icon={MinusGlyph}
           label={strings.zoomOut}
           target={targets.previous}
         />
@@ -208,7 +208,7 @@ export function ZoomControl({
         <ZoomButton
           {...buttonProps}
           slot="zoom-in"
-          icon="plus"
+          icon={PlusGlyph}
           label={strings.zoomIn}
           target={targets.next}
         />
@@ -227,7 +227,7 @@ export function ZoomControl({
         <ZoomButton
           {...buttonProps}
           slot="reset"
-          icon="restore"
+          icon={RestoreGlyph}
           label={strings.resetZoom}
           target={Math.abs(current - resetValue) < tolerance ? undefined : resetValue}
         />

@@ -1,3 +1,4 @@
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
@@ -92,7 +93,7 @@ export function Pagination({
         <li {...hooks.slot('item')}>
           <Button
             className={hooks.slotClass('previous')}
-            icon={isRtl ? 'chevron-right' : 'chevron-left'}
+            icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
             label={strings.previousPage}
             size="sm"
             isDisabled={isDisabled || current === 1}
@@ -125,7 +126,7 @@ export function Pagination({
         <li {...hooks.slot('item')}>
           <Button
             className={hooks.slotClass('next')}
-            icon={isRtl ? 'chevron-left' : 'chevron-right'}
+            icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
             label={strings.nextPage}
             size="sm"
             isDisabled={isDisabled || current === count}

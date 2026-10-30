@@ -21,7 +21,7 @@ export interface EmptyStateProps extends BaseProps, Pick<NativeProps<'section'>,
   size?: EmptyStateSize | undefined;
   /** The title's heading level. Defaults to 3. */
   headingLevel?: HeadingLevel | undefined;
-  /** A decorative illustration or glyph over the text: a built-in glyph name or any node. */
+  /** A decorative illustration or glyph over the text: a imported icon component or rendered element. */
   icon?: IconSource;
   /** Calls to action under the description, such as a button that adds the first item. */
   actions?: ReactNode;
@@ -38,7 +38,7 @@ function toTypographicEllipsis(node: ReactNode): ReactNode {
 /** The decorative lead: the spinner while loading, else the icon, if any. */
 function EmptyStateLead({ icon, isLoading }: { icon: IconSource; isLoading: boolean }) {
   if (isLoading) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
-  if (isEmptyNode(icon)) return null;
+  if (!icon) return null;
   return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
 }
 

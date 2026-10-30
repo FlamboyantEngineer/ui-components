@@ -4,6 +4,27 @@ import { expect, test } from './fixtures.js';
 const editor = (page: Page, cell: string) => page.locator(`[data-lab-editor="${cell}"]`);
 
 test.describe('Completion List lab', () => {
+  test('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.4 stops suggesting when completions are removed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('completion-list');
+    const note = page.getByRole('textbox', { name: 'Note' });
+    await note.fill('Ask @Jon');
+    await expect(page.getByRole('option', { name: /Jon Berg/ })).toBeVisible();
+    await page.getByRole('button', { name: 'Disable note suggestions' }).click();
+    await note.focus();
+    await note.press('Control+Space');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(note).toHaveValue('Ask @Jon');
+    await page.getByRole('button', { name: 'Enable note suggestions' }).click();
+    await note.focus();
+    await note.press('Control+Space');
+    await expect(page.getByRole('option', { name: /Jon Berg/ })).toBeVisible();
+    await note.press('Enter');
+    await expect(note).toHaveValue('Ask @jon ');
+  });
+
   test('UIC-COMPLETION-LIST-1.1 UIC-COMPLETION-LIST-1.2 UIC-COMPLETION-LIST-1.4 opens below the editor with the active documentation', async ({
     page,
     lab,

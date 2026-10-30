@@ -1,3 +1,4 @@
+import { ArrowDownGlyph, ArrowUpGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -53,7 +54,12 @@ export function TranscriptJumpButton({
 }) {
   const strings = useUiStrings();
   return (
-    <Button className={hooks.slotClass('jump')} size="sm" startIcon="arrow-down" onPress={onJump}>
+    <Button
+      className={hooks.slotClass('jump')}
+      size="sm"
+      startIcon={ArrowDownGlyph}
+      onPress={onJump}
+    >
       {unseenCount > 0 ? strings.newMessageCount(unseenCount) : strings.jumpToLatest}
     </Button>
   );
@@ -66,7 +72,7 @@ export function TranscriptUnreadBar({ count, onJump }: { count: number; onJump: 
   return (
     <div {...hooks.slot('unread')}>
       <span id={countId}>{strings.unreadMessageCount(count)}</span>
-      <Button size="sm" startIcon="arrow-up" aria-describedby={countId} onPress={onJump}>
+      <Button size="sm" startIcon={ArrowUpGlyph} aria-describedby={countId} onPress={onJump}>
         {strings.jumpToUnread}
       </Button>
     </div>

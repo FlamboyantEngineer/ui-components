@@ -1,3 +1,4 @@
+import { SearchGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent } from 'react';
 import {
   Autocomplete,
@@ -111,7 +112,7 @@ function CommandPaletteDialog({
         filter={filter === null ? undefined : (filter ?? contains)}
       >
         <SearchField className={hooks.slotClass('search')} aria-label={hint} autoFocus>
-          <Glyph name="search" className={hooks.slotClass('search-icon')} />
+          <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
           <Input className={hooks.slotClass('search-input')} placeholder={hint} />
         </SearchField>
         <MenuContext.Provider value={{ onClose: close }}>

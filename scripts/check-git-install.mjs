@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Installs the package as an npm Git dependency into a clean temporary consumer, as a host installs a
 // branch, and checks what npm prepared: the root and component entry points import and render, the
-// public declarations type-check, and labs/build/reference.css is present. Then it deletes
+// public declarations type-check, and labs are excluded. Then it deletes
 // node_modules and repeats the checks through `npm ci` with the consumer's lockfile. Each install
 // uses an empty npm cache, so npm clones and prepares the package from source both times.
 // The default is this checkout's HEAD commit, so commit the changes to check first. Git reads a
@@ -74,12 +74,14 @@ function npm(args) {
 
 function check(phase) {
   const installed = join(consumer, 'node_modules', ...PACKAGE.split('/'));
-  for (const file of ['dist/index.js', 'dist/index.d.ts', 'labs/build/reference.css']) {
+  for (const file of ['dist/index.js', 'dist/index.d.ts']) {
     const path = join(installed, file);
     if (!existsSync(path) || statSync(path).size === 0) {
       problems.push(`${phase}: the installed package is missing ${file}`);
     }
   }
+  if (existsSync(join(installed, 'labs')))
+    problems.push(`${phase}: the installed package contains labs`);
   try {
     execFileSync('node', ['render.mjs'], { cwd: consumer, stdio: 'inherit' });
   } catch {

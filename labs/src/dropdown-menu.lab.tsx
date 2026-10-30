@@ -1,3 +1,4 @@
+import { ExpandGlyph, MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import type { ButtonVariant } from '../../src/components/button/button.js';
@@ -30,7 +31,7 @@ function Actions() {
         <DropdownMenu
           label="More actions"
           iconOnly
-          icon="more-vertical"
+          icon={MoreVerticalGlyph}
           placement="bottom end"
           items={editEntries}
           onAction={(key: Key) => setLast(String(key))}
@@ -50,7 +51,7 @@ function Choice() {
     <>
       <DropdownMenu
         label={`Layout: ${chosen}`}
-        icon="expand"
+        icon={ExpandGlyph}
         selectionMode="single"
         selectedKeys={layout}
         onSelectionChange={setLayout}
@@ -81,7 +82,7 @@ function Split() {
     <>
       <DropdownMenu
         label="Save"
-        icon="save"
+        icon={SaveGlyph}
         variant="primary"
         items={saveEntries}
         onPress={() => setLast('save')}
@@ -149,7 +150,7 @@ mountLab(
             iconOnly={state === 'icon only'}
             showCaret={state === 'no caret' ? false : undefined}
             isDisabled={state === 'disabled'}
-            {...(state === 'start icon' ? { icon: 'plus' as const } : {})}
+            {...(state === 'start icon' ? { icon: PlusGlyph } : {})}
           />
         )}
       />

@@ -1,3 +1,4 @@
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -85,7 +86,7 @@ function MediaFallback({ item }: { item: MediaViewerItem }) {
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('fallback')}>
-      <Icon glyph={getFileGlyph(item.type)} className={hooks.slotClass('fallback-icon')} />
+      <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('fallback-icon')} />
       {strings.previewUnavailable}
     </div>
   );
@@ -107,7 +108,7 @@ export function MediaStage(props: MediaStageProps) {
       {hasSiblings ? (
         <Button
           className={hooks.slotClass('previous')}
-          icon={isRtl ? 'chevron-right' : 'chevron-left'}
+          icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
           label={strings.previous}
           isDisabled={!props.onPrevious}
           focusableWhenDisabled
@@ -132,7 +133,7 @@ export function MediaStage(props: MediaStageProps) {
       {hasSiblings ? (
         <Button
           className={hooks.slotClass('next')}
-          icon={isRtl ? 'chevron-left' : 'chevron-right'}
+          icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
           label={strings.next}
           isDisabled={!props.onNext}
           focusableWhenDisabled

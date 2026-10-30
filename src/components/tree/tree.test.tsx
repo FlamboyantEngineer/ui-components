@@ -1,3 +1,4 @@
+import { MinusGlyph, MoreGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
@@ -75,9 +76,9 @@ describe('Tree', () => {
         getIcon={(item, state) =>
           item.children ? (
             state.isExpanded ? (
-              'minus'
+              MinusGlyph
             ) : (
-              'plus'
+              PlusGlyph
             )
           ) : (
             <svg role="img" aria-label={`${item.name} icon`} />
@@ -86,7 +87,7 @@ describe('Tree', () => {
         renderLabel={(item) => <strong>{item.name}</strong>}
         renderMeta={(item) => (item.id === 'apple' ? 'Red' : null)}
         renderActions={(item) =>
-          item.id === 'pear' ? <Button icon="more" label={`More for ${item.name}`} /> : null
+          item.id === 'pear' ? <Button icon={MoreGlyph} label={`More for ${item.name}`} /> : null
         }
       />,
     );
@@ -299,7 +300,11 @@ describe('Tree', () => {
       <FoodTree
         onAction={onAction}
         renderActions={(item) => (
-          <Button icon="more" label={`More for ${item.name}`} onPress={() => onMore(item.id)} />
+          <Button
+            icon={MoreGlyph}
+            label={`More for ${item.name}`}
+            onPress={() => onMore(item.id)}
+          />
         )}
       />,
     );

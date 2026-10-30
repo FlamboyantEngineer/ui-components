@@ -1,3 +1,4 @@
+import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import { useRef, type ReactNode, type RefObject } from 'react';
 import {
   ButtonContext,
@@ -109,7 +110,7 @@ function ClearButton({ label, text, onPress }: { label: string; text?: string; o
           {text}
         </Button>
       ) : (
-        <Button {...shared} icon="close" label={label} />
+        <Button {...shared} icon={CloseGlyph} label={label} />
       )}
     </ButtonContext.Provider>
   );
@@ -126,7 +127,7 @@ function SearchBox({
 }: SearchBoxProps) {
   return (
     <>
-      <Glyph name="search" className={hooks.slotClass('glyph')} />
+      <Glyph icon={SearchGlyph} className={hooks.slotClass('glyph')} />
       <Input {...hooks.slot('input')} ref={input} placeholder={placeholder} />
       {isPending ? <ButtonSpinner className={hooks.slotClass('spinner')} /> : null}
       {onClear ? <ClearButton label={clearLabel} text={clearText} onPress={onClear} /> : null}

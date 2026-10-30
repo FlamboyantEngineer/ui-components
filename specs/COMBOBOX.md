@@ -43,7 +43,7 @@ Verification: `e2e/combobox.spec.ts`
 
 ### UIC-COMBOBOX-2.1 - Options and sections
 
-Suggestions shall be options (`id`, `label`, optional `description`, `icon` as a built-in glyph name or node, and `isDisabled`) or sections (`id`, `title`, `options`). An option draws its icon (`ui-combobox__option-icon`), label (`ui-combobox__option-label`) and description (`ui-combobox__option-description`) in a `role="option"` row (`ui-combobox__option`), named by its label and description text; a section draws a group (`ui-combobox__section`) headed by its title (`ui-combobox__section-header`).
+Suggestions shall be options (`id`, `label`, optional `description`, `icon` as a built-in icon component or element, and `isDisabled`) or sections (`id`, `title`, `options`). An option draws its icon (`ui-combobox__option-icon`), label (`ui-combobox__option-label`) and description (`ui-combobox__option-description`) in a `role="option"` row (`ui-combobox__option`), named by its label and description text; a section draws a group (`ui-combobox__section`) headed by its title (`ui-combobox__section-header`).
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
@@ -129,7 +129,7 @@ Verification: `src/components/combobox/combobox-field.test.tsx`, `e2e/combobox.s
 
 ### UIC-COMBOBOX-3.5 - Chip icons
 
-A chip of a multiple combobox shall draw its option's `icon` (a built-in glyph name or a node, such as an avatar) before its label, in an `Icon` that also carries `ui-combobox__chip-icon` and is hidden from assistive technology, so the chip is named by its label alone. A chip whose option has no icon draws none.
+A chip of a multiple combobox shall draw its option's `icon` (a built-in icon component or an element, such as an avatar) before its label, in an `Icon` that also carries `ui-combobox__chip-icon` and is hidden from assistive technology, so the chip is named by its label alone. A chip whose option has no icon draws none.
 
 Implementation: `src/components/combobox/combobox-chips.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`

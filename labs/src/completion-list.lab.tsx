@@ -1,17 +1,13 @@
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
-import { Button } from '../../src/components/button/button.js';
 import {
   CompletionList,
-  createTriggerCompletions,
   getCompletionOptionId,
-  type Completion,
   type CompletionListItem,
   type CompletionListProps,
 } from '../../src/components/completion-list/completion-list.js';
 import { KeyHints } from '../../src/components/shortcut/shortcut.js';
-import { TextField } from '../../src/components/text-field/text-field.js';
-import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
+import { TriggeredNote } from './completion-list-note.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const contents = ['labels', 'descriptions', 'documentation', 'drawn'] as const;
@@ -175,64 +171,6 @@ function DemoEditor({
 
 function Note({ children }: { children: ReactNode }) {
   return <p>{children}</p>;
-}
-
-const people: Completion[] = [
-  { label: 'Maria Santos', description: 'Design', insertText: '@maria ', kind: 'person' },
-  { label: 'Jon Berg', description: 'Field research', insertText: '@jon ', kind: 'person' },
-  { label: 'Lena Ortiz', description: 'Quality', insertText: '@lena ', kind: 'person' },
-  { label: 'Sam Okafor', description: 'Testing', insertText: '@sam ', kind: 'person' },
-];
-
-const references: Completion[] = [12, 14, 27, 35].map((number) => ({
-  label: `Requirement ${number}`,
-  insertText: `#${number} `,
-  kind: 'reference',
-}));
-
-const byQuery = (options: readonly Completion[], query: string) =>
-  options.filter(({ label }) => label.toLowerCase().includes(query.toLowerCase()));
-
-/** `@` searches people (answering later, as a directory would) and `#` numbered references. */
-const noteCompletions = createTriggerCompletions([
-  {
-    character: '@',
-    allowsSpaces: true,
-    getCompletions: (query) => Promise.resolve(byQuery(people, query)),
-  },
-  { character: '#', getCompletions: (query) => byQuery(references, query.replace(/^\D*/, '')) },
-]);
-
-function TriggeredNote() {
-  const [value, setValue] = useState('');
-  const [isReadOnly, setReadOnly] = useState(false);
-  return (
-    <>
-      <Button onPress={() => setReadOnly(!isReadOnly)}>
-        {isReadOnly ? 'Enable note editing' : 'Make note read-only'}
-      </Button>
-      <TextField
-        label="Note"
-        multiline
-        minRows={3}
-        value={value}
-        onChange={setValue}
-        completions={noteCompletions}
-        isReadOnly={isReadOnly}
-        renderCompletion={(completion) =>
-          completion.kind === 'person' ? (
-            <UserIdentity name={completion.label} description={completion.description} size="sm" />
-          ) : (
-            completion.label
-          )
-        }
-        data-lab-field="trigger"
-      />
-      <p>
-        Value: <output data-lab-output="trigger">{value}</output>
-      </p>
-    </>
-  );
 }
 
 mountLab(

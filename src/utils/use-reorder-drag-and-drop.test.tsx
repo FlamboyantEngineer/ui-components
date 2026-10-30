@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { KeyboardEvent } from 'react';
 import { DropIndicator, GridList, GridListItem, useDragAndDrop } from '../primitives/index.js';
@@ -49,6 +49,9 @@ async function dragPlumByKeyboard() {
   const user = userEvent.setup();
   screen.getByRole('row', { name: 'plum' }).focus();
   await user.keyboard('{ArrowRight}{Enter}');
+  await waitFor(() => {
+    expect(document.querySelectorAll('.indicator[data-drop-target]')).toHaveLength(1);
+  });
   return user;
 }
 
@@ -58,19 +61,26 @@ describe('useReorderDragAndDrop', { timeout: 15_000 }, () => {
     const onMove = vi.fn();
     render(<Fruit accepts onMove={onMove} />);
     const user = await dragPlumByKeyboard();
-    expect(document.querySelectorAll('.indicator[data-drop-target]')).toHaveLength(1);
-    await user.keyboard('{Enter}');
-    expect(onMove).toHaveBeenCalledTimes(1);
-    expect(onMove.mock.lastCall?.[0]).toMatchObject({ keys: ['plum'] });
+    try {
+      await user.keyboard('{Enter}');
+      expect(onMove).toHaveBeenCalledTimes(1);
+      expect(onMove.mock.lastCall?.[0]).toMatchObject({ keys: ['plum'] });
+    } finally {
+      await user.keyboard('{Escape}');
+    }
   });
 
   it('offers no drop target where resolveMove refuses, and checks the latest options on drop', async () => {
     const onMove = vi.fn();
     const { rerender } = render(<Fruit accepts onMove={onMove} />);
     const user = await dragPlumByKeyboard();
-    rerender(<Fruit accepts={false} onMove={onMove} />);
-    await user.keyboard('{Enter}');
-    expect(onMove).not.toHaveBeenCalled();
+    try {
+      rerender(<Fruit accepts={false} onMove={onMove} />);
+      await user.keyboard('{Enter}');
+      expect(onMove).not.toHaveBeenCalled();
+    } finally {
+      await user.keyboard('{Escape}');
+    }
   });
 
   it('treats Alt alone as the move chord', () => {

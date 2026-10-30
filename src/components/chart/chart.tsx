@@ -1,3 +1,4 @@
+import { TableGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode, type Ref } from 'react';
 import { ToggleButton } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -128,7 +129,7 @@ export function Chart({
           isSelected={shown === 'table'}
           onChange={(isSelected) => setShown(isSelected ? 'table' : 'chart')}
         >
-          <Glyph name="table" />
+          <Glyph icon={TableGlyph} />
           {strings.showAsTable}
         </ToggleButton>
       </div>

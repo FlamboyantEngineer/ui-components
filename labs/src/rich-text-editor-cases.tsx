@@ -1,6 +1,6 @@
+import { StarGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-
 import {
   BlockHandle,
   FormatToolbar,
@@ -184,7 +184,7 @@ function HighlightButton() {
   const command = { type: 'toggle-mark', mark: 'highlight' } as const;
   return (
     <Button
-      icon="star"
+      icon={StarGlyph}
       label="Highlight"
       size="sm"
       isSelected={controller.isActive(command)}

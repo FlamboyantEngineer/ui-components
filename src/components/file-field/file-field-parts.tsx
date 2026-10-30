@@ -1,3 +1,4 @@
+import { DownloadGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
@@ -23,7 +24,7 @@ function FileDownloadLink({ item, href }: { item: FileFieldItem; href: string })
       aria-label={strings.downloadFile(item.name)}
       isStandalone
     >
-      <Icon glyph="download" />
+      <Icon icon={DownloadGlyph} />
     </Link>
   );
 }

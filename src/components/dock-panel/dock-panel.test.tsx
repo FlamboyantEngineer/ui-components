@@ -1,3 +1,11 @@
+import {
+  EditGlyph,
+  FolderGlyph,
+  InfoGlyph,
+  LockGlyph,
+  UsersGlyph,
+  WarningGlyph,
+} from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -17,16 +25,16 @@ function Panel(props: Partial<DockPanelProps>) {
       <DockPanelPane
         id="files"
         label="Files"
-        icon="folder"
+        icon={FolderGlyph}
         title="Recent files"
         actions={[{ verb: 'add', onPress: add }]}
       >
         <input aria-label="File filter" />
       </DockPanelPane>
-      <DockPanelPane id="people" label="People" icon="users" count={3}>
+      <DockPanelPane id="people" label="People" icon={UsersGlyph} count={3}>
         <p>Maria Santos</p>
       </DockPanelPane>
-      <DockPanelPane id="locked" label="Locked" icon="lock" isDisabled>
+      <DockPanelPane id="locked" label="Locked" icon={LockGlyph} isDisabled>
         <p>Hidden</p>
       </DockPanelPane>
       {null}
@@ -209,10 +217,10 @@ describe('DockPanel structure', () => {
   it('UIC-DOCK-PANEL-1.2 caps counts, hides empty ones and lays a bottom toolbar out in a row', () => {
     const { container } = render(
       <DockPanel label="Output" position="bottom">
-        <DockPanelPane id="log" label="Log" icon="info" count={120}>
+        <DockPanelPane id="log" label="Log" icon={InfoGlyph} count={120}>
           Log
         </DockPanelPane>
-        <DockPanelPane id="warnings" label="Warnings" icon="warning" count={0}>
+        <DockPanelPane id="warnings" label="Warnings" icon={WarningGlyph} count={0}>
           None
         </DockPanelPane>
       </DockPanel>,
@@ -254,7 +262,7 @@ describe('DockPanel structure', () => {
             <DockPanelPane
               id="a"
               label="Notes"
-              icon="edit"
+              icon={EditGlyph}
               title="Notes"
               className="notes"
               data-kind="text"
@@ -263,7 +271,7 @@ describe('DockPanel structure', () => {
             </DockPanelPane>
           </DockPanel>
         </Section>
-        <DockPanelPane id="alone" label="Alone" icon="info">
+        <DockPanelPane id="alone" label="Alone" icon={InfoGlyph}>
           Standalone
         </DockPanelPane>
       </>,
@@ -363,7 +371,7 @@ describe('DockPanel panes', () => {
   it('UIC-DOCK-PANEL-2.2 refuses the toggle without an enabled pane', () => {
     render(
       <DockPanel label="Empty">
-        <DockPanelPane id="a" label="Off" icon="info" isDisabled>
+        <DockPanelPane id="a" label="Off" icon={InfoGlyph} isDisabled>
           Off
         </DockPanelPane>
       </DockPanel>,

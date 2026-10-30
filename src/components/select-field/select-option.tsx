@@ -1,3 +1,4 @@
+import { CheckGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Collection, Header, ListBoxItem, ListBoxSection } from '../../primitives/index.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -74,7 +75,7 @@ function OptionRow({
         <>
           {isMultiple ? (
             <span {...hooks.slot('option-check')} aria-hidden="true">
-              {state.isSelected ? <Glyph name="check" /> : null}
+              {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
             </span>
           ) : null}
           {renderOption ? (

@@ -1,3 +1,4 @@
+import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { Button as AriaButton, Input, TextField as AriaTextField } from '../../primitives/index.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -106,7 +107,7 @@ export function RadixControl(props: RadixControlProps) {
           input.current?.focus();
         }}
       >
-        <Glyph name={direction === 1 ? 'plus' : 'minus'} />
+        <Glyph icon={direction === 1 ? PlusGlyph : MinusGlyph} />
       </AriaButton>
     );
   };

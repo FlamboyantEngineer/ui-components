@@ -1,3 +1,4 @@
+import { ListTaskGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -15,7 +16,9 @@ describe('MessageComposerToggle', () => {
     const onChange = vi.fn();
     const { container } = render(
       <MessageComposer
-        startControls={<MessageComposerToggle label="Plan" icon="list-task" onChange={onChange} />}
+        startControls={
+          <MessageComposerToggle label="Plan" icon={ListTaskGlyph} onChange={onChange} />
+        }
       />,
     );
     expect(plan()).toHaveClass('ui-button', 'ui-message-composer__toggle');
@@ -39,7 +42,7 @@ describe('MessageComposerToggle', () => {
       return (
         <MessageComposerToggle
           label="Plan"
-          icon="list-task"
+          icon={ListTaskGlyph}
           isSelected={isPlanning}
           onChange={setPlanning}
         />
@@ -49,13 +52,15 @@ describe('MessageComposerToggle', () => {
     expect(plan()).toHaveAttribute('aria-pressed', 'true');
     await user.click(plan());
     expect(plan()).toHaveAttribute('aria-pressed', 'false');
-    rerender(<MessageComposerToggle label="Plan" icon="list-task" defaultSelected key="fresh" />);
+    rerender(
+      <MessageComposerToggle label="Plan" icon={ListTaskGlyph} defaultSelected key="fresh" />,
+    );
     expect(plan()).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('UIC-MESSAGE-COMPOSER-8.1 shows its icon alone while compact and is disabled with the composer', () => {
     const row = installComposerRow();
-    const toggle = <MessageComposerToggle label="Plan" icon="list-task" />;
+    const toggle = <MessageComposerToggle label="Plan" icon={ListTaskGlyph} />;
     const { container, rerender } = render(<MessageComposer startControls={toggle} />);
     row.resize(container, 80, 200);
     expect(plan()).toHaveAttribute('data-content', 'icon');
@@ -63,7 +68,7 @@ describe('MessageComposerToggle', () => {
     expect(plan().querySelector('[data-glyph="list-task"]')).not.toBeNull();
     rerender(<MessageComposer isDisabled startControls={toggle} />);
     expect(plan()).toBeDisabled();
-    rerender(<MessageComposerToggle label="Plan" icon="list-task" isDisabled />);
+    rerender(<MessageComposerToggle label="Plan" icon={ListTaskGlyph} isDisabled />);
     expect(plan()).toBeDisabled();
   });
 });

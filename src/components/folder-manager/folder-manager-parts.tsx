@@ -1,3 +1,4 @@
+import { DeleteGlyph, EditGlyph, PlusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import type { Ref } from 'react';
 import { Input } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -45,7 +46,7 @@ function ToolButton({
   label,
 }: {
   action: FolderToolAction;
-  icon: 'plus' | 'edit' | 'delete';
+  icon: GlyphComponent;
   label: string;
 }) {
   if (!action.isOffered) return null;
@@ -93,9 +94,9 @@ export function FolderToolbar({ create, rename, remove }: FolderToolbarProps) {
   if (!create.isOffered && !rename.isOffered && !remove.isOffered) return null;
   return (
     <div {...hooks.slot('toolbar')}>
-      <ToolButton action={create} icon="plus" label={strings.newFolder} />
-      <ToolButton action={rename} icon="edit" label={strings.rename} />
-      <ToolButton action={remove} icon="delete" label={strings.delete} />
+      <ToolButton action={create} icon={PlusGlyph} label={strings.newFolder} />
+      <ToolButton action={rename} icon={EditGlyph} label={strings.rename} />
+      <ToolButton action={remove} icon={DeleteGlyph} label={strings.delete} />
     </div>
   );
 }

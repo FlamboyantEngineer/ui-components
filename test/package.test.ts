@@ -1,16 +1,5 @@
 // @vitest-environment node
-import { execFileSync } from 'node:child_process';
-import {
-  cpSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -27,12 +16,10 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
 };
 
 describe('package manifest', () => {
-  it('UIC-LABS-1.2 ships the lab pages, reference sheet and built bundles but not lab sources', () => {
-    expect(manifest.files).toEqual(
-      expect.arrayContaining(['labs/*.html', 'labs/*.css', 'labs/reference', 'labs/build']),
-    );
-    expect(manifest.files.some((entry) => entry.startsWith('labs/src'))).toBe(false);
-    expect(manifest.files).not.toContain('!labs/build/vendor');
+  it('UIC-LABS-1.2 distributes runnable labs separately from the installed library', () => {
+    expect(manifest.files.some((entry) => entry.startsWith('labs'))).toBe(false);
+    expect(manifest.files).toContain('dist');
+    expect(manifest.scripts['pack:labs']).toBe('node scripts/pack-labs.mjs');
   });
 
   it('UIC-HOOKS-3.1 ships tree-shakeable ESM entry points and no styling dependency', () => {
@@ -87,43 +74,7 @@ describe('package manifest', () => {
 });
 
 describe('Git branch install', () => {
-  it('UIC-LABS-1.4 prepares the entry points and the reference stylesheet, not the lab bundles', () => {
-    expect(manifest.scripts.prepare).toBe('npm run build:package');
-    expect(manifest.scripts['build:package']).toBe(
-      'npm run build && node scripts/build-labs.mjs --reference',
-    );
-  });
-
-  it('UIC-LABS-1.4 builds only labs/build/reference.css and keeps the rest of labs/build', () => {
-    const fixture = mkdtempSync(join(tmpdir(), 'ui-reference-build-'));
-    try {
-      for (const path of [
-        'scripts/build-labs.mjs',
-        'scripts/lib/labs.mjs',
-        'labs/reference.css',
-        'labs/reference',
-      ]) {
-        cpSync(join(process.cwd(), path), join(fixture, path), { recursive: true });
-      }
-      symlinkSync(join(process.cwd(), 'node_modules'), join(fixture, 'node_modules'), 'dir');
-      mkdirSync(join(fixture, 'labs', 'build'));
-      writeFileSync(join(fixture, 'labs', 'build', 'button.js'), 'kept');
-
-      execFileSync('node', ['scripts/build-labs.mjs', '--reference'], {
-        cwd: fixture,
-        stdio: 'pipe',
-      });
-
-      expect(readdirSync(join(fixture, 'labs', 'build')).sort()).toEqual([
-        'button.js',
-        'reference.css',
-      ]);
-      expect(readFileSync(join(fixture, 'labs', 'build', 'button.js'), 'utf8')).toBe('kept');
-      const css = readFileSync(join(fixture, 'labs', 'build', 'reference.css'), 'utf8');
-      expect(css).toContain('.ui-button');
-      expect(css).not.toContain('@import');
-    } finally {
-      rmSync(fixture, { recursive: true, force: true });
-    }
+  it('UIC-LABS-1.4 prepares the library entry points without building labs', () => {
+    expect(manifest.scripts.prepare).toBe('npm run build');
   });
 });

@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, ChevronUpGlyph } from '../../core/glyphs.js';
 // The Previous and Next buttons that move between the changes of a compare view: the text diff,
 // the merge view and the redline compare.
 
@@ -23,7 +24,7 @@ export function ChangeNavigation({ hooks, previous, next }: ChangeNavigationProp
   return (
     <span {...hooks.slot('navigation')}>
       <Button
-        icon="chevron-up"
+        icon={ChevronUpGlyph}
         size="sm"
         label={previous.label}
         className={hooks.slotClass('previous')}
@@ -31,7 +32,7 @@ export function ChangeNavigation({ hooks, previous, next }: ChangeNavigationProp
         onPress={previous.onPress}
       />
       <Button
-        icon="chevron-down"
+        icon={ChevronDownGlyph}
         size="sm"
         label={next.label}
         className={hooks.slotClass('next')}

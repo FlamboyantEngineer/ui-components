@@ -1,10 +1,21 @@
+import {
+  CheckGlyph,
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  EmojiGlyph,
+  ErrorGlyph,
+  ReplyGlyph,
+  ThumbsDownGlyph,
+  ThumbsUpGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import { useRef, type ReactNode, type SyntheticEvent } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatFeedbackRating, MessageCommands } from './message-commands.js';
@@ -18,7 +29,7 @@ interface MessageActionsBarProps extends BaseProps, AriaLabellingProps {
 interface OverlayButtonProps {
   state: MessageCommands;
   overlay: 'react' | 'delete';
-  icon: GlyphName;
+  icon: GlyphComponent;
   label: string;
 }
 
@@ -38,7 +49,7 @@ export const actionHooks = createHooks('chat-message-actions', [
   'emoji-popover',
 ]);
 
-const copyGlyphs = { idle: 'copy', copied: 'check', failed: 'error' } as const;
+const copyGlyphs = { idle: CopyGlyph, copied: CheckGlyph, failed: ErrorGlyph } as const;
 
 /**
  * React passes events from portalled overlays up the component tree, so keys, secondary clicks and
@@ -78,7 +89,7 @@ function RatingButton({ state, rating }: { state: MessageCommands; rating: ChatF
   return (
     <Button
       ref={ref}
-      icon={rating === 'up' ? 'thumbs-up' : 'thumbs-down'}
+      icon={rating === 'up' ? ThumbsUpGlyph : ThumbsDownGlyph}
       label={rating === 'up' ? strings.goodResponse : strings.badResponse}
       size="sm"
       className={actionHooks.slotClass('rating')}
@@ -134,7 +145,7 @@ export function MessageActionsBar({ state, children, className, ...rest }: Messa
       ) : null}
       {commands.onReply ? (
         <Button
-          icon="reply"
+          icon={ReplyGlyph}
           label={strings.reply}
           size="sm"
           className={actionHooks.slotClass('reply')}
@@ -142,11 +153,16 @@ export function MessageActionsBar({ state, children, className, ...rest }: Messa
         />
       ) : null}
       {commands.onReact ? (
-        <OverlayButton state={state} overlay="react" icon="emoji" label={strings.addReaction} />
+        <OverlayButton
+          state={state}
+          overlay="react"
+          icon={EmojiGlyph}
+          label={strings.addReaction}
+        />
       ) : null}
       {commands.onEdit ? (
         <Button
-          icon="edit"
+          icon={EditGlyph}
           label={strings.edit}
           size="sm"
           className={actionHooks.slotClass('edit')}
@@ -154,7 +170,7 @@ export function MessageActionsBar({ state, children, className, ...rest }: Messa
         />
       ) : null}
       {commands.onDelete ? (
-        <OverlayButton state={state} overlay="delete" icon="delete" label={strings.delete} />
+        <OverlayButton state={state} overlay="delete" icon={DeleteGlyph} label={strings.delete} />
       ) : null}
       {children ? (
         <span

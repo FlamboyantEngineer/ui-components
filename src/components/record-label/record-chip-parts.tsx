@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { Fragment, useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -64,7 +65,7 @@ function ChipRemove({
   const name = unavailable ? strings.recordUnavailable(unavailable) : identifier;
   return (
     <Button
-      icon="close"
+      icon={CloseGlyph}
       size="xs"
       label={strings.removeItem(name)}
       className={hooks.slotClass('remove')}

@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -6,7 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { FieldMenuEntry } from './field.js';
 
 const menu: FieldMenuEntry[] = [
-  { id: 'copy', label: 'Copy name', icon: 'plus' },
+  { id: 'copy', label: 'Copy name', icon: PlusGlyph },
   'clear',
   'set-default',
   'help',

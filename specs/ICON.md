@@ -1,15 +1,15 @@
 # Icon
 
-`Icon` draws one icon in a square box: a built-in glyph from the provider's glyph map, or any icon node the caller passes. Hosts keep their own icon registries and pass the drawings in as children.
+`Icon` draws one icon in a square box: an imported icon component or children supplied by the caller.
 
 ## UIC-ICON-1 - Contract
 
 ### UIC-ICON-1.1 - Sources
 
-`Icon` shall draw the built-in glyph named by `glyph` (through the provider, [PROVIDER.md](PROVIDER.md)) or, without `glyph`, its children (an SVG element, an image or any node). A glyph renders in the `ui-icon__glyph` slot. Components that take an icon accept an `IconSource` (a glyph name or a node) and draw it with `toIconProps`; `isGlyphName` is true only for a built-in glyph's name, so any other string (such as `★`) is drawn as text rather than looked up.
+`Icon` shall draw its `icon` component, or without `icon`, its children (an SVG element, image or any node). Imported components render in the `ui-icon__glyph` slot. Components that take an `IconSource` accept an imported component or rendered element, with `null`, `undefined` and `false` representing no icon. `toIconProps` passes components as `icon` and elements as `children`; custom text is wrapped in an element. Individually exported built-in components such as `CloseGlyph` honor provider overrides; third-party components work directly. Importing one glyph shall not retain unused built-in icons.
 
 Implementation: `src/components/icon/icon.tsx`
-Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
+Verification: `src/components/icon/icon.test.tsx`, `test/bundle.test.ts`, `e2e/icon.spec.ts`
 
 ### UIC-ICON-1.2 - Sizes
 
@@ -27,7 +27,7 @@ Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 
 ### UIC-ICON-1.4 - Hooks and caller attributes
 
-`Icon` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes and `id`, and publish the glyph name in `data-glyph` when it draws a glyph.
+`Icon` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes and `id`, and publish the built-in component's `glyphName` in `data-glyph` when present.
 
 Implementation: `src/components/icon/icon.tsx`
 Verification: `src/components/icon/icon.test.tsx`
@@ -41,9 +41,9 @@ Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 
 ## Hooks
 
-| Hook             | Kind      | Values                      | Description                                        |
-| ---------------- | --------- | --------------------------- | -------------------------------------------------- |
-| `ui-icon`        | root      |                             | The icon box (`<span>`).                           |
-| `ui-icon__glyph` | slot      |                             | The built-in glyph's `<svg>`, when `glyph` is set. |
-| `data-size`      | attribute | `sm`, `md`, `lg`, `inherit` | Box size; `inherit` follows the font size.         |
-| `data-glyph`     | attribute |                             | The built-in glyph name, when `glyph` is set.      |
+| Hook             | Kind      | Values                      | Description                                         |
+| ---------------- | --------- | --------------------------- | --------------------------------------------------- |
+| `ui-icon`        | root      |                             | The icon box (`<span>`).                            |
+| `ui-icon__glyph` | slot      |                             | The imported component's SVG, when `icon` is set.   |
+| `data-size`      | attribute | `sm`, `md`, `lg`, `inherit` | Box size; `inherit` follows the font size.          |
+| `data-glyph`     | attribute |                             | The built-in component’s `glyphName`, when present. |

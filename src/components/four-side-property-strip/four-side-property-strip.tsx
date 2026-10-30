@@ -1,3 +1,4 @@
+import { LinkGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, dataAttributes, mergeClassNames } from '../../core/hooks.js';
@@ -148,7 +149,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
         {link ? (
           <Button
             className={hooks.slotClass('link')}
-            icon="link"
+            icon={LinkGlyph}
             size="sm"
             label={strings.linkSides(link)}
             isSelected={linked}

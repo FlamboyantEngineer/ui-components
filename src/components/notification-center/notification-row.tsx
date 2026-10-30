@@ -1,3 +1,4 @@
+import { CloseGlyph, EnvelopeGlyph, EnvelopeOpenGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -86,7 +87,7 @@ function RowTrailing({
       {renderActions ? <span {...hooks.slot('item-actions')}>{renderActions(item)}</span> : null}
       {onReadChange ? (
         <Button
-          icon={isRead ? 'envelope' : 'envelope-open'}
+          icon={isRead ? EnvelopeGlyph : EnvelopeOpenGlyph}
           label={readLabel}
           tooltip={readLabel}
           size="sm"
@@ -96,7 +97,7 @@ function RowTrailing({
       ) : null}
       {onDismiss ? (
         <Button
-          icon="close"
+          icon={CloseGlyph}
           label={strings.dismiss}
           tooltip={strings.dismiss}
           size="sm"

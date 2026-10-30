@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isThenable } from '../../utils/is-thenable.js';
 
 /** Receives a new value; a returned promise holds the change pending until it settles. */
 export type PendingChangeHandler<T> = (value: T) => void | Promise<unknown>;
@@ -10,10 +11,6 @@ interface PendingChange<T> {
   isPending: boolean;
   /** Reports a new value; ignored while another change is pending. */
   change: (next: T) => void;
-}
-
-function isPromiseLike(result: unknown): result is PromiseLike<unknown> {
-  return typeof (result as PromiseLike<unknown> | undefined)?.then === 'function';
 }
 
 /**
@@ -33,7 +30,7 @@ export function usePendingChange<T>(
   const change = (next: T) => {
     if (pending) return;
     const result = onChange?.(next);
-    if (!isPromiseLike(result)) {
+    if (!isThenable(result)) {
       if (!isControlled) setOwn(next);
       return;
     }

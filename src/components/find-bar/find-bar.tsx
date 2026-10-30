@@ -1,3 +1,4 @@
+import { ArrowDownGlyph, ArrowUpGlyph, ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, RefObject } from 'react';
 import { Input } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -7,7 +8,6 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-
 import { SearchField } from '../search-field/search-field.js';
 
 /** A way of matching the reader can turn on or off, such as matching case or whole words. */
@@ -115,7 +115,7 @@ function FindBarOptions(
     <DropdownMenu
       className={hooks.slotClass('options')}
       iconOnly
-      icon="chevron-down"
+      icon={ChevronDownGlyph}
       label={strings.findOptions}
       size="sm"
       selectionMode="multiple"
@@ -241,7 +241,7 @@ function FindBarFind({
       </span>
       <Button
         className={hooks.slotClass('previous')}
-        icon="arrow-up"
+        icon={ArrowUpGlyph}
         label={strings.previousMatch}
         size="sm"
         isDisabled={!hasMatches}
@@ -249,7 +249,7 @@ function FindBarFind({
       />
       <Button
         className={hooks.slotClass('next')}
-        icon="arrow-down"
+        icon={ArrowDownGlyph}
         label={strings.nextMatch}
         size="sm"
         isDisabled={!hasMatches}
@@ -318,7 +318,7 @@ export function FindBar({
       {onClose ? (
         <Button
           className={hooks.slotClass('close')}
-          icon="close"
+          icon={CloseGlyph}
           label={strings.close}
           size="sm"
           onPress={onClose}

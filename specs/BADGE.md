@@ -48,7 +48,7 @@ Verification: `src/components/badge/badge.test.tsx`
 
 ### UIC-BADGE-1.7 - Icons
 
-`startIcon` and `endIcon` shall draw a built-in glyph name or any icon node as a decorative [Icon](ICON.md) in the `ui-badge__start-icon` and `ui-badge__end-icon` slots, before and after a label badge's label (after a status badge's dot). An empty value draws no slot. Count and dot badges take no icons.
+`startIcon` and `endIcon` shall draw an imported icon component or rendered element as a decorative [Icon](ICON.md) in the `ui-badge__start-icon` and `ui-badge__end-icon` slots, before and after a label badge's label (after a status badge's dot). An empty value draws no slot. Count and dot badges take no icons.
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`

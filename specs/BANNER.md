@@ -13,7 +13,7 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-1.2 - Tones and glyphs
 
-`tone` shall publish `data-tone`: `neutral` (the default), `info`, `success`, `warning` or `danger`. Without `icon`, the banner draws the tone's built-in glyph (`info`, `success`, `warning` and `error`; none for `neutral`) as a decorative [Icon](ICON.md) in the `ui-banner__icon` slot. `icon` replaces it with another glyph name or any icon node, and `icon={null}` draws none.
+`tone` shall publish `data-tone`: `neutral` (the default), `info`, `success`, `warning` or `danger`. Without `icon`, the banner draws the tone's built-in glyph (`info`, `success`, `warning` and `error`; none for `neutral`) as a decorative [Icon](ICON.md) in the `ui-banner__icon` slot. `icon` replaces it with another icon component or rendered element, and `icon={null}` draws none.
 
 Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`

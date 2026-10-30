@@ -1,3 +1,4 @@
+import { ErrorGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
@@ -51,7 +52,7 @@ export function InlineError({
   ...rest
 }: InlineErrorProps) {
   const strings = useUiStrings();
-  const glyph = getToneGlyph(tone) ?? 'error';
+  const glyph = getToneGlyph(tone) ?? ErrorGlyph;
   return (
     <div
       {...rest}
@@ -62,7 +63,7 @@ export function InlineError({
       {isPending ? (
         <span {...hooks.slot('spinner')} aria-hidden="true" />
       ) : (
-        <Icon glyph={glyph} className={hooks.slotClass('icon')} />
+        <Icon icon={glyph} className={hooks.slotClass('icon')} />
       )}
       <div {...hooks.slot('message')}>{children}</div>
       {onRetry ? (

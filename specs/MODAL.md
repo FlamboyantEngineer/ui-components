@@ -306,7 +306,7 @@ Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirma
 
 ### UIC-MODAL-21.7 - News tones and icon
 
-`tone` shall also take `info`, `success` and `warning`, published in the modal's `data-tone`, for a dialog that brings news. The title shall start with a decorative icon (`ui-modal__confirmation-icon`, also `ui-icon`) inside the heading: by default the `info`, `success` or `warning` glyph for those tones and none for `neutral` and `danger`; `icon`, a built-in glyph name or any icon node, replaces it (`icon="error"` with `tone="danger"` marks an error), and `icon={null}` leaves it out. The icon does not change the dialog's name.
+`tone` shall also take `info`, `success` and `warning`, published in the modal's `data-tone`, for a dialog that brings news. The title shall start with a decorative icon (`ui-modal__confirmation-icon`, also `ui-icon`) inside the heading: by default the `info`, `success` or `warning` glyph for those tones and none for `neutral` and `danger`; `icon`, an imported icon component or rendered element, replaces it (`icon={ErrorGlyph}` with `tone="danger"` marks an error), and `icon={null}` leaves it out. The icon does not change the dialog's name.
 
 Implementation: `src/components/modal/modal-confirm.tsx`, `labs/reference/modal.css`
 Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`

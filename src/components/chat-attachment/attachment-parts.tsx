@@ -1,6 +1,6 @@
+import { DownloadGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { Button } from '../button/button.js';
@@ -60,7 +60,7 @@ export function AttachmentThumbnail({ src, name, onPreview, onError }: Attachmen
 }
 
 interface AttachmentChipProps {
-  glyph: GlyphName;
+  glyph: GlyphComponent;
   name: string;
   size: number | undefined;
   locale: string;
@@ -70,7 +70,7 @@ interface AttachmentChipProps {
 export function AttachmentChip({ glyph, name, size, locale }: AttachmentChipProps) {
   return (
     <>
-      <Icon glyph={glyph} className={hooks.slotClass('icon')} />
+      <Icon icon={glyph} className={hooks.slotClass('icon')} />
       <span {...hooks.slot('name')}>{name}</span>
       {size === undefined ? null : <span {...hooks.slot('size')}>{formatBytes(size, locale)}</span>}
     </>
@@ -102,7 +102,7 @@ export function AttachmentDownload({ href, name }: { href: string; name: string 
       aria-label={strings.downloadFile(name)}
       isStandalone
     >
-      <Icon glyph="download" />
+      <Icon icon={DownloadGlyph} />
     </Link>
   );
 }

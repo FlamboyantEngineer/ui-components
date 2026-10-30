@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../src/core/glyphs.js';
 // The Chat lab's sidebar "+" buttons: a host inserting record references into the shown conversation's draft
 // through the composer handle, skipping records the draft holds, in a new chat and after a reply.
 
@@ -123,7 +124,7 @@ function RecordsDemo() {
             <li key={record.id}>
               {record.name ?? record.label}{' '}
               <Button
-                icon="plus"
+                icon={PlusGlyph}
                 size="sm"
                 label={`Add ${record.label} to the message`}
                 onPress={() => add(record)}

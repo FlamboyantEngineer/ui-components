@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { ViewSwitcher, type ViewSwitcherView } from './view-switcher.js';
 
 const views: ViewSwitcherView[] = [
-  { id: 'all', label: 'All recipes', icon: 'folder' },
+  { id: 'all', label: 'All recipes', icon: FolderGlyph },
   { id: 'quick', label: 'Quick meals' },
   { id: 'baking', label: 'Baking' },
 ];

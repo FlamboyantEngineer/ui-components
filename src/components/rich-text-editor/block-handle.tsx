@@ -1,3 +1,4 @@
+import { DragHandleGlyph, MoreVerticalGlyph } from '../../core/glyphs.js';
 import { useEditorEventCallback } from '@handlewithcare/react-prosemirror';
 import { NodeSelection, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
@@ -125,12 +126,12 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
         }}
         onDragEnd={() => target.setDragging(false)}
       >
-        <Glyph name="drag-handle" />
+        <Glyph icon={DragHandleGlyph} />
       </span>
       <DropdownMenu
         className={hooks.slotClass('menu')}
         label={strings.blockActions}
-        icon="more-vertical"
+        icon={MoreVerticalGlyph}
         iconOnly
         size="sm"
         menuSize="sm"

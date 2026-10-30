@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -148,7 +149,7 @@ describe('PropertySection', () => {
     const { container } = render(
       <PropertySection
         title="Notes"
-        actions={<Button icon="plus" label="Add note" onPress={onPress} />}
+        actions={<Button icon={PlusGlyph} label="Add note" onPress={onPress} />}
       >
         <p>Body</p>
       </PropertySection>,

@@ -1,3 +1,4 @@
+import { MoreGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -48,7 +49,7 @@ describe('ChatList', () => {
         conversations={conversations}
         onNew={() => {}}
         renderActions={(conversation) => (
-          <Button icon="more" label={`More for ${conversation.title}`} size="sm" />
+          <Button icon={MoreGlyph} label={`More for ${conversation.title}`} size="sm" />
         )}
         getNow={getNow}
         className="host"
@@ -178,7 +179,7 @@ describe('ChatList', () => {
           conversations={conversations}
           renderActions={(conversation) => (
             <Button
-              icon="more"
+              icon={MoreGlyph}
               label={`More for ${conversation.title}`}
               size="sm"
               onPress={() => onMore(conversation.id)}

@@ -1,3 +1,4 @@
+import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { useContext, useLayoutEffect, type JSX, type ReactNode } from 'react';
@@ -120,10 +121,10 @@ export function TableCheckbox() {
   return (
     <AriaCheckbox slot="selection" className={hooks.slotClass('checkbox')}>
       {({ isSelected, isIndeterminate }) => {
-        const glyph = isIndeterminate ? 'minus' : isSelected ? 'check' : null;
+        const glyph = isIndeterminate ? MinusGlyph : isSelected ? CheckGlyph : null;
         return (
           <span {...hooks.slot('checkbox-box')}>
-            {glyph ? <Icon glyph={glyph} size="sm" /> : null}
+            {glyph ? <Icon icon={glyph} size="sm" /> : null}
           </span>
         );
       }}

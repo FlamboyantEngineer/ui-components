@@ -1,3 +1,11 @@
+import {
+  DeleteGlyph,
+  ExpandGlyph,
+  HelpGlyph,
+  InfoGlyph,
+  SortAscendingGlyph,
+  UploadGlyph,
+} from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
@@ -66,7 +74,7 @@ describe('ActionRow', () => {
           {
             verb: 'custom',
             id: 'full',
-            icon: 'expand',
+            icon: ExpandGlyph,
             label: 'Full screen',
             isSelected: true,
             onPress,
@@ -79,7 +87,7 @@ describe('ActionRow', () => {
             isSelected: false,
             ref,
           },
-          { verb: 'custom', id: 'help', icon: 'help', label: 'Help' },
+          { verb: 'custom', id: 'help', icon: HelpGlyph, label: 'Help' },
         ]}
       />,
     );
@@ -104,10 +112,16 @@ describe('ActionRow', () => {
   it('UIC-ACTION-ROW-1.3 draws custom actions in their order, then the verbs in a fixed order', () => {
     const actions: ActionRowAction[] = [
       { verb: 'cancel', id: 'cancel', onPress: noop },
-      { verb: 'custom', id: 'second-custom', icon: 'info', label: 'History', onPress: noop },
+      { verb: 'custom', id: 'second-custom', icon: InfoGlyph, label: 'History', onPress: noop },
       { verb: 'save', id: 'save', onPress: noop },
       { verb: 'edit', id: 'edit', onPress: noop },
-      { verb: 'custom', id: 'first-custom', icon: 'expand', label: 'Full screen', onPress: noop },
+      {
+        verb: 'custom',
+        id: 'first-custom',
+        icon: ExpandGlyph,
+        label: 'Full screen',
+        onPress: noop,
+      },
       { verb: 'add', id: 'add', onPress: noop },
       { verb: 'refresh', id: 'refresh', onPress: noop },
       { verb: 'close', id: 'close', onPress: noop },
@@ -138,7 +152,7 @@ describe('ActionRow', () => {
           { verb: 'refresh', onPress: noop },
           {
             verb: 'custom',
-            icon: 'expand',
+            icon: ExpandGlyph,
             label: 'Full screen',
             tooltip: 'Full screen (F)',
             onPress: noop,
@@ -181,7 +195,7 @@ describe('ActionRow', () => {
           {
             verb: 'custom',
             id: 'details',
-            icon: 'info',
+            icon: InfoGlyph,
             label: 'Details',
             isExpanded: false,
             'aria-haspopup': 'dialog',
@@ -229,7 +243,7 @@ describe('ActionRow', () => {
             onPress,
             onAction,
             items: [
-              { id: 'export', label: 'Export', icon: 'upload', shortcut: 'Ctrl+E' },
+              { id: 'export', label: 'Export', icon: UploadGlyph, shortcut: 'Ctrl+E' },
               { id: 'archive', label: 'Archive', onAction: onArchive },
               { id: 'locked', label: 'Rename', isDisabled: true },
               { type: 'separator', id: 'rule' },
@@ -237,7 +251,7 @@ describe('ActionRow', () => {
                 type: 'section',
                 id: 'danger',
                 title: 'Danger zone',
-                items: [{ id: 'delete', label: 'Delete', icon: 'delete', tone: 'danger' }],
+                items: [{ id: 'delete', label: 'Delete', icon: DeleteGlyph, tone: 'danger' }],
               },
             ],
           },
@@ -292,7 +306,7 @@ describe('ActionRow', () => {
           {
             verb: 'custom',
             id: 'sort',
-            icon: 'sort-ascending',
+            icon: SortAscendingGlyph,
             label: 'Sort',
             tooltip: 'Sort the list',
             isExpanded: true,

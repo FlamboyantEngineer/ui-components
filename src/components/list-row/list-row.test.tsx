@@ -1,3 +1,4 @@
+import { InfoGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, Profiler, useState, type ReactNode } from 'react';
@@ -355,7 +356,7 @@ describe('ListRow', () => {
           href="/report"
           title="Report.pdf"
           meta="4 KB"
-          icon="info"
+          icon={InfoGlyph}
           trailing={<button type="button">Share</button>}
         />
       </List>,
@@ -428,7 +429,9 @@ describe('ListRow', () => {
   });
 
   it('UIC-LIST-ROW-2.4 draws title, meta, an icon through IconLabel and decorative leading media', () => {
-    const { container, rerender } = render(<ListRow title="Report.pdf" meta="4 KB" icon="info" />);
+    const { container, rerender } = render(
+      <ListRow title="Report.pdf" meta="4 KB" icon={InfoGlyph} />,
+    );
     const label = container.querySelector('.ui-icon-label') as HTMLElement;
     expect(label).toHaveAttribute('data-grow', 'true');
     expect(
@@ -437,7 +440,7 @@ describe('ListRow', () => {
     expect(container.querySelector('.ui-list-row-content__meta')).toHaveTextContent('4 KB');
     expectHooksMatchSpec(container, 'LIST-ROW');
 
-    rerender(<ListRow title="Report.pdf" icon="info" leading={<svg aria-label="Media" />} />);
+    rerender(<ListRow title="Report.pdf" icon={InfoGlyph} leading={<svg aria-label="Media" />} />);
     expect(screen.queryByLabelText('Media')).not.toBeInTheDocument();
 
     rerender(<ListRow title="Report.pdf" meta={null} leading={<svg aria-label="Media" />} />);

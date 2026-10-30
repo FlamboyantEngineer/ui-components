@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { TextMatch } from '../text-match/text-match.js';
 import { CommandPalette, type CommandPaletteProps } from './command-palette.js';
 
 const commands: MenuEntry[] = [
-  { id: 'new', label: 'New file', icon: 'plus', shortcut: 'Ctrl+N' },
+  { id: 'new', label: 'New file', icon: PlusGlyph, shortcut: 'Ctrl+N' },
   { id: 'open', label: 'Open recent', description: 'Report.pdf and 3 more' },
   { id: 'locked', label: 'Lock file', isDisabled: true },
   { type: 'separator', id: 'rule' },

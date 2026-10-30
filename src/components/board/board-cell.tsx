@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -224,7 +225,7 @@ export function BoardCell<T extends { id: Key }>(props: BoardCellProps<T>) {
         <Button
           variant="ghost"
           size="sm"
-          startIcon="plus"
+          startIcon={PlusGlyph}
           aria-describedby={labelledBy}
           className={hooks.slotClass('add')}
           onPress={() => onAddCard(address)}

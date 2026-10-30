@@ -1,8 +1,20 @@
+import {
+  ArrowLeftGlyph,
+  ArrowRightGlyph,
+  ChevronDownGlyph,
+  ChevronRightGlyph,
+  ChevronUpGlyph,
+  EditGlyph,
+  MinusGlyph,
+  MoveGlyph,
+  PlusGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
+
 // The parts of a tree comparison around its tree: hooks, toolbar, summary, column labels and rows.
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import type {
   CompareTreeNode,
@@ -43,11 +55,11 @@ export const treeCompareHooks = createHooks('tree-compare', [
 
 const hooks = treeCompareHooks;
 
-const changeGlyphs: Readonly<Record<Exclude<TreeChange, 'unchanged'>, GlyphName>> = {
-  added: 'plus',
-  removed: 'minus',
-  changed: 'edit',
-  moved: 'move',
+const changeGlyphs: Readonly<Record<Exclude<TreeChange, 'unchanged'>, GlyphComponent>> = {
+  added: PlusGlyph,
+  removed: MinusGlyph,
+  changed: EditGlyph,
+  moved: MoveGlyph,
 };
 
 const countedChanges = ['added', 'removed', 'changed', 'moved'] as const;
@@ -96,7 +108,7 @@ export function TreeCompareToolbar(props: {
       </Switch>
       <Button
         className={hooks.slotClass('previous')}
-        icon="chevron-up"
+        icon={ChevronUpGlyph}
         label={strings.treePreviousChange}
         size="sm"
         variant="ghost"
@@ -105,7 +117,7 @@ export function TreeCompareToolbar(props: {
       />
       <Button
         className={hooks.slotClass('next')}
-        icon="chevron-down"
+        icon={ChevronDownGlyph}
         label={strings.treeNextChange}
         size="sm"
         variant="ghost"
@@ -129,14 +141,14 @@ export function TreeCompareHeader(props: { leftLabel: string; rightLabel: string
 function TreeCompareCell<T extends CompareTreeNode>(props: {
   node: T | undefined;
   side: TreeCompareSide;
-  branch: GlyphName | null;
+  branch: GlyphComponent | null;
   renderLabel: TreeCompareLabelRenderer<T> | undefined;
 }) {
   const { node, side, branch, renderLabel } = props;
   if (!node) return <span {...hooks.slot('cell', { side, empty: true })} />;
   return (
     <span {...hooks.slot('cell', { side })}>
-      {branch ? <Icon glyph={branch} size="sm" className={hooks.slotClass('branch')} /> : null}
+      {branch ? <Icon icon={branch} size="sm" className={hooks.slotClass('branch')} /> : null}
       {renderLabel ? renderLabel(node, side) : node.label}
     </span>
   );
@@ -153,12 +165,13 @@ export function TreeCompareRowContent<T extends CompareTreeNode>(props: {
 }) {
   const { row, isExpanded, renderLabel } = props;
   const { change } = row;
-  const branch = row.children.length > 0 ? (isExpanded ? 'chevron-down' : 'chevron-right') : null;
+  const branch =
+    row.children.length > 0 ? (isExpanded ? ChevronDownGlyph : ChevronRightGlyph) : null;
   return (
     <span {...hooks.slot('row', { change })}>
       <TreeCompareCell node={row.left} side="left" branch={null} renderLabel={renderLabel} />
       <span {...hooks.slot('marker', { change })}>
-        {change === 'unchanged' ? null : <Icon glyph={changeGlyphs[change]} size="sm" />}
+        {change === 'unchanged' ? null : <Icon icon={changeGlyphs[change]} size="sm" />}
       </span>
       <TreeCompareCell node={row.right} side="right" branch={branch} renderLabel={renderLabel} />
     </span>
@@ -171,7 +184,7 @@ export function TreeCompareJump(props: { isOldPosition: boolean; onPress: () => 
   return (
     <Button
       className={hooks.slotClass('jump')}
-      icon={props.isOldPosition ? 'arrow-right' : 'arrow-left'}
+      icon={props.isOldPosition ? ArrowRightGlyph : ArrowLeftGlyph}
       label={props.isOldPosition ? strings.treeGoToNewPosition : strings.treeGoToOldPosition}
       size="xs"
       variant="ghost"

@@ -78,7 +78,7 @@ Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-2.4 - Row text
 
-A row shall draw its `title` and, when it has content, its `meta` below it. An `icon` (a built-in glyph name or icon node) shall be drawn through `IconLabel`, beside both lines and taking the row's free width; it takes precedence over `leading`, decorative media drawn before the text and hidden from assistive technology.
+A row shall draw its `title` and, when it has content, its `meta` below it. An `icon` (an imported icon component or rendered element) shall be drawn through `IconLabel`, beside both lines and taking the row's free width; it takes precedence over `leading`, decorative media drawn before the text and hidden from assistive technology.
 
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`

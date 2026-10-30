@@ -148,7 +148,7 @@ export function TableExpandButton({
   if (!hasChildItems) return <span {...hooks.slot('expand-spacer')} aria-hidden="true" />;
   return (
     <AriaButton slot="chevron" className={hooks.slotClass('expand')}>
-      <Icon glyph={glyph} size="sm" />
+      <Icon icon={glyph} size="sm" />
     </AriaButton>
   );
 }

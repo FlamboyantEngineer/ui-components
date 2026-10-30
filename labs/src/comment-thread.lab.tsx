@@ -1,3 +1,4 @@
+import { LinkGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { CommentComposer } from '../../src/components/comment-composer/comment-composer.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
@@ -120,7 +121,7 @@ function LiveThread() {
             time={comment.time}
             text={comment.text}
             isEdited={comment.isEdited}
-            actions={[{ id: 'copy-link', label: 'Copy link', icon: 'link' }]}
+            actions={[{ id: 'copy-link', label: 'Copy link', icon: LinkGlyph }]}
             onAction={(key) => setLastAction(`${String(key)} on comment ${comment.id}`)}
             onEdit={
               comment.author === maria

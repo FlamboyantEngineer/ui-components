@@ -1,3 +1,4 @@
+import { EditGlyph, MinusGlyph, MoveGlyph, PlusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
@@ -133,7 +134,12 @@ export function RedlineCompareColumns({ labels }: { labels: { old: string; new: 
   );
 }
 
-const markerGlyphs = { changed: 'edit', added: 'plus', removed: 'minus', moved: 'move' } as const;
+const markerGlyphs = {
+  changed: EditGlyph,
+  added: PlusGlyph,
+  removed: MinusGlyph,
+  moved: MoveGlyph,
+} as const;
 
 /** The row's change glyph and its spoken description, which also describes its buttons. */
 export function RedlineMarker(props: {
@@ -143,7 +149,7 @@ export function RedlineMarker(props: {
 }) {
   return (
     <span {...hooks.slot('marker', { change: props.change })}>
-      {props.change === 'unchanged' ? null : <Glyph name={markerGlyphs[props.change]} />}
+      {props.change === 'unchanged' ? null : <Glyph icon={markerGlyphs[props.change]} />}
       <VisuallyHidden elementType="span" id={props.labelId}>
         {props.label}
       </VisuallyHidden>

@@ -1,3 +1,4 @@
+import { MoreVerticalGlyph } from '../../src/core/glyphs.js';
 import { useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
@@ -107,7 +108,7 @@ function ColumnActions({
     <DropdownMenu
       label={`${column.title} actions`}
       iconOnly
-      icon="more-vertical"
+      icon={MoreVerticalGlyph}
       size="sm"
       placement="bottom end"
       items={columnMenu}

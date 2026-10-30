@@ -1,3 +1,4 @@
+import { InfoGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -106,7 +107,7 @@ describe('Tabs', () => {
         </p>
         <Tabs>
           <TabList aria-label="Mail">
-            <Tab id="inbox" icon="info" count={15} countMax={9}>
+            <Tab id="inbox" icon={InfoGlyph} count={15} countMax={9}>
               Inbox
             </Tab>
             <Tab id="sent" icon={<svg className="custom-glyph" />} count={9} countMax={9}>

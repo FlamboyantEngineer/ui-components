@@ -1,4 +1,4 @@
-import { glyphNames } from '../../src/core/glyphs.js';
+import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 import { Icon } from '../../src/components/icon/icon.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -9,7 +9,7 @@ mountLab(
     <LabSection title="Glyphs by size" description="Every built-in glyph in every box size.">
       <StateMatrix
         axes={{ glyph: glyphNames, size: sizes }}
-        render={({ glyph, size }) => <Icon glyph={glyph} size={size} />}
+        render={({ glyph, size }) => <Icon icon={glyphCatalog[glyph]} size={size} />}
       />
     </LabSection>
     <LabSection
@@ -21,7 +21,7 @@ mountLab(
         render={({ source, naming, size }) => (
           <Icon
             size={size}
-            {...(source === 'glyph' ? { glyph: 'info' as const } : {})}
+            {...(source === 'glyph' ? { icon: glyphCatalog.info } : {})}
             {...(naming === 'labelled' ? { label: 'Information' } : {})}
           >
             {source === 'custom node' ? (
@@ -41,7 +41,7 @@ mountLab(
         axes={{ fontSize: ['12', '16', '24'], glyph: ['info', 'check'] as const }}
         render={({ fontSize, glyph }) => (
           <span style={{ fontSize: Number(fontSize) }}>
-            <Icon glyph={glyph} size="inherit" /> Ripe pears
+            <Icon icon={glyphCatalog[glyph]} size="inherit" /> Ripe pears
           </span>
         )}
       />

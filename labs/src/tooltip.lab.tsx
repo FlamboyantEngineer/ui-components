@@ -1,6 +1,6 @@
+import { RedoGlyph, RefreshGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
-
 import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { AnchoredTooltipCases } from './tooltip-anchored-cases.js';
@@ -67,7 +67,7 @@ mountLab(
             </Button>
           ) : (
             <Button
-              icon="undo"
+              icon={UndoGlyph}
               label="Undo"
               tooltip={state === 'focusable disabled' ? 'Nothing to undo' : 'Undo the last edit'}
               isPending={state === 'pending'}
@@ -88,7 +88,9 @@ mountLab(
           <div style={{ padding: 24 }}>
             <Tooltip relationship="label" content={label}>
               <Button variant="ghost">
-                <Icon glyph={label === 'Undo' ? 'undo' : label === 'Redo' ? 'redo' : 'refresh'} />
+                <Icon
+                  icon={label === 'Undo' ? UndoGlyph : label === 'Redo' ? RedoGlyph : RefreshGlyph}
+                />
               </Button>
             </Tooltip>
           </div>

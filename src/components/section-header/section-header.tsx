@@ -84,7 +84,7 @@ function HeaderContent({
 function SectionChevron() {
   const state = useContext(DisclosureStateContext);
   const glyph = useExpandGlyph(state?.isExpanded ?? false);
-  return <Glyph name={glyph} className={headerHooks.slotClass('chevron')} />;
+  return <Glyph icon={glyph} className={headerHooks.slotClass('chevron')} />;
 }
 
 /**

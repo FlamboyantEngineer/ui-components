@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -52,7 +53,7 @@ function SelectionStatus({
       {onClear ? (
         <Button
           {...hooks.slot('clear')}
-          icon="close"
+          icon={CloseGlyph}
           label={strings.clearSelection}
           tooltip={strings.clearSelection}
           size="sm"

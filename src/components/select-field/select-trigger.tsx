@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, Ref } from 'react';
 import {
   Button as AriaButton,
@@ -82,14 +83,14 @@ export function SelectTrigger({
           {chosen ? <OptionIcon option={chosen} slot="value-icon" /> : null}
           <span {...hooks.slot('value-label')}>{chosen?.label ?? summary ?? placeholder}</span>
         </span>
-        <Glyph name="chevron-down" className={hooks.slotClass('chevron')} />
+        <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('chevron')} />
       </AriaButton>
       {clearLabel ? (
         // Inside the select every button would otherwise take the trigger's props.
         <ButtonContext.Provider value={null}>
           <Button
             className={hooks.slotClass('clear')}
-            icon="close"
+            icon={CloseGlyph}
             label={clearLabel}
             variant="bare"
             size="xs"

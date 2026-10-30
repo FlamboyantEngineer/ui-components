@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -10,7 +11,7 @@ const produce: SelectFieldItem[] = [
     id: 'fruit',
     label: 'Fruit',
     options: [
-      { id: 'apple', label: 'Apple', icon: 'plus' },
+      { id: 'apple', label: 'Apple', icon: PlusGlyph },
       { id: 'pear', label: 'Pear' },
     ],
   },

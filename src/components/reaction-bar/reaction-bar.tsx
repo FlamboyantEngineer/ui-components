@@ -1,3 +1,4 @@
+import { EmojiGlyph } from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -5,7 +6,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { Button } from '../button/button.js';
 import { EmojiPickerTrigger, type EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
-
 import { Tooltip } from '../tooltip/tooltip.js';
 
 /** The reactions with one emoji. */
@@ -130,7 +130,7 @@ export function ReactionBar({
           }
         >
           <Button
-            icon="emoji"
+            icon={EmojiGlyph}
             label={strings.addReaction}
             size="sm"
             className={hooks.slotClass('add')}

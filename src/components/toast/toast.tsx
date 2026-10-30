@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import {
   useCallback,
   useContext,
@@ -27,7 +28,6 @@ import { mergeProps } from '../../utils/merge-props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { getToneGlyph } from '../banner/banner.js';
 import { Button } from '../button/button.js';
-
 import { Icon, toIconProps } from '../icon/icon.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
 import {
@@ -208,7 +208,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
       {action ? <ToastActionButton action={action} toastKey={toast.key} /> : null}
       <Button
         slot="close"
-        icon="close"
+        icon={CloseGlyph}
         label={strings.dismiss}
         size="sm"
         className={toastHooks.slotClass('close')}

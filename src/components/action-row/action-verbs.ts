@@ -1,4 +1,13 @@
-import type { GlyphName } from '../../core/glyphs.js';
+import {
+  CloseGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  MoreGlyph,
+  PlusGlyph,
+  RefreshGlyph,
+  SaveGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { IconSource } from '../icon/icon.js';
@@ -11,7 +20,7 @@ type StringKey = {
 
 interface VerbDefinition {
   /** The built-in glyph the verb draws. */
-  glyph: GlyphName;
+  glyph: GlyphComponent;
   /** The provider string that names the verb. */
   label: StringKey;
   /** The provider string that names the busy indicator while the verb is pending. */
@@ -23,14 +32,14 @@ interface VerbDefinition {
  * fixed glyph and a provider string for its label.
  */
 export const actionVerbs = {
-  add: { glyph: 'plus', label: 'add' },
-  refresh: { glyph: 'refresh', label: 'refresh' },
-  more: { glyph: 'more', label: 'more' },
-  edit: { glyph: 'edit', label: 'edit' },
-  delete: { glyph: 'delete', label: 'delete' },
-  save: { glyph: 'save', label: 'save', pendingLabel: 'saving' },
-  cancel: { glyph: 'close', label: 'cancel' },
-  close: { glyph: 'close', label: 'close' },
+  add: { glyph: PlusGlyph, label: 'add' },
+  refresh: { glyph: RefreshGlyph, label: 'refresh' },
+  more: { glyph: MoreGlyph, label: 'more' },
+  edit: { glyph: EditGlyph, label: 'edit' },
+  delete: { glyph: DeleteGlyph, label: 'delete' },
+  save: { glyph: SaveGlyph, label: 'save', pendingLabel: 'saving' },
+  cancel: { glyph: CloseGlyph, label: 'cancel' },
+  close: { glyph: CloseGlyph, label: 'close' },
 } as const satisfies Record<string, VerbDefinition>;
 
 export type ActionVerb = keyof typeof actionVerbs;

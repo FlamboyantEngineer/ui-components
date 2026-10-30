@@ -1,13 +1,12 @@
+import { ChevronDownGlyph, MoreVerticalGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import type { ReactNode } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
-
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { Combobox, type ComboboxItem } from '../../src/components/combobox/combobox.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-
 import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -71,7 +70,7 @@ const options = (isLong: boolean): SelectFieldOption[] => [
 
 const cells: Record<Control, (props: CellProps) => ReactNode> = {
   button: ({ size, isLong }) => (
-    <Button size={size} startIcon="plus" endIcon={isLong ? 'chevron-down' : undefined}>
+    <Button size={size} startIcon={PlusGlyph} endIcon={isLong ? ChevronDownGlyph : undefined}>
       {isLong ? 'Save every change' : 'Save'}
     </Button>
   ),
@@ -79,7 +78,7 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
     <Button
       variant="secondary"
       size={size}
-      icon={isLong ? 'more-vertical' : 'plus'}
+      icon={isLong ? MoreVerticalGlyph : PlusGlyph}
       label={isLong ? 'More editing actions' : 'Add'}
     />
   ),

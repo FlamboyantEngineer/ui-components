@@ -1,7 +1,12 @@
+import {
+  SortAscendingGlyph,
+  SortDescendingGlyph,
+  SortNoneGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Column, ColumnResizer } from '../../primitives/index.js';
 import type { SortDirection } from '../../core/props.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
@@ -29,10 +34,10 @@ export interface TableColumnHeaderState {
   probe: ReactNode;
 }
 
-const sortGlyphs: Readonly<Record<SortDirection | 'none', GlyphName>> = {
-  ascending: 'sort-ascending',
-  descending: 'sort-descending',
-  none: 'sort-none',
+const sortGlyphs: Readonly<Record<SortDirection | 'none', GlyphComponent>> = {
+  ascending: SortAscendingGlyph,
+  descending: SortDescendingGlyph,
+  none: SortNoneGlyph,
 };
 
 /** The accessible name of a column. */
@@ -82,7 +87,7 @@ export function DataColumn<T>({
       </span>
       {column.allowsSorting ? (
         <Icon
-          glyph={sortGlyphs[state.sortDirection ?? 'none']}
+          icon={sortGlyphs[state.sortDirection ?? 'none']}
           size="sm"
           className={hooks.slotClass('sort-icon')}
         />

@@ -1,3 +1,5 @@
+import { CalendarGlyph, FileGlyph, LinkGlyph } from '../../src/core/glyphs.js';
+
 // Sample records for the reference chips of the composer, Chat Parts and Chat labs: trip plans and
 // notes the host looks up by their opaque ids, one of them missing and one restricted.
 
@@ -20,7 +22,7 @@ export const labRecords: readonly LabRecord[] = [
     label: 'TRIP-4',
     recordType: 'itinerary',
     name: 'Lisbon weekend',
-    icon: 'calendar',
+    icon: CalendarGlyph,
     type: 'Itinerary',
     href: '#trip-4',
     preview: 'Two days in Lisbon: the castle, the tram ride and dinner by the river.',
@@ -30,7 +32,7 @@ export const labRecords: readonly LabRecord[] = [
     label: 'NOTE-12',
     recordType: 'note',
     name: 'Packing list',
-    icon: 'file',
+    icon: FileGlyph,
     type: 'Note',
     href: '#note-12',
   },
@@ -61,7 +63,7 @@ export const referenceMenuItems: MessageComposerMenuItem[] = labRecords.map((rec
   id: `reference-${record.label}`,
   label: `Reference ${record.label}`,
   description: record.name ?? record.unavailable,
-  icon: 'link',
+  icon: LinkGlyph,
   onAction: (composer) =>
     composer.insertPill({
       kind: 'reference',

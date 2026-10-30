@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { AnchoredTooltip } from '../../src/components/tooltip/tooltip.js';
@@ -113,7 +114,7 @@ function VisualHint() {
     <div data-lab-demo="anchored-visual">
       <Button
         ref={setButton}
-        icon="plus"
+        icon={PlusGlyph}
         label="Add a row"
         onHoverChange={setIsOpen}
         onFocusChange={setIsOpen}

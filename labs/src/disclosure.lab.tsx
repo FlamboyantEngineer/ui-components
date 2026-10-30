@@ -1,3 +1,4 @@
+import { EditGlyph } from '../../src/core/glyphs.js';
 import { useState, type CSSProperties } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -8,7 +9,6 @@ import {
   DisclosurePanel,
   DisclosureTitle,
 } from '../../src/components/disclosure/disclosure.js';
-
 import { HeadingLevelContext } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -71,7 +71,12 @@ function CustomHeader() {
       <Disclosure indicatorPosition="end" defaultExpanded>
         <DisclosureHeader>
           <DisclosureTitle>Delivery address</DisclosureTitle>
-          <Button icon="edit" label="Edit address" size="sm" onPress={() => setEdits(edits + 1)} />
+          <Button
+            icon={EditGlyph}
+            label="Edit address"
+            size="sm"
+            onPress={() => setEdits(edits + 1)}
+          />
         </DisclosureHeader>
         <DisclosurePanel role="region">
           <p>12 Harbour Road, Porto</p>

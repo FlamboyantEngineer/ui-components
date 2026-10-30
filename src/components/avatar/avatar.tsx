@@ -1,3 +1,4 @@
+import { UsersGlyph } from '../../core/glyphs.js';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
@@ -144,7 +145,7 @@ function AvatarContent({
   picture: AvatarPicture;
 }) {
   const { name, src, imageProps, initials, kind } = identity;
-  if (kind === 'group') return <Glyph name="users" className={hooks.slotClass('glyph')} />;
+  if (kind === 'group') return <Glyph icon={UsersGlyph} className={hooks.slotClass('glyph')} />;
   if (picture.status === 'loading' || picture.status === 'loaded') {
     return (
       <img

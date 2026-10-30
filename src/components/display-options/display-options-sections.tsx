@@ -1,3 +1,4 @@
+import { SortAscendingGlyph, SortDescendingGlyph } from '../../core/glyphs.js';
 // The sections of the display options popover: grouping, sorting, shown properties and density.
 
 import { useId } from 'react';
@@ -92,7 +93,7 @@ export function SortSection({ properties, value, onChange }: DisplayOptionsSecti
         options={directions.map((direction) => ({
           value: direction,
           label: strings.sortDirectionName(direction),
-          icon: `sort-${direction}`,
+          icon: direction === 'ascending' ? SortAscendingGlyph : SortDescendingGlyph,
         }))}
         value={sort?.direction ?? null}
         isDisabled={sort === null}

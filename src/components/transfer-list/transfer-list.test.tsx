@@ -1,3 +1,4 @@
+import { StarGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { TransferList, type TransferListItem } from './transfer-list.js';
 
 const cities: TransferListItem[] = [
   { id: 'lisbon', label: 'Lisbon', description: 'Portugal' },
-  { id: 'oslo', label: 'Oslo', icon: 'star' },
+  { id: 'oslo', label: 'Oslo', icon: StarGlyph },
   { id: 'quito', label: 'Quito' },
   { id: 'lima', label: 'Lima' },
   { id: 'malmo', label: 'Malmö' },
@@ -155,7 +156,7 @@ describe('TransferList', () => {
       label: 'Counted',
       get icon() {
         iconReads += 1;
-        return 'star' as const;
+        return StarGlyph;
       },
     };
     render(

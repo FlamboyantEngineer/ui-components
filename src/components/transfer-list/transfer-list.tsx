@@ -1,3 +1,11 @@
+import {
+  ArrowDownGlyph,
+  ArrowUpGlyph,
+  ChevronDoubleLeftGlyph,
+  ChevronDoubleRightGlyph,
+  ChevronLeftGlyph,
+  ChevronRightGlyph,
+} from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -47,7 +55,7 @@ function MoveButtons({ from, side, toLabel, onTransfer }: MoveButtonsProps) {
     <>
       <Button
         {...hooks.slot('move', { scope: 'selected', target: isForward ? 'chosen' : 'available' })}
-        icon={isForward ? 'chevron-right' : 'chevron-left'}
+        icon={isForward ? ChevronRightGlyph : ChevronLeftGlyph}
         label={strings.moveSelectedTo(toLabel)}
         tooltip={strings.moveSelectedTo(toLabel)}
         size="sm"
@@ -57,7 +65,7 @@ function MoveButtons({ from, side, toLabel, onTransfer }: MoveButtonsProps) {
       />
       <Button
         {...hooks.slot('move', { scope: 'all', target: isForward ? 'chosen' : 'available' })}
-        icon={isForward ? 'chevron-double-right' : 'chevron-double-left'}
+        icon={isForward ? ChevronDoubleRightGlyph : ChevronDoubleLeftGlyph}
         label={strings.moveAllTo(toLabel)}
         tooltip={strings.moveAllTo(toLabel)}
         size="sm"
@@ -114,7 +122,7 @@ export function TransferList({
       {(['up', 'down'] as const).map((direction) => (
         <Button
           key={direction}
-          icon={direction === 'up' ? 'arrow-up' : 'arrow-down'}
+          icon={direction === 'up' ? ArrowUpGlyph : ArrowDownGlyph}
           label={strings.moveItem(direction)}
           tooltip={strings.moveItem(direction)}
           size="sm"

@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { Heading } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -53,7 +54,7 @@ export function ModalHeader({
       )}
       {showCloseButton ? (
         <Button
-          icon="close"
+          icon={CloseGlyph}
           label={strings.close}
           className={hooks.slotClass('close')}
           isDisabled={isDismissDisabled}

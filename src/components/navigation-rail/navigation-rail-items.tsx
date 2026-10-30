@@ -11,7 +11,6 @@ import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { getInitials } from '../../utils/initials.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
@@ -116,8 +115,7 @@ function EntryContent({ label, icon, isCollapsed }: EntryContentProps) {
     <span {...hooks.slot('label')}>{label}</span>
   );
   let tile: ReactNode = null;
-  if (!isEmptyNode(icon))
-    tile = <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
+  if (icon) tile = <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
   else if (isCollapsed) {
     tile = (
       <span {...hooks.slot('monogram')} aria-hidden="true">
@@ -257,7 +255,7 @@ export function NavigationRailGroup({
             render={renderUndescribedButton}
           >
             <EntryContent label={label} icon={icon} isCollapsed={rail.isCollapsed} />
-            <Glyph name={glyph} className={hooks.slotClass('indicator')} />
+            <Glyph icon={glyph} className={hooks.slotClass('indicator')} />
           </AriaButton>
         </Tooltip>
         <AriaDisclosurePanel className={hooks.slotClass('group-panel')}>

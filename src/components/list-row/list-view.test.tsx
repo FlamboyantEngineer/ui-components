@@ -1,4 +1,5 @@
-import { render, screen, within } from '@testing-library/react';
+import { InfoGlyph } from '../../core/glyphs.js';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -272,7 +273,7 @@ describe('ListView', () => {
           <ListViewItem
             title={item.name}
             meta={item.meta}
-            icon="info"
+            icon={InfoGlyph}
             tone={item.id === 'damson' ? 'danger' : undefined}
             trailing={<button type="button">Share {item.name}</button>}
           />
@@ -411,16 +412,23 @@ describe('ListView', () => {
       render(<Reorderable onMove={onMove} />);
       const user = userEvent.setup();
       screen.getByRole('row', { name: 'Apple' }).focus();
-      await user.keyboard('{ArrowRight}{Enter}');
-      expect(
-        document.querySelectorAll('.ui-list-view__drop-indicator[data-drop-target]'),
-      ).toHaveLength(1);
-      await user.keyboard('{ArrowDown}{Enter}');
-      expect(onMove).toHaveBeenCalledTimes(1);
-      const move = onMove.mock.lastCall?.[0];
-      expect(move?.keys).toEqual(['apple']);
-      expect(move?.targetKey).not.toBe('apple');
-      expect(['before', 'after']).toContain(move?.position);
+      try {
+        await user.keyboard('{ArrowRight}{Enter}');
+        await waitFor(() => {
+          expect(
+            document.querySelectorAll('.ui-list-view__drop-indicator[data-drop-target]'),
+          ).toHaveLength(1);
+        });
+        await user.keyboard('{ArrowDown}{Enter}');
+        expect(onMove).toHaveBeenCalledTimes(1);
+        const move = onMove.mock.lastCall?.[0];
+        expect(move?.keys).toEqual(['apple']);
+        expect(move?.targetKey).not.toBe('apple');
+        expect(['before', 'after']).toContain(move?.position);
+      } finally {
+        // A failed assertion must still end the drag before this worker runs another test.
+        await user.keyboard('{Escape}');
+      }
     },
   );
 

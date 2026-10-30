@@ -1,7 +1,15 @@
+import {
+  CheckGlyph,
+  ClockGlyph,
+  ErrorGlyph,
+  EyeGlyph,
+  RefreshGlyph,
+  SuccessGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatAbsoluteTime } from '../../utils/relative-time.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
@@ -50,12 +58,12 @@ export const chatMessageHooks = createHooks('chat-message', [
 
 const hooks = chatMessageHooks;
 
-const deliveryGlyphs: Record<ChatMessageDelivery, GlyphName> = {
-  sending: 'clock',
-  sent: 'check',
-  delivered: 'success',
-  read: 'eye',
-  failed: 'error',
+const deliveryGlyphs: Record<ChatMessageDelivery, GlyphComponent> = {
+  sending: ClockGlyph,
+  sent: CheckGlyph,
+  delivered: SuccessGlyph,
+  read: EyeGlyph,
+  failed: ErrorGlyph,
 };
 
 /** A message's time as the absolute date and time, for its accessible name. */
@@ -107,7 +115,7 @@ function RetryButton({ onRetry }: { onRetry: () => void }) {
     <Button
       size="sm"
       variant="secondary"
-      startIcon="refresh"
+      startIcon={RefreshGlyph}
       className={hooks.slotClass('retry')}
       onPress={() => onRetry()}
     >
@@ -143,7 +151,7 @@ export function ChatMessageFooter({
       {isCancelled ? <span {...hooks.slot('stopped')}>{strings.chatStopped}</span> : null}
       {delivery ? (
         <span {...hooks.slot('delivery')}>
-          <Glyph name={deliveryGlyphs[delivery]} className={hooks.slotClass('delivery-icon')} />
+          <Glyph icon={deliveryGlyphs[delivery]} className={hooks.slotClass('delivery-icon')} />
           <span {...hooks.slot('delivery-label')}>{strings.chatDelivery(delivery)}</span>
         </span>
       ) : null}

@@ -1,3 +1,4 @@
+import { EditGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -6,7 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { SelectField, type SelectFieldLoader, type SelectFieldOption } from './select-field.js';
 
 const catalogue: SelectFieldOption[] = [
-  { id: 'r1', label: 'Report.pdf', description: 'Document', icon: 'edit' },
+  { id: 'r1', label: 'Report.pdf', description: 'Document', icon: EditGlyph },
   { id: 'r2', label: 'Report draft.pdf' },
   { id: 'b1', label: 'Budget.xlsx' },
 ];

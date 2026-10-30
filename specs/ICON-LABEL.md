@@ -6,7 +6,7 @@
 
 ### UIC-ICON-LABEL-1.1 - Icon and label
 
-`IconLabel` shall draw its `icon` (a built-in glyph name or any icon node) as a decorative `Icon` in the `ui-icon-label__icon` slot, followed by its `label` (text or nodes) in the `ui-icon-label__label` slot. It adds no role, tab stop or accessible name of its own; the label text names it.
+`IconLabel` shall draw its `icon` (an imported icon component or rendered element) as a decorative `Icon` in the `ui-icon-label__icon` slot, followed by its `label` (text or nodes) in the `ui-icon-label__label` slot. It adds no role, tab stop or accessible name of its own; the label text names it.
 
 Implementation: `src/components/icon-label/icon-label.tsx`
 Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.spec.ts`

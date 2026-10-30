@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useContext, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
@@ -130,7 +131,7 @@ export function ChatAttachment({
       {onRemove ? (
         <Button
           className={hooks.slotClass('remove')}
-          icon="close"
+          icon={CloseGlyph}
           label={strings.removeItem(name)}
           size="sm"
           ref={(button) => removal?.register(id, button)}

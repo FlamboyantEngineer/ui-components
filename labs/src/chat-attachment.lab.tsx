@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -130,7 +131,7 @@ function ComposerStrip() {
           ) : undefined
         }
         startControls={
-          <Button size="sm" startIcon="plus" onPress={uploads.add}>
+          <Button size="sm" startIcon={PlusGlyph} onPress={uploads.add}>
             Attach a file
           </Button>
         }

@@ -1,3 +1,4 @@
+import { DragHandleGlyph } from '../../core/glyphs.js';
 // One step of a step list editor: its drag handle, number, text fields and menu.
 
 import type { KeyboardEvent } from 'react';
@@ -133,7 +134,7 @@ export function StepRow(props: StepRowProps) {
     >
       {isReadOnly ? null : (
         <Button
-          icon="drag-handle"
+          icon={DragHandleGlyph}
           size="sm"
           label={strings.moveStep(number)}
           className={hooks.slotClass('handle')}

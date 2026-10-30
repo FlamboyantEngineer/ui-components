@@ -1,3 +1,4 @@
+import { HelpGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
@@ -180,7 +181,7 @@ export function FieldHelp({
   return (
     <>
       <Button
-        icon="help"
+        icon={HelpGlyph}
         size={size}
         label={strings.fieldHelp(label)}
         tooltip={children}

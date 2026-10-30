@@ -12,7 +12,7 @@ export interface DockPanelPaneProps extends Omit<BaseProps, 'id'> {
   id: Key;
   /** Names the pane, its launcher and the launcher's tooltip. */
   label: string;
-  /** The launcher's icon: a built-in glyph name or any icon node. */
+  /** The launcher's icon: an imported icon component or rendered element. */
   icon: IconSource;
   /** A count on the launcher, such as unread entries. Zero, negative and non-finite values show none. */
   count?: number | null | undefined;

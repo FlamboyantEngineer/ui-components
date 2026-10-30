@@ -1,3 +1,4 @@
+import { CheckGlyph, CloseGlyph, EditGlyph } from '../../core/glyphs.js';
 import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useId, type ReactNode } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
@@ -97,7 +98,7 @@ function InlineEditActions({
   return (
     <span {...hooks.slot('actions')}>
       <Button
-        icon="check"
+        icon={CheckGlyph}
         label={strings.save}
         size="sm"
         variant="secondary"
@@ -106,7 +107,7 @@ function InlineEditActions({
         onPress={onSave}
       />
       <Button
-        icon="close"
+        icon={CloseGlyph}
         label={strings.cancel}
         size="sm"
         variant="secondary"
@@ -194,7 +195,7 @@ export function InlineEdit<T = string>(props: InlineEditProps<T>) {
               {renderValue ? renderValue(value) : String(value)}
             </span>
           )}
-          {isDisabled ? null : <Glyph name="edit" className={hooks.slotClass('icon')} />}
+          {isDisabled ? null : <Glyph icon={EditGlyph} className={hooks.slotClass('icon')} />}
         </AriaButton>
       )}
     </div>

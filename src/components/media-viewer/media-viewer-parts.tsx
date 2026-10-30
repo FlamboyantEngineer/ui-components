@@ -1,3 +1,4 @@
+import { DownloadGlyph, RotateGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -5,7 +6,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
-
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
@@ -87,7 +87,7 @@ export function MediaHeaderActions(props: MediaHeaderActionsProps) {
           />
           <Button
             className={hooks.slotClass('rotate')}
-            icon="rotate"
+            icon={RotateGlyph}
             label={strings.rotateClockwise}
             size="sm"
             onPress={props.onRotate}
@@ -102,7 +102,7 @@ export function MediaHeaderActions(props: MediaHeaderActionsProps) {
           aria-label={strings.downloadFile(item.name)}
           isStandalone
         >
-          <Icon glyph="download" />
+          <Icon icon={DownloadGlyph} />
         </Link>
       ) : null}
     </>
@@ -136,7 +136,7 @@ export function MediaThumbnails({
             {url ? (
               <img {...hooks.slot('thumbnail-image')} src={url} alt="" />
             ) : (
-              <Icon glyph={getFileGlyph(item.type)} className={hooks.slotClass('thumbnail-icon')} />
+              <Icon icon={getFileGlyph(item.type)} className={hooks.slotClass('thumbnail-icon')} />
             )}
           </Button>
         );

@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useRef,
   useState,
   type AnchorHTMLAttributes,
   type Dispatch,
@@ -13,7 +12,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { I18nProvider, RouterProvider } from '../primitives/index.js';
-import { defaultGlyphs, type GlyphComponent, type GlyphMap, type GlyphName } from './glyphs.js';
+import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
 import { mergeClassNames } from './hooks.js';
 import { OverlayPresenceScope } from './overlay-presence.js';
 import { formatMessage, type MessageValues } from './message-format.js';
@@ -21,6 +20,7 @@ import { createMemoryStorage, type UiStorage } from './storage.js';
 import { en } from './locales/index.js';
 import { compileStrings, defaultStrings, type UiMessages, type UiStrings } from './strings.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
+import { useLatest } from '../utils/use-latest.js';
 
 /** Props a link renderer receives. It must render an element that navigates to `href`. */
 export interface UiLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -65,8 +65,8 @@ export interface UiProviderProps {
 }
 
 export interface GlyphProps {
-  /** The built-in glyph to draw. */
-  name: GlyphName;
+  /** The imported icon component to draw. */
+  icon: GlyphComponent;
   /** Usually the host component's slot class, e.g. `ui-button__icon`. */
   className?: string | undefined;
 }
@@ -77,7 +77,7 @@ export interface PersistCodec<T> {
 }
 
 interface UiContextValue {
-  glyphs: GlyphMap;
+  glyphs: Partial<GlyphMap>;
   messages: UiMessages;
   locale: string;
   strings: UiStrings;
@@ -88,7 +88,7 @@ interface UiContextValue {
 const renderAnchor: UiLinkRenderer = (props) => <a {...props} />;
 
 const defaultContext: UiContextValue = {
-  glyphs: defaultGlyphs,
+  glyphs: {},
   messages: en,
   locale: 'en-US',
   strings: defaultStrings,
@@ -120,19 +120,25 @@ export function UiProvider({
   children,
 }: UiProviderProps) {
   const parent = useContext(UiContext);
-  const value = useMemo<UiContextValue>(() => {
+  const text = useMemo(() => {
     const merged = messages ? { ...parent.messages, ...omitUndefined(messages) } : parent.messages;
     const resolvedLocale = locale ?? parent.locale;
     const isSameText = merged === parent.messages && resolvedLocale === parent.locale;
     return {
-      glyphs: icons ? { ...parent.glyphs, ...omitUndefined(icons) } : parent.glyphs,
       messages: merged,
       locale: resolvedLocale,
       strings: isSameText ? parent.strings : compileStrings(merged, resolvedLocale),
+    };
+  }, [parent.messages, parent.locale, parent.strings, messages, locale]);
+  const value = useMemo<UiContextValue>(
+    () => ({
+      ...text,
+      glyphs: icons ? { ...parent.glyphs, ...omitUndefined(icons) } : parent.glyphs,
       renderLink: renderLink ?? parent.renderLink,
       storage: storage ?? parent.storage,
-    };
-  }, [parent, icons, messages, locale, renderLink, storage]);
+    }),
+    [text, parent.glyphs, parent.renderLink, parent.storage, icons, renderLink, storage],
+  );
 
   let content = (
     <OverlayPresenceScope>
@@ -150,9 +156,9 @@ export function UiProvider({
   return content;
 }
 
-/** The glyph component for a built-in glyph name. */
-export function useGlyph(name: GlyphName): GlyphComponent {
-  return useContext(UiContext).glyphs[name];
+/** Resolves a provider override, using the supplied default when the key is unlisted. */
+export function useGlyph(name: GlyphName, fallback: GlyphComponent): GlyphComponent {
+  return useContext(UiContext).glyphs[name] ?? fallback;
 }
 
 /** The built-in text in the provider's language. */
@@ -179,13 +185,12 @@ export function UiLink(props: UiLinkProps) {
   return useContext(UiContext).renderLink(props);
 }
 
-/** Draws a built-in glyph as decoration (hidden from assistive technology). */
-export function Glyph({ name, className }: GlyphProps) {
-  const Component = useGlyph(name);
+/** Draws an imported icon as decoration (hidden from assistive technology). */
+export function Glyph({ icon: Component, className }: GlyphProps) {
   return (
     <Component
       className={mergeClassNames('ui-glyph', className)}
-      data-glyph={name}
+      data-glyph={Component.glyphName}
       aria-hidden="true"
       focusable="false"
     />
@@ -194,19 +199,20 @@ export function Glyph({ name, className }: GlyphProps) {
 
 /**
  * State persisted through the provider storage adapter under `key`. Without a key it is plain state.
- * Unreadable stored values fall back to `initialValue`.
+ * Changing the key or adapter reads the new store. Unreadable values fall back to `initialValue`.
  */
 export function usePersistentState<T>(
   key: string | undefined,
   initialValue: T | (() => T),
   codec: PersistCodec<T> = jsonCodec as PersistCodec<T>,
 ): [T, Dispatch<SetStateAction<T>>] {
-  const storage = useUiStorage();
-  // Called only on mount and when the key changes, so initialValue is read once per key.
+  const adapter = useUiStorage();
+  const storage = key === undefined ? undefined : adapter;
+  // Plain state does not belong to an adapter; persisted state belongs to both adapter and key.
   const read = (): T => {
     const fallback = () =>
       typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue;
-    if (key === undefined) return fallback();
+    if (key === undefined || storage === undefined) return fallback();
     const raw = storage.getItem(key);
     if (raw === null) return fallback();
     try {
@@ -216,25 +222,24 @@ export function usePersistentState<T>(
     }
   };
 
-  const [state, setState] = useState(() => ({ key, value: read() }));
+  const [state, setState] = useState(() => ({ key, storage, value: read() }));
   let current = state;
-  if (state.key !== key) {
-    current = { key, value: read() };
+  if (state.key !== key || state.storage !== storage) {
+    current = { key, storage, value: read() };
     setState(current);
   }
 
-  const latest = useRef(current.value);
-  latest.current = current.value;
+  const latest = useLatest({ ...current, codec });
 
   const setValue = useCallback<Dispatch<SetStateAction<T>>>(
     (action) => {
-      const next =
-        typeof action === 'function' ? (action as (previous: T) => T)(latest.current) : action;
-      latest.current = next;
-      if (key !== undefined) storage.setItem(key, codec.stringify(next));
-      setState({ key, value: next });
+      const { key, storage, codec, value } = latest.current;
+      const next = typeof action === 'function' ? (action as (previous: T) => T)(value) : action;
+      latest.current.value = next;
+      if (key !== undefined && storage !== undefined) storage.setItem(key, codec.stringify(next));
+      setState({ key, storage, value: next });
     },
-    [key, storage, codec],
+    [latest],
   );
 
   return [current.value, setValue];

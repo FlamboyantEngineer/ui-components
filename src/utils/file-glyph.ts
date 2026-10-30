@@ -1,15 +1,20 @@
+import {
+  AudioGlyph,
+  FileGlyph,
+  ImageGlyph,
+  VideoGlyph,
+  type GlyphComponent,
+} from '../core/glyphs.js';
 // The glyph that stands for a file of a given MIME type.
 
-import type { GlyphName } from '../core/glyphs.js';
-
-const families: ReadonlyArray<[prefix: string, glyph: GlyphName]> = [
-  ['image/', 'image'],
-  ['video/', 'video'],
-  ['audio/', 'audio'],
+const families: ReadonlyArray<[prefix: string, glyph: GlyphComponent]> = [
+  ['image/', ImageGlyph],
+  ['video/', VideoGlyph],
+  ['audio/', AudioGlyph],
 ];
 
 /** `image`, `video` or `audio` for a file of that MIME family, else `file`. */
-export function getFileGlyph(type: string | undefined): GlyphName {
+export function getFileGlyph(type: string | undefined): GlyphComponent {
   const lower = type?.toLowerCase() ?? '';
-  return families.find(([prefix]) => lower.startsWith(prefix))?.[1] ?? 'file';
+  return families.find(([prefix]) => lower.startsWith(prefix))?.[1] ?? FileGlyph;
 }

@@ -1,3 +1,4 @@
+import { SearchGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   ChatPlan,
@@ -157,7 +158,7 @@ mountLab(
         render={({ running, content }) => (
           <ChatStatusLine
             text={content === 'text' ? 'Searching trains to Porto…' : undefined}
-            icon={content === 'icon' ? <Icon glyph="search" size="sm" /> : undefined}
+            icon={content === 'icon' ? <Icon icon={SearchGlyph} size="sm" /> : undefined}
             isRunning={running === 'running'}
           />
         )}

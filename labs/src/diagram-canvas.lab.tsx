@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useState, type CSSProperties } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import {
@@ -247,9 +248,9 @@ function Plant() {
         onViewportChange={setViewport}
         palette={
           <>
-            <DiagramPaletteItem type="Pump" label="Pump" icon="plus" />
-            <DiagramPaletteItem type="Valve" label="Valve" icon="plus" />
-            <DiagramPaletteItem type="Tank" label="Tank" icon="plus" />
+            <DiagramPaletteItem type="Pump" label="Pump" icon={PlusGlyph} />
+            <DiagramPaletteItem type="Valve" label="Valve" icon={PlusGlyph} />
+            <DiagramPaletteItem type="Tank" label="Tank" icon={PlusGlyph} />
           </>
         }
       />

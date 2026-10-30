@@ -1,3 +1,11 @@
+import {
+  CalendarGlyph,
+  FolderGlyph,
+  HelpGlyph,
+  InfoGlyph,
+  UsersGlyph,
+  WarningGlyph,
+} from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -17,19 +25,19 @@ function Rail(props: Partial<NavigationRailProps> & { current?: string }) {
   return (
     <NavigationRail aria-label="Main navigation" header={<span>Orchard</span>} {...rest}>
       <NavigationRailSection title="Pinned">
-        <NavigationRailItem label="Harvest plan" href="/plan" icon="calendar" />
+        <NavigationRailItem label="Harvest plan" href="/plan" icon={CalendarGlyph} />
       </NavigationRailSection>
       <NavigationRailSection title="Workspace">
         <NavigationRailItem
           label="Inbox"
           href="/inbox"
-          icon="info"
+          icon={InfoGlyph}
           count={4}
           countLabel="4 unread"
           isCurrent={current === 'inbox'}
         />
-        <NavigationRailItem label="Team" href="/team" icon="users" count={0} />
-        <NavigationRailGroup label="Fields" icon="folder">
+        <NavigationRailItem label="Team" href="/team" icon={UsersGlyph} count={0} />
+        <NavigationRailGroup label="Fields" icon={FolderGlyph}>
           <NavigationRailItem label="North field" href="/north" isCurrent={current === 'north'} />
           <NavigationRailItem label="South field" href="/south" />
         </NavigationRailGroup>
@@ -240,10 +248,10 @@ describe('NavigationRail', () => {
     render(
       <NavigationRail aria-label="Main navigation">
         <NavigationRailSection title="Pinned">
-          <NavigationRailItem label="Plan" href="/plan" icon="calendar" />
+          <NavigationRailItem label="Plan" href="/plan" icon={CalendarGlyph} />
         </NavigationRailSection>
         <NavigationRailSection>
-          <NavigationRailItem label="Help" href="/help" icon="help" />
+          <NavigationRailItem label="Help" href="/help" icon={HelpGlyph} />
         </NavigationRailSection>
       </NavigationRail>,
     );
@@ -267,7 +275,7 @@ describe('NavigationRail', () => {
       <UiProvider renderLink={renderLink}>
         <NavigationRail aria-label="Main navigation">
           <NavigationRailSection>
-            <NavigationRailItem label="Inbox" href="/inbox" icon="info" isCurrent />
+            <NavigationRailItem label="Inbox" href="/inbox" icon={InfoGlyph} isCurrent />
             <NavigationRailItem label="Refresh" onPress={onPress} />
           </NavigationRailSection>
         </NavigationRail>
@@ -300,15 +308,15 @@ describe('NavigationRail', () => {
     render(
       <NavigationRail aria-label="Main navigation">
         <NavigationRailSection>
-          <NavigationRailItem label="Inbox" href="/inbox" icon="info" count={4} />
+          <NavigationRailItem label="Inbox" href="/inbox" icon={InfoGlyph} count={4} />
           <NavigationRailItem
             label="Alerts"
             href="/alerts"
-            icon="warning"
+            icon={WarningGlyph}
             count={250}
             countLabel="250 new"
           />
-          <NavigationRailItem label="Team" href="/team" icon="users" count={-2} />
+          <NavigationRailItem label="Team" href="/team" icon={UsersGlyph} count={-2} />
         </NavigationRailSection>
       </NavigationRail>,
     );
@@ -373,7 +381,11 @@ describe('NavigationRail', () => {
     const { container } = render(
       <NavigationRail aria-label="Main navigation">
         <NavigationRailSection>
-          <NavigationRailGroup label="Fields" icon="folder" onExpandedChange={onExpandedChange}>
+          <NavigationRailGroup
+            label="Fields"
+            icon={FolderGlyph}
+            onExpandedChange={onExpandedChange}
+          >
             <NavigationRailItem label="North field" href="/north" />
           </NavigationRailGroup>
         </NavigationRailSection>

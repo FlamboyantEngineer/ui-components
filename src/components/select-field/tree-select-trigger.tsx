@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -69,14 +70,14 @@ export function TreeSelectTrigger({
           >
             {text}
           </span>
-          <Glyph name="chevron-down" className={hooks.slotClass('chevron')} />
+          <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('chevron')} />
         </AriaButton>
         {popover}
       </DialogTrigger>
       {clearLabel ? (
         <Button
           className={hooks.slotClass('clear')}
-          icon="close"
+          icon={CloseGlyph}
           label={clearLabel}
           variant="bare"
           size="xs"

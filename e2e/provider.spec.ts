@@ -1,6 +1,29 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Provider lab', () => {
+  test('UIC-PROVIDER-6.1 keeps values with their storage adapter and key', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('provider');
+    const storage = page.locator('[data-lab-case="storage"]');
+    await storage.getByRole('button', { name: 'Stored count 2', exact: true }).click();
+    await storage.getByRole('button', { name: 'Switch storage', exact: true }).click();
+    await storage.getByRole('button', { name: 'Stored count 10', exact: true }).click();
+    await storage.getByRole('button', { name: 'Switch storage key' }).click();
+    await expect(
+      storage.getByRole('button', { name: 'Stored count 20', exact: true }),
+    ).toBeVisible();
+    await storage.getByRole('button', { name: 'Switch storage key' }).click();
+    await expect(
+      storage.getByRole('button', { name: 'Stored count 11', exact: true }),
+    ).toBeVisible();
+    await storage.getByRole('button', { name: 'Switch storage', exact: true }).click();
+    await expect(
+      storage.getByRole('button', { name: 'Stored count 3', exact: true }),
+    ).toBeVisible();
+  });
+
   test('UIC-PROVIDER-7.1 pauses a page shortcut while a menu or a field popup is open', async ({
     page,
     lab,

@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -22,7 +23,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     const user = userEvent.setup();
     render(
       <MenuButton aria-label="Edit">
-        <MenuItem id="copy" icon="plus" description="To the clipboard" shortcut="Ctrl+C">
+        <MenuItem id="copy" icon={PlusGlyph} description="To the clipboard" shortcut="Ctrl+C">
           Copy
         </MenuItem>
         <MenuItem
@@ -381,7 +382,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
         onAction={onAction}
         items={[
           { id: 'copy', label: 'Copy link' },
-          { id: 'loading', label: 'Loading…', isPending: true, icon: 'plus' },
+          { id: 'loading', label: 'Loading…', isPending: true, icon: PlusGlyph },
         ]}
       />,
     );

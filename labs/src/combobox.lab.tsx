@@ -1,3 +1,11 @@
+import {
+  CalendarGlyph,
+  EditGlyph,
+  FileGlyph,
+  FolderGlyph,
+  LinkGlyph,
+  PlusGlyph,
+} from '../../src/core/glyphs.js';
 import { useCallback, useRef, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -15,7 +23,7 @@ const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['resting', 'with value', 'disabled', 'read-only', 'invalid', 'pending'] as const;
 
 const fruit: ComboboxItem[] = [
-  { id: 'apple', label: 'Apple', description: 'Crisp and sweet', icon: 'plus' },
+  { id: 'apple', label: 'Apple', description: 'Crisp and sweet', icon: PlusGlyph },
   { id: 'banana', label: 'Banana' },
   { id: 'cherry', label: 'Cherry' },
   {
@@ -301,10 +309,10 @@ function ControlledOpen() {
 }
 
 const fileTypes: ComboboxOption[] = [
-  { id: 'notes', label: 'Notes', icon: 'edit' },
-  { id: 'links', label: 'Links', icon: 'link' },
-  { id: 'events', label: 'Events', icon: 'calendar' },
-  { id: 'folders', label: 'Folders', icon: 'folder' },
+  { id: 'notes', label: 'Notes', icon: EditGlyph },
+  { id: 'links', label: 'Links', icon: LinkGlyph },
+  { id: 'events', label: 'Events', icon: CalendarGlyph },
+  { id: 'folders', label: 'Folders', icon: FolderGlyph },
 ];
 
 const countries: Record<string, string> = {
@@ -323,7 +331,11 @@ function RememberedChips() {
       <Combobox
         label="Saved types"
         selectionMode="multiple"
-        items={isListed ? [{ id: 'notes', label: 'Notes', icon }] : []}
+        items={
+          isListed
+            ? [{ id: 'notes', label: 'Notes', icon: icon === 'file' ? FileGlyph : FolderGlyph }]
+            : []
+        }
         defaultValue={['notes']}
       />
       <Button size="sm" onPress={() => setIcon(icon === 'file' ? 'folder' : 'file')}>

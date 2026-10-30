@@ -1,3 +1,4 @@
+import { FilterGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -50,7 +51,7 @@ describe('SegmentedChoice counts', () => {
       <SegmentedChoice
         aria-label="Show"
         options={[
-          { value: 'open', label: 'Open', count: 2.7, icon: 'filter' },
+          { value: 'open', label: 'Open', count: 2.7, icon: FilterGlyph },
           { value: 'done', label: 'Done', count: Number.NaN },
           { value: 'all', label: 'All', count: 12 },
         ]}

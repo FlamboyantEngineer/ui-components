@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
@@ -130,7 +131,7 @@ describe('Button', () => {
 
   it('UIC-BUTTON-1.5 draws decorative start and end icons', () => {
     render(
-      <Button startIcon="plus" endIcon={<svg role="img" aria-label="End glyph" />}>
+      <Button startIcon={PlusGlyph} endIcon={<svg role="img" aria-label="End glyph" />}>
         Add
       </Button>,
     );
@@ -308,7 +309,7 @@ describe('Button', () => {
 
     const onPress = vi.fn();
     render(
-      <Button isPending startIcon="plus" endIcon="chevron-down" onPress={onPress}>
+      <Button isPending startIcon={PlusGlyph} endIcon={ChevronDownGlyph} onPress={onPress}>
         Saving
       </Button>,
     );
@@ -439,7 +440,7 @@ describe('Button', () => {
           ref={ref}
           href="/reports/new"
           variant="primary"
-          startIcon="plus"
+          startIcon={PlusGlyph}
           shortcut="Ctrl+N"
           onPress={onPress}
         >
@@ -663,7 +664,7 @@ describe('Button', () => {
     render(
       <>
         <Button onPress={sync}>Apply</Button>
-        <Button icon="save" label="Save changes" onPress={run} />
+        <Button icon={SaveGlyph} label="Save changes" onPress={run} />
       </>,
     );
     const apply = screen.getByRole('button', { name: 'Apply' });

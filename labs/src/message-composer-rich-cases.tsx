@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -50,7 +51,7 @@ export function AttachmentChip({ name, onRemove }: { name: string; onRemove?: ()
     <Button
       size="sm"
       variant="chip"
-      endIcon="close"
+      endIcon={CloseGlyph}
       onPress={onRemove}
       aria-label={`Remove ${name}`}
     >
@@ -70,7 +71,7 @@ export function ComposerBanner({
   return (
     <>
       <span>{children}</span>
-      {onClose ? <Button icon="close" label="Close" size="xs" onPress={onClose} /> : null}
+      {onClose ? <Button icon={CloseGlyph} label="Close" size="xs" onPress={onClose} /> : null}
     </>
   );
 }

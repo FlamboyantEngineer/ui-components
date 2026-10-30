@@ -1,3 +1,4 @@
+import { CheckGlyph, InfoGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -243,7 +244,7 @@ describe('Badge', () => {
   it('UIC-BADGE-1.7 draws decorative icons before and after the label', () => {
     const { container, rerender } = render(
       <Badge
-        startIcon="check"
+        startIcon={CheckGlyph}
         endIcon={<svg role="img" aria-label="Custom glyph" />}
         tone="success"
       >
@@ -261,7 +262,7 @@ describe('Badge', () => {
     expectHooksMatchSpec(container, 'BADGE', { slots: ['start-icon', 'label', 'end-icon'] });
 
     rerender(
-      <Badge variant="status" startIcon="info" endIcon={null}>
+      <Badge variant="status" startIcon={InfoGlyph} endIcon={null}>
         Fresh
       </Badge>,
     );

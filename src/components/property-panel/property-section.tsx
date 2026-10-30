@@ -114,7 +114,7 @@ export function PropertySection({
           <Heading level={headingLevel} className={hooks.slotClass('heading')}>
             {/* Spaces between the parts keep the trigger's accessible name readable. */}
             <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
-              <Glyph name={glyph} className={hooks.slotClass('chevron')} />
+              <Glyph icon={glyph} className={hooks.slotClass('chevron')} />
               <span {...hooks.slot('title')}>
                 <TextMatch>{title}</TextMatch>
               </span>{' '}

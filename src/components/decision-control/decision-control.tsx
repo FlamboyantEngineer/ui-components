@@ -1,3 +1,4 @@
+import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps } from '../../core/props.js';
@@ -52,8 +53,8 @@ export interface DecisionControlProps extends BaseProps {
 
 function defaultOptions(strings: UiStrings): DecisionControlOption[] {
   return [
-    { value: 'approve', label: strings.approve, icon: 'check' },
-    { value: 'reject', label: strings.reject, icon: 'close', requiresComment: true },
+    { value: 'approve', label: strings.approve, icon: CheckGlyph },
+    { value: 'reject', label: strings.reject, icon: CloseGlyph, requiresComment: true },
   ];
 }
 

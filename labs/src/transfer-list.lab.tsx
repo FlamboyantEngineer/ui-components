@@ -1,3 +1,13 @@
+import {
+  CalendarGlyph,
+  ClockGlyph,
+  EditGlyph,
+  FileGlyph,
+  FilterGlyph,
+  InfoGlyph,
+  StarGlyph,
+  UsersGlyph,
+} from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import {
@@ -7,14 +17,14 @@ import {
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const columns: TransferListItem[] = [
-  { id: 'name', label: 'Name', icon: 'edit' },
-  { id: 'owner', label: 'Owner', description: 'Person responsible', icon: 'users' },
-  { id: 'status', label: 'Status', icon: 'info' },
-  { id: 'due', label: 'Due date', icon: 'calendar' },
-  { id: 'created', label: 'Created', icon: 'clock' },
-  { id: 'priority', label: 'Priority', icon: 'star' },
-  { id: 'tags', label: 'Tags', icon: 'filter' },
-  { id: 'size', label: 'Size', description: 'In bytes', icon: 'file' },
+  { id: 'name', label: 'Name', icon: EditGlyph },
+  { id: 'owner', label: 'Owner', description: 'Person responsible', icon: UsersGlyph },
+  { id: 'status', label: 'Status', icon: InfoGlyph },
+  { id: 'due', label: 'Due date', icon: CalendarGlyph },
+  { id: 'created', label: 'Created', icon: ClockGlyph },
+  { id: 'priority', label: 'Priority', icon: StarGlyph },
+  { id: 'tags', label: 'Tags', icon: FilterGlyph },
+  { id: 'size', label: 'Size', description: 'In bytes', icon: FileGlyph },
 ];
 
 const cities: TransferListItem[] = [

@@ -1,3 +1,12 @@
+import {
+  ArrowDownGlyph,
+  ArrowLeftGlyph,
+  ArrowRightGlyph,
+  ArrowUpGlyph,
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+} from '../../core/glyphs.js';
 import { joinMenuGroups } from '../menu/menu.js';
 // The menu of a tab's actions, opened from the tab like a context menu.
 
@@ -60,7 +69,7 @@ function useStandardEntries(options: TabMenuOptions) {
       edits.push({
         id: 'rename',
         label: strings.rename,
-        icon: 'edit',
+        icon: EditGlyph,
         onAction: () => rename.start(key),
       });
     }
@@ -68,7 +77,7 @@ function useStandardEntries(options: TabMenuOptions) {
       edits.push({
         id: 'duplicate',
         label: strings.duplicate,
-        icon: 'copy',
+        icon: CopyGlyph,
         onAction: () => onDuplicate(key),
       });
     }
@@ -80,7 +89,12 @@ function useStandardEntries(options: TabMenuOptions) {
         moves.push({
           id: index === 0 ? 'move-backward' : 'move-forward',
           label: strings.moveItem(direction),
-          icon: `arrow-${direction}`,
+          icon: {
+            left: ArrowLeftGlyph,
+            right: ArrowRightGlyph,
+            up: ArrowUpGlyph,
+            down: ArrowDownGlyph,
+          }[direction],
           isDisabled: move === null,
           onAction: () => move && reorder.onReorder(move),
         });
@@ -91,7 +105,7 @@ function useStandardEntries(options: TabMenuOptions) {
           {
             id: 'delete',
             label: strings.delete,
-            icon: 'delete',
+            icon: DeleteGlyph,
             tone: 'danger',
             onAction: () => onRemove(new Set([key])),
           },

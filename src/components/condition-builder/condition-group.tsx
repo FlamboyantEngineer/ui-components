@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
@@ -69,7 +70,7 @@ export function ConditionGroupView({ group, depth, index, count }: ConditionGrou
           id={elementId(group.id, 'add')}
           variant="ghost"
           size="sm"
-          startIcon="plus"
+          startIcon={PlusGlyph}
           className={hooks.slotClass('add-rule')}
           onPress={() => actions.addRule(group.id)}
         >
@@ -79,7 +80,7 @@ export function ConditionGroupView({ group, depth, index, count }: ConditionGrou
           <Button
             variant="ghost"
             size="sm"
-            startIcon="plus"
+            startIcon={PlusGlyph}
             className={hooks.slotClass('add-group')}
             onPress={() => actions.addGroup(group.id)}
           >

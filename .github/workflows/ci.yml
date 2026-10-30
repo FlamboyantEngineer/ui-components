@@ -45,6 +45,8 @@ jobs:
         run: npm run build
       - name: Build labs
         run: npm run build:labs
+      - name: Standalone labs archive
+        run: npm run pack:labs
       - name: Package contents
         run: npm run check:package
 

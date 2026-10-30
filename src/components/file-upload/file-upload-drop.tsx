@@ -1,3 +1,4 @@
+import { UploadGlyph } from '../../core/glyphs.js';
 import {
   useId,
   useState,
@@ -121,7 +122,7 @@ export function DropZoneCommand(props: CommandProps) {
       data-drop-accept={(isOver && isDragAcceptable) || undefined}
       data-drop-reject={(isOver && !isDragAcceptable) || undefined}
     >
-      <Icon glyph="upload" className={hooks.slotClass('icon')} />
+      <Icon icon={UploadGlyph} className={hooks.slotClass('icon')} />
       <span {...hooks.slot('label')} id={labelId}>
         {label}
       </span>
@@ -154,7 +155,7 @@ export function ButtonCommand(props: CommandProps) {
           {...nameCommand(props.naming, id, label)}
           ref={commandRef}
           id={id}
-          startIcon="upload"
+          startIcon={UploadGlyph}
           isDisabled={isDisabled}
           aria-describedby={describedBy}
         >

@@ -6,7 +6,7 @@
 
 ### UIC-RECORD-LABEL-1.1 - Identity and name
 
-`RecordLabel` shall render a `ui-record-label` root holding a `ui-record-label__identity` element with the decorative `icon` (a glyph name or icon node, in the `ui-record-label__icon` slot) and the `identifier` (`ui-record-label__identifier`), then, when `name` is not blank, a space and the trimmed name in the `ui-record-label__name` slot. The reference sheet keeps the identity on one line. Text is rendered as text, never as markup.
+`RecordLabel` shall render a `ui-record-label` root holding a `ui-record-label__identity` element with the decorative `icon` (a icon component or rendered element, in the `ui-record-label__icon` slot) and the `identifier` (`ui-record-label__identifier`), then, when `name` is not blank, a space and the trimmed name in the `ui-record-label__name` slot. The reference sheet keeps the identity on one line. Text is rendered as text, never as markup.
 
 Implementation: `src/components/record-label/record-label.tsx`, `labs/reference/record-label.css`
 Verification: `src/components/record-label/record-label.test.tsx`, `e2e/record-label.spec.ts`

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Builds and checks the package, then tags the version in package.json as `v<version>` on a
-// release commit: the current commit plus the built `dist/` and `labs/build/`, so a git install
-// of the tag needs no build. Also packs the tarball for the GitHub Release.
+// release commit: the current commit plus the built `dist/`, so a git install
+// of the tag needs no build. Also packs the library and standalone labs archives for the GitHub Release.
 // Run on an up-to-date `main` with a clean tree, after the version bump has merged.
 
 import { execFileSync } from 'node:child_process';
@@ -11,7 +11,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const BUILT = ['dist', 'labs/build'];
+const BUILT = ['dist'];
 
 const run = (command, args, options = {}) =>
   execFileSync(command, args, { cwd: root, encoding: 'utf8', ...options });
@@ -29,7 +29,7 @@ if (git(['status', '--porcelain', '--untracked-files=no'])) {
 }
 if (git(['tag', '--list', tag])) fail(`${tag} already exists.`);
 
-for (const script of ['build', 'build:labs', 'check:package']) {
+for (const script of ['build', 'build:labs', 'check:package', 'pack:labs']) {
   run('npm', ['run', script], { stdio: 'inherit' });
 }
 
@@ -51,5 +51,5 @@ console.log(
   `Tagged ${tag} on ${git(['rev-parse', '--short', `${tag}^{commit}`])} and packed ${pack.filename}.`,
 );
 console.log(
-  `Publish with: git push origin ${tag}, then attach ${pack.filename} to the ${tag} GitHub Release.`,
+  `Publish with: git push origin ${tag}, then attach ${pack.filename} and ui-components-labs-${version}.tgz to the ${tag} GitHub Release.`,
 );

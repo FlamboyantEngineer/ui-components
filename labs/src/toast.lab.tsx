@@ -1,3 +1,4 @@
+import { HelpGlyph } from '../../src/core/glyphs.js';
 import { useRef } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
@@ -41,7 +42,7 @@ function previewContent(tone: ToastTone, content: (typeof contents)[number]): To
     title: titles[tone],
     ...(content !== 'title' ? { description: 'Changes to the city list were kept.' } : {}),
     ...(content === 'action' ? { action: { label: 'Undo', onAction: () => {} } } : {}),
-    ...(content === 'custom icon' ? { icon: 'help' as const } : {}),
+    ...(content === 'custom icon' ? { icon: HelpGlyph } : {}),
   };
 }
 

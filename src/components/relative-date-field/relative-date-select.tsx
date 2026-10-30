@@ -1,3 +1,4 @@
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import {
   Button as AriaButton,
@@ -58,7 +59,7 @@ function RelativeTrigger({
       <span {...hooks.slot('value', { placeholder: !text })} id={valueProps?.id}>
         {text ? text.relative : placeholder}
       </span>
-      <Glyph name="chevron-down" className={hooks.slotClass('chevron')} />
+      <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('chevron')} />
     </AriaButton>
   );
 }

@@ -1,3 +1,11 @@
+import {
+  CheckGlyph,
+  EditGlyph,
+  FolderGlyph,
+  HandRaisedGlyph,
+  ListTaskGlyph,
+  LockGlyph,
+} from '../../src/core/glyphs.js';
 // The message composer's row of controls: the "+" menu, an approval select, a plan toggle and the
 // model picker at either end, the send button where the host puts it, a host's own control that
 // drops its label, and the same row at narrower widths, where the controls shrink to their icons.
@@ -25,15 +33,15 @@ export const labApprovalModes: MessageComposerSelectOption[] = [
   {
     id: 'ask',
     label: 'Ask first',
-    icon: 'hand-raised',
+    icon: HandRaisedGlyph,
     description: 'Approve each change before it is made',
   },
-  { id: 'edits', label: 'Accept edits', icon: 'edit', description: 'Edit files without asking' },
-  { id: 'auto', label: 'Run on its own', icon: 'check', description: 'Never stop to ask' },
+  { id: 'edits', label: 'Accept edits', icon: EditGlyph, description: 'Edit files without asking' },
+  { id: 'auto', label: 'Run on its own', icon: CheckGlyph, description: 'Never stop to ask' },
   {
     id: 'locked',
     label: 'Read only',
-    icon: 'lock',
+    icon: LockGlyph,
     description: 'Change nothing',
     isDisabled: true,
     disabledReason: 'Only an owner can turn this on',
@@ -53,9 +61,9 @@ function ContextControl({ count }: { count: number }) {
     'data-lab-control': 'context',
   } as const;
   return isCompact ? (
-    <Button {...button} icon="folder" label={label} tooltip={label} />
+    <Button {...button} icon={FolderGlyph} label={label} tooltip={label} />
   ) : (
-    <Button {...button} startIcon="folder">
+    <Button {...button} startIcon={FolderGlyph}>
       {label}
     </Button>
   );
@@ -84,7 +92,7 @@ function useControlChoices() {
         />
         <MessageComposerToggle
           label="Plan"
-          icon="list-task"
+          icon={ListTaskGlyph}
           isSelected={isPlanning}
           onChange={setPlanning}
         />

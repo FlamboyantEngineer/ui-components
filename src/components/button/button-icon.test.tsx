@@ -1,3 +1,14 @@
+import {
+  CloseGlyph,
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  EyeGlyph,
+  HelpGlyph,
+  MoreGlyph,
+  RedoGlyph,
+  UndoGlyph,
+} from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -9,7 +20,7 @@ describe('Button', () => {
     const user = userEvent.setup();
 
     const onPress = vi.fn();
-    render(<Button icon="close" label="Close" onPress={onPress} />);
+    render(<Button icon={CloseGlyph} label="Close" onPress={onPress} />);
     const button = screen.getByRole('button', { name: 'Close' });
     const icon = button.querySelector('.ui-button__icon');
     expect(icon).toHaveClass('ui-icon');
@@ -23,16 +34,16 @@ describe('Button', () => {
   it('UIC-BUTTON-11.1 accepts icon nodes and rejects an empty label', () => {
     render(<Button icon={<svg aria-label="Custom glyph" />} label="Custom" />);
     expect(screen.getByLabelText('Custom glyph').parentElement).toHaveClass('ui-button__icon');
-    expect(() => render(<Button icon="close" label="  " />)).toThrow(/label/);
+    expect(() => render(<Button icon={CloseGlyph} label="  " />)).toThrow(/label/);
   });
 
   it('UIC-BUTTON-11.2 publishes variant and size, ghost and medium by default', () => {
-    const { rerender } = render(<Button icon="more" label="More" />);
+    const { rerender } = render(<Button icon={MoreGlyph} label="More" />);
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute('data-variant', 'ghost');
     expect(button).toHaveAttribute('data-size', 'md');
     for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
-      rerender(<Button icon="more" label="More" variant="secondary" size={size} />);
+      rerender(<Button icon={MoreGlyph} label="More" variant="secondary" size={size} />);
       expect(button).toHaveAttribute('data-size', size);
       expect(button).toHaveAttribute('data-variant', 'secondary');
     }
@@ -42,11 +53,13 @@ describe('Button', () => {
     const user = userEvent.setup();
 
     const onPress = vi.fn();
-    const { rerender } = render(<Button icon="undo" label="Undo" isDisabled onPress={onPress} />);
+    const { rerender } = render(
+      <Button icon={UndoGlyph} label="Undo" isDisabled onPress={onPress} />,
+    );
     expect(screen.getByRole('button')).toBeDisabled();
 
     rerender(
-      <Button icon="undo" label="Undo" isDisabled focusableWhenDisabled onPress={onPress} />,
+      <Button icon={UndoGlyph} label="Undo" isDisabled focusableWhenDisabled onPress={onPress} />,
     );
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute('aria-disabled', 'true');
@@ -54,14 +67,14 @@ describe('Button', () => {
     await user.click(button);
     expect(onPress).not.toHaveBeenCalled();
 
-    rerender(<Button icon="undo" label="Undo" isPending onPress={onPress} />);
+    rerender(<Button icon={UndoGlyph} label="Undo" isPending onPress={onPress} />);
     expect(button.querySelector('.ui-button__spinner')).not.toBeNull();
     expect(button.querySelector('.ui-button__icon')).toBeInTheDocument();
     expect(button).toHaveAttribute('data-pending', 'true');
     expect(button).toHaveAccessibleName('Undo Loading');
     expectHooksMatchSpec(document.body, 'BUTTON', { slots: ['spinner'] });
 
-    rerender(<Button icon="undo" label="Undo" isSelected />);
+    rerender(<Button icon={UndoGlyph} label="Undo" isSelected />);
     expect(button).toHaveAttribute('aria-pressed', 'true');
     expect(button).toHaveAttribute('data-selected', 'true');
   });
@@ -69,7 +82,14 @@ describe('Button', () => {
   it('UIC-BUTTON-11.4 appends the caller class and forwards id, ref and data attributes', () => {
     const ref = { current: null as HTMLButtonElement | null };
     render(
-      <Button icon="help" label="Help" className="caller" id="help" ref={ref} data-probe="help" />,
+      <Button
+        icon={HelpGlyph}
+        label="Help"
+        className="caller"
+        id="help"
+        ref={ref}
+        data-probe="help"
+      />,
     );
     const button = screen.getByRole('button', { name: 'Help' });
     expect(button).toHaveClass('ui-button', 'caller');
@@ -81,7 +101,9 @@ describe('Button', () => {
 
   it('UIC-BUTTON-11.5 shows a tooltip that describes the button and keeps its label', async () => {
     const user = userEvent.setup();
-    const { container } = render(<Button icon="undo" label="Undo" tooltip="Undo the last edit" />);
+    const { container } = render(
+      <Button icon={UndoGlyph} label="Undo" tooltip="Undo the last edit" />,
+    );
     const button = screen.getByRole('button', { name: 'Undo' });
     expect(button.parentElement).toBe(container);
     await user.tab();
@@ -98,8 +120,13 @@ describe('Button', () => {
     const user = userEvent.setup();
     render(
       <>
-        <Button icon="undo" label="Undo" shortcut="Ctrl+Z" />
-        <Button icon="redo" label="Redo" tooltip="Redo the last edit" shortcut="Ctrl+Shift+Z" />
+        <Button icon={UndoGlyph} label="Undo" shortcut="Ctrl+Z" />
+        <Button
+          icon={RedoGlyph}
+          label="Redo"
+          tooltip="Redo the last edit"
+          shortcut="Ctrl+Shift+Z"
+        />
       </>,
     );
     const undo = screen.getByRole('button', { name: 'Undo' });
@@ -119,8 +146,8 @@ describe('Button', () => {
     const user = userEvent.setup();
     render(
       <>
-        <Button icon="edit" label="Rename" tooltip="Rename" />
-        <Button icon="delete" label="Delete" tooltip="Delete the selected rows" />
+        <Button icon={EditGlyph} label="Rename" tooltip="Rename" />
+        <Button icon={DeleteGlyph} label="Delete" tooltip="Delete the selected rows" />
       </>,
     );
     await user.tab();
@@ -141,10 +168,10 @@ describe('Button', () => {
     const onChange = vi.fn();
     render(
       <>
-        <Button icon="eye" label="Show hidden" defaultSelected={false} onChange={onChange} />
-        <Button icon="help" label="Help" href="/help" />
+        <Button icon={EyeGlyph} label="Show hidden" defaultSelected={false} onChange={onChange} />
+        <Button icon={HelpGlyph} label="Help" href="/help" />
         <Button
-          icon="copy"
+          icon={CopyGlyph}
           label="Copy"
           render={(props) => <button {...props} data-swapped="true" />}
         />

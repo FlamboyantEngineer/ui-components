@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, ChevronUpGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The parts a disclosure is composed of: a header, the title that toggles it, and its panel.
 
 import { useContext, type ReactNode } from 'react';
@@ -11,7 +12,6 @@ import {
   type KeyboardEvent,
 } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
@@ -63,10 +63,13 @@ const groupKeys: Readonly<
 };
 
 /** While collapsed a start indicator points to the inline end and an end one down; open, they turn. */
-function useIndicatorGlyph(position: DisclosureIndicatorPosition, isExpanded: boolean): GlyphName {
+function useIndicatorGlyph(
+  position: DisclosureIndicatorPosition,
+  isExpanded: boolean,
+): GlyphComponent {
   const startGlyph = useExpandGlyph(isExpanded);
   if (position === 'start') return startGlyph;
-  return isExpanded ? 'chevron-up' : 'chevron-down';
+  return isExpanded ? ChevronUpGlyph : ChevronDownGlyph;
 }
 
 /**
@@ -112,7 +115,7 @@ export function DisclosureTitle({ className, children, ...rest }: DisclosureTitl
   const isExpanded = useContext(DisclosureStateContext)?.isExpanded ?? false;
   const glyph = useIndicatorGlyph(indicatorPosition, isExpanded);
   const onKeyDown = useGroupNavigation();
-  const indicator = <Glyph name={glyph} className={hooks.slotClass('indicator')} />;
+  const indicator = <Glyph icon={glyph} className={hooks.slotClass('indicator')} />;
   return (
     <Heading
       {...rest}

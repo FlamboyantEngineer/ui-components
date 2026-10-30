@@ -1,3 +1,4 @@
+import { FolderGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -184,7 +185,7 @@ describe('Combobox chips', () => {
         aria-label="Cities"
         selectionMode="multiple"
         defaultItems={[
-          { id: 'paris', label: 'Paris', icon: 'folder' },
+          { id: 'paris', label: 'Paris', icon: FolderGlyph },
           { id: 'lima', label: 'Lima', icon: <svg role="img" aria-label="Flag" /> },
           { id: 'oslo', label: 'Oslo' },
         ]}
@@ -206,7 +207,7 @@ describe('Combobox chips', () => {
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['chips', 'chip-icon'] });
   });
   it('UIC-COMBOBOX-3.1 UIC-COMBOBOX-3.5 keeps the latest icon when suggestions change', () => {
-    const option: ComboboxOption = { id: 'paris', label: 'Paris', icon: 'folder' };
+    const option: ComboboxOption = { id: 'paris', label: 'Paris', icon: FolderGlyph };
     const { rerender } = render(
       <Combobox label="Cities" selectionMode="multiple" items={[option]} value={['paris']} />,
     );
@@ -216,7 +217,7 @@ describe('Combobox chips', () => {
       <Combobox
         label="Cities"
         selectionMode="multiple"
-        items={[{ ...option, icon: 'plus' }]}
+        items={[{ ...option, icon: PlusGlyph }]}
         value={['paris']}
       />,
     );

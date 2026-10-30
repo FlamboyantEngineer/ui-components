@@ -1,3 +1,4 @@
+import { CloseGlyph, HelpGlyph, RefreshGlyph } from '../../core/glyphs.js';
 import type { ReactElement } from 'react';
 import type { ControlSize, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -27,17 +28,17 @@ function toMenuEntry(
   strings: UiStrings,
 ): MenuEntry {
   if (entry === 'clear') {
-    return { id: entry, label: strings.clear, icon: 'close', isDisabled: !state.canClear };
+    return { id: entry, label: strings.clear, icon: CloseGlyph, isDisabled: !state.canClear };
   }
   if (entry === 'set-default') {
     return {
       id: entry,
       label: strings.setDefault,
-      icon: 'refresh',
+      icon: RefreshGlyph,
       isDisabled: !state.canSetDefault,
     };
   }
-  if (entry === 'help') return { id: entry, label: strings.help, icon: 'help' };
+  if (entry === 'help') return { id: entry, label: strings.help, icon: HelpGlyph };
   return entry;
 }
 

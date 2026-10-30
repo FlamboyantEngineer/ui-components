@@ -1,3 +1,13 @@
+import {
+  DeleteGlyph,
+  ExpandGlyph,
+  FolderGlyph,
+  LinkGlyph,
+  PlusGlyph,
+  RefreshGlyph,
+  SaveGlyph,
+  SidebarGlyph,
+} from '../../src/core/glyphs.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -23,16 +33,16 @@ const commands: MenuEntry[] = [
     id: 'files',
     title: 'Files',
     items: [
-      { id: 'new-file', label: 'New file', icon: 'plus', shortcut: 'Ctrl+N' },
+      { id: 'new-file', label: 'New file', icon: PlusGlyph, shortcut: 'Ctrl+N' },
       {
         id: 'open-recent',
         label: 'Open recent',
-        icon: 'folder',
+        icon: FolderGlyph,
         description: 'Report.pdf, Recipes.csv',
       },
-      { id: 'save-all', label: 'Save all', icon: 'save', shortcut: 'Ctrl+Alt+S' },
-      { id: 'delete-file', label: 'Delete file', icon: 'delete', tone: 'danger' },
-      { id: 'share-file', label: 'Share file', icon: 'link', isDisabled: true },
+      { id: 'save-all', label: 'Save all', icon: SaveGlyph, shortcut: 'Ctrl+Alt+S' },
+      { id: 'delete-file', label: 'Delete file', icon: DeleteGlyph, tone: 'danger' },
+      { id: 'share-file', label: 'Share file', icon: LinkGlyph, isDisabled: true },
     ],
   },
   { type: 'separator', id: 'rule' },
@@ -47,9 +57,9 @@ const commands: MenuEntry[] = [
     id: 'view',
     title: 'View',
     items: [
-      { id: 'toggle-sidebar', label: 'Toggle sidebar', icon: 'sidebar', shortcut: 'Ctrl+B' },
+      { id: 'toggle-sidebar', label: 'Toggle sidebar', icon: SidebarGlyph, shortcut: 'Ctrl+B' },
       { id: 'zoom-in', label: 'Zoom in', shortcut: 'Ctrl++' },
-      { id: 'refresh', label: 'Refresh', icon: 'refresh', shortcut: 'F5' },
+      { id: 'refresh', label: 'Refresh', icon: RefreshGlyph, shortcut: 'F5' },
     ],
   },
 ];
@@ -202,12 +212,12 @@ function JsxPalette() {
           <MenuItem
             id="sidebar"
             textValue="Toggle sidebar"
-            icon="sidebar"
+            icon={SidebarGlyph}
             shouldCloseOnSelect={false}
           >
             <TextMatch>Toggle sidebar</TextMatch>
           </MenuItem>
-          <MenuItem id="split" textValue="Split view" icon="expand">
+          <MenuItem id="split" textValue="Split view" icon={ExpandGlyph}>
             <TextMatch>Split view</TextMatch>
           </MenuItem>
         </MenuSection>

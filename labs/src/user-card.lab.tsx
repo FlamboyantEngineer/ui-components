@@ -1,3 +1,4 @@
+import { EditGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
@@ -15,7 +16,7 @@ const contents = [
   'loading',
 ] as const;
 const actions = [
-  { id: 'message', label: 'Message', icon: 'edit' as const },
+  { id: 'message', label: 'Message', icon: EditGlyph },
   { id: 'profile', label: 'View profile' },
 ];
 const details = [

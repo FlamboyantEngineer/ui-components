@@ -1,3 +1,4 @@
+import { CloseGlyph, InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -77,10 +78,10 @@ function SearchResults() {
             data-city={city.id}
             title={city.title}
             meta={<MetaLine items={city.meta} />}
-            icon="info"
+            icon={InfoGlyph}
             isDisabled={city.disabled}
             onPress={() => setOpened(city.title)}
-            trailing={<Button icon="more" label={`More about ${city.title}`} size="sm" />}
+            trailing={<Button icon={MoreGlyph} label={`More about ${city.title}`} size="sm" />}
           />
         ))}
       </List>
@@ -101,7 +102,7 @@ function RemovableRows() {
           onPress={() => {}}
           trailing={
             <Button
-              icon="close"
+              icon={CloseGlyph}
               size="sm"
               label={`Remove ${name}`}
               onPress={() => setNames((current) => current.filter((entry) => entry !== name))}
@@ -128,7 +129,7 @@ mountLab(
                 {...kindProps(kind, `${kind}-${state}`)}
                 title="Report.pdf"
                 meta="Updated yesterday"
-                icon="info"
+                icon={InfoGlyph}
                 isCurrent={state === 'current'}
                 isDisabled={state === 'disabled'}
                 tone={state === 'danger' ? 'danger' : 'neutral'}
@@ -151,11 +152,11 @@ mountLab(
                 {...kindProps(kind, `${content}-${kind}`)}
                 title="Ada Lovelace"
                 meta={content === 'title' ? undefined : 'Mathematician · London'}
-                icon={content === 'icon' ? 'info' : undefined}
+                icon={content === 'icon' ? InfoGlyph : undefined}
                 leading={content === 'leading' ? <Avatar initials="AL" /> : undefined}
                 trailing={
                   content === 'trailing' ? (
-                    <Button icon="more" label="More about Ada Lovelace" size="sm" />
+                    <Button icon={MoreGlyph} label="More about Ada Lovelace" size="sm" />
                   ) : undefined
                 }
               />
@@ -186,7 +187,7 @@ mountLab(
             href="#narrow"
             title="Quarterly planning notes for the garden committee"
             meta={<MetaLine items={['Shared folder', 'Edited by Grace Hopper', '3 days ago']} />}
-            icon="info"
+            icon={InfoGlyph}
             trailing={<span data-lab-badge>New</span>}
           />
           <ListRow title="Short title" meta="Short meta" trailing={<span>New</span>} />

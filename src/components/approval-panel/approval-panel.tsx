@@ -1,5 +1,13 @@
+import {
+  BellGlyph,
+  CheckGlyph,
+  ClockGlyph,
+  CloseGlyph,
+  MinusGlyph,
+  RefreshGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import { useId, type ReactNode, type Ref } from 'react';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -82,11 +90,11 @@ const decisionTones: Record<ApprovalPanelDecision, Tone> = {
   abstained: 'info',
 };
 
-const decisionGlyphs: Record<ApprovalPanelDecision, GlyphName> = {
-  pending: 'clock',
-  approved: 'check',
-  rejected: 'close',
-  abstained: 'minus',
+const decisionGlyphs: Record<ApprovalPanelDecision, GlyphComponent> = {
+  pending: ClockGlyph,
+  approved: CheckGlyph,
+  rejected: CloseGlyph,
+  abstained: MinusGlyph,
 };
 
 const decisions: readonly ApprovalPanelDecision[] = [
@@ -121,7 +129,7 @@ function ApproverActions({ approver, onRemind, onRequestAgain }: ApproverRowProp
     const label = strings.remindApprover(name);
     return (
       <Button
-        icon="bell"
+        icon={BellGlyph}
         label={label}
         tooltip={label}
         size="sm"
@@ -134,7 +142,7 @@ function ApproverActions({ approver, onRemind, onRequestAgain }: ApproverRowProp
   const label = strings.requestApprovalAgain(name);
   return (
     <Button
-      icon="refresh"
+      icon={RefreshGlyph}
       label={label}
       tooltip={label}
       size="sm"

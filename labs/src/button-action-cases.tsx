@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 function Counter() {
