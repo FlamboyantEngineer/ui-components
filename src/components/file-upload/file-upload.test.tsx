@@ -526,6 +526,91 @@ describe('FileUpload', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('1 file is over the file limit.');
   });
 
+  it('UIC-FILE-UPLOAD-2.7 abandons a pending check when the upload unmounts', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    let answer: (message: string | null) => void = () => undefined;
+    const validate = () => new Promise<string | null>((resolve) => (answer = resolve));
+    const { container, unmount } = render(
+      <FileUpload label="Attach" validate={validate} onSelect={onSelect} onReject={onReject} />,
+    );
+    await user.upload(chooser(container), file('a.txt', 'text/plain'));
+    unmount();
+    await act(async () => answer(null));
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onReject).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FILE-UPLOAD-1.4 UIC-FILE-UPLOAD-1.6 UIC-FILE-UPLOAD-2.7 abandons pending and queued offers once disabled or read-only', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    const answers: Array<(message: string | null) => void> = [];
+    const validate = () => new Promise<string | null>((resolve) => answers.push(resolve));
+    const props = { label: 'Attach', allowsMultiple: true, validate, onSelect, onReject };
+    const { container, rerender } = render(<FileUpload {...props} />);
+    await user.upload(chooser(container), file('a.txt', 'text/plain'));
+    await user.upload(chooser(container), file('b.txt', 'text/plain'));
+    for (const lock of [{ isDisabled: true }, { isReadOnly: true }]) {
+      rerender(<FileUpload {...props} {...lock} />);
+      await act(async () => answers.forEach((resolve) => resolve('Too wide.')));
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onReject).not.toHaveBeenCalled();
+      rerender(<FileUpload {...props} />);
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    }
+    // The offer queued behind the abandoned one was never checked.
+    expect(answers).toHaveLength(1);
+    const c = file('c.txt', 'text/plain');
+    await user.upload(chooser(container), c);
+    await waitFor(() => expect(answers).toHaveLength(2));
+    await act(async () => answers.at(-1)?.(null));
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith([c]);
+  });
+
+  it('UIC-FILE-UPLOAD-2.7 hands an answer to the callbacks the upload renders with now', async () => {
+    const user = userEvent.setup();
+    let answer: (message: string | null) => void = () => undefined;
+    const validate = () => new Promise<string | null>((resolve) => (answer = resolve));
+    const first = vi.fn();
+    const second = vi.fn();
+    const { container, rerender } = render(
+      <FileUpload label="Attach" validate={validate} onSelect={first} />,
+    );
+    const a = file('a.txt', 'text/plain');
+    await user.upload(chooser(container), a);
+    rerender(<FileUpload label="Attach" validate={validate} onSelect={second} />);
+    await act(async () => answer(null));
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledWith([a]);
+  });
+
+  it('UIC-FILE-UPLOAD-2.3 UIC-FILE-UPLOAD-2.7 refuses a file whose check fails, without an unhandled rejection', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    const validate = (candidate: File) =>
+      candidate.name === 'broken.txt'
+        ? Promise.reject(new Error('offline'))
+        : Promise.resolve(null);
+    const { container } = render(
+      <FileUpload
+        label="Attach"
+        allowsMultiple
+        validate={validate}
+        onSelect={onSelect}
+        onReject={onReject}
+      />,
+    );
+    const broken = file('broken.txt', 'text/plain');
+    const fine = file('fine.txt', 'text/plain');
+    await user.upload(chooser(container), [broken, fine]);
+    await waitFor(() => expect(onSelect).toHaveBeenCalledWith([fine]));
+    expect(onReject).toHaveBeenCalledWith([{ file: broken, reason: 'unchecked' }]);
+    expect(screen.getByRole('alert')).toHaveTextContent('1 file could not be checked.');
+  });
+
   it('UIC-FILE-UPLOAD-2.8 says during a drag whether the dragged files would be accepted', () => {
     const { container } = render(
       <FileUpload

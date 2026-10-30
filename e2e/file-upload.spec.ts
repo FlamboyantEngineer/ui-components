@@ -264,4 +264,30 @@ test.describe('File Upload lab', () => {
     await lab.open('file-upload', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-FILE-UPLOAD-2.7 abandons a checked offer when the editor closes, and refuses a failed check', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('file-upload');
+    const chooser = page.locator('[data-lab-upload="slow"] input[type="file"]');
+    const listed = page.locator('[data-lab-output="slow-listed"]');
+    const refused = page.locator('[data-lab-output="slow-refused"]');
+    const sample = (name: string) => ({ name, mimeType: 'text/plain', buffer: Buffer.from('x') });
+    await chooser.setInputFiles([sample('notes.txt')]);
+    await page.getByRole('button', { name: 'Close the editor' }).click();
+    await page.clock.runFor(2000);
+    await page.getByRole('button', { name: 'Open the editor' }).click();
+    await expect(listed).toHaveText('0');
+    await expect(refused).toHaveText('none');
+
+    await chooser.setInputFiles([sample('offline.txt'), sample('plan.txt')]);
+    await page.clock.runFor(3100);
+    await expect(listed).toHaveText('1');
+    await expect(refused).toHaveText('offline.txt (unchecked)');
+    await expect(page.locator('[data-lab-upload="slow"] [role="alert"]')).toHaveText(
+      '1 file could not be checked.',
+    );
+  });
 });

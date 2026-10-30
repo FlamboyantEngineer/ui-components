@@ -15,6 +15,8 @@ export interface FieldStrings {
   rejectedFileCount: (count: number) => string;
   /** A chosen file refused by the host's own check, with the host's reason. */
   rejectedFileReason: (name: string, reason: string) => string;
+  /** Counts chosen files the host's own check could not check, because it failed. */
+  rejectedFileUnchecked: (count: number) => string;
   /** States how many files an upload holds at most. */
   fileCountLimit: (count: number) => string;
   /** The command of a file field that takes one file. */
@@ -145,6 +147,7 @@ export const fieldArguments: MessageArguments<FieldStrings> = {
   rejectedFileSmall: (count) => ({ count }),
   rejectedFileCount: (count) => ({ count }),
   rejectedFileReason: (name, reason) => ({ name, reason }),
+  rejectedFileUnchecked: (count) => ({ count }),
   fileCountLimit: (count) => ({ count }),
   problemCount: (errors, warnings) => ({ errors, warnings }),
   problemSeverity: (severity) => ({ severity }),

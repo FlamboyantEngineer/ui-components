@@ -16,6 +16,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { formatMetaLine } from '../meta-line/meta-line.js';
@@ -98,6 +99,7 @@ function rejectionMessage(rejections: readonly FileRejection[], strings: UiStrin
     counted('size') && strings.rejectedFileSize(counted('size')),
     counted('min-size') && strings.rejectedFileSmall(counted('min-size')),
     counted('count') && strings.rejectedFileCount(counted('count')),
+    counted('unchecked') && strings.rejectedFileUnchecked(counted('unchecked')),
   ];
   const reasons = rejections.flatMap(({ file, reason, message }) =>
     reason === 'invalid' ? [strings.rejectedFileReason(file.name, message ?? '')] : [],
@@ -110,38 +112,63 @@ function rejectionMessage(rejections: readonly FileRejection[], strings: UiStrin
  * before the drop. `held` files are listed already. An offer made while an earlier one still waits
  * for `validate` is checked once the earlier one is handed on, counting the files it accepted until
  * the upload renders again, so overlapping offers never pass `maxFiles` together and the latest
- * offer's refusals are the ones shown.
+ * offer's refusals are the ones shown. Offers still waiting when the upload unmounts or becomes
+ * disabled or read-only are abandoned: they call nothing and show nothing.
  */
 function useFileIntake(props: FileUploadProps, held: number) {
-  const { allowsMultiple, acceptDirectory, onSelect, onReject } = props;
+  const { allowsMultiple, acceptDirectory, isDisabled, isReadOnly } = props;
   const { acceptedFileTypes, maxSize, minSize, maxFiles, validate } = props;
   const rules: FileRules = { acceptedFileTypes, maxSize, minSize, maxFiles, validate };
   const [rejections, setRejections] = useState<FileRejection[]>([]);
   const [isDragAcceptable, setDragAcceptable] = useState(true);
   const count = useRef({ held, accepted: 0 });
   const queue = useRef<Promise<void> | null>(null);
+  // The intake's current lifetime; offers made in an earlier one are abandoned.
+  const lifetime = useRef({});
+  const callbacks = useLatest({ onSelect: props.onSelect, onReject: props.onReject });
+  const isLocked = Boolean(isDisabled || isReadOnly);
   useLayoutEffect(() => {
     count.current = { held, accepted: 0 };
   });
+  useLayoutEffect(() => {
+    if (!isLocked) return undefined;
+    lifetime.current = {};
+    queue.current = null;
+    return undefined;
+  }, [isLocked]);
+  useLayoutEffect(
+    () => () => {
+      lifetime.current = {};
+      queue.current = null;
+    },
+    [],
+  );
   const isMultiple = Boolean(allowsMultiple || acceptDirectory);
   const report = (result: FilePartition) => {
     count.current.accepted += result.accepted.length;
     setRejections(result.rejections);
-    if (result.rejections.length > 0) onReject?.(result.rejections);
-    if (result.accepted.length > 0) onSelect(result.accepted);
+    if (result.rejections.length > 0) callbacks.current.onReject?.(result.rejections);
+    if (result.accepted.length > 0) callbacks.current.onSelect(result.accepted);
   };
-  const judge = (offered: readonly File[]): Promise<void> | undefined => {
+  const judge = (offered: readonly File[], owner: object): Promise<void> | undefined => {
+    if (owner !== lifetime.current) return undefined;
     const outcome = partitionFiles(offered, rules, count.current.held + count.current.accepted);
-    if (outcome instanceof Promise) return outcome.then(report);
-    report(outcome);
-    return undefined;
+    if (!(outcome instanceof Promise)) {
+      report(outcome);
+      return undefined;
+    }
+    return outcome.then((result) => {
+      if (owner === lifetime.current) report(result);
+    });
   };
   return {
     rejections,
     isDragAcceptable,
     receive(offered: readonly File[]) {
+      if (isLocked) return;
       const files = isMultiple ? offered : offered.slice(0, 1);
-      const run = () => judge(files);
+      const owner = lifetime.current;
+      const run = () => judge(files, owner);
       const outcome = queue.current ? queue.current.then(run, run) : run();
       if (!outcome) return;
       const settled: Promise<void> = outcome.finally(() => {
