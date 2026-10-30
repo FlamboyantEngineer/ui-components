@@ -139,6 +139,31 @@ function Delivery() {
   );
 }
 
+/** Reset asks first: while "Keep edits" is on, the form cancels the reset and nothing changes. */
+function ConfirmedReset() {
+  const [keepsEdits, setKeepsEdits] = useState(true);
+  const [resets, setResets] = useState('none');
+  return (
+    <>
+      <Switch isSelected={keepsEdits} onChange={setKeepsEdits}>
+        Keep edits
+      </Switch>
+      <form
+        aria-label="Pantry"
+        onReset={(event) => {
+          if (keepsEdits) event.preventDefault();
+          setResets(keepsEdits ? 'cancelled' : 'done');
+        }}
+      >
+        <TextField label="Shelf" name="shelf" defaultValue="Spices" data-lab-field="shelf" />
+        <NumberField label="Jars" name="jars" defaultValue={12} data-lab-field="jars" />
+        <Button type="reset">Reset</Button>
+        <LabOutput name="Reset">{resets}</LabOutput>
+      </form>
+    </>
+  );
+}
+
 /** A button outside the form submits it through the form's ref, with the same validation. */
 function OutsideSubmit() {
   const form = useRef<HTMLFormElement>(null);
@@ -197,6 +222,12 @@ mountLab(
     </LabSection>
     <LabSection title="Fieldset" description="A fieldset groups fields and disables them together.">
       <Delivery />
+    </LabSection>
+    <LabSection
+      title="Cancelled reset"
+      description="Edit the fields and press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
+    >
+      <ConfirmedReset />
     </LabSection>
     <LabSection
       title="Submitting from outside"
