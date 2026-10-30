@@ -1,3 +1,5 @@
+'use client';
+
 import { DragHandleGlyph } from '../../core/glyphs.js';
 import type { PointerEvent } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';

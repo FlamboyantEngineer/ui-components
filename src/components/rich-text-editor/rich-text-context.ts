@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 

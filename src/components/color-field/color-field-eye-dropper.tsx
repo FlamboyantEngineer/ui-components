@@ -1,3 +1,5 @@
+'use client';
+
 import { EyeDropperGlyph } from '../../core/glyphs.js';
 import { useContext } from 'react';
 import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';

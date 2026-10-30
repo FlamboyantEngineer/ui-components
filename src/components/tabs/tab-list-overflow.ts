@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';

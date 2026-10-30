@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import { useRef, type ReactNode, type RefObject } from 'react';
 import {

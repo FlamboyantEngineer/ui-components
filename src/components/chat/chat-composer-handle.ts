@@ -1,3 +1,5 @@
+'use client';
+
 // The chat composer's public handle and draft reports, for the host's own controls outside the
 // chat (specs/CHAT.md, UIC-CHAT-3.11).
 

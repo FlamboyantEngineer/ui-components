@@ -1,3 +1,5 @@
+'use client';
+
 import { ColorSwatch as AriaColorSwatch, parseColor } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

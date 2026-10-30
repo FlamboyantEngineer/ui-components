@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';

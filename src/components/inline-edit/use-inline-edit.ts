@@ -1,3 +1,5 @@
+'use client';
+
 import { toErrorMessage } from '../../utils/to-error-message.js';
 // The editing state of an inline edit: opening and closing the editor, the value being edited, the
 // save and its outcome, focus, and the keys and focus moves that save or cancel.

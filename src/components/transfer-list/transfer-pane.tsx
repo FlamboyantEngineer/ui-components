@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key, Selection } from '../../core/props.js';

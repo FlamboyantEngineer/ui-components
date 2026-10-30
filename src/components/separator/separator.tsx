@@ -1,3 +1,5 @@
+'use client';
+
 import { createElement, useId, type JSX, type ReactNode } from 'react';
 import { Separator as AriaSeparator } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

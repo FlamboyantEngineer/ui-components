@@ -1,3 +1,5 @@
+'use client';
+
 import { PlusGlyph } from '../../core/glyphs.js';
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { requireDefined } from '../../utils/require-defined.js';

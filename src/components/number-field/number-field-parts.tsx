@@ -1,3 +1,5 @@
+'use client';
+
 import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import { useId, type KeyboardEvent } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import type { CodeEdit } from './code-editing.js';
 import { findMatches, type CodeRange } from './code-ranges.js';

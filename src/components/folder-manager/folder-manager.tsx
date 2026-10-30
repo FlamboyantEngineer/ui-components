@@ -1,3 +1,5 @@
+'use client';
+
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { findMaximum } from '../../utils/find-maximum.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

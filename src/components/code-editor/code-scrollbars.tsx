@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState, type RefObject } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { OverlayScrollbars, useOverlayMetrics } from '../scroll-region/scroll-region.js';

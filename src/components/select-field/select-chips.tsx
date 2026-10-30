@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import { Tag, TagGroup, TagList } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';

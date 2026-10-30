@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, CloseGlyph, FormulaGlyph } from '../../core/glyphs.js';
 import {
   useId,

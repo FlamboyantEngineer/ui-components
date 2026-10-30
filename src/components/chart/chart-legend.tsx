@@ -1,3 +1,5 @@
+'use client';
+
 import type { Ref } from 'react';
 import { ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

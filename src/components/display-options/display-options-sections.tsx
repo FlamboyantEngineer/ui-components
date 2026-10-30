@@ -1,3 +1,5 @@
+'use client';
+
 import { SortAscendingGlyph, SortDescendingGlyph } from '../../core/glyphs.js';
 // The sections of the display options popover: grouping, sorting, shown properties and density.
 

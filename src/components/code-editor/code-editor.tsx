@@ -1,3 +1,5 @@
+'use client';
+
 import { CodeField } from './code-field.js';
 import { CodeSurface, type CodeSurfaceProps, type CodeEditorSize } from './code-surface.js';
 import type { FieldInputProps } from '../field/field.js';

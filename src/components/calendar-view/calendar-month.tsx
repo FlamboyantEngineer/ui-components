@@ -1,3 +1,5 @@
+'use client';
+
 import { findMaximum } from '../../utils/find-maximum.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';

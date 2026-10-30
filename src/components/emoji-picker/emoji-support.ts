@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState, type RefObject } from 'react';
 
 /** What the platform draws, as far as a canvas can tell. */

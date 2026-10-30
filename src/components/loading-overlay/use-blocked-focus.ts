@@ -1,3 +1,5 @@
+'use client';
+
 // Keyboard focus around content that turns inert while its region loads.
 
 import { useLayoutEffect, useRef, type RefObject } from 'react';

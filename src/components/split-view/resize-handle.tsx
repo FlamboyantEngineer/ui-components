@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

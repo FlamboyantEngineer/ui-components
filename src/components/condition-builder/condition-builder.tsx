@@ -1,3 +1,5 @@
+'use client';
+
 import { useId } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';

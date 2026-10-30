@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import { useLocale } from '../../primitives/index.js';

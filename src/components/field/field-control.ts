@@ -1,3 +1,5 @@
+'use client';
+
 import type { FieldControlProps } from './field-parts.js';
 import {
   useFieldState,

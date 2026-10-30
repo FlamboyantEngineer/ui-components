@@ -61,6 +61,37 @@ Then style the hooks in the host stylesheet:
 
 The styling contract is [specs/HOOK-CONTRACT.md](specs/HOOK-CONTRACT.md). Each component's spec under [specs/](specs/) lists its hooks in a `## Hooks` table.
 
+### Server components
+
+Interactive modules start with `'use client'`, so a React Server Components framework (such as the Next.js app router) can import any entry point from a server page. Render components there with serializable props, and call server-safe utilities such as `sanitizeHtml`, `parseMarkdown` or `formatMetaLine` on the server. Event handlers, render functions and hooks belong in the host's own client module:
+
+```tsx
+// app/page.tsx, a server component
+import { Badge, Button, UiProvider, formatMetaLine } from '@flamboyantengineer/ui-components';
+
+export default function Page() {
+  return (
+    <UiProvider locale="en-US">
+      <p>{formatMetaLine(['Draft', 3, 'shared'])}</p>
+      <Badge>New</Badge>
+      <Button type="submit">Save</Button>
+    </UiProvider>
+  );
+}
+```
+
+```tsx
+// app/save-button.tsx
+'use client';
+import { Button } from '@flamboyantengineer/ui-components/button';
+
+export function SaveButton({ onSaved }: { onSaved: () => void }) {
+  return <Button onPress={onSaved}>Save</Button>;
+}
+```
+
+The boundaries are specified in [specs/SERVER-COMPONENTS.md](specs/SERVER-COMPONENTS.md).
+
 ### Provider
 
 Components work without any setup. `UiProvider` replaces the defaults when a host needs to ([specs/PROVIDER.md](specs/PROVIDER.md)):

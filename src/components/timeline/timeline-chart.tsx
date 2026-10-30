@@ -1,3 +1,5 @@
+'use client';
+
 import { useId } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { measuredProperty } from '../../core/hooks.js';

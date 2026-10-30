@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';

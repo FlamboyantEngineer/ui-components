@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { Button as AriaButton, Link as AriaLink, ProgressBar } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

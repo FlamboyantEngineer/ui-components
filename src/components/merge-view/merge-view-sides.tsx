@@ -1,3 +1,5 @@
+'use client';
+
 import { memo, useId, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';

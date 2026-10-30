@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
 import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';

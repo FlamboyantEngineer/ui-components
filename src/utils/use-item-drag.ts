@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type HTMLAttributes, type RefObject } from 'react';
 import { useDrag, useDrop } from '../primitives/index.js';
 import type { PressEvent } from '../core/events.js';

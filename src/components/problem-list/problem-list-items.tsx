@@ -1,3 +1,5 @@
+'use client';
+
 import { ErrorGlyph, InfoGlyph, WarningGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';

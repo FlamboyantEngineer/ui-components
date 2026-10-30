@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';

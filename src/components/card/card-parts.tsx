@@ -1,3 +1,5 @@
+'use client';
+
 // The parts a custom card header composes: the title that names the card and the whole-card action.
 
 import { createContext, useContext, type ReactNode, type RefCallback } from 'react';

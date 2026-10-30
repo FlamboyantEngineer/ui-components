@@ -1,3 +1,5 @@
+'use client';
+
 import { DropIndicator } from '../primitives/index.js';
 import type { CollectionDropTarget } from './use-reorder-drag-and-drop.js';
 

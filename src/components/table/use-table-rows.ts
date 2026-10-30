@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useLocale } from '../../primitives/index.js';

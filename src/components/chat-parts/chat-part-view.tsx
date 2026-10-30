@@ -1,3 +1,5 @@
+'use client';
+
 // One part of a message, drawn by the component for its type (specs/CHAT-PARTS.md).
 
 import { useId, type ReactNode } from 'react';

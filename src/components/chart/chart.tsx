@@ -1,3 +1,5 @@
+'use client';
+
 import { TableGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode, type Ref } from 'react';
 import { ToggleButton } from '../../primitives/index.js';

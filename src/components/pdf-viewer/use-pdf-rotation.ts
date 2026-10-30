@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { createViewportCache, type LoadedPdf } from './use-pdf-document.js';

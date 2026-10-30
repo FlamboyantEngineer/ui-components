@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext } from 'react';
 import type { Key } from '../../core/props.js';
 import type { AnchoredAnnotation } from './anchor-geometry.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // The dialogs a version history opens from a version's menu: confirming a restore, and naming.
 
 import { useState } from 'react';

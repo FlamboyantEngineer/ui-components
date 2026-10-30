@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';

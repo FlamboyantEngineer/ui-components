@@ -1,3 +1,5 @@
+'use client';
+
 import type { InputHTMLAttributes } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';

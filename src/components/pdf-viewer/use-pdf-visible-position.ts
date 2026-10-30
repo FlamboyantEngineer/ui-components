@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, type RefObject } from 'react';
 import { measurePageFrame } from './page-geometry.js';
 import { useLatest } from '../../utils/use-latest.js';

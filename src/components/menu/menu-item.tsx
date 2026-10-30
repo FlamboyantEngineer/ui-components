@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useContext, type ComponentPropsWithRef, type ReactNode } from 'react';
 import {

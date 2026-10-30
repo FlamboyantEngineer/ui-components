@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from 'react';
 import { getCompletionOptionId } from './completion-option-id.js';
 import {

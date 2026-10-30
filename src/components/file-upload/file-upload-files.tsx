@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

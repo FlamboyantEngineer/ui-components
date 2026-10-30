@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, type DOMAttributes } from 'react';
 import { useLocale, useMove } from '../../primitives/index.js';
 import type { DashboardGridItem } from './dashboard-layout.js';

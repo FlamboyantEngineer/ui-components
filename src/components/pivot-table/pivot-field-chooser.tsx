@@ -1,3 +1,5 @@
+'use client';
+
 import { UiProvider, useUiStrings } from '../../core/provider.js';
 import type { PivotAggregateName, PivotLayout } from '../../utils/pivot.js';
 import { Board, type BoardColumn } from '../board/board.js';

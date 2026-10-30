@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useLatest } from '../../utils/use-latest.js';

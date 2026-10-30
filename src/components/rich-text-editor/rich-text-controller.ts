@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEventCallback, useEditorState } from '@handlewithcare/react-prosemirror';
 import { useMemo } from 'react';
 import {

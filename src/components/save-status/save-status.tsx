@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, ErrorGlyph, OfflineGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useRef } from 'react';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { LinkGlyph, UnlinkGlyph } from '../../core/glyphs.js';
 import { useState, type FormEvent } from 'react';
 import type { Key } from '../../core/props.js';

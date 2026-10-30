@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import { clamp } from './clamp.js';
 import type { Key } from '../core/props.js';

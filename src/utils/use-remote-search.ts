@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState } from 'react';
 import { useAsyncList } from '../primitives/index.js';
 

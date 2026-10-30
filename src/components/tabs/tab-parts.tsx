@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 // The parts inside a tab: its label or name field, its count and its close mark.
 

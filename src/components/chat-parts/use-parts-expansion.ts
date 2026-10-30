@@ -1,3 +1,5 @@
+'use client';
+
 // Which reasoning, tool calls and groups of steps of a message are open, as the reader chose
 // (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5.3, UIC-CHAT-PARTS-5.4 and UIC-CHAT-PARTS-6.1).
 

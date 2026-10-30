@@ -1,3 +1,5 @@
+'use client';
+
 import { PlusGlyph } from '../../core/glyphs.js';
 // The parts around a list of tabs: scroll buttons, the "more" menu of hidden tabs and the add button.
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { UploadGlyph } from '../../core/glyphs.js';
 import {
   useId,

@@ -1,3 +1,5 @@
+'use client';
+
 import type { PointerEvent } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';

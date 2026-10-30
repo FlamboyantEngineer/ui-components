@@ -1,3 +1,5 @@
+'use client';
+
 import { memo, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatStatusLine } from '../chat-activity/chat-activity.js';

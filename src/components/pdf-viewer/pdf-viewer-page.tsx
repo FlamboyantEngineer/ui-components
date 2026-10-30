@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { highlightTextRuns } from './highlights.js';
 import type { PdfPageGeometry } from './page-geometry.js';

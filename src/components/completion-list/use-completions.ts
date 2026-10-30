@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';

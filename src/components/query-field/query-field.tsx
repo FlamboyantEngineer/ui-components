@@ -1,3 +1,5 @@
+'use client';
+
 import { SearchGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, type KeyboardEvent } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';

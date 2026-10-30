@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { revealRange } from './code-geometry.js';
 import { useCodeHover, type CodeHoverModel, type MarkedDiagnostic } from './code-hover.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import type { JSX, KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { Toolbar, Tooltip, TooltipTrigger } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

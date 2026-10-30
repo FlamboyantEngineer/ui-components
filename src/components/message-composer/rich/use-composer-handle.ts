@@ -1,3 +1,5 @@
+'use client';
+
 // The rich composer's public handle: insertion from controls outside the composer
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-4.10).
 

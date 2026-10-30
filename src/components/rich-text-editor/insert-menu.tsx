@@ -1,3 +1,5 @@
+'use client';
+
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';

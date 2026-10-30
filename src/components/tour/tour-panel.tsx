@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Dialog, Heading } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

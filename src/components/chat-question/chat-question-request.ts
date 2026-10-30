@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isThenable } from '../../utils/is-thenable.js';

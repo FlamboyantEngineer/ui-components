@@ -1,3 +1,5 @@
+'use client';
+
 // Builds the React elements of a parsed Markdown tree, leaves first and without recursion
 // (specs/MARKDOWN.md).
 

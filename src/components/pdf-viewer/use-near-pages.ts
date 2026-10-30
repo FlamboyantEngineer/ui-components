@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 
 export interface NearPages {

@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type ReactNode } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

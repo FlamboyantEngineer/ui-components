@@ -1,3 +1,5 @@
+'use client';
+
 import { findMaximum } from '../../utils/find-maximum.js';
 import {
   createContext,

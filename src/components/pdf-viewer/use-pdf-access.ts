@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect } from 'react';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { createPageText } from './pdf-search.js';

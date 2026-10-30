@@ -1,3 +1,5 @@
+'use client';
+
 // Whether focus is inside a field, and the moment it leaves.
 
 import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';

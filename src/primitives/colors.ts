@@ -1,3 +1,5 @@
+'use client';
+
 // Colour fields, pickers, sliders, swatches and colour values.
 
 export {

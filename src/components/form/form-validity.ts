@@ -1,3 +1,5 @@
+'use client';
+
 // The verdict of a form's fields as they stand, for an action outside the submit, such as a Save
 // button, that must not reveal validation, move focus or submit just to ask.
 

@@ -1,3 +1,5 @@
+'use client';
+
 // Keeps portalled content in the tab order of the place it is declared: Tab moves into and out of
 // it as if it sat there, through focus guards in place and at both ends of the portal wrapper.
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useId, type ReactNode, type Ref } from 'react';
 import {
   CheckboxGroupStateContext,

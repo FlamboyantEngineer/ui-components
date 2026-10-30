@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useDragType } from '../../utils/use-drag-type.js';

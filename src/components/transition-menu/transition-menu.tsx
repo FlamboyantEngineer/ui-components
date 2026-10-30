@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';

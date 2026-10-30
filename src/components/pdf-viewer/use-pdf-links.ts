@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useMemo } from 'react';
 import { resolveDestination, type PdfTarget } from './pdf-destination.js';
 import type { PdfLinkService, PdfTextContent, PdfViewport } from './pdf-engine.js';

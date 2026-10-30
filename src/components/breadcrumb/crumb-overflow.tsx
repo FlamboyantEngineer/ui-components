@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo, type ReactNode, type RefCallback } from 'react';
 import { Breadcrumb as AriaBreadcrumb } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';

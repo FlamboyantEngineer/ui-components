@@ -1,3 +1,5 @@
+'use client';
+
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';

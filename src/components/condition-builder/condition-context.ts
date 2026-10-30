@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';

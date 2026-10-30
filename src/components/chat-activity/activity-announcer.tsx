@@ -1,3 +1,5 @@
+'use client';
+
 // A polite, throttled live region that the activity parts announce their changes through.
 
 import { useEffect, useRef, useState } from 'react';

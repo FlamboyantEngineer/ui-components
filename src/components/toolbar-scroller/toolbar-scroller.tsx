@@ -1,3 +1,5 @@
+'use client';
+
 import { Fragment, useRef, type FocusEvent, type ReactNode } from 'react';
 import { Toolbar, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

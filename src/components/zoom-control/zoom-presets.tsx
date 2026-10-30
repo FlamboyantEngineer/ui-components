@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';

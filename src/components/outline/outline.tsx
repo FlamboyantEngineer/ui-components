@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

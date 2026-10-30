@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { clamp } from '../../utils/clamp.js';

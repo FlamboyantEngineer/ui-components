@@ -1,3 +1,5 @@
+'use client';
+
 // Keeps keyboard focus in a list of removable items when the item whose remove button was pressed
 // leaves the list. Shared by File Upload's listed files and Chat Attachment List.
 

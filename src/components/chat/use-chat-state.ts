@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useMemo, useRef, useState, type RefCallback, type RefObject } from 'react';
 
 /** What the composer edits instead of a new message: one of the reader's messages, or a queued one. */

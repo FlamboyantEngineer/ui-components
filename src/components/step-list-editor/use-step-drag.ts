@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type HTMLAttributes, type RefObject } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import { useItemDrag } from '../../utils/use-item-drag.js';

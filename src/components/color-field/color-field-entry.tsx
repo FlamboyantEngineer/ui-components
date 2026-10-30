@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState } from 'react';
 import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';

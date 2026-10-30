@@ -1,3 +1,5 @@
+'use client';
+
 import { DragHandleGlyph, MoreVerticalGlyph } from '../../core/glyphs.js';
 import { useEditorEventCallback } from '@handlewithcare/react-prosemirror';
 import { NodeSelection, TextSelection } from 'prosemirror-state';

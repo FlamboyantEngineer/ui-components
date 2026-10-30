@@ -1,3 +1,5 @@
+'use client';
+
 // Keeps the elements of a streaming document's finished blocks, so each chunk renders only the
 // blocks it changed (specs/MARKDOWN.md, UIC-MARKDOWN-2.12).
 

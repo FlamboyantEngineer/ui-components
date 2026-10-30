@@ -1,3 +1,5 @@
+'use client';
+
 // Filtering a tree by text: matching rows show with their ancestors, expanded to reveal them, and
 // with their own descendants.
 

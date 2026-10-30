@@ -1,3 +1,5 @@
+'use client';
+
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';

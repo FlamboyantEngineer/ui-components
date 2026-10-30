@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

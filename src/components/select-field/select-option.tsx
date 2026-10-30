@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Collection, Header, ListBoxItem, ListBoxSection } from '../../primitives/index.js';

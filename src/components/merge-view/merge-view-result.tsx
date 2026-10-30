@@ -1,3 +1,5 @@
+'use client';
+
 import { memo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';

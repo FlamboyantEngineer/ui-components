@@ -1,3 +1,5 @@
+'use client';
+
 // Focus targets a caller names (`initialFocus`, `finalFocus`) and returning focus to one when a
 // focus-managing container leaves the page. Shared by Modal and FocusScope.
 

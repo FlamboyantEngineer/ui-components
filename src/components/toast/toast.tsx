@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import {
   useCallback,

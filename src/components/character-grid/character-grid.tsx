@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { GridList, GridListHeader, GridListItem, GridListSection } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

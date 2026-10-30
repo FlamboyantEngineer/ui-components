@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, type KeyboardEvent, type RefObject } from 'react';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { pdfZoomLevels, type PdfZoom } from './pdf-zoom.js';

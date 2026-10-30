@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
 import { useSubmission, type Submitter } from './use-submission.js';

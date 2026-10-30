@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useRef, type FocusEvent, type RefObject } from 'react';
 import { notificationListHooks as hooks } from './notification-row.js';
 

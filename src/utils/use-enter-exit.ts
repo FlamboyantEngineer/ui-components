@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 

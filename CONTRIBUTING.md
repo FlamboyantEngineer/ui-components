@@ -45,6 +45,7 @@ Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, str
 
 - **No styles in source.** No stylesheet imports and no styling dependency (CSS-in-JS, utility frameworks, component kits). Literal class names are hook classes only.
 - **Functional inline styles only:** positions, measured sizes, layout tracks, layering and interaction locks, plus documented `--ui-*` custom properties for measured values. Colours, spacing, borders, fonts and other visual properties belong in the host stylesheet.
+- **Client boundaries.** A module that needs the browser runtime of React starts with `'use client'`, and every other module, entry points included, has no directive ([specs/SERVER-COMPONENTS.md](specs/SERVER-COMPONENTS.md)). `npm run check:client-boundaries` enforces it, and `--fix` adds the directives. `npm run check:server-components` builds, serves and hydrates the packed library in a Next.js consumer.
 - **No direct browser storage.** Persisted state goes through the `UiProvider` storage adapter.
 - **Neutral wording.** Code, comments, docs, specs, labs, fixtures, tests and package metadata never name a host application or its domain vocabulary. `npm run check:references` scans every authored file and path against an encoded denylist in `scripts/reference-denylist.json`. To add a term, append the output of `node scripts/check-references.mjs --encode '<regex>'`.
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type ReactNode } from 'react';
 import { VisuallyHidden as AriaVisuallyHidden, useFocusWithin } from '../../primitives/index.js';
 import type { FocusEventProps } from '../../core/events.js';

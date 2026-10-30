@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import { GridList, GridListItem, type Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';

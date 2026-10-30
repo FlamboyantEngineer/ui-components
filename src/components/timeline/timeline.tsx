@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type Ref } from 'react';
 import { getLocalTimeZone, today as todayIn, useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

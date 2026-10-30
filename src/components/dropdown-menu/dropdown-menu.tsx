@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, MoreGlyph } from '../../core/glyphs.js';
 import { useContext, type ReactNode } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';

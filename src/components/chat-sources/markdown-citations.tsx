@@ -1,3 +1,5 @@
+'use client';
+
 // A Markdown node override that turns `[n]` markers in text into citations (specs/CHAT-SOURCES.md,
 // UIC-MARKDOWN-2.8).
 

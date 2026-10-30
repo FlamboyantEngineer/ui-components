@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { PreviewTrigger } from '../../primitives/index.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';

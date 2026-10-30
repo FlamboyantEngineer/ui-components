@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type ReactNode } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';

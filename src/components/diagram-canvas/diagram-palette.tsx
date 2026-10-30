@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useMemo, type HTMLAttributes, type RefObject } from 'react';
 import { useDrag, useDrop } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';

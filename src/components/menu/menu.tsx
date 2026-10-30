@@ -1,3 +1,5 @@
+'use client';
+
 import { cloneElement, createContext, useContext, type ReactElement, type ReactNode } from 'react';
 import {
   Autocomplete,

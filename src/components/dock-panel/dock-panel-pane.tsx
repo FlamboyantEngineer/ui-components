@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, type ReactNode, type Ref } from 'react';
 import { pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';

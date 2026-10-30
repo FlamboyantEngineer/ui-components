@@ -1,3 +1,5 @@
+'use client';
+
 import { StarGlyph } from '../../core/glyphs.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';

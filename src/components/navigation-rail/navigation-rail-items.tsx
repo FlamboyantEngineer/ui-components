@@ -1,3 +1,5 @@
+'use client';
+
 // The sections, links and groups a navigation rail lists.
 
 import { useContext, useId, useState, type JSX, type ReactNode } from 'react';

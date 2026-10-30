@@ -1,3 +1,5 @@
+'use client';
+
 import { DeleteGlyph, UndoGlyph } from '../../core/glyphs.js';
 import { useId, useState, type PointerEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';

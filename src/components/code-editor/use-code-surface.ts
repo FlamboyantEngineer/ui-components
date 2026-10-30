@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useLayoutEffect, useMemo, useRef } from 'react';
 import { splitDataAttributes } from '../../core/hooks.js';
 import { mergeRefs } from '../../utils/merge-props.js';

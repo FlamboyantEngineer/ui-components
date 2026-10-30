@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useSyncExternalStore } from 'react';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

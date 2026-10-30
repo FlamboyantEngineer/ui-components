@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, type KeyboardEvent } from 'react';
 import { Group, Input, NumberField as AriaNumberField } from '../../primitives/index.js';
 import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';

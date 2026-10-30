@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type ReactNode, type Ref } from 'react';
 import {
   FocusScope,

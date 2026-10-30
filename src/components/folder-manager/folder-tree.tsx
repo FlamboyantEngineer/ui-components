@@ -1,3 +1,5 @@
+'use client';
+
 import { FolderGlyph } from '../../core/glyphs.js';
 import { useCallback, useRef, type KeyboardEvent } from 'react';
 import type { Key, Selection } from '../../core/props.js';

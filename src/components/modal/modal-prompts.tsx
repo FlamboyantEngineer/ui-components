@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type {

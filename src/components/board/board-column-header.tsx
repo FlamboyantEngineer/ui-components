@@ -1,3 +1,5 @@
+'use client';
+
 import { DragHandleGlyph } from '../../core/glyphs.js';
 import {
   useRef,

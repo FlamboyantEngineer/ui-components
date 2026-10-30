@@ -1,3 +1,5 @@
+'use client';
+
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';

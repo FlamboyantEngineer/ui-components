@@ -1,3 +1,5 @@
+'use client';
+
 import { usePersistentState } from '../../core/provider.js';
 import type {
   ChatEffortOption,

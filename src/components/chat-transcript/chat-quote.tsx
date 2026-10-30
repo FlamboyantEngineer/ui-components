@@ -1,3 +1,5 @@
+'use client';
+
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { PressEvent } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

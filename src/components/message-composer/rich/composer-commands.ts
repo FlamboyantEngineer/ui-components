@@ -1,3 +1,5 @@
+'use client';
+
 // Editing commands, Markdown-style shortcuts and plain-text paste of the rich composer.
 
 import { reactKeys } from '@handlewithcare/react-prosemirror';

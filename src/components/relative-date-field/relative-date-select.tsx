@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import {

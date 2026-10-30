@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { listenPointerRelease } from '../../utils/pointer-drag.js';
 import {

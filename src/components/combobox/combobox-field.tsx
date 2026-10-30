@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import {
   useContext,

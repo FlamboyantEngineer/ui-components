@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, Ref } from 'react';
 import {

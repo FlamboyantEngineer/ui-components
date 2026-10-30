@@ -1,3 +1,5 @@
+'use client';
+
 // Renaming a tab in place: a text field laid over the tab; Enter or leaving the field renames the
 // tab when the name is valid, and Escape keeps the old name.
 

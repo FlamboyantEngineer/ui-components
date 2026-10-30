@@ -1,3 +1,5 @@
+'use client';
+
 import type { Ref } from 'react';
 import type { TreeItemData } from '../tree/tree.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';

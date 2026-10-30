@@ -1,3 +1,5 @@
+'use client';
+
 // A mode the reader turns on and off among the composer's controls, such as planning before acting
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-8).
 

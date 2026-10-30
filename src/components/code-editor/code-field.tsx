@@ -1,3 +1,5 @@
+'use client';
+
 import { useDeferredValue, useMemo } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';

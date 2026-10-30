@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState, type PointerEvent } from 'react';
 import type { Key } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

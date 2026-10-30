@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import type { BoardColumn, BoardLane, BoardProps } from './board.js';

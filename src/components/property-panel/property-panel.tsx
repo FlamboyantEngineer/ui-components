@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo, type ReactNode } from 'react';
 import { DisclosureGroup } from '../../primitives/index.js';
 import type { ExpansionProps } from '../../core/events.js';

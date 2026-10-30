@@ -1,3 +1,5 @@
+'use client';
+
 // Breadcrumbs, tabs and disclosures.
 
 export {

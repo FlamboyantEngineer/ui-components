@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type ReactNode, type Ref } from 'react';
 import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';

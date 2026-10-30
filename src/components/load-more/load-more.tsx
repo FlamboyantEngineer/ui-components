@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

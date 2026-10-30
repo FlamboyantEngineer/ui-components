@@ -1,3 +1,5 @@
+'use client';
+
 // Focus containment, restoration and programmatic focus movement.
 
 export { Focusable } from 'react-aria-components';

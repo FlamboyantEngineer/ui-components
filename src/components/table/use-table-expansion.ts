@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type ReactNode } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
