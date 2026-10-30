@@ -490,4 +490,26 @@ test.describe('Rich Text Editor lab', () => {
       formatToolbar(page, 'lockable').getByRole('button', { name: 'Insert' }),
     ).toBeDisabled();
   });
+
+  test('UIC-RICH-TEXT-EDITOR-4.3 submits the document as JSON with its form', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const form = page.locator('form').filter({ has: editor(page, 'form') });
+    const submittedText = async () => {
+      await form.getByRole('button', { name: 'Submit' }).click();
+      const json = (await output(page, 'form').textContent()) ?? '';
+      const document = JSON.parse(json) as { content: { content: { text: string }[] }[] };
+      return document.content.map((block) => block.content.map((run) => run.text).join(''));
+    };
+    expect(await submittedText()).toEqual(['Pick the pears on Friday.']);
+    await content(page, 'form').click();
+    await pressEnd(page);
+    await page.keyboard.type(' Early.');
+    expect(await submittedText()).toEqual(['Pick the pears on Friday. Early.']);
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(content(page, 'form')).toHaveText('Pick the pears on Friday.');
+    expect(await submittedText()).toEqual(['Pick the pears on Friday.']);
+  });
 });

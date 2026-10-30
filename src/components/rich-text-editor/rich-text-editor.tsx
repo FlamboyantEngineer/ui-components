@@ -23,6 +23,23 @@ export interface RichTextEditorProps extends FieldInputProps<RichTextDocument> {
 }
 
 /**
+ * The document in its form, under the field's `name`: a hidden input holding the document's JSON,
+ * which `JSON.parse` turns back into the value. It reads the field's value, so it keeps no copy.
+ */
+function DocumentFormValue({
+  name,
+  value,
+  isDisabled,
+}: {
+  name: string;
+  value: RichTextDocument;
+  isDisabled: boolean;
+}) {
+  const json = useMemo(() => JSON.stringify(value), [value]);
+  return <input type="hidden" name={name} value={json} disabled={isDisabled} />;
+}
+
+/**
  * A field for formatted text: headings, lists, tasks, quotes, code, links and inline marks, with
  * undo history, Markdown-style shortcuts as you type and keyboard shortcuts. The value is the
  * document as JSON. Its toolbar and floating chrome drive it through `useRichTextController`.
@@ -57,14 +74,23 @@ export function RichTextEditor(props: RichTextEditorProps) {
       commitOnBlur
     >
       {(control) => (
-        <EditorSurface
-          control={control}
-          editor={editor}
-          placeholder={rest.placeholder}
-          toolbar={rest.toolbar}
-        >
-          {rest.children}
-        </EditorSurface>
+        <>
+          <EditorSurface
+            control={control}
+            editor={editor}
+            placeholder={rest.placeholder}
+            toolbar={rest.toolbar}
+          >
+            {rest.children}
+          </EditorSurface>
+          {rest.name ? (
+            <DocumentFormValue
+              name={rest.name}
+              value={fieldControl.state.value}
+              isDisabled={state.isDisabled}
+            />
+          ) : null}
+        </>
       )}
     </Field>
   );

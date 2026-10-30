@@ -118,6 +118,39 @@ function Extras() {
   );
 }
 
+function Form() {
+  const [entries, setEntries] = useState('none');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setEntries(
+          [...data.entries()].map(([name, entry]) => `${name}=${String(entry)}`).join(' '),
+        );
+      }}
+    >
+      <RelativeDateField
+        label="Follow-up"
+        name="follow-up"
+        defaultValue="2026-04-21"
+        getNow={getNow}
+      />
+      <RelativeDateField
+        label="Period"
+        name="period"
+        valueKind="date-range"
+        defaultValue={{ start: '2026-04-13', end: '2026-04-20' }}
+        getNow={getNow}
+      />
+      <button type="submit">Submit</button> <button type="reset">Reset</button>
+      <p>
+        Form: <output data-lab-output="Form">{entries}</output>
+      </p>
+    </form>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -173,6 +206,12 @@ mountLab(
       description="A calendar beside the presets, caller-named and computed presets, relative ranges and bounds."
     >
       <Extras />
+    </LabSection>
+    <LabSection
+      title="Form"
+      description="Named fields submit with their form: a date as YYYY-MM-DD and a range as an ISO 8601 interval, start/end. Reset puts the first values back."
+    >
+      <Form />
     </LabSection>
   </>,
 );

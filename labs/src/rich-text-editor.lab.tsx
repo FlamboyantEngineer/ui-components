@@ -8,6 +8,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   ControlledEditor,
   CustomSchemaEditor,
+  FormEditor,
   FullEditor,
   LockedChromeEditor,
   LongDocumentEditor,
@@ -63,6 +64,12 @@ mountLab(
     </LabSection>
     <LabSection title="Controlled value">
       <ControlledEditor />
+    </LabSection>
+    <LabSection
+      title="Form"
+      description="A named editor submits its document as JSON with the form, which JSON.parse turns back into the value. Reset puts the first note back."
+    >
+      <FormEditor />
     </LabSection>
     <LabSection
       title="Long document"

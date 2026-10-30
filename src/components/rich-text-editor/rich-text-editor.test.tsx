@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -491,6 +491,89 @@ describe('RichTextEditor', () => {
       'aria-label',
       'Summary',
     );
+  });
+  describe('UIC-RICH-TEXT-EDITOR-4.3 form value', () => {
+    function submitted(name: string) {
+      const form = screen.getByRole<HTMLFormElement>('form', { name: 'Plan' });
+      const entry = new FormData(form).get(name);
+      return typeof entry === 'string' ? (JSON.parse(entry) as RichTextDocument) : entry;
+    }
+
+    it('submits the document as JSON under its name, following edits, undo, restore and reset', async () => {
+      const user = userEvent.setup();
+      render(
+        <form aria-label="Plan">
+          <RichTextEditor label="Notes" name="notes" committedValue={note} defaultValue={note}>
+            <ViewProbe />
+          </RichTextEditor>
+          <button type="reset">Reset</button>
+        </form>,
+      );
+      expect(submitted('notes')).toEqual(note);
+      selectRange(11);
+      await user.keyboard(' now');
+      expect(submitted('notes')).toEqual({
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Pick pears now' }] }],
+      });
+      await user.keyboard('{Control>}z{/Control}');
+      expect(submitted('notes')).toEqual(note);
+      await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+      await user.click(screen.getByRole('button', { name: 'Restore Notes' }));
+      expect(submitted('notes')).toEqual(note);
+      selectRange(11);
+      await user.keyboard('!');
+      await user.click(screen.getByRole('button', { name: 'Reset' }));
+      await waitFor(() => expect(submitted('notes')).toEqual(note));
+    });
+
+    it('keeps the structure of every block and mark', () => {
+      render(
+        <form aria-label="Plan">
+          <RichTextEditor label="Notes" name="notes" defaultValue={sampleDocument} />
+        </form>,
+      );
+      expect(submitted('notes')).toEqual(sampleDocument);
+    });
+
+    it('follows a value set from outside', async () => {
+      const user = userEvent.setup();
+      const other: RichTextDocument = {
+        type: 'doc',
+        content: [
+          { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Figs' }] },
+        ],
+      };
+      function Controlled() {
+        const [value, setValue] = useState(note);
+        return (
+          <form aria-label="Plan">
+            <RichTextEditor label="Notes" name="notes" value={value} onChange={setValue} />
+            <button type="button" onClick={() => setValue(other)}>
+              Replace
+            </button>
+          </form>
+        );
+      }
+      render(<Controlled />);
+      await user.click(screen.getByRole('button', { name: 'Replace' }));
+      expect(submitted('notes')).toEqual(other);
+    });
+
+    it('submits a read-only editor and leaves out a disabled or unnamed one', () => {
+      render(
+        <form aria-label="Plan">
+          <RichTextEditor label="Notes" name="notes" defaultValue={note} isReadOnly />
+          <RichTextEditor label="Draft" name="draft" defaultValue={note} isDisabled />
+          <fieldset disabled>
+            <RichTextEditor label="Summary" name="summary" defaultValue={note} />
+          </fieldset>
+          <RichTextEditor label="Scratch" defaultValue={note} />
+        </form>,
+      );
+      const form = screen.getByRole<HTMLFormElement>('form', { name: 'Plan' });
+      expect([...new FormData(form).keys()]).toEqual(['notes']);
+    });
   });
 });
 

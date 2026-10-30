@@ -112,6 +112,13 @@ When the value changes to a document other than the one shown (a controlled chan
 Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/rich-text-editor.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
+### UIC-RICH-TEXT-EDITOR-4.3 - Form value
+
+With `name`, the editor shall submit its document with its form through a hidden input under that name holding the document's JSON (UIC-RICH-TEXT-EDITOR-1.3), which `JSON.parse` turns back into the same document with every block, attribute and mark. The input reads the field's value, keeping no copy of the document, and follows every edit, controlled change, undo, restore, clear and native form reset (UIC-FIELD-2.6); an empty editor submits its empty document. A read-only editor submits its document; a disabled one, or one inside a disabled `<fieldset>`, submits nothing, and an editor without `name` adds no entry.
+
+Implementation: `src/components/rich-text-editor/rich-text-editor.tsx`
+Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+
 ## UIC-RICH-TEXT-EDITOR-5 - Commands and controller
 
 ### UIC-RICH-TEXT-EDITOR-5.1 - Commands as data

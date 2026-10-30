@@ -161,6 +161,25 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
 }
 
 /**
+ * The value in its form, under the field's `name`: a hidden input holding the date or date and
+ * time, or a range as an ISO 8601 interval (`start/end`), empty while there is none.
+ */
+function FormValue({
+  name,
+  value,
+  isDisabled,
+}: {
+  name: string | undefined;
+  value: RelativeDateValue | null;
+  isDisabled: boolean;
+}) {
+  if (!name) return null;
+  const text =
+    value === null || typeof value === 'string' ? (value ?? '') : `${value.start}/${value.end}`;
+  return <input type="hidden" name={name} value={text} disabled={isDisabled} />;
+}
+
+/**
  * A field that sets a date, an instant or a range of dates from relative presets (React Aria
  * `Select`), and with `showCalendar` from a calendar beside them: the trigger reads the value
  * relative to now, such as `Tomorrow` or `3 days ago`, and a preview after it gives the absolute
@@ -233,6 +252,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
             }
           />
           {text && value ? <Preview value={value} absolute={text.absolute} /> : null}
+          <FormValue name={props.name} value={value} isDisabled={state.isDisabled} />
         </>
       )}
     </Field>
