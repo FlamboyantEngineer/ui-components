@@ -1,3 +1,4 @@
+import { RestoreGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
@@ -22,7 +23,7 @@ export function FieldRestoreButton({ label, className, ...rest }: FieldRestoreBu
     <Button
       {...rest}
       {...hooks.root({ className, props: rest })}
-      icon="restore"
+      icon={RestoreGlyph}
       label={strings.restoreValue(label)}
       preventFocusOnPress
     />

@@ -1,3 +1,4 @@
+import { CalendarGlyph } from '../../core/glyphs.js';
 import {
   formatIsoDate,
   now,
@@ -180,7 +181,7 @@ function Segments({ slot }: { slot?: 'start' | 'end' }) {
 function CalendarButton() {
   return (
     <AriaButton className={hooks.slotClass('button')}>
-      <Glyph name="calendar" />
+      <Glyph icon={CalendarGlyph} />
     </AriaButton>
   );
 }

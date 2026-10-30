@@ -1,3 +1,4 @@
+import { UsersGlyph } from '../../core/glyphs.js';
 // The controls above a version history: the filters and the compare action.
 
 import type { Key } from '../../core/props.js';
@@ -43,7 +44,7 @@ function PersonFilter({
       label={strings.versionsBy(filter.person)}
       variant="ghost"
       size="sm"
-      icon="users"
+      icon={UsersGlyph}
       className={hooks.slotClass('person')}
       items={items}
       selectionMode="single"

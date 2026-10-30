@@ -1,3 +1,4 @@
+import { BellGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
@@ -62,7 +63,7 @@ export function NotificationCenter({
   );
   const bell = (
     <Button
-      icon="bell"
+      icon={BellGlyph}
       label={strings.notificationsWithCount(unread)}
       className={hooks.slotClass('trigger')}
     />

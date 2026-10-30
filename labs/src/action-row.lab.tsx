@@ -1,3 +1,13 @@
+import {
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  ExpandGlyph,
+  HelpGlyph,
+  SearchGlyph,
+  SortAscendingGlyph,
+  UploadGlyph,
+} from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { ActionRow, type ActionRowAction } from '../../src/components/action-row/action-row.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -10,7 +20,7 @@ function actionsFor(state: (typeof states)[number]): ActionRowAction[] {
   return [
     {
       verb: 'custom',
-      icon: 'expand',
+      icon: ExpandGlyph,
       label: 'Full screen',
       isSelected: state === 'selected',
       onPress: noop,
@@ -35,17 +45,17 @@ function MoreMenu() {
             label: 'More actions',
             onAction: (key) => setLast(String(key)),
             items: [
-              { id: 'rename', label: 'Rename', icon: 'edit', shortcut: 'F2' },
+              { id: 'rename', label: 'Rename', icon: EditGlyph, shortcut: 'F2' },
               { id: 'duplicate', label: 'Duplicate' },
-              { id: 'export', label: 'Export', icon: 'upload', description: 'As PDF' },
+              { id: 'export', label: 'Export', icon: UploadGlyph, description: 'As PDF' },
               { id: 'share', label: 'Share', isDisabled: true },
               { type: 'separator', id: 'rule' },
-              { id: 'delete', label: 'Delete', icon: 'delete', tone: 'danger' },
+              { id: 'delete', label: 'Delete', icon: DeleteGlyph, tone: 'danger' },
             ],
           },
           {
             verb: 'custom',
-            icon: 'sort-ascending',
+            icon: SortAscendingGlyph,
             label: 'Sort',
             onAction: (key) => setLast(`sort ${String(key)}`),
             items: [
@@ -83,7 +93,7 @@ function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
         aria-label={`File actions, ${width}`}
         lead={<span>Report.pdf</span>}
         actions={[
-          { verb: 'custom', icon: 'copy', label: 'Duplicate', onPress: press('duplicate') },
+          { verb: 'custom', icon: CopyGlyph, label: 'Duplicate', onPress: press('duplicate') },
           { verb: 'add', label: 'Add note', onPress: press('add') },
           { verb: 'refresh', onPress: press('refresh') },
           { verb: 'edit', onPress: press('edit') },
@@ -159,11 +169,11 @@ mountLab(
             { verb: 'save', onPress: noop },
             { verb: 'delete', onPress: noop },
             { verb: 'edit', onPress: noop },
-            { verb: 'custom', icon: 'help', label: 'Help', onPress: noop },
+            { verb: 'custom', icon: HelpGlyph, label: 'Help', onPress: noop },
             { verb: 'more', onPress: noop },
             { verb: 'refresh', onPress: noop },
             { verb: 'add', onPress: noop },
-            { verb: 'custom', icon: 'search', label: 'Search', onPress: noop },
+            { verb: 'custom', icon: SearchGlyph, label: 'Search', onPress: noop },
           ]}
         />
       </div>

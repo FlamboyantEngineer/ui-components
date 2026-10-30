@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useId, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -58,7 +59,7 @@ function OutlineLinks({ direction, node, links, controller, onFollow }: OutlineL
             {isRemovable ? (
               <Button
                 className={hooks.slotClass('outline-remove')}
-                icon="close"
+                icon={CloseGlyph}
                 label={strings.diagramRemoveConnection(node.label, link.other.label)}
                 size="xs"
                 variant="ghost"

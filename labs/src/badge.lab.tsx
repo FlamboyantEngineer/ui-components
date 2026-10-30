@@ -1,3 +1,10 @@
+import {
+  CheckGlyph,
+  ChevronDownGlyph,
+  InfoGlyph,
+  MoreGlyph,
+  UsersGlyph,
+} from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Badge, type BadgeTone } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
@@ -22,7 +29,7 @@ function OverlayDemo() {
         style={{ position: 'relative', display: 'inline-flex' }}
       >
         <Button
-          icon="info"
+          icon={InfoGlyph}
           label={`Messages, ${unread} unread`}
           variant="secondary"
           onPress={() => setUnread((value) => value + 1)}
@@ -33,7 +40,7 @@ function OverlayDemo() {
         data-lab-overlay-host="mentions"
         style={{ position: 'relative', display: 'inline-flex' }}
       >
-        <Button icon="more" label="Mentions, 3 new" variant="secondary" />
+        <Button icon={MoreGlyph} label="Mentions, 3 new" variant="secondary" />
         <Badge count={3} tone="info" size="sm" placement="overlay" aria-hidden />
       </span>
       <p>
@@ -49,7 +56,7 @@ function ZeroDemo() {
     <div data-lab-demo="zero">
       <span data-lab-overlay-host="inbox" style={{ position: 'relative', display: 'inline-flex' }}>
         <Button
-          icon="check"
+          icon={CheckGlyph}
           label={`Mark one read, ${unread} unread`}
           variant="secondary"
           onPress={() => setUnread((value) => Math.max(0, value - 1))}
@@ -64,7 +71,7 @@ function ZeroDemo() {
         />
       </span>{' '}
       <span data-lab-overlay-host="dot" style={{ position: 'relative', display: 'inline-flex' }}>
-        <Button icon="users" label="Team, new activity" variant="secondary" />
+        <Button icon={UsersGlyph} label="Team, new activity" variant="secondary" />
         <Badge variant="dot" tone="success" placement="overlay" aria-label="New activity" />
       </span>
       <p>
@@ -145,8 +152,8 @@ mountLab(
             variant={icon === 'status and start' ? 'status' : 'subtle'}
             announce={false}
             tone={tone}
-            startIcon={icon === 'end' ? undefined : 'check'}
-            endIcon={icon === 'end' || icon === 'both' ? 'chevron-down' : undefined}
+            startIcon={icon === 'end' ? undefined : CheckGlyph}
+            endIcon={icon === 'end' || icon === 'both' ? ChevronDownGlyph : undefined}
           >
             {labels[tone]}
           </Badge>

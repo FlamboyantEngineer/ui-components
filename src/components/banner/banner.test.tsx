@@ -1,3 +1,4 @@
+import { RestoreGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef } from 'react';
@@ -55,7 +56,7 @@ describe('Banner', () => {
       expect(icon).toHaveAttribute('data-glyph', glyph);
       expectHooksMatchSpec(container, 'BANNER', { slots: ['icon'] });
     }
-    rerender(<Banner tone="info" icon="restore" description="Note" />);
+    rerender(<Banner tone="info" icon={RestoreGlyph} description="Note" />);
     expect(container.querySelector('.ui-banner__icon')).toHaveAttribute('data-glyph', 'restore');
     rerender(
       <Banner tone="info" icon={<svg role="img" aria-label="Custom glyph" />} description="Note" />,

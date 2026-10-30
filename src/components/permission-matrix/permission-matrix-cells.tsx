@@ -1,3 +1,4 @@
+import { LockGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Checkbox } from '../checkbox/checkbox.js';
@@ -37,7 +38,7 @@ export function PermissionRoleHeader({ role }: { role: PermissionMatrixRole }) {
       <span {...hooks.slot('role-label')}>{role.label}</span>
       {isReadOnly ? (
         <>
-          <Glyph name="lock" className={hooks.slotClass('lock')} />
+          <Glyph icon={LockGlyph} className={hooks.slotClass('lock')} />
           <VisuallyHidden elementType="span">{`, ${strings.readOnlyRole}`}</VisuallyHidden>
         </>
       ) : null}

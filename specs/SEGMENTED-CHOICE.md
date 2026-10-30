@@ -13,7 +13,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ### UIC-SEGMENTED-CHOICE-1.2 - Icons
 
-An option's `icon` (a built-in glyph name or any icon node) shall render as a decorative [Icon](ICON.md) in the `ui-segmented-choice__icon` slot before the label, sized with the segment. The segment's name stays its label alone.
+An option's `icon` (an imported icon component or rendered element) shall render as a decorative [Icon](ICON.md) in the `ui-segmented-choice__icon` slot before the label, sized with the segment. The segment's name stays its label alone.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`

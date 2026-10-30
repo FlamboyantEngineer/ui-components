@@ -66,7 +66,7 @@ export function ChatSteps({
       label={label}
       glyph={
         first ? (
-          <Glyph name={toolCallKindGlyphs[first.kind]} className={hooks.slotClass('glyph')} />
+          <Glyph icon={toolCallKindGlyphs[first.kind]} className={hooks.slotClass('glyph')} />
         ) : null
       }
       data={{ running: isRunning }}

@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).
 
@@ -47,7 +48,7 @@ export interface MessageComposerMenuItem {
   label: string;
   /** A note after the label, such as what the item does or where it comes from. */
   description?: string | undefined;
-  /** Drawn before the label: a built-in glyph name or any icon node. */
+  /** Drawn before the label: an imported icon component or rendered element. */
   icon?: IconSource;
   /** A keyboard chord shown at the end of the row, for a shortcut the host handles itself. */
   shortcut?: ShortcutProps['chord'] | undefined;
@@ -167,7 +168,7 @@ export function MessageComposerMenuButton({
           {...props}
           ref={handback.ref}
           className={mergeClassNames(hooks.slotClass('menu-button'), props.className)}
-          icon="plus"
+          icon={PlusGlyph}
           label={strings.composerMenu}
           size="sm"
           isDisabled={isDisabled}

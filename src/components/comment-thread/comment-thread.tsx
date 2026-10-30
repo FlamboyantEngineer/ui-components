@@ -1,3 +1,4 @@
+import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
 import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -119,7 +120,7 @@ function CommentThreadHeader({
         <Button
           variant="ghost"
           size="sm"
-          startIcon={isResolved ? 'undo' : 'check'}
+          startIcon={isResolved ? UndoGlyph : CheckGlyph}
           className={hooks.slotClass('resolve')}
           onPress={onToggle}
         >

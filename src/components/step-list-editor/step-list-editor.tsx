@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { useMemo, useRef, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -177,7 +178,7 @@ export function StepListEditor({
         <Button
           variant="ghost"
           size="sm"
-          startIcon="plus"
+          startIcon={PlusGlyph}
           className={hooks.slotClass('add')}
           onPress={() => actions.insertAt(steps.length)}
         >

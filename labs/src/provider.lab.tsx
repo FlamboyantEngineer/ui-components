@@ -1,9 +1,11 @@
 import { Glyph, UiProvider, useUiStrings } from '../../src/core/provider.js';
-import { glyphNames, type GlyphComponentProps } from '../../src/core/glyphs.js';
+import type { GlyphComponentProps } from '../../src/core/glyphs.js';
+import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 import * as languages from '../../src/core/locales/index.js';
 import type { UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
+import { StorageSwitch } from './provider-storage-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -185,10 +187,10 @@ mountLab(
         axes={{ glyph: glyphNames, source: ['default', 'replaced'] }}
         render={({ glyph, source }) =>
           source === 'default' ? (
-            <Glyph name={glyph} />
+            <Glyph icon={glyphCatalog[glyph]} />
           ) : (
             <UiProvider icons={replacedGlyphs}>
-              <Glyph name={glyph} />
+              <Glyph icon={glyphCatalog[glyph]} />
             </UiProvider>
           )
         }
@@ -212,6 +214,12 @@ mountLab(
       description="Press N anywhere to add a note. The shortcut reads the provider's overlay presence and pauses while the menu, its submenu, the select or the calendar is open; the tooltip does not pause it."
     >
       <PausedShortcut />
+    </LabSection>
+    <LabSection
+      title="Storage"
+      description="Switch adapters and keys without remounting the counter. Each stored value stays with its own adapter and key."
+    >
+      <StorageSwitch />
     </LabSection>
   </>,
 );

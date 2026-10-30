@@ -1,3 +1,4 @@
+import { EyeDropperGlyph } from '../../core/glyphs.js';
 import { useContext } from 'react';
 import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -42,7 +43,7 @@ export function ColorFieldEyeDropper() {
   return (
     <Button
       className={hooks.slotClass('eye-dropper')}
-      icon="eye-dropper"
+      icon={EyeDropperGlyph}
       label={strings.pickScreenColor}
       variant="ghost"
       size="sm"

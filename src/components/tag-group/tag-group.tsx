@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
 import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primitives/index.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
@@ -118,7 +119,7 @@ export function Tag({ id, children, tone, textValue, className, ...rest }: TagPr
           {allowsRemoving && !isDisabled ? (
             <Button
               slot="remove"
-              icon="close"
+              icon={CloseGlyph}
               label={strings.remove}
               variant="bare"
               size="xs"

@@ -1,9 +1,9 @@
+import { LinkGlyph, UnlinkGlyph } from '../../core/glyphs.js';
 import { useState, type FormEvent } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 import { Button } from '../button/button.js';
-
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { SelectField } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
@@ -106,7 +106,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
       }}
     >
       <Button
-        icon="link"
+        icon={LinkGlyph}
         label={strings.link}
         tooltip={strings.link}
         size="sm"
@@ -129,7 +129,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
           {controller.link === null ? null : (
             <Button
               size="sm"
-              startIcon="unlink"
+              startIcon={UnlinkGlyph}
               onPress={() => finish(controller.run({ type: 'set-link', href: null }))}
             >
               {strings.removeLink}

@@ -15,7 +15,7 @@ export interface TransferListItem {
   label: string;
   /** Secondary text below the title. */
   description?: string | undefined;
-  /** A built-in glyph name or icon node before the title. */
+  /** An imported icon component or rendered element before the title. */
   icon?: IconSource | undefined;
 }
 

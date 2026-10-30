@@ -1,3 +1,4 @@
+import { SuccessGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
@@ -21,7 +22,7 @@ const items: NotificationItem[] = [
   {
     id: 'n2',
     title: 'Import finished',
-    icon: 'success',
+    icon: SuccessGlyph,
     time: new Date(2026, 4, 20, 8, 0).toISOString(),
     isRead: true,
   },

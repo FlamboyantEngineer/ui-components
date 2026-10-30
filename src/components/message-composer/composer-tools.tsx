@@ -1,3 +1,11 @@
+import {
+  AttachGlyph,
+  CloseGlyph,
+  EmojiGlyph,
+  SaveGlyph,
+  SendGlyph,
+  StopGlyph,
+} from '../../core/glyphs.js';
 import { useLayoutEffect } from 'react';
 import { FileTrigger } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
@@ -40,7 +48,7 @@ export function MessageComposerAttachButton(props: MessageComposerAttachButtonPr
       <Button
         {...props}
         className={mergeClassNames(hooks.slotClass('attach'), props.className)}
-        icon="attach"
+        icon={AttachGlyph}
         label={strings.attachFiles}
         size="sm"
         isDisabled={composer.isDisabled}
@@ -70,7 +78,7 @@ export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProp
         {...props}
         ref={handback.ref}
         className={mergeClassNames(hooks.slotClass('emoji'), props.className)}
-        icon="emoji"
+        icon={EmojiGlyph}
         label={strings.insertEmoji}
         size="sm"
         isDisabled={isDisabled}
@@ -85,7 +93,7 @@ function CancelButton({ composer }: { composer: ComposerControlsValue }) {
   return (
     <Button
       className={hooks.slotClass('cancel')}
-      icon="close"
+      icon={CloseGlyph}
       label={strings.cancel}
       variant="secondary"
       isDisabled={composer.isDisabled}
@@ -114,7 +122,7 @@ export function ComposerSendControl({
       <Button
         {...props}
         className={mergeClassNames(hooks.slotClass('action'), props.className)}
-        icon={mode}
+        icon={{ send: SendGlyph, stop: StopGlyph, save: SaveGlyph }[mode]}
         label={strings[mode]}
         variant={isStop ? 'secondary' : 'primary'}
         shortcut={isStop ? undefined : model.keys.submit[0]}

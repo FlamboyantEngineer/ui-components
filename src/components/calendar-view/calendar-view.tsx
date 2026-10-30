@@ -1,3 +1,4 @@
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 // A month or week calendar of events: a toolbar to move between periods and views, then a grid of
 // days the reader navigates by keyboard, holding all-day bars, timed events and `+n more` lists.
 
@@ -7,7 +8,6 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { CalendarMonth } from './calendar-month.js';
 import { CalendarWeek } from './calendar-week.js';
@@ -96,14 +96,14 @@ function CalendarToolbar(props: {
         {strings.today}
       </Button>
       <Button
-        icon={isRightToLeft ? 'chevron-right' : 'chevron-left'}
+        icon={isRightToLeft ? ChevronRightGlyph : ChevronLeftGlyph}
         size="sm"
         label={strings.previousRange(mode)}
         className={hooks.slotClass('previous')}
         onPress={() => onMove(-1)}
       />
       <Button
-        icon={isRightToLeft ? 'chevron-left' : 'chevron-right'}
+        icon={isRightToLeft ? ChevronLeftGlyph : ChevronRightGlyph}
         size="sm"
         label={strings.nextRange(mode)}
         className={hooks.slotClass('next')}

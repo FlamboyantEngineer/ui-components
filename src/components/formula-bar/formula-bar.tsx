@@ -1,3 +1,4 @@
+import { CheckGlyph, CloseGlyph, FormulaGlyph } from '../../core/glyphs.js';
 import {
   useId,
   useLayoutEffect,
@@ -149,7 +150,7 @@ function FormulaBarButtons(props: {
   return (
     <>
       <Button
-        icon="close"
+        icon={CloseGlyph}
         size="sm"
         label={strings.cancel}
         className={hooks.slotClass('cancel')}
@@ -157,7 +158,7 @@ function FormulaBarButtons(props: {
         onPress={props.onCancel}
       />
       <Button
-        icon="check"
+        icon={CheckGlyph}
         size="sm"
         label={strings.confirm}
         className={hooks.slotClass('confirm')}
@@ -228,7 +229,7 @@ export function FormulaBar({
         onCancel={cancel}
         onConfirm={commit}
       />
-      <Glyph name="formula" className={hooks.slotClass('glyph')} />
+      <Glyph icon={FormulaGlyph} className={hooks.slotClass('glyph')} />
       <CodeEditor
         variant="surface"
         className={hooks.slotClass('editor')}

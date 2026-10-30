@@ -5,7 +5,7 @@ import { Icon, toIconProps, type IconSize, type IconSource } from '../icon/icon.
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
 export interface IconLabelProps extends BaseProps, Pick<HTMLAttributes<HTMLSpanElement>, 'hidden'> {
-  /** A built-in glyph name or any icon node. The icon is decorative; the label names it. */
+  /** An imported icon component or rendered element. The icon is decorative; the label names it. */
   icon: IconSource;
   /** The text after the icon. */
   label: ReactNode;

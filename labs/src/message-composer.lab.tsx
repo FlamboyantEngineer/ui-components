@@ -1,3 +1,4 @@
+import { ListTaskGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -92,7 +93,7 @@ function StateSample({
         withMenu ? (
           <>
             <MessageComposerSelect label="Approval" options={labApprovalModes} />
-            <MessageComposerToggle label="Plan" icon="list-task" defaultSelected />
+            <MessageComposerToggle label="Plan" icon={ListTaskGlyph} defaultSelected />
           </>
         ) : withParts ? (
           <Button size="sm" variant="ghost">

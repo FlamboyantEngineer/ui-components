@@ -1,3 +1,4 @@
+import { SearchGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, type KeyboardEvent } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
@@ -97,7 +98,7 @@ export function QueryField({
         />
         {onSubmit ? (
           <Button
-            icon="search"
+            icon={SearchGlyph}
             size="sm"
             label={strings.runQuery}
             className={hooks.slotClass('submit')}

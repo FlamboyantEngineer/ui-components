@@ -1,3 +1,4 @@
+import { SearchGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
@@ -80,7 +81,7 @@ export function ChatSearchToggle({ search }: { search: ChatSearchModel }) {
   return (
     <Button
       ref={search.toggleRef}
-      icon="search"
+      icon={SearchGlyph}
       label={strings.chatSearch}
       size="sm"
       aria-expanded={search.isOpen}

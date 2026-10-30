@@ -1,6 +1,6 @@
 # Labs
 
-Every component has a static lab page that renders its full variant, size and state matrix. Labs are debugging and review pages, not package API, but hosts may serve the built labs from the package.
+Every component has a static lab page that renders its full variant, size and state matrix. Labs are debugging and review pages, not package API, and hosts may serve them from a separate release archive.
 
 ## UIC-LABS-1 - Pages
 
@@ -13,11 +13,11 @@ Every page shall declare an embedded icon so browsers do not request a missing `
 Implementation: `scripts/build-labs.mjs`, `scripts/serve-labs.mjs`, `scripts/lib/labs.mjs`, `scripts/check-labs.mjs`
 Verification: `e2e/lab-harness.spec.ts`, `test/serve-labs.test.ts`
 
-### UIC-LABS-1.2 - Shipped in the package
+### UIC-LABS-1.2 - Standalone release archive
 
-The published package shall contain the lab pages, `labs/reference.css` and the built bundles, including the PDF engine, its worker, its upstream license and both sample documents, so a host can serve them without building this repository or fetching lab dependencies from another server. Package checks shall verify the engine and worker byte for byte against the installed `pdfjs-dist` dependency and reject modified copies.
+`npm run pack:labs`, after `npm run build:labs`, shall create `ui-components-labs-<version>.tgz` containing the lab pages, `labs/reference.css` and the built bundles, including the PDF engine, its worker, its upstream license and both sample documents, so a host can serve them without building this repository or fetching lab dependencies from another server. Archive checks shall verify the engine and worker byte for byte against the installed `pdfjs-dist` dependency and reject modified copies. The library package shall exclude labs and their assets; the release attaches the library tarball and standalone lab archive.
 
-Implementation: `package.json`, `scripts/check-package.mjs`, `scripts/check-references.mjs`
+Implementation: `package.json`, `scripts/pack-labs.mjs`, `scripts/check-package.mjs`, `scripts/check-references.mjs`
 Verification: `test/package.test.ts`, `test/check-references.test.ts`
 
 ### UIC-LABS-1.3 - Local start
@@ -29,7 +29,7 @@ Verification: `test/start-labs.test.ts`
 
 ### UIC-LABS-1.4 - Prepared from a Git branch
 
-Installing a branch or commit of this repository as an npm Git dependency shall give a working package without committed build output: the `prepare` script builds the compiled entry points, their declarations and `labs/build/reference.css`, and builds no lab bundles, so the install skips their cost. The lab pages of such an install therefore have no bundles to run; a release tag ships them (UIC-LABS-1.2). `npm run check:git-install` installs a commit into a clean consumer with `npm install` and again with its lockfile through `npm ci`, each with an empty npm cache, then imports and renders a component, type-checks against the declarations and checks the reference stylesheet.
+Installing a branch or commit shall run `prepare` (`npm run build`) to compile the library entry points and declarations. It shall not build or install labs. `npm run check:git-install` verifies a clean consumer through `npm install` and `npm ci`, checks rendering and public declarations, and rejects installed lab files.
 
 Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/check-git-install.mjs`
 Verification: `test/package.test.ts`
@@ -91,7 +91,7 @@ Verification: `e2e/lab-harness.spec.ts`, `e2e/accessibility.spec.ts`
 
 ### UIC-LABS-3.3 - Browser fixture
 
-The Playwright fixture `lab` shall open a lab with a given stylesheet and theme, wait until it has rendered and its stylesheet has loaded, fail the test on any page or console error, and run axe on the lab content.
+The Playwright fixture `lab` shall open a lab with a given stylesheet and theme, wait until it has rendered and its stylesheet has loaded, fail the test on any page or console error, and run axe on the lab content after finite running animations settle. Infinite animations such as spinners shall not delay the scan.
 
 Implementation: `e2e/fixtures.ts`
 Verification: `e2e/lab-harness.spec.ts`

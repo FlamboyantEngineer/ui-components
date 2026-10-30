@@ -1,3 +1,4 @@
+import { CheckGlyph } from '../../core/glyphs.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { CSSProperties } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -44,7 +45,7 @@ interface CellProps {
 function RelationMark({ label }: { label: string }) {
   return (
     <span {...hooks.slot('mark')}>
-      <Glyph name="check" />
+      <Glyph icon={CheckGlyph} />
       <VisuallyHidden elementType="span">{label}</VisuallyHidden>
     </span>
   );

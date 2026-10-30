@@ -1,3 +1,4 @@
+import { HelpGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
@@ -16,10 +17,10 @@ const square = (
 );
 
 const symbols: SelectFieldOption[] = [
-  { id: 'info', label: 'Info', icon: 'info' },
-  { id: 'warning', label: 'Warning', icon: 'warning' },
-  { id: 'success', label: 'Success', icon: 'success' },
-  { id: 'help', label: 'Help', icon: 'help' },
+  { id: 'info', label: 'Info', icon: InfoGlyph },
+  { id: 'warning', label: 'Warning', icon: WarningGlyph },
+  { id: 'success', label: 'Success', icon: SuccessGlyph },
+  { id: 'help', label: 'Help', icon: HelpGlyph },
   { id: 'square', label: 'Square', icon: square },
 ];
 

@@ -1,3 +1,15 @@
+import {
+  CalendarGlyph,
+  FolderGlyph,
+  HelpGlyph,
+  InfoGlyph,
+  LinkGlyph,
+  LockGlyph,
+  RefreshGlyph,
+  SearchGlyph,
+  UsersGlyph,
+  WarningGlyph,
+} from '../../src/core/glyphs.js';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import type { Key } from '../../src/core/props.js';
@@ -61,13 +73,13 @@ function MatrixPanel({ position, state }: { position: Position; state: string })
       defaultSize={position === 'bottom' ? 120 : 220}
       minSize={position === 'bottom' ? 80 : 160}
     >
-      <DockPanelPane id="outline" label={`Outline (${name})`} icon="folder" title="Outline">
+      <DockPanelPane id="outline" label={`Outline (${name})`} icon={FolderGlyph} title="Outline">
         <p>Introduction, Methods, Results.</p>
       </DockPanelPane>
-      <DockPanelPane id="people" label={`People (${name})`} icon="users" count={3}>
+      <DockPanelPane id="people" label={`People (${name})`} icon={UsersGlyph} count={3}>
         <p>{people.join(', ')}</p>
       </DockPanelPane>
-      <DockPanelPane id="locked" label={`Locked (${name})`} icon="lock" isDisabled>
+      <DockPanelPane id="locked" label={`Locked (${name})`} icon={LockGlyph} isDisabled>
         <p>Unavailable</p>
       </DockPanelPane>
     </DockPanel>
@@ -81,7 +93,7 @@ function InspectorPanes() {
       key="properties"
       id="properties"
       label="Properties"
-      icon="info"
+      icon={InfoGlyph}
       title="Report.pdf"
       actions={[
         { verb: 'edit', onPress: () => {} },
@@ -101,22 +113,28 @@ function InspectorPanes() {
         <dd>18</dd>
       </dl>
     </DockPanelPane>,
-    <DockPanelPane key="search" id="search" label="Search" icon="search" title="Search">
+    <DockPanelPane key="search" id="search" label="Search" icon={SearchGlyph} title="Search">
       <label>
         Find <input data-lab-input="search" />
       </label>
     </DockPanelPane>,
-    <DockPanelPane key="people" id="people" label="People" icon="users" count={3}>
+    <DockPanelPane key="people" id="people" label="People" icon={UsersGlyph} count={3}>
       <ul>
         {people.map((person) => (
           <li key={person}>{person}</li>
         ))}
       </ul>
     </DockPanelPane>,
-    <DockPanelPane key="activity" id="activity" label="Activity" icon="refresh" count={128}>
+    <DockPanelPane key="activity" id="activity" label="Activity" icon={RefreshGlyph} count={128}>
       <p>128 changes this week.</p>
     </DockPanelPane>,
-    <DockPanelPane key="permissions" id="permissions" label="Permissions" icon="lock" isDisabled>
+    <DockPanelPane
+      key="permissions"
+      id="permissions"
+      label="Permissions"
+      icon={LockGlyph}
+      isDisabled
+    >
       <p>Only owners see permissions.</p>
     </DockPanelPane>,
   ];
@@ -190,14 +208,14 @@ function Controlled() {
             size={size}
             onSizeChange={setSize}
           >
-            <DockPanelPane id="outline" label="Outline" icon="folder" title="Outline">
+            <DockPanelPane id="outline" label="Outline" icon={FolderGlyph} title="Outline">
               <ol>
                 <li>Scope</li>
                 <li>Requirement 12</li>
                 <li>Verification</li>
               </ol>
             </DockPanelPane>
-            <DockPanelPane id="history" label="History" icon="calendar" title="History">
+            <DockPanelPane id="history" label="History" icon={CalendarGlyph} title="History">
               <p>Edited yesterday by Kenji Watanabe.</p>
             </DockPanelPane>
           </DockPanel>
@@ -221,14 +239,14 @@ function Console() {
           <DockPanelPane
             id="problems"
             label="Problems"
-            icon="warning"
+            icon={WarningGlyph}
             count={12}
             title="12 problems"
             actions={[{ verb: 'refresh', onPress: () => {} }]}
           >
             <p>Line 4: unknown unit “km/hr”.</p>
           </DockPanelPane>
-          <DockPanelPane id="output" label="Output" icon="info">
+          <DockPanelPane id="output" label="Output" icon={InfoGlyph}>
             <p>Build finished in 2.1 s.</p>
           </DockPanelPane>
         </DockPanel>
@@ -248,10 +266,10 @@ function Narrow() {
       data-lab-frame="narrow"
       panel={
         <DockPanel label="Helper" overlayBelow={600}>
-          <DockPanelPane id="tips" label="Tips" icon="help" title="Tips">
+          <DockPanelPane id="tips" label="Tips" icon={HelpGlyph} title="Tips">
             <p>Press a launcher to open its pane in a drawer.</p>
           </DockPanelPane>
-          <DockPanelPane id="links" label="Links" icon="link" count={2}>
+          <DockPanelPane id="links" label="Links" icon={LinkGlyph} count={2}>
             <p>Two linked records.</p>
           </DockPanelPane>
         </DockPanel>

@@ -1,3 +1,4 @@
+import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode, Ref } from 'react';
 import { Checkbox as AriaCheckbox } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -55,7 +56,7 @@ export function Checkbox({ children, size = 'md', className, ...rest }: Checkbox
           <span {...hooks.slot('box')} aria-hidden="true">
             {isIndeterminate || isSelected ? (
               <Glyph
-                name={isIndeterminate ? 'minus' : 'check'}
+                icon={isIndeterminate ? MinusGlyph : CheckGlyph}
                 className={hooks.slotClass('glyph')}
               />
             ) : null}

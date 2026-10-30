@@ -1,5 +1,7 @@
 // Which offered files a file upload accepts: by type, size, count and the caller's own check.
 
+import { isThenable } from '../../utils/is-thenable.js';
+
 /** Why an offered file was refused. */
 export type FileRejectionReason = 'type' | 'size' | 'min-size' | 'count' | 'invalid';
 
@@ -67,10 +69,6 @@ function checkFileRules(file: File, rules: FileRules): FileRejectionReason | nul
   return null;
 }
 
-function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
-  return typeof (value as Promise<T> | null)?.then === 'function';
-}
-
 /**
  * Sorts offered files into the accepted ones and the refusals, keeping their order: a file must
  * match the types, fit the size limits, pass `validate` and fit within `maxFiles`, where `held`
@@ -95,7 +93,7 @@ export function partitionFiles(
       const reason = checkFileRules(file, rules);
       if (reason) partition.rejections.push({ file, reason });
       const verdict = reason ? null : rules.validate?.(file, [...partition.accepted]);
-      if (isPromise(verdict)) {
+      if (isThenable(verdict)) {
         return verdict.then((message) => {
           admit(file, message);
           return sortFrom(at + 1);

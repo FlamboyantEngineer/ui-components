@@ -1,3 +1,4 @@
+import { ChevronLeftGlyph, ChevronRightGlyph, PauseGlyph, PlayGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -54,7 +55,7 @@ export function CarouselControls({
       {rotation ? (
         <Button
           ref={rotation.rotationRef}
-          icon={rotation.isStopped ? 'play' : 'pause'}
+          icon={rotation.isStopped ? PlayGlyph : PauseGlyph}
           label={rotation.isStopped ? strings.startSlideRotation : strings.stopSlideRotation}
           size="sm"
           className={hooks.slotClass('rotation')}
@@ -63,7 +64,7 @@ export function CarouselControls({
         />
       ) : null}
       <Button
-        icon={isRtl ? 'chevron-right' : 'chevron-left'}
+        icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
         label={strings.previousSlide}
         size="sm"
         className={hooks.slotClass('previous')}
@@ -73,7 +74,7 @@ export function CarouselControls({
         onPress={onPrevious}
       />
       <Button
-        icon={isRtl ? 'chevron-left' : 'chevron-right'}
+        icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
         label={strings.nextSlide}
         size="sm"
         className={hooks.slotClass('next')}

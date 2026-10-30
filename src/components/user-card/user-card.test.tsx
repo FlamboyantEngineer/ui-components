@@ -1,3 +1,4 @@
+import { EditGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { Avatar } from '../avatar/avatar.js';
 import { UserCard, UserCardTrigger } from './user-card.js';
 
 const actions = [
-  { id: 'message', label: 'Message', icon: 'edit' as const },
+  { id: 'message', label: 'Message', icon: EditGlyph },
   { id: 'profile', label: 'View profile' },
 ];
 

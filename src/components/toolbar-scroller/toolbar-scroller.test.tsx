@@ -1,3 +1,4 @@
+import { CopyGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -518,7 +519,7 @@ describe('ToolbarScroller', () => {
             { id: 'bold', label: 'Bold' },
             { id: 'italic', label: 'Italic' },
             { id: 'underline', label: 'Underline' },
-            { id: 'link', label: 'Link', icon: 'copy', priority: 1, onAction: onLink },
+            { id: 'link', label: 'Link', icon: CopyGlyph, priority: 1, onAction: onLink },
             { id: 'clear', label: 'Clear', isDisabled: true },
           ]}
           renderItem={(item) => <button type="button">{item.label}</button>}

@@ -1,3 +1,4 @@
+import { CopyGlyph, DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
 import { VisuallyHidden } from '../../src/components/visually-hidden/visually-hidden.js';
@@ -10,13 +11,13 @@ function RecipeActions({ name }: { name: string }) {
   return (
     <li data-lab-recipe={name}>
       <span>{name}</span>{' '}
-      <Button variant="ghost" size="sm" content="parts" startIcon="edit">
+      <Button variant="ghost" size="sm" content="parts" startIcon={EditGlyph}>
         <VisuallyHidden elementType="span">Edit {name}</VisuallyHidden>
       </Button>
-      <Button variant="ghost" size="sm" content="parts" startIcon="copy">
+      <Button variant="ghost" size="sm" content="parts" startIcon={CopyGlyph}>
         <VisuallyHidden elementType="span">Duplicate {name}</VisuallyHidden>
       </Button>
-      <Button variant="ghost" size="sm" content="parts" startIcon="delete">
+      <Button variant="ghost" size="sm" content="parts" startIcon={DeleteGlyph}>
         <VisuallyHidden elementType="span">Delete {name}</VisuallyHidden>
       </Button>
     </li>

@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
@@ -118,7 +119,7 @@ function FilePreview({
   if (url) return <img {...hooks.slot('file-preview')} src={url} alt="" />;
   return (
     <Icon
-      glyph={getFileGlyph(item.type ?? item.file?.type)}
+      icon={getFileGlyph(item.type ?? item.file?.type)}
       className={hooks.slotClass('file-icon')}
     />
   );
@@ -151,7 +152,7 @@ function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadR
       {onRemove ? (
         <Button
           className={hooks.slotClass('file-remove')}
-          icon="close"
+          icon={CloseGlyph}
           label={strings.removeItem(item.name)}
           size="sm"
           isDisabled={options.isDisabled}

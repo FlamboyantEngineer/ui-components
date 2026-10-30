@@ -50,7 +50,7 @@ Verification: `src/components/empty-state/empty-state.test.tsx`
 
 ### UIC-EMPTY-STATE-2.1 - Illustration
 
-`icon` shall draw a built-in glyph name or any node (an illustration, an image) as a decorative [Icon](ICON.md) in the `ui-empty-state__icon` slot, before the heading and hidden from assistive technology, so the text alone carries the message. A `loading` empty state draws its spinner in place of the icon, and an empty value draws no slot.
+`icon` shall draw a imported icon component or rendered element (an illustration, an image) as a decorative [Icon](ICON.md) in the `ui-empty-state__icon` slot, before the heading and hidden from assistive technology, so the text alone carries the message. A `loading` empty state draws its spinner in place of the icon, and an empty value draws no slot.
 
 Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference/empty-state.css`
 Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-state.spec.ts`

@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
@@ -8,7 +9,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxItem } from './combobox.js';
 
 const fruit: ComboboxItem[] = [
-  { id: 'apple', label: 'Apple', description: 'Crisp', icon: 'plus' },
+  { id: 'apple', label: 'Apple', description: 'Crisp', icon: PlusGlyph },
   { id: 'banana', label: 'Banana' },
   {
     id: 'citrus',

@@ -1,3 +1,4 @@
+import { StarGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
@@ -133,7 +134,7 @@ describe('ChatModelPicker', () => {
 
   it('UIC-CHAT-MODEL-PICKER-1.2 UIC-CHAT-MODEL-PICKER-2.2 draws a model icon on the trigger and in the menu', async () => {
     const { user } = renderPicker({
-      models: models.map((model) => (model.id === 'swift' ? { ...model, icon: 'star' } : model)),
+      models: models.map((model) => (model.id === 'swift' ? { ...model, icon: StarGlyph } : model)),
     });
     expect(trigger().querySelector('.ui-button__start-icon [data-glyph="star"]')).not.toBeNull();
     const menu = await openMenu(user);
@@ -155,7 +156,7 @@ describe('ChatModelPicker', () => {
     expect(trigger()).toHaveAccessibleName('Model: Swift, Low effort');
     expect(trigger().querySelector('[data-glyph="sparkles"]')).not.toBeNull();
     expectHooksMatchSpec(container, 'CHAT-MODEL-PICKER', { slots: [] });
-    rerender(picker([{ id: 'deep', label: 'Deep', icon: 'star' }]));
+    rerender(picker([{ id: 'deep', label: 'Deep', icon: StarGlyph }]));
     expect(trigger().querySelector('[data-glyph="star"]')).not.toBeNull();
     rerender(<MessageComposer isDisabled endControls={<ChatModelPicker models={models} />} />);
     expect(trigger()).toBeDisabled();

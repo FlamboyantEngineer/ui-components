@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -31,7 +32,7 @@ const area: CSSProperties = {
 function FileMenu({ size, onAction }: { size?: MenuSize; onAction: (key: Key) => void }) {
   return (
     <Menu size={size} onAction={onAction}>
-      <MenuItem id="open" icon="plus" shortcut="Ctrl+O">
+      <MenuItem id="open" icon={PlusGlyph} shortcut="Ctrl+O">
         Open
       </MenuItem>
       <MenuItem id="rename">Rename</MenuItem>

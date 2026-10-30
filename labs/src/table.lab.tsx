@@ -1,7 +1,7 @@
+import { DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-
 import { Table, type TableProps } from '../../src/components/table/table.js';
 import { applyTableMove, type TableColumn } from '../../src/components/table/table-rows.js';
 import { sortTableRows } from '../../src/components/table/table-sort.js';
@@ -119,13 +119,13 @@ function Selection() {
         renderRowActions={(row) => (
           <>
             <Button
-              icon="edit"
+              icon={EditGlyph}
               label={`Edit ${row.name}`}
               size="sm"
               onPress={() => setAction(`Edit ${row.name}`)}
             />
             <Button
-              icon="delete"
+              icon={DeleteGlyph}
               label={`Delete ${row.name}`}
               size="sm"
               onPress={() => setAction(`Delete ${row.name}`)}

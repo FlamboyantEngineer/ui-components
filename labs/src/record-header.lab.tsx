@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { ActionRow } from '../../src/components/action-row/action-row.js';
 import { Attribution } from '../../src/components/attribution/attribution.js';
@@ -50,7 +51,7 @@ function MatrixCell({ parts, title }: { parts: MatrixParts; title: string }) {
   return (
     <RecordHeader
       identifier="REQ-12"
-      icon="folder"
+      icon={FolderGlyph}
       title={text}
       onTitleChange={title === 'editable' ? setText : undefined}
       headingLevel={3}
@@ -85,7 +86,7 @@ function RequirementHeader() {
     <div data-lab-demo="requirement">
       <RecordHeader
         identifier="REQ-42"
-        icon="folder"
+        icon={FolderGlyph}
         title={title}
         onTitleChange={saveTitle}
         headingLevel={3}

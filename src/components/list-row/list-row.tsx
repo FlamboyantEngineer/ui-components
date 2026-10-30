@@ -38,7 +38,7 @@ export interface ListRowContentProps
   title: ReactNode;
   /** Secondary text below the title, such as a `MetaLine`. */
   meta?: ReactNode;
-  /** A built-in glyph name or icon node beside the title and meta, drawn through `IconLabel`. */
+  /** An imported icon component or rendered element beside the title and meta, drawn through `IconLabel`. */
   icon?: IconSource;
   /** Decorative leading media (an avatar, a thumbnail). Ignored when `icon` is set. */
   leading?: ReactNode;
@@ -210,7 +210,7 @@ export function ListRowContent({
   );
   return (
     <span {...rest} {...contentHooks.root({ className, props: rest })}>
-      {isEmptyNode(icon) ? (
+      {!icon ? (
         <>
           {media}
           {text}

@@ -1,3 +1,4 @@
+import { AudioGlyph, CalendarGlyph, UsersGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -25,14 +26,14 @@ function createMenu(add: MessageComposerMenuItem[], filterable = false) {
               id: 'calendar',
               label: 'Calendar',
               description: 'Shared schedule',
-              icon: 'calendar',
+              icon: CalendarGlyph,
               shortcut: 'Ctrl+Shift+K',
             },
             {
               id: 'people',
               label: 'People',
               description: 'Mention someone',
-              icon: 'users',
+              icon: UsersGlyph,
               items: [
                 {
                   id: 'maria',
@@ -104,7 +105,7 @@ describe('MessageComposer menu', () => {
           id: 'record',
           label: 'Record a voice note',
           description: 'Up to two minutes',
-          icon: 'audio',
+          icon: AudioGlyph,
           isDisabled: true,
           disabledReason: 'Allow the microphone first',
           onAction: onRecord,

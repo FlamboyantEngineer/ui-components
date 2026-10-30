@@ -1,3 +1,4 @@
+import { RefreshGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   ActivityFeed,
@@ -49,7 +50,7 @@ const events: ActivityFeedItem[] = [
   },
   {
     id: 'import',
-    icon: 'refresh',
+    icon: RefreshGlyph,
     action: 'Nightly import finished with 3 new records',
     time: '2026-04-19T02:00:00',
   },

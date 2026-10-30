@@ -1,8 +1,18 @@
+import {
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  MinusGlyph,
+  PlusGlyph,
+  RedoGlyph,
+  RefreshGlyph,
+  SaveGlyph,
+  UndoGlyph,
+} from '../../src/core/glyphs.js';
 // Cases of the layout lab for toolbar rows: overflow, pending rows and attached groups.
 
 import { useState, type CSSProperties } from 'react';
 import { Button } from '../../src/components/button/button.js';
-
 import {
   ToolbarRow,
   ToolbarRowGroup,
@@ -22,14 +32,14 @@ function KitchenTools({ name, overflow }: { name: string; overflow: ToolbarRowOv
   return (
     <ToolbarRow aria-label={name} overflow={overflow} justify="start" space="xs">
       <ToolbarRowGroup aria-label={`History, ${name}`} density="attached">
-        <Button icon="undo" label="Undo" size="sm" />
-        <Button icon="redo" label="Redo" size="sm" />
+        <Button icon={UndoGlyph} label="Undo" size="sm" />
+        <Button icon={RedoGlyph} label="Redo" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowSeparator />
       <ToolbarRowGroup aria-label={`Clipboard, ${name}`}>
-        <Button icon="copy" label="Copy" size="sm" />
-        <Button icon="edit" label="Edit" size="sm" />
-        <Button icon="delete" label="Delete" size="sm" />
+        <Button icon={CopyGlyph} label="Copy" size="sm" />
+        <Button icon={EditGlyph} label="Edit" size="sm" />
+        <Button icon={DeleteGlyph} label="Delete" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowSeparator />
       <ToolbarRowGroup aria-label={`Recipe, ${name}`}>
@@ -71,9 +81,9 @@ export function AttachedGroups() {
           justify="start"
         >
           <ToolbarRowGroup aria-label={`Zoom steps, ${density}, ${orientation}`} density={density}>
-            <Button icon="minus" label="Zoom out" size="sm" />
-            <Button icon="refresh" label="Reset zoom" size="sm" />
-            <Button icon="plus" label="Zoom in" size="sm" />
+            <Button icon={MinusGlyph} label="Zoom out" size="sm" />
+            <Button icon={RefreshGlyph} label="Reset zoom" size="sm" />
+            <Button icon={PlusGlyph} label="Zoom in" size="sm" />
           </ToolbarRowGroup>
         </ToolbarRow>
       )}
@@ -96,9 +106,9 @@ export function PendingToolbar() {
           justify="start"
           variant="surface"
         >
-          <Button icon="undo" label="Undo" size="sm" />
-          <Button icon="redo" label="Redo" size="sm" />
-          <Button icon="save" label="Save" size="sm" />
+          <Button icon={UndoGlyph} label="Undo" size="sm" />
+          <Button icon={RedoGlyph} label="Redo" size="sm" />
+          <Button icon={SaveGlyph} label="Save" size="sm" />
         </ToolbarRow>
         <p data-lab-output="editor">{isStarted ? 'Editor ready.' : 'Editor starting…'}</p>
       </div>

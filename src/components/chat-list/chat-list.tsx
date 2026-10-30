@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { GridList, useFilter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -116,7 +117,12 @@ function ListHeader({
         className={listHooks.slotClass('search')}
       />
       {onNew ? (
-        <Button size="sm" startIcon="plus" onPress={onNew} className={listHooks.slotClass('new')}>
+        <Button
+          size="sm"
+          startIcon={PlusGlyph}
+          onPress={onNew}
+          className={listHooks.slotClass('new')}
+        >
           {strings.newChat}
         </Button>
       ) : null}

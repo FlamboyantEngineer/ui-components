@@ -1,6 +1,6 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { filterBarHooks as hooks } from './filter-bar-hooks.js';
 import { FilterConditionFields } from './filter-editor.js';
@@ -58,7 +58,7 @@ export function FilterChip({
         </Popover>
       </PopoverTrigger>
       <Button
-        icon="close"
+        icon={CloseGlyph}
         size="sm"
         label={strings.removeFilter(joinFilterConditionText(text))}
         className={hooks.slotClass('chip-remove')}

@@ -1,3 +1,4 @@
+import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import { useId, type KeyboardEvent } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -90,7 +91,7 @@ export function Stepper({
       id={id}
       aria-labelledby={labelledBy ? `${id} ${labelledBy}` : undefined}
     >
-      <Glyph name={slot === 'decrement' ? 'minus' : 'plus'} />
+      <Glyph icon={slot === 'decrement' ? MinusGlyph : PlusGlyph} />
     </AriaButton>
   );
 }
@@ -137,7 +138,7 @@ export function NumberScrubber({
   });
   return (
     <span {...hooks.slot('scrubber')} aria-hidden="true" style={{ touchAction: 'none' }} {...drag}>
-      <Glyph name="scrub" />
+      <Glyph icon={ScrubGlyph} />
     </span>
   );
 }

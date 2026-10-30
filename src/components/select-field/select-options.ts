@@ -11,7 +11,7 @@ export interface SelectFieldOption {
   label: string;
   /** Secondary text on the option's row, also matched by the filter. */
   description?: string | undefined;
-  /** A built-in glyph name or icon node, shown on the row, in the trigger and on the chip. */
+  /** An imported icon component or rendered element, shown on the row, in the trigger and on the chip. */
   icon?: IconSource;
   isDisabled?: boolean | undefined;
 }

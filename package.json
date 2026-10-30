@@ -40,17 +40,12 @@
   "files": [
     "dist",
     "!dist/**/*.test.*",
-    "labs/*.html",
-    "labs/*.css",
-    "labs/reference",
-    "labs/build",
     "specs",
     "CHANGELOG.md"
   ],
   "scripts": {
     "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
-    "build:package": "npm run build && node scripts/build-labs.mjs --reference",
-    "prepare": "npm run build:package",
+    "prepare": "npm run build",
     "build:labs": "node scripts/build-labs.mjs",
     "labs": "node scripts/start-labs.mjs",
     "lint": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js . --max-warnings=0",
@@ -71,7 +66,8 @@
     "new:lab": "node scripts/new-lab.mjs",
     "changeset": "changeset",
     "release": "node scripts/release.mjs",
-    "check:structure": "node scripts/check-structure.mjs"
+    "check:structure": "node scripts/check-structure.mjs",
+    "pack:labs": "node scripts/pack-labs.mjs"
   },
   "peerDependencies": {
     "@handlewithcare/react-prosemirror": "^3.2.11",

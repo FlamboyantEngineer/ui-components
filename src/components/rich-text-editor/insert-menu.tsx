@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
@@ -108,7 +109,7 @@ export function InsertMenuButton({ items, className, ...rest }: InsertMenuButton
       ref={focusReturn.ref}
       className={mergeClassNames(buttonHooks.className, className)}
       label={strings.insert}
-      icon="plus"
+      icon={PlusGlyph}
       iconOnly
       size="sm"
       isDisabled={!controller.isEditable}

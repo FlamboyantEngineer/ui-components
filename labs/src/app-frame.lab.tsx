@@ -1,3 +1,14 @@
+import {
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  FilterGlyph,
+  RedoGlyph,
+  RefreshGlyph,
+  SearchGlyph,
+  UndoGlyph,
+  UsersGlyph,
+} from '../../src/core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { AppFrame, AppFrameContent } from '../../src/components/app-frame/app-frame.js';
 import {
@@ -5,7 +16,6 @@ import {
   AppFrameBandContent,
 } from '../../src/components/app-frame/app-frame-band.js';
 import { Button } from '../../src/components/button/button.js';
-
 import { ToolbarRowGroup } from '../../src/components/layout/toolbar-row.js';
 import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
 import {
@@ -22,18 +32,18 @@ function Tools() {
   return (
     <>
       <ToolbarRowGroup aria-label="History">
-        <Button icon="undo" label="Undo" size="sm" />
-        <Button icon="redo" label="Redo" size="sm" />
+        <Button icon={UndoGlyph} label="Undo" size="sm" />
+        <Button icon={RedoGlyph} label="Redo" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowGroup aria-label="Edit" density="attached">
-        <Button icon="edit" label="Edit" size="sm" />
-        <Button icon="copy" label="Copy" size="sm" />
-        <Button icon="delete" label="Delete" size="sm" />
+        <Button icon={EditGlyph} label="Edit" size="sm" />
+        <Button icon={CopyGlyph} label="Copy" size="sm" />
+        <Button icon={DeleteGlyph} label="Delete" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowGroup aria-label="View">
-        <Button icon="search" label="Find" size="sm" />
-        <Button icon="filter" label="Filter" size="sm" />
-        <Button icon="refresh" label="Refresh" size="sm" />
+        <Button icon={SearchGlyph} label="Find" size="sm" />
+        <Button icon={FilterGlyph} label="Filter" size="sm" />
+        <Button icon={RefreshGlyph} label="Refresh" size="sm" />
       </ToolbarRowGroup>
     </>
   );
@@ -51,8 +61,8 @@ function RegionsCell({ label, rail, panels }: { label: string; rail: boolean; pa
           rail ? (
             <NavigationRail aria-label={`${label} navigation`} defaultCollapsed>
               <NavigationRailSection>
-                <NavigationRailItem label="Notes" href="#notes" icon="edit" isCurrent />
-                <NavigationRailItem label="People" href="#people" icon="users" />
+                <NavigationRailItem label="Notes" href="#notes" icon={EditGlyph} isCurrent />
+                <NavigationRailItem label="People" href="#people" icon={UsersGlyph} />
               </NavigationRailSection>
             </NavigationRail>
           ) : null

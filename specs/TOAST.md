@@ -82,7 +82,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-3.1 - Tones
 
-`tone` shall publish `data-tone` on the toast: `info` (the default; neutral news), `success` (the requested work finished), `warning` (it finished with a caveat, or something needs attention soon) or `danger` (it failed). The toast draws the tone's built-in glyph (`info`, `success`, `warning`, and `error` for `danger`), or the caller's `icon` (a glyph name or any icon node), as a decorative [Icon](ICON.md) in the `ui-toast__icon` slot.
+`tone` shall publish `data-tone` on the toast: `info` (the default; neutral news), `success` (the requested work finished), `warning` (it finished with a caveat, or something needs attention soon) or `danger` (it failed). The toast draws the tone's built-in glyph (`info`, `success`, `warning`, and `error` for `danger`), or the caller's `icon` (a icon component or rendered element), as a decorative [Icon](ICON.md) in the `ui-toast__icon` slot.
 
 Implementation: `src/components/toast/toast.tsx`, `src/components/banner/banner.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`

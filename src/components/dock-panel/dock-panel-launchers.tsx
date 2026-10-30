@@ -1,6 +1,12 @@
+import {
+  ChevronDoubleLeftGlyph,
+  ChevronDoubleRightGlyph,
+  ChevronDownGlyph,
+  ChevronUpGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import { useId, type Ref } from 'react';
 import { Toolbar, useLocale } from '../../primitives/index.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import type { Key, Placement } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
@@ -66,9 +72,10 @@ const tooltipPlacements: Readonly<Record<DockPanelPosition, Placement>> = {
 
 /** The toggle points the way the panel moves: toward its edge to collapse, away to expand. */
 function resolveToggleGlyph(position: DockPanelPosition, isExpanded: boolean, isRtl: boolean) {
-  if (position === 'bottom') return isExpanded ? 'chevron-down' : 'chevron-up';
+  if (position === 'bottom') return isExpanded ? ChevronDownGlyph : ChevronUpGlyph;
   const towardEnd = (position === 'end') === isExpanded;
-  const glyph: GlyphName = towardEnd !== isRtl ? 'chevron-double-right' : 'chevron-double-left';
+  const glyph: GlyphComponent =
+    towardEnd !== isRtl ? ChevronDoubleRightGlyph : ChevronDoubleLeftGlyph;
   return glyph;
 }
 

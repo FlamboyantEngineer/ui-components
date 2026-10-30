@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, type RefObject } from 'react';
@@ -39,7 +40,7 @@ function HostChat({
     <>
       <Button
         label="Add Ana"
-        icon="plus"
+        icon={PlusGlyph}
         onPress={() => handle.current?.insertToken(ana, { conversationId: props.conversationId })}
       />
       <TestChat

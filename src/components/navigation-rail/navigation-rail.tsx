@@ -1,3 +1,4 @@
+import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -123,7 +124,7 @@ function RailToggle({ isCollapsed, bodyId, onPress }: RailToggleProps) {
   return (
     <Button
       className={hooks.slotClass('toggle')}
-      icon={pointsLeft ? 'chevron-double-left' : 'chevron-double-right'}
+      icon={pointsLeft ? ChevronDoubleLeftGlyph : ChevronDoubleRightGlyph}
       label={label}
       tooltip={label}
       size="sm"

@@ -1,3 +1,4 @@
+import { InfoGlyph, SuccessGlyph, WarningGlyph } from '../../core/glyphs.js';
 import { useId, useRef, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -48,14 +49,14 @@ export type ConfirmOptions = Omit<
 const hooks = createHooks('modal', ['confirmation-icon', 'message']);
 
 const toneGlyphs: Partial<Record<ModalTone, IconSource>> = {
-  info: 'info',
-  success: 'success',
-  warning: 'warning',
+  info: InfoGlyph,
+  success: SuccessGlyph,
+  warning: WarningGlyph,
 };
 
 /** The title, led by the tone's glyph or the caller's icon. */
 function ConfirmTitle({ title, icon }: { title: ReactNode; icon: IconSource }) {
-  if (isEmptyNode(icon)) return title;
+  if (!icon) return title;
   return (
     <>
       <Icon {...toIconProps(icon)} className={hooks.slotClass('confirmation-icon')} /> {title}

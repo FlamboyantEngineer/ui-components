@@ -1,3 +1,4 @@
+import { CheckGlyph, ErrorGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import {
   Button as AriaButton,
@@ -73,7 +74,7 @@ const hooks = createHooks('steps', [
   'connector',
 ]);
 
-const statusGlyphs = { complete: 'check', error: 'error', skipped: 'minus' } as const;
+const statusGlyphs = { complete: CheckGlyph, error: ErrorGlyph, skipped: MinusGlyph } as const;
 
 /** The status of the step at `index`: its own, else read from where it sits against the current one. */
 function resolveStepStatus(item: StepsItem, index: number, currentIndex: number): StepsStatus {
@@ -88,7 +89,7 @@ function StepMarker({ status, index }: { status: StepsStatus; index: number }) {
   const glyph = status in statusGlyphs ? statusGlyphs[status as keyof typeof statusGlyphs] : null;
   return (
     <span {...hooks.slot('marker')} aria-hidden="true">
-      {glyph ? <Icon glyph={glyph} size="sm" /> : format.format(index + 1)}
+      {glyph ? <Icon icon={glyph} size="sm" /> : format.format(index + 1)}
     </span>
   );
 }

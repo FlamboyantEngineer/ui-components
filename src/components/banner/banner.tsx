@@ -1,5 +1,12 @@
+import {
+  CloseGlyph,
+  ErrorGlyph,
+  InfoGlyph,
+  SuccessGlyph,
+  WarningGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import { useEffect, useRef, type ReactNode, type Ref } from 'react';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -19,7 +26,7 @@ export interface BannerProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden
   description?: ReactNode;
   /** Controls for the reader's next step, after the message. */
   actions?: ReactNode;
-  /** A built-in glyph name or icon node. Omit for the tone's glyph; `null` draws none. */
+  /** An imported icon component or rendered element. Omit for the tone's glyph; `null` draws none. */
   icon?: IconSource;
   /** Draws a dismiss button that calls this once per activation. */
   onDismiss?: (() => void) | undefined;
@@ -49,12 +56,12 @@ const hooks = createHooks('banner', [
   'dismiss',
 ]);
 
-const toneGlyphs: Readonly<Record<Tone, GlyphName | null>> = {
+const toneGlyphs: Readonly<Record<Tone, GlyphComponent | null>> = {
   neutral: null,
-  info: 'info',
-  success: 'success',
-  warning: 'warning',
-  danger: 'error',
+  info: InfoGlyph,
+  success: SuccessGlyph,
+  warning: WarningGlyph,
+  danger: ErrorGlyph,
 };
 
 type BannerSlot = Parameters<typeof hooks.slot>[0];
@@ -75,7 +82,7 @@ function BannerPart({
 /** The decorative lead: a spinner while pending, else the icon, if any. */
 function BannerLead({ icon, isPending }: { icon: IconSource; isPending: boolean }) {
   if (isPending) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
-  if (isEmptyNode(icon)) return null;
+  if (!icon) return null;
   return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
 }
 
@@ -89,7 +96,7 @@ function BannerDismiss({
   const strings = useUiStrings();
   return (
     <Button
-      icon="close"
+      icon={CloseGlyph}
       label={label ?? strings.dismiss}
       size="sm"
       className={hooks.slotClass('dismiss')}
@@ -107,7 +114,7 @@ function useFocusOnMount(ref: { current: HTMLElement | null }, autoFocus: boolea
 }
 
 /** The built-in glyph that introduces a message of `tone`; none for `neutral`. */
-export function getToneGlyph(tone: Tone): GlyphName | null {
+export function getToneGlyph(tone: Tone): GlyphComponent | null {
   return toneGlyphs[tone];
 }
 

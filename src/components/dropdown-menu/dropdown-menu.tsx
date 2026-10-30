@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, MoreGlyph } from '../../core/glyphs.js';
 import { useContext, type ReactNode } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -6,7 +7,6 @@ import type { BaseProps, Placement } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
-
 import {
   Menu,
   MenuPopover,
@@ -91,12 +91,12 @@ function DropdownMenuTrigger({
       <Button
         {...props}
         variant={variant ?? 'ghost'}
-        icon={icon ?? 'more'}
+        icon={icon ?? MoreGlyph}
         label={typeof label === 'string' ? label : ''}
       />
     );
   }
-  const caret = <Glyph name="chevron-down" className={hooks.slotClass('caret')} />;
+  const caret = <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('caret')} />;
   return (
     <Button
       {...props}
@@ -156,7 +156,7 @@ function DropdownSplitButton({
       <MenuTrigger isOpen={isOpen} onOpenChange={setOpen}>
         <Button
           {...shared}
-          icon="chevron-down"
+          icon={ChevronDownGlyph}
           label={strings.moreOptions}
           className={hooks.slotClass('toggle')}
         />

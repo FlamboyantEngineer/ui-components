@@ -1,3 +1,4 @@
+import { EyeGlyph, EyeSlashGlyph } from '../../core/glyphs.js';
 import {
   useMemo,
   type AriaAttributes,
@@ -146,7 +147,7 @@ function RevealButton({ label, isRevealed, isDisabled, onChange }: RevealButtonP
   return (
     <Button
       className={hooks.slotClass('reveal')}
-      icon={isRevealed ? 'eye-slash' : 'eye'}
+      icon={isRevealed ? EyeSlashGlyph : EyeGlyph}
       label={strings.revealValue(label)}
       size="sm"
       isSelected={isRevealed}

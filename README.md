@@ -5,7 +5,7 @@ Unstyled, accessible React components that expose documented styling hooks for a
 - **Unstyled components.** Components load no CSS and require no CSS variables. Every component renders hook classes (`ui-<component>`, `ui-<component>__<slot>`) and data attributes (`data-variant`, `data-size`, `data-disabled`, …), with documented custom properties for measured values. The host page loads a stylesheet that styles those hooks. The standalone labs include their own reference stylesheets.
 - **Accessible behaviour** comes from [React Aria Components](https://react-spectrum.adobe.com/react-aria/components.html).
 - **Generic API.** Neutral names and props (`Button`, `variant`, `size`). Built-in glyphs default to [Heroicons](https://heroicons.com) and can be replaced per glyph.
-- **Static labs.** Every component has a lab page under `labs/` that shows its full variant, size and state matrix with a stylesheet picker. The built labs ship in the package so a host can serve them.
+- **Static labs.** Every component has a lab page under `labs/` that shows its full variant, size and state matrix with a stylesheet picker. The built labs ship as a separate release archive so a host can serve them.
 
 The library is preparing its initial `0.1.0` release. APIs and styling hooks are experimental until `1.0.0`; development changes are described in changesets without migration notices or deprecation periods. See [versioning](CONTRIBUTING.md#versioning).
 
@@ -30,7 +30,7 @@ Each release is a `v<version>` tag in this repository, on a commit that holds th
 
    The lockfile records the tag's commit. The tarball is also attached to the tag's GitHub Release.
 
-To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points, their declarations and `labs/build/reference.css`; the lab bundles are not built, so the lab pages of a branch install do not run. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
+To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points and their declarations. Runnable labs are a separate download: extract `ui-components-labs-<version>.tgz` and serve its `labs/` directory with a static HTTP server. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
 
 `react` and `react-dom` 19 are peer dependencies.
 
@@ -40,7 +40,12 @@ Import from the package root or from a component's own entry point, which keeps 
 
 ```tsx
 import { Button } from '@flamboyantengineer/ui-components/button';
+import { PlusGlyph } from '@flamboyantengineer/ui-components/core';
+
+<Button startIcon={PlusGlyph}>Add item</Button>;
 ```
+
+Icons accept imported components or rendered elements. Built-in glyph components honor `UiProvider` overrides; icons from other libraries can be passed directly.
 
 Then style the hooks in the host stylesheet:
 

@@ -1,3 +1,4 @@
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import {
   Button as AriaButton,
   CalendarMonthPicker,
@@ -37,7 +38,7 @@ function HeadingSelect({ unit, items, ...select }: HeadingSelectProps) {
     <Select {...select} {...hooks.slot('calendar-select', { unit })}>
       <AriaButton className={hooks.slotClass('calendar-select-button')}>
         <SelectValue />
-        <Glyph name="chevron-down" />
+        <Glyph icon={ChevronDownGlyph} />
       </AriaButton>
       <PopoverPresence />
       <Popover

@@ -1,3 +1,4 @@
+import { HelpGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -393,7 +394,7 @@ describe('Toast', () => {
     }
     queue.add({ title: 'Default tone' });
     queue.add({ title: 'Custom', icon: <svg role="img" aria-label="Custom glyph" /> });
-    queue.add({ title: 'Glyph', icon: 'help' });
+    queue.add({ title: 'Glyph', icon: HelpGlyph });
     render(<ToastList queue={queue} />);
     for (const tone of tones) {
       const toast = screen.getByRole('alertdialog', { name: `${tone} title` });

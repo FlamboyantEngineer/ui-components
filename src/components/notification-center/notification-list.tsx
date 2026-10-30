@@ -1,3 +1,4 @@
+import { BellGlyph } from '../../core/glyphs.js';
 import { useId, useRef, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -137,7 +138,7 @@ function ListEmptyState({ filter, isLoading }: { filter: NotificationFilter; isL
   return (
     <EmptyState
       size="sm"
-      icon="bell"
+      icon={BellGlyph}
       title={isUnread ? strings.noUnreadNotifications : strings.noNotifications}
       description={isUnread ? strings.unreadNotificationsEmpty : strings.notificationsEmpty}
       className={hooks.slotClass('empty')}

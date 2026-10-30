@@ -1,6 +1,12 @@
+import {
+  ErrorGlyph,
+  PendingGlyph,
+  SkippedGlyph,
+  SuccessGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import { useId, useState } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -28,11 +34,11 @@ const hooks = createHooks('chat-plan', [
 ]);
 
 /** The glyph of each settled or waiting status; a step in progress shows a spinner instead. */
-const statusGlyphs: Readonly<Record<Exclude<ChatPlanStepStatus, 'in-progress'>, GlyphName>> = {
-  pending: 'pending',
-  done: 'success',
-  failed: 'error',
-  skipped: 'skipped',
+const statusGlyphs: Readonly<Record<Exclude<ChatPlanStepStatus, 'in-progress'>, GlyphComponent>> = {
+  pending: PendingGlyph,
+  done: SuccessGlyph,
+  failed: ErrorGlyph,
+  skipped: SkippedGlyph,
 };
 
 /**
@@ -66,7 +72,7 @@ function ChatPlanItem({ step }: { step: ChatPlanStep }) {
       {status === 'in-progress' ? (
         <span {...hooks.slot('spinner')} aria-hidden="true" />
       ) : (
-        <Glyph name={statusGlyphs[status]} className={hooks.slotClass('glyph')} />
+        <Glyph icon={statusGlyphs[status]} className={hooks.slotClass('glyph')} />
       )}
       <span {...hooks.slot('label')}>{step.label}</span>{' '}
       <VisuallyHidden elementType="span">{strings.chatPlanStepStatus(status)}</VisuallyHidden>

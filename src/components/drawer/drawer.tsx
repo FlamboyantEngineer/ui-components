@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
   Heading,
@@ -85,7 +86,7 @@ function DrawerHeader({ title, showCloseButton, isDisabled, onClose }: DrawerHea
       </Heading>
       {showCloseButton ? (
         <Button
-          icon="close"
+          icon={CloseGlyph}
           label={strings.close}
           className={hooks.slotClass('close')}
           isDisabled={isDisabled}

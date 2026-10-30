@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -9,7 +10,7 @@ import { PortalContainerProvider } from '../portal/portal.js';
 import { Combobox, type ComboboxItem, type ComboboxOption } from './combobox.js';
 
 const fruit: ComboboxItem[] = [
-  { id: 'apple', label: 'Apple', description: 'Crisp', icon: 'plus' },
+  { id: 'apple', label: 'Apple', description: 'Crisp', icon: PlusGlyph },
   { id: 'banana', label: 'Banana' },
   {
     id: 'citrus',

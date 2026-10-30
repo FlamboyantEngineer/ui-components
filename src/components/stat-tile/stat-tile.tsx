@@ -1,3 +1,4 @@
+import { TrendDownGlyph, TrendFlatGlyph, TrendUpGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -39,7 +40,7 @@ export interface StatTileProps
 
 const hooks = createHooks('stat-tile', ['value', 'delta', 'trend-icon', 'description', 'chart']);
 
-const trendGlyphs = { up: 'trend-up', down: 'trend-down', flat: 'trend-flat' } as const;
+const trendGlyphs = { up: TrendUpGlyph, down: TrendDownGlyph, flat: TrendFlatGlyph } as const;
 
 function toTrend(delta: number): StatTileTrend {
   if (delta > 0) return 'up';
@@ -92,7 +93,7 @@ export function StatTile({
       {isEmptyNode(valueText) ? null : <div {...hooks.slot('value')}>{valueText}</div>}
       {change ? (
         <div {...hooks.slot('delta')}>
-          <Glyph name={trendGlyphs[change.trend]} className={hooks.slotClass('trend-icon')} />
+          <Glyph icon={trendGlyphs[change.trend]} className={hooks.slotClass('trend-icon')} />
           {deltaFormat.format(change.delta)}
         </div>
       ) : null}

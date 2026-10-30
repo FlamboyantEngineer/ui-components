@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 import {
   Breadcrumb as AriaBreadcrumb,
@@ -131,7 +132,7 @@ function CrumbMenu({ item, index, isDisabled, onAction }: CrumbMenuProps) {
       iconOnly
       size="xs"
       variant="ghost"
-      icon="chevron-down"
+      icon={ChevronDownGlyph}
       isDisabled={isDisabled}
       className={hooks.slotClass('menu')}
       label={strings.placesBeside(toCrumbText(item, index))}
@@ -226,7 +227,7 @@ export function Breadcrumb({
     ...rest,
     ...hooks.root({ className, props: rest, data: { size, overflow } }),
   };
-  const glyph = separator ?? (rtl ? 'chevron-left' : 'chevron-right');
+  const glyph = separator ?? (rtl ? ChevronLeftGlyph : ChevronRightGlyph);
   const collapse = useCrumbOverflow(items, overflow === 'menu');
   const containerRef = collapse.containerRef;
 

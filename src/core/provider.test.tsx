@@ -1,12 +1,13 @@
+import { CheckGlyph, CloseGlyph, type GlyphComponentProps } from './glyphs.js';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { render, screen } from '@testing-library/react';
+import { render, renderHook, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Link, useLocale } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../test/hooks.js';
 import { requireDefined } from '../utils/require-defined.js';
-import { defaultGlyphs, glyphNames, type GlyphComponentProps } from './glyphs.js';
 import {
   Glyph,
   UiLink,
@@ -25,8 +26,8 @@ function Probe() {
   const strings = useUiStrings();
   return (
     <button type="button" aria-label={strings.close} data-count={strings.itemCount(2)}>
-      <Glyph name="close" className="ui-probe__close" />
-      <Glyph name="check" className="ui-probe__check" />
+      <Glyph icon={CloseGlyph} className="ui-probe__close" />
+      <Glyph icon={CheckGlyph} className="ui-probe__check" />
     </button>
   );
 }
@@ -59,7 +60,7 @@ describe('UiProvider defaults', () => {
   });
 
   it('UIC-PROVIDER-2.1 draws glyphs as decoration with the glyph hooks', () => {
-    const { container } = render(<Glyph name="close" />);
+    const { container } = render(<Glyph icon={CloseGlyph} />);
     const svg = container.querySelector('svg');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
@@ -67,17 +68,16 @@ describe('UiProvider defaults', () => {
     expectHooksMatchSpec(container, 'PROVIDER');
   });
 
-  it('UIC-PROVIDER-2.1 UIC-PROVIDER-3.1 exports the default glyph map, glyph names and strings', () => {
-    expect(glyphNames).toEqual(Object.keys(defaultGlyphs));
-    expect(glyphNames).toContain('restore');
+  it('UIC-PROVIDER-2.1 UIC-PROVIDER-3.1 resolves glyph overrides with an explicit fallback', () => {
+    expect(CloseGlyph.glyphName).toBe('close');
     expect(defaultStrings.close).toBe('Close');
     let drawn: unknown;
     function Reader() {
-      drawn = useGlyph('check');
+      drawn = useGlyph('check', CheckIcon);
       return null;
     }
     render(<Reader />);
-    expect(drawn).toBe(defaultGlyphs.check);
+    expect(drawn).toBe(CheckIcon);
   });
 });
 
@@ -126,6 +126,22 @@ describe('text', () => {
       </UiProvider>,
     );
     expect(screen.getByRole('button', { name: '閉じる' })).toHaveAttribute('data-count', '2 件');
+  });
+
+  it('UIC-PROVIDER-3.3 keeps compiled messages when unrelated provider services change', () => {
+    const messages = { close: 'Dismiss' };
+    let storage = createMemoryStorage();
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <UiProvider storage={storage}>
+        <UiProvider messages={messages}>{children}</UiProvider>
+      </UiProvider>
+    );
+    const { result, rerender } = renderHook(() => useUiStrings(), { wrapper });
+    const strings = result.current;
+    storage = createMemoryStorage();
+    rerender();
+    expect(result.current).toBe(strings);
+    expect(result.current.close).toBe('Dismiss');
   });
 
   it('UIC-PROVIDER-3.4 follows the locale for plurals, numbers and lists', () => {

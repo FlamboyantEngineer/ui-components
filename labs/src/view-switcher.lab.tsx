@@ -1,3 +1,10 @@
+import {
+  ClockGlyph,
+  FilterGlyph,
+  FolderGlyph,
+  StarGlyph,
+  UsersGlyph,
+} from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   DisplayOptions,
@@ -15,9 +22,9 @@ import { RecipeTable, recipeProperties, recipes } from './recipe-samples.js';
 const noop = () => undefined;
 
 const matrixViews: ViewSwitcherView[] = [
-  { id: 'all', label: 'All recipes', icon: 'folder' },
-  { id: 'quick', label: 'Quick meals', icon: 'clock' },
-  { id: 'mine', label: 'My recipes', icon: 'users' },
+  { id: 'all', label: 'All recipes', icon: FolderGlyph },
+  { id: 'quick', label: 'Quick meals', icon: ClockGlyph },
+  { id: 'mine', label: 'My recipes', icon: UsersGlyph },
 ];
 
 interface SavedView extends ViewSwitcherView {
@@ -28,7 +35,7 @@ const startingViews: SavedView[] = [
   {
     id: 'all',
     label: 'All recipes',
-    icon: 'folder',
+    icon: FolderGlyph,
     settings: {
       groupBy: null,
       sort: { column: 'title', direction: 'ascending' },
@@ -39,7 +46,7 @@ const startingViews: SavedView[] = [
   {
     id: 'cuisine',
     label: 'By cuisine',
-    icon: 'filter',
+    icon: FilterGlyph,
     settings: {
       groupBy: 'cuisine',
       sort: { column: 'minutes', direction: 'ascending' },
@@ -89,7 +96,7 @@ function RecipeViews({ variant }: { variant: 'tabs' | 'menu' }) {
         onReset={dropDraft}
         onSaveAs={(label) => {
           const id = `view-${views.length + 1}`;
-          setViews((all) => [...all, { id, label, icon: 'star', settings: current }]);
+          setViews((all) => [...all, { id, label, icon: StarGlyph, settings: current }]);
           dropDraft(selected.id);
           setSelectedKey(id);
         }}

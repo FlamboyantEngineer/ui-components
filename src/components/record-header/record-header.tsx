@@ -13,7 +13,7 @@ import { useHeadingLevel, type HeadingLevel } from '../section-header/section-he
 export interface RecordHeaderProps extends BaseProps {
   /** The record's identifier, such as `REQ-12`, shown with a button that copies it. */
   identifier: string;
-  /** A glyph name or icon node for the record's kind, before the identifier. Decorative. */
+  /** A icon component or rendered element for the record's kind, before the identifier. Decorative. */
   icon?: IconSource;
   /** The record's title. */
   title: string;

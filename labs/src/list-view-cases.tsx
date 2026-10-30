@@ -1,3 +1,4 @@
+import { MoreGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -73,7 +74,9 @@ export function SelectionCase({ selection }: { selection: (typeof selections)[nu
           title={item.name}
           meta={item.meta}
           tone={item.id === 'elderberry' ? 'danger' : undefined}
-          trailing={<Button icon="more" size="sm" label={`More about ${item.name} ${selection}`} />}
+          trailing={
+            <Button icon={MoreGlyph} size="sm" label={`More about ${item.name} ${selection}`} />
+          }
         />
       )}
     </ListView>

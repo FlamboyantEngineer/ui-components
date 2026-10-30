@@ -1,3 +1,4 @@
+import { FilterGlyph } from '../../core/glyphs.js';
 import {
   CheckboxContext,
   CheckboxFieldContext,
@@ -8,7 +9,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { ChoiceGroup, Choice } from '../choice-group/choice-group.js';
 import { DateTimeField, type DateRangeValue } from '../date-time-field/date-time-field.js';
-
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { TextField } from '../text-field/text-field.js';
@@ -135,7 +135,7 @@ export function TableColumnFilter<T extends TableRow>(props: TableColumnFilterPr
   return (
     <DialogTrigger>
       <Button
-        icon="filter"
+        icon={FilterGlyph}
         label={title}
         size="xs"
         excludeFromTabOrder

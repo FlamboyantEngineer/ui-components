@@ -1,3 +1,4 @@
+import { HelpGlyph, InfoGlyph, SearchGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
@@ -48,7 +49,7 @@ function MailTabs({
       <TabList aria-label={label}>
         <Tab
           id="inbox"
-          {...(icons ? { icon: 'info' as const } : {})}
+          {...(icons ? { icon: InfoGlyph } : {})}
           {...(counts ? { count: 15, countMax: 9, countLabel: '15 unread' } : {})}
         >
           Inbox
@@ -56,12 +57,12 @@ function MailTabs({
         <Tab
           id="search"
           isDisabled={state === 'disabled tab'}
-          {...(icons ? { icon: 'search' as const } : {})}
+          {...(icons ? { icon: SearchGlyph } : {})}
           {...(counts ? { count: 3, countLabel: '3 saved' } : {})}
         >
           Search
         </Tab>
-        <Tab id="help" {...(icons ? { icon: 'help' as const } : {})}>
+        <Tab id="help" {...(icons ? { icon: HelpGlyph } : {})}>
           Help
         </Tab>
       </TabList>

@@ -1,3 +1,4 @@
+import { DragHandleGlyph, FitPageGlyph, SortAscendingGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -72,7 +73,7 @@ describe('SegmentedChoice', () => {
         aria-label="Order"
         value="up"
         options={[
-          { value: 'up', label: 'Ascending', icon: 'sort-ascending' },
+          { value: 'up', label: 'Ascending', icon: SortAscendingGlyph },
           { value: 'down', label: 'Descending', icon: <svg className="custom-glyph" /> },
           { value: 'none', label: 'Unsorted' },
         ]}
@@ -396,8 +397,8 @@ describe('SegmentedChoice', () => {
         aria-label="Alignment"
         iconOnly
         options={[
-          { value: 'list', label: 'List view', icon: 'drag-handle' },
-          { value: 'grid', label: 'Grid view', icon: 'fit-page' },
+          { value: 'list', label: 'List view', icon: DragHandleGlyph },
+          { value: 'grid', label: 'Grid view', icon: FitPageGlyph },
         ]}
         defaultValue="list"
       />,

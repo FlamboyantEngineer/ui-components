@@ -1,3 +1,4 @@
+import { CheckGlyph, EditGlyph, LinkGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { RecordLabel } from '../../src/components/record-label/record-label.js';
@@ -51,7 +52,7 @@ function ReferenceList() {
               mode="chip"
               identifier={record.identifier}
               name={record.name}
-              icon="link"
+              icon={LinkGlyph}
               href={`#${record.identifier.toLowerCase()}`}
               preview={<RecordPreview record={record} />}
               onRemove={() => setReferences((list) => list.filter((item) => item !== record))}
@@ -82,7 +83,7 @@ export function RecordChipCases() {
                 mode="chip"
                 identifier="REQ-12"
                 name="Brake pressure limits"
-                icon="edit"
+                icon={EditGlyph}
                 href="#req-12"
                 layout={layout}
                 version={parts === 'label' ? undefined : 'v3'}
@@ -104,7 +105,7 @@ export function RecordChipCases() {
                 mode="chip"
                 identifier="TEST-48"
                 name="Cold start at minus twenty"
-                icon="check"
+                icon={CheckGlyph}
                 size={size}
                 type="Test"
                 state={
@@ -129,7 +130,7 @@ export function RecordChipCases() {
                 mode="chip"
                 identifier="RISK-7"
                 name="Sensor drift over long trips"
-                icon="warning"
+                icon={WarningGlyph}
                 href="#risk-7"
                 isExternal={link === 'new tab'}
                 preview={<RecordPreview record={initialReferences[2] as SampleRecord} />}

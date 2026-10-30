@@ -1,3 +1,4 @@
+import { HelpGlyph } from '../../src/core/glyphs.js';
 // The Chat lab's surfaces: the chat is inline, so a host places it in a drawer, a popover or a tab.
 
 import { Button } from '../../src/components/button/button.js';
@@ -51,7 +52,7 @@ function LauncherDemo() {
     >
       <div style={{ position: 'absolute', insetInlineEnd: 16, insetBlockEnd: 16 }}>
         <PopoverTrigger>
-          <Button icon="help" label="Chat with the trip planner" variant="primary" />
+          <Button icon={HelpGlyph} label="Chat with the trip planner" variant="primary" />
           <Popover aria-label="Trip planner" placement="top end" data-lab-surface="popover">
             <div style={{ width: 290, height: 460 }}>
               <Chat

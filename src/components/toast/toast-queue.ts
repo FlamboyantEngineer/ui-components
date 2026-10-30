@@ -19,7 +19,7 @@ export interface ToastContent {
   tone?: ToastTone | undefined;
   title: ReactNode;
   description?: ReactNode;
-  /** Replaces the tone's glyph: a built-in glyph name or any icon node. */
+  /** Replaces the tone's glyph: an imported icon component or rendered element. */
   icon?: IconSource;
   action?: ToastAction | undefined;
   /** Work is in progress: a busy indicator replaces the glyph and the toast has no timeout. */

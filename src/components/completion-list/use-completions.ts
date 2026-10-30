@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';
 import { useLatest } from '../../utils/use-latest.js';
 
@@ -105,10 +106,6 @@ function step(index: number, delta: number, count: number): number {
   return (index + delta + count) % count;
 }
 
-function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
-  return typeof (value as Promise<T> | null)?.then === 'function';
-}
-
 function isExplicitRequest(event: KeyboardEvent<HTMLElement>): boolean {
   return event.ctrlKey && !event.metaKey && !event.altKey && event.key === ' ';
 }
@@ -166,7 +163,7 @@ function useCompletionState(options: CompletionsOptions) {
   const request = useRef(0);
   // Every commit: callers pass a fresh options object each render.
   const latest = useLatest({ state, options });
-  const { isLocked } = options;
+  const isLocked = options.isLocked || options.completions === undefined;
   useLayoutEffect(() => {
     if (!isLocked) return;
     request.current += 1;
@@ -190,7 +187,12 @@ function closeCompletions(session: CompletionSession) {
 
 function applyCompletion(session: CompletionSession, option: Completion) {
   const current = session.latest.current;
-  if (current.options.isLocked || !current.state.isOpen || !current.state.options.includes(option))
+  if (
+    current.options.isLocked ||
+    !current.options.completions ||
+    !current.state.isOpen ||
+    !current.state.options.includes(option)
+  )
     return;
   const { start, end } = current.state;
   current.state = hideCompletionState(current.state);
@@ -219,7 +221,7 @@ function trackCompletions(session: CompletionSession, reason: CompletionReason) 
       session.setState((state) => toState(answer, lookup, state.revision + 1));
   };
   const answer = lookUp(current.completions, lookup);
-  if (!isPromise(answer)) return show(answer);
+  if (!isThenable(answer)) return show(answer);
   session.setState((state) => toPendingState(state, lookup));
   answer.then(show, () => undefined);
 }
@@ -235,7 +237,7 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
   const session = useCompletionState(options);
   const { state, setState, request } = session;
   const usedKey = useRef<string | null>(null);
-  const isOpen = state.isOpen && !isLocked;
+  const isOpen = state.isOpen && !isLocked && completions !== undefined;
   const close = () => closeCompletions(session);
   const setActiveIndex = (index: number) =>
     setState((current) => ({ ...current, activeIndex: index }));

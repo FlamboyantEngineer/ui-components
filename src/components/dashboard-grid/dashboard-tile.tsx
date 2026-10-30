@@ -1,3 +1,4 @@
+import { DragHandleGlyph, ResizeGlyph } from '../../core/glyphs.js';
 import { useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { BaseProps } from '../../core/props.js';
@@ -66,7 +67,7 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
       type="button"
       aria-label={kind === 'move' ? strings.moveTile(label) : strings.resizeTile(label)}
     >
-      <Glyph name={kind === 'move' ? 'drag-handle' : 'resize'} />
+      <Glyph icon={kind === 'move' ? DragHandleGlyph : ResizeGlyph} />
     </button>
   );
 }

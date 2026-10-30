@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import type { RefObject } from 'react';
 import {
   Button as AriaButton,
@@ -55,7 +56,7 @@ export function EmojiPickerSearch({ className, ...rest }: EmojiPickerSearchProps
     >
       <Input className={hooks.slotClass('search-input')} placeholder={strings.searchEmoji} />
       <AriaButton className={hooks.slotClass('search-clear')}>
-        <Glyph name="close" />
+        <Glyph icon={CloseGlyph} />
       </AriaButton>
     </SearchField>
   );

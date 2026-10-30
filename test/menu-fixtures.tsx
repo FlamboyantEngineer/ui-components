@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../src/core/glyphs.js';
 // Shared fixtures for the menu family's unit tests.
 
 import { screen } from '@testing-library/react';
@@ -34,7 +35,7 @@ export function MenuButton({ children, label = 'Actions', layer, ...menu }: Menu
 
 /** Items, a disabled item, a separator, a section and a submenu. */
 export const fruitEntries: MenuEntry[] = [
-  { id: 'apple', label: 'Apple', icon: 'plus', shortcut: 'Ctrl+A' },
+  { id: 'apple', label: 'Apple', icon: PlusGlyph, shortcut: 'Ctrl+A' },
   { id: 'banana', label: 'Banana', isDisabled: true },
   { type: 'separator', id: 'rule' },
   {

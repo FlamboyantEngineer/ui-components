@@ -1,3 +1,4 @@
+import { MoreGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { ChatList, type ChatConversation } from '../../src/components/chat-list/chat-list.js';
 import { Button } from '../../src/components/button/button.js';
@@ -19,7 +20,7 @@ function RowMenu({
 }) {
   return (
     <MenuTrigger>
-      <Button icon="more" label={`More for ${conversation.title}`} size="sm" />
+      <Button icon={MoreGlyph} label={`More for ${conversation.title}`} size="sm" />
       <MenuPopover>
         <Menu
           onAction={(key) =>

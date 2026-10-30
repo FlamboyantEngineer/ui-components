@@ -1,5 +1,6 @@
 import { IntlMessageFormat } from 'intl-messageformat';
 import { getListFormat } from '../utils/intl-format.js';
+import { createLruCache } from '../utils/lru-cache.js';
 
 /** Items a message reads as one locale-aware list: `a, b and c`, `a, b or c`, or `a, b, c`. */
 export interface MessageList {
@@ -19,7 +20,7 @@ export type MessageValue = string | number | boolean | readonly string[] | Messa
 /** The named arguments of a message. */
 export type MessageValues = Readonly<Record<string, MessageValue | null>>;
 
-const formats = new Map<string, IntlMessageFormat>();
+const formats = createLruCache<string, IntlMessageFormat>(1024);
 
 function getFormat(message: string, locale: string): IntlMessageFormat {
   const key = `${locale}\u0000${message}`;

@@ -1,3 +1,4 @@
+import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import { Button as AriaButton, Input, SearchField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
@@ -20,10 +21,10 @@ export function TableSearch({ label, value, onChange }: TableSearchProps) {
       onChange={onChange}
       className={hooks.slotClass('filter')}
     >
-      <Icon glyph="search" size="sm" className={hooks.slotClass('filter-icon')} />
+      <Icon icon={SearchGlyph} size="sm" className={hooks.slotClass('filter-icon')} />
       <Input className={hooks.slotClass('filter-input')} placeholder={label} />
       <AriaButton className={hooks.slotClass('filter-clear')} aria-label={strings.clear}>
-        <Icon glyph="close" size="sm" />
+        <Icon icon={CloseGlyph} size="sm" />
       </AriaButton>
     </SearchField>
   );

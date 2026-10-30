@@ -1,3 +1,4 @@
+import { ErrorGlyph } from '../../core/glyphs.js';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -224,7 +225,7 @@ describe('ModalConfirmation', () => {
     }
     rerender(<ModalConfirmation title="Delete?" isOpen tone="danger" />);
     expect(icon()).toBeNull();
-    rerender(<ModalConfirmation title="Upload failed" isOpen tone="danger" icon="error" />);
+    rerender(<ModalConfirmation title="Upload failed" isOpen tone="danger" icon={ErrorGlyph} />);
     expect(icon()).toHaveAttribute('data-glyph', 'error');
     rerender(<ModalConfirmation title="Plain" isOpen tone="info" icon={null} />);
     expect(icon()).toBeNull();

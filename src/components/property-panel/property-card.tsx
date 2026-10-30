@@ -93,7 +93,7 @@ export function PropertyCard({
         <div {...hooks.slot('header')}>
           {/* Spaces between the parts keep the trigger's accessible name readable. */}
           <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
-            <Glyph name={glyph} className={hooks.slotClass('chevron')} />
+            <Glyph icon={glyph} className={hooks.slotClass('chevron')} />
             <span {...hooks.slot('name')}>
               <TextMatch>{name}</TextMatch>
             </span>{' '}

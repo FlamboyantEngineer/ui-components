@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -14,7 +15,7 @@ const slot = (container: HTMLElement, name: string) =>
 describe('RecordLabel', () => {
   it('UIC-RECORD-LABEL-1.1 keeps the icon and identifier together before the name', () => {
     const { container } = render(
-      <RecordLabel icon="folder" identifier="REQ-12" name="  Brake pressure limits " />,
+      <RecordLabel icon={FolderGlyph} identifier="REQ-12" name="  Brake pressure limits " />,
     );
     const element = root(container);
     expect(element.tagName).toBe('SPAN');
@@ -106,10 +107,10 @@ describe('RecordLabel', () => {
   });
 
   it('UIC-RECORD-LABEL-1.4 sizes the icon with the label, medium by default', () => {
-    const { container, rerender } = render(<RecordLabel identifier="REQ-12" icon="folder" />);
+    const { container, rerender } = render(<RecordLabel identifier="REQ-12" icon={FolderGlyph} />);
     expect(root(container)).toHaveAttribute('data-size', 'md');
     for (const size of ['sm', 'md', 'lg'] as const) {
-      rerender(<RecordLabel identifier="REQ-12" icon="folder" size={size} />);
+      rerender(<RecordLabel identifier="REQ-12" icon={FolderGlyph} size={size} />);
       expect(root(container)).toHaveAttribute('data-size', size);
       expect(slot(container, 'icon')).toHaveAttribute('data-size', size);
     }
@@ -120,7 +121,7 @@ describe('RecordLabel', () => {
       <RecordLabel
         identifier="REQ-12"
         name="Limits"
-        icon="folder"
+        icon={FolderGlyph}
         href="/12"
         unavailable="restricted"
       />,

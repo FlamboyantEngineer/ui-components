@@ -1,3 +1,4 @@
+import { DragHandleGlyph } from '../../core/glyphs.js';
 import {
   useRef,
   type DragEvent,
@@ -113,7 +114,7 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
     >
       {drag ? (
         <Button
-          icon="drag-handle"
+          icon={DragHandleGlyph}
           size="sm"
           label={strings.moveColumn(title)}
           className={hooks.slotClass('column-handle')}

@@ -1,3 +1,12 @@
+import {
+  CalendarGlyph,
+  EditGlyph,
+  FolderGlyph,
+  InfoGlyph,
+  LockGlyph,
+  UsersGlyph,
+  WarningGlyph,
+} from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import {
   NavigationRail,
@@ -41,12 +50,12 @@ export function KitchenRail({ current, onNavigate, ...rest }: KitchenRailProps) 
   return (
     <NavigationRail {...rest}>
       <NavigationRailSection title="Pinned">
-        <NavigationRailItem {...item('menu')} icon="calendar" />
-        <NavigationRailItem {...item('pantry')} icon="folder" />
+        <NavigationRailItem {...item('menu')} icon={CalendarGlyph} />
+        <NavigationRailItem {...item('pantry')} icon={FolderGlyph} />
       </NavigationRailSection>
       <NavigationRailSection title="Workspace">
-        <NavigationRailItem {...item('inbox')} icon="info" count={4} countLabel="4 unread" />
-        <NavigationRailGroup label="Recipes" icon="edit">
+        <NavigationRailItem {...item('inbox')} icon={InfoGlyph} count={4} countLabel="4 unread" />
+        <NavigationRailGroup label="Recipes" icon={EditGlyph}>
           <NavigationRailItem {...item('breakfast')} />
           <NavigationRailItem {...item('lunch')} />
           <NavigationRailGroup label="Desserts">
@@ -54,11 +63,11 @@ export function KitchenRail({ current, onNavigate, ...rest }: KitchenRailProps) 
             <NavigationRailItem {...item('tarts')} count={120} countLabel="120 recipes" />
           </NavigationRailGroup>
         </NavigationRailGroup>
-        <NavigationRailItem {...item('team')} icon="users" />
+        <NavigationRailItem {...item('team')} icon={UsersGlyph} />
       </NavigationRailSection>
       <NavigationRailSection title="Settings">
-        <NavigationRailItem {...item('profile')} icon="lock" />
-        <NavigationRailItem {...item('alerts')} icon="warning" count={0} />
+        <NavigationRailItem {...item('profile')} icon={LockGlyph} />
+        <NavigationRailItem {...item('alerts')} icon={WarningGlyph} count={0} />
       </NavigationRailSection>
     </NavigationRail>
   );

@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -25,7 +26,7 @@ const nested: Entry[] = [
 function AddButton({ entry, isDisabled = false }: { entry: Entry; isDisabled?: boolean }) {
   return (
     <Button
-      icon="plus"
+      icon={PlusGlyph}
       label={`Add to ${entry.label}`}
       tooltip={`Add to ${entry.label}`}
       focusableWhenDisabled

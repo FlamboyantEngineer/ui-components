@@ -1,3 +1,4 @@
+import { InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
 import { IconLabel } from '../../src/components/icon-label/icon-label.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -15,7 +16,7 @@ mountLab(
             label="Settings"
             icon={
               icon === 'glyph' ? (
-                'more'
+                MoreGlyph
               ) : (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
                   <rect x="5" y="5" width="14" height="14" rx="3" />
@@ -38,7 +39,7 @@ mountLab(
         render={({ option, size }) => (
           <div data-lab-column="180" style={{ width: 180 }}>
             <IconLabel
-              icon="info"
+              icon={InfoGlyph}
               size={size}
               label={longText}
               truncate={option === 'truncate'}

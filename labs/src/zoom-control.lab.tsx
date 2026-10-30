@@ -1,3 +1,4 @@
+import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
@@ -101,7 +102,7 @@ function CallerSteps() {
         onChange={setZoom}
         zoomOutButton={
           <Button
-            icon="minus"
+            icon={MinusGlyph}
             label="Shrink page"
             size="sm"
             isDisabled={index <= 0}
@@ -110,7 +111,7 @@ function CallerSteps() {
         }
         zoomInButton={
           <Button
-            icon="plus"
+            icon={PlusGlyph}
             label="Grow page"
             size="sm"
             isDisabled={index >= levels.length - 1}

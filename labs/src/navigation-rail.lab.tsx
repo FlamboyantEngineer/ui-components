@@ -1,3 +1,4 @@
+import { FolderGlyph, UsersGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
@@ -69,8 +70,18 @@ mountLab(
           <div style={{ display: 'flex', height: 260 }}>
             <NavigationRail aria-label={`Items, ${rail}`} defaultCollapsed={rail === 'collapsed'}>
               <NavigationRailSection title="Lists">
-                <NavigationRailItem label="Groceries" href="#groceries" icon="folder" isCurrent />
-                <NavigationRailItem label="Shared lists" href="#shared" icon="users" count={7} />
+                <NavigationRailItem
+                  label="Groceries"
+                  href="#groceries"
+                  icon={FolderGlyph}
+                  isCurrent
+                />
+                <NavigationRailItem
+                  label="Shared lists"
+                  href="#shared"
+                  icon={UsersGlyph}
+                  count={7}
+                />
                 <NavigationRailItem label="Market days" href="#market" count={250} />
               </NavigationRailSection>
             </NavigationRail>

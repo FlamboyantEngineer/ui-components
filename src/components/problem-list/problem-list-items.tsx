@@ -1,3 +1,4 @@
+import { ErrorGlyph, InfoGlyph, WarningGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -46,7 +47,10 @@ function ProblemText({ problem }: { problem: ShownProblem }) {
   const strings = useUiStrings();
   return (
     <>
-      <Icon glyph={problem.severity} className={hooks.slotClass('icon')} />
+      <Icon
+        icon={{ error: ErrorGlyph, warning: WarningGlyph, info: InfoGlyph }[problem.severity]}
+        className={hooks.slotClass('icon')}
+      />
       <VisuallyHidden elementType="span">{`${strings.problemSeverity(problem.severity)}:`}</VisuallyHidden>{' '}
       {problem.label ? (
         <>

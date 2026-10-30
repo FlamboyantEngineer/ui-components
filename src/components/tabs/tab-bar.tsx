@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 // The parts around a list of tabs: scroll buttons, the "more" menu of hidden tabs and the add button.
 
 import { useContext, useMemo, type ReactNode, type RefObject } from 'react';
@@ -109,7 +110,7 @@ export function TabBar({
       {onAdd ? (
         <Button
           {...hooks.slot('add')}
-          icon="plus"
+          icon={PlusGlyph}
           label={strings.addTab}
           size="sm"
           onPress={onAdd}

@@ -1,3 +1,4 @@
+import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import { treeChoices } from './select-tree.js';
 import { iconsChoices } from './select-icons.js';
 import { useState } from 'react';
@@ -17,8 +18,8 @@ import { TriggerRefField } from './select-field-trigger-cases.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const fruit: SelectFieldOption[] = [
-  { id: 'apple', label: 'Apple', description: 'Crisp and sweet', icon: 'plus' },
-  { id: 'pear', label: 'Pear', icon: 'minus' },
+  { id: 'apple', label: 'Apple', description: 'Crisp and sweet', icon: PlusGlyph },
+  { id: 'pear', label: 'Pear', icon: MinusGlyph },
   { id: 'plum', label: 'Plum', description: 'Out of season', isDisabled: true },
   { id: 'fig', label: 'Fig' },
   { id: 'quince', label: 'Quince' },
@@ -62,8 +63,8 @@ const produce: SelectFieldItem[] = [
     id: 'fruit',
     label: 'Fruit',
     options: [
-      { id: 'apple', label: 'Apple', icon: 'plus' },
-      { id: 'pear', label: 'Pear', icon: 'minus' },
+      { id: 'apple', label: 'Apple', icon: PlusGlyph },
+      { id: 'pear', label: 'Pear', icon: MinusGlyph },
       { id: 'plum', label: 'Plum', isDisabled: true },
     ],
   },

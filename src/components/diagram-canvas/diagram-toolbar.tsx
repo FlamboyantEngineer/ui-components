@@ -1,3 +1,4 @@
+import { ExpandGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
@@ -31,7 +32,7 @@ export function DiagramToolbar({ controller, view, onViewChange }: DiagramToolba
           />
           <Button
             className={hooks.slotClass('fit')}
-            icon="expand"
+            icon={ExpandGlyph}
             label={strings.diagramFit}
             tooltip={strings.diagramFit}
             size="sm"

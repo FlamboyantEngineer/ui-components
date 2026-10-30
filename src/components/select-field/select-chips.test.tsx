@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import type { Key } from '../../core/props.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const fruit: SelectFieldOption[] = [
-  { id: 'apple', label: 'Apple', icon: 'plus' },
+  { id: 'apple', label: 'Apple', icon: PlusGlyph },
   { id: 'pear', label: 'Pear' },
   { id: 'plum', label: 'Plum' },
   { id: 'fig', label: 'Fig' },

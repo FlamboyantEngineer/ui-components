@@ -1,3 +1,4 @@
+import { CheckGlyph, ClockGlyph } from '../../src/core/glyphs.js';
 // Sample data and stand-ins shared by the Chat Activity lab's cases and its simulation.
 
 import type { ChatPlanStep } from '../../src/components/chat-activity/chat-activity.js';
@@ -21,5 +22,5 @@ interface LabToolCallProps {
 
 /** A stand-in for a tool call: a glyph and what the tool did, or is doing. */
 export function LabToolCall({ label, isRunning = false }: LabToolCallProps) {
-  return <IconLabel icon={isRunning ? 'clock' : 'check'} label={label} size="sm" />;
+  return <IconLabel icon={isRunning ? ClockGlyph : CheckGlyph} label={label} size="sm" />;
 }

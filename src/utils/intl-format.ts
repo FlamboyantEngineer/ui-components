@@ -1,14 +1,15 @@
 // Shared Intl formatters. Building one costs far more than formatting with it, and lists, tables and
 // transcripts format a value per row on every render, so each locale and option set builds one
-// formatter for the life of the page.
+// formatter while it remains among the recently used configurations.
 
 import { DateFormatter } from '../primitives/index.js';
+import { createLruCache } from './lru-cache.js';
 
 /** Returns the formatter for a locale and options, building it on the first call. */
 function createFormatCache<L extends string | undefined, O extends object, F>(
   create: (locale: L, options: O | undefined) => F,
 ) {
-  const formats = new Map<string, F>();
+  const formats = createLruCache<string, F>(128);
   return (locale: L, options?: O): F => {
     const key = `${locale ?? ''}\u0000${options ? JSON.stringify(options) : ''}`;
     let format = formats.get(key);

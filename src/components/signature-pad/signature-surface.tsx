@@ -1,3 +1,4 @@
+import { DeleteGlyph, UndoGlyph } from '../../core/glyphs.js';
 import { useId, useState, type PointerEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -130,7 +131,7 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
       <div {...hooks.slot('actions')}>
         <Button
           size="sm"
-          startIcon="undo"
+          startIcon={UndoGlyph}
           isDisabled={!isEditable || !hasStrokes}
           onPress={() => onDraw(paths.length > 1 ? { ...size, paths: paths.slice(0, -1) } : null)}
         >
@@ -138,7 +139,7 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
         </Button>
         <Button
           size="sm"
-          startIcon="delete"
+          startIcon={DeleteGlyph}
           isDisabled={!isEditable || !hasStrokes}
           onPress={() => onDraw(null)}
         >

@@ -1,3 +1,4 @@
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useLocale } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -16,7 +17,7 @@ export function ScrollStripButton({ edge, isHidden, onPress, ...rest }: ScrollSt
   return (
     <Button
       {...rest}
-      icon={pointsLeft ? 'chevron-left' : 'chevron-right'}
+      icon={pointsLeft ? ChevronLeftGlyph : ChevronRightGlyph}
       label={edge === 'start' ? strings.scrollBackward : strings.scrollForward}
       size="sm"
       excludeFromTabOrder

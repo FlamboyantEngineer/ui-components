@@ -36,7 +36,7 @@ export interface UserCardAction {
   id: string;
   /** The button's text. */
   label: string;
-  /** A glyph name or icon node drawn before the label. */
+  /** A icon component or rendered element drawn before the label. */
   icon?: IconSource | undefined;
 }
 

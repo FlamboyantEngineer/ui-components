@@ -1,3 +1,4 @@
+import { LockGlyph, WarningGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames, type HookProps } from '../../core/hooks.js';
@@ -36,7 +37,7 @@ export interface RecordLabelProps extends BaseProps, AriaLabellingProps {
   identifier: string;
   /** The record's name, after the identifier. */
   name?: string | undefined;
-  /** A glyph name or icon node for the record's kind. Decorative. */
+  /** A icon component or rendered element for the record's kind. Decorative. */
   icon?: IconSource;
   /** Icon and text size. Defaults to `md`. */
   size?: RecordLabelSize | undefined;
@@ -80,7 +81,7 @@ const hooks = createHooks('record-label', [
   'accessible-label',
 ]);
 
-const unavailableGlyphs = { restricted: 'lock', missing: 'warning' } as const;
+const unavailableGlyphs = { restricted: LockGlyph, missing: WarningGlyph } as const;
 
 /** The root: a link to the record, or a span. */
 function RecordLabelRoot({

@@ -1,3 +1,4 @@
+import { UndoGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -17,7 +18,7 @@ describe('PropertyCard', () => {
       <PropertyCard
         name="Heading"
         summary="Serif 22"
-        actions={<Button icon="undo" label="Reset heading" onPress={onPress} />}
+        actions={<Button icon={UndoGlyph} label="Reset heading" onPress={onPress} />}
       >
         <PropertyRow label="Font">Serif</PropertyRow>
       </PropertyCard>,

@@ -1,3 +1,4 @@
+import { RefreshGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
@@ -22,7 +23,7 @@ const items: ActivityFeedItem[] = [
     detail: 'Looks good to me.',
   },
   { id: 'b', person: jon, action: 'renamed', target: 'Budget', time: '2026-04-20T08:00:00' },
-  { id: 'c', action: 'Nightly import finished', icon: 'refresh', time: '2026-04-19T23:10:00' },
+  { id: 'c', action: 'Nightly import finished', icon: RefreshGlyph, time: '2026-04-19T23:10:00' },
   { id: 'd', person: { name: '  ' }, action: 'joined', time: '2026-04-14' },
   { id: 'e', person: maria, action: 'left', time: 'not a time' },
 ];

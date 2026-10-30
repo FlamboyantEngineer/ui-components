@@ -1,3 +1,11 @@
+import {
+  ChevronDownGlyph,
+  ChevronRightGlyph,
+  EyeGlyph,
+  InfoGlyph,
+  PlusGlyph,
+  SaveGlyph,
+} from '../../src/core/glyphs.js';
 import { ButtonActionCases } from './button-action-cases.js';
 import { ButtonIconCases } from './button-icon-cases.js';
 import { useState } from 'react';
@@ -12,7 +20,7 @@ function Toggles() {
   const [pinned, setPinned] = useState(false);
   return (
     <div data-lab-demo="toggles">
-      <Button startIcon="eye" defaultSelected>
+      <Button startIcon={EyeGlyph} defaultSelected>
         Show grid
       </Button>{' '}
       <Button isSelected={pinned} onChange={setPinned}>
@@ -45,7 +53,7 @@ mountLab(
           render={({ variant, state }) => (
             <Button
               variant={variant}
-              startIcon="plus"
+              startIcon={PlusGlyph}
               isSelected={state === 'selected'}
               isDisabled={state === 'disabled' || state === 'focusable disabled'}
               focusableWhenDisabled={state === 'focusable disabled'}
@@ -62,8 +70,8 @@ mountLab(
           render={({ icons, size }) => (
             <Button
               size={size}
-              {...(icons !== 'end' ? { startIcon: 'plus' as const } : {})}
-              {...(icons !== 'start' ? { endIcon: 'chevron-down' as const } : {})}
+              {...(icons !== 'end' ? { startIcon: PlusGlyph } : {})}
+              {...(icons !== 'start' ? { endIcon: ChevronDownGlyph } : {})}
             >
               New
             </Button>
@@ -78,7 +86,7 @@ mountLab(
           axes={{ hint: hints, state: ['default', 'focusable disabled', 'pending'] }}
           render={({ hint, state }) => (
             <Button
-              startIcon="save"
+              startIcon={SaveGlyph}
               isDisabled={state === 'focusable disabled'}
               focusableWhenDisabled
               isPending={state === 'pending'}
@@ -99,7 +107,7 @@ mountLab(
                 content={content}
                 align={align}
                 fullWidth
-                {...(content === 'parts' ? {} : { startIcon: 'info' as const })}
+                {...(content === 'parts' ? {} : { startIcon: InfoGlyph })}
               >
                 {content === 'parts' ? (
                   <>
@@ -126,7 +134,7 @@ mountLab(
             <Button
               href="#reports"
               variant={variant}
-              endIcon="chevron-right"
+              endIcon={ChevronRightGlyph}
               isDisabled={link === 'disabled'}
             >
               Open reports

@@ -312,7 +312,7 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`
 
 ### UIC-SELECT-FIELD-11.1 - Icon options
 
-List options may include an `icon`, a built-in glyph name or any icon node. The open list draws an icon before the label when present, and a single-selection trigger shows the chosen option's icon. Icon options support the same single and multiple selection modes as text options.
+List options may include an `icon`, an imported icon component or rendered element. The open list draws an icon before the label when present, and a single-selection trigger shows the chosen option's icon. Icon options support the same single and multiple selection modes as text options.
 
 Implementation: `src/components/select-field/select-field.tsx`
 Verification: `src/components/select-field/select-icons.test.tsx`, `e2e/select-icons.spec.ts`

@@ -84,7 +84,7 @@ const currentTime = () => new Date();
 /** The marker beside an entry: its glyph, else its person's avatar, else an empty dot. */
 function EntryMarker({ item }: { item: ActivityFeedItem }) {
   let content: ReactNode = null;
-  if (!isEmptyNode(item.icon)) content = <Icon {...toIconProps(item.icon)} />;
+  if (item.icon) content = <Icon {...toIconProps(item.icon)} />;
   else if (item.person) content = <Avatar {...item.person} size="sm" decorative />;
   return (
     <span {...hooks.slot('marker')} aria-hidden="true">

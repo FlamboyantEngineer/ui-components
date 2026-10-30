@@ -1,3 +1,4 @@
+import { CheckGlyph, HandRaisedGlyph, ListTaskGlyph } from '../../core/glyphs.js';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
@@ -17,8 +18,8 @@ import {
 import { MessageComposer } from './message-composer.js';
 
 const approval = [
-  { id: 'ask', label: 'Ask first', icon: 'hand-raised' },
-  { id: 'auto', label: 'Run on its own', icon: 'check' },
+  { id: 'ask', label: 'Ask first', icon: HandRaisedGlyph },
+  { id: 'auto', label: 'Run on its own', icon: CheckGlyph },
 ] as const;
 
 const names = (group: Element | null) =>
@@ -63,7 +64,7 @@ describe('MessageComposer controls', () => {
         onAttach={() => undefined}
         startControls={
           <>
-            <MessageComposerToggle label="Plan" icon="list-task" />
+            <MessageComposerToggle label="Plan" icon={ListTaskGlyph} />
             <MessageComposerMenuButton sections={[]} className="extra" data-testid="probe" />
             <MessageComposerAttachButton />
           </>
@@ -114,7 +115,7 @@ describe('MessageComposer controls', () => {
         defaultValue="Hello"
         onSubmit={onSubmit}
         startControls={<MessageComposerSendButton className="lead" />}
-        endControls={<MessageComposerToggle label="Plan" icon="list-task" />}
+        endControls={<MessageComposerToggle label="Plan" icon={ListTaskGlyph} />}
       />,
     );
     expect(names(container.querySelector('.ui-message-composer__start'))).toEqual(['Send']);
@@ -142,7 +143,7 @@ describe('MessageComposer controls', () => {
     const row = installComposerRow();
     const { container } = render(
       <MessageComposer
-        startControls={<MessageComposerToggle label="Plan" icon="list-task" />}
+        startControls={<MessageComposerToggle label="Plan" icon={ListTaskGlyph} />}
         endControls={<MessageComposerSelect label="Approval" options={approval} />}
       />,
     );

@@ -1,3 +1,4 @@
+import { BellGlyph, ErrorGlyph, InfoGlyph, SuccessGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
@@ -37,7 +38,7 @@ const firstPage: NotificationItem[] = [
   {
     id: 'import',
     title: 'Import of Orchard.csv finished',
-    icon: 'success',
+    icon: SuccessGlyph,
     time: at(20, 7, 40),
     isRead: true,
   },
@@ -48,15 +49,21 @@ const firstPage: NotificationItem[] = [
     time: at(19, 16, 20),
     href: '#comment',
   },
-  { id: 'digest', title: 'Weekly digest is ready', icon: 'info', time: at(14, 8, 0), isRead: true },
+  {
+    id: 'digest',
+    title: 'Weekly digest is ready',
+    icon: InfoGlyph,
+    time: at(14, 8, 0),
+    isRead: true,
+  },
 ];
 
 const olderPage: NotificationItem[] = [
-  { id: 'export', title: 'Export of Cities.xlsx failed', icon: 'error', time: at(10, 15, 30) },
+  { id: 'export', title: 'Export of Cities.xlsx failed', icon: ErrorGlyph, time: at(10, 15, 30) },
   {
     id: 'welcome',
     title: 'Welcome to the workspace',
-    icon: 'bell',
+    icon: BellGlyph,
     time: at(2, 9, 0),
     isRead: true,
   },
@@ -103,7 +110,7 @@ function LiveDemo() {
     {
       id: 'live-0',
       title: 'Workspace created',
-      icon: 'bell',
+      icon: BellGlyph,
       time: new Date().toISOString(),
       isRead: true,
     },
@@ -113,7 +120,7 @@ function LiveDemo() {
       {
         id: `live-${list.length}`,
         title: `Build ${list.length} passed`,
-        icon: 'success',
+        icon: SuccessGlyph,
         time: new Date().toISOString(),
       },
       ...list,

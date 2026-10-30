@@ -5,7 +5,6 @@ import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
 export type BadgeTone = Tone;
@@ -36,9 +35,9 @@ export interface BadgeLabelProps extends BadgeCommonProps {
   announce?: boolean | undefined;
   /** Soften only the status dot, keeping the label's contrast. */
   mutedDot?: boolean | undefined;
-  /** A decorative icon before the label: a built-in glyph name or any icon node. */
+  /** A decorative icon before the label: an imported icon component or rendered element. */
   startIcon?: IconSource;
-  /** A decorative icon after the label: a built-in glyph name or any icon node. */
+  /** A decorative icon after the label: an imported icon component or rendered element. */
   endIcon?: IconSource;
   count?: never;
   max?: never;
@@ -191,9 +190,7 @@ function resolveLabelName({
 
 /** A label badge's decorative icon in its slot, or nothing. */
 function renderLabelIcon(source: IconSource, slot: 'start-icon' | 'end-icon') {
-  return isEmptyNode(source) ? null : (
-    <Icon {...toIconProps(source)} className={hooks.slotClass(slot)} />
-  );
+  return !source ? null : <Icon {...toIconProps(source)} className={hooks.slotClass(slot)} />;
 }
 
 function LabelBadge({

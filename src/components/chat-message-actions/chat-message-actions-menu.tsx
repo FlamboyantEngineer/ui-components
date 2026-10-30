@@ -1,4 +1,13 @@
 import {
+  CopyGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  EmojiGlyph,
+  ReplyGlyph,
+  ThumbsDownGlyph,
+  ThumbsUpGlyph,
+} from '../../core/glyphs.js';
+import {
   cloneElement,
   isValidElement,
   useMemo,
@@ -59,7 +68,7 @@ function CommandMenu({
   return (
     <Menu onAction={run}>
       {commands.copyText === undefined ? null : (
-        <MenuItem id="copy" icon="copy">
+        <MenuItem id="copy" icon={CopyGlyph}>
           {strings.copy}
         </MenuItem>
       )}
@@ -74,31 +83,31 @@ function CommandMenu({
             if (chosen) state.rate(chosen, anchor);
           }}
         >
-          <MenuItem id="up" icon="thumbs-up">
+          <MenuItem id="up" icon={ThumbsUpGlyph}>
             {strings.goodResponse}
           </MenuItem>
-          <MenuItem id="down" icon="thumbs-down">
+          <MenuItem id="down" icon={ThumbsDownGlyph}>
             {strings.badResponse}
           </MenuItem>
         </MenuSection>
       ) : null}
       {commands.onReply ? (
-        <MenuItem id="reply" icon="reply">
+        <MenuItem id="reply" icon={ReplyGlyph}>
           {strings.reply}
         </MenuItem>
       ) : null}
       {commands.onReact ? (
-        <MenuItem id="react" icon="emoji">
+        <MenuItem id="react" icon={EmojiGlyph}>
           {strings.addReaction}
         </MenuItem>
       ) : null}
       {commands.onEdit ? (
-        <MenuItem id="edit" icon="edit">
+        <MenuItem id="edit" icon={EditGlyph}>
           {strings.edit}
         </MenuItem>
       ) : null}
       {commands.onDelete ? (
-        <MenuItem id="delete" icon="delete" tone="danger">
+        <MenuItem id="delete" icon={DeleteGlyph} tone="danger">
           {strings.delete}
         </MenuItem>
       ) : null}

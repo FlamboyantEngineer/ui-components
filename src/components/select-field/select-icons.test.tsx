@@ -1,3 +1,4 @@
+import { CheckGlyph, InfoGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -6,14 +7,14 @@ import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const symbols: SelectFieldOption[] = [
   { id: 'star', label: 'Star', icon: <svg aria-label="Star glyph" /> },
-  { id: 'check', label: 'Check', icon: 'check' },
-  { id: 'info', label: 'Info', icon: 'info' },
+  { id: 'check', label: 'Check', icon: CheckGlyph },
+  { id: 'info', label: 'Info', icon: InfoGlyph },
 ];
 
 const many: SelectFieldOption[] = Array.from({ length: 14 }, (_, index) => ({
   id: `symbol-${index}`,
   label: `Symbol ${index}`,
-  icon: 'plus',
+  icon: PlusGlyph,
 }));
 
 describe('SelectField', () => {

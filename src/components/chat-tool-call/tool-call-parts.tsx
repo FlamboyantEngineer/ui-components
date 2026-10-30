@@ -1,8 +1,24 @@
+import {
+  ClockGlyph,
+  EditGlyph,
+  ErrorGlyph,
+  FileTextGlyph,
+  GlobeGlyph,
+  HandRaisedGlyph,
+  NoSymbolGlyph,
+  RefreshGlyph,
+  SearchGlyph,
+  SuccessGlyph,
+  TerminalGlyph,
+  WrenchGlyph,
+  XCircleGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
+
 // The parts of a tool call's card: the title in its trigger and the body its panel shows.
 
 import { useId, useMemo, type ReactNode } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
@@ -44,24 +60,24 @@ interface ToolCallBodyProps {
   children?: ReactNode;
 }
 
-const statusGlyphs: Readonly<Record<ChatToolCallStatus, GlyphName>> = {
-  pending: 'clock',
-  running: 'refresh',
-  'approval-requested': 'hand-raised',
-  succeeded: 'success',
-  failed: 'error',
-  denied: 'no-symbol',
-  cancelled: 'x-circle',
+const statusGlyphs: Readonly<Record<ChatToolCallStatus, GlyphComponent>> = {
+  pending: ClockGlyph,
+  running: RefreshGlyph,
+  'approval-requested': HandRaisedGlyph,
+  succeeded: SuccessGlyph,
+  failed: ErrorGlyph,
+  denied: NoSymbolGlyph,
+  cancelled: XCircleGlyph,
 };
 
 /** The glyph of each kind of call, shown once the call succeeded and by groups of steps. */
-export const toolCallKindGlyphs: Readonly<Record<ChatToolCallKind, GlyphName>> = {
-  read: 'file-text',
-  edit: 'edit',
-  command: 'terminal',
-  search: 'search',
-  fetch: 'globe',
-  other: 'wrench',
+export const toolCallKindGlyphs: Readonly<Record<ChatToolCallKind, GlyphComponent>> = {
+  read: FileTextGlyph,
+  edit: EditGlyph,
+  command: TerminalGlyph,
+  search: SearchGlyph,
+  fetch: GlobeGlyph,
+  other: WrenchGlyph,
 };
 
 /** How long the call ran: the short form shown, the long one read by assistive technology. */
@@ -94,7 +110,7 @@ export function ToolCallTitle({
   const glyph = status === 'succeeded' ? toolCallKindGlyphs[kind] : statusGlyphs[status];
   return (
     <DisclosureTitle className={hooks.slotClass('heading')}>
-      <Glyph name={glyph} className={hooks.slotClass('status-glyph')} />
+      <Glyph icon={glyph} className={hooks.slotClass('status-glyph')} />
       <span {...hooks.slot('summary')}>
         <span {...hooks.slot('label')}>{label}</span>{' '}
         {target ? (
@@ -126,7 +142,7 @@ export function ToolCallTitle({
 export function ToolCallError({ message }: { message: string }) {
   return (
     <div {...hooks.slot('error')}>
-      <Glyph name="error" />
+      <Glyph icon={ErrorGlyph} />
       {message}
     </div>
   );

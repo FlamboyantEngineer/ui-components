@@ -1,3 +1,13 @@
+import {
+  CheckGlyph,
+  EditGlyph,
+  ExpandGlyph,
+  FilterGlyph,
+  FitPageGlyph,
+  FitWidthGlyph,
+  SortAscendingGlyph,
+  SortDescendingGlyph,
+} from '../../src/core/glyphs.js';
 import { useId, useState } from 'react';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { InlineError } from '../../src/components/inline-error/inline-error.js';
@@ -198,8 +208,8 @@ mountLab(
             options={
               icons === 'glyphs'
                 ? [
-                    { value: 'up', label: 'Ascending', icon: 'sort-ascending' },
-                    { value: 'down', label: 'Descending', icon: 'sort-descending' },
+                    { value: 'up', label: 'Ascending', icon: SortAscendingGlyph },
+                    { value: 'down', label: 'Descending', icon: SortDescendingGlyph },
                     { value: 'none', label: 'Unsorted' },
                   ]
                 : [
@@ -231,9 +241,9 @@ mountLab(
             sizing="content"
             defaultValue="width"
             options={[
-              { value: 'width', label: 'Fit width', icon: 'fit-width' },
-              { value: 'page', label: 'Fit page', icon: 'fit-page' },
-              { value: 'full', label: 'Full screen', icon: 'expand' },
+              { value: 'width', label: 'Fit width', icon: FitWidthGlyph },
+              { value: 'page', label: 'Fit page', icon: FitPageGlyph },
+              { value: 'full', label: 'Full screen', icon: ExpandGlyph },
             ]}
           />
         )}
@@ -279,7 +289,7 @@ mountLab(
             defaultValue="open"
             options={notes.map((option, index) => ({
               ...option,
-              icon: (['edit', 'check', 'filter'] as const)[index],
+              icon: [EditGlyph, CheckGlyph, FilterGlyph][index],
             }))}
           />
         )}

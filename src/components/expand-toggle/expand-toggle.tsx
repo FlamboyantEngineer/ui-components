@@ -1,8 +1,13 @@
+import {
+  ChevronDownGlyph,
+  ChevronLeftGlyph,
+  ChevronRightGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 import { useContext } from 'react';
 import { DisclosureStateContext, useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
@@ -34,10 +39,10 @@ export interface ExpandToggleProps
 const hooks = createHooks('expand-toggle');
 
 /** The chevron of a disclosure: down while expanded, else pointing to the inline end. */
-export function useExpandGlyph(isExpanded: boolean): GlyphName {
+export function useExpandGlyph(isExpanded: boolean): GlyphComponent {
   const { direction } = useLocale();
-  if (isExpanded) return 'chevron-down';
-  return direction === 'rtl' ? 'chevron-left' : 'chevron-right';
+  if (isExpanded) return ChevronDownGlyph;
+  return direction === 'rtl' ? ChevronLeftGlyph : ChevronRightGlyph;
 }
 
 /**

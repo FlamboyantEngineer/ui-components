@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../core/glyphs.js';
 import { useCallback, useRef, type KeyboardEvent } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -196,7 +197,7 @@ export function FolderTree<T extends FolderItem>({
             aria-label={tree['aria-label']}
             aria-labelledby={tree['aria-labelledby']}
             getTextValue={(node) => node.name}
-            getIcon={() => 'folder'}
+            getIcon={() => FolderGlyph}
             renderLabel={renderLabel}
             renderMeta={createLoadErrorRenderer(model)}
             hasChildItems={(node) => node.isLazy}

@@ -1,3 +1,4 @@
+import { CheckGlyph, EditGlyph, FolderGlyph } from '../../src/core/glyphs.js';
 import { RecordChipCases } from './record-chip-cases.js';
 import { RecordLabel } from '../../src/components/record-label/record-label.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -5,9 +6,9 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 const sizes = ['sm', 'md', 'lg'] as const;
 
 const records = [
-  { identifier: 'REQ-12', name: 'Brake pressure limits', icon: 'edit' },
-  { identifier: 'TEST-48', name: 'Cold start at minus twenty', icon: 'check' },
-  { identifier: 'DOC-3', name: 'Field guide', icon: 'folder' },
+  { identifier: 'REQ-12', name: 'Brake pressure limits', icon: EditGlyph },
+  { identifier: 'TEST-48', name: 'Cold start at minus twenty', icon: CheckGlyph },
+  { identifier: 'DOC-3', name: 'Field guide', icon: FolderGlyph },
 ] as const;
 
 mountLab(
@@ -27,7 +28,7 @@ mountLab(
             <RecordLabel
               identifier="REQ-12"
               name={content === 'identifier' ? undefined : 'Brake pressure limits'}
-              icon={content === 'no icon' ? undefined : 'edit'}
+              icon={content === 'no icon' ? undefined : EditGlyph}
               href={kind === 'link' ? '#req-12' : undefined}
               size={size}
             />
@@ -45,7 +46,7 @@ mountLab(
               <RecordLabel
                 identifier="REQ-1024"
                 name="Brake pressure limits for wet and icy road surfaces"
-                icon="edit"
+                icon={EditGlyph}
                 truncate={name === 'truncate'}
                 href={kind === 'link' ? '#req-1024' : undefined}
               />

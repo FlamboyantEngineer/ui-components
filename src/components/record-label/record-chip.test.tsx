@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../core/glyphs.js';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -30,7 +31,7 @@ describe('RecordLabel', () => {
         mode="chip"
         identifier="REQ-12"
         name="Brake pressure limits"
-        icon="folder"
+        icon={FolderGlyph}
         version="v3"
         type="Requirement"
         state={<Badge tone="success">Approved</Badge>}

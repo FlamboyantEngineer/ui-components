@@ -1,3 +1,4 @@
+import { BellSlashGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -133,7 +134,7 @@ export function ChatListRow({ conversation, renderActions, getNow }: ChatListRow
       ) : null}
       {isMuted ? (
         <Icon
-          glyph="bell-slash"
+          icon={BellSlashGlyph}
           label={strings.conversationMuted}
           className={listHooks.slotClass('muted')}
         />

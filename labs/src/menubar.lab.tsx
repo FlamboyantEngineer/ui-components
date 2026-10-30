@@ -1,3 +1,12 @@
+import {
+  CopyGlyph,
+  DeleteGlyph,
+  HelpGlyph,
+  PlusGlyph,
+  RedoGlyph,
+  SaveGlyph,
+  UndoGlyph,
+} from '../../src/core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
@@ -14,7 +23,7 @@ const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const orientations = ['horizontal', 'vertical'] as const;
 
 const fileEntries: MenuEntry[] = [
-  { id: 'new', label: 'New file', icon: 'plus', shortcut: 'Ctrl+N' },
+  { id: 'new', label: 'New file', icon: PlusGlyph, shortcut: 'Ctrl+N' },
   {
     id: 'recent',
     label: 'Open recent',
@@ -31,24 +40,24 @@ const fileEntries: MenuEntry[] = [
       },
     ],
   },
-  { id: 'save', label: 'Save', icon: 'save', shortcut: 'Ctrl+S' },
+  { id: 'save', label: 'Save', icon: SaveGlyph, shortcut: 'Ctrl+S' },
   { type: 'separator', id: 'rule' },
   { id: 'close', label: 'Close', shortcut: 'Ctrl+W' },
 ];
 
 const editEntries: MenuEntry[] = [
-  { id: 'undo', label: 'Undo', icon: 'undo', shortcut: 'Ctrl+Z' },
-  { id: 'redo', label: 'Redo', icon: 'redo', shortcut: 'Ctrl+Shift+Z' },
+  { id: 'undo', label: 'Undo', icon: UndoGlyph, shortcut: 'Ctrl+Z' },
+  { id: 'redo', label: 'Redo', icon: RedoGlyph, shortcut: 'Ctrl+Shift+Z' },
   { type: 'separator', id: 'rule' },
   { id: 'cut', label: 'Cut', shortcut: 'Ctrl+X' },
-  { id: 'copy', label: 'Copy', icon: 'copy', shortcut: 'Ctrl+C' },
+  { id: 'copy', label: 'Copy', icon: CopyGlyph, shortcut: 'Ctrl+C' },
   { id: 'paste', label: 'Paste', shortcut: 'Ctrl+V', isDisabled: true },
   { type: 'separator', id: 'danger-rule' },
-  { id: 'delete', label: 'Delete', icon: 'delete', tone: 'danger' },
+  { id: 'delete', label: 'Delete', icon: DeleteGlyph, tone: 'danger' },
 ];
 
 const helpEntries: MenuEntry[] = [
-  { id: 'guide', label: 'Guide', icon: 'help', description: 'Opens the getting started guide' },
+  { id: 'guide', label: 'Guide', icon: HelpGlyph, description: 'Opens the getting started guide' },
   { id: 'shortcuts', label: 'Keyboard shortcuts', shortcut: 'Ctrl+/' },
 ];
 

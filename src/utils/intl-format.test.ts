@@ -24,4 +24,16 @@ describe('intl formatters', () => {
     );
     expect(getRelativeTimeFormat('fr-FR', { numeric: 'auto' }).format(-1, 'day')).toBe('hier');
   });
+
+  it('UIC-INTL-FORMAT-1.2 evicts old configurations while keeping recently used formatters', () => {
+    const first = getNumberFormat('en-US-x-evict');
+    const recent = getNumberFormat('en-US-x-keep');
+    for (let index = 0; index < 129; index += 1) {
+      getNumberFormat(`en-US-x-cache-${index}`);
+      expect(getNumberFormat('en-US-x-keep')).toBe(recent);
+    }
+    const replacement = getNumberFormat('en-US-x-evict');
+    expect(replacement).not.toBe(first);
+    expect(replacement.format(1234.5)).toBe(first.format(1234.5));
+  });
 });

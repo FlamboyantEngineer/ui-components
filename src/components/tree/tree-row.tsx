@@ -1,9 +1,15 @@
+import {
+  ChevronDownGlyph,
+  ChevronRightGlyph,
+  MinusGlyph,
+  PlusGlyph,
+  type GlyphComponent,
+} from '../../core/glyphs.js';
 // The anatomy of one tree row, inside React Aria's row content.
 
 import type { ReactNode } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
-import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Checkbox } from '../checkbox/checkbox.js';
@@ -31,9 +37,12 @@ export type RowContentOptions<T extends TreeItemData> = Pick<
   | 'loads'
 > & { isMovable: (key: Key) => boolean; hasReorder: boolean };
 
-const expandGlyphs: Record<TreeExpandGlyph, { expanded: GlyphName; collapsed: GlyphName }> = {
-  chevron: { expanded: 'chevron-down', collapsed: 'chevron-right' },
-  'plus-minus': { expanded: 'minus', collapsed: 'plus' },
+const expandGlyphs: Record<
+  TreeExpandGlyph,
+  { expanded: GlyphComponent; collapsed: GlyphComponent }
+> = {
+  chevron: { expanded: ChevronDownGlyph, collapsed: ChevronRightGlyph },
+  'plus-minus': { expanded: MinusGlyph, collapsed: PlusGlyph },
 };
 
 /** The expand button of a row with children, or a spacer holding its place. */
@@ -47,7 +56,7 @@ function TreeExpandButton({ state, glyph }: { state: TreeItemState; glyph: TreeE
       className={hooks.slotClass('expand')}
       aria-label={state.isExpanded ? strings.collapse : strings.expand}
     >
-      <Icon glyph={state.isExpanded ? glyphs.expanded : glyphs.collapsed} size="sm" />
+      <Icon icon={state.isExpanded ? glyphs.expanded : glyphs.collapsed} size="sm" />
     </AriaButton>
   );
 }
@@ -109,9 +118,7 @@ export function TreeRowContent<T extends TreeItemData>(props: {
           isIndeterminate={options.isIndeterminate(item.id)}
         />
       ) : null}
-      {isEmptyNode(icon) ? null : (
-        <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />
-      )}
+      {!icon ? null : <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />}
       <TreeRowLabel item={item} state={state} options={options} />
       {isEmptyNode(meta) ? null : <span {...hooks.slot('meta')}>{meta}</span>}
       <TreeLoadError loads={options.loads} itemKey={item.id} />

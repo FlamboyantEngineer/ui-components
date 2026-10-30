@@ -1,3 +1,4 @@
+import { ListTaskGlyph, QuoteGlyph } from '../../src/core/glyphs.js';
 // The Chat lab's host controls: Quote in an assistant chat, the composer's row of controls (the "+"
 // menu, an approval select and a Plan toggle at the start, a selection toggle and the model picker
 // at the end), Ctrl+Enter, blank messages carried by selected context or files, and sending the
@@ -157,7 +158,7 @@ function HostDemo() {
                 />
                 <MessageComposerToggle
                   label="Plan"
-                  icon="list-task"
+                  icon={ListTaskGlyph}
                   isSelected={isPlanning}
                   onChange={setPlanning}
                 />
@@ -167,7 +168,7 @@ function HostDemo() {
               <>
                 <MessageComposerToggle
                   label="Ask about the selection"
-                  icon="quote"
+                  icon={QuoteGlyph}
                   isSelected={useSelection}
                   onChange={setUseSelection}
                 />

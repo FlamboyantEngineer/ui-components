@@ -1,3 +1,4 @@
+import { CheckGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -58,7 +59,7 @@ export function QuestionTabs({
               key={item.id}
               id={item.id}
               {...hooks.slot('tab', { answered: isAnswered })}
-              icon={isAnswered && answeredMark === 'icon' ? 'check' : undefined}
+              icon={isAnswered && answeredMark === 'icon' ? CheckGlyph : undefined}
               aria-describedby={isAnswered ? answeredId : undefined}
             >
               {item.header || strings.questionStep(index + 1)}

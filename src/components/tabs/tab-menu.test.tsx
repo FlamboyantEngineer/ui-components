@@ -1,3 +1,4 @@
+import { DeleteGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -98,6 +99,14 @@ describe('Tab menu', { timeout: 15_000 }, () => {
     );
     fireEvent.contextMenu(tab('Banana'));
     expect(menuItems()).toEqual(['Move up', 'Move down']);
+    expect(
+      screen.getByRole('menuitem', { name: 'Move up' }).querySelector('[data-glyph="arrow-up"]'),
+    ).not.toBeNull();
+    expect(
+      screen
+        .getByRole('menuitem', { name: 'Move down' })
+        .querySelector('[data-glyph="arrow-down"]'),
+    ).not.toBeNull();
     unmount();
     render(
       <UiProvider locale="he">
@@ -106,6 +115,16 @@ describe('Tab menu', { timeout: 15_000 }, () => {
     );
     fireEvent.contextMenu(tab('Banana'));
     expect(menuItems()).toEqual(['Move right', 'Move left']);
+    expect(
+      screen
+        .getByRole('menuitem', { name: 'Move right' })
+        .querySelector('[data-glyph="arrow-right"]'),
+    ).not.toBeNull();
+    expect(
+      screen
+        .getByRole('menuitem', { name: 'Move left' })
+        .querySelector('[data-glyph="arrow-left"]'),
+    ).not.toBeNull();
   });
 
   it("UIC-TABS-3.5 shows the owner's entries, changed or added", async () => {
@@ -117,7 +136,7 @@ describe('Tab menu', { timeout: 15_000 }, () => {
     render(<Fruit getMenuItems={getMenuItems} onRemove={vi.fn()} />);
     fireEvent.contextMenu(tab('Cherry'));
     expect(getMenuItems).toHaveBeenLastCalledWith('cherry', [
-      expect.objectContaining({ id: 'delete', label: 'Delete', tone: 'danger', icon: 'delete' }),
+      expect.objectContaining({ id: 'delete', label: 'Delete', tone: 'danger', icon: DeleteGlyph }),
     ]);
     expect(menuItems()).toEqual(['Delete', 'Pin cherry']);
     expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveAttribute(

@@ -1,3 +1,4 @@
+import { DragHandleGlyph } from '../../core/glyphs.js';
 import type { PointerEvent } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -89,7 +90,7 @@ export function DragHandle({ className, excludeFromTabOrder = true, ...rest }: D
       {...hooks.root({ className, props: rest })}
       slot="drag"
     >
-      <Icon glyph="drag-handle" size="sm" />
+      <Icon icon={DragHandleGlyph} size="sm" />
     </AriaButton>
   );
 }

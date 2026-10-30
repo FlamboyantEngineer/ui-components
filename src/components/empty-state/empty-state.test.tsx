@@ -1,3 +1,4 @@
+import { FolderGlyph } from '../../core/glyphs.js';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -102,7 +103,7 @@ describe('EmptyState', () => {
 
   it('UIC-EMPTY-STATE-2.1 draws a decorative illustration before the heading, or the spinner while loading', () => {
     const { container, rerender } = render(
-      <EmptyState icon="folder" title="No files" description="Upload a file to start." />,
+      <EmptyState icon={FolderGlyph} title="No files" description="Upload a file to start." />,
     );
     const root = container.firstElementChild as HTMLElement;
     const [icon, heading] = Array.from(root.children);
@@ -114,7 +115,7 @@ describe('EmptyState', () => {
 
     rerender(<EmptyState icon={<img alt="" src="empty.svg" />} description="Nothing yet." />);
     expect(container.querySelector('.ui-empty-state__icon img')).not.toBeNull();
-    rerender(<EmptyState variant="loading" icon="folder" description="Loading..." />);
+    rerender(<EmptyState variant="loading" icon={FolderGlyph} description="Loading..." />);
     expect(container.querySelector('.ui-empty-state__icon')).toBeNull();
     expect(container.querySelector('.ui-empty-state__spinner')).not.toBeNull();
     rerender(<EmptyState icon={null} description="Nothing yet." />);

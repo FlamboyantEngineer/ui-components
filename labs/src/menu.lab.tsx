@@ -1,7 +1,16 @@
+import {
+  ChevronDownGlyph,
+  CloseGlyph,
+  MinusGlyph,
+  MoreGlyph,
+  PlusGlyph,
+  RefreshGlyph,
+  RestoreGlyph,
+  UndoGlyph,
+} from '../../src/core/glyphs.js';
 import { useState, type CSSProperties } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-
 import {
   Menu,
   MenuItem,
@@ -32,15 +41,15 @@ const dot = (
 
 const itemKinds = {
   plain: { id: 'item', label: 'Rename' },
-  icon: { id: 'item', label: 'New file', icon: 'plus' },
+  icon: { id: 'item', label: 'New file', icon: PlusGlyph },
   'custom icon': { id: 'item', label: 'Record', icon: dot },
   description: {
     id: 'item',
     label: 'Restore',
-    icon: 'restore',
+    icon: RestoreGlyph,
     description: 'Back to the saved copy',
   },
-  shortcut: { id: 'item', label: 'Undo', icon: 'undo', shortcut: 'Ctrl+Z' },
+  shortcut: { id: 'item', label: 'Undo', icon: UndoGlyph, shortcut: 'Ctrl+Z' },
   submenu: { id: 'item', label: 'Share', items: [{ id: 'mail', label: 'Mail' }] },
   custom: {
     id: 'item',
@@ -59,7 +68,7 @@ function stateMenu(state: string): MenuProps {
   const item: MenuEntry = {
     id: 'item',
     label: state === 'pending' ? 'Loading…' : state === 'danger' ? 'Delete' : 'Archive',
-    icon: 'minus',
+    icon: MinusGlyph,
     tone: state === 'danger' ? 'danger' : 'neutral',
     isDisabled: state === 'disabled' || state === 'focusable disabled',
     focusableWhenDisabled: state === 'focusable disabled',
@@ -78,7 +87,7 @@ function stateMenu(state: string): MenuProps {
 function MenuButton({ label, ...menu }: MenuProps & { label: string }) {
   return (
     <MenuTrigger>
-      <Button endIcon="chevron-down">{label}</Button>
+      <Button endIcon={ChevronDownGlyph}>{label}</Button>
       <MenuPopover>
         <Menu {...menu} />
       </MenuPopover>
@@ -87,7 +96,7 @@ function MenuButton({ label, ...menu }: MenuProps & { label: string }) {
 }
 
 const fileEntries: MenuEntry[] = [
-  { id: 'new', label: 'New file', icon: 'plus', shortcut: 'Ctrl+N' },
+  { id: 'new', label: 'New file', icon: PlusGlyph, shortcut: 'Ctrl+N' },
   { id: 'open', label: 'Open…', shortcut: 'Ctrl+O' },
   { id: 'recent', label: 'Recent (none)', isDisabled: true },
   { type: 'separator', id: 'rule' },
@@ -111,7 +120,7 @@ const fileEntries: MenuEntry[] = [
     type: 'section',
     id: 'danger-zone',
     title: 'Danger zone',
-    items: [{ id: 'delete', label: 'Delete', icon: 'close', tone: 'danger' }],
+    items: [{ id: 'delete', label: 'Delete', icon: CloseGlyph, tone: 'danger' }],
   },
 ];
 
@@ -131,7 +140,7 @@ function JsxMenu() {
   return (
     <>
       <MenuTrigger>
-        <Button icon="more" label="Edit actions" variant="secondary" />
+        <Button icon={MoreGlyph} label="Edit actions" variant="secondary" />
         <MenuPopover>
           <Menu onAction={onAction}>
             <MenuSection title="Clipboard">
@@ -208,7 +217,7 @@ function CheckItemMenu() {
   return (
     <>
       <MenuButton label="Editor" onAction={(key) => setLast(String(key))}>
-        <MenuItem id="reload" icon="refresh">
+        <MenuItem id="reload" icon={RefreshGlyph}>
           Reload
         </MenuItem>
         <MenuItem
@@ -297,7 +306,7 @@ const manyCities: MenuEntry[] = Array.from({ length: 5000 }, (_, index) => ({
 function VirtualizedMenu() {
   return (
     <MenuTrigger>
-      <Button endIcon="chevron-down">5000 cities</Button>
+      <Button endIcon={ChevronDownGlyph}>5000 cities</Button>
       <MenuPopover>
         <Menu aria-label="5000 cities" items={manyCities} virtualized />
       </MenuPopover>

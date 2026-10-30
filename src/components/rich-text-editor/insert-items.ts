@@ -1,6 +1,6 @@
+import { MinusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The blocks the insert menus offer, and how a typed query finds them.
 
-import type { GlyphName } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import { scoreCompletion } from '../completion-list/completion-list.js';
@@ -13,8 +13,8 @@ export interface InsertMenuItem {
   label: string;
   /** A short explanation shown beside the label. */
   description?: string | undefined;
-  /** A built-in glyph shown before the label in the insert button's menu. */
-  icon?: GlyphName | undefined;
+  /** An imported icon component shown before the label in the insert button's menu. */
+  icon?: GlyphComponent | undefined;
   /** Other words that find it, such as `title` for a heading. */
   keywords?: readonly string[] | undefined;
   /** What choosing it runs at the caret. */
@@ -56,7 +56,7 @@ export function getInsertItems(
     {
       id: 'divider',
       label: strings.divider,
-      icon: 'minus' as const,
+      icon: MinusGlyph,
       command: { type: 'insert', node: 'horizontalRule' } as const,
     },
   ];

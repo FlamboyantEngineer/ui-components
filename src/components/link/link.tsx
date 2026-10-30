@@ -1,3 +1,4 @@
+import { ExternalLinkGlyph } from '../../core/glyphs.js';
 import type { JSX, ReactElement, ReactNode, Ref } from 'react';
 import { Link as AriaLink } from '../../primitives/index.js';
 import type {
@@ -87,7 +88,7 @@ function NewTabParts() {
   return (
     <>
       {' '}
-      <Glyph name="external-link" className={hooks.slotClass('external-icon')} />
+      <Glyph icon={ExternalLinkGlyph} className={hooks.slotClass('external-icon')} />
       <VisuallyHidden elementType="span" className={hooks.slotClass('new-tab-label')}>
         {strings.opensInNewTab}
       </VisuallyHidden>

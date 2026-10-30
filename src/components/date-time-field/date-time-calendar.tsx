@@ -1,3 +1,4 @@
+import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useContext, useId, type ReactNode } from 'react';
 import {
   CalendarCell,
@@ -15,7 +16,6 @@ import { PopoverPresence } from '../popover/popover.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-
 import { useLayerZIndex } from '../portal/portal.js';
 import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
@@ -111,7 +111,7 @@ export function CalendarBody({
       <header {...hooks.slot('calendar-header')} role="none">
         <Button
           slot="previous"
-          icon="chevron-left"
+          icon={ChevronLeftGlyph}
           label={strings.previous}
           size="sm"
           className={hooks.slotClass('calendar-nav')}
@@ -123,7 +123,7 @@ export function CalendarBody({
         )}
         <Button
           slot="next"
-          icon="chevron-right"
+          icon={ChevronRightGlyph}
           label={strings.next}
           size="sm"
           className={hooks.slotClass('calendar-nav')}

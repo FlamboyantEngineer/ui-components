@@ -1,3 +1,12 @@
+import {
+  CloseGlyph,
+  DeleteGlyph,
+  EditGlyph,
+  EyeGlyph,
+  HelpGlyph,
+  MoreGlyph,
+  UndoGlyph,
+} from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
@@ -10,7 +19,7 @@ export function ButtonIconCases() {
           <StateMatrix
             axes={{ variant: buttonVariants, size: buttonSizes }}
             render={({ variant, size }) => (
-              <Button icon="more" label="More actions" variant={variant} size={size} />
+              <Button icon={MoreGlyph} label="More actions" variant={variant} size={size} />
             )}
           />
         </LabSection>
@@ -19,7 +28,7 @@ export function ButtonIconCases() {
             axes={{ variant: buttonVariants, state: buttonStates }}
             render={({ variant, state }) => (
               <Button
-                icon="close"
+                icon={CloseGlyph}
                 label="Close"
                 variant={variant}
                 isSelected={state === 'selected'}
@@ -38,7 +47,7 @@ export function ButtonIconCases() {
             axes={{ hint: ['shortcut', 'tooltip and shortcut'], size: buttonSizes }}
             render={({ hint, size }) => (
               <Button
-                icon="undo"
+                icon={UndoGlyph}
                 label="Undo"
                 size={size}
                 shortcut="Ctrl+Z"
@@ -52,19 +61,19 @@ export function ButtonIconCases() {
           description="A tooltip that repeats the label names the button, so it is announced once; a longer tooltip describes it."
         >
           <div data-lab-demo="tooltip-name">
-            <Button icon="edit" label="Rename" tooltip="Rename" />{' '}
-            <Button icon="delete" label="Delete" tooltip="Delete the selected rows" />
+            <Button icon={EditGlyph} label="Rename" tooltip="Rename" />{' '}
+            <Button icon={DeleteGlyph} label="Delete" tooltip="Delete the selected rows" />
           </div>
         </LabSection>
         <LabSection title="Icon-only: Toggles and links">
           <div data-lab-demo="toggle-link">
             <Button
-              icon="eye"
+              icon={EyeGlyph}
               label="Show hidden files"
               tooltip="Show hidden files"
               defaultSelected={false}
             />{' '}
-            <Button icon="help" label="Open help" tooltip="Open help" href="#help" />
+            <Button icon={HelpGlyph} label="Open help" tooltip="Open help" href="#help" />
           </div>
         </LabSection>
       </>

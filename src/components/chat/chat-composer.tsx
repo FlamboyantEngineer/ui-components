@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
@@ -169,7 +170,7 @@ function ComposerBanner({ id, banner }: { id: string; banner: BannerContent }) {
       </div>
       {banner.onCancel ? (
         <Button
-          icon="close"
+          icon={CloseGlyph}
           label={strings.chatCancelReply}
           size="sm"
           className={hooks.slotClass('banner-cancel')}

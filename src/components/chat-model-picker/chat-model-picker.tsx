@@ -1,3 +1,4 @@
+import { SparklesGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -176,7 +177,7 @@ export function ChatModelPicker(props: ChatModelPickerProps) {
         })}
         id={id}
         icon={model.icon}
-        compactIcon={model.icon ?? 'sparkles'}
+        compactIcon={model.icon ?? SparklesGlyph}
         name={name}
         hasMenu
         isDisabled={isDisabled}

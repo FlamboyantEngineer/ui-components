@@ -1,3 +1,4 @@
+import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
 import { useState } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -20,7 +21,7 @@ export interface CopyButtonProps
 
 const hooks = createHooks('copy-button', ['button', 'status']);
 
-const statusGlyphs = { idle: 'copy', copied: 'check', failed: 'error' } as const;
+const statusGlyphs = { idle: CopyGlyph, copied: CheckGlyph, failed: ErrorGlyph } as const;
 
 /**
  * An icon button that copies `value` to the clipboard, shows a check mark (or an error glyph)

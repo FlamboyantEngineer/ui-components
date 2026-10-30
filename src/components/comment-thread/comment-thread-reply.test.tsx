@@ -1,3 +1,4 @@
+import { LinkGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -66,7 +67,7 @@ describe('CommentThreadReply', () => {
         author={ana}
         time={minutesAgo(1)}
         text="Hi"
-        actions={[{ id: 'copy-link', label: 'Copy link', icon: 'link' }]}
+        actions={[{ id: 'copy-link', label: 'Copy link', icon: LinkGlyph }]}
         onAction={onAction}
       />,
     );

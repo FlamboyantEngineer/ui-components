@@ -27,7 +27,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-1.4 - Separators
 
-Between consecutive crumbs, and never after the last, the trail shall draw a decorative separator in the `ui-breadcrumb__separator` slot, a small [Icon](ICON.md) hidden from assistive technology. It defaults to a chevron pointing along the reading direction (`chevron-right`, or `chevron-left` in right-to-left locales); `separator` replaces it with another glyph name or node.
+Between consecutive crumbs, and never after the last, the trail shall draw a decorative separator in the `ui-breadcrumb__separator` slot, a small [Icon](ICON.md) hidden from assistive technology. It defaults to a chevron pointing along the reading direction (`chevron-right`, or `chevron-left` in right-to-left locales); `separator` replaces it with another icon component or element.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`

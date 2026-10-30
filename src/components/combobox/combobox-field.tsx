@@ -1,3 +1,4 @@
+import { ChevronDownGlyph, CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
 import {
   useContext,
   useLayoutEffect,
@@ -70,7 +71,7 @@ function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null
   return (
     <Button
       slot={null}
-      icon="close"
+      icon={CloseGlyph}
       label={strings.clear}
       variant="bare"
       size="sm"
@@ -137,7 +138,7 @@ export function ComboboxField({
         <ComboboxChips {...chips} size={size === 'xs' ? 'sm' : size} isEditable={isEditable} />
       )}
       {variant === 'search' ? (
-        <Glyph name="search" className={hooks.slotClass('search-icon')} />
+        <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
       ) : null}
       <Input
         ref={input.setRef}
@@ -150,7 +151,7 @@ export function ComboboxField({
       {isPending ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
       {isEditable ? <ClearButton inputRef={input.ref} /> : null}
       <AriaButton className={hooks.slotClass('button')}>
-        <Glyph name="chevron-down" />
+        <Glyph icon={ChevronDownGlyph} />
       </AriaButton>
     </Group>
   );

@@ -1,3 +1,4 @@
+import { SortNoneGlyph } from '../../core/glyphs.js';
 import {
   act,
   createEvent,
@@ -49,7 +50,7 @@ const tasks: Task[] = [
 type TaskBoardProps = Partial<BoardProps<Task>>;
 
 const sortAction = (column: BoardColumn, onPress?: () => void) => (
-  <Button size="sm" icon="sort-none" label={`Sort ${column.title}`} onPress={onPress} />
+  <Button size="sm" icon={SortNoneGlyph} label={`Sort ${column.title}`} onPress={onPress} />
 );
 
 function TaskBoard(props: TaskBoardProps) {

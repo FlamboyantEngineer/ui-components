@@ -1,3 +1,4 @@
+import { MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
@@ -15,7 +16,7 @@ const items = [
 describe('DropdownMenu', () => {
   it('UIC-DROPDOWN-MENU-1.1 draws a button with a start icon and a caret', () => {
     const { container, rerender } = render(
-      <DropdownMenu label="Edit" icon="plus" variant="primary" size="sm" items={items} />,
+      <DropdownMenu label="Edit" icon={PlusGlyph} variant="primary" size="sm" items={items} />,
     );
     const trigger = screen.getByRole('button', { name: 'Edit' });
     expect(trigger).toHaveClass('ui-button', 'ui-dropdown-menu');
@@ -43,7 +44,7 @@ describe('DropdownMenu', () => {
     expect(trigger.querySelector('.ui-button__icon')).toHaveAttribute('data-glyph', 'more');
     expect(trigger.querySelector('.ui-dropdown-menu__caret')).toBeNull();
     expectHooksMatchSpec(container, 'DROPDOWN-MENU');
-    rerender(<DropdownMenu label="Options" iconOnly icon="more-vertical" items={items} />);
+    rerender(<DropdownMenu label="Options" iconOnly icon={MoreVerticalGlyph} items={items} />);
     expect(
       screen.getByRole('button', { name: 'Options' }).querySelector('.ui-button__icon'),
     ).toHaveAttribute('data-glyph', 'more-vertical');
@@ -196,7 +197,7 @@ describe('DropdownMenu', () => {
     render(
       <DropdownMenu
         label="Save"
-        icon="save"
+        icon={SaveGlyph}
         variant="primary"
         size="sm"
         items={[{ id: 'copy', label: 'Save a copy' }]}

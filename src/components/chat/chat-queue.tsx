@@ -1,3 +1,4 @@
+import { CloseGlyph, EditGlyph } from '../../core/glyphs.js';
 import { useId, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
@@ -51,7 +52,7 @@ export function ChatQueue({
             {onQueueChange ? (
               <>
                 <Button
-                  icon="edit"
+                  icon={EditGlyph}
                   label={strings.chatEditQueued(index + 1)}
                   size="sm"
                   className={hooks.slotClass('queue-edit')}
@@ -59,7 +60,7 @@ export function ChatQueue({
                 />
                 <Button
                   ref={(button) => removal.register(entry.id, button)}
-                  icon="close"
+                  icon={CloseGlyph}
                   label={strings.chatRemoveQueued(index + 1)}
                   size="sm"
                   className={hooks.slotClass('queue-remove')}

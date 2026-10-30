@@ -1,7 +1,7 @@
+import { RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { ButtonGroup } from '../../src/components/button-group/button-group.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const densities = ['regular', 'compact', 'attached'] as const;
@@ -40,8 +40,8 @@ mountLab(
             density={density}
             orientation={orientation}
           >
-            <Button icon="undo" label="Undo" tooltip="Undo" />
-            <Button icon="redo" label="Redo" tooltip="Redo" />
+            <Button icon={UndoGlyph} label="Undo" tooltip="Undo" />
+            <Button icon={RedoGlyph} label="Redo" tooltip="Redo" />
             <DropdownMenu
               iconOnly
               label="More history"

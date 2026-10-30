@@ -1,3 +1,4 @@
+import { PlusGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -478,7 +479,7 @@ describe('DiagramCanvas', () => {
     const onNodeAdd = vi.fn();
     const palette = (
       <>
-        <DiagramPaletteItem type="valve" label="Valve" icon="plus" data-testid="valve-item" />
+        <DiagramPaletteItem type="valve" label="Valve" icon={PlusGlyph} data-testid="valve-item" />
         <DiagramPaletteItem type="tank" label="Tank" className="host" />
       </>
     );

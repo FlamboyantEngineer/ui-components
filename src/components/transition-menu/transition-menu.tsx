@@ -1,3 +1,4 @@
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
@@ -162,7 +163,7 @@ export function TransitionMenu({
             variant="bare"
             className={hooks.slotClass('trigger')}
             aria-label={strings.stateTrigger(label ?? strings.status, current.label)}
-            endIcon="chevron-down"
+            endIcon={ChevronDownGlyph}
             isDisabled={isDisabled}
             isPending={isPending}
           >

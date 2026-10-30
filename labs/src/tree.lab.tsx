@@ -1,3 +1,4 @@
+import { MoreGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
@@ -102,7 +103,9 @@ function SelectionTree() {
         onSelectionChange={(keys) => setSelected(keys === 'all' ? 'all' : [...keys].join(', '))}
         onAction={(key) => setAction(String(key))}
         renderMeta={sizeOf}
-        renderActions={(entry) => <Button icon="more" size="sm" label={`More for ${entry.name}`} />}
+        renderActions={(entry) => (
+          <Button icon={MoreGlyph} size="sm" label={`More for ${entry.name}`} />
+        )}
       />
       <p data-lab-output>
         Selected: {selected} · Opened: {action}

@@ -1,3 +1,4 @@
+import { CloseGlyph } from '../../core/glyphs.js';
 import { Tag, TagGroup, TagList } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -86,7 +87,7 @@ export function SelectChips({
                     {allowsRemoving ? (
                       <Button
                         slot="remove"
-                        icon="close"
+                        icon={CloseGlyph}
                         label={strings.remove}
                         variant="bare"
                         size="xs"

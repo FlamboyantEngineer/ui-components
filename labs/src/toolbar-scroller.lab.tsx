@@ -1,6 +1,6 @@
+import { MoreGlyph, SaveGlyph } from '../../src/core/glyphs.js';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
-
 import {
   ToolbarScroller,
   type ToolbarScrollerItem,
@@ -37,7 +37,7 @@ function Tools({ names }: { names: string[] }) {
           {name}
         </Button>
       ))}
-      <Button icon="more" label="More tools" size="sm" />
+      <Button icon={MoreGlyph} label="More tools" size="sm" />
     </>
   );
 }
@@ -74,7 +74,7 @@ function MenuTools({ width }: { width: keyof typeof menuWidths }) {
   const [last, setLast] = useState('none');
   const tools: ToolbarScrollerItem[] = [
     ...manyTools.map((name) => ({ id: name, label: name, onAction: () => setLast(name) })),
-    { id: 'save', label: 'Save', icon: 'save', priority: 1, onAction: () => setLast('Save') },
+    { id: 'save', label: 'Save', icon: SaveGlyph, priority: 1, onAction: () => setLast('Save') },
   ];
   return (
     <div style={{ width: menuWidths[width] }} data-lab-menu={width}>

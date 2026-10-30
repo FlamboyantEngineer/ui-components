@@ -1,3 +1,4 @@
+import { AdjustmentsGlyph } from '../../core/glyphs.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -69,7 +70,7 @@ export function DisplayOptions({
       <PopoverTrigger>
         <Button
           className={hooks.slotClass('trigger')}
-          startIcon="adjustments"
+          startIcon={AdjustmentsGlyph}
           isDisabled={isDisabled}
         >
           {label ?? strings.display}
