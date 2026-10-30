@@ -234,4 +234,28 @@ test.describe('Tree lab', () => {
     await page.keyboard.press('F2');
     await expect(tree.getByRole('textbox')).toHaveCount(0);
   });
+
+  test('UIC-TREE-7.2 closes the name field of a row locked while renaming', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const area = page.locator('[data-lab-locked-rename]');
+    const tree = area.getByRole('treegrid', { name: 'Rename tasks' });
+    await area.getByRole('button', { name: 'Lock Review in 1.5 seconds' }).click();
+    await tree.getByRole('row', { name: 'Review' }).focus();
+    await page.keyboard.press('F2');
+    const field = tree.getByRole('textbox', { name: 'Rename Review' });
+    await expect(field).toBeFocused();
+    await page.keyboard.type('Approve');
+    await expect(area.locator('[data-lab-output="Locked"]')).toHaveText('review');
+    await expect(field).toHaveCount(0);
+    await expect(tree).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(area.locator('[data-lab-output="Last rename"]')).toHaveText('none');
+    await expect(tree.getByRole('row', { name: 'Review' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
 });

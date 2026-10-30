@@ -264,7 +264,7 @@ function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     disabledKeys,
   });
   const loads = useOwnerLoads(state.items, { getChildren: getAllChildren, ...features });
-  const rename = useTreeRename({ ...parts.rename, getTextValue });
+  const rename = useTreeRename({ ...parts.rename, getTextValue, items, getChildren, disabledKeys });
   const reordering = useTreeReorder({
     items,
     reorder,
