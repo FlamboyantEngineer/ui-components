@@ -1,7 +1,11 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, type RenderResult } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import {
+  createDeferredCompletions,
+  expectReplacedValueDropsCompletions,
+} from '../../../test/completion-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { matchCompletions, type Completion } from '../completion-list/completion-list.js';
 import { findCompletionQuery } from './completion-match.js';
@@ -394,6 +398,26 @@ describe('CodeEditor', () => {
     expect(matchCompletions(vocabulary, 'frba').map(({ label }) => label)).toEqual([
       'fruit.banana',
     ]);
+  });
+
+  it('UIC-CODE-EDITOR-4.2 UIC-COMPLETION-LIST-2.6 drops completions for source the host replaced', async () => {
+    const { source, answer } = createDeferredCompletions();
+    const changes: string[] = [];
+    let view: RenderResult | undefined;
+    const show = (value: string) => {
+      const editor = (
+        <CodeEditor
+          variant="surface"
+          aria-label="Source"
+          value={value}
+          onChange={(next) => changes.push(next)}
+          completions={source}
+        />
+      );
+      if (view) view.rerender(editor);
+      else view = render(editor);
+    };
+    await expectReplacedValueDropsCompletions({ show, answer, changes: () => changes });
   });
 
   it('UIC-CODE-EDITOR-4.2 opens the completion list as the reader types and ties it to the input', async () => {

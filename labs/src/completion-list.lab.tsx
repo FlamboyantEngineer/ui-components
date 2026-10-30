@@ -8,6 +8,7 @@ import {
 } from '../../src/components/completion-list/completion-list.js';
 import { KeyHints } from '../../src/components/shortcut/shortcut.js';
 import { TriggeredNote } from './completion-list-note.js';
+import { ReloadedTextSection } from './completion-list-reload.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const contents = ['labels', 'descriptions', 'documentation', 'drawn'] as const;
@@ -234,5 +235,6 @@ mountLab(
     >
       <TriggeredNote />
     </LabSection>
+    <ReloadedTextSection />
   </>,
 );

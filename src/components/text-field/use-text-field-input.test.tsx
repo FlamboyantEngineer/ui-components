@@ -1,9 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, type RenderResult } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
 import { TextField } from './text-field.js';
+import {
+  createDeferredCompletions,
+  expectReplacedValueDropsCompletions,
+} from '../../../test/completion-fixtures.js';
 
 const cities: Completion[] = [
   { label: 'Lisbon', description: 'Portugal' },
@@ -44,6 +48,26 @@ describe('TextField completions', () => {
     await user.tab();
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-text-field__completions')).toBeNull();
+  });
+
+  it('UIC-TEXT-FIELD-5.1 UIC-COMPLETION-LIST-2.6 drops completions for text the host replaced', async () => {
+    const { source, answer } = createDeferredCompletions();
+    const changes: string[] = [];
+    let view: RenderResult | undefined;
+    const show = (value: string) => {
+      const field = (
+        <TextField
+          label="Notes"
+          value={value}
+          onChange={(next) => changes.push(next)}
+          completions={source}
+        />
+      );
+      if (view) view.rerender(field);
+      else view = render(field);
+    };
+    await expectReplacedValueDropsCompletions({ show, answer, changes: () => changes });
+    expect(screen.getByRole('textbox')).toHaveValue('other text');
   });
 
   it('UIC-TEXT-FIELD-5.1 offers nothing while read-only or without completions', async () => {

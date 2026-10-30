@@ -1,9 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, type RenderResult } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  createDeferredCompletions,
+  expectReplacedValueDropsCompletions,
+} from '../../../test/completion-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectPackages } from '../../../test/module-imports.js';
 import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
@@ -37,6 +41,25 @@ function Controlled(props: Omit<MessageComposerProps, 'value' | 'onChange'>) {
 }
 
 describe('MessageComposer', () => {
+  it('UIC-COMPLETION-LIST-2.6 drops completions for a draft the host replaced', async () => {
+    const { source, answer } = createDeferredCompletions();
+    const changes: string[] = [];
+    let view: RenderResult | undefined;
+    const show = (value: string) => {
+      const composer = (
+        <MessageComposer
+          value={value}
+          onChange={(next) => changes.push(next)}
+          completions={source}
+        />
+      );
+      if (view) view.rerender(composer);
+      else view = render(composer);
+    };
+    await expectReplacedValueDropsCompletions({ show, answer, changes: () => changes });
+    expect(input()).toHaveValue('other text');
+  });
+
   it('UIC-MESSAGE-COMPOSER-1.1 UIC-MESSAGE-COMPOSER-2.2 edits its text in a named text area that grows', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
