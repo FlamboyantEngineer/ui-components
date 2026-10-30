@@ -2,6 +2,7 @@ import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
 import {
   compareCellValues,
   getCellValue,
+  getTextCollator,
   type TableCellValue,
   type TableColumn,
   type TableRow,
@@ -38,14 +39,17 @@ export function toSortDescriptors(sort: TableSort): readonly SortDescriptor[] {
 
 /**
  * A comparison of rows by the sort's columns in priority order, each later column breaking the
- * ties of the earlier ones, or null when no sorted column exists. Each value is read once per row.
+ * ties of the earlier ones and text collated in `locale`, or null when no sorted column exists.
+ * Each value is read once per row.
  */
 export function createRowComparator<T extends TableRow>(
   columns: readonly ValueColumn<T>[],
   sort: TableSort,
+  locale: string,
 ): ((left: T, right: T) => number) | null {
   const keys = toSortKeys(columns, sort);
   if (keys.length === 0) return null;
+  const collator = getTextCollator(locale);
   const cache = new Map<T, readonly TableCellValue[]>();
   const read = (row: T) => {
     let values = cache.get(row);
@@ -59,24 +63,33 @@ export function createRowComparator<T extends TableRow>(
     const a = read(left);
     const b = read(right);
     for (const [index, key] of keys.entries()) {
-      const order = compareCellValues(a[index], b[index]) * key.sign;
+      const order = compareCellValues(a[index], b[index], collator) * key.sign;
       if (order !== 0) return order;
     }
     return 0;
   };
 }
 
+/** How `sortTableRows` orders rows. */
+export interface TableRowsSort<T> {
+  /** The columns the sort may name, read with their values. */
+  columns: readonly ValueColumn<T>[];
+  /** One descriptor, several in priority order, or none. */
+  sort: TableSort;
+  /** The BCP 47 locale whose collation orders text, such as the provider's. */
+  locale: string;
+}
+
 /**
- * The rows ordered by the sort, one descriptor or several in priority order. Rows the sort cannot
- * separate keep their given order. Without a sort or a matching column the rows are returned
- * unchanged; the input array is never modified.
+ * The rows ordered by the sort, one descriptor or several in priority order, text collated in the
+ * locale. Rows the sort cannot separate keep their given order. Without a sort or a matching
+ * column the rows are returned unchanged; the input array is never modified.
  */
 export function sortTableRows<T extends TableRow>(
   rows: readonly T[],
-  columns: readonly ValueColumn<T>[],
-  sort: TableSort,
+  { columns, sort, locale }: TableRowsSort<T>,
 ): readonly T[] {
-  const compare = createRowComparator(columns, sort);
+  const compare = createRowComparator(columns, sort, locale);
   if (!compare) return rows;
   return [...rows].sort(compare);
 }

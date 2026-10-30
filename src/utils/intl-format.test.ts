@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getCollator,
   getDateFormatter,
   getDateTimeFormat,
   getListFormat,
@@ -23,6 +24,8 @@ describe('intl formatters', () => {
       getRelativeTimeFormat('fr-FR', { numeric: 'auto', style: 'short' }),
     );
     expect(getRelativeTimeFormat('fr-FR', { numeric: 'auto' }).format(-1, 'day')).toBe('hier');
+    expect(getCollator('sv-SE', { numeric: true })).toBe(getCollator('sv-SE', { numeric: true }));
+    expect(getCollator('sv-SE').compare('z', 'ä')).toBeLessThan(0);
   });
 
   it('UIC-INTL-FORMAT-1.2 evicts old configurations while keeping recently used formatters', () => {

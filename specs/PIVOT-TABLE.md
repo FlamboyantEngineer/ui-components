@@ -6,7 +6,7 @@
 
 ### UIC-PIVOT-TABLE-1.1 - Groups
 
-`pivot(records, layout)` shall group the records by the layout's row fields into nested row groups (`PivotRow`), outermost first, each with its `key` (its path as JSON), its `field`, its `value` in that field, its `path` of values and the groups of the next row field as `children`; and list the columns (`PivotColumn`) as every combination of the column fields' values the records hold, each with its `key` (its path as JSON) and `path`, or one column with an empty path without column fields. A record's value in a field is its key: a string, finite number or boolean as it is, an empty value (missing, `null` or `''`) as `null`, anything else (`NaN` and infinite numbers included) as text. Keys order numbers by value, `false` before `true`, text naturally ignoring case, and `null` last.
+`pivot(records, layout, locale)` shall group the records by the layout's row fields into nested row groups (`PivotRow`), outermost first, each with its `key` (its path as JSON), its `field`, its `value` in that field, its `path` of values and the groups of the next row field as `children`; and list the columns (`PivotColumn`) as every combination of the column fields' values the records hold, each with its `key` (its path as JSON) and `path`, or one column with an empty path without column fields. A record's value in a field is its key: a string, finite number or boolean as it is, an empty value (missing, `null` or `''`) as `null`, anything else (`NaN` and infinite numbers included) as text. Keys order numbers by value, `false` before `true`, text naturally ignoring case in `locale` (a BCP 47 tag; Pivot Table passes the provider locale), and `null` last.
 
 Implementation: `src/utils/pivot.ts`
 Verification: `src/utils/pivot.test.ts`

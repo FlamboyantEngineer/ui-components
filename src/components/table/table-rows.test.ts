@@ -4,6 +4,7 @@ import { filterTableRows } from './table-filters.js';
 import {
   applyTableMove,
   compareCellValues,
+  getTextCollator,
   getCellValue,
   getRowText,
   isEffectiveTableMove,
@@ -30,6 +31,8 @@ const columns: TableColumn<Fruit>[] = [
   { id: 'weight', header: 'Weight' },
 ];
 
+const english = getTextCollator('en-US');
+
 describe('table row helpers', () => {
   it('UIC-TABLE-2.2 reads a column value from getValue or the property named by its id', () => {
     const row = { id: 'x', name: 'Kiwi', weight: 5, tags: ['green'] };
@@ -39,24 +42,50 @@ describe('table row helpers', () => {
   });
 
   it('UIC-TABLE-2.2 compares numbers, booleans and dates numerically and text naturally', () => {
-    expect(compareCellValues(30, 100)).toBeLessThan(0);
-    expect(compareCellValues(true, false)).toBeGreaterThan(0);
-    expect(compareCellValues(new Date('2026-10-02'), new Date('2026-10-10'))).toBeLessThan(0);
-    expect(compareCellValues('item 2', 'Item 10')).toBeLessThan(0);
-    expect(compareCellValues('apple', 'APPLE')).toBe(0);
-    expect(compareCellValues(null, 'a')).toBeLessThan(0);
+    expect(compareCellValues(30, 100, english)).toBeLessThan(0);
+    expect(compareCellValues(true, false, english)).toBeGreaterThan(0);
+    expect(compareCellValues(new Date('2026-10-02'), new Date('2026-10-10'), english)).toBeLessThan(
+      0,
+    );
+    expect(compareCellValues('item 2', 'Item 10', english)).toBeLessThan(0);
+    expect(compareCellValues('apple', 'APPLE', english)).toBe(0);
+    expect(compareCellValues(null, 'a', english)).toBeLessThan(0);
+  });
+
+  it('UIC-TABLE-2.10 collates text by the given locale', () => {
+    const swedish = getTextCollator('sv-SE');
+    expect(compareCellValues('z', 'ä', swedish)).toBeLessThan(0);
+    expect(compareCellValues('z', 'ä', english)).toBeGreaterThan(0);
+    expect(compareCellValues('item 2', 'item 10', swedish)).toBeLessThan(0);
+    const words = [
+      { id: 'first', name: 'z', weight: 1 },
+      { id: 'second', name: 'ä', weight: 1 },
+      { id: 'third', name: 'Z', weight: 1 },
+    ];
+    const order = (locale: string) =>
+      sortTableRows(words, {
+        columns,
+        sort: { column: 'name', direction: 'ascending' },
+        locale: locale,
+      }).map((row) => row.id);
+    expect(order('sv-SE')).toEqual(['first', 'third', 'second']);
+    expect(order('en-US')).toEqual(['second', 'first', 'third']);
   });
 
   it('UIC-TABLE-2.2 UIC-TABLE-2.3 sorts without touching the input and keeps ties in order', () => {
-    expect(sortTableRows(fruit, columns, { column: 'name', direction: 'ascending' })).toEqual([
-      fruit[1],
-      fruit[0],
-      fruit[2],
-    ]);
     expect(
-      sortTableRows(fruit, columns, { column: 'weight', direction: 'descending' }).map(
-        (row) => row.id,
-      ),
+      sortTableRows(fruit, {
+        columns,
+        sort: { column: 'name', direction: 'ascending' },
+        locale: 'en-US',
+      }),
+    ).toEqual([fruit[1], fruit[0], fruit[2]]);
+    expect(
+      sortTableRows(fruit, {
+        columns,
+        sort: { column: 'weight', direction: 'descending' },
+        locale: 'en-US',
+      }).map((row) => row.id),
     ).toEqual(['banana', 'cherry', 'apple']);
     const ties = [
       { id: 'first', name: 'item 2', weight: 1 },
@@ -64,21 +93,31 @@ describe('table row helpers', () => {
       { id: 'third', name: 'item 10', weight: 1 },
     ];
     expect(
-      sortTableRows(ties, columns, { column: 'name', direction: 'descending' }).map(
-        (row) => row.id,
-      ),
+      sortTableRows(ties, {
+        columns,
+        sort: { column: 'name', direction: 'descending' },
+        locale: 'en-US',
+      }).map((row) => row.id),
     ).toEqual(['third', 'first', 'second']);
-    expect(sortTableRows(fruit, columns, null)).toBe(fruit);
-    expect(sortTableRows(fruit, columns, { column: 'missing', direction: 'ascending' })).toBe(
-      fruit,
-    );
+    expect(sortTableRows(fruit, { columns, sort: null, locale: 'en-US' })).toBe(fruit);
+    expect(
+      sortTableRows(fruit, {
+        columns,
+        sort: { column: 'missing', direction: 'ascending' },
+        locale: 'en-US',
+      }),
+    ).toBe(fruit);
   });
 
   it('UIC-TABLE-2.2 reads each sort value once per row', () => {
     const getValue = vi.fn((row: Fruit) => row.weight);
-    sortTableRows(fruit, [{ id: 'weight', getValue }], {
-      column: 'weight',
-      direction: 'ascending',
+    sortTableRows(fruit, {
+      columns: [{ id: 'weight', getValue }],
+      sort: {
+        column: 'weight',
+        direction: 'ascending',
+      },
+      locale: 'en-US',
     });
     expect(getValue).toHaveBeenCalledTimes(fruit.length);
   });

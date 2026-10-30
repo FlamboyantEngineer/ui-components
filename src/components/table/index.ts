@@ -27,7 +27,7 @@ export type {
   TableRow,
 } from './table-rows.js';
 export { sortTableRows } from './table-sort.js';
-export type { TableSort } from './table-sort.js';
+export type { TableRowsSort, TableSort } from './table-sort.js';
 export type { TableAggregate, TableGroup, TableGroupBy, TableGrouping } from './table-groups.js';
 export type { TableChildRows } from './table-tree.js';
 export type { TableCellEdit } from './use-cell-editing.js';

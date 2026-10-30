@@ -59,3 +59,10 @@ export const getRelativeTimeFormat = createFormatCache<
   Intl.RelativeTimeFormatOptions,
   Intl.RelativeTimeFormat
 >((locale, options) => new Intl.RelativeTimeFormat(locale, options));
+
+/** A shared `Intl.Collator`. */
+export const getCollator = createFormatCache<
+  string | undefined,
+  Intl.CollatorOptions,
+  Intl.Collator
+>((locale, options) => new Intl.Collator(locale, options));

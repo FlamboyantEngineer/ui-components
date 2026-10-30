@@ -63,7 +63,7 @@ Verification: `src/components/table/table.test.tsx`, `src/components/table/table
 
 ### UIC-TABLE-2.2 - Table-owned order
 
-Without a `sortDescriptor` prop the table shall own the sort, starting from `defaultSortDescriptor`, and order the rows itself by the sorted column's values: numbers, booleans and dates numerically, text naturally and ignoring case. Rows the column cannot separate keep their given order, each value is read once per row, and the caller's array is never modified.
+Without a `sortDescriptor` prop the table shall own the sort, starting from `defaultSortDescriptor`, and order the rows itself by the sorted column's values: numbers, booleans and dates numerically, text naturally and ignoring case in the provider locale (UIC-TABLE-2.10). Rows the column cannot separate keep their given order, each value is read once per row, and the caller's array is never modified.
 
 Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/table-sort.ts`, `src/components/table/table-rows.ts`
 Verification: `src/components/table/table.test.tsx`, `src/components/table/table-rows.test.ts`
@@ -116,6 +116,13 @@ The table shall match filters with small pure functions: a query term matches th
 
 Implementation: `src/components/table/table-filters.ts`
 Verification: `src/components/table/table-filters.test.ts`
+
+### UIC-TABLE-2.10 - Locale collation
+
+The table shall collate text in the provider locale (React Aria's locale from [Provider](PROVIDER.md)) wherever it orders it: its own sort, its row groups and the values a `set` filter lists from the rows. Text orders by that language's alphabet, naturally for embedded numbers and ignoring case, so Swedish orders `Å`, `Ä` and `Ö` after `Z` while German orders them beside `A` and `O`. A change of locale reorders the rows, groups and filter values at once; numbers, booleans and dates still order by value, and ties keep their given order. The exported `sortTableRows(rows, { columns, sort, locale })` takes the locale, a BCP 47 tag, so a caller sorts as the table does.
+
+Implementation: `src/components/table/table-rows.ts`, `src/components/table/table-sort.ts`, `src/components/table/table-groups.ts`, `src/components/table/table-filters.ts`, `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/table-column-filter.tsx`, `src/utils/intl-format.ts`
+Verification: `src/components/table/table-locale.test.tsx`, `src/components/table/table-rows.test.ts`, `e2e/table.spec.ts`
 
 ## UIC-TABLE-3 - Selection and row actions
 

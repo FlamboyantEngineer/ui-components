@@ -79,10 +79,21 @@ describe('table filter helpers', () => {
   });
 
   it('UIC-TABLE-2.8 lists a set filter its options, else the sorted distinct values', () => {
-    expect(listFilterOptions(fruit, requireDefined(columns[1]))).toEqual(['Red', 'Yellow']);
+    expect(listFilterOptions(fruit, requireDefined(columns[1]), 'en-US')).toEqual([
+      'Red',
+      'Yellow',
+    ]);
     expect(
-      listFilterOptions(fruit, { id: 'colour', filter: { type: 'set', options: ['Green'] } }),
+      listFilterOptions(
+        fruit,
+        { id: 'colour', filter: { type: 'set', options: ['Green'] } },
+        'en-US',
+      ),
     ).toEqual(['Green']);
-    expect(listFilterOptions(fruit, requireDefined(columns[2]))).toEqual(['30', '100', '120']);
+    expect(listFilterOptions(fruit, requireDefined(columns[2]), 'en-US')).toEqual([
+      '30',
+      '100',
+      '120',
+    ]);
   });
 });

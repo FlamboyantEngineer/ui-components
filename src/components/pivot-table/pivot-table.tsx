@@ -64,7 +64,7 @@ export function PivotTable({
     defaultLayout ?? emptyLayout,
     onLayoutChange,
   );
-  const result = useMemo(() => pivot(records, current), [records, current]);
+  const result = useMemo(() => pivot(records, current, locale), [records, current, locale]);
   const { columns, groups } = createPivotColumns({
     result,
     layout: current,

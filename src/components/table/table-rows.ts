@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
+import { getCollator } from '../../utils/intl-format.js';
 import type { TableColumnSizing } from './column-sizing.js';
 import type { TableBulkEdit } from './table-bulk-edit.js';
 import type { TableColumnFilter } from './table-filters.js';
@@ -96,7 +97,7 @@ export interface TableMove {
 
 type ValueColumn<T> = Pick<TableColumn<T>, 'id' | 'getValue'>;
 
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+const textOrder: Intl.CollatorOptions = { numeric: true, sensitivity: 'base' };
 
 function isCellValue(value: unknown): value is TableCellValue {
   return (
@@ -125,8 +126,20 @@ export function getCellValue<T extends TableRow>(row: T, column: ValueColumn<T>)
   return isCellValue(value) ? value : undefined;
 }
 
-/** Orders two cell values: numbers, booleans and dates numerically, text naturally ignoring case. */
-export function compareCellValues(left: TableCellValue, right: TableCellValue): number {
+/** The collation of cell text in `locale`: natural numbers, ignoring case and accents. */
+export function getTextCollator(locale: string): Intl.Collator {
+  return getCollator(locale, textOrder);
+}
+
+/**
+ * Orders two cell values: numbers, booleans and dates numerically, text naturally ignoring case
+ * by `collator`.
+ */
+export function compareCellValues(
+  left: TableCellValue,
+  right: TableCellValue,
+  collator: Intl.Collator,
+): number {
   const a = toSortKey(left);
   const b = toSortKey(right);
   if (typeof a === 'number' && typeof b === 'number') return a - b;
