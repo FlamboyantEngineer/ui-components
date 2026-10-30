@@ -287,6 +287,81 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(root).not.toHaveAttribute('data-invalid');
   });
 
+  it('UIC-INLINE-EDIT-1.6 keeps edits made while a save runs and saves them when asked', async () => {
+    const user = userEvent.setup();
+    const saves: Array<ReturnType<typeof deferred>> = [];
+    const onSave = vi.fn((_next: string) => {
+      saves.push(deferred());
+      return saves.at(-1)?.promise;
+    });
+    function Owner() {
+      const [value, setValue] = useState('Rye loaf');
+      return (
+        <InlineEdit
+          label="Title"
+          value={value}
+          onSave={async (next) => {
+            await onSave(next);
+            setValue(next);
+          }}
+        />
+      );
+    }
+    render(<Owner />);
+    await user.click(read());
+    await user.clear(textbox());
+    await user.keyboard('first edit{Enter}');
+    await user.keyboard(' extra');
+    expect(textbox()).toHaveValue('first edit extra');
+    await act(async () => saves[0]?.resolve());
+    expect(textbox()).toHaveValue('first edit extra');
+    expect(onSave).toHaveBeenCalledTimes(1);
+
+    await user.keyboard('{Enter} more{Enter}');
+    expect(onSave).toHaveBeenLastCalledWith('first edit extra');
+    await act(async () => saves[1]?.resolve());
+    expect(onSave).toHaveBeenLastCalledWith('first edit extra more');
+    expect(textbox()).toHaveValue('first edit extra more');
+    await act(async () => saves[2]?.resolve());
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(read()).toHaveTextContent('first edit extra more');
+    expect(read()).toHaveFocus();
+  });
+
+  it('UIC-INLINE-EDIT-1.2 UIC-INLINE-EDIT-1.6 ignores a save that settles after its session ended', async () => {
+    const user = userEvent.setup();
+    let save = deferred();
+    const onSave = vi.fn(() => save.promise);
+    const onEditingChange = vi.fn();
+    const editor = (isEditing: boolean) => (
+      <InlineEdit
+        label="Title"
+        value="Rye loaf"
+        onSave={onSave}
+        isEditing={isEditing}
+        onEditingChange={onEditingChange}
+      />
+    );
+    const { rerender, unmount, container } = render(editor(true));
+    await user.clear(textbox());
+    await user.keyboard('first{Enter}');
+    rerender(editor(false));
+    rerender(editor(true));
+    expect(container.firstElementChild).not.toHaveAttribute('data-pending');
+    await user.clear(textbox());
+    await user.keyboard('second');
+    await act(async () => save.resolve());
+    expect(textbox()).toHaveValue('second');
+    expect(onEditingChange).not.toHaveBeenCalled();
+
+    save = deferred();
+    await user.keyboard('{Enter}');
+    expect(onSave).toHaveBeenLastCalledWith('second');
+    unmount();
+    await act(async () => save.reject(new Error('Too late.')));
+    expect(onEditingChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-INLINE-EDIT-1.7 draws save and cancel buttons', async () => {
     const user = userEvent.setup();
     const save = deferred();

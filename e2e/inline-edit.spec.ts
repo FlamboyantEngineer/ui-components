@@ -109,4 +109,22 @@ test.describe('Inline Edit lab', () => {
     await lab.open('inline-edit', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-INLINE-EDIT-1.6 keeps and saves text typed while a save runs', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-edit');
+    const title = page.locator(field('title'));
+    await title.getByRole('button').click();
+    const input = title.getByRole('textbox');
+    await input.fill('Spelt');
+    await input.press('Enter');
+    await expect(title).toHaveAttribute('data-pending', 'true');
+    await input.press('End');
+    await page.keyboard.type(' loaf');
+    await page.keyboard.press('Enter');
+    await expect(title).not.toHaveAttribute('data-editing');
+    await expect(title.locator('.ui-inline-edit__value')).toHaveText('Spelt loaf');
+  });
 });
