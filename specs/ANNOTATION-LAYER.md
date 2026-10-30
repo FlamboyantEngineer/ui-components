@@ -13,9 +13,16 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 ### UIC-ANNOTATION-LAYER-1.2 - Anchors by rectangles or elements
 
-An annotation's `rects` shall be its anchor, in pixels from the top left corner of the layer's content (inside its border, scrolling with it). Without `rects`, an annotation with a `targetId` naming an element inside the layer is anchored by that element's boxes (`getClientRects`, one per line of an inline element), measured in the same coordinates after each commit and again when the layer resizes. An annotation with neither, or whose element is missing or outside the layer, has no anchor.
+An annotation's `rects` shall be its anchor, in pixels from the top left corner of the layer's content (inside its border, scrolling with it). Without `rects`, an annotation with a `targetId` naming an element inside the layer is anchored by that element's boxes (`getClientRects`, one per line of an inline element), measured in the same coordinates after each commit and again as [UIC-ANNOTATION-LAYER-1.4](#uic-annotation-layer-14---keeping-measured-anchors-current) describes. An annotation with neither, or whose element is missing or outside the layer, has no anchor.
 
 Implementation: `src/components/annotation-layer/annotation-layer.tsx`, `src/components/annotation-layer/anchor-geometry.ts`
+Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
+
+### UIC-ANNOTATION-LAYER-1.4 - Keeping measured anchors current
+
+The layer shall measure its target elements again, and so redraw their marks and hit test where they are now, when its content changes without the layer rendering: a node added, removed or edited anywhere inside it (other than its own marks and margin), a scroll of an element inside it, or a resize of the layer, of a target or of an ancestor of a target inside the layer. Content changes and scrolls are coalesced into one measurement on the next animation frame; resizes measure when observed. Scrolling the layer itself measures nothing, since anchors are in its content coordinates. A target that appears or disappears with such a change gains or loses its marks. The observers and listeners stop when the layer unmounts. For a change none of these report, such as a CSS transform or a web font loading, `handleRef` gives an `AnnotationLayerHandle` whose `remeasure()` measures every target at once. Caller `rects` are never measured.
+
+Implementation: `src/components/annotation-layer/annotation-layer.tsx`, `src/components/annotation-layer/observe-targets.ts`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
 ### UIC-ANNOTATION-LAYER-1.3 - The active annotation

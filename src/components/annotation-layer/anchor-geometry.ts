@@ -36,6 +36,17 @@ export function getLayerOrigin(layer: Element): { top: number; left: number } {
   };
 }
 
+/** The target element of each annotation anchored by one inside the layer, by annotation id. */
+export function findTargets(layer: Element, annotations: readonly Annotation[]): Map<Key, Element> {
+  const targets = new Map<Key, Element>();
+  for (const { id, rects, targetId } of annotations) {
+    if (rects || targetId === undefined) continue;
+    const element = layer.ownerDocument.getElementById(targetId);
+    if (element && layer.contains(element)) targets.set(id, element);
+  }
+  return targets;
+}
+
 /** The boxes of each target element inside the layer, by annotation id. */
 export function measureTargets(
   layer: Element,
@@ -43,10 +54,7 @@ export function measureTargets(
 ): Map<Key, AnnotationRect[]> {
   const origin = getLayerOrigin(layer);
   const measured = new Map<Key, AnnotationRect[]>();
-  for (const { id, rects, targetId } of annotations) {
-    if (rects || targetId === undefined) continue;
-    const element = layer.ownerDocument.getElementById(targetId);
-    if (!element || !layer.contains(element)) continue;
+  for (const [id, element] of findTargets(layer, annotations)) {
     measured.set(
       id,
       Array.from(element.getClientRects(), (box) => ({

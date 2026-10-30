@@ -124,6 +124,40 @@ test.describe('Annotation Layer lab', () => {
     }).toPass();
   });
 
+  test('UIC-ANNOTATION-LAYER-1.4 follows a phrase moved by its own content and a nested scroll', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('annotation-layer');
+    const demo = page.locator('[data-lab-demo="scrolling"]');
+    const layer = demo.locator('.ui-annotation-layer');
+    const phrase = demo.locator('#scroll-step');
+    const mark = demo.locator('.ui-annotation-layer__mark');
+    const expectMarkOnPhrase = async () => {
+      await expect(async () => {
+        const anchor = await boxOf(phrase);
+        const box = await boxOf(mark);
+        expect(Math.abs(box.y - anchor.y)).toBeLessThan(1);
+        expect(Math.abs(box.x - anchor.x)).toBeLessThan(1);
+      }).toPass();
+    };
+    await expectMarkOnPhrase();
+    const offsetInLayer = async () => (await boxOf(phrase)).y - (await boxOf(layer)).y;
+    const layerBefore = await boxOf(layer);
+    const before = await offsetInLayer();
+    await demo.getByRole('button', { name: 'Add a step above' }).press('Enter');
+    await expect(demo.getByText('Added step 1')).toBeVisible();
+    expect(await offsetInLayer()).toBeGreaterThan(before + 10);
+    expect((await boxOf(layer)).height).toBe(layerBefore.height);
+    await expectMarkOnPhrase();
+    await demo.getByRole('region', { name: 'Steps' }).evaluate((node) => {
+      node.scrollTop = 60;
+    });
+    await expectMarkOnPhrase();
+    await phrase.click();
+    await expect(demo.locator('[data-lab-active]')).toHaveText('fold');
+  });
+
   test('is accessible', async ({ lab }) => {
     await lab.open('annotation-layer');
     await lab.expectAccessible();

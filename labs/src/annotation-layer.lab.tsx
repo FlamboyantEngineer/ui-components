@@ -123,6 +123,56 @@ function LiveReview() {
   );
 }
 
+/** Steps in a scrolling region, with a button of their own that adds a step above the note. */
+function ScrollingSteps() {
+  const [extra, setExtra] = useState(0);
+  return (
+    <div>
+      <Button size="sm" onPress={() => setExtra(extra + 1)}>
+        Add a step above
+      </Button>
+      <div
+        role="region"
+        aria-label="Steps"
+        tabIndex={0}
+        data-lab-scroller
+        style={{ height: 180, overflow: 'auto' }}
+      >
+        {Array.from({ length: extra }, (_, index) => (
+          <p key={index}>Added step {index + 1}: rinse the bowl.</p>
+        ))}
+        <p>Heat the oven to 190 degrees and grease the tin.</p>
+        <p>Sift the flour with a pinch of salt.</p>
+        <p>
+          <span id="scroll-step">Fold in the whipped egg whites</span> with a metal spoon.
+        </p>
+        <p>Pour into the tin and level the top.</p>
+        <p>Bake for 25 minutes, until the top springs back.</p>
+        <p>Cool in the tin for 10 minutes before turning out.</p>
+      </div>
+    </div>
+  );
+}
+
+/** A layer of fixed height, without a margin, whose content scrolls and changes on its own. */
+function ScrollingReview() {
+  const [activeId, setActiveId] = useState<Key | null>(null);
+  return (
+    <div data-lab-demo="scrolling">
+      <p>
+        Active: <output data-lab-active>{activeId ?? 'none'}</output>
+      </p>
+      <AnnotationLayer
+        annotations={[{ id: 'fold', targetId: 'scroll-step' }]}
+        activeId={activeId}
+        onActiveChange={setActiveId}
+      >
+        <ScrollingSteps />
+      </AnnotationLayer>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -154,6 +204,12 @@ mountLab(
       description="Press a highlight or a card to make it active, or Tab to the cards and move with the arrow keys, Home and End. Adding an intro moves the phrases: the layer measures them again and the cards follow."
     >
       <LiveReview />
+    </LabSection>
+    <LabSection
+      title="Scrolling and changing content"
+      description="The steps scroll inside the layer, and their own button adds a step above the note without the layer rendering. The highlight follows the phrase, and pressing the phrase makes its note active."
+    >
+      <ScrollingReview />
     </LabSection>
     <LabSection
       title="Numeric and text IDs"
