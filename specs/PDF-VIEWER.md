@@ -170,8 +170,10 @@ Verification: `src/components/pdf-viewer/use-pdf-navigation.test.tsx`
 
 Each time `destination` changes to a name, and when a document opens with it set, the viewer shall go to the destination the document defines under that name, once. A destination lands like a revealed rectangle (UIC-PDF-VIEWER-7.3): the spot it names (the top left of an `XYZ` destination, the top of a `FitH` or `FitBH` one, the left of a `FitV` or `FitBV` one, the corner of a `FitR` one) lands where a page's top lands, and a destination naming no spot (`Fit`, `FitB`) lands on its page's top; its zoom is not applied. A name the document does not define does nothing. Links and outline entries go to their destinations, named or explicit, the same way.
 
+Looking a destination up waits on the document, and only the latest request counts: a lookup still pending is dropped once another destination is followed (a new `destination`, an outline entry or a link) or the reader goes to a page (the page field, the previous and next page buttons, a thumbnail, the page keys or a link's page action), whichever order the lookups finish in. A lookup is also dropped when another document has opened since it started. A change of `page` from the caller does not drop a pending lookup.
+
 Implementation: `src/components/pdf-viewer/pdf-destination.ts`, `src/components/pdf-viewer/use-pdf-links.ts`, `src/components/pdf-viewer/use-pdf-navigation.ts`
-Verification: `src/components/pdf-viewer/pdf-destination.test.ts`, `src/components/pdf-viewer/use-pdf-navigation.test.tsx`, `e2e/pdf-viewer.spec.ts`
+Verification: `src/components/pdf-viewer/pdf-destination.test.ts`, `src/components/pdf-viewer/use-pdf-navigation.test.tsx`, `src/components/pdf-viewer/use-pdf-links.test.tsx`, `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-4.6 - Page keys
 

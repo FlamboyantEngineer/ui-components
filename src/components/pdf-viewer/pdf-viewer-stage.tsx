@@ -6,7 +6,8 @@ import { ContextMenu, type ContextMenuProps } from '../context-menu/context-menu
 import { InlineError } from '../inline-error/inline-error.js';
 import { LoadingOverlay } from '../loading-overlay/loading-overlay.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
-import type { PdfLinkService, PdfTextContent, PdfViewport } from './pdf-engine.js';
+import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
+import type { PdfLinks } from './use-pdf-links.js';
 import type { PdfPageGeometry } from './page-geometry.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import { PdfViewerPage } from './pdf-viewer-page.js';
@@ -35,7 +36,7 @@ interface PdfViewerStageProps<
   };
   /** Reports a primary click on a page. */
   onPageClick(event: MouseEvent<HTMLElement>): void;
-  links: { linkService: PdfLinkService; followDestination(destination: unknown): void };
+  links: Pick<PdfLinks, 'linkService' | 'followDestination' | 'goToPage'>;
   isSidebarOpen: boolean;
   onKeyDown(event: KeyboardEvent<HTMLElement>): void;
   onScrollerKeyDown(event: KeyboardEvent<HTMLElement>): void;
@@ -81,7 +82,7 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
         <PdfViewerSidebar
           view={view}
           currentPage={pages.currentPage}
-          onPageChange={pages.scrollToPage}
+          onPageChange={links.goToPage}
           followDestination={links.followDestination}
         />
       ) : null}

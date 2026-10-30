@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   createEngine,
+  holdDestinations,
   pageSize,
   renderReady,
   renderViewer,
@@ -159,6 +160,21 @@ describe('PdfViewer sidebar', () => {
     await userEvent.click(within(tree).getByRole('row', { name: 'Orchard guide' }));
     expect(open).toHaveBeenCalledWith('https://example.com/', '_blank', 'noopener,noreferrer');
     await userEvent.click(within(tree).getByRole('row', { name: 'Varieties' }));
+    expect(scroller.scrollTop).toBe(800);
+  });
+
+  it('UIC-PDF-VIEWER-10.3 follows the latest outline entry when an earlier lookup finishes last', async () => {
+    stubLayout();
+    const engine = createEngine({ outline });
+    const lookups = holdDestinations(engine);
+    await renderReady({ defaultZoom: 100, defaultSidebarOpen: true }, engine);
+    const tree = screen.getByRole('treegrid', { name: 'Outline' });
+    const scroller = screen.getByRole('document');
+
+    await userEvent.click(within(tree).getByRole('row', { name: 'Markets' }));
+    await userEvent.click(within(tree).getByRole('row', { name: 'Apple' }));
+    await waitFor(() => expect(scroller.scrollTop).toBe(800));
+    await lookups.settle('markets', [{ num: 2, gen: 0 }, { name: 'Fit' }]);
     expect(scroller.scrollTop).toBe(800);
   });
 });

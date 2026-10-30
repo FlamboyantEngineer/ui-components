@@ -120,7 +120,14 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     onVisiblePositionChange: props.onVisiblePositionChange,
   });
   usePinchZoom({ engine: loaded?.engine ?? null, scrollerRef, pagesRef, zoom });
-  const keyboard = usePdfKeyboard({ isReady, zoom, defaultZoom, pages, pageCount, findFieldRef });
+  const keyboard = usePdfKeyboard({
+    isReady,
+    zoom,
+    defaultZoom,
+    pages: { ...pages, scrollToPage: links.goToPage },
+    pageCount,
+    findFieldRef,
+  });
   const commands = usePdfCommands({ view, rotate, source: props.source, label });
   const sidebar = { isOpen: isSidebarOpen, setOpen: setSidebarOpen };
   const refs = { scrollerRef, pagesRef, findFieldRef };
