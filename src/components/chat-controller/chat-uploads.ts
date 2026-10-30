@@ -89,7 +89,8 @@ export function takeUploadedFiles(engine: ChatEngineContext): ChatAttachmentData
   return taken.map(({ status: _status, progress: _progress, error: _error, ...rest }) => rest);
 }
 
-/** Aborts every upload still running. */
+/** Aborts every upload still running and forgets them, so no late result reaches the composer. */
 export function abortUploads(engine: ChatEngineContext) {
   for (const { controller } of engine.uploads.values()) controller.abort();
+  engine.uploads.clear();
 }

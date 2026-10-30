@@ -1,6 +1,6 @@
 # Chat Controller
 
-`useChatController(options)` turns a host's `send` function, which streams an assistant's reply as library events, into the state and callbacks of a chat: the messages with their streaming reply, stop, retry, errors, a queue of follow-ups, approvals, questions, the reader's prompt history and uploads. It has no backend of its own: `send` talks to whatever service the host uses, and an adapter of a few lines maps that service's stream onto the events below. The hook returns the state, imperative `send`, `sendNow`, `stop`, `retry` and `setMessages`, and `props`, everything a chat needs to spread into it. `reduceChatStream`, the pure reducer the hook folds events with, is exported for hosts that keep the conversation themselves.
+`useChatController(options)` turns a host's `send` function, which streams an assistant's reply as library events, into the state and callbacks of a chat: the messages with their streaming reply, stop, retry, errors, a queue of follow-ups, approvals, questions, the reader's prompt history and uploads. It has no backend of its own: `send` talks to whatever service the host uses, and an adapter of a few lines maps that service's stream onto the events below. The hook returns the state, imperative `send`, `sendNow`, `stop`, `retry`, `updateMessages` and `resetConversation`, and `props`, everything a chat needs to spread into it. `reduceChatStream`, the pure reducer the hook folds events with, is exported for hosts that keep the conversation themselves.
 
 Messages are [`ChatMessageData`](CHAT-PARTS.md) values whose content is an ordered list of typed parts ([Chat Parts](CHAT-PARTS.md)). The reader's messages carry `authorId: currentUserId`, the replies `authorId: assistantId`.
 
@@ -208,10 +208,12 @@ Verification: `labs/src/chat-controller-adapters.test.ts`
 
 ### UIC-CHAT-CONTROLLER-5.3 - Replacing the conversation
 
-`setMessages(messages)` or `setMessages(update)` shall replace the conversation, such as to clear it or to load another one.
+`updateMessages(update)` shall edit the conversation as it stands, such as to add a reaction or a page of older messages; the running reply, the queue and the uploads carry on.
 
-Implementation: `src/components/chat-controller/chat-engine.ts`
-Verification: `src/components/chat-controller/chat-controller.test.tsx`
+`resetConversation(messages)` shall replace the conversation (empty by default), such as to clear it or to load another one, and drop at once everything the old conversation owned: the running reply's signal aborts and its waiters reject, and nothing it streams, settles or continues later reaches the controller; the queue is cleared and never sent; the composer's files are removed and their uploads aborted, so no late upload result returns; and the retry record is cleared, so a retry runs the new conversation's failed turn from scratch. Responses to the old conversation's approvals and questions find nothing and do nothing.
+
+Implementation: `src/components/chat-controller/chat-engine.ts`, `src/components/chat-controller/chat-run.ts`, `src/components/chat-controller/chat-uploads.ts`
+Verification: `src/components/chat-controller/chat-controller.test.tsx`, `src/components/chat-controller/chat-uploads.test.ts`, `e2e/chat-controller.spec.ts`
 
 ## Markup
 

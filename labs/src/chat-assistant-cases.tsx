@@ -86,7 +86,7 @@ function AssistantDemo() {
           composerEndControls={<ChatModelPicker {...modelPicker} />}
           toolRenderers={{ get_weather: forecastRenderer }}
           renderPart={renderLabPart}
-          {...createReplyHandlers(controller.setMessages, record)}
+          {...createReplyHandlers(controller.updateMessages, record)}
         />
       </div>
       <p>

@@ -206,7 +206,7 @@ export function ChatControllerDemo() {
               <Button size="sm" isDisabled={allowed.length === 0} onPress={() => setAllowed([])}>
                 Forget always allowed tools
               </Button>
-              <Button size="sm" isDisabled={chat.isPending} onPress={() => chat.setMessages([])}>
+              <Button size="sm" onPress={() => chat.resetConversation()}>
                 Clear the conversation
               </Button>
               <Button

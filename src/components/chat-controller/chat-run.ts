@@ -91,6 +91,17 @@ export function endRun(engine: ChatEngineContext, run: ChatRun, outcome: ChatRep
   engine.onSettle({ replyId: run.replyId, isComplete, needsContinuation: run.needsContinuation });
 }
 
+/**
+ * Drops the run without settling it, as when the conversation is replaced: its signal aborts and its
+ * waiters reject, and nothing it streams or settles later reaches the controller.
+ */
+export function abandonRun(engine: ChatEngineContext, run: ChatRun) {
+  if (engine.run !== run) return;
+  engine.run = undefined;
+  run.controller.abort();
+  for (const waiter of run.waiters.values()) waiter.reject(run.controller.signal.reason);
+}
+
 async function streamRun(
   engine: ChatEngineContext,
   run: ChatRun,

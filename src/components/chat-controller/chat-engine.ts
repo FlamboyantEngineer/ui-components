@@ -18,7 +18,7 @@ import {
   toDismissal,
   type ChatReaderResponse,
 } from './chat-reply.js';
-import { endRun, respond, startRun } from './chat-run.js';
+import { abandonRun, endRun, respond, startRun } from './chat-run.js';
 import {
   abortUploads,
   attachFiles,
@@ -28,10 +28,10 @@ import {
   takeUploadedFiles,
 } from './chat-uploads.js';
 
-/** A new conversation, or a function of the current one. */
-export type ChatMessagesUpdate =
-  | readonly ChatMessageData[]
-  | ((messages: readonly ChatMessageData[]) => readonly ChatMessageData[]);
+/** An edit of the conversation as it stands, such as a reaction or an older page. */
+export type ChatMessagesUpdate = (
+  messages: readonly ChatMessageData[],
+) => readonly ChatMessageData[];
 
 /** Dismisses what the last message waits for: denies its approvals, dismisses its questions. */
 function dismissWaiting(engine: ChatEngineContext) {
@@ -153,6 +153,18 @@ function retry(engine: ChatEngineContext) {
   startReply(engine, messages.slice(0, -1));
 }
 
+/**
+ * Replaces the conversation and drops everything the old one owned, at once: the running reply is
+ * abandoned (its signal aborts, its waiters reject, its late events are ignored and it sends nothing
+ * queued), and the queue, the composer's files and their uploads and the retry record are cleared.
+ */
+function resetConversation(engine: ChatEngineContext, messages: readonly ChatMessageData[]) {
+  if (engine.run) abandonRun(engine, engine.run);
+  abortUploads(engine);
+  engine.lastRun = undefined;
+  patchState(engine, { messages, isPending: false, queue: [], attachments: [] });
+}
+
 /** Records Always allow for the call's tool and lets the call run. */
 function alwaysAllow(engine: ChatEngineContext, callId: string) {
   const call = engine.store
@@ -204,10 +216,11 @@ export function createChatEngine(
       if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
     },
     retry: () => retry(engine),
-    setMessages: (update: ChatMessagesUpdate) => {
-      const { messages } = engine.store.get();
-      patchState(engine, { messages: typeof update === 'function' ? update(messages) : update });
+    updateMessages: (update: ChatMessagesUpdate) => {
+      patchState(engine, { messages: update(engine.store.get().messages) });
     },
+    resetConversation: (messages: readonly ChatMessageData[] = []) =>
+      resetConversation(engine, messages),
     setQueue: (queue: readonly ChatQueuedMessage[]) => patchState(engine, { queue }),
     approve: (id: string) => answer(id, { type: 'approval', decision: 'approved' }),
     deny: (id: string, reason?: string) =>

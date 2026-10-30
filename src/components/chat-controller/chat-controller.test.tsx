@@ -10,7 +10,11 @@ import {
 import { requireDefined } from '../../utils/require-defined.js';
 import { ChatMessage, ChatTranscript } from '../chat-transcript/chat-transcript.js';
 import { ChatToolCall } from '../chat-tool-call/chat-tool-call.js';
-import { useChatController, type ChatSendFunction } from './chat-controller.js';
+import {
+  useChatController,
+  type ChatSendContext,
+  type ChatSendFunction,
+} from './chat-controller.js';
 
 afterEach(() => vi.useRealTimers());
 
@@ -274,14 +278,83 @@ describe('useChatController props', () => {
     expect(result.current.props.onStop).toBe(result.current.stop);
   });
 
-  it('UIC-CHAT-CONTROLLER-5.3 replaces the conversation', () => {
-    const { result } = renderController({ initialMessages: [textMessage('m1', 'ana', 'Hello')] });
+  it('UIC-CHAT-CONTROLLER-5.3 edits the conversation while the reply and queue carry on', async () => {
+    const { result, at, send } = renderController({
+      initialMessages: [textMessage('m1', 'ana', 'Hello')],
+    });
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Second'));
     act(() =>
-      result.current.setMessages((messages) => [...messages, textMessage('m2', 'helper', 'Hi')]),
+      result.current.updateMessages((messages) => [textMessage('m0', 'ben', 'Older'), ...messages]),
     );
-    expect(result.current.messages.map((message) => message.id)).toEqual(['m1', 'm2']);
-    act(() => result.current.setMessages([]));
+    expect(result.current.messages.map((message) => message.authorId)).toEqual([
+      'ben',
+      'ana',
+      'ana',
+      'helper',
+    ]);
+    expect(result.current.isPending).toBe(true);
+    await push(at(), { type: 'text-delta', text: 'Soak.' }, { type: 'finish' });
+    expect(result.current.messages[3]?.parts).toEqual([
+      { type: 'text', text: 'Soak.', status: 'complete' },
+    ]);
+    expect(send).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-CHAT-CONTROLLER-5.3 resets the conversation, dropping the old reply and its queue', async () => {
+    let finish = () => {};
+    const gate = new Promise<void>((resolve) => (finish = resolve));
+    const send = vi.fn<ChatSendFunction>(async function* () {
+      // A host stream that ignores its signal and finishes late.
+      await gate;
+      yield { type: 'text-delta', text: 'Late text.' };
+      yield { type: 'finish' };
+    });
+    const { result } = renderController({ send });
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Queued follow-up'));
+    const [[, context]] = send.mock.calls as unknown as [[unknown, ChatSendContext]];
+    const conversation = [textMessage('b1', 'ana', 'Another conversation')];
+    act(() => result.current.resetConversation(conversation));
+    expect(context.signal.aborted).toBe(true);
+    expect(result.current.messages).toEqual(conversation);
+    expect(result.current.isPending).toBe(false);
+    expect(result.current.queue).toEqual([]);
+    finish();
+    await settle();
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(result.current.messages).toEqual(conversation);
+    act(() => result.current.resetConversation());
     expect(result.current.props.messages).toEqual([]);
+  });
+
+  it('UIC-CHAT-CONTROLLER-5.3 rejects the old reply waiters and ignores late responses', async () => {
+    const { result, at, send } = renderController();
+    act(() => result.current.send('Delete the draft'));
+    await push(
+      at(),
+      { type: 'tool-call', id: 'call-1', name: 'delete_draft' },
+      { type: 'approval-request', id: 'call-1', await: true },
+    );
+    const waiting = at().context.waitFor('call-1');
+    act(() => result.current.resetConversation([textMessage('b1', 'ana', 'Fresh start')]));
+    await expect(waiting).rejects.toThrow();
+    act(() => result.current.props.onApprove('call-1'));
+    await settle();
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(result.current.messages).toEqual([textMessage('b1', 'ana', 'Fresh start')]);
+  });
+
+  it('UIC-CHAT-CONTROLLER-5.3 retries a failed reply of the new conversation from scratch', async () => {
+    const { result, at, send } = renderController();
+    act(() => result.current.send('Plan dinner'));
+    await push(at(), { type: 'text-delta', text: 'Partial' }, { type: 'error', message: 'Busy.' });
+    const failed = requireDefined(result.current.messages[1]);
+    const question = textMessage('b1', 'ana', 'Plan lunch');
+    act(() => result.current.resetConversation([question, { ...failed, parts: [] }]));
+    act(() => result.current.retry());
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(at().messages).toEqual([question]);
   });
 
   it('UIC-CHAT-CONTROLLER-5.1 drives a rendered approval through the props', async () => {

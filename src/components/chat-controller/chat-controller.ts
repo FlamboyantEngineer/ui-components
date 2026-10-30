@@ -103,8 +103,17 @@ export interface ChatController {
   stop: () => void;
   /** Runs the last turn again after its reply failed. */
   retry: () => void;
-  /** Replaces the conversation. */
-  setMessages: (update: ChatMessagesUpdate) => void;
+  /**
+   * Edits the conversation as it stands, such as to add a reaction or older messages; the running
+   * reply, the queue and the uploads carry on.
+   */
+  updateMessages: (update: ChatMessagesUpdate) => void;
+  /**
+   * Replaces the conversation (empty by default), such as to clear it or load another one, and
+   * drops what the old one owned: the running reply, its waiters, the queue, the composer's files
+   * and their uploads.
+   */
+  resetConversation: (messages?: readonly ChatMessageData[]) => void;
   /** Everything a chat needs, to spread into it. */
   props: ChatControllerProps;
 }
@@ -168,7 +177,8 @@ export function useChatController(options: ChatControllerOptions): ChatControlle
     sendNow: engine.sendNow,
     stop: engine.stop,
     retry: engine.retry,
-    setMessages: engine.setMessages,
+    updateMessages: engine.updateMessages,
+    resetConversation: engine.resetConversation,
     props,
   };
 }

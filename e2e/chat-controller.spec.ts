@@ -128,4 +128,26 @@ test.describe('Chat Controller lab', () => {
     await expect(transcript(page).getByText('Third question')).toHaveCount(0);
     await expect(page.getByRole('list', { name: 'Sent prompts' })).toContainText('Second, edited');
   });
+
+  test('UIC-CHAT-CONTROLLER-5.3 clears a streaming conversation and never sends its queue', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-controller');
+    await sendMessage(page, 'First question');
+    await expect(lastMessage(page)).toContainText('Soak');
+    await sendMessage(page, 'Queued question');
+    await expect(page.getByRole('list', { name: 'Queued messages' })).toBeVisible();
+    await demo(page).getByRole('button', { name: 'Clear the conversation' }).click();
+    await expect(transcript(page).getByRole('article')).toHaveCount(0);
+    await expect(page.getByRole('list', { name: 'Queued messages' })).toHaveCount(0);
+    await expect(demo(page).getByRole('button', { name: 'Stop' })).toBeDisabled();
+    // A fresh turn runs as long as the old reply would have; the old queue never follows it.
+    await sendMessage(page, 'Fresh question');
+    await expect(demo(page).getByRole('button', { name: 'Stop' })).toBeDisabled({
+      timeout: 20_000,
+    });
+    await expect(transcript(page).getByRole('article')).toHaveCount(2);
+    await expect(transcript(page).getByText('Queued question')).toHaveCount(0);
+  });
 });
