@@ -2,6 +2,26 @@
 
 `Card` is a framed container for a self-contained group of content: a settings section, a dashboard widget, a record tile or a tool panel. It draws optional media, an optional header (a title block with a description and actions, or custom header content), a body and an optional footer. With `href` or `onAction` the whole card is a link or press target. `CardGrid` arranges cards as a navigable, selectable collection. Grouping without a frame belongs to layout, or to a [Section](SECTION-HEADER.md) whose header matches a card's title block; a region with nothing to show is an [Empty State](EMPTY-STATE.md).
 
+A record card with a status, metadata, a preview while collapsed, actions and details, in place of a header, summary and disclosure composed by the host:
+
+```tsx
+<Card
+  title="Orchard row 4"
+  abbreviation="R4"
+  leading={<Badge tone="success">Active</Badge>}
+  description="Twelve plum trees along the south wall"
+  meta="Updated Monday"
+  summary={<ProgressBar label="Harvest" value={40} />}
+  actions={<Button size="sm">Water</Button>}
+  isCollapsible
+  isExpanded={isExpanded}
+  onExpandedChange={setExpanded}
+  presentationSteps={{ compact: { width: 320 }, minimal: { width: 120 } }}
+>
+  <TextField label="Notes" />
+</Card>
+```
+
 ## UIC-CARD-1 - Structure
 
 ### UIC-CARD-1.1 - Parts
@@ -138,42 +158,88 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 Implementation: `src/components/card/card-grid.tsx`
 Verification: `src/components/card/card.test.tsx`
 
+## UIC-CARD-6 - Header regions and collapse
+
+### UIC-CARD-6.1 - Leading content, metadata and summary
+
+`leading` shall render before the title block in the `ui-card__leading` slot (a status icon or badges), and `meta` inside the title block after the description in the `ui-card__meta` slot (an owner, a date). `summary` renders after the header in the `ui-card__summary` slot only while a collapsible card is collapsed, as its preview (progress, a current activity). Empty values render no slot, and a hidden region leaves no element, border or padding behind.
+
+Implementation: `src/components/card/card-header.tsx`, `src/components/card/card.tsx`, `labs/reference/card.css`
+Verification: `src/components/card/card-collapse.test.tsx`, `e2e/card.spec.ts`
+
+### UIC-CARD-6.2 - Collapsible card
+
+`isCollapsible` shall draw an expand and collapse control in the header (`ui-card__toggle`, a [Button](BUTTON.md)) named "Details" followed by the card's title (the provider's `details` string), with `aria-expanded` and `aria-controls` naming the regions it shows and hides: the media, body and footer. The state is controlled with `isExpanded` or held from `defaultExpanded` (default `true`); `onExpandedChange` receives each requested state, also while controlled, and a controlled card follows its owner's value only. A collapsed card keeps those regions mounted but `hidden`, so drafts, editor state and pending work survive toggling while the regions take no space and leave the tab order and the accessibility tree. The root publishes `data-collapsible` and, while expanded, `data-expanded`. `isToggleDisabled` disables the control and keeps the state. The control works the same in a custom header, beside the caller's content.
+
+Activating the control never activates the card's action, its grid item's selection or a drag: it is an inner control ([UIC-CARD-3.2](#uic-card-32---pressing-the-card)). Collapse is independent of the action, selection, loading, density and layout options. When a change of state from outside hides the element that holds focus inside the card, focus moves to the control (or, in the minimal presentation, the More button); focus anywhere else stays.
+
+Implementation: `src/components/card/card.tsx`, `src/components/card/card-header.tsx`, `src/components/card/card-focus.ts`, `labs/reference/card.css`
+Verification: `src/components/card/card-collapse.test.tsx`, `e2e/card.spec.ts`
+
+## UIC-CARD-7 - Adaptive presentation
+
+### UIC-CARD-7.1 - Presentations by allocated space
+
+The host sets each card's breakpoints with `presentationSteps` (`compact` and `minimal`, each a `width`, a `height` or both, in pixels); the library has no defaults. With at least one breakpoint, the card shall measure its own border box, which its container sizes, and publish `data-presentation`: `compact` below a `compact` breakpoint, `minimal` below a `minimal` one, else `full`, taking the smaller of what its width and its height call for. A presentation without a breakpoint is never shown, and a height breakpoint suits a card whose height is its container's, such as a `fill` card. Growing past a threshold takes 8 pixels more than shrinking below it, so resizing never oscillates, and the presentation never changes the size it is measured by. A card without breakpoints publishes no presentation and keeps every region. The presentation never changes the expanded state or calls `onExpandedChange`.
+
+Implementation: `src/components/card/card-presentation.ts`, `src/components/card/card.tsx`
+Verification: `src/components/card/card-collapse.test.tsx`, `e2e/card.spec.ts`
+
+### UIC-CARD-7.2 - What each presentation shows
+
+`full` shows every region. `compact` keeps the leading content, the title, the summary and the toggle in one header line and moves the description, metadata and actions into the More panel. `minimal` keeps only the title (the `abbreviation` when given, else the title cut to the room left) and moves the leading content, description, metadata, summary, actions and toggle into the More panel. A smaller presentation moves secondary content (description, metadata) before identity (title, leading content). Each region renders in exactly one place, so no action is duplicated.
+
+The More button (`ui-card__more`, named "More" followed by the title) shows whenever a region was moved and opens a [Popover](POPOVER.md) titled by the card's title whose `ui-card__more-panel` slot holds the moved regions, so every action and the toggle stay reachable at every size. Outside `full`, the title is cut by the stylesheet in a [Truncation Tooltip](TRUNCATION-TOOLTIP.md), which shows it whole on hover and focus. An abbreviation shows in the `ui-card__abbreviation` slot hidden from assistive technology while the whole title stays in the heading, visually hidden, so the heading level and the card's accessible name do not change; the stylesheet cuts text at grapheme boundaries, so no character is split. A custom header keeps its content until `minimal`, where an `abbreviation` replaces it on screen while the content stays mounted, hidden, to name the card. When a presentation change removes the focused element, focus moves to the More button, else the toggle or the card's action. The presentation never hides the media, body or footer: an expanded card keeps them at every size, and in `minimal` the reference sheet lets them scroll sideways, so a host collapses a card it wants reduced to its header. The reference sheet's minimal card fits two characters and the More button in about 50 pixels.
+
+Implementation: `src/components/card/card-header.tsx`, `src/components/card/card-focus.ts`, `labs/reference/card.css`
+Verification: `src/components/card/card-collapse.test.tsx`, `e2e/card.spec.ts`
+
 ## Hooks
 
-| Hook                          | Kind      | Values                                       | Description                                            |
-| ----------------------------- | --------- | -------------------------------------------- | ------------------------------------------------------ |
-| `ui-card`                     | root      |                                              | The `<section>`.                                       |
-| `ui-card__media`              | slot      |                                              | Full-bleed media before the header.                    |
-| `ui-card__header`             | slot      |                                              | The `<header>`, when the card has header content.      |
-| `ui-card__heading`            | slot      |                                              | Groups the title and description.                      |
-| `ui-card__title`              | slot      |                                              | The title heading.                                     |
-| `ui-card__action`             | slot      |                                              | The title's link or button, or the slotted action.     |
-| `ui-card__description`        | slot      |                                              | Supporting text under the title.                       |
-| `ui-card__actions`            | slot      |                                              | Trailing header controls or status.                    |
-| `ui-card__body`               | slot      |                                              | The body.                                              |
-| `ui-card__skeleton`           | slot      |                                              | The loading placeholder (also `ui-skeleton`).          |
-| `ui-card__footer`             | slot      |                                              | The `<footer>`.                                        |
-| `ui-card-grid`                | root      |                                              | The card collection (`role="grid"`).                   |
-| `ui-card-grid__loader`        | slot      |                                              | The loading item after the cards while more load.      |
-| `ui-card-grid-item`           | root      |                                              | One item of the collection (`role="row"`).             |
-| `ui-card-grid-item__checkbox` | slot      |                                              | The selection checkbox (also `ui-checkbox`).           |
-| `data-variant`                | attribute | `default`, `panel`                           | Surface.                                               |
-| `data-density`                | attribute | `default`, `comfortable`, `compact`, `tight` | Interior padding.                                      |
-| `data-selected`               | state     | `true`                                       | The current card, or a selected item (React Aria).     |
-| `data-loading`                | state     | `true`                                       | The card's content is loading.                         |
-| `data-layout`                 | state     | `grid`                                       | The grid's layout (React Aria).                        |
-| `data-empty`                  | state     | `true`                                       | The grid has no items (React Aria).                    |
-| `data-focused`                | state     | `true`                                       | Focus on the grid or an item (React Aria).             |
-| `data-focus-visible`          | state     | `true`                                       | Keyboard focus on the grid or an item (React Aria).    |
-| `data-hovered`                | state     | `true`                                       | Pointer over an item (React Aria).                     |
-| `data-pressed`                | state     | `true`                                       | An item being pressed (React Aria).                    |
-| `data-disabled`               | state     | `true`                                       | A disabled item (React Aria).                          |
-| `data-selection-mode`         | state     | `single`, `multiple`                         | The grid's selection mode, on items (React Aria).      |
-| `data-focus-visible-within`   | state     | `true`                                       | Keyboard focus inside an item (React Aria).            |
-| `data-orientation`            | state     | `vertical`                                   | The grid's orientation (React Aria).                   |
-| `data-collection`             | state     |                                              | React Aria's collection marker, on the grid and items. |
-| `data-key`                    | state     |                                              | An item's `id` (React Aria).                           |
-| `data-interactive`            | state     | `true`                                       | Answers to a pointer.                                  |
-| `data-flush`                  | state     | `true`                                       | Set into a surrounding frame.                          |
-| `data-fill`                   | state     | `true`                                       | The body grows to the card's height.                   |
-| `data-full-width`             | state     | `true`                                       | Fills the container's width.                           |
+| Hook                          | Kind      | Values                                       | Description                                                                    |
+| ----------------------------- | --------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
+| `ui-card`                     | root      |                                              | The `<section>`.                                                               |
+| `ui-card__media`              | slot      |                                              | Full-bleed media before the header.                                            |
+| `ui-card__header`             | slot      |                                              | The `<header>`, when the card has header content.                              |
+| `ui-card__heading`            | slot      |                                              | Groups the title and description.                                              |
+| `ui-card__title`              | slot      |                                              | The title heading.                                                             |
+| `ui-card__action`             | slot      |                                              | The title's link or button, or the slotted action.                             |
+| `ui-card__description`        | slot      |                                              | Supporting text under the title.                                               |
+| `ui-card__actions`            | slot      |                                              | Trailing header controls or status.                                            |
+| `ui-card__leading`            | slot      |                                              | Leading content before the title block.                                        |
+| `ui-card__abbreviation`       | slot      |                                              | The minimal presentation's short title (hidden from AT).                       |
+| `ui-card__meta`               | slot      |                                              | Metadata in the title block.                                                   |
+| `ui-card__toggle`             | slot      |                                              | The expand and collapse control (also `ui-button`).                            |
+| `ui-card__more`               | slot      |                                              | The More button (also `ui-button`).                                            |
+| `ui-card__more-panel`         | slot      |                                              | The regions a smaller presentation moved, in the popover.                      |
+| `ui-card__summary`            | slot      |                                              | The collapsed card's preview.                                                  |
+| `ui-card__body`               | slot      |                                              | The body.                                                                      |
+| `ui-card__skeleton`           | slot      |                                              | The loading placeholder (also `ui-skeleton`).                                  |
+| `ui-card__footer`             | slot      |                                              | The `<footer>`.                                                                |
+| `ui-card-grid`                | root      |                                              | The card collection (`role="grid"`).                                           |
+| `ui-card-grid__loader`        | slot      |                                              | The loading item after the cards while more load.                              |
+| `ui-card-grid-item`           | root      |                                              | One item of the collection (`role="row"`).                                     |
+| `ui-card-grid-item__checkbox` | slot      |                                              | The selection checkbox (also `ui-checkbox`).                                   |
+| `data-variant`                | attribute | `default`, `panel`                           | Surface.                                                                       |
+| `data-density`                | attribute | `default`, `comfortable`, `compact`, `tight` | Interior padding.                                                              |
+| `data-presentation`           | attribute | `full`, `compact`, `minimal`                 | An adaptive card's presentation.                                               |
+| `data-collapsible`            | state     | `true`                                       | The card has an expand and collapse control.                                   |
+| `data-expanded`               | state     | `true`                                       | A collapsible card shows its media, body and footer, or its toggle shows that. |
+| `data-selected`               | state     | `true`                                       | The current card, or a selected item (React Aria).                             |
+| `data-loading`                | state     | `true`                                       | The card's content is loading.                                                 |
+| `data-layout`                 | state     | `grid`                                       | The grid's layout (React Aria).                                                |
+| `data-empty`                  | state     | `true`                                       | The grid has no items (React Aria).                                            |
+| `data-focused`                | state     | `true`                                       | Focus on the grid or an item (React Aria).                                     |
+| `data-focus-visible`          | state     | `true`                                       | Keyboard focus on the grid or an item (React Aria).                            |
+| `data-hovered`                | state     | `true`                                       | Pointer over an item (React Aria).                                             |
+| `data-pressed`                | state     | `true`                                       | An item being pressed (React Aria).                                            |
+| `data-disabled`               | state     | `true`                                       | A disabled item (React Aria).                                                  |
+| `data-selection-mode`         | state     | `single`, `multiple`                         | The grid's selection mode, on items (React Aria).                              |
+| `data-focus-visible-within`   | state     | `true`                                       | Keyboard focus inside an item (React Aria).                                    |
+| `data-orientation`            | state     | `vertical`                                   | The grid's orientation (React Aria).                                           |
+| `data-collection`             | state     |                                              | React Aria's collection marker, on the grid and items.                         |
+| `data-key`                    | state     |                                              | An item's `id` (React Aria).                                                   |
+| `data-interactive`            | state     | `true`                                       | Answers to a pointer.                                                          |
+| `data-flush`                  | state     | `true`                                       | Set into a surrounding frame.                                                  |
+| `data-fill`                   | state     | `true`                                       | The body grows to the card's height.                                           |
+| `data-full-width`             | state     | `true`                                       | Fills the container's width.                                                   |

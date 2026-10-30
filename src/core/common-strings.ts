@@ -34,6 +34,8 @@ export interface CommonStrings {
   help: string;
   expand: string;
   collapse: string;
+  /** Names a card's expand and collapse control, with the card's title after it. */
+  details: string;
   search: string;
   noResults: string;
   previous: string;

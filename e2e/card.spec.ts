@@ -223,4 +223,98 @@ test.describe('Card lab', () => {
     expect(focused.y).toBe(boxes[0]?.y);
     await lab.expectAccessible('[data-lab-demo="waterfall"]');
   });
+
+  test("UIC-CARD-6.1 UIC-CARD-6.2 collapses a record and keeps its body's state", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="collapse"]');
+    const card = demo.getByRole('region', { name: 'Orchard row 4' });
+    const toggle = card.getByRole('button', { name: 'Details Orchard row 4' });
+    await card.getByRole('textbox', { name: 'Notes' }).fill('Prune the low branches');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(card.locator('.ui-card__summary')).toHaveCount(0);
+    await toggle.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('[data-lab-output="expanded"]')).toHaveText('false');
+    await expect(card.locator('.ui-card__body')).toBeHidden();
+    await expect(card.locator('.ui-card__footer')).toBeHidden();
+    await expect(card.getByRole('progressbar', { name: 'Harvest' })).toBeVisible();
+    const header = await card.locator('.ui-card__header').evaluate((node) => ({
+      border: getComputedStyle(node).borderBottomWidth,
+    }));
+    expect(header.border).toBe('0px');
+    await toggle.click();
+    await expect(card.getByRole('textbox', { name: 'Notes' })).toHaveValue(
+      'Prune the low branches',
+    );
+    await demo.getByRole('button', { name: 'Collapse row 4' }).click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await lab.expectAccessible('[data-lab-demo="collapse"]');
+  });
+
+  test('UIC-CARD-7.1 UIC-CARD-7.2 fits cards to a pane from full width down to a few characters', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="pane"]');
+    const card = demo.locator('.ui-card').first();
+    const thumb = demo.getByRole('slider', { name: 'Pane width' });
+    await expect(card).toHaveAttribute('data-presentation', 'full');
+    await expect(card.getByRole('button', { name: 'Water' })).toBeVisible();
+
+    await thumb.focus();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('PageUp');
+    await page.keyboard.press('PageUp');
+    await page.keyboard.press('PageUp');
+    await page.keyboard.press('PageUp');
+    await expect(card).toHaveAttribute('data-presentation', 'compact');
+    await expect(card.getByRole('button', { name: 'Water' })).toHaveCount(0);
+    await expect(card.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
+
+    await page.keyboard.press('Home');
+    await expect(card).toHaveAttribute('data-presentation', 'minimal');
+    await expect(card.locator('.ui-card__abbreviation')).toHaveText('P7');
+    const box = await card.evaluate((node) => ({
+      width: node.getBoundingClientRect().width,
+      overflows: node.scrollWidth > node.clientWidth + 1,
+    }));
+    expect(box.width).toBeLessThanOrEqual(56);
+    expect(box.overflows).toBe(false);
+    await expect(card).toHaveAccessibleName('Plum row 7');
+    const more = card.getByRole('button', { name: 'More Plum row 7' });
+    await expect(more).toBeVisible();
+    await more.click();
+    const panel = page.getByRole('dialog', { name: 'Plum row 7' });
+    await expect(panel.getByRole('button', { name: 'Water' })).toBeVisible();
+    await expect(panel.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(more).toBeFocused();
+
+    await thumb.focus();
+    await page.keyboard.press('End');
+    await expect(card).toHaveAttribute('data-presentation', 'full');
+    await expect(card.getByRole('button', { name: 'Water' })).toBeVisible();
+    const toggle = card.getByRole('button', { name: 'Details Plum row 7' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(card.getByRole('textbox', { name: 'Notes' })).toBeVisible();
+    await lab.expectAccessible('[data-lab-demo="pane"]');
+  });
+
+  test('UIC-CARD-6.2 toggles a card in a selectable grid without selecting it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="collapse-grid"]');
+    const toggle = demo.getByRole('button', { name: 'Details Orchard row 4' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(demo.getByText('Twelve trees.').first()).toBeVisible();
+    await expect(page.locator('[data-lab-output="grid-selected"]')).toHaveText('none');
+  });
 });

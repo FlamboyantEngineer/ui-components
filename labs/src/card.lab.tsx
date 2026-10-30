@@ -5,6 +5,12 @@ import { Card, type CardDensity, type CardVariant } from '../../src/components/c
 import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  CollapsibleGrid,
+  CollapsibleRecords,
+  CustomHeaderCard,
+  ResizablePane,
+} from './card-collapse-cases.js';
 
 const variants: CardVariant[] = ['default', 'panel'];
 const densities: CardDensity[] = ['default', 'comfortable', 'compact', 'tight'];
@@ -276,6 +282,24 @@ mountLab(
       description="The waterfall layout: cards of different heights in columns, only those in view rendered, in a 320px tall frame."
     >
       <WaterfallDemo />
+    </LabSection>
+    <LabSection
+      title="Collapsible records"
+      description="Collapse a record and expand it again: its notes keep what you typed. The button above collapses row 4 from outside."
+    >
+      <CollapsibleRecords />
+    </LabSection>
+    <LabSection title="Custom header with the built-in toggle">
+      <CustomHeaderCard />
+    </LabSection>
+    <LabSection
+      title="Adaptive cards in a resizable pane"
+      description="Narrow the pane with the slider or its grip: the cards turn compact, then show a few characters and a More button that holds the rest."
+    >
+      <ResizablePane />
+    </LabSection>
+    <LabSection title="Collapsible cards in a selectable grid">
+      <CollapsibleGrid />
     </LabSection>
   </>,
 );
