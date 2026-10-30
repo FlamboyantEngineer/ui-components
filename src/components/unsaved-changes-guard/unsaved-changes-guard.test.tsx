@@ -314,6 +314,67 @@ describe('UnsavedChangesGuard', () => {
     await expect(second).resolves.toBe(false);
   });
 
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a new question open and free when the save of the one it replaced finishes', async () => {
+    const user = userEvent.setup();
+    const save = deferred();
+    const { leave } = setup(<Source isDirty label="Profile" onSave={() => save.promise} />);
+    const first = leave({ title: 'First leave' });
+    await screen.findByRole('alertdialog', { name: 'First leave' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    const second = leave({ title: 'Second leave' });
+    await expect(first).resolves.toBe(false);
+    expect(await screen.findByRole('alertdialog', { name: 'Second leave' })).toBeVisible();
+    expect(document.querySelector('.ui-modal__primary')).not.toHaveAttribute('data-pending');
+    await act(async () => save.resolve());
+    expect(screen.getByRole('alertdialog', { name: 'Second leave' })).toBeVisible();
+    expect(await settled(second)).toBe('pending');
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
+    await expect(second).resolves.toBe(false);
+  });
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a late discard or refusal of a replaced question to itself', async () => {
+    const user = userEvent.setup();
+    const discard = deferred();
+    const save = deferred();
+    const { leave } = setup(
+      <Source
+        isDirty
+        label="Profile"
+        onSave={() => save.promise}
+        onDiscard={() => discard.promise}
+      />,
+    );
+    const first = leave({ title: 'First leave' });
+    await screen.findByRole('alertdialog', { name: 'First leave' });
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
+    const second = leave({ title: 'Second leave' });
+    await expect(first).resolves.toBe(false);
+    await screen.findByRole('alertdialog', { name: 'Second leave' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    const third = leave({ title: 'Third leave' });
+    await expect(second).resolves.toBe(false);
+    await act(async () => discard.resolve());
+    await act(async () => save.reject(new Error('The server is busy.')));
+    expect(screen.getByRole('alertdialog', { name: 'Third leave' })).toBeVisible();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
+    await expect(third).resolves.toBe(true);
+  });
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 answers no when the guard leaves while a save runs', async () => {
+    const user = userEvent.setup();
+    const save = deferred();
+    const { leave, unmount } = setup(
+      <Source isDirty label="Profile" onSave={() => save.promise} />,
+    );
+    const result = leave();
+    await screen.findByRole('alertdialog');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    unmount();
+    await expect(result).resolves.toBe(false);
+    await act(async () => save.resolve());
+  });
+
   it('UIC-UNSAVED-CHANGES-GUARD-3.1 lets a nested guard ask about its own sources and stand in its parent', async () => {
     const user = userEvent.setup();
 

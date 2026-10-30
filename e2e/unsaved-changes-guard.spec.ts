@@ -112,6 +112,29 @@ test.describe('Unsaved Changes Guard lab', () => {
     await expect(form.locator('[data-lab-dirty]')).toHaveText('All changes saved');
   });
 
+  test('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a replacing question open when the replaced save ends', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('unsaved-changes-guard');
+    const demo = page.locator('[data-lab-demo="replaced"]');
+    await demo.getByRole('button', { name: 'Leave, then sign out' }).click();
+    const first = page.getByRole('alertdialog', { name: 'Leave the plan?' });
+    await first.getByRole('button', { name: 'Save' }).click();
+    await page.clock.runFor(1000);
+    const second = page.getByRole('alertdialog', { name: 'Sign out now?' });
+    await expect(second).toBeVisible();
+    await expect(demo.locator('[data-lab-answers]')).toHaveText('Leave the plan? Stayed');
+    await page.clock.runFor(1500);
+    await expect(second).toBeVisible();
+    await expect(page.locator('.ui-modal__primary')).not.toHaveAttribute('data-pending');
+    await second.getByRole('button', { name: 'Stay' }).click();
+    await expect(demo.locator('[data-lab-answers]')).toHaveText(
+      'Leave the plan? Stayed · Sign out now? Stayed',
+    );
+  });
+
   test('UIC-UNSAVED-CHANGES-GUARD-1.1 UIC-UNSAVED-CHANGES-GUARD-1.2 UIC-UNSAVED-CHANGES-GUARD-3.1 asks a nested guard about its own sources', async ({
     page,
     lab,
