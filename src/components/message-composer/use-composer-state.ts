@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
-import { useSubmission, type Submitter } from './use-submission.js';
+import { useDraftSubmission, type Submitter } from '../../utils/use-draft-submission.js';
 
 /** How a composer reads its value as text and turns text back into its value. */
 export interface ComposerFormat<T> {
@@ -120,8 +120,10 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   const [draft, setDraft] = useDraft(options);
   const [edit, setEdit] = useEditedMessage(editValue, format.empty);
   const [recalled, setRecalled] = useState<Recalled | null>(null);
-  const submission = useSubmission({
+  const submission = useDraftSubmission({
     ...options,
+    empty: format.empty,
+    codec: format.codec,
     isControlled: options.value !== undefined,
     draft,
     setDraft,

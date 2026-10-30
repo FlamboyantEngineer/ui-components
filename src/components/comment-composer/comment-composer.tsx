@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, type KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
+import { useDraftSubmission } from '../../utils/use-draft-submission.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
 
@@ -16,7 +18,8 @@ export interface CommentComposerProps extends BaseProps {
   onChange?: ((value: string) => void) | undefined;
   /**
    * Called with the trimmed text when the reader submits, then the draft clears. A returned promise
-   * keeps the composer pending until it settles, and keeps the draft if it rejects.
+   * keeps the composer pending until it settles; once it resolves, the draft clears only if it is
+   * still the one submitted, and a rejection keeps it.
    */
   onSubmit: (text: string) => void | Promise<unknown>;
   /** Called when the reader cancels, after the draft clears. Shows Cancel even while the draft is empty. */
@@ -37,6 +40,15 @@ export interface CommentComposerProps extends BaseProps {
 
 const hooks = createHooks('comment-composer', ['field', 'actions', 'cancel', 'submit']);
 
+/** A stored draft, which is a string or falls back to the default. */
+const draftCodec = createJsonCodec((value) => {
+  if (typeof value !== 'string') throw new TypeError('A comment draft is a string.');
+  return value;
+});
+
+/** A failed submit keeps the draft; the host reports the failure. */
+const keepDraft = () => undefined;
+
 /** Whether a key press is the submit chord, Ctrl+Enter or Command+Enter. */
 function isSubmitChord(event: KeyboardEvent): boolean {
   return event.key === 'Enter' && (event.ctrlKey || event.metaKey);
@@ -49,7 +61,7 @@ function useDraft({
   onChange,
   persistKey,
 }: Pick<CommentComposerProps, 'value' | 'defaultValue' | 'onChange' | 'persistKey'>) {
-  const [own, setOwn] = usePersistentState(persistKey, defaultValue);
+  const [own, setOwn] = usePersistentState(persistKey, defaultValue, draftCodec);
   const setDraft = (next: string) => {
     if (value === undefined) setOwn(next);
     onChange?.(next);
@@ -57,36 +69,37 @@ function useDraft({
   return [value ?? own, setDraft] as const;
 }
 
+type ComposerActions = ReturnType<typeof useComposerActions>;
+
 /** Submitting, pending while a returned promise settles, and cancelling. */
 function useComposerActions({
+  value,
+  persistKey,
   draft,
   setDraft,
   onSubmit,
   onCancel,
   isDisabled,
-}: Pick<CommentComposerProps, 'onSubmit' | 'onCancel'> & {
+}: Pick<CommentComposerProps, 'value' | 'persistKey' | 'onSubmit' | 'onCancel'> & {
   draft: string;
   setDraft: (next: string) => void;
   isDisabled: boolean;
 }) {
-  const [isPending, setIsPending] = useState(false);
+  const submission = useDraftSubmission({
+    onSubmitError: keepDraft,
+    persistKey,
+    empty: '',
+    codec: draftCodec,
+    isControlled: value !== undefined,
+    draft,
+    setDraft,
+  });
+  const isPending = submission.isSubmitting;
   const text = draft.trim();
   const canSubmit = text !== '' && !isDisabled && !isPending;
   const submit = () => {
-    if (!canSubmit) return;
-    const result = onSubmit(text);
-    if (!(result instanceof Promise)) {
-      setDraft('');
-      return;
-    }
-    setIsPending(true);
-    // A rejected submit keeps the draft; the host reports the failure.
-    void result
-      .then(
-        () => setDraft(''),
-        () => undefined,
-      )
-      .finally(() => setIsPending(false));
+    // The draft is sent as it stands, so a resolved submit clears it only while it is unchanged.
+    if (canSubmit) submission.send(draft, true, (sent) => onSubmit(sent.trim()));
   };
   const cancel = () => {
     setDraft('');
@@ -99,6 +112,18 @@ function useComposerActions({
     submit,
     cancel,
   };
+}
+
+/** Submits on the chord, and cancels on Escape while there is something to cancel. */
+function handleComposerKey(event: KeyboardEvent, actions: ComposerActions) {
+  if (isSubmitChord(event)) {
+    event.preventDefault();
+    actions.submit();
+  } else if (event.key === 'Escape' && actions.canCancel) {
+    event.preventDefault();
+    event.stopPropagation();
+    actions.cancel();
+  }
 }
 
 /**
@@ -128,23 +153,21 @@ export function CommentComposer({
     onChange,
     persistKey,
   });
-  const actions = useComposerActions({ draft, setDraft, onSubmit, onCancel, isDisabled });
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (isSubmitChord(event)) {
-      event.preventDefault();
-      actions.submit();
-    } else if (event.key === 'Escape' && actions.canCancel) {
-      event.preventDefault();
-      event.stopPropagation();
-      actions.cancel();
-    }
-  };
+  const actions = useComposerActions({
+    value,
+    persistKey,
+    draft,
+    setDraft,
+    onSubmit,
+    onCancel,
+    isDisabled,
+  });
   const fieldLabel = label ?? strings.addComment;
   return (
     <div
       {...rest}
       {...hooks.root({ className, data: { disabled: isDisabled, pending: actions.isPending } })}
-      onKeyDown={onKeyDown}
+      onKeyDown={(event) => handleComposerKey(event, actions)}
     >
       <TextField
         className={hooks.slotClass('field')}

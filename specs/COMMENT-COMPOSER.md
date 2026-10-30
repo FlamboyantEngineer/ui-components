@@ -20,10 +20,10 @@ Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/
 
 ### UIC-COMMENT-COMPOSER-1.3 - Pending submits
 
-When `onSubmit` returns a promise, the composer shall be pending until it settles: the root carries `data-pending`, the submit button shows its spinner and refuses presses, the chord submits nothing and there is no cancel. It clears the draft when the promise resolves and keeps it when the promise rejects, for the host to report the failure.
+When `onSubmit` returns a promise, the composer shall be pending until it settles: the root carries `data-pending`, the submit button shows its spinner and refuses presses, the chord submits nothing and there is no cancel. The text box stays editable. When the promise resolves, the composer shall clear the draft only if it is still the one submitted and still belongs to the same owner: text typed since stays, and where the key or the storage adapter changed, or the composer unmounted, only the stored draft it was submitted from clears, if it still holds that text, while the draft shown now is left alone and is not pending. A throw or a rejection keeps the draft, for the host to report the failure.
 
-Implementation: `src/components/comment-composer/comment-composer.tsx`
-Verification: `src/components/comment-composer/comment-composer.test.tsx`
+Implementation: `src/components/comment-composer/comment-composer.tsx`, `src/utils/use-draft-submission.ts`
+Verification: `src/components/comment-composer/comment-composer.test.tsx`, `src/components/comment-composer/comment-composer-submit.test.tsx`, `e2e/comment-composer.spec.ts`
 
 ### UIC-COMMENT-COMPOSER-1.4 - Cancelling
 

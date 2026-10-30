@@ -76,6 +76,37 @@ test.describe('Comment Composer lab', () => {
     await expect(page.locator('[data-lab-output="cancelled"]')).toHaveText('1');
   });
 
+  test('UIC-COMMENT-COMPOSER-1.3 keeps newer drafts and other threads when a submit settles', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('comment-composer');
+    const pending = page.locator('[data-lab-composer="pending"]').getByRole('textbox');
+    await pending.fill('First note');
+    await pending.press('ControlOrMeta+Enter');
+    await pending.fill('Second note');
+    await page.clock.runFor(1600);
+    await expect(pending).toHaveValue('Second note');
+
+    const composer = page.locator('[data-lab-composer="threads"]');
+    await composer.getByRole('textbox', { name: 'Reply in Orchard' }).fill('Orchard reply');
+    await page.getByRole('button', { name: 'Open Market' }).click();
+    const market = composer.getByRole('textbox', { name: 'Reply in Market' });
+    await market.fill('Market draft');
+    await page.getByRole('button', { name: 'Open Orchard' }).click();
+    await composer.getByRole('button', { name: 'Comment' }).click();
+    await page.getByRole('button', { name: 'Open Market' }).click();
+    await expect(composer).not.toHaveAttribute('data-pending');
+    await page.clock.runFor(1600);
+    await expect(page.locator('[data-lab-output="thread-posted"] li')).toHaveText([
+      'Orchard reply',
+    ]);
+    await expect(market).toHaveValue('Market draft');
+    await page.getByRole('button', { name: 'Open Orchard' }).click();
+    await expect(composer.getByRole('textbox', { name: 'Reply in Orchard' })).toHaveValue('');
+  });
+
   test('UIC-COMMENT-COMPOSER-1.7 passes axe in both themes', async ({ lab }) => {
     await lab.open('comment-composer');
     await lab.expectAccessible();

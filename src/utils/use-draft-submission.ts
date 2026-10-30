@@ -1,14 +1,13 @@
 'use client';
 
-// Sending a composer's value: at once, or once the host accepts it (specs/MESSAGE-COMPOSER.md,
-// UIC-MESSAGE-COMPOSER-3.9).
+// Sending a composer's draft: at once, or once the host accepts it (specs/MESSAGE-COMPOSER.md,
+// UIC-MESSAGE-COMPOSER-3.9; specs/COMMENT-COMPOSER.md, UIC-COMMENT-COMPOSER-1.3).
 
 import { useEffect, useRef, useState } from 'react';
-import { useUiStorage } from '../../core/provider.js';
-import type { UiStorage } from '../../core/storage.js';
-import { isThenable } from '../../utils/is-thenable.js';
-import { useLatest } from '../../utils/use-latest.js';
-import type { ComposerFormat } from './use-composer-state.js';
+import { useUiStorage, type PersistCodec } from '../core/provider.js';
+import type { UiStorage } from '../core/storage.js';
+import { isThenable } from './is-thenable.js';
+import { useLatest } from './use-latest.js';
 
 /** Hands a value to the host, which may accept it later through a promise. */
 export type Submitter<T> = (value: T) => void | Promise<unknown>;
@@ -17,7 +16,10 @@ interface SubmissionOptions<T> {
   onSubmit?: Submitter<T> | undefined;
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
-  format: ComposerFormat<T>;
+  /** The draft once it is sent. */
+  empty: T;
+  /** How the draft is stored under `persistKey`, which also tells whether two drafts are the same. */
+  codec: PersistCodec<T>;
   /** The host holds the draft, so the provider's storage does not. */
   isControlled: boolean;
   draft: T;
@@ -52,7 +54,7 @@ const isSameOwner = (a: DraftOwner, b: DraftOwner) => a.key === b.key && a.stora
  * unmounted) only the stored draft it was sent from empties. A throw or a rejection keeps the draft
  * and goes to `onSubmitError`, or is rethrown without it.
  */
-export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
+export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
   const adapter = useUiStorage();
   const latest = useLatest(options);
   const owner: DraftOwner = {
@@ -76,11 +78,11 @@ export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
     onSubmitError(error);
   };
   const clear = (from: DraftOwner, sent: string) => {
-    const { format, draft, setDraft } = latest.current;
+    const { empty, codec, draft, setDraft } = latest.current;
     if (isMounted.current && isSameOwner(latestOwner.current, from)) {
-      if (format.codec.stringify(draft) === sent) setDraft(format.empty);
+      if (codec.stringify(draft) === sent) setDraft(empty);
     } else if (from.key !== undefined && from.storage?.getItem(from.key) === sent) {
-      from.storage.setItem(from.key, format.codec.stringify(format.empty));
+      from.storage.setItem(from.key, codec.stringify(empty));
     }
   };
   const track = (from: DraftOwner, isWaiting: boolean) => {
@@ -100,10 +102,10 @@ export function useSubmission<T>(options: SubmissionOptions<T>): Submission<T> {
       return;
     }
     if (!isThenable(result)) {
-      if (clearsDraft) options.setDraft(options.format.empty);
+      if (clearsDraft) options.setDraft(options.empty);
       return;
     }
-    const sent = options.format.codec.stringify(value);
+    const sent = options.codec.stringify(value);
     track(owner, true);
     void Promise.resolve(result).then(
       () => {

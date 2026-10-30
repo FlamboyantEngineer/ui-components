@@ -72,6 +72,41 @@ function StoredDraft() {
   );
 }
 
+const threads = ['Orchard', 'Market'] as const;
+
+/** One composer that moves between threads, each with its own stored draft, sending slowly. */
+function ThreadDrafts() {
+  const [thread, setThread] = useState<(typeof threads)[number]>('Orchard');
+  const [posted, setPosted] = useState<string[]>([]);
+  const submit = (text: string) =>
+    new Promise<void>((resolve) => {
+      window.setTimeout(() => {
+        setPosted((list) => [...list, text]);
+        resolve();
+      }, 1500);
+    });
+  return (
+    <div>
+      {threads.map((name) => (
+        <Button key={name} size="sm" isDisabled={name === thread} onPress={() => setThread(name)}>
+          {`Open ${name}`}
+        </Button>
+      ))}
+      <CommentComposer
+        label={`Reply in ${thread}`}
+        persistKey={`lab:thread-draft:${thread}`}
+        onSubmit={submit}
+        data-lab-composer="threads"
+      />
+      <ol data-lab-output="thread-posted">
+        {posted.map((text, index) => (
+          <li key={index}>{text}</li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -95,7 +130,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Pending submits"
-      description="Ctrl+Enter or Command+Enter sends; the composer stays pending for 1.5 seconds and keeps the draft when the submit fails."
+      description="Ctrl+Enter or Command+Enter sends; the composer stays pending for 1.5 seconds and keeps the draft when the submit fails. Text typed while it sends stays once the submit succeeds."
     >
       <PendingComposer />
     </LabSection>
@@ -104,6 +139,12 @@ mountLab(
       description="With persistKey, type, unmount and mount again: the draft comes back from the provider storage. Escape or Cancel clears it."
     >
       <StoredDraft />
+    </LabSection>
+    <LabSection
+      title="Switching threads"
+      description="Send in one thread, then open the other before the 1.5-second submit settles: only the sent thread's draft clears, and the other thread is not pending."
+    >
+      <ThreadDrafts />
     </LabSection>
   </>,
 );
