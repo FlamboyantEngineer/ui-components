@@ -260,6 +260,40 @@ describe('Board', () => {
     expect(screen.getByRole('button', { name: 'Expand South team' })).toBeInTheDocument();
   });
 
+  it.each(['{}', '[null]', '["doing",{}]', '{'])(
+    'UIC-BOARD-1.4 starts from the default collapsed keys when %s is stored',
+    async (raw) => {
+      const storage = createMemoryStorage({ 'kitchen:columns': raw, 'kitchen:lanes': raw });
+      const user = userEvent.setup();
+      render(
+        <UiProvider storage={storage}>
+          <TaskBoard lanes={lanes} persistKey="kitchen" defaultCollapsedLanes={['south']} />
+        </UiProvider>,
+      );
+      expect(screen.getByRole('button', { name: 'Collapse Doing' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Expand South team' })).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Collapse Doing' }));
+      expect(storage.getItem('kitchen:columns')).toBe('["doing"]');
+    },
+  );
+
+  it('UIC-BOARD-1.4 restores stored numeric and text keys as distinct keys', () => {
+    const storage = createMemoryStorage({ 'kitchen:lanes': '[1]' });
+    render(
+      <UiProvider storage={storage}>
+        <TaskBoard
+          lanes={[
+            { id: 1, title: 'Numbered team' },
+            { id: '1', title: 'Named team' },
+          ]}
+          persistKey="kitchen"
+        />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Expand Numbered team' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Collapse Named team' })).toBeInTheDocument();
+  });
+
   it('UIC-BOARD-1.4 follows controlled collapsed columns and lanes', async () => {
     const onCollapsedColumnsChange = vi.fn<(keys: Set<Key>) => void>();
     const onCollapsedLanesChange = vi.fn<(keys: Set<Key>) => void>();

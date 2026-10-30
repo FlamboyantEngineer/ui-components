@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
+import { keyListCodec } from '../../utils/json-codec.js';
 
 interface CollapsedKeysOptions {
   /** The collapsed keys, controlled. */
@@ -34,6 +35,7 @@ export function useCollapsedKeys({
   const [own, setOwn] = usePersistentState<Key[]>(
     value === undefined ? storageKey : undefined,
     () => [...(defaultValue ?? [])],
+    keyListCodec,
   );
   const keys = useMemo(() => new Set(value ?? own), [value, own]);
   return {

@@ -5,6 +5,7 @@ import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
+import { booleanCodec } from '../../utils/json-codec.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { TourPanel } from './tour-panel.js';
 import { TourSpotlight } from './tour-spotlight.js';
@@ -53,7 +54,7 @@ function useTourOpenState({
   onOpenChange,
   persistKey,
 }: Pick<TourProps, 'isOpen' | 'defaultOpen' | 'onOpenChange' | 'persistKey'>) {
-  const [isCompleted, setCompleted] = usePersistentState<boolean>(persistKey, false);
+  const [isCompleted, setCompleted] = usePersistentState(persistKey, false, booleanCodec);
   const [ownOpen, setOwnOpen] = useState(defaultOpen);
   const complete = () => {
     if (persistKey !== undefined) setCompleted(true);

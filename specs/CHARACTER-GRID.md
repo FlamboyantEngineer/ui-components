@@ -45,7 +45,7 @@ Verification: `src/components/character-grid/character-filter.test.ts`, `src/com
 
 ### UIC-CHARACTER-GRID-2.2 - Recently chosen
 
-While nothing is searched, the characters chosen last shall lead the grid in a section headed by the provider's `recentCharacters` string: most recent first, without duplicates, at most 16. With `persistKey` the list is kept through the provider's storage adapter under that key, as a JSON array of characters, so it survives remounts; without it, it lasts as long as the grid. A stored character that no category offers any longer is left out, and an unreadable stored value counts as none.
+While nothing is searched, the characters chosen last shall lead the grid in a section headed by the provider's `recentCharacters` string: most recent first, without duplicates, at most 16. With `persistKey` the list is kept through the provider's storage adapter under that key, as a JSON array of characters, so it survives remounts; without it, it lasts as long as the grid. A stored character that no category offers any longer is left out, and an unreadable stored value, or one that is not a list of characters, counts as none.
 
 Implementation: `src/components/character-grid/use-recent-characters.ts`, `src/components/character-grid/character-grid.tsx`
 Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/character-grid.spec.ts`

@@ -114,10 +114,10 @@ Verification: `src/core/provider.test.tsx`, `src/core/provider-storage.test.tsx`
 
 ### UIC-PROVIDER-6.2 - Unreadable values
 
-A stored value that cannot be parsed shall fall back to the component's initial value. `createSafeStorage` wraps a storage that may throw, so reads return nothing and writes are dropped instead of failing.
+A stored value that cannot be parsed, or that parses to data of the wrong shape, shall fall back to the component's initial value: every component that persists state reads it through a codec that checks the shape it expects, and refuses a list as a whole when one of its entries is not valid, so old, stale or corrupted data never fails a render. `createSafeStorage` wraps a storage that may throw, so reads return nothing and writes are dropped instead of failing.
 
-Implementation: `src/core/provider.tsx`, `src/core/storage.ts`
-Verification: `src/core/provider.test.tsx`
+Implementation: `src/core/provider.tsx`, `src/core/storage.ts`, `src/utils/json-codec.ts`
+Verification: `src/core/provider.test.tsx`, `src/utils/json-codec.test.ts`
 
 ## UIC-PROVIDER-7 - Overlay presence
 

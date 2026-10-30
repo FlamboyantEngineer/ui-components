@@ -1,8 +1,11 @@
 // Tile layouts on a column grid: normalising, placing with push-down, and reflowing to fewer
 // columns (specs/DASHBOARD-GRID.md).
 
+import type { PersistCodec } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
+import { isKey } from '../../utils/is-key.js';
+import { createListCodec } from '../../utils/json-codec.js';
 
 /** Where a tile sits on the grid, in whole columns and rows counted from 0. */
 export interface DashboardGridItem {
@@ -17,6 +20,21 @@ export interface DashboardGridItem {
   /** How many rows it spans. */
   h: number;
 }
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/** Whether stored data is a layout item: a key `id` and finite `x`, `y`, `w` and `h`. */
+function isDashboardGridItem(value: unknown): value is DashboardGridItem {
+  if (typeof value !== 'object' || value === null) return false;
+  const { id, x, y, w, h } = value as Partial<Record<keyof DashboardGridItem, unknown>>;
+  return isKey(id) && [x, y, w, h].every(isFiniteNumber);
+}
+
+/** A stored layout; one entry that is not a layout item refuses the whole layout. */
+export const dashboardLayoutCodec: PersistCodec<DashboardGridItem[]> =
+  createListCodec(isDashboardGridItem);
 
 function toWhole(value: number, fallback: number): number {
   return Number.isFinite(value) ? Math.round(value) : fallback;

@@ -21,6 +21,7 @@ import { useElementSize } from '../../utils/use-element-size.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
+  dashboardLayoutCodec,
   normalizeDashboardLayout,
   placeDashboardItem,
   reflowDashboardLayout,
@@ -131,6 +132,7 @@ function useDashboardLayout(
   const [own, setOwn] = usePersistentState<DashboardGridItem[]>(
     props.layout === undefined ? props.persistKey : undefined,
     () => [...(props.defaultLayout ?? [])],
+    dashboardLayoutCodec,
   );
   const layout = normalizeDashboardLayout(props.layout ?? own, columns);
   const commit = (next: DashboardGridItem[]) => {
