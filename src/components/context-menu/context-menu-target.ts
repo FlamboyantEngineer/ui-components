@@ -1,5 +1,8 @@
+'use client';
+
 import {
   useCallback,
+  useMemo,
   useEffect,
   useRef,
   type KeyboardEvent,
@@ -8,6 +11,7 @@ import {
   type Ref,
   type RefObject,
 } from 'react';
+import { mergeRefs } from '../../utils/merge-props.js';
 import type { MenuController } from './menu-controller.js';
 
 /** The props a context menu target receives; its own values are called first. */
@@ -121,14 +125,7 @@ export function useContextMenuTarget(options: ContextMenuTargetOptions): Context
   const suppressUntil = useRef(0);
   const { cancel, ...pointerHandlers } = useLongPress(options, suppressUntil);
   const ownRef = own.ref;
-  const ref = useCallback(
-    (node: HTMLElement | null) => {
-      targetRef.current = node;
-      if (typeof ownRef === 'function') ownRef(node);
-      else if (ownRef) ownRef.current = node;
-    },
-    [ownRef, targetRef],
-  );
+  const ref = useMemo(() => mergeRefs(targetRef, ownRef), [ownRef, targetRef]);
   return {
     ...pointerHandlers,
     ref,

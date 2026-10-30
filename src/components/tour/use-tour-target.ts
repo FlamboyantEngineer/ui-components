@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState, type RefObject } from 'react';
 
 /** The element a step points at: a ref, or a CSS selector looked up when the step shows. */

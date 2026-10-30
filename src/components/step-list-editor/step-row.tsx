@@ -1,3 +1,5 @@
+'use client';
+
 import { DragHandleGlyph } from '../../core/glyphs.js';
 // One step of a step list editor: its drag handle, number, text fields and menu.
 

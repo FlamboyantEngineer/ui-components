@@ -1,3 +1,5 @@
+'use client';
+
 import { BellGlyph } from '../../core/glyphs.js';
 import { useId, useRef, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';

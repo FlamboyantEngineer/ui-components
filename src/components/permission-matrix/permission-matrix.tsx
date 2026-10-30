@@ -1,3 +1,5 @@
+'use client';
+
 // Roles × permissions: a configured Table whose role columns hold checkboxes and whose permission
 // groups get a header row with a checkbox per role.
 

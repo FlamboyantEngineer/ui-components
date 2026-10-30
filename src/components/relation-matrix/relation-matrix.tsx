@@ -1,3 +1,5 @@
+'use client';
+
 // A traceability matrix: row items × column items with a mark in each related cell, on a grid
 // that windows both axes, since React Aria's table renders every column of a row.
 

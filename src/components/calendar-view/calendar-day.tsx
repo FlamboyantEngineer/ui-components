@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';

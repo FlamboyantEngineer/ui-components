@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useLayoutEffect, useState, type RefObject } from 'react';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 

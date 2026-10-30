@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Input, TableStateContext } from '../../primitives/index.js';
 import { getColumnText } from './table-column.js';

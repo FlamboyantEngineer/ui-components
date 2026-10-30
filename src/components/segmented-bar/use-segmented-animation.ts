@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState } from 'react';
 import { useInView } from '../../utils/use-in-view.js';
 

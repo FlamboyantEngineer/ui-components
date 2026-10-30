@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

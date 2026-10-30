@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useRef, type ReactNode, type Ref } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import {
   useTextCompletions,

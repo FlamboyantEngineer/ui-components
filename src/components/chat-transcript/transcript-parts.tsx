@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowDownGlyph, ArrowUpGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';

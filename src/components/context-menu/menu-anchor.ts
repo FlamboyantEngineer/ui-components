@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { Placement } from '../../core/props.js';

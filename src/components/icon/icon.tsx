@@ -1,3 +1,5 @@
+'use client';
+
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import type { GlyphComponent } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';

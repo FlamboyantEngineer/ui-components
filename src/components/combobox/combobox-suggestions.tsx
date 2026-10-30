@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useId, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Collection,

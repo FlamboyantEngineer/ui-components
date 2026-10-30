@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';

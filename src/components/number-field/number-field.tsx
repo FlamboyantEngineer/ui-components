@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';

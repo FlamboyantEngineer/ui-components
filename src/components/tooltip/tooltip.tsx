@@ -1,3 +1,5 @@
+'use client';
+
 import { cloneElement, isValidElement, type ReactNode, type RefObject } from 'react';
 import { OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from '../../primitives/index.js';
 import type { OpenStateProps } from '../../core/events.js';

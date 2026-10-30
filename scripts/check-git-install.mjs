@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // Installs the package as an npm Git dependency into a clean temporary consumer, as a host installs a
-// branch, and checks what npm prepared: the root and component entry points import and render, the
-// public declarations type-check, and labs are excluded. Then it deletes
-// node_modules and repeats the checks through `npm ci` with the consumer's lockfile. Each install
+// branch, and checks what npm prepared: the root and component entry points import and render with
+// the minimum supported React, the public declarations type-check, labs are excluded and no optional
+// rich-text peer is installed. Then it deletes node_modules and repeats the checks through `npm ci`
+// with the consumer's lockfile. Last, it adds the rich-text peers at their minimum versions, without
+// relaxing npm's peer resolution, and renders the rich text editor. Each install
 // uses an empty npm cache, so npm clones and prepares the package from source both times.
 // The default is this checkout's HEAD commit, so commit the changes to check first. Git reads a
 // private repository through its usual credential helpers.
@@ -10,7 +12,15 @@
 //   node scripts/check-git-install.mjs "git+https://github.com/FlamboyantEngineer/ui-components.git#dev"
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,6 +28,22 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PACKAGE = '@flamboyantengineer/ui-components';
 const tsc = join(root, 'node_modules', 'typescript', 'bin', 'tsc');
+const { peerDependencies } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+
+/** The lowest version a peer range admits; the ranges are a caret range or one exact version. */
+function minimum(name) {
+  const version = /^\^?(\d+\.\d+\.\d+)$/.exec(peerDependencies[name])?.[1];
+  if (!version)
+    throw new Error(`The ${name} peer range ${peerDependencies[name]} has no plain minimum`);
+  return `${name}@${version}`;
+}
+
+const corePeers = ['react', 'react-dom'];
+const richTextPeers = [
+  '@handlewithcare/react-prosemirror',
+  'react-reconciler',
+  ...Object.keys(peerDependencies).filter((name) => name.startsWith('prosemirror-')),
+];
 
 const dependency =
   process.argv[2] ??
@@ -36,6 +62,16 @@ import { Button } from '${PACKAGE}/button';
 const markup = renderToStaticMarkup(createElement(Button, null, 'Save'));
 if (library.Button !== Button || !markup.includes('ui-button') || !markup.includes('Save')) {
   throw new Error('Button rendered ' + markup);
+}
+`,
+  'render-rich-text.mjs': `
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { RichTextEditor } from '${PACKAGE}/rich-text-editor';
+
+const markup = renderToStaticMarkup(createElement(RichTextEditor, { label: 'Notes' }));
+if (!markup.includes('ui-rich-text-editor') || !markup.includes('ProseMirror')) {
+  throw new Error('RichTextEditor rendered ' + markup);
 }
 `,
   'consumer.ts': `
@@ -82,6 +118,11 @@ function check(phase) {
   }
   if (existsSync(join(installed, 'labs')))
     problems.push(`${phase}: the installed package contains labs`);
+  for (const name of richTextPeers) {
+    if (existsSync(join(consumer, 'node_modules', ...name.split('/')))) {
+      problems.push(`${phase}: the optional rich-text peer ${name} was installed`);
+    }
+  }
   try {
     execFileSync('node', ['render.mjs'], { cwd: consumer, stdio: 'inherit' });
   } catch {
@@ -99,12 +140,19 @@ try {
   for (const [name, text] of Object.entries(files)) writeFileSync(join(consumer, name), text);
 
   console.log(`Installing ${dependency} with Node ${process.version}.`);
-  npm(['install', dependency, '@types/react@^19']);
+  npm(['install', dependency, ...corePeers.map(minimum), '@types/react@^19']);
   check('npm install');
 
   rmSync(join(consumer, 'node_modules'), { recursive: true, force: true });
   npm(['ci']);
   check('npm ci');
+
+  try {
+    npm(['install', ...richTextPeers.map(minimum)]);
+    execFileSync('node', ['render-rich-text.mjs'], { cwd: consumer, stdio: 'inherit' });
+  } catch {
+    problems.push('rich text: installing its peers or rendering the editor failed (see above)');
+  }
 } finally {
   rmSync(workDir, { recursive: true, force: true });
 }

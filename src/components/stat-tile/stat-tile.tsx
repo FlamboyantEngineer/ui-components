@@ -1,3 +1,5 @@
+'use client';
+
 import { TrendDownGlyph, TrendFlatGlyph, TrendUpGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';

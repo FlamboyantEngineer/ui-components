@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';

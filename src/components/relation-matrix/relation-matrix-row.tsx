@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph } from '../../core/glyphs.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { CSSProperties } from 'react';

@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 // A month or week calendar of events: a toolbar to move between periods and views, then a grid of
 // days the reader navigates by keyboard, holding all-day bars, timed events and `+n more` lists.

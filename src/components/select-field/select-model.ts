@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useState, type KeyboardEvent, type Ref } from 'react';
 import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';

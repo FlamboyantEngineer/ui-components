@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type ReactNode } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';

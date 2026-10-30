@@ -1,3 +1,5 @@
+'use client';
+
 // Reordering a list's tabs: Alt+Arrow keys on the focused tab, and pointer drags through the
 // building blocks' drag and drop, each reported as one move for the owner to apply.
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import { Fragment, useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';

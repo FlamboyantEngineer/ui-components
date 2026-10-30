@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

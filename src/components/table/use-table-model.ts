@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { TableStatus } from './table-body.js';
 import type { TableSelectionBarProps } from './table-bulk-edit.js';

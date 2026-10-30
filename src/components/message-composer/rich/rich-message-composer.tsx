@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useRef, type FocusEvent, type Ref } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
 import type { RecordLabelResolver } from '../../record-label/record-label.js';

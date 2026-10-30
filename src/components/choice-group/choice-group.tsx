@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { ControlSize, Orientation } from '../../core/props.js';

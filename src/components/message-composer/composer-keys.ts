@@ -1,3 +1,5 @@
+'use client';
+
 // The composer's own keys: the send, queue and send-now chords, Escape in edit mode and the arrows
 // that recall.
 

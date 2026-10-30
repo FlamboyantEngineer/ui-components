@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph, ChevronUpGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The parts a disclosure is composed of: a header, the title that toggles it, and its panel.
 

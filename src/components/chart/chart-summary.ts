@@ -1,3 +1,5 @@
+'use client';
+
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { useUiStrings } from '../../core/provider.js';
 

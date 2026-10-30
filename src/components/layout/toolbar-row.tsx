@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, type ReactNode } from 'react';
 import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

@@ -62,6 +62,8 @@
     "check:package": "node scripts/check-package.mjs",
     "check:public-types": "node scripts/check-public-types.mjs",
     "check:git-install": "node scripts/check-git-install.mjs",
+    "check:client-boundaries": "node scripts/check-client-boundaries.mjs",
+    "check:server-components": "node scripts/check-server-components.mjs",
     "check": "node scripts/check.mjs",
     "new:lab": "node scripts/new-lab.mjs",
     "changeset": "changeset",
@@ -83,8 +85,8 @@
     "prosemirror-state": "^1.4.4",
     "prosemirror-transform": "^1.12.2",
     "prosemirror-view": "1.42.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "react-reconciler": "^0.33.0"
   },
   "peerDependenciesMeta": {

@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import { usePersistentState } from '../../core/provider.js';
 import {

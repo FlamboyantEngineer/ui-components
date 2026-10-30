@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 
 /** An element to observe: the element itself, a ref to it, or the element with the box to watch. */

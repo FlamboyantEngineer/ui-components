@@ -1,3 +1,5 @@
+'use client';
+
 // The rich composer's pills as the editor draws them: a mention or command as its text, a record
 // reference as a record chip (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-4.3 and 4.9).
 

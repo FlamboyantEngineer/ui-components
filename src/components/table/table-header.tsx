@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';

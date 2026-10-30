@@ -1,5 +1,8 @@
-import { useCallback, useId, useLayoutEffect, useRef, type Ref, type RefObject } from 'react';
+'use client';
+
+import { useId, useLayoutEffect, useMemo, useRef } from 'react';
 import { splitDataAttributes } from '../../core/hooks.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import type { CodeSurfaceProps } from './code-surface.js';
 import type { CodeTextAreaProps } from './code-area.js';
@@ -8,17 +11,6 @@ import { alignLayers, useCodeEditor } from './use-code-editor.js';
 type ProblemOptions = Pick<CodeSurfaceProps, 'diagnostics' | 'listDiagnostics' | 'isInvalid'>;
 function joinIds(...ids: Array<string | false | undefined>): string | undefined {
   return ids.filter(Boolean).join(' ') || undefined;
-}
-
-function useMergedRef<T>(own: RefObject<T | null>, caller: Ref<T> | undefined) {
-  return useCallback(
-    (node: T | null) => {
-      own.current = node;
-      if (typeof caller === 'function') caller(node);
-      else if (caller) caller.current = node;
-    },
-    [own, caller],
-  );
 }
 
 /** The problems' state: the reported ones, whether one is an error, and what describes the input. */
@@ -100,7 +92,7 @@ export function useCodeSurface(configuration: CodeSurfaceProps) {
     ...{ autoCloseBrackets, allowsSearch, isLocked, diagnostics: located },
   });
   const { layers } = model;
-  const inputRef = useMergedRef(layers.input, ref);
+  const inputRef = useMemo(() => mergeRefs(layers.input, ref), [layers.input, ref]);
   const caretRef = useRef<HTMLSpanElement>(null);
   const textWidth = useElementSize(layers.input, {
     box: 'client',

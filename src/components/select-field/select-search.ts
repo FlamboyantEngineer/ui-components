@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useRemoteSearch, type RemoteSearch } from '../../utils/use-remote-search.js';
 import { mergeSelectOptions, type SelectFieldOption } from './select-options.js';

@@ -1,3 +1,5 @@
+'use client';
+
 // How a Chat Attachment List hears about its attachments' remove buttons.
 
 import { createContext } from 'react';

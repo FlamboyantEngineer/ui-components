@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { EmojiPicker } from '../emoji-picker/emoji-picker.js';

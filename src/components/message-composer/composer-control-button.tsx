@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 // The button every compact composer control draws: its icon and label, or its icon alone while the
 // composer is compact (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-6.4).

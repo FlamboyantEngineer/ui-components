@@ -1,3 +1,5 @@
+'use client';
+
 // What a list lets its tabs do, and the state its two renders share. React Aria builds the tabs'
 // collection from a hidden render of the list, where the `Tab` components run, while the drawn list
 // holds the collection state; state both renders need lives in `Tabs`, above them.

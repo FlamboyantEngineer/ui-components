@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type RefObject, type UIEvent } from 'react';
 import { useElementSize } from '../../utils/use-element-size.js';
 import {

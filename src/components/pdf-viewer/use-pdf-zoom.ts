@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type RefObject } from 'react';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';

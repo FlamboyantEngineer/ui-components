@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactElement } from 'react';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

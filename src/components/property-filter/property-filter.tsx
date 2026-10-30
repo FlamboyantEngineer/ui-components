@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';

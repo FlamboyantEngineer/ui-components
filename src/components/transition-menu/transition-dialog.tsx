@@ -1,3 +1,5 @@
+'use client';
+
 // The dialog a transition opens before it runs: a confirmation, a required comment, or both.
 
 import { useState, type ReactNode } from 'react';

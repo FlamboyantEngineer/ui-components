@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';

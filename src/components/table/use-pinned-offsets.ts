@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useState } from 'react';
 import type { TableColumnPin } from './table-rows.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

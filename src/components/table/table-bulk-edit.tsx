@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

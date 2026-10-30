@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';

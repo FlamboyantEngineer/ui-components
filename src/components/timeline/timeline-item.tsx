@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, type KeyboardEvent } from 'react';
 import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';

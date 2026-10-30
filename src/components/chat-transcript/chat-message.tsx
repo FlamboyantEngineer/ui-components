@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useFocusWithin, useHover } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';

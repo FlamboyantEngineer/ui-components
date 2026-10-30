@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';

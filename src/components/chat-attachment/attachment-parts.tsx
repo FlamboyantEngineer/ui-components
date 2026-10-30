@@ -1,3 +1,5 @@
+'use client';
+
 import { DownloadGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useState } from 'react';
 import { createHooks } from '../../core/hooks.js';

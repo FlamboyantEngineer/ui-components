@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { Button as AriaButton, Focusable } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';

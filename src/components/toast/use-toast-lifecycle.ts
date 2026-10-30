@@ -1,3 +1,5 @@
+'use client';
+
 // How a rendered toast follows its queue entry: its current content, its timer and its exit.
 
 import { useEffect, useSyncExternalStore } from 'react';

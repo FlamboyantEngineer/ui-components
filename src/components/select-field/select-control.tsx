@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, type CSSProperties } from 'react';
 import { Select as AriaSelect } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';

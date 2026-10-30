@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph, HelpGlyph, RefreshGlyph } from '../../core/glyphs.js';
 import type { ReactElement } from 'react';
 import type { ControlSize, Key } from '../../core/props.js';

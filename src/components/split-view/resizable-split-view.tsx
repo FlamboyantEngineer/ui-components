@@ -1,3 +1,5 @@
+'use client';
+
 import { Fragment, useId, useImperativeHandle, useState, type KeyboardEvent } from 'react';
 import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

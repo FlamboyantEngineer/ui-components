@@ -1,3 +1,5 @@
+'use client';
+
 import { RestoreGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';

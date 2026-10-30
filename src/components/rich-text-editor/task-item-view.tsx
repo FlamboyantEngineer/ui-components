@@ -1,3 +1,5 @@
+'use client';
+
 import {
   useEditorEventCallback,
   useStopEvent,

@@ -1,3 +1,5 @@
+'use client';
+
 import { BellSlashGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';

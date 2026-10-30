@@ -1,3 +1,5 @@
+'use client';
+
 // The collapsible frame reasoning and groups of steps share: a trigger with a label and a busy
 // indicator, and a panel that opens while the work goes on and collapses once it ends.
 

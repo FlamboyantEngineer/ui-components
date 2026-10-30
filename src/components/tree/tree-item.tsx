@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, type JSX, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,

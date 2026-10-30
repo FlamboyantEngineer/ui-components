@@ -37,7 +37,7 @@ Releases are git tags in this repository; nothing is published to a registry.
 2. On an up-to-date `main` with a clean tree, run `npm run release`. It builds the library and the labs, checks the package, tags `v<version>` on a release commit that adds the built `dist/` to `main`'s commit, and packs the library tarball and standalone labs archive.
 3. Push the tag (`git push origin v<version>`) and create the tag's GitHub Release with the changelog entry, attaching both archives.
 
-Hosts can also install a branch or commit before it is released: npm runs `prepare` (`npm run build`), which builds `dist/` without building labs. The same script runs after `npm ci` in a checkout. A change to the build or the package contents runs `npm run check:git-install`, which installs the committed `HEAD` into a clean consumer through `npm install` and then `npm ci`, and checks its imports and declarations, and verifies that labs are excluded; pass a dependency such as `"git+https://github.com/FlamboyantEngineer/ui-components.git#dev"` to check a pushed branch.
+Hosts can also install a branch or commit before it is released: npm runs `prepare` (`npm run build`), which builds `dist/` without building labs. The same script runs after `npm ci` in a checkout. A change to the build or the package contents runs `npm run check:git-install`, which installs the committed `HEAD` into a clean consumer through `npm install` and then `npm ci`, and checks its imports and declarations with the minimum `react` and `react-dom` the peer ranges admit, and verifies that labs and the optional rich-text peers are excluded. It then adds the rich-text peers at their minimum versions, with npm's strict peer resolution, and renders the rich text editor; pass a dependency such as `"git+https://github.com/FlamboyantEngineer/ui-components.git#dev"` to check a pushed branch.
 
 ## Source rules
 
@@ -45,6 +45,7 @@ Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, str
 
 - **No styles in source.** No stylesheet imports and no styling dependency (CSS-in-JS, utility frameworks, component kits). Literal class names are hook classes only.
 - **Functional inline styles only:** positions, measured sizes, layout tracks, layering and interaction locks, plus documented `--ui-*` custom properties for measured values. Colours, spacing, borders, fonts and other visual properties belong in the host stylesheet.
+- **Client boundaries.** A module that needs the browser runtime of React starts with `'use client'`, and every other module, entry points included, has no directive ([specs/SERVER-COMPONENTS.md](specs/SERVER-COMPONENTS.md)). `npm run check:client-boundaries` enforces it, and `--fix` adds the directives. `npm run check:server-components` builds, serves and hydrates the packed library in a Next.js consumer.
 - **No direct browser storage.** Persisted state goes through the `UiProvider` storage adapter.
 - **Neutral wording.** Code, comments, docs, specs, labs, fixtures, tests and package metadata never name a host application or its domain vocabulary. `npm run check:references` scans every authored file and path against an encoded denylist in `scripts/reference-denylist.json`. To add a term, append the output of `node scripts/check-references.mjs --encode '<regex>'`.
 

@@ -1,3 +1,5 @@
+'use client';
+
 // What the collapsible parts of a property panel (sections and cards) share.
 
 import { useContext, useId } from 'react';

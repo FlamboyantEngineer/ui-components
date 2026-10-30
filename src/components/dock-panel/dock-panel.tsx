@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useRef, useState, type ReactNode } from 'react';
 import type { BaseProps, Key } from '../../core/props.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';

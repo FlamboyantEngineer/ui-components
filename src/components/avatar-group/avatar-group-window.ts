@@ -1,3 +1,5 @@
+'use client';
+
 import { useUiStrings } from '../../core/provider.js';
 import { assignOccurrenceKeys, type KeyedValue } from '../../utils/stable-keys.js';
 import { getDisplayName } from '../avatar/avatar.js';

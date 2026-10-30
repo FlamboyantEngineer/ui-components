@@ -29,10 +29,10 @@ Verification: `src/utils/merge-props.test.ts`
 
 ### UIC-COMPOSITION-2.2 - Refs
 
-`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead. Components that keep their own ref beside the caller's `ref` merge them the same way, so a caller's callback ref cleanup runs when the element detaches.
+`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead. Components that keep their own ref beside the caller's `ref` merge them the same way, so a caller's callback ref cleanup runs once for each attachment when the element detaches, including the extra attachment of Strict Mode; none keeps its own ref-merging code.
 
-Implementation: `src/utils/merge-props.ts`, `src/utils/use-forwarded-ref.ts`
-Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test.tsx`
+Implementation: `src/utils/merge-props.ts`, `src/utils/use-forwarded-ref.ts`, `src/components/code-editor/use-code-surface.ts`, `src/components/context-menu/context-menu-target.ts`
+Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test.tsx`, `src/components/code-editor/code-editor.test.tsx`, `src/components/context-menu/context-menu-target.test.tsx`
 
 ## UIC-COMPOSITION-3 - Slots
 

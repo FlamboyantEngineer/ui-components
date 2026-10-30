@@ -1,3 +1,5 @@
+'use client';
+
 // A tool call's approval: the request with its buttons and deny reason form, then the decision.
 
 import { useId, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';

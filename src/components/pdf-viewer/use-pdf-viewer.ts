@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { downloadPdf, printPdf, toPdfFileName } from './pdf-commands.js';

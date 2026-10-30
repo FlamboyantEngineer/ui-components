@@ -1,3 +1,5 @@
+'use client';
+
 // Stacking: each toast measures itself, so it knows its place in the stack and the height of the
 // newer toasts in front of it; regions and lists also hand their swipe settings down.
 

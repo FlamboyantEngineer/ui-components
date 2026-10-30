@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useRef, type CSSProperties } from 'react';
 import { Switch, ToggleButton, type Key } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';

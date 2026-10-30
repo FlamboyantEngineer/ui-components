@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo } from 'react';
 import type { Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, type CSSProperties, type FocusEvent } from 'react';
 import {
   Autocomplete,

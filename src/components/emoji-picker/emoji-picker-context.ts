@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext } from 'react';
 import { useStoreValue } from '../../utils/value-store.js';
 import { toEmojiSelection, type EmojiSelection } from './emoji-catalog.js';

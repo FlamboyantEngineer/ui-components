@@ -1,3 +1,5 @@
+'use client';
+
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';

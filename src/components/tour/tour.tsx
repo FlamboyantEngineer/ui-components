@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState, type ReactNode } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';

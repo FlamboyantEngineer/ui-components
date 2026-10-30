@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useSyncExternalStore } from 'react';
 import type { MenuEntry } from '../menu/menu.js';
 

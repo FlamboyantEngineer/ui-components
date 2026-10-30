@@ -1,3 +1,5 @@
+'use client';
+
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import type {

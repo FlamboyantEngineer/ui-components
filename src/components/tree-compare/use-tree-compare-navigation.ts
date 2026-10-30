@@ -1,3 +1,5 @@
+'use client';
+
 // Moving focus between the rows of a tree comparison: to the next difference or a moved node's twin.
 
 import { useEffect, useRef, type FocusEvent } from 'react';

@@ -1,3 +1,5 @@
+'use client';
+
 // Collections of rows the reader selects, reorders or scrolls through at length: React Aria's grid
 // list in its stack layout, each row drawn with the list row's text.
 

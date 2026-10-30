@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
 import { useState } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';

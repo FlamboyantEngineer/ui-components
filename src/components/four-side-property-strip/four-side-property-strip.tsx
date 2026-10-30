@@ -1,3 +1,5 @@
+'use client';
+
 import { LinkGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';

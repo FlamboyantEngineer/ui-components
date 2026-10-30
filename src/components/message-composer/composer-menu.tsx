@@ -1,3 +1,5 @@
+'use client';
+
 import { PlusGlyph } from '../../core/glyphs.js';
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).

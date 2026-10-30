@@ -1,3 +1,5 @@
+'use client';
+
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import type { RichTextController } from './rich-text-controller.js';
 

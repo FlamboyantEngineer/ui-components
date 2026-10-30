@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, type ReactNode } from 'react';
 import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';

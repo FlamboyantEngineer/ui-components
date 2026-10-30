@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type KeyboardEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext } from 'react';
 
 /** What a thread tells the comments inside it. */

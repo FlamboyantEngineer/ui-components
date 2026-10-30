@@ -1,3 +1,5 @@
+'use client';
+
 import { CalendarGlyph } from '../../core/glyphs.js';
 import {
   formatIsoDate,

@@ -1,3 +1,5 @@
+'use client';
+
 import { EditGlyph, MinusGlyph, MoveGlyph, PlusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ContextMenu, type ContextMenuProps } from '../context-menu/context-menu.js';

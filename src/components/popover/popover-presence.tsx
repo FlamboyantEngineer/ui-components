@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useState, type RefObject } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useOverlayRegistration } from '../../core/overlay-presence.js';

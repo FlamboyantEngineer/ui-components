@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactElement, Ref } from 'react';
 import { SelectionIndicator, ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

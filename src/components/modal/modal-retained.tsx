@@ -1,3 +1,5 @@
+'use client';
+
 // Keeping a closed dialog mounted: when retention starts, and what a closed retained dialog hides.
 
 import { createContext, useState } from 'react';

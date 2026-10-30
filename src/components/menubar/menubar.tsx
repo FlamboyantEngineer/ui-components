@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useId, useLayoutEffect, useRef, type ReactNode } from 'react';
 import {
   useInteractOutside,

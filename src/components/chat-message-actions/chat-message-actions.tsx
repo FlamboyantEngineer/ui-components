@@ -1,3 +1,5 @@
+'use client';
+
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { MessageActionsBar } from './message-actions-bar.js';

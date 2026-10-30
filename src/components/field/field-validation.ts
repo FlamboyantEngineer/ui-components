@@ -1,3 +1,5 @@
+'use client';
+
 import { isEmptyValue } from '../../utils/is-empty-value.js';
 // How a field decides its validation: its issues, its status and message, and when it shows them.
 

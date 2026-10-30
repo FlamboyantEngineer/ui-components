@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useMemo, useRef } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

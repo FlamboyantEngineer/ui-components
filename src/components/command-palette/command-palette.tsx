@@ -1,3 +1,5 @@
+'use client';
+
 import { SearchGlyph } from '../../core/glyphs.js';
 import type { KeyboardEvent } from 'react';
 import {

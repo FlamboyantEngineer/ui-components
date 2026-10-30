@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, type KeyboardEvent } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';

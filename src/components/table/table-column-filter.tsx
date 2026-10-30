@@ -1,3 +1,5 @@
+'use client';
+
 import { FilterGlyph } from '../../core/glyphs.js';
 import {
   CheckboxContext,

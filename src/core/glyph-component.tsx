@@ -1,3 +1,5 @@
+'use client';
+
 import type { GlyphComponent, GlyphComponentProps, GlyphName } from './glyph-types.js';
 import { useGlyph } from './provider.js';
 

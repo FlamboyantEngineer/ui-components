@@ -1,3 +1,5 @@
+'use client';
+
 // The preformatted content of a code block: highlighted tokens, or terminal lines whose commands
 // follow a prompt (specs/CODE-BLOCK.md).
 

@@ -1,3 +1,5 @@
+'use client';
+
 // What the segments of a date-time field show while that is not yet a value: a date typed in part,
 // or a range with one end left empty, which the building block does not report as a change.
 

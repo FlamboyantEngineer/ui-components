@@ -1,3 +1,5 @@
+'use client';
+
 // What a list item and a citation's card show of a source: its title (a link when it has a URL),
 // its site and its snippet (specs/CHAT-SOURCES.md).
 

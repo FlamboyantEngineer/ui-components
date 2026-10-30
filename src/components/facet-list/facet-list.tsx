@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useState, type FocusEvent } from 'react';
 import { CheckboxGroup as AriaCheckboxGroup, useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { useContext, useRef, useState, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';

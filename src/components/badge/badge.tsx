@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';

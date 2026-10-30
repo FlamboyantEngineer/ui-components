@@ -1,3 +1,5 @@
+'use client';
+
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

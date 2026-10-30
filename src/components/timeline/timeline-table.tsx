@@ -1,3 +1,5 @@
+'use client';
+
 import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

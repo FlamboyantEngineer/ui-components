@@ -32,7 +32,7 @@ Each release is a `v<version>` tag in this repository, on a commit that holds th
 
 To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points and their declarations. Runnable labs are a separate download: extract `ui-components-labs-<version>.tgz` and serve its `labs/` directory with a static HTTP server. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
 
-`react` and `react-dom` 19 are peer dependencies.
+`react` and `react-dom` 19.2 or later are peer dependencies. The rich text editor also needs its optional peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages listed in `package.json`); a host that does not use it installs none of them.
 
 ## Use
 
@@ -60,6 +60,37 @@ Then style the hooks in the host stylesheet:
 ```
 
 The styling contract is [specs/HOOK-CONTRACT.md](specs/HOOK-CONTRACT.md). Each component's spec under [specs/](specs/) lists its hooks in a `## Hooks` table.
+
+### Server components
+
+Interactive modules start with `'use client'`, so a React Server Components framework (such as the Next.js app router) can import any entry point from a server page. Render components there with serializable props, and call server-safe utilities such as `sanitizeHtml`, `parseMarkdown` or `formatMetaLine` on the server. Event handlers, render functions and hooks belong in the host's own client module:
+
+```tsx
+// app/page.tsx, a server component
+import { Badge, Button, UiProvider, formatMetaLine } from '@flamboyantengineer/ui-components';
+
+export default function Page() {
+  return (
+    <UiProvider locale="en-US">
+      <p>{formatMetaLine(['Draft', 3, 'shared'])}</p>
+      <Badge>New</Badge>
+      <Button type="submit">Save</Button>
+    </UiProvider>
+  );
+}
+```
+
+```tsx
+// app/save-button.tsx
+'use client';
+import { Button } from '@flamboyantengineer/ui-components/button';
+
+export function SaveButton({ onSaved }: { onSaved: () => void }) {
+  return <Button onPress={onSaved}>Save</Button>;
+}
+```
+
+The boundaries are specified in [specs/SERVER-COMPONENTS.md](specs/SERVER-COMPONENTS.md).
 
 ### Provider
 

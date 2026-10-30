@@ -1,3 +1,5 @@
+'use client';
+
 import { CloseGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLocale, type Placement, Popover } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';

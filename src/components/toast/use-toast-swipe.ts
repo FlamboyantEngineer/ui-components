@@ -1,3 +1,5 @@
+'use client';
+
 // Swiping a toast away: the pointer drags it along one direction, and a release past the threshold
 // dismisses it.
 

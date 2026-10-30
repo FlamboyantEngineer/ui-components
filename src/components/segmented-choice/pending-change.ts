@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { isThenable } from '../../utils/is-thenable.js';
 

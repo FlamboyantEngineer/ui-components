@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, type CSSProperties, type FocusEvent, type JSX, type ReactNode } from 'react';
 import {
   Button as AriaButton,

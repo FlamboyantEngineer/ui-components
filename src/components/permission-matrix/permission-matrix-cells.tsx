@@ -1,3 +1,5 @@
+'use client';
+
 import { LockGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';

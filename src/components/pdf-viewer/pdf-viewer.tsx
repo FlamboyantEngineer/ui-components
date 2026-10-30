@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

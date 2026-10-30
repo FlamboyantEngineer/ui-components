@@ -1,3 +1,5 @@
+'use client';
+
 // The state a navigation rail shares with its sections, items and groups.
 
 import { createContext, useCallback, useContext, useLayoutEffect, useState } from 'react';

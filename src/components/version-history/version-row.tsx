@@ -1,3 +1,5 @@
+'use client';
+
 // One version's row in a version history: its name or time, the current mark, who made it and
 // when, its summary, and its menu of actions.
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';

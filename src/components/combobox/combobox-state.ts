@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useState, type ReactNode } from 'react';
 import { useFilter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

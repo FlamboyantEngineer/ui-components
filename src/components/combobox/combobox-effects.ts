@@ -1,3 +1,5 @@
+'use client';
+
 import { useContext, useEffect, useLayoutEffect, type RefObject } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { findFirstOptionKey, type ComboboxCompletion } from './combobox-options.js';

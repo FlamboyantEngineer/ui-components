@@ -1,3 +1,5 @@
+'use client';
+
 import { SearchGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, type Ref } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';

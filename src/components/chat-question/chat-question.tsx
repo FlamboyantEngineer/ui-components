@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';

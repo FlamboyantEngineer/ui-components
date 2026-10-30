@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useRef, type KeyboardEvent } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { TreeMoveDirection } from '../../utils/tree-reorder.js';

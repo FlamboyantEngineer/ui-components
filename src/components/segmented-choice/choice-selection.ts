@@ -1,3 +1,5 @@
+'use client';
+
 import type { Key } from '../../core/props.js';
 import { usePendingChange, type PendingChangeHandler } from './pending-change.js';
 

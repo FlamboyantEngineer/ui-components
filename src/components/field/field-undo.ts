@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, type KeyboardEvent } from 'react';
 
 /** The undo and redo of one field, as its root element registers them. */

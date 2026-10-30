@@ -1,3 +1,5 @@
+'use client';
+
 import { UsersGlyph } from '../../core/glyphs.js';
 // The controls above a version history: the filters and the compare action.
 

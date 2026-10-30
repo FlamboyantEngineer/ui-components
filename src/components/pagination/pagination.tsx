@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';

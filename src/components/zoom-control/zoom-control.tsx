@@ -1,3 +1,5 @@
+'use client';
+
 import { MinusGlyph, PlusGlyph, RestoreGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { useId, useMemo, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';

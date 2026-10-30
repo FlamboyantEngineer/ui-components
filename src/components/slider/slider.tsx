@@ -1,3 +1,5 @@
+'use client';
+
 import { Field, useFieldControl } from '../field/field.js';
 import { SliderControl, sliderHooks as hooks, type SliderFieldProps } from './slider-parts.js';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { HelpGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';

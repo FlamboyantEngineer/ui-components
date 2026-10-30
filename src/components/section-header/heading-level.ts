@@ -1,3 +1,5 @@
+'use client';
+
 // Heading levels that nested sections take from the section around them.
 
 import { createContext, useContext } from 'react';

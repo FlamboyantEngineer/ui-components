@@ -1,3 +1,5 @@
+'use client';
+
 // The bookkeeping behind property filtering: each part of a property panel reports how many
 // properties it holds, how many match the active query and whether one overrides an inherited
 // value; each level sums the reports of the parts inside it.

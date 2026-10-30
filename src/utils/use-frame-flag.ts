@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState, type RefObject } from 'react';
 
 /** Lets focus-driven scrolling settle before an overlay subscribes to scroll dismissal. */

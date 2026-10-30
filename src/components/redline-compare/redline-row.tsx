@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { BlockChange, ComparedBlockRow } from '../../utils/compare-blocks.js';

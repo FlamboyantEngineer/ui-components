@@ -1,3 +1,5 @@
+'use client';
+
 // Menus, menu triggers, submenus and filtering.
 
 export {

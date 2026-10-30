@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useRef, useState, type FocusEvent } from 'react';
 import {
   CheckboxGroup as AriaCheckboxGroup,
