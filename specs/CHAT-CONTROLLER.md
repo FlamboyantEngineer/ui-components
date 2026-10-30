@@ -178,7 +178,7 @@ Verification: `src/components/chat-controller/chat-reply.test.ts`, `e2e/chat-con
 
 ### UIC-CHAT-CONTROLLER-4.1 - Uploads
 
-With `upload`, `props.onAttach(files)` shall add each file to `props.attachments` as `uploading` with progress 0 and call `upload(file, { signal, onProgress })`; progress updates the attachment, a resolved upload merges its data and marks it `complete`, and a rejected one marks it `error` with the error's message. `props.onRetryAttachment(id)` uploads a failed file again, and `props.onRemoveAttachment(id)` removes a file and aborts its upload. Without `upload`, these three callbacks are `undefined`.
+With `upload`, `props.onAttach(files)` shall add each file to `props.attachments` as `uploading` with progress 0 and call `upload(file, { signal, onProgress })`; progress updates the attachment, a resolved upload merges its data and marks it `complete`, and a rejected one, or an `upload` that throws before returning its promise, marks it `error` with the error's message, so the other files of the batch still start and Retry can recover it. `props.onRetryAttachment(id)` uploads a failed file again, and `props.onRemoveAttachment(id)` removes a file and aborts its upload. Without `upload`, these three callbacks are `undefined`.
 
 Implementation: `src/components/chat-controller/chat-uploads.ts`, `src/components/chat-controller/chat-controller.ts`
 Verification: `src/components/chat-controller/chat-uploads.test.ts`

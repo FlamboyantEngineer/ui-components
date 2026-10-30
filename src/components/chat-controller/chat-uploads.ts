@@ -22,11 +22,17 @@ function startUpload(engine: ChatEngineContext, id: string, file: File) {
   engine.uploads.set(id, { file, controller });
   const isCurrent = () =>
     engine.uploads.get(id)?.controller === controller && !controller.signal.aborted;
-  upload(file, {
-    signal: controller.signal,
-    onProgress: (progress) => {
-      if (isCurrent()) patchAttachment(engine, id, { progress });
-    },
+  // A throw before `upload` returns its promise fails this file as a rejection would, and leaves
+  // the rest of the batch to start.
+  new Promise<Partial<ChatAttachmentData>>((resolve) => {
+    resolve(
+      upload(file, {
+        signal: controller.signal,
+        onProgress: (progress) => {
+          if (isCurrent()) patchAttachment(engine, id, { progress });
+        },
+      }),
+    );
   }).then(
     (data) => {
       if (isCurrent())

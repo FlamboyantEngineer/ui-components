@@ -331,6 +331,19 @@ test.describe('Chat lab', () => {
     await expect(files.getByRole('alert')).toContainText('did not arrive');
     await files.getByRole('button', { name: 'Retry' }).click();
     await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toBeVisible();
+
+    const refused = page.waitForEvent('filechooser');
+    await assistant.getByRole('button', { name: 'Attach files' }).click();
+    await (
+      await refused
+    ).setFiles([
+      { name: 'huge-photo.png', mimeType: 'image/png', buffer: Buffer.from('png') },
+      { name: 'route.txt', mimeType: 'text/plain', buffer: Buffer.from('txt') },
+    ]);
+    await expect(files.getByRole('alert')).toContainText('huge-photo.png is too large');
+    await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toHaveCount(2);
+    await files.getByRole('button', { name: 'Retry' }).click();
+    await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toHaveCount(3);
   });
 
   test('UIC-CHAT-2.4 UIC-CHAT-2.5 replies with a quote and edits it between two people', async ({
