@@ -275,6 +275,30 @@ test.describe('Field lab', () => {
     await expect(handle.locator('.ui-field__message')).toHaveText('ada is taken.');
   });
 
+  test('UIC-FIELD-3.8 checks a returning value and a replacement validator again', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('field');
+    const handle = field(page, 'async');
+    const input = handle.getByRole('textbox', { name: 'Handle' });
+    await expect(handle).toHaveAttribute('data-validation', 'valid');
+    await page.clock.pauseAt(Date.now() + 1000);
+    await input.press('End');
+    await input.press('a');
+    await input.press('Backspace');
+    await expect(input).toHaveValue('lin');
+    await expect(handle).toHaveAttribute('data-validation', 'pending');
+    await page.clock.runFor(800);
+    await expect(handle).toHaveAttribute('data-validation', 'valid');
+    await page.getByRole('checkbox', { name: 'Reserve short handles' }).check();
+    await expect(handle).toHaveAttribute('data-validation', 'pending');
+    await page.clock.runFor(800);
+    await expect(handle).toHaveAttribute('data-validation', 'invalid');
+    await expect(handle.locator('.ui-field__message')).toHaveText('Short handles are reserved.');
+  });
+
   test('UIC-FIELD-2.1 sends edits to the shown record while the next one loads', async ({
     page,
     lab,

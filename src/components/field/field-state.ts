@@ -56,7 +56,10 @@ export interface FieldStateOptions<T> {
   onCommit?: ((value: T) => void) | undefined;
   /** Checks a value during render, after the required check. It must be pure. */
   validate?: ((value: T) => FieldIssues) | undefined;
-  /** A check that may wait (for a server). It runs once the value settles; the field is pending meanwhile. */
+  /**
+   * A check that may wait (for a server). It runs once the value settles; the field is pending
+   * meanwhile. Keep it stable: a new function is a new validator, which checks the value again.
+   */
   validateAsync?: FieldAsyncValidate<T> | undefined;
   /** How long the value must stay unchanged before `validateAsync` runs, in milliseconds. Defaults to 0. */
   validationDebounce?: number | undefined;
