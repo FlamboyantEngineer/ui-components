@@ -23,6 +23,7 @@ const adversarialMarkups: Record<string, string> = {
   'animated link': `<a><set attributeName="href" to="javascript:${attack}"/><rect width="4" height="4"/></a>`,
   'remote image': `<image href="https://remote.invalid/tile.png" width="4" height="4"/><feImage href="https://remote.invalid/tile.png"/>`,
   'remote paint': `<rect width="4" height="4" fill="url(https://remote.invalid/paint.svg#p)" style="fill: url(https://remote.invalid/a.svg#p)"/>`,
+  'unclosed paint': `<rect width="4" height="4" fill="url(https://remote.invalid/paint.svg#g" stroke="url('https://remote.invalid/paint.svg#g'" style="--tone: url(https://remote.invalid/a.svg#p"/>`,
   'HTML breakout': `<html:iframe src="javascript:${attack}"/><p><img src="x" onerror="${attack}"/></p>`,
   'CDATA in description': `<desc><![CDATA[</desc><img src="x" onerror="${attack}">]]></desc>`,
   'event handler': `<circle cx="12" cy="12" r="4" onload="${attack}" onclick="${attack}"/>`,
