@@ -96,6 +96,25 @@ test.describe('Merge View lab', () => {
     await expect(recipe.getByRole('button', { name: 'Previous conflict' })).toBeDisabled();
   });
 
+  test('UIC-MERGE-VIEW-2.5 starts a replaced merge over, undo history included', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('merge-view');
+    const queued = field(page, 'queued');
+    await queued.getByRole('button', { name: 'Take Ours' }).click();
+    await expect(output(page, 'queued-text')).toHaveText('Use 3 eggs.');
+    await page.getByRole('button', { name: 'Next merge' }).click();
+    const conflict = queued.getByRole('group', { name: 'Conflict 1 of 1' });
+    const editor = conflict.getByRole('textbox');
+    await expect(editor).toHaveValue(/Rest for 2 hours\./);
+    await editor.focus();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(conflict).toHaveAttribute('data-resolution', 'unresolved');
+    await expect(editor).not.toHaveValue(/eggs/);
+    await expect(output(page, 'queued-text')).toHaveText('');
+  });
+
   test('UIC-MERGE-VIEW-1.3 scrolls every pane together', async ({ page, lab }) => {
     await lab.open('merge-view');
     const settings = field(page, 'settings');

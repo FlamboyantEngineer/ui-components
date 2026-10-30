@@ -24,6 +24,8 @@ export interface MergeLabels {
 
 interface MergeResultPaneProps extends MergePaneProps {
   blocks: readonly MergeBlock[];
+  /** Changes with the merged texts; conflict editors of an earlier merge are replaced. */
+  generation: number;
   states: readonly ConflictState[];
   labels: MergeLabels;
   /** Prefix of the conflict blocks' ids. */
@@ -122,7 +124,7 @@ const CleanBlock = memo(function CleanBlock({ block }: { block: MergeBlock }) {
  * actions and an editor holding its result.
  */
 export function MergeResultPane(props: MergeResultPaneProps) {
-  const { label, blocks, states, labels, current, baseId, paneRef, onResolve } = props;
+  const { label, blocks, generation, states, labels, current, baseId, paneRef, onResolve } = props;
   return (
     <MergePane side="result" label={label} paneRef={paneRef}>
       <div {...hooks.slot('blocks')}>
@@ -131,7 +133,7 @@ export function MergeResultPane(props: MergeResultPaneProps) {
           if (conflict === null) return <CleanBlock key={block.index} block={block} />;
           return (
             <ConflictBlock
-              key={block.index}
+              key={`${generation}:${block.index}`}
               block={block}
               conflict={conflict}
               total={states.length}
