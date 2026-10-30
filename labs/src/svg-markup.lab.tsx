@@ -12,6 +12,13 @@ const unsafeMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24" fill="none" strok
 
 const attack = 'window.unsafe = true';
 
+/** A drawing that tries to hide the page's own status mark through a fragment reference. */
+const hostReferenceMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><set href="#lab-host-status" attributeName="opacity" to="0" begin="0s" dur="indefinite"/><use href="#lab-host-status"/><circle cx="12" cy="12" r="4" fill="url(#lab-host-paint)"/></svg>`;
+
+/** Two drawings that both name their gradient `tone`, with different colours. */
+const toneMarkup = (color: string) =>
+  `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="url(#tone)"/></svg>`;
+
 /** Adversarial drawings: each would run script or load a remote resource if rendered unfiltered. */
 const adversarialMarkups: Record<string, string> = {
   'iframe in description': `<desc><iframe srcdoc="&lt;script&gt;parent.${attack}&lt;/script&gt;"></iframe></desc>`,
@@ -30,14 +37,12 @@ const adversarialMarkups: Record<string, string> = {
 };
 
 /** A small registry of drawings kept as markup strings, as a host icon registry would. */
-function registry(suffix: string): Record<string, string> {
-  return {
-    outline: `<svg ${svgNamespace} fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v8M8 12h8"/></svg>`,
-    solid: `<svg ${svgNamespace} viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4h16v16H4Zm5 5v6h6V9Z"/></svg>`,
-    'multi-path': `<svg ${svgNamespace} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4 4 10-10"/><path d="M5 20h14"/></svg>`,
-    gradient: `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="sunrise-${suffix}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#db2777"/></linearGradient></defs><circle cx="12" cy="12" r="9" fill="url(#sunrise-${suffix})"/></svg>`,
-  };
-}
+const registry: Record<string, string> = {
+  outline: `<svg ${svgNamespace} fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v8M8 12h8"/></svg>`,
+  solid: `<svg ${svgNamespace} viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4h16v16H4Zm5 5v6h6V9Z"/></svg>`,
+  'multi-path': `<svg ${svgNamespace} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4 4 10-10"/><path d="M5 20h14"/></svg>`,
+  gradient: `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="sunrise" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#db2777"/></linearGradient></defs><circle cx="12" cy="12" r="9" fill="url(#sunrise)"/></svg>`,
+};
 
 mountLab(
   <>
@@ -48,7 +53,7 @@ mountLab(
       <StateMatrix
         axes={{ markup: markups, placement: placements }}
         render={({ markup, placement }) => {
-          const source = registry(`${markup}-${placement.replace(' ', '-')}`)[markup] ?? '';
+          const source = registry[markup] ?? '';
           if (placement === 'standalone') return <SvgMarkup markup={source} />;
           const size = placement.slice('icon '.length) as 'sm' | 'md' | 'lg';
           return (
@@ -66,7 +71,7 @@ mountLab(
       <StateMatrix
         axes={{ naming: ['decorative', 'labelled'], placement: ['standalone', 'icon'] }}
         render={({ naming, placement }) => {
-          const source = registry(`a11y-${naming}-${placement}`).outline ?? '';
+          const source = registry.outline ?? '';
           const label = naming === 'labelled' ? 'Add city' : undefined;
           return placement === 'standalone' ? (
             <SvgMarkup markup={source} label={label} />
@@ -77,6 +82,22 @@ mountLab(
           );
         }}
       />
+    </LabSection>
+    <LabSection
+      title="Isolated references"
+      description="Each drawing's IDs are its own: a reference to the page or another drawing is dropped, and drawings that reuse an ID keep their own gradients."
+    >
+      <p data-lab-host="">
+        Page status:{' '}
+        <svg width="24" height="24" role="img" aria-label="Page status">
+          <rect id="lab-host-status" width="24" height="24" fill="green" />
+        </svg>{' '}
+        Drawing: <SvgMarkup markup={hostReferenceMarkup} label="Drawing aimed at the page" />
+      </p>
+      <p data-lab-colliding="">
+        <SvgMarkup markup={toneMarkup('#2563eb')} label="Blue tone" />{' '}
+        <SvgMarkup markup={toneMarkup('#db2777')} label="Pink tone" />
+      </p>
     </LabSection>
     <LabSection
       title="Unsafe and missing markup"
