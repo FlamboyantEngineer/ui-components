@@ -68,8 +68,11 @@ interface GuardContextValue {
 }
 
 interface LeaveRequest extends ConfirmLeaveOptions {
+  /** Names this question, so each one gets a dialog of its own. */
+  id: number;
   /** What was unsaved when the reader was asked; the dialog keeps it while it closes. */
   summary: UnsavedChangesSummary;
+  /** Answers the question; only the first answer counts. */
   settle: (allowed: boolean) => void;
 }
 
@@ -108,9 +111,13 @@ function useUnloadConfirmation(isActive: boolean) {
   }, [isActive]);
 }
 
-/** The open confirmation and `confirmLeave`, which replaces any confirmation still open. */
+/**
+ * The open confirmation and `confirmLeave`, which answers any question still open `false` and
+ * replaces it.
+ */
 function useLeaveRequests(store: UnsavedChangesStore) {
   const pending = useRef<LeaveRequest | null>(null);
+  const nextId = useRef(0);
   const [shown, setShown] = useState<LeaveRequest | null>(null);
   const [isOpen, setOpen] = useState(false);
   const confirmLeave = useCallback(
@@ -119,10 +126,15 @@ function useLeaveRequests(store: UnsavedChangesStore) {
       if (!summary.isDirty) return Promise.resolve(true);
       return new Promise<boolean>((resolve) => {
         pending.current?.settle(false);
+        let isSettled = false;
+        nextId.current += 1;
         const request: LeaveRequest = {
           ...options,
+          id: nextId.current,
           summary,
           settle: (allowed) => {
+            if (isSettled) return;
+            isSettled = true;
             if (pending.current === request) pending.current = null;
             resolve(allowed);
           },
@@ -189,8 +201,11 @@ function LeaveConfirmation({
     request?.settle(true);
     close();
   };
+  // A dialog per question: an action still running for a replaced question settles, fails and
+  // closes only its own dialog, so the new question starts with none running.
   return (
     <Modal
+      key={request?.id}
       {...rest}
       role="alertdialog"
       tone={canSave ? 'neutral' : 'danger'}

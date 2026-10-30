@@ -94,6 +94,22 @@ test.describe('Table lab', () => {
     expect((await names(caller))[0]).toBe('Lemon');
   });
 
+  test('UIC-TABLE-2.10 sorts text in the provider language and follows a change', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = section(page, 'locale-sort');
+    const grid = demo.getByRole('grid', { name: 'Places, sorted in the chosen language' });
+    await expect
+      .poll(() => names(grid))
+      .toEqual(['Aarhus', 'Malmö', 'Oslo', 'Zürich', 'Åre', 'Örebro']);
+    await demo.getByRole('radio', { name: 'German' }).click();
+    await expect
+      .poll(() => names(grid))
+      .toEqual(['Aarhus', 'Åre', 'Malmö', 'Örebro', 'Oslo', 'Zürich']);
+  });
+
   test('UIC-TABLE-1.5 marks rows with caller attributes that the stylesheet draws', async ({
     page,
     lab,

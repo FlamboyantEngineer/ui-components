@@ -24,33 +24,41 @@ const ids = (rows: readonly Fruit[]) => rows.map((row) => row.id);
 
 describe('table sort helpers', () => {
   it('UIC-TABLE-2.6 orders by several columns, each later one breaking ties', () => {
-    const sorted = sortTableRows(fruit, columns, [
-      { column: 'colour', direction: 'ascending' },
-      { column: 'weight', direction: 'descending' },
-    ]);
+    const sorted = sortTableRows(fruit, {
+      columns,
+      sort: [
+        { column: 'colour', direction: 'ascending' },
+        { column: 'weight', direction: 'descending' },
+      ],
+      locale: 'en-US',
+    });
     expect(ids(sorted)).toEqual(['cherry', 'apple', 'banana', 'lemon']);
     expect(
       ids(
-        sortTableRows(fruit, columns, [
-          { column: 'missing', direction: 'ascending' },
-          { column: 'weight', direction: 'ascending' },
-        ]),
+        sortTableRows(fruit, {
+          columns,
+          sort: [
+            { column: 'missing', direction: 'ascending' },
+            { column: 'weight', direction: 'ascending' },
+          ],
+          locale: 'en-US',
+        }),
       ),
     ).toEqual(['apple', 'cherry', 'lemon', 'banana']);
-    expect(sortTableRows(fruit, columns, [])).toBe(fruit);
+    expect(sortTableRows(fruit, { columns, sort: [], locale: 'en-US' })).toBe(fruit);
     expect(ids(fruit)).toEqual(['banana', 'apple', 'cherry', 'lemon']);
   });
 
   it('UIC-TABLE-2.6 reads each value once per row and column', () => {
     const getValue = vi.fn((row: Fruit) => row.weight);
-    sortTableRows(
-      fruit,
-      [{ id: 'colour' }, { id: 'weight', getValue }],
-      [
+    sortTableRows(fruit, {
+      columns: [{ id: 'colour' }, { id: 'weight', getValue }],
+      sort: [
         { column: 'colour', direction: 'ascending' },
         { column: 'weight', direction: 'ascending' },
       ],
-    );
+      locale: 'en-US',
+    });
     expect(getValue).toHaveBeenCalledTimes(fruit.length);
   });
 

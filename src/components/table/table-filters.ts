@@ -2,6 +2,7 @@ import type { DateRangeValue } from '../date-time-field/date-time-field.js';
 import {
   getCellValue,
   getRowText,
+  getTextCollator,
   isTextValue,
   type TableCellValue,
   type TableColumn,
@@ -151,10 +152,14 @@ export function filterTableRows<T extends TableRow>(
   return matches ? rows.filter(matches) : rows;
 }
 
-/** The values a `set` filter offers: its `options`, else the distinct values in the rows, sorted. */
+/**
+ * The values a `set` filter offers: its `options`, else the distinct values in the rows, sorted
+ * naturally in `locale`.
+ */
 export function listFilterOptions<T extends TableRow>(
   rows: readonly T[],
   column: FilterColumn<T>,
+  locale: string,
 ): readonly string[] {
   if (column.filter?.type === 'set' && column.filter.options) return column.filter.options;
   const values = new Set<string>();
@@ -162,5 +167,6 @@ export function listFilterOptions<T extends TableRow>(
     const value = getCellValue(row, column);
     if (value !== null && value !== undefined && value !== '') values.add(String(value));
   }
-  return [...values].sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
+  const collator = getTextCollator(locale);
+  return [...values].sort((left, right) => collator.compare(left, right));
 }

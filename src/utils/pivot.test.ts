@@ -24,7 +24,7 @@ const describeRows = (rows: readonly PivotRow[]): unknown[] =>
 
 describe('pivot', () => {
   it('UIC-PIVOT-TABLE-1.1 groups rows by nested row fields and columns by column fields', () => {
-    const result = pivot(sales, layout);
+    const result = pivot(sales, layout, 'en-US');
     expect(describeRows(result.rows)).toEqual([
       { North: ['Apple', 'Pear'] },
       { South: ['Apple', 'Plum'] },
@@ -61,13 +61,23 @@ describe('pivot', () => {
       { key: true },
       { key: false },
     ];
-    const keys = pivot(records, { rows: ['key'], columns: [], values: [] }).rows.map(
+    const keys = pivot(records, { rows: ['key'], columns: [], values: [] }, 'en-US').rows.map(
       (row) => row.value,
     );
     expect(keys.slice(0, 2)).toEqual([3, 20]);
     expect(keys.at(-1)).toBeNull();
     expect(keys.indexOf(false)).toBeLessThan(keys.indexOf(true));
     expect(keys.indexOf('item 9')).toBeLessThan(keys.indexOf('Item 10'));
+  });
+
+  it('UIC-PIVOT-TABLE-1.1 orders text keys in the given locale', () => {
+    const records = [{ key: 'ä' }, { key: 'z' }];
+    const order = (locale: string) =>
+      pivot(records, { rows: ['key'], columns: [], values: [] }, locale).rows.map(
+        (row) => row.value,
+      );
+    expect(order('sv-SE')).toEqual(['z', 'ä']);
+    expect(order('en-US')).toEqual(['ä', 'z']);
   });
 
   it('UIC-PIVOT-TABLE-1.1 reads NaN and infinite values as text, apart from the empty group', () => {
@@ -77,62 +87,78 @@ describe('pivot', () => {
       { kind: Infinity, n: 3 },
       { kind: -Infinity, n: 4 },
     ];
-    const result = pivot(records, {
-      rows: ['kind'],
-      columns: [],
-      values: [{ field: 'n', aggregate: 'count' }],
-    });
+    const result = pivot(
+      records,
+      {
+        rows: ['kind'],
+        columns: [],
+        values: [{ field: 'n', aggregate: 'count' }],
+      },
+      'en-US',
+    );
     expect(result.rows.map((row) => row.value)).toEqual(['-Infinity', 'Infinity', 'NaN', null]);
     expect(new Set(result.rows.map((row) => row.key)).size).toBe(4);
   });
 
   it('UIC-PIVOT-TABLE-1.2 aggregates a large group without a function-argument limit', () => {
     const records = Array.from({ length: 200_000 }, (_, value) => ({ value }));
-    const result = pivot(records, {
-      rows: [],
-      columns: [],
-      values: [
-        { field: 'value', aggregate: 'min' },
-        { field: 'value', aggregate: 'max' },
-        { field: 'value', aggregate: 'average' },
-      ],
-    });
+    const result = pivot(
+      records,
+      {
+        rows: [],
+        columns: [],
+        values: [
+          { field: 'value', aggregate: 'min' },
+          { field: 'value', aggregate: 'max' },
+          { field: 'value', aggregate: 'average' },
+        ],
+      },
+      'en-US',
+    );
     expect(result.grandTotal).toEqual([0, 199_999, 99_999.5]);
   });
 
   it('UIC-PIVOT-TABLE-1.2 aggregates by sum, count, min, max, average or a function', () => {
-    const result = pivot(sales, {
-      rows: ['region'],
-      columns: [],
-      values: [
-        { field: 'boxes', aggregate: 'sum' },
-        { field: 'boxes', aggregate: 'count' },
-        { field: 'price', aggregate: 'min' },
-        { field: 'price', aggregate: 'max' },
-        { field: 'price', aggregate: 'average' },
-        { field: 'fruit', aggregate: (values) => new Set(values).size },
-      ],
-    });
+    const result = pivot(
+      sales,
+      {
+        rows: ['region'],
+        columns: [],
+        values: [
+          { field: 'boxes', aggregate: 'sum' },
+          { field: 'boxes', aggregate: 'count' },
+          { field: 'price', aggregate: 'min' },
+          { field: 'price', aggregate: 'max' },
+          { field: 'price', aggregate: 'average' },
+          { field: 'fruit', aggregate: (values) => new Set(values).size },
+        ],
+      },
+      'en-US',
+    );
     expect(result.columns).toEqual([{ key: '[]', path: [] }]);
     const [north, south, empty] = result.rows;
     expect(requireDefined(north).total).toEqual([20, 3, 2, 3, 2.5, 2]);
     expect(requireDefined(south).total).toEqual([8, 2, 1.5, 4, 2.75, 2]);
     expect(requireDefined(empty).total).toEqual([1, 1, null, null, null, 1]);
     expect(
-      pivot([{ x: 'a' }], { rows: [], columns: [], values: [{ field: 'x' }] }).grandTotal,
+      pivot([{ x: 'a' }], { rows: [], columns: [], values: [{ field: 'x' }] }, 'en-US').grandTotal,
     ).toEqual([null]);
   });
 
   it('UIC-PIVOT-TABLE-1.3 computes row, column and grand totals from the records', () => {
-    const result = pivot(sales, {
-      rows: ['region'],
-      columns: ['year'],
-      values: [{ field: 'price', aggregate: 'average' }],
-    });
+    const result = pivot(
+      sales,
+      {
+        rows: ['region'],
+        columns: ['year'],
+        values: [{ field: 'price', aggregate: 'average' }],
+      },
+      'en-US',
+    );
     expect(requireDefined(result.rows[0]).total).toEqual([2.5]);
     expect(result.totals).toEqual({ '[2024]': [2.75], '[2025]': [2.5] });
     expect(result.grandTotal).toEqual([2.6]);
-    const empty = pivot([], layout);
+    const empty = pivot([], layout, 'en-US');
     expect(empty).toEqual({ rows: [], columns: [], totals: {}, grandTotal: [null] });
   });
 });

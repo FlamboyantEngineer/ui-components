@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { createRowMatcher, type TableFilter } from './table-filters.js';
 import type { TableColumn, TableRow } from './table-rows.js';
@@ -104,14 +105,26 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
     if (pagination && requestedPage !== 1) setPage(1);
   };
   const sort = useTableSort(options, resetPage);
+  const { locale } = useLocale();
 
   const presented = useMemo(() => {
     const nodes = buildTableNodes(rows, getChildRows);
     const matches = isFilterOwned ? createRowMatcher(columns, filter) : null;
     const filtered = matches ? filterTableNodes(nodes, matches) : nodes;
-    const compare = sort.isControlled ? null : createRowComparator(columns, sort.descriptors);
+    const compare = sort.isControlled
+      ? null
+      : createRowComparator(columns, sort.descriptors, locale);
     return compare ? sortTableNodes(filtered, compare) : filtered;
-  }, [rows, getChildRows, columns, filter, isFilterOwned, sort.isControlled, sort.descriptors]);
+  }, [
+    rows,
+    getChildRows,
+    columns,
+    filter,
+    isFilterOwned,
+    sort.isControlled,
+    sort.descriptors,
+    locale,
+  ]);
 
   const { page, pageCount, start, end } = resolvePages(pagination, requestedPage, presented.length);
   const nodes = useMemo(() => presented.slice(start, end), [presented, start, end]);

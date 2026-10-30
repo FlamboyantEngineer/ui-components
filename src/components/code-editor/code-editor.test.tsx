@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, useState } from 'react';
+import { createRef, StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { matchCompletions, type Completion } from '../completion-list/completion-list.js';
@@ -497,6 +497,24 @@ describe('CodeEditor', () => {
     await user.tab();
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-code-editor__caret')).toBeNull();
+  });
+
+  it('UIC-CODE-EDITOR-5.1 UIC-COMPOSITION-2.2 runs a callback ref cleanup once per attachment', () => {
+    const attached: Array<HTMLTextAreaElement | null> = [];
+    const cleanup = vi.fn();
+    const callbackRef = (node: HTMLTextAreaElement | null) => {
+      attached.push(node);
+      return cleanup;
+    };
+    const { unmount } = render(
+      <StrictMode>
+        <CodeEditor variant="surface" aria-label="Source" value="text" ref={callbackRef} />
+      </StrictMode>,
+    );
+    expect(attached).toContain(screen.getByRole('textbox'));
+    unmount();
+    expect(cleanup).toHaveBeenCalledTimes(attached.length);
+    expect(attached).not.toContain(null);
   });
 
   it('UIC-CODE-EDITOR-5.1 puts the id and ref on the input and the class and data attributes on the root', () => {

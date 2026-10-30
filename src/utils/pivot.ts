@@ -1,6 +1,7 @@
 // Pivot of plain records (specs/PIVOT-TABLE.md): groups by row and column fields and aggregates
 // value fields per group, with row, column and grand totals computed from the records.
 
+import { getCollator } from './intl-format.js';
 import { summarizeNumbers } from './summarize-numbers.js';
 /** A record a pivot reads: plain data whose fields are named by key. */
 export type PivotRecord = Readonly<Record<string, unknown>>;
@@ -78,8 +79,6 @@ interface KeyGroup {
   records: PivotRecord[];
 }
 
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-
 function readKey(record: PivotRecord, field: string): PivotKey {
   const value = record[field];
   if (value === undefined || value === null || value === '') return null;
@@ -92,7 +91,7 @@ function readKey(record: PivotRecord, field: string): PivotKey {
 }
 
 /** Orders keys: numbers by value, booleans false first, text naturally, empty keys last. */
-function compareKeys(left: PivotKey, right: PivotKey): number {
+function compareKeys(left: PivotKey, right: PivotKey, collator: Intl.Collator): number {
   if (left === null || right === null) return (left === null ? 1 : 0) - (right === null ? 1 : 0);
   if (typeof left === 'number' && typeof right === 'number') return left - right;
   if (typeof left === 'boolean' && typeof right === 'boolean') return Number(left) - Number(right);
@@ -100,7 +99,11 @@ function compareKeys(left: PivotKey, right: PivotKey): number {
 }
 
 /** The records grouped by their key in `field`, groups in key order. */
-function groupRecords(records: readonly PivotRecord[], field: string): KeyGroup[] {
+function groupRecords(
+  records: readonly PivotRecord[],
+  field: string,
+  collator: Intl.Collator,
+): KeyGroup[] {
   const groups = new Map<string, KeyGroup>();
   for (const record of records) {
     const key = readKey(record, field);
@@ -109,7 +112,7 @@ function groupRecords(records: readonly PivotRecord[], field: string): KeyGroup[
     group.records.push(record);
     groups.set(id, group);
   }
-  return [...groups.values()].sort((left, right) => compareKeys(left.key, right.key));
+  return [...groups.values()].sort((left, right) => compareKeys(left.key, right.key, collator));
 }
 
 function isPresent(value: unknown): boolean {
@@ -152,26 +155,33 @@ function aggregateColumns(records: readonly PivotRecord[], layout: PivotLayout) 
   );
 }
 
+/** The layout being pivoted and the collation of its text keys. */
+interface Pivoting {
+  layout: PivotLayout;
+  collator: Intl.Collator;
+}
+
 function buildColumns(
   records: readonly PivotRecord[],
-  fields: readonly string[],
   path: readonly PivotKey[],
+  at: Pivoting,
 ): PivotColumn[] {
-  const field = fields[path.length];
+  const field = at.layout.columns[path.length];
   if (field === undefined) return [{ key: JSON.stringify(path), path }];
-  return groupRecords(records, field).flatMap((group) =>
-    buildColumns(group.records, fields, [...path, group.key]),
+  return groupRecords(records, field, at.collator).flatMap((group) =>
+    buildColumns(group.records, [...path, group.key], at),
   );
 }
 
 function buildRows(
   records: readonly PivotRecord[],
-  layout: PivotLayout,
   parent: readonly PivotKey[],
+  at: Pivoting,
 ): PivotRow[] {
+  const { layout } = at;
   const field = layout.rows[parent.length];
   if (field === undefined) return [];
-  return groupRecords(records, field).map((group) => {
+  return groupRecords(records, field, at.collator).map((group) => {
     const path = [...parent, group.key];
     return {
       key: JSON.stringify(path),
@@ -180,7 +190,7 @@ function buildRows(
       path,
       cells: aggregateColumns(group.records, layout),
       total: aggregateAll(group.records, layout),
-      children: buildRows(group.records, layout, path),
+      children: buildRows(group.records, path, at),
     };
   });
 }
@@ -188,12 +198,18 @@ function buildRows(
 /**
  * Pivots records: rows grouped by the layout's row fields (nested, outermost first) and columns by
  * its column fields, every cell and total aggregating the values over the records it covers. Keys
- * order numerically, false before true, text naturally, and empty values last as `null` keys.
+ * order numerically, false before true, text naturally in `locale` ignoring case, and empty values
+ * last as `null` keys.
  */
-export function pivot(records: readonly PivotRecord[], layout: PivotLayout): PivotResult {
+export function pivot(
+  records: readonly PivotRecord[],
+  layout: PivotLayout,
+  locale: string,
+): PivotResult {
+  const at = { layout, collator: getCollator(locale, { numeric: true, sensitivity: 'base' }) };
   return {
-    rows: buildRows(records, layout, []),
-    columns: buildColumns(records, layout.columns, []),
+    rows: buildRows(records, [], at),
+    columns: buildColumns(records, [], at),
     totals: aggregateColumns(records, layout),
     grandTotal: aggregateAll(records, layout),
   };

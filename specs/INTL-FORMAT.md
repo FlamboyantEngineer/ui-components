@@ -6,7 +6,7 @@ The shared Intl formatters behind every date, number, list and relative time the
 
 ### UIC-INTL-FORMAT-1.1 - One formatter per locale and options
 
-`getDateFormatter`, `getDateTimeFormat`, `getNumberFormat`, `getListFormat` and `getRelativeTimeFormat` in `src/utils/intl-format.ts` shall return a `DateFormatter`, `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.ListFormat` or `Intl.RelativeTimeFormat` for a locale and options, and the same cached formatter for later calls with that locale and equal options. Library code that formats outside a React Aria formatter hook shall take its formatters from them.
+`getDateFormatter`, `getDateTimeFormat`, `getNumberFormat`, `getListFormat`, `getRelativeTimeFormat` and `getCollator` in `src/utils/intl-format.ts` shall return a `DateFormatter`, `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.ListFormat`, `Intl.RelativeTimeFormat` or `Intl.Collator` for a locale and options, and the same cached formatter for later calls with that locale and equal options. Library code that formats outside a React Aria formatter hook, or collates text for people to read, shall take its formatters and collators from them.
 
 Implementation: `src/utils/intl-format.ts`
 Verification: `src/utils/intl-format.test.ts`

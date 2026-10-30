@@ -157,6 +157,34 @@ function NestedGuards() {
   );
 }
 
+/**
+ * A question replaced while its Save runs: Leave asks, and a second later a sign-out asks again.
+ * The draft takes two seconds to save, and its end leaves the new question open.
+ */
+function ReplacedQuestion() {
+  const { confirmLeave } = useUnsavedChangesGuard();
+  const [answers, setAnswers] = useState<string[]>([]);
+  useUnsavedChanges({ isDirty: true, label: 'Trip plan', onSave: () => wait(2000) });
+  const ask = (title: string) =>
+    void confirmLeave({ title }).then((ok) =>
+      setAnswers((list) => [...list, `${title} ${ok ? 'Left' : 'Stayed'}`]),
+    );
+  return (
+    <div data-lab-demo="replaced">
+      <Button
+        size="sm"
+        onPress={() => {
+          ask('Leave the plan?');
+          setTimeout(() => ask('Sign out now?'), 1000);
+        }}
+      >
+        Leave, then sign out
+      </Button>{' '}
+      <output data-lab-answers="">{answers.join(' · ') || 'Not asked'}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -186,6 +214,14 @@ mountLab(
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <NestedGuards />
+      </UnsavedChangesGuard>
+    </LabSection>
+    <LabSection
+      title="A question replaced"
+      description="Press the button, then Save at once: a second later a sign-out asks its own question, which answers the first Stayed. The first save still finishes after two seconds, and the sign-out question stays open, ready for Save, Discard or Stay."
+    >
+      <UnsavedChangesGuard shouldConfirmUnload={false}>
+        <ReplacedQuestion />
       </UnsavedChangesGuard>
     </LabSection>
   </>,

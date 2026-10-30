@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
+import { useLocale } from '../../primitives/index.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { TableChildRows } from './table-tree.js';
 import {
@@ -42,6 +43,7 @@ export function useTableGrouping<T extends TableRow>(
 ): TableGroupedBody<T> {
   const { groupBy, columns, rows, getChildRows } = options;
   const descriptors = view.sort.descriptors;
+  const { locale } = useLocale();
   const nodes = useMemo(() => {
     const groupings = resolveGroupings(groupBy ?? [], columns, descriptors);
     if (groupings.length === 0) return view.nodes;
@@ -49,8 +51,8 @@ export function useTableGrouping<T extends TableRow>(
       walkTree(rows, (row) => getChildRows?.(row) ?? undefined),
       (row) => row.id,
     );
-    return groupTableNodes(view.nodes, groupings, reserved);
-  }, [groupBy, columns, descriptors, view.nodes, rows, getChildRows]);
+    return groupTableNodes(view.nodes, groupings, { locale, reservedKeys: reserved });
+  }, [groupBy, columns, descriptors, view.nodes, rows, getChildRows, locale]);
   const groupKeys = useMemo(() => listGroupKeys(nodes), [nodes]);
   const expansion = useTableExpansion(options, groupKeys);
   return { nodes, isGrouped: groupKeys.length > 0, expansion };

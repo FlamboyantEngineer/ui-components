@@ -182,7 +182,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components
 
 ### UIC-CODE-EDITOR-5.1 - Hooks and caller attributes
 
-`CodeEditor` shall carry the hooks below, put the caller's `className` and `data-*` attributes on its root, and its `id` and `ref` on the text area, so a label can point at it and a field can focus it.
+`CodeEditor` shall carry the hooks below, put the caller's `className` and `data-*` attributes on its root, and its `id` and `ref` on the text area, so a label can point at it and a field can focus it. The `ref` is merged as UIC-COMPOSITION-2.2 describes, so a React 19 callback ref's cleanup runs on detach.
 
 Implementation: `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`

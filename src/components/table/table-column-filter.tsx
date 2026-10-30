@@ -6,6 +6,7 @@ import {
   CheckboxFieldContext,
   DialogTrigger,
   Provider,
+  useLocale,
 } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -75,6 +76,7 @@ function NumberRangeFields<T extends TableRow>({ value, onChange }: TableColumnF
 /** The field a column's filter type edits its value with. */
 function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   const { column, label, value, onChange } = props;
   switch (column.filter?.type) {
     case 'number':
@@ -93,7 +95,7 @@ function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) 
     }
     case 'set': {
       const ticked = Array.isArray(value) ? [...value] : [];
-      const options = listFilterOptions(props.rows, column).map((option) => ({
+      const options = listFilterOptions(props.rows, column, locale).map((option) => ({
         value: option,
         label: option,
       }));
