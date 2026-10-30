@@ -15,6 +15,7 @@ import {
 import { useControllableState } from '../../core/controllable-state.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { useIsMounted } from '../../utils/use-is-mounted.js';
 
 interface InlineEditStateOptions<T> {
   value: T;
@@ -131,13 +132,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
   const [pending, setPending] = useState<SaveAttempt<T> | null>(null);
   const saving = useRef<SaveAttempt<T> | null>(null);
   const queued = useRef<{ request: SaveRequest<T>; focusReturn: FocusReturn } | null>(null);
-  const isMounted = useRef(true);
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+  const isMounted = useIsMounted();
   const latest = useLatest(options);
   const takeQueued = () => {
     const request = queued.current;

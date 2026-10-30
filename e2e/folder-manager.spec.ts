@@ -118,6 +118,26 @@ test.describe('Folder Manager lab', () => {
     await expect(page.locator('[data-lab-output="Selected"]')).toHaveText('citrus');
   });
 
+  test('UIC-FOLDER-MANAGER-2.5 selects nothing from a closed panel when its delete settles', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('folder-manager');
+    const demo = page.locator('[data-lab-demo="closing"]');
+    const manager = demo.getByRole('treegrid', { name: 'Panel folders' });
+    await row(manager, 'Lemons').click();
+    await expect(demo.locator('[data-lab-output="Panel selection"]')).toHaveText('lemons');
+    await page.keyboard.press('Delete');
+    await demo.getByRole('button', { name: 'Close panel' }).click();
+    await page.clock.runFor(1600);
+    await expect(demo.locator('[data-lab-output="Panel action"]')).toHaveText('deleted lemons');
+    await expect(demo.locator('[data-lab-output="Panel selection"]')).toHaveText('lemons');
+    await demo.getByRole('button', { name: 'Open panel' }).click();
+    await expect(row(manager, 'Lemons')).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="Panel selection"]')).toHaveText('lemons');
+  });
+
   test('UIC-FOLDER-MANAGER-2.8 opens Rename and Delete from the context menu', async ({
     page,
     lab,

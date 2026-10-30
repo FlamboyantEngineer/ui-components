@@ -3,11 +3,12 @@
 // Sending a composer's draft: at once, or once the host accepts it (specs/MESSAGE-COMPOSER.md,
 // UIC-MESSAGE-COMPOSER-3.9; specs/COMMENT-COMPOSER.md, UIC-COMMENT-COMPOSER-1.3).
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useUiStorage, type PersistCodec } from '../core/provider.js';
 import type { UiStorage } from '../core/storage.js';
 import { isThenable } from './is-thenable.js';
 import { useLatest } from './use-latest.js';
+import { useIsMounted } from './use-is-mounted.js';
 
 /** Hands a value to the host, which may accept it later through a promise. */
 export type Submitter<T> = (value: T) => void | Promise<unknown>;
@@ -64,13 +65,7 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
   const latestOwner = useLatest(owner);
   const [waiting, setWaiting] = useState<readonly DraftOwner[]>([]);
   const inFlight = useRef<DraftOwner[]>([]);
-  const isMounted = useRef(true);
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+  const isMounted = useIsMounted();
 
   const fail = (error: unknown) => {
     const onSubmitError = latest.current.onSubmitError;
