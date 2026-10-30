@@ -213,6 +213,39 @@ describe('DiagramCanvas nodes', () => {
     expect(onNodesChange).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.3 leaves presses on controls inside a node to them', async () => {
+    const user = userEvent.setup();
+    const onNodesChange = vi.fn();
+    const onAction = vi.fn();
+    const { container } = render(
+      <EditableDiagram
+        onNodesChange={onNodesChange}
+        renderNode={(item) => (
+          <>
+            <input aria-label={`${item.label} text`} defaultValue="Select this text" />
+            <button type="button" onClick={onAction}>{`${item.label} action`}</button>
+            <span>{item.label}</span>
+          </>
+        )}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Pump action' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    const field = screen.getByRole('textbox', { name: 'Pump text' });
+    await drag(user, field, { clientX: 70, clientY: 0 });
+    await release(user, field, { clientX: 70, clientY: 0 });
+    expect(onNodesChange).not.toHaveBeenCalled();
+    expect(node('Pump')).not.toHaveAttribute('data-selected');
+    // Nor does the press reach the background, which would pan the view.
+    expect(
+      container.querySelector<HTMLElement>('.ui-diagram-canvas__content')?.style.transform,
+    ).toBe('translate(0px, 0px) scale(1)');
+    // Ordinary content still drags the node.
+    await drag(user, screen.getByText('Pump'), { clientX: 23, clientY: 7 });
+    await release(user, screen.getByText('Pump'));
+    expect(onNodesChange).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-DIAGRAM-CANVAS-4.3 moves nothing outside edit mode and keeps positions off the grid with gridSize 0', async () => {
     const user = userEvent.setup();
     const onNodesChange = vi.fn();

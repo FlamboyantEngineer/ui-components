@@ -13,6 +13,7 @@ import {
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 import { capturePointer } from '../../utils/pointer-drag.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -81,6 +82,10 @@ function useNodePointer(id: Key, controller: RefObject<DiagramController>, isEdi
     onStart: (event) => {
       const { selection, moves, connect } = controller.current;
       event.stopPropagation();
+      // Controls and editable content in the node, and presses they handled, keep their gesture.
+      if (event.defaultPrevented || isInteractiveTarget(event.target, event.currentTarget)) {
+        return null;
+      }
       if (isEditing && connect.complete(id)) return null;
       const isToggle = isToggleEvent(event);
       const wasSelected = selection.selected.has(id);
