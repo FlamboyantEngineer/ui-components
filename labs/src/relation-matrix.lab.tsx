@@ -103,6 +103,36 @@ function TraceabilityMatrix() {
   );
 }
 
+/** The requirements with the fewest relations first, keeping the listed order between equals. */
+function sortByCoverage(relations: readonly RelationMatrixRelation[]): RelationMatrixItem[] {
+  const count = (row: RelationMatrixItem) =>
+    relations.filter((relation) => relation.row === row.id).length;
+  return [...requirements].sort((a, b) => count(a) - count(b));
+}
+
+/** Rows that reorder as relations change, while focus stays on the cell the reader acted on. */
+function CoverageSortedMatrix() {
+  const [relations, setRelations] = useState(traces);
+  const [output, setOutput] = useState('No change yet');
+  return (
+    <div data-lab-demo="sorted">
+      <RelationMatrix
+        aria-label="Least covered requirements first"
+        rows={sortByCoverage(relations)}
+        columns={tests}
+        relations={relations}
+        kinds={kinds}
+        rowsLabel="Requirements"
+        onCellAction={(cell) => {
+          setOutput(describeAction(cell, 'verifies'));
+          setRelations((current) => toggleRelation(current, { ...cell, kind: 'verifies' }));
+        }}
+      />
+      <output data-lab-output>{output}</output>
+    </div>
+  );
+}
+
 const rowCount = 2000;
 const columnCount = 400;
 const manyRows: RelationMatrixItem[] = Array.from({ length: rowCount }, (_, index) => ({
@@ -166,6 +196,12 @@ mountLab(
       description="Press a cell, or move to it with the arrow keys and press Enter or Space, to add a relation of the chosen kind or remove one. Home, End, PageUp and PageDown move further; Control+Home and Control+End reach the corners."
     >
       <TraceabilityMatrix />
+    </LabSection>
+    <LabSection
+      title="Rows sorted by coverage"
+      description="Requirements with the fewest relations come first, so adding or removing a relation can move its row. Focus and Enter stay with the cell you acted on as its row moves."
+    >
+      <CoverageSortedMatrix />
     </LabSection>
     <LabSection
       title="Large matrix"

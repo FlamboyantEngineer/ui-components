@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampMatrixPosition, moveMatrixFocus } from './matrix-navigation.js';
+import { moveMatrixFocus, resolveMatrixFocus, toMatrixFocus } from './matrix-navigation.js';
 
 describe('matrix navigation', () => {
   const grid = { rowCount: 5, columnCount: 4, pageSize: 2, isRightToLeft: false };
@@ -26,9 +26,42 @@ describe('matrix navigation', () => {
     expect(move('End', 2, 0, { isPrimaryModifier: true })).toEqual({ row: 4, column: 3 });
   });
 
-  it('UIC-RELATION-MATRIX-2.1 keeps the focused cell inside a grid that shrinks', () => {
-    const position = { row: 1, column: 1 };
-    expect(clampMatrixPosition(position, 5, 5)).toBe(position);
-    expect(clampMatrixPosition({ row: 6, column: 6 }, 2, 0)).toEqual({ row: 1, column: -1 });
+  it('UIC-RELATION-MATRIX-2.3 follows the focused items when they reorder', () => {
+    const focus = toMatrixFocus({ row: 0, column: 1 }, ['a', 'b'], ['x', 'y']);
+    expect(focus).toEqual({ row: 'a', column: 'y', at: { row: 0, column: 1 } });
+    expect(resolveMatrixFocus(focus, ['b', 'a'], ['y', 'x'])).toEqual({
+      position: { row: 1, column: 0 },
+      isLost: false,
+    });
+    const header = toMatrixFocus({ row: -1, column: 0 }, ['a'], ['x']);
+    expect(resolveMatrixFocus(header, ['b', 'a'], ['z', 'x']).position).toEqual({
+      row: -1,
+      column: 1,
+    });
+  });
+
+  it('UIC-RELATION-MATRIX-2.3 falls back to the place of an item that went', () => {
+    const focus = toMatrixFocus({ row: 1, column: 1 }, ['a', 'b', 'c'], ['x', 'y']);
+    expect(resolveMatrixFocus(focus, ['a', 'c'], ['x', 'y'])).toEqual({
+      position: { row: 1, column: 1 },
+      isLost: true,
+    });
+    expect(resolveMatrixFocus(focus, ['a'], ['y'])).toEqual({
+      position: { row: 0, column: 0 },
+      isLost: true,
+    });
+    expect(resolveMatrixFocus(focus, [], [])).toEqual({
+      position: { row: -1, column: -1 },
+      isLost: true,
+    });
+  });
+
+  it('UIC-RELATION-MATRIX-2.3 gives a place no item held to the item that arrives there', () => {
+    const empty = toMatrixFocus({ row: 0, column: 0 }, [], []);
+    expect(resolveMatrixFocus(empty, [], []).position).toEqual({ row: -1, column: -1 });
+    expect(resolveMatrixFocus(empty, ['a'], ['x'])).toEqual({
+      position: { row: 0, column: 0 },
+      isLost: false,
+    });
   });
 });

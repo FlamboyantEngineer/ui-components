@@ -10,12 +10,20 @@ import {
 } from 'react';
 import { useFocusWithin, useLocale } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { clampMatrixPosition, moveMatrixFocus, type MatrixPosition } from './matrix-navigation.js';
+import {
+  moveMatrixFocus,
+  resolveMatrixFocus,
+  toMatrixFocus,
+  type MatrixFocus,
+  type MatrixPosition,
+} from './matrix-navigation.js';
 
 interface MatrixNavigationOptions {
   root: RefObject<HTMLDivElement | null>;
-  rowCount: number;
-  columnCount: number;
+  /** The identities of the row items, in order. */
+  rowIds: readonly string[];
+  /** The identities of the column items, in order. */
+  columnIds: readonly string[];
   /** Called when Enter or Space is pressed on a body cell. */
   onCellAction: (position: MatrixPosition) => void;
 }
@@ -89,22 +97,34 @@ function revealCell(root: HTMLElement, cell: HTMLElement, position: MatrixPositi
  * Grid keyboard navigation over a matrix with a header row and a row header column: arrow keys,
  * PageUp, PageDown, Home and End (with Control or Command, Home and End reach the corners) move
  * the focused cell, which holds the grid's only tab stop and scrolls into view; focus landing on a
- * cell by pointer makes it the focused cell.
+ * cell by pointer makes it the focused cell. The focused cell follows its row and column items
+ * when they reorder; where one goes, the cell now at its place takes focus (`resolveMatrixFocus`).
+ * Keys act from the cell that holds focus.
  */
 export function useMatrixNavigation({
   root,
-  rowCount,
-  columnCount,
+  rowIds,
+  columnIds,
   onCellAction,
 }: MatrixNavigationOptions): MatrixNavigation {
   const { direction } = useLocale();
-  const [own, setOwn] = useState<MatrixPosition>({ row: 0, column: 0 });
+  const [own, setOwn] = useState<MatrixFocus>(() =>
+    toMatrixFocus({ row: 0, column: 0 }, rowIds, columnIds),
+  );
   const [isFocusWithin, setFocusWithin] = useState(false);
   const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocusWithin });
   const shouldFocus = useRef(false);
-  const focus = clampMatrixPosition(own, rowCount, columnCount);
+  const { position: focus, isLost } = resolveMatrixFocus(own, rowIds, columnIds);
+  const moveTo = (position: MatrixPosition) => setOwn(toMatrixFocus(position, rowIds, columnIds));
   useLayoutEffect(() => {
-    if (!shouldFocus.current || !root.current) return;
+    if (!root.current) return;
+    if (isLost) {
+      // The focused item went: its place takes over, and takes DOM focus if the cell held it.
+      const hasDroppedFocus = isFocusWithin && !root.current.contains(document.activeElement);
+      shouldFocus.current ||= hasDroppedFocus;
+      moveTo(focus);
+    }
+    if (!shouldFocus.current) return;
     shouldFocus.current = false;
     const cell = root.current.querySelector<HTMLElement>(selectMatrixCell(focus));
     if (!cell) return;
@@ -112,26 +132,28 @@ export function useMatrixNavigation({
     revealCell(root.current, cell, focus);
   });
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.altKey || readPosition(event.target) === null) return;
+    const from = readPosition(event.target);
+    if (event.altKey || from === null) return;
     const pageSize = measurePage(event.currentTarget, event.target as Element);
-    if (actionKeys.has(event.key) && focus.row >= 0 && focus.column >= 0) {
+    if (actionKeys.has(event.key) && from.row >= 0 && from.column >= 0) {
       event.preventDefault();
-      onCellAction(focus);
+      onCellAction(from);
       return;
     }
-    const next = moveMatrixFocus(focus, {
+    const next = moveMatrixFocus(from, {
       ...{ key: event.key, isPrimaryModifier: event.ctrlKey || event.metaKey },
-      ...{ isRightToLeft: direction === 'rtl', rowCount, columnCount, pageSize },
+      ...{ isRightToLeft: direction === 'rtl', pageSize },
+      ...{ rowCount: rowIds.length, columnCount: columnIds.length },
     });
     if (!next) return;
     event.preventDefault();
     shouldFocus.current = true;
-    setOwn(next);
+    moveTo(next);
   };
   const onFocus = (event: FocusEvent<HTMLDivElement>) => {
     const position = readPosition(event.target);
     if (position && (position.row !== focus.row || position.column !== focus.column))
-      setOwn(position);
+      moveTo(position);
   };
   return {
     focus,
