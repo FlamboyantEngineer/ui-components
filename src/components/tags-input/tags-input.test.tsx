@@ -1,10 +1,11 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Form } from '../form/form.js';
+import { TextField } from '../text-field/text-field.js';
 import { TagsInput, type TagsInputProps } from './tags-input.js';
 
 function root(container: HTMLElement) {
@@ -99,6 +100,40 @@ describe('TagsInput', () => {
     expect(new FormData(form).getAll('fruit')).toEqual(['Apple', 'Fig']);
     await user.click(screen.getByRole('button', { name: 'Reset' }));
     await waitFor(() => expect(new FormData(form).getAll('fruit')).toEqual(['Apple']));
+    expect(tagTexts()).toEqual(['Apple']);
+  });
+
+  it('UIC-TAGS-INPUT-1.2 UIC-FIELD-2.6 keeps edits when a listener cancels the reset', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    let isConfirmed = false;
+    render(
+      <form
+        aria-label="Order"
+        onReset={(event) => {
+          if (!isConfirmed) event.preventDefault();
+        }}
+      >
+        <TagsInput label="Fruit" name="fruit" defaultValue={['Apple']} onChange={onChange} />
+        <TextField label="Note" name="note" defaultValue="Ripe" />
+        <button type="reset">Reset</button>
+      </form>,
+    );
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Order' });
+    const note = screen.getByRole('textbox', { name: 'Note' });
+    await user.type(screen.getByRole('textbox', { name: 'Fruit' }), 'Fig{Enter}');
+    await user.type(note, ' only');
+    onChange.mockClear();
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    expect(new FormData(form).getAll('fruit')).toEqual(['Apple', 'Fig']);
+    expect(note).toHaveValue('Ripe only');
+    expect(onChange).not.toHaveBeenCalled();
+
+    isConfirmed = true;
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(new FormData(form).getAll('fruit')).toEqual(['Apple']));
+    expect(note).toHaveValue('Ripe');
     expect(tagTexts()).toEqual(['Apple']);
   });
 

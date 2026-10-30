@@ -15,6 +15,11 @@ const serverPayloads = [
   `<a href="javascript:${attack}"><rect width="4" height="4"/></a>`,
   `<image href="https://remote.invalid/tile.png" width="4" height="4"/>`,
   `<rect width="4" height="4" style="fill: url(https://remote.invalid/a.svg#p)"/>`,
+  `<rect width="4" height="4" fill="url(https://remote.invalid/paint.svg#g"/>`,
+  `<rect width="4" height="4" fill="url('https://remote.invalid/paint.svg#g'"/>`,
+  `<rect width="4" height="4" style="fill: url(&quot;https://remote.invalid/a.svg#p"/>`,
+  `<rect width="4" height="4" style="--paint: url(https://remote.invalid/a.svg#p; fill: var(--paint)"/>`,
+  `<rect width="4" height="4"><animate attributeName="fill" values="url(#g);url(https://remote.invalid/a.svg#p" dur="1s"/></rect>`,
   `<p><img src="x" onerror="${attack}"/></p>`,
 ];
 
@@ -76,9 +81,11 @@ test.describe('SVG Markup lab', () => {
     await expect(sanitised).not.toHaveAttribute('onload');
     await expect(sanitised.locator('a')).toHaveCount(0);
     const adversarial = page.locator('[data-lab-adversarial] svg');
-    await expect(adversarial).toHaveCount(12);
+    await expect(adversarial).toHaveCount(13);
     await expect(
-      adversarial.locator('a, foreignObject, style, iframe, img, image[href*="remote"]'),
+      adversarial.locator(
+        'a, foreignObject, style, iframe, img, [href*="remote"], [fill*="remote"], [stroke*="remote"], [style*="remote"]',
+      ),
     ).toHaveCount(0);
     expect(await page.evaluate(() => 'unsafe' in window)).toBe(false);
     await expect(page.locator('[data-lab-missing] svg')).toHaveCount(0);

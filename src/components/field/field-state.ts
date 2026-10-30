@@ -122,6 +122,18 @@ export interface FieldState<T> {
   setDraftIssue(issue: FieldIssue | null): void;
 }
 
+/**
+ * Holds a field's changes while a native form reset goes through its listeners, so a building block
+ * that resets itself (as React Aria's controls do) changes nothing until the reset is known not to
+ * be cancelled (UIC-FIELD-2.6). The form binding reads it from the state under this key.
+ */
+export const fieldChangeHold = Symbol('fieldChangeHold');
+
+/** Whether the field's changes are held; `setValue` ignores changes while they are. */
+export interface FieldChangeHold {
+  isHeld: boolean;
+}
+
 function firstDefined<T>(...values: Array<T | undefined>): T {
   return values.find((value) => value !== undefined) as T;
 }
@@ -257,10 +269,11 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     own.setHistory(history);
   }
 
+  const hold = useRef<FieldChangeHold>({ isHeld: false });
   const setValue = useCallback(
     (next: T) => {
       const current = latest.current;
-      if (current.isLocked) return;
+      if (current.isLocked || hold.current.isHeld) return;
       current.value = next;
       current.isUnsettled = current.options.value !== undefined;
       markChanged();
@@ -288,7 +301,7 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   };
   const canClear = !options.isRequired && canApply(value, options.emptyValue, isLocked);
 
-  return {
+  const state: FieldState<T> = {
     value,
     committedValue,
     validation: shown.validation,
@@ -315,4 +328,5 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     revealValidation: reveal.revealValidation,
     setDraftIssue,
   };
+  return Object.assign(state, { [fieldChangeHold]: hold.current });
 }
