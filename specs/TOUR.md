@@ -68,7 +68,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 ### UIC-TOUR-3.1 - Remembered completion
 
-With `persistKey`, finishing or skipping the tour shall store `true` under that key through the provider's storage adapter ([PROVIDER.md](PROVIDER.md)), and an uncontrolled tour whose key holds `true` stays closed, `defaultOpen` notwithstanding. A controlled `isOpen` still opens it, so a host can offer to take the tour again; clearing the key resets it.
+With `persistKey`, finishing or skipping the tour shall store `true` under that key through the provider's storage adapter ([PROVIDER.md](PROVIDER.md)), and an uncontrolled tour whose key holds `true` stays closed (a stored value that is not a boolean counts as not completed), `defaultOpen` notwithstanding. A controlled `isOpen` still opens it, so a host can offer to take the tour again; clearing the key resets it.
 
 Implementation: `src/components/tour/tour.tsx`, `src/core/provider.tsx`
 Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`

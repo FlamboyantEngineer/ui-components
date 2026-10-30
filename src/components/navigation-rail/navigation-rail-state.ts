@@ -49,12 +49,6 @@ export const navigationRailHooks = createHooks('navigation-rail', [
   'group-panel',
 ]);
 
-/** The stored collapsed state: a boolean. */
-export const collapsedCodec = createJsonCodec((value): boolean => {
-  if (typeof value !== 'boolean') throw new TypeError('Not a collapsed state');
-  return value;
-});
-
 /** The stored width: a finite number of pixels. */
 export const widthCodec = createJsonCodec((value): number => {
   if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError('Not a width');

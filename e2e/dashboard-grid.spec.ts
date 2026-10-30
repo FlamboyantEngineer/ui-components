@@ -159,7 +159,7 @@ test.describe('Dashboard Grid lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-DASHBOARD-GRID-1.2 remembers an uncontrolled layout across reloads', async ({
+  test('UIC-DASHBOARD-GRID-1.2 remembers an uncontrolled layout across reloads and refuses a broken one', async ({
     page,
     lab,
   }) => {
@@ -173,5 +173,8 @@ test.describe('Dashboard Grid lab', () => {
     await expect(page.locator('html')).toHaveAttribute('data-lab-ready', 'true');
     await expect(stored.getByRole('group', { name: 'Saved A' })).toHaveCSS('grid-row-start', '2');
     await expect(stored.getByRole('group', { name: 'Saved C' })).toHaveCSS('grid-row-start', '3');
+    await stored.getByRole('button', { name: 'Store a broken layout and remount' }).click();
+    await expect(stored.getByRole('group', { name: 'Saved A' })).toHaveCSS('grid-row-start', '1');
+    await expect(stored.getByRole('group', { name: 'Saved C' })).toHaveCSS('grid-row-start', '2');
   });
 });

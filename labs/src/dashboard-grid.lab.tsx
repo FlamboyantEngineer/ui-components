@@ -10,6 +10,7 @@ import {
 } from '../../src/components/dashboard-grid/dashboard-grid.js';
 import { DashboardTile } from '../../src/components/dashboard-grid/dashboard-tile.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
+import { useUiStorage } from '../../src/core/provider.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -152,6 +153,41 @@ function SharedLayout() {
   );
 }
 
+/** The remembered grid, and a way to store a layout of the wrong shape and mount it again. */
+function RememberedLayout() {
+  const storage = useUiStorage();
+  const [mount, setMount] = useState(0);
+  return (
+    <div data-lab-demo="stored">
+      <Button
+        onPress={() => {
+          storage.setItem('lab-dashboard-grid', '[{"id":"a"}]');
+          setMount(mount + 1);
+        }}
+      >
+        Store a broken layout and remount
+      </Button>
+      <div style={frame(360)}>
+        <DashboardGrid
+          key={mount}
+          aria-label="Remembered"
+          defaultLayout={small}
+          persistKey="lab-dashboard-grid"
+          columns={3}
+          rowHeight={48}
+          isEditing
+        >
+          {(item) => (
+            <DashboardTile label={`Saved ${smallTitles.get(item.id)}`}>
+              Saved {smallTitles.get(item.id)}
+            </DashboardTile>
+          )}
+        </DashboardGrid>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -194,24 +230,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Remembered layout"
-      description="With persistKey, an uncontrolled grid keeps its layout through the provider storage when the page reloads."
+      description="With persistKey, an uncontrolled grid keeps its layout through the provider storage when the page reloads. A stored layout of the wrong shape is refused, and the grid starts from its default layout."
     >
-      <div style={frame(360)} data-lab-demo="stored">
-        <DashboardGrid
-          aria-label="Remembered"
-          defaultLayout={small}
-          persistKey="lab-dashboard-grid"
-          columns={3}
-          rowHeight={48}
-          isEditing
-        >
-          {(item) => (
-            <DashboardTile label={`Saved ${smallTitles.get(item.id)}`}>
-              Saved {smallTitles.get(item.id)}
-            </DashboardTile>
-          )}
-        </DashboardGrid>
-      </div>
+      <RememberedLayout />
     </LabSection>
   </>,
 );

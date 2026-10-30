@@ -6,6 +6,7 @@ import { useContext, useId } from 'react';
 import { DisclosureGroupStateContext } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
+import { booleanCodec } from '../../utils/json-codec.js';
 
 /** Whether a section or card is open, which the caller may control. */
 export interface PropertyExpansionProps {
@@ -50,6 +51,7 @@ export function useScopedExpansion({
   const [ownExpanded, setOwnExpanded] = usePersistentState(
     isExpanded === undefined ? persistKey : undefined,
     defaultExpanded,
+    booleanCodec,
   );
   return {
     isExpanded: isFiltering ? isExpandedWhileFiltering : (isExpanded ?? ownExpanded),

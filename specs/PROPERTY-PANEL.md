@@ -64,7 +64,7 @@ Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/pr
 
 ### UIC-PROPERTY-PANEL-2.4 - Remembered sections
 
-With a `persistKey`, an uncontrolled section shall keep whether it is open through the provider storage under that key and start from the stored value the next time it mounts. A controlled section ignores the key.
+With a `persistKey`, an uncontrolled section shall keep whether it is open through the provider storage under that key and start from the stored value the next time it mounts; a stored value that is not a boolean is ignored, so it starts from `defaultExpanded`. A controlled section ignores the key.
 
 Implementation: `src/components/property-panel/property-disclosure.tsx`, `src/components/property-panel/property-section.tsx`
 Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/property-panel.spec.ts`

@@ -193,6 +193,21 @@ describe('PropertySection', () => {
     expect(storage.getItem('sections.print')).toBe('false');
   });
 
+  it('UIC-PROPERTY-PANEL-2.4 starts from defaultExpanded when the stored state is not a boolean', async () => {
+    const storage = createMemoryStorage({ 'sections.print': '"false"' });
+    render(
+      <UiProvider storage={storage}>
+        <PropertySection title="Print" persistKey="sections.print">
+          <p>Copies</p>
+        </PropertySection>
+      </UiProvider>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Print' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(trigger);
+    expect(storage.getItem('sections.print')).toBe('false');
+  });
+
   it('UIC-PROPERTY-PANEL-2.5 stays mounted while hidden', () => {
     function Draft() {
       const [value, setValue] = useState('Draft');

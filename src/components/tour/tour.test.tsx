@@ -254,6 +254,16 @@ describe('Tour', () => {
     expect(await screen.findAllByRole('dialog')).toHaveLength(1);
   });
 
+  it('UIC-TOUR-3.1 opens a tour whose stored completion is not a boolean', async () => {
+    const storage = createMemoryStorage({ 'tour.recipes': '{}' });
+    render(
+      <UiProvider storage={storage}>
+        <Page persistKey="tour.recipes" />
+      </UiProvider>,
+    );
+    expect(await screen.findByRole('dialog', { name: 'Search' })).toBeInTheDocument();
+  });
+
   it('UIC-TOUR-3.2 makes the page inert while modal and leaves it usable when not', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<Page />);

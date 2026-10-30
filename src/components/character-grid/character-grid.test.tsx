@@ -276,6 +276,7 @@ describe('CharacterGrid', () => {
     const storage = createMemoryStorage({
       full: JSON.stringify(many),
       broken: '{oops',
+      mixed: '["€",1]',
       gone: '["☃","€"]',
     });
     const wide: CharacterGridCategory[] = [
@@ -296,6 +297,12 @@ describe('CharacterGrid', () => {
     rerender(
       <UiProvider storage={storage}>
         <CharacterGrid categories={wide} onSelect={() => {}} persistKey="broken" />
+      </UiProvider>,
+    );
+    expect(headings(container)).toEqual(['Arrows', 'Currency', 'Circled']);
+    rerender(
+      <UiProvider storage={storage}>
+        <CharacterGrid categories={wide} onSelect={() => {}} persistKey="mixed" />
       </UiProvider>,
     );
     expect(headings(container)).toEqual(['Arrows', 'Currency', 'Circled']);

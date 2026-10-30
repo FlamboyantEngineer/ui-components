@@ -339,6 +339,38 @@ describe('DashboardGrid', () => {
     expect(screen.getByRole('group', { name: 'Notes' }).style.gridRow).toBe('4 / span 1');
   });
 
+  it.each([
+    ['not JSON', '{'],
+    ['an object', '{}'],
+    ['a list holding null', '[null]'],
+    ['an item without an id', '[{"x":0,"y":0,"w":1,"h":1}]'],
+    ['an item with a text column', '[{"id":"a","x":"0","y":0,"w":1,"h":1}]'],
+    ['one invalid item among valid ones', '[{"id":"a","x":0,"y":0,"w":1,"h":1},{"id":"b"}]'],
+  ])(
+    'UIC-DASHBOARD-GRID-1.2 starts from the default layout when the stored one is %s',
+    async (_, raw) => {
+      const user = userEvent.setup();
+      const storage = createMemoryStorage({ saved: raw });
+      render(
+        <UiProvider storage={storage}>
+          <DashboardGrid aria-label="Saved" defaultLayout={layout} persistKey="saved" isEditing>
+            {(item) => (
+              <DashboardTile label={requireDefined(titles[item.id])}>{item.id}</DashboardTile>
+            )}
+          </DashboardGrid>
+        </UiProvider>,
+      );
+      expect(tileNames()).toEqual(['Visitors', 'Sales', 'Notes']);
+      screen.getByRole('button', { name: 'Move Notes' }).focus();
+      await user.keyboard('{ArrowDown}');
+      expect(JSON.parse(storage.getItem('saved') ?? '[]')).toEqual([
+        layout[0],
+        layout[1],
+        { id: 'notes', x: 0, y: 3, w: 12, h: 1 },
+      ]);
+    },
+  );
+
   it('UIC-DASHBOARD-GRID-2.3 keeps the start column when a resize reaches the last column', async () => {
     const user = userEvent.setup();
     const onLayoutChange = vi.fn();
