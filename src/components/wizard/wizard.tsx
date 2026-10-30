@@ -29,9 +29,10 @@ export interface WizardStep {
   isOptional?: boolean | undefined;
   /**
    * Checks the step once its fields pass, before the wizard moves on. Return `false` or a message to
-   * stay; a returned promise keeps Next pending until it settles.
+   * stay; a returned promise keeps Next pending until it settles. `signal` aborts once the wizard
+   * leaves the step or its workflow, or unmounts, and the check's answer then changes nothing.
    */
-  validate?: (() => WizardValidation | Promise<WizardValidation>) | undefined;
+  validate?: ((signal: AbortSignal) => WizardValidation | Promise<WizardValidation>) | undefined;
 }
 
 export interface WizardProps extends BaseProps, AriaLabellingProps {
@@ -43,7 +44,11 @@ export interface WizardProps extends BaseProps, AriaLabellingProps {
   defaultCurrentId?: Key | undefined;
   /** Receives the step the wizard moves to. */
   onCurrentIdChange?: ((id: Key) => void) | undefined;
-  /** Runs when the last step passes; a returned promise keeps Finish pending until it settles. */
+  /**
+   * Runs when the last step passes; a returned promise keeps Finish pending until it settles. It
+   * never runs for a check the wizard has left. Once it runs it is the host's: leaving the step or
+   * workflow, or unmounting, then ends the pending state and ignores its outcome.
+   */
   onFinish?: (() => void | Promise<unknown>) | undefined;
   /** Draws a Cancel button that calls it. */
   onCancel?: (() => void) | undefined;
