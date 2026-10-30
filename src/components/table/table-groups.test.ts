@@ -65,7 +65,7 @@ describe('table grouping helpers', () => {
         { id: 'a', label: 'A', getValue: (row) => row.a, direction: 'ascending' },
         { id: 'b', label: 'B', getValue: (row) => row.b, direction: 'ascending' },
       ],
-      [`${base}:2`],
+      { locale: 'en-US', reservedKeys: [`${base}:2`] },
     );
     const keys = listGroupKeys(grouped);
     expect(new Set(keys).size).toBe(4);
@@ -90,10 +90,14 @@ describe('table grouping helpers', () => {
       undefined,
     );
     const identify = (direction: 'ascending' | 'descending', reversed = false) => {
-      const grouped = groupTableNodes(reversed ? [...source].reverse() : source, [
-        { id: 'a', label: 'A', getValue: (row) => row.a, direction },
-        { id: 'b', label: 'B', getValue: (row) => row.b, direction },
-      ]);
+      const grouped = groupTableNodes(
+        reversed ? [...source].reverse() : source,
+        [
+          { id: 'a', label: 'A', getValue: (row) => row.a, direction },
+          { id: 'b', label: 'B', getValue: (row) => row.b, direction },
+        ],
+        { locale: 'en-US' },
+      );
       const found = new Map<string, string>();
       for (const node of walkTree(grouped, (node) =>
         isGroupNode(node) ? node.children : undefined,
@@ -146,7 +150,9 @@ describe('table grouping helpers', () => {
   });
 
   it('UIC-TABLE-13.1 UIC-TABLE-13.5 groups rows by value in order, empty values last, rows kept in order', () => {
-    const tree = groupTableNodes(nodes, resolveGroupings(['kind'], columns, []));
+    const tree = groupTableNodes(nodes, resolveGroupings(['kind'], columns, []), {
+      locale: 'en-US',
+    });
     expect(describe2(tree)).toEqual([
       { 'ui-table-group:kind=Fruit': ['a', 'd'], count: 2 },
       { 'ui-table-group:kind=Herb': ['b'], count: 1 },
@@ -166,6 +172,7 @@ describe('table grouping helpers', () => {
     const tree = groupTableNodes(
       nodes,
       resolveGroupings(['city', 'kind'], columns, [{ column: 'city', direction: 'descending' }]),
+      { locale: 'en-US' },
     );
     expect(describe2(tree)).toEqual([
       {
@@ -194,15 +201,19 @@ describe('table grouping helpers', () => {
       ],
       undefined,
     );
-    const tree = groupTableNodes(dated, [
-      { id: 'at', label: 'At', getValue: (row) => row.at, direction: 'ascending' },
-    ]);
+    const tree = groupTableNodes(
+      dated,
+      [{ id: 'at', label: 'At', getValue: (row) => row.at, direction: 'ascending' }],
+      { locale: 'en-US' },
+    );
     expect(tree.map((node) => node.id)).toEqual(['ui-table-group:at=2026-10-02']);
-    expect(groupTableNodes(nodes, [])).toBe(nodes);
+    expect(groupTableNodes(nodes, [], { locale: 'en-US' })).toBe(nodes);
   });
 
   it('UIC-TABLE-13.5 lists the visible rows inside expanded groups and rows', () => {
-    const tree = groupTableNodes(nodes, resolveGroupings(['kind'], columns, []));
+    const tree = groupTableNodes(nodes, resolveGroupings(['kind'], columns, []), {
+      locale: 'en-US',
+    });
     const ids = (keys: string[]) => listVisibleRows(tree, new Set(keys)).map((row) => row.id);
     expect(ids(['ui-table-group:kind=Fruit'])).toEqual(['a', 'd']);
     expect(ids(['ui-table-group:kind=Fruit', 'd', 'ui-table-group:kind='])).toEqual([

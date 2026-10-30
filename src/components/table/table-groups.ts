@@ -6,6 +6,7 @@ import { getColumnText } from './table-column.js';
 import {
   compareCellValues,
   getCellValue,
+  getTextCollator,
   type TableCellValue,
   type TableColumn,
   type TableRow,
@@ -110,18 +111,24 @@ export function resolveGroupings<T extends TableRow>(
   });
 }
 
+interface GroupOrder {
+  direction: SortDirection;
+  collator: Intl.Collator;
+}
+
 /** Orders two group values in a direction, keeping groups without a value last. */
-function compareGroupValues(left: TableCellValue, right: TableCellValue, direction: SortDirection) {
+function compareGroupValues(left: TableCellValue, right: TableCellValue, order: GroupOrder) {
   const isLeftEmpty = isEmptyCellValue(left);
   if (isLeftEmpty !== isEmptyCellValue(right)) return isLeftEmpty ? 1 : -1;
-  const order = compareCellValues(left, right);
-  return direction === 'descending' ? -order : order;
+  const compared = compareCellValues(left, right, order.collator);
+  return order.direction === 'descending' ? -compared : compared;
 }
 
 interface GroupLevel {
   prefix: string;
   level: number;
   reserved: Set<Key>;
+  collator: Intl.Collator;
 }
 
 function encodeGroupPart(value: string): string {
@@ -144,7 +151,10 @@ function groupLevel<T>(
     buckets.set(valueKey, bucket);
   }
   const ordered = [...buckets].sort(([, left], [, right]) =>
-    compareGroupValues(left.value, right.value, grouping.direction),
+    compareGroupValues(left.value, right.value, {
+      direction: grouping.direction,
+      collator: at.collator,
+    }),
   );
   return ordered.map(([valueKey, bucket]) => {
     const base = `${at.prefix}${encodeGroupPart(grouping.id)}=${encodeGroupPart(valueKey)}`;
@@ -166,25 +176,35 @@ function groupLevel<T>(
         prefix: `${base}/`,
         level: at.level + 1,
         reserved: at.reserved,
+        collator: at.collator,
       }),
     };
   });
 }
 
+interface GroupNodesOptions {
+  /** The locale whose collation orders text values. */
+  locale: string;
+  /** Keys group keys must avoid, such as every row id. */
+  reservedKeys?: Iterable<Key> | undefined;
+}
+
 /**
  * The nodes under one group header row per value of the first grouping, each holding the groups
  * of the next grouping, and so on. Rows keep their order inside a group; groups are ordered by
- * value, those without one last. Group keys are unique paths of grouping ids and values.
+ * value in `locale`, those without one last. Group keys are unique paths of grouping ids and values.
  */
 export function groupTableNodes<T>(
   nodes: readonly TableNode<T>[],
   groupings: readonly ResolvedGrouping<T>[],
-  reservedKeys: Iterable<Key> = [],
+  options: GroupNodesOptions,
 ): readonly TableBodyNode<T>[] {
   if (groupings.length === 0) return nodes;
+  const { locale, reservedKeys = [] } = options;
   const reserved = new Set(reservedKeys);
   for (const node of walkTree(nodes, (node) => node.children)) reserved.add(node.id);
-  return groupLevel(nodes, groupings, { prefix: groupKeyPrefix, level: 1, reserved });
+  const collator = getTextCollator(locale);
+  return groupLevel(nodes, groupings, { prefix: groupKeyPrefix, level: 1, reserved, collator });
 }
 
 /** The keys of every group header row, nested ones included. */

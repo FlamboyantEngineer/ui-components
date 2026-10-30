@@ -5,6 +5,7 @@ import { PlusGlyph } from '../../src/core/glyphs.js';
 import { useRef, useState } from 'react';
 import type { Key, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Table } from '../../src/components/table/table.js';
 import type {
   TableColumnGroup,
@@ -12,6 +13,7 @@ import type {
 } from '../../src/components/table/table-columns.js';
 import type { TableFilter } from '../../src/components/table/table-filters.js';
 import type { TableColumn } from '../../src/components/table/table-rows.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 
 interface Produce {
@@ -200,6 +202,57 @@ export function MultipleSort() {
         size="sm"
       />
       <output data-lab-output>{describeSort(sort)}</output>
+    </div>
+  );
+}
+
+interface Town {
+  id: string;
+  name: string;
+  region: string;
+}
+
+const towns: Town[] = [
+  { id: 'zurich', name: 'Zürich', region: 'Alps' },
+  { id: 'orebro', name: 'Örebro', region: 'Lakes' },
+  { id: 'malmo', name: 'Malmö', region: 'Coast' },
+  { id: 'are', name: 'Åre', region: 'Alps' },
+  { id: 'oslo', name: 'Oslo', region: 'Coast' },
+  { id: 'aarhus', name: 'Aarhus', region: 'Coast' },
+];
+
+const townColumns: TableColumn<Town>[] = [
+  { id: 'name', header: 'Place', allowsSorting: true, filter: { type: 'set' } },
+  { id: 'region', header: 'Region', allowsSorting: true },
+];
+
+const sortLocales = [
+  { value: 'sv-SE', label: 'Swedish' },
+  { value: 'de-DE', label: 'German' },
+  { value: 'en-US', label: 'English' },
+];
+
+export function LocaleSort() {
+  const [locale, setLocale] = useState('sv-SE');
+  return (
+    <div data-lab="locale-sort">
+      <SegmentedChoice
+        aria-label="Sort language"
+        options={sortLocales}
+        value={locale}
+        onChange={(value) => setLocale(value ?? 'sv-SE')}
+        size="sm"
+        sizing="content"
+      />
+      <UiProvider locale={locale}>
+        <Table
+          aria-label="Places, sorted in the chosen language"
+          rows={towns}
+          columns={townColumns}
+          defaultSortDescriptor={{ column: 'name', direction: 'ascending' }}
+          size="sm"
+        />
+      </UiProvider>
     </div>
   );
 }

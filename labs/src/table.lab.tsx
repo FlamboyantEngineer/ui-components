@@ -14,6 +14,7 @@ import {
   DetailRows,
   Editing,
   LoadingMore,
+  LocaleSort,
   MultipleSort,
   NestedRows,
   NestedRowActions,
@@ -89,7 +90,7 @@ function SortAndFilter() {
       <h3>Sorted by the caller</h3>
       <Table
         aria-label="Fruit, sorted by the caller"
-        rows={sortTableRows(fruit, columns, sort)}
+        rows={sortTableRows(fruit, { columns, sort, locale: 'en-US' })}
         columns={columns}
         sortDescriptor={sort}
         onSortChange={setSort}
@@ -353,6 +354,12 @@ mountLab(
       description="Shift with a header press adds a column to the sort; headers show their priority."
     >
       <MultipleSort />
+    </LabSection>
+    <LabSection
+      title="Sorting by language"
+      description="Text sorts in the provider's language. Swedish orders Å and Ö after Z; German and English order them beside A and O. Switch the language and the order follows; the place filter lists its values the same way."
+    >
+      <LocaleSort />
     </LabSection>
     <LabSection
       title="Column filters"
