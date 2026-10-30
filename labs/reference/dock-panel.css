@@ -152,6 +152,15 @@
   min-height: 0;
 }
 
+/* The panes' own element, which moves between the body and the drawer. */
+.ui-dock-panel__panes {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
 .ui-dock-panel__pane {
   display: flex;
   flex: 1 1 auto;
@@ -198,7 +207,9 @@
   overflow: auto;
 }
 
-/* In the drawer the pane fills the body below the drawer's own title. */
+/* In the drawer the panes fill the body below the drawer's own title. */
+.ui-dock-panel__drawer-body,
+.ui-dock-panel__drawer .ui-dock-panel__panes,
 .ui-dock-panel__drawer .ui-dock-panel__pane {
   height: 100%;
 }

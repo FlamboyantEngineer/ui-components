@@ -9,14 +9,12 @@ import {
   type DockPanelPosition,
 } from './dock-panel-launchers.js';
 import {
-  DockPanelDrawer,
+  DockPanelPanes,
   DockPanelSeparator,
-  PaneFrame,
   readEnabledKeys,
   readPanes,
   useDockPanelBounds,
   useDockPanelOpenState,
-  type PaneEntry,
 } from './dock-panel-parts.js';
 import { useDockPanelFocus, type DockPanelFocus } from './use-dock-panel-focus.js';
 import { useDockPanelState, type DockPanelState } from './use-dock-panel-state.js';
@@ -74,7 +72,8 @@ function createLaunch(state: DockPanelState, open: DockPanelOpenState, focus: Do
  * A panel docked against an edge of an application frame: a toolbar of pane launchers that stays
  * visible while the panel is collapsed, one open pane at a time beside the main content, a
  * separator that resizes it, and a drawer over the page below `overlayBelow`. Panes stay mounted
- * while hidden; the selection, expanded state and size persist under `persistKey`.
+ * while hidden and when they move between the body and the drawer; the selection, expanded state
+ * and size persist under `persistKey`.
  */
 export function DockPanel({
   label,
@@ -108,10 +107,6 @@ export function DockPanel({
   const openKey = state.isExpanded && !isOverlay ? state.selectedKey : null;
   const focus = useDockPanelFocus(openKey);
   const open = useDockPanelOpenState(state, isOverlay);
-  const selected = panes.find((pane) => pane.launcher.id === state.selectedKey);
-  const frame = (entry: PaneEntry) => (
-    <PaneFrame key={entry.element.key} {...{ entry, openKey, isOverlay, focus }} />
-  );
   const isDocked = openKey !== null;
   // A drag ends with its separator if the panel collapses mid-drag.
   const data = {
@@ -144,16 +139,7 @@ export function DockPanel({
           onResizingChange={setResizing}
         />
       )}
-      {isOverlay ? null : (
-        <div {...hooks.slot('body')} id={bodyId} hidden={openKey === null}>
-          {panes.map(frame)}
-        </div>
-      )}
-      {isOverlay && selected ? (
-        <DockPanelDrawer position={position} entry={selected} state={open}>
-          {frame(selected)}
-        </DockPanelDrawer>
-      ) : null}
+      <DockPanelPanes {...{ bodyId, position, panes, openKey, isOverlay, open, focus }} />
     </section>
   );
 }

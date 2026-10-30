@@ -148,7 +148,7 @@ test.describe('Dock Panel lab', () => {
     await lab.open('dock-panel');
     const panel = page.getByRole('region', { name: 'Helper', exact: true });
     await expect(panel).toHaveAttribute('data-overlay', 'true');
-    await expect(panel.locator('.ui-dock-panel__body')).toHaveCount(0);
+    await expect(panel.locator('.ui-dock-panel__body')).toBeHidden();
     const tips = panel.getByRole('button', { name: 'Tips', exact: true });
     await expect(tips).toHaveAttribute('aria-haspopup', 'dialog');
     await tips.click();
@@ -163,5 +163,60 @@ test.describe('Dock Panel lab', () => {
     await expect(drawer).toHaveCount(0);
     await expect(tips).toBeFocused();
     await expect(tips).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('UIC-DOCK-PANEL-2.3 UIC-DOCK-PANEL-4.1 keeps pane drafts across the drawer and width changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = page.getByRole('region', { name: 'Helper', exact: true });
+    const tips = panel.getByRole('button', { name: 'Tips', exact: true });
+    const links = panel.getByRole('button', { name: 'Links', exact: true });
+    // An open drawer hides the page from the accessibility tree, so look past that.
+    const widen = page.getByRole('button', { name: 'Widen the frame', includeHidden: true });
+    const narrow = page.getByRole('button', { name: 'Narrow the frame' });
+    const drawer = page.locator('.ui-dock-panel__drawer');
+
+    await links.click();
+    const linksDialog = page.getByRole('dialog', { name: 'Links' });
+    await linksDialog.getByLabel('Link draft').fill('Unsaved link');
+    // Focus stays contained in the drawer, and Escape from inside the pane closes it.
+    for (let step = 0; step < 4; step += 1) {
+      await page.keyboard.press('Tab');
+      await expect(linksDialog.locator(':focus')).toHaveCount(1);
+    }
+    await linksDialog.getByLabel('Link draft').focus();
+    await page.keyboard.press('Escape');
+    await expect(drawer).toHaveCount(0);
+    await tips.click();
+    const tipDraft = page.getByRole('dialog', { name: 'Tips' }).getByLabel('Tip draft');
+    await tipDraft.fill('Unsaved tip');
+    // The frame widening under the open drawer, as a host layout change would, docks the panel:
+    // the drawer closes and the field keeps focus in the docked pane.
+    await widen.dispatchEvent('click');
+    await expect(drawer).toHaveCount(0);
+    await expect(panel).not.toHaveAttribute('data-overlay');
+    await expect(panel.getByLabel('Tip draft')).toBeFocused();
+    await expect(panel.getByLabel('Tip draft')).toHaveValue('Unsaved tip');
+
+    for (let crossing = 0; crossing < 2; crossing += 1) {
+      await narrow.click();
+      await expect(panel).toHaveAttribute('data-overlay', 'true');
+      await tips.click();
+      const dialog = page.getByRole('dialog', { name: 'Tips' });
+      await expect(dialog.getByLabel('Tip draft')).toHaveValue('Unsaved tip');
+      await expect(dialog.getByLabel('Link draft')).toBeHidden();
+      await expect(drawer).not.toHaveAttribute('data-entering');
+      await expect(dialog).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(drawer).toHaveCount(0);
+      await expect(tips).toBeFocused();
+      await widen.click();
+      await expect(panel).not.toHaveAttribute('data-overlay');
+    }
+    await links.click();
+    await expect(panel.getByLabel('Link draft')).toHaveValue('Unsaved link');
+    await expect(panel.getByLabel('Tip draft')).toBeHidden();
   });
 });

@@ -4,10 +4,12 @@ import {
   Children,
   isValidElement,
   useState,
+  useSyncExternalStore,
   type ReactElement,
   type ReactNode,
   type RefObject,
 } from 'react';
+import { createPortal } from 'react-dom';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useElementSize } from '../../utils/use-element-size.js';
@@ -47,11 +49,31 @@ interface DockPanelSeparatorProps {
   onResizingChange: (isResizing: boolean) => void;
 }
 
+/** The element every pane renders into, and the places that can hold it. */
+interface PaneHost {
+  element: HTMLElement;
+  /** Holds the panes while no drawer does. */
+  bodyRef: (node: HTMLElement | null) => void;
+  /** Holds the panes while the drawer is open. */
+  drawerRef: (node: HTMLElement | null) => void;
+}
+
 interface PaneFrameProps {
   entry: PaneEntry;
+  /** The pane that shows, docked or in the drawer, if any. */
+  shownKey: Key | null;
+  isOverlay: boolean;
+  focus: Pick<DockPanelFocus, 'paneRef'>;
+}
+
+interface DockPanelPanesProps {
+  bodyId: string;
+  position: DockPanelPosition;
+  panes: readonly PaneEntry[];
   /** The pane shown beside the main content, if any. */
   openKey: Key | null;
   isOverlay: boolean;
+  open: DockPanelOpenState;
   focus: Pick<DockPanelFocus, 'paneRef'>;
 }
 
@@ -60,8 +82,11 @@ interface DockPanelDrawerProps {
   /** The open pane, which titles the drawer. */
   entry: PaneEntry;
   state: DockPanelOpenState;
-  children: ReactNode;
+  /** Receives the element that holds the panes in the drawer. */
+  holderRef: ((node: HTMLElement | null) => void) | undefined;
 }
+
+const subscribeToNothing = () => () => undefined;
 
 /** Arrow keys step 5 % of this many pixels (10), Shift+arrows 1 % (2). */
 const keyboardExtent = 200;
@@ -129,18 +154,98 @@ export function DockPanelSeparator({
   );
 }
 
+function createPaneHost(): PaneHost {
+  const element = document.createElement('div');
+  element.className = hooks.slotClass('panes');
+  const holders: { body: HTMLElement | null; drawer: HTMLElement | null } = {
+    body: null,
+    drawer: null,
+  };
+  const place = () => {
+    const holder = holders.drawer ?? holders.body;
+    if (!holder || element.parentNode === holder) return;
+    // Moving an element blurs what it holds; focus stays put where the element lands shown.
+    const active = element.ownerDocument.activeElement;
+    holder.append(element);
+    if (active instanceof HTMLElement && element.contains(active))
+      active.focus({ preventScroll: true });
+  };
+  return {
+    element,
+    bodyRef(node) {
+      holders.body = node;
+      place();
+    },
+    drawerRef(node) {
+      holders.drawer = node;
+      place();
+    },
+  };
+}
+
+/**
+ * One element for every pane, which the body holds and the open drawer borrows: the panes render
+ * into it through a portal, so moving it keeps them mounted. It is `null` on the server and while
+ * hydrating, when the panes render in place in the body.
+ */
+function usePaneHost(): PaneHost | null {
+  const isHydrated = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
+  const [host] = useState(() => (typeof document === 'undefined' ? null : createPaneHost()));
+  return isHydrated ? host : null;
+}
+
 /** Hands a pane its element id, its visibility and the ref that lets its launcher focus it. */
-export function PaneFrame({ entry, openKey, isOverlay, focus }: PaneFrameProps) {
+function PaneFrame({ entry, shownKey, isOverlay, focus }: PaneFrameProps) {
   const { id, elementId } = entry.launcher;
-  const isHidden = !isOverlay && id !== openKey;
+  const isHidden = id !== shownKey;
   const value = { elementId, isHidden, isOverlay, paneRef: focus.paneRef(id) };
   return (
     <DockPanelPaneContext.Provider value={value}>{entry.element}</DockPanelPaneContext.Provider>
   );
 }
 
-/** The drawer that holds the open pane while the panel is an overlay, titled by the pane. */
-export function DockPanelDrawer({ position, entry, state, children }: DockPanelDrawerProps) {
+/**
+ * The body and, while an overlay, the drawer: the panes render once, into the pane host the body
+ * holds and the open drawer borrows. Docked, the open pane shows; in the drawer, the selected one.
+ */
+export function DockPanelPanes({
+  bodyId,
+  position,
+  panes,
+  openKey,
+  isOverlay,
+  open,
+  focus,
+}: DockPanelPanesProps) {
+  const host = usePaneHost();
+  const shownKey = isOverlay ? open.selectedKey : openKey;
+  const selected = panes.find((pane) => pane.launcher.id === open.selectedKey);
+  const frames = panes.map((entry) => (
+    <PaneFrame key={entry.element.key} {...{ entry, shownKey, isOverlay, focus }} />
+  ));
+  return (
+    <>
+      <div {...hooks.slot('body')} ref={host?.bodyRef} id={bodyId} hidden={openKey === null}>
+        {host ? createPortal(frames, host.element) : frames}
+      </div>
+      {isOverlay && selected ? (
+        <DockPanelDrawer
+          position={position}
+          entry={selected}
+          state={open}
+          holderRef={host?.drawerRef}
+        />
+      ) : null}
+    </>
+  );
+}
+
+/** The drawer that holds the panes while the panel is an overlay, titled by the open pane. */
+function DockPanelDrawer({ position, entry, state, holderRef }: DockPanelDrawerProps) {
   return (
     <Drawer
       className={hooks.slotClass('drawer')}
@@ -150,7 +255,7 @@ export function DockPanelDrawer({ position, entry, state, children }: DockPanelD
       isOpen={state.isOpen}
       onOpenChange={state.setOpen}
     >
-      {children}
+      <div {...hooks.slot('drawer-body')} ref={holderRef} />
     </Drawer>
   );
 }
