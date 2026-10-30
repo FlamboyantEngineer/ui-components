@@ -1,6 +1,7 @@
 import type { Key } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { TableColumn, TableRow } from './table-rows.js';
+import { clamp } from '../../utils/clamp.js';
 
 /** `cell` selects one cell at a time; `range` also selects rectangles of cells; `none` neither. */
 export type TableCellSelectionMode = 'none' | 'cell' | 'range';
@@ -108,8 +109,8 @@ export function stepCell<T extends TableRow>(
 ): TableCellPosition {
   const at = locateCell(grid, position);
   if (!at) return position;
-  const row = Math.min(Math.max(at.row + step.rows, 0), grid.rows.length - 1);
-  const column = Math.min(Math.max(at.column + step.columns, 0), grid.columns.length - 1);
+  const row = clamp(at.row + step.rows, 0, grid.rows.length - 1);
+  const column = clamp(at.column + step.columns, 0, grid.columns.length - 1);
   return getCellPosition(grid, { row, column }) ?? position;
 }
 

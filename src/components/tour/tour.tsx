@@ -7,6 +7,7 @@ import { PopoverPanel } from '../popover/popover.js';
 import { TourPanel } from './tour-panel.js';
 import { TourSpotlight } from './tour-spotlight.js';
 import { useTourTarget, type TourTarget } from './use-tour-target.js';
+import { clamp } from '../../utils/clamp.js';
 
 export type { TourTarget } from './use-tour-target.js';
 
@@ -109,7 +110,7 @@ export function Tour({
     onStepChange,
     isOpen: open.isOpen,
   });
-  const index = Math.min(Math.max(0, Math.trunc(position.step) || 0), steps.length - 1);
+  const index = clamp(Math.trunc(position.step) || 0, 0, steps.length - 1);
   const current = steps[index];
   const isOpen = open.isOpen && current !== undefined;
   const target = useTourTarget(current?.target, isOpen);

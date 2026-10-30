@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { listenPointerRelease } from '../../utils/pointer-drag.js';
 import {
   createBoundsRange,
@@ -14,6 +14,7 @@ import {
 } from './table-cell-range.js';
 import { planFill, resolveFillTarget, type CellWrite } from './table-cell-writes.js';
 import type { TableRow } from './table-rows.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 interface CellPointerOptions<T> {
   mode: TableCellSelectionMode;
@@ -51,10 +52,7 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
   const drag = useRef<DragKind | null>(null);
   const fillTarget = useRef<CellBounds | null>(null);
   const stop = useRef<(() => void) | null>(null);
-  const latest = useRef(options);
-  useLayoutEffect(() => {
-    latest.current = options;
-  });
+  const latest = useLatest(options);
   useEffect(() => () => stop.current?.(), []);
 
   const finish = (shouldCommit: boolean) => {

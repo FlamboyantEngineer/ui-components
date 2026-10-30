@@ -1,5 +1,7 @@
 // Keyboard movement between the cells of a matrix grid, headers included.
 
+import { clamp } from '../../utils/clamp.js';
+
 /** A cell of the grid: `-1` is the header row or the row header column. */
 export interface MatrixPosition {
   row: number;
@@ -15,10 +17,6 @@ interface MatrixKeyOptions {
   columnCount: number;
   /** Rows PageUp and PageDown move by. */
   pageSize: number;
-}
-
-function clamp(value: number, last: number): number {
-  return Math.min(Math.max(value, -1), last);
 }
 
 function stepColumn(key: string, isRightToLeft: boolean): number {
@@ -42,16 +40,16 @@ export function moveMatrixFocus(
   const { row, column } = position;
   switch (key) {
     case 'ArrowUp':
-      return { row: clamp(row - 1, lastRow), column };
+      return { row: clamp(row - 1, -1, lastRow), column };
     case 'ArrowDown':
-      return { row: clamp(row + 1, lastRow), column };
+      return { row: clamp(row + 1, -1, lastRow), column };
     case 'ArrowLeft':
     case 'ArrowRight':
-      return { row, column: clamp(column + stepColumn(key, isRightToLeft), lastColumn) };
+      return { row, column: clamp(column + stepColumn(key, isRightToLeft), -1, lastColumn) };
     case 'PageUp':
-      return { row: clamp(row - pageSize, lastRow), column };
+      return { row: clamp(row - pageSize, -1, lastRow), column };
     case 'PageDown':
-      return { row: clamp(row + pageSize, lastRow), column };
+      return { row: clamp(row + pageSize, -1, lastRow), column };
     case 'Home':
       return { row: isPrimaryModifier ? -1 : row, column: -1 };
     case 'End':
@@ -67,7 +65,7 @@ export function clampMatrixPosition(
   rowCount: number,
   columnCount: number,
 ): MatrixPosition {
-  const row = clamp(position.row, rowCount - 1);
-  const column = clamp(position.column, columnCount - 1);
+  const row = clamp(position.row, -1, rowCount - 1);
+  const column = clamp(position.column, -1, columnCount - 1);
   return row === position.row && column === position.column ? position : { row, column };
 }

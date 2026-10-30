@@ -10,6 +10,7 @@ import { useState, type RefObject } from 'react';
 import { matchInsertItems, type InsertMenuItem } from './insert-items.js';
 import { toEngineCommand } from './engine-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** The text a slash command replaces: the slash and the query typed after it. */
 interface SlashRange {
@@ -48,10 +49,6 @@ function placeCaret(view: EditorView, surface: HTMLElement | null, pos: number):
   };
 }
 
-function isSamePlace(a: CaretPlace | null, b: CaretPlace | null): boolean {
-  return a?.left === b?.left && a?.top === b?.top && a?.height === b?.height;
-}
-
 /**
  * The slash menu's state: open while the editor has focus and a slash query sits before the caret
  * (until Escape closes it for that slash), its matching items, the active one, and the caret
@@ -79,7 +76,7 @@ export function useSlashMenu(
   useEditorEffect(
     (view) => {
       const place = range ? placeCaret(view, surfaceRef.current, range.from) : null;
-      setCaret((current) => (isSamePlace(current, place) ? current : place));
+      setCaret((current) => (isShallowEqual(current, place) ? current : place));
     },
     [range?.from, state],
   );

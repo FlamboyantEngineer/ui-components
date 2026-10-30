@@ -21,6 +21,7 @@ import {
   type CarouselPagination,
 } from './carousel-parts.js';
 import { useCarouselAutoplay } from './use-carousel-autoplay.js';
+import { clamp } from '../../utils/clamp.js';
 
 export type { CarouselPagination } from './carousel-parts.js';
 
@@ -85,7 +86,7 @@ function useCarouselIndex({
   count,
 }: Pick<CarouselProps, 'index' | 'defaultIndex' | 'onIndexChange' | 'loop'> & { count: number }) {
   const [requested, setIndex] = useControllableState(index, defaultIndex, onIndexChange);
-  const current = Math.min(Math.max(0, Math.trunc(requested) || 0), Math.max(0, count - 1));
+  const current = clamp(Math.trunc(requested) || 0, 0, Math.max(0, count - 1));
   const { viewportRef, markIfFocusInside } = useSlideFocus(current);
   const goTo = (next: number) => {
     if (next === current || next < 0 || next >= count) return;

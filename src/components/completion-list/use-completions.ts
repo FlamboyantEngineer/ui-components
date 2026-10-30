@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { matchCompletions, type Completion } from './completion-match.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** What a completion source knows about the place it completes. */
 export interface CompletionContext {
@@ -163,11 +164,8 @@ function toPendingState(state: CompletionState, lookup: Lookup): CompletionState
 function useCompletionState(options: CompletionsOptions) {
   const [state, setState] = useState<CompletionState>(closed);
   const request = useRef(0);
-  const latest = useRef({ state, options });
   // Every commit: callers pass a fresh options object each render.
-  useLayoutEffect(() => {
-    latest.current = { state, options };
-  });
+  const latest = useLatest({ state, options });
   const { isLocked } = options;
   useLayoutEffect(() => {
     if (!isLocked) return;
@@ -179,7 +177,7 @@ function useCompletionState(options: CompletionsOptions) {
       request.current += 1;
       latest.current.state = hideCompletionState(latest.current.state);
     },
-    [],
+    [latest],
   );
   return { state, setState, request, latest };
 }

@@ -1,3 +1,5 @@
+import { clamp } from '../../utils/clamp.js';
+
 /** A column width: pixels, a percentage of the table, or a share (`fr`) of the width left over. */
 export type TableColumnSize = number | `${number}%` | `${number}fr`;
 
@@ -56,7 +58,7 @@ export function clampColumnWidth(
 ): TableColumnSize {
   if (typeof width !== 'number') return width;
   const { minWidth = 0, maxWidth = Number.POSITIVE_INFINITY } = getColumnBounds(column);
-  return Math.min(Math.max(width, minWidth), maxWidth);
+  return clamp(width, minWidth, maxWidth);
 }
 
 /** The width a column renders at: a usable stored width, else its declared width, else `1fr`. */

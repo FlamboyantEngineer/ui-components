@@ -1,6 +1,6 @@
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import {
   getVisibleTreeRows,
@@ -19,6 +19,7 @@ import {
 import type { TreeItemData } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** The owner's half of a reorderable tree: which rows move, where they may go, and what to do. */
 export interface TreeReorderOptions<T> {
@@ -112,17 +113,17 @@ export function useTreeReorder<T extends TreeItemData>(
   source: TreeReorderSource<T>,
 ): TreeReorder | null {
   const rows = useMoveRows(source);
-  const latest = useRef({ rows, source });
-  useLayoutEffect(() => {
-    latest.current = { rows, source };
-  });
-  const report = useCallback((moves: readonly TreeMove[]) => {
-    const { expansion, reorder } = latest.current.source;
-    const [first] = moves;
-    if (first?.position === 'inside') expansion.expand(first.targetKey);
-    if (moves.length > 1) reorder?.onMoveMany?.(moves);
-    else if (first) reorder?.onMove(first);
-  }, []);
+  const latest = useLatest({ rows, source });
+  const report = useCallback(
+    (moves: readonly TreeMove[]) => {
+      const { expansion, reorder } = latest.current.source;
+      const [first] = moves;
+      if (first?.position === 'inside') expansion.expand(first.targetKey);
+      if (moves.length > 1) reorder?.onMoveMany?.(moves);
+      else if (first) reorder?.onMove(first);
+    },
+    [latest],
+  );
   const dragAndDrop = useReorderDragAndDrop<readonly TreeMove[]>({
     resolveMove: (target, keys) =>
       resolveDropMoves(rows, source.reorder, {
@@ -144,7 +145,7 @@ export function useTreeReorder<T extends TreeItemData>(
       if (move) report([move]);
       return move !== undefined;
     },
-    [report],
+    [report, latest],
   );
   const movable = useMemo(
     () => new Set(rows.filter((row) => row.isMovable).map((row) => row.key)),

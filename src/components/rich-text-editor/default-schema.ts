@@ -3,6 +3,7 @@
 
 import type { MarkSpec, NodeSpec } from 'prosemirror-model';
 import { isSafeUrl } from '../../utils/safe-url.js';
+import { clamp } from '../../utils/clamp.js';
 
 const headingLevels = [1, 2, 3] as const;
 
@@ -31,7 +32,7 @@ export const defaultNodes: Record<string, NodeSpec> = {
       { tag: 'h5', attrs: { level: 3 } },
       { tag: 'h6', attrs: { level: 3 } },
     ],
-    toDOM: (node) => [`h${Math.min(Math.max(Number(node.attrs.level) || 1, 1), 3)}`, 0],
+    toDOM: (node) => [`h${clamp(Number(node.attrs.level) || 1, 1, 3)}`, 0],
   },
   blockquote: {
     group: 'block',

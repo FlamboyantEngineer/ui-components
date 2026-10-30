@@ -1,6 +1,8 @@
 // The geometry of a windowed matrix: which rows and columns are in view, and the column tracks
 // that place the rendered ones.
 
+import { clamp } from '../../utils/clamp.js';
+
 /** A run of indices, `start` included and `end` excluded. */
 interface MatrixSpan {
   start: number;
@@ -35,10 +37,6 @@ interface MatrixColumnTracksOptions {
   width: number;
 }
 
-function clampIndex(value: number, count: number): number {
-  return Math.min(Math.max(value, 0), count);
-}
-
 /** The items of one axis in view of a viewport scrolled by `offset`, with `overscan` more on each side. */
 export function resolveMatrixSpan({
   offset,
@@ -48,8 +46,8 @@ export function resolveMatrixSpan({
   overscan,
 }: MatrixSpanOptions): MatrixSpan {
   if (size <= 0) return { start: 0, end: count };
-  const start = clampIndex(Math.floor(offset / size) - overscan, count);
-  const end = clampIndex(Math.ceil((offset + extent) / size) + overscan, count);
+  const start = clamp(Math.floor(offset / size) - overscan, 0, count);
+  const end = clamp(Math.ceil((offset + extent) / size) + overscan, 0, count);
   return { start, end: Math.max(start, end) };
 }
 

@@ -10,6 +10,7 @@ import type { BaseProps, ControlSize, NativeProps, Orientation } from '../../cor
 import { mergeProps } from '../../utils/merge-props.js';
 import { Menu, MenuOverlay, MenuTrigger, type MenuProps } from '../menu/menu.js';
 import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 export interface MenubarProps
   extends Omit<NativeProps<'div'>, 'role' | 'children' | 'aria-orientation'>, BaseProps {
@@ -74,17 +75,14 @@ interface MenubarTriggerProps extends Omit<MenubarMenuProps, 'items' | 'children
 function MenubarTrigger({ itemKey, isOpen, label, className, ...rest }: MenubarTriggerProps) {
   const bar = useMenubarContext();
   const state = useContext(RootMenuTriggerStateContext);
-  const stateRef = useRef(state);
-  useLayoutEffect(() => {
-    stateRef.current = state;
-  });
+  const stateRef = useLatest(state);
   const ref = useRef<HTMLButtonElement>(null);
   const { register } = bar;
   // React Aria hands the button a new merged ref on every render, so registration waits for mount.
   useLayoutEffect(() => {
     const element = ref.current;
     return element ? register(itemKey, { element, state: stateRef }) : undefined;
-  }, [register, itemKey]);
+  }, [register, itemKey, stateRef]);
   return (
     <AriaButton
       {...rest}

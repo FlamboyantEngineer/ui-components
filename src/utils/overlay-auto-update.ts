@@ -1,3 +1,4 @@
+import { isShallowEqual } from './is-shallow-equal.js';
 // Re-solving an overlay a component positions itself when its anchor or the page moves under it.
 
 export interface OverlayAutoUpdateOptions {
@@ -21,10 +22,6 @@ interface BoxSnapshot {
 function snapshot(element: Element): BoxSnapshot {
   const { left, top, width, height } = element.getBoundingClientRect();
   return { left, top, width, height };
-}
-
-function isSameBox(a: BoxSnapshot, b: BoxSnapshot): boolean {
-  return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
 }
 
 /**
@@ -51,7 +48,7 @@ export function autoUpdateOverlay({
     if (!active) return;
     if (last) {
       const next = snapshot(anchor);
-      needsUpdate ||= !isSameBox(last, next);
+      needsUpdate ||= !isShallowEqual(last, next);
       last = next;
     }
     if (needsUpdate) {

@@ -17,6 +17,7 @@ import { ModalFooter } from './modal-footer.js';
 import { ModalHeader } from './modal-header.js';
 import { claimPrimaryShortcut } from './modal-shortcut.js';
 import { useModalActions, type ModalActions } from './use-modal-actions.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 type ModalDialogProps = Omit<
   ModalProps,
@@ -109,15 +110,12 @@ function toRenderProps(actionState: ModalActions, hasCustomActions: boolean): Mo
 /** Calls `onExitComplete` when the dialog leaves the page after closing, not when torn down open. */
 function useExitComplete(onExitComplete: ModalProps['onExitComplete']) {
   const isOpen = useContext(OverlayTriggerStateContext)?.isOpen ?? true;
-  const latest = useRef({ isOpen, onExitComplete });
-  useLayoutEffect(() => {
-    latest.current = { isOpen, onExitComplete };
-  });
+  const latest = useLatest({ isOpen, onExitComplete });
   useLayoutEffect(
     () => () => {
       if (!latest.current.isOpen) latest.current.onExitComplete?.();
     },
-    [],
+    [latest],
   );
 }
 

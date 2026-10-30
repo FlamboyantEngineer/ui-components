@@ -1,4 +1,5 @@
 import { requireDefined } from '../../utils/require-defined.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 /** How an edge runs between its ends: a straight line, horizontal and vertical runs, or a curve. */
 export type DiagramEdgeRouting = 'straight' | 'orthogonal' | 'bezier';
 
@@ -302,10 +303,6 @@ function routePolyline(points: readonly DiagramPoint[]): DiagramRoute {
   };
 }
 
-function isSameRect(a: DiagramRect, b: DiagramRect): boolean {
-  return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
-}
-
 /**
  * The SVG geometry of an edge between two boxes: its path, an arrowhead at the target and the
  * middle of the path for its label. Ends with a port start at the port and leave along its side;
@@ -314,7 +311,7 @@ function isSameRect(a: DiagramRect, b: DiagramRect): boolean {
  */
 export function routeDiagramEdge(options: DiagramRouteOptions): DiagramRoute {
   const { source, target, routing = 'bezier' } = options;
-  if (!source.port && !target.port && isSameRect(source.rect, target.rect)) {
+  if (!source.port && !target.port && isShallowEqual(source.rect, target.rect)) {
     return routeLoop(source.rect);
   }
   if (routing === 'straight') {

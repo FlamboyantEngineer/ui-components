@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useResizeObserver } from './use-resize-observer.js';
+import { isShallowEqual } from './is-shallow-equal.js';
 
 /**
  * The box `useElementSize` reports:
@@ -31,10 +32,6 @@ function resolveElement(target: ElementSizeTarget, parent: boolean): Element | n
   if (!target) return null;
   const element = 'current' in target ? target.current : target;
   return (parent ? element?.parentElement : element) ?? null;
-}
-
-function isSameSize(current: ElementSize | null, next: ElementSize): boolean {
-  return current !== null && current.width === next.width && current.height === next.height;
 }
 
 function readSize(entry: ResizeObserverEntry, element: Element, box: ElementSizeBox): ElementSize {
@@ -71,7 +68,7 @@ export function useElementSize(
       return undefined;
     }
     const commit = (next: ElementSize) =>
-      setSize((current) => (isSameSize(current, next) ? current : next));
+      setSize((current) => (isShallowEqual(current, next) ? current : next));
     let measured = false;
     let frame: number | null = null;
     let pending: ElementSize | null = null;

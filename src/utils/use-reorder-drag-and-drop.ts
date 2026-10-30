@@ -1,13 +1,6 @@
-import {
-  createElement,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type JSX,
-  type KeyboardEvent,
-} from 'react';
+import { createElement, useMemo, useRef, useState, type JSX, type KeyboardEvent } from 'react';
 import type { Key } from '../core/props.js';
+import { useLatest } from './use-latest.js';
 
 /** A dragged item: its data by media type. */
 type ReorderDragItem = Record<string, string>;
@@ -66,10 +59,7 @@ export function isMoveChord(event: KeyboardEvent): boolean {
 export function useReorderDragAndDrop<Move>(
   options: ReorderDragAndDropOptions<Move>,
 ): CollectionDragAndDropOptions {
-  const latest = useRef(options);
-  useLayoutEffect(() => {
-    latest.current = options;
-  });
+  const latest = useLatest(options);
   const dragging = useRef<ReadonlySet<Key>>(new Set());
   const { renderDropIndicator } = options;
   // React Aria reads whether a preview exists once, so only its content follows later renders.
@@ -100,6 +90,6 @@ export function useReorderDragAndDrop<Move>(
           }
         : {}),
     }),
-    [renderDropIndicator, hasPreview],
+    [renderDropIndicator, hasPreview, latest],
   );
 }

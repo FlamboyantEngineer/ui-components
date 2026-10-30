@@ -1,7 +1,8 @@
 import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 /** Where loading a branch's children stands: loading, loaded, or failed with a message. */
 type BranchLoad = 'loading' | 'loaded' | { error: string };
@@ -26,10 +27,7 @@ export function useTreeLoads(onLoad: ((key: Key) => unknown) | undefined): TreeL
   const [loads, setLoads] = useState<ReadonlyMap<Key, BranchLoad>>(() => new Map());
   // Requests can repeat before the loading state renders: the running ones are tracked here too.
   const running = useRef(new Set<Key>());
-  const latest = useRef(onLoad);
-  useLayoutEffect(() => {
-    latest.current = onLoad;
-  });
+  const latest = useLatest(onLoad);
   return useMemo(() => {
     const settle = (key: Key, next: BranchLoad) => {
       if (next !== 'loading') running.current.delete(key);
@@ -55,5 +53,5 @@ export function useTreeLoads(onLoad: ((key: Key) => unknown) | undefined): TreeL
         return typeof entry === 'object' ? entry.error : null;
       },
     };
-  }, [loads, strings.actionFailed]);
+  }, [loads, strings.actionFailed, latest]);
 }

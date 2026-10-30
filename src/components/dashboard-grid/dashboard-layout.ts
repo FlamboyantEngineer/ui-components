@@ -2,6 +2,7 @@
 // columns (specs/DASHBOARD-GRID.md).
 
 import type { Key } from '../../core/props.js';
+import { clamp } from '../../utils/clamp.js';
 
 /** Where a tile sits on the grid, in whole columns and rows counted from 0. */
 export interface DashboardGridItem {
@@ -23,9 +24,9 @@ function toWhole(value: number, fallback: number): number {
 
 /** An item made whole and kept inside `columns`: at least one cell, never past either edge. */
 function fitItem(item: DashboardGridItem, columns: number): DashboardGridItem {
-  const w = Math.min(Math.max(toWhole(item.w, 1), 1), columns);
+  const w = clamp(toWhole(item.w, 1), 1, columns);
   const h = Math.max(toWhole(item.h, 1), 1);
-  const x = Math.min(Math.max(toWhole(item.x, 0), 0), columns - w);
+  const x = clamp(toWhole(item.x, 0), 0, columns - w);
   const y = Math.max(toWhole(item.y, 0), 0);
   return { ...item, x, y, w, h };
 }
