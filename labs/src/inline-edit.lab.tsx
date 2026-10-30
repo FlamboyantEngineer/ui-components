@@ -170,7 +170,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A recipe's details"
-      description="Text, number, select, date and multiline editors. Each save waits half a second; an empty title is refused. A select saves on a choice; Enter saves the others, and Control+Enter the notes."
+      description="Text, number, select, date and multiline editors. Each save waits half a second; an empty title is refused. Typing while a save runs keeps the newer text, and Enter meanwhile saves it once the first save ends. A select saves on a choice; Enter saves the others, and Control+Enter the notes."
     >
       <RecipeDetails />
     </LabSection>
