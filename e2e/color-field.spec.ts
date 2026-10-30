@@ -229,6 +229,40 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Preset committed')).toHaveText('#e69500');
   });
 
+  test('UIC-COLOR-FIELD-4.2 discards a screen sample once its picker closes', async ({
+    page,
+    lab,
+  }) => {
+    await page.addInitScript(() => {
+      const samples: Array<(hex: string) => void> = [];
+      Object.assign(window, {
+        labSamples: samples,
+        EyeDropper: function EyeDropper() {
+          return {
+            open: () => new Promise((resolve) => samples.push((hex) => resolve({ sRGBHex: hex }))),
+          };
+        },
+      });
+    });
+    await lab.open('color-field');
+    const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Label colour' });
+    await dialog.getByRole('button', { name: 'Pick a color from the screen' }).click();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await page.evaluate(() => {
+      const { labSamples } = window as unknown as { labSamples: Array<(hex: string) => void> };
+      labSamples[0]?.('#ff0000');
+    });
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+    await expect(trigger).toHaveAccessibleName('Label colour #336699');
+    await page.keyboard.press('Escape');
+    // Nothing changed, so closing the picker commits nothing.
+    await expect(output(page, 'Preset committed')).toHaveText('none');
+  });
+
   test('UIC-COLOR-FIELD-4.3 types a colour into the closed field', async ({ page, lab }) => {
     await lab.open('color-field');
     const typing = field(page, 'typing');
