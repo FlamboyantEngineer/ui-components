@@ -46,6 +46,13 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/c
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/context-menu-target.ts`, `src/core/strings.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `src/components/context-menu/context-menu.test.tsx`
 
+### UIC-CONTEXT-MENU-1.7 - Requests handled elsewhere
+
+A secondary click, long touch or key whose default the target's own handler, or a handler on an element inside the target, prevented shall open no menu: a cancelled touch schedules no long press and leaves the browser's later events alone, and a cancelled secondary click also drops a pending long press. Each of the target's own handlers runs once per event. A long touch on nested targets opens only the innermost target's menu, as a secondary click does.
+
+Implementation: `src/components/context-menu/context-menu-target.ts`
+Verification: `src/components/context-menu/context-menu-cancel.test.tsx`, `e2e/context-menu.spec.ts`
+
 ## UIC-CONTEXT-MENU-2 - Menu controller
 
 ### UIC-CONTEXT-MENU-2.1 - Controller
