@@ -11,6 +11,7 @@ import {
 import { useState, type CSSProperties } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import {
   Menu,
   MenuItem,
@@ -370,6 +371,42 @@ function Layering() {
   );
 }
 
+const presentationOptions = ['filterable', 'highlightMatches', 'virtualized'] as const;
+
+/** A multiple-selection menu whose presentation options switch while its selection stays. */
+function SwitchedPresentationMenu() {
+  const [options, setOptions] = useState<ReadonlySet<string>>(new Set());
+  const toggle = (name: string, isOn: boolean) =>
+    setOptions((current) => {
+      const next = new Set(current);
+      if (isOn) next.add(name);
+      else next.delete(name);
+      return next;
+    });
+  return (
+    <div data-lab-demo="switched-presentation">
+      {presentationOptions.map((name) => (
+        <Checkbox key={name} isSelected={options.has(name)} onChange={(isOn) => toggle(name, isOn)}>
+          {name}
+        </Checkbox>
+      ))}
+      <div style={{ height: 160, display: 'flex', flexDirection: 'column' }}>
+        <Menu
+          aria-label="Fruit to buy"
+          selectionMode="multiple"
+          filterable={options.has('filterable')}
+          highlightMatches={options.has('highlightMatches')}
+          virtualized={options.has('virtualized')}
+        >
+          <MenuItem id="apple">Apple</MenuItem>
+          <MenuItem id="banana">Banana</MenuItem>
+          <MenuItem id="cherry">Cherry</MenuItem>
+        </Menu>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -492,6 +529,12 @@ mountLab(
       description="rowHeight sets 40-pixel rows; scrolling to the end loads 200 more cities, up to 1000."
     >
       <VirtualizedPagedMenu />
+    </LabSection>
+    <LabSection
+      title="Switching presentation"
+      description="Check some fruit, then switch filterable, highlightMatches or virtualized on and off: the checked fruit stay checked. Highlighting keeps the list and its focus mounted."
+    >
+      <SwitchedPresentationMenu />
     </LabSection>
     <LabSection
       title="Typed collection IDs"

@@ -1,6 +1,13 @@
 'use client';
 
-import { cloneElement, createContext, useContext, type ReactElement, type ReactNode } from 'react';
+import {
+  cloneElement,
+  createContext,
+  useContext,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import {
   Autocomplete,
   AutocompleteStateContext,
@@ -18,7 +25,7 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
@@ -146,14 +153,37 @@ function MenuFilter({
   );
 }
 
-/** Hands the text typed in the enclosing React Aria `Autocomplete` to the `TextMatch` labels below. */
-function AutocompleteMatches({ children }: { children: ReactNode }) {
+/**
+ * Hands the text typed in the enclosing React Aria `Autocomplete` to the `TextMatch` labels below,
+ * while `isOn`. It wraps every menu, so turning highlighting on or off keeps the menu mounted.
+ */
+function AutocompleteMatches({ isOn, children }: { isOn: boolean; children: ReactNode }) {
   const query = useContext(AutocompleteStateContext)?.inputValue;
   return (
-    <TextMatchProvider query={query} ignoreAccents>
+    <TextMatchProvider query={query} ignoreAccents isInherited={!isOn}>
       {children}
     </TextMatchProvider>
   );
+}
+
+/**
+ * The selection a menu without `selectedKeys` holds itself, above the React Aria menu, so turning
+ * filtering or virtualization on or off, which mounts the list again, keeps it.
+ */
+function useMenuSelection({
+  selectedKeys,
+  defaultSelectedKeys,
+  onSelectionChange,
+}: Pick<MenuProps, 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'>) {
+  const [own, setOwn] = useState(defaultSelectedKeys);
+  const isControlled = selectedKeys !== undefined;
+  return {
+    selectedKeys: isControlled ? selectedKeys : own,
+    onSelectionChange: (keys: Selection) => {
+      if (!isControlled) setOwn(keys);
+      onSelectionChange?.(keys);
+    },
+  };
 }
 
 /** While loading, the loading row stands alone; a filtered menu with no match says so. */
@@ -212,17 +242,14 @@ export function Menu(props: MenuProps) {
   const action = onAction ?? inheritedAction;
   const trigger = useSlottedContext(MenuContext);
   const renderEmptyState = useEmptyState(props);
+  const selection = useMenuSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
+  const labelling = useContext(MenuContext);
   let menu = (
     <AriaMenu
       {...rest}
       {...hooks.root({ className, props: rest, data: { size: resolvedSize, virtualized } })}
       onAction={action && ((key) => action(fromCollectionKey(key)))}
-      {...toCollectionSelectionProps({
-        selectedKeys,
-        defaultSelectedKeys,
-        disabledKeys,
-        onSelectionChange,
-      })}
+      {...toCollectionSelectionProps({ ...selection, disabledKeys })}
       renderEmptyState={renderEmptyState}
     >
       {renderMenuChildren({ children, items, highlightMatches })}
@@ -232,12 +259,15 @@ export function Menu(props: MenuProps) {
     </AriaMenu>
   );
   if (virtualized) menu = <MenuVirtualizer rowHeight={rowHeight}>{menu}</MenuVirtualizer>;
-  // An explicit `aria-label` names the menu instead of the trigger that would label it.
+  // An explicit `aria-label` names the menu instead of the trigger that would label it. The provider
+  // is always there, so a label that comes or goes keeps the menu mounted.
+  let context = labelling;
   if (rest['aria-label'] && trigger && 'aria-labelledby' in trigger) {
     const { 'aria-labelledby': _labelledBy, ...unlabelled } = trigger;
-    menu = <MenuContext.Provider value={unlabelled}>{menu}</MenuContext.Provider>;
+    context = unlabelled;
   }
-  if (highlightMatches) menu = <AutocompleteMatches>{menu}</AutocompleteMatches>;
+  menu = <MenuContext.Provider value={context}>{menu}</MenuContext.Provider>;
+  menu = <AutocompleteMatches isOn={highlightMatches}>{menu}</AutocompleteMatches>;
   if (filterable) menu = <MenuFilter isOpenedByTrigger={Boolean(trigger)}>{menu}</MenuFilter>;
   return (
     <MenuSizeContext.Provider value={resolvedSize}>

@@ -314,4 +314,17 @@ describe('TextMatch', () => {
     expect(document.querySelector('[role], [aria-live]')).toBeNull();
     expect(document.querySelectorAll('mark')).toHaveLength(2);
   });
+
+  it('UIC-TEXT-MATCH-2.3 passes the enclosing query through while inherited', () => {
+    render(
+      <TextMatchProvider query="app">
+        <TextMatchProvider query="ban" isInherited>
+          <TextMatch>Apple and banana</TextMatch>
+        </TextMatchProvider>
+      </TextMatchProvider>,
+    );
+    expect(Array.from(document.querySelectorAll('mark'), (mark) => mark.textContent)).toEqual([
+      'App',
+    ]);
+  });
 });
