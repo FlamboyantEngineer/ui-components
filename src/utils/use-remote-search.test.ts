@@ -16,7 +16,7 @@ describe('useRemoteSearch', () => {
   it('UIC-COMBOBOX-5.1 waits for the search delay unless asked to search at once', async () => {
     vi.useFakeTimers();
     const load = vi.fn<RemoteSearchLoader<string>>(async (query) => findWords(query));
-    const { result } = renderHook(() => useRemoteSearch({ load, searchDelay: 200 }));
+    const { result } = renderHook(() => useRemoteSearch({ load, source: load, searchDelay: 200 }));
     act(() => result.current.search('ap'));
     expect(result.current.isLoading).toBe(true);
     await act(async () => {
@@ -38,7 +38,11 @@ describe('useRemoteSearch', () => {
     const load = vi.fn<RemoteSearchLoader<string>>(async (query) => findWords(query));
     const { result, rerender } = renderHook(
       ({ withLoader }) =>
-        useRemoteSearch({ load: withLoader ? load : undefined, minSearchLength: 2 }),
+        useRemoteSearch({
+          load: withLoader ? load : undefined,
+          source: withLoader ? load : undefined,
+          minSearchLength: 2,
+        }),
       { initialProps: { withLoader: true } },
     );
     act(() => result.current.searchNow('a'));
@@ -56,7 +60,7 @@ describe('useRemoteSearch', () => {
       if (query === 'fail') throw new Error('offline');
       return cursor === undefined ? { items: ['a1'], cursor: 'next' } : { items: ['a2'] };
     });
-    const { result } = renderHook(() => useRemoteSearch({ load, searchDelay: 0 }));
+    const { result } = renderHook(() => useRemoteSearch({ load, source: load, searchDelay: 0 }));
     act(() => result.current.searchNow('a'));
     await waitFor(() => expect(result.current.hasMore).toBe(true));
     act(() => result.current.loadMore());
@@ -73,7 +77,7 @@ describe('useRemoteSearch', () => {
       if (query === 'blue') throw new Error('offline');
       return cursor === undefined ? { items: ['alpha 1'], cursor: 'alpha-page-2' } : { items: [] };
     });
-    const { result } = renderHook(() => useRemoteSearch({ load, searchDelay: 0 }));
+    const { result } = renderHook(() => useRemoteSearch({ load, source: load, searchDelay: 0 }));
     act(() => result.current.searchNow('alpha'));
     await waitFor(() => expect(result.current.hasMore).toBe(true));
     act(() => result.current.search('blue'));
@@ -94,7 +98,7 @@ describe('useRemoteSearch', () => {
       (query, _signal, cursor) =>
         new Promise((resolve) => pending.set(`${query} ${cursor ?? 'first'}`, resolve)),
     );
-    const { result } = renderHook(() => useRemoteSearch({ load, searchDelay: 0 }));
+    const { result } = renderHook(() => useRemoteSearch({ load, source: load, searchDelay: 0 }));
     act(() => result.current.searchNow('alpha'));
     await act(async () => pending.get('alpha first')?.({ items: ['alpha 1'], cursor: 'a2' }));
     act(() => result.current.loadMore());
@@ -121,7 +125,7 @@ describe('useRemoteSearch', () => {
       return { items: ['uno'], cursor: 'dos' };
     });
     const { result, rerender } = renderHook(
-      ({ load }) => useRemoteSearch({ load, searchDelay: 0 }),
+      ({ load }) => useRemoteSearch({ load, source: load, searchDelay: 0 }),
       { initialProps: { load: first } },
     );
     act(() => result.current.searchNow('n'));

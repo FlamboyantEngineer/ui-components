@@ -7,13 +7,13 @@ import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/fiel
 import {
   SelectField,
   type SelectFieldItem,
-  type SelectFieldLoader,
   type SelectFieldOption,
   type SelectFieldProps,
   type SelectFieldSelectionMode,
 } from '../../src/components/select-field/select-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
+import { Paged } from './select-field-paged.js';
 import { TriggerRefField } from './select-field-trigger-cases.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
@@ -90,11 +90,6 @@ const people: SelectFieldOption[] = [
 const numbered: SelectFieldOption[] = Array.from({ length: 5000 }, (_, index) => ({
   id: `item-${index + 1}`,
   label: `Item ${index + 1}`,
-}));
-
-const towns = Array.from({ length: 60 }, (_, index) => ({
-  id: `town-${index + 1}`,
-  label: `Town ${String(index + 1).padStart(2, '0')}`,
 }));
 
 function stateProps(
@@ -286,38 +281,6 @@ function Limits() {
         data-lab-field="limited"
       />
       <LabOutput name="Basket">{basket.join(', ') || 'none'}</LabOutput>
-    </>
-  );
-}
-
-function Paged() {
-  const [pages, setPages] = useState(0);
-  const [request, setRequest] = useState('none');
-  const loadOptions: SelectFieldLoader = async (query, _signal, cursor) => {
-    setPages((count) => count + 1);
-    setRequest(`"${query}" from ${cursor ?? 'the start'}`);
-    if (query === 'offline') throw new Error('The town list is offline.');
-    const matches = towns.filter((town) => town.label.toLowerCase().includes(query.toLowerCase()));
-    const start = Number(cursor ?? 0);
-    const end = start + 20;
-    return {
-      options: matches.slice(start, end),
-      cursor: end < matches.length ? String(end) : undefined,
-    };
-  };
-  return (
-    <>
-      <SelectField
-        label="Town"
-        options={[]}
-        loadOptions={loadOptions}
-        minSearchLength={0}
-        searchDelay={0}
-        description='Twenty towns a page; scrolling to the end loads the next page. Searching "offline" fails, and the failed search offers no page of the search before it.'
-        data-lab-field="paged"
-      />
-      <LabOutput name="Pages">{pages}</LabOutput>
-      <LabOutput name="Last request">{request}</LabOutput>
     </>
   );
 }

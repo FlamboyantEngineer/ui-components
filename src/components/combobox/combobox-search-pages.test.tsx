@@ -72,4 +72,27 @@ describe('Combobox pages of replaced searches', () => {
     await act(async () => pending.get('blue b2')?.(page(['blue second'])));
     expect(optionLabels()).toEqual(['blue first', 'blue second']);
   });
+
+  it('UIC-COMBOBOX-5.3 searches a replaced loader from its first page, never with the old cursor', async () => {
+    const observers = stubObservers();
+    const user = userEvent.setup();
+    const first = vi.fn<ComboboxLoader>(async () => page(['from first'], 'first-next'));
+    const second = vi.fn<ComboboxLoader>(async (_query, _signal, cursor) =>
+      cursor === undefined ? page(['from second'], 'second-next') : page(['second more']),
+    );
+    const { rerender } = render(<Combobox label="Word" loadItems={first} searchDelay={0} />);
+    await user.click(input());
+    await replaceText(user, 'from');
+    await waitFor(() => expect(optionLabels()).toEqual(['from first']));
+    rerender(<Combobox label="Word" loadItems={second} searchDelay={0} />);
+    act(() => observers.at(-1)?.([{ isIntersecting: true }]));
+    await waitFor(() => expect(optionLabels()).toEqual(['from second']));
+    act(() => observers.at(-1)?.([{ isIntersecting: true }]));
+    await waitFor(() => expect(optionLabels()).toEqual(['from second', 'second more']));
+    expect(first.mock.calls.every(([, , cursor]) => cursor === undefined)).toBe(true);
+    expect(second.mock.calls.map(([query, , cursor]) => [query, cursor])).toEqual([
+      ['from', undefined],
+      ['from', 'second-next'],
+    ]);
+  });
 });

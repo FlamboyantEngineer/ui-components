@@ -319,12 +319,31 @@ test.describe('Select Field lab', () => {
     await expect(listbox.getByRole('option')).toHaveCount(20);
     await page.keyboard.type('offline');
     await expect(listbox).toContainText('Search is unavailable.');
-    await expect(output(page, 'Last request')).toHaveText('"offline" from the start');
+    await expect(output(page, 'Last request')).toHaveText('towns: "offline" from the start');
     await expect(
       listbox.getByRole('option').filter({ hasNotText: 'Search is unavailable.' }),
     ).toHaveCount(0);
     await expect(page.locator('.ui-select-field__load-more')).toHaveCount(0);
-    await expect(output(page, 'Last request')).toHaveText('"offline" from the start');
+    await expect(output(page, 'Last request')).toHaveText('towns: "offline" from the start');
+  });
+
+  test('UIC-SELECT-FIELD-5.4 searches a new list from its first page', async ({ page, lab }) => {
+    await lab.open('select-field');
+    const trigger = field(page, 'paged').locator('.ui-select-field__trigger');
+    await trigger.click();
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option')).toHaveCount(20);
+    await listbox.evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect(output(page, 'Last request')).toHaveText('towns: "" from 20');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Search villages' }).click();
+    await expect(output(page, 'Last request')).toHaveText('villages: "" from the start');
+    await trigger.click();
+    await expect(listbox.getByRole('option')).toHaveCount(20);
+    await expect(listbox.getByRole('option').first()).toHaveText('Village 01');
+    await listbox.evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect(output(page, 'Last request')).toHaveText('villages: "" from 20');
+    await expect(listbox.getByRole('option')).toHaveCount(40);
   });
 });
 
