@@ -210,6 +210,19 @@ test.describe('Boolean Field lab', () => {
     await expect(page.getByRole('listbox')).toBeVisible();
     await lab.expectAccessible('.ui-select-field__popover');
   });
+
+  test('UIC-BOOLEAN-FIELD-1.5 submits false from the checkbox as the toggle button does', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    const form = page.locator('[data-lab-form]');
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect(output(page, 'Submitted')).toHaveText('ripe=false fresh=false');
+    await field(page, 'dirty').locator('.ui-checkbox__box').click();
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect(output(page, 'Submitted')).toHaveText('ripe=true fresh=false');
+  });
 });
 
 test('UIC-BOOLEAN-FIELD-3.5 UIC-SEGMENTED-CHOICE-1.3 keeps the False label glyphs inside the segmented label', async ({

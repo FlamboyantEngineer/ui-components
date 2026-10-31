@@ -8,6 +8,7 @@ import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { cycleCheckState } from '../checkbox/checkbox.js';
 import {
+  FieldFormValue,
   FieldPreviousValue,
   toAriaControlProps,
   type FieldControlProps,
@@ -102,7 +103,10 @@ function toKeyState(state: FieldState<boolean | null>): FieldState<SelectKeysVal
   };
 }
 
-/** A hidden input that submits `true` or `false`, and nothing while unset or disabled. */
+/**
+ * What every variant submits under the field's `name`: `true` or `false`, and nothing while unset
+ * or disabled.
+ */
 function FormValue({
   name,
   state,
@@ -110,14 +114,12 @@ function FormValue({
   name: string | undefined;
   state: FieldState<boolean | null>;
 }) {
-  if (!name) return null;
   return (
-    <input
-      {...hooks.slot('form-value')}
-      type="hidden"
+    <FieldFormValue
       name={name}
-      value={String(state.value)}
-      disabled={state.value === null || state.isDisabled}
+      value={state.value === null ? [] : String(state.value)}
+      isDisabled={state.isDisabled}
+      className={hooks.slotClass('form-value')}
     />
   );
 }
@@ -237,19 +239,27 @@ function CheckControl(props: BooleanControlProps) {
     inputRef: control.ref,
     isSelected: state.value === true,
     onChange: () => pick(state, pressedValue(props)),
-    name,
-    value: 'true',
   };
+  // The native input carries no name: the hidden value submits `false` too, as other variants do.
+  const formValue = <FormValue name={name} state={state} />;
   if (variant === 'checkbox')
-    return <Checkbox {...shared} size={size} isIndeterminate={state.value === null} />;
+    return (
+      <>
+        <Checkbox {...shared} size={size} isIndeterminate={state.value === null} />
+        {formValue}
+      </>
+    );
   const caption = switchCaptionOf(state.value, labels);
   return (
-    <Switch {...shared} {...hooks.slot('switch', { indeterminate: state.value === null })}>
-      <span {...hooks.slot('track')} aria-hidden="true">
-        <span {...hooks.slot('thumb')} />
-      </span>
-      {caption ? <span {...hooks.slot('caption')}>{caption}</span> : null}
-    </Switch>
+    <>
+      <Switch {...shared} {...hooks.slot('switch', { indeterminate: state.value === null })}>
+        <span {...hooks.slot('track')} aria-hidden="true">
+          <span {...hooks.slot('thumb')} />
+        </span>
+        {caption ? <span {...hooks.slot('caption')}>{caption}</span> : null}
+      </Switch>
+      {formValue}
+    </>
   );
 }
 

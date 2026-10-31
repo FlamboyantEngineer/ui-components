@@ -5,7 +5,12 @@ import { useRef, useState, type KeyboardEvent } from 'react';
 import { Button as AriaButton, Input, TextField as AriaTextField } from '../../primitives/index.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
+import {
+  FieldFormValue,
+  toAriaControlProps,
+  type FieldControlProps,
+  type FieldState,
+} from '../field/field.js';
 import type { NumberControlConfig } from './number-field.js';
 import {
   addStep,
@@ -142,9 +147,11 @@ export function RadixControl(props: RadixControlProps) {
         {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
         {hideStepper ? null : stepper(1)}
       </div>
-      {name ? (
-        <input type="hidden" name={name} value={state.value ?? ''} disabled={state.isDisabled} />
-      ) : null}
+      <FieldFormValue
+        name={name}
+        value={state.value === null ? null : String(state.value)}
+        isDisabled={state.isDisabled}
+      />
     </AriaTextField>
   );
 }
