@@ -18,7 +18,7 @@
 // it rather than receive a client reference.
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
@@ -331,7 +331,7 @@ for (const { path, text, source, reason } of modules.values()) {
 
 // The package's entry points; the building blocks under src/primitives are internal.
 const isEntryPoint = (path) =>
-  path.endsWith(`${'/'}index.ts`) && !relative(root, path).startsWith(`src${'/'}primitives`);
+  basename(path) === 'index.ts' && !relative(root, path).startsWith(join('src', 'primitives'));
 
 for (const { path, source } of modules.values()) {
   if (!isEntryPoint(path)) continue;

@@ -3,7 +3,7 @@
 // output once each finishes; a stage starts only when every check of the one before it passed.
 // The unit tests use every core, so they run beside only the light checks that need the builds.
 
-import { spawn } from 'node:child_process';
+import { startNpm } from './lib/npm.mjs';
 
 const STAGES = [
   [
@@ -24,7 +24,7 @@ const STAGES = [
 function run(script) {
   const started = Date.now();
   return new Promise((resolve) => {
-    const child = spawn('npm', ['run', '--silent', script], {
+    const child = startNpm(['run', '--silent', script], {
       env: process.stdout.isTTY ? { ...process.env, FORCE_COLOR: '1' } : process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
     });

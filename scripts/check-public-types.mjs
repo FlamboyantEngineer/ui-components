@@ -7,7 +7,7 @@
 //   node scripts/check-public-types.mjs button menu          check only these components
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -35,7 +35,7 @@ if (!existsSync(dir)) {
 
 const problems = [];
 const files = walk(dir).filter((path) => {
-  const rel = relative(dir, path);
+  const rel = relative(dir, path).split(sep).join('/');
   if (!rel.endsWith('.d.ts') || rel.startsWith('primitives/')) return false;
   return (
     components.length === 0 || components.some((name) => rel.startsWith(`components/${name}/`))

@@ -10,7 +10,9 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
+import { extractTarGz } from './lib/tar.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const STYLING_DEPENDENCY =
@@ -33,8 +35,7 @@ const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-package-'));
 
 try {
-  const output = execFileSync(
-    'npm',
+  const output = runNpm(
     [
       'pack',
       '--json',
@@ -43,10 +44,7 @@ try {
       '--pack-destination',
       workDir,
     ],
-    {
-      cwd: root,
-      encoding: 'utf8',
-    },
+    { cwd: root },
   );
   const [pack] = JSON.parse(output);
   const files = new Set(pack.files.map((file) => file.path));
@@ -89,7 +87,7 @@ try {
 
   const extractDir = join(workDir, 'extract');
   mkdirSync(extractDir);
-  execFileSync('tar', ['-xzf', join(workDir, pack.filename), '-C', extractDir]);
+  extractTarGz(join(workDir, pack.filename), extractDir);
 
   const installed = join(extractDir, 'package');
   if (files.has(REFERENCE_STYLESHEET)) {

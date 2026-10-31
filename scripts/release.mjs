@@ -11,19 +11,14 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const BUILT = ['dist', REFERENCE_STYLESHEET];
 
-const run = (command, args, options = {}) =>
-  execFileSync(command, args, {
-    cwd: root,
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
-    ...options,
-  });
-const git = (args, options) => run('git', args, { shell: false, ...options }).trim();
+const git = (args, options = {}) =>
+  execFileSync('git', args, { cwd: root, encoding: 'utf8', ...options }).trim();
 const fail = (message) => {
   console.error(message);
   process.exit(1);
@@ -45,7 +40,7 @@ if (git(['tag', '--list', tag])) fail(`${tag} already exists.`);
 
 // One build: the package, then the labs; the checks and both archives use it as built.
 for (const script of ['build:package', 'build:labs', 'check:package', 'pack:labs']) {
-  run('npm', ['run', script], { stdio: 'inherit' });
+  runNpm(['run', script], { cwd: root, stdio: 'inherit' });
 }
 
 /** The manifest the tag carries: the same, without the script that would build the package again. */
@@ -72,7 +67,7 @@ try {
 
 // Packed as built, from the files the tag holds.
 const [pack] = JSON.parse(
-  run('npm', ['pack', '--json', '--ignore-scripts', '--foreground-scripts=false']),
+  runNpm(['pack', '--json', '--ignore-scripts', '--foreground-scripts=false'], { cwd: root }),
 );
 console.log(
   `Tagged ${tag} on ${git(['rev-parse', '--short', `${tag}^{commit}`])} and packed ${pack.filename}.`,

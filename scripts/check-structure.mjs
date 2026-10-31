@@ -5,7 +5,7 @@
 //   S2 component directory layout, S3 re-export-only entry points, I2 props that extend BaseProps.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { basename, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
@@ -16,7 +16,7 @@ const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+)*$/;
 const NO_ELEMENT = /(?:Provider|Host|Outlet|Content|Trigger)$/;
 
 const problems = [];
-const rel = (path) => relative(root, path);
+const rel = (path) => relative(root, path).split(sep).join('/');
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -26,7 +26,7 @@ function walk(dir) {
 }
 
 for (const path of walk(join(root, 'src'))) {
-  const name = path.split('/').at(-1);
+  const name = basename(path);
   if (!KEBAB.test(name))
     problems.push(`${rel(path)}: file and directory names are kebab-case (N1)`);
 }
@@ -96,7 +96,8 @@ for (const name of components) {
 
 // I2: props inherit BaseProps instead of redeclaring caller data attributes.
 for (const path of walk(join(root, 'src'))) {
-  if (!/\.tsx?$/.test(path) || /\.test\.tsx?$/.test(path) || path.includes('/src/core/')) continue;
+  if (!/\.tsx?$/.test(path) || /\.test\.tsx?$/.test(path) || rel(path).startsWith('src/core/'))
+    continue;
   if (/\[\w+: `data-\$\{string\}`\]\s*:/.test(readFileSync(path, 'utf8'))) {
     problems.push(
       `${rel(path)}: extend BaseProps instead of declaring a data-* index signature (I2)`,

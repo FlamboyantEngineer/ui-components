@@ -4,10 +4,10 @@
 // last build. --dry-run prints those steps without running them or serving.
 //   node scripts/start-labs.mjs [--dry-run] [--port 4173] [--host 127.0.0.1] [--dir labs]
 
-import { spawnSync } from 'node:child_process';
 import { lstatSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runNpm } from './lib/npm.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const dryRun = process.argv.includes('--dry-run');
@@ -62,12 +62,11 @@ function buildReason() {
 function run(reason, args) {
   console.log(`npm ${args.join(' ')}: ${reason}`);
   if (dryRun) return;
-  const result = spawnSync('npm', args, {
-    cwd: root,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-  });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  try {
+    runNpm(args, { cwd: root, stdio: 'inherit' });
+  } catch (error) {
+    process.exit(error.status ?? 1);
+  }
 }
 
 const install = installReason();

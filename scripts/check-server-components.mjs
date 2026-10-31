@@ -7,13 +7,14 @@
 // and builds a page that calls the rich-text helpers on the server.
 // Needs the npm registry. `CHROMIUM_PATH` points Playwright at a browser of its own.
 
-import { execFileSync, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
+import { runNpm } from './lib/npm.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const NEXT_VERSION = '16.4.3';
@@ -128,8 +129,13 @@ const installedVersion = (name) =>
 const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-server-components-'));
 const appDir = join(workDir, 'app');
-const run = (command, args) =>
-  execFileSync(command, args, { cwd: appDir, stdio: ['ignore', 'pipe', 'inherit'] });
+const install = (packages) =>
+  runNpm(['install', '--no-audit', '--no-fund', ...packages], {
+    cwd: appDir,
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
+const nextBuild = () =>
+  runNpm(['exec', '--', 'next', 'build'], { cwd: appDir, env, stdio: 'inherit' });
 
 function write(path, text) {
   mkdirSync(resolve(appDir, path, '..'), { recursive: true });
@@ -198,30 +204,26 @@ const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
 let server;
 let browser;
 
-/** Serves the built app on a free port, in its own process group, and returns its origin. */
+/** Serves the built app on a free port and returns its origin. */
 async function serve() {
   const port = await freePort();
   const origin = `http://localhost:${port}`;
-  // Its own process group, so stopping it stops the server process Next starts.
-  server = spawn('npx', ['next', 'start', '-p', String(port)], {
-    cwd: appDir,
-    env,
-    detached: true,
-  });
+  // Next's own command, run by Node rather than through npm, so stopping it stops the server.
+  const next = join(appDir, 'node_modules', 'next', 'dist', 'bin', 'next');
+  server = spawn(process.execPath, [next, 'start', '-p', String(port)], { cwd: appDir, env });
   await waitForServer(`${origin}/`);
   return origin;
 }
 
 function stopServer() {
-  if (server?.pid) process.kill(-server.pid);
+  server?.kill();
   server = undefined;
 }
 
 try {
   // Built once here and packed as built, so packing runs no package script.
-  execFileSync('npm', ['run', 'build:package'], { cwd: root, stdio: 'inherit' });
-  const output = execFileSync(
-    'npm',
+  runNpm(['run', 'build:package'], { cwd: root, stdio: 'inherit' });
+  const output = runNpm(
     [
       'pack',
       '--json',
@@ -230,7 +232,7 @@ try {
       '--pack-destination',
       workDir,
     ],
-    { cwd: root, encoding: 'utf8' },
+    { cwd: root },
   );
   const [pack] = JSON.parse(output);
   write('package.json', JSON.stringify({ name: 'consumer', private: true, type: 'module' }));
@@ -238,16 +240,13 @@ try {
   write('app/page.js', ROOT_PAGE);
   write('app/subpaths/page.js', SUBPATH_PAGE);
   write('app/helpers/page.js', HELPERS_PAGE);
-  run('npm', [
-    'install',
-    '--no-audit',
-    '--no-fund',
+  install([
     `next@${NEXT_VERSION}`,
     `react@${reactVersion}`,
     `react-dom@${reactVersion}`,
     join(workDir, pack.filename),
   ]);
-  execFileSync('npx', ['next', 'build'], { cwd: appDir, env, stdio: 'inherit' });
+  nextBuild();
 
   // Tree shaking: the client code holds the components the pages render and no others.
   const chunks = join(appDir, '.next', 'static', 'chunks');
@@ -272,14 +271,9 @@ try {
   stopServer();
 
   // The rich-text helpers, with the optional peers they need.
-  run('npm', [
-    'install',
-    '--no-audit',
-    '--no-fund',
-    ...RICH_TEXT_PEERS.map((name) => `${name}@${installedVersion(name)}`),
-  ]);
+  install(RICH_TEXT_PEERS.map((name) => `${name}@${installedVersion(name)}`));
   write('app/rich-text/page.js', RICH_TEXT_PAGE);
-  execFileSync('npx', ['next', 'build'], { cwd: appDir, env, stdio: 'inherit' });
+  nextBuild();
   await checkMarkup(await serve(), '/rich-text', ['&lt;p&gt;Hello&lt;/p&gt;', 'Plain Hello']);
 } catch (error) {
   problems.push(error instanceof Error ? error.message : String(error));
