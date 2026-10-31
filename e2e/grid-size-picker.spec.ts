@@ -105,4 +105,26 @@ test.describe('Grid Size Picker lab', () => {
       .hover();
     await lab.expectAccessible();
   });
+
+  test('UIC-GRID-SIZE-PICKER-2.5 keeps focus on the clamped cell when the bounds shrink', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('grid-size-picker');
+    const picker = field(page, 'limited');
+    await picker.getByRole('gridcell', { name: cellName(1, 1) }).focus();
+    await page.keyboard.press('Control+End');
+    await expect(picker.getByRole('gridcell', { name: cellName(8, 8) })).toBeFocused();
+    // A script click leaves focus in the grid, as a bounds change from the host would.
+    await page.locator('[data-lab-control="limit"]').evaluate((button: HTMLElement) => {
+      button.click();
+    });
+    await expect(picker.getByRole('gridcell', { name: cellName(3, 3) })).toBeFocused();
+    await expect(picker.locator('.ui-grid-size-picker__readout')).toHaveText('3 × 3');
+    await page.locator('[data-lab-control="limit"]').evaluate((button: HTMLElement) => {
+      button.click();
+    });
+    await expect(picker.getByRole('gridcell', { name: cellName(3, 3) })).toBeFocused();
+    await expect(picker.getByRole('gridcell')).toHaveCount(25);
+  });
 });

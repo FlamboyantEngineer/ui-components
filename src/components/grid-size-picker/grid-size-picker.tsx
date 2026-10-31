@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -74,7 +74,11 @@ function GridCell({
   );
 }
 
-/** The previewed size, and the keyboard handling that moves it and moves focus along. */
+/**
+ * The previewed size, and the keyboard handling that moves it and moves focus along. Bounds that
+ * shrink below the preview clamp it for good, so growing them again does not bring back a size the
+ * reader left; when that removes the focused cell, focus moves to the clamped one.
+ */
 function useGridPreview(max: GridSize, autoFocus: boolean) {
   const { direction } = useLocale();
   const [own, setPreview] = useState<GridSize>({ rows: 1, columns: 1 });
@@ -82,10 +86,16 @@ function useGridPreview(max: GridSize, autoFocus: boolean) {
     rows: Math.min(own.rows, max.rows),
     columns: Math.min(own.columns, max.columns),
   };
+  if (preview.rows !== own.rows || preview.columns !== own.columns) setPreview(preview);
+  const gridRef = useRef<HTMLDivElement | null>(null);
   const cellRef = useRef<HTMLDivElement | null>(null);
   const shouldFocus = useRef(autoFocus);
+  // Browsers fire no blur when they remove a focused cell, so this stays set until focus leaves.
+  const hasFocus = useRef(false);
   useLayoutEffect(() => {
-    if (!shouldFocus.current) return;
+    const active = gridRef.current?.ownerDocument.activeElement;
+    const isFocusLost = hasFocus.current && (!active || active === active.ownerDocument.body);
+    if (!shouldFocus.current && !isFocusLost) return;
     shouldFocus.current = false;
     cellRef.current?.focus();
   });
@@ -105,7 +115,16 @@ function useGridPreview(max: GridSize, autoFocus: boolean) {
   const focusRef = (node: HTMLDivElement | null) => {
     cellRef.current = node;
   };
-  return { preview, setPreview, move, focusRef };
+  const gridProps = {
+    ref: gridRef,
+    onFocus: () => {
+      hasFocus.current = true;
+    },
+    onBlur: (event: FocusEvent<HTMLDivElement>) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) hasFocus.current = false;
+    },
+  };
+  return { preview, setPreview, move, focusRef, gridProps };
 }
 
 /**
@@ -128,7 +147,7 @@ export function GridSizePicker({
 }: GridSizePickerProps) {
   const strings = useUiStrings();
   const max = { rows: maxRows, columns: maxColumns };
-  const { preview, setPreview, move, focusRef } = useGridPreview(max, autoFocus);
+  const { preview, setPreview, move, focusRef, gridProps } = useGridPreview(max, autoFocus);
   const shown = getShownGridSize(preview, { min: { rows: minRows, columns: minColumns }, max });
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!isDisabled) move(event);
@@ -138,6 +157,7 @@ export function GridSizePicker({
     <div {...hooks.root({ className, props: rest, data: { disabled: isDisabled } })} id={id}>
       <div
         {...hooks.slot('grid')}
+        {...gridProps}
         role="grid"
         aria-label={
           rest['aria-labelledby'] ? undefined : (rest['aria-label'] ?? strings.gridSizePicker)

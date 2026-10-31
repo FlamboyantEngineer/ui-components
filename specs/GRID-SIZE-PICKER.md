@@ -62,6 +62,13 @@ Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`, `labs/reference/grid-size-picker.css`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`
 
+### UIC-GRID-SIZE-PICKER-2.5 - Changing bounds
+
+When `maxRows` or `maxColumns` drops below the preview, the picker shall clamp the preview to the new bounds and keep it clamped when they grow again. When a bounds change, or a preview that shrinks the grid, removes the focused cell, focus moves to the cell at the preview, also while the picker is disabled; a picker that did not hold focus does not take it.
+
+Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`
+Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`
+
 ## Hooks
 
 | Hook                           | Kind  | Values | Description                                     |
