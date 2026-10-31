@@ -16,11 +16,6 @@
   padding: 4px;
   overflow: auto hidden;
   scroll-behavior: smooth;
-  scrollbar-width: none;
-}
-
-.ui-toolbar-scroller__strip::-webkit-scrollbar {
-  display: none;
 }
 
 .ui-toolbar-scroller__strip > * {

@@ -119,8 +119,8 @@
 
 .ui-text-field__start .ui-glyph,
 .ui-text-field__end .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-text-field__end:last-child {

@@ -89,8 +89,8 @@
 
 .ui-dashboard-grid__move .ui-glyph,
 .ui-dashboard-grid__resize .ui-glyph {
-  width: 16px;
-  height: 16px;
+  width: var(--ref-icon-size-lg);
+  height: var(--ref-icon-size-lg);
 }
 
 .ui-dashboard-grid__status {

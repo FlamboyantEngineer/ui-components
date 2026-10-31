@@ -51,7 +51,7 @@
     width: 1px;
     height: 1px;
     overflow: hidden;
-    clip-path: inset(50%);
+    clip-path: inset(50%); /* token-exempt: hidden only inside its container query */
     white-space: nowrap;
   }
 }

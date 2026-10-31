@@ -102,8 +102,8 @@
 }
 
 .ui-date-time-field__button .ui-glyph {
-  width: 16px;
-  height: 16px;
+  width: var(--ref-icon-size-lg);
+  height: var(--ref-icon-size-lg);
 }
 
 .ui-date-time-field__button:is([data-hovered], [data-pressed]) {
@@ -215,8 +215,8 @@
 }
 
 .ui-date-time-field__calendar-select-button .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
   color: var(--ref-muted);
 }
 

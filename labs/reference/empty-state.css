@@ -49,23 +49,8 @@
 
 .ui-banner__spinner,
 .ui-empty-state__spinner {
-  display: inline-block;
-  flex: none;
-  box-sizing: border-box;
-  width: 14px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
+  --ref-spinner-size: var(--ref-icon-size-md);
 }
 .ui-banner__spinner {
   margin-block-start: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* The open ring still reads as pending while it stands still. */
-  .ui-banner__spinner,
-  .ui-empty-state__spinner {
-    animation: none;
-  }
 }

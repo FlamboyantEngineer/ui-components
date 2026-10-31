@@ -15,7 +15,6 @@
   min-width: 0;
   border-bottom: 1px solid var(--ref-border);
   overflow-x: auto;
-  scrollbar-width: none;
 }
 .ui-tabs__list[data-orientation='vertical'] {
   flex-direction: column;
@@ -171,8 +170,8 @@
   color: var(--ref-muted);
 }
 .ui-tabs__remove .ui-glyph {
-  width: 12px;
-  height: 12px;
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
 }
 .ui-tabs__remove:hover {
   background: var(--ref-pressed);

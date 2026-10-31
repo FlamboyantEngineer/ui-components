@@ -64,7 +64,6 @@
   box-sizing: border-box;
   padding: 8px 6px;
   overflow: auto;
-  scrollbar-width: none;
 }
 
 .ui-dock-panel__launchers[data-orientation='vertical'] {

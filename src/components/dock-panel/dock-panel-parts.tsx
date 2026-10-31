@@ -164,11 +164,15 @@ function createPaneHost(): PaneHost {
   const place = () => {
     const holder = holders.drawer ?? holders.body;
     if (!holder || element.parentNode === holder) return;
-    // Moving an element blurs what it holds; focus stays put where the element lands shown.
+    // Moving an element blurs what it holds; focus stays put where the element lands shown. The
+    // holder may still be hidden while React commits, so focus that does not take is retried once
+    // the commit has shown it.
     const active = element.ownerDocument.activeElement;
     holder.append(element);
-    if (active instanceof HTMLElement && element.contains(active))
-      active.focus({ preventScroll: true });
+    if (!(active instanceof HTMLElement) || !element.contains(active)) return;
+    active.focus({ preventScroll: true });
+    if (element.ownerDocument.activeElement !== active)
+      queueMicrotask(() => active.focus({ preventScroll: true }));
   };
   return {
     element,

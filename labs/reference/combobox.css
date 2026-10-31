@@ -93,14 +93,7 @@
 }
 
 .ui-combobox__spinner {
-  flex: none;
-  box-sizing: border-box;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--ref-muted);
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
+  color: var(--ref-muted);
 }
 
 .ui-combobox :is(.ui-combobox__clear.ui-button[data-content='icon'], .ui-combobox__button) {
@@ -122,8 +115,8 @@
 }
 
 .ui-combobox__button .ui-glyph {
-  width: 16px;
-  height: 16px;
+  width: var(--ref-icon-size-lg);
+  height: var(--ref-icon-size-lg);
 }
 
 .ui-combobox__button:is([data-hovered], [data-pressed]) {
@@ -268,8 +261,8 @@
 }
 
 .ui-combobox__chip-icon .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-combobox:has(.ui-combobox__chips) .ui-combobox__input {

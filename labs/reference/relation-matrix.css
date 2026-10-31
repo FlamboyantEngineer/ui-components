@@ -154,8 +154,8 @@
 }
 
 .ui-relation-matrix__mark .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-relation-matrix__cell[data-tone] .ui-relation-matrix__mark {

@@ -122,12 +122,6 @@
 }
 
 .ui-search-field__spinner {
-  flex: none;
-  box-sizing: border-box;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--ref-muted);
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
+  --ref-spinner-size: var(--ref-icon-size-md);
+  color: var(--ref-muted);
 }

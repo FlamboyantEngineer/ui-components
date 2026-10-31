@@ -84,8 +84,8 @@
 }
 
 .ui-emoji-picker__search-clear .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-emoji-picker__categories {
@@ -107,15 +107,6 @@
 .ui-emoji-picker__categories .ui-tabs__icon {
   font-size: var(--ref-font-size-lg);
   line-height: 16px;
-}
-
-.ui-emoji-picker__categories .ui-tabs__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .ui-emoji-picker__categories .ui-tabs__panel {

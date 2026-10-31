@@ -147,6 +147,26 @@ for (const declaration of declarations) {
       `${where(declaration)}: ${property} builds a focus ring by hand; use a --ref-focus-* token`,
     );
   }
+  // Shared constructs live once in the base: pinned glyph sizes, hidden text and hidden scrollbars.
+  if (
+    /\.ui-glyph(?![\w-])[^\s>+~]*$/.test(selector) &&
+    /^(?:min-|max-)?(?:width|height|inline-size|block-size)$/.test(property) &&
+    /\d+px/.test(value)
+  ) {
+    problems.push(
+      `${where(declaration)}: ${property} "${value}" pins a glyph by hand; use a --ref-icon-size-* token`,
+    );
+  }
+  if (property === 'clip-path' && value === 'inset(50%)') {
+    problems.push(
+      `${where(declaration)}: visually hidden by hand; add the selector to the shared list in base.css`,
+    );
+  }
+  if (property === 'scrollbar-width' && value === 'none') {
+    problems.push(
+      `${where(declaration)}: a scrollbar hidden by hand; add the selector to the shared list in base.css`,
+    );
+  }
   if (
     property === 'opacity' &&
     /\[data-(?:disabled|dragging)\]/.test(selector) &&
