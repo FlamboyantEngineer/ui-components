@@ -184,7 +184,7 @@ describe('PinInput', () => {
     expect(values()).toEqual(['1', '', '', '']);
   });
 
-  it('UIC-PIN-INPUT-1.7 refuses edits while read-only but still moves', async () => {
+  it('UIC-PIN-INPUT-1.7 UIC-PIN-INPUT-2.3 refuses edits while read-only but still moves, except on composing keys', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<PinInput label="Code" length={4} defaultValue="123" isReadOnly onChange={onChange} />);
@@ -194,6 +194,9 @@ describe('PinInput', () => {
     await user.paste('77');
     expect(values()).toEqual(['1', '2', '3', '']);
     expect(onChange).not.toHaveBeenCalled();
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(cells()[0] as HTMLElement, { key: 'ArrowRight', isComposing: true });
+    expect(focusedIndex()).toBe(0);
     await user.keyboard('{ArrowRight}');
     expect(focusedIndex()).toBe(1);
   });

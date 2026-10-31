@@ -244,7 +244,7 @@ Verification: `src/components/pdf-viewer/use-pdf-keyboard.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-6.1 - Toolbar
 
-The controls shall sit above the pages in a [Toolbar Scroller](TOOLBAR-SCROLLER.md) named with the provider's `controlsFor` string (`Report controls`), in this order: the caller's `leadingActions` (`ui-pdf-viewer__leading-actions`), the sidebar toggle (UIC-PDF-VIEWER-10.1), zoom, fit modes, page navigation, find (or the controls `renderSearch` draws), the document commands (UIC-PDF-VIEWER-9.1), then the caller's `actions` (`ui-pdf-viewer__actions`). The left and right arrow keys move focus along the toolbar; inside a text field they move the caret, and move focus only at the ends of the text.
+The controls shall sit above the pages in a [Toolbar Scroller](TOOLBAR-SCROLLER.md) named with the provider's `controlsFor` string (`Report controls`), in this order: the caller's `leadingActions` (`ui-pdf-viewer__leading-actions`), the sidebar toggle (UIC-PDF-VIEWER-10.1), zoom, fit modes, page navigation, find (or the controls `renderSearch` draws), the document commands (UIC-PDF-VIEWER-9.1), then the caller's `actions` (`ui-pdf-viewer__actions`). The left and right arrow keys move focus along the toolbar; inside a text field they move the caret, and move focus only at the ends of the text; while an input method composes in the field (`isComposing`, or key code 229), every arrow is the input method's and moves no focus.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-toolbar.tsx`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`

@@ -78,7 +78,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec
 
 ### UIC-PIN-INPUT-2.3 - Moving between cells
 
-Left and Right Arrow shall move focus to the previous and next cell (mirrored in a right-to-left locale), Home to the first cell and End to the active cell: the first empty cell, or the last cell once every cell is filled. One cell is in the tab order, the focused cell while focus is in the code and the active cell otherwise, so Tab moves into and out of the code in one step. Focus never lands past the active cell: a press on a later cell focuses the active one.
+Left and Right Arrow shall move focus to the previous and next cell (mirrored in a right-to-left locale), Home to the first cell and End to the active cell: the first empty cell, or the last cell once every cell is filled. One cell is in the tab order, the focused cell while focus is in the code and the active cell otherwise, so Tab moves into and out of the code in one step. Focus never lands past the active cell: a press on a later cell focuses the active one. A key that belongs to an input method composition (`isComposing`, or key code 229), as in a text cell, is the input method's: it neither moves focus nor erases.
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`, `e2e/pin-input.spec.ts`

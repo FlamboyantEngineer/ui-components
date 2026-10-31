@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -129,6 +129,9 @@ describe('Tour', () => {
     render(<Page onSkip={onSkip} />);
     const step = await screen.findByRole('dialog', { name: 'Search' });
     await waitFor(() => expect(step).toHaveFocus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(step, { key: 'Escape', isComposing: true });
+    expect(screen.getByRole('dialog', { name: 'Search' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(onSkip).toHaveBeenLastCalledWith(0);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

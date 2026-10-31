@@ -10,6 +10,7 @@ import {
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import type { HookProps } from '../../core/hooks.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface ComboboxListHeaderProps {
   /** The hook attributes of the header slot. */
@@ -46,8 +47,9 @@ export function ComboboxListHeader({ slot, inputRef, children }: ComboboxListHea
         if (!isEntryControl(event.target)) inputRef.current?.focus();
       }}
       onKeyDown={(event: KeyboardEvent) => {
-        // The list is non-modal, so only the input closes it on Escape by itself.
-        if (event.key !== 'Escape') return;
+        // The list is non-modal, so only the input closes it on Escape by itself. A composing
+        // Escape cancels the input method's candidate in a header field instead.
+        if (event.key !== 'Escape' || isComposingKey(event.nativeEvent)) return;
         event.preventDefault();
         event.stopPropagation();
         inputRef.current?.focus();
