@@ -224,6 +224,28 @@ describe('Chat composer', () => {
     expect(onQueueChange).toHaveBeenLastCalledWith([queue[0]]);
   });
 
+  it('UIC-CHAT-3.4 ends the edit of a queued message that leaves the queue and sends as usual', async () => {
+    const onQueueChange = vi.fn();
+    const queue = [{ id: 'q1', text: 'And lunch?' }];
+    const { user, container, onSend, rerenderWith } = renderChat({
+      participants: assistantPeople,
+      isPending: true,
+      onStop: () => undefined,
+      queue,
+      onQueueChange,
+    });
+    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    expect(container.querySelector('.ui-chat__banner')).toHaveTextContent(
+      'Editing a queued message',
+    );
+    rerenderWith({ participants: assistantPeople, queue: [], onQueueChange });
+    await waitFor(() => expect(container.querySelector('.ui-chat__banner')).toBeNull());
+    await user.click(box());
+    await user.keyboard('And tea?{Enter}');
+    expect(onSend).toHaveBeenCalledWith('And tea?', []);
+    expect(onQueueChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-CHAT-3.4 shows a queued message’s files and keeps them when its text is saved', async () => {
     const onQueueChange = vi.fn();
     const photo = {
