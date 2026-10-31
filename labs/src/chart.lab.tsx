@@ -9,7 +9,7 @@ import { LineChart, type LineChartSeries } from '../../src/components/chart/inde
 import type { Key } from '../../src/core/props.js';
 import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const box = (width: number): CSSProperties => ({ width });

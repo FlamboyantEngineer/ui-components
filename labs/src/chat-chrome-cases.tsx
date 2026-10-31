@@ -6,7 +6,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { ChatList, type ChatConversation } from '../../src/components/chat-list/index.js';
 import type { ChatMessageData, ChatParticipant } from '../../src/components/chat-parts/index.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { usePeopleHost } from './chat-people-host.js';
 import { ana, ben, getLabNow, mia, reader, readerId, textMessage } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';

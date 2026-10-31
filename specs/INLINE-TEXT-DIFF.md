@@ -9,7 +9,7 @@
 `splitTextDiff(before, after)` shall split two values around their one contiguous change, comparing code points: the longest common prefix, the removed middle of `before`, the added middle of `after`, and the longest common suffix that does not overlap the prefix.
 
 Implementation: `src/components/inline-text-diff/text-diff.ts`
-Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`
+Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/inline-text-diff.spec.ts`
 
 ### UIC-INLINE-TEXT-DIFF-1.2 - Bounded excerpt
 

@@ -12,7 +12,7 @@ import {
 } from '../../src/components/chat-parts/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { tripSources } from './chat-parts-samples.js';
 
 /** A reply after one event of its stream. */

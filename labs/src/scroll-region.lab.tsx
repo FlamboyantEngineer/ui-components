@@ -7,7 +7,7 @@ import {
 import { resolveScrollSpy, useScrollSpy } from '../../src/components/scroll-region/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabOutput } from './lab-output.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 

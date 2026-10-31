@@ -10,6 +10,8 @@ import { Badge, type BadgeTone } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { formatCount, normalizeCount } from '../../src/utils/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const tones: BadgeTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -191,6 +193,20 @@ mountLab(
       description="Press the first button to read messages: its count disappears at zero. The second host carries a labelled dot."
     >
       <ZeroDemo />
+    </LabSection>
+    <LabSection
+      title="Counts for hosts"
+      description="normalizeCount and formatCount give a text-only count the badge's rule."
+    >
+      <LabHelperCalls
+        calls={[
+          ['normalizeCount(4.7)', String(normalizeCount(4.7))],
+          ['normalizeCount(-2)', String(normalizeCount(-2))],
+          ["formatCount(128, 'en-US', { max: 99 })", formatCount(128, 'en-US', { max: 99 })],
+          ["formatCount(12, 'en-US', { more: true })", formatCount(12, 'en-US', { more: true })],
+          ["formatCount(12345, 'fr-FR')", formatCount(12345, 'fr-FR')],
+        ]}
+      />
     </LabSection>
   </>,
 );

@@ -3,7 +3,7 @@
 import type { CodeToken } from '../../src/components/code-editor/code-editor.js';
 import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { formatCellReference, parseCellReference } from '../../src/utils/cell-reference.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 
 /** Raw cell contents by A1 reference. */
 export type SheetCells = Readonly<Record<string, string>>;

@@ -11,7 +11,7 @@ import type { TableColumnGroup, TableColumnLayout } from '../../src/components/t
 import type { TableFilter } from '../../src/components/table/index.js';
 import type { TableColumn } from '../../src/components/table/index.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 
 interface Produce {
   id: string;

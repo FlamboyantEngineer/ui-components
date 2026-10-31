@@ -1,7 +1,12 @@
-import * as glyphs from '../../src/core/glyphs.js';
-import { type GlyphComponent, type GlyphName } from '../../src/core/glyphs.js';
+import * as core from '../../src/core/index.js';
+import { type GlyphComponent, type GlyphName } from '../../src/core/index.js';
+
+const isGlyph = (value: unknown): value is Required<GlyphComponent> =>
+  typeof value === 'function' && 'glyphName' in value;
 
 export const glyphCatalog = Object.fromEntries(
-  Object.values(glyphs).map((glyph) => [glyph.glyphName, glyph]),
+  Object.values(core as Record<string, unknown>).flatMap((value) =>
+    isGlyph(value) ? [[value.glyphName, value]] : [],
+  ),
 ) as Record<GlyphName, GlyphComponent>;
 export const glyphNames = Object.keys(glyphCatalog) as GlyphName[];

@@ -6,7 +6,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat, type ChatProps } from '../../src/components/chat/index.js';
 import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 

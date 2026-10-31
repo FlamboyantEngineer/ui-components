@@ -72,3 +72,17 @@ test.describe('Inline Text Diff lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-INLINE-TEXT-DIFF-1.1 shows splitTextDiff in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('inline-text-diff');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("splitTextDiff('The red apple', 'The green apple')")).toHaveText(
+    '{"prefix":"The ","removed":"red","added":"green","suffix":" apple"}',
+  );
+  await expect(call("splitTextDiff('Porto', 'Porto')")).toHaveText(
+    '{"prefix":"Porto","removed":"","added":"","suffix":""}',
+  );
+});

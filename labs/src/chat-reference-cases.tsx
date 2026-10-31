@@ -9,7 +9,7 @@ import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import {
   assistantPeople,
   nextLabId,

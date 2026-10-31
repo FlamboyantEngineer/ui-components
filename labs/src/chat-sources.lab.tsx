@@ -6,7 +6,7 @@ import {
   type ChatSource,
 } from '../../src/components/chat-sources/index.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sources: ChatSource[] = [

@@ -9,7 +9,7 @@
 `formatBytes(bytes, locale)` shall show the size in the largest binary unit (steps of 1024) that keeps it at 1 or more: `B`, `KB`, `MB`, `GB` or `TB`, the largest unit holding any bigger size. Bytes show as a whole number; larger units show exactly one decimal (`512 B`, `1.0 KB`, `1.5 KB`, `5.0 MB`).
 
 Implementation: `src/utils/format-bytes.ts`
-Verification: `src/utils/format-bytes.test.ts`
+Verification: `src/utils/format-bytes.test.ts`, `e2e/file-upload.spec.ts`
 
 ### UIC-FORMAT-BYTES-1.2 - Locale
 

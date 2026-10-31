@@ -284,3 +284,17 @@ test('UIC-OVERLAY-POSITION-3.1 measures a scrolling frame for a host layer', asy
     /^visible \d+×\d+, content \d+×\d+, scrolls$/,
   );
 });
+
+test('UIC-OVERLAY-POSITION-3.3 places a host panel with resolveOverlayGeometry', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('popover');
+  await page.getByRole('button', { name: 'Place the panel above' }).click();
+  await expect(page.locator('[data-lab-output="geometry"]')).toHaveText(
+    /→ side bottom, align start, fits$/,
+  );
+  const anchor = await page.locator('[data-lab-geometry-anchor]').boundingBox();
+  const panel = await page.locator('[data-lab-geometry-panel]').boundingBox();
+  expect(panel?.y).toBeGreaterThanOrEqual((anchor?.y ?? 0) + (anchor?.height ?? 0));
+});

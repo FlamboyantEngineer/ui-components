@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { defaultZoomLevels, findNextZoomLevel } from '../../src/components/zoom-control/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const levels = [50, 75, 100, 125, 150, 200];
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
@@ -192,6 +194,28 @@ mountLab(
       description="The caller owns the step buttons; the control keeps the slider and the percentage."
     >
       <CallerSteps />
+    </LabSection>
+    <LabSection
+      title="Zoom levels for hosts"
+      description="defaultZoomLevels and findNextZoomLevel give a host's own zoom keys the steps the control takes."
+    >
+      <LabHelperCalls
+        calls={[
+          ['defaultZoomLevels', defaultZoomLevels.join(', ')],
+          [
+            'findNextZoomLevel(defaultZoomLevels, 110, 1)',
+            String(findNextZoomLevel(defaultZoomLevels, 110, 1)),
+          ],
+          [
+            'findNextZoomLevel(defaultZoomLevels, 110, -1)',
+            String(findNextZoomLevel(defaultZoomLevels, 110, -1)),
+          ],
+          [
+            'findNextZoomLevel(defaultZoomLevels, 400, 1)',
+            String(findNextZoomLevel(defaultZoomLevels, 400, 1)),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

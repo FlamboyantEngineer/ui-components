@@ -88,6 +88,27 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     expect(await ruleIds(imports('table/table.js'), lab)).not.toContain('ui/component-imports');
   });
 
+  it('UIC-PRIMITIVES-1.4 makes labs import shared utils and core only as their index re-exports them', async () => {
+    const lab = 'labs/src/probe.lab.tsx';
+    const imports = (names: string, path: string) =>
+      `import { ${names} } from '../../src/${path}';\nexport { ${names} };\n`;
+    const internal = imports('requireDefined', 'utils/require-defined.js');
+    expect(await ruleIds(internal, lab)).toContain('ui/component-imports');
+    const unlisted = imports('formatStableTime', 'utils/relative-time.js');
+    expect(await ruleIds(unlisted, lab)).toContain('ui/component-imports');
+    const namespace = "import * as glyphs from '../../src/core/glyphs.js';\nexport { glyphs };\n";
+    expect(await ruleIds(namespace, lab)).toContain('ui/component-imports');
+    for (const allowed of [
+      imports('formatCount', 'utils/count.js'),
+      imports('formatCount', 'utils/index.js'),
+      imports('UiProvider', 'core/provider.js'),
+      "import * as languages from '../../src/core/locales/index.js';\nexport { languages };\n",
+    ]) {
+      expect(await ruleIds(allowed, lab), allowed).not.toContain('ui/component-imports');
+    }
+    expect(await ruleIds(internal, 'e2e/probe.spec.ts')).not.toContain('ui/component-imports');
+  });
+
   it('UIC-LABS-3.4 keeps component specs from reloading a lab dark for the scan the sweep runs', async () => {
     const spec = (body: string) =>
       `import { test } from './fixtures.js';\ntest('probe', async ({ lab }) => {\n${body}\n});\n`;

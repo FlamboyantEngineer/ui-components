@@ -14,7 +14,7 @@ import {
   RichMessageComposer,
   type MessageComposerMessage,
 } from '../../src/components/message-composer/rich/index.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection } from './chrome/index.js';
 import { SentMessage } from './message-composer-rich-cases.js';
 import { getLabReference, labRecords, referenceMenuItems } from './reference-samples.js';

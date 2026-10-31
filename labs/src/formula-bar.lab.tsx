@@ -4,7 +4,7 @@ import { Table } from '../../src/components/table/table.js';
 import type { TableCellRange } from '../../src/components/table/index.js';
 import type { TableColumn } from '../../src/components/table/index.js';
 import { formatCellReference, type CellCoordinates } from '../../src/utils/cell-reference.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   evaluateCell,

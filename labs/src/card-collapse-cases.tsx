@@ -14,7 +14,7 @@ import { Link } from '../../src/components/link/index.js';
 import { ProgressBar } from '../../src/components/progress-bar/progress-bar.js';
 import { Slider } from '../../src/components/slider/slider.js';
 import { TextField } from '../../src/components/text-field/index.js';
-import { requireDefined } from '../../src/utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 
 /** A search box whose first Escape clears it and stays with it; the next one reaches the card. */
 function FindField({ label }: { label: string }) {
