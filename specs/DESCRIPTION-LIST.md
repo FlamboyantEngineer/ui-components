@@ -57,7 +57,7 @@ Verification: `src/components/description-list/description-list.test.tsx`, `e2e/
 
 ### UIC-DESCRIPTION-LIST-2.3 - Hooks and caller attributes
 
-`DescriptionList` and `DescriptionRow` shall carry the hooks below, append the caller's `className` to their own element, and forward caller `data-*` attributes and `id` to it.
+`DescriptionList` and `DescriptionRow` shall carry the hooks below, append the caller's `className` to their own element, and forward caller `data-*` attributes and `id` to it; `DescriptionList` also forwards `ref` to its `<dl>`.
 
 Implementation: `src/components/description-list/description-list.tsx`
 Verification: `src/components/description-list/description-list.test.tsx`

@@ -10,7 +10,7 @@ import {
   type LinkProps as AriaLinkProps,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps, Size } from '../../core/props.js';
+import type { BaseProps, Key, NativeProps, Size, RefProps } from '../../core/props.js';
 import { UiLink, useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -46,7 +46,8 @@ export interface BreadcrumbItem {
   menu?: readonly MenuEntry[] | undefined;
 }
 
-export interface BreadcrumbProps extends BaseProps, Pick<NativeProps<'nav'>, 'ref' | 'hidden'> {
+export interface BreadcrumbProps
+  extends BaseProps, Pick<NativeProps<'nav'>, 'hidden'>, RefProps<HTMLElement> {
   /** Names the trail's landmark. */
   'aria-label'?: string | undefined;
   /** Names the trail's landmark by another element. */

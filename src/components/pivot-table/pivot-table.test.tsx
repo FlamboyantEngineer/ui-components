@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -349,6 +350,14 @@ describe('PivotTable', { timeout: 20_000 }, () => {
       aggregate: 'max',
     });
     expect(screen.getByRole('columnheader', { name: 'Maximum of Boxes' })).toBeInTheDocument();
+  });
+
+  it('UIC-PIVOT-TABLE-4.1 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(
+      <PivotTable aria-label="Sales" records={sales} fields={fields} ref={ref} />,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-pivot-table'));
   });
 
   it('UIC-PIVOT-TABLE-4.1 forwards the class name, id and caller data attributes', () => {

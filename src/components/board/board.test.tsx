@@ -9,7 +9,7 @@ import {
   within,
 } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, createRef } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { createMemoryStorage } from '../../core/storage.js';
 import { UiProvider } from '../../core/provider.js';
@@ -150,6 +150,12 @@ describe('Board', () => {
       (element) => element.textContent,
     );
     expect(titles).toEqual(['Text column', 'Numeric column']);
+  });
+
+  it('UIC-BOARD-1.8 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<TaskBoard ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-board'));
   });
 
   it('UIC-BOARD-1.1 UIC-BOARD-1.8 UIC-BOARD-4.1 renders columns, cells and cards', async () => {

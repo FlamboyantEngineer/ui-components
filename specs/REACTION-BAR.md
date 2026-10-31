@@ -41,7 +41,7 @@ Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction
 
 ### UIC-REACTION-BAR-1.6 - Accessibility, hooks and caller attributes
 
-The root shall be a `role="group"` named by `aria-label` or `aria-labelledby`, else by the provider's `reactions` string. Every chip and the add button are tab stops. It shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id`.
+The root shall be a `role="group"` named by `aria-label` or `aria-labelledby`, else by the provider's `reactions` string. Every chip and the add button are tab stops. It shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref`.
 
 Implementation: `src/components/reaction-bar/reaction-bar.tsx`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`

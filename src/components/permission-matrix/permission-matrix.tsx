@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Table, type TableProps } from '../table/table.js';
@@ -48,7 +48,8 @@ export interface PermissionMatrixGroup {
   label: string;
 }
 
-export interface PermissionMatrixProps extends BaseProps, AriaLabellingProps {
+export interface PermissionMatrixProps
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The roles, in column order. */
   roles: readonly PermissionMatrixRole[];
   /** The permissions, in row order within their groups. */

@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -243,6 +244,12 @@ describe('ChangeList', () => {
   it('UIC-CHANGE-LIST-1.7 renders nothing for an empty state that returns null', () => {
     const { container } = render(<ChangeList changes={[]} renderEmptyState={() => null} />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('UIC-CHANGE-LIST-1.8 forwards ref to its root', () => {
+    const ref = createRef<HTMLDListElement>();
+    const { container } = render(<ChangeList changes={changes} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-change-list'));
   });
 
   it('UIC-CHANGE-LIST-1.8 forwards id, labels, class names and caller attributes', () => {

@@ -1,9 +1,9 @@
 'use client';
 
-import { useId, useRef, type ReactNode, type Ref } from 'react';
+import { useId, useRef, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -52,7 +52,7 @@ export interface LoadingCardProps extends BaseProps {
 
 export type LoadingOverlayPresentation = 'card' | 'scrim';
 
-export interface LoadingOverlayProps extends LoadingCardProps {
+export interface LoadingOverlayProps extends LoadingCardProps, RefProps<HTMLDivElement> {
   /**
    * `card` (the default) centres the status card on the scrim. `scrim` draws the cover alone, hidden
    * from assistive technology, for secondary regions that load together with a primary one.
@@ -66,8 +66,6 @@ export interface LoadingOverlayProps extends LoadingCardProps {
   isEntering?: boolean | undefined;
   /** The overlay is on its way out; publishes `data-exiting` for an exit transition. */
   isExiting?: boolean | undefined;
-  /** The cover element, for example for `useEnterExit`. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 export interface LoadingRegionProps extends Omit<

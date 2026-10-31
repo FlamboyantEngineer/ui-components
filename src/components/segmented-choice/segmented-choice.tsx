@@ -1,10 +1,9 @@
 'use client';
 
-import type { Ref } from 'react';
 import { SelectionIndicator, ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Orientation, Size } from '../../core/props.js';
+import type { BaseProps, Orientation, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
@@ -47,9 +46,7 @@ export interface SegmentedChoiceRenderState {
 }
 
 export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = 'single'>
-  extends BaseProps, AriaLabellingProps {
-  /** The group element. */
-  ref?: Ref<HTMLDivElement> | undefined;
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The segments, in order. */
   options: readonly SegmentedChoiceOption[];
   /** `single` (the default) picks one value; `multiple` presses any number of segments. */

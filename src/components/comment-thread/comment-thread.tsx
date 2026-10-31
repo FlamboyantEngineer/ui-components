@@ -5,7 +5,7 @@ import { Children, isValidElement, useEffect, useRef, useState, type ReactNode }
 import type { AriaLabellingProps } from '../../core/events.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
@@ -17,7 +17,8 @@ import {
 import { InlineError } from '../inline-error/inline-error.js';
 import { CommentThreadContext } from './comment-thread-context.js';
 
-export interface CommentThreadProps extends BaseProps, AriaLabellingProps {
+export interface CommentThreadProps
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The comments, usually `CommentThreadReply` elements: the opening comment, then the replies. */
   children?: ReactNode;
   /** The commented text or other anchor the thread is about, quoted above the comments. */

@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { mergeRefs } from '../../utils/merge-props.js';
@@ -16,9 +16,10 @@ import {
 } from '../button/button.js';
 
 export interface LoadMoreProps
-  extends Pick<ButtonProps, 'onError' | 'isPending' | 'isDisabled' | 'pendingLabel'>, BaseProps {
-  /** The load button. */
-  ref?: Ref<HTMLButtonElement> | undefined;
+  extends
+    Pick<ButtonProps, 'onError' | 'isPending' | 'isDisabled' | 'pendingLabel'>,
+    BaseProps,
+    RefProps<HTMLButtonElement> {
   /**
    * Requests the next page. The caller owns cursors, requests and errors. When it returns a promise,
    * the control is pending until the promise settles.

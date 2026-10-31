@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Orientation } from '../../core/props.js';
+import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { layoutLayeredGraph } from '../../utils/layered-layout.js';
@@ -38,7 +38,8 @@ export interface StateMachineTransitionRequest {
   to: Key;
 }
 
-export interface StateMachineViewProps extends BaseProps, AriaLabellingProps {
+export interface StateMachineViewProps
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   states: readonly StateMachineState[];
   transitions: readonly StateMachineTransition[];
   /** The state the machine starts in. Defaults to the first state. */

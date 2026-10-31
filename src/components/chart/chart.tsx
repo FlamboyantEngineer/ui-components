@@ -1,11 +1,11 @@
 'use client';
 
 import { TableGlyph } from '../../core/glyphs.js';
-import { useId, type ReactNode, type Ref } from 'react';
+import { useId, type ReactNode } from 'react';
 import { ToggleButton } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -40,7 +40,8 @@ export interface ChartViewProps {
   onViewChange?: ((view: ChartView) => void) | undefined;
 }
 
-export interface ChartProps extends BaseProps, AriaLabellingProps, ChartViewProps {
+export interface ChartProps
+  extends BaseProps, AriaLabellingProps, ChartViewProps, RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
   /** Text that describes what the chart shows, such as its range of values. */
@@ -55,8 +56,6 @@ export interface ChartProps extends BaseProps, AriaLabellingProps, ChartViewProp
   isEmpty?: boolean | undefined;
   /** The drawing. */
   children?: ReactNode;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 /** The table view: the first column names each row. */

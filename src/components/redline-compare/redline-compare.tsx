@@ -1,8 +1,8 @@
 'use client';
 
-import { useId, useMemo, useRef, type KeyboardEvent } from 'react';
+import { useId, useMemo, type KeyboardEvent, type Ref } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -19,6 +19,7 @@ import {
   redlineCompareHooks as hooks,
 } from './redline-compare-parts.js';
 import { RedlineRow, type RedlineDecision } from './redline-row.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 
 export type { RedlineDecision } from './redline-row.js';
 
@@ -33,7 +34,7 @@ export interface RedlineResolution<B extends DocumentBlock = DocumentBlock> {
 }
 
 export interface RedlineCompareProps<B extends DocumentBlock = DocumentBlock>
-  extends BaseProps, AriaLabellingProps {
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The blocks of the document before the change. */
   oldBlocks: readonly B[];
   /** The blocks of the document after the change. */
@@ -56,8 +57,12 @@ const noDecisions: Readonly<Record<string, RedlineDecision>> = {};
 const isChangeRow = (row: ComparedBlockRow) => row.change !== 'unchanged' && row.move !== 'from';
 
 /** Steps between changes and moved blocks' positions, focusing the row it reaches. */
-function useRedlineNavigation(comparison: BlockComparison, baseId: string) {
-  const rootRef = useRef<HTMLDivElement>(null);
+function useRedlineNavigation(
+  comparison: BlockComparison,
+  baseId: string,
+  ref: Ref<HTMLDivElement> | undefined,
+) {
+  const [rootRef, setRootRef] = useForwardedRef(ref);
   const [current, setCurrent] = useStateFor<string | null>(comparison, null);
   const { changes, positions } = useMemo(
     () => ({
@@ -82,7 +87,7 @@ function useRedlineNavigation(comparison: BlockComparison, baseId: string) {
     if (target) goTo(target.key);
   };
   return {
-    rootRef,
+    setRootRef,
     current,
     rowId,
     goTo,
@@ -106,12 +111,13 @@ export function RedlineCompare<B extends DocumentBlock>({
   resolutions,
   onResolve,
   className,
+  ref,
   ...rest
 }: RedlineCompareProps<B>) {
   const strings = useUiStrings();
   const baseId = useId();
   const comparison = useMemo(() => compareBlocks(oldBlocks, newBlocks), [oldBlocks, newBlocks]);
-  const navigation = useRedlineNavigation(comparison, baseId);
+  const navigation = useRedlineNavigation(comparison, baseId, ref);
   const [ownDecisions, setOwnDecisions] = useStateFor(comparison, noDecisions);
   const decisions = resolutions ?? ownDecisions;
   const isSplit = layout === 'split';
@@ -133,7 +139,7 @@ export function RedlineCompare<B extends DocumentBlock>({
       {...rest}
       {...hooks.root({ className, props: rest, data: { layout } })}
       aria-label={rest['aria-label'] ?? (labelledBy ? undefined : strings.redlineComparison)}
-      ref={navigation.rootRef}
+      ref={navigation.setRootRef}
       role="group"
       onKeyDown={onKeyDown}
     >

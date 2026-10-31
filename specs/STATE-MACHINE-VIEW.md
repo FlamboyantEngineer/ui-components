@@ -20,7 +20,7 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `
 
 ### UIC-STATE-MACHINE-VIEW-1.3 - Hooks and caller attributes
 
-`StateMachineView` shall carry the hooks below beside the canvas's, publish `orientation` in `data-orientation`, append the caller's `className` and forward its `id` and `data-*` attributes to the root.
+`StateMachineView` shall carry the hooks below beside the canvas's, publish `orientation` in `data-orientation`, append the caller's `className` and forward its `id`, `ref` and `data-*` attributes to the root.
 
 Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `labs/reference/state-machine-view.css`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`

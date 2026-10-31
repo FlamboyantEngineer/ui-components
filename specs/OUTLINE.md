@@ -84,7 +84,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-5.2 - Hooks and caller attributes
 
-`Outline` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and the ARIA labelling attributes to its `<nav>`.
+`Outline` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and the ARIA labelling attributes to its `<nav>`.
 
 Implementation: `src/components/outline/outline.tsx`
 Verification: `src/components/outline/outline.test.tsx`

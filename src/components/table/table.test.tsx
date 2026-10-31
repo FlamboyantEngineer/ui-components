@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import type { Selection, SortDescriptor } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -195,6 +195,14 @@ describe('Table', { timeout: 15_000 }, () => {
     expect(header('Actions')).toHaveAttribute('data-kind', 'actions');
     await user.click(header('Name'));
     await waitFor(() => expect(document.body).toHaveTextContent(/sorted by column Fruit name/));
+  });
+
+  it('UIC-TABLE-1.4 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(
+      <Table aria-label="Fruit" rows={fruit} columns={columns} ref={ref} />,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-table'));
   });
 
   it('UIC-TABLE-1.4 UIC-TABLE-7.1 appends the class, forwards id and data attributes to the root', () => {

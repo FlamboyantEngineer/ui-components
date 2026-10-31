@@ -1,10 +1,10 @@
 'use client';
 
-import { useId, type ReactNode, type Ref } from 'react';
+import { useId, type ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Size, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
@@ -27,7 +27,7 @@ export interface SegmentedBarSegment {
 
 export type SegmentedBarShape = 'linear' | 'donut' | 'pie';
 
-export interface SegmentedBarProps extends BaseProps, AriaLabellingProps {
+export interface SegmentedBarProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** Linear track, donut ring or filled pie. Defaults to linear. */
   shape?: SegmentedBarShape | undefined;
   /** Fill the segments once on first visibility; the host stylesheet chooses the motion. Defaults to false. */
@@ -46,8 +46,6 @@ export interface SegmentedBarProps extends BaseProps, AriaLabellingProps {
   size?: SegmentedBarSize | undefined;
   /** How counts and the total are formatted, such as with a unit. */
   formatOptions?: Intl.NumberFormatOptions | undefined;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 const hooks = createHooks('segmented-bar', [

@@ -33,7 +33,7 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-1.4 - Hooks and caller attributes
 
-`Table` shall carry the hooks below on a root element that holds the toolbar, the scroll area and the page navigation, append the caller's `className`, and forward `id` and caller `data-*` attributes to that root. Its labelling (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), selection and expansion props go to the grid; the table takes no other building-block prop.
+`Table` shall carry the hooks below on a root element that holds the toolbar, the scroll area and the page navigation, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to that root. Its labelling (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), selection and expansion props go to the grid; the table takes no other building-block prop.
 
 Implementation: `src/components/table/table.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-props.ts`
 Verification: `src/components/table/table.test.tsx`

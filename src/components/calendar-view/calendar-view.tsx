@@ -8,7 +8,7 @@ import { useId, useMemo, type ReactNode } from 'react';
 import { parseIsoDate, useLocale } from '../../primitives/index.js';
 import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, Key, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
@@ -49,7 +49,7 @@ export interface CalendarViewDay {
   events: CalendarViewEvent[];
 }
 
-export interface CalendarViewProps extends BaseProps {
+export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The events, as plain data. */
   events: readonly CalendarViewEvent[];
   /** The view on show, controlled. */

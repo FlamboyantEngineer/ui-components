@@ -9,9 +9,9 @@ import {
   RefreshGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import { useId, type ReactNode, type Ref } from 'react';
+import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -42,7 +42,7 @@ export interface ApprovalPanelApprover {
   comment?: ReactNode;
 }
 
-export interface ApprovalPanelProps extends BaseProps {
+export interface ApprovalPanelProps extends BaseProps, RefProps<HTMLElement> {
   /** The approvers, in the order they show. */
   approvers: readonly ApprovalPanelApprover[];
   /** The approvals needed. Defaults to every approver. */
@@ -59,8 +59,6 @@ export interface ApprovalPanelProps extends BaseProps {
   getNow?: (() => Date) | undefined;
   /** The reader's own decision, such as a `DecisionControl`, under the approvers. */
   children?: ReactNode;
-  /** The root `<section>`. */
-  ref?: Ref<HTMLElement> | undefined;
 }
 
 type ApproverRowProps = Pick<ApprovalPanelProps, 'onRemind' | 'onRequestAgain' | 'getNow'> & {

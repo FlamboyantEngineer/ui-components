@@ -57,7 +57,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-1.8 - Hooks and caller attributes
 
-`Board` shall carry the hooks below, append the caller's `className` to the root, and forward `id`, the ARIA labelling attributes and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
+`Board` shall carry the hooks below, append the caller's `className` to the root, and forward `id`, `ref`, the ARIA labelling attributes and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/board/board.tsx`, `src/components/board/board-hooks.ts`
 Verification: `src/components/board/board.test.tsx`

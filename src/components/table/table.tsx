@@ -12,7 +12,7 @@ import type {
   ExpansionProps,
 } from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Key, Size } from '../../core/props.js';
+import type { BaseProps, Key, Size, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
@@ -58,7 +58,8 @@ export interface TableProps<T extends TableRow>
     ExpansionProps,
     TableSortOptions,
     TableGroupingProps<T>,
-    TableSpreadsheetProps<T> {
+    TableSpreadsheetProps<T>,
+    RefProps<HTMLDivElement> {
   /** The data columns, in declared order. */
   columns: readonly TableColumn<T>[];
   /** The rows, each with an `id` unique in the table, nested rows included. */
@@ -224,6 +225,7 @@ export function Table<T extends TableRow>({
   filterLabel,
   className,
   id,
+  ref,
   ...rest
 }: TableProps<T>) {
   const strings = useUiStrings();
@@ -243,6 +245,7 @@ export function Table<T extends TableRow>({
         data: { size, stickyHeader, virtualized },
       })}
       id={id}
+      ref={ref}
       aria-busy={grid.body.status === 'loading' || undefined}
     >
       <TableToolbar

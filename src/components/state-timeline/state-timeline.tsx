@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps, SortDirection, Tone } from '../../core/props.js';
+import type { BaseProps, Key, SortDirection, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -39,8 +39,8 @@ export interface StateTimelineProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<NativeProps<'ol'>, 'ref'>,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'> {
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    RefProps<HTMLOListElement> {
   /** The state changes, oldest first; the last one is the current state. */
   entries: readonly StateTimelineEntry[];
   /** States not reached yet, in the order they would come. */
