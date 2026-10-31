@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -11,6 +11,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { PlacedEvent, WeekSegment } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';
+import { dayCellSelector } from './use-calendar-grid.js';
 
 /** What every event of a calendar view needs. */
 export interface CalendarEventContext {
@@ -62,6 +63,24 @@ function formatTime(
 }
 
 /**
+ * A focused event button that leaves the view (removed, or hidden behind a crowded day's more
+ * button) hands focus to its day cell rather than dropping it on the page.
+ */
+function useFocusHandoff() {
+  const ref = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(
+    () => () => {
+      const button = ref.current;
+      if (button && button.ownerDocument.activeElement === button) {
+        button.closest<HTMLElement>(dayCellSelector)?.focus();
+      }
+    },
+    [],
+  );
+  return ref;
+}
+
+/**
  * One event: a button showing its title, after its time when asked, and named by its title and when
  * it happens; a press calls `onEventAction` with its key.
  */
@@ -77,6 +96,7 @@ export function CalendarEventButton({
   const strings = useUiStrings();
   const { event } = placed;
   const shown = formatTime(placed, time, context.format);
+  const ref = useFocusHandoff();
   const data = {
     allDay: placed.isAllDay,
     tone: event.tone ?? 'neutral',
@@ -86,6 +106,7 @@ export function CalendarEventButton({
   return (
     <AriaButton
       {...hooks.slot('event', data)}
+      ref={ref}
       excludeFromTabOrder={!isTabbable}
       style={style}
       onPress={() => context.onEventAction?.(event.id)}
@@ -155,10 +176,13 @@ export function CalendarEventLanes({
 }: CalendarEventLanesProps) {
   return Array.from({ length: laneCount }, (_, lane) => {
     const segment = segments.find((entry) => entry.lane === lane && entry.column === column);
-    if (!segment) return <div key={lane} aria-hidden="true" {...hooks.slot('spacer')} />;
+    // Spacers are keyed by lane and bars by event, so a repacked lane never hands an event's
+    // button, and the focus on it, to another event.
+    if (!segment)
+      return <div key={`spacer:${lane}`} aria-hidden="true" {...hooks.slot('spacer')} />;
     return (
       <CalendarEventButton
-        key={lane}
+        key={toKeyIdentity(segment.placed.event.id)}
         placed={segment.placed}
         context={context}
         isTabbable={isTabbable}

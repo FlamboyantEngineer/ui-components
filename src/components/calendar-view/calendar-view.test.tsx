@@ -59,6 +59,70 @@ describe('CalendarView', () => {
     expect(onEventAction.mock.calls).toEqual([[1], ['1']]);
   });
 
+  describe.each(['month', 'week'] as const)('in the %s view, a focused all-day event', (view) => {
+    const charlie = { id: 'charlie', title: 'Charlie', start: '2026-11-02' };
+    const alpha = { id: 'alpha', title: 'Alpha', start: '2026-11-02' };
+    const bravo = { id: 'bravo', title: 'Bravo', start: '2026-11-02' };
+    const props = { date: '2026-11-02', view, maxEvents: 5 };
+    const button = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name},`) });
+
+    it('UIC-CALENDAR-VIEW-2.2 keeps its button and focus when an event is packed before it', async () => {
+      const user = userEvent.setup();
+      const onEventAction = vi.fn();
+      const { rerender } = render(
+        <Calendar {...props} events={[charlie]} onEventAction={onEventAction} />,
+      );
+      const focused = button('Charlie');
+      act(() => focused.focus());
+      rerender(<Calendar {...props} events={[alpha, charlie]} onEventAction={onEventAction} />);
+      expect(button('Charlie')).toBe(focused);
+      expect(focused).toHaveFocus();
+      await user.keyboard('{Enter}');
+      await user.keyboard(' ');
+      expect(onEventAction.mock.calls).toEqual([['charlie'], ['charlie']]);
+    });
+
+    it('UIC-CALENDAR-VIEW-2.2 keeps focus on it when a change moves it to a later lane', async () => {
+      const user = userEvent.setup();
+      const onEventAction = vi.fn();
+      const { rerender } = render(
+        <Calendar {...props} events={[alpha, bravo]} onEventAction={onEventAction} />,
+      );
+      const focused = button('Alpha');
+      act(() => focused.focus());
+      const renamed = { ...alpha, title: 'Zulu' };
+      rerender(<Calendar {...props} events={[renamed, bravo]} onEventAction={onEventAction} />);
+      expect(button('Zulu')).toBe(focused);
+      expect(focused).toHaveFocus();
+      await user.keyboard('{Enter}');
+      expect(onEventAction).toHaveBeenCalledExactlyOnceWith('alpha');
+    });
+
+    it('UIC-CALENDAR-VIEW-2.2 hands focus to its day when it is removed', () => {
+      const { rerender } = render(<Calendar {...props} events={[alpha, charlie]} />);
+      act(() => button('Charlie').focus());
+      rerender(<Calendar {...props} events={[alpha]} />);
+      expect(document.querySelector('[role="gridcell"][data-date="2026-11-02"]')).toHaveFocus();
+    });
+  });
+
+  it('UIC-CALENDAR-VIEW-2.4 hands focus to the day when a focused event moves behind the more button', () => {
+    const at = (id: string, title: string) => ({ id, title, start: '2026-11-02' });
+    const props = { date: '2026-11-02', maxEvents: 2 };
+    const { rerender } = render(
+      <Calendar {...props} events={[at('charlie', 'Charlie'), at('delta', 'Delta')]} />,
+    );
+    act(() => screen.getByRole('button', { name: /^Charlie,/ }).focus());
+    rerender(
+      <Calendar
+        {...props}
+        events={[at('alpha', 'Alpha'), at('charlie', 'Charlie'), at('delta', 'Delta')]}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /^Charlie,/ })).not.toBeInTheDocument();
+    expect(document.querySelector('[role="gridcell"][data-date="2026-11-02"]')).toHaveFocus();
+  });
+
   it('UIC-CALENDAR-VIEW-2.1 UIC-CALENDAR-VIEW-2.4 keeps numeric and text events distinct in a crowded-day list', async () => {
     const user = userEvent.setup();
     const onEventAction = vi.fn();
