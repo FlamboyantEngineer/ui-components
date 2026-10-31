@@ -32,6 +32,23 @@ test.describe('Markdown lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-MARKDOWN-1.5 UIC-MARKDOWN-1.6 continues only an open paragraph lazily', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('markdown');
+    const lazy = page.locator('[data-lab-lazy]');
+    await expect(lazy.locator('blockquote').first()).toHaveText(
+      'Apples keep for months\nwhen stored cool.',
+    );
+    await expect(lazy.locator('blockquote').nth(1)).toHaveText('Pears');
+    await expect(lazy.locator(':scope > p')).toHaveText([
+      'Pears ripen off the tree.',
+      'Press after the harvest.',
+    ]);
+    await expect(lazy.getByRole('listitem')).toHaveText('press --cool');
+  });
+
   test('UIC-MARKDOWN-2.3 draws links through Link, opening absolute URLs in a new tab', async ({
     page,
     lab,

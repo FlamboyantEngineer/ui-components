@@ -66,6 +66,19 @@ const samples = {
   ].join('\n'),
 } as const;
 
+const lazyLines = [
+  '> Apples keep for months',
+  'when stored cool.',
+  '',
+  '> ### Pears',
+  'Pears ripen off the tree.',
+  '',
+  '- ```',
+  '  press --cool',
+  '  ```',
+  'Press after the harvest.',
+].join('\n');
+
 const taskList = [
   '- [x] Prune the apple trees',
   '- [ ] Order **crates**',
@@ -190,12 +203,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Nested blocks"
-      description="Nested quotes can hold nested lists while keeping their content in source order."
+      description="Nested quotes can hold nested lists while keeping their content in source order. A line without the quote marker continues only an open paragraph: after a heading or a code block it starts a paragraph outside."
     >
       <Markdown
         source={`${'> '.repeat(6)}- outer\n${'> '.repeat(6)}  - nested item`}
         data-lab-nested
       />
+      <Markdown source={lazyLines} data-lab-lazy />
     </LabSection>
     <LabSection
       title="Heading ids and outline"
