@@ -1,7 +1,8 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { collectPackages } from './module-imports.js';
 
 const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
   files: string[];
@@ -9,6 +10,7 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
   exports: Record<string, unknown>;
   sideEffects: boolean;
   dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
   peerDependenciesMeta?: Record<string, { optional?: boolean }>;
   private: boolean;
@@ -143,5 +145,36 @@ describe('hosted CI', () => {
     ]) {
       expect(filters).toContain(`- ${path}\n`);
     }
+  });
+});
+
+describe('optional rich-text peers', () => {
+  const RICH_TEXT_PEER = /^(prosemirror-|@handlewithcare\/react-prosemirror|react-reconciler)/;
+  const componentsDir = join(process.cwd(), 'src/components');
+  /** Every component entry point the `./*` export serves, as its subpath. */
+  const entries = readdirSync(componentsDir).flatMap((name) =>
+    [name, `${name}/rich`].filter((entry) => existsSync(join(componentsDir, entry, 'index.ts'))),
+  );
+
+  it('UIC-MESSAGE-COMPOSER-4.1 are reached only from the rich text, rich composer and chat entry points', () => {
+    const needsPeers = entries.filter((entry) =>
+      collectPackages(`src/components/${entry}/index.ts`).some((name) => RICH_TEXT_PEER.test(name)),
+    );
+    expect(needsPeers.sort()).toEqual(['chat', 'message-composer/rich', 'rich-text-editor']);
+    for (const entry of ['src/index.ts', 'src/core/index.ts']) {
+      expect(collectPackages(entry).filter((name) => RICH_TEXT_PEER.test(name))).toEqual([]);
+    }
+  });
+
+  it('UIC-MESSAGE-COMPOSER-4.1 pins prosemirror-view exactly where the React view requires it', () => {
+    const view = JSON.parse(
+      readFileSync(
+        join(process.cwd(), 'node_modules/@handlewithcare/react-prosemirror/package.json'),
+        'utf8',
+      ),
+    ) as { peerDependencies: Record<string, string> };
+    const required = view.peerDependencies['prosemirror-view'];
+    expect(manifest.peerDependencies['prosemirror-view']).toBe(required);
+    expect(manifest.devDependencies['prosemirror-view']).toBe(required);
   });
 });

@@ -149,8 +149,10 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `src/
 
 `RichMessageComposer` shall be exported only from `@flamboyantengineer/ui-components/message-composer/rich`, with its prop and message types; only modules under `src/components/message-composer/rich/` import ProseMirror and `@handlewithcare/react-prosemirror`, so neither the package root nor `MessageComposer` loads them and applications without the rich mode install none of them. `Chat`, which composes the rich mode, is likewise exported only from its own entry point ([UIC-CHAT-1.1](CHAT.md#uic-chat-11---entry-point)). No public declaration exposes their types. The host stylesheet gives the input ProseMirror's required rules, as the reference partial does.
 
-Implementation: `src/components/message-composer/rich/index.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
-Verification: `src/components/message-composer/message-composer.test.tsx`
+Only three entry points reach the optional peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages): `/rich-text-editor`, `/message-composer/rich` and `/chat`; the package root, `/core` and every other entry point reach none. `prosemirror-view` is the only exact peer (and development) version because `@handlewithcare/react-prosemirror` itself requires that exact version; the pins move together with the React view.
+
+Implementation: `src/components/message-composer/rich/index.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`, `package.json`, `README.md`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `test/package.test.ts`
 
 ### UIC-MESSAGE-COMPOSER-4.2 - Rich text box
 

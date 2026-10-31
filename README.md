@@ -34,7 +34,7 @@ To try unreleased work, install a branch or commit the same way, for example `#d
 
 The package ships the neutral reference stylesheet at `labs/build/reference.css` (also `@flamboyantengineer/ui-components/reference.css`): one self-contained file a host can copy into its assets or import, built when npm prepares the package.
 
-`react` and `react-dom` 19.2 or later are peer dependencies. The rich text editor also needs its optional peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages listed in `package.json`); a host that does not use it installs none of them.
+`react` and `react-dom` 19.2 or later are peer dependencies. Three entry points also need the optional rich-text peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages listed in `package.json`): `@flamboyantengineer/ui-components/rich-text-editor`, `/message-composer/rich` and `/chat`. A host that imports none of them installs none of the peers. `prosemirror-view` is pinned to an exact version because `@handlewithcare/react-prosemirror` requires exactly that version; install the version `package.json` names.
 
 ## Use
 
