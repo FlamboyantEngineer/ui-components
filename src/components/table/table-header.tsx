@@ -1,9 +1,8 @@
 'use client';
 
 import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { useContext, useLayoutEffect, type JSX, type ReactNode } from 'react';
+import { useContext, useLayoutEffect, type ReactNode } from 'react';
 import {
   Checkbox as AriaCheckbox,
   Column,
@@ -16,7 +15,8 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';
 import { DataColumn, type TableColumnHeaderState } from './table-column.js';
-import { groupColumnCells, type TableColumnGroup } from './table-columns.js';
+import type { TableColumnGroup } from './table-columns.js';
+import { createGroupedHeader, hasGroupRow } from './table-group-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 import {
@@ -35,6 +35,8 @@ export interface TableHeaderModel<T> {
   widths: TableColumnWidths;
   /** Group headers drawn in a row above the column headers; empty draws none. */
   groups: readonly TableColumnGroup[];
+  /** A virtualized table's row height, which its group header row takes. */
+  rowHeight: number;
   pinOffsets: TablePinOffsets;
   /** Takes the pinned offsets the header measures. */
   onPinOffsets: (offsets: TablePinOffsets) => void;
@@ -156,87 +158,14 @@ function getHeaderState<T>(
   };
 }
 
-/** Whether the header draws a group row: groups exist and the table is not virtualized. */
-export function hasGroupRow<T>(structure: TableStructure<T>, groups: readonly unknown[]): boolean {
-  return groups.length > 0 && !structure.isVirtualized;
-}
-
-/**
- * The widths of React Aria's columns as layout tracks. A fixed table layout takes its column widths
- * from its first row, which a group row would otherwise decide.
- */
-function TableColumnTracks() {
-  const state = useContext(TableStateContext);
-  const layout = useContext(TableColumnResizeStateContext);
-  return (
-    <colgroup>
-      {(state?.collection.columns ?? []).map((column) => (
-        <col
-          key={toKeyIdentity(column.key)}
-          style={{ width: layout?.getColumnWidth(column.key) }}
-        />
-      ))}
-    </colgroup>
-  );
-}
-
-/** The grid's `table` element with column tracks first, for a table with a group row. */
-export function renderTableWithTracks(
-  props: JSX.IntrinsicElements['table'] | JSX.IntrinsicElements['div'],
-) {
-  // Groups draw only in a table element, so the props are a `table`'s.
-  return (
-    <table {...(props as JSX.IntrinsicElements['table'])}>
-      <TableColumnTracks />
-      {props.children}
-    </table>
-  );
-}
-
-/** A header element that draws the group header row above React Aria's column row. */
-function createGroupedHeader<T>({ structure, model }: TableHeaderProps<T>) {
-  const cells = groupColumnCells(structure.columns, model.groups, {
-    leading: Number(structure.hasSelection),
-    trailing: Number(structure.hasActions),
-  });
-  // Groups draw only in a table element, so the props are a `thead`'s.
-  return (props: JSX.IntrinsicElements['thead'] | JSX.IntrinsicElements['div']) => (
-    <thead {...(props as JSX.IntrinsicElements['thead'])}>
-      <tr role="row">
-        {cells.map(({ key, group, span }) =>
-          group ? (
-            <th
-              key={key}
-              role="columnheader"
-              scope="colgroup"
-              colSpan={span}
-              className={hooks.slotClass('column-group')}
-            >
-              {group.header}
-            </th>
-          ) : (
-            <td
-              key={key}
-              colSpan={span}
-              aria-hidden="true"
-              {...hooks.slot('column-group', { ungrouped: true })}
-            />
-          ),
-        )}
-      </tr>
-      {props.children}
-    </thead>
-  );
-}
-
 /**
  * The header: an optional row of group headers, then the select-all checkbox, the data columns and
- * the actions column. A virtualized table positions its header rows itself and draws no groups.
+ * the actions column.
  */
 export function TableHeader<T>(props: TableHeaderProps<T>) {
   const strings = useUiStrings();
   const { structure, model } = props;
-  const hasGroups = hasGroupRow(structure, model.groups);
+  const hasGroups = hasGroupRow(model.groups);
   const selectionPin = getColumnPin(structure, 'selection');
   const actionsPin = getColumnPin(structure, 'actions');
   const pins = collectPins(structure);

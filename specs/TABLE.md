@@ -327,10 +327,10 @@ Verification: `src/components/table/use-pinned-offsets.test.tsx`, `e2e/table.spe
 
 ### UIC-TABLE-8.7 - Column groups
 
-`columnGroups` (an id, a header and the ids of its columns each) shall draw a row of group headers above the column headers: one `ui-table__column-group` header cell (`scope="colgroup"`) spanning each run of neighbouring drawn columns of one group, and a cell hidden from assistive technology over ungrouped columns and the selection and actions columns, which publishes `data-ungrouped`. A group whose columns are moved apart draws over each run. The grid then lists React Aria's column widths as column tracks first, so the fixed table layout takes them rather than the group row's. A virtualized table draws no group row.
+`columnGroups` (an id, a header and the ids of its columns each) shall draw a row of group headers above the column headers: one `ui-table__column-group` header cell (`scope="colgroup"`) spanning each run of neighbouring drawn columns of one group, and a cell hidden from assistive technology over ungrouped columns and the selection and actions columns, which publishes `data-ungrouped`. A group whose columns are moved apart draws over each run. The grid then lists React Aria's column widths as column tracks first, so the fixed table layout takes them rather than the group row's. A virtualized table draws the same row with the same hooks, one row height tall: its layout lowers the column headers and the rows below them by that height, and each group cell, a `columnheader` with `aria-colindex` and `aria-colspan`, sits over its columns' widths.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table.tsx`, `src/components/table/table-columns.ts`
-Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-group-header.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-columns.ts`
+Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`, `e2e/pivot-table.spec.ts`
 
 ### UIC-TABLE-8.8 - Layout helpers
 

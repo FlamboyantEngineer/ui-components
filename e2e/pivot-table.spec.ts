@@ -169,6 +169,26 @@ test.describe('Pivot Table lab', () => {
     );
     await expect(grid.getByRole('rowheader', { name: 'Store 0001' })).toBeVisible();
     expect(await grid.getByRole('row').count()).toBeLessThan(60);
+    // The group header row sits above the column headers, each group over its fruit's values.
+    const groups = grid.locator('.ui-table__column-group[role="columnheader"]');
+    await expect(groups).toHaveText(['Apple', 'Cherry', 'Pear', 'Plum', 'Total']);
+    await expect(groups.first()).toHaveAttribute('aria-colspan', '2');
+    const apple = await groups.first().boundingBox();
+    const values = grid.getByRole('columnheader', { name: 'Sum of Boxes' });
+    const firstValue = await values.first().boundingBox();
+    const deliveries = await grid
+      .getByRole('columnheader', { name: 'Deliveries' })
+      .first()
+      .boundingBox();
+    expect(apple && firstValue && deliveries).toBeTruthy();
+    if (apple && firstValue && deliveries) {
+      expect(apple.y + apple.height).toBeLessThanOrEqual(firstValue.y + 1);
+      expect(Math.abs(apple.x - firstValue.x)).toBeLessThan(1);
+      expect(Math.abs(apple.x + apple.width - (deliveries.x + deliveries.width))).toBeLessThan(1);
+    }
+    // The first row starts below the taller header.
+    const first = await grid.getByRole('rowheader', { name: 'Store 0001' }).boundingBox();
+    expect(first && firstValue && first.y >= firstValue.y + firstValue.height - 1).toBe(true);
     // The summary row stays in the document while it is out of view.
     await expect(grid.locator('.ui-table__footer').getByRole('row')).toHaveCount(1);
     await demo
