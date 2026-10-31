@@ -180,4 +180,71 @@ describe('GridSizePicker', () => {
     render(<GridSizePicker onSelect={() => {}} autoFocus />);
     expect(cell(1, 1)).toHaveFocus();
   });
+
+  it('UIC-GRID-SIZE-PICKER-2.5 moves focus to the clamped cell when bounds remove the focused one', async () => {
+    const user = userEvent.setup();
+    const props = { onSelect: () => {}, minRows: 2, minColumns: 2 };
+    const { container, rerender } = render(<GridSizePicker {...props} />);
+    await user.tab();
+    await user.keyboard('{Control>}{End}{/Control}');
+    expect(cell(10, 10)).toHaveFocus();
+    rerender(<GridSizePicker {...props} maxRows={6} />);
+    expect(cell(6, 10)).toHaveFocus();
+    rerender(<GridSizePicker {...props} maxRows={6} maxColumns={3} />);
+    expect(cell(6, 3)).toHaveFocus();
+    rerender(<GridSizePicker {...props} maxRows={2} maxColumns={2} />);
+    expect(cell(2, 2)).toHaveFocus();
+    expect(cell(2, 2)).toHaveAttribute('tabindex', '0');
+    expect(readout(container)).toHaveTextContent('2 × 2');
+  });
+
+  it('UIC-GRID-SIZE-PICKER-2.5 keeps the clamped size when the bounds grow again', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<GridSizePicker onSelect={() => {}} />);
+    await user.tab();
+    await user.keyboard('{Control>}{End}{/Control}');
+    rerender(<GridSizePicker onSelect={() => {}} maxRows={3} maxColumns={3} />);
+    rerender(<GridSizePicker onSelect={() => {}} />);
+    expect(cell(3, 3)).toHaveFocus();
+    expect(cell(3, 3)).toHaveAttribute('data-active', 'true');
+    expect(readout(container)).toHaveTextContent('3 × 3');
+  });
+
+  it('UIC-GRID-SIZE-PICKER-2.5 does not take focus when the picker was not focused', async () => {
+    const user = userEvent.setup();
+    const picker = (max: number) => (
+      <>
+        <GridSizePicker onSelect={() => {}} maxRows={max} maxColumns={max} />
+        <button type="button">Elsewhere</button>
+      </>
+    );
+    const { rerender } = render(picker(5));
+    await user.hover(cell(5, 5));
+    await user.click(cell(5, 5));
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    rerender(picker(2));
+    expect(screen.getByRole('button', { name: 'Elsewhere' })).toHaveFocus();
+    expect(cell(2, 2)).toHaveAttribute('data-active', 'true');
+  });
+
+  it('UIC-GRID-SIZE-PICKER-2.5 keeps focus in the grid when the preview shrinks it', async () => {
+    const user = userEvent.setup();
+    render(<GridSizePicker onSelect={() => {}} />);
+    await user.tab();
+    await user.keyboard('{Control>}{End}{/Control}');
+    expect(cell(10, 10)).toHaveFocus();
+    await user.hover(cell(1, 1));
+    expect(screen.getAllByRole('gridcell')).toHaveLength(25);
+    expect(cell(1, 1)).toHaveFocus();
+  });
+
+  it('UIC-GRID-SIZE-PICKER-2.5 keeps focus in a picker that becomes disabled as it shrinks', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<GridSizePicker onSelect={() => {}} />);
+    await user.tab();
+    await user.keyboard('{Control>}{End}{/Control}');
+    rerender(<GridSizePicker onSelect={() => {}} isDisabled maxRows={2} maxColumns={2} />);
+    expect(cell(2, 2)).toHaveFocus();
+    expect(cell(2, 2)).toHaveAttribute('tabindex', '-1');
+  });
 });

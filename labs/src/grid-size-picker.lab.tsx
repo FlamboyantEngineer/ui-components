@@ -64,6 +64,25 @@ function InsertTable() {
   );
 }
 
+function LimitedPicker() {
+  const [isLimited, setLimited] = useState(false);
+  const max = isLimited ? 3 : 8;
+  return (
+    <>
+      <Button data-lab-control="limit" onPress={() => setLimited((value) => !value)}>
+        {isLimited ? 'Allow 8 × 8' : 'Limit to 3 × 3'}
+      </Button>
+      <GridSizePicker
+        aria-label="Grid size, changing bounds"
+        maxRows={max}
+        maxColumns={max}
+        onSelect={() => {}}
+        data-lab-field="limited"
+      />
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -93,6 +112,12 @@ mountLab(
       description="The insert command opens the picker with the first cell focused; choosing closes it."
     >
       <InsertTable />
+    </LabSection>
+    <LabSection
+      title="Changing bounds"
+      description="Limiting the bounds below the preview clamps it, and a focused picker keeps focus on the clamped cell; allowing 8 × 8 again keeps the clamped size."
+    >
+      <LimitedPicker />
     </LabSection>
     <LabSection title="Right to left" description="Left and right follow the reading direction.">
       <UiProvider locale="ar-EG">
