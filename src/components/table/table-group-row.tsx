@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import {
   Cell,
   Collection,
@@ -32,6 +32,7 @@ import {
   getPinStyle,
   selectionColumnId,
 } from './table-structure.js';
+import { renderLabelledRow } from './table-spanning-row.js';
 
 /** A column's cell in a group header row: its aggregate of the group's rows, if it has one. */
 function renderAggregate<T extends TableRow>(
@@ -58,6 +59,8 @@ function useGroupHeading<T>(group: TableGroup<T>): string {
 
 /** The group cell's content: the expand button, the label and the number of rows. */
 function GroupLabel<T>(props: {
+  /** The prefix of the label's and the count's ids, which name the row. */
+  labelId: string;
   values: CellRenderProps;
   group: TableGroup<T>;
   label: ReactNode;
@@ -68,13 +71,29 @@ function GroupLabel<T>(props: {
   return (
     <>
       <TableExpandButton {...props.values} />
-      <span className={hooks.slotClass('group-label')}>{props.label}</span>
+      <span id={`${props.labelId}-label`} className={hooks.slotClass('group-label')}>
+        {props.label}
+      </span>
       {/* The count reads as words; the drawn number is for the eye. */}
       <span className={hooks.slotClass('group-count')} aria-hidden="true">
         {props.format.format(count)}
       </span>{' '}
-      <VisuallyHidden elementType="span">{strings.itemCount(count)}</VisuallyHidden>
+      <VisuallyHidden elementType="span" id={`${props.labelId}-count`}>
+        {strings.itemCount(count)}
+      </VisuallyHidden>
     </>
+  );
+}
+
+/** The empty cell of a group row under the selection or actions column. */
+function EdgeCell<T>({ kind, model }: { kind: 'selection' | 'actions'; model: TableRowModel<T> }) {
+  const pin = getColumnPin(model.structure, kind);
+  const columnId = kind === 'selection' ? selectionColumnId : actionsColumnId;
+  return (
+    <Cell
+      style={getPinStyle(pin, model.pinOffsets[columnId])}
+      {...hooks.slot('aggregate-cell', { kind, pinned: pin })}
+    />
   );
 }
 
@@ -102,8 +121,7 @@ function TableGroupRow<T extends TableRow>({
     ...getPinStyle(labelPin, firstColumn ? pinOffsets[firstColumn.id] : undefined),
     ...measuredProperty('table-level', String(level)),
   });
-  const selectionPin = getColumnPin(structure, 'selection');
-  const actionsPin = getColumnPin(structure, 'actions');
+  const labelId = useId();
   return (
     <Row
       id={id}
@@ -112,13 +130,10 @@ function TableGroupRow<T extends TableRow>({
       isDisabled
       disabledBehavior="selection"
       className={hooks.slotClass('group-row')}
+      // Named by its label and count, whichever columns are row headers.
+      render={renderLabelledRow(structure.isVirtualized, `${labelId}-label ${labelId}-count`)}
     >
-      {structure.hasSelection ? (
-        <Cell
-          style={getPinStyle(selectionPin, pinOffsets[selectionColumnId])}
-          {...hooks.slot('aggregate-cell', { kind: 'selection', pinned: selectionPin })}
-        />
-      ) : null}
+      {structure.hasSelection ? <EdgeCell kind="selection" model={model} /> : null}
       {/* One cell per column, as React Aria counts a parent row's cells to number its rows. */}
       <Cell
         style={labelStyle}
@@ -126,6 +141,7 @@ function TableGroupRow<T extends TableRow>({
       >
         {(values) => (
           <GroupLabel
+            labelId={labelId}
             values={values}
             group={group}
             label={model.renderGroupLabel?.(group) ?? heading}
@@ -151,12 +167,7 @@ function TableGroupRow<T extends TableRow>({
           </Cell>
         );
       })}
-      {structure.hasActions ? (
-        <Cell
-          style={getPinStyle(actionsPin, pinOffsets[actionsColumnId])}
-          {...hooks.slot('aggregate-cell', { kind: 'actions', pinned: actionsPin })}
-        />
-      ) : null}
+      {structure.hasActions ? <EdgeCell kind="actions" model={model} /> : null}
       <Collection items={node.children} dependencies={[model]}>
         {(child) => renderBodyNode(child, model)}
       </Collection>
