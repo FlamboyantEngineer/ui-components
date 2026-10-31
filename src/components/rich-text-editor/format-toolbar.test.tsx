@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import type { FormEvent, ReactNode } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   ViewProbe,
@@ -9,6 +10,7 @@ import {
   renderEditor,
   selectRange,
 } from '../../../test/rich-text-fixtures.js';
+import { Form } from '../form/form.js';
 import { FormatToolbar } from './format-toolbar.js';
 import { RichTextEditor, createRichTextSchema, type RichTextDocument } from './rich-text-editor.js';
 
@@ -167,6 +169,70 @@ describe('FormatToolbar', () => {
     expect(value()?.content?.[0]?.content).toEqual([{ type: 'text', text: 'Pick pears' }]);
     expectHooksMatchSpec(container, 'RICH-TEXT-EDITOR');
   });
+
+  it.each([
+    ['an ordinary form', 'plain'],
+    ['the library Form', 'library'],
+  ] as const)(
+    'UIC-RICH-TEXT-EDITOR-6.3 applies, removes and cancels a link without submitting %s around the editor',
+    async (_name, kind) => {
+      const user = userEvent.setup();
+      const submitted: unknown[] = [];
+      const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        submitted.push(new FormData(event.currentTarget).get('notes'));
+      });
+      const editor = (
+        <>
+          <RichTextEditor
+            label="Notes"
+            name="notes"
+            defaultValue={note}
+            toolbar={<FormatToolbar />}
+          >
+            <ViewProbe />
+          </RichTextEditor>
+          <button type="submit">Save</button>
+        </>
+      );
+      const wrap = (children: ReactNode) =>
+        kind === 'plain' ? (
+          <form aria-label="Page" onSubmit={onSubmit}>
+            {children}
+          </form>
+        ) : (
+          <Form aria-label="Page" onSubmit={onSubmit}>
+            {children}
+          </Form>
+        );
+      render(wrap(editor));
+      selectRange(6, 11);
+      const link = within(toolbar()).getByRole('button', { name: 'Link' });
+      await user.click(link);
+      await user.type(
+        screen.getByRole('textbox', { name: 'Link address' }),
+        'https://example.com/a{Enter}',
+      );
+      await user.click(link);
+      await user.clear(screen.getByRole('textbox', { name: 'Link address' }));
+      await user.type(
+        screen.getByRole('textbox', { name: 'Link address' }),
+        'https://example.com/b',
+      );
+      await user.click(screen.getByRole('button', { name: 'Apply' }));
+      await user.click(link);
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('textbox', { name: 'Link address' })).not.toBeInTheDocument();
+      expect(onSubmit).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(String(submitted[0])).toContain('https://example.com/b');
+      selectRange(6, 11);
+      await user.click(link);
+      await user.click(screen.getByRole('button', { name: 'Remove link' }));
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it.each(['isReadOnly', 'isDisabled'] as const)(
     'UIC-RICH-TEXT-EDITOR-4.1 UIC-RICH-TEXT-EDITOR-6.3 closes the link editor on %s and does not reopen it when unlocked',

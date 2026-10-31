@@ -67,7 +67,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Form"
-      description="A named editor submits its document as JSON with the form, which JSON.parse turns back into the value. Reset puts the first note back."
+      description="A named editor submits its document as JSON with the form, which JSON.parse turns back into the value. Reset puts the first note back. Applying a link with Enter or Apply stays in the link editor and submits nothing."
     >
       <FormEditor />
     </LabSection>
