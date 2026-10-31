@@ -49,6 +49,16 @@ test.describe('Markdown lab', () => {
     await expect(lazy.getByRole('listitem')).toHaveText('press --cool');
   });
 
+  test('UIC-MARKDOWN-1.4 keeps the tabs of code inside quotes and lists', async ({ page, lab }) => {
+    await lab.open('markdown');
+    const code = page.locator('[data-lab-tabs] .ui-markdown__code-block code');
+    await expect(code).toHaveCount(2);
+    expect(await code.allTextContents()).toEqual([
+      'press:\n\tpress --batch 4',
+      'clean:\n\trm -f cider',
+    ]);
+  });
+
   test('UIC-MARKDOWN-2.3 draws links through Link, opening absolute URLs in a new tab', async ({
     page,
     lab,

@@ -11,6 +11,8 @@ import {
   readListMarker,
   readSetextLevel,
   stripBlockquoteMarker,
+  stripColumns,
+  stripIndent,
   type Fence,
 } from './markdown-lines.js';
 
@@ -21,17 +23,37 @@ export interface ParagraphState {
   isOpen: () => boolean;
 }
 
-/** The line inside the block quotes and list items it opens, and whether it opened any. */
-function stripContainers(line: string): { content: string; opensContainer: boolean } {
+interface Containers {
+  content: string;
+  opensContainer: boolean;
+}
+
+/**
+ * The line inside the containers it continues or opens, and whether it opened any. `indents`
+ * holds the content columns of the list items still open, outermost first; a line indented to
+ * one continues that item, and a list marker opens a new one in its place.
+ */
+function stripContainers(line: string, indents: number[]): Containers {
   let content = line;
   let opensContainer = false;
+  let depth = 0;
   for (;;) {
+    const indent = indents[depth];
+    if (indent !== undefined && !isBlank(content) && indentOf(content) >= indent) {
+      content = stripColumns(content, indent);
+      depth += 1;
+      continue;
+    }
     const quoted = stripBlockquoteMarker(content);
     const marker = quoted === null ? readListMarker(content) : null;
-    if (quoted === null && marker === null) return { content, opensContainer };
-    content = quoted ?? content.slice(marker?.contentIndent ?? 0);
+    if (quoted === null && marker === null) break;
+    if (marker) indents.splice(depth, Infinity, marker.contentIndent);
+    depth += marker ? 1 : 0;
+    content = quoted ?? marker?.content ?? content;
     opensContainer = true;
   }
+  if (!isBlank(content)) indents.splice(depth);
+  return { content, opensContainer };
 }
 
 export function createParagraphState(): ParagraphState {
@@ -39,10 +61,11 @@ export function createParagraphState(): ParagraphState {
   let isTable = false;
   let fence: Fence | null = null;
   let last = '';
+  const indents: number[] = [];
   /** How a line inside the open paragraph reads it: undefined when the line starts a block. */
-  const continueParagraph = (content: string): boolean | undefined => {
+  const continueParagraph = (content: string, previous: string): boolean | undefined => {
     if (readSetextLevel(content) !== null) return false;
-    if (isTableStart(last, content)) {
+    if (isTableStart(previous, content)) {
       isTable = true;
       return false;
     }
@@ -50,12 +73,15 @@ export function createParagraphState(): ParagraphState {
   };
   const read = (line: string): boolean => {
     if (fence) {
-      if (isFenceClose(line.trimStart(), fence)) fence = null;
+      if (isFenceClose(stripIndent(line), fence)) fence = null;
       return false;
     }
-    const { content, opensContainer } = stripContainers(line);
+    const { content, opensContainer } = stripContainers(line, indents);
+    const wasOpen = isOpen;
+    const previous = last;
+    last = content;
     if (isBlank(content)) return false;
-    const continued = isOpen && !opensContainer ? continueParagraph(content) : undefined;
+    const continued = wasOpen && !opensContainer ? continueParagraph(content, previous) : undefined;
     if (continued !== undefined) return continued;
     if (isTable && !opensContainer && !interruptsParagraph(content, undefined)) return false;
     isTable = false;
@@ -66,7 +92,6 @@ export function createParagraphState(): ParagraphState {
   return {
     push: (line) => {
       isOpen = read(line);
-      last = isOpen ? stripContainers(line).content : '';
     },
     isOpen: () => isOpen,
   };

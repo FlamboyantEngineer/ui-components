@@ -4,6 +4,7 @@
 import type { LinkTarget } from './markdown-inline-syntax.js';
 import { normalizeLabel, unescapeMarkdown } from './markdown-inline-syntax.js';
 import {
+  decodeBlockText,
   indentOf,
   interruptsParagraph,
   isBlank,
@@ -15,6 +16,8 @@ import {
   readSetextLevel,
   readTableDivider,
   splitTableCells,
+  stripColumns,
+  stripIndent,
 } from './markdown-lines.js';
 import type { MarkdownBlock, MarkdownHeading, MarkdownInline } from './markdown-nodes.js';
 
@@ -63,17 +66,13 @@ function createHeading(context: BlockContext, level: number, text: string): Mark
   return heading;
 }
 
-function stripIndent(line: string, columns: number): string {
-  return line.slice(Math.min(columns, indentOf(line)));
-}
-
 export const readFencedCode: BlockReader = (lines, at) => {
   const fence = readFence(lines[at] ?? '');
   if (!fence) return null;
   const body: string[] = [];
   let index = at + 1;
   for (; index < lines.length && !isFenceClose(lines[index] ?? '', fence); index += 1) {
-    body.push(stripIndent(lines[index] ?? '', fence.indent));
+    body.push(decodeBlockText(stripColumns(lines[index] ?? '', fence.indent)));
   }
   const word = fence.info.split(/\s+/)[0];
   const language = word ? unescapeMarkdown(word) : null;
@@ -90,9 +89,9 @@ export const readIndentedCode: BlockReader = (lines, at) => {
   for (; index < lines.length; index += 1) {
     const line = lines[index] ?? '';
     if (!isBlank(line) && indentOf(line) < 4) break;
-    body.push(isBlank(line) ? '' : line.slice(4));
+    body.push(decodeBlockText(stripColumns(line, 4)));
   }
-  while (body.at(-1) === '') body.pop();
+  while (body.length > 0 && isBlank(body.at(-1) ?? '')) body.pop();
   return { block: { type: 'codeBlock', language: null, text: body.join('\n') }, next: index };
 };
 
@@ -152,7 +151,7 @@ function collectParagraph(lines: readonly string[], at: number) {
       if (level) return { collected, index, level };
       if (interruptsParagraph(line, lines[index + 1])) break;
     }
-    collected.push(line.trimStart());
+    collected.push(decodeBlockText(stripIndent(line)));
   }
   return { collected, index, level: null };
 }

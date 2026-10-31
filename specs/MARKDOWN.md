@@ -27,10 +27,10 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.4 - Code blocks
 
-Fenced code (three or more backticks or tildes, closed by a fence of the same character at least as long, or by the end of its container) and indented code (four spaces) shall become `codeBlock` nodes holding their text verbatim, with a fence's indentation removed from its lines. `language` is the first word of the fence's info string, or `null`.
+Fenced code (three or more backticks or tildes, closed by a fence of the same character at least as long, or by the end of its container) and indented code (four columns) shall become `codeBlock` nodes holding their text verbatim, with a fence's indentation, or indented code's four columns, removed from its lines; blank lines inside indented code keep what is left of their whitespace. Tabs stay as written: where block structure is read, in quotes and list items too, a tab spans the columns to the next multiple of four, and a tab that removed indentation takes only in part leaves spaces for its remaining columns. `language` is the first word of the fence's info string, or `null`.
 
 Implementation: `src/components/markdown/markdown-blocks.ts`, `src/components/markdown/markdown-lines.ts`
-Verification: `src/components/markdown/parse-markdown.test.ts`
+Verification: `src/components/markdown/parse-markdown.test.ts`, `src/components/markdown/markdown-tabs.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-1.5 - Block quotes
 

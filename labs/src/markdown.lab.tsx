@@ -79,6 +79,20 @@ const lazyLines = [
   'Press after the harvest.',
 ].join('\n');
 
+const tabbedCode = [
+  '> ```make',
+  '> press:',
+  '> \tpress --batch 4',
+  '> ```',
+  '',
+  '- Then clean up:',
+  '',
+  '  ```make',
+  '  clean:',
+  '  \trm -f cider',
+  '  ```',
+].join('\n');
+
 const taskList = [
   '- [x] Prune the apple trees',
   '- [ ] Order **crates**',
@@ -210,6 +224,12 @@ mountLab(
         data-lab-nested
       />
       <Markdown source={lazyLines} data-lab-lazy />
+    </LabSection>
+    <LabSection
+      title="Tabs in code"
+      description="Code keeps its tabs as written, inside quotes and lists too, so copying a recipe gives back working tabs."
+    >
+      <Markdown source={tabbedCode} data-lab-tabs />
     </LabSection>
     <LabSection
       title="Heading ids and outline"

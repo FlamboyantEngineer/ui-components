@@ -9,6 +9,8 @@ export interface ListMarker {
   start: number;
   /** Columns from the line start to the item's content. */
   contentIndent: number;
+  /** The item's first line without its marker and the whitespace up to its content. */
+  content: string;
   /** The item's first line has no content. */
   isEmpty: boolean;
 }
@@ -19,30 +21,62 @@ export interface Fence {
   info: string;
 }
 
-const fenceOpen = /^( {0,3})(`{3,}|~{3,})(.*)$/;
-const atxHeading = /^ {0,3}(#{1,6})(?=[ \t]|$)(.*)$/;
-const thematicBreak = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
-const setextUnderline = /^ {0,3}(=+|-+)[ \t]*$/;
-const blockquoteMarker = /^ {0,3}> ?/;
-const listMarker = /^( {0,3})(?:([-+*])|(\d{1,9})([.)]))(?=[ \t]|$)/;
+// Block lines hold each tab as a tab character followed by a NUL for every further column it
+// covers, so one character is one column at any container depth (see toBlockLine). Whitespace
+// patterns therefore read `[ \t\0]`.
+const fenceOpen = /^([ \t\0]{0,3})(`{3,}|~{3,})(.*)$/;
+const fenceClose = /^[ \t\0]{0,3}(`{3,}|~{3,})[ \t\0]*$/;
+const atxHeading = /^[ \t\0]{0,3}(#{1,6})(?=[ \t]|$)(.*)$/;
+const thematicBreak = /^[ \t\0]{0,3}([-*_])(?:[ \t\0]*\1){2,}[ \t\0]*$/;
+const setextUnderline = /^[ \t\0]{0,3}(=+|-+)[ \t\0]*$/;
+const blockquoteMarker = /^[ \t\0]{0,3}>/;
+const listMarker = /^([ \t\0]{0,3})(?:([-+*])|(\d{1,9})([.)]))(?=[ \t]|$)/;
 const dividerCell = /^:?-+:?$/;
 
+/**
+ * A source line as the block parser reads it: NUL becomes U+FFFD, and each tab is followed by a
+ * NUL for every further column it covers up to the next multiple of four, counted from the line
+ * start. Columns stay true inside containers, and decodeBlockText gives the tabs back.
+ */
+export function toBlockLine(line: string): string {
+  const safe = line.replaceAll('\u0000', '\ufffd');
+  if (!safe.includes('\t')) return safe;
+  let encoded = '';
+  for (const char of safe) {
+    encoded += char === '\t' ? '\t' + '\u0000'.repeat(3 - (encoded.length % 4)) : char;
+  }
+  return encoded;
+}
+
+/**
+ * Block text as written: an encoded tab becomes one tab again, and the columns left of a tab that
+ * stripping took only in part become spaces.
+ */
+export function decodeBlockText(text: string): string {
+  if (!text.includes('\u0000')) return text;
+  return text.replace(/\t\0+/g, '\t').replaceAll('\u0000', ' ');
+}
+
 export function isBlank(line: string): boolean {
-  return line.trim() === '';
+  return /^[\s\0]*$/.test(line);
 }
 
+/** The columns of a line's leading whitespace. */
 export function indentOf(line: string): number {
-  return line.length - line.trimStart().length;
+  return /^[ \t\0]*/.exec(line)?.[0].length ?? 0;
 }
 
-/** Expands the tabs of a line's leading whitespace to the next multiple of four columns. */
-export function expandLeadingTabs(line: string): string {
-  const whitespace = /^[ \t]*/.exec(line)?.[0] ?? '';
-  if (!whitespace.includes('\t')) return line;
-  let columns = 0;
-  for (const char of whitespace)
-    columns = char === '\t' ? columns + 4 - (columns % 4) : columns + 1;
-  return ' '.repeat(columns) + line.slice(whitespace.length);
+/**
+ * The line without up to `columns` columns of its leading whitespace. A tab taken only in part
+ * leaves the rest of its columns, which decode as spaces.
+ */
+export function stripColumns(line: string, columns: number): string {
+  return line.slice(Math.min(columns, indentOf(line)));
+}
+
+/** The line without its leading whitespace. */
+export function stripIndent(line: string): string {
+  return line.slice(indentOf(line));
 }
 
 export function readFence(line: string): Fence | null {
@@ -50,11 +84,11 @@ export function readFence(line: string): Fence | null {
   if (!match) return null;
   const [, indent = '', marker = '', info = ''] = match;
   if (marker.startsWith('`') && info.includes('`')) return null;
-  return { indent: indent.length, marker, info: info.trim() };
+  return { indent: indent.length, marker, info: decodeBlockText(info).trim() };
 }
 
 export function isFenceClose(line: string, fence: Fence): boolean {
-  const match = /^ {0,3}(`{3,}|~{3,})[ \t]*$/.exec(line);
+  const match = fenceClose.exec(line);
   const marker = match?.[1] ?? '';
   return marker.startsWith(fence.marker.charAt(0)) && marker.length >= fence.marker.length;
 }
@@ -63,7 +97,9 @@ export function isFenceClose(line: string, fence: Fence): boolean {
 export function readAtxHeading(line: string): { level: number; text: string } | null {
   const match = atxHeading.exec(line);
   if (!match) return null;
-  const text = (match[2] ?? '').trim().replace(/(?:^|[ \t]+)#+[ \t]*$/, '');
+  const text = decodeBlockText(match[2] ?? '')
+    .trim()
+    .replace(/(?:^|[ \t]+)#+[ \t]*$/, '');
   return { level: (match[1] ?? '').length, text: text.trim() };
 }
 
@@ -78,10 +114,13 @@ export function readSetextLevel(line: string): 1 | 2 | null {
   return match[1]?.startsWith('=') ? 1 : 2;
 }
 
-/** The line without its block quote marker, or null when it has none. */
+/**
+ * The line without its block quote marker and the one column of whitespace after it, or null when
+ * it has none.
+ */
 export function stripBlockquoteMarker(line: string): string | null {
   const match = blockquoteMarker.exec(line);
-  return match ? line.slice(match[0].length) : null;
+  return match ? stripColumns(line.slice(match[0].length), 1) : null;
 }
 
 export function readListMarker(line: string): ListMarker | null {
@@ -92,20 +131,21 @@ export function readListMarker(line: string): ListMarker | null {
   const rest = line.slice(marker.length);
   const spaces = indentOf(rest);
   const isEmpty = isBlank(rest);
-  // Five or more spaces start indented code inside the item, which then begins after one space.
+  // Five or more columns start indented code inside the item, which then begins after one.
   const gap = isEmpty || spaces > 4 ? 1 : spaces;
   return {
     ordered: bullet === undefined,
     symbol: bullet ?? delimiter,
     start: digits === undefined ? 1 : Number(digits),
     contentIndent: marker.length + gap,
+    content: stripColumns(rest, gap),
     isEmpty,
   };
 }
 
 /** Splits a table row into trimmed cells on unescaped pipes; `\|` becomes a literal pipe. */
 export function splitTableCells(line: string): string[] {
-  let row = line.trim();
+  let row = decodeBlockText(line).trim();
   if (row.startsWith('|')) row = row.slice(1);
   if (row.endsWith('|') && !row.endsWith('\\|')) row = row.slice(0, -1);
   return row.split(/(?<!\\)\|/).map((cell) => cell.trim().replaceAll('\\|', '|'));
