@@ -48,6 +48,13 @@ The installed package shall ship the reference stylesheet at `labs/build/referen
 Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/lib/reference-stylesheet.mjs`, `scripts/check-package.mjs`, `scripts/check-git-install.mjs`
 Verification: `test/package.test.ts`
 
+### UIC-LABS-1.7 - Browser suite in hosted CI
+
+Hosted CI shall build the labs once, in one job, and hand the build to the browser jobs as an artifact. The Chromium projects run in three shards and the WebKit projects in their own job, and each job installs only its own browser, restored from a cache keyed by the Playwright version, plus that browser's system packages. A failing browser job uploads `test-results/`, which holds the trace Playwright keeps for each failed test on CI.
+
+Implementation: `.github/workflows/ci.yml`, `playwright.config.ts`
+Verification: `test/package.test.ts`
+
 ## UIC-LABS-2 - Chrome
 
 ### UIC-LABS-2.1 - Stylesheet picker

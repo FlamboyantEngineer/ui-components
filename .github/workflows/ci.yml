@@ -85,20 +85,28 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
       - name: Install Playwright browser
+        if: steps.browsers.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+      - name: Install Playwright system dependencies
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - name: Server components consumer
         run: npm run check:server-components
 
-  labs:
-    # The lab browser suite runs in shards beside the check job so it fits the time budget.
+  labs-build:
+    # The labs are built once; the browser jobs download the build.
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -108,7 +116,59 @@ jobs:
       - run: npm ci
       - name: Build labs
         run: npm run build:labs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: labs-build
+          path: labs/build/
+          retention-days: 1
+
+  labs:
+    # The lab browser suite runs in shards beside the check job so it fits the time budget. The
+    # Chromium shards and the WebKit job each install only their own browser, from a cache keyed by
+    # the Playwright version. A failing job uploads the traces of its failed tests.
+    needs: labs-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: chromium 1 of 3, browser: chromium, args: --project=chromium --shard=1/3 }
+          - { name: chromium 2 of 3, browser: chromium, args: --project=chromium --shard=2/3 }
+          - { name: chromium 3 of 3, browser: chromium, args: --project=chromium --shard=3/3 }
+          - { name: webkit, browser: webkit, args: --project=webkit --project=mobile-webkit }
+    name: labs (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: labs-build
+          path: labs/build/
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ matrix.browser }}
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium webkit
-      - name: Lab browser tests (shard ${{ matrix.shard }} of 3)
-        run: npx playwright test --shard=${{ matrix.shard }}/3
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Install Playwright system dependencies
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ matrix.browser }}
+      - name: Lab browser tests (${{ matrix.name }})
+        run: npx playwright test ${{ matrix.args }}
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: traces-${{ matrix.browser }}-${{ strategy.job-index }}
+          path: test-results/
+          retention-days: 7
