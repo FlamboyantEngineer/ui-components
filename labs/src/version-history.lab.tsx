@@ -153,9 +153,14 @@ function RecipeHistory() {
         onCompare={setCompared}
         onRestore={restore}
         onRename={(key, label) =>
-          setSaved((list) =>
-            list.map((version) => (version.id === key ? { ...version, label } : version)),
-          )
+          new Promise<void>((resolve) => {
+            window.setTimeout(() => {
+              setSaved((list) =>
+                list.map((version) => (version.id === key ? { ...version, label } : version)),
+              );
+              resolve();
+            }, 1500);
+          })
         }
         showAvatar
       />
@@ -209,7 +214,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A recipe's history"
-      description="Select a version to view it, two to compare them; restore one (a new current version) or rename it from its menu."
+      description="Select a version to view it, two to compare them; restore one (a new current version) or rename it from its menu. A rename takes a second and a half: press Escape while it saves and rename another version, and the late save leaves the new dialog open."
     >
       <RecipeHistory />
     </LabSection>

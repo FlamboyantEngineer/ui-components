@@ -250,6 +250,32 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
+  it('UIC-VERSION-HISTORY-1.6 settles a dismissed rename without closing the dialog opened since', async () => {
+    const user = userEvent.setup();
+    let settle!: () => void;
+    const onRename = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+    );
+    render(<VersionHistory versions={versions} currentKey="v5" onRename={onRename} />);
+    await user.click(within(await openMenu(1)).getByRole('menuitem', { name: 'Rename version' }));
+    const first = await screen.findByRole('dialog', { name: 'Rename version' });
+    await user.type(within(first).getByRole('textbox', { name: 'Version name' }), ' 2{Enter}');
+    expect(onRename).toHaveBeenCalledWith('v4', 'Final draft 2');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await user.click(within(await openMenu(3)).getByRole('menuitem', { name: 'Rename version' }));
+    const second = await screen.findByRole('dialog', { name: 'Rename version' });
+    const field = within(second).getByRole('textbox', { name: 'Version name' });
+    await user.type(field, ' notes');
+    const typed = (field as HTMLInputElement).value;
+    await act(async () => settle());
+    expect(screen.getByRole('dialog', { name: 'Rename version' })).toBeInTheDocument();
+    expect(field).toHaveValue(typed);
+  });
+
   it('UIC-VERSION-HISTORY-1.6 saves a name once per Enter or Control+Enter and shows a failure', async () => {
     const user = userEvent.setup();
     let fail!: (error: unknown) => void;

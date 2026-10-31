@@ -105,6 +105,36 @@ test.describe('Version History lab', () => {
     await expect(first).toHaveAttribute('data-named', 'true');
   });
 
+  test('UIC-VERSION-HISTORY-1.6 leaves a later rename open when a dismissed one settles', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('version-history');
+    const demo = page.locator('[data-lab-demo="recipe"]');
+    const rows = demo.getByRole('row');
+    await rows
+      .nth(0)
+      .getByRole('button', { name: /^Actions for/ })
+      .click();
+    await page.getByRole('menuitem', { name: 'Name this version' }).click();
+    const first = page.getByRole('dialog', { name: 'Name this version' });
+    await first.getByRole('textbox', { name: 'Version name' }).fill('Slow name');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Escape');
+    await expect(first).toBeHidden();
+    await rows
+      .nth(1)
+      .getByRole('button', { name: /^Actions for/ })
+      .click();
+    await page.getByRole('menuitem', { name: /^(Name this version|Rename version)$/ }).click();
+    const second = page.getByRole('dialog');
+    const field = second.getByRole('textbox', { name: 'Version name' });
+    await field.fill('Typed meanwhile');
+    await expect(rows.nth(0).locator('.ui-version-history__label')).toHaveText('Slow name');
+    await expect(second).toBeVisible();
+    await expect(field).toHaveValue('Typed meanwhile');
+  });
+
   test('UIC-VERSION-HISTORY-1.7 filters to named versions and one person', async ({
     page,
     lab,

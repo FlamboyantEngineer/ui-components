@@ -32,9 +32,10 @@ function NameViewDialog({
   const strings = useUiStrings();
   const [draft, setDraft] = useState<string | null>(null);
   const name = (draft ?? dialog?.label ?? '').trim();
-  const submit = async () => {
+  // `close` closes only the opening this save began in, never a dialog opened since.
+  const submit = async (close: () => void) => {
     await dialog?.onSubmit(name);
-    onClose();
+    close();
   };
   return (
     <Modal
