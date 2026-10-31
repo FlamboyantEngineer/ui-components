@@ -6,7 +6,7 @@ import {
   SortAscendingGlyph,
   UploadGlyph,
 } from '../../core/glyphs.js';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -794,5 +794,34 @@ describe('ActionRow', () => {
       />,
     );
     expect(container.querySelector('.ui-action-row')).toBeNull();
+  });
+
+  it('UIC-ACTION-ROW-3.1 leaves an Escape that an input method composition owns to the input method', async () => {
+    const user = userEvent.setup();
+    const onClearSelection = vi.fn();
+    render(
+      <ActionRow
+        selectedCount={2}
+        onClearSelection={onClearSelection}
+        lead={<input aria-label="Rename" />}
+        actions={[{ verb: 'delete', onPress: noop }]}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Rename' });
+    await user.click(input);
+    // Input methods have no user-event support: the composition events are dispatched directly.
+    fireEvent.compositionStart(input);
+    fireEvent.compositionUpdate(input, { data: 'か' });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- the key code 229 some browsers report as a composition ends
+    fireEvent.keyDown(input, { key: 'Escape', keyCode: 229 });
+    fireEvent.compositionEnd(input, { data: '' });
+    expect(onClearSelection).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('status')).toHaveTextContent('2 selected');
+
+    await user.keyboard('{Escape}');
+    expect(onClearSelection).toHaveBeenCalledTimes(1);
   });
 });
