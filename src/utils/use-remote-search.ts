@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLatest } from './use-latest.js';
 
 /** One page of a search's results; a `cursor` means another page follows. */
-interface RemoteSearchPage<T> {
+export interface RemotePage<T> {
   items: readonly T[];
   /** Passed back to the loader to fetch the next page; absent on the last page. */
   cursor?: string | undefined;
@@ -12,17 +12,17 @@ interface RemoteSearchPage<T> {
 
 /**
  * Fetches the results matching a query, or with `cursor` the page after the one that returned it;
- * it should stop when `signal` aborts.
+ * it should stop when `signal` aborts. A loader without pages returns the results alone.
  */
-export type RemoteSearchLoader<T> = (
+export type RemoteLoader<T> = (
   query: string,
   signal: AbortSignal,
   cursor?: string,
-) => Promise<RemoteSearchPage<T>>;
+) => Promise<readonly T[] | RemotePage<T>>;
 
 interface RemoteSearchOptions<T> {
   /** Without a loader nothing is searched. */
-  load?: RemoteSearchLoader<T> | undefined;
+  load?: RemoteLoader<T> | undefined;
   /**
    * What the results come from, such as the caller's own loader, as `load` may be a fresh adapter
    * each render. A new source ends the running search and the paging of the results.
@@ -58,6 +58,19 @@ export interface RemoteSearch<T> {
 }
 
 const defaultSearchDelay = 240;
+
+/**
+ * Runs `load` for one page, as a page: the first page is asked for with the query alone, as a loader
+ * without pages expects, and results returned alone are a last page.
+ */
+export async function loadRemotePage<T>(
+  load: RemoteLoader<T>,
+  { query, signal, cursor }: { query: string; signal: AbortSignal; cursor?: string | undefined },
+): Promise<RemotePage<T>> {
+  const result =
+    cursor === undefined ? await load(query, signal) : await load(query, signal, cursor);
+  return 'items' in result ? result : { items: result };
+}
 
 function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -140,8 +153,7 @@ export function useRemoteSearch<T>({
     const { signal } = next.scope;
     try {
       if (!isImmediate) await wait(searchDelay, signal);
-      // A first page is asked for with the query alone, as a loader without pages expects.
-      const page = await (loader.current ?? load)(trimmed, signal);
+      const page = await loadRemotePage(loader.current ?? load, { query: trimmed, signal });
       if (isCurrent(next.scope))
         commit({ ...next, items: page.items, cursor: page.cursor, status: 'idle' });
     } catch {
@@ -155,7 +167,11 @@ export function useRemoteSearch<T>({
     if (from.source !== latestSource.current) return;
     commit({ ...from, status: 'loadingMore' });
     try {
-      const page = await run(from.query.trim(), from.scope.signal, from.cursor);
+      const page = await loadRemotePage(run, {
+        query: from.query.trim(),
+        signal: from.scope.signal,
+        cursor: from.cursor,
+      });
       if (!isCurrent(from.scope)) return;
       commit({ ...from, items: [...from.items, ...page.items], cursor: page.cursor });
     } catch {

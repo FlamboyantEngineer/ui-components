@@ -374,6 +374,15 @@ Verification: `src/components/field/fieldset.test.tsx`, `e2e/form.spec.ts`
 Implementation: `src/components/field/fieldset.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/field-validation.test.tsx`, `e2e/form.spec.ts`
 
+## UIC-FIELD-11 - Pickers
+
+### UIC-FIELD-11.1 - Picker vocabulary
+
+The pickers built on fields (`Combobox`, `SelectField` and `PeoplePicker` on the combobox) shall share one option model, one remote loader and one way to draw an option and an empty list. An option (`PickerOption`) has an `id`, a `label`, an optional `description`, `icon` and `isDisabled`; a section (`PickerSection`) has an `id`, an optional `label` heading it, and `options`. A remote loader (`RemoteLoader`) takes the query, an abort signal and, for a next page, the cursor, and returns the results or a page (`RemotePage`, `{ items, cursor }`). An option row draws the option's icon, label and description in the picker's own `option`, `option-icon`, `option-label` and `option-description` slots, or the caller's `renderOption` content. An empty list shows the provider's `loading` while searching, `searchFailed` after a failure, `typeToSearch` while the text is too short, else the caller's empty state or `noResults`.
+
+Implementation: `src/components/field/field-picker.tsx`, `src/utils/use-remote-search.ts`
+Verification: `src/components/field/field-picker.test.tsx`
+
 ## Hooks
 
 | Hook                             | Kind      | Values                                                                  | Description                                                      |

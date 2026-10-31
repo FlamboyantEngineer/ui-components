@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { isSection, type ComboboxItem } from './combobox-options.js';
+import { isPickerSection } from '../field/field.js';
+import type { ComboboxItem } from './combobox-options.js';
 
 type Value = Key | Key[] | null | undefined;
 
@@ -26,7 +27,7 @@ export function decodeComboboxValue(value: Exclude<Value, undefined>): Exclude<V
 
 export function encodeComboboxItems(items: Iterable<ComboboxItem>): ComboboxItem[] {
   return Array.from(items, (item) =>
-    isSection(item)
+    isPickerSection(item)
       ? {
           ...item,
           id: toCollectionKey(item.id),

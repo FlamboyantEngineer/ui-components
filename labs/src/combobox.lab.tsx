@@ -29,7 +29,7 @@ const fruit: ComboboxItem[] = [
   { id: 'cherry', label: 'Cherry' },
   {
     id: 'citrus',
-    title: 'Citrus',
+    label: 'Citrus',
     options: [
       { id: 'lemon', label: 'Lemon' },
       { id: 'lime', label: 'Lime', isDisabled: true },
@@ -260,7 +260,7 @@ function RemoteSearch() {
         minSearchLength={2}
         searchDelay={300}
         loadItems={loadItems}
-        items={[{ id: 'recent', title: 'Recently used', options: cities.slice(0, 2) }]}
+        items={[{ id: 'recent', label: 'Recently used', options: cities.slice(0, 2) }]}
         renderEmptyState={() => 'No city matches; try another region.'}
         listHeader={
           <SegmentedChoice

@@ -32,8 +32,8 @@ describe('SelectField pages of replaced searches', () => {
     const loadOptions = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
       if (query === 'blue') throw new Error('offline');
       return cursor === undefined
-        ? { options: options(['alpha first']), cursor: 'alpha-page-2' }
-        : { options: [] };
+        ? { items: options(['alpha first']), cursor: 'alpha-page-2' }
+        : { items: [] };
     });
     render(<SelectField label="Words" options={[]} loadOptions={loadOptions} searchDelay={0} />);
     await user.click(screen.getByRole('button', { name: /Words$/ }));
@@ -61,18 +61,18 @@ describe('SelectField pages of replaced searches', () => {
     search('alpha');
     await waitFor(() => expect(pending.has('alpha first')).toBe(true));
     await act(async () =>
-      pending.get('alpha first')?.({ options: options(['alpha first']), cursor: 'a2' }),
+      pending.get('alpha first')?.({ items: options(['alpha first']), cursor: 'a2' }),
     );
     act(() => observers.at(-1)?.([{ isIntersecting: true }]));
     search('blue');
     await waitFor(() => expect(pending.has('blue first')).toBe(true));
     await act(async () =>
-      pending.get('blue first')?.({ options: options(['blue first']), cursor: 'b2' }),
+      pending.get('blue first')?.({ items: options(['blue first']), cursor: 'b2' }),
     );
     act(() => observers.at(-1)?.([{ isIntersecting: true }]));
     await waitFor(() => expect(pending.has('blue b2')).toBe(true));
-    await act(async () => pending.get('alpha a2')?.({ options: options(['alpha second']) }));
-    await act(async () => pending.get('blue b2')?.({ options: options(['blue second']) }));
+    await act(async () => pending.get('alpha a2')?.({ items: options(['alpha second']) }));
+    await act(async () => pending.get('blue b2')?.({ items: options(['blue second']) }));
     expect(optionLabels()).toEqual(['blue first', 'blue second']);
   });
 });

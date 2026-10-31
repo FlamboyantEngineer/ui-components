@@ -1,16 +1,14 @@
 'use client';
 
-import { useMemo, type CSSProperties, type FocusEvent } from 'react';
+import { useMemo, type FocusEvent, type ReactNode } from 'react';
 import {
   Autocomplete,
   Input,
   ListBox,
   ListBoxLoadMoreItem,
   ListLayout,
-  PopoverContext,
   SearchField,
   useFilter,
-  useSlottedContext,
   Virtualizer,
   type AutocompleteProps,
   Popover,
@@ -19,9 +17,9 @@ import { PopoverPresence } from '../popover/popover.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import { SelectListItems, type SelectOptionsDisplay } from './select-option.js';
-import { flattenSelectItems, type SelectFieldItem } from './select-options.js';
+import { flattenPickerItems, pickerListLayout, usePickerPopoverStyle } from '../field/field.js';
+import { type SelectFieldItem } from './select-options.js';
 
 /** The next page of a search's results, loaded when the end of the list scrolls into view. */
 interface SelectListMore {
@@ -41,7 +39,7 @@ export interface SelectListProps extends SelectOptionsDisplay {
   /** A search is running: a status line says so above the options it replaces. */
   isLoading: boolean;
   /** Shown when no option is listed. */
-  emptyMessage: string;
+  emptyMessage: ReactNode;
   /** Renders only the options in view. */
   isVirtualized: boolean;
   /** Ends the list with a row that loads the next page; `null` when there is none. */
@@ -57,9 +55,6 @@ const hooks = createHooks('select-field', [
   'load-more',
   'empty',
 ]);
-
-// Estimates the virtualizer starts from; it measures each row as it renders.
-const listLayoutOptions = { estimatedRowSize: 32, estimatedHeadingSize: 26, loaderSize: 32 };
 
 /** Starts typing after the filter text a key on the closed trigger seeded, not over it. */
 function moveCaretToEnd(event: FocusEvent<HTMLInputElement>) {
@@ -90,7 +85,7 @@ function OptionList(props: SelectListProps) {
   );
   if (!props.isVirtualized) return list;
   return (
-    <Virtualizer layout={ListLayout} layoutOptions={listLayoutOptions}>
+    <Virtualizer layout={ListLayout} layoutOptions={pickerListLayout}>
       {list}
     </Virtualizer>
   );
@@ -103,14 +98,12 @@ function OptionList(props: SelectListProps) {
  */
 export function SelectList(props: SelectListProps) {
   const strings = useUiStrings();
-  const zIndex = useLayerZIndex('dropdown');
+  const style = usePickerPopoverStyle();
   const { contains } = useFilter({ sensitivity: 'base' });
-  const context = useSlottedContext(PopoverContext);
-  const contextStyle = typeof context?.style === 'object' ? (context.style as CSSProperties) : {};
   const descriptions = useMemo(
     () =>
       new Map(
-        flattenSelectItems(props.items).map((option) => [
+        flattenPickerItems(props.items).map((option) => [
           toCollectionKey(option.id),
           option.description,
         ]),
@@ -119,7 +112,9 @@ export function SelectList(props: SelectListProps) {
   );
   const filter: AutocompleteProps<object>['filter'] = (text, query, node) => {
     const description = descriptions.get(String(node.key));
-    return contains(text, query) || Boolean(description && contains(description, query));
+    return (
+      contains(text, query) || (typeof description === 'string' && contains(description, query))
+    );
   };
   return (
     <>
@@ -128,7 +123,7 @@ export function SelectList(props: SelectListProps) {
         {...hooks.slot('popover', { layer: 'dropdown' })}
         offset={4}
         containerPadding={8}
-        style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
+        style={style}
       >
         {props.isLoading && props.items.length > 0 ? (
           <div {...hooks.slot('loading')} role="status">

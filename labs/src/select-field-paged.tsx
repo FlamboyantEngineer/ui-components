@@ -33,7 +33,7 @@ export function Paged() {
       const start = Number(cursor ?? 0);
       const end = start + 20;
       return {
-        options: matches.slice(start, end),
+        items: matches.slice(start, end),
         cursor: end < matches.length ? String(end) : undefined,
       };
     },

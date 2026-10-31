@@ -1,25 +1,23 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRemoteSearch, type RemoteSearch } from '../../utils/use-remote-search.js';
+import {
+  loadRemotePage,
+  useRemoteSearch,
+  type RemoteLoader,
+  type RemotePage,
+  type RemoteSearch,
+} from '../../utils/use-remote-search.js';
 import { mergeSelectOptions, type SelectFieldOption } from './select-options.js';
 
 /** One page of a search's results; a `cursor` means another page follows. */
-export interface SelectFieldPage {
-  options: readonly SelectFieldOption[];
-  /** Passed back to the loader to fetch the next page; absent on the last page. */
-  cursor?: string | undefined;
-}
+export type SelectFieldPage = RemotePage<SelectFieldOption>;
 
 /**
  * Fetches the options matching a query, or with `cursor` the page after the one that returned it; it
  * should stop when `signal` aborts.
  */
-export type SelectFieldLoader = (
-  query: string,
-  signal: AbortSignal,
-  cursor?: string,
-) => Promise<readonly SelectFieldOption[] | SelectFieldPage>;
+export type SelectFieldLoader = RemoteLoader<SelectFieldOption>;
 
 interface SelectSearchOptions {
   loadOptions?: SelectFieldLoader | undefined;
@@ -32,10 +30,6 @@ interface SelectSearchOptions {
 export interface SelectSearch extends RemoteSearch<SelectFieldOption> {
   /** Every option a search has returned while the field is mounted, so chosen ones keep labels. */
   seen: readonly SelectFieldOption[];
-}
-
-function toPage(result: readonly SelectFieldOption[] | SelectFieldPage): SelectFieldPage {
-  return 'options' in result ? result : { options: result };
 }
 
 /**
@@ -51,13 +45,9 @@ export function useSelectSearch({
   const search = useRemoteSearch<SelectFieldOption>({
     load: loadOptions
       ? async (query, signal, cursor) => {
-          const page = toPage(
-            cursor === undefined
-              ? await loadOptions(query, signal)
-              : await loadOptions(query, signal, cursor),
-          );
-          if (!signal.aborted) setSeen((previous) => mergeSelectOptions(page.options, previous));
-          return { items: page.options, cursor: page.cursor };
+          const page = await loadRemotePage(loadOptions, { query, signal, cursor });
+          if (!signal.aborted) setSeen((previous) => mergeSelectOptions(page.items, previous));
+          return page;
         }
       : undefined,
     source: loadOptions,

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { flattenPickerItems, isPickerSection } from '../field/field.js';
 import {
   diffSelectKeys,
-  flattenSelectItems,
-  isSelectFieldGroup,
   mergeSelectOptions,
   orderSelectKeys,
   resolveSelectOptions,
@@ -18,10 +17,10 @@ const fruit = [
 describe('select options', () => {
   it('UIC-SELECT-FIELD-7.1 flattens groups into their options in display order', () => {
     const group = { id: 'stone', label: 'Stone fruit', options: [{ id: 'plum', label: 'Plum' }] };
-    expect(isSelectFieldGroup(group)).toBe(true);
-    expect(isSelectFieldGroup({ id: 'apple', label: 'Apple' })).toBe(false);
+    expect(isPickerSection(group)).toBe(true);
+    expect(isPickerSection({ id: 'apple', label: 'Apple' })).toBe(false);
     expect(
-      flattenSelectItems([{ id: 'apple', label: 'Apple' }, group, { id: 'pear', label: 'Pear' }]),
+      flattenPickerItems([{ id: 'apple', label: 'Apple' }, group, { id: 'pear', label: 'Pear' }]),
     ).toEqual([
       { id: 'apple', label: 'Apple' },
       { id: 'plum', label: 'Plum' },

@@ -1,44 +1,20 @@
 // The option model of a select field: chosen keys, their order, their options and what changed.
 
 import type { Key } from '../../core/props.js';
-import type { IconSource } from '../icon/icon.js';
+import type { PickerItem, PickerOption, PickerSection } from '../field/field.js';
 
 /** One choice of a select field. */
-export interface SelectFieldOption {
-  /** The stored value. */
-  id: Key;
-  /** The visible text, matched by the filter and announced. */
-  label: string;
-  /** Secondary text on the option's row, also matched by the filter. */
-  description?: string | undefined;
-  /** An imported icon component or rendered element, shown on the row, in the trigger and on the chip. */
-  icon?: IconSource;
-  isDisabled?: boolean | undefined;
-}
+export type SelectFieldOption = PickerOption;
 
-/** A headed section of a select field's options; a group without a label only sets them apart. */
-export interface SelectFieldGroup {
-  id: Key;
-  /** The section's heading, which names its options' group. */
-  label?: string | undefined;
-  options: readonly SelectFieldOption[];
-}
+/** A section of a select field's options; a section without a label only sets them apart. */
+export type SelectFieldGroup = PickerSection;
 
 /** An entry of a select field's options: one option or a group of them. */
-export type SelectFieldItem = SelectFieldOption | SelectFieldGroup;
+export type SelectFieldItem = PickerItem;
 
 /** The option the field shows for a chosen key; a key no option names is shown as itself. */
 export interface ChosenSelectOption extends SelectFieldOption {
   isMissing: boolean;
-}
-
-export function isSelectFieldGroup(item: SelectFieldItem): item is SelectFieldGroup {
-  return 'options' in item && Array.isArray(item.options);
-}
-
-/** The options of a list of options and groups, in display order. */
-export function flattenSelectItems(items: readonly SelectFieldItem[]): SelectFieldOption[] {
-  return items.flatMap((item) => (isSelectFieldGroup(item) ? item.options : [item]));
 }
 
 /** The chosen keys of a single (`Key | null`) or multiple (`Key[]`) value, without repeats. */

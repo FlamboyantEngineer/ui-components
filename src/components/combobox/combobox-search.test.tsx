@@ -118,8 +118,8 @@ describe('Combobox remote search', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const loadItems = vi.fn<ComboboxLoader>(async (query) => [
-      { id: 'recent', title: 'Recently used', options: [{ id: 'cairo', label: 'Cairo' }] },
-      { id: 'found', title: 'Search results', options: findCities(query) },
+      { id: 'recent', label: 'Recently used', options: [{ id: 'cairo', label: 'Cairo' }] },
+      { id: 'found', label: 'Search results', options: findCities(query) },
     ]);
     render(<Combobox label="City" loadItems={loadItems} searchDelay={0} onChange={onChange} />);
     await user.click(input());
@@ -153,7 +153,7 @@ describe('Combobox remote search', () => {
   it('UIC-COMBOBOX-5.1 lists the given items while the text is too short to search', async () => {
     const user = userEvent.setup();
     const loadItems = vi.fn<ComboboxLoader>(async (query) => findCities(query));
-    const recent = [{ id: 'recent', title: 'Recently used', options: cities.slice(4) }];
+    const recent = [{ id: 'recent', label: 'Recently used', options: cities.slice(4) }];
     render(<Combobox label="City" loadItems={loadItems} items={recent} searchDelay={0} />);
     await user.click(input());
     await user.keyboard('{ArrowDown}');

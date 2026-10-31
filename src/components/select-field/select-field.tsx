@@ -9,7 +9,8 @@ import type { Key } from '../../core/props.js';
 import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
 import { SelectControl, type SelectKeysValue } from './select-control.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
-import { flattenSelectItems, type SelectFieldItem } from './select-options.js';
+import { flattenPickerItems } from '../field/field.js';
+import { type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
@@ -87,7 +88,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
         data: {
           mode,
           selectionMode,
-          icons: flattenSelectItems(config.options).some((option) => Boolean(option.icon)),
+          icons: flattenPickerItems(config.options).some((option) => Boolean(option.icon)),
         },
       })}
       state={state}
