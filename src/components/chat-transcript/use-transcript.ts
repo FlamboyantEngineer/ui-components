@@ -5,12 +5,15 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
   type RefObject,
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import {
   announceMessage,
   applyArrivals,
@@ -23,6 +26,7 @@ import { useTranscriptAnnouncer } from './transcript-announcer.js';
 import {
   collectTranscriptItems,
   diffTranscriptKeys,
+  type TranscriptChange,
   type TranscriptItem,
 } from './transcript-items.js';
 import type { TranscriptNavigation } from './transcript-keyboard.js';
@@ -72,8 +76,11 @@ function measureWindow(runtime: TranscriptRuntime, settings: TranscriptSettings)
 }
 
 /** The children a virtualized transcript keeps mounted wherever its window is. */
-function collectForced(runtime: TranscriptRuntime, keys: readonly string[], highlight?: string) {
-  const arrivals = runtime.keys === null ? [] : diffTranscriptKeys(runtime.keys, keys).arrivals;
+function collectForced(
+  runtime: TranscriptRuntime,
+  keys: readonly string[],
+  { arrivals, highlight }: { arrivals: readonly string[]; highlight: string | undefined },
+) {
   return [
     runtime.activeKey,
     runtime.pendingFocus?.key,
@@ -86,23 +93,72 @@ function collectForced(runtime: TranscriptRuntime, keys: readonly string[], high
   ];
 }
 
-/** How many messages there are from the first unread one to the end. */
-function countUnread(runtime: TranscriptRuntime, keys: readonly string[], firstUnreadId?: string) {
+/** How many messages there are from the first unread one to the end, read from there on. */
+function countUnread(
+  runtime: TranscriptRuntime,
+  { keys, indexOf }: { keys: readonly string[]; indexOf: ReadonlyMap<string, number> },
+  firstUnreadId?: string,
+) {
   const key = resolveMessageKey(runtime, firstUnreadId);
-  const start = key === undefined ? -1 : keys.indexOf(key);
-  if (start === -1) return 0;
-  return keys.slice(start).filter((key) => isTranscriptMessage(runtime, key)).length;
+  const start = key === undefined ? undefined : indexOf.get(key);
+  if (start === undefined) return 0;
+  let count = 0;
+  for (let index = start; index < keys.length; index += 1) {
+    if (isTranscriptMessage(runtime, keys[index] as string)) count += 1;
+  }
+  return count;
 }
 
-/** Processes each commit: arrivals, scroll keeping, announcements, highlight and pending focus. */
+/** A commit's keys and window, with how the keys changed since the last commit that read them. */
+interface CommitInput {
+  keys: string[];
+  indexOf: ReadonlyMap<string, number>;
+  mountedItems: string[];
+  change: TranscriptChange;
+}
+
+const noChange: TranscriptChange = { isReset: false, arrivals: [], older: [] };
+
+/** What a commit's pass reads besides the keys and window. */
+function readPassSettings(settings: TranscriptSettings) {
+  const { scrollMode, highlightedMessageId, hasOlder, isLoadingOlder, firstUnreadId } = settings;
+  return { scrollMode, highlightedMessageId, hasOlder, isLoadingOlder, firstUnreadId };
+}
+
+/** Focuses the message a focus request waited on, once a commit mounted it. */
+function flushPendingFocus(runtime: TranscriptRuntime, settings: TranscriptSettings) {
+  const pending = runtime.pendingFocus;
+  runtime.pendingFocus = null;
+  if (pending && runtime.registry.element(pending.key)) focusMessage(runtime, settings, pending);
+}
+
+/**
+ * Processes a commit that changed the keys, the window or the settings the pass reads: arrivals,
+ * scroll keeping, announcements, highlight and pending focus. A commit that changed none of them,
+ * such as a token streaming into a message, only flushes a pending focus; the content's resize
+ * keeps the scroll position.
+ */
 function useCommit(
   runtime: TranscriptRuntime,
   latest: RefObject<TranscriptSettings>,
-  commit: { keys: string[]; indexOf: ReadonlyMap<string, number>; mountedItems: string[] },
+  commit: CommitInput,
 ) {
+  const lastPass = useRef<{ mountedItems: string[]; settings: object } | null>(null);
   useLayoutEffect(() => {
     const settings = latest.current;
-    const change = diffTranscriptKeys(runtime.keys, commit.keys);
+    const passSettings = readPassSettings(settings);
+    const isNewKeys = runtime.keys !== commit.keys;
+    const last = lastPass.current;
+    if (
+      !isNewKeys &&
+      last?.mountedItems === commit.mountedItems &&
+      isShallowEqual(last.settings, passSettings)
+    ) {
+      flushPendingFocus(runtime, settings);
+      return;
+    }
+    lastPass.current = { mountedItems: commit.mountedItems, settings: passSettings };
+    const change = isNewKeys ? commit.change : noChange;
     runtime.keys = commit.keys;
     runtime.indexOf = commit.indexOf;
     runtime.mountedItems = commit.mountedItems;
@@ -114,14 +170,11 @@ function useCommit(
     for (const key of commit.mountedItems) runtime.seen.add(key);
     refreshMounted(runtime);
     publishView(runtime, settings);
-    applyArrivals(runtime, settings, change.arrivals);
-    runtime.keeper.settle();
+    if (!applyArrivals(runtime, settings, change.arrivals)) runtime.keeper.settle();
     countUnseen(runtime, change.arrivals);
     noteOlder(runtime, settings, change.older);
     applyHighlight(runtime, settings);
-    const pending = runtime.pendingFocus;
-    runtime.pendingFocus = null;
-    if (pending && runtime.registry.element(pending.key)) focusMessage(runtime, settings, pending);
+    flushPendingFocus(runtime, settings);
     syncWithScroll(runtime, settings);
   });
 }
@@ -195,8 +248,12 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
   const strings = useUiStrings();
   const [runtime] = useState(createTranscriptRuntime);
   const items = useMemo(() => collectTranscriptItems(children), [children]);
-  const keys = useMemo(() => items.map((item) => item.key), [items]);
+  // New children with the same keys, as each streamed token brings, keep the same keys array.
+  const itemKeys = useMemo(() => items.map((item) => item.key), [items]);
+  const keys = useShallowStable(itemKeys);
   const indexOf = useMemo(() => new Map(keys.map((key, index) => [key, index])), [keys]);
+  // Diffed once per new keys array, against the keys the last commit read.
+  const change = useMemo(() => diffTranscriptKeys(runtime.keys, keys), [runtime, keys]);
   const announcer = useTranscriptAnnouncer(strings);
   const [ui, setUi] = useState(initialUi);
   const [range, setRange] = useState<WindowRange | null>(null);
@@ -210,23 +267,24 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
     setRange,
     requestRender,
   });
-  const forced = collectForced(
-    runtime,
-    keys,
-    resolveMessageKey(runtime, options.highlightedMessageId),
-  );
+  const forced = collectForced(runtime, keys, {
+    arrivals: runtime.keys === null ? [] : change.arrivals,
+    highlight: resolveMessageKey(runtime, options.highlightedMessageId),
+  });
   const mounted = options.virtualized
     ? selectMounted(indexOf, range ?? resolveTailRange(keys), forced)
     : null;
-  const mountedItems = mounted ? mounted.map((index) => keys[index] as string) : keys;
-  useCommit(runtime, latest, { keys, indexOf, mountedItems });
+  const mountedItems = useShallowStable(
+    mounted ? mounted.map((index) => keys[index] as string) : keys,
+  );
+  useCommit(runtime, latest, { keys, indexOf, mountedItems, change });
   useObservers(runtime, latest, items.length === 0);
   return {
     runtime,
     items,
     mounted,
     ui,
-    unreadCount: countUnread(runtime, keys, options.firstUnreadId),
+    unreadCount: countUnread(runtime, { keys, indexOf }, options.firstUnreadId),
     announcement: announcer.text,
     navigation: createNavigation(runtime, latest, options.onEscape),
     onScroll() {

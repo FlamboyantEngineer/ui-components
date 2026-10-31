@@ -6,6 +6,7 @@ import {
   getViewport,
   installTranscriptLayout,
   offsetInViewport,
+  resizeContent,
   scrollViewport,
   uninstallTranscriptLayout,
   type TranscriptLayout,
@@ -95,7 +96,7 @@ describe('ChatTranscript history', () => {
     expect(viewport.scrollTop).toBe(660);
     expect(article('m24')).toHaveFocus();
     layout.heights.set('m12', 150);
-    rerender(<History hasOlder first={11} />);
+    resizeContent();
     expect(offsetInViewport(article('m24'))).toBe(20);
   });
 
