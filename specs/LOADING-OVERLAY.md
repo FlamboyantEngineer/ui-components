@@ -1,6 +1,6 @@
 # Loading Overlay
 
-The loading overlay family blocks a surface while work it depends on runs. `LoadingCard` is the status card: what is loading, how far it got and what it is doing now. `LoadingOverlay` covers a positioned surface with a scrim and centres the card on it. `LoadingRegion` is a bounded region that marks itself busy, makes its content inert and shows the overlay while `isLoading` is true. Progress beside content that stays usable is a [Progress Bar](PROGRESS-BAR.md).
+The loading overlay family blocks a surface while work it depends on runs. `LoadingCard` is the status card: what is loading, how far it got and what it is doing now. `LoadingOverlay` covers a positioned surface with a scrim and centres the card on it. `LoadingRegion` is a bounded region that marks its content busy and inert and shows the overlay while `isLoading` is true. Progress beside content that stays usable is a [Progress Bar](PROGRESS-BAR.md).
 
 ## UIC-LOADING-OVERLAY-1 - Card
 
@@ -73,14 +73,14 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 ### UIC-LOADING-OVERLAY-3.1 - Blocking while loading
 
-While `isLoading` is true, `LoadingRegion` shall set `aria-busy="true"` and `data-loading` on its root, make its `ui-loading-region__content` inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. When loading ends, busy and inert are removed and the content is usable again; the overlay leaves once its exit ends ([UIC-LOADING-OVERLAY-2.4](#uic-loading-overlay-24---entering-and-exiting)). Keyboard focus inside the content when blocking starts moves to the region's root, which is focusable (`tabindex="-1"`) only while blocking, so focus is not lost to the document; when blocking ends, focus returns to the element that had it, unless the reader has moved focus elsewhere meanwhile.
+While `isLoading` is true, `LoadingRegion` shall set `data-loading` on its root, mark its `ui-loading-region__content` busy (`aria-busy="true"`) and inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. The overlay's status card is never inside a busy element, so its label is announced during the wait rather than held back until the region is ready. When loading ends, busy and inert are removed and the content is usable again; the overlay leaves once its exit ends ([UIC-LOADING-OVERLAY-2.4](#uic-loading-overlay-24---entering-and-exiting)). Keyboard focus inside the content when blocking starts moves to the region's root, which is focusable (`tabindex="-1"`) only while blocking, so focus is not lost to the document; when blocking ends, focus returns to the element that had it, unless the reader has moved focus elsewhere meanwhile.
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/components/loading-overlay/use-blocked-focus.ts`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ### UIC-LOADING-OVERLAY-3.2 - Show delay
 
-With `delay` (milliseconds), `LoadingRegion` shall stay usable and unmarked until `isLoading` has been true for that long, then block as above; loading that ends sooner never shows the overlay, marks the region busy or makes its content inert. A `LoadingOverlay` given `delay` renders nothing until it has been mounted that long.
+With `delay` (milliseconds), `LoadingRegion` shall stay usable and unmarked until `isLoading` has been true for that long, then block as above; loading that ends sooner never shows the overlay, marks the content busy or makes its content inert. A `LoadingOverlay` given `delay` renders nothing until it has been mounted that long.
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/utils/use-delayed-flag.ts`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/loading-overlay.spec.ts`

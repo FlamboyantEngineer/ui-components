@@ -170,7 +170,7 @@ describe('LoadingRegion', () => {
     );
     const region = container.firstElementChild as HTMLElement;
     const content = region.querySelector('.ui-loading-region__content');
-    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     expect(region).not.toHaveAttribute('data-loading');
     expect(content).not.toHaveAttribute('inert');
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
@@ -182,13 +182,18 @@ describe('LoadingRegion', () => {
         </button>
       </LoadingRegion>,
     );
-    expect(region).toHaveAttribute('aria-busy', 'true');
+    expect(region?.querySelector('.ui-loading-region__content')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
     expect(region).toHaveAttribute('data-loading', 'true');
     expect(content).toHaveAttribute('inert');
     const overlay = region.querySelector(':scope > .ui-loading-overlay');
     expect(overlay).not.toBeNull();
     expect(overlay?.closest('[inert]')).toBeNull();
     expect(within(region).getByRole('status')).toHaveTextContent('Saving');
+    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region.querySelector('[aria-busy] [role="status"]')).toBeNull();
     expect(region.querySelector('.ui-loading-card__step')).toHaveTextContent('1 of 2');
     expectHooksMatchSpec(container, 'LOADING-OVERLAY', { slots: ['content'] });
 
@@ -199,7 +204,7 @@ describe('LoadingRegion', () => {
         </button>
       </LoadingRegion>,
     );
-    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     expect(content).not.toHaveAttribute('inert');
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Apply' }));
@@ -348,7 +353,7 @@ describe('LoadingOverlay presence', () => {
     animations = [{ finished: exit }];
     rerender(<LoadingRegion label="Loading">Content</LoadingRegion>);
     const region = container.querySelector('.ui-loading-region');
-    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('inert');
     expect(cover()).toHaveAttribute('data-exiting', 'true');
     await act(async () => {
@@ -367,7 +372,7 @@ describe('LoadingOverlay presence', () => {
     );
     const region = container.querySelector('.ui-loading-region') as HTMLElement;
     const content = region.querySelector('.ui-loading-region__content');
-    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     expect(region).not.toHaveAttribute('data-loading');
     expect(content).not.toHaveAttribute('inert');
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
@@ -378,7 +383,10 @@ describe('LoadingOverlay presence', () => {
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(region).toHaveAttribute('aria-busy', 'true');
+    expect(region?.querySelector('.ui-loading-region__content')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
     expect(content).toHaveAttribute('inert');
     expect(region.querySelector('.ui-loading-overlay')).not.toBeNull();
 
@@ -404,7 +412,7 @@ describe('LoadingOverlay presence', () => {
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
 
     rerender(<LoadingOverlay delay={300} label="Loading" />);
