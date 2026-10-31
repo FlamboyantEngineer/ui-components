@@ -77,10 +77,9 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
   const latest = useLatest(state);
   const [initial] = useState(() => state.value);
   useEffect(() => {
-    const form = findForm(slots);
-    const document = form?.ownerDocument;
+    const document = (slots.read('root') ?? slots.read('control'))?.ownerDocument;
     const view = document?.defaultView;
-    if (!form || !document || !view) return undefined;
+    if (!document || !view) return undefined;
     // The same hold for the field's whole life.
     const hold = readHold(latest.current);
     let timer: number | undefined;
@@ -90,7 +89,10 @@ function useFormReset(state: FieldState<unknown>, slots: FieldSlots) {
       if (!isFieldValueEqual(latest.current.value, initial)) latest.current.setValue(initial);
     };
     const onReset = (event: Event) => {
-      if (event.target !== form) return;
+      // The form that owns the control now, read at each reset, so a control moved to another
+      // form (its `form` attribute, a form replaced) follows its current owner.
+      const form = findForm(slots);
+      if (!form || event.target !== form) return;
       if (hold) hold.isHeld = true;
       view.clearTimeout(timer);
       timer = view.setTimeout(() => restore(event), 0);

@@ -8,6 +8,7 @@ import {
   useState,
   type FormEvent,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { Form as AriaForm } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -26,6 +27,7 @@ import {
 import {
   FormProblemContext,
   createFormProblemStore,
+  inDocumentOrder,
   type FormProblemStore,
 } from './form-problems.js';
 import {
@@ -126,6 +128,34 @@ function useInvalidFocus(fields: Set<FieldRegistration>) {
 }
 
 /**
+ * Tells the stores when fields move in the document without changing their issues (keyed fields
+ * reordered), so the problem list and the blockers keep document order. It sorts the fields once per
+ * batch of DOM changes inside the form, and only notifies when their order changed.
+ */
+function useOrderNotify(
+  form: RefObject<HTMLFormElement | null>,
+  fields: ReadonlySet<FieldRegistration>,
+  notify: () => void,
+) {
+  useEffect(() => {
+    const element = form.current;
+    const view = element?.ownerDocument.defaultView;
+    if (!element || !view) return undefined;
+    let order = inDocumentOrder(fields);
+    const observer = new view.MutationObserver(() => {
+      const next = inDocumentOrder(fields);
+      if (next.length === order.length && next.every((field, index) => field === order[index])) {
+        return;
+      }
+      order = next;
+      notify();
+    });
+    observer.observe(element, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [form, fields, notify]);
+}
+
+/**
  * A form on React Aria's `Form` that validates its fields on submit: it shows every field's
  * validation and, while any field has an error or is still being checked, blocks the submit and
  * focuses the first such field. `validationErrors` (a server's answer) show on the fields they name
@@ -147,6 +177,10 @@ export function Form({
   const [problems] = useState(() => createFormProblemStore(fields));
   const notify = useBatchedNotify(problems);
   const { validity, notifyValidity } = useValidity(fields, onValidityChange);
+  const notifyAll = useCallback(() => {
+    notify();
+    notifyValidity();
+  }, [notify, notifyValidity]);
   const register = useCallback(
     (field: FieldRegistration) => {
       fields.add(field);
@@ -170,6 +204,7 @@ export function Form({
     onValidityChange: notifyValidity,
   });
   const form = useInvalidFocus(fields);
+  useOrderNotify(form, fields, notifyAll);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
   const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);
   const submit = (event: FormEvent<HTMLFormElement>) => {

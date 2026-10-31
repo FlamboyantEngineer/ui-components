@@ -1,8 +1,32 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Input } from '../../primitives/index.js';
+import { Field, useFieldState } from './field.js';
+
+/** A field whose input belongs to the form named by `form`, wherever the field sits. */
+function OwnedField({ form }: { form: string }) {
+  const state = useFieldState<string>({ defaultValue: 'initial' });
+  return (
+    <Field state={state} label="Note">
+      {(control) => (
+        <Input
+          {...control}
+          form={form}
+          value={state.value}
+          onChange={(event) => state.setValue(event.target.value)}
+        />
+      )}
+    </Field>
+  );
+}
+
+function resetForm(id: string) {
+  const form = document.getElementById(id) as HTMLFormElement;
+  fireEvent.reset(form);
+}
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -94,5 +118,33 @@ describe('Field in a form', () => {
     });
     expect(invalid.defaultPrevented).toBe(false);
     expect(root(container)).toHaveAttribute('data-validation', 'invalid');
+  });
+
+  it('UIC-FIELD-2.6 resets with the form its control belongs to now', async () => {
+    const user = userEvent.setup();
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    const view = (form: string) => (
+      <>
+        <form id="first" aria-label="First" />
+        <form id="second" aria-label="Second" />
+        <OwnedField form={form} />
+      </>
+    );
+    const { rerender } = render(view('first'));
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Note' });
+    await user.clear(input);
+    await user.type(input, 'edited');
+    rerender(view('second'));
+    resetForm('first');
+    await settle();
+    expect(input).toHaveValue('edited');
+    resetForm('second');
+    await settle();
+    expect(input).toHaveValue('initial');
+    await user.type(input, ' again');
+    rerender(view('first'));
+    resetForm('first');
+    await settle();
+    expect(input).toHaveValue('initial');
   });
 });
