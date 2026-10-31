@@ -121,9 +121,13 @@ function useLeaveRequests(store: UnsavedChangesStore) {
   const [isOpen, setOpen] = useState(false);
   const confirmLeave = useCallback(
     (options: ConfirmLeaveOptions = {}) => {
-      if (!store.getSummary().isDirty) return Promise.resolve(true);
+      const displaced = pending.current;
+      displaced?.settle(false);
+      if (!store.getSummary().isDirty) {
+        if (displaced) setOpen(false);
+        return Promise.resolve(true);
+      }
       return new Promise<boolean>((resolve) => {
-        pending.current?.settle(false);
         let isSettled = false;
         nextId.current += 1;
         const request: LeaveRequest = {
