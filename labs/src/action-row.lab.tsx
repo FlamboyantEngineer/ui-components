@@ -179,6 +179,19 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="Custom action without an icon"
+      description="A custom action's icon is optional: without one it shows its label as text, still a toggle."
+    >
+      <div data-lab-case="no-icon">
+        <ActionRow
+          actions={[
+            { verb: 'custom', label: 'Schedule', isSelected: false, onPress: noop },
+            { verb: 'custom', icon: HelpGlyph, label: 'Help', onPress: noop },
+          ]}
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Menus and disabled reason"
       description="The more verb and the custom sort action open menus of typed items. The disabled delete keeps focus so its tooltip can explain why."
     >

@@ -80,6 +80,21 @@ describe('Button', () => {
     },
   );
 
+  it('UIC-BUTTON-11.1 shows its label as text when it has neither an icon nor children', () => {
+    const showsIcon = false as boolean;
+    render(
+      <>
+        <Button icon={showsIcon && CopyGlyph} label="Copy" />
+        <Button label="Help" href="#help" />
+      </>,
+    );
+    const copy = screen.getByRole('button', { name: 'Copy' });
+    expect(copy).toHaveTextContent('Copy');
+    expect(copy.querySelector('.ui-button__label')).toHaveTextContent('Copy');
+    expect(copy).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveTextContent('Help');
+  });
+
   it('UIC-BUTTON-11.2 publishes variant and size, ghost and medium by default', () => {
     const { rerender } = render(<Button icon={MoreGlyph} label="More" />);
     const button = screen.getByRole('button');
