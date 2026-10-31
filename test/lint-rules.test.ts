@@ -102,6 +102,27 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     );
   });
 
+  it('UIC-LABS-3.2 UIC-LABS-3.7 keeps lab addresses and control heights in the e2e fixture', async () => {
+    const spec = (body: string) =>
+      `import { expect, test } from './fixtures.js';\ntest('probe', async ({ page }) => {\n${body}\n});\n`;
+    const restricted = async (body: string, filePath = 'e2e/probe.spec.ts') =>
+      (await ruleIds(spec(body), filePath)).filter((id) => id === 'no-restricted-syntax').length;
+    expect(await restricted(`  page.locator('[data-lab-cell="size=md"]');`)).toBe(1);
+    expect(await restricted('  page.locator(`[data-lab-family="${String(1)}"] .ui-probe`);')).toBe(
+      1,
+    );
+    expect(
+      await restricted("  await expect(page.locator('.ui-probe')).toHaveCSS('height', '28px');"),
+    ).toBe(1);
+    expect(
+      await restricted(
+        "  await expect(page.locator('.ui-probe')).toHaveCSS('height', '28px');",
+        'e2e/control-sizes.spec.ts',
+      ),
+    ).toBe(0);
+    expect(await restricted("  page.locator('[data-lab-cell]');")).toBe(0);
+  });
+
   it('does not apply library rules outside src', async () => {
     expect(
       await ruleIds("import './chrome.css';\nexport {};\n", 'labs/src/probe.ts'),

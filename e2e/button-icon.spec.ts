@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Button icon-only content', () => {
   test('UIC-BUTTON-11.1 UIC-BUTTON-11.2 draws named square buttons at four sizes', async ({
@@ -71,10 +71,9 @@ test.describe('Button icon-only content', () => {
       await expect(tooltip.locator('.ui-shortcut__key')).toHaveText(['Ctrl', 'Z']);
       await expect(undo).toHaveAccessibleName('Undo');
       await lab.expectAccessible();
-      await page
-        .locator('[data-lab-family="button-icon-cases"]')
+      await matrix(page, 'button-icon-cases')
         .locator(
-          '[data-lab-cell="hint=tooltip and shortcut size=md"] .ui-button[data-content="icon"]',
+          `${cellSelector('hint=tooltip and shortcut size=md')} .ui-button[data-content="icon"]`,
         )
         .focus();
       await expect(
@@ -88,9 +87,7 @@ test.describe('Button icon-only content', () => {
     lab,
   }) => {
     await lab.open('button');
-    const demo = page
-      .locator('[data-lab-family="button-icon-cases"]')
-      .locator('[data-lab-demo="tooltip-name"]');
+    const demo = matrix(page, 'button-icon-cases').locator('[data-lab-demo="tooltip-name"]');
     const rename = demo.getByRole('button', { name: 'Rename' });
     const remove = demo.getByRole('button', { name: 'Delete' });
     await remove.focus();
@@ -106,9 +103,7 @@ test.describe('Button icon-only content', () => {
 
   test('UIC-BUTTON-11.8 toggles its state and renders an icon link', async ({ page, lab }) => {
     await lab.open('button');
-    const demo = page
-      .locator('[data-lab-family="button-icon-cases"]')
-      .locator('[data-lab-demo="toggle-link"]');
+    const demo = matrix(page, 'button-icon-cases').locator('[data-lab-demo="toggle-link"]');
     const toggle = demo.getByRole('button', { name: 'Show hidden files' });
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
     await toggle.click();

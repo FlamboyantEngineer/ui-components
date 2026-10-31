@@ -105,10 +105,10 @@ Verification: `e2e/lab-harness.spec.ts`, `e2e/reference-rtl.spec.ts`, `test/refe
 
 ### UIC-LABS-3.2 - State matrix
 
-`StateMatrix` shall render every combination of a lab's axes in one table, the last axis as columns, with each cell uniquely addressable within its matrix as `data-lab-cell="axis=value …"` for browser tests and screenshot comparison. The table stays readable unstyled, and every lab renders without loading a stylesheet.
+`StateMatrix` shall render every combination of a lab's axes in one table, the last axis as columns, with each cell uniquely addressable within its matrix as `data-lab-cell="axis=value …"` for browser tests and screenshot comparison. The table stays readable unstyled, and every lab renders without loading a stylesheet. Browser tests address sections and cells only through `e2e/fixtures.ts` (`matrix`, `matrixCell` and their selector forms) and read control heights through `controlHeight`, so a change to the address format or the control scale fails one file; a lint restriction keeps the literals out of other specs.
 
-Implementation: `labs/src/chrome/state-matrix.tsx`
-Verification: `e2e/lab-harness.spec.ts`, `e2e/accessibility.spec.ts`
+Implementation: `labs/src/chrome/state-matrix.tsx`, `e2e/fixtures.ts`, `eslint.config.js`
+Verification: `e2e/lab-harness.spec.ts`, `e2e/accessibility.spec.ts`, `test/lint-rules.test.ts`
 
 ### UIC-LABS-3.3 - Browser fixture
 

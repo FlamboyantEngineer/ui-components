@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Inline Text Diff lab', () => {
   test('UIC-INLINE-TEXT-DIFF-2.1 shows a struck removed run and an added run in the sentence', async ({
@@ -28,7 +28,7 @@ test.describe('Inline Text Diff lab', () => {
     await lab.open('inline-text-diff');
     await expect(
       page.locator(
-        '[data-lab-cell="change=first value container=inline"] .ui-inline-text-diff > *',
+        `${cellSelector('change=first value container=inline')} .ui-inline-text-diff > *`,
       ),
     ).toHaveCount(1);
     await expect(matrixCell(page, 'change=cleared container=inline').locator('del')).toHaveText(

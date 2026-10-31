@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { cellSelector, controlHeight, expect, matrixCell, test } from './fixtures.js';
 
 function popovers(page: Page): Locator {
   return page.locator('.ui-menu-popover');
@@ -24,7 +24,7 @@ test.describe('Dropdown Menu lab', () => {
       ['lg', 32],
     ] as const) {
       const trigger = page.locator(
-        `[data-lab-cell="variant=secondary size=${size}"] .ui-dropdown-menu`,
+        `${cellSelector(`variant=secondary size=${size}`)} .ui-dropdown-menu`,
       );
       expect((await trigger.boundingBox())?.height).toBe(height);
       await expect(trigger).toHaveClass(/ui-button/);

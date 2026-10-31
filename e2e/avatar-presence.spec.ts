@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Avatar presence', () => {
   test('UIC-AVATAR-11.1 UIC-AVATAR-11.4 badges the status at every size', async ({ page, lab }) => {
@@ -38,12 +38,8 @@ test.describe('Avatar presence', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const avatar = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-avatar="counter"]');
-    const presses = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-output="presses"]');
+    const avatar = matrix(page, 'avatar-presence-cases').locator('[data-lab-avatar="counter"]');
+    const presses = matrix(page, 'avatar-presence-cases').locator('[data-lab-output="presses"]');
     await avatar.click();
     await expect(presses).toHaveText('1');
     await expect(avatar).toBeFocused();
@@ -83,9 +79,7 @@ test.describe('Avatar presence', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const avatar = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-avatar="card"]');
+    const avatar = matrix(page, 'avatar-presence-cases').locator('[data-lab-avatar="card"]');
     await expect(avatar).toHaveClass(/ui-user-card-trigger/);
     await avatar.focus();
     await page.keyboard.press('Enter');
@@ -103,9 +97,9 @@ test.describe('Avatar presence', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const image = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-avatar="tooltip-image"]');
+    const image = matrix(page, 'avatar-presence-cases').locator(
+      '[data-lab-avatar="tooltip-image"]',
+    );
     await expect(image).toHaveAttribute('role', 'img');
     await expect(image).toHaveAccessibleName('Maria Santos, Active');
     await page.mouse.move(5, 5);
@@ -115,9 +109,9 @@ test.describe('Avatar presence', () => {
     await page.mouse.move(5, 5);
     await expect(tooltip).toHaveCount(0);
 
-    const button = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-avatar="tooltip-button"]');
+    const button = matrix(page, 'avatar-presence-cases').locator(
+      '[data-lab-avatar="tooltip-button"]',
+    );
     await image.focus();
     await page.keyboard.press('Tab');
     await expect(button).toBeFocused();
@@ -134,9 +128,7 @@ test.describe('Avatar presence', () => {
     await page.clock.install();
     await lab.open('avatar');
     await page.clock.pauseAt(Date.now() + 1000);
-    const avatar = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-avatar="hover-card"]');
+    const avatar = matrix(page, 'avatar-presence-cases').locator('[data-lab-avatar="hover-card"]');
     await page.mouse.move(5, 5);
     await avatar.hover();
     await page.clock.runFor(599);
@@ -157,9 +149,7 @@ test.describe('Avatar presence', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const avatar = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-avatar="late"]');
+    const avatar = matrix(page, 'avatar-presence-cases').locator('[data-lab-avatar="late"]');
     await page.getByRole('button', { name: 'Load the profile in a second' }).click();
     await avatar.focus();
     await expect(avatar).toHaveClass(/ui-user-card-trigger/);

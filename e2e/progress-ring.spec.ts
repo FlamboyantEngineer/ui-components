@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('ProgressBar circular shape', () => {
   test('UIC-PROGRESS-BAR-11.1 UIC-PROGRESS-BAR-11.5 draws named rings in three sizes', async ({
@@ -6,9 +6,9 @@ test.describe('ProgressBar circular shape', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const cells = page
-      .locator('[data-lab-family="progress-ring-cases"]')
-      .locator('table[data-lab-matrix="state size"] td[data-lab-cell]');
+    const cells = matrix(page, 'progress-ring-cases').locator(
+      'table[data-lab-matrix="state size"] td[data-lab-cell]',
+    );
     expect(await cells.count()).toBe(4 * 3);
     for (const [size, edge] of [
       ['sm', 16],

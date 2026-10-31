@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Text Match lab', () => {
   test('UIC-TEXT-MATCH-2.1 UIC-TEXT-MATCH-1.3 marks substrings or words for each query', async ({
@@ -71,7 +71,7 @@ test.describe('Text Match lab', () => {
     await lab.open('text-match');
     const marks = (text: string, query: string, accents: string) =>
       page.locator(
-        `[data-lab-cell="text=${text} query=${query} accents=${accents}"] mark.ui-text-match`,
+        `${cellSelector(`text=${text} query=${query} accents=${accents}`)} mark.ui-text-match`,
       );
     for (const text of ['composed', 'decomposed']) {
       await expect(marks(text, 'resume', 'exact')).toHaveCount(0);

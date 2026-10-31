@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Code Block lab', () => {
   test('UIC-CODE-BLOCK-1.1 UIC-CODE-BLOCK-1.2 UIC-CODE-BLOCK-1.4 draws every variant with its header and highlighted code', async ({
@@ -8,7 +8,7 @@ test.describe('Code Block lab', () => {
     await lab.open('code-block');
     const cell = (variant: string, content: string, actions: string) =>
       page.locator(
-        `[data-lab-cell="variant=${variant} content=${content} actions=${actions}"] .ui-code-block`,
+        `${cellSelector(`variant=${variant} content=${content} actions=${actions}`)} .ui-code-block`,
       );
     const code = cell('code', 'short', 'copy');
     await expect(code).toHaveAttribute('data-variant', 'code');

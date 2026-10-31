@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Progress Bar lab', () => {
   test('UIC-PROGRESS-BAR-1.1 UIC-PROGRESS-BAR-1.6 draws named bars with 4, 6 and 8 pixel tracks', async ({
@@ -6,9 +6,9 @@ test.describe('Progress Bar lab', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const cells = page
-      .locator('[data-lab-family="progress-bar-main"]')
-      .locator('table[data-lab-matrix="state size"] td[data-lab-cell]');
+    const cells = matrix(page, 'progress-bar-main').locator(
+      'table[data-lab-matrix="state size"] td[data-lab-cell]',
+    );
     expect(await cells.count()).toBe(4 * 3);
     for (const [size, height] of [
       ['sm', 4],
@@ -43,9 +43,7 @@ test.describe('Progress Bar lab', () => {
 
   test('UIC-PROGRESS-BAR-1.2 follows a count to its total', async ({ page, lab }) => {
     await lab.open('progress-bar');
-    const demo = page
-      .locator('[data-lab-family="progress-bar-main"]')
-      .locator('[data-lab-demo="count"]');
+    const demo = matrix(page, 'progress-bar-main').locator('[data-lab-demo="count"]');
     const bar = demo.getByRole('progressbar', { name: 'Copied files' });
     const forward = demo.getByRole('button', { name: 'Step forward' });
     await expect(bar).toHaveAttribute('aria-valuetext', '2/5');
@@ -126,9 +124,9 @@ test.describe('Progress Bar lab', () => {
     // A turning ring's box grows with its angle; measure it at rest.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await lab.open('progress-bar');
-    const sentence = page
-      .locator('[data-lab-family="progress-bar-main"]')
-      .getByText('Fetching the next page of results');
+    const sentence = matrix(page, 'progress-bar-main').getByText(
+      'Fetching the next page of results',
+    );
     const spinner = sentence.getByRole('progressbar', { name: 'Loading results' });
     await expect(spinner).toHaveClass(/ui-spinner/);
     const [line, glyph] = await Promise.all([sentence.boundingBox(), spinner.boundingBox()]);

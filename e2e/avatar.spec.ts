@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Avatar lab', () => {
   test('UIC-AVATAR-1.1 UIC-AVATAR-2.1 draws pictures, initials and group glyphs at every size', async ({
@@ -6,9 +6,9 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const cells = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('table[data-lab-matrix="content variant size"] td[data-lab-cell]');
+    const cells = matrix(page, 'avatar-main').locator(
+      'table[data-lab-matrix="content variant size"] td[data-lab-cell]',
+    );
     expect(await cells.count()).toBe(3 * 2 * 5);
     for (const [size, pixels] of [
       ['xs', 20],
@@ -70,7 +70,7 @@ test.describe('Avatar lab', () => {
     expect(fills.size).toBe(8);
     await expect(
       page.locator(
-        '[data-lab-family="avatar-main"] .ui-avatar[style], [data-lab-family="avatar-main"] .ui-avatar [style]',
+        `${familySelector('avatar-main')} .ui-avatar[style], ${familySelector('avatar-main')} .ui-avatar [style]`,
       ),
     ).toHaveCount(0);
   });
@@ -80,14 +80,12 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const avatar = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-avatar="fallback"]');
+    const avatar = matrix(page, 'avatar-main').locator('[data-lab-avatar="fallback"]');
     await expect(avatar.locator('img')).toBeVisible();
     await page.getByRole('button', { name: 'Break the picture' }).click();
-    await expect(
-      page.locator('[data-lab-family="avatar-main"]').locator('[data-lab-output="picture"]'),
-    ).toHaveText('broken');
+    await expect(matrix(page, 'avatar-main').locator('[data-lab-output="picture"]')).toHaveText(
+      'broken',
+    );
     await expect(avatar.locator('.ui-avatar__initials')).toHaveText('JB');
     await expect(avatar.locator('img')).toHaveCount(0);
     await page.getByRole('button', { name: 'Restore the picture' }).click();
@@ -100,9 +98,7 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const avatar = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-avatar="candidate"]');
+    const avatar = matrix(page, 'avatar-main').locator('[data-lab-avatar="candidate"]');
     await expect(avatar.locator('.ui-avatar__initials')).toHaveText('PN');
     await expect(avatar.locator('img')).toHaveCount(0);
     await page.getByRole('button', { name: 'Offer a working candidate' }).click();
@@ -162,12 +158,8 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const statuses = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-output="status"]');
-    const avatar = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-avatar="status"]');
+    const statuses = matrix(page, 'avatar-main').locator('[data-lab-output="status"]');
+    const avatar = matrix(page, 'avatar-main').locator('[data-lab-avatar="status"]');
     await expect(statuses).toHaveText('idle');
     await page.getByRole('button', { name: 'Load a working picture' }).click();
     await expect(statuses).toHaveText('idle, loading, loaded');
@@ -179,9 +171,7 @@ test.describe('Avatar lab', () => {
     await page.getByRole('button', { name: 'Remove the picture' }).click();
     await expect(statuses).toHaveText('idle, loading, loaded, loading, error, idle');
 
-    const picture = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-avatar="attributes"] img');
+    const picture = matrix(page, 'avatar-main').locator('[data-lab-avatar="attributes"] img');
     await expect(picture).toHaveAttribute('srcset', /1x, data:image\/svg\+xml,.* 2x$/);
     await expect(picture).toHaveAttribute('referrerpolicy', 'no-referrer');
     await expect(picture).toHaveAttribute('crossorigin', 'anonymous');
@@ -194,8 +184,6 @@ test.describe('Avatar lab', () => {
 
   test('UIC-AVATAR-2.1 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('avatar', { stylesheet: 'none' });
-    await expect(
-      page.locator('[data-lab-family="avatar-main"]').locator('.ui-avatar').first(),
-    ).toBeVisible();
+    await expect(matrix(page, 'avatar-main').locator('.ui-avatar').first()).toBeVisible();
   });
 });

@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, matrix, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-record-label`;
+const cell = (id: string) => `${cellSelector(id)} .ui-record-label`;
 
 test.describe('Record Label lab', () => {
   test('UIC-RECORD-LABEL-1.1 UIC-RECORD-LABEL-1.4 keeps the identity on one line at every size', async ({
@@ -13,17 +13,16 @@ test.describe('Record Label lab', () => {
       ['md', 16],
       ['lg', 20],
     ] as const) {
-      const label = page
-        .locator('[data-lab-family="record-label-main"]')
-        .locator(cell(`content=identifier and name kind=plain size=${size}`));
+      const label = matrix(page, 'record-label-main').locator(
+        cell(`content=identifier and name kind=plain size=${size}`),
+      );
       await expect(label).toHaveText('REQ-12 Brake pressure limits');
       await expect(label).toHaveAttribute('data-size', size);
       const icon = await label.locator('.ui-record-label__icon').boundingBox();
       expect(icon?.width).toBe(pixels);
     }
     await expect(
-      page
-        .locator('[data-lab-family="record-label-main"]')
+      matrix(page, 'record-label-main')
         .locator(cell('content=no icon kind=plain size=md'))
         .locator('.ui-record-label__icon'),
     ).toHaveCount(0);
@@ -34,9 +33,7 @@ test.describe('Record Label lab', () => {
     lab,
   }) => {
     await lab.open('record-label');
-    const cut = page
-      .locator('[data-lab-family="record-label-main"]')
-      .locator(cell('name=truncate kind=plain'));
+    const cut = matrix(page, 'record-label-main').locator(cell('name=truncate kind=plain'));
     const name = cut.locator('.ui-record-label__name');
     expect(await name.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
     await page.mouse.move(5, 5);
@@ -44,9 +41,7 @@ test.describe('Record Label lab', () => {
     await expect(page.getByRole('tooltip')).toHaveText(
       'Brake pressure limits for wet and icy road surfaces',
     );
-    const wrapped = page
-      .locator('[data-lab-family="record-label-main"]')
-      .locator(cell('name=wrap kind=plain'));
+    const wrapped = matrix(page, 'record-label-main').locator(cell('name=wrap kind=plain'));
     const identity = await wrapped.locator('.ui-record-label__identity').boundingBox();
     const wrappedName = await wrapped.locator('.ui-record-label__name').boundingBox();
     expect(wrappedName && identity && wrappedName.height > identity.height).toBe(true);
@@ -61,15 +56,12 @@ test.describe('Record Label lab', () => {
     lab,
   }) => {
     await lab.open('record-label');
-    const link = page
-      .locator('[data-lab-family="record-label-main"]')
+    const link = matrix(page, 'record-label-main')
       .getByRole('link', { name: 'REQ-12 Brake pressure limits' })
       .first();
     await expect(link).toHaveAttribute('href', '#req-12');
     await expect(link).toHaveClass(/ui-link/);
-    const cut = page
-      .locator('[data-lab-family="record-label-main"]')
-      .locator(cell('name=truncate kind=link'));
+    const cut = matrix(page, 'record-label-main').locator(cell('name=truncate kind=link'));
     await cut.focus();
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
@@ -77,29 +69,25 @@ test.describe('Record Label lab', () => {
     await expect(page.getByRole('tooltip')).toHaveText(
       'Brake pressure limits for wet and icy road surfaces',
     );
-    const external = page
-      .locator('[data-lab-family="record-label-main"]')
-      .getByRole('link', { name: 'DOC-3 Field guide (opens in a new tab)' });
+    const external = matrix(page, 'record-label-main').getByRole('link', {
+      name: 'DOC-3 Field guide (opens in a new tab)',
+    });
     await expect(external).toHaveAttribute('target', '_blank');
   });
 
   test('UIC-RECORD-LABEL-1.5 shows unavailable records without a link', async ({ page, lab }) => {
     await lab.open('record-label');
-    const restricted = page
-      .locator('[data-lab-family="record-label-main"]')
-      .locator(cell('unavailable=restricted size=md'));
+    const restricted = matrix(page, 'record-label-main').locator(
+      cell('unavailable=restricted size=md'),
+    );
     await expect(restricted).toHaveText('Restricted item');
     await expect(restricted).toHaveAttribute('data-unavailable', 'restricted');
     await expect(restricted.locator('.ui-glyph[data-glyph="lock"]')).toHaveCount(1);
     await expect(
-      page
-        .locator('[data-lab-family="record-label-main"]')
-        .locator(cell('unavailable=missing size=md')),
+      matrix(page, 'record-label-main').locator(cell('unavailable=missing size=md')),
     ).toHaveText('Missing item');
     await expect(
-      page
-        .locator('[data-lab-family="record-label-main"]')
-        .locator('[data-lab-cell^="unavailable="] a'),
+      matrix(page, 'record-label-main').locator('[data-lab-cell^="unavailable="] a'),
     ).toHaveCount(0);
   });
 

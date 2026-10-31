@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-approval-panel`;
+const cell = (id: string) => `${cellSelector(id)} .ui-approval-panel`;
 
 test.describe('Approval Panel lab', () => {
   test('UIC-APPROVAL-PANEL-1.1 UIC-APPROVAL-PANEL-1.2 UIC-APPROVAL-PANEL-1.3 UIC-APPROVAL-PANEL-1.4 reads each outcome', async ({

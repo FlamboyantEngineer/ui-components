@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, variant: string, state: string, layout = 'label-control'): Locator {
   return matrixCell(page, `variant=${variant} state=${state} layout=${layout}`);
@@ -113,7 +113,7 @@ test.describe('Boolean Field lab', () => {
     await lab.open('boolean-field');
     const resting = cell(page, 'dropdown', 'resting');
     const trigger = resting.getByRole('button', { name: 'True Ripe' });
-    await expect(trigger).toHaveCSS('height', '28px');
+    await expect(trigger).toHaveCSS('height', `${await controlHeight(page, 'md')}px`);
     await trigger.focus();
     await page.keyboard.press('Enter');
     const listbox = page.getByRole('listbox');

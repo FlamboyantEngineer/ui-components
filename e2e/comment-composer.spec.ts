@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-comment-composer`;
+const cell = (id: string) => `${cellSelector(id)} .ui-comment-composer`;
 
 test.describe('Comment Composer lab', () => {
   test('UIC-COMMENT-COMPOSER-1.1 UIC-COMMENT-COMPOSER-1.4 UIC-COMMENT-COMPOSER-1.6 draws each state', async ({

@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -15,7 +15,7 @@ test.describe('Split View lab', () => {
   test('UIC-SPLIT-VIEW-1.1 places fixed panes side by side or stacked', async ({ page, lab }) => {
     await lab.open('split-view');
     const horizontal = page.locator(
-      '[data-lab-cell="ratio=equal orientation=horizontal"] .ui-split-view > *',
+      `${cellSelector('ratio=equal orientation=horizontal')} .ui-split-view > *`,
     );
     const [left, right] = [await box(horizontal.nth(0)), await box(horizontal.nth(1))];
     expect(left.y).toBe(right.y);
@@ -23,14 +23,14 @@ test.describe('Split View lab', () => {
     expect(right.x).toBeGreaterThan(left.x + left.width);
 
     const vertical = page.locator(
-      '[data-lab-cell="ratio=equal orientation=vertical"] .ui-split-view > *',
+      `${cellSelector('ratio=equal orientation=vertical')} .ui-split-view > *`,
     );
     const [top, bottom] = [await box(vertical.nth(0)), await box(vertical.nth(1))];
     expect(top.x).toBe(bottom.x);
     expect(bottom.y).toBeGreaterThan(top.y + top.height);
 
     const rail = page.locator(
-      '[data-lab-cell="ratio=main-rail orientation=horizontal"] .ui-split-view > *',
+      `${cellSelector('ratio=main-rail orientation=horizontal')} .ui-split-view > *`,
     );
     expect((await box(rail.nth(1))).width).toBe(96);
     await expect(page.locator('[data-lab-section="Fixed ratios"] [role="separator"]')).toHaveCount(

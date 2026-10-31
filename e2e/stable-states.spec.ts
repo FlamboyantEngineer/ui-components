@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, familySelector, test } from './fixtures.js';
 
 /**
  * Labs whose state matrices show one value through every state, so each cell of a row of states
@@ -18,7 +18,7 @@ const labs: Record<
   'inline-edit': {},
   'code-editor': {
     contentStates: ['read-only'],
-    matrixSelector: '[data-lab-family="json"] table[data-lab-matrix]',
+    matrixSelector: `${familySelector('json')} table[data-lab-matrix]`,
   },
   link: { contentStates: ['new tab'] },
   'load-more': {},

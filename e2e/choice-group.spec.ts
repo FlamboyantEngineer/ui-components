@@ -1,12 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="single"] [data-lab-field="${name}"]`);
+  return page.locator(`${familySelector('single')} [data-lab-field="${name}"]`);
 }
 
 function output(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="single"] [data-lab-output="${name}"]`);
+  return page.locator(`${familySelector('single')} [data-lab-output="${name}"]`);
 }
 
 async function boxOf(locator: Locator) {
@@ -37,7 +37,7 @@ test.describe('Choice Group lab', () => {
     await lab.open('choice-group');
     const plans = field(page, 'plans');
     const before = page
-      .locator('[data-lab-family="single"] [data-lab-cell="size=lg orientation=horizontal"]')
+      .locator(`${familySelector('single')} ${cellSelector('size=lg orientation=horizontal')}`)
       .getByRole('radio', { name: 'Pear' });
     await before.focus();
     await page.keyboard.press('Tab');
@@ -83,14 +83,14 @@ test.describe('Choice Group lab', () => {
       'One cook, unlimited recipes.',
     );
     const row = page.locator(
-      '[data-lab-family="single"] [data-lab-cell="size=md orientation=horizontal"]',
+      `${familySelector('single')} ${cellSelector('size=md orientation=horizontal')}`,
     );
     const apple = await boxOf(row.locator('.ui-choice', { hasText: 'Apple' }));
     const pear = await boxOf(row.locator('.ui-choice', { hasText: 'Pear' }));
     expect(Math.abs(apple.y - pear.y)).toBeLessThanOrEqual(1);
     expect(pear.x).toBeGreaterThan(apple.x + apple.width);
     const column = page.locator(
-      '[data-lab-family="single"] [data-lab-cell="size=md orientation=vertical"]',
+      `${familySelector('single')} ${cellSelector('size=md orientation=vertical')}`,
     );
     const first = await boxOf(column.locator('.ui-choice', { hasText: 'Apple' }));
     const second = await boxOf(column.locator('.ui-choice', { hasText: 'Pear' }));
@@ -98,14 +98,14 @@ test.describe('Choice Group lab', () => {
     const small = await boxOf(
       page
         .locator(
-          '[data-lab-family="single"] [data-lab-cell="size=sm orientation=vertical"] .ui-choice__indicator',
+          `${familySelector('single')} ${cellSelector('size=sm orientation=vertical')} .ui-choice__indicator`,
         )
         .first(),
     );
     const large = await boxOf(
       page
         .locator(
-          '[data-lab-family="single"] [data-lab-cell="size=lg orientation=vertical"] .ui-choice__indicator',
+          `${familySelector('single')} ${cellSelector('size=lg orientation=vertical')} .ui-choice__indicator`,
         )
         .first(),
     );

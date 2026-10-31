@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Skeleton lab', () => {
   test('UIC-SKELETON-1.1 UIC-SKELETON-1.2 draws hidden placeholders in each shape', async ({
@@ -49,7 +49,7 @@ test.describe('Skeleton lab', () => {
   }) => {
     await lab.open('skeleton');
     const lines = page.locator(
-      '[data-lab-cell="animation=animated lines=5"] .ui-skeleton-text__line',
+      `${cellSelector('animation=animated lines=5')} .ui-skeleton-text__line`,
     );
     await expect(lines).toHaveCount(5);
     const first = await lines.first().boundingBox();
@@ -58,7 +58,7 @@ test.describe('Skeleton lab', () => {
     expect(last?.width).toBe(120);
     expect(last?.y ?? 0).toBeGreaterThan(first?.y ?? 0);
     const single = page.locator(
-      '[data-lab-cell="animation=animated lines=1"] .ui-skeleton-text__line',
+      `${cellSelector('animation=animated lines=1')} .ui-skeleton-text__line`,
     );
     expect((await single.boundingBox())?.width).toBe(200);
     const still = matrixCell(page, 'animation=still lines=3').locator('.ui-skeleton-text__line');

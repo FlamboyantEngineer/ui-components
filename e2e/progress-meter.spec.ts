@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('ProgressBar meter mode', () => {
   test('UIC-PROGRESS-BAR-21.1 UIC-PROGRESS-BAR-21.5 UIC-PROGRESS-BAR-22.1 draws named meters with 4, 6 and 8 pixel tracks', async ({
@@ -6,9 +6,9 @@ test.describe('ProgressBar meter mode', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const cells = page
-      .locator('[data-lab-family="progress-meter-cases"]')
-      .locator('table[data-lab-matrix="value size"] td[data-lab-cell]');
+    const cells = matrix(page, 'progress-meter-cases').locator(
+      'table[data-lab-matrix="value size"] td[data-lab-cell]',
+    );
     expect(await cells.count()).toBe(3 * 3);
     for (const [size, height] of [
       ['sm', 4],
@@ -80,9 +80,7 @@ test.describe('ProgressBar meter mode', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const demo = page
-      .locator('[data-lab-family="progress-meter-cases"]')
-      .locator('[data-lab-demo="disk"]');
+    const demo = matrix(page, 'progress-meter-cases').locator('[data-lab-demo="disk"]');
     const meter = demo.getByRole('meter', { name: 'Disk used' });
     const use = demo.getByRole('button', { name: 'Use 10 GB' });
     await expect(meter).toHaveAttribute('data-tone', 'success');

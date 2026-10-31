@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-attribution`;
+const cell = (id: string) => `${cellSelector(id)} .ui-attribution`;
 
 test.describe('Attribution lab', () => {
   test('UIC-ATTRIBUTION-1.1 UIC-ATTRIBUTION-1.2 reads each sentence with its time', async ({

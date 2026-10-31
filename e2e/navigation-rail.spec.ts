@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
 const stateRail = (rail: string, width: string) =>
-  `[data-lab-cell="rail=${rail} width=${width}"] .ui-navigation-rail`;
+  `${cellSelector(`rail=${rail} width=${width}`)} .ui-navigation-rail`;
 
 test.describe('Navigation Rail lab', () => {
   test('UIC-NAVIGATION-RAIL-1.1 UIC-NAVIGATION-RAIL-2.1 UIC-NAVIGATION-RAIL-2.2 renders sections of links with the current page', async ({

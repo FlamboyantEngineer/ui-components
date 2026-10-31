@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, formatLabUrl, test, waitForLab, matrixCell } from './fixtures.js';
+import { cellSelector, expect, formatLabUrl, matrixCell, test, waitForLab } from './fixtures.js';
 
 const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
 const composer = (scope: Locator) => scope.getByRole('textbox', { name: 'Message' });
@@ -252,7 +252,7 @@ test.describe('Chat lab', () => {
     await assistant.getByRole('button', { name: 'Retry' }).click();
     await expect(lastReply(assistant)).toContainText('Sent to Classic.');
     await expect(lastReply(assistant)).toContainText('ferries cross every 20 minutes');
-    const disabled = section(page, 'States').locator('[data-lab-cell="state=disabled"]');
+    const disabled = section(page, 'States').locator(cellSelector('state=disabled'));
     await expect(disabled.getByRole('button', { name: /^Model:/ })).toBeDisabled();
   });
 

@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Card lab', () => {
   test('UIC-CARD-2.1 UIC-CARD-2.2 draws every variant, density and state', async ({
@@ -10,7 +10,7 @@ test.describe('Card lab', () => {
     expect(await cells.count()).toBe(2 * 4 * 4);
     const card = (variant: string, density: string, state = 'resting') =>
       page.locator(
-        `[data-lab-cell="variant=${variant} density=${density} state=${state}"] .ui-card`,
+        `${cellSelector(`variant=${variant} density=${density} state=${state}`)} .ui-card`,
       );
     const padding = (density: string) =>
       card('default', density).evaluate((node) => getComputedStyle(node).padding);

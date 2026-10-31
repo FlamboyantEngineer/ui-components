@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 async function box(locator: Locator) {
@@ -8,8 +8,7 @@ async function box(locator: Locator) {
   return rect;
 }
 
-const cell = (section: string, id: string) =>
-  `[data-lab-section="${section}"] [data-lab-cell="${id}"]`;
+const cell = (section: string, id: string) => `[data-lab-section="${section}"] ${cellSelector(id)}`;
 
 test.describe('Layout lab', () => {
   test('UIC-LAYOUT-1.1 UIC-LAYOUT-2.1 stacks children in a column with the reference gaps', async ({

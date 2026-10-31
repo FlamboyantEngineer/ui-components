@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Shortcut lab', () => {
@@ -13,7 +13,7 @@ test.describe('Shortcut lab', () => {
       ['linux', 'Ctrl+Shift+K'],
     ] as const) {
       const shortcut = page.locator(
-        `[data-lab-cell="chord=Ctrl+Shift+K platform=${platform}"] .ui-shortcut`,
+        `${cellSelector(`chord=Ctrl+Shift+K platform=${platform}`)} .ui-shortcut`,
       );
       await expect(shortcut).toHaveAttribute('data-platform', platform);
       await expect(shortcut.locator('.ui-shortcut__keys')).toHaveText(text);

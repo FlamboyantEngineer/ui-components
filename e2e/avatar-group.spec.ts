@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Avatar Group lab', () => {
   test('UIC-AVATAR-GROUP-1.1 UIC-AVATAR-GROUP-1.2 overlaps the avatars and counts the rest', async ({
@@ -43,9 +43,7 @@ test.describe('Avatar Group lab', () => {
       group.getByRole('img', { name: '3 more people: Sam Okafor, Priya Nair, Tom Li' }),
     ).toHaveText('+3');
     await expect(group.getByRole('img', { name: 'Jon Berg' })).toBeVisible();
-    const names = page
-      .locator('[data-lab-family="avatar-group-main"]')
-      .locator('[data-lab-group="names"]');
+    const names = matrix(page, 'avatar-group-main').locator('[data-lab-group="names"]');
     await expect(names).toHaveAccessibleName('Reviewers');
     await expect(names.getByRole('img', { name: 'Unnamed' })).toBeVisible();
     await expect(names.locator('.ui-avatar__initials').last()).toHaveText('JB');
@@ -56,9 +54,7 @@ test.describe('Avatar Group lab', () => {
     lab,
   }) => {
     await lab.open('avatar-group');
-    const group = page
-      .locator('[data-lab-family="avatar-group-main"]')
-      .locator('[data-lab-group="list"]');
+    const group = matrix(page, 'avatar-group-main').locator('[data-lab-group="list"]');
     await expect(group).toHaveAccessibleName(
       'Maria Santos, Jon Berg, Lena Ortiz, Sam Okafor, Priya Nair, Tom Li',
     );

@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Banner lab', () => {
   test('UIC-BANNER-2.1 UIC-BANNER-1.2 announces each tone with its role and glyph', async ({
@@ -35,7 +35,7 @@ test.describe('Banner lab', () => {
   }) => {
     await lab.open('banner');
     const banner = page.locator(
-      '[data-lab-cell="tone=info content=actions and dismiss"] .ui-banner',
+      `${cellSelector('tone=info content=actions and dismiss')} .ui-banner`,
     );
     const content = await banner.locator('.ui-banner__content').boundingBox();
     const actions = await banner.locator('.ui-banner__actions').boundingBox();

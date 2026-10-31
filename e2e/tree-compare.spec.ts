@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const PART_ROWS = [
@@ -26,7 +26,7 @@ test.describe('Tree Compare lab', () => {
   }) => {
     await lab.open('tree-compare');
     const compare = page.locator(
-      '[data-lab-cell="trees=different filter=all rows"] .ui-tree-compare',
+      `${cellSelector('trees=different filter=all rows')} .ui-tree-compare`,
     );
     const tree = compare.getByRole('treegrid', { name: 'Parts, different, all rows' });
     await expect(tree.getByRole('row')).toHaveCount(PART_ROWS.length);
@@ -63,7 +63,7 @@ test.describe('Tree Compare lab', () => {
       'plus',
     );
     const identical = page.locator(
-      '[data-lab-cell="trees=identical filter=all rows"] .ui-tree-compare__summary',
+      `${cellSelector('trees=identical filter=all rows')} .ui-tree-compare__summary`,
     );
     await expect(identical).toHaveText('No differences');
     const nested = page.getByRole('treegrid', { name: 'Nested changes' });
@@ -125,7 +125,7 @@ test.describe('Tree Compare lab', () => {
     ).toBeVisible();
     await expect(tree.getByRole('row', { name: 'Glossary, removed' })).toBeVisible();
     const filtered = page.locator(
-      '[data-lab-cell="trees=identical filter=only differences"] .ui-tree-compare__tree',
+      `${cellSelector('trees=identical filter=only differences')} .ui-tree-compare__tree`,
     );
     await expect(filtered).toContainText('No differences');
   });

@@ -1,18 +1,18 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 function cell(page: Page, state: string, layout = 'label-control'): Locator {
   return page.locator(
-    `[data-lab-family="multiple"] [data-lab-cell="state=${state} layout=${layout}"]`,
+    `${familySelector('multiple')} ${cellSelector(`state=${state} layout=${layout}`)}`,
   );
 }
 
 function field(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="multiple"] [data-lab-field="${name}"]`);
+  return page.locator(`${familySelector('multiple')} [data-lab-field="${name}"]`);
 }
 
 function output(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="multiple"] [data-lab-output="${name}"]`);
+  return page.locator(`${familySelector('multiple')} [data-lab-output="${name}"]`);
 }
 
 test.describe('Choice Group multiple lab', () => {

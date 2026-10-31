@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SvgMarkup } from '../src/components/svg-markup/svg-markup.js';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 const attack = 'window.unsafe = true';
 
@@ -44,13 +44,13 @@ test.describe('SVG Markup lab', () => {
         ['lg', 20],
       ] as const) {
         const svg = page.locator(
-          `[data-lab-cell="markup=${markup} placement=icon ${size}"] .ui-icon > .ui-svg-markup`,
+          `${cellSelector(`markup=${markup} placement=icon ${size}`)} .ui-icon > .ui-svg-markup`,
         );
         expect((await svg.boundingBox())?.width).toBe(pixels);
       }
     }
     const stop = page.locator(
-      '[data-lab-cell="markup=gradient placement=standalone"] linearGradient stop',
+      `${cellSelector('markup=gradient placement=standalone')} linearGradient stop`,
     );
     await expect(stop.first()).toHaveAttribute('stop-color', '#f59e0b');
     const circle = matrixCell(page, 'markup=gradient placement=standalone').locator('circle');

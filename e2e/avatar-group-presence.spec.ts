@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('AvatarGroup presence layouts', () => {
   test('UIC-AVATAR-GROUP-11.2 UIC-AVATAR-GROUP-12.2 windows the people and sizes the overflow', async ({
@@ -63,12 +63,12 @@ test.describe('AvatarGroup presence layouts', () => {
     lab,
   }) => {
     await lab.open('avatar-group');
-    const strip = page
-      .locator('[data-lab-family="avatar-group-presence-cases"]')
-      .locator('[data-lab-strip="following"]');
-    const following = page
-      .locator('[data-lab-family="avatar-group-presence-cases"]')
-      .locator('[data-lab-output="following"]');
+    const strip = matrix(page, 'avatar-group-presence-cases').locator(
+      '[data-lab-strip="following"]',
+    );
+    const following = matrix(page, 'avatar-group-presence-cases').locator(
+      '[data-lab-output="following"]',
+    );
     await strip.getByRole('button', { name: 'Jon Berg, Away' }).click();
     await expect(following).toHaveText('Jon Berg');
     await page.keyboard.press('Tab');
@@ -110,9 +110,7 @@ test.describe('AvatarGroup presence layouts', () => {
 
   test('UIC-AVATAR-GROUP-11.5 opens the card of the pressed person', async ({ page, lab }) => {
     await lab.open('avatar-group');
-    const strip = page
-      .locator('[data-lab-family="avatar-group-presence-cases"]')
-      .locator('[data-lab-strip="cards"]');
+    const strip = matrix(page, 'avatar-group-presence-cases').locator('[data-lab-strip="cards"]');
     await strip.getByRole('button', { name: 'Lena Ortiz, Busy' }).click();
     const card = page.getByRole('dialog', { name: 'Lena Ortiz' });
     await expect(card).toContainText('Busy');
@@ -125,9 +123,7 @@ test.describe('AvatarGroup presence layouts', () => {
     lab,
   }) => {
     await lab.open('avatar-group');
-    const strip = page
-      .locator('[data-lab-family="avatar-group-presence-cases"]')
-      .locator('[data-lab-strip="menu"]');
+    const strip = matrix(page, 'avatar-group-presence-cases').locator('[data-lab-strip="menu"]');
     await expect(strip).toHaveAttribute('data-overflow', 'menu');
     const count = strip.getByRole('button', {
       name: '4 more people: Sam Okafor, Priya Nair, Tom Li, Ines Duarte',
@@ -149,9 +145,7 @@ test.describe('AvatarGroup presence layouts', () => {
     await page.keyboard.press('Enter');
     await expect(menu).toHaveCount(0);
     await expect(
-      page
-        .locator('[data-lab-family="avatar-group-presence-cases"]')
-        .locator('[data-lab-output="menu"]'),
+      matrix(page, 'avatar-group-presence-cases').locator('[data-lab-output="menu"]'),
     ).toHaveText('Priya Nair');
     await expect(count).toBeFocused();
     await page.keyboard.press('Enter');
@@ -168,9 +162,9 @@ test.describe('AvatarGroup presence layouts', () => {
     await page.clock.install();
     await lab.open('avatar-group');
     await page.clock.pauseAt(Date.now() + 1000);
-    const tooltips = page
-      .locator('[data-lab-family="avatar-group-presence-cases"]')
-      .locator('[data-lab-strip="tooltips"]');
+    const tooltips = matrix(page, 'avatar-group-presence-cases').locator(
+      '[data-lab-strip="tooltips"]',
+    );
     const persons = tooltips.locator('.ui-avatar-group__avatar');
     await persons.first().focus();
     await page.keyboard.press('Tab');
@@ -179,9 +173,9 @@ test.describe('AvatarGroup presence layouts', () => {
     await persons.nth(1).blur();
     await page.clock.runFor(1000);
 
-    const cards = page
-      .locator('[data-lab-family="avatar-group-presence-cases"]')
-      .locator('[data-lab-strip="hover-cards"]');
+    const cards = matrix(page, 'avatar-group-presence-cases').locator(
+      '[data-lab-strip="hover-cards"]',
+    );
     await page.mouse.move(5, 5);
     await cards.getByRole('button', { name: 'Lena Ortiz, Busy' }).hover();
     await page.clock.runFor(600);

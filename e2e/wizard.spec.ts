@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-wizard`;
+const cell = (id: string) => `${cellSelector(id)} .ui-wizard`;
 
 test.describe('Wizard lab', () => {
   test('UIC-WIZARD-1.1 UIC-WIZARD-1.3 UIC-WIZARD-1.4 shows each step with its buttons and layout', async ({

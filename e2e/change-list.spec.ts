@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-change-list`;
+const cell = (id: string) => `${cellSelector(id)} .ui-change-list`;
 
 test.describe('Change List lab', () => {
   test('UIC-CHANGE-LIST-1.1 UIC-CHANGE-LIST-1.3 UIC-CHANGE-LIST-1.4 UIC-CHANGE-LIST-1.5 shows each change on one line', async ({

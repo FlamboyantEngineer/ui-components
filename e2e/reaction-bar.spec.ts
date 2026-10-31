@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-reaction-bar`;
+const cell = (id: string) => `${cellSelector(id)} .ui-reaction-bar`;
 
 test.describe('Reaction Bar lab', () => {
   test('UIC-REACTION-BAR-1.1 UIC-REACTION-BAR-1.2 draws chips named by who reacted', async ({

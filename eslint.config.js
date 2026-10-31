@@ -61,6 +61,35 @@ const PRIMITIVES_MODULES = {
   message: 'Labs use the public API, not src/primitives (UIC-PRIMITIVES-1.4).',
 };
 
+// The accessibility sweep scans every lab in both themes in one load (UIC-LABS-3.4), so a component
+// spec does not reload its lab dark only to end on the same scan.
+const DARK_RELOAD_SYNTAX = {
+  selector:
+    "ExpressionStatement:has(CallExpression[callee.property.name='open'] Property[key.name='theme'][value.value='dark']) + ExpressionStatement:last-child:has(CallExpression[callee.property.name='expectAccessible'][arguments.length=0])",
+  message:
+    'The accessibility sweep already scans this lab in the dark theme; drop the reload (UIC-LABS-3.4).',
+};
+
+// e2e/fixtures.ts owns the lab's cell and family addresses (matrix, matrixCell and their selectors).
+const LAB_ADDRESS_SYNTAX = [
+  {
+    selector: 'Literal[value=/\\[data-lab-(?:family|cell)=/]',
+    message: 'Address a lab section or cell through the e2e/fixtures.ts helpers (UIC-LABS-3.2).',
+  },
+  {
+    selector: 'TemplateElement[value.raw=/\\[data-lab-(?:family|cell)=/]',
+    message: 'Address a lab section or cell through the e2e/fixtures.ts helpers (UIC-LABS-3.2).',
+  },
+];
+
+// Control heights come from the reference scale through controlHeight() in e2e/fixtures.ts.
+const CONTROL_HEIGHT_SYNTAX = {
+  selector:
+    "CallExpression[callee.property.name='toHaveCSS'][arguments.0.value=/^(?:min-)?height$/][arguments.1.value=/^(?:20|24|28|32)px$/]",
+  message:
+    'Read a control height with controlHeight(page, size) from e2e/fixtures.ts (UIC-LABS-3.7).',
+};
+
 // TypeScript rules TS2 to TS11 (docs/CODING-GUIDELINES.md). They load the TypeScript program, so
 // `npm run lint` gives ESLint a 6 GB heap.
 const TYPED_FILES = [
@@ -143,21 +172,31 @@ export default tseslint.config(
     },
   },
   {
-    // The accessibility sweep scans every lab in both themes in one load (UIC-LABS-3.4), so a component
-    // spec does not reload its lab dark only to end on the same scan.
+    // Component specs: no dark reload for the sweep's scan, cells and sections addressed through
+    // e2e/fixtures.ts, and control heights read from the scale.
     files: ['e2e/**/*.ts'],
-    ignores: ['e2e/accessibility.spec.ts'],
+    ignores: ['e2e/fixtures.ts', 'e2e/accessibility.spec.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',
         ENUM_SYNTAX,
         CONTEXT_PROVIDER_SYNTAX,
-        {
-          selector:
-            "ExpressionStatement:has(CallExpression[callee.property.name='open'] Property[key.name='theme'][value.value='dark']) + ExpressionStatement:last-child:has(CallExpression[callee.property.name='expectAccessible'][arguments.length=0])",
-          message:
-            'The accessibility sweep already scans this lab in the dark theme; drop the reload (UIC-LABS-3.4).',
-        },
+        DARK_RELOAD_SYNTAX,
+        ...LAB_ADDRESS_SYNTAX,
+        CONTROL_HEIGHT_SYNTAX,
+      ],
+    },
+  },
+  {
+    // The control scale's own spec pins its pixel heights.
+    files: ['e2e/control-sizes.spec.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ENUM_SYNTAX,
+        CONTEXT_PROVIDER_SYNTAX,
+        DARK_RELOAD_SYNTAX,
+        ...LAB_ADDRESS_SYNTAX,
       ],
     },
   },

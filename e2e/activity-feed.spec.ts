@@ -1,7 +1,7 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-activity-feed`;
+const cell = (id: string) => `${cellSelector(id)} .ui-activity-feed`;
 
 test.describe('Activity Feed lab', () => {
   test('UIC-ACTIVITY-FEED-1.1 UIC-ACTIVITY-FEED-1.2 UIC-ACTIVITY-FEED-1.3 groups entries by day', async ({

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrixCell, test } from './fixtures.js';
 
 async function settled(page: Page) {
   const overlay = page.locator('.ui-modal.ui-signature-dialog');
@@ -15,9 +15,7 @@ test.describe('Signature Dialog lab', () => {
     await lab.open('signature-dialog');
     for (const meanings of ['one', 'several']) {
       for (const credentials of ['password', 'username-password']) {
-        const cell = page.locator(
-          `[data-lab-cell="meanings=${meanings} credentials=${credentials}"]`,
-        );
+        const cell = matrixCell(page, `meanings=${meanings} credentials=${credentials}`);
         const opener = cell.getByRole('button', { name: 'Sign', exact: true });
         await opener.click();
         const dialog = page.getByRole('dialog', { name: 'Sign Requirement 12' });

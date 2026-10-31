@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const style = (locator: Locator, property: string) =>
@@ -13,7 +13,7 @@ test.describe('Link lab', () => {
     await lab.open('link');
     const link = (placement: string, variant: string, underline: string) =>
       page.locator(
-        `[data-lab-cell="placement=${placement} variant=${variant} underline=${underline}"] .ui-link`,
+        `${cellSelector(`placement=${placement} variant=${variant} underline=${underline}`)} .ui-link`,
       );
     const inlineAlways = link('inline', 'primary', 'always');
     await expect(inlineAlways).toHaveAttribute('data-underline', 'always');
@@ -34,7 +34,7 @@ test.describe('Link lab', () => {
 
     const secondary = link('inline', 'secondary', 'always');
     const sentence = page.locator(
-      '[data-lab-cell="placement=inline variant=secondary underline=always"] p',
+      `${cellSelector('placement=inline variant=secondary underline=always')} p`,
     );
     expect(await style(secondary, 'color')).toBe(await style(sentence, 'color'));
     expect(await style(link('inline', 'primary', 'always'), 'color')).not.toBe(

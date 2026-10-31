@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Prose Table lab', () => {
   test('UIC-PROSE-TABLE-1.1 fills its text column and takes the surrounding typography', async ({
@@ -52,7 +52,7 @@ test.describe('Prose Table lab', () => {
     );
     await expect(table.locator('thead th[data-align="center"]')).toHaveCSS('text-align', 'center');
     await expect(
-      page.locator('[data-lab-cell="caption=without footer=without"] :is(caption, tfoot)'),
+      page.locator(`${cellSelector('caption=without footer=without')} :is(caption, tfoot)`),
     ).toHaveCount(0);
     await lab.expectAccessible();
   });

@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-view-switcher`;
+const cell = (id: string) => `${cellSelector(id)} .ui-view-switcher`;
 
 test.describe('View Switcher lab', () => {
   test('UIC-VIEW-SWITCHER-1.1 UIC-VIEW-SWITCHER-1.3 UIC-VIEW-SWITCHER-1.8 shows views as tabs or a menu', async ({

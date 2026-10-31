@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry', 'Fig', 'Grape'];
 
@@ -28,7 +28,7 @@ test.describe('Overflow List lab', () => {
     await lab.open('overflow-list');
     const cell = (collapseFrom: string, width: string) =>
       page.locator(
-        `[data-lab-cell="collapseFrom=${collapseFrom} width=${width}"] .ui-overflow-list`,
+        `${cellSelector(`collapseFrom=${collapseFrom} width=${width}`)} .ui-overflow-list`,
       );
 
     const wide = cell('end', 'wide');

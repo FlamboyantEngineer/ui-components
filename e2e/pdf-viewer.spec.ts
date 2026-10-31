@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 const pageWidthAt100 = 420 * (96 / 72);
 
@@ -404,7 +404,7 @@ test.describe('PDF Viewer lab', () => {
     await expect(field).toBeVisible({ timeout: 30_000 });
     await expect(cell.locator('.ui-pdf-viewer')).toHaveAttribute('data-locked', 'true');
     await expect(cell.locator('.ui-pdf-viewer')).not.toHaveAttribute('aria-busy');
-    await lab.expectAccessible('[data-lab-cell="state=locked"]');
+    await lab.expectAccessible(cellSelector('state=locked'));
 
     await field.fill('apple');
     await field.press('Enter');

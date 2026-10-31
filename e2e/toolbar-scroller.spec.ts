@@ -1,8 +1,8 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
 function cell(direction: string, buttons: string, position: string) {
-  return `[data-lab-cell="direction=${direction} buttons=${buttons} position=${position}"]`;
+  return cellSelector(`direction=${direction} buttons=${buttons} position=${position}`);
 }
 
 async function box(locator: Locator) {

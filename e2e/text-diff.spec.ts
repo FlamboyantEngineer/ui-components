@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-text-diff`;
+const cell = (id: string) => `${cellSelector(id)} .ui-text-diff`;
 
 test.describe('Text Diff lab', () => {
   test('UIC-TEXT-DIFF-1.1 UIC-TEXT-DIFF-1.2 UIC-TEXT-DIFF-1.3 UIC-TEXT-DIFF-2.1 UIC-TEXT-DIFF-3.1 draws a unified diff', async ({

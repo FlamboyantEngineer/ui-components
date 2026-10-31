@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('User Card lab', () => {
   test('UIC-USER-CARD-1.1 UIC-USER-CARD-1.2 UIC-USER-CARD-1.5 draws every part within the card width', async ({
@@ -59,7 +59,7 @@ test.describe('User Card lab', () => {
   test('UIC-USER-CARD-1.7 draws a loading card as a busy skeleton', async ({ page, lab }) => {
     await lab.open('user-card');
     const skeleton = page.locator(
-      '[data-lab-cell="content=loading avatar=initials"] .ui-user-card',
+      `${cellSelector('content=loading avatar=initials')} .ui-user-card`,
     );
     await expect(skeleton).toHaveAttribute('aria-busy', 'true');
     await expect(skeleton.locator('.ui-user-card__skeleton')).toBeVisible();

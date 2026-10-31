@@ -1,7 +1,7 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-annotation-layer`;
+const cell = (id: string) => `${cellSelector(id)} .ui-annotation-layer`;
 
 async function boxOf(locator: Locator) {
   const box = await locator.boundingBox();

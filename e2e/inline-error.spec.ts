@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Inline Error lab', () => {
   test('UIC-INLINE-ERROR-1.3 moves recovery below a narrow message without overflowing', async ({
@@ -11,7 +11,7 @@ test.describe('Inline Error lab', () => {
       ['480', false],
     ] as const) {
       const error = page.locator(
-        `[data-lab-cell="recovery=long label width=${width}"] .ui-inline-error`,
+        `${cellSelector(`recovery=long label width=${width}`)} .ui-inline-error`,
       );
       const message = await error.locator('.ui-inline-error__message').boundingBox();
       const retry = await error
@@ -25,7 +25,7 @@ test.describe('Inline Error lab', () => {
     const disabled = matrixCell(page, 'recovery=disabled width=480');
     await expect(disabled.getByRole('button', { name: 'Retry' })).toBeDisabled();
     const small = page.locator(
-      '[data-lab-cell="message=small host text"] .ui-inline-error__message',
+      `${cellSelector('message=small host text')} .ui-inline-error__message`,
     );
     expect(await small.evaluate((node) => getComputedStyle(node).fontSize)).toBe('11px');
   });

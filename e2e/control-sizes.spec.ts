@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 /** The box whose height each control of the control sizes lab takes from its size. */
@@ -118,7 +118,7 @@ test('UIC-LABS-3.7 checkbox and radio groups show independent and exclusive choi
 }) => {
   await lab.open('control-sizes');
   const checkboxes = page.locator(
-    '[data-lab-cell="control=choice-group-multiple content=short size=md"]',
+    cellSelector('control=choice-group-multiple content=short size=md'),
   );
   await expect(checkboxes.getByRole('checkbox')).toHaveCount(3);
   await checkboxes.getByRole('checkbox', { name: 'Pear' }).focus();
