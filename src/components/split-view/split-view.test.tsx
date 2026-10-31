@@ -251,6 +251,123 @@ describe('SplitView', () => {
   });
 });
 
+describe('SplitView owners', () => {
+  function persisted(storage: ReturnType<typeof createMemoryStorage>, extra = {}) {
+    return <UiProvider storage={storage}>{resizable({ persistKey: 'a', ...extra })}</UiProvider>;
+  }
+
+  it("UIC-SPLIT-VIEW-2.4 abandons a drag when the key changes and keeps the new key's size", () => {
+    const storage = createMemoryStorage({ a: '30', b: '70' });
+    const onSizesChangeEnd = vi.fn();
+    const { container, rerender } = render(persisted(storage, { onSizesChangeEnd }));
+    const { root, handle, capture } = prepareDrag(container);
+    pointer('pointerDown', handle, { clientX: 300 });
+    pointer('pointerMove', handle, { clientX: 400 });
+    expect(handle).toHaveAttribute('aria-valuenow', '40');
+    rerender(persisted(storage, { onSizesChangeEnd, persistKey: 'b' }));
+    expect(handle).toHaveAttribute('aria-valuenow', '70');
+    expect(capture.id).toBeNull();
+    expect(root).not.toHaveAttribute('data-resizing');
+    expect(handle).not.toHaveAttribute('data-resizing');
+    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    pointer('pointerMove', handle, { clientX: 500 });
+    pointer('pointerUp', handle, { clientX: 500 });
+    expect(handle).toHaveAttribute('aria-valuenow', '70');
+    expect(storage.getItem('a')).toBe('30');
+    expect(storage.getItem('b')).toBe('70');
+    expect(onSizesChangeEnd).not.toHaveBeenCalled();
+
+    pointer('pointerDown', handle, { clientX: 700 });
+    pointer('pointerUp', handle, { clientX: 600 });
+    expect(storage.getItem('b')).toBe('60');
+    expect(storage.getItem('a')).toBe('30');
+  });
+
+  it('UIC-SPLIT-VIEW-2.4 abandons a drag when the storage changes', () => {
+    const first = createMemoryStorage({ a: '30' });
+    const second = createMemoryStorage({ a: '60' });
+    const { container, rerender } = render(persisted(first));
+    const { handle, capture } = prepareDrag(container);
+    pointer('pointerDown', handle, { clientX: 300 });
+    pointer('pointerMove', handle, { clientX: 200 });
+    rerender(persisted(second));
+    expect(handle).toHaveAttribute('aria-valuenow', '60');
+    expect(capture.id).toBeNull();
+    pointer('pointerCancel', handle, { clientX: 200 });
+    expect(first.getItem('a')).toBe('30');
+    expect(second.getItem('a')).toBe('60');
+  });
+
+  it("UIC-SPLIT-VIEW-2.4 abandons a drag when the panes' bounds or units change", () => {
+    const onSizesChange = vi.fn();
+    const onSizesChangeEnd = vi.fn();
+    const props = { onSizesChange, onSizesChangeEnd };
+    const { container, rerender } = render(resizable(props));
+    const { handle, capture } = prepareDrag(container);
+    pointer('pointerDown', handle, { clientX: 300 });
+    pointer('pointerMove', handle, { clientX: 450 });
+    expect(handle).toHaveAttribute('aria-valuenow', '45');
+    const narrower = [{ ...panes[0], maxSize: 60 }, panes[1]];
+    rerender(resizable({ ...props, panes: narrower }));
+    expect(handle).toHaveAttribute('aria-valuenow', '30');
+    expect(capture.id).toBeNull();
+    onSizesChange.mockClear();
+    pointer('pointerMove', handle, { clientX: 500 });
+    pointer('pointerUp', handle, { clientX: 500 });
+    expect(onSizesChange).not.toHaveBeenCalled();
+    expect(onSizesChangeEnd).not.toHaveBeenCalled();
+
+    // The same panes in a new array keep a drag going.
+    pointer('pointerDown', handle, { clientX: 300 });
+    rerender(resizable({ ...props, panes: [...narrower] }));
+    pointer('pointerUp', handle, { clientX: 400 });
+    expect(onSizesChangeEnd).toHaveBeenCalledExactlyOnceWith([40, 60]);
+  });
+
+  it('UIC-SPLIT-VIEW-3.4 abandons a standalone drag when its reset key changes and takes a new press', () => {
+    const onChangeEnd = vi.fn();
+    const onResizingChange = vi.fn();
+    const props = {
+      orientation: 'horizontal' as const,
+      value: 300,
+      minValue: 120,
+      maxValue: 640,
+      'aria-label': 'Resize details',
+      onChangeEnd,
+      onResizingChange,
+    };
+    const { rerender } = render(<ResizeHandle {...props} resetKey="first" />);
+    const handle = screen.getByRole('separator', { name: 'Resize details' });
+    Object.assign(handle, { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() });
+    pointer('pointerDown', handle, { clientY: 100 });
+    rerender(<ResizeHandle {...props} resetKey="second" />);
+    expect(onResizingChange.mock.calls).toEqual([[true], [false]]);
+    pointer('pointerUp', handle, { clientY: 140 });
+    expect(onChangeEnd).not.toHaveBeenCalled();
+    pointer('pointerDown', handle, { clientY: 100 });
+    pointer('pointerUp', handle, { clientY: 140 });
+    expect(onChangeEnd).toHaveBeenCalledExactlyOnceWith(340);
+  });
+
+  it('UIC-SPLIT-VIEW-2.6 reopens a pane at its earlier size only under the key it collapsed in', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage({ a: '40', b: '0' });
+    const foldable: SplitViewPane[] = [
+      { id: 'list', minSize: 20, collapsible: true },
+      { id: 'detail' },
+    ];
+    const { rerender } = render(persisted(storage, { panes: foldable }));
+    const handle = screen.getByRole('separator');
+    handle.focus();
+    await user.keyboard('{Enter}');
+    expect(storage.getItem('a')).toBe('0');
+    rerender(persisted(storage, { panes: foldable, persistKey: 'b' }));
+    await user.keyboard('{Enter}');
+    expect(storage.getItem('b')).toBe('20');
+    expect(storage.getItem('a')).toBe('0');
+  });
+});
+
 describe('SplitView panes', () => {
   it('UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.2 lays out three panes with a separator between each pair', async () => {
     const user = userEvent.setup();

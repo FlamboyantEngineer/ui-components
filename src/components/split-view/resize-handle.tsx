@@ -58,6 +58,11 @@ export interface ResizeHandleProps
   onResizingChange?: ((isResizing: boolean) => void) | undefined;
   /** Ignore pointer and keyboard input and leave the tab order. */
   isDisabled?: boolean | undefined;
+  /**
+   * A change abandons a drag in progress, as becoming disabled does, without disabling later
+   * presses: for a value whose owner changed, such as a split restored from another key.
+   */
+  resetKey?: unknown;
 }
 
 interface Drag {
@@ -67,7 +72,10 @@ interface Drag {
 }
 
 type ResizeInteractionOptions = ResizeKeyboardInput &
-  Pick<ResizeHandleProps, 'onChange' | 'onChangeEnd' | 'onResizingChange' | 'isDisabled'> & {
+  Pick<
+    ResizeHandleProps,
+    'onChange' | 'onChangeEnd' | 'onResizingChange' | 'isDisabled' | 'resetKey'
+  > & {
     getUnitsPerPixel: () => number;
   };
 
@@ -114,6 +122,7 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
   };
   const pointer = usePointerDrag<HTMLDivElement, Drag>({
     isDisabled: options.isDisabled,
+    resetKey: options.resetKey,
     onCancel: () => changeResizing(false),
     onStart: (event) => {
       event.preventDefault();
@@ -183,6 +192,7 @@ export function ResizeHandle({
   onChangeEnd,
   onResizingChange,
   isDisabled = false,
+  resetKey,
   className,
   ...rest
 }: ResizeHandleProps) {
@@ -200,6 +210,7 @@ export function ResizeHandle({
     onChangeEnd,
     onResizingChange,
     isDisabled,
+    resetKey,
   });
   // A disabled handle ignores pointer and keys itself; the caller's handlers in `rest` still run.
   const interactive = isDisabled ? {} : chainHandleEvents(rest, interaction);

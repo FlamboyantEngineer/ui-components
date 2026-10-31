@@ -1,7 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { usePersistentState, useUiStorage, type PersistCodec } from '../../core/provider.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import {
   collapseSplitPane,
   expandSplitPane,
@@ -34,6 +35,11 @@ export interface SplitSizes {
   /** Every pane's size, fitted to the panes. */
   current: readonly number[];
   /**
+   * Changes when the storage, the key or the panes' units and bounds change. A drag or a preview
+   * begun for an earlier owner is abandoned, so it never lands in the new one.
+   */
+  owner: object;
+  /**
    * Applies new sizes: `change` live during a drag or a key step, `end` committed (and saved) when
    * it ends, `set` both at once.
    */
@@ -63,6 +69,25 @@ function createSizesCodec(panes: readonly SplitViewPane[]): PersistCodec<number[
   };
 }
 
+/** The panes' units and bounds, which decide what stored sizes and a drag's values mean. */
+function toPaneShape(panes: readonly SplitViewPane[]): string {
+  return JSON.stringify(
+    panes.map((pane) => [
+      pane.unit ?? 'percent',
+      pane.minSize,
+      pane.maxSize,
+      pane.collapsible ?? false,
+      pane.collapsedSize,
+    ]),
+  );
+}
+
+/** Live sizes and reopening sizes, held for the owner they were taken under. */
+interface Owned<T> {
+  owner: object;
+  value: T;
+}
+
 function toPair(size: number | undefined): number[] | undefined {
   return size === undefined ? undefined : [size, 100 - size];
 }
@@ -75,16 +100,29 @@ function toPair(size: number | undefined): number[] | undefined {
 export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   const { panes, persistKey } = options;
   const controlled = options.sizes ?? toPair(options.size);
+  const persistedKey = controlled ? undefined : persistKey;
+  const adapter = useUiStorage();
+  const owner = useShallowStable({
+    key: persistedKey,
+    storage: persistedKey === undefined ? undefined : adapter,
+    shape: toPaneShape(panes),
+  });
   const codec = useMemo(() => createSizesCodec(panes), [panes]);
   const [committed, setCommitted] = usePersistentState<number[]>(
-    controlled ? undefined : persistKey,
+    persistedKey,
     () => resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize)),
     codec,
   );
-  const [live, setLive] = useState<readonly number[] | null>(null);
-  const current = normalizeSplitSizes(panes, controlled ?? live ?? committed);
+  const [live, setLive] = useState<Owned<readonly number[]> | null>(null);
+  const preview = live?.owner === owner ? live.value : null;
+  const current = normalizeSplitSizes(panes, controlled ?? preview ?? committed);
   const latest = useRef(current);
-  const reopen = useRef(new Map<number, number>());
+  const reopened = useRef<Owned<Map<number, number>>>({ owner, value: new Map() });
+  // A pane reopens at its size before collapsing only under the owner it collapsed in.
+  const reopen = () => {
+    if (reopened.current.owner !== owner) reopened.current = { owner, value: new Map() };
+    return reopened.current.value;
+  };
   useLayoutEffect(() => {
     latest.current = current;
   });
@@ -94,7 +132,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
       const was = isSplitPaneCollapsed(panes[index], previous[index] ?? 0);
       const is = isSplitPaneCollapsed(panes[index], size);
       if (!was && is) {
-        reopen.current.set(index, previous[index] ?? 0);
+        reopen().set(index, previous[index] ?? 0);
         options.onCollapse?.(index);
       } else if (was && !is) options.onExpand?.(index);
     });
@@ -106,7 +144,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     latest.current = next;
     if (!controlled) {
       if (isEnd) setCommitted(next);
-      setLive(isEnd ? null : next);
+      setLive(isEnd ? null : { owner, value: next });
     }
     if (phase !== 'end') {
       options.onSizesChange?.(next);
@@ -118,13 +156,14 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   };
   return {
     current,
+    owner,
     update,
     collapse(index) {
       const next = collapseSplitPane(panes, latest.current, index);
       if (next !== latest.current) update(next, 'set');
     },
     expand(index) {
-      const size = reopen.current.get(index);
+      const size = reopen().get(index);
       const next = expandSplitPane(panes, latest.current, { index, size });
       if (next !== latest.current) update(next, 'set');
     },
