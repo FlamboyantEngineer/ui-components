@@ -115,12 +115,34 @@ function isInline(node: MarkdownNode): node is MarkdownInline {
   return inlineTypes.has(node.type);
 }
 
+/** The fragment percent-decoded once, or as written when its escapes are malformed. */
+function decodeFragment(fragment: string): string {
+  try {
+    return decodeURIComponent(fragment);
+  } catch {
+    return fragment;
+  }
+}
+
+/**
+ * The heading id a fragment names: as written or percent-decoded once, compared as is and with
+ * the accents folded the way heading slugs fold them.
+ */
+function findHeadingId(fragment: string, ids: ReadonlySet<string>): string | undefined {
+  for (const candidate of new Set([fragment, decodeFragment(fragment)])) {
+    const folded = candidate.normalize('NFKD').replace(/\p{M}/gu, '');
+    if (ids.has(candidate)) return candidate;
+    if (ids.has(folded)) return folded;
+  }
+  return undefined;
+}
+
 /** A link to a heading of the document follows the heading's prefixed id. */
 function resolveHref(href: string, context: RenderContext): string {
   const { headingIdPrefix } = context;
   if (headingIdPrefix === undefined || !href.startsWith('#')) return href;
-  const id = href.slice(1);
-  return context.headingIds.has(id) ? `#${headingIdPrefix}${id}` : href;
+  const id = findHeadingId(href.slice(1), context.headingIds);
+  return id === undefined ? href : `#${headingIdPrefix}${id}`;
 }
 
 function renderInline(node: MarkdownInline, children: ReactNode, context: RenderContext) {

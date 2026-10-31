@@ -129,11 +129,18 @@ test.describe('Markdown lab', () => {
       'Planting',
       'Soil',
       'Harvest',
+      'Après-récolte',
     ]);
     await outline.getByRole('link', { name: 'Soil' }).click();
     await expect(guide.getByRole('heading', { name: 'Soil' })).toBeInViewport();
     await guide.getByRole('link', { name: 'harvest' }).click();
     await expect(page).toHaveURL(/#guide-harvest$/);
+    // A percent-encoded link to an accented heading follows its prefixed id.
+    const after = guide.getByRole('link', { name: 'winter care' });
+    await expect(after).toHaveAttribute('href', '#guide-apres-recolte');
+    await after.click();
+    await expect(page).toHaveURL(/#guide-apres-recolte$/);
+    await expect(guide.getByRole('heading', { name: 'Après-récolte' })).toBeInViewport();
   });
 
   test('UIC-MARKDOWN-2.7 marks the query of a text match provider', async ({ page, lab }) => {
