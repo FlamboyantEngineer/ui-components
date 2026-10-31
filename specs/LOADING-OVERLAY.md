@@ -92,6 +92,20 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `src/ut
 Implementation: `src/components/loading-overlay/use-blocked-focus.ts`, `src/utils/focus-target.ts`
 Verification: `src/components/loading-overlay/loading-region-shadow.test.tsx`, `e2e/loading-overlay.spec.ts`
 
+### UIC-LOADING-OVERLAY-3.4 - Nested regions
+
+When `LoadingRegion`s nest, focus shall wait on the outermost region that blocks it and return to the element that had it once every region around that element has ended, whichever region starts or ends first: a region that ends while an outer one still blocks hands its return target to the outer region, and a region that ends while it holds focus inside a region still blocking moves focus to that region instead of into inert content. Focus the reader moved elsewhere meanwhile stays where it is.
+
+Implementation: `src/components/loading-overlay/use-blocked-focus.ts`
+Verification: `src/components/loading-overlay/loading-region-nested.test.tsx`, `e2e/loading-overlay.spec.ts`
+
+### UIC-LOADING-OVERLAY-3.5 - Overlays opened from the content
+
+`LoadingRegion` shall publish its blocking to the library's interactive overlays opened from its content (menus and submenus, field popups such as select, combobox, completion and calendar lists, and popovers: every overlay that renders `PopoverPresence`), which render outside the content in a portal. When the region starts blocking, after its `delay`, each such overlay that is open closes before the reader can act in it again, so neither a key nor a pointer can activate it; focus inside the overlay moves to the region's root and returns to the overlay's trigger once blocking ends, as in [UIC-LOADING-OVERLAY-3.1](#uic-loading-overlay-31---blocking-while-loading). Overlays opened elsewhere, such as from a sibling of the region, stay open. Inside a blocking region, an inner region's or skeleton's overlays follow the outer region. `Skeleton` applies the same policy ([UIC-SKELETON-2.3](SKELETON.md#uic-skeleton-23---overlays-opened-from-the-content)).
+
+Implementation: `src/core/loading-boundary.tsx`, `src/components/loading-overlay/loading-overlay.tsx`, `src/components/loading-overlay/use-blocked-focus.ts`, `src/components/popover/popover-presence.tsx`
+Verification: `src/components/loading-overlay/loading-region-overlays.test.tsx`, `e2e/loading-overlay.spec.ts`
+
 ## UIC-LOADING-OVERLAY-4 - Hooks
 
 ### UIC-LOADING-OVERLAY-4.1 - Hooks and caller attributes

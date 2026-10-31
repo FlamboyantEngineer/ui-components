@@ -39,6 +39,13 @@ The footer's `ui-emoji-picker__preview` shall show the emoji last hovered or foc
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-grid.tsx`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`
 
+### UIC-EMOJI-PICKER-1.6 - Virtualized grids
+
+With `virtualized`, each grid shall render through React Aria's `Virtualizer` with a grid layout of square cells, at most eight a row ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)), and publish `data-virtualized` on the grid and its section: only the cells in view of the grid, which then scrolls itself, are in the document, positioned by the layout, while the arrow keys, Home and End reach every emoji and each cell keeps its hooks and name. Without it every cell renders, and the section scrolls.
+
+Implementation: `src/components/emoji-picker/emoji-grid.tsx`, `labs/reference/emoji-picker.css`
+Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+
 ## UIC-EMOJI-PICKER-2 - Search, recent and custom emoji, skin tone
 
 ### UIC-EMOJI-PICKER-2.1 - Search
@@ -191,6 +198,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 | `ui-emoji-picker__skin-tones`    | slot      |                                  | The skin tone radio group.                                            |
 | `ui-emoji-picker__skin-tone`     | slot      |                                  | One skin tone radio (a `<label>`).                                    |
 | `data-loading`                   | state     | `true`                           | The standard emoji are loading.                                       |
+| `data-virtualized`               | state     | `true`                           | On a grid and its section: only the cells in view render.             |
 | `data-empty`                     | state     | `true`                           | The search field is empty (React Aria).                               |
 | `data-layout`                    | attribute | `grid`                           | The grid's layout (React Aria).                                       |
 | `data-orientation`               | attribute | `vertical`, `horizontal`         | The grid's and the radio group's axis (React Aria).                   |

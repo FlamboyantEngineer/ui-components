@@ -1,0 +1,167 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import type { ReactNode } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { Button } from '../button/button.js';
+import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
+import { SelectField } from '../select-field/select-field.js';
+import { Skeleton } from '../skeleton/skeleton.js';
+import { LoadingRegion } from './loading-overlay.js';
+
+type Boundary = 'region' | 'skeleton';
+
+function Actions({ onAction }: { onAction?: (key: unknown) => void }) {
+  return (
+    <MenuTrigger>
+      <Button>Actions</Button>
+      <MenuPopover>
+        <Menu
+          aria-label="Actions"
+          items={[
+            { id: 'run', label: 'Run action' },
+            { id: 'more', label: 'More', items: [{ id: 'copy', label: 'Copy' }] },
+          ]}
+          onAction={onAction}
+        />
+      </MenuPopover>
+    </MenuTrigger>
+  );
+}
+
+function Around({
+  boundary,
+  isLoading,
+  delay,
+  children,
+}: {
+  boundary: Boundary;
+  isLoading: boolean;
+  delay?: number;
+  children: ReactNode;
+}) {
+  return boundary === 'region' ? (
+    <LoadingRegion isLoading={isLoading} delay={delay} label="Refreshing">
+      {children}
+    </LoadingRegion>
+  ) : (
+    <Skeleton isLoading={isLoading}>{children}</Skeleton>
+  );
+}
+
+function setup(boundary: Boundary, delay?: number) {
+  const onAction = vi.fn();
+  const view = (isLoading: boolean) => (
+    <Around boundary={boundary} isLoading={isLoading} delay={delay}>
+      <Actions onAction={onAction} />
+    </Around>
+  );
+  const { rerender } = render(view(false));
+  return { onAction, setLoading: (isLoading: boolean) => rerender(view(isLoading)) };
+}
+
+const regionRoot = () => document.querySelector<HTMLElement>('.ui-loading-region');
+
+async function openRunAction(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Actions' }));
+  await user.keyboard('{ArrowDown}');
+  await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Run action' })).toHaveFocus());
+}
+
+describe('LoadingRegion and Skeleton suspend the overlays their content opened', () => {
+  it.each<Boundary>(['region', 'skeleton'])(
+    'UIC-LOADING-OVERLAY-3.5 UIC-SKELETON-2.3 closes a menu focused before %s loading starts, so Enter runs nothing',
+    async (boundary) => {
+      const user = userEvent.setup();
+      const { onAction, setLoading } = setup(boundary);
+      await openRunAction(user);
+      setLoading(true);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      await user.keyboard('{Enter}');
+      expect(onAction).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-LOADING-OVERLAY-3.5 holds focus on the region and returns it to the trigger', async () => {
+    const user = userEvent.setup();
+    const { setLoading } = setup('region');
+    await openRunAction(user);
+    setLoading(true);
+    expect(regionRoot()).toHaveFocus();
+    setLoading(false);
+    expect(screen.getByRole('button', { name: 'Actions' })).toHaveFocus();
+  });
+
+  it('UIC-LOADING-OVERLAY-3.5 closes a submenu with its menu', async () => {
+    const user = userEvent.setup();
+    const { setLoading } = setup('region');
+    await user.click(screen.getByRole('button', { name: 'Actions' }));
+    await user.click(screen.getByRole('menuitem', { name: 'More' }));
+    expect(await screen.findByRole('menuitem', { name: 'Copy' })).toBeInTheDocument();
+    setLoading(true);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(regionRoot()).toHaveFocus();
+  });
+
+  it('UIC-LOADING-OVERLAY-3.5 closes a select field popup', async () => {
+    const user = userEvent.setup();
+    const field = (isLoading: boolean) => (
+      <LoadingRegion isLoading={isLoading} label="Refreshing">
+        <SelectField
+          label="Fruit"
+          options={[
+            { id: 'apple', label: 'Apple' },
+            { id: 'pear', label: 'Pear' },
+          ]}
+        />
+      </LoadingRegion>
+    );
+    const { rerender } = render(field(false));
+    const trigger = screen.getByRole('button', { name: /Fruit$/ });
+    await user.click(trigger);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    rerender(field(true));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    rerender(field(false));
+    expect(trigger).toHaveFocus();
+  });
+
+  it('UIC-LOADING-OVERLAY-3.5 keeps the menu until a delayed region blocks', async () => {
+    const user = userEvent.setup();
+    const { setLoading } = setup('region', 50);
+    await openRunAction(user);
+    setLoading(true);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(regionRoot()).toHaveFocus();
+  });
+
+  it('UIC-LOADING-OVERLAY-3.5 suspends again on every loading transition', async () => {
+    const user = userEvent.setup();
+    const { onAction, setLoading } = setup('region');
+    for (let round = 0; round < 2; round += 1) {
+      await openRunAction(user);
+      setLoading(true);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      setLoading(false);
+    }
+    await openRunAction(user);
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledWith('run');
+  });
+
+  it('UIC-LOADING-OVERLAY-3.5 leaves a menu opened outside the region open', async () => {
+    const user = userEvent.setup();
+    const view = (isLoading: boolean) => (
+      <>
+        <Actions />
+        <LoadingRegion isLoading={isLoading} label="Refreshing">
+          <p>Content</p>
+        </LoadingRegion>
+      </>
+    );
+    const { rerender } = render(view(false));
+    await openRunAction(user);
+    rerender(view(true));
+    expect(screen.getByRole('menuitem', { name: 'Run action' })).toHaveFocus();
+  });
+});

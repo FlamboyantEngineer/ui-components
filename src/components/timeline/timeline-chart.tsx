@@ -1,6 +1,7 @@
 'use client';
 
 import { useId } from 'react';
+import { useLocale } from '../../primitives/index.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { measuredProperty } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -8,6 +9,7 @@ import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import {
   resolveScaleCells,
   timelineScales,
+  toInlineStart,
   type TimelineAxis,
   type TimelineItem,
   type TimelineItemChange,
@@ -47,10 +49,14 @@ interface RowListProps {
   onExpandedChange: (id: Key, isExpanded: boolean) => void;
 }
 
-/** The row names on the left, pinned to the viewport's start while the chart scrolls sideways. */
+/** The row names at the start, pinned to the viewport's start while the chart scrolls sideways. */
 function TimelineRowList({ rows, rowHeight, labelId, onExpandedChange }: RowListProps) {
+  const isRtl = useLocale().direction === 'rtl';
   return (
-    <div {...hooks.slot('list')} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
+    <div
+      {...hooks.slot('list')}
+      style={{ position: 'sticky', ...toInlineStart(0, isRtl), zIndex: 1 }}
+    >
       {rows.map(({ row, level, hasChildren, isExpanded }, index) => (
         <div
           key={toKeyIdentity(row.id)}
@@ -79,6 +85,7 @@ function TimelineGuides({
   scale,
   today,
 }: Pick<TimelineChartProps, 'axis' | 'scale' | 'today'>) {
+  const isRtl = useLocale().direction === 'rtl';
   const plan = timelineScales[scale];
   const majorStarts = new Set(resolveScaleCells(axis, plan.major).map((cell) => cell.start));
   const isTodayShown = today >= axis.range.start && today <= axis.range.end;
@@ -88,7 +95,7 @@ function TimelineGuides({
         <span
           key={cell.start}
           {...hooks.slot('gridline', { major: majorStarts.has(cell.start) })}
-          style={{ position: 'absolute', top: 0, bottom: 0, left: cell.left }}
+          style={{ position: 'absolute', top: 0, bottom: 0, ...toInlineStart(cell.left, isRtl) }}
           aria-hidden="true"
         />
       ))}
@@ -99,7 +106,7 @@ function TimelineGuides({
             position: 'absolute',
             top: 0,
             bottom: 0,
-            left: axis.scale.map(today) + axis.dayWidth / 2,
+            ...toInlineStart(axis.scale.map(today) + axis.dayWidth / 2, isRtl),
           }}
           aria-hidden="true"
         />
@@ -118,23 +125,27 @@ function TimelineConnectors({
   layout: TimelineLayout;
   height: number;
 }) {
+  const isRtl = useLocale().direction === 'rtl';
   return (
     <svg
       {...hooks.slot('connectors')}
       width={axis.width}
       height={height}
-      style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+      style={{ position: 'absolute', top: 0, ...toInlineStart(0, isRtl), pointerEvents: 'none' }}
       aria-hidden="true"
       focusable="false"
     >
-      {layout.connectors.map((connector) => (
-        <path
-          key={connector.key}
-          {...hooks.slot('connector', { conflict: connector.hasConflict })}
-          d={connector.path}
-          fill="none"
-        />
-      ))}
+      {/* Paths run from the axis's start; right to left they are mirrored onto the flipped axis. */}
+      <g transform={isRtl ? `translate(${axis.width} 0) scale(-1 1)` : undefined}>
+        {layout.connectors.map((connector) => (
+          <path
+            key={connector.key}
+            {...hooks.slot('connector', { conflict: connector.hasConflict })}
+            d={connector.path}
+            fill="none"
+          />
+        ))}
+      </g>
     </svg>
   );
 }
@@ -152,12 +163,16 @@ export function TimelineChart({
   today,
   actions,
 }: TimelineChartProps) {
+  const isRtl = useLocale().direction === 'rtl';
   const baseId = useId();
   const labelId = (index: number) => `${baseId}-row-${index}`;
   return (
     <div {...hooks.slot('viewport')}>
       <div {...hooks.slot('canvas')} style={{ gridTemplateColumns: `auto ${axis.width}px` }}>
-        <div {...hooks.slot('corner')} style={{ position: 'sticky', top: 0, left: 0, zIndex: 3 }} />
+        <div
+          {...hooks.slot('corner')}
+          style={{ position: 'sticky', top: 0, ...toInlineStart(0, isRtl), zIndex: 3 }}
+        />
         <TimelineHeader axis={axis} scale={scale} />
         <TimelineRowList
           rows={rows}

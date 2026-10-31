@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '../../src/components/button/button.js';
+import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import {
   LoadingCard,
   LoadingOverlay,
@@ -99,6 +100,88 @@ function RegionDemo() {
   );
 }
 
+/** Lab-only stand-in for two loads finishing after the given delays. */
+function useTimedLoad(): [boolean, (duration: number) => void] {
+  const [duration, setDuration] = useState<number | null>(null);
+  useEffect(() => {
+    if (duration === null) return undefined;
+    const timer = setTimeout(() => setDuration(null), duration);
+    return () => clearTimeout(timer);
+  }, [duration]);
+  return [duration !== null, setDuration];
+}
+
+function NestedDemo() {
+  const [isOuterLoading, startOuter] = useTimedLoad();
+  const [isInnerLoading, startInner] = useTimedLoad();
+  const save = (outer: number, inner: number) => {
+    startOuter(outer);
+    startInner(inner);
+  };
+  return (
+    <div data-lab-demo="nested-regions">
+      <LoadingRegion isLoading={isOuterLoading} label="Loading panel" data-lab-region="outer">
+        <div style={{ width: 360, minHeight: 240, padding: 12 }}>
+          <p>Panel</p>
+          <LoadingRegion isLoading={isInnerLoading} label="Saving note" data-lab-region="inner">
+            <div style={{ minHeight: 140 }}>
+              <p>
+                <label>
+                  Note <input name="note" defaultValue="Plums" />
+                </label>
+              </p>
+              <p>
+                <Button onPress={() => save(1600, 800)}>Save, note first</Button>{' '}
+                <Button onPress={() => save(800, 1600)}>Save, panel first</Button>
+              </p>
+            </div>
+          </LoadingRegion>
+        </div>
+      </LoadingRegion>
+    </div>
+  );
+}
+
+function MenuDemo() {
+  const [isLoading, startLoading] = useTimedLoad();
+  const [isScheduled, setScheduled] = useState(false);
+  const [lastAction, setLastAction] = useState('none');
+  useEffect(() => {
+    if (!isScheduled) return undefined;
+    // Lab-only stand-in for a refresh that starts while the menu is open.
+    const timer = setTimeout(() => {
+      setScheduled(false);
+      startLoading(1500);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isScheduled, startLoading]);
+  return (
+    <div data-lab-demo="menu-in-region">
+      <p>
+        <Button onPress={() => setScheduled(true)}>Refresh in a second</Button>
+      </p>
+      <LoadingRegion isLoading={isLoading} label="Refreshing">
+        <div style={{ width: 320, minHeight: 120 }}>
+          <MenuTrigger>
+            <Button>Actions</Button>
+            <MenuPopover>
+              <Menu
+                aria-label="Actions"
+                items={[
+                  { id: 'run', label: 'Run action' },
+                  { id: 'more', label: 'More', items: [{ id: 'copy', label: 'Copy' }] },
+                ]}
+                onAction={(key) => setLastAction(String(key))}
+              />
+            </MenuPopover>
+          </MenuTrigger>
+          <p>Last action: {lastAction}</p>
+        </div>
+      </LoadingRegion>
+    </div>
+  );
+}
+
 function DelayDemo() {
   const [isLoading, setLoading] = useState(false);
   return (
@@ -189,6 +272,18 @@ mountLab(
       description="Start loading to block the form, then stop it, or press Apply to save for a moment: focus waits on the region and returns to Apply. The cover fades in and out with useEnterExit."
     >
       <RegionDemo />
+    </LabSection>
+    <LabSection
+      title="Nested regions"
+      description="A note's region inside a panel's region. Each Save blocks both, then ends them in the named order: focus waits on whichever region still blocks and returns to the button once both end."
+    >
+      <NestedDemo />
+    </LabSection>
+    <LabSection
+      title="Menus opened from the content"
+      description="Press Refresh, then open Actions within a second: when the region starts loading the menu closes, focus waits on the region, and it returns to Actions once loading ends."
+    >
+      <MenuDemo />
     </LabSection>
     <LabSection
       title="Blocking inside a shadow root"

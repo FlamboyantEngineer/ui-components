@@ -123,6 +123,13 @@
   padding: 4px 8px 8px;
 }
 
+/* A virtualized grid scrolls itself, so the section only stacks the label above it. */
+.ui-emoji-picker__section[data-virtualized] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .ui-emoji-picker__label {
   padding: 4px 0;
   color: var(--ref-muted);
@@ -135,6 +142,13 @@
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 2px;
   outline: none;
+}
+
+.ui-emoji-picker__grid[data-virtualized] {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .ui-emoji-picker__cell {

@@ -39,19 +39,19 @@ The card shall be a `role="dialog"` named by the display name, or by the caller'
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
-### UIC-USER-CARD-1.7 - Loading
-
-While `isLoading`, the card shall publish `data-loading`, set `aria-busy="true"` and draw a decorative `ui-user-card__skeleton` slot, hidden from assistive technology, in place of its status row, details and actions, so a card opened before its profile has loaded keeps its size. The slot is a [Skeleton](SKELETON.md) block, so it also carries `ui-skeleton` and its attributes and a host draws it like its other placeholders. The identity row stays. Without it neither attribute renders.
-
-Implementation: `src/components/user-card/user-card.tsx`, `src/components/skeleton/skeleton.tsx`, `labs/reference/user-card.css`
-Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
-
 ### UIC-USER-CARD-1.6 - Hooks and caller attributes
 
 `UserCard` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`
+
+### UIC-USER-CARD-1.7 - Loading
+
+While `isLoading`, the card shall publish `data-loading`, set `aria-busy="true"` and draw a decorative `ui-user-card__skeleton` slot, hidden from assistive technology, in place of its status row, details and actions, so a card opened before its profile has loaded keeps its size. The slot is a [Skeleton](SKELETON.md) block, so it also carries `ui-skeleton` and its attributes and a host draws it like its other placeholders. The identity row stays. Without it neither attribute renders.
+
+Implementation: `src/components/user-card/user-card.tsx`, `src/components/skeleton/skeleton.tsx`, `labs/reference/user-card.css`
+Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
 ## UIC-USER-CARD-2 - Trigger
 
@@ -61,13 +61,6 @@ Verification: `src/components/user-card/user-card.test.tsx`
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
-
-### UIC-USER-CARD-2.5 - Without a card
-
-Without `card` (`undefined`, `null` or `false`), `UserCardTrigger` shall be a plain button that runs `onPress`, with no `ui-user-card__trigger` class, `aria-haspopup` or `aria-expanded`. A card that arrives or leaves later, or a change of `trigger`, keeps the same button element and its focus.
-
-Implementation: `src/components/user-card/user-card.tsx`
-Verification: `src/components/user-card/user-card.test.tsx`
 
 ### UIC-USER-CARD-2.2 - Opening and dismissing
 
@@ -89,6 +82,13 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
+
+### UIC-USER-CARD-2.5 - Without a card
+
+Without `card` (`undefined`, `null` or `false`), `UserCardTrigger` shall be a plain button that runs `onPress`, with no `ui-user-card__trigger` class, `aria-haspopup` or `aria-expanded`. A card that arrives or leaves later, or a change of `trigger`, keeps the same button element and its focus.
+
+Implementation: `src/components/user-card/user-card.tsx`
+Verification: `src/components/user-card/user-card.test.tsx`
 
 ## Hooks
 

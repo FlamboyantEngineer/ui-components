@@ -118,6 +118,15 @@ With `defaultSelected` or `onChange` the button shall be a toggle: every press (
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
+## UIC-BUTTON-3 - Unified options
+
+### UIC-BUTTON-3.1 - Unified commands
+
+Button shall offer icon-only content through icon and an accessible label. Promise-returning presses automatically refuse repeats and manage pending; synchronous presses neither wait nor show a pending state.
+
+Implementation: `src/components/button/button.tsx`
+Verification: `src/components/button/button.test.tsx`
+
 ## UIC-BUTTON-11 - Contract
 
 ### UIC-BUTTON-11.1 - Icon and name
@@ -226,15 +235,6 @@ Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action
 
 Implementation: `src/components/button/button-action.tsx`, `src/components/button/button-state.tsx`, `src/utils/use-delayed-flag.ts`
 Verification: `src/components/button/button-action.test.tsx`, `src/components/button/button-inherited-press.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/button-action.spec.ts`, `e2e/button.spec.ts`
-
-## UIC-BUTTON-3 - Unified options
-
-### UIC-BUTTON-3.1 - Unified commands
-
-Button shall offer icon-only content through icon and an accessible label. Promise-returning presses automatically refuse repeats and manage pending; synchronous presses neither wait nor show a pending state.
-
-Implementation: `src/components/button/button.tsx`
-Verification: `src/components/button/button.test.tsx`
 
 ## Hooks
 

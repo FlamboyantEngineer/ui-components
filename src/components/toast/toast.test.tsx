@@ -927,6 +927,35 @@ describe('Toast updates and motion', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
+  it.each([
+    ['en-US', 'end', 'right', '30px', 230],
+    ['ar-EG', 'end', 'left', '-30px', 170],
+    ['ar-EG', 'start', 'right', '30px', 230],
+    ['ar-EG', 'up', 'up', '', 200],
+  ] as const)(
+    'UIC-TOAST-4.2 in %s resolves %s to %s',
+    (locale, direction, resolved, travel, clientX) => {
+      const queue = createToastQueue({ defaultTimeout: 0 });
+      render(
+        <UiProvider locale={locale}>
+          <ToastRegion
+            queue={queue}
+            {...(direction === 'end' ? {} : { swipeDirection: direction })}
+          />
+        </UiProvider>,
+      );
+      act(() => {
+        queue.add({ title: 'Saved' });
+      });
+      const toast = screen.getByRole('alertdialog', { name: 'Saved' });
+      expect(toast).toHaveAttribute('data-swipe-direction', resolved);
+      pointer('pointerDown', toast, { clientX: 200, clientY: 10 });
+      pointer('pointerMove', toast, { clientX, clientY: 10 });
+      expect(toast.style.getPropertyValue('--ui-toast-swipe-x')).toBe(travel);
+      pointer('pointerCancel', toast, { clientX, clientY: 10 });
+    },
+  );
+
   it('UIC-TOAST-4.3 stays expanded while the pointer crosses the gaps of the spread stack', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();

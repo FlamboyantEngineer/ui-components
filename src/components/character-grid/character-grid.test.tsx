@@ -331,4 +331,28 @@ describe('CharacterGrid', () => {
     render(<CharacterGrid categories={categories} onSelect={() => {}} autoFocus />);
     expect(screen.getByRole('searchbox')).toHaveFocus();
   });
+
+  it('UIC-CHARACTER-GRID-2.5 renders every cell under its heading and keeps the preview across renders', async () => {
+    const user = userEvent.setup();
+    const large: CharacterGridCategory[] = [
+      {
+        id: 'letters',
+        label: 'Letters',
+        characters: Array.from({ length: 300 }, (_, index) => ({
+          char: String.fromCodePoint(0x4e00 + index),
+          name: `Ideograph ${index}`,
+        })),
+      },
+    ];
+    const { container, rerender } = render(
+      <CharacterGrid categories={large} onSelect={() => {}} />,
+    );
+    expect(container.querySelectorAll('.ui-character-grid__cell')).toHaveLength(300);
+    expect(headings(container)).toEqual(['Letters']);
+    await user.hover(cell('Ideograph 299'));
+    rerender(<CharacterGrid categories={large} onSelect={() => {}} className="again" />);
+    expect(container.querySelector('.ui-character-grid__preview-name')).toHaveTextContent(
+      'Ideograph 299',
+    );
+  });
 });

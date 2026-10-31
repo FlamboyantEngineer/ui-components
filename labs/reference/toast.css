@@ -14,13 +14,22 @@
   outline-offset: 4px;
 }
 
-/* Toasts share one grid cell: a pile at rest that spreads out by its offsets while expanded. */
+/*
+ * A list in place shows every toast, newest first, each in the flow at the list's width. In a
+ * region, toasts share one grid cell instead: a pile at rest that spreads out by its offsets while
+ * expanded.
+ */
 .ui-toast-list {
   display: grid;
-  align-items: end;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.ui-toast-region .ui-toast-list {
+  align-items: end;
+  gap: 0;
 }
 
 .ui-toast {
@@ -36,6 +45,14 @@
   background: var(--ref-raised);
   box-shadow: var(--ref-shadow);
   outline: none;
+  transform: translate(var(--ui-toast-swipe-x, 0px), var(--ui-toast-swipe-y, 0px));
+  transition:
+    transform var(--ref-duration) ease,
+    opacity var(--ref-duration) ease;
+  touch-action: none;
+}
+
+.ui-toast-region .ui-toast {
   grid-area: 1 / 1;
   z-index: calc(10 - var(--ui-toast-index));
   opacity: clamp(0, calc(3 - var(--ui-toast-index)), 1);
@@ -45,10 +62,6 @@
     )
     scale(calc(1 - min(var(--ui-toast-index), 3) * 0.05));
   transform-origin: bottom center;
-  transition:
-    transform var(--ref-duration) ease,
-    opacity var(--ref-duration) ease;
-  touch-action: none;
 }
 
 .ui-toast-region[data-expanded] .ui-toast {

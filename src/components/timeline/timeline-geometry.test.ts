@@ -162,6 +162,9 @@ describe('timeline geometry', () => {
       end: '2026-03-21',
     });
     expect(resolveKeyboardChange(bar, { key: 'ArrowUp', shiftKey: false }, 'day')).toBeNull();
+    expect(resolveKeyboardChange(bar, { ...right, isRtl: true }, 'day')).toEqual(
+      resolveKeyboardChange(bar, left, 'day'),
+    );
   });
 
   it('UIC-TIMELINE-2.1 moves an item or one end of a bar by whole days', () => {

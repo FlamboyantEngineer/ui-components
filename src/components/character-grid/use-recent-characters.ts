@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { usePersistentState } from '../../core/provider.js';
 import { createListCodec } from '../../utils/json-codec.js';
 import type { CharacterGridCategory, CharacterGridCharacter } from './character-filter.js';
@@ -25,12 +26,20 @@ export function useRecentCharacters(
   categories: readonly CharacterGridCategory[],
 ): RecentCharacters {
   const [stored, setStored] = usePersistentState(persistKey, () => [], { codec: charListCodec });
-  const known = new Map<string, CharacterGridCharacter>();
-  for (const character of categories.flatMap((category) => category.characters)) {
-    if (!known.has(character.char)) known.set(character.char, character);
-  }
+  const known = useMemo(() => {
+    const byChar = new Map<string, CharacterGridCharacter>();
+    for (const character of categories.flatMap((category) => category.characters)) {
+      if (!byChar.has(character.char)) byChar.set(character.char, character);
+    }
+    return byChar;
+  }, [categories]);
+  // One list while neither changes, so the sections built from it are kept too.
+  const characters = useMemo(
+    () => stored.flatMap((char) => known.get(char) ?? []),
+    [stored, known],
+  );
   return {
-    characters: stored.flatMap((char) => known.get(char) ?? []),
+    characters,
     remember: (character) =>
       setStored((previous) =>
         [character.char, ...previous]

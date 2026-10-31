@@ -39,19 +39,19 @@ Verification: `src/components/user-identity/user-identity.test.tsx`
 Implementation: `src/components/user-identity/user-identity.tsx`
 Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
 
-### UIC-USER-IDENTITY-1.7 - Presence
-
-A non-blank `status` shall be published, trimmed, in `data-status` on the root, together with a `ui-user-identity__indicator` badge the stylesheet draws on the avatar's corner. The badge comes after the name and secondary line, so the status is read after them: a `role="img"` named by the trimmed `statusLabel`, or hidden from assistive technology without one. Without a status neither renders.
-
-Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference/user-identity.css`
-Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
-
 ### UIC-USER-IDENTITY-1.6 - Hooks and caller attributes
 
 `UserIdentity` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
 
 Implementation: `src/components/user-identity/user-identity.tsx`
 Verification: `src/components/user-identity/user-identity.test.tsx`
+
+### UIC-USER-IDENTITY-1.7 - Presence
+
+A non-blank `status` shall be published, trimmed, in `data-status` on the root, together with a `ui-user-identity__indicator` badge the stylesheet draws on the avatar's corner. The badge comes after the name and secondary line, so the status is read after them: a `role="img"` named by the trimmed `statusLabel`, or hidden from assistive technology without one. Without a status neither renders.
+
+Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference/user-identity.css`
+Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
 
 ## Hooks
 

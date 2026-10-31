@@ -1,6 +1,7 @@
 'use client';
 
-// Date and time fields, calendars and the date values they edit.
+// Date and time fields and calendars. The date values they edit, and the functions on them, are
+// server-safe and live in date-values.ts.
 
 export {
   Calendar,
@@ -20,18 +21,3 @@ export {
   TimeField,
   TimeFieldStateContext,
 } from 'react-aria-components';
-export {
-  DateFormatter,
-  fromDate,
-  getLocalTimeZone,
-  now,
-  resetLocalTimeZone,
-  setLocalTimeZone,
-  startOfWeek,
-  toCalendarDate,
-  toCalendarDateTime,
-  toZoned,
-  today,
-} from '@internationalized/date';
-export type { CalendarDate, DateValue } from '@internationalized/date';
-export { formatIsoDate, parseIsoDate, parseIsoDateTime, parseIsoTime } from './date-values.js';

@@ -82,7 +82,9 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `labs/reference/transfer-list.css`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`
 
-### UIC-TRANSFER-LIST-3.4 - Leading row controls
+## UIC-TRANSFER-LIST-3 - Row controls
+
+### UIC-TRANSFER-LIST-3.1 - Leading row controls
 
 Row checkboxes and drag handles precede all content in a horizontal row, vertically centered beside the title, metadata, icons and trailing actions. The reference stylesheet applies flex layout to the row itself because React Aria's generated grid cell uses display: contents. This stays true in narrow panes and during selection or dragging.
 

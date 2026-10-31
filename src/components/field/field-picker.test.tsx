@@ -4,13 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { createHooks } from '../../core/hooks.js';
 import { ListBox } from '../../primitives/index.js';
 import { loadRemotePage } from '../../utils/use-remote-search.js';
-import {
-  PickerOptionRow,
-  flattenPickerItems,
-  isPickerSection,
-  usePickerEmptyContent,
-  type PickerItem,
-} from './field-picker.js';
+import { PickerOptionRow, usePickerEmptyContent } from './field-picker.js';
+import { flattenPickerItems, isPickerSection, type PickerItem } from './field-picker-items.js';
 
 const hooks = createHooks('combobox', [
   'option',

@@ -66,9 +66,9 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-2.3 - In-place list
 
-`ToastList` shall draw a queue's visible toasts in place as a `ui-toast-list`, with the same toast markup, but without the portal, the landmark and the pausing of a region.
+`ToastList` shall draw a queue's visible toasts in place as a `ui-toast-list`, with the same toast markup, but without the portal, the landmark and the pausing of a region. A list in place is never piled or expanded: every visible toast, its action and its dismiss button show and take focus in order, so it holds no invisible focus stop. The reference stylesheet piles toasts only inside a `ui-toast-region` and lays a list in place out as a column at the list's width, newest first.
 
-Implementation: `src/components/toast/toast.tsx`
+Implementation: `src/components/toast/toast.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-2.4 - Overlay layer
@@ -133,7 +133,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-4.2 - Swipe to dismiss
 
-A pointer that starts on a toast outside its buttons (whose presses stay theirs) and drags it more than 8 pixels toward the region's `swipeDirection` (`right` by default, or `left`, `up` or `down`, published on each toast as `data-swipe-direction`) shall make it swiping: it publishes `data-swiping` and its travel as `--ui-toast-swipe-x` (left and right, negative to the left) or `--ui-toast-swipe-y` (up and down, negative upwards). Releasing it after at least `swipeThreshold` pixels (50 by default) closes it and keeps the travel for its exit; a shorter release or a cancelled pointer returns it to rest. The click that ends a swipe is swallowed, so a swipe that ends on a link does not follow it. Keyboard users dismiss with the dismiss button.
+A pointer that starts on a toast outside its buttons (whose presses stay theirs) and drags it more than 8 pixels toward the region's `swipeDirection` shall make it swiping: it publishes `data-swiping` and its travel as `--ui-toast-swipe-x` (left and right, negative to the left) or `--ui-toast-swipe-y` (up and down, negative upwards). Releasing it after at least `swipeThreshold` pixels (50 by default) closes it and keeps the travel for its exit; a shorter release or a cancelled pointer returns it to rest. The click that ends a swipe is swallowed, so a swipe that ends on a link does not follow it. Keyboard users dismiss with the dismiss button. `swipeDirection` is `end` by default; `start` and `end` follow the provider locale's reading direction, and `left`, `right`, `up` and `down` are physical. Each toast publishes the resolved screen direction as `data-swipe-direction`, so `end` reads `right` left to right and `left` right to left.
 
 Implementation: `src/components/toast/use-toast-swipe.ts`, `src/components/toast/toast.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -160,7 +160,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 | `ui-toast__action`      | slot      |                                        | The action button (also `ui-button`).             |
 | `ui-toast__close`       | slot      |                                        | The dismiss button (also `ui-button`).            |
 | `data-tone`             | attribute | `info`, `success`, `warning`, `danger` | The toast's tone.                                 |
-| `data-swipe-direction`  | attribute | `up`, `down`, `left`, `right`          | The direction that dismisses the toast.           |
+| `data-swipe-direction`  | attribute | `up`, `down`, `left`, `right`          | The screen direction that dismisses the toast.    |
 | `data-pending`          | state     | `true`                                 | Work in progress.                                 |
 | `data-entering`         | state     | `true`                                 | The toast is playing its enter animation.         |
 | `data-exiting`          | state     | `true`                                 | The toast is playing its exit before removal.     |

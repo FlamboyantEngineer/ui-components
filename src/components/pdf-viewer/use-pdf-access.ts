@@ -3,7 +3,8 @@
 import { useCallback, useEffect } from 'react';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { createPageText } from './pdf-search.js';
-import { toPageRotation, type LoadedPdf } from './use-pdf-document.js';
+import { toPageRotation } from './page-geometry.js';
+import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
 
 /** A page's text, read from the document whether or not the page has rendered. */

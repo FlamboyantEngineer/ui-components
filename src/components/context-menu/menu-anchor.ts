@@ -2,7 +2,12 @@ import { useMemo, type RefObject } from 'react';
 import type { Placement } from '../../core/props.js';
 import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuOverlayProps } from '../menu/menu.js';
-import { isElementAnchor, type MenuAnchor } from './menu-controller.js';
+import type { MenuAnchor } from './menu-controller.js';
+
+/** Whether an anchor is an element rather than a point. */
+export function isElementAnchor(anchor: MenuAnchor): anchor is Element {
+  return typeof (anchor as Element).getBoundingClientRect === 'function';
+}
 
 interface MenuAnchorOptions {
   anchor: MenuAnchor | null;

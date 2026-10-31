@@ -7,8 +7,9 @@ import { useElementSize } from '../../utils/use-element-size.js';
 import { useInView } from '../../utils/use-in-view.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
-import { drawPage, measureCanvasPixels } from './use-page-render.js';
-import { toPageRotation, type LoadedPdf } from './use-pdf-document.js';
+import { drawPage, measureCanvasPixels } from './page-bitmap.js';
+import { toPageRotation } from './page-geometry.js';
+import type { LoadedPdf } from './use-pdf-document.js';
 
 interface PdfViewerThumbnailsProps<
   V extends PdfViewport = PdfViewport,

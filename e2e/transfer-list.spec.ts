@@ -113,7 +113,7 @@ test.describe('Transfer List lab', () => {
   });
 });
 
-test('UIC-TRANSFER-LIST-3.4 keeps row handles and checkboxes left of vertically centered content', async ({
+test('UIC-TRANSFER-LIST-3.1 keeps row handles and checkboxes left of vertically centered content', async ({
   page,
   lab,
 }) => {

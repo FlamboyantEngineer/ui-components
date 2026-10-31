@@ -325,6 +325,29 @@ A read-only editor shall keep its text and line numbers visible and refuse edits
 Implementation: `src/components/code-editor/code-field.tsx`
 Verification: `src/components/code-editor/code-json.test.tsx`
 
+## UIC-CODE-EDITOR-12 - Languages and fields
+
+### UIC-CODE-EDITOR-12.1 - Built-in and custom syntax
+
+`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet.
+
+Implementation: `src/components/code-editor/code-languages.ts`, `src/components/code-editor/code-editor.tsx`
+Verification: `src/components/code-editor/code-languages.test.tsx`
+
+### UIC-CODE-EDITOR-12.2 - Field and surface variants
+
+`variant="field"` is the default: a string field with label, descriptions, validation, dirty state, restore, undo, menu, native form name and commit on blur. `variant="surface"` is a controlled editing surface for composition in another field or widget. JSON field mode provides parsing, optional JSON Schema checks, completions, hover documentation and formatting; other languages accept caller diagnostics and completion sources. Caller errors also make a field invalid.
+
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-field.tsx`, `src/components/code-editor/code-surface.tsx`
+Verification: `src/components/code-editor/code-languages.test.tsx`, `src/components/code-editor/code-json.test.tsx`, `src/components/code-editor/code-editor.test.tsx`
+
+### UIC-CODE-EDITOR-12.3 - Diagnostic scrollbar marks
+
+Multiline surfaces hide native scrollbars and draw the shared custom scrollbars around the native textarea viewport. Colored marks inside the vertical track map each diagnostic line or multiline range to its position in the whole document, including wrapped text and non-default first line numbers. Error marks are red and warning marks amber in the reference stylesheet. The track and thumb preserve pointer drag, paging, wheel and keyboard scrolling, while existing F8 diagnostic navigation remains available. Editor thumbs stay out of the Tab sequence so Tab can reach the field restore controls; focusing a thumb by pointer still enables its scrolling keys. Measurements refresh when text or layout changes; obsolete marks disappear with diagnostics.
+
+Implementation: `src/components/code-editor/code-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
+Verification: `e2e/code-overview.spec.ts`
+
 ## UIC-CODE-EDITOR-13 - JSON schema
 
 ### UIC-CODE-EDITOR-13.1 - Schema subset
@@ -370,29 +393,6 @@ The editor shall mark the bracket at the caret and its partner (UIC-CODE-EDITOR-
 
 Implementation: `src/components/code-editor/code-field.tsx`
 Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
-
-## UIC-CODE-EDITOR-12 - Languages and fields
-
-### UIC-CODE-EDITOR-12.1 - Built-in and custom syntax
-
-`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet.
-
-Implementation: `src/components/code-editor/code-languages.ts`, `src/components/code-editor/code-editor.tsx`
-Verification: `src/components/code-editor/code-languages.test.tsx`
-
-### UIC-CODE-EDITOR-12.2 - Field and surface variants
-
-`variant="field"` is the default: a string field with label, descriptions, validation, dirty state, restore, undo, menu, native form name and commit on blur. `variant="surface"` is a controlled editing surface for composition in another field or widget. JSON field mode provides parsing, optional JSON Schema checks, completions, hover documentation and formatting; other languages accept caller diagnostics and completion sources. Caller errors also make a field invalid.
-
-Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-field.tsx`, `src/components/code-editor/code-surface.tsx`
-Verification: `src/components/code-editor/code-languages.test.tsx`, `src/components/code-editor/code-json.test.tsx`, `src/components/code-editor/code-editor.test.tsx`
-
-### UIC-CODE-EDITOR-12.3 - Diagnostic scrollbar marks
-
-Multiline surfaces hide native scrollbars and draw the shared custom scrollbars around the native textarea viewport. Colored marks inside the vertical track map each diagnostic line or multiline range to its position in the whole document, including wrapped text and non-default first line numbers. Error marks are red and warning marks amber in the reference stylesheet. The track and thumb preserve pointer drag, paging, wheel and keyboard scrolling, while existing F8 diagnostic navigation remains available. Editor thumbs stay out of the Tab sequence so Tab can reach the field restore controls; focusing a thumb by pointer still enables its scrolling keys. Measurements refresh when text or layout changes; obsolete marks disappear with diagnostics.
-
-Implementation: `src/components/code-editor/code-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
-Verification: `e2e/code-overview.spec.ts`
 
 ## Hooks
 

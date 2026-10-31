@@ -64,6 +64,13 @@ Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/char
 Implementation: `src/components/character-grid/character-grid.tsx`, `labs/reference/character-grid.css`
 Verification: `src/components/character-grid/character-grid.test.tsx`
 
+### UIC-CHARACTER-GRID-2.5 - Rendering every cell
+
+`CharacterGrid` shall render every cell of its sections, each section with its heading, and read its sections, the recent characters and the cell of a focused element from lookups built once per set of categories, search text and recent characters, so hovering, focusing and re-rendering for other reasons do not walk the categories again. It offers no `virtualized` option ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)): React Aria's grid layout places no section headings, and the library writes no layout classes of its own (I1). A caller with thousands of characters splits them into categories, which the search narrows.
+
+Implementation: `src/components/character-grid/character-grid.tsx`, `src/components/character-grid/use-recent-characters.ts`
+Verification: `src/components/character-grid/character-grid.test.tsx`
+
 ## Hooks
 
 | Hook                              | Kind      | Values     | Description                                                                |

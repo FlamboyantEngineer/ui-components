@@ -13,9 +13,9 @@ Verification: `test/primitives.test.ts`
 
 ### UIC-PRIMITIVES-1.2 - An explicit inventory by area
 
-`src/primitives/` shall re-export by name exactly the building blocks the library uses, grouped in one module per area (`core`, `i18n`, `focus`, `actions`, `content`, `navigation`, `overlays`, `menus`, `collections`, `drag-and-drop`, `fields`, `dates`, `colors`), with `index.ts` re-exporting every area. A building block is added to its area when a component first needs it and removed when nothing uses it, so the inventory is the list of what a replacement must provide. An area may also re-export value adapters from a sibling module, such as `date-values.ts`, which reads the library's plain values (ISO 8601 date and time texts) as the building blocks' value objects and writes them back, so components convert values without exposing those objects.
+`src/primitives/` shall re-export by name exactly the building blocks the library uses, grouped in one module per area (`core`, `i18n`, `focus`, `actions`, `content`, `navigation`, `overlays`, `menus`, `collections`, `drag-and-drop`, `fields`, `dates`, `colors`), with `index.ts` re-exporting every area by name rather than with `export *`, since the areas are client modules (UIC-SERVER-COMPONENTS-1.1). A building block is added to its area when a component first needs it and removed when nothing uses it, so the inventory is the list of what a replacement must provide. The values the building blocks edit live in server-safe sibling modules, so server-safe utilities use them on the server: `date-values.ts` re-exports the date functions and reads the library's plain values (ISO 8601 date and time texts) as the building blocks' date objects and writes them back, so components convert values without exposing those objects, and `color-values.ts` re-exports colour parsing.
 
-Implementation: `src/primitives/index.ts`
+Implementation: `src/primitives/index.ts`, `src/primitives/date-values.ts`, `src/primitives/color-values.ts`
 Verification: `test/primitives.test.ts`
 
 ### UIC-PRIMITIVES-1.3 - Names stay stable across a replacement

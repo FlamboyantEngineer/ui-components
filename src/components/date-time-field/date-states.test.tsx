@@ -12,7 +12,7 @@ const getDateState = (date: string): DateTimeFieldDateState | undefined => {
   return undefined;
 };
 describe('calendar day states', () => {
-  it('UIC-DATE-TIME-FIELD-3.5 highlights dates with descriptions and distinguishes taken dates from disabled dates', async () => {
+  it('UIC-DATE-TIME-FIELD-3.4 highlights dates with descriptions and distinguishes taken dates from disabled dates', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     render(
@@ -44,7 +44,7 @@ describe('calendar day states', () => {
     expect(onCommit).not.toHaveBeenCalled();
     expect(screen.getByText('Choose an available date.')).toBeVisible();
   });
-  it('UIC-DATE-TIME-FIELD-3.1 UIC-DATE-TIME-FIELD-3.5 rejects ranges and presets crossing disabled or taken dates', async () => {
+  it('UIC-DATE-TIME-FIELD-3.1 UIC-DATE-TIME-FIELD-3.4 rejects ranges and presets crossing disabled or taken dates', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container } = render(

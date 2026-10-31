@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { measureCanvasPixels } from './use-page-render.js';
+import { measureCanvasPixels } from './page-bitmap.js';
 
 describe('measureCanvasPixels', () => {
   afterEach(() => {

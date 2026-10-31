@@ -205,17 +205,30 @@ export function resolveItemSpan(axis: TimelineAxis, item: ReadItem) {
 }
 
 /**
+ * A physical inline offset from the axis's start: from the left, or from the right on a
+ * right-to-left axis. Physical rather than logical, so every renderer and test reads it the same.
+ */
+export function toInlineStart(
+  offset: number,
+  isRtl: boolean,
+): { left: number } | { right: number } {
+  return isRtl ? { right: offset } : { left: offset };
+}
+
+/**
  * The change an arrow key asks for: Left and Right move the item by one unit of the scale, keeping
- * a bar's length in days; with Shift they move a bar's last day, never before its first. `null`
- * for any other key, and for Shift with a milestone.
+ * a bar's length in days; with Shift they move a bar's last day, never before its first. On a
+ * right-to-left axis Left moves later and Right earlier. `null` for any other key, and for Shift
+ * with a milestone.
  */
 export function resolveKeyboardChange(
   item: ReadItem,
-  key: { key: string; shiftKey: boolean },
+  key: { key: string; shiftKey: boolean; isRtl?: boolean | undefined },
   scale: TimelineScale,
 ): TimelineItemChange | null {
-  const direction = { ArrowLeft: -1, ArrowRight: 1 }[key.key];
-  if (direction === undefined) return null;
+  const step = { ArrowLeft: -1, ArrowRight: 1 }[key.key];
+  if (step === undefined) return null;
+  const direction = key.isRtl ? -step : step;
   const unit = timelineScales[scale].minor;
   if (key.shiftKey) {
     if (item.kind === 'milestone') return null;

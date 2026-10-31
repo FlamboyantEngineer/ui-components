@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { collectPackages } from './module-imports.js';
 
@@ -16,6 +17,24 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
   private: boolean;
   publishConfig?: unknown;
 };
+
+describe('shipped reference stylesheet', () => {
+  it('UIC-LABS-1.6 UIC-LABS-3.1 rejects the lab page rules', async () => {
+    const moduleUrl = pathToFileURL(join(process.cwd(), 'scripts/lib/reference-stylesheet.mjs'));
+    const { referenceStylesheetProblems } = (await import(moduleUrl.href)) as {
+      referenceStylesheetProblems: (css: string) => string[];
+    };
+    const required =
+      '.ui-field[data-density=compact]{} .ui-card[data-density=compact]{} .ui-button{}';
+    expect(referenceStylesheetProblems(required)).toEqual([]);
+    expect(
+      referenceStylesheetProblems(`${required} #lab-root{padding:0} [data-lab-cell] td{}`),
+    ).toEqual([
+      'labs/build/reference.css styles the lab page (#lab-root)',
+      'labs/build/reference.css styles the lab page ([data-lab-cell)',
+    ]);
+  });
+});
 
 describe('package manifest', () => {
   it('UIC-LABS-1.2 distributes runnable labs separately from the installed library', () => {

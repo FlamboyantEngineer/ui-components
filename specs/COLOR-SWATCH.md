@@ -48,6 +48,13 @@ The list shall take one tab stop; the arrow keys move between swatches (in two d
 Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-swatch/color-swatch-picker.test.tsx`, `e2e/color-swatch.spec.ts`
 
+### UIC-COLOR-SWATCH-2.3 - Picker hooks and caller attributes
+
+`size` shall publish `data-size` on the picker (`md` by default) and size every swatch in it. The picker appends the caller's `className` and forwards caller `data-*` attributes and `id` to its root; an item appends its `className` and forwards its `data-*` attributes.
+
+Implementation: `src/components/color-swatch/color-swatch-picker.tsx`, `labs/reference/color-swatch.css`
+Verification: `src/components/color-swatch/color-swatch-picker.test.tsx`
+
 ### UIC-COLOR-SWATCH-2.4 - No value
 
 A controlled `value` that is empty or unreadable shall pick nothing, and the list stays controlled: a press reports the item through `onChange` and the list keeps showing `value`. Without `value` the list holds its own pick, starting at `defaultValue`, or at nothing without one; a later `defaultValue` changes nothing.
@@ -61,13 +68,6 @@ Items shall be options in their own right whatever their colour: equal colours, 
 
 Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-swatch/color-swatch-picker-values.test.tsx`, `e2e/color-swatch.spec.ts`
-
-### UIC-COLOR-SWATCH-2.3 - Picker hooks and caller attributes
-
-`size` shall publish `data-size` on the picker (`md` by default) and size every swatch in it. The picker appends the caller's `className` and forwards caller `data-*` attributes and `id` to its root; an item appends its `className` and forwards its `data-*` attributes.
-
-Implementation: `src/components/color-swatch/color-swatch-picker.tsx`, `labs/reference/color-swatch.css`
-Verification: `src/components/color-swatch/color-swatch-picker.test.tsx`
 
 ## Hooks
 

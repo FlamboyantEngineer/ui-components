@@ -262,6 +262,25 @@ function LeavingPageDemo() {
   );
 }
 
+const listQueue = createToastQueue({ defaultTimeout: 0 });
+for (const [index, tone] of tones.entries()) {
+  listQueue.add({
+    tone,
+    title: titles[tone],
+    description: index === 1 ? 'Changes to the city list were kept.' : undefined,
+    action: index === 3 ? { label: 'Retry', onAction: () => {} } : undefined,
+  });
+}
+
+/** Four permanent toasts in a narrow list placed in the page: every one shows, none is piled. */
+function InPlaceListDemo() {
+  return (
+    <div data-lab-demo="in-place-list" style={{ width: 280 }}>
+      <ToastList queue={listQueue} />
+    </div>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -355,8 +374,14 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="List in place"
+      description="A ToastList with four permanent toasts in a 280-pixel column. A list in place never piles: every toast, its action and its dismiss button show in the flow and take focus in order."
+    >
+      <InPlaceListDemo />
+    </LabSection>
+    <LabSection
       title="Live region"
-      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime, and the pointer can cross the gaps between spread toasts to reach an older one. Closing the follow-up toast adds the next one from its onClose. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
+      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime, and the pointer can cross the gaps between spread toasts to reach an older one. Closing the follow-up toast adds the next one from its onClose. Pending toasts update in place, promise toasts settle into success or error, and a drag toward the end of the reading direction (to the right here) swipes a toast away. Cancelling a swipe returns the toast to rest."
     >
       <LiveDemo />
     </LabSection>

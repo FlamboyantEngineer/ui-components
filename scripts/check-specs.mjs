@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Validates specs/ against the format in specs/README.md:
 //   - unique UIC- requirement IDs with Implementation: and Verification: lines;
+//   - every requirement sits under its own group heading, numbered from 1 without gaps, and groups
+//     ascend;
 //   - every referenced path exists, and a referenced test names the requirement ID;
 //   - Hooks tables use the hook contract's names;
 //   - every component directory is implemented by some spec;
@@ -15,6 +17,8 @@ const specsDir = join(root, 'specs');
 
 const ID = String.raw`UIC-[A-Z0-9]+(?:-[A-Z0-9]+)*-T?\d+(?:\.\d+)?[a-z]?`;
 const HEADING = new RegExp(`^(#{2,3}) (${ID}) - (.+)$`);
+// The group and the number within it: UIC-BUTTON-2 and UIC-BUTTON-2.3.
+const NUMBERS = /-(\d+)(?:\.(\d+))?[a-z]?$/;
 const TEST_FILE = /(\.test\.tsx?|\.spec\.ts)$/;
 const HOOK_KINDS = new Set(['root', 'slot', 'attribute', 'state', 'property']);
 const ROOT_HOOK = /^ui-[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -130,6 +134,35 @@ for (const name of specFiles) {
 
   let requirement = null;
   let hooks = null;
+  // The open group heading's number, the last group's number and the last number within it.
+  let group = null;
+  let lastGroup = 0;
+  let lastNumber = 0;
+  const checkNumbering = (level, id) => {
+    const [, groupText = '', numberText] = id.match(NUMBERS) ?? [];
+    const groupNumber = Number(groupText);
+    if (level === '##') {
+      if (numberText) problems.push(`${file}: group heading ${id} has a requirement number`);
+      if (groupNumber <= lastGroup) {
+        problems.push(`${file}: group ${id} comes after group ${lastGroup}; groups ascend`);
+      }
+      group = groupNumber;
+      lastGroup = Math.max(lastGroup, groupNumber);
+      lastNumber = 0;
+      return;
+    }
+    const number = Number(numberText);
+    if (groupNumber !== group) {
+      problems.push(
+        `${file}: ${id} is not under its group heading ## ${id.replace(/\.\d+[a-z]?$/, '')}`,
+      );
+    } else if (number !== lastNumber + 1) {
+      problems.push(
+        `${file}: ${id} follows ${lastNumber === 0 ? 'its group heading' : `.${lastNumber}`}; number requirements in order from 1 and keep withdrawn ones`,
+      );
+    }
+    lastNumber = number;
+  };
   const flush = () => {
     if (requirement) checkRequirement(file, requirement);
     if (hooks) checkHooks(file, hooks);
@@ -146,13 +179,15 @@ for (const name of specFiles) {
         if (ids.has(id)) problems.push(`${file}: ${id} is also defined in ${ids.get(id)}`);
         ids.set(id, file);
         const isSequence = /-T\d/.test(id);
+        if (!isSequence) checkNumbering(level, id);
         if (level === '###' && !isSequence) requirement = { id, lines: [] };
       } else if (/^#{2,3} UIC-/.test(line)) {
         problems.push(
           `${file}: malformed requirement heading "${line}" (expected "### UIC-AREA-1.1 - Title")`,
         );
-      } else if (line === '## Hooks') {
-        hooks = [];
+      } else if (line.startsWith('## ')) {
+        group = null;
+        if (line === '## Hooks') hooks = [];
       }
       continue;
     }
