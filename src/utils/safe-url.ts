@@ -20,3 +20,14 @@ export function isSafeUrl(url: string, schemes: readonly string[] = defaultUrlSc
   const scheme = schemePattern.exec(compact)?.[1]?.toLowerCase();
   return scheme === undefined || schemes.some((allowed) => allowed.toLowerCase() === scheme);
 }
+
+/**
+ * Attributes for an `<img>` whose source comes from authored content: it sends no `Referer`, so
+ * it does not reveal the page's URL, and it loads only near the viewport and off the main thread,
+ * so an image in an unread part of the page does not report that the page was opened.
+ */
+export const untrustedImageProps = Object.freeze({
+  referrerPolicy: 'no-referrer',
+  loading: 'lazy',
+  decoding: 'async',
+} as const);

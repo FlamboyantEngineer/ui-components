@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
-import { HtmlMarkup, type HtmlPolicy } from '../../src/components/html-markup/index.js';
+import {
+  HtmlMarkup,
+  defaultHtmlPolicy,
+  type HtmlPolicy,
+} from '../../src/components/html-markup/index.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LargeInputDemo } from './large-input-demo.js';
@@ -44,6 +48,18 @@ const reply =
 const textOnly: HtmlPolicy = { elements: ['p', 'br'], attributes: [], schemes: [] };
 
 const policies = { default: undefined, 'text only': textOnly } as const;
+
+const pearDrawing =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M24 6c-2 0-3 2-3 4-6 3-11 12-11 20 0 7 6 12 14 12s14-5 14-12c0-8-5-17-11-20 0-2-1-4-3-4Z" fill="#9bbb59"/></svg>',
+  );
+
+/** The default policy, also allowing `data:` images, so the lab draws its image offline. */
+const withDataImages: HtmlPolicy = {
+  ...defaultHtmlPolicy,
+  schemes: [...defaultHtmlPolicy.schemes, 'data'],
+};
 
 function FindDemo() {
   const [query, setQuery] = useState('orchard');
@@ -90,6 +106,16 @@ mountLab(
             policy={policies[policy as keyof typeof policies]}
           />
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Images"
+      description="An image from the content sends no referrer and loads lazily, so a remote image does not learn the page's URL or report that the page was opened. This policy also allows data: images."
+    >
+      <HtmlMarkup
+        data-lab-images
+        policy={withDataImages}
+        markup={`<figure><img src="${pearDrawing}" alt="A pear" width="48" height="48"><figcaption>Conference pear</figcaption></figure>`}
       />
     </LabSection>
     <LabSection

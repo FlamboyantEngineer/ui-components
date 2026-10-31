@@ -6,6 +6,7 @@
 import { createElement, Fragment, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { mapTree } from '../../utils/map-tree.js';
+import { untrustedImageProps } from '../../utils/safe-url.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { Link } from '../link/link.js';
 import { ProseTable } from '../prose-table/prose-table.js';
@@ -175,6 +176,7 @@ function renderInline(node: MarkdownInline, children: ReactNode, context: Render
       return (
         <img
           {...hooks.slot('image')}
+          {...untrustedImageProps}
           src={node.src}
           alt={node.alt}
           title={node.title || undefined}
