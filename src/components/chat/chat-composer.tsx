@@ -1,7 +1,7 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
@@ -148,6 +148,21 @@ function useEditValue({ state, messages, options }: ChatComposerProps) {
   );
 }
 
+/**
+ * The edit, kept only while the queued message or message it edits is still there. Once that is
+ * gone (sent from the queue, removed or deleted) the edit ends, and the composer sends as usual.
+ */
+function useLiveEdit(props: ChatComposerProps) {
+  const editValue = useEditValue(props);
+  const { state } = props;
+  const isGone = state.editing !== null && editValue === undefined;
+  const { cancelEdit } = state;
+  useEffect(() => {
+    if (isGone) cancelEdit();
+  }, [isGone, cancelEdit]);
+  return { editValue, props: isGone ? { ...props, state: { ...state, editing: null } } : props };
+}
+
 /** The banner above the input: the message being replied to, or what is being edited. */
 function useBanner(props: ChatComposerProps): BannerContent | undefined {
   const strings = useUiStrings();
@@ -259,10 +274,10 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
  * reply runs, the reply and edit banners, attachments, the host's
  * controls below the input, and Stop.
  */
-export function ChatComposer(props: ChatComposerProps) {
+export function ChatComposer(given: ChatComposerProps) {
+  const { editValue, props } = useLiveEdit(given);
   const { options, state, isAssistantChat } = props;
   const bannerId = useId();
-  const editValue = useEditValue(props);
   const banner = useBanner(props);
   const mentions = useMentions(props);
   const composerRef = useRef<MessageComposerHandle>(null);
