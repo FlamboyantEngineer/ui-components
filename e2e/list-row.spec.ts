@@ -186,11 +186,6 @@ test.describe('List Row lab', () => {
     await expect(long.locator('[data-lab-output]')).toHaveText('Loaded 150 of 200');
     expect(await list.getByRole('row').count()).toBeLessThan(20);
   });
-
-  test('UIC-LIST-ROW-3.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('list-row', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
 });
 
 test('UIC-LIST-ROW-4.1 keeps row handles and checkboxes left of vertically centered content', async ({

@@ -61,14 +61,9 @@ test.describe('Approval Panel lab', () => {
     await expect(actions).toHaveCount(0);
   });
 
-  test('UIC-APPROVAL-PANEL-2.1 names each panel and passes axe in both themes', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-APPROVAL-PANEL-2.1 names each panel and passes axe', async ({ page, lab }) => {
     await lab.open('approval-panel');
     await expect(page.getByRole('region', { name: 'Recipe 42 sign-off' })).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('approval-panel', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

@@ -78,14 +78,12 @@ test.describe('Change List lab', () => {
     await expect(demo.locator('.ui-change-list__new')).toHaveText('Lemon and lime tart');
   });
 
-  test('UIC-CHANGE-LIST-2.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-CHANGE-LIST-2.1 passes axe', async ({ page, lab }) => {
     await lab.open('change-list');
     await expect(page.locator(cell('variant=compact'))).toHaveAttribute(
       'aria-label',
       'Changes, compact',
     );
-    await lab.expectAccessible();
-    await lab.open('change-list', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

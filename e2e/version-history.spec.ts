@@ -200,7 +200,5 @@ test.describe('Version History lab', () => {
       rows.nth(1).getByRole('button', { name: 'Actions for Tested once' }),
     ).toBeFocused();
     await lab.expectAccessible();
-    await lab.open('version-history', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 });

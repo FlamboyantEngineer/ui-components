@@ -122,11 +122,9 @@ test.describe('Relative Time lab', () => {
     await page.clock.resume();
   });
 
-  test('UIC-RELATIVE-TIME-3.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-RELATIVE-TIME-3.1 passes axe', async ({ page, lab }) => {
     await lab.open('relative-time');
     await expect(page.locator('#lab-root .ui-relative-time').first()).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('relative-time', { theme: 'dark' });
     await lab.expectAccessible();
   });
   test('UIC-RELATIVE-TIME-2.2 updates a shared deadline after timestamps are removed and remounted', async ({

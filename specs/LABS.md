@@ -119,10 +119,10 @@ Verification: `e2e/lab-harness.spec.ts`
 
 ### UIC-LABS-3.4 - Accessible in both themes
 
-Every lab shall pass axe with the reference stylesheet in its light theme and in `?theme=dark`, to catch automated accessibility regressions and reference-palette contrast failures in either theme. One page load scans both, switching the theme in place through the lab chrome.
+Every lab shall pass axe with the reference stylesheet in its light theme and in `?theme=dark`, to catch automated accessibility regressions and reference-palette contrast failures in either theme. One page load scans both, switching the theme in place through the lab chrome. Component specs leave that scan to the sweep (`e2e/accessibility.spec.ts`) rather than reloading their lab dark only to scan it again; a lint restriction keeps such a reload out.
 
-Implementation: `labs/reference/base.css`
-Verification: `e2e/accessibility.spec.ts`
+Implementation: `labs/reference/base.css`, `eslint.config.js`
+Verification: `e2e/accessibility.spec.ts`, `test/lint-rules.test.ts`
 
 ### UIC-LABS-3.5 - One token set
 

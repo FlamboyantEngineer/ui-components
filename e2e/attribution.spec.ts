@@ -73,11 +73,9 @@ test.describe('Attribution lab', () => {
     await page.clock.resume();
   });
 
-  test('UIC-ATTRIBUTION-1.6 adds no role and passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-ATTRIBUTION-1.6 adds no role and passes axe', async ({ page, lab }) => {
     await lab.open('attribution');
     await expect(page.locator('#lab-root .ui-attribution[role]')).toHaveCount(0);
-    await lab.expectAccessible();
-    await lab.open('attribution', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

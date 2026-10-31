@@ -49,8 +49,6 @@ test.describe('User Identity lab', () => {
       'JB',
     );
     await lab.expectAccessible();
-    await lab.open('user-identity', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-USER-IDENTITY-1.7 badges the avatar corner and reads the status after the name', async ({

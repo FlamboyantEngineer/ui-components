@@ -83,12 +83,10 @@ test.describe('Steps lab', () => {
     await expect(demo.locator('[data-lab-current]')).toHaveText('Current step: map');
   });
 
-  test('UIC-STEPS-3.1 names each list and passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-STEPS-3.1 names each list and passes axe', async ({ page, lab }) => {
     await lab.open('steps');
     await expect(page.getByRole('list', { name: 'Steps' }).first()).toBeVisible();
     await expect(page.getByRole('list', { name: 'Step error' })).toContainText('Has errors');
-    await lab.expectAccessible();
-    await lab.open('steps', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

@@ -78,11 +78,6 @@ test.describe('Property Scope lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-PROPERTY-SCOPE-1.4 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('property-scope', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-PROPERTY-SCOPE-1.6 matches through the host’s filter', async ({ page, lab }) => {
     await lab.open('property-scope');
     const area = page.locator('[data-lab-whole-words]');

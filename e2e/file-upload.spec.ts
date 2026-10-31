@@ -312,11 +312,6 @@ test.describe('File Upload lab', () => {
     expect(await formData()).toEqual(['Signed.pdf:64']);
   });
 
-  test('UIC-FILE-UPLOAD-1.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('file-upload', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-FILE-UPLOAD-2.7 abandons a checked offer when the editor closes, and refuses a failed check', async ({
     page,
     lab,

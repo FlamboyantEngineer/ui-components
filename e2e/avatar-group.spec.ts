@@ -88,7 +88,5 @@ test.describe('Avatar Group lab', () => {
     await page.mouse.click(5, 5);
     await expect(dialog).toHaveCount(0);
     await lab.expectAccessible();
-    await lab.open('avatar-group', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 });

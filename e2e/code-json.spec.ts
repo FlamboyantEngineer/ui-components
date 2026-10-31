@@ -128,11 +128,6 @@ test.describe('Code Editor JSON mode lab', () => {
     await expect(editor).not.toHaveAttribute('data-focused');
   });
 
-  test('UIC-CODE-EDITOR-8.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('code-editor', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-CODE-EDITOR-9.3 marks where the text stops parsing in the editor', async ({
     page,
     lab,

@@ -84,11 +84,9 @@ test.describe('Save Status lab', () => {
     await expect(region).toHaveText('Saved');
   });
 
-  test('UIC-SAVE-STATUS-1.2 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-SAVE-STATUS-1.2 passes axe', async ({ page, lab }) => {
     await lab.open('save-status');
     await expect(page.locator('#lab-root .ui-save-status').first()).toBeAttached();
-    await lab.expectAccessible();
-    await lab.open('save-status', { theme: 'dark' });
     await lab.expectAccessible();
   });
 

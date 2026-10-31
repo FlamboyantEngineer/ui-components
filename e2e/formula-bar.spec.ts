@@ -124,11 +124,9 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.root.locator('.ui-formula-bar')).not.toHaveAttribute('data-dirty');
   });
 
-  test('UIC-FORMULA-BAR-4.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-FORMULA-BAR-4.1 passes axe', async ({ page, lab }) => {
     await lab.open('formula-bar');
     await expect(page.getByRole('grid', { name: 'Fruit order' })).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('formula-bar', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

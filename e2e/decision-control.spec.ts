@@ -109,10 +109,8 @@ test.describe('Decision Control lab', () => {
     );
   });
 
-  test('UIC-DECISION-CONTROL-2.1 passes axe in both themes', async ({ lab }) => {
+  test('UIC-DECISION-CONTROL-2.1 passes axe', async ({ lab }) => {
     await lab.open('decision-control');
-    await lab.expectAccessible();
-    await lab.open('decision-control', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

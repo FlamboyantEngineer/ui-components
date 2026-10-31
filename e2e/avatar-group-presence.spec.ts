@@ -106,8 +106,6 @@ test.describe('AvatarGroup presence layouts', () => {
     });
     await expect(dotsCell.locator('.ui-avatar-group__overflow')).toHaveText('+2');
     await lab.expectAccessible();
-    await lab.open('avatar-group', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-AVATAR-GROUP-11.5 opens the card of the pressed person', async ({ page, lab }) => {

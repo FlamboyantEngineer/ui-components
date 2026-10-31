@@ -38,11 +38,6 @@ test.describe('Four Side Property Strip lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('four-side-property-strip', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 links opposite sides or all four from the toggle', async ({
     page,
     lab,

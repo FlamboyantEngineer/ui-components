@@ -79,8 +79,6 @@ test.describe('Transition Menu lab', () => {
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
     await lab.expectAccessible();
-    await lab.open('transition-menu', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-TRANSITION-MENU-1.3 UIC-TRANSITION-MENU-2.1 reaches an unavailable transition by keyboard', async ({

@@ -76,8 +76,6 @@ test.describe('Avatar presence', () => {
     });
     await expect(button.getByRole('button', { name: 'Maria Santos, Busy' })).toBeVisible();
     await lab.expectAccessible();
-    await lab.open('avatar', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-AVATAR-11.6 opens the person card from the keyboard and returns focus', async ({

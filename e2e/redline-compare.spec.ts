@@ -128,11 +128,9 @@ test.describe('Redline Compare lab', () => {
     await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
   });
 
-  test('UIC-REDLINE-COMPARE-4.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-REDLINE-COMPARE-4.1 passes axe', async ({ page, lab }) => {
     await lab.open('redline-compare');
     await expect(page.getByRole('group', { name: /^Pump maintenance/ })).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('redline-compare', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

@@ -103,16 +103,11 @@ test.describe('State Timeline lab', () => {
     await expect(list.locator('[data-status="upcoming"]')).toHaveCount(2);
   });
 
-  test('UIC-STATE-TIMELINE-2.1 names each list and passes axe in both themes', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-STATE-TIMELINE-2.1 names each list and passes axe', async ({ page, lab }) => {
     await lab.open('state-timeline');
     await expect(
       page.getByRole('list', { name: 'History, ascending, two upcoming' }),
     ).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('state-timeline', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

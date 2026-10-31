@@ -138,11 +138,9 @@ test.describe('Comment Thread lab', () => {
     await expect(day.last()).toHaveText(/^Apr 17, 2026/);
   });
 
-  test('UIC-COMMENT-THREAD-1.8 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-COMMENT-THREAD-1.8 passes axe', async ({ page, lab }) => {
     await lab.open('comment-thread');
     await expect(page.getByRole('group', { name: 'Comment thread' }).first()).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('comment-thread', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

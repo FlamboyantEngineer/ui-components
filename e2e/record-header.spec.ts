@@ -60,7 +60,5 @@ test.describe('Record Header lab', () => {
     await demo.getByRole('button', { name: 'Edit details' }).click();
     await expect(demo.locator('[data-lab-output="log"]')).toHaveText('Last action: Edit details');
     await lab.expectAccessible();
-    await lab.open('record-header', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 });
