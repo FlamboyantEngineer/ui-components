@@ -9,7 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { OverlayTriggerStateContext, useLocale } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { createValueStore, type ValueStore } from '../../utils/value-store.js';
@@ -29,6 +29,7 @@ import {
 import { filterNativeEmoji } from './emoji-filter.js';
 import type { EmojiGridOptions } from './emoji-grid.js';
 import { loadEmojiData, resolveEmojiLocale } from './emoji-locale.js';
+import { EmojiPickerDismissContext } from './emoji-picker-context.js';
 import { useEmojiSupport } from './emoji-support.js';
 
 interface EmojiData {
@@ -214,18 +215,18 @@ function useEmojiSearch(
   };
 }
 
-/** Reports a chosen emoji and the updated recent list, then closes the overlay around the picker. */
+/** Reports a chosen emoji and the updated recent list, then closes the trigger's popover, if any. */
 function useChooseEmoji({
   tone,
   recentEmoji = noKeys,
   onSelect,
   onRecentEmojiChange,
 }: ChooseEmojiOptions) {
-  const overlay = useContext(OverlayTriggerStateContext);
+  const dismiss = useContext(EmojiPickerDismissContext);
   return (entry: EmojiEntry) => {
     onSelect?.(toEmojiSelection(entry, tone));
     onRecentEmojiChange?.(addRecentEmoji(recentEmoji, getEmojiKey(entry), recentLimit));
-    overlay?.close();
+    dismiss?.();
   };
 }
 
