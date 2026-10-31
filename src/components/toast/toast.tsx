@@ -1,14 +1,7 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import {
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-  type ReactNode,
-} from 'react';
+import { useCallback, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   Text,
   UNSTABLE_Toast as AriaToast,
@@ -17,7 +10,6 @@ import {
   UNSTABLE_ToastQueue as AriaToastQueue,
   UNSTABLE_ToastRegion as AriaToastRegion,
   UNSTABLE_ToastStateContext as ToastStateContext,
-  UNSAFE_PortalProvider as AriaPortalProvider,
   type QueuedToast,
   type ToastState,
 } from '../../primitives/index.js';
@@ -32,7 +24,7 @@ import { getToneGlyph } from '../banner/banner.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
-import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
+import { useLayerZIndex } from '../portal/portal.js';
 import {
   createQueueOverStore,
   getToastLifecycle,
@@ -221,23 +213,6 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
 }
 
 /**
- * Points the building block's own portal at the library's overlay container, so the region renders
- * where every `Portal` below the nearest provider renders: the document body unless a provider or
- * host chooses another, and nothing while the chosen one is not ready.
- */
-function ToastPortalContainer({ children }: { children: ReactNode }) {
-  const container = usePortalContainer();
-  if (container === undefined) return children;
-  // Any element, an iframe's body too, or `null` while not ready. No realm's `HTMLElement` is
-  // assumed or even read, so the server, where it does not exist, renders this too.
-  return (
-    <AriaPortalProvider getContainer={() => container as HTMLElement | null}>
-      {children}
-    </AriaPortalProvider>
-  );
-}
-
-/**
  * The live region for a queue: a landmark (reachable with F6) portalled into the overlay container
  * on the `toast` layer while it has toasts, pausing every timer and publishing `data-expanded` while
  * it is hovered or holds focus.
@@ -256,18 +231,16 @@ export function ToastRegion({
   const zIndex = useLayerZIndex('toast');
   return (
     <ToastStackProvider value={stack}>
-      <ToastPortalContainer>
-        <AriaToastRegion
-          {...rest}
-          queue={ariaQueue}
-          {...regionHooks.root({ className, data: { expanded: isExpanded } })}
-          style={{ zIndex }}
-          // React Aria's region forwards no focus handlers, so they join its props here.
-          render={(props) => <div {...mergeProps(props, regionProps)} />}
-        >
-          <AriaToastList className={listHooks.className}>{renderToast}</AriaToastList>
-        </AriaToastRegion>
-      </ToastPortalContainer>
+      <AriaToastRegion
+        {...rest}
+        queue={ariaQueue}
+        {...regionHooks.root({ className, data: { expanded: isExpanded } })}
+        style={{ zIndex }}
+        // React Aria's region forwards no focus handlers, so they join its props here.
+        render={(props) => <div {...mergeProps(props, regionProps)} />}
+      >
+        <AriaToastList className={listHooks.className}>{renderToast}</AriaToastList>
+      </AriaToastRegion>
     </ToastStackProvider>
   );
 }

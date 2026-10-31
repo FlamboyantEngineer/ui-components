@@ -6,7 +6,7 @@
 
 ### UIC-TOOLTIP-1.1 - Trigger and panel
 
-`Tooltip` shall wrap one focusable trigger (a library `Button`, `Button` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the document. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
+`Tooltip` shall wrap one focusable trigger (a library `Button`, `Button` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the overlay container ([UIC-PORTAL-1.2](PORTAL.md#uic-portal-12---choosing-the-container)): the document body, or the container a `PortalHost` or `PortalContainerProvider` above chooses. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
@@ -71,7 +71,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`
 
 ### UIC-TOOLTIP-2.1 - Existing elements
 
-`AnchoredTooltip` shall show its `content` in the same panel and hooks as `Tooltip` (`ui-tooltip`, `role="tooltip"`, portalled on the `tooltip` layer) while `isOpen` is true and hide it when false, pointing at an `anchor` the caller already owns: an HTML or SVG element, or a ref to one. It renders no trigger and nothing around the anchor, and nothing in it opens or closes the panel: the caller owns the state. The panel takes `variant`, `placement` (default `top`, flipping when it does not fit), the caller's `id`, `className` and `data-*`, and publishes `data-placement`, `data-entering` and `data-exiting` as `Tooltip` does. Its `ui-tooltip__arrow` sits out of the panel's flow on the side facing the anchor, as React Aria places `Tooltip`'s, so the panel is only as tall as its content.
+`AnchoredTooltip` shall show its `content` in the same panel and hooks as `Tooltip` (`ui-tooltip`, `role="tooltip"`), rendered straight into the overlay container that a [Portal](PORTAL.md) uses, with the `tooltip` layer's z-index, and nothing on the server or until hydrated while `isOpen` is true and hide it when false, pointing at an `anchor` the caller already owns: an HTML or SVG element, or a ref to one. It renders no trigger and nothing around the anchor, and nothing in it opens or closes the panel: the caller owns the state. The panel takes `variant`, `placement` (default `top`, flipping when it does not fit), the caller's `id`, `className` and `data-*`, and publishes `data-placement`, `data-entering` and `data-exiting` as `Tooltip` does. Its `ui-tooltip__arrow` sits out of the panel's flow on the side facing the anchor, as React Aria places `Tooltip`'s, so the panel is only as tall as its content.
 
 Implementation: `src/components/tooltip/anchored-tooltip.tsx`
 Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.spec.ts`

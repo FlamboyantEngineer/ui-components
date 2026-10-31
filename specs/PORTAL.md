@@ -2,7 +2,7 @@
 
 `Portal` renders its children outside the surrounding layout, in an overlay container, while keeping them in the React tree. The container is the document body unless `PortalContainerProvider` or `PortalHost` chooses another. Every portal sits on one of a fixed, ordered set of overlay layers, so a later layer always stacks above an earlier one. A portal draws nothing of its own: the overlay inside it draws its surface, places itself and owns its semantics.
 
-React Aria overlays (`Popover`, `Modal`, `Tooltip`, `UNSTABLE_Toast*`) portal themselves into the document body, or into the container set with React Aria's own portal provider, and are positioned and dismissed by React Aria. They do not go inside a `Portal`. `Portal` is for overlays the library or a host builds without a React Aria overlay, and it cooperates with open React Aria overlays as described in [UIC-PORTAL-3.2](#uic-portal-32---react-aria-overlays).
+React Aria overlays (`Popover`, `Modal`, `Tooltip`, `UNSTABLE_Toast*`) portal themselves and are positioned and dismissed by React Aria. They do not go inside a `Portal`, but they render into the same container: `PortalContainerProvider` and `PortalHost` set React Aria's portal provider too (UIC-PORTAL-1.2). `Portal` is for overlays the library or a host builds without a React Aria overlay, and it cooperates with open React Aria overlays as described in [UIC-PORTAL-3.2](#uic-portal-32---react-aria-overlays).
 
 ## UIC-PORTAL-1 - Container
 
@@ -15,14 +15,14 @@ Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 
 ### UIC-PORTAL-1.2 - Choosing the container
 
-`PortalContainerProvider` shall make its `container` element the container of every portal below it; the nearest provider wins, and a provider without `container` keeps the outer one. A `container` of `null` means the container is not available yet: portals below render nothing until it is, and never fall back to the document body.
+`PortalContainerProvider` shall make its `container` element the container of every portal below it; the nearest provider wins, and a provider without `container` keeps the outer one. A `container` of `null` means the container is not available yet: portals below render nothing until it is, and never fall back to the document body. The provider shall also point React Aria's portal provider at the same container, so every library overlay below renders there, whether it is a `Portal` or a React Aria overlay: popovers, menus, selects, dialogs, drawers, the command palette, tooltips and toasts. Overlays the library portals itself render through `Portal` (floating and retained dialogs, `TourSpotlight`) or, when they position themselves against their containing block, straight into the same container with the same wait for hydration and for a container that is not ready (`AnchoredTooltip`).
 
 Implementation: `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`
 
 ### UIC-PORTAL-1.3 - Portal host
 
-`PortalHost` shall render its children followed by one container element carrying `ui-portal-host`, and make that element the container of every portal below it, so overlays stay in the host's part of the page (a themed preview, an embedded frame) and inherit what the stylesheet sets there. Removing the `PortalHost` removes its container and every portal in it. A `PortalHost` nested inside another is the container for the portals below it.
+`PortalHost` shall render its children followed by one container element carrying `ui-portal-host`, and make that element the container of every portal below it, so overlays stay in the host's part of the page (a themed preview, an embedded frame) and inherit what the stylesheet sets there. This holds for every library overlay (UIC-PORTAL-1.2). Removing the `PortalHost` removes its container and every portal in it. A `PortalHost` nested inside another is the container for the portals below it.
 
 Implementation: `src/components/portal/portal.tsx`, `labs/reference/portal.css`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`

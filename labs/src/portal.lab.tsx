@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { overlayLayers } from '../../src/components/portal/layers.js';
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
@@ -84,6 +85,34 @@ function ChosenContainer() {
         </Portal>
       </PortalContainerProvider>
       <div ref={setTarget} data-lab-target="" />
+    </div>
+  );
+}
+
+/** Overlays built on React Aria and on `Portal` alike render into the host's container. */
+function HostedOverlays() {
+  return (
+    <div data-lab-demo="hosted-overlays">
+      <PortalHost>
+        <MenuTrigger>
+          <Button>Hosted menu</Button>
+          <MenuPopover>
+            <Menu
+              aria-label="Hosted menu"
+              items={[
+                { id: 'copy', label: 'Copy' },
+                { id: 'paste', label: 'Paste' },
+              ]}
+            />
+          </MenuPopover>
+        </MenuTrigger>{' '}
+        <ModalTrigger>
+          <Button>Hosted dialog</Button>
+          <Modal title="Hosted dialog" size="sm" isDismissable>
+            <p>This dialog renders in the portal host.</p>
+          </Modal>
+        </ModalTrigger>
+      </PortalHost>
     </div>
   );
 }
@@ -389,6 +418,12 @@ mountLab(
         }}
         render={({ edge, mode }) => <EdgeCaseDemo edge={edge} mode={mode} />}
       />
+    </LabSection>
+    <LabSection
+      title="Overlays in a host"
+      description="A menu and a dialog, React Aria overlays both, open into the portal host's container like every Portal below it."
+    >
+      <HostedOverlays />
     </LabSection>
     <LabSection
       title="Document body"

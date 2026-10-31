@@ -154,8 +154,12 @@ function UploadForm() {
   );
 }
 
-/** A server check that answers after 1.5 s; a file named "offline…" makes the check fail. */
+/**
+ * A server check that answers after 1.5 s; a file named "offline…" makes the check fail, and one
+ * named "broken…" makes it throw at once.
+ */
 function checkSlowly(file: File): Promise<string | null> {
+  if (file.name.startsWith('broken')) throw new Error('The check is broken.');
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (file.name.startsWith('offline')) reject(new Error('The check is offline.'));
@@ -251,7 +255,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Slow check"
-      description='The host checks each file for 1.5 s; a file named "offline…" fails its check and is refused as unchecked. Disabling the upload or closing the editor while a check runs abandons the offer: nothing is listed or refused.'
+      description='The host checks each file for 1.5 s; a file named "offline…" fails its check and one named "broken…" makes the check throw, and either is refused as unchecked. Disabling the upload or closing the editor while a check runs abandons the offer: nothing is listed or refused.'
     >
       <SlowCheck />
     </LabSection>

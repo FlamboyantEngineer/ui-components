@@ -20,6 +20,7 @@ function actionsFor(state: (typeof states)[number]): ActionRowAction[] {
   return [
     {
       verb: 'custom',
+      id: 'full-screen',
       icon: ExpandGlyph,
       label: 'Full screen',
       isSelected: state === 'selected',
@@ -55,6 +56,7 @@ function MoreMenu() {
           },
           {
             verb: 'custom',
+            id: 'sort',
             icon: SortAscendingGlyph,
             label: 'Sort',
             onAction: (key) => setLast(`sort ${String(key)}`),
@@ -93,13 +95,57 @@ function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
         aria-label={`File actions, ${width}`}
         lead={<span>Report.pdf</span>}
         actions={[
-          { verb: 'custom', icon: CopyGlyph, label: 'Duplicate', onPress: press('duplicate') },
+          {
+            verb: 'custom',
+            id: 'duplicate',
+            icon: CopyGlyph,
+            label: 'Duplicate',
+            onPress: press('duplicate'),
+          },
           { verb: 'add', label: 'Add note', onPress: press('add') },
           { verb: 'refresh', onPress: press('refresh') },
           { verb: 'edit', onPress: press('edit') },
           { verb: 'delete', onPress: press('delete') },
         ]}
       />
+      <p>
+        Last action: <output data-lab-output="last">{last}</output>
+      </p>
+    </div>
+  );
+}
+
+/** An action that removes itself: focus moves to the next action's own button. */
+function ChangingActions() {
+  const [hasArchive, setHasArchive] = useState(true);
+  const [last, setLast] = useState('none');
+  const archive: ActionRowAction = {
+    verb: 'custom',
+    id: 'archive',
+    icon: UploadGlyph,
+    label: 'Archive',
+    onPress: () => {
+      setLast('archive');
+      setHasArchive(false);
+    },
+  };
+  const share: ActionRowAction = {
+    verb: 'custom',
+    id: 'share',
+    icon: CopyGlyph,
+    label: 'Share',
+    onPress: () => setLast('share'),
+  };
+  return (
+    <div data-lab-case="changing">
+      <ActionRow
+        toolbar
+        aria-label="Changing actions"
+        actions={hasArchive ? [archive, share] : [share]}
+      />
+      <button type="button" onClick={() => setHasArchive(true)}>
+        Restore archive
+      </button>
       <p>
         Last action: <output data-lab-output="last">{last}</output>
       </p>
@@ -196,11 +242,11 @@ mountLab(
             { verb: 'save', onPress: noop },
             { verb: 'delete', onPress: noop },
             { verb: 'edit', onPress: noop },
-            { verb: 'custom', icon: HelpGlyph, label: 'Help', onPress: noop },
+            { verb: 'custom', id: 'help', icon: HelpGlyph, label: 'Help', onPress: noop },
             { verb: 'more', onPress: noop },
             { verb: 'refresh', onPress: noop },
             { verb: 'add', onPress: noop },
-            { verb: 'custom', icon: SearchGlyph, label: 'Search', onPress: noop },
+            { verb: 'custom', id: 'search', icon: SearchGlyph, label: 'Search', onPress: noop },
           ]}
         />
       </div>
@@ -212,8 +258,8 @@ mountLab(
       <div data-lab-case="no-icon">
         <ActionRow
           actions={[
-            { verb: 'custom', label: 'Schedule', isSelected: false, onPress: noop },
-            { verb: 'custom', icon: HelpGlyph, label: 'Help', onPress: noop },
+            { verb: 'custom', id: 'schedule', label: 'Schedule', isSelected: false, onPress: noop },
+            { verb: 'custom', id: 'help', icon: HelpGlyph, label: 'Help', onPress: noop },
           ]}
         />
       </div>
@@ -244,6 +290,12 @@ mountLab(
         axes={{ width: ['wide', 'narrow'] }}
         render={({ width }) => <CollapsingRow width={width} />}
       />
+    </LabSection>
+    <LabSection
+      title="Actions that come and go"
+      description="Archive removes itself: focus moves to Share's own button, and Enter then runs Share. Restore archive brings it back."
+    >
+      <ChangingActions />
     </LabSection>
     <LabSection
       title="Overflow menus that share item ids"

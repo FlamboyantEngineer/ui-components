@@ -1,7 +1,6 @@
 'use client';
 
 import { useContext, useRef, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import {
   FocusScope,
   Modal as AriaModal,
@@ -15,7 +14,7 @@ import { createHooks, dataAttributes, type HookProps } from '../../core/hooks.js
 import type { Placement } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { Portal, useLayerZIndex } from '../portal/portal.js';
 import { ModalShownContext, retainedStyle } from './modal-retained.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */
@@ -145,26 +144,27 @@ function FloatingModal({ state, rootProps, children, isRetained }: FloatingModal
   const zIndex = useLayerZIndex('modal');
   const panelRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(panelRef, state.isOpen);
-  if ((!isMounted && !isRetained) || typeof document === 'undefined') return null;
+  if (!isMounted && !isRetained) return null;
   const phase = { entering: isEntering, exiting: isExiting };
-  return createPortal(
-    <div
-      {...rootProps}
-      {...dataAttributes(phase)}
-      inert={!state.isOpen && isRetained}
-      style={{ position: 'fixed', inset: 0, zIndex, pointerEvents: 'none' }}
-    >
+  return (
+    <Portal layer="modal">
       <div
-        ref={panelRef}
-        {...hooks.slot('panel', phase)}
-        style={{ pointerEvents: 'auto', ...retainedStyle(isMounted) }}
+        {...rootProps}
+        {...dataAttributes(phase)}
+        inert={!state.isOpen && isRetained}
+        style={{ position: 'fixed', inset: 0, zIndex, pointerEvents: 'none' }}
       >
-        <OverlayTriggerStateContext.Provider value={state}>
-          <ModalShownContext.Provider value={isMounted}>{children}</ModalShownContext.Provider>
-        </OverlayTriggerStateContext.Provider>
+        <div
+          ref={panelRef}
+          {...hooks.slot('panel', phase)}
+          style={{ pointerEvents: 'auto', ...retainedStyle(isMounted) }}
+        >
+          <OverlayTriggerStateContext.Provider value={state}>
+            <ModalShownContext.Provider value={isMounted}>{children}</ModalShownContext.Provider>
+          </OverlayTriggerStateContext.Provider>
+        </div>
       </div>
-    </div>,
-    document.body,
+    </Portal>
   );
 }
 
@@ -215,27 +215,27 @@ function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingMod
   const panelRef = useRef<HTMLDivElement>(null);
   const phase = useEnterExit(overlayRef, state.isOpen);
   const { modalProps, underlayProps } = useModalOverlay(dismissal, state, panelRef);
-  if (typeof document === 'undefined') return null;
-  return createPortal(
-    <div
-      {...underlayProps}
-      {...rootProps}
-      {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting })}
-      ref={overlayRef}
-      inert={!state.isOpen}
-      style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}
-    >
-      <FocusScope contain={state.isOpen}>
-        <div {...modalProps} ref={panelRef} className={hooks.slotClass('panel')}>
-          <OverlayTriggerStateContext.Provider value={state}>
-            <ModalShownContext.Provider value={phase.isMounted}>
-              {children}
-            </ModalShownContext.Provider>
-          </OverlayTriggerStateContext.Provider>
-        </div>
-      </FocusScope>
-    </div>,
-    document.body,
+  return (
+    <Portal layer="modal">
+      <div
+        {...underlayProps}
+        {...rootProps}
+        {...dataAttributes({ entering: phase.isEntering, exiting: phase.isExiting })}
+        ref={overlayRef}
+        inert={!state.isOpen}
+        style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}
+      >
+        <FocusScope contain={state.isOpen}>
+          <div {...modalProps} ref={panelRef} className={hooks.slotClass('panel')}>
+            <OverlayTriggerStateContext.Provider value={state}>
+              <ModalShownContext.Provider value={phase.isMounted}>
+                {children}
+              </ModalShownContext.Provider>
+            </OverlayTriggerStateContext.Provider>
+          </div>
+        </FocusScope>
+      </div>
+    </Portal>
   );
 }
 

@@ -34,7 +34,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.5 - Action states and attributes
 
-`isDisabled` shall disable an action natively, except that a disabled action with its own `tooltip` stays focusable (`aria-disabled="true"`) so the tooltip explaining it can be read. `isPending` shows Icon Button's busy indicator and refuses presses; a pending `save` names its indicator with the provider's `saving` string. `isExpanded` publishes `aria-expanded`; `aria-controls`, `aria-haspopup` and `id` pass through, and the action's `data-*` attributes are forwarded to its button, which also publishes its verb in `data-verb`. `onPress` runs on activation.
+`isDisabled` shall disable an action natively, except that a disabled action with its own `tooltip` stays focusable (`aria-disabled="true"`) so the tooltip explaining it can be read. `isPending` shows Icon Button's busy indicator and refuses presses; a pending `save` names its indicator with the provider's `saving` string. `isExpanded` publishes `aria-expanded`; `aria-controls` and `aria-haspopup` pass through, and the action's `data-*` attributes are forwarded to its button, which also publishes its verb in `data-verb`. `onPress` runs on activation.
 
 Implementation: `src/components/action-row/action-row.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`
@@ -44,6 +44,13 @@ Verification: `src/components/action-row/action-row.test.tsx`
 An action with non-empty `items` shall open a [Menu](MENU.md) of those entries (items with their `icon`, `description`, `shortcut`, `tone`, `isDisabled` and submenus, sections and separators, as `Menu` takes them as data) in a `MenuPopover` at the button's bottom end, from its button: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. The menu is labelled by the button and takes the row's size (`sm` for `xs`). The button keeps its tooltip and states, carries React Aria's `aria-haspopup`, `aria-expanded` and, while open, `aria-controls`, which replace the action's own `isExpanded` and `aria-haspopup`, and never calls the action's `onPress`. Choosing an item calls the item's `onAction` and the action's `onAction` with the item's `id`, closes the menu and returns focus to the button. A disabled or pending action does not open its menu. Without items the action is a plain button. This is the `more` verb's menu.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/menu/menu.tsx`
+Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
+
+### UIC-ACTION-ROW-1.7 - Action identity
+
+Each action shall be identified by its `id`: required on a custom action, and defaulting to the verb on a standard one, so a row with the same verb twice gives each an `id` (ids are unique within a row, as React keys are). The `id` identifies the action, not its button element. An action keeps its own button, with its focus and internal press and pending state, while other actions are added, removed or reordered, and a button is never reused for another action. When the action holding focus leaves the row, or moves into the overflow menu, focus moves to the next button in the actions slot that is still there, else to the overflow menu's button, else to the previous button, so it never falls to the page.
+
+Implementation: `src/components/action-row/action-verbs.ts`, `src/components/action-row/action-row-actions.tsx`, `src/components/action-row/use-action-focus.ts`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ## UIC-ACTION-ROW-2 - Row

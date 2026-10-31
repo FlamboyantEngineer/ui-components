@@ -2,7 +2,7 @@
 
 import { isThenable } from '../../utils/is-thenable.js';
 
-/** Why an offered file was refused; `unchecked` when `validate` failed (its promise rejected). */
+/** Why an offered file was refused; `unchecked` when `validate` failed (it threw or its promise rejected). */
 export type FileRejectionReason = 'type' | 'size' | 'min-size' | 'count' | 'invalid' | 'unchecked';
 
 /** An offered file the upload refused, and why. */
@@ -69,11 +69,28 @@ function checkFileRules(file: File, rules: FileRules): FileRejectionReason | nul
   return null;
 }
 
+/** A verdict `validate` could not give: it threw. */
+const unchecked = Symbol('unchecked');
+
+/** Runs `validate` on one file, turning a throw into `unchecked` as a rejected promise is. */
+function checkValidator(
+  validate: FileValidator | undefined,
+  file: File,
+  accepted: readonly File[],
+): ReturnType<FileValidator> | undefined | typeof unchecked {
+  try {
+    return validate?.(file, [...accepted]);
+  } catch {
+    return unchecked;
+  }
+}
+
 /**
  * Sorts offered files into the accepted ones and the refusals, keeping their order: a file must
  * match the types, fit the size limits, pass `validate` and fit within `maxFiles`, where `held`
  * files are already listed. The result is immediate unless `validate` answers with a promise; a
- * promise that rejects refuses its file as `unchecked`, so the result never rejects.
+ * `validate` that throws, or answers with a promise that rejects, refuses its file as `unchecked`
+ * and the other files are still sorted, so the result never throws or rejects.
  */
 export function partitionFiles(
   files: readonly File[],
@@ -93,8 +110,9 @@ export function partitionFiles(
       const file = files[at] as File;
       const reason = checkFileRules(file, rules);
       if (reason) partition.rejections.push({ file, reason });
-      const verdict = reason ? null : rules.validate?.(file, [...partition.accepted]);
-      if (isThenable(verdict)) {
+      const verdict = reason ? null : checkValidator(rules.validate, file, partition.accepted);
+      if (verdict === unchecked) partition.rejections.push({ file, reason: 'unchecked' });
+      else if (isThenable(verdict)) {
         return verdict.then(
           (message) => {
             admit(file, message);
@@ -105,8 +123,7 @@ export function partitionFiles(
             return sortFrom(at + 1);
           },
         );
-      }
-      if (!reason) admit(file, verdict);
+      } else if (!reason) admit(file, verdict);
     }
     return partition;
   };
