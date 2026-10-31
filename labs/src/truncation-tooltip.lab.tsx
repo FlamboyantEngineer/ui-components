@@ -53,5 +53,14 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Beside a text field"
+      description="Focus the note, rest the pointer on the cut name, then type with an input method: Escape while composing cancels the composition and leaves the hint open; Escape after it closes the hint and keeps focus in the note."
+    >
+      <div style={{ width: 160 }}>
+        <TruncationTooltip>{longText}</TruncationTooltip>
+      </div>
+      <input aria-label="Note" />
+    </LabSection>
   </>,
 );

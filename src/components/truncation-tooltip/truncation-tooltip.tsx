@@ -29,6 +29,7 @@ import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Button } from '../button/button.js';
 import { TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The pointer handlers the component owns on its text. */
 type TruncationPointerHandler = 'onPointerEnter' | 'onPointerLeave' | 'onPointerDown';
@@ -118,12 +119,15 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Tru
   }, [ref, open, close]);
 }
 
-/** Closes on Escape, consuming the key only while the tooltip is open. */
+/**
+ * Closes on Escape, consuming the key only while the tooltip is open. An Escape that belongs to an
+ * input method's composition is left to the focused editor.
+ */
 function useEscapeToClose({ isOpen, close }: TruncationState) {
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
+      if (event.key !== 'Escape' || isComposingKey(event)) return;
       event.stopPropagation();
       close();
     };
