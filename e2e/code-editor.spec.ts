@@ -523,4 +523,25 @@ test.describe('Code Editor lab', () => {
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue('  \n  \nreturn basket');
   });
+
+  test('UIC-CODE-EDITOR-4.8 completes text an input method composed, once', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const input = editor(page, 'editing').getByRole('textbox', { name: 'Editable source' });
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    const session = await page.context().newCDPSession(page);
+    await session.send('Input.imeSetComposition', {
+      text: 'pi',
+      selectionStart: 2,
+      selectionEnd: 2,
+    });
+    await session.send('Input.insertText', { text: 'pi' });
+    await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue(/\npick\(test, yes, no\)$/);
+  });
 });

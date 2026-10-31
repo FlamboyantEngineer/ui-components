@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -90,6 +90,36 @@ describe('InsertMenu', () => {
     expect(await screen.findByRole('listbox', { name: 'Insert commands' })).toBeInTheDocument();
     await user.keyboard(' ');
     expect(list()).toBeNull();
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-8.2 leaves keys an input method owns to it', async () => {
+    const { user, value } = renderMenu();
+    const content = getContent();
+    await user.click(content);
+    await user.keyboard('/head');
+    const options = within(await screen.findByRole('listbox', { name: 'Insert commands' }));
+    // The engine itself leaves keys alone while it composes; the menu must too, including the
+    // Enter some browsers report with key code 229 as a composition ends.
+    fireEvent.compositionStart(content);
+    for (const key of [
+      { key: 'Enter', isComposing: true },
+      { key: 'Tab', keyCode: 229 },
+      { key: 'ArrowDown', isComposing: true },
+      { key: 'Escape', isComposing: true },
+    ]) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode 229 on a keydown
+      fireEvent.keyDown(content, key);
+    }
+    fireEvent.compositionEnd(content);
+    // eslint-disable-next-line testing-library/prefer-user-event -- as above
+    fireEvent.keyDown(content, { key: 'Enter', keyCode: 229 });
+    expect(list()).not.toBeNull();
+    expect(options.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
+    expect(value()?.content).toEqual([
+      { type: 'paragraph', content: [{ type: 'text', text: '/head' }] },
+    ]);
+    await user.keyboard('{Enter}');
+    expect(value()?.content).toEqual([{ type: 'heading', attrs: { level: 1 } }]);
   });
 
   it('UIC-RICH-TEXT-EDITOR-8.2 moves through entries with the arrow keys and inserts one in place of the query', async () => {

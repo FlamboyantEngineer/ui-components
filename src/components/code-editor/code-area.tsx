@@ -8,6 +8,7 @@ import type { FieldTextInputProps } from '../field/field.js';
 import { CodeHighlight } from './code-layers.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /**
  * The caller's props the text area takes as they are. Of the text-entry attributes it takes the
@@ -59,6 +60,8 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
   const { completion, snippet, hover } = model;
   return {
     onKeyDown: (event) => {
+      // Keys an input method owns go to the caller alone: no completion, field, hover or edit.
+      if (isComposingKey(event.nativeEvent)) return props.onKeyDown?.(event);
       // Escape ends snippet stepping first, so Escape then Tab leaves even past an open list.
       if (event.key === 'Escape') snippet.end();
       if (completion.handleKeyDown(event) || snippet.handleKeyDown(event)) return;

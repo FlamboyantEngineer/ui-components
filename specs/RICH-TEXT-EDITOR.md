@@ -215,7 +215,7 @@ Verification: `src/components/rich-text-editor/insert-items.test.ts`, `src/compo
 
 ### UIC-RICH-TEXT-EDITOR-8.2 - Keys and insertion
 
-While the menu is open, ArrowDown and ArrowUp shall move the active entry (wrapping), Enter or Tab replace the slash and query with the active entry's command, and Escape closes the menu until the current slash query ends; removing and retyping a slash at the same source position can open a new menu. Pressing an entry inserts it. A menu callback that remains pending after the editor locks cannot change the document. Focus stays in the document, which autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`) and, while open, names the list in `aria-controls` and the active entry in `aria-activedescendant`.
+While the menu is open, ArrowDown and ArrowUp shall move the active entry (wrapping), Enter or Tab replace the slash and query with the active entry's command, and Escape closes the menu until the current slash query ends; removing and retyping a slash at the same source position can open a new menu. Pressing an entry inserts it. Keys an input method owns (pressed during a composition, or reported with key code 229 as one ends) neither move, run nor close it. A menu callback that remains pending after the editor locks cannot change the document. Focus stays in the document, which autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`) and, while open, names the list in `aria-controls` and the active entry in `aria-activedescendant`.
 
 Implementation: `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-menu.tsx`
 Verification: `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`
