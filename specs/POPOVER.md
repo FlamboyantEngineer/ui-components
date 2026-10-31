@@ -43,7 +43,7 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`, 
 
 ### UIC-POPOVER-2.1 - Escape and outside presses
 
-Escape pressed in the popover shall close it, unless `isKeyboardDismissDisabled` is set, and a press outside it shall close it, unless `shouldCloseOnInteractOutside` returns false for the element pressed.
+Escape pressed in the popover shall close it, unless `isKeyboardDismissDisabled` is set or a component inside the popover handles it itself, by stopping it or by calling `preventDefault` (the next Escape it leaves alone closes the popover), and a press outside it shall close it, unless `shouldCloseOnInteractOutside` returns false for the element pressed.
 
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`

@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
@@ -78,9 +79,11 @@ function ModalBody({
 
 /**
  * Escape that would close the dialog: the caller may refuse it; a floating dialog closes itself,
- * and a blocking one leaves it to React Aria's overlay above. A refused Escape stops here.
+ * and a blocking one leaves it to React Aria's overlay above. An Escape the content already
+ * handled, or a refused one, stops here.
  */
 function handleEscape(event: KeyboardEvent<HTMLElement>, options: EscapeOptions) {
+  if (stopConsumedEscape(event)) return;
   if (!options.canEscape || event.nativeEvent.isComposing) return;
   const isRefused = options.shouldCloseOnEscape?.() === false;
   if (!isRefused && !options.isFloating) return;

@@ -219,6 +219,19 @@ test.describe('Popover lab', () => {
     await page.keyboard.press('Escape');
     await lab.expectAccessible();
   });
+
+  test('UIC-POPOVER-2.1 stays open on an Escape its content handled', async ({ page, lab }) => {
+    await lab.open('popover');
+    await page.getByRole('button', { name: 'Add label' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Add label' });
+    const draft = dialog.locator('[data-lab-draft]');
+    await draft.fill('Urgent');
+    await page.keyboard.press('Escape');
+    await expect(draft).toHaveValue('');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
 });
 
 for (const mode of ['no arrow', 'arrow']) {

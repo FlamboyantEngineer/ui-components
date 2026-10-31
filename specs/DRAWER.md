@@ -43,7 +43,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-2.1 - Escape
 
-Escape pressed in the drawer shall close it, unless `isKeyboardDismissDisabled` is set. With drawers nested, Escape closes only the topmost.
+Escape pressed in the drawer shall close it, unless `isKeyboardDismissDisabled` is set or a component inside the drawer handles it itself, by stopping it or by calling `preventDefault`, such as an editor cancelling its draft; the next Escape it leaves alone closes the drawer. With drawers nested, Escape closes only the topmost.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`

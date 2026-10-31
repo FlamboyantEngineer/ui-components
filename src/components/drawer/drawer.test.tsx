@@ -220,6 +220,33 @@ describe('Drawer', () => {
     expect(screen.getByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
   });
 
+  it('UIC-DRAWER-2.1 stays open on an Escape its content handled and closes on the next', async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Page triggerProps={{ onOpenChange }}>
+        <input
+          aria-label="City"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && event.currentTarget.value !== '') {
+              event.currentTarget.value = '';
+              event.preventDefault();
+            }
+          }}
+        />
+      </Page>,
+    );
+    await open();
+    await userEvent.type(screen.getByRole('textbox', { name: 'City' }), 'Oslo');
+    await userEvent.keyboard('{Escape}');
+    await settle();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(screen.getByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await settle();
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(overlay()).toBeNull();
+  });
+
   it('UIC-DRAWER-2.2 closes on outside presses unless not dismissable', async () => {
     const { unmount } = render(<Page />);
     await open();

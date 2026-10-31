@@ -18,6 +18,7 @@ import type {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
@@ -188,6 +189,16 @@ export function Popover({
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}
         className={hooks.slotClass('dialog')}
+        // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element: an
+        // Escape the content already handled stops there, before React Aria's popover closes.
+        render={(props) => (
+          <section
+            {...props}
+            onKeyDown={(event) => {
+              stopConsumedEscape(event);
+            }}
+          />
+        )}
       >
         <PopoverHeader title={title} showCloseButton={showCloseButton} onClose={close} />
         {children === undefined || children === null ? null : (
