@@ -2,13 +2,10 @@
 
 import { CheckGlyph, ErrorGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import {
-  Button as AriaButton,
-  VisuallyHidden,
-  useNumberFormatter,
-} from '../../primitives/index.js';
+import { Button as AriaButton, useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps, Key, NativeProps, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
