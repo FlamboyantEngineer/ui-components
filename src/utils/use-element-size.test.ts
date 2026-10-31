@@ -284,6 +284,38 @@ test('UIC-MEASUREMENT-2.5 an element held in state is measured when it mounts an
   expect(observer.disconnected).toBe(true);
 });
 
+test('UIC-MEASUREMENT-2.5 follows a stable ref to an element that mounts late or replaces the last', async () => {
+  function Panel({ elementKey }: { elementKey: string | null }): ReactElement | null {
+    const ref = useRef<HTMLDivElement>(null);
+    sizes.push(useElementSize(ref));
+    return elementKey === null ? null : createElement('div', { ref, key: elementKey });
+  }
+  const root = createRoot(document.body.appendChild(document.createElement('div')));
+  roots.push(root);
+  const renderPanel = (elementKey: string | null) =>
+    commit(root, createElement(Panel, { elementKey }));
+
+  await renderPanel(null);
+  expect(FakeObserver.instances).toHaveLength(0);
+  await renderPanel('first');
+  const observer = requireDefined(FakeObserver.instances[0]);
+  const first = requireDefined(observer.targets[0]).element;
+  await act(async () => observer.report({ width: 100, height: 20 }));
+  expect(latest()).toEqual({ width: 100, height: 20 });
+
+  await renderPanel('second');
+  expect(requireDefined(observer.targets[0]).element).not.toBe(first);
+  expect(latest()).toBeNull();
+  await act(async () => observer.report({ width: 900, height: 900 }, first));
+  expect(latest()).toBeNull();
+  await act(async () => observer.report({ width: 300, height: 40 }));
+  expect(latest()).toEqual({ width: 300, height: 40 });
+
+  await renderPanel(null);
+  expect(latest()).toBeNull();
+  expect(observer.disconnected).toBe(true);
+});
+
 test('UIC-MEASUREMENT-2.5 follows the parent of an element held in state and keeps the object across commits', async () => {
   function Panel({ visible, rowKey }: { visible: boolean; rowKey: string }): ReactElement | null {
     const [element, setElement] = useState<HTMLDivElement | null>(null);

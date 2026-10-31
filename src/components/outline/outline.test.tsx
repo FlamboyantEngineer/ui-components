@@ -210,6 +210,44 @@ describe('Outline', () => {
     expect(currentName()).toBe('Design');
   });
 
+  it('UIC-OUTLINE-2.2 follows a viewport that mounts late or is replaced under the same ref', () => {
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0);
+      return 0;
+    });
+    function Late({ viewportKey }: { viewportKey: string | null }) {
+      const ref = useRef<HTMLDivElement>(null);
+      return (
+        <>
+          <Outline headings={headings.slice(0, 2)} viewportRef={ref} />
+          {viewportKey === null ? null : (
+            <div key={viewportKey} ref={ref} role="region" aria-label={viewportKey}>
+              <h2 id="intro">Introduction</h2>
+              <h2 id="scope">Scope</h2>
+            </div>
+          )}
+        </>
+      );
+    }
+    const currentName = () =>
+      document.querySelector('.ui-outline [aria-current="location"]')?.textContent;
+    const { rerender } = render(<Late viewportKey={null} />);
+    expect(currentName()).toBeUndefined();
+    // Without layout every heading's top has reached the viewport's: the last is current.
+    rerender(<Late viewportKey="First" />);
+    expect(currentName()).toBe('Scope');
+    rerender(<Late viewportKey="Second" />);
+    const viewport = screen.getByRole('region', { name: 'Second' });
+    Object.defineProperties(viewport, {
+      scrollHeight: { configurable: true, get: () => 2000 },
+      clientHeight: { configurable: true, get: () => 200 },
+    });
+    const scope = within(viewport).getByRole('heading', { name: 'Scope' });
+    scope.getBoundingClientRect = () => ({ top: 500 }) as DOMRect;
+    fireEvent.scroll(viewport);
+    expect(currentName()).toBe('Introduction');
+  });
+
   it('UIC-OUTLINE-3.1 scrolls to a followed heading and focuses it when it takes focus', async () => {
     const onNavigate = vi.fn();
     render(

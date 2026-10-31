@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type RefObject } from 'react';
+import { useTargetElement } from '../../utils/use-target-element.js';
 
 export interface ScrollSpyOptions {
   /** The ids of the sections to follow, in document order. */
@@ -33,7 +34,8 @@ export function resolveScrollSpy(
 /**
  * Follows which of the sections `ids` is current in a scrolling viewport, such as a `ScrollRegion`'s
  * (its `ref`), for a table of contents to mark. It updates once per animation frame as the viewport
- * scrolls or resizes, and at once when the ids change.
+ * scrolls or resizes, and at once when the ids change. The ref is read after every commit, so a
+ * viewport that mounts late or is replaced is followed.
  */
 export function useScrollSpy(
   viewport: RefObject<HTMLElement | null>,
@@ -41,9 +43,9 @@ export function useScrollSpy(
 ): string | undefined {
   const [active, setActive] = useState<string | undefined>(undefined);
   const key = ids.join('\n');
+  const element = useTargetElement(viewport);
 
   useEffect(() => {
-    const element = viewport.current;
     const view = element?.ownerDocument.defaultView;
     if (!element || !view) return undefined;
     const sectionIds = key ? key.split('\n') : [];
@@ -66,7 +68,7 @@ export function useScrollSpy(
       element.removeEventListener('scroll', update);
       if (frame !== null) view.cancelAnimationFrame(frame);
     };
-  }, [key, offset, viewport]);
+  }, [element, key, offset]);
 
   return active;
 }

@@ -206,3 +206,25 @@ test.describe('Tour lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-TOUR-1.2 follows a target replaced or removed while its step shows', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('tour');
+  const demo = page.locator('[data-lab-replaced]');
+  const spotlight = page.locator('.ui-tour__spotlight');
+  const top = async (locator: Locator) => Math.round((await locator.boundingBox())?.y ?? -1);
+  await demo.getByRole('button', { name: 'Point at the newest order' }).click();
+  await expect(page.getByRole('dialog', { name: 'Newest order' })).toBeVisible();
+  const newest = demo.locator('[data-lab-newest]');
+  await expect.poll(() => top(spotlight)).toBe(await top(newest));
+  await demo.getByRole('button', { name: 'Refresh the list' }).click();
+  await expect(newest).toHaveText('Order 2 (newest)');
+  await expect.poll(async () => (await top(spotlight)) === (await top(newest))).toBe(true);
+  await demo.getByRole('button', { name: 'Clear the list' }).click();
+  await expect(spotlight).toHaveAttribute('data-target-missing', 'true');
+  await expect(page.getByRole('dialog', { name: 'Newest order' })).toBeVisible();
+  await demo.getByRole('button', { name: 'Refresh the list' }).click();
+  await expect(spotlight).not.toHaveAttribute('data-target-missing');
+});

@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type RefObject } from 'react';
 import { findOverlayScrollContainer } from './overlay-geometry.js';
+import { useTargetElement } from './use-target-element.js';
 
-/** An element, or a ref whose element is stable. Hold late-mounting elements in state instead. */
+/** An element, or a ref to one, followed to the element it holds after every commit. */
 export type InViewTarget = Element | RefObject<Element | null> | null | undefined;
 
 export interface InViewOptions {
@@ -15,11 +16,6 @@ export interface InViewOptions {
    * Omit to report only actual visibility.
    */
   readonly scrollOffset?: number | undefined;
-}
-
-function resolveElement(target: InViewTarget): Element | null {
-  if (!target) return null;
-  return 'current' in target ? target.current : target;
 }
 
 /** Observer options that extend the nearest scrolling container's view by `scrollOffset`, or none. */
@@ -36,16 +32,16 @@ function toObserverInit(element: Element, scrollOffset: number | undefined) {
  * Whether any part of `target` is visible in the viewport, after clipping by the scrolling
  * ancestors it sits in, for loading more content or rendering it lazily. False until the first
  * report, while disabled, and in a window without `IntersectionObserver`; the observer comes from
- * the element's own window.
+ * the element's own window. A ref is followed to the element it holds after every commit.
  */
 export function useInView(
   target: InViewTarget,
   { enabled = true, scrollOffset }: InViewOptions = {},
 ): boolean {
   const [isInView, setInView] = useState(false);
+  const element = useTargetElement(target);
 
   useEffect(() => {
-    const element = resolveElement(target);
     const Observer = element?.ownerDocument.defaultView?.IntersectionObserver;
     if (!enabled || !element || typeof Observer !== 'function') return undefined;
     let active = true;
@@ -63,7 +59,7 @@ export function useInView(
       observer.disconnect();
       setInView(false);
     };
-  }, [enabled, target, scrollOffset]);
+  }, [element, enabled, scrollOffset]);
 
   return enabled && isInView;
 }

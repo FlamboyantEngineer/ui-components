@@ -43,7 +43,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-2.2 - Scroll tracking
 
-When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes. Without either prop no heading is current.
+When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes, and follows the ref to a viewport that mounts after the outline or replaces the previous one. Without either prop no heading is current.
 
 Implementation: `src/components/outline/outline.tsx`, `src/components/scroll-region/use-scroll-spy.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`

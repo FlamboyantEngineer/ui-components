@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { getOwnerDocument } from '../../utils/owner-window.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { usePortalContainer } from '../portal/portal.js';
 
 /** The element a step points at: a ref, or a CSS selector looked up when the step shows. */
@@ -29,16 +30,38 @@ export function resolveTourTarget(
  * Looks up the shown step's target once the tour has rendered, and scrolls it into view. Until the
  * first lookup is done, `isResolved` is false, so the popover does not open at a stale place; on a
  * step change the previous target stands in until the lookup, before the page paints, so the
- * popover and its focus scope stay mounted from step to step.
+ * popover and its focus scope stay mounted from step to step. While open, the target is looked up
+ * again after every commit and whenever nodes come or go in the document, so an element that
+ * replaces it takes over and a removed one leaves the step without a target.
  */
 export function useTourTarget(target: TourTarget | undefined, isOpen: boolean) {
   const [resolved, setResolved] = useState<{ element: Element | null } | null>(null);
   const container = usePortalContainer();
+  const lookUp = useLatest(() => resolveTourTarget(target, getOwnerDocument(container)));
   useLayoutEffect(() => {
     if (!isOpen) return;
-    const element = resolveTourTarget(target, getOwnerDocument(container));
+    const element = lookUp.current();
     element?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     setResolved({ element });
-  }, [target, isOpen, container]);
+  }, [target, isOpen, container, lookUp]);
+  const follow = useLatest(() =>
+    setResolved((current) => {
+      const element = lookUp.current();
+      return current === null || current.element === element ? current : { element };
+    }),
+  );
+  // A ref's element changes in commits that change no prop.
+  useLayoutEffect(() => {
+    if (isOpen) follow.current();
+  });
+  useLayoutEffect(() => {
+    if (!isOpen) return undefined;
+    const document = getOwnerDocument(container);
+    const view = document.defaultView;
+    if (typeof view?.MutationObserver !== 'function') return undefined;
+    const observer = new view.MutationObserver(() => follow.current());
+    observer.observe(document, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [isOpen, container, follow]);
   return { element: resolved?.element ?? null, isResolved: isOpen && resolved !== null };
 }

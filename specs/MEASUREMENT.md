@@ -57,7 +57,7 @@ Verification: `src/utils/use-element-size.test.ts`
 
 ### UIC-MEASUREMENT-2.5 - Changing elements
 
-An element held in state (through a callback ref) shall be measured when it mounts; a replacement starts unmeasured, ignores late reports from the element it replaced and gets its first measurement at once; and when the element leaves, the hook returns `null` and disconnects.
+An element held in state (through a callback ref), or held by a ref, which is read again after every commit, shall be measured when it mounts; a replacement starts unmeasured, ignores late reports from the element it replaced and gets its first measurement at once; and when the element leaves, the hook returns `null` and disconnects.
 
 Implementation: `src/utils/use-element-size.ts`
 Verification: `src/utils/use-element-size.test.ts`
@@ -82,7 +82,7 @@ Verification: `src/utils/use-in-view.test.ts`, `e2e/load-more.spec.ts`
 
 ### UIC-MEASUREMENT-4.2 - Targets, disabled and unsupported
 
-The target shall be an element or a ref whose element is stable. With `enabled={false}`, without an element, or in a window without `IntersectionObserver`, the hook shall return false and observe nothing; disabling disconnects, and re-enabling starts out of view until the next report.
+The target shall be an element or a ref, which is read again after every commit: an element that mounts late or replaces the previous one under the same ref is observed instead, starting out of view. With `enabled={false}`, without an element, or in a window without `IntersectionObserver`, the hook shall return false and observe nothing; disabling disconnects, and re-enabling starts out of view until the next report.
 
 Implementation: `src/utils/use-in-view.ts`
 Verification: `src/utils/use-in-view.test.ts`

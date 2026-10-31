@@ -85,6 +85,27 @@ describe('useInView', () => {
     element.remove();
   });
 
+  it('UIC-MEASUREMENT-4.2 follows a stable ref to an element that replaces the last', () => {
+    const ref: { current: Element | null } = { current: null };
+    const { result, rerender } = renderHook(() => useInView(ref));
+    expect(FakeIntersectionObserver.instances).toHaveLength(0);
+    const first = document.body.appendChild(document.createElement('div'));
+    ref.current = first;
+    rerender();
+    act(() => latestObserver().report(first, true));
+    expect(result.current).toBe(true);
+    const old = latestObserver();
+    const second = document.body.appendChild(document.createElement('div'));
+    ref.current = second;
+    rerender();
+    expect(old.disconnected).toBe(true);
+    expect(result.current).toBe(false);
+    act(() => latestObserver().report(second, true));
+    expect(result.current).toBe(true);
+    first.remove();
+    second.remove();
+  });
+
   it('UIC-MEASUREMENT-4.1 UIC-MEASUREMENT-4.2 ignores released observations after target or enabled changes', () => {
     const first = document.createElement('div');
     const second = document.createElement('div');

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -88,6 +88,43 @@ describe('Tour', () => {
       screen.getByRole('button', { name: 'Filters', hidden: true }),
     );
     expect(resolveTourTarget(undefined)).toBeNull();
+  });
+
+  it('UIC-TOUR-1.2 follows a ref target that is replaced or removed while its step shows', async () => {
+    const saveRef = createRef<HTMLButtonElement>();
+    let setVersion: (version: string | null) => void = () => {};
+    function Replacing() {
+      const [version, setOwnVersion] = useState<string | null>('first');
+      setVersion = setOwnVersion;
+      return (
+        <div>
+          {version === null ? null : (
+            <button key={version} ref={saveRef} type="button" data-version={version}>
+              Save
+            </button>
+          )}
+          <Tour steps={[{ target: saveRef, title: 'Save' }]} defaultOpen />
+        </div>
+      );
+    }
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const top = this.dataset.version === 'second' ? 120 : 40;
+      return { top, left: 30, width: 80, height: 24, right: 110, bottom: top + 24 } as DOMRect;
+    });
+    render(<Replacing />);
+    await screen.findByRole('dialog', { name: 'Save' });
+    const spotlight = () => document.querySelector('.ui-tour__spotlight') as HTMLElement;
+    expect(spotlight().style.top).toBe('40px');
+    act(() => setVersion('second'));
+    await waitFor(() => expect(spotlight().style.top).toBe('120px'));
+    expect(spotlight()).not.toHaveAttribute('data-target-missing');
+    act(() => setVersion(null));
+    await waitFor(() => expect(spotlight()).toHaveAttribute('data-target-missing', 'true'));
+    expect(screen.getByRole('dialog', { name: 'Save' })).toBeInTheDocument();
+    expect(document.querySelector('.ui-tour__arrow')).toBeNull();
+    vi.restoreAllMocks();
   });
 
   it('UIC-TOUR-2.1 moves with next and back, and finishes on the last step', async () => {
