@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -72,6 +72,20 @@ describe('Chat composer', () => {
     const { user } = renderChat({ participants: assistantPeople, isPending: true, onStop });
     await user.click(screen.getByRole('button', { name: 'Stop' }));
     expect(onStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-CHAT-2.4 leaves a composing Escape to the input method and keeps the reply', async () => {
+    const { user, container } = renderChat();
+    await user.hover(article('m1'));
+    await user.click(within(article('m1')).getByRole('button', { name: 'Reply' }));
+    await waitFor(() => expect(box()).toHaveFocus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(box(), { key: 'Escape', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(box(), { key: 'Escape', keyCode: 229 });
+    expect(container.querySelector('.ui-chat__banner')).toHaveTextContent('Replying to');
+    await user.keyboard('{Escape}');
+    expect(container.querySelector('.ui-chat__banner')).toBeNull();
   });
 
   it('UIC-CHAT-2.4 replies to a message from its banner, and Escape cancels the reply', async () => {

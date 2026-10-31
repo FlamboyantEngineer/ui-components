@@ -4,6 +4,7 @@ import { CloseGlyph } from '../../core/glyphs.js';
 import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
@@ -290,6 +291,8 @@ export function ChatComposer(given: ChatComposerProps) {
   });
   if (!options.onSend) return null;
   const onKeyDown = (event: KeyboardEvent) => {
+    // A composing Escape cancels the input method's candidate, not the reply.
+    if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Escape' && state.replyingId !== null) state.cancelReply();
   };
   return (

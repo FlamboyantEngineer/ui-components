@@ -259,7 +259,7 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`
 
 ### UIC-SELECT-FIELD-10.1 - Search
 
-Text in the search field shall filter the tree as `Tree`'s `filterText` does: the rows whose text value holds every word show with their ancestors, expanded, and their descendants. Down in the search field moves focus to the tree's first row. A tree with no row to show reads the provider's `noResults` string while it filters, else `noItems`.
+Text in the search field shall filter the tree as `Tree`'s `filterText` does: the rows whose text value holds every word show with their ancestors, expanded, and their descendants. Down in the search field moves focus to the tree's first row, except a Down that belongs to an input method composition (`isComposing`, or key code 229), which steps through its candidates. A tree with no row to show reads the provider's `noResults` string while it filters, else `noItems`.
 
 Implementation: `src/components/select-field/tree-select-popover.tsx`
 Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`

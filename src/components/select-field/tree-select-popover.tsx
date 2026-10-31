@@ -11,6 +11,7 @@ import { Tree, type TreeItemData } from '../tree/tree.js';
 import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
 import type { SelectTreeFieldProps } from './select-tree-field.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
@@ -60,7 +61,8 @@ function TreeSelectDialog<T extends TreeItemData>({
   // closes the popover instead of clearing a multiple choice.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
     const isInSearch = (event.target as Element).closest(`.${hooks.slotClass('search')}`) !== null;
-    if (event.key === 'ArrowDown' && isInSearch) {
+    // A composing Down steps through the input method's candidates.
+    if (event.key === 'ArrowDown' && isInSearch && !isComposingKey(event.nativeEvent)) {
       event.preventDefault();
       treeRef.current?.querySelector<HTMLElement>('[role="row"]')?.focus();
     } else if (event.key === 'Escape' && !isInSearch) {

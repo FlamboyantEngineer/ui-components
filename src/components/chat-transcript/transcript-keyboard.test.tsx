@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { cloneElement, createRef } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -146,6 +146,26 @@ describe('ChatTranscript keyboard', () => {
     expect(message('Second')).toHaveFocus();
     expect(copy).toHaveAttribute('tabindex', '-1');
     expect(link).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-3.3 leaves a composing Escape in a field inside a message to the input method', async () => {
+    const user = userEvent.setup();
+    render(
+      <ChatTranscript>
+        <ChatMessage id="m1" author={ana} actions={<input aria-label="Reason" />}>
+          First
+        </ChatMessage>
+      </ChatTranscript>,
+    );
+    const field = screen.getByRole('textbox', { name: 'Reason' });
+    act(() => field.focus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(field, { key: 'Escape', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(field, { key: 'Escape', keyCode: 229 });
+    expect(field).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(message('First')).toHaveFocus();
   });
 
   it('UIC-CHAT-TRANSCRIPT-3.3 keeps focus on a message without controls and enters on a click', async () => {
