@@ -63,4 +63,22 @@ test.describe('Text Match lab', () => {
     ).toHaveText('Café crème, crème brûlée and a café au lait');
     await lab.expectAccessible();
   });
+
+  test('UIC-TEXT-MATCH-1.4 matches composed and decomposed accents alike', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-match');
+    const marks = (text: string, query: string, accents: string) =>
+      page.locator(
+        `[data-lab-cell="text=${text} query=${query} accents=${accents}"] mark.ui-text-match`,
+      );
+    for (const text of ['composed', 'decomposed']) {
+      await expect(marks(text, 'resume', 'exact')).toHaveCount(0);
+      await expect(marks(text, 'resume', 'ignored')).toHaveCount(1);
+      await expect(marks(text, 'r\u00e9sum\u00e9', 'exact')).toHaveCount(1);
+      await expect(marks(text, 'r\u00e9sum\u00e9', 'ignored')).toHaveCount(1);
+    }
+    await expect(marks('decomposed', 'resume', 'ignored')).toHaveText('re\u0301sume\u0301');
+  });
 });
