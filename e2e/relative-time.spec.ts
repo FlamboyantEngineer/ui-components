@@ -153,6 +153,26 @@ test.describe('Relative Time lab', () => {
   });
 });
 
+test.describe('Relative Time frozen clock', () => {
+  test('UIC-RELATIVE-TIME-2.2 stops waking a timestamp whose clock does not move', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-time');
+    const demo = page.locator('[data-lab-demo="frozen-clock"]');
+    await expect(demo.locator('.ui-relative-time')).toHaveText('In 1 minute');
+    await page.waitForTimeout(500);
+    const count = demo.getByRole('button', { name: 'Count clock reads' });
+    await count.click();
+    const first = Number(await demo.locator('[data-lab-output="reads"]').textContent());
+    expect(first).toBeLessThan(10);
+    await page.waitForTimeout(500);
+    await count.click();
+    // Only the press's own render reads the clock again; no wake did.
+    await expect(demo.locator('[data-lab-output="reads"]')).toHaveText(String(first + 1));
+  });
+});
+
 test.describe('Relative Time lab in New York', () => {
   test.use({ timezoneId: 'America/New_York' });
 

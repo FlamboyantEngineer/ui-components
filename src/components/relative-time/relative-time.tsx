@@ -69,8 +69,9 @@ export function RelativeTime({
   ...rest
 }: RelativeTimeProps) {
   const { locale } = useLocale();
+  const now = getNow();
   const options = {
-    now: getNow(),
+    now,
     locale,
     fallbackAfterDays,
     precision,
@@ -79,7 +80,7 @@ export function RelativeTime({
     timeStyle,
   };
   const text = value ? describeRelativeTime(value, options) : null;
-  useClockTick(text?.nextChange ?? null);
+  useClockTick(text?.nextChange ?? null, now.getTime());
   const finish = (words: string) => (capitalize ? capitalizeText(words, locale) : words);
   if (!text || !value) {
     if (!placeholder) return null;

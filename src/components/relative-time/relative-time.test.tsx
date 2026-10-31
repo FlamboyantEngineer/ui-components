@@ -171,6 +171,45 @@ describe('RelativeTime', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it.each([
+    { precision: 'minute', value: '2026-10-31T12:01:00Z', text: 'In 1 minute' },
+    { precision: 'second', value: '2026-10-31T12:00:05Z', text: 'In 5 seconds' },
+  ] as const)(
+    'UIC-RELATIVE-TIME-2.2 wakes a frozen clock at most once at a $precision boundary',
+    async ({ precision, value, text }) => {
+      vi.useFakeTimers({ now: new Date('2026-10-31T11:00:00Z') });
+      const frozen = vi.fn(() => new Date('2026-10-31T12:00:00Z'));
+      const { container } = render(
+        <RelativeTime value={value} getNow={frozen} precision={precision} showTooltip={false} />,
+      );
+      expect(root(container)).toHaveTextContent(text);
+      for (let step = 0; step < 100; step += 1) await advance(10);
+      expect(frozen.mock.calls.length).toBeLessThanOrEqual(3);
+      expect(vi.getTimerCount()).toBe(0);
+      expect(root(container)).toHaveTextContent(text);
+    },
+  );
+
+  it('UIC-RELATIVE-TIME-2.2 wakes again once a frozen clock moves on', async () => {
+    vi.useFakeTimers({ now: new Date('2026-10-31T11:00:00Z') });
+    const value = '2026-10-31T12:01:00Z';
+    const props = { value, showTooltip: false };
+    const { container, rerender } = render(
+      <RelativeTime {...props} getNow={() => new Date('2026-10-31T12:00:00Z')} />,
+    );
+    await advance(10);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(root(container)).toHaveTextContent('In 1 minute');
+    // The host hands over a clock that runs: the timestamp follows it on the shared timer.
+    const start = Date.now();
+    const running = () => new Date(Date.parse('2026-10-31T11:59:00Z') + Date.now() - start);
+    rerender(<RelativeTime {...props} getNow={running} />);
+    expect(root(container)).toHaveTextContent('In 2 minutes');
+    expect(vi.getTimerCount()).toBe(1);
+    await advance(60_000);
+    expect(root(container)).toHaveTextContent('In 1 minute');
+  });
+
   it('UIC-RELATIVE-TIME-1.2 spells units in the unit style', () => {
     render(<RelativeTime value={at(10, 25)} getNow={getNow} unitStyle="narrow" />);
     expect(screen.getByText('5m ago')).toHaveAttribute('datetime', at(10, 25));
