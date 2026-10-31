@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
 import { AvatarGroup } from '../../src/components/avatar-group/avatar-group.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UserCard, UserCardTrigger } from '../../src/components/user-card/user-card.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -85,13 +86,20 @@ function Triggers() {
 function HoverCards() {
   const [isOpen, setOpen] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const [log, setLog] = useState('nothing yet');
   useEffect(() => {
     if (!isLoading) return;
     const timer = setTimeout(() => setLoading(false), 800);
     return () => clearTimeout(timer);
   }, [isLoading]);
   const card = (name: string) => (
-    <UserCard name={name} description="Research team" {...statusProps()} actions={actions} />
+    <UserCard
+      name={name}
+      description="Research team"
+      {...statusProps()}
+      actions={actions}
+      onAction={(id) => setLog(`${id} for ${name}`)}
+    />
   );
   return (
     <div>
@@ -136,6 +144,30 @@ function HoverCards() {
         </Button>{' '}
         Card: <output data-lab-output="controlled">{isOpen ? 'open' : 'closed'}</output>
       </p>
+      <p>
+        Last action: <output data-lab-output="hover-action">{log}</output>
+      </p>
+    </div>
+  );
+}
+
+function InModal() {
+  const [log, setLog] = useState('nothing yet');
+  return (
+    <div>
+      <ModalTrigger>
+        <Button data-lab-trigger="editor">Open editor</Button>
+        <Modal title="Editor">
+          <input aria-label="Draft" defaultValue="" />
+          <UserCard
+            name="Maria Santos"
+            description="Research team"
+            actions={actions}
+            onAction={(id) => setLog(`${id} for Maria Santos`)}
+          />
+        </Modal>
+      </ModalTrigger>{' '}
+      Last action: <output data-lab-output="modal-action">{log}</output>
     </div>
   );
 }
@@ -169,6 +201,12 @@ mountLab(
       description="Rest the pointer on a person or Tab to them: the card opens after a short delay without taking focus, stays open while the pointer moves into it, and Tab enters it. One card loads its details on opening; another is opened from outside."
     >
       <HoverCards />
+    </LabSection>
+    <LabSection
+      title="In a modal"
+      description="A card shown in place inside a modal: its actions report without closing the modal, and it takes no focus."
+    >
+      <InModal />
     </LabSection>
   </>,
 );

@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Avatar } from '../avatar/avatar.js';
+import { Button } from '../button/button.js';
+import { Modal, ModalTrigger } from '../modal/modal.js';
 import { UserCard, UserCardTrigger } from './user-card.js';
 
 const actions = [
@@ -275,6 +277,31 @@ describe('UserCardTrigger', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
+
+  it('UIC-USER-CARD-1.4 UIC-USER-CARD-1.5 leaves a containing modal open and its focus alone', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <ModalTrigger>
+        <Button>Edit</Button>
+        <Modal title="Editor">
+          <input aria-label="Draft" />
+          <UserCard name="Maria Santos" actions={actions} onAction={onAction} />
+        </Modal>
+      </ModalTrigger>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const draft = await screen.findByRole('textbox', { name: 'Draft' });
+    await waitFor(() => expect(draft).toHaveFocus());
+    const card = screen.getByRole('dialog', { name: 'Maria Santos' });
+    expect(card.tagName).toBe('SECTION');
+    await user.type(draft, 'Notes');
+    await user.click(within(card).getByRole('button', { name: 'Message' }));
+    expect(onAction).toHaveBeenCalledWith('message');
+    expect(screen.getByRole('dialog', { name: 'Editor' })).toBeInTheDocument();
+    expect(draft).toHaveValue('Notes');
+    expect(within(card).getByRole('button', { name: 'Message' })).toHaveFocus();
+  });
 });
 
 let user: ReturnType<typeof userEvent.setup>;
@@ -382,6 +409,41 @@ describe('UserCardTrigger opening', () => {
     await user.tab();
     expect(dialog.contains(document.activeElement)).toBe(true);
     expect(document.activeElement).toHaveClass('ui-user-card__action');
+  });
+
+  it('UIC-USER-CARD-1.4 UIC-USER-CARD-2.3 closes a hover card before reporting its action', async () => {
+    useFakeClock();
+    const onAction = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <UserCardTrigger
+        trigger="hover"
+        delay={0}
+        onOpenChange={onOpenChange}
+        card={<UserCard name="Maria Santos" actions={actions} onAction={onAction} />}
+      >
+        <Avatar name="Maria Santos" size="sm" />
+      </UserCardTrigger>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Maria Santos' });
+    await hover(trigger);
+    await advance(0);
+    const dialog = screen.getByRole('dialog', { name: 'Maria Santos' });
+    await user.click(within(dialog).getByRole('button', { name: 'Message' }));
+    expect(onAction).toHaveBeenCalledWith('message');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    await advance(1000);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await tabTo(trigger);
+    await advance(0);
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Message' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledTimes(2);
+    await advance(1000);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 
   it('UIC-USER-CARD-2.3 stays closed while disabled', async () => {
