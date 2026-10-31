@@ -38,7 +38,7 @@ Verification: `src/components/drag-handle/drag-handle.test.tsx`
 
 ### UIC-DRAG-HANDLE-2.1 - Dragging by the handle only
 
-`armHandleDrag(event)`, called on a pointer press inside a collection whose rows render without `draggable`, shall make the pressed row draggable when a primary press lands on that row's own enabled handle, until the press ends or the drag it starts ends. A press elsewhere in the row, a press with another button or a press on a disabled handle leaves the row as it is, so only the handle starts a pointer drag. React Aria keeps the handle out of pointer hit testing so that pressing it never sorts or selects, so the press is matched to the handle by position.
+`armHandleDrag(event)`, called on a pointer press inside a collection whose rows render without `draggable`, shall make the pressed row draggable when a primary press lands on that row's own enabled handle, until the press ends, is cancelled before a drag starts, or the drag it starts ends ([UIC-DRAG-INTERACTIONS-2.1](DRAG-INTERACTIONS.md#uic-drag-interactions-21---arming)). A press elsewhere in the row, a press with another button or a press on a disabled handle leaves the row as it is, so only the handle starts a pointer drag. React Aria keeps the handle out of pointer hit testing so that pressing it never sorts or selects, so the press is matched to the handle by position.
 
 Implementation: `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`

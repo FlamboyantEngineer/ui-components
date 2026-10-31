@@ -82,7 +82,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Dragging by the handle only"
-      description="The table renders its rows without draggable and arms a row from its handle, so a press on the row's text never drags it."
+      description="The table renders its rows without draggable and arms a row from its handle, so a press on the row's text never drags it. A press that ends or is cancelled before a drag starts disarms the row again."
     >
       <FruitTable />
     </LabSection>
