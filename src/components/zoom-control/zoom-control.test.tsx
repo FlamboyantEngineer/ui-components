@@ -102,19 +102,23 @@ describe('ZoomControl', () => {
     const onChange = vi.fn();
     const unordered = [150, NaN, 50, Infinity, 100, 100, -Infinity];
     const { rerender } = render(<ZoomControl levels={unordered} value={75} onChange={onChange} />);
-    expect(slider()).toHaveAttribute('max', '2');
-    expect(slider()).toHaveValue('0');
+    // The levels 50, 100 and 150, with 75 as a stop of its own between them.
+    expect(slider()).toHaveAttribute('max', '3');
+    expect(slider()).toHaveValue('1');
     expect(findNearestZoomLevelIndex(unordered, 75)).toBe(0);
     expect(findNextZoomLevel(unordered, 75, 1)).toBe(100);
     expect(findNextZoomLevel(unordered, 75, -1)).toBe(50);
     await user.click(screen.getByRole('button', { name: 'Zoom in' }));
     expect(onChange).toHaveBeenLastCalledWith(100);
     rerender(<ZoomControl levels={unordered} value={125} onChange={onChange} />);
-    expect(slider()).toHaveValue('1');
+    expect(slider()).toHaveValue('2');
     await user.click(screen.getByRole('button', { name: 'Zoom out' }));
     expect(onChange).toHaveBeenLastCalledWith(100);
     rerender(<ZoomControl levels={[]} value={125} />);
     expect(slider()).toHaveAttribute('max', '0');
+    rerender(<ZoomControl levels={unordered} value={100} />);
+    expect(slider()).toHaveAttribute('max', '2');
+    expect(slider()).toHaveValue('1');
     expect(findNearestZoomLevelIndex([], 100)).toBe(0);
     expect(findNextZoomLevel([], 100, 1)).toBeUndefined();
   });
@@ -151,16 +155,17 @@ describe('ZoomControl', () => {
     }
   });
 
-  it('UIC-ZOOM-CONTROL-1.4 is a native range over the level indices that requests the chosen level', () => {
+  it('UIC-ZOOM-CONTROL-1.4 is a native range over the levels and the current value that requests the chosen level', () => {
     const onChange = vi.fn();
     render(<ZoomControl levels={levels} value={137.5} onChange={onChange} />);
     const range = slider();
     expect(range.tagName).toBe('INPUT');
     expect(range).toHaveAttribute('type', 'range');
     expect(range).toHaveAttribute('min', '0');
-    expect(range).toHaveAttribute('max', '4');
+    // 137.5 is a stop of its own between 125 and 150.
+    expect(range).toHaveAttribute('max', '5');
     expect(range).toHaveAttribute('step', '1');
-    expect(range).toHaveValue('3');
+    expect(range).toHaveValue('4');
     expect(range).toHaveAttribute('aria-valuetext', '137.5%');
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot drag or step a native range input
     fireEvent.change(range, { target: { value: '0' } });
@@ -174,10 +179,14 @@ describe('ZoomControl', () => {
     const onChange = vi.fn();
     const { rerender } = render(<ZoomControl value={110} onChange={onChange} />);
     const range = slider();
-    expect(range).toHaveValue('3');
+    // 25, 50, 75, 100, then 110 as its own stop.
+    expect(range).toHaveValue('4');
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
-    fireEvent.change(range, { target: { value: '2' } });
+    fireEvent.change(range, { target: { value: '3' } });
     expect(onChange).toHaveBeenLastCalledWith(100);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '5' } });
+    expect(onChange).toHaveBeenLastCalledWith(125);
     rerender(<ZoomControl value={90} onChange={onChange} />);
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
     fireEvent.change(range, { target: { value: '4' } });
@@ -185,6 +194,37 @@ describe('ZoomControl', () => {
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot drag a native range input
     fireEvent.change(range, { target: { value: '0' } });
     expect(onChange).toHaveBeenLastCalledWith(25);
+  });
+
+  it('UIC-ZOOM-CONTROL-1.4 reaches an endpoint level one step from a value nearest it', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ZoomControl levels={[100, 125, 150]} defaultValue={110} onChange={onChange} />,
+    );
+    const range = slider();
+    // 110 rounds to 100, the first level, yet sits one stop above it.
+    expect(range).toHaveAttribute('max', '3');
+    expect(range).toHaveValue('1');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '0' } });
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    rerender(<ZoomControl levels={[100, 125, 150]} value={140} onChange={onChange} />);
+    expect(range).toHaveValue('2');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '3' } });
+    expect(onChange).toHaveBeenLastCalledWith(150);
+    // Past the levels, and with a single level, the value is the outer stop.
+    rerender(<ZoomControl levels={[100, 125, 150]} value={180} onChange={onChange} />);
+    expect(range).toHaveValue('3');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '2' } });
+    expect(onChange).toHaveBeenLastCalledWith(150);
+    rerender(<ZoomControl levels={[100]} value={80} onChange={onChange} />);
+    expect(range).toHaveAttribute('max', '1');
+    expect(range).toHaveValue('0');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '1' } });
+    expect(onChange).toHaveBeenLastCalledWith(100);
   });
 
   it('UIC-ZOOM-CONTROL-1.5 shows the percentage without rounding and keeps the value node mounted', () => {

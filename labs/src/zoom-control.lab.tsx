@@ -57,6 +57,27 @@ function Requested() {
   );
 }
 
+/** A fit-to-width zoom between levels, one stop from the first or the last level. */
+function NearEndpoint({ start, name }: { start: number; name: string }) {
+  const [zoom, setZoom] = useState(start);
+  return (
+    <div data-lab-case={name}>
+      <ZoomControl
+        aria-label={`Zoom from ${start}%`}
+        levels={[100, 125, 150]}
+        value={zoom}
+        onChange={setZoom}
+      />
+      <p>
+        Applied zoom: <output data-lab-output="zoom">{zoom}</output>{' '}
+        <Button size="sm" onPress={() => setZoom(start)}>
+          Back to {start}%
+        </Button>
+      </p>
+    </div>
+  );
+}
+
 function Presets() {
   const [zoom, setZoom] = useState(100);
   const [last, setLast] = useState('none');
@@ -152,6 +173,13 @@ mountLab(
       description="A controlled control: unordered levels, duplicates and non-finite entries share one normalised ladder. The buttons, slider (arrow keys, Home, End) and reset request levels that the lab applies."
     >
       <Requested />
+    </LabSection>
+    <LabSection
+      title="Between levels near an endpoint"
+      description="Levels 100, 125 and 150, starting between them at 110% and 140%. The slider's arrow keys step to 100% and 150% just as the buttons do."
+    >
+      <NearEndpoint start={110} name="near-first" />
+      <NearEndpoint start={140} name="near-last" />
     </LabSection>
     <LabSection
       title="Preset menu"
