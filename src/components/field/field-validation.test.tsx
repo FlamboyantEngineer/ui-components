@@ -134,6 +134,50 @@ describe('field validation', () => {
     expect(result.current.validation.status).toBe('valid');
   });
 
+  it('UIC-FIELD-3.9 keeps each name its own errors when the field is renamed', () => {
+    const errors = { first: 'First server error.', second: 'Second server error.' };
+    const scope: FieldScope = { validationErrors: errors };
+    const { result, rerender } = renderField<string>({ name: 'first', defaultValue: 'a' }, scope);
+    expect(result.current.validation.message).toBe('First server error.');
+    act(() => result.current.setValue('b'));
+    expect(result.current.validation.status).toBe('valid');
+    rerender({ name: 'second', defaultValue: 'a' });
+    expect(result.current.validation.message).toBe('Second server error.');
+    rerender({ name: undefined, defaultValue: 'a' });
+    expect(result.current.validation.status).toBe('valid');
+    rerender({ name: 'second', defaultValue: 'a' });
+    expect(result.current.validation.message).toBe('Second server error.');
+    act(() => result.current.setValue('c'));
+    expect(result.current.validation.status).toBe('valid');
+    rerender({ name: 'first', defaultValue: 'a' });
+    expect(result.current.validation.status).toBe('valid');
+  });
+
+  it.each([
+    ['an empty map', {}],
+    ['a null-prototype map', Object.create(null) as Record<string, string>],
+    ['a parsed map', JSON.parse('{"other":"Elsewhere."}') as Record<string, string>],
+  ])('UIC-FIELD-3.9 reads only own error entries from %s', (_, errors) => {
+    for (const name of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
+      const { result } = renderField<string>({ name }, { validationErrors: errors });
+      expect(result.current.validation.status).toBe('valid');
+    }
+  });
+
+  it('UIC-FIELD-3.9 shows own entries named like inherited members', () => {
+    const errors = JSON.parse(
+      '{"constructor":"Reserved.","toString":["Taken."],"__proto__":"Odd."}',
+    ) as Record<string, string | string[]>;
+    for (const [name, message] of [
+      ['constructor', 'Reserved.'],
+      ['toString', 'Taken.'],
+      ['__proto__', 'Odd.'],
+    ] as const) {
+      const { result } = renderField<string>({ name }, { validationErrors: errors });
+      expect(result.current.validation.message).toBe(message);
+    }
+  });
+
   it('UIC-FIELD-10.2 disables a field inside a disabled scope', () => {
     const { result } = renderField<string>({ defaultValue: 'Fig' }, { isDisabled: true });
     expect(result.current.isDisabled).toBe(true);
