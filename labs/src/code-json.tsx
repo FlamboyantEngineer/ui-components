@@ -261,5 +261,17 @@ export const jsonExamples = (
     >
       <LongText />
     </LabSection>
+    <LabSection
+      title="JSON: An excerpt"
+      description="Lines 120 to 123 of a longer file. The parse error and the caller's warning both name lines as the gutter numbers them; press F8 to reach the error."
+    >
+      <Sample
+        label="Excerpt"
+        firstLineNumber={120}
+        defaultValue={'{\n  "fruit": "Fig",\n  "count": ,\n}'}
+        diagnostics={[{ message: 'Fig is out of season.', line: 121, severity: 'warning' }]}
+        data-lab-editor="excerpt"
+      />
+    </LabSection>
   </div>
 );
