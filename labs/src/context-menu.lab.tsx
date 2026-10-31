@@ -119,6 +119,36 @@ function Nested() {
   );
 }
 
+/** A target whose badge handles its own secondary click and long touch. */
+function Handled() {
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <ContextMenuTrigger>
+        <div tabIndex={0} role="group" aria-label="Report row" style={{ ...area, width: 320 }}>
+          Report.pdf{' '}
+          <span
+            data-lab-badge=""
+            onContextMenu={(event) => {
+              event.preventDefault();
+              setLast('badge handled it');
+            }}
+            onPointerDown={(event) => {
+              if (event.pointerType === 'touch') event.preventDefault();
+            }}
+          >
+            [Locked]
+          </span>
+        </div>
+        <Menu aria-label="Row" onAction={(key: Key) => setLast(`row ${String(key)}`)}>
+          <MenuItem id="open">Open row</MenuItem>
+        </Menu>
+      </ContextMenuTrigger>
+      <Feedback name="Handled action">{last}</Feedback>
+    </>
+  );
+}
+
 const fruitEntries: MenuEntry[] = [
   { id: 'apple', label: 'Apple' },
   { id: 'pear', label: 'Pear' },
@@ -195,6 +225,12 @@ mountLab(
     </LabSection>
     <LabSection title="Nested targets" description="The innermost target opens its own menu only.">
       <Nested />
+    </LabSection>
+    <LabSection
+      title="Requests handled inside the target"
+      description="The Locked badge handles its own secondary click and long touch and cancels them, so the row's menu stays closed there; anywhere else on the row opens it."
+    >
+      <Handled />
     </LabSection>
     <LabSection
       title="Controller"

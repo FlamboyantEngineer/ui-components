@@ -206,4 +206,17 @@ test.describe('Context Menu lab', () => {
     await expect(popovers(page)).toHaveCount(1);
     await lab.expectAccessible('.ui-menu-popover');
   });
+
+  test('UIC-CONTEXT-MENU-1.7 leaves a secondary click the badge cancelled to the badge', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('context-menu');
+    const row = page.getByRole('group', { name: 'Report row' });
+    await row.locator('[data-lab-badge]').click({ button: 'right' });
+    await expect(page.locator('[data-lab-output="Handled action"]')).toHaveText('badge handled it');
+    await expect(page.getByRole('menu', { name: 'Row' })).toHaveCount(0);
+    await row.click({ button: 'right', position: { x: 10, y: 10 } });
+    await expect(page.getByRole('menu', { name: 'Row' })).toBeVisible();
+  });
 });

@@ -45,6 +45,12 @@ interface PendingPress {
   y: number;
 }
 
+/**
+ * Touch presses a nested target already took for its own long press, so an enclosing target leaves
+ * them alone, as a secondary click stops at the innermost target.
+ */
+const claimedPresses = new WeakSet<Event>();
+
 /** Input types whose text the reader edits, where the browser's own menu offers paste and spelling. */
 const textInputTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number']);
 
@@ -89,7 +95,10 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
       own.onPointerDown?.(event);
       cancel();
       if (isDisabled || event.pointerType !== 'touch') return;
+      // A handler that prevented the press's default, or a nested target that took it, keeps it.
+      if (event.defaultPrevented || claimedPresses.has(event.nativeEvent)) return;
       if (isTextInside(event.target, event.currentTarget)) return;
+      claimedPresses.add(event.nativeEvent);
       const { clientX: x, clientY: y, pointerId, currentTarget } = event;
       const timer = setTimeout(() => {
         pending.current = null;
@@ -118,7 +127,8 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
  * The handlers and ref that make an element a context menu target: a secondary click opens the
  * menu at the pointer, the Context Menu key or Shift+F10 below the element, a long touch at the
  * touch point. A secondary click or long touch on a text control inside the target keeps the
- * browser's own menu, which edits the text.
+ * browser's own menu, which edits the text. A request whose default the target's own handler, or
+ * one inside it, prevented opens nothing, whether a secondary click, a long touch or a key.
  */
 export function useContextMenuTarget(options: ContextMenuTargetOptions): ContextMenuTargetProps {
   const { controller, isDisabled, own, targetRef } = options;
@@ -132,6 +142,11 @@ export function useContextMenuTarget(options: ContextMenuTargetOptions): Context
     onContextMenu(event) {
       own.onContextMenu?.(event);
       if (isDisabled) return;
+      // The target or something inside it handled the request and kept the browser's menu away.
+      if (event.defaultPrevented) {
+        cancel();
+        return;
+      }
       const isSuppressed = Date.now() < suppressUntil.current;
       if (!isSuppressed && isTextInside(event.target, event.currentTarget)) return;
       event.preventDefault();
