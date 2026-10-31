@@ -60,9 +60,11 @@ function TreeSelectDialog<T extends TreeItemData>({
   // the popover: Down from the search field moves to the tree's first row, and Escape in the tree
   // closes the popover instead of clearing a multiple choice.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
+    // A key an input method composition owns (a Down through its candidates, an Escape that drops
+    // them) is left to it.
+    if (isComposingKey(event.nativeEvent)) return;
     const isInSearch = (event.target as Element).closest(`.${hooks.slotClass('search')}`) !== null;
-    // A composing Down steps through the input method's candidates.
-    if (event.key === 'ArrowDown' && isInSearch && !isComposingKey(event.nativeEvent)) {
+    if (event.key === 'ArrowDown' && isInSearch) {
       event.preventDefault();
       treeRef.current?.querySelector<HTMLElement>('[role="row"]')?.focus();
     } else if (event.key === 'Escape' && !isInSearch) {
@@ -108,7 +110,8 @@ function TreeSelectDialog<T extends TreeItemData>({
         onSelectionChange={choose}
         onAction={isMultiple ? undefined : (key) => onChoose([key])}
         onItemKeyDown={(item, event) => {
-          if (isMultiple || event.key !== 'Enter') return false;
+          if (isMultiple || event.key !== 'Enter' || isComposingKey(event.nativeEvent))
+            return false;
           onChoose([item.id]);
           return true;
         }}

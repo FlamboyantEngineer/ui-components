@@ -20,7 +20,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `src/componen
 
 ### UIC-SELECT-FIELD-1.3 - Validation and states
 
-The field base's validation shall apply (a required field without a value is invalid, then `validate`, `isPending`), and an invalid select marks its React Aria `Select` invalid (`data-invalid`). A disabled select disables its trigger and keeps its list closed, including an explicitly open list. A read-only select keeps its trigger focusable and its value visible, never opens its list and offers no chip removal.
+The field base's validation shall apply (a required field without a value is invalid, then `validate`, `isPending`), and an invalid select marks its React Aria `Select` invalid (`data-invalid`). A disabled select disables its trigger and keeps its list closed, including an explicitly open list. An open list whose select turns disabled or read-only closes through the ordinary close (`onOpenChange(false)`, the filter cleared), so it stays closed once the select unlocks; in tree mode the popover does the same. A read-only select keeps its trigger focusable and its value visible, never opens its list and offers no chip removal.
 
 Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-chips.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
@@ -108,7 +108,7 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 ### UIC-SELECT-FIELD-3.6 - Typing on the closed trigger
 
-A printable key (other than Space) pressed on the closed trigger of a filterable, editable select shall open the list with the filter holding that key, without changing the value. A select that is not filterable keeps React Aria's type-to-select on the trigger.
+A printable key (other than Space) pressed on the closed trigger of a filterable, editable select shall open the list with the filter holding that key, without changing the value. A key an input method composition owns (`isComposing`, or key code 229) is left to it. A select that is not filterable keeps React Aria's type-to-select on the trigger.
 
 Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-trigger.tsx`
 Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
@@ -154,9 +154,9 @@ Verification: `src/components/select-field/select-search.test.tsx`
 
 ### UIC-SELECT-FIELD-5.3 - Remembered options
 
-Every option a search returns shall stay known while the field is mounted, so a chosen searched option keeps its label and icon in the trigger and on its chip after later results no longer include it.
+Every option a search returns shall stay known while the field is mounted, so a chosen searched option keeps its label and icon in the trigger and on its chip after later results no longer include it. The latest version of an option a search returned wins over earlier results and over `options` given as seeds, so its row, the trigger and its chip show the same label, icon, description and disabled state, and choosing a result never changes how it reads.
 
-Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-control.tsx`
+Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-model.ts`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-search.test.tsx`
 
 ### UIC-SELECT-FIELD-5.4 - Paged results
@@ -209,7 +209,7 @@ Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select
 
 ### UIC-SELECT-FIELD-8.2 - Maximum values
 
-`maxValues` shall cap a multiple select's value: once it holds that many values, every option it has not chosen is disabled (`aria-disabled`, passed over by the arrow keys and refusing a press) and the restore buttons of removed committed values are disabled, until a value is removed. A single select ignores it.
+`maxValues` shall cap a multiple select's value, by the count of its values whatever options are known: no pick or restore makes it hold more, and once it holds that many values, every option it has not chosen is disabled (`aria-disabled`, passed over by the arrow keys and refusing a press) and the restore buttons of removed committed values are disabled, until a value is removed. A single select ignores it.
 
 Implementation: `src/components/select-field/select-model.ts`, `src/components/select-field/select-option.tsx`, `src/components/select-field/select-chips.tsx`
 Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-field.spec.ts`
@@ -259,7 +259,7 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`
 
 ### UIC-SELECT-FIELD-10.1 - Search
 
-Text in the search field shall filter the tree as `Tree`'s `filterText` does: the rows whose text value holds every word show with their ancestors, expanded, and their descendants. Down in the search field moves focus to the tree's first row, except a Down that belongs to an input method composition (`isComposing`, or key code 229), which steps through its candidates. A tree with no row to show reads the provider's `noResults` string while it filters, else `noItems`.
+Text in the search field shall filter the tree as `Tree`'s `filterText` does: the rows whose text value holds every word show with their ancestors, expanded, and their descendants. Down in the search field moves focus to the tree's first row, except a Down that belongs to an input method composition (`isComposing`, or key code 229), which steps through its candidates; Escape and Enter that a composition owns are left to it too, so they neither close the popover nor choose a row. A tree with no row to show reads the provider's `noResults` string while it filters, else `noItems`.
 
 Implementation: `src/components/select-field/tree-select-popover.tsx`
 Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
