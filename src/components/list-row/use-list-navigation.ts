@@ -237,10 +237,11 @@ function useRowRegistry(state: ListState): RowRegistry {
       activate: (id: string) => {
         focusedId.current = id;
         hasEntered.current = true;
-        store.setActiveId(id);
+        // A disabled row's trailing control takes focus without taking the tab stop.
+        if (rows.nodes.current.has(id)) store.setActiveId(id);
       },
     }),
-    [register, store, focusedId, hasEntered],
+    [register, store, rows, focusedId, hasEntered],
   );
 }
 

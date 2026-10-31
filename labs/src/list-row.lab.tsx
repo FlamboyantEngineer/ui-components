@@ -168,7 +168,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Keyboard navigation"
-      description="One tab stop: arrows, Home and End move between rows and skip the disabled one. ArrowDown in the field enters the list; ArrowUp on the first row returns to it. Tab reaches each row's trailing button."
+      description="One tab stop: arrows, Home and End move between rows and skip the disabled one. ArrowDown in the field enters the list; ArrowUp on the first row returns to it. Tab reaches each row's trailing button; the disabled row's button leaves the tab stop on the last enabled row."
     >
       <SearchResults />
     </LabSection>
