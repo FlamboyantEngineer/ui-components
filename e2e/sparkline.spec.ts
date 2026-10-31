@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Sparkline lab', () => {
@@ -33,18 +33,18 @@ test.describe('Sparkline lab', () => {
     await lab.open('sparkline');
     const cells = page.locator('table[data-lab-matrix="variant markers"] td[data-lab-cell]');
     expect(await cells.count()).toBe(2 * 3);
-    const area = page.locator('[data-lab-cell="variant=area markers=min max last"]');
+    const area = matrixCell(page, 'variant=area markers=min max last');
     const image = area.getByRole('img', { name: 'Daily sign-ups' });
     await expect(image).toHaveAttribute('data-variant', 'area');
     const box = await image.boundingBox();
     expect([box?.width, box?.height]).toEqual([80, 24]);
     await expect(image.locator('.ui-sparkline__area')).toHaveCount(1);
     await expect(image.locator('.ui-sparkline__marker')).toHaveCount(3);
-    const line = page.locator('[data-lab-cell="variant=line markers=none"] .ui-sparkline__line');
+    const line = matrixCell(page, 'variant=line markers=none').locator('.ui-sparkline__line');
     expect(await line.evaluate((node) => getComputedStyle(node).fill)).toBe('none');
     expect(await line.evaluate((node) => getComputedStyle(node).strokeWidth)).toBe('1.5px');
     await expect(
-      page.locator('[data-lab-cell="variant=line markers=none"] .ui-sparkline__marker'),
+      matrixCell(page, 'variant=line markers=none').locator('.ui-sparkline__marker'),
     ).toHaveCount(0);
     await lab.expectAccessible();
   });
@@ -54,15 +54,15 @@ test.describe('Sparkline lab', () => {
     lab,
   }) => {
     await lab.open('sparkline');
-    const gaps = page.locator('[data-lab-cell="shape=gaps"] .ui-sparkline__line');
+    const gaps = matrixCell(page, 'shape=gaps').locator('.ui-sparkline__line');
     expect((await gaps.getAttribute('d'))?.match(/M/g)).toHaveLength(2);
-    await expect(page.locator('[data-lab-cell="shape=gaps"] .ui-sparkline__dot')).toHaveCount(1);
-    const empty = page.locator('[data-lab-cell="shape=empty"]').getByRole('img');
+    await expect(matrixCell(page, 'shape=gaps').locator('.ui-sparkline__dot')).toHaveCount(1);
+    const empty = matrixCell(page, 'shape=empty').getByRole('img');
     await expect(empty).toHaveAttribute('data-empty', 'true');
     await expect(empty).toHaveAccessibleDescription('No data');
-    await expect(
-      page.locator('[data-lab-cell="shape=rising"]').getByRole('img'),
-    ).toHaveAccessibleDescription('Low 2, high 11, last 11');
+    await expect(matrixCell(page, 'shape=rising').getByRole('img')).toHaveAccessibleDescription(
+      'Low 2, high 11, last 11',
+    );
     await expect(page.locator('[data-lab-demo="percent"]')).toHaveAccessibleDescription(
       'Low 2.1%, high 4.1%, last 4.1%',
     );
@@ -95,7 +95,7 @@ test.describe('Sparkline lab', () => {
   }) => {
     await lab.open('sparkline');
     const cell = (shape: string, variant: string) =>
-      page.locator(`[data-lab-cell="shape=${shape} variant=${variant}"]`).getByRole('img');
+      matrixCell(page, `shape=${shape} variant=${variant}`).getByRole('img');
     /** Each visible dot's centre, in the drawing's own coordinates. */
     const dotCentres = (image: ReturnType<typeof cell>) =>
       image.locator('.ui-sparkline__dot').evaluateAll((dots) =>

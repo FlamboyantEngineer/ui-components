@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Disclosure lab', () => {
   test('UIC-DISCLOSURE-1.1 UIC-DISCLOSURE-1.4 UIC-DISCLOSURE-4.1 draws titled triggers with the indicator at either end', async ({
@@ -9,7 +9,7 @@ test.describe('Disclosure lab', () => {
     const cells = page.locator('table[data-lab-matrix="indicator state"] td[data-lab-cell]');
     expect(await cells.count()).toBe(2 * 3);
     for (const indicator of ['start', 'end']) {
-      const cell = page.locator(`[data-lab-cell="indicator=${indicator} state=collapsed"]`);
+      const cell = matrixCell(page, `indicator=${indicator} state=collapsed`);
       const heading = cell.getByRole('heading', { level: 3, name: 'Opening hours' });
       const trigger = heading.getByRole('button', { name: 'Opening hours' });
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -25,7 +25,7 @@ test.describe('Disclosure lab', () => {
         expect((triggerBox?.x ?? 0) + (triggerBox?.width ?? 0) - (glyph?.x ?? 0)).toBeLessThan(30);
       }
     }
-    const expanded = page.locator('[data-lab-cell="indicator=end state=expanded"]');
+    const expanded = matrixCell(page, 'indicator=end state=expanded');
     await expect(expanded.getByRole('group', { name: 'Opening hours' })).toBeVisible();
     await expect(expanded.locator('.ui-disclosure__indicator')).toHaveAttribute(
       'data-glyph',
@@ -39,7 +39,7 @@ test.describe('Disclosure lab', () => {
     lab,
   }) => {
     await lab.open('disclosure');
-    const cell = page.locator('[data-lab-cell="indicator=start state=collapsed"]');
+    const cell = matrixCell(page, 'indicator=start state=collapsed');
     const trigger = cell.getByRole('button', { name: 'Opening hours' });
     const panel = cell.locator('.ui-disclosure__panel');
     await expect(panel).toHaveAttribute('hidden', 'until-found');
@@ -92,7 +92,7 @@ test.describe('Disclosure lab', () => {
     lab,
   }) => {
     await lab.open('disclosure');
-    const cell = page.locator('[data-lab-cell="indicator=start state=disabled"]');
+    const cell = matrixCell(page, 'indicator=start state=disabled');
     const trigger = cell.getByRole('button', { name: 'Opening hours' });
     await expect(trigger).toBeDisabled();
     await expect(cell.locator('.ui-disclosure')).toHaveAttribute('data-disabled', 'true');

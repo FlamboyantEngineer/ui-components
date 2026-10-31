@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 function cell(page: Page, state: string, size: string): Locator {
-  return page.locator(`[data-lab-cell="state=${state} size=${size}"]`);
+  return matrixCell(page, `state=${state} size=${size}`);
 }
 
 function output(page: Page, name: string): Locator {
@@ -91,7 +91,7 @@ test.describe('Search Field lab', () => {
     const label = await labelled.locator('.ui-search-field__label').boundingBox();
     const group = await labelled.locator('.ui-search-field__group').boundingBox();
     expect((label?.y ?? 0) + (label?.height ?? 0)).toBeLessThanOrEqual(group?.y ?? 0);
-    expect(group?.height).toBe(28);
+    expect(group?.height).toBe(await controlHeight(page, 'md'));
     await expect(input).toHaveAccessibleDescription('Type at least three letters.');
     await input.fill('Os');
     const message = labelled.locator('.ui-search-field__message');

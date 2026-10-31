@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 function cell(page: Page, stepper: string, state: string, layout = 'label-control'): Locator {
-  return page.locator(`[data-lab-cell="stepper=${stepper} state=${state} layout=${layout}"]`);
+  return matrixCell(page, `stepper=${stepper} state=${state} layout=${layout}`);
 }
 
 function field(page: Page, name: string): Locator {
@@ -25,7 +25,7 @@ test.describe('Number Field lab', () => {
     const decrement = await resting.locator('.ui-number-field__decrement').boundingBox();
     const increment = await resting.locator('.ui-number-field__increment').boundingBox();
     const box = await input.boundingBox();
-    expect(group?.height).toBe(28);
+    expect(group?.height).toBe(await controlHeight(page, 'md'));
     expect((decrement?.x ?? 0) + (decrement?.width ?? 0)).toBeLessThanOrEqual(box?.x ?? 0);
     expect(increment?.x ?? 0).toBeGreaterThanOrEqual((box?.x ?? 0) + (box?.width ?? 0));
 

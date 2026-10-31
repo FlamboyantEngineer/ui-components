@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test('UIC-ATTRIBUTION-1.4 aligns card names with the surrounding sentence', async ({
   page,
@@ -6,9 +6,8 @@ test('UIC-ATTRIBUTION-1.4 aligns card names with the surrounding sentence', asyn
 }) => {
   await lab.open('attribution');
   for (const template of ['default', 'edited', 'person first']) {
-    const difference = await page
-      .locator(`[data-lab-cell="template=${template} person=card"]`)
-      .evaluate((cell) => {
+    const difference = await matrixCell(page, `template=${template} person=card`).evaluate(
+      (cell) => {
         const bottom = (selector: string) => {
           const node = cell.querySelector(selector);
           if (!node) throw new Error(`Missing ${selector}`);
@@ -17,7 +16,8 @@ test('UIC-ATTRIBUTION-1.4 aligns card names with the surrounding sentence', asyn
           return range.getBoundingClientRect().bottom;
         };
         return Math.abs(bottom('.ui-attribution__name') - bottom('.ui-attribution__time'));
-      });
+      },
+    );
     expect(difference).toBeLessThanOrEqual(0.5);
   }
 });
@@ -27,7 +27,7 @@ test('UIC-PROSE-TABLE-2.5 pins the header from the first pixel of scrolling', as
   lab,
 }) => {
   await lab.open('prose-table');
-  const viewport = page.locator('[data-lab-cell="header=sticky"] .ui-scroll-region__viewport');
+  const viewport = matrixCell(page, 'header=sticky').locator('.ui-scroll-region__viewport');
   await viewport.scrollIntoViewIfNeeded();
   const header = viewport.locator('thead th').first();
   const initial = (await header.boundingBox())?.y;
@@ -69,9 +69,9 @@ test('UIC-POPOVER-1.5 demonstrates start placement with and without an arrow', a
 }) => {
   await lab.open('popover');
   for (const arrow of ['no arrow', 'arrow']) {
-    const trigger = page
-      .locator(`[data-lab-cell="placement=start arrow=${arrow}"]`)
-      .getByRole('button', { name: 'Open start' });
+    const trigger = matrixCell(page, `placement=start arrow=${arrow}`).getByRole('button', {
+      name: 'Open start',
+    });
     await trigger.click();
     const panel = page.locator(`[data-lab-popover="start-${arrow}"]`);
     await expect(panel).toHaveAttribute('data-placement', 'left');

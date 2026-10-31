@@ -1,11 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const cell = (page: Page, state: string, part = 'text only') =>
-  page.locator(`[data-lab-cell="state=${state} part=${part}"]`);
+  matrixCell(page, `state=${state} part=${part}`);
 
 const richCell = (page: Page, content: string, status: string) =>
-  page.locator(`[data-lab-cell="content=${content} status=${status}"]`);
+  matrixCell(page, `content=${content} status=${status}`);
 
 const composer = (page: Page, name: string) => page.locator(`[data-lab-composer="${name}"]`);
 

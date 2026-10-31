@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -52,7 +52,7 @@ test.describe('Split View lab', () => {
       'aria-controls',
       'horizontal-30-first horizontal-30-second',
     );
-    const split = page.locator('[data-lab-cell="orientation=horizontal start=30"] .ui-split-view');
+    const split = matrixCell(page, 'orientation=horizontal start=30').locator('.ui-split-view');
     const first = page.locator('#horizontal-30-first');
     expect(Math.round(((await box(first)).width / (await innerWidth(split))) * 100)).toBe(30);
     expect((await box(separator)).width).toBe(10);
@@ -65,7 +65,7 @@ test.describe('Split View lab', () => {
   test('UIC-SPLIT-VIEW-3.2 resizes by keyboard within the bounds', async ({ page, lab }) => {
     await lab.open('split-view');
     const separator = page.getByRole('separator', { name: 'Resize horizontal split from 30%' });
-    const split = page.locator('[data-lab-cell="orientation=horizontal start=30"] .ui-split-view');
+    const split = matrixCell(page, 'orientation=horizontal start=30').locator('.ui-split-view');
     await separator.focus();
     await page.keyboard.press('ArrowRight');
     await expect(separator).toHaveAttribute('aria-valuenow', '35');
@@ -93,7 +93,7 @@ test.describe('Split View lab', () => {
   }) => {
     await lab.open('split-view');
     const separator = page.getByRole('separator', { name: 'Resize horizontal split from 30%' });
-    const split = page.locator('[data-lab-cell="orientation=horizontal start=30"] .ui-split-view');
+    const split = matrixCell(page, 'orientation=horizontal start=30').locator('.ui-split-view');
     await separator.scrollIntoViewIfNeeded();
     const handle = await box(separator);
     const width = await innerWidth(split);
@@ -185,7 +185,7 @@ test.describe('Split View lab', () => {
     lab,
   }) => {
     await lab.open('split-view');
-    const cell = page.locator('[data-lab-cell="orientation=horizontal"]');
+    const cell = matrixCell(page, 'orientation=horizontal');
     const split = cell.locator('.ui-split-view');
     await expect(split.getByRole('separator')).toHaveCount(2);
     const width = await innerWidth(split);

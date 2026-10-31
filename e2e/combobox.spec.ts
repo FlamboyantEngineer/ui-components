@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function section(page: Page, title: string): Locator {
@@ -7,7 +7,7 @@ function section(page: Page, title: string): Locator {
 }
 
 function cell(page: Page, variant: string, state: string, size: string): Locator {
-  return page.locator(`[data-lab-cell="variant=${variant} state=${state} size=${size}"]`);
+  return matrixCell(page, `variant=${variant} state=${state} size=${size}`);
 }
 
 test.describe('Combobox lab', () => {
@@ -257,7 +257,7 @@ test.describe('Combobox lab', () => {
 
   test('UIC-COMBOBOX-3.4 keeps the caret of an edit inside the text', async ({ page, lab }) => {
     await lab.open('combobox');
-    const input = page.locator('[data-lab-cell="aid=inline completion"]').getByRole('combobox');
+    const input = matrixCell(page, 'aid=inline completion').getByRole('combobox');
     await input.fill('cery');
     await input.press('End');
     for (let step = 0; step < 3; step += 1) await input.press('ArrowLeft');
@@ -277,8 +277,7 @@ test.describe('Combobox lab', () => {
     lab,
   }) => {
     await lab.open('combobox');
-    const aid = (name: string) =>
-      page.locator(`[data-lab-cell="aid=${name}"]`).getByRole('combobox');
+    const aid = (name: string) => matrixCell(page, `aid=${name}`).getByRole('combobox');
 
     // Retried from an empty input: on a loaded runner the first keys can land before the list opens.
     await expect(async () => {

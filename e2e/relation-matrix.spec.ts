@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const cell = (matrix: Locator, row: number, column: number) =>
@@ -11,9 +11,9 @@ test.describe('Relation Matrix lab', () => {
     lab,
   }) => {
     await lab.open('relation-matrix');
-    const matrix = page
-      .locator('[data-lab-cell="cells=read only labels=rotated"]')
-      .getByRole('grid', { name: 'Coverage, rotated, read only' });
+    const matrix = matrixCell(page, 'cells=read only labels=rotated').getByRole('grid', {
+      name: 'Coverage, rotated, read only',
+    });
     await expect(matrix.getByRole('columnheader')).toHaveCount(5);
     await expect(matrix.getByRole('rowheader')).toHaveCount(4);
     await expect(matrix.getByRole('rowheader').first()).toContainText('1 relation');
@@ -25,9 +25,7 @@ test.describe('Relation Matrix lab', () => {
     await expect(cell(matrix, 0, 0)).toHaveText('Verifies');
     await expect(cell(matrix, 2, 2)).toHaveAttribute('data-tone', 'danger');
     await expect(matrix).toHaveAttribute('data-column-labels', 'rotated');
-    const truncated = page
-      .locator('[data-lab-cell="cells=read only labels=truncated"]')
-      .getByRole('grid');
+    const truncated = matrixCell(page, 'cells=read only labels=truncated').getByRole('grid');
     await expect(truncated).toHaveAttribute('data-column-labels', 'truncated');
     const header = truncated.getByRole('columnheader').nth(1);
     await header.focus();

@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Segmented Choice lab', () => {
   test('UIC-SEGMENTED-CHOICE-1.3 draws three heights and shares or hugs the width', async ({
@@ -16,13 +16,13 @@ test.describe('Segmented Choice lab', () => {
       );
       expect((await frame.boundingBox())?.height).toBe(height);
     }
-    const equal = page.locator('[data-lab-cell="sizing=equal size=md"]');
+    const equal = matrixCell(page, 'sizing=equal size=md');
     const widths = await equal
       .locator('.ui-segmented-choice__segment')
       .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
     expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
     expect((await equal.locator('.ui-segmented-choice').boundingBox())?.width).toBe(280);
-    const content = page.locator('[data-lab-cell="sizing=content size=md"] .ui-segmented-choice');
+    const content = matrixCell(page, 'sizing=content size=md').locator('.ui-segmented-choice');
     expect((await content.boundingBox())?.width).toBeLessThan(280);
 
     const day = content.getByRole('radio', { name: 'Day' });

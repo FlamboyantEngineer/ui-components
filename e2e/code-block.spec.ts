@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Code Block lab', () => {
   test('UIC-CODE-BLOCK-1.1 UIC-CODE-BLOCK-1.2 UIC-CODE-BLOCK-1.4 draws every variant with its header and highlighted code', async ({
@@ -54,7 +54,7 @@ test.describe('Code Block lab', () => {
     await expect(async () => {
       expect(await region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
     }).toPass();
-    const short = page.locator('[data-lab-cell="variant=code content=short actions=copy"] pre');
+    const short = matrixCell(page, 'variant=code content=short actions=copy').locator('pre');
     await expect(short).not.toHaveAttribute('tabindex');
     await lab.expectAccessible('[data-lab-demo="long"]');
   });

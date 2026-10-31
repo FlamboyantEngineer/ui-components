@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function field(page: Page, name: string): Locator {
@@ -42,7 +42,7 @@ test.describe('Relative Date Field lab', () => {
     lab,
   }) => {
     await lab.open('relative-date-field');
-    const dirty = page.locator('[data-lab-cell="state=dirty layout=label-control"] .ui-field');
+    const dirty = matrixCell(page, 'state=dirty layout=label-control').locator('.ui-field');
     await expect(dirty).toHaveAttribute('data-dirty', 'true');
     await dirty.getByRole('button', { name: /Apr 27, 2026/ }).focus();
     await page.keyboard.press('Tab');

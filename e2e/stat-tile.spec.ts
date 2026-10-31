@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Stat Tile lab', () => {
   test('UIC-STAT-TILE-1.1 UIC-STAT-TILE-1.3 UIC-STAT-TILE-1.4 UIC-STAT-TILE-2.1 judges each trend against its goal', async ({
@@ -8,7 +8,7 @@ test.describe('Stat Tile lab', () => {
     await lab.open('stat-tile');
     const cells = page.locator('table[data-lab-matrix="goal delta"] td[data-lab-cell]');
     expect(await cells.count()).toBe(3 * 3);
-    const tile = (cell: string) => page.locator(`[data-lab-cell="${cell}"]`).getByRole('region');
+    const tile = (cell: string) => matrixCell(page, cell).getByRole('region');
     await expect(tile('goal=increase delta=rise').locator('.ui-stat-tile__value')).toHaveText(
       '1,284',
     );
@@ -38,7 +38,7 @@ test.describe('Stat Tile lab', () => {
 
   test('UIC-STAT-TILE-1.2 UIC-STAT-TILE-1.5 formats values and loads', async ({ page, lab }) => {
     await lab.open('stat-tile');
-    const cell = (value: string) => page.locator(`[data-lab-cell="value=${value}"]`);
+    const cell = (value: string) => matrixCell(page, `value=${value}`);
     await expect(cell('percent').locator('.ui-stat-tile__value')).toHaveText('99.87%');
     await expect(cell('percent').locator('.ui-stat-tile__delta')).toHaveText('-0.04%');
     await expect(cell('currency').locator('.ui-stat-tile__value')).toHaveText('€48K');

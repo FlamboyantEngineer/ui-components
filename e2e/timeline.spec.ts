@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Timeline lab', () => {
@@ -9,7 +9,7 @@ test.describe('Timeline lab', () => {
     await lab.open('timeline');
     const cells = page.locator('table[data-lab-matrix="scale mode"] td[data-lab-cell]');
     expect(await cells.count()).toBe(2 * 4);
-    const day = page.locator('[data-lab-cell="scale=day mode=fixed"]');
+    const day = matrixCell(page, 'scale=day mode=fixed');
     await expect(day.locator('.ui-timeline')).toHaveAttribute('data-scale', 'day');
     const shopping = await day.getByRole('button', { name: 'Shopping' }).boundingBox();
     const stew = await day.getByRole('button', { name: 'Slow stew' }).boundingBox();
@@ -18,7 +18,7 @@ test.describe('Timeline lab', () => {
     await expect(day.locator('[data-tier="major"] .ui-timeline__scale-cell')).toHaveText([
       'March 2026',
     ]);
-    const quarter = page.locator('[data-lab-cell="scale=quarter mode=fixed"]');
+    const quarter = matrixCell(page, 'scale=quarter mode=fixed');
     await expect(quarter.locator('[data-tier="minor"] .ui-timeline__scale-cell')).toHaveText([
       'Q1',
       'Q2',

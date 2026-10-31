@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const bar = (page: Page, commands: string) =>
-  page.locator(`[data-lab-cell="commands=${commands}"] .ui-chat-message-actions`);
+  matrixCell(page, `commands=${commands}`).locator(`.ui-chat-message-actions`);
 const log = (page: Page, name: string) => page.locator(`[data-lab-log="${name}"]`);
 const message = (page: Page, id: string) => page.locator(`[data-lab-message="${id}"]`);
 

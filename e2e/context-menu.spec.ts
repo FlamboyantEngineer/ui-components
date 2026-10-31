@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function popovers(page: Page): Locator {
   return page.locator('.ui-menu-popover');
@@ -25,7 +25,7 @@ test.describe('Context Menu lab', () => {
     lab,
   }) => {
     await lab.open('context-menu');
-    const target = page.locator('[data-lab-cell="target=focusable size=md"] [data-lab-target]');
+    const target = matrixCell(page, 'target=focusable size=md').locator('[data-lab-target]');
     const { x, y } = await centre(target);
     await page.mouse.click(x, y, { button: 'right' });
     const popover = popovers(page);
@@ -48,7 +48,7 @@ test.describe('Context Menu lab', () => {
   test('UIC-CONTEXT-MENU-1.1 stays inside the viewport near its edges', async ({ page, lab }) => {
     await page.setViewportSize({ width: 700, height: 500 });
     await lab.open('context-menu');
-    const target = page.locator('[data-lab-cell="target=text size=lg"] [data-lab-target]');
+    const target = matrixCell(page, 'target=text size=lg').locator('[data-lab-target]');
     await target.evaluate((node) => node.scrollIntoView({ block: 'end' }));
     const { box } = await centre(target);
     const x = box.x + box.width - 4;
@@ -67,7 +67,7 @@ test.describe('Context Menu lab', () => {
     lab,
   }) => {
     await lab.open('context-menu');
-    const target = page.locator('[data-lab-cell="target=focusable size=sm"] [data-lab-target]');
+    const target = matrixCell(page, 'target=focusable size=sm').locator('[data-lab-target]');
     await target.focus();
     await page.keyboard.press('Shift+F10');
     await expect(item(page, /^Open/)).toBeFocused();
@@ -86,7 +86,7 @@ test.describe('Context Menu lab', () => {
 
   test('UIC-CONTEXT-MENU-1.3 opens at a resting touch', async ({ page, lab }) => {
     await lab.open('context-menu');
-    const target = page.locator('[data-lab-cell="target=text size=md"] [data-lab-target]');
+    const target = matrixCell(page, 'target=text size=md').locator('[data-lab-target]');
     const { x, y } = await centre(target);
     const touch = { pointerType: 'touch', pointerId: 9, isPrimary: true, clientX: x, clientY: y };
     await target.dispatchEvent('pointerdown', touch);
@@ -102,7 +102,7 @@ test.describe('Context Menu lab', () => {
     lab,
   }) => {
     await lab.open('context-menu');
-    const target = page.locator('[data-lab-cell="target=focusable size=md"] [data-lab-target]');
+    const target = matrixCell(page, 'target=focusable size=md').locator('[data-lab-target]');
     const { x, y } = await centre(target);
     await page.mouse.click(x, y, { button: 'right' });
     await expect(popovers(page)).toHaveCount(1);
@@ -113,8 +113,8 @@ test.describe('Context Menu lab', () => {
     await page.mouse.click(x + 400, y + 200);
     await expect(popovers(page)).toHaveCount(0);
     await expect(page.locator('[data-lab-output="Action"]')).toHaveText('none');
-    await page
-      .locator('[data-lab-cell="target=disabled size=md"] [data-lab-target]')
+    await matrixCell(page, 'target=disabled size=md')
+      .locator('[data-lab-target]')
       .click({ button: 'right' });
     await expect(popovers(page)).toHaveCount(0);
   });
@@ -200,8 +200,8 @@ test.describe('Context Menu lab', () => {
   test('UIC-CONTEXT-MENU-1.6 stays accessible in the dark theme', async ({ page, lab }) => {
     await lab.open('context-menu', { theme: 'dark' });
     await lab.expectAccessible();
-    await page
-      .locator('[data-lab-cell="target=focusable size=md"] [data-lab-target]')
+    await matrixCell(page, 'target=focusable size=md')
+      .locator('[data-lab-target]')
       .click({ button: 'right' });
     await expect(popovers(page)).toHaveCount(1);
     await lab.expectAccessible('.ui-menu-popover');

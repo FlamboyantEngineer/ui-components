@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Skeleton lab', () => {
   test('UIC-SKELETON-1.1 UIC-SKELETON-1.2 draws hidden placeholders in each shape', async ({
@@ -9,7 +9,7 @@ test.describe('Skeleton lab', () => {
     const cells = page.locator('table[data-lab-matrix="shape animation"] td[data-lab-cell]');
     expect(await cells.count()).toBe(3 * 2);
     const box = (shape: string) =>
-      page.locator(`[data-lab-cell="shape=${shape} animation=still"] .ui-skeleton`).boundingBox();
+      matrixCell(page, `shape=${shape} animation=still`).locator(`.ui-skeleton`).boundingBox();
     const [text, rectangle, circle] = await Promise.all([
       box('text'),
       box('rectangle'),
@@ -20,8 +20,8 @@ test.describe('Skeleton lab', () => {
     expect(text?.width).toBe(200);
     expect(text?.height ?? 0).toBeLessThan(16);
     expect([circle?.width, circle?.height]).toEqual([40, 40]);
-    const radius = await page
-      .locator('[data-lab-cell="shape=circle animation=still"] .ui-skeleton')
+    const radius = await matrixCell(page, 'shape=circle animation=still')
+      .locator('.ui-skeleton')
       .evaluate((node) => getComputedStyle(node).borderRadius);
     expect(radius).toBe('50%');
     await expect(page.locator('[data-lab-section="Shapes"] .ui-skeleton').first()).toHaveAttribute(
@@ -34,8 +34,8 @@ test.describe('Skeleton lab', () => {
   test('UIC-SKELETON-1.3 animates only placeholders that allow it', async ({ page, lab }) => {
     await lab.open('skeleton');
     const animation = (value: string) =>
-      page
-        .locator(`[data-lab-cell="shape=rectangle animation=${value}"] .ui-skeleton`)
+      matrixCell(page, `shape=rectangle animation=${value}`)
+        .locator(`.ui-skeleton`)
         .evaluate((node) => getComputedStyle(node).animationName);
     expect(await animation('animated')).toBe('ref-skeleton-pulse');
     expect(await animation('still')).toBe('none');
@@ -61,7 +61,7 @@ test.describe('Skeleton lab', () => {
       '[data-lab-cell="animation=animated lines=1"] .ui-skeleton-text__line',
     );
     expect((await single.boundingBox())?.width).toBe(200);
-    const still = page.locator('[data-lab-cell="animation=still lines=3"] .ui-skeleton-text__line');
+    const still = matrixCell(page, 'animation=still lines=3').locator('.ui-skeleton-text__line');
     await expect(still).toHaveCount(3);
     await expect(still.first()).not.toHaveAttribute('data-animated');
     expect(await still.first().evaluate((node) => getComputedStyle(node).animationName)).toBe(
@@ -108,11 +108,11 @@ test.describe('Skeleton lab', () => {
   test('UIC-SKELETON-2.1 keeps the loaded layout in every shape', async ({ page, lab }) => {
     await lab.open('skeleton');
     for (const shape of ['text', 'rectangle', 'circle']) {
-      const loading = await page
-        .locator(`[data-lab-cell="shape=${shape} state=loading"] .ui-skeleton`)
+      const loading = await matrixCell(page, `shape=${shape} state=loading`)
+        .locator(`.ui-skeleton`)
         .boundingBox();
-      const loaded = await page
-        .locator(`[data-lab-cell="shape=${shape} state=loaded"] .ui-skeleton`)
+      const loaded = await matrixCell(page, `shape=${shape} state=loaded`)
+        .locator(`.ui-skeleton`)
         .boundingBox();
       expect([loading?.width, loading?.height]).toEqual([loaded?.width, loaded?.height]);
     }

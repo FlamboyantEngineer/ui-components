@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 /** Draws one stroke across the area through points given as fractions of its box. */
@@ -104,7 +104,7 @@ test.describe('Signature Pad lab', () => {
     lab,
   }) => {
     await lab.open('signature-pad');
-    const field = page.locator('[data-lab-cell="mode=type"] .ui-signature-pad');
+    const field = matrixCell(page, 'mode=type').locator('.ui-signature-pad');
     const input = field.getByRole('textbox', { name: 'Signature' });
     await input.click();
     await page.keyboard.press('End');
@@ -160,7 +160,7 @@ test.describe('Signature Pad lab', () => {
     lab,
   }) => {
     await lab.open('signature-pad', { theme: 'dark' });
-    const stroke = page.locator('[data-lab-cell="mode=draw"] .ui-signature-pad__stroke').first();
+    const stroke = matrixCell(page, 'mode=draw').locator('.ui-signature-pad__stroke').first();
     await expect(stroke).toBeVisible();
     const colors = await stroke.evaluate((node) => {
       const pad = node.closest('.ui-signature-pad');

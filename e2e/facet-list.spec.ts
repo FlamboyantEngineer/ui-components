@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Facet List lab', () => {
   test('UIC-FACET-LIST-1.1 UIC-FACET-LIST-2.1 UIC-FACET-LIST-1.4 shows counted values and folds long facets', async ({
@@ -12,7 +12,7 @@ test.describe('Facet List lab', () => {
     await expect(plain.getByRole('checkbox', { name: 'Apple, 1,204' })).not.toBeChecked();
     await expect(plain.getByRole('checkbox', { name: 'Pear, 87' })).toBeChecked();
     await expect(plain.getByRole('checkbox', { name: 'Plum' })).toBeVisible();
-    const folded = page.locator('[data-lab-cell="mode=folded"]');
+    const folded = matrixCell(page, 'mode=folded');
     await expect(folded.getByRole('checkbox')).toHaveCount(5);
     await folded.getByRole('button', { name: 'Show 7 more' }).click();
     await expect(folded.getByRole('checkbox')).toHaveCount(12);

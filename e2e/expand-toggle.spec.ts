@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Expand Toggle lab', () => {
   test('UIC-EXPAND-TOGGLE-1.5 gives a leaf the toggle box at every size', async ({ page, lab }) => {
@@ -9,11 +9,11 @@ test.describe('Expand Toggle lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const toggle = await page
-        .locator(`[data-lab-cell="state=collapsed size=${size}"] .ui-expand-toggle`)
+      const toggle = await matrixCell(page, `state=collapsed size=${size}`)
+        .locator(`.ui-expand-toggle`)
         .boundingBox();
-      const leaf = await page
-        .locator(`[data-lab-cell="state=leaf size=${size}"] .ui-expand-toggle`)
+      const leaf = await matrixCell(page, `state=leaf size=${size}`)
+        .locator(`.ui-expand-toggle`)
         .boundingBox();
       expect(toggle?.width).toBe(edge);
       expect(leaf?.width).toBe(edge);
@@ -58,9 +58,7 @@ test.describe('Expand Toggle lab', () => {
     await expect(page.locator('[data-lab-row="Strawberry"]')).toBeVisible();
     await page.keyboard.press(' ');
     await expect(page.locator('[data-lab-row="Strawberry"]')).toHaveCount(0);
-    await expect(
-      page.locator('[data-lab-cell="state=disabled size=md"]').getByRole('button'),
-    ).toBeDisabled();
+    await expect(matrixCell(page, 'state=disabled size=md').getByRole('button')).toBeDisabled();
     await lab.expectAccessible();
   });
 

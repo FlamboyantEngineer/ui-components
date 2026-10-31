@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function section(page: Page, title: string): Locator {
   return page.locator(`[data-lab-section="${title}"]`);
@@ -87,8 +87,7 @@ test.describe('Command Palette lab', () => {
     await lab.open('command-palette');
     const widths: number[] = [];
     for (const size of ['sm', 'md', 'lg']) {
-      await page
-        .locator(`[data-lab-cell="state=default size=${size}"]`)
+      await matrixCell(page, `state=default size=${size}`)
         .getByRole('button', { name: 'Open' })
         .click();
       const overlay = palette(page);
@@ -114,9 +113,7 @@ test.describe('Command Palette lab', () => {
   }) => {
     await lab.open('command-palette');
     const cell = (state: string) =>
-      page
-        .locator(`[data-lab-cell="state=${state} size=md"]`)
-        .getByRole('button', { name: 'Open' });
+      matrixCell(page, `state=${state} size=md`).getByRole('button', { name: 'Open' });
     await cell('typed').click();
     await expect(palette(page).getByRole('searchbox')).toHaveValue('fi');
     await expect(command(page, /^New file/).locator('mark.ui-text-match')).toHaveText('fi');

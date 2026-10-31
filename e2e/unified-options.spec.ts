@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test('UIC-AVATAR-4.1 keeps a card avatar circular with its own typography', async ({
   page,
@@ -16,9 +16,9 @@ test('UIC-PROGRESS-BAR-3.1 draws a circular meter with threshold styling', async
   lab,
 }) => {
   await lab.open('progress-bar');
-  const meter = page
-    .locator('[data-lab-cell="mode=meter shape=circular"]')
-    .getByRole('meter', { name: 'Storage' });
+  const meter = matrixCell(page, 'mode=meter shape=circular').getByRole('meter', {
+    name: 'Storage',
+  });
   await expect(meter).toHaveAttribute('aria-valuenow', '60');
   await expect(meter).toHaveAttribute('data-tone', 'success');
   await expect(meter.locator('.ui-progress-bar__ring')).toHaveCSS('width', '24px');
@@ -32,7 +32,7 @@ test('UIC-SEGMENTED-BAR-3.1 shows the same shares in linear, donut and pie shape
 }) => {
   await lab.open('segmented-bar');
   for (const shape of ['linear', 'donut', 'pie']) {
-    const bar = page.locator(`[data-lab-cell="shape=${shape} size=md"] .ui-segmented-bar`);
+    const bar = matrixCell(page, `shape=${shape} size=md`).locator(`.ui-segmented-bar`);
     await expect(bar).toHaveAttribute('data-shape', shape);
     await expect(bar.locator('.ui-segmented-bar__item-value')).toHaveText(['42', '6', '4', '8']);
     await expect(bar.locator('.ui-segmented-bar__item-share')).toHaveText([

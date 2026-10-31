@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 function cell(page: Page, lines: string, state: string, layout = 'label-control'): Locator {
-  return page.locator(`[data-lab-cell="lines=${lines} state=${state} layout=${layout}"]`);
+  return matrixCell(page, `lines=${lines} state=${state} layout=${layout}`);
 }
 
 function field(page: Page, name: string): Locator {
@@ -21,7 +21,7 @@ test.describe('Text Field lab', () => {
     await lab.open('text-field');
     const input = cell(page, 'single', 'resting').getByRole('textbox', { name: 'Fruit' });
     await expect(input).toHaveValue('Apple');
-    expect((await input.boundingBox())?.height).toBe(28);
+    expect((await input.boundingBox())?.height).toBe(await controlHeight(page, 'md'));
     const area = cell(page, 'multiline', 'resting').getByRole('textbox', { name: 'Fruit' });
     expect(await area.evaluate((node) => node.tagName)).toBe('TEXTAREA');
     expect((await area.boundingBox())?.height).toBeGreaterThanOrEqual(64);
@@ -140,7 +140,7 @@ test.describe('Text Field lab', () => {
     const start = await website.locator('.ui-text-field__start').boundingBox();
     const input = await website.getByRole('textbox', { name: 'Website' }).boundingBox();
     const end = await website.locator('.ui-text-field__end').boundingBox();
-    expect(group?.height).toBe(28);
+    expect(group?.height).toBe(await controlHeight(page, 'md'));
     expect((start?.x ?? 0) + (start?.width ?? 0)).toBeLessThanOrEqual(input?.x ?? 0);
     expect(end?.x ?? 0).toBeGreaterThanOrEqual((input?.x ?? 0) + (input?.width ?? 0));
     await expect(website.locator('.ui-text-field__input')).toHaveCSS('border-top-width', '0px');

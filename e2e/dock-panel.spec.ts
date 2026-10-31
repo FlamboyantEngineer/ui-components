@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -35,11 +35,11 @@ test.describe('Dock Panel lab', () => {
     await expect(page.getByRole('region', { name: 'Properties' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Report.pdf' })).toBeVisible();
 
-    const start = page.locator('[data-lab-cell="position=start state=expanded"]');
+    const start = matrixCell(page, 'position=start state=expanded');
     const startPanel = await box(start.locator('.ui-dock-panel'));
     const startMain = await box(start.getByText('Main'));
     expect(startPanel.x).toBeLessThan(startMain.x);
-    const bottom = page.locator('[data-lab-cell="position=bottom state=expanded"]');
+    const bottom = matrixCell(page, 'position=bottom state=expanded');
     const bottomPanel = await box(bottom.locator('.ui-dock-panel'));
     expect(bottomPanel.height).toBe(120);
     expect(bottomPanel.y).toBeGreaterThan((await box(bottom.getByText('Main'))).y);

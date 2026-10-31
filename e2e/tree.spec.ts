@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Tree lab', () => {
   test('UIC-TREE-1.1 UIC-TREE-2.1 UIC-TREE-3.2 UIC-TREE-3.3 retains typed keys through expansion, selection and actions', async ({
@@ -62,7 +62,7 @@ test.describe('Tree lab', () => {
 
   test('UIC-TREE-1.2 indents rows by their depth', async ({ page, lab }) => {
     await lab.open('tree');
-    const cell = page.locator('[data-lab-cell="variant=default size=sm"]');
+    const cell = matrixCell(page, 'variant=default size=sm');
     const x = async (name: string) =>
       (await cell.getByRole('row', { name }).locator('.ui-tree__label').boundingBox())?.x ?? 0;
     const top = await x('Budget.xlsx');
@@ -78,8 +78,7 @@ test.describe('Tree lab', () => {
     await lab.open('tree');
     const height = async (size: string) =>
       (
-        await page
-          .locator(`[data-lab-cell="variant=default size=${size}"]`)
+        await matrixCell(page, `variant=default size=${size}`)
           .getByRole('row', { name: 'Budget.xlsx' })
           .boundingBox()
       )?.height ?? 0;

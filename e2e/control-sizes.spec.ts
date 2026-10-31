@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 /** The box whose height each control of the control sizes lab takes from its size. */
@@ -64,8 +64,8 @@ test('UIC-LABS-3.7 distinguishes surrounding type and keeps field samples compac
   lab,
 }) => {
   await lab.open('control-sizes');
-  const large = page.locator('[data-lab-cell="control=button content=large type size=md"]');
-  const short = page.locator('[data-lab-cell="control=button content=short size=md"]');
+  const large = matrixCell(page, 'control=button content=large type size=md');
+  const short = matrixCell(page, 'control=button content=short size=md');
   await expect(large.locator('[data-lab-control-sample] > span')).toHaveCSS('font-size', '24px');
   await expect(short.locator('[data-lab-control-sample] > span')).toHaveCSS('font-size', '14px');
   await expect(large.getByRole('button')).toHaveCSS('font-size', '13px');
@@ -86,7 +86,7 @@ test("UIC-LABS-3.7 the type and control scales follow the reader's font size", a
   lab,
 }) => {
   await lab.open('control-sizes');
-  const button = page.locator('[data-lab-cell="control=button content=short size=md"] .ui-button');
+  const button = matrixCell(page, 'control=button content=short size=md').locator('.ui-button');
   await expect(button).toHaveCSS('height', '28px');
   await expect(button).toHaveCSS('font-size', '13px');
   // A browser font-size preference of 20 pixels sets the root's font size.
@@ -108,7 +108,7 @@ test('UIC-LABS-3.7 checkbox and radio groups show independent and exclusive choi
   await page.keyboard.press('Space');
   await expect(checkboxes.getByRole('checkbox', { name: 'Apple' })).toBeChecked();
   await expect(checkboxes.getByRole('checkbox', { name: 'Pear' })).toBeChecked();
-  const radios = page.locator('[data-lab-cell="control=choice-group content=short size=md"]');
+  const radios = matrixCell(page, 'control=choice-group content=short size=md');
   await expect(radios.getByRole('radio')).toHaveCount(3);
   await radios.getByRole('radio', { name: 'Apple' }).focus();
   await page.keyboard.press('ArrowDown');
@@ -127,7 +127,7 @@ for (const [size, height] of [
     lab,
   }) => {
     await lab.open('control-sizes');
-    const cell = page.locator(`[data-lab-cell="control=combobox content=short size=${size}"]`);
+    const cell = matrixCell(page, `control=combobox content=short size=${size}`);
     const input = cell.getByRole('combobox');
     await input.focus();
     await page.keyboard.press('ArrowDown');
@@ -150,9 +150,10 @@ for (const [size, height] of [
 
 test('UIC-DROPDOWN-MENU-1.4 opening a dropdown preserves page scrolling', async ({ page, lab }) => {
   await lab.open('control-sizes');
-  const trigger = page
-    .locator('[data-lab-cell="control=dropdown-menu content=short size=md"]')
-    .getByRole('button', { name: 'Edit' });
+  const trigger = matrixCell(page, 'control=dropdown-menu content=short size=md').getByRole(
+    'button',
+    { name: 'Edit' },
+  );
   await trigger.focus();
   const before = await page.evaluate(() => ({
     overflow: getComputedStyle(document.documentElement).overflowY,

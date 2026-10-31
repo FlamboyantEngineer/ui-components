@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('List Row lab', () => {
   test('UIC-LIST-ROW-1.1 UIC-LIST-ROW-2.1 UIC-LIST-ROW-2.2 keeps native roles and one link per link row', async ({
@@ -6,15 +6,15 @@ test.describe('List Row lab', () => {
     lab,
   }) => {
     await lab.open('list-row');
-    const link = page.locator('[data-lab-cell="kind=link state=default"]');
+    const link = matrixCell(page, 'kind=link state=default');
     await expect(link.getByRole('list')).toHaveCount(1);
     await expect(link.getByRole('listitem')).toHaveCount(1);
     await expect(link.locator('a')).toHaveCount(1);
     await expect(link.getByRole('link')).toHaveAccessibleName(/Report\.pdf/);
     await expect(
-      page.locator('[data-lab-cell="kind=action state=default"]').getByRole('button'),
+      matrixCell(page, 'kind=action state=default').getByRole('button'),
     ).toHaveAccessibleName(/Report\.pdf/);
-    const trailing = page.locator('[data-lab-cell="content=trailing kind=link"]');
+    const trailing = matrixCell(page, 'content=trailing kind=link');
     await expect(trailing.locator('a button, a a')).toHaveCount(0);
     await expect(trailing.locator('.ui-list-row__trailing').getByRole('button')).toBeVisible();
     await lab.expectAccessible();
@@ -91,7 +91,7 @@ test.describe('List Row lab', () => {
       (primaryBox?.y ?? 0) + (primaryBox?.height ?? 0) - 1,
     );
 
-    const wide = page.locator('[data-lab-cell="content=trailing kind=link"]');
+    const wide = matrixCell(page, 'content=trailing kind=link');
     const widePrimary = await wide.locator('.ui-list-row__primary').boundingBox();
     const wideTrailing = await wide.locator('.ui-list-row__trailing').boundingBox();
     expect(wideTrailing?.x ?? 0).toBeGreaterThan(

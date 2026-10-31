@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, controlHeight } from './fixtures.js';
 
 test.describe('Copy Button lab', () => {
   test('UIC-COPY-BUTTON-1.4 draws every variant, size and state', async ({ page, lab }) => {
@@ -15,7 +15,11 @@ test.describe('Copy Button lab', () => {
         async (size) => (await button('rest', 'ghost', size).boundingBox())?.height,
       ),
     );
-    expect(sizes).toEqual([20, 24, 28, 32]);
+    expect(sizes).toEqual(
+      await Promise.all(
+        (['xs', 'sm', 'md', 'lg'] as const).map((size) => controlHeight(page, size)),
+      ),
+    );
     await lab.expectAccessible();
   });
 

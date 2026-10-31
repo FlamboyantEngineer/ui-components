@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const plain = (text: string) => text.replace(/[\u00a0\u2009\u202f]/g, ' ');
 const interactive = (page: Page) => page.locator('[data-lab-demo="interactive"]');
@@ -11,7 +11,7 @@ test.describe('Calendar View lab', () => {
     lab,
   }) => {
     await lab.open('calendar-view');
-    const month = page.locator('[data-lab-cell="state=events view=month"]');
+    const month = matrixCell(page, 'state=events view=month');
     await expect(month.getByRole('grid', { name: 'March 2026' })).toBeVisible();
     await expect(month.getByRole('columnheader').locator('[aria-hidden]')).toHaveText([
       'Sun',
@@ -26,7 +26,7 @@ test.describe('Calendar View lab', () => {
     await expect(today).toHaveAttribute('aria-current', 'date');
     await expect(today.locator('.ui-calendar-view__day-number')).toHaveCSS('font-weight', '600');
     await expect(month.locator('[data-outside-month]')).toHaveCount(4);
-    const week = page.locator('[data-lab-cell="state=events view=week"]');
+    const week = matrixCell(page, 'state=events view=week');
     await expect(week.locator('.ui-calendar-view__weekday[data-today] [aria-hidden]')).toHaveText(
       'Wed 18',
     );
@@ -40,13 +40,13 @@ test.describe('Calendar View lab', () => {
     lab,
   }) => {
     await lab.open('calendar-view');
-    const month = page.locator('[data-lab-cell="state=events view=month"]');
+    const month = matrixCell(page, 'state=events view=month');
     const trip = month.locator('[data-date="2026-03-12"] .ui-calendar-view__event');
     const thursday = await month.locator('[data-date="2026-03-12"]').boundingBox();
     const tripBox = await trip.boundingBox();
     expect(tripBox?.width).toBeGreaterThan((thursday?.width ?? 0) * 2.8);
     await expect(trip).toHaveAttribute('data-continues-after', 'true');
-    const week = page.locator('[data-lab-cell="state=events view=week"]');
+    const week = matrixCell(page, 'state=events view=week');
     const lunch = week.getByRole('button', { name: /^Team lunch/ });
     const review = week.getByRole('button', { name: /^Design review/ });
     const [lunchBox, reviewBox] = [await lunch.boundingBox(), await review.boundingBox()];

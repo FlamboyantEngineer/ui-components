@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Action Row lab', () => {
@@ -45,9 +45,9 @@ test.describe('Action Row lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const button = page
-        .locator(`[data-lab-cell="state=default size=${size}"]`)
-        .getByRole('button', { name: 'Refresh' });
+      const button = matrixCell(page, `state=default size=${size}`).getByRole('button', {
+        name: 'Refresh',
+      });
       const box = await button.boundingBox();
       expect(box?.width).toBe(edge);
       expect(box?.height).toBe(edge);
@@ -56,7 +56,7 @@ test.describe('Action Row lab', () => {
 
   test('UIC-ACTION-ROW-1.4 shows tooltips on keyboard focus and hover', async ({ page, lab }) => {
     await lab.open('action-row');
-    const row = page.locator('[data-lab-cell="state=default size=md"]');
+    const row = matrixCell(page, 'state=default size=md');
     await row.getByRole('button', { name: 'Full screen' }).focus();
     await page.keyboard.press('Tab');
     await expect(row.getByRole('button', { name: 'Add note' })).toBeFocused();

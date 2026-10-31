@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Markdown lab', () => {
   test('UIC-MARKDOWN-2.1 UIC-MARKDOWN-3.1 renders each construct with native semantics', async ({
@@ -6,7 +6,7 @@ test.describe('Markdown lab', () => {
     lab,
   }) => {
     await lab.open('markdown');
-    const text = page.locator('[data-lab-cell="content=text text=body"] .ui-markdown');
+    const text = matrixCell(page, 'content=text text=body').locator('.ui-markdown');
     await expect(text.getByRole('heading', { level: 2 })).toHaveText([
       'Orchard notes',
       'Setext heading',
@@ -15,11 +15,11 @@ test.describe('Markdown lab', () => {
     await expect(text.locator('del')).toHaveText('in the rain');
     await expect(text.locator('br')).toHaveCount(1);
     await expect(text).toContainText('*stars* and entities: © 2026 — Cider & Co.');
-    const lists = page.locator('[data-lab-cell="content=lists text=body"] .ui-markdown');
+    const lists = matrixCell(page, 'content=lists text=body').locator('.ui-markdown');
     await expect(lists.getByRole('list')).toHaveCount(3);
     await expect(lists.locator('ol')).toHaveAttribute('start', '3');
     await expect(lists.locator('li p')).toHaveCount(0);
-    const quote = page.locator('[data-lab-cell="content=quote text=body"] .ui-markdown');
+    const quote = matrixCell(page, 'content=quote text=body').locator('.ui-markdown');
     await expect(quote.locator('blockquote blockquote')).toHaveText('A nested remark.');
     await expect(quote.getByRole('separator')).toHaveCount(1);
     const nested = page.locator('[data-lab-nested]');
@@ -27,7 +27,7 @@ test.describe('Markdown lab', () => {
     await expect(nested.getByRole('list')).toHaveCount(2);
     await expect(nested.getByRole('listitem')).toHaveCount(2);
     await expect(
-      page.locator('[data-lab-cell="content=text text=small"] .ui-markdown p').first(),
+      matrixCell(page, 'content=text text=small').locator('.ui-markdown p').first(),
     ).toHaveCSS('font-size', '12px');
     await lab.expectAccessible();
   });
@@ -64,7 +64,7 @@ test.describe('Markdown lab', () => {
     lab,
   }) => {
     await lab.open('markdown');
-    const links = page.locator('[data-lab-cell="content=links text=body"] .ui-markdown');
+    const links = matrixCell(page, 'content=links text=body').locator('.ui-markdown');
     const internal = links.getByRole('link', { name: 'planting guide' });
     await expect(internal).toHaveAttribute('href', '/guides/planting');
     await expect(internal).not.toHaveAttribute('target');
@@ -84,7 +84,7 @@ test.describe('Markdown lab', () => {
     lab,
   }) => {
     await lab.open('markdown');
-    const code = page.locator('[data-lab-cell="content=code text=body"]');
+    const code = matrixCell(page, 'content=code text=body');
     const block = code.locator('.ui-markdown__code-block').first();
     await expect(block).toHaveAttribute('data-language', 'sh');
     // Only the hook attribute names the language: highlighters go through an override.
@@ -92,7 +92,7 @@ test.describe('Markdown lab', () => {
     await expect(block).toHaveCSS('font-family', /monospace/);
     await expect(code.locator('.ui-markdown__code-block')).toHaveCount(2);
     await expect(code.locator('.ui-markdown__code')).toHaveText('press --batch 4');
-    const table = page.locator('[data-lab-cell="content=table text=body"]').getByRole('table');
+    const table = matrixCell(page, 'content=table text=body').getByRole('table');
     await expect(table.getByRole('columnheader')).toHaveText(['Fruit', 'Orchard', 'Crates']);
     await expect(table.locator('td[data-align="end"]').first()).toHaveCSS('text-align', 'end');
     await expect(table.locator('th[data-align="center"]')).toHaveCSS('text-align', 'center');

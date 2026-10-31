@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function centerOffset(list: Locator, tab: Locator): Promise<number> {
   const listBox = await list.boundingBox();
@@ -57,12 +57,12 @@ test.describe('Tabs lab', () => {
       ['md', 36],
       ['lg', 42],
     ] as const) {
-      const cell = page.locator(`[data-lab-cell="orientation=horizontal size=${size}"]`);
+      const cell = matrixCell(page, `orientation=horizontal size=${size}`);
       const apple = cell.getByRole('tab', { name: 'Apple' });
       expect((await apple.boundingBox())?.height).toBe(height);
       await expect(cell.getByRole('tabpanel')).toHaveText('Apples are crisp.');
     }
-    const vertical = page.locator('[data-lab-cell="orientation=vertical size=md"]');
+    const vertical = matrixCell(page, 'orientation=vertical size=md');
     const tops = await vertical
       .getByRole('tab')
       .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().top));
@@ -75,7 +75,7 @@ test.describe('Tabs lab', () => {
     lab,
   }) => {
     await lab.open('tabs');
-    const cell = page.locator('[data-lab-cell="orientation=horizontal size=md"]');
+    const cell = matrixCell(page, 'orientation=horizontal size=md');
     const tab = (name: string) => cell.getByRole('tab', { name });
     await tab('Apple').focus();
     await page.keyboard.press('ArrowRight');
@@ -90,7 +90,7 @@ test.describe('Tabs lab', () => {
     await page.keyboard.press('Home');
     await expect(tab('Apple')).toBeFocused();
 
-    const vertical = page.locator('[data-lab-cell="orientation=vertical size=md"]');
+    const vertical = matrixCell(page, 'orientation=vertical size=md');
     await vertical.getByRole('tab', { name: 'Apple' }).focus();
     await page.keyboard.press('ArrowDown');
     await expect(vertical.getByRole('tab', { name: 'Banana' })).toHaveAttribute(
@@ -118,7 +118,7 @@ test.describe('Tabs lab', () => {
     lab,
   }) => {
     await lab.open('tabs');
-    const counts = page.locator('[data-lab-cell="content=counts state=default"]');
+    const counts = matrixCell(page, 'content=counts state=default');
     const inbox = counts.getByRole('tab', { name: 'Inbox 9+' });
     await expect(inbox.locator('.ui-tabs__count')).toHaveText('9+');
     await expect(inbox).toHaveAccessibleDescription('15 unread');
@@ -126,7 +126,7 @@ test.describe('Tabs lab', () => {
       '3 saved',
     );
 
-    const partly = page.locator('[data-lab-cell="content=text state=disabled tab"]');
+    const partly = matrixCell(page, 'content=text state=disabled tab');
     await expect(partly.getByRole('tab', { name: 'Search' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -146,7 +146,7 @@ test.describe('Tabs lab', () => {
 
   test('UIC-TABS-1.3 moves the selection indicator to the selected tab', async ({ page, lab }) => {
     await lab.open('tabs');
-    const cell = page.locator('[data-lab-cell="orientation=horizontal size=md"]');
+    const cell = matrixCell(page, 'orientation=horizontal size=md');
     const apple = cell.getByRole('tab', { name: 'Apple' });
     const indicator = apple.locator('.ui-tabs__indicator');
     const tabBox = await apple.boundingBox();

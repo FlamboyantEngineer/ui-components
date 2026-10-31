@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import type { Locator } from '@playwright/test';
 
 const order = (tree: Locator) =>
@@ -22,9 +22,7 @@ test.describe('Tree reordering', () => {
       tree.getByRole('row', { name: 'Budget.xlsx' }).locator('.ui-tree__drag-handle'),
     ).toBeDisabled();
     await expect(tree.getByRole('button', { name: 'Drag Lisbon.pdf' })).toBeEnabled();
-    await expect(page.locator('[data-lab-cell="variant=default size=sm"] [draggable]')).toHaveCount(
-      0,
-    );
+    await expect(matrixCell(page, 'variant=default size=sm').locator('[draggable]')).toHaveCount(0);
     await lab.expectAccessible();
   });
 

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function section(page: Page, title: string): Locator {
   return page.locator(`[data-lab-section="${title}"]`);
@@ -13,16 +13,14 @@ test.describe('People Picker lab', () => {
     await lab.open('people-picker');
     const cells = page.locator('table[data-lab-matrix="state size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(5 * 3);
-    const resting = page.locator('[data-lab-cell="state=resting size=md"]');
+    const resting = matrixCell(page, 'state=resting size=md');
     await expect(resting.locator('.ui-people-picker')).toHaveClass(/ui-combobox/);
+    await expect(matrixCell(page, 'state=with value size=md').getByRole('combobox')).toHaveValue(
+      'Sam Rivera',
+    );
+    await expect(matrixCell(page, 'state=disabled size=md').getByRole('combobox')).toBeDisabled();
     await expect(
-      page.locator('[data-lab-cell="state=with value size=md"]').getByRole('combobox'),
-    ).toHaveValue('Sam Rivera');
-    await expect(
-      page.locator('[data-lab-cell="state=disabled size=md"]').getByRole('combobox'),
-    ).toBeDisabled();
-    await expect(
-      page.locator('[data-lab-cell="state=invalid size=md"]').locator('.ui-combobox__error'),
+      matrixCell(page, 'state=invalid size=md').locator('.ui-combobox__error'),
     ).toHaveText('Choose someone on the team');
     await lab.expectAccessible();
   });

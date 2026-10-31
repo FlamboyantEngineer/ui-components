@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const overview = (page: Page) => page.locator('[data-lab-demo="overview"]');
@@ -145,10 +145,10 @@ test.describe('Dashboard Grid lab', () => {
     lab,
   }) => {
     await lab.open('dashboard-grid');
-    const wide = page.locator('[data-lab-cell="mode=editing width=wide"] .ui-dashboard-grid');
+    const wide = matrixCell(page, 'mode=editing width=wide').locator('.ui-dashboard-grid');
     await expect(wide).not.toHaveAttribute('data-reflowed');
     await expect(wide.locator('.ui-dashboard-grid__move')).toHaveCount(3);
-    const narrow = page.locator('[data-lab-cell="mode=editing width=narrow"] .ui-dashboard-grid');
+    const narrow = matrixCell(page, 'mode=editing width=narrow').locator('.ui-dashboard-grid');
     await expect(narrow).toHaveAttribute('data-reflowed', 'true');
     await expect(narrow).not.toHaveAttribute('data-editing');
     await expect(narrow.locator('.ui-dashboard-grid__move')).toHaveCount(0);

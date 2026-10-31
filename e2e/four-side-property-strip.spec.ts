@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Four Side Property Strip lab', () => {
   test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.1 lays the four sides out on one line in order', async ({
@@ -6,7 +6,7 @@ test.describe('Four Side Property Strip lab', () => {
     lab,
   }) => {
     await lab.open('four-side-property-strip');
-    const cell = page.locator('[data-lab-cell="state=unit layout=responsive"]');
+    const cell = matrixCell(page, 'state=unit layout=responsive');
     const sides = cell.locator('.ui-four-side-property-strip__side');
     await expect(sides).toHaveCount(4);
     await expect(sides.locator('.ui-property-strip-cell__letter')).toHaveText(['T', 'B', 'L', 'R']);
@@ -48,7 +48,7 @@ test.describe('Four Side Property Strip lab', () => {
     lab,
   }) => {
     await lab.open('four-side-property-strip');
-    const pairs = page.locator('[data-lab-cell="link=pairs"]');
+    const pairs = matrixCell(page, 'link=pairs');
     const side = (area: typeof pairs, link: string, name: string) =>
       area.getByRole('textbox', { name: `Padding ${link} ${name}` });
     const toggle = pairs.getByRole('button', { name: 'Link opposite sides' });
@@ -63,7 +63,7 @@ test.describe('Four Side Property Strip lab', () => {
     await expect(side(pairs, 'pairs', 'right')).toHaveValue('20');
     await expect(side(pairs, 'pairs', 'top')).toHaveValue('8');
 
-    const all = page.locator('[data-lab-cell="link=all"]');
+    const all = matrixCell(page, 'link=all');
     await side(all, 'all', 'bottom').fill('6');
     for (const name of ['top', 'left', 'right']) {
       await expect(side(all, 'all', name)).toHaveValue('6');
@@ -80,7 +80,7 @@ test.describe('Four Side Property Strip lab', () => {
       page
         .getByRole('textbox', { name: `Inset ${direction} ${name}` })
         .evaluate((element) => element.getBoundingClientRect().x);
-    const rtl = page.locator('[data-lab-cell="direction=rtl"]');
+    const rtl = matrixCell(page, 'direction=rtl');
     await expect(rtl.locator('.ui-property-strip-cell__letter')).toHaveText(['T', 'B', 'S', 'E']);
     expect(await xOf('rtl', 'inline-start')).toBeGreaterThan(await xOf('rtl', 'inline-end'));
     expect(await xOf('ltr', 'inline-start')).toBeLessThan(await xOf('ltr', 'inline-end'));

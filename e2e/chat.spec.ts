@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, formatLabUrl, test, waitForLab } from './fixtures.js';
+import { expect, formatLabUrl, test, waitForLab, matrixCell } from './fixtures.js';
 
 const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
 const composer = (scope: Locator) => scope.getByRole('textbox', { name: 'Message' });
@@ -140,7 +140,7 @@ test.describe('Chat lab', () => {
   }) => {
     await lab.open('chat');
     const thinking = section(page, 'Thinking');
-    const cell = (state: string) => thinking.locator(`[data-lab-cell="state=${state}"]`);
+    const cell = (state: string) => matrixCell(thinking, `state=${state}`);
     for (const [state, text] of [
       ['before any part', 'Thinking…'],
       ['custom text', 'Pondering…'],
@@ -172,7 +172,7 @@ test.describe('Chat lab', () => {
     await lab.open('chat');
     const styles = section(page, 'Thinking styles');
     const cell = (style: string, phase: string) =>
-      styles.locator(`[data-lab-cell="style=${style} phase=${phase}"]`);
+      matrixCell(styles, `style=${style} phase=${phase}`);
     const line = (style: string, phase: string) => cell(style, phase).locator('.ui-chat__status');
     await expect(line('summary', 'waiting').locator('.ui-chat-status-line__text')).toHaveText(
       'Thinking…',

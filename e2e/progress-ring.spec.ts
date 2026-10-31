@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('ProgressBar circular shape', () => {
   test('UIC-PROGRESS-BAR-11.1 UIC-PROGRESS-BAR-11.5 draws named rings in three sizes', async ({
@@ -15,9 +15,7 @@ test.describe('ProgressBar circular shape', () => {
       ['md', 24],
       ['lg', 32],
     ] as const) {
-      const cell = page
-        .locator('[data-lab-family="progress-ring-cases"]')
-        .locator(`[data-lab-cell="state=42% size=${size}"]`);
+      const cell = matrixCell(page, `state=42% size=${size}`, { family: 'progress-ring-cases' });
       const ring = cell.getByRole('progressbar', { name: 'Completed 42%' });
       await expect(ring).toHaveAttribute('aria-valuenow', '42');
       const box = await cell.locator('.ui-progress-bar__ring').boundingBox();
@@ -37,20 +35,18 @@ test.describe('ProgressBar circular shape', () => {
       ['100%', '0'],
     ] as const) {
       await expect(
-        page
-          .locator('[data-lab-family="progress-ring-cases"]')
-          .locator(`[data-lab-cell="state=${state} size=md"] .ui-progress-bar__fill`),
+        matrixCell(page, `state=${state} size=md`, { family: 'progress-ring-cases' }).locator(
+          `.ui-progress-bar__fill`,
+        ),
       ).toHaveAttribute('stroke-dashoffset', offset);
     }
-    const indeterminate = page
-      .locator('[data-lab-family="progress-ring-cases"]')
-      .locator('[data-lab-cell="state=indeterminate size=md"]')
-      .getByRole('progressbar');
+    const indeterminate = matrixCell(page, 'state=indeterminate size=md', {
+      family: 'progress-ring-cases',
+    }).getByRole('progressbar');
     await expect(indeterminate).toHaveAttribute('data-indeterminate', 'true');
     await expect(indeterminate).not.toHaveAttribute('aria-valuenow');
-    const stroke = await page
-      .locator('[data-lab-family="progress-ring-cases"]')
-      .locator('[data-lab-cell="state=42% size=md"] .ui-progress-bar__fill')
+    const stroke = await matrixCell(page, 'state=42% size=md', { family: 'progress-ring-cases' })
+      .locator('.ui-progress-bar__fill')
       .evaluate((node) => getComputedStyle(node).strokeWidth);
     expect(stroke).toBe('4px');
   });
@@ -61,17 +57,17 @@ test.describe('ProgressBar circular shape', () => {
   }) => {
     await lab.open('progress-bar');
     await expect(
-      page
-        .locator('[data-lab-family="progress-ring-cases"]')
-        .locator('[data-lab-cell="option=value label"] .ui-progress-bar__value'),
+      matrixCell(page, 'option=value label', { family: 'progress-ring-cases' }).locator(
+        '.ui-progress-bar__value',
+      ),
     ).toHaveText('3 of 4');
     await expect(
-      page
-        .locator('[data-lab-family="progress-ring-cases"]')
-        .locator('[data-lab-cell="option=visible label"]')
-        .getByRole('progressbar', {
+      matrixCell(page, 'option=visible label', { family: 'progress-ring-cases' }).getByRole(
+        'progressbar',
+        {
           name: 'Completed',
-        }),
+        },
+      ),
     ).toBeVisible();
     await lab.expectAccessible();
   });
@@ -82,9 +78,9 @@ test.describe('ProgressBar circular shape', () => {
   }) => {
     await lab.open('progress-bar');
     const ring = (tone: string, progress: string) =>
-      page
-        .locator('[data-lab-family="progress-ring-cases"]')
-        .locator(`[data-lab-cell="tone=${tone} progress=${progress}"] .ui-progress-bar`);
+      matrixCell(page, `tone=${tone} progress=${progress}`, {
+        family: 'progress-ring-cases',
+      }).locator(`.ui-progress-bar`);
     const stroke = (tone: string, progress: string) =>
       ring(tone, progress)
         .locator('.ui-progress-bar__fill')
@@ -107,9 +103,9 @@ test('UIC-PROGRESS-BAR-11.4 circular indeterminate arcs rotate around the ring c
 }) => {
   await lab.open('progress-bar');
   for (const size of ['sm', 'md', 'lg']) {
-    const root = page
-      .locator('[data-lab-family="progress-ring-cases"]')
-      .locator(`[data-lab-cell="state=indeterminate size=${size}"]`);
+    const root = matrixCell(page, `state=indeterminate size=${size}`, {
+      family: 'progress-ring-cases',
+    });
     const centers = await root.evaluate((node) => {
       const ring = node.querySelector('.ui-progress-bar__ring');
       const fill = node.querySelector('.ui-progress-bar__fill');

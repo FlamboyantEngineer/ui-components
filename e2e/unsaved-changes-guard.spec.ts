@@ -1,7 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
-
-const cell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"]`);
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function waitForSettledDialog(page: Page) {
   const overlay = page.locator('.ui-unsaved-changes-guard');
@@ -15,7 +13,9 @@ test.describe('Unsaved Changes Guard lab', () => {
     lab,
   }) => {
     await lab.open('unsaved-changes-guard');
-    await cell(page, 'save=can save label=labelled').getByRole('button', { name: 'Leave' }).click();
+    await matrixCell(page, 'save=can save label=labelled')
+      .getByRole('button', { name: 'Leave' })
+      .click();
     const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('.ui-unsaved-changes-guard__list')).toHaveText('Recipe notes');
@@ -26,9 +26,11 @@ test.describe('Unsaved Changes Guard lab', () => {
     ]);
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(dialog).toBeHidden();
-    await expect(cell(page, 'save=can save label=labelled').locator('output')).toHaveText('Left');
+    await expect(matrixCell(page, 'save=can save label=labelled').locator('output')).toHaveText(
+      'Left',
+    );
 
-    await cell(page, 'save=cannot save label=unlabelled')
+    await matrixCell(page, 'save=cannot save label=unlabelled')
       .getByRole('button', { name: 'Leave' })
       .click();
     await expect(dialog).toHaveAccessibleDescription(
@@ -39,9 +41,9 @@ test.describe('Unsaved Changes Guard lab', () => {
     await expect(page.locator('.ui-unsaved-changes-guard')).toHaveAttribute('data-tone', 'danger');
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
-    await expect(cell(page, 'save=cannot save label=unlabelled').locator('output')).toHaveText(
-      'Stayed',
-    );
+    await expect(
+      matrixCell(page, 'save=cannot save label=unlabelled').locator('output'),
+    ).toHaveText('Stayed');
   });
 
   test('UIC-UNSAVED-CHANGES-GUARD-2.1 UIC-UNSAVED-CHANGES-GUARD-2.5 UIC-UNSAVED-CHANGES-GUARD-4.1 guards a tab switch', async ({
@@ -212,7 +214,7 @@ test.describe('Unsaved Changes Guard lab', () => {
       await lab.open('unsaved-changes-guard', { theme });
       await expect(page.locator('#lab-root .ui-button').first()).toBeVisible();
       await lab.expectAccessible();
-      await cell(page, 'save=can save label=labelled')
+      await matrixCell(page, 'save=can save label=labelled')
         .getByRole('button', { name: 'Leave' })
         .click();
       await waitForSettledDialog(page);

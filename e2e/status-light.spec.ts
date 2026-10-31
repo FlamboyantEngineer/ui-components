@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Status Light lab', () => {
   test('UIC-STATUS-LIGHT-1.1 UIC-STATUS-LIGHT-1.3 draws 6, 8 and 10 pixel dots before their labels', async ({
@@ -13,7 +13,7 @@ test.describe('Status Light lab', () => {
       ['md', 8],
       ['lg', 10],
     ] as const) {
-      const light = page.locator(`[data-lab-cell="tone=success size=${size}"] .ui-status-light`);
+      const light = matrixCell(page, `tone=success size=${size}`).locator(`.ui-status-light`);
       await expect(light).toHaveText('Running');
       const dot = await light.locator('.ui-status-light__dot').boundingBox();
       const label = await light.locator('.ui-status-light__label').boundingBox();
@@ -31,8 +31,8 @@ test.describe('Status Light lab', () => {
     await lab.open('status-light');
     const colours = await Promise.all(
       ['neutral', 'info', 'success', 'warning', 'danger'].map((tone) =>
-        page
-          .locator(`[data-lab-cell="tone=${tone} size=md"] .ui-status-light__dot`)
+        matrixCell(page, `tone=${tone} size=md`)
+          .locator(`.ui-status-light__dot`)
           .evaluate((node) => getComputedStyle(node).backgroundColor),
       ),
     );
@@ -45,7 +45,7 @@ test.describe('Status Light lab', () => {
   }) => {
     await lab.open('status-light');
     const cell = (status: string, label: string) =>
-      page.locator(`[data-lab-cell="status=${status} label=${label}"] .ui-status-light`);
+      matrixCell(page, `status=${status} label=${label}`).locator(`.ui-status-light`);
     const defaults = await Promise.all(
       ['active', 'away', 'busy', 'idle'].map((status) => cell(status, 'default').textContent()),
     );

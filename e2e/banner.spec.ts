@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Banner lab', () => {
   test('UIC-BANNER-2.1 UIC-BANNER-1.2 announces each tone with its role and glyph', async ({
@@ -13,7 +13,7 @@ test.describe('Banner lab', () => {
       ['warning', 'status', 'polite', 'warning'],
       ['danger', 'alert', 'assertive', 'error'],
     ] as const) {
-      const banner = page.locator(`[data-lab-cell="tone=${tone} content=description"] .ui-banner`);
+      const banner = matrixCell(page, `tone=${tone} content=description`).locator(`.ui-banner`);
       await expect(banner).toHaveAttribute('role', role);
       await expect(banner).toHaveAttribute('aria-live', live);
       await expect(banner).toHaveAttribute('aria-atomic', 'true');

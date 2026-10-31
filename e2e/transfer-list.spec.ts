@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -12,7 +12,7 @@ function output(page: Page, name: string): Locator {
 test.describe('Transfer List lab', () => {
   test('UIC-TRANSFER-LIST-1.1 UIC-TRANSFER-LIST-1.3 draws every state', async ({ page, lab }) => {
     await lab.open('transfer-list');
-    const cell = (state: string) => page.locator(`[data-lab-cell="state=${state}"]`);
+    const cell = (state: string) => matrixCell(page, `state=${state}`);
     await expect(
       cell('chosen').locator('[data-side="chosen"] .ui-transfer-list__count'),
     ).toHaveText('2 items');

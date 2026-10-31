@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Problem List lab', () => {
   test('UIC-PROBLEM-LIST-1.1 UIC-PROBLEM-LIST-2.1 counts problems by severity in every content', async ({
@@ -7,7 +7,7 @@ test.describe('Problem List lab', () => {
   }) => {
     await lab.open('problem-list');
     const cell = (content: string, target: string) =>
-      page.locator(`[data-lab-cell="content=${content} target=${target}"] .ui-problem-list`);
+      matrixCell(page, `content=${content} target=${target}`).locator(`.ui-problem-list`);
     await expect(cell('empty', 'plain')).toHaveAttribute('data-empty', 'true');
     await expect(cell('empty', 'plain').getByRole('status')).toHaveText('No problems');
     await expect(cell('mixed', 'plain').getByRole('status')).toHaveText('3 errors, 1 warning');

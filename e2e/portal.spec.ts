@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, waitForLab } from './fixtures.js';
+import { expect, test, waitForLab, matrixCell } from './fixtures.js';
 
 /**
  * Makes one edge case the whole page: everything else turns inert, so Tab meets the document's
@@ -46,9 +46,7 @@ const layers = ['backdrop', 'drawer', 'modal', 'dropdown', 'context-menu', 'tool
 
 /** The card drawn topmost at an offset from the top-left of a stacking cell's stage. */
 async function topCardAt(page: Page, order: string, { x, y }: { x: number; y: number }) {
-  const stage = await page
-    .locator(`[data-lab-cell="order=${order}"] [data-lab-stage]`)
-    .boundingBox();
+  const stage = await matrixCell(page, `order=${order}`).locator(`[data-lab-stage]`).boundingBox();
   if (!stage) throw new Error('stage not rendered');
   return page.evaluate(
     ([px, py]) =>
@@ -67,7 +65,7 @@ test.describe('Portal lab', () => {
   }) => {
     await lab.open('portal');
     for (const [index, layer] of layers.entries()) {
-      const cell = page.locator(`[data-lab-cell="layer=${layer}"]`);
+      const cell = matrixCell(page, `layer=${layer}`);
       const wrapper = cell.locator('.ui-portal-host > .ui-portal');
       await expect(wrapper).toHaveAttribute('data-layer', layer);
       await expect(wrapper).toHaveCSS('z-index', String(100 + index * 10));

@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
-const cell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"] .ui-outline`);
+const cell = (page: Page, id: string) => matrixCell(page, id).locator(`.ui-outline`);
 
 test.describe('Outline lab', () => {
   test('UIC-OUTLINE-1.1 UIC-OUTLINE-1.3 UIC-OUTLINE-1.4 UIC-OUTLINE-2.1 renders every state', async ({

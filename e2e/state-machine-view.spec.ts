@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function field(page: Page, name: string): Locator {
@@ -21,7 +21,7 @@ test.describe('State Machine View lab', () => {
   }) => {
     await lab.open('state-machine-view');
     const cell = (state: string, orientation: string) =>
-      page.locator(`[data-lab-cell="state=${state} orientation=${orientation}"]`);
+      matrixCell(page, `state=${state} orientation=${orientation}`);
     const resting = cell('resting', 'horizontal');
     await expect(resting.locator('.ui-state-machine-view__initial-marker')).toHaveCount(1);
     await expect(resting.locator('.ui-diagram-canvas__edge')).toHaveCount(4);

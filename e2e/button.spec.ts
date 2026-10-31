@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 test.describe('Button lab', () => {
   test('UIC-HOOKS-2.3 clears an inactive hook despite a conflicting caller attribute', async ({
@@ -26,9 +26,10 @@ test.describe('Button lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const box = await page
-        .locator('[data-lab-family="button-main"]')
-        .locator(`[data-lab-cell="variant=secondary size=${size}"] .ui-button`)
+      const box = await matrixCell(page, `variant=secondary size=${size}`, {
+        family: 'button-main',
+      })
+        .locator(`.ui-button`)
         .boundingBox();
       expect(box?.height).toBe(height);
     }
@@ -39,9 +40,9 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const button = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-cell="variant=primary size=md"] .ui-button');
+    const button = matrixCell(page, 'variant=primary size=md', { family: 'button-main' }).locator(
+      '.ui-button',
+    );
     await button.focus();
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
@@ -55,18 +56,18 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const disabled = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-cell="variant=primary state=disabled"] .ui-button');
-    const focusable = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-cell="variant=primary state=focusable disabled"] .ui-button');
+    const disabled = matrixCell(page, 'variant=primary state=disabled', {
+      family: 'button-main',
+    }).locator('.ui-button');
+    const focusable = matrixCell(page, 'variant=primary state=focusable disabled', {
+      family: 'button-main',
+    }).locator('.ui-button');
     await expect(disabled).toHaveAttribute('disabled', '');
     await expect(focusable).not.toHaveAttribute('disabled');
     await expect(focusable).toHaveAttribute('aria-disabled', 'true');
-    const selected = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-cell="variant=primary state=selected"] .ui-button');
+    const selected = matrixCell(page, 'variant=primary state=selected', {
+      family: 'button-main',
+    }).locator('.ui-button');
     await selected.focus();
     await page.keyboard.press('Tab');
     await expect(focusable).toBeFocused();
@@ -124,9 +125,9 @@ test.describe('Button lab', () => {
     }) => {
       await lab.open('button', { theme });
       const cell = (hint: string, state: string) =>
-        page
-          .locator('[data-lab-family="button-main"]')
-          .locator(`[data-lab-cell="hint=${hint} state=${state}"] .ui-button`);
+        matrixCell(page, `hint=${hint} state=${state}`, { family: 'button-main' }).locator(
+          `.ui-button`,
+        );
       const both = cell('tooltip and shortcut', 'default');
       await expect(both).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+S');
       await expect(cell('tooltip', 'default')).not.toHaveAttribute('aria-keyshortcuts');
@@ -154,18 +155,18 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const link = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-cell="variant=primary link=enabled"] a.ui-button');
+    const link = matrixCell(page, 'variant=primary link=enabled', {
+      family: 'button-main',
+    }).locator('a.ui-button');
     await expect(link).toHaveAttribute('href', '#reports');
     await expect(link).toHaveAttribute('data-variant', 'primary');
-    const disabled = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-cell="variant=primary link=disabled"] .ui-button');
+    const disabled = matrixCell(page, 'variant=primary link=disabled', {
+      family: 'button-main',
+    }).locator('.ui-button');
     await expect(disabled).toHaveJSProperty('tagName', 'SPAN');
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     const box = await link.boundingBox();
-    expect(box?.height).toBe(28);
+    expect(box?.height).toBe(await controlHeight(page, 'md'));
     await link.focus();
     await expect(link).toHaveAttribute('data-focus-visible', 'true');
     await page.keyboard.press('Enter');

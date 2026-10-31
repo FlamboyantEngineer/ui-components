@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -15,7 +15,7 @@ test.describe('Character Grid lab', () => {
     lab,
   }) => {
     await lab.open('character-grid');
-    const stored = page.locator('[data-lab-cell="recent=stored set=all"]');
+    const stored = matrixCell(page, 'recent=stored set=all');
     await expect(stored.locator('.ui-character-grid__heading')).toHaveText([
       'Recently used',
       'Arrows',
@@ -26,7 +26,7 @@ test.describe('Character Grid lab', () => {
     await expect(stored.locator('.ui-character-grid__section').first().getByRole('row')).toHaveText(
       ['Recently used', '©', '€', '→'],
     );
-    const single = page.locator('[data-lab-cell="recent=none set=one"]');
+    const single = matrixCell(page, 'recent=none set=one');
     await expect(single.locator('.ui-character-grid__heading')).toHaveText(['Currency']);
     await expect(stored.locator('.ui-character-grid')).toHaveCSS('width', '300px');
     await lab.expectAccessible();

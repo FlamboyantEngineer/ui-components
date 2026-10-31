@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const database = 'Which database should the notes app use?';
 const features = 'Which features should the first version include?';
@@ -10,7 +10,7 @@ function demo(page: Page, name: string): Locator {
 }
 
 function cell(page: Page, axes: string): Locator {
-  return page.locator(`[data-lab-cell="${axes}"] .ui-chat-question`);
+  return matrixCell(page, axes).locator(`.ui-chat-question`);
 }
 
 async function boxOf(locator: Locator) {

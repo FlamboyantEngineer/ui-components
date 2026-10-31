@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Badge lab', () => {
   test('UIC-BADGE-1.2 UIC-BADGE-1.3 UIC-BADGE-1.4 draws every variant and tone at three heights', async ({
@@ -14,14 +14,14 @@ test.describe('Badge lab', () => {
         ['md', 22],
         ['lg', 26],
       ] as const) {
-        const box = await page
-          .locator(`[data-lab-cell="variant=${variant} tone=success size=${size}"] .ui-badge`)
+        const box = await matrixCell(page, `variant=${variant} tone=success size=${size}`)
+          .locator(`.ui-badge`)
           .boundingBox();
         expect(box?.height).toBe(height);
       }
     }
-    const dot = await page
-      .locator('[data-lab-cell="variant=status tone=danger size=md"] .ui-badge__dot')
+    const dot = await matrixCell(page, 'variant=status tone=danger size=md')
+      .locator('.ui-badge__dot')
       .boundingBox();
     expect(dot?.width).toBe(6);
   });
@@ -31,11 +31,11 @@ test.describe('Badge lab', () => {
     lab,
   }) => {
     await lab.open('badge');
-    const plain = page.locator('[data-lab-cell="variant=subtle tone=info size=md"] .ui-badge');
+    const plain = matrixCell(page, 'variant=subtle tone=info size=md').locator('.ui-badge');
     await expect(plain).not.toHaveAttribute('role');
-    const status = page.locator('[data-lab-cell="variant=status tone=info size=md"]');
+    const status = matrixCell(page, 'variant=status tone=info size=md');
     await expect(status.getByRole('status')).toHaveText('New');
-    const quiet = page.locator('[data-lab-cell="option=quiet status tone=info"] .ui-badge');
+    const quiet = matrixCell(page, 'option=quiet status tone=info').locator('.ui-badge');
     await expect(quiet).not.toHaveAttribute('role');
     await expect(quiet.locator('.ui-badge__dot')).toBeVisible();
     expect(await page.locator('#lab-root .ui-badge[tabindex]').count()).toBe(0);
@@ -47,7 +47,7 @@ test.describe('Badge lab', () => {
     lab,
   }) => {
     await lab.open('badge');
-    const capped = page.locator('[data-lab-cell="count=capped size=md"] .ui-badge');
+    const capped = matrixCell(page, 'count=capped size=md').locator('.ui-badge');
     await expect(capped.locator('.ui-badge__label')).toHaveText('9+');
     await expect(capped.locator('.ui-badge__label')).toHaveAttribute('aria-hidden', 'true');
     const spoken = capped.locator('.ui-badge__accessible-label');
@@ -55,12 +55,12 @@ test.describe('Badge lab', () => {
     const hidden = await spoken.boundingBox();
     expect(hidden?.width ?? 0).toBeLessThanOrEqual(1);
     await expect(
-      page.locator('[data-lab-cell="count=more size=md"] .ui-badge__accessible-label'),
+      matrixCell(page, 'count=more size=md').locator('.ui-badge__accessible-label'),
     ).toHaveText('20 or more');
-    const exact = page.locator('[data-lab-cell="count=exact size=md"] .ui-badge');
+    const exact = matrixCell(page, 'count=exact size=md').locator('.ui-badge');
     await expect(exact.locator('.ui-badge__label')).not.toHaveAttribute('aria-hidden');
     await expect(exact.locator('.ui-badge__accessible-label')).toHaveCount(0);
-    const zero = await page.locator('[data-lab-cell="count=zero size=sm"] .ui-badge').boundingBox();
+    const zero = await matrixCell(page, 'count=zero size=sm').locator('.ui-badge').boundingBox();
     expect(zero?.width).toBeGreaterThanOrEqual(18);
     expect(await capped.evaluate((node) => getComputedStyle(node).fontVariantNumeric)).toContain(
       'tabular-nums',
@@ -99,7 +99,7 @@ test.describe('Badge lab', () => {
     lab,
   }) => {
     await lab.open('badge');
-    const both = page.locator('[data-lab-cell="icon=both tone=info"] .ui-badge');
+    const both = matrixCell(page, 'icon=both tone=info').locator('.ui-badge');
     const start = await both.locator('.ui-badge__start-icon').boundingBox();
     const label = await both.locator('.ui-badge__label').boundingBox();
     const end = await both.locator('.ui-badge__end-icon').boundingBox();
@@ -112,7 +112,7 @@ test.describe('Badge lab', () => {
       ['md', 8],
       ['lg', 10],
     ] as const) {
-      const dot = page.locator(`[data-lab-cell="dot=danger size=${size}"] .ui-badge`);
+      const dot = matrixCell(page, `dot=danger size=${size}`).locator(`.ui-badge`);
       expect((await dot.boundingBox())?.width).toBe(width);
       await expect(dot.locator('.ui-badge__accessible-label')).toHaveText('Sold out marker');
     }

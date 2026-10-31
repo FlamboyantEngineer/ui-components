@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Text Match lab', () => {
   test('UIC-TEXT-MATCH-2.1 UIC-TEXT-MATCH-1.3 marks substrings or words for each query', async ({
@@ -7,7 +7,7 @@ test.describe('Text Match lab', () => {
   }) => {
     await lab.open('text-match');
     const marks = (query: string, matching: string) =>
-      page.locator(`[data-lab-cell="query=${query} matching=${matching}"] mark.ui-text-match`);
+      matrixCell(page, `query=${query} matching=${matching}`).locator(`mark.ui-text-match`);
     await expect(marks('(none)', 'substring')).toHaveCount(0);
     await expect(marks('to', 'substring')).toHaveCount(3);
     await expect(marks('to', 'words')).toHaveCount(2);
@@ -46,7 +46,7 @@ test.describe('Text Match lab', () => {
   }) => {
     await lab.open('text-match');
     const marks = (query: string, accents: string) =>
-      page.locator(`[data-lab-cell="query=${query} accents=${accents}"] mark.ui-text-match`);
+      matrixCell(page, `query=${query} accents=${accents}`).locator(`mark.ui-text-match`);
     await expect(marks('cafe', 'exact')).toHaveCount(0);
     await expect(marks('cafe', 'ignored')).toHaveText(['Café', 'café']);
     await expect(marks('café', 'exact')).toHaveText(['Café', 'café']);
@@ -58,9 +58,9 @@ test.describe('Text Match lab', () => {
       terms.nth(index).evaluate((node) => getComputedStyle(node).backgroundColor);
     const [lait, creme, cafe] = await Promise.all([tint(4), tint(1), tint(0)]);
     expect(new Set([lait, creme, cafe]).size).toBe(3);
-    await expect(
-      page.locator('[data-lab-cell="query=lait creme cafe accents=ignored"]'),
-    ).toHaveText('Café crème, crème brûlée and a café au lait');
+    await expect(matrixCell(page, 'query=lait creme cafe accents=ignored')).toHaveText(
+      'Café crème, crème brûlée and a café au lait',
+    );
     await lab.expectAccessible();
   });
 

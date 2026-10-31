@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -49,7 +49,7 @@ test.describe('Pivot Table lab', () => {
     lab,
   }) => {
     await lab.open('pivot-table');
-    const cell = (layout: string) => page.locator(`[data-lab-cell="layout=${layout}"]`);
+    const cell = (layout: string) => matrixCell(page, `layout=${layout}`);
     const basic = cell('rows and columns');
     await expect(basic.getByRole('columnheader', { name: 'Sum of Boxes' })).toBeVisible();
     await expect(rowHeaders(basic)).toHaveText(['East', 'North', 'South']);

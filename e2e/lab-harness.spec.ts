@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, formatLabUrl, test, waitForLab } from './fixtures.js';
+import { expect, formatLabUrl, test, waitForLab, matrixCell } from './fixtures.js';
 
 const customSheet = 'data:text/css,html%7Bbackground-color%3Argb(1%2C%202%2C%203)%7D';
 
@@ -14,13 +14,13 @@ test.describe('lab harness', () => {
   }) => {
     await lab.open('provider', { stylesheet: 'none' });
     await expect(page.locator('#ui-lab-stylesheet')).toHaveCount(0);
-    await expect(page.locator('[data-lab-cell="glyph=close source=default"] svg')).toBeVisible();
+    await expect(matrixCell(page, 'glyph=close source=default').locator('svg')).toBeVisible();
     const unstyled = await background(page);
 
     await lab.open('provider', { stylesheet: 'reference' });
     await expect(page.locator('#ui-lab-stylesheet')).toHaveAttribute('href', 'build/reference.css');
     expect(await background(page)).toBe('rgb(255, 255, 255)');
-    const glyph = page.locator('[data-lab-cell="glyph=close source=default"] .ui-glyph');
+    const glyph = matrixCell(page, 'glyph=close source=default').locator('.ui-glyph');
     expect((await glyph.boundingBox())?.width).toBeLessThan(40);
 
     await lab.open('provider', { stylesheet: customSheet });
@@ -222,7 +222,7 @@ test.describe('lab harness', () => {
     expect(rows).toBeGreaterThanOrEqual(26);
     expect(await cells.count()).toBe(rows * 2);
     await expect(
-      page.locator('[data-lab-cell="glyph=check source=replaced"] svg[data-glyph="check"] rect'),
+      matrixCell(page, 'glyph=check source=replaced').locator('svg[data-glyph="check"] rect'),
     ).toHaveCount(1);
   });
 

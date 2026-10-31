@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Display Options lab', () => {
   test('UIC-DISPLAY-OPTIONS-1.1 UIC-DISPLAY-OPTIONS-1.3 UIC-DISPLAY-OPTIONS-1.4 groups and sorts a table', async ({
@@ -7,7 +7,7 @@ test.describe('Display Options lab', () => {
   }) => {
     await lab.open('display-options');
     await expect(
-      page.locator('[data-lab-cell="state=disabled label=custom"]').getByRole('button'),
+      matrixCell(page, 'state=disabled label=custom').getByRole('button'),
     ).toBeDisabled();
     const demo = page.locator('[data-lab-demo="recipes"]');
     const table = demo.locator('[data-lab-output="table"]');

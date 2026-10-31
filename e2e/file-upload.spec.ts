@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function cell(page: Page, state: string, variant: string): Locator {
-  return page.locator(`[data-lab-cell="state=${state} variant=${variant}"]`);
+  return matrixCell(page, `state=${state} variant=${variant}`);
 }
 
 function upload(page: Page, variant: string): Locator {

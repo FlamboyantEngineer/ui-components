@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 function cell(page: Page, state: string, layout = 'label-control'): Locator {
-  return page.locator(`[data-lab-cell="state=${state} layout=${layout}"]`);
+  return matrixCell(page, `state=${state} layout=${layout}`);
 }
 
 function field(page: Page, name: string): Locator {
@@ -21,7 +21,7 @@ test.describe('Color Field lab', () => {
     await lab.open('color-field');
     const trigger = cell(page, 'resting').locator('.ui-color-field__trigger');
     await expect(trigger).toHaveAccessibleName('Accent #336699');
-    expect((await trigger.boundingBox())?.height).toBe(28);
+    expect((await trigger.boundingBox())?.height).toBe(await controlHeight(page, 'md'));
     await expect(cell(page, 'resting').locator('.ui-color-swatch')).toHaveCSS(
       'background-color',
       'rgb(51, 102, 153)',
@@ -35,10 +35,10 @@ test.describe('Color Field lab', () => {
     await readOnly.click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(cell(page, 'disabled').locator('.ui-color-field__trigger')).toBeDisabled();
-    await expect(page.locator('[data-lab-cell="format=rgb"] .ui-color-field__value')).toHaveText(
+    await expect(matrixCell(page, 'format=rgb').locator('.ui-color-field__value')).toHaveText(
       'rgb(51, 102, 153)',
     );
-    await expect(page.locator('[data-lab-cell="format=hsb"] .ui-color-field__value')).toHaveText(
+    await expect(matrixCell(page, 'format=hsb').locator('.ui-color-field__value')).toHaveText(
       'hsb(210, 66.67%, 60%)',
     );
     await lab.expectAccessible();
@@ -140,7 +140,7 @@ test.describe('Color Field lab', () => {
     lab,
   }) => {
     await lab.open('color-field');
-    await expect(page.locator('[data-lab-cell="format=hexa"] .ui-color-field__value')).toHaveText(
+    await expect(matrixCell(page, 'format=hexa').locator('.ui-color-field__value')).toHaveText(
       '#336699BF',
     );
     const formats = field(page, 'formats');
@@ -270,7 +270,7 @@ test.describe('Color Field lab', () => {
     await expect(input).toHaveValue('#2E8B57');
     const button = typing.getByRole('button', { name: 'Text colour picker' });
     const frame = await typing.locator('.ui-color-field__group').boundingBox();
-    expect(frame?.height).toBe(28);
+    expect(frame?.height).toBe(await controlHeight(page, 'md'));
     expect((await button.boundingBox())?.y).toBeGreaterThanOrEqual(frame?.y ?? 0);
     await input.fill('hsl(0, 100%, 50%)');
     await input.press('Enter');

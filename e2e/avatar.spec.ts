@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Avatar lab', () => {
   test('UIC-AVATAR-1.1 UIC-AVATAR-2.1 draws pictures, initials and group glyphs at every size', async ({
@@ -18,30 +18,30 @@ test.describe('Avatar lab', () => {
       ['fill', 48],
     ] as const) {
       for (const content of ['picture', 'initials', 'group']) {
-        const cell = page
-          .locator('[data-lab-family="avatar-main"]')
-          .locator(`[data-lab-cell="content=${content} variant=filled size=${size}"]`);
+        const cell = matrixCell(page, `content=${content} variant=filled size=${size}`, {
+          family: 'avatar-main',
+        });
         const box = await cell.locator('.ui-avatar').boundingBox();
         expect(box?.width).toBe(pixels);
         expect(box?.height).toBe(pixels);
       }
     }
-    const picture = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-cell="content=picture variant=filled size=md"] img');
+    const picture = matrixCell(page, 'content=picture variant=filled size=md', {
+      family: 'avatar-main',
+    }).locator('img');
     await expect(picture).toHaveClass('ui-avatar__image');
     expect(await picture.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(
       0,
     );
     await expect(
-      page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator('[data-lab-cell="content=initials variant=filled size=md"] .ui-avatar__initials'),
+      matrixCell(page, 'content=initials variant=filled size=md', {
+        family: 'avatar-main',
+      }).locator('.ui-avatar__initials'),
     ).toHaveText('MS');
     await expect(
-      page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator('[data-lab-cell="content=group variant=filled size=md"] .ui-avatar__glyph'),
+      matrixCell(page, 'content=group variant=filled size=md', { family: 'avatar-main' }).locator(
+        '.ui-avatar__glyph',
+      ),
     ).toBeVisible();
   });
 
@@ -52,17 +52,18 @@ test.describe('Avatar lab', () => {
     await lab.open('avatar');
     const fills = new Set<string>();
     for (let slot = 0; slot < 8; slot += 1) {
-      const filled = page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator(`[data-lab-cell="variant=filled slot=${slot}"] .ui-avatar`);
+      const filled = matrixCell(page, `variant=filled slot=${slot}`, {
+        family: 'avatar-main',
+      }).locator(`.ui-avatar`);
       await expect(filled).toHaveAttribute('data-color', String(slot));
       const fill = await filled
         .locator('.ui-avatar__initials')
         .evaluate((node) => getComputedStyle(node).backgroundColor);
       fills.add(fill);
-      const ring = await page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator(`[data-lab-cell="variant=outlined slot=${slot}"] .ui-avatar`)
+      const ring = await matrixCell(page, `variant=outlined slot=${slot}`, {
+        family: 'avatar-main',
+      })
+        .locator(`.ui-avatar`)
         .evaluate((node) => getComputedStyle(node).borderTopColor);
       expect(ring).toBe(fill);
     }
@@ -118,24 +119,19 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const derived = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-cell="name=jon de berg source=derived"]');
+    const derived = matrixCell(page, 'name=jon de berg source=derived', { family: 'avatar-main' });
     await expect(derived.getByRole('img', { name: 'jon de berg' })).toHaveText('JB');
     await expect(
-      page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator('[data-lab-cell="name=(blank) source=derived"]')
-        .getByRole('img'),
+      matrixCell(page, 'name=(blank) source=derived', { family: 'avatar-main' }).getByRole('img'),
     ).toHaveAccessibleName('Unnamed');
     await expect(
-      page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator('[data-lab-cell="name=Plato source=explicit initials"] .ui-avatar'),
+      matrixCell(page, 'name=Plato source=explicit initials', { family: 'avatar-main' }).locator(
+        '.ui-avatar',
+      ),
     ).toHaveText('AI');
-    const decorative = page
-      .locator('[data-lab-family="avatar-main"]')
-      .locator('[data-lab-cell="name=Plato source=decorative"] .ui-avatar');
+    const decorative = matrixCell(page, 'name=Plato source=decorative', {
+      family: 'avatar-main',
+    }).locator('.ui-avatar');
     await expect(decorative).toHaveAttribute('aria-hidden', 'true');
     await expect(decorative).not.toHaveAttribute('role');
     await lab.expectAccessible();
@@ -146,9 +142,10 @@ test.describe('Avatar lab', () => {
   test('UIC-AVATAR-2.3 rounds or squares the corners by shape', async ({ page, lab }) => {
     await lab.open('avatar');
     const radius = async (shape: string, content: string) =>
-      page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator(`[data-lab-cell="shape=${shape} content=${content} variant=filled"] .ui-avatar`)
+      matrixCell(page, `shape=${shape} content=${content} variant=filled`, {
+        family: 'avatar-main',
+      })
+        .locator(`.ui-avatar`)
         .evaluate((node) => getComputedStyle(node).borderTopLeftRadius);
     for (const content of ['picture', 'initials', 'group']) {
       expect(await radius('circle', content)).toBe('50%');
@@ -156,9 +153,9 @@ test.describe('Avatar lab', () => {
       expect(await radius('square', content)).toBe('0px');
     }
     await expect(
-      page
-        .locator('[data-lab-family="avatar-main"]')
-        .locator('[data-lab-cell="shape=square content=picture variant=filled"] .ui-avatar'),
+      matrixCell(page, 'shape=square content=picture variant=filled', {
+        family: 'avatar-main',
+      }).locator('.ui-avatar'),
     ).toHaveAttribute('data-shape', 'square');
   });
 

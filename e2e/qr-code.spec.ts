@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('QR Code lab', () => {
   test('UIC-QR-CODE-2.1 UIC-QR-CODE-2.2 draws each level at its version and size', async ({
@@ -12,13 +12,13 @@ test.describe('QR Code lab', () => {
       ['quartile', '5'],
       ['high', '7'],
     ] as const) {
-      const code = page.locator(`[data-lab-cell="text=sentence level=${level}"] .ui-qr-code`);
+      const code = matrixCell(page, `text=sentence level=${level}`).locator(`.ui-qr-code`);
       await expect(code).toHaveAttribute('data-error-correction', level);
       await expect(code).toHaveAttribute('data-version', version);
       const modules = Number(version) * 4 + 17 + 8;
       expect((await code.boundingBox())?.width).toBe(modules * 3);
     }
-    const wide = page.locator('[data-lab-cell="quietZone=0 moduleSize=4"] .ui-qr-code');
+    const wide = matrixCell(page, 'quietZone=0 moduleSize=4').locator('.ui-qr-code');
     await expect(wide).toHaveAttribute('viewBox', '0 0 25 25');
     expect((await wide.boundingBox())?.width).toBe(100);
   });
@@ -41,7 +41,7 @@ test.describe('QR Code lab', () => {
     await expect(code).toHaveAttribute('data-version', '4');
     await expect(page.locator('[data-lab-output="symbol"]')).toContainText('33 × 33');
     await expect(page.getByRole('img', { name: 'Guest Wi-Fi' })).toBeVisible();
-    await expect(page.locator('[data-lab-cell="case=version 40"] .ui-qr-code')).toHaveAttribute(
+    await expect(matrixCell(page, 'case=version 40').locator('.ui-qr-code')).toHaveAttribute(
       'data-version',
       '40',
     );

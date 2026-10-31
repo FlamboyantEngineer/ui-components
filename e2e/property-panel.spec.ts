@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function cell(page: Page, id: string): Locator {
-  return page.locator(`[data-lab-cell="${id}"]`);
+  return matrixCell(page, id);
 }
 
 async function box(locator: Locator) {
@@ -172,10 +172,10 @@ test.describe('Property Panel lab', () => {
     lab,
   }) => {
     await lab.open('property-panel');
-    const disabled = page.locator('[data-lab-cell="lock=disabled"]');
+    const disabled = matrixCell(page, 'lock=disabled');
     await expect(disabled.locator('.ui-property-panel')).toHaveAttribute('data-disabled', 'true');
     await expect(disabled.getByRole('textbox', { name: 'Width' })).toBeDisabled();
-    const readOnly = page.locator('[data-lab-cell="lock=read-only"]');
+    const readOnly = matrixCell(page, 'lock=read-only');
     const height = readOnly.getByRole('textbox', { name: 'Height' });
     await expect(height).toHaveAttribute('readonly', '');
     await height.focus();
@@ -184,7 +184,7 @@ test.describe('Property Panel lab', () => {
     const frame = readOnly.getByRole('button', { name: /^Frame/ });
     await frame.click();
     await expect(frame).toHaveAttribute('aria-expanded', 'false');
-    const editable = page.locator('[data-lab-cell="lock=editable"]').getByRole('textbox', {
+    const editable = matrixCell(page, 'lock=editable').getByRole('textbox', {
       name: 'Width',
     });
     await expect(editable).toBeEditable();

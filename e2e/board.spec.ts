@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const cards = (board: Locator, column: string) =>
@@ -31,7 +31,7 @@ test.describe('Board lab', () => {
     lab,
   }) => {
     await lab.open('board');
-    const cell = (state: string) => page.locator(`[data-lab-cell="state=${state}"]`);
+    const cell = (state: string) => matrixCell(page, `state=${state}`);
     const board = cell('cards').getByRole('group', { name: 'Chores, cards' });
     await expect(cards(board, 'To do')).toHaveText([
       'Order seedsUrgent',
@@ -299,10 +299,10 @@ test.describe('Board lab', () => {
       await expect(collapsed.locator('.ui-board__column-count')).toBeVisible();
       await expect(collapsed.locator('.ui-board__column-actions')).toBeVisible();
     }
-    const long = page.locator('[data-lab-cell="state=collapsed long title"]');
+    const long = matrixCell(page, 'state=collapsed long title');
     const longRow = await long.locator('.ui-board__columns').boundingBox();
-    const plainRow = await page
-      .locator('[data-lab-cell="state=cards"] .ui-board__columns')
+    const plainRow = await matrixCell(page, 'state=cards')
+      .locator('.ui-board__columns')
       .boundingBox();
     expect(longRow?.height).toBe(plainRow?.height);
     const title = long.locator('.ui-board__column[data-collapsed] .ui-board__column-title');

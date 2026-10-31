@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SvgMarkup } from '../src/components/svg-markup/svg-markup.js';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const attack = 'window.unsafe = true';
 
@@ -32,7 +32,7 @@ test.describe('SVG Markup lab', () => {
     const cells = page.locator('table[data-lab-matrix="markup placement"] td[data-lab-cell]');
     expect(await cells.count()).toBe(16);
     for (const markup of ['outline', 'solid', 'multi-path', 'gradient']) {
-      const alone = page.locator(`[data-lab-cell="markup=${markup} placement=standalone"] svg`);
+      const alone = matrixCell(page, `markup=${markup} placement=standalone`).locator(`svg`);
       await expect(alone).toHaveClass('ui-svg-markup');
       await expect(alone).toHaveAttribute('viewBox', '0 0 24 24');
       const box = await alone.boundingBox();
@@ -53,7 +53,7 @@ test.describe('SVG Markup lab', () => {
       '[data-lab-cell="markup=gradient placement=standalone"] linearGradient stop',
     );
     await expect(stop.first()).toHaveAttribute('stop-color', '#f59e0b');
-    const circle = page.locator('[data-lab-cell="markup=gradient placement=standalone"] circle');
+    const circle = matrixCell(page, 'markup=gradient placement=standalone').locator('circle');
     await expect(circle).toHaveAttribute('fill', /^url\(#.+_sunrise\)$/);
   });
 
@@ -141,13 +141,13 @@ test.describe('SVG Markup lab', () => {
 
   test('UIC-SVG-MARKUP-2.3 exposes only labelled drawings', async ({ page, lab }) => {
     await lab.open('svg-markup');
-    const alone = page.locator('[data-lab-cell="naming=labelled placement=standalone"]');
+    const alone = matrixCell(page, 'naming=labelled placement=standalone');
     await expect(alone.getByRole('img', { name: 'Add city' })).toHaveClass('ui-svg-markup');
-    const icon = page.locator('[data-lab-cell="naming=labelled placement=icon"]');
+    const icon = matrixCell(page, 'naming=labelled placement=icon');
     await expect(icon.getByRole('img', { name: 'Add city' })).toHaveClass('ui-icon');
     await expect(icon.locator('.ui-svg-markup')).toHaveAttribute('aria-hidden', 'true');
     await expect(
-      page.locator('[data-lab-cell="naming=decorative placement=standalone"] svg'),
+      matrixCell(page, 'naming=decorative placement=standalone').locator('svg'),
     ).toHaveAttribute('aria-hidden', 'true');
     await lab.expectAccessible();
   });

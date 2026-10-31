@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Avatar presence', () => {
   test('UIC-AVATAR-11.1 UIC-AVATAR-11.4 badges the status at every size', async ({ page, lab }) => {
@@ -9,9 +9,9 @@ test.describe('Avatar presence', () => {
       ['md', 32],
       ['lg', 40],
     ] as const) {
-      const cell = page
-        .locator('[data-lab-family="avatar-presence-cases"]')
-        .locator(`[data-lab-cell="interaction=image status=active size=${size}"]`);
+      const cell = matrixCell(page, `interaction=image status=active size=${size}`, {
+        family: 'avatar-presence-cases',
+      });
       const avatar = await cell.locator('.ui-avatar__surface').boundingBox();
       const badge = await cell.locator('.ui-avatar__indicator').boundingBox();
       expect(avatar?.width).toBe(pixels);
@@ -22,14 +22,14 @@ test.describe('Avatar presence', () => {
       }
     }
     await expect(
-      page
-        .locator('[data-lab-family="avatar-presence-cases"]')
-        .locator('[data-lab-cell="interaction=image status=none size=md"] .ui-avatar__indicator'),
+      matrixCell(page, 'interaction=image status=none size=md', {
+        family: 'avatar-presence-cases',
+      }).locator('.ui-avatar__indicator'),
     ).toHaveCount(0);
     await expect(
-      page
-        .locator('[data-lab-family="avatar-presence-cases"]')
-        .locator('[data-lab-cell="interaction=image status=idle size=md"] .ui-avatar'),
+      matrixCell(page, 'interaction=image status=idle size=md', {
+        family: 'avatar-presence-cases',
+      }).locator('.ui-avatar'),
     ).toHaveAttribute('data-status', 'idle');
   });
 
@@ -66,14 +66,14 @@ test.describe('Avatar presence', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const image = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-cell="interaction=image status=away size=md"]');
+    const image = matrixCell(page, 'interaction=image status=away size=md', {
+      family: 'avatar-presence-cases',
+    });
     await expect(image.getByRole('img', { name: 'Maria Santos, Away' })).toBeVisible();
     await expect(image.getByRole('button')).toHaveCount(0);
-    const button = page
-      .locator('[data-lab-family="avatar-presence-cases"]')
-      .locator('[data-lab-cell="interaction=button status=busy size=md"]');
+    const button = matrixCell(page, 'interaction=button status=busy size=md', {
+      family: 'avatar-presence-cases',
+    });
     await expect(button.getByRole('button', { name: 'Maria Santos, Busy' })).toBeVisible();
     await lab.expectAccessible();
     await lab.open('avatar', { theme: 'dark' });

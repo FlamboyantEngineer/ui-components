@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function editor(page: Page, name: string): Locator {
   return page.locator(`[data-lab-editor="${name}"]`);
@@ -411,7 +411,7 @@ test.describe('Rich Text Editor lab', () => {
     lab,
   }) => {
     await lab.open('rich-text-editor');
-    const field = page.locator('[data-lab-cell="state=resting chrome=plain"] .ui-rich-text-editor');
+    const field = matrixCell(page, 'state=resting chrome=plain').locator('.ui-rich-text-editor');
     const document = field.getByRole('textbox', { name: /^Note/ });
     await document.click();
     await page.keyboard.press('Control+End');
@@ -433,7 +433,7 @@ test.describe('Rich Text Editor lab', () => {
     lab,
   }) => {
     await lab.open('rich-text-editor');
-    const readOnly = page.locator('[data-lab-cell="state=read-only chrome=toolbar"]');
+    const readOnly = matrixCell(page, 'state=read-only chrome=toolbar');
     const box = readOnly.getByRole('textbox', { name: 'Note' });
     await expect(box).toHaveAttribute('contenteditable', 'false');
     await expect(box).toHaveAttribute('aria-readonly', 'true');
@@ -441,12 +441,12 @@ test.describe('Rich Text Editor lab', () => {
     await page.keyboard.type('x');
     await expect(box).toHaveText('Pick the pears on Friday.');
     await expect(readOnly.getByRole('button', { name: 'Bold' })).toBeDisabled();
-    const disabled = page.locator('[data-lab-cell="state=disabled chrome=plain"]');
+    const disabled = matrixCell(page, 'state=disabled chrome=plain');
     await expect(disabled.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    const invalid = page.locator('[data-lab-cell="state=invalid chrome=plain"]');
+    const invalid = matrixCell(page, 'state=invalid chrome=plain');
     await expect(invalid.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-invalid',
       'true',

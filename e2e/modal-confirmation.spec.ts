@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Modal confirmation helpers', () => {
   test('UIC-MODAL-21.1 UIC-MODAL-21.3 UIC-MODAL-21.4 opens every cell with focus on the safe action', async ({
@@ -9,9 +9,9 @@ test.describe('Modal confirmation helpers', () => {
     for (const tone of ['neutral', 'danger']) {
       for (const size of ['sm', 'md', 'lg']) {
         for (const focus of ['cancel', 'confirm']) {
-          const cell = page
-            .locator('[data-lab-family="modal-confirmation-cases"]')
-            .locator(`[data-lab-cell="tone=${tone} size=${size} focus=${focus}"]`);
+          const cell = matrixCell(page, `tone=${tone} size=${size} focus=${focus}`, {
+            family: 'modal-confirmation-cases',
+          });
           const button = cell.getByRole('button');
           await button.click();
           const dialog = page.getByRole('alertdialog');
@@ -38,9 +38,9 @@ test.describe('Modal confirmation helpers', () => {
 
   test('UIC-MODAL-21.2 reports the answer of the declarative dialog', async ({ page, lab }) => {
     await lab.open('modal');
-    const cell = page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-cell="tone=danger size=md focus=cancel"]');
+    const cell = matrixCell(page, 'tone=danger size=md focus=cancel', {
+      family: 'modal-confirmation-cases',
+    });
     await cell.getByRole('button').click();
     await expect(page.getByRole('alertdialog')).toHaveAccessibleDescription(
       'The file is removed for everyone. This cannot be undone.',
@@ -84,9 +84,10 @@ test.describe('Modal confirmation helpers', () => {
   test('UIC-MODAL-21.4 passes an accessibility check in the dark theme', async ({ page, lab }) => {
     await lab.open('modal', { theme: 'dark' });
     await lab.expectAccessible();
-    await page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-cell="tone=danger size=md focus=cancel"] button')
+    await matrixCell(page, 'tone=danger size=md focus=cancel', {
+      family: 'modal-confirmation-cases',
+    })
+      .locator('button')
       .click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
     await lab.expectAccessible('.ui-modal');
@@ -103,9 +104,8 @@ test.describe('Modal confirmation helpers', () => {
       ['warning', 'default', 'warning'],
       ['danger', 'error', 'error'],
     ] as const) {
-      await page
-        .locator('[data-lab-family="modal-confirmation-cases"]')
-        .locator(`[data-lab-cell="tone=${tone} icon=${icon}"] button`)
+      await matrixCell(page, `tone=${tone} icon=${icon}`, { family: 'modal-confirmation-cases' })
+        .locator(`button`)
         .click();
       const overlay = page.locator(`.ui-modal[data-lab-modal="news-${tone}-${icon}"]`);
       await expect(overlay).toHaveAttribute('data-tone', tone);
@@ -119,9 +119,8 @@ test.describe('Modal confirmation helpers', () => {
       await page.keyboard.press('Enter');
       await expect(overlay).toHaveCount(0);
     }
-    await page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-cell="tone=info icon=none"] button')
+    await matrixCell(page, 'tone=info icon=none', { family: 'modal-confirmation-cases' })
+      .locator('button')
       .click();
     await expect(page.locator('.ui-modal__confirmation-icon')).toHaveCount(0);
   });

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 for (const mode of ['hidden', 'fieldset', 'chosen-hidden', 'chosen-plain']) {
   test(`UIC-MODAL-3.1 UIC-MODAL-3.4 focuses the first usable body field after ${mode}`, async ({
@@ -43,9 +43,9 @@ test.describe('Modal lab', () => {
     const viewport = page.viewportSize();
     for (const tone of ['neutral', 'danger']) {
       for (const [size, width] of [...sizes, ['full', (viewport?.width ?? 0) - 32] as const]) {
-        const button = page
-          .locator('[data-lab-family="modal-main"]')
-          .locator(`[data-lab-cell="tone=${tone} size=${size}"] button`);
+        const button = matrixCell(page, `tone=${tone} size=${size}`, {
+          family: 'modal-main',
+        }).locator(`button`);
         await button.click();
         const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-${size}"]`);
         await expect(overlay).toHaveAttribute('data-tone', tone);
@@ -222,9 +222,8 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    await page
-      .locator('[data-lab-family="modal-main"]')
-      .locator('[data-lab-cell="state=error tone=danger"] button')
+    await matrixCell(page, 'state=error tone=danger', { family: 'modal-main' })
+      .locator('button')
       .click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
     const buttons = page.locator('.ui-modal__actions button');
@@ -233,17 +232,15 @@ test.describe('Modal lab', () => {
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
 
-    await page
-      .locator('[data-lab-family="modal-main"]')
-      .locator('[data-lab-cell="state=secondary action tone=neutral"] button')
+    await matrixCell(page, 'state=secondary action tone=neutral', { family: 'modal-main' })
+      .locator('button')
       .click();
     await expect(buttons).toHaveText(['Cancel', 'Discard', 'Save']);
     await page.getByRole('button', { name: 'Discard' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    await page
-      .locator('[data-lab-family="modal-main"]')
-      .locator('[data-lab-cell="state=action variant tone=neutral"] button')
+    await matrixCell(page, 'state=action variant tone=neutral', { family: 'modal-main' })
+      .locator('button')
       .click();
     await expect(page.getByRole('button', { name: 'Remove', exact: true })).toHaveAttribute(
       'data-variant',
@@ -257,9 +254,9 @@ test.describe('Modal lab', () => {
 
   test('UIC-MODAL-1.1 works without a stylesheet', async ({ page, lab }) => {
     await lab.open('modal', { stylesheet: 'none' });
-    const button = page
-      .locator('[data-lab-family="modal-main"]')
-      .locator('[data-lab-cell="tone=neutral size=md"] button');
+    const button = matrixCell(page, 'tone=neutral size=md', { family: 'modal-main' }).locator(
+      'button',
+    );
     await button.click();
     await expect(page.getByRole('dialog', { name: 'Rename Report.pdf' })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -275,17 +272,15 @@ test.describe('Modal lab', () => {
       expect(page.locator('.ui-modal[data-entering], .ui-modal[data-exiting]')).toHaveCount(0);
     await lab.open('modal', { theme: 'dark' });
     await lab.expectAccessible();
-    await page
-      .locator('[data-lab-family="modal-main"]')
-      .locator('[data-lab-cell="state=error tone=danger"] button')
+    await matrixCell(page, 'state=error tone=danger', { family: 'modal-main' })
+      .locator('button')
       .click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
     await settled();
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
-    await page
-      .locator('[data-lab-family="modal-main"]')
-      .locator('[data-lab-cell="state=status tone=neutral"] button')
+    await matrixCell(page, 'state=status tone=neutral', { family: 'modal-main' })
+      .locator('button')
       .click();
     await expect(page.locator('.ui-modal').getByRole('status')).toHaveText('Choose a city.');
     await settled();
@@ -295,9 +290,8 @@ test.describe('Modal lab', () => {
   test('UIC-MODAL-1.4 opens the news tones', async ({ page, lab }) => {
     await lab.open('modal');
     for (const tone of ['info', 'success', 'warning']) {
-      await page
-        .locator('[data-lab-family="modal-main"]')
-        .locator(`[data-lab-cell="tone=${tone} size=md"] button`)
+      await matrixCell(page, `tone=${tone} size=md`, { family: 'modal-main' })
+        .locator(`button`)
         .click();
       const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-md"]`);
       await expect(overlay).toHaveAttribute('data-tone', tone);

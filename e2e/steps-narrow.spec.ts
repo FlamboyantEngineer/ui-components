@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const widths = ['240', '264', '320', 'desktop'] as const;
@@ -7,7 +7,7 @@ const counts = ['4', '6', '8'] as const;
 const variants = ['default', 'compact'] as const;
 
 const list = (page: Page, steps: string, variant: string, width: string) =>
-  page.locator(`[data-lab-cell="steps=${steps} variant=${variant} width=${width}"] .ui-steps`);
+  matrixCell(page, `steps=${steps} variant=${variant} width=${width}`).locator(`.ui-steps`);
 
 const box = async (locator: Locator) => requireDefined(await locator.boundingBox());
 

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function boxOf(locator: Locator) {
   const box = await locator.boundingBox();
@@ -9,7 +9,7 @@ async function boxOf(locator: Locator) {
 
 /** Opens the drawer of a matrix cell and waits until it has slid in and taken focus. */
 async function openCell(page: Page, cell: string, name = 'Filters') {
-  const trigger = page.locator(`[data-lab-cell="${cell}"] button`);
+  const trigger = matrixCell(page, cell).locator(`button`);
   await trigger.click();
   const dialog = page.getByRole('dialog', { name });
   await expect(dialog).toBeFocused();
