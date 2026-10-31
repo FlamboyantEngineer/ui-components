@@ -47,6 +47,28 @@ test.describe('Button asynchronous actions', () => {
     await expect(submits).toHaveText('2');
   });
 
+  for (const key of ['Space', 'Enter']) {
+    test(`UIC-BUTTON-21.2 submits its form with the ${key} press that starts the action`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('button');
+      const cases = page.locator('[data-lab-family="button-action-cases"]');
+      const send = cases.locator('[data-lab-action="submit"]');
+      const submits = cases.locator('[data-lab-output="submits"]');
+      await send.focus();
+      await page.keyboard.press(key);
+      await expect(send).toHaveAttribute('data-pending', 'true');
+      await expect(submits).toHaveText('1');
+      await page.keyboard.press('Space');
+      await page.keyboard.press('Enter');
+      await send.evaluate((node) => (node as HTMLButtonElement).click());
+      await expect(submits).toHaveText('1');
+      await cases.locator('[data-lab-action="finish-send"]').click();
+      await expect(send).not.toHaveAttribute('data-pending', 'true');
+    });
+  }
+
   test('UIC-BUTTON-21.3 returns to idle after a rejection and reports it', async ({
     page,
     lab,

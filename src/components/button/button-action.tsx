@@ -64,13 +64,15 @@ export function usePendingAction({
 
 /**
  * Draws a submit or reset button that keeps its type while pending and cancels the native
- * activation of a click that arrives while `isBusy`. React Aria turns a pending submit button into a
- * plain one, which in a browser lands before the click that started the action submits; a click
- * guard instead lets that click submit and refuses the repeats, also during `pendingDelay`.
+ * activation of a click that arrives while `isBusy`, unless it is the click of the press that
+ * started the action (`isAdmitted`). React Aria turns a pending submit button into a plain one,
+ * which in a browser lands before the click that started the action submits; a click guard instead
+ * lets that click submit and refuses the repeats, also during `pendingDelay`. Space presses before
+ * its click, so the action is already running when that click arrives.
  */
 function guardActivation(
   type: 'submit' | 'reset',
-  isBusy: () => boolean,
+  guard: { isBusy: () => boolean; isAdmitted: () => boolean },
   render: ButtonProps['render'],
 ): ElementRender<'button', ButtonRenderState> {
   return (props, state) => {
@@ -78,7 +80,7 @@ function guardActivation(
       ...props,
       type,
       onClick: (event: MouseEvent<HTMLButtonElement>) => {
-        if (isBusy()) event.preventDefault();
+        if (guard.isBusy() && !guard.isAdmitted()) event.preventDefault();
         props.onClick?.(event);
       },
     };
@@ -99,14 +101,26 @@ export function useButtonAction({
 }: ButtonProps) {
   const { pending, run, isBusy } = usePendingAction({ isPending, isDisabled, onError });
   const showsPending = useActiveAfter(pending, pendingDelay);
+  // The press that starts an action admits the click it dispatches in the same task, and no other.
+  const admitted = useRef(false);
   const handlePress = useCallback(
-    (event: PressEvent) => run(onPress ? () => onPress(event) : undefined),
-    [run, onPress],
+    (event: PressEvent) => {
+      const wasBusy = isBusy();
+      run(onPress ? () => onPress(event) : undefined);
+      if (wasBusy || !isBusy()) return;
+      admitted.current = true;
+      setTimeout(() => {
+        admitted.current = false;
+      });
+    },
+    [run, isBusy, onPress],
   );
   const submits = !isDisabled && (type === 'submit' || type === 'reset');
   return {
     onPress: href === undefined ? handlePress : onPress,
     isPending: href === undefined && showsPending,
-    render: submits ? guardActivation(type, isBusy, render) : render,
+    render: submits
+      ? guardActivation(type, { isBusy, isAdmitted: () => admitted.current }, render)
+      : render,
   };
 }
