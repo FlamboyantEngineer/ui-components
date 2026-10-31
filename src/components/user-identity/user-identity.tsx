@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, PresenceStatus, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toImageProps } from '../icon/icon.js';
@@ -12,6 +12,7 @@ import {
   splitAvatarIdentity,
   type AvatarIdentity,
   type AvatarProps,
+  resolveStatusLabel,
 } from '../avatar/avatar.js';
 
 export type UserIdentitySize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
@@ -24,9 +25,9 @@ export interface UserIdentityProps
   nameSuffix?: ReactNode;
   /** Selects the avatar size. Defaults to `md`. */
   size?: UserIdentitySize | undefined;
-  /** What the person is doing, as any word the host stylesheet knows (`active`, `away`, …). */
-  status?: string | undefined;
-  /** Human-readable status, which names the status badge for assistive technology. */
+  /** The person's presence, published as `data-status` and drawn as a status badge. */
+  status?: PresenceStatus | undefined;
+  /** The status in words, which names the badge. Defaults to the provider's `presenceStatus`. */
   statusLabel?: string | undefined;
 }
 
@@ -49,9 +50,8 @@ export function UserIdentity(props: UserIdentityProps) {
     { description, nameSuffix, size = 'md', colorCount, status, statusLabel, className, ...rest },
   ] = splitAvatarIdentity(props);
   const strings = useUiStrings();
-  const statusValue = status?.trim() || undefined;
   return (
-    <span {...rest} {...hooks.root({ className, data: { size, status: statusValue } })}>
+    <span {...rest} {...hooks.root({ className, data: { size, status } })}>
       <Avatar
         {...identity}
         colorCount={colorCount}
@@ -74,10 +74,13 @@ export function UserIdentity(props: UserIdentityProps) {
       </span>
       {/* After the text and a space, so the status is read after the name; the stylesheet places it
       on the avatar. */}
-      {statusValue ? (
+      {status ? (
         <>
           {' '}
-          <span {...hooks.slot('indicator')} {...toImageProps(statusLabel?.trim() || undefined)} />
+          <span
+            {...hooks.slot('indicator')}
+            {...toImageProps(resolveStatusLabel({ status, statusLabel }, strings))}
+          />
         </>
       ) : null}
     </span>

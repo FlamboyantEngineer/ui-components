@@ -13,7 +13,7 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 
 ### UIC-USER-CARD-1.2 - Status
 
-A non-blank `status` shall be published, trimmed, in `data-status` on the root, a word the host stylesheet maps to a look (`active`, `away`, …). A non-blank `statusLabel` shall draw a `ui-user-card__status` row holding a decorative `ui-user-card__indicator` and the trimmed label in `ui-user-card__status-label`. Without a status label there is no status row.
+A `status` (a `PresenceStatus`, as on [Avatar](AVATAR.md#uic-avatar-111---avatar-and-status)) shall be published in `data-status` on the root. A status in words, the trimmed `statusLabel` or else the provider's `presenceStatus` string for `status`, shall draw a `ui-user-card__status` row holding a decorative `ui-user-card__indicator` and that text in `ui-user-card__status-label`. With neither there is no status row.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
@@ -105,7 +105,7 @@ Verification: `src/components/user-card/user-card.test.tsx`
 | `ui-user-card__trigger`      | slot      |                                   | The trigger button around the caller's content.                |
 | `ui-user-card__popover`      | slot      |                                   | The open card's popover (also `ui-hover-card` on hover).       |
 | `ui-user-card__skeleton`     | slot      |                                   | The placeholder while the profile loads (also `ui-skeleton`).  |
-| `data-status`                | attribute |                                   | The caller's status word, on the card.                         |
+| `data-status`                | attribute |                                   | The `status`: `active`, `away`, `busy` or `idle`.              |
 | `data-loading`               | state     | `true`                            | The card's profile is loading.                                 |
 | `data-hovered`               | state     | `true`                            | Pointer over the trigger (React Aria).                         |
 | `data-pressed`               | state     | `true`                            | The trigger is being pressed (React Aria).                     |

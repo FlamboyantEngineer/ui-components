@@ -48,21 +48,21 @@ Verification: `src/components/user-identity/user-identity.test.tsx`
 
 ### UIC-USER-IDENTITY-1.7 - Presence
 
-A non-blank `status` shall be published, trimmed, in `data-status` on the root, together with a `ui-user-identity__indicator` badge the stylesheet draws on the avatar's corner. The badge comes after the name and secondary line, so the status is read after them: a `role="img"` named by the trimmed `statusLabel`, or hidden from assistive technology without one. Without a status neither renders.
+A `status` (a `PresenceStatus`, as on [Avatar](AVATAR.md#uic-avatar-111---avatar-and-status)) shall be published in `data-status` on the root, together with a `ui-user-identity__indicator` badge the stylesheet draws on the avatar's corner. The badge comes after the name and secondary line, so the status is read after them: a `role="img"` named by the trimmed `statusLabel`, or by the provider's `presenceStatus` string for `status` when the label is blank. Without a status neither renders.
 
 Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference/user-identity.css`
 Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
 
 ## Hooks
 
-| Hook                            | Kind      | Values                 | Description                                     |
-| ------------------------------- | --------- | ---------------------- | ----------------------------------------------- |
-| `ui-user-identity`              | root      |                        | The row (`<span>`).                             |
-| `ui-user-identity__avatar`      | slot      |                        | The decorative avatar (also `ui-avatar`).       |
-| `ui-user-identity__content`     | slot      |                        | The column holding the title and description.   |
-| `ui-user-identity__title`       | slot      |                        | The line holding the name and its suffix.       |
-| `ui-user-identity__name`        | slot      |                        | The display name.                               |
-| `ui-user-identity__description` | slot      |                        | The secondary line.                             |
-| `ui-user-identity__indicator`   | slot      |                        | The status badge, when there is a status.       |
-| `data-size`                     | attribute | `xs`, `sm`, `md`, `lg` | Row and avatar size.                            |
-| `data-status`                   | attribute |                        | The caller's status word (`active`, `away`, …). |
+| Hook                            | Kind      | Values                 | Description                                       |
+| ------------------------------- | --------- | ---------------------- | ------------------------------------------------- |
+| `ui-user-identity`              | root      |                        | The row (`<span>`).                               |
+| `ui-user-identity__avatar`      | slot      |                        | The decorative avatar (also `ui-avatar`).         |
+| `ui-user-identity__content`     | slot      |                        | The column holding the title and description.     |
+| `ui-user-identity__title`       | slot      |                        | The line holding the name and its suffix.         |
+| `ui-user-identity__name`        | slot      |                        | The display name.                                 |
+| `ui-user-identity__description` | slot      |                        | The secondary line.                               |
+| `ui-user-identity__indicator`   | slot      |                        | The status badge, when there is a status.         |
+| `data-size`                     | attribute | `xs`, `sm`, `md`, `lg` | Row and avatar size.                              |
+| `data-status`                   | attribute |                        | The `status`: `active`, `away`, `busy` or `idle`. |

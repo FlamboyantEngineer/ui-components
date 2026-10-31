@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
+import type { BaseProps, NativeProps, PresenceStatus, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
@@ -10,16 +10,13 @@ export type StatusLightTone = Tone;
 
 export type StatusLightSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-/** A person's presence, in the words a presence avatar uses. */
-export type StatusLightStatus = 'active' | 'away' | 'busy' | 'idle';
-
 export interface StatusLightProps extends BaseProps, Pick<NativeProps<'span'>, 'aria-label'> {
   /** The visible label. Defaults to the presence label of `status`, if any. */
   children?: ReactNode;
   /** The status's tone. Defaults to `neutral`. */
   tone?: StatusLightTone | undefined;
   /** A presence state, published for the stylesheet and labelled from the provider's strings. */
-  status?: StatusLightStatus | undefined;
+  status?: PresenceStatus | undefined;
   /** Dot and text size. Defaults to `md`. */
   size?: StatusLightSize | undefined;
   /** The status is still in progress, such as a deployment running; the stylesheet may pulse the dot. */

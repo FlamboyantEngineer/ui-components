@@ -121,26 +121,22 @@ describe('UserIdentity', () => {
       <UserIdentity
         name="Lena Ortiz"
         description="Research"
-        status=" away "
-        statusLabel=" Away "
+        status="away"
+        statusLabel=" Away until noon "
       />,
     );
     const element = root(container);
     expect(element).toHaveAttribute('data-status', 'away');
     const badge = element.lastElementChild as HTMLElement;
     expect(badge).toHaveClass('ui-user-identity__indicator');
-    expect(badge).toBe(screen.getByRole('img', { name: 'Away' }));
+    expect(badge).toBe(screen.getByRole('img', { name: 'Away until noon' }));
     expect(element.querySelector('.ui-avatar')).toHaveAttribute('aria-hidden', 'true');
     expectHooksMatchSpec(container, 'USER-IDENTITY', { slots: 'all' });
 
     rerender(<UserIdentity name="Lena Ortiz" status="busy" />);
-    expect(container.querySelector('.ui-user-identity__indicator')).toHaveAttribute(
-      'aria-hidden',
-      'true',
-    );
-    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Busy' })).toHaveClass('ui-user-identity__indicator');
 
-    rerender(<UserIdentity name="Lena Ortiz" status="  " statusLabel="Away" />);
+    rerender(<UserIdentity name="Lena Ortiz" statusLabel="Away" />);
     expect(root(container)).not.toHaveAttribute('data-status');
     expect(container.querySelector('.ui-user-identity__indicator')).toBeNull();
   });

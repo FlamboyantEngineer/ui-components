@@ -10,9 +10,9 @@ export function minutesAgo(minutes: number): string {
 }
 
 const people = {
-  ana: { id: 'ana', name: 'Ana Lima', presence: 'active', presenceLabel: 'Active' },
-  ben: { id: 'ben', name: 'Ben Ode', src: samplePicture, presence: 'away', presenceLabel: 'Away' },
-  chen: { id: 'chen', name: 'Chen Wu', presence: 'busy', presenceLabel: 'Busy' },
+  ana: { id: 'ana', name: 'Ana Lima', presence: 'active' as const },
+  ben: { id: 'ben', name: 'Ben Ode', src: samplePicture, presence: 'away' as const },
+  chen: { id: 'chen', name: 'Chen Wu', presence: 'busy' as const },
   dia: { id: 'dia', name: 'Dia Rao', src: otherPicture },
   eli: { id: 'eli', name: 'Eli Park' },
 };

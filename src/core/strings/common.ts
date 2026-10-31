@@ -1,4 +1,5 @@
 import { defineStrings, toSelectKey } from '../message-format.js';
+import type { PresenceStatus } from '../props.js';
 /** The formatted parts of a segmented progress bar's value text. */
 interface SegmentProgressText {
   /** Completed units. */
@@ -102,7 +103,7 @@ export interface CommonStrings {
   /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
   nameWithStatus: (name: string, status: string) => string;
   /** The label of a presence state on its own (`Away`). */
-  presenceStatus: (status: 'active' | 'away' | 'busy' | 'idle') => string;
+  presenceStatus: (status: PresenceStatus) => string;
   /** Accessible name of an overflow count, with the names it hides when known. */
   morePeople: (count: number, names: readonly string[]) => string;
   /**

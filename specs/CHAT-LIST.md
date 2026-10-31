@@ -20,7 +20,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 ### UIC-CHAT-LIST-1.3 - Row names
 
-A row shall be named by the provider string `conversationLabel` from its title, the presence label of its one participant (unless it has its own `avatar`), its unread count, whether it is muted and its time as the row shows it, followed by its last message. Typing the first letters of a title moves to that row.
+A row shall be named by the provider string `conversationLabel` from its title, the presence of its one participant in words (unless it has its own `avatar`): their `presenceLabel`, or the provider's `presenceStatus` string for their `presence`, its unread count, whether it is muted and its time as the row shows it, followed by its last message. Typing the first letters of a title moves to that row.
 
 Implementation: `src/components/chat-list/chat-list-row.tsx`, `src/core/strings/chat-list.ts`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`

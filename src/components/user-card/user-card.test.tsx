@@ -55,10 +55,10 @@ describe('UserCard', () => {
     expect(screen.getByRole('dialog', { name: 'Someone' })).toHaveTextContent('Someone');
   });
 
-  it('UIC-USER-CARD-1.2 publishes the status word and draws a status row for a label', () => {
-    const { container, rerender } = render(<UserCard name="Jon Berg" status=" away " />);
+  it('UIC-USER-CARD-1.2 publishes the status and draws a status row named by its label', () => {
+    const { container, rerender } = render(<UserCard name="Jon Berg" status="away" />);
     expect(card(container)).toHaveAttribute('data-status', 'away');
-    expect(container.querySelector('.ui-user-card__status')).toBeNull();
+    expect(container.querySelector('.ui-user-card__status-label')).toHaveTextContent(/^Away$/);
 
     rerender(<UserCard name="Jon Berg" status="active" statusLabel=" Editing " />);
     const row = container.querySelector('.ui-user-card__status') as HTMLElement;
@@ -68,7 +68,7 @@ describe('UserCard', () => {
       slots: ['status', 'indicator', 'status-label'],
     });
 
-    rerender(<UserCard name="Jon Berg" status="  " statusLabel="  " />);
+    rerender(<UserCard name="Jon Berg" statusLabel="  " />);
     expect(card(container)).not.toHaveAttribute('data-status');
     expect(container.querySelector('.ui-user-card__status')).toBeNull();
   });

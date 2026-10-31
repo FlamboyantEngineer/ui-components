@@ -4,10 +4,11 @@ import { BellSlashGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import type { PresenceStatus } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { capitalizeText, describeRelativeTime } from '../../utils/relative-time.js';
-import { Avatar, type AvatarIdentity } from '../avatar/avatar.js';
+import { Avatar, resolveStatusLabel, type AvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
@@ -19,9 +20,9 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 export interface ChatListParticipant extends AvatarIdentity {
   /** Stable id, used to keep each person's avatar across renders. */
   id: string;
-  /** A presence word the stylesheet draws on the avatar, such as `online` or `away`. */
-  presence?: string | undefined;
-  /** The presence in words, read after the person's name, such as "Online". */
+  /** The person's presence, drawn on the avatar. */
+  presence?: PresenceStatus | undefined;
+  /** The presence in words, read after the person's name. Defaults to the provider's `presenceStatus`. */
   presenceLabel?: string | undefined;
 }
 
@@ -100,11 +101,15 @@ export function ChatListRow({ conversation, renderActions, getNow }: ChatListRow
   const { title, lastMessage, time, isMuted = false, participants = [] } = conversation;
   const unread = normalizeCount(conversation.unreadCount) ?? 0;
   const timeText = useTimeText(time, getNow);
-  const presence = conversation.avatar ? undefined : participants[0]?.presenceLabel?.trim();
+  const [only] = participants;
+  const presence =
+    conversation.avatar || !only
+      ? undefined
+      : resolveStatusLabel({ status: only.presence, statusLabel: only.presenceLabel }, strings);
   const actions = renderActions?.(conversation);
   const label = strings.conversationLabel({
     title,
-    presence: participants.length === 1 ? presence || undefined : undefined,
+    presence: participants.length === 1 ? presence : undefined,
     unreadCount: unread,
     isMuted,
     time: timeText,

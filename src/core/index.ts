@@ -31,6 +31,7 @@ export type {
   SelectableState,
   SortDescriptor,
   SortDirection,
+  PresenceStatus,
   Tone,
 } from './props.js';
 export type {

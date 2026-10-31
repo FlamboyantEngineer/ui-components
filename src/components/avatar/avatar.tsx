@@ -3,8 +3,9 @@
 import { UsersGlyph } from '../../core/glyphs.js';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size } from '../../core/props.js';
+import type { BaseProps, NativeProps, PresenceStatus, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
 import type { PressEvent } from '../../core/events.js';
 import { toImageProps } from '../icon/icon.js';
@@ -55,9 +56,9 @@ export interface AvatarIdentity {
 }
 
 export interface AvatarProps extends AvatarIdentity, BaseProps {
-  /** Optional presence status, such as active, away, busy or idle. */
-  status?: string | undefined;
-  /** Human-readable status added to the accessible name. */
+  /** The person's presence, published as `data-status`. */
+  status?: PresenceStatus | undefined;
+  /** The status in words, added to the accessible name. Defaults to the provider's `presenceStatus`. */
   statusLabel?: string | undefined;
   /** Makes the avatar a pressable command. */
   onPress?: ((event: PressEvent) => void) | undefined;
@@ -202,20 +203,30 @@ export function splitAvatarIdentity<P extends AvatarIdentity>(
   return [{ name, src, imageProps, initials, colorKey, colorIndex, kind, shape }, rest];
 }
 
+/**
+ * A presence in words: the caller's `statusLabel`, or the provider's `presenceStatus` of `status`.
+ * Avatar, UserIdentity and UserCard name a status the same way.
+ */
+export function resolveStatusLabel(
+  { status, statusLabel }: Pick<AvatarProps, 'status' | 'statusLabel'>,
+  strings: UiStrings,
+): string | undefined {
+  return statusLabel?.trim() || (status ? strings.presenceStatus(status) : undefined);
+}
+
 /** The full name, including optional status, is shared by the root and its name tooltip. */
 function useAvatarPresentation(
   props: Pick<
     AvatarProps,
-    'name' | 'label' | 'statusLabel' | 'nameTooltip' | 'card' | 'cardTrigger' | 'onPress'
+    'name' | 'label' | 'status' | 'statusLabel' | 'nameTooltip' | 'card' | 'cardTrigger' | 'onPress'
   >,
 ) {
   const strings = useUiStrings();
   const displayName = getDisplayName(props.name, strings.unnamed);
+  const statusText = resolveStatusLabel(props, strings);
   const accessibleName =
     props.label?.trim() ||
-    (props.statusLabel?.trim()
-      ? strings.nameWithStatus(displayName, props.statusLabel.trim())
-      : displayName);
+    (statusText ? strings.nameWithStatus(displayName, statusText) : displayName);
   return {
     accessibleName,
     surfaceProps: toImageProps(props.card || props.onPress ? accessibleName : undefined),
@@ -249,6 +260,7 @@ export function Avatar(props: AvatarProps) {
   const { accessibleName, hasTooltip, surfaceProps } = useAvatarPresentation({
     name: identity.name,
     label,
+    status,
     statusLabel,
     nameTooltip,
     card,
@@ -267,7 +279,7 @@ export function Avatar(props: AvatarProps) {
           shape: identity.shape ?? 'circle',
           color,
           loading: picture.status === 'loading',
-          status: status?.trim() || undefined,
+          status,
         },
       })}
       imageLabel={decorative ? undefined : accessibleName}
@@ -280,7 +292,7 @@ export function Avatar(props: AvatarProps) {
       <span {...hooks.slot('surface')} {...surfaceProps}>
         <AvatarContent identity={identity} picture={picture} />
       </span>
-      {status?.trim() ? <span {...hooks.slot('indicator')} aria-hidden="true" /> : null}
+      {status ? <span {...hooks.slot('indicator')} aria-hidden="true" /> : null}
     </AvatarRoot>
   );
   // A pressable avatar keeps its tooltip trigger while the tooltip is off, so turning it on or off

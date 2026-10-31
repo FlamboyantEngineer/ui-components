@@ -5,9 +5,14 @@ import { Button as AriaButton, Dialog, Provider } from '../../primitives/index.j
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, PressEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, PresenceStatus } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { getDisplayName, splitAvatarIdentity, type AvatarIdentity } from '../avatar/avatar.js';
+import {
+  getDisplayName,
+  resolveStatusLabel,
+  splitAvatarIdentity,
+  type AvatarIdentity,
+} from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { DescriptionList, DescriptionRow } from '../description-list/description-list.js';
 import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
@@ -46,9 +51,9 @@ export interface UserCardProps
   extends AvatarIdentity, Pick<UserIdentityProps, 'description' | 'colorCount'>, BaseProps {
   /** Names the card instead of the display name. */
   'aria-label'?: string | undefined;
-  /** What the person is doing, as any word the host stylesheet knows (`active`, `away`, …). */
-  status?: string | undefined;
-  /** Human-readable status, shown in the status row. */
+  /** The person's presence, published as `data-status`. */
+  status?: PresenceStatus | undefined;
+  /** The status in words, shown in the status row. Defaults to the provider's `presenceStatus`. */
   statusLabel?: string | undefined;
   /** Labelled facts about the person, shown as description rows. */
   details?: readonly UserCardDetail[] | undefined;
@@ -110,8 +115,8 @@ interface UserCardOwner {
  */
 const UserCardOwnerContext = createContext<UserCardOwner | null>(null);
 
-function CardStatus({ statusLabel }: Pick<UserCardProps, 'statusLabel'>) {
-  const text = statusLabel?.trim();
+function CardStatus(props: Pick<UserCardProps, 'status' | 'statusLabel'>) {
+  const text = resolveStatusLabel(props, useUiStrings());
   if (!text) return null;
   return (
     <div {...hooks.slot('status')}>
@@ -211,7 +216,7 @@ export function UserCard(props: UserCardProps) {
       {...rest}
       {...hooks.root({
         className,
-        data: { status: status?.trim() || undefined, loading: isLoading },
+        data: { status, loading: isLoading },
       })}
       aria-label={ariaLabel ?? getDisplayName(identity.name, strings.unnamed)}
       isLoading={isLoading}
@@ -226,7 +231,7 @@ export function UserCard(props: UserCardProps) {
         <Skeleton className={hooks.slotClass('skeleton')} />
       ) : (
         <>
-          <CardStatus statusLabel={statusLabel} />
+          <CardStatus status={status} statusLabel={statusLabel} />
           <CardDetails details={details} />
           <CardActions actions={actions} onAction={onAction} />
         </>

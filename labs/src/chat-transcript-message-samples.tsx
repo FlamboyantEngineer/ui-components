@@ -17,16 +17,15 @@ export const helper = { name: 'Helper', src: samplePicture, colorKey: 'helper' }
 /** The people of the group conversation; Maria is the reader. */
 export const team = {
   maria: { id: 'maria', ...maria },
-  ana: { id: 'ana', name: 'Ana Lopez', colorKey: 'ana', status: 'active', statusLabel: 'Active' },
+  ana: { id: 'ana', name: 'Ana Lopez', colorKey: 'ana', status: 'active' as const },
   ben: {
     id: 'ben',
     name: 'Ben Okoro',
     src: samplePicture,
     colorKey: 'ben',
-    status: 'away',
-    statusLabel: 'Away',
+    status: 'away' as const,
   },
-  cy: { id: 'cy', name: 'Cy Park', colorKey: 'cy', status: 'busy', statusLabel: 'Busy' },
+  cy: { id: 'cy', name: 'Cy Park', colorKey: 'cy', status: 'busy' as const },
   dee: { id: 'dee', name: 'Dee Nolan', colorKey: 'dee' },
   eli: { id: 'eli', name: 'Eli Brandt', colorKey: 'eli' },
 };

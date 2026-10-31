@@ -52,6 +52,9 @@ export type Density = 'tight' | 'compact' | 'default' | 'comfortable';
 /** The sizes of single-line controls: every control of one size shares one height. */
 export type ControlSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
+/** A person's presence: what StatusLight, Avatar, UserIdentity and UserCard publish and name. */
+export type PresenceStatus = 'active' | 'away' | 'busy' | 'idle';
+
 /** Semantic tones for status, feedback and emphasis. */
 export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
