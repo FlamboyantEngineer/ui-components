@@ -161,16 +161,21 @@ function isSafeLink(tag: string, value: string): boolean {
   return tag === 'image' && rasterDataUrl.test(link);
 }
 
-/** A `style` attribute keeping only presentation and custom-property declarations. */
+/**
+ * A `style` attribute keeping only presentation and custom-property declarations. Property names
+ * are lower-cased, but a custom property's name is case-sensitive, so it keeps its spelling.
+ */
 function filterStyle(css: string): string {
   const kept: string[] = [];
   for (const declaration of css.split(';')) {
     const colon = declaration.indexOf(':');
     if (colon === -1) continue;
-    const property = declaration.slice(0, colon).trim().toLowerCase();
+    const name = declaration.slice(0, colon).trim();
+    const isCustom = name.startsWith('--');
+    const property = isCustom ? name : name.toLowerCase();
     const value = declaration.slice(colon + 1).trim();
     const unprefixed = property.replace(/^-(?:webkit|moz|ms|o)-/, '');
-    const isKnown = property.startsWith('--') || presentationProperties.has(unprefixed);
+    const isKnown = isCustom || presentationProperties.has(unprefixed);
     if (isKnown && value && isSafeValue(value)) kept.push(`${property}: ${value}`);
   }
   return kept.join('; ');

@@ -26,6 +26,9 @@ const labelMarkup = `<svg ${svgNamespace} viewBox="0 0 48 24">
   <text x="2" y="15" font-size="9" fill="currentColor"><tspan>Orchard</tspan> <tspan>map</tspan></text>
 </svg>`;
 
+/** Mixed-case design tokens, defined on a group and inherited by its shapes. */
+const tokenMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><g style="--Leaf: #16a34a; --leaf: #dc2626; --leafShade: var(--Leaf)"><circle cx="8" cy="12" r="6" style="fill: var(--leafShade, #dc2626)"/><circle cx="17" cy="12" r="5" style="fill: var(--leaf)"/></g></svg>`;
+
 /** Two drawings that both name their gradient `tone`, with different colours. */
 const toneMarkup = (color: string) =>
   `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="url(#tone)"/></svg>`;
@@ -99,6 +102,12 @@ mountLab(
       description="Whitespace inside text stays, so words in separate spans keep their space; indentation between other elements is dropped."
     >
       <SvgMarkup markup={labelMarkup} label="Orchard map label" />
+    </LabSection>
+    <LabSection
+      title="Design tokens"
+      description="Custom property names keep their case: --Leaf (green) and --leaf (red) are two tokens, and shapes inherit them from their group."
+    >
+      <SvgMarkup markup={tokenMarkup} label="Leaf tokens" />
     </LabSection>
     <LabSection
       title="Isolated references"
