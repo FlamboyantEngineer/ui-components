@@ -120,7 +120,11 @@ export function useTransferList(options: TransferListOptions) {
       setSelections((current) => ({ ...current, [side]: keys })),
     filter: (side: TransferListSide, text: string) =>
       setFilters((current) => ({ ...current, [side]: text })),
-    drop: (drop: TransferDrop) => setChosen(dropChosenKeys(chosen, drop)),
+    // Disabled rows never move, even when a drag that held them started before they were disabled.
+    drop: (drop: TransferDrop) => {
+      const keys = drop.keys.filter((key) => !blocked.has(key));
+      if (keys.length > 0) setChosen(dropChosenKeys(chosen, { ...drop, keys }));
+    },
     up: step(-1),
     down: step(1),
   };

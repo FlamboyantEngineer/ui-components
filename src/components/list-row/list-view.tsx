@@ -27,7 +27,10 @@ import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useHeldSelection } from '../../utils/use-held-selection.js';
-import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
+import {
+  useReorderDragAndDrop,
+  type CollectionDropTarget,
+} from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
@@ -122,17 +125,25 @@ function getKeyText(key: Key): string {
   return String(fromCollectionKey(key));
 }
 
+/** The move a drop makes, of the dragged rows not disabled now, or null. */
+function resolveListMove(
+  target: CollectionDropTarget,
+  keys: ReadonlySet<Key>,
+  disabled: ReadonlySet<Key>,
+): ListViewMove | null {
+  if (target.type !== 'item' || target.dropPosition === 'on' || keys.has(target.key)) return null;
+  const moved = [...keys].map(fromCollectionKey).filter((key) => !disabled.has(key));
+  if (moved.length === 0) return null;
+  return { keys: moved, targetKey: fromCollectionKey(target.key), position: target.dropPosition };
+}
+
 /** The building block's drag and drop hooks for the list's reorder options. */
-function useListDragAndDrop(reorder: ListViewReorderOptions | undefined) {
+function useListDragAndDrop(
+  reorder: ListViewReorderOptions | undefined,
+  disabled: ReadonlySet<Key>,
+) {
   const options = useReorderDragAndDrop<ListViewMove>({
-    resolveMove: (target, keys) =>
-      target.type === 'item' && target.dropPosition !== 'on' && !keys.has(target.key)
-        ? {
-            keys: [...keys].map(fromCollectionKey),
-            targetKey: fromCollectionKey(target.key),
-            position: target.dropPosition,
-          }
-        : null,
+    resolveMove: (target, keys) => resolveListMove(target, keys, disabled),
     onMove: (move) => reorder?.onMove(move),
     getTextValue: getKeyText,
     renderDropIndicator,
@@ -190,7 +201,9 @@ export function ListView<T extends object>({
   className,
   ...rest
 }: ListViewProps<T>) {
-  const dragAndDropHooks = useListDragAndDrop(reorder);
+  // Read once per new iterable, which may be one-shot, and shared by the selection and drops.
+  const disabled = useMemo(() => new Set(disabledKeys ?? []), [disabledKeys]);
+  const dragAndDropHooks = useListDragAndDrop(reorder, disabled);
   const selection = useHeldSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
   const listRef = useCarriedFocus<HTMLDivElement>(`${String(virtualized)} ${String(!!reorder)}`);
   const emptyState = useMemo(
@@ -202,7 +215,7 @@ export function ListView<T extends object>({
       // React Aria keeps drag and drop hooks for the list's lifetime: remount when reorder toggles.
       key={reorder ? 'reorder' : 'static'}
       {...rest}
-      {...toCollectionSelectionProps({ ...selection, disabledKeys })}
+      {...toCollectionSelectionProps({ ...selection, disabledKeys: disabled })}
       ref={listRef}
       onAction={onAction && ((key) => onAction(fromCollectionKey(key)))}
       dragAndDropHooks={dragAndDropHooks}
