@@ -101,6 +101,19 @@ Adapted from the agent-rules TypeScript set ([coding-rules/README.md](coding-rul
 
 **TS14. Give an exported function an explicit return type** when the inferred one is a wide object or a promise the caller must branch on.
 
+**TS15. Three compiler programs check the code** (`npm run typecheck`).
+
+- `tsconfig.json` checks library source, tests, labs and configs with Node's globals, which the tests need.
+- `tsconfig.build.json` checks library source again without them (`types: []`), as the build compiles it.
+- `tsconfig.scripts.json` checks the Node scripts and local lint rules as JavaScript (`checkJs`). An unannotated parameter there is `any`, and everything else is strict.
+- Library source compiles in both global environments, so a timer handle is typed `ReturnType<typeof setTimeout>`, which holds in both.
+- Beyond `strict`, the programs set `noUncheckedIndexedAccess`, `noImplicitOverride`, `noImplicitReturns` and `noFallthroughCasesInSwitch`.
+- Three flags are deliberately off:
+  - `exactOptionalPropertyTypes`: optional props declare `| undefined` so callers may pass `undefined`, but the flag would also reject spreading partial objects at about 200 sites.
+  - `noPropertyAccessFromIndexSignature`: records keyed by id are read with dot access.
+  - `isolatedDeclarations`: public types are inferred where TS14 does not ask for them.
+    **(enforced: `npm run typecheck`)**
+
 ## Node scripts
 
 Adapted from the agent-rules Node.js set. They apply to `scripts/` and the configuration files; library source runs in the browser and never reads `process.env` or Node APIs.

@@ -146,7 +146,7 @@ function write(path, text) {
 function freePort() {
   return new Promise((done) => {
     const probe = createServer().listen(0, () => {
-      const { port } = probe.address();
+      const { port } = /** @type {import('node:net').AddressInfo} */ (probe.address());
       probe.close(() => done(port));
     });
   });

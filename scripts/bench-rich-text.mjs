@@ -54,8 +54,9 @@ function editedDocuments(state, paragraphs) {
 }
 
 function heapUsed() {
-  globalThis.gc();
-  globalThis.gc();
+  // Run with --expose-gc, which defines gc.
+  globalThis.gc?.();
+  globalThis.gc?.();
   return process.memoryUsage().heapUsed;
 }
 

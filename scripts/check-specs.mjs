@@ -135,7 +135,9 @@ for (const name of specFiles) {
   const lines = readFileSync(join(specsDir, name), 'utf8').split('\n');
   if (!lines[0]?.startsWith('# ')) problems.push(`${file}: first line must be a "# Title" heading`);
 
+  /** @type {{ id: string, lines: string[] } | null} */
   let requirement = null;
+  /** @type {string[] | null} */
   let hooks = null;
   // The open group heading's number, the last group's number and the last number within it.
   let group = null;
@@ -178,7 +180,7 @@ for (const name of specFiles) {
       flush();
       const match = line.match(HEADING);
       if (match) {
-        const [, level, id] = match;
+        const [, level = '', id = ''] = match;
         if (ids.has(id)) problems.push(`${file}: ${id} is also defined in ${ids.get(id)}`);
         ids.set(id, file);
         const isSequence = /-T\d/.test(id);

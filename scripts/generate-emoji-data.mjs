@@ -24,6 +24,7 @@ const require = createRequire(import.meta.url);
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const dataDir = join(root, 'node_modules/emojibase-data');
 const outDir = join(root, 'src/components/emoji-picker');
+/** @type {Array<{ group?: number, order: number } & Record<string, unknown>>} */
 const compact = require('emojibase-data/en/compact.json');
 const versions = new Map(
   require('emojibase-data/en/data.json').map((emoji) => [emoji.hexcode, emoji.version]),
