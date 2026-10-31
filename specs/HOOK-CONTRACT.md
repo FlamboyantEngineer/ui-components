@@ -75,7 +75,7 @@ Verification: `test/lint-rules.test.ts`, `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-4.1 - Markup matches the spec
 
-Each component's spec shall list every hook the component renders in its `## Hooks` table ([README.md](README.md#file-format)). Component tests assert their rendered markup with `expectHooksMatchSpec`, which fails on a hook class no spec declares, on a data attribute or `--ui-*` property not declared by a spec that owns the element's classes, on a value outside the declared list, and on a missing root or required slot.
+Each component's spec shall list every hook the component renders in its `## Hooks` table ([README.md](README.md#file-format)). Component tests assert their rendered markup with `expectHooksMatchSpec`, which fails on a hook class no spec declares, on a data attribute or `--ui-*` property not declared by a spec that owns the element's classes, on a value outside the declared list, and on a missing root or required slot. It parses the spec hook tables once per test worker, not once per test file.
 
 Implementation: `test/hooks.ts`
 Verification: `test/hooks.test.tsx`

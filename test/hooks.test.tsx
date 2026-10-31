@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createHooks } from '../src/core/hooks.js';
-import { expectHooksMatchSpec, parseHookTable } from './hooks.js';
+import { expectHooksMatchSpec, parseHookTable, specRegistry } from './hooks.js';
 
 const spec = parseHookTable(
   'SAMPLE',
@@ -91,5 +91,13 @@ describe('expectHooksMatchSpec', () => {
     expect(failureOf(() => expectHooksMatchSpec(empty, spec))).toContain(
       'none of the roots ui-sample rendered',
     );
+  });
+
+  it('UIC-HOOKS-4.1 parses the spec hook tables once per worker, across module resets', async () => {
+    const registry = specRegistry();
+    expect(registry.get('BUTTON')?.hooks.length).toBeGreaterThan(0);
+    vi.resetModules();
+    const reloaded = await import('./hooks.js');
+    expect(reloaded.specRegistry()).toBe(registry);
   });
 });

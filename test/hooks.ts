@@ -38,7 +38,10 @@ const ignoredData = /^data-(rac|react-aria-[a-z-]+|slot|testid|lab-[a-z-]+)$/;
 // Vitest runs from the repository root.
 const specsDir = join(process.cwd(), 'specs');
 
-let registry: Map<string, SpecHooks> | null = null;
+// Test files share their worker's globals but reset its modules (test/setup.ts), so the parsed
+// specs live on a global to be read once per worker rather than once per file.
+const registryKey = Symbol.for('ui-components.test.spec-hook-registry');
+const registryHolder = globalThis as { [registryKey]?: Map<string, SpecHooks> };
 
 function isClassHook(entry: SpecHook): boolean {
   return entry.kind === 'root' || entry.kind === 'slot';
@@ -137,14 +140,15 @@ export function parseHookTable(name: string, markdown: string): SpecHooks {
 
 /** Every spec's hook table, keyed by spec name (file name without `.md`). */
 export function specRegistry(): Map<string, SpecHooks> {
-  if (!registry) {
-    registry = new Map();
-    for (const file of readdirSync(specsDir)) {
-      if (!file.endsWith('.md') || file === 'README.md') continue;
-      const name = file.slice(0, -'.md'.length);
-      registry.set(name, parseHookTable(name, readFileSync(join(specsDir, file), 'utf8')));
-    }
+  const cached = registryHolder[registryKey];
+  if (cached) return cached;
+  const registry = new Map<string, SpecHooks>();
+  for (const file of readdirSync(specsDir)) {
+    if (!file.endsWith('.md') || file === 'README.md') continue;
+    const name = file.slice(0, -'.md'.length);
+    registry.set(name, parseHookTable(name, readFileSync(join(specsDir, file), 'utf8')));
   }
+  registryHolder[registryKey] = registry;
   return registry;
 }
 
