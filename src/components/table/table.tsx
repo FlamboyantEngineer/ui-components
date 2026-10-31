@@ -157,7 +157,7 @@ function createHeaderModel<T extends TableRow>(
     onPinOffsets: grid.onPinOffsets,
     sort: view.sort.descriptors,
     isMultipleSort: view.sort.isMultiple,
-    dropTarget: grid.columnReorder.dropTarget,
+    columnDrag: grid.columnReorder.drag,
     isFiltered: (column) => !isEmptyFilterValue(values[column.id]),
     renderFilter: (column) =>
       column.filter ? (

@@ -14,6 +14,8 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { getColumnBounds, type TableColumnSize } from './column-sizing.js';
 import { tableHooks as hooks } from './table-hooks.js';
+import { useColumnDrag } from './use-column-drag.js';
+import type { TableColumnDrag } from './use-column-reorder.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 import { getPinStyle } from './table-structure.js';
 
@@ -27,8 +29,8 @@ export interface TableColumnHeaderState {
   sortDirection: SortDirection | undefined;
   /** The column's place in a sort by several columns, from 1. */
   sortPriority: number | undefined;
-  /** Where a dragged column would land beside this one. */
-  dropPosition: 'before' | 'after' | undefined;
+  /** The table's shared column drag, or null while no column reorders. */
+  drag: TableColumnDrag | null;
   isFiltered: boolean;
   /** The filter button, for a filterable column. */
   filter: ReactNode;
@@ -50,8 +52,9 @@ export function getColumnText<T>(column: TableColumn<T>): string {
 }
 
 /**
- * One data column header: its label, which drags a reorderable column, the sort glyph, the filter
- * button and the resizer, with its pin, sort, filter and drop states.
+ * One data column header: its content (the label, which drags a reorderable column, the sort glyph
+ * and the filter button), which takes another column dropped on it, and the resizer, with its pin,
+ * sort, filter and drop states.
  */
 export function DataColumn<T>({
   column,
@@ -62,6 +65,13 @@ export function DataColumn<T>({
 }) {
   const strings = useUiStrings();
   const hasControls = column.allowsResizing === true || state.filter !== null;
+  const isReorderable = column.allowsReordering === true;
+  const drag = useColumnDrag({
+    id: column.id,
+    textValue: getColumnText(column),
+    allowsReordering: isReorderable,
+    drag: state.drag,
+  });
   return (
     <Column
       id={toCollectionKey(column.id)}
@@ -80,21 +90,24 @@ export function DataColumn<T>({
         pinned: state.pin,
         sortPriority: state.sortPriority,
         filtered: state.isFiltered,
-        dropPosition: state.dropPosition,
+        dropPosition: drag.dropPosition ?? undefined,
+        dragging: drag.isDragging,
         allowsReordering: column.allowsReordering,
       })}
     >
-      <span {...hooks.slot('column-label')} draggable={column.allowsReordering || undefined}>
-        {column.header}
-      </span>
-      {column.allowsSorting ? (
-        <Icon
-          icon={sortGlyphs[state.sortDirection ?? 'none']}
-          size="sm"
-          className={hooks.slotClass('sort-icon')}
-        />
-      ) : null}
-      {state.filter}
+      <div ref={drag.ref} {...drag.targetProps} {...hooks.slot('column-content')}>
+        <span {...(isReorderable ? drag.sourceProps : {})} {...hooks.slot('column-label')}>
+          {column.header}
+        </span>
+        {column.allowsSorting ? (
+          <Icon
+            icon={sortGlyphs[state.sortDirection ?? 'none']}
+            size="sm"
+            className={hooks.slotClass('sort-icon')}
+          />
+        ) : null}
+        {state.filter}
+      </div>
       {column.allowsResizing ? (
         <ColumnResizer className={hooks.slotClass('resizer')} aria-label={strings.resize} />
       ) : null}

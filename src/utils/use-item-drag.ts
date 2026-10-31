@@ -24,7 +24,12 @@ interface ItemDragOptions<K extends Key, Move extends ItemMove> {
 }
 
 interface ItemDragState<Move extends ItemMove> {
+  /** The drag source's and the drop target's props, for an item that is both. */
   dragProps: HTMLAttributes<HTMLElement>;
+  /** The drag source's props alone, for an item whose dragged part is inside its drop target. */
+  sourceProps: HTMLAttributes<HTMLElement>;
+  /** The drop target's props alone, for the element `ref` holds. */
+  targetProps: HTMLAttributes<HTMLElement>;
   startDrag: (event: PressEvent) => void;
   /** The id of the building block's description of the drag button, for its `aria-describedby`. */
   describedBy: string | undefined;
@@ -78,6 +83,8 @@ export function useItemDrag<K extends Key, Move extends ItemMove>(
   });
   return {
     dragProps: mergeProps(dragProps, dropProps),
+    sourceProps: dragProps,
+    targetProps: dropProps,
     startDrag: (event) => dragButtonProps.onPress?.(event as never),
     describedBy: dragButtonProps['aria-describedby'],
     isDragging,
