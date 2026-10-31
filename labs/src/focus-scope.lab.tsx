@@ -1,4 +1,5 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { createRoot } from 'react-dom/client';
 import { Button } from '../../src/components/button/button.js';
 import { FocusScope, useFocusManager } from '../../src/components/focus-scope/focus-scope.js';
 import { Switch } from '../../src/components/switch/switch.js';
@@ -102,6 +103,52 @@ function RenameFlow() {
   );
 }
 
+/** A note editor rendered by this page's React into a same-origin frame's document. */
+function FramedNote() {
+  const [isEditing, setEditing] = useState(false);
+  const doneRef = useRef<HTMLParagraphElement>(null);
+  return (
+    <main aria-label="Note editor">
+      <h1>Note</h1>
+      <p ref={doneRef} tabIndex={-1}>
+        Note saved
+      </p>
+      <button type="button" onClick={() => setEditing(true)}>
+        Edit note
+      </button>
+      {isEditing ? (
+        <FocusScope autoFocus finalFocus={doneRef} role="group" aria-label="Edit note">
+          <label>
+            Note <input />
+          </label>
+          <button type="button" onClick={() => setEditing(false)}>
+            Save note
+          </button>
+        </FocusScope>
+      ) : null}
+    </main>
+  );
+}
+
+function FramedScope() {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  useEffect(() => {
+    const body = frameRef.current?.contentDocument?.body;
+    if (!body) return;
+    const root = createRoot(body);
+    root.render(<FramedNote />);
+    return () => root.unmount();
+  }, []);
+  return (
+    <iframe
+      ref={frameRef}
+      title="Framed note"
+      data-lab-demo="frame"
+      style={{ width: 360, height: 140, border: '1px dotted currentColor' }}
+    />
+  );
+}
+
 function FruitFilters() {
   const manager = useFocusManager();
   const onKeyDown = (event: KeyboardEvent) => {
@@ -159,6 +206,12 @@ mountLab(
       description="Rename focuses the name field rather than the first field, and saving sends focus to the renamed heading instead of the Rename button."
     >
       <RenameFlow />
+    </LabSection>
+    <LabSection
+      title="Inside a frame"
+      description="This page's React renders the note editor into a same-origin frame. Saving sends focus to the frame's Note saved line: the scope reads focus from its own document, not this page's."
+    >
+      <FramedScope />
     </LabSection>
     <LabSection
       title="Arrow keys through the focus manager"

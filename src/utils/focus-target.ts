@@ -17,6 +17,33 @@ interface FocusReturnOptions {
   fallback: Element | null;
 }
 
+/**
+ * Whether a value is an element that takes focus, from any window: `instanceof HTMLElement` holds
+ * only for elements of the global window, not of a frame's document.
+ */
+export function isFocusableElement(value: unknown): value is HTMLElement {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as Node).nodeType === 1 &&
+    typeof (value as HTMLElement).focus === 'function'
+  );
+}
+
+/**
+ * The focused element, followed into same-origin frames: a document whose focus sits on a frame
+ * reports the frame element, not the element inside it that holds focus.
+ */
+export function getDeepActiveElement(owner: Document = document): Element | null {
+  let active = owner.activeElement;
+  while (active?.tagName === 'IFRAME') {
+    const inner = (active as HTMLIFrameElement).contentDocument?.activeElement;
+    if (!inner) break;
+    active = inner;
+  }
+  return active;
+}
+
 /** The element a focus target names now, if it is still in the document. */
 export function resolveFocusTarget(target: FocusTarget | undefined): HTMLElement | null {
   const element = typeof target === 'function' ? target() : target?.current;
@@ -24,10 +51,11 @@ export function resolveFocusTarget(target: FocusTarget | undefined): HTMLElement
 }
 
 /**
- * When the container leaves the page, or the component closes a container that stays, moves focus to `finalFocus`, else to `fallback`, provided
- * focus was still inside the container or on the body, so a reader who moved elsewhere keeps their
- * place. It runs while the container is removed, before React Aria's own restoration, which then
- * stands down.
+ * When the container leaves the page, or the component closes a container that stays, moves focus
+ * to `finalFocus`, else to `fallback`, provided focus was still inside the container or on the body
+ * of the container's own document (a frame's, for a root mounted in one), so a reader who moved
+ * elsewhere keeps their place. It runs while the container is removed, before React Aria's own
+ * restoration, which then stands down.
  */
 export function useFocusReturn({ containerRef, finalFocus, fallback }: FocusReturnOptions) {
   const optionsRef = useRef({ finalFocus, fallback });
@@ -36,13 +64,16 @@ export function useFocusReturn({ containerRef, finalFocus, fallback }: FocusRetu
   });
   useLayoutEffect(() => {
     const container = containerRef.current;
+    const owner = container?.ownerDocument ?? document;
     return () => {
-      const active = document.activeElement;
-      if (active !== document.body && !container?.contains(active)) return;
+      const active = owner.activeElement;
+      if (active !== owner.body && !container?.contains(active)) return;
+      // A frame keeps its focused element while the page around it holds focus; that is not ours.
+      if (owner.defaultView?.frameElement && !owner.hasFocus()) return;
       const { finalFocus: chosen, fallback: opener } = optionsRef.current;
       const target =
         resolveFocusTarget(chosen) ??
-        (opener instanceof HTMLElement && opener.isConnected ? opener : null);
+        (isFocusableElement(opener) && opener.isConnected ? opener : null);
       if (!target) return;
       // A container that stays mounted (a retained dialog) is still in the document while React
       // commits, and React puts focus back on the element it had; move it once the commit is done.

@@ -142,4 +142,33 @@ test.describe('Focus Scope lab', () => {
     await expect(button('Apples')).toBeFocused();
     await lab.expectAccessible();
   });
+
+  test('UIC-FOCUS-SCOPE-2.7 returns focus to finalFocus inside a frame the page renders into', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('focus-scope');
+    const frame = page.frameLocator('[data-lab-demo="frame"]');
+    const edit = frame.getByRole('button', { name: 'Edit note' });
+    await edit.click();
+    const note = frame.getByRole('textbox', { name: 'Note' });
+    await expect(note).toBeFocused();
+    await frame.getByRole('button', { name: 'Save note' }).click();
+    await expect(frame.getByRole('group', { name: 'Edit note' })).toHaveCount(0);
+    await expect(frame.getByText('Note saved')).toBeFocused();
+
+    // Focus the reader moved to the page around the frame stays there.
+    await edit.click();
+    await expect(note).toBeFocused();
+    const rename = page.getByRole('button', { name: 'Rename' });
+    await rename.focus();
+    await expect(rename).toBeFocused();
+    await frame
+      .locator('body')
+      .evaluate((body) =>
+        body.querySelector<HTMLButtonElement>('[aria-label="Edit note"] button')?.click(),
+      );
+    await expect(frame.getByRole('group', { name: 'Edit note' })).toHaveCount(0);
+    await expect(rename).toBeFocused();
+  });
 });
