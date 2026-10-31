@@ -11,6 +11,7 @@ import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { SearchField } from '../search-field/search-field.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isNode } from '../../utils/is-element.js';
 
 /** A way of matching the reader can turn on or off, such as matching case or whole words. */
@@ -296,9 +297,10 @@ export function FindBar({
   ...rest
 }: FindBarProps) {
   const strings = useUiStrings();
-  // Escape closes the bar before the find box would empty itself; a menu's Escape is the menu's own.
+  // Escape closes the bar before the find box would empty itself; a menu's Escape is the menu's own,
+  // and a composing Escape the input method's.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Escape' || !onClose) return;
+    if (event.key !== 'Escape' || !onClose || isComposingKey(event.nativeEvent)) return;
     if (!isNode(event.target) || !event.currentTarget.contains(event.target)) return;
     event.preventDefault();
     event.stopPropagation();

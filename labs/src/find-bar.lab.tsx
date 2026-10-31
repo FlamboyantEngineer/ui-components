@@ -169,7 +169,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Find and replace in a passage"
-      description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar. Ctrl+F in the passage opens it again."
+      description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar (an Escape that cancels an input method candidate only cancels it). Ctrl+F in the passage opens it again."
     >
       <Passage />
     </LabSection>

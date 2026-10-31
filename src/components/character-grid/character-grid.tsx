@@ -6,6 +6,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useStoreValue } from '../../utils/use-store-value.js';
 import { createValueStore, type ValueStore } from '../../utils/value-store.js';
@@ -182,7 +183,8 @@ export function CharacterGrid({
   // with a key handler of its own would keep Escape from closing the surface around it.
   const moveToGrid = (event: KeyboardEvent<HTMLElement>) => {
     const target = event.target as Element;
-    if (event.key !== 'ArrowDown' || !target.closest(`.${hooks.slotClass('search')}`)) return;
+    if (event.key !== 'ArrowDown' || isComposingKey(event.nativeEvent)) return;
+    if (!target.closest(`.${hooks.slotClass('search')}`)) return;
     event.preventDefault();
     gridRef.current?.querySelector<HTMLElement>(`.${hooks.slotClass('cell')}`)?.focus();
   };

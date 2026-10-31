@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -221,6 +221,19 @@ describe('CharacterGrid', () => {
     expect(onSelect).toHaveBeenLastCalledWith({ char: '→', name: 'Rightwards arrow' });
     await user.keyboard('{ArrowDown}');
     expect(cell('Rightwards arrow')).toHaveFocus();
+  });
+
+  it('UIC-CHARACTER-GRID-2.1 leaves a composing Down to the input method', async () => {
+    const user = userEvent.setup();
+    renderGrid();
+    const search = screen.getByRole('searchbox', { name: 'Search characters' });
+    await user.type(search, 'arrow');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(search, { key: 'ArrowDown', isComposing: true, keyCode: 229 });
+    expect(search).toHaveFocus();
+    expect(search).toHaveValue('arrow');
+    await user.keyboard('{ArrowDown}');
+    expect(cell('Leftwards arrow')).toHaveFocus();
   });
 
   it('UIC-CHARACTER-GRID-2.1 lets Escape in the empty search reach the surface around it', async () => {
