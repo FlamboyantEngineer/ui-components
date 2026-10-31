@@ -77,8 +77,8 @@ describe('SvgMarkup', () => {
     const use = svg.querySelector('use') as SVGUseElement;
     const dot = svg.querySelector('circle')?.id ?? '';
     const fade = svg.querySelector('linearGradient')?.id ?? '';
-    expect(dot).toMatch(/.-dot$/);
-    expect(fade).toMatch(/.-fade$/);
+    expect(dot).toMatch(/._dot$/);
+    expect(fade).toMatch(/._fade$/);
     expect(use.getAttributeNS('http://www.w3.org/1999/xlink', 'href')).toBe(`#${dot}`);
     expect(use).toHaveClass('outline');
     expect(use.style.getPropertyValue('fill')).toMatch(new RegExp(`^url\\("?#${fade}"?\\)$`));
@@ -169,7 +169,7 @@ describe('SvgMarkup', () => {
       expect(svg.querySelector('set')).toHaveAttribute('href', `#${dot}`);
     }
     expect(parseSvgMarkup(markup)).toBe(tree);
-    expect(JSON.stringify(tree)).not.toMatch(/"id":"[^"]+-paint"/);
+    expect(JSON.stringify(tree)).not.toMatch(/"id":"[^"]+_paint"/);
   });
 
   it('UIC-SVG-MARKUP-1.4 hydrates server-rendered drawings with the same IDs', async () => {
