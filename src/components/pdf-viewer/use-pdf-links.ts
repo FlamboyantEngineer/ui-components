@@ -38,29 +38,29 @@ export interface PdfLinks {
 export function usePdfLinks<V extends PdfViewport, C extends PdfTextContent>(
   options: UsePdfLinksOptions<V, C>,
 ): PdfLinks {
-  const latest = useLatest(options);
+  const latestRef = useLatest(options);
   const request = useRef(0);
   const followDestination = useCallback(
     (destination: unknown) => {
-      const opened = latest.current.view;
+      const opened = latestRef.current.view;
       if (!opened) return;
       request.current += 1;
       const attempt = request.current;
       void resolveDestination(opened, destination).then((target) => {
         const isLatest = attempt === request.current;
-        if (target && isLatest && latest.current.view?.document === opened.document) {
-          latest.current.goTo(target);
+        if (target && isLatest && latestRef.current.view?.document === opened.document) {
+          latestRef.current.goTo(target);
         }
       });
     },
-    [latest],
+    [latestRef],
   );
   const goToPage = useCallback(
     (pageIndex: number) => {
       request.current += 1;
-      latest.current.pages.scrollToPage(pageIndex);
+      latestRef.current.pages.scrollToPage(pageIndex);
     },
-    [latest],
+    [latestRef],
   );
   const linkService = useMemo(
     () =>
@@ -68,11 +68,11 @@ export function usePdfLinks<V extends PdfViewport, C extends PdfTextContent>(
         followDestination,
         goToPage,
         readPosition: () => ({
-          currentPage: latest.current.pages.currentPage,
-          pageCount: latest.current.view?.pages.length ?? 0,
+          currentPage: latestRef.current.pages.currentPage,
+          pageCount: latestRef.current.view?.pages.length ?? 0,
         }),
       }),
-    [followDestination, goToPage, latest],
+    [followDestination, goToPage, latestRef],
   );
 
   const { destination } = options;

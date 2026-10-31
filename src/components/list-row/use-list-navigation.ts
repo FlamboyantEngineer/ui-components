@@ -167,7 +167,7 @@ function recoverFromRemoval(state: ListState, removed: RemovedRow) {
 }
 
 function useOrderedRows(
-  list: RefObject<HTMLUListElement | null>,
+  listRef: RefObject<HTMLUListElement | null>,
   { primaryClass, onRead }: { primaryClass: string; onRead: (order: readonly string[]) => void },
 ): OrderedRows {
   const nodes = useRef(new Map<string, HTMLElement>());
@@ -175,7 +175,9 @@ function useOrderedRows(
   const isReadQueued = useRef(false);
   const read = useCallback(() => {
     const ids = new Map([...nodes.current].map(([id, node]) => [node, id]));
-    const primaries = [...(list.current?.querySelectorAll<HTMLElement>(`.${primaryClass}`) ?? [])];
+    const primaries = [
+      ...(listRef.current?.querySelectorAll<HTMLElement>(`.${primaryClass}`) ?? []),
+    ];
     const rows = primaries.flatMap((node): Array<[string, HTMLElement]> => {
       const id = ids.get(node);
       return id === undefined ? [] : [[id, node]];
@@ -183,7 +185,7 @@ function useOrderedRows(
     order.current = rows.map(([id]) => id);
     onRead(order.current);
     return rows;
-  }, [list, primaryClass, onRead]);
+  }, [listRef, primaryClass, onRead]);
   const queueRead = useCallback(() => {
     if (isReadQueued.current) return;
     isReadQueued.current = true;
@@ -194,14 +196,14 @@ function useOrderedRows(
   }, [read]);
   // Keyed moves and inserts change the order without any registration.
   useLayoutEffect(() => {
-    const element = list.current;
+    const element = listRef.current;
     const Observer = element?.ownerDocument.defaultView?.MutationObserver;
     if (!element || !Observer) return;
     const observer = new Observer(read);
     observer.observe(element, { childList: true, subtree: true });
     read();
     return () => observer.disconnect();
-  }, [list, read]);
+  }, [listRef, read]);
   return useMemo(() => ({ nodes, order, read, queueRead }), [read, queueRead]);
 }
 

@@ -247,13 +247,13 @@ interface LatestSnapshot<T> {
  * committed value is always one the field shows.
  */
 function useCommit<T>(
-  latest: { current: LatestSnapshot<T> },
+  latestRef: { current: LatestSnapshot<T> },
   setCommitted: (value: T) => void,
 ): () => void {
   const pending = useRef(false);
   const [, rerender] = useReducer((count: number) => count + 1, 0);
   const commit = useCallback(() => {
-    const current = latest.current;
+    const current = latestRef.current;
     if (current.isLocked || current.options.tracksChanges === false) return;
     if (current.isUnsettled) {
       pending.current = true;
@@ -264,7 +264,7 @@ function useCommit<T>(
     current.committedValue = current.value;
     if (current.options.committedValue === undefined) setCommitted(current.value);
     current.options.onCommit?.(current.value);
-  }, [latest, setCommitted]);
+  }, [latestRef, setCommitted]);
   useLayoutEffect(() => {
     if (!pending.current) return;
     pending.current = false;
@@ -292,7 +292,7 @@ export function useFieldState<T>(
   const isReadOnly = Boolean(options.isReadOnly || scope.isReadOnly);
   const isLocked = isReadOnly || isDisabled;
   const snapshot = { value, committedValue, options, isLocked, isEqual };
-  const latest = useLatest<LatestSnapshot<T>>(snapshot);
+  const latestRef = useLatest<LatestSnapshot<T>>(snapshot);
   const checked = useFieldValidation(value, options, { scope, isEqual, isEmpty: contract.isEmpty });
   const { reveal, realtime, shown, isEmpty, setDraftIssue } = checked;
   const { markChanged } = reveal;
@@ -302,7 +302,7 @@ export function useFieldState<T>(
   const hold = useRef<FieldChangeHold>({ isHeld: false });
   const setValue = useCallback(
     (next: T) => {
-      const current = latest.current;
+      const current = latestRef.current;
       if (current.isLocked || hold.current.isHeld) return;
       current.value = next;
       current.isUnsettled = current.options.value !== undefined;
@@ -310,13 +310,13 @@ export function useFieldState<T>(
       if (current.options.value === undefined) setDraft(next);
       current.options.onChange?.(next);
     },
-    [latest, setDraft, markChanged],
+    [latestRef, setDraft, markChanged],
   );
-  const commit = useCommit(latest, setCommitted);
+  const commit = useCommit(latestRef, setCommitted);
 
   const lock = { isLocked, isEqual };
   const apply = (target: T | undefined) => {
-    if (!canApply(latest.current.value, target, lock)) return;
+    if (!canApply(latestRef.current.value, target, lock)) return;
     setValue(target as T);
     commit();
   };
@@ -326,7 +326,7 @@ export function useFieldState<T>(
     const next = stepFieldHistory(history, direction);
     setHistory(next);
     const target = next.entries[next.index] as T;
-    if (isEqual(latest.current.value, target)) return;
+    if (isEqual(latestRef.current.value, target)) return;
     setValue(target);
     commit();
   };
