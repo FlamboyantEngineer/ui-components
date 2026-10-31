@@ -59,7 +59,7 @@ test.describe('Code Editor JSON mode lab', () => {
     await expect(input).not.toHaveAttribute('aria-invalid');
   });
 
-  test('UIC-CODE-EDITOR-10.1 formats the text with the chosen indentation and commits it', async ({
+  test('UIC-CODE-EDITOR-10.1 formats the text with the chosen indentation, keeping every number, and commits it', async ({
     page,
     lab,
   }) => {
@@ -68,13 +68,13 @@ test.describe('Code Editor JSON mode lab', () => {
     const format = editor.getByRole('button', { name: 'Format' });
     await format.click();
     const formatted =
-      '{\n    "fruit": "Pear",\n    "sizes": [\n        1,\n        2,\n        3\n    ]\n}';
+      '{\n    "fruit": "Pear",\n    "id": 9007199254740993,\n    "sizes": [\n        1,\n        2,\n        3\n    ]\n}';
     await expect(editor.getByRole('textbox', { name: 'Order' })).toHaveValue(formatted);
     await expect(page.locator('[data-lab-family="json"] [data-lab-output="Committed"]')).toHaveText(
       formatted,
     );
     await expect(format).toBeDisabled();
-    await expect(editor.locator('.ui-code-editor__line-number')).toHaveCount(8);
+    await expect(editor.locator('.ui-code-editor__line-number')).toHaveCount(9);
   });
 
   test('UIC-CODE-EDITOR-11.1 restores the committed text and commits on leaving the editor', async ({
@@ -89,13 +89,13 @@ test.describe('Code Editor JSON mode lab', () => {
     await page.keyboard.type(' ');
     await expect(editor).toHaveAttribute('data-dirty', 'true');
     await editor.getByRole('button', { name: 'Restore Order' }).click();
-    await expect(input).toHaveValue('{"fruit":"Pear","sizes":[1,2,3]}');
+    await expect(input).toHaveValue('{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}');
     await expect(input).toBeFocused();
     await page.keyboard.press('Control+End');
     await page.keyboard.type('\n');
     await page.keyboard.press('Tab');
     await expect(page.locator('[data-lab-family="json"] [data-lab-output="Committed"]')).toHaveText(
-      '{"fruit":"Pear","sizes":[1,2,3]}',
+      '{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}',
     );
   });
 
@@ -119,9 +119,11 @@ test.describe('Code Editor JSON mode lab', () => {
     await expect(editor.getByRole('button', { name: 'Help for Order' })).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(editor.getByRole('button', { name: 'Order actions' })).toBeFocused();
-    await expect(committed).toHaveText('{"fruit":"Pear","sizes":[1,2,3]}');
+    await expect(committed).toHaveText('{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}');
     await page.keyboard.press('Tab');
-    await expect(committed).toHaveText('{"fruit":"Pear","sizes":[1,2,3],"ripe":true}');
+    await expect(committed).toHaveText(
+      '{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3],"ripe":true}',
+    );
     await expect(editor).not.toHaveAttribute('data-dirty');
     await expect(editor).not.toHaveAttribute('data-focused');
   });

@@ -2,7 +2,6 @@
 
 import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeToken } from './code-editor.js';
-import { stringifyJsonValue } from './json-value.js';
 
 /** Where a JSON text stops parsing, counted from 1. */
 interface JsonErrorLocation {
@@ -166,12 +165,32 @@ export function findJsonError(source: string): { location: JsonErrorLocation | n
   }
 }
 
-/** The text rewritten with `indent` spaces per level, or `null` when it is blank or not JSON. */
+const openers = new Set(['{', '[']);
+const closers = new Set(['}', ']']);
+
+/**
+ * The text rewritten with `indent` spaces per level (0 to 10, none on one line), or `null` when it is blank
+ * or not JSON. It lays out the source's own tokens, so every number, string and repeated key keeps
+ * its text: formatting never changes a value, as reading it into JavaScript values would.
+ */
 export function formatJson(source: string, indent: number): string | null {
-  if (source.trim() === '') return null;
-  try {
-    return stringifyJsonValue(JSON.parse(source), indent);
-  } catch {
-    return null;
-  }
+  if (source.trim() === '' || findJsonError(source)) return null;
+  // Strings keep their quotes, so only punctuation reads as a bare bracket, colon or comma.
+  const tokens = placeJsonTokens(source).map(({ text }) => text);
+  const width = Math.min(10, Math.max(0, Math.trunc(indent) || 0));
+  const breakAt = (depth: number) => (width > 0 ? `\n${' '.repeat(width * depth)}` : '');
+  let depth = 0;
+  let text = '';
+  tokens.forEach((token, index) => {
+    if (closers.has(token) && !openers.has(tokens[index - 1] ?? '')) {
+      depth -= 1;
+      text += breakAt(depth);
+    }
+    text += token === ':' && width > 0 ? ': ' : token;
+    if (openers.has(token) && !closers.has(tokens[index + 1] ?? '')) {
+      depth += 1;
+      text += breakAt(depth);
+    } else if (token === ',') text += breakAt(depth);
+  });
+  return text;
 }

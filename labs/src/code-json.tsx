@@ -60,7 +60,9 @@ function Sample({ label = 'Basket', start, ...props }: SampleProps) {
  * saves it.
  */
 function SavedEditor() {
-  const [committed, setCommitted] = useState('{"fruit":"Pear","sizes":[1,2,3]}');
+  const [committed, setCommitted] = useState(
+    '{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}',
+  );
   const [last, setLast] = useState('none');
   return (
     <>
@@ -234,7 +236,7 @@ export const jsonExamples = (
     </LabSection>
     <LabSection
       title="JSON: Format, restore and menu"
-      description="Format rewrites the text with four spaces per level and commits it; the field menu clears or sets the default."
+      description="Format rewrites the text with four spaces per level, keeping every number as written (the id is past what a JavaScript number holds), and commits it; the field menu clears or sets the default."
     >
       <SavedEditor />
     </LabSection>

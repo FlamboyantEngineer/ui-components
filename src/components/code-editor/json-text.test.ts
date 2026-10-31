@@ -97,12 +97,20 @@ describe('formatJson', () => {
     expect(formatJson(' ', 2)).toBeNull();
   });
 
-  it('UIC-CODE-EDITOR-10.1 formats deep values and retains native JSON normalization', () => {
+  it('UIC-CODE-EDITOR-10.1 formats deep values and keeps every literal as written', () => {
     const source = '['.repeat(20_000) + '1' + ']'.repeat(20_000);
     expect(formatJson(source, 0)).toBe(source);
-    const sample = '{"20":-0,"2":1e400,"a":1,"a":2,"__proto__":{"x":"\\\\"},"empty":[]}';
+    expect(formatJson('{ "id" : 9007199254740993 }', 2)).toBe('{\n  "id": 9007199254740993\n}');
+    const sample =
+      '{"20":-0,"2":1e400,"r":1.0000000000000001,"a":1,"a":2,"__proto__":{"x":"\\u00e9\\\\"},"empty":[],"o":{}}';
+    const layout = '{"20":0,"2":1,"r":1,"a":1,"b":2,"c":{"x":"y"},"empty":[],"o":{}}';
     for (const indent of [0, 2, 4, 20, -1, 1.5]) {
-      expect(formatJson(sample, indent)).toBe(JSON.stringify(JSON.parse(sample), null, indent));
+      const formatted = formatJson(sample, indent);
+      expect(formatted?.replace(/\s+/g, '')).toBe(sample);
+      const shape = JSON.stringify(JSON.parse(layout), null, indent);
+      expect(formatted?.split('\n').map((line) => line.length - line.trimStart().length)).toEqual(
+        shape.split('\n').map((line) => line.length - line.trimStart().length),
+      );
     }
   });
 });
