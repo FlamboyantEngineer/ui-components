@@ -56,6 +56,29 @@ function Cover({ label }: { label: string }) {
   );
 }
 
+/** An actionable card holding another one and an editor: each click goes to whoever owns it. */
+function NestedActionDemo() {
+  const [outer, setOuter] = useState(0);
+  const [inner, setInner] = useState(0);
+  return (
+    <div data-lab-demo="nested-action" style={{ width: 360 }}>
+      <Card title="Trip plan" onAction={() => setOuter((count) => count + 1)}>
+        <p>Three days on the coast.</p>
+        <Card title="Day one" variant="panel" onAction={() => setInner((count) => count + 1)}>
+          Ferry to the islands.
+        </Card>
+        <div contentEditable="plaintext-only" suppressContentEditableWarning data-lab-editor="">
+          Packing notes: sunscreen, maps.
+        </div>
+      </Card>
+      <p>
+        Trip opened <output data-lab-output="outer">{outer}</output>, day opened{' '}
+        <output data-lab-output="inner">{inner}</output>
+      </p>
+    </div>
+  );
+}
+
 function ActionDemo() {
   const [opened, setOpened] = useState(0);
   const [shared, setShared] = useState(0);
@@ -270,6 +293,12 @@ mountLab(
       description="Each card is a link or a press target whose title is the action: click anywhere on it. The Share button inside keeps its own behaviour."
     >
       <ActionDemo />
+    </LabSection>
+    <LabSection
+      title="Nested cards and editors"
+      description="A click on the inner card opens only the day; a click in the editable packing notes opens nothing; a click elsewhere on the trip opens the trip."
+    >
+      <NestedActionDemo />
     </LabSection>
     <LabSection
       title="Card grid"

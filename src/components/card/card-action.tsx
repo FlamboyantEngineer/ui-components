@@ -46,16 +46,32 @@ const controlSelector = [
   'textarea',
   'summary',
   'label',
-  '[contenteditable="true"]',
-  '[role="button"]',
-  '[role="link"]',
-  '[role="checkbox"]',
-  '[role="switch"]',
-  '[role="menuitem"]',
-  '[role="option"]',
-  '[role="tab"]',
+  // Widgets own their clicks even as a roving item that is not a tab stop.
+  ...[
+    'button',
+    'link',
+    'checkbox',
+    'switch',
+    'radio',
+    'menuitem',
+    'menuitemcheckbox',
+    'menuitemradio',
+    'option',
+    'tab',
+    'treeitem',
+    'gridcell',
+    'slider',
+    'spinbutton',
+    'scrollbar',
+    'textbox',
+    'searchbox',
+    'combobox',
+  ].map((role) => `[role="${role}"]`),
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
+
+/** Clicks an actionable card has claimed, so the cards around it leave them alone. */
+const claimedClicks = new WeakSet<Event>();
 
 function hasCardAction({ href, onAction }: CardActionOptions): boolean {
   return href !== undefined || onAction !== undefined;
@@ -65,10 +81,23 @@ function toLinkRel({ target, rel }: CardActionOptions): string | undefined {
   return rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined);
 }
 
-/** Whether a click on `target` was meant for the card: not for an inner control or a text selection. */
+/**
+ * Whether `target` is inside an editor: an element whose `contenteditable` is anything but
+ * `false` (empty, `true`, `plaintext-only`), including the non-editable islands an editor holds.
+ */
+function isInEditor(target: Element): boolean {
+  if (target instanceof HTMLElement && target.isContentEditable) return true;
+  return target.closest('[contenteditable]:not([contenteditable="false"])') !== null;
+}
+
+/**
+ * Whether a click on `target` was meant for the card: not for an inner control, an editor or a
+ * text selection.
+ */
 function isCardClick(target: Element, card: Element): boolean {
   const control = target.closest(controlSelector);
   if (control && card.contains(control)) return false;
+  if (isInEditor(target)) return false;
   const selection = card.ownerDocument.getSelection();
   return !selection || selection.isCollapsed || !card.contains(selection.anchorNode);
 }
@@ -98,9 +127,12 @@ export function useCardAction(options: CardActionOptions): CardAction {
   const onClick = (event: ReactMouseEvent<HTMLElement>) => {
     const element = action.current;
     if (!isActionable || !element || event.defaultPrevented) return;
-    if (!(event.target instanceof Element) || element.contains(event.target)) return;
     // React bubbles clicks out of portals; content portalled out of the card is not the card.
-    if (!event.currentTarget.contains(event.target)) return;
+    if (!(event.target instanceof Element) || !event.currentTarget.contains(event.target)) return;
+    // The innermost actionable card owns a click; the cards around it leave it alone.
+    if (claimedClicks.has(event.nativeEvent)) return;
+    claimedClicks.add(event.nativeEvent);
+    if (element.contains(event.target)) return;
     if (isCardClick(event.target, event.currentTarget)) repeatClick(element, event);
   };
   return { isActionable, actionRef, onClick };

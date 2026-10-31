@@ -140,6 +140,24 @@ test.describe('Card lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CARD-3.2 leaves nested cards and editors their own clicks', async ({ page, lab }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="nested-action"]');
+    const outer = demo.locator('[data-lab-output="outer"]');
+    const inner = demo.locator('[data-lab-output="inner"]');
+    await demo.getByText('Ferry to the islands.').click();
+    await expect(inner).toHaveText('1');
+    await expect(outer).toHaveText('0');
+    const editor = demo.locator('[data-lab-editor]');
+    await editor.click();
+    await page.keyboard.type(' Hat.');
+    await expect(editor).toContainText('Hat.');
+    await expect(outer).toHaveText('0');
+    await demo.getByText('Three days on the coast.').click();
+    await expect(outer).toHaveText('1');
+    await expect(inner).toHaveText('1');
+  });
+
   test('UIC-CARD-4.1 UIC-CARD-4.2 draws edge-to-edge media and a loading skeleton', async ({
     page,
     lab,
