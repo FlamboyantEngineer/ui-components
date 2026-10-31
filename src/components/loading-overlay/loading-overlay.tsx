@@ -4,6 +4,7 @@ import { useId, useRef, type ReactNode, type Ref } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
@@ -252,7 +253,7 @@ export function LoadingRegion({
   const { isMounted, isEntering, isExiting } = useEnterExit(overlayRef, isBlocked);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  useBlockedFocus({ rootRef, contentRef, isBlocked });
+  const holdFocus = useBlockedFocus({ rootRef, contentRef, isBlocked });
   const [data, overlayProps] = splitDataAttributes(rest);
   return (
     <div
@@ -269,7 +270,9 @@ export function LoadingRegion({
         aria-busy={isBlocked || undefined}
         inert={isBlocked || undefined}
       >
-        {children}
+        <LoadingBoundaryProvider isSuspended={isBlocked} holdFocus={holdFocus}>
+          {children}
+        </LoadingBoundaryProvider>
       </div>
       {isMounted ? (
         <LoadingOverlay

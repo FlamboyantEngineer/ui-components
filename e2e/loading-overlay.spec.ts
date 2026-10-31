@@ -154,6 +154,27 @@ test.describe('Loading Overlay lab', () => {
     });
   }
 
+  test('UIC-LOADING-OVERLAY-3.5 closes a focused menu when its region starts loading', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    const demo = page.locator('[data-lab-demo="menu-in-region"]');
+    const region = demo.locator('.ui-loading-region');
+    const trigger = demo.getByRole('button', { name: 'Actions' });
+    await demo.getByRole('button', { name: 'Refresh in a second' }).click();
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menuitem', { name: 'Run action' })).toBeFocused();
+    await expect(region).toHaveAttribute('data-loading');
+    await expect(region).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(region).not.toHaveAttribute('data-loading');
+    await expect(trigger).toBeFocused();
+    await expect(demo.getByText('Last action: none')).toBeVisible();
+  });
+
   test('UIC-LOADING-OVERLAY-2.4 UIC-ENTER-EXIT-1.3 fades the region cover out before removing it', async ({
     page,
     lab,

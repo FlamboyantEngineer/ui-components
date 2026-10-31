@@ -221,7 +221,11 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const filterText = completion?.text === inputText ? completion.typed : inputText;
   return (
     <>
-      <PopoverPresence isOpen={isShown} triggerRef={props.inputRef} />
+      <PopoverPresence
+        isOpen={isShown}
+        triggerRef={props.inputRef}
+        onClose={() => state?.close()}
+      />
       <Popover
         {...hooks.slot('popover', { layer: 'dropdown', size: props.size })}
         isOpen={isShown}

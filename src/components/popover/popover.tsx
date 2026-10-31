@@ -131,7 +131,13 @@ export function PopoverPanel({
   const gutter = usePopoverGutter(panel);
   return (
     <>
-      {isHint ? null : <PopoverPresence isOpen={rest.isOpen} triggerRef={rest.triggerRef} />}
+      {isHint ? null : (
+        <PopoverPresence
+          isOpen={rest.isOpen}
+          triggerRef={rest.triggerRef}
+          onClose={() => rest.onOpenChange?.(false)}
+        />
+      )}
       <AriaPopover
         {...rest}
         style={({ placement }) => ({
