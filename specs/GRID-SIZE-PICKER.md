@@ -13,14 +13,14 @@ Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/
 
 ### UIC-GRID-SIZE-PICKER-1.2 - Preview and readout
 
-The picker shall preview one size, 1 × 1 at first. Hovering a cell with a pointer, or focusing it, previews its size. Every cell within the previewed size publishes `data-in-range`, the cell at the previewed size publishes `data-active` and holds the grid's single tab stop, and the readout shows the provider's `gridSize` string for the preview (`3 × 4`). The preview stays when the pointer leaves the grid.
+The picker shall preview one size and keep one focused cell, both 1 × 1 at first. Hovering a cell with a pointer previews its size without moving the focused cell; focusing a cell, or moving with the keys, makes it both the focused cell and the preview. Every cell within the previewed size publishes `data-in-range`, the cell at the previewed size publishes `data-active`, the focused cell holds the grid's single tab stop, and the readout shows the provider's `gridSize` string for the preview (`3 × 4`). The preview stays when the pointer leaves the grid.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`
 
 ### UIC-GRID-SIZE-PICKER-1.3 - Growth
 
-The grid shall show one row more than the previewed rows and one column more than the previewed columns, at least `minRows` rows and `minColumns` columns (5 each by default) and at most `maxRows` rows and `maxColumns` columns (10 each by default). Setting the minimums to the maximums shows a fixed grid.
+The grid shall show one row more than the larger of the previewed and focused rows and one column more than the larger of their columns, so the focused cell stays while the pointer previews a smaller size, at least `minRows` rows and `minColumns` columns (5 each by default) and at most `maxRows` rows and `maxColumns` columns (10 each by default). Setting the minimums to the maximums shows a fixed grid.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`, `src/components/grid-size-picker/grid-size.ts`
 Verification: `src/components/grid-size-picker/grid-size.test.ts`, `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`
@@ -36,7 +36,7 @@ Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/
 
 ### UIC-GRID-SIZE-PICKER-2.1 - Keyboard
 
-In the grid, the arrow keys shall move the preview one cell, left and right following the reading direction of the provider locale; Home and End move it to the first and last column of its row (the last allowed by `maxColumns`), and with Ctrl or Cmd to the first cell and to the cell at the maximum size. The preview never leaves 1 to the maximum on either axis. Focus follows the preview to its cell once the grid has grown to show it, and the grid keeps the keys it handles from the surface around it.
+In the grid, the arrow keys shall move focus and the preview one cell from the focused cell, whatever cell the pointer previews, left and right following the reading direction of the provider locale; Home and End move it to the first and last column of its row (the last allowed by `maxColumns`), and with Ctrl or Cmd to the first cell and to the cell at the maximum size. Neither leaves 1 to the maximum on either axis. Focus follows the preview to its cell once the grid has grown to show it, and the grid keeps the keys it handles from the surface around it.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`, `src/components/grid-size-picker/grid-size.ts`
 Verification: `src/components/grid-size-picker/grid-size.test.ts`, `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`
@@ -64,20 +64,20 @@ Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`
 
 ### UIC-GRID-SIZE-PICKER-2.5 - Changing bounds
 
-When `maxRows` or `maxColumns` drops below the preview, the picker shall clamp the preview to the new bounds and keep it clamped when they grow again. When a bounds change, or a preview that shrinks the grid, removes the focused cell, focus moves to the cell at the preview, also while the picker is disabled; a picker that did not hold focus does not take it.
+When `maxRows` or `maxColumns` drops below the preview or the focused cell, the picker shall clamp them to the new bounds and keep them clamped when they grow again. When a bounds change removes the focused cell, focus moves to the clamped focused cell, also while the picker is disabled; a picker that did not hold focus does not take it.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`
 
 ## Hooks
 
-| Hook                           | Kind  | Values | Description                                     |
-| ------------------------------ | ----- | ------ | ----------------------------------------------- |
-| `ui-grid-size-picker`          | root  |        | The picker's `<div>`.                           |
-| `ui-grid-size-picker__grid`    | slot  |        | The grid (`role="grid"`).                       |
-| `ui-grid-size-picker__row`     | slot  |        | One row of cells (`role="row"`).                |
-| `ui-grid-size-picker__cell`    | slot  |        | One cell (`role="gridcell"`).                   |
-| `ui-grid-size-picker__readout` | slot  |        | The previewed size as text, such as `3 × 4`.    |
-| `data-disabled`                | state | `true` | On the root: the picker is disabled.            |
-| `data-in-range`                | state | `true` | On a cell: within the previewed size.           |
-| `data-active`                  | state | `true` | On a cell: at the previewed size; the tab stop. |
+| Hook                           | Kind  | Values | Description                                  |
+| ------------------------------ | ----- | ------ | -------------------------------------------- |
+| `ui-grid-size-picker`          | root  |        | The picker's `<div>`.                        |
+| `ui-grid-size-picker__grid`    | slot  |        | The grid (`role="grid"`).                    |
+| `ui-grid-size-picker__row`     | slot  |        | One row of cells (`role="row"`).             |
+| `ui-grid-size-picker__cell`    | slot  |        | One cell (`role="gridcell"`).                |
+| `ui-grid-size-picker__readout` | slot  |        | The previewed size as text, such as `3 × 4`. |
+| `data-disabled`                | state | `true` | On the root: the picker is disabled.         |
+| `data-in-range`                | state | `true` | On a cell: within the previewed size.        |
+| `data-active`                  | state | `true` | On a cell: at the previewed size.            |
