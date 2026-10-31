@@ -11,6 +11,7 @@ import {
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useStoreValue } from '../../utils/use-store-value.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { getEmojiLabel } from './emoji-catalog.js';
 import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { EmojiContent } from './emoji-grid.js';
@@ -24,9 +25,13 @@ export type EmojiPickerPreviewProps = BaseProps;
 
 // Down moves from the search field to the grid's first emoji, even from a field laid out after the
 // grid, where focusing the grid itself would pick its last. The field's keys stay inside the picker,
-// except Escape, which React Aria still stops while it clears a non-empty field.
+// except Escape, which React Aria still stops while it clears a non-empty field. A composing key is
+// the input method's: it moves nothing and goes on to it.
 function moveToGrid(event: AriaKeyboardEvent, gridRef: RefObject<HTMLDivElement | null>) {
-  if (event.key === 'Escape') event.continuePropagation();
+  if (event.key === 'Escape' || isComposingKey(event.nativeEvent)) {
+    event.continuePropagation();
+    return;
+  }
   if (event.key !== 'ArrowDown') return;
   event.preventDefault();
   gridRef.current?.querySelector<HTMLElement>('[role="row"]')?.focus();

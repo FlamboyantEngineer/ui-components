@@ -1,5 +1,6 @@
 import type { FocusEvent, KeyboardEvent } from 'react';
 import { listTabbables } from '../../utils/tabbable.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import type { RevealAlignment } from './transcript-geometry.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
 import { findOwner, type TabbablesManager, type TranscriptOwner } from './transcript-tabbables.js';
@@ -84,7 +85,12 @@ export function handleTranscriptKeyDown(
   if (!owner) return;
   if (target === owner.element) {
     handleMessageKey(event, owner, nav);
-  } else if (event.key === 'Escape') {
+  } else if (
+    event.key === 'Escape' &&
+    !event.defaultPrevented &&
+    // A composing Escape cancels the input method's candidate in a field inside the message.
+    !isComposingKey(event.nativeEvent)
+  ) {
     event.preventDefault();
     event.stopPropagation();
     owner.element.focus();

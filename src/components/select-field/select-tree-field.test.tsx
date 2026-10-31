@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -294,6 +294,28 @@ describe('SelectTreeField', () => {
     await user.click(screen.getByRole('searchbox'));
     await user.keyboard('zzz');
     expect(within(tree()).getByText('No results')).toBeInTheDocument();
+  });
+
+  it('UIC-SELECT-FIELD-10.1 leaves a composing Down in the search to the input method', async () => {
+    const user = userEvent.setup();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        defaultOpen
+      />,
+    );
+    const search = screen.getByRole('searchbox');
+    act(() => search.focus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(search, { key: 'ArrowDown', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(search, { key: 'ArrowDown', keyCode: 229 });
+    expect(search).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(row('Europe')).toHaveFocus();
   });
 
   it('UIC-SELECT-FIELD-10.2 UIC-SELECT-FIELD-10.3 chooses several with cascading checkboxes and chips', async () => {

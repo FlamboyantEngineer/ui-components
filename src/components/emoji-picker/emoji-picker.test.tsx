@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -328,6 +328,19 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'EMOJI-PICKER', {
       slots: ['search', 'search-input', 'search-clear'],
     });
+  });
+
+  it('UIC-EMOJI-PICKER-2.1 leaves a composing Down in the search to the input method', async () => {
+    await renderPicker({});
+    const search = screen.getByRole('searchbox');
+    await userEvent.type(search, 'fruit');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(search, { key: 'ArrowDown', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(search, { key: 'ArrowDown', keyCode: 229 });
+    expect(search).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('row', { name: 'banana' })).toHaveFocus();
   });
 
   it('UIC-EMOJI-PICKER-2.1 moves down into the grid, chooses on Enter and clears on Escape', async () => {

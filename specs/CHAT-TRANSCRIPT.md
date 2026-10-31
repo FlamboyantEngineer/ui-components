@@ -166,7 +166,7 @@ Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `e2
 
 ### UIC-CHAT-TRANSCRIPT-3.3 - Entering a message
 
-Enter on a focused message shall put its controls in the tab order and move focus to the first of them (a message without controls keeps focus). Inside, Tab and Shift+Tab cycle through the message's controls, wrapping at either end, a composite control such as a toolbar counting as its one tab stop; Escape returns focus to the message and takes its controls out of the tab order again. Focusing a control inside a message by other means, such as a click, enters that message too. Keys from content portalled out of the message, such as an open menu, are left alone.
+Enter on a focused message shall put its controls in the tab order and move focus to the first of them (a message without controls keeps focus). Inside, Tab and Shift+Tab cycle through the message's controls, wrapping at either end, a composite control such as a toolbar counting as its one tab stop; Escape returns focus to the message and takes its controls out of the tab order again, unless a control already handled it (`defaultPrevented`) or it belongs to an input method composition (`isComposing`, or key code 229), which leaves it to the input method in a field inside the message. Focusing a control inside a message by other means, such as a click, enters that message too. Keys from content portalled out of the message, such as an open menu, are left alone.
 
 Implementation: `src/components/chat-transcript/transcript-keyboard.ts`, `src/components/chat-transcript/transcript-tabbables.ts`, `src/utils/tabbable.ts`
 Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `e2e/chat-transcript.spec.ts`
