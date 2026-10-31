@@ -130,6 +130,42 @@ test.describe('Split View lab', () => {
     );
   });
 
+  test('UIC-SPLIT-VIEW-2.4 abandons a drag when the layout switches to another key', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const separator = page.getByRole('separator', { name: 'Resize layout panes' });
+    const split = page.locator('[data-lab-split="layouts"] .ui-split-view');
+    const editing = page.getByRole('radio', { name: 'Editing' });
+    await editing.check();
+    await separator.focus();
+    await page.keyboard.press('End');
+    await expect(separator).toHaveAttribute('aria-valuenow', '90');
+    await page.getByRole('radio', { name: 'Reading' }).check();
+    await expect(separator).toHaveAttribute('aria-valuenow', '40');
+
+    await separator.scrollIntoViewIfNeeded();
+    const handle = await box(separator);
+    const width = await innerWidth(split);
+    const startX = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX + width * 0.1, y, { steps: 3 });
+    await expect(separator).toHaveAttribute('aria-valuenow', '50');
+    // The switch lands while the button is still held.
+    await editing.evaluate((node: HTMLInputElement) => node.click());
+    await expect(separator).toHaveAttribute('aria-valuenow', '90');
+    await expect(separator).not.toHaveAttribute('data-resizing');
+    await expect(page.locator('.ui-resize-handle__shield')).toHaveCount(0);
+    await page.mouse.move(startX + width * 0.2, y, { steps: 2 });
+    await page.mouse.up();
+    await expect(separator).toHaveAttribute('aria-valuenow', '90');
+    await page.getByRole('radio', { name: 'Reading' }).check();
+    await expect(separator).toHaveAttribute('aria-valuenow', '40');
+  });
+
   test('UIC-SPLIT-VIEW-3.2 grows the first pane with the Left arrow right to left', async ({
     page,
     lab,

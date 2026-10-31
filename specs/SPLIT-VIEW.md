@@ -47,7 +47,7 @@ Verification: `src/components/split-view/split-view.test.tsx`
 
 ### UIC-SPLIT-VIEW-2.4 - Persisted size
 
-With `persistKey`, an uncontrolled split shall restore its sizes from the provider storage ([PROVIDER.md](PROVIDER.md)) under that key and save them when a drag ends, after each key step and after a collapse, an opening or a resize, never during a drag. Two percent panes store the first pane's size as a number; other splits store the list of sizes. A stored value that does not fit the panes falls back to the default sizes.
+With `persistKey`, an uncontrolled split shall restore its sizes from the provider storage ([PROVIDER.md](PROVIDER.md)) under that key and save them when a drag ends, after each key step and after a collapse, an opening or a resize, never during a drag. Two percent panes store the first pane's size as a number; other splits store the list of sizes. A stored value that does not fit the panes falls back to the default sizes. A drag belongs to the storage, the key and the panes' units and bounds it began under: when any of them changes during the drag, the drag is abandoned as a disabled handle abandons it (capture, resizing state and shield cleared, no end reported, nothing saved), and the split shows the sizes of its new owner. The size a collapsed pane reopens at is likewise kept per owner.
 
 Implementation: `src/components/split-view/use-split-sizes.ts`
 Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.spec.ts`
@@ -98,7 +98,7 @@ Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.s
 
 ### UIC-SPLIT-VIEW-3.4 - Standalone handle
 
-`ResizeHandle` shall work outside `SplitView` in any unit: the caller passes `value`, `minValue`, `maxValue`, `extent` and `getUnitsPerPixel` and receives `onChange`, `onChangeEnd` and `onResizingChange`. `isDisabled` removes it from the tab order, ignores input and publishes `data-disabled` and `aria-disabled`. Becoming disabled during a drag shall release capture, clear the resizing state and shield, and report `onResizingChange(false)` without `onChangeEnd`; re-enabling requires a new press. `resolveResizeKeyboardValue` exposes the keyboard contract.
+`ResizeHandle` shall work outside `SplitView` in any unit: the caller passes `value`, `minValue`, `maxValue`, `extent` and `getUnitsPerPixel` and receives `onChange`, `onChangeEnd` and `onResizingChange`. `isDisabled` removes it from the tab order, ignores input and publishes `data-disabled` and `aria-disabled`. Becoming disabled during a drag shall release capture, clear the resizing state and shield, and report `onResizingChange(false)` without `onChangeEnd`; re-enabling requires a new press. A change of `resetKey` during a drag abandons it the same way without disabling later presses. `resolveResizeKeyboardValue` exposes the keyboard contract.
 
 Implementation: `src/components/split-view/resize-handle.tsx`
 Verification: `src/components/split-view/split-view.test.tsx`

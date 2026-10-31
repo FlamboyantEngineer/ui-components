@@ -111,6 +111,7 @@ function SeparatorHandle({
       aria-label={handle.label}
       aria-controls={handle.controls}
       onResizingChange={handle.onResizingChange}
+      resetKey={split.owner}
       onChange={(value) => split.update(apply(value), 'change')}
       onChangeEnd={(value) => split.update(apply(value), 'end')}
       onKeyDown={onKeyDown}

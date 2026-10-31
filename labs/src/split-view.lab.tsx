@@ -45,6 +45,41 @@ function ControlledSplit() {
   );
 }
 
+const layouts = ['Reading', 'Editing'] as const;
+
+/** One split saved under a key per layout; switching layouts mid-drag abandons the drag. */
+function LayoutSplit() {
+  const [layout, setLayout] = useState<(typeof layouts)[number]>('Reading');
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <fieldset style={{ display: 'flex', gap: 12, border: 0, padding: 0, margin: 0 }}>
+        <legend>Layout</legend>
+        {layouts.map((name) => (
+          <label key={name}>
+            <input
+              type="radio"
+              name="split-view-lab-layout"
+              checked={layout === name}
+              onChange={() => setLayout(name)}
+            />{' '}
+            {name}
+          </label>
+        ))}
+      </fieldset>
+      <div style={frame(480, 140)} data-lab-split="layouts">
+        <SplitView
+          panes={[{ id: 'layout-list' }, { id: 'layout-detail' }]}
+          defaultSize={40}
+          persistKey={`split-view-lab.layout.${layout.toLowerCase()}`}
+          separatorLabel="Resize layout panes"
+        >
+          {[<Pane key="a">{layout} list</Pane>, <Pane key="b">{layout} detail</Pane>]}
+        </SplitView>
+      </div>
+    </div>
+  );
+}
+
 const columns = ['Folders', 'Messages', 'Reading'];
 
 function CollapsibleSplit() {
@@ -174,6 +209,12 @@ mountLab(
           {[<Pane key="a">Cities</Pane>, <Pane key="b">Lisbon, Oslo, Kyoto</Pane>]}
         </SplitView>
       </div>
+    </LabSection>
+    <LabSection
+      title="Layouts saved apart"
+      description="Each layout saves its own size. Switching layouts during a drag abandons the drag, so it never lands in the other layout."
+    >
+      <LayoutSplit />
     </LabSection>
     <LabSection
       title="Several panes"
