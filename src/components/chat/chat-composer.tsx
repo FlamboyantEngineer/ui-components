@@ -293,7 +293,10 @@ export function ChatComposer(given: ChatComposerProps) {
   const onKeyDown = (event: KeyboardEvent) => {
     // A composing Escape cancels the input method's candidate, not the reply.
     if (isComposingKey(event.nativeEvent)) return;
-    if (event.key === 'Escape' && state.replyingId !== null) state.cancelReply();
+    if (event.key !== 'Escape' || state.replyingId === null) return;
+    // Handled, so an overlay around the chat stays open for the next Escape.
+    event.preventDefault();
+    state.cancelReply();
   };
   return (
     <>

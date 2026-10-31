@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Modal } from '../modal/modal.js';
 import { CodeEditor, type CodeDiagnostic, type CodeEditorSurfaceProps } from './code-editor.js';
 
 const CHARACTER = { width: 10, height: 20 };
@@ -124,6 +125,25 @@ describe('CodeEditor problems and hover tips', () => {
     expect(input().selectionStart).toBe(26);
     await user.keyboard('{Escape}');
     expect(tooltip()).toBeNull();
+  });
+
+  it('UIC-CODE-EDITOR-3.6 keeps a Modal around the editor open on the Escape that closes the tip', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <Modal isOpen onOpenChange={onOpenChange} title="Script">
+        <Editor diagnostics={problems} />
+      </Modal>,
+    );
+    await user.click(input());
+    act(() => input().setSelectionRange(0, 0));
+    await user.keyboard('{F8}');
+    await waitFor(() => expect(tooltip()).toHaveTextContent('Shadowed name.'));
+    await user.keyboard('{Escape}');
+    expect(tooltip()).toBeNull();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('UIC-CODE-EDITOR-3.5 does nothing on F8 without a marked problem', async () => {
