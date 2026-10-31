@@ -239,3 +239,14 @@ test.describe('Action Row lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('action-row');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(
+    call("orderActions([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])"),
+  ).toHaveText('add, edit, delete');
+});

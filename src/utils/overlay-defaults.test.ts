@@ -18,7 +18,6 @@ describe('overlay defaults', () => {
     expect({ ...defaults }).toEqual({
       DEFAULT_OVERLAY_GUTTER: 8,
       DEFAULT_OVERLAY_GAP: 6,
-      DEFAULT_SUBMENU_OVERLAP: 6,
       DEFAULT_DROPDOWN_OFFSET: 4,
       DEFAULT_POINT_OFFSET: 2,
       SUBMENU_OFFSET: -2,

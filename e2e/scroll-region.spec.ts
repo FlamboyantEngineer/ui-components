@@ -490,3 +490,10 @@ test.describe('Scroll Region lab', () => {
     await expect(toc.locator('[aria-current]')).toHaveCount(1);
   });
 });
+
+test('UIC-SCROLL-REGION-4.5 reads the current section on demand', async ({ page, lab }) => {
+  await lab.open('scroll-region');
+  const read = page.getByRole('button', { name: 'Read the current section' });
+  await read.click();
+  await expect(page.locator('[data-lab-output="resolved-section"]')).toHaveText(/^chapter-/);
+});

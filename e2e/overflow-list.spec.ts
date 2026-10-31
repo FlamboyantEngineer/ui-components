@@ -155,3 +155,16 @@ test.describe('Overflow List lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-OVERFLOW-LIST-1.4 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('overflow-list');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(
+    call(
+      'resolveOverflowCount({ sizes: [60, 60, 60, 60], available: 200, gap: 8, indicatorSize: 40 })',
+    ),
+  ).toHaveText('2');
+});

@@ -1,11 +1,16 @@
 import { useState, type KeyboardEvent } from 'react';
 import { KeyHints, Shortcut, matchesChord } from '../../src/components/shortcut/shortcut.js';
 import {
+  detectShortcutPlatform,
+  formatShortcut,
+  formatShortcutAccessibleText,
   formatShortcutDescription,
+  formatShortcutKeys,
   formatShortcutTooltip,
   getShortcutPlatform,
 } from '../../src/components/shortcut/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const platforms = ['mac', 'windows', 'linux'] as const;
 const chords = [
@@ -121,6 +126,29 @@ mountLab(
       description="A Cyrillic я matches both Control+Я and Control+Z; AltGr typing @ on the Q key is text, not Control+Alt+Q."
     >
       <ChordTester />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="Text forms of a chord for a host that draws its own shortcut, such as in a native menu or a title attribute."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "detectShortcutPlatform({ platform: 'MacIntel' })",
+            detectShortcutPlatform({ platform: 'MacIntel' }),
+          ],
+          ["formatShortcut('Ctrl+Shift+K', 'mac')", formatShortcut('Ctrl+Shift+K', 'mac')],
+          ["formatShortcut(['G', 'I'], 'linux')", formatShortcut(['G', 'I'], 'linux')],
+          [
+            "formatShortcutKeys('Ctrl+Shift+K', 'windows')",
+            JSON.stringify(formatShortcutKeys('Ctrl+Shift+K', 'windows')),
+          ],
+          [
+            "formatShortcutAccessibleText('Ctrl+Shift+K', { platform: 'mac' })",
+            formatShortcutAccessibleText('Ctrl+Shift+K', { platform: 'mac' }),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

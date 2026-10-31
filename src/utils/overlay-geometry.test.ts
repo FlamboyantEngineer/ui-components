@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   findOverlayScrollContainer,
   getOverlayBoundary,
-  isSameOverlayGeometry,
   resolveOverlayGeometry,
   type OverlayGeometry,
 } from './overlay-geometry.js';
@@ -213,29 +212,11 @@ describe('measuring', () => {
     height = 500;
     expect(resolve()).toMatchObject({ maxHeight: 384, constrained: true, top: 8 });
   });
+});
 
-  it('UIC-OVERLAY-POSITION-3.4 compares geometries', () => {
-    const geometry: OverlayGeometry = {
-      strategy: 'fixed',
-      left: 1,
-      top: 2,
-      maxWidth: null,
-      maxHeight: 40,
-      side: 'bottom',
-      align: 'start',
-      constrained: true,
-      constrainedWidth: false,
-      availableWidth: 300,
-      availableHeight: 40,
-      transformOrigin: '20px 0px',
-    };
-    expect(isSameOverlayGeometry(geometry, { ...geometry })).toBe(true);
-    expect(isSameOverlayGeometry(geometry, { ...geometry, transformOrigin: '0px 0px' })).toBe(
-      false,
-    );
-    expect(isSameOverlayGeometry(geometry, { ...geometry, top: 3 })).toBe(false);
-    expect(isSameOverlayGeometry(geometry, { ...geometry, align: 'end' })).toBe(false);
-    expect(isSameOverlayGeometry(null, null)).toBe(true);
-    expect(isSameOverlayGeometry(geometry, null)).toBe(false);
+describe('withdrawn geometry equality', () => {
+  it('UIC-OVERLAY-POSITION-3.4 exports no geometry comparison', async () => {
+    const geometry = await import('./overlay-geometry.js');
+    expect('isSameOverlayGeometry' in geometry).toBe(false);
   });
 });

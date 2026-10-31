@@ -6,6 +6,8 @@ import {
   type PopoverProps,
 } from '../../src/components/popover/popover.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { getOverlayBoundary } from '../../src/utils/index.js';
+import { LabOutput } from './lab-output.js';
 
 const placements = ['top', 'bottom', 'start', 'end'] as const;
 const arrows = ['no arrow', 'arrow'] as const;
@@ -14,6 +16,37 @@ const options = ['offset 16', 'cross offset 24', 'no flip'] as const;
 const dismissals = ['Escape refused', 'outside presses refused'] as const;
 
 /** A field whose Escape clears its draft first, handling the key, and lets the next one pass. */
+/** Measures a scrolling frame as an overlay would see it, for a host positioning its own layer. */
+function BoundaryDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [boundary, setBoundary] = useState('Not measured');
+  const measure = () => {
+    const { visibleRect, contentRect, hasVerticalScroll } = getOverlayBoundary(ref.current, {
+      gutter: 8,
+    });
+    setBoundary(
+      `visible ${Math.round(visibleRect.width)}×${Math.round(visibleRect.height)}, content ${Math.round(contentRect.width)}×${Math.round(contentRect.height)}, ${hasVerticalScroll ? 'scrolls' : 'does not scroll'}`,
+    );
+  };
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <div
+        ref={ref}
+        role="region"
+        aria-label="Measured frame"
+        tabIndex={0}
+        style={{ width: 240, height: 120, overflow: 'auto', border: '1px dashed' }}
+      >
+        <div style={{ height: 320, padding: 8 }}>A frame taller than its view.</div>
+      </div>
+      <Button size="sm" onPress={measure}>
+        Measure the frame
+      </Button>
+      <LabOutput name="boundary">{boundary}</LabOutput>
+    </div>
+  );
+}
+
 function DraftField({ label }: { label: string }) {
   return (
     <label>
@@ -264,6 +297,12 @@ mountLab(
       <Opener label="Add label" title="Add label" data-lab-popover="handled">
         <DraftField label="Label" />
       </Opener>
+    </LabSection>
+    <LabSection
+      title="Boundary for a host layer"
+      description="getOverlayBoundary measures a frame less its gutter, as the library's own overlays solve against it."
+    >
+      <BoundaryDemo />
     </LabSection>
   </>,
 );

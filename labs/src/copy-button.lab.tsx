@@ -2,9 +2,35 @@ import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { useClipboard } from '../../src/utils/use-clipboard.js';
+import { copyRichText, type RichCopyResult } from '../../src/utils/index.js';
+import { LabOutput } from './lab-output.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['rest', 'disabled'] as const;
+
+/** Copies a formatted note: rich editors paste the HTML, plain fields the text. */
+function RichCopyDemo() {
+  const [result, setResult] = useState<RichCopyResult | 'not copied'>('not copied');
+  const copy = async () => {
+    setResult(
+      await copyRichText(
+        {
+          text: 'Lemon tart: zest, juice, butter',
+          html: '<p><strong>Lemon tart</strong>: zest, juice, butter</p>',
+        },
+        { fallbackOnRichFailure: true },
+      ),
+    );
+  };
+  return (
+    <div>
+      <Button size="sm" onPress={() => void copy()}>
+        Copy the note as rich text
+      </Button>
+      <LabOutput name="rich-copy">{result}</LabOutput>
+    </div>
+  );
+}
 
 function CopyDemo() {
   const [outcome, setOutcome] = useState('none');
@@ -98,6 +124,12 @@ mountLab(
       description="This simulated clipboard lets writes finish out of order. Start the earlier copy, copy the latest, then refuse the earlier: feedback still follows the latest request, and the refused copy does not fall back to a selection copy over the latest text. Reset also ignores a pending write."
     >
       <CopyFeedbackDemo />
+    </LabSection>
+    <LabSection
+      title="Rich text from the host"
+      description="copyRichText writes HTML with a plain-text version, falling back to the text alone where the browser refuses rich writes."
+    >
+      <RichCopyDemo />
     </LabSection>
   </>,
 );

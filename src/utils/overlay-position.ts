@@ -2,11 +2,7 @@
 // or a point. Pure functions over rects; `overlay-geometry.ts` measures the DOM for them.
 
 import { alignCrossAxis, clampFinite, resolveAnchorPoint, solveMainAxis } from './overlay-axis.js';
-import {
-  DEFAULT_OVERLAY_GAP,
-  DEFAULT_OVERLAY_GUTTER,
-  DEFAULT_SUBMENU_OVERLAP,
-} from './overlay-defaults.js';
+import { DEFAULT_OVERLAY_GAP } from './overlay-defaults.js';
 
 /** A box in viewport coordinates, like `DOMRect`. */
 export interface OverlayRect {
@@ -30,10 +26,6 @@ export type OverlaySide = 'bottom' | 'top' | 'left' | 'right';
  * left-to-right text, the top edge beside the anchor), its `end` edge, or centred on it.
  */
 export type OverlayAlign = 'start' | 'center' | 'end';
-/** The side of its trigger row a submenu opens on. */
-export type SubmenuSide = 'right' | 'left';
-/** Which way a submenu extends from its trigger row. */
-export type SubmenuDirection = 'down' | 'up';
 /**
  * `viewport`: fit the visible part of the boundary and clamp into it. `content`: use the boundary's
  * whole scrollable content, so a tall overlay may extend into the scrolled-away part and scroll with it.
@@ -83,33 +75,8 @@ export interface OverlayPlacement {
   transformOrigin: string;
 }
 
-export interface SubmenuPlacementInput {
-  triggerRect: OverlayRect;
-  overlaySize: OverlaySize;
-  visibleRect: OverlayRect;
-  contentRect?: OverlayRect | undefined;
-  horizontalRect?: OverlayRect | undefined;
-  /** How far the submenu overlaps its parent. Defaults to 6. */
-  overlap?: number | undefined;
-  /** Extra space kept free past a constrained submenu. Defaults to 8. */
-  gutter?: number | undefined;
-  /** Text direction, which decides the preferred side. Defaults to `ltr` (right). */
-  dir?: 'ltr' | 'rtl' | undefined;
-  mode?: OverlayMode | undefined;
-}
-
-export interface SubmenuPlacement {
-  side: SubmenuSide;
-  direction: SubmenuDirection;
-  left: number;
-  top: number;
-  /** The height limit to apply when `constrained`; the submenu's own height otherwise. */
-  maxHeight: number;
-  constrained: boolean;
-}
-
 /** The rects a placement is solved in: vertical room by mode, horizontal room as given. */
-function resolveSolvingRects(input: OverlayPlacementInput | SubmenuPlacementInput) {
+function resolveSolvingRects(input: OverlayPlacementInput) {
   const { visibleRect } = input;
   const content = input.mode === 'content';
   return {
@@ -117,31 +84,6 @@ function resolveSolvingRects(input: OverlayPlacementInput | SubmenuPlacementInpu
     verticalRect: content ? (input.contentRect ?? visibleRect) : visibleRect,
     horizontalRect: input.horizontalRect ?? visibleRect,
   };
-}
-
-function chooseVerticalSide(above: number, below: number, height: number): OverlaySide {
-  if (below >= height) return 'bottom';
-  if (above >= height) return 'top';
-  return below >= above ? 'bottom' : 'top';
-}
-
-/** The side a submenu opens on: the reading side when it fits or has at least as much room. */
-function chooseSubmenuSide(
-  input: SubmenuPlacementInput,
-  horizontalRect: OverlayRect,
-  overlap: number,
-) {
-  const { triggerRect, overlaySize } = input;
-  const availableRight = Math.max(0, horizontalRect.right - triggerRect.right + overlap);
-  const availableLeft = Math.max(0, triggerRect.left - horizontalRect.left + overlap);
-  const [preferred, other, preferredRoom, otherRoom]: [SubmenuSide, SubmenuSide, number, number] =
-    input.dir === 'rtl'
-      ? ['left', 'right', availableLeft, availableRight]
-      : ['right', 'left', availableRight, availableLeft];
-  const side = preferredRoom >= overlaySize.width || preferredRoom >= otherRoom ? preferred : other;
-  const left =
-    side === 'right' ? triggerRect.right - overlap : triggerRect.left - overlaySize.width + overlap;
-  return { side, left };
 }
 
 /** Copies any rect-like value (a `DOMRect`, or an object with edges) into an `OverlayRect`. */
@@ -286,39 +228,5 @@ export function resolveOverlayPlacement(input: OverlayPlacementInput): OverlayPl
     availableHeight: placed.availableHeight,
     constrained: placed.main.constrained,
     transformOrigin: resolveTransformOrigin(placed.side, anchorRect, placed),
-  };
-}
-
-/**
- * Places a submenu beside its trigger row, overlapping the parent menu slightly. It opens on the
- * reading-direction side when it fits there or has more room there, and on the other side otherwise.
- * It extends down from the row when it fits, up when only that fits, else toward the roomier side,
- * constrained to it.
- */
-export function resolveSubmenuPlacement(input: SubmenuPlacementInput): SubmenuPlacement {
-  const overlap = input.overlap ?? DEFAULT_SUBMENU_OVERLAP;
-  const gutter = input.gutter ?? DEFAULT_OVERLAY_GUTTER;
-  const { triggerRect, overlaySize, visibleRect } = input;
-  const { content, verticalRect, horizontalRect } = resolveSolvingRects(input);
-  const { side, left } = chooseSubmenuSide(input, horizontalRect, overlap);
-
-  const availableBelow = Math.max(0, verticalRect.bottom - triggerRect.top);
-  const availableAbove = Math.max(0, triggerRect.bottom - verticalRect.top);
-  const direction: SubmenuDirection =
-    chooseVerticalSide(availableAbove, availableBelow, overlaySize.height) === 'bottom'
-      ? 'down'
-      : 'up';
-  const available = direction === 'down' ? availableBelow : availableAbove;
-  const constrained = overlaySize.height > available;
-  const height = Math.max(0, constrained ? available : overlaySize.height);
-  const top = direction === 'down' ? triggerRect.top : triggerRect.bottom - height;
-
-  return {
-    side,
-    direction,
-    left: clampFinite(left, horizontalRect.left, horizontalRect.right - overlaySize.width),
-    top: content ? top : clampFinite(top, visibleRect.top, visibleRect.bottom - height),
-    maxHeight: constrained ? Math.max(0, height - gutter) : overlaySize.height,
-    constrained,
   };
 }

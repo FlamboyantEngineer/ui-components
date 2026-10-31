@@ -1,12 +1,20 @@
 import { Button } from '../../src/components/button/button.js';
 import { Path } from '../../src/components/path/path.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { formatFolderPath } from '../../src/utils/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const paths: Record<string, string | string[]> = {
   short: '/Garden',
   long: '/Garden/Vegetable beds/North side/Raised bed four/Tomatoes/Seed saving/Final notes',
   labels: ['Recipes', 'https://example.test/lemon-tart', 'Step 3'],
 };
+
+const folders = [
+  { id: 'garden', parentId: null, name: 'Garden' },
+  { id: 'beds', parentId: 'garden', name: 'Vegetable beds' },
+  { id: 'tomatoes', parentId: 'beds', name: 'Tomatoes' },
+];
 
 mountLab(
   <>
@@ -52,6 +60,18 @@ mountLab(
           </div>
         ))}
       </div>
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="formatFolderPath builds a path from a flat folder catalog, ready for Path."
+    >
+      <LabHelperCalls
+        calls={[
+          ["formatFolderPath(folders, 'tomatoes')", formatFolderPath(folders, 'tomatoes')],
+          ["formatFolderPath(folders, null, 'Home')", formatFolderPath(folders, null, 'Home')],
+        ]}
+      />
+      <Path path={formatFolderPath(folders, 'tomatoes')} />
     </LabSection>
   </>,
 );

@@ -64,14 +64,14 @@ Verification: `src/utils/overlay-position.test.ts`, `src/utils/overlay-geometry.
 
 ### UIC-OVERLAY-POSITION-2.1 - Submenu side
 
-`resolveSubmenuPlacement` shall place a submenu beside its trigger row, overlapping the parent by `overlap` pixels (6 by default), on the reading-direction side (right, or left with `dir: 'rtl'`) when it fits there or has at least as much room there, and on the other side otherwise; it is then clamped into the horizontal boundary.
+Withdrawn. Submenus open through React Aria, so the library has no submenu solver.
 
 Implementation: `src/utils/overlay-position.ts`
 Verification: `src/utils/overlay-position.test.ts`
 
 ### UIC-OVERLAY-POSITION-2.2 - Submenu direction
 
-The submenu shall extend `down` from the top of its trigger row when it fits, `up` from the bottom of the row when only that fits, and otherwise toward the side with more room, constrained to it with `maxHeight` equal to that room less `gutter` (8 by default). In `viewport` mode it is clamped into the visible boundary.
+Withdrawn, with UIC-OVERLAY-POSITION-2.1.
 
 Implementation: `src/utils/overlay-position.ts`
 Verification: `src/utils/overlay-position.test.ts`
@@ -101,7 +101,7 @@ Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.4 - Geometry equality
 
-`isSameOverlayGeometry` shall report whether two geometries render the same, so a caller can skip a state update that changes nothing.
+Withdrawn. Callers compare geometries with a shallow equality of their own.
 
 Implementation: `src/utils/overlay-geometry.ts`
 Verification: `src/utils/overlay-geometry.test.ts`
@@ -124,7 +124,7 @@ Verification: `src/utils/use-follow-anchor.test.tsx`
 
 ### UIC-OVERLAY-POSITION-4.1 - Named distances and delays
 
-The distances and delays the library's overlays share shall be named once, in `src/utils/overlay-defaults.ts`, and every overlay shall take them from there rather than from a literal: `DEFAULT_OVERLAY_GUTTER` (8 pixels kept inside the boundary, React Aria's `containerPadding`), `DEFAULT_OVERLAY_GAP` (6) and `DEFAULT_SUBMENU_OVERLAP` (6) for the overlays the library positions itself, `DEFAULT_DROPDOWN_OFFSET` (4) between a field or trigger and its list, menu or panel, `DEFAULT_POINT_OFFSET` (2) for a point, caret or compact inline control, `SUBMENU_OFFSET` (-2) and `SUBMENU_CROSS_OFFSET` (-4) for a submenu, `TOOLTIP_OFFSET` (8, the room the reference arrow is drawn in), `POPOVER_OFFSET` (8) and `POPOVER_ARROW_OFFSET` (7), and the delays `TOOLTIP_DELAY` (500 milliseconds), `HOVER_CARD_DELAY` (600), `HOVER_CARD_CLOSE_DELAY` (200) and `LONG_PRESS_DELAY` (500). No library overlay passes a numeric literal as `offset`, `crossOffset` or `containerPadding`. The first three stay exported from the package; the others are internal.
+The distances and delays the library's overlays share shall be named once, in `src/utils/overlay-defaults.ts`, and every overlay shall take them from there rather than from a literal: `DEFAULT_OVERLAY_GUTTER` (8 pixels kept inside the boundary, React Aria's `containerPadding`) and `DEFAULT_OVERLAY_GAP` (6) for the overlays the library positions itself, `DEFAULT_DROPDOWN_OFFSET` (4) between a field or trigger and its list, menu or panel, `DEFAULT_POINT_OFFSET` (2) for a point, caret or compact inline control, `SUBMENU_OFFSET` (-2) and `SUBMENU_CROSS_OFFSET` (-4) for a submenu, `TOOLTIP_OFFSET` (8, the room the reference arrow is drawn in), `POPOVER_OFFSET` (8) and `POPOVER_ARROW_OFFSET` (7), and the delays `TOOLTIP_DELAY` (500 milliseconds), `HOVER_CARD_DELAY` (600), `HOVER_CARD_CLOSE_DELAY` (200) and `LONG_PRESS_DELAY` (500). No library overlay passes a numeric literal as `offset`, `crossOffset` or `containerPadding`. The first two stay exported from the package; the others are internal.
 
 Implementation: `src/utils/overlay-defaults.ts`
 Verification: `src/utils/overlay-defaults.test.ts`

@@ -4,7 +4,9 @@ import {
   useScrollRegionHeaderRef,
   type ScrollRegionProps,
 } from '../../src/components/scroll-region/scroll-region.js';
-import { useScrollSpy } from '../../src/components/scroll-region/index.js';
+import { resolveScrollSpy, useScrollSpy } from '../../src/components/scroll-region/index.js';
+import { Button } from '../../src/components/button/button.js';
+import { LabOutput } from './lab-output.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -203,8 +205,13 @@ function Chapters() {
   const ref = useRef<HTMLDivElement>(null);
   const ids = chapters.map((chapter) => `chapter-${chapter.toLowerCase()}`);
   const active = useScrollSpy(ref, { ids, offset: 8 });
+  const [read, setRead] = useState('Not read yet');
+  const readCurrent = () => {
+    const viewport = ref.current;
+    if (viewport) setRead(resolveScrollSpy(viewport, { ids, offset: 8 }) ?? 'None');
+  };
   return (
-    <div style={{ display: 'flex', gap: 16 }}>
+    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
       <nav aria-label="Chapters" data-lab-toc="">
         <ul style={{ margin: 0, paddingInlineStart: 16 }}>
           {chapters.map((chapter, index) => (
@@ -228,6 +235,12 @@ function Chapters() {
             </section>
           ))}
         </ScrollRegion>
+      </div>
+      <div>
+        <Button size="sm" onPress={readCurrent}>
+          Read the current section
+        </Button>
+        <LabOutput name="resolved-section">{read}</LabOutput>
       </div>
     </div>
   );

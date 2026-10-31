@@ -9,20 +9,10 @@ export { copyRichText, copyText } from './clipboard.js';
 export { formatTsv, parseTsv } from './tsv.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
 export { useClipboard } from './use-clipboard.js';
-export { DEFAULT_COPY_TIMEOUT } from './copy-timeout.js';
 export type { ClipboardOptions, ClipboardState, CopyStatus } from './use-clipboard.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';
-export {
-  DEFAULT_OVERLAY_GAP,
-  DEFAULT_OVERLAY_GUTTER,
-  DEFAULT_SUBMENU_OVERLAP,
-} from './overlay-defaults.js';
-export {
-  createOverlayPointRect,
-  resolveOverlayPlacement,
-  resolveSubmenuPlacement,
-  toOverlayRect,
-} from './overlay-position.js';
+export { DEFAULT_OVERLAY_GAP, DEFAULT_OVERLAY_GUTTER } from './overlay-defaults.js';
+export { createOverlayPointRect, resolveOverlayPlacement } from './overlay-position.js';
 export type {
   OverlayAlign,
   OverlayMode,
@@ -31,15 +21,10 @@ export type {
   OverlayRect,
   OverlaySide,
   OverlaySize,
-  SubmenuDirection,
-  SubmenuPlacement,
-  SubmenuPlacementInput,
-  SubmenuSide,
 } from './overlay-position.js';
 export {
   findOverlayScrollContainer,
   getOverlayBoundary,
-  isSameOverlayGeometry,
   resolveOverlayGeometry,
 } from './overlay-geometry.js';
 export { autoUpdateOverlay } from './overlay-auto-update.js';
@@ -64,12 +49,6 @@ export type {
   ElementSizeOptions,
   ElementSizeTarget,
 } from './use-element-size.js';
-export {
-  SCROLL_OVERVIEW_MIN_MARKER,
-  buildScrollOverviewImage,
-  resolveLayeredScrollOverviewSegments,
-  resolveScrollOverviewSegments,
-} from './scroll-overview.js';
 export type {
   ScrollOverviewLayer,
   ScrollOverviewMarker,

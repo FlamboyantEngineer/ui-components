@@ -220,3 +220,11 @@ test('UIC-LIST-ROW-4.1 keeps row handles and checkboxes left of vertically cente
   }
   expect(controls).toBeGreaterThan(0);
 });
+
+test('UIC-LIST-ROW-2.2 draws row content inside a host-owned element', async ({ page, lab }) => {
+  await lab.open('list-row');
+  const host = page.getByRole('group', { name: 'Host row' });
+  await expect(host).toContainText('Quarterly notes');
+  await expect(host).toContainText('Edited today');
+  await expect(host.getByRole('listitem')).toHaveCount(0);
+});

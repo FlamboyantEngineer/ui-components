@@ -192,3 +192,11 @@ test.describe('Slider lab', () => {
     await expect(output(page, 'Submitted')).toHaveText('volume=50 quiet=10 quiet=22');
   });
 });
+
+test('UIC-SLIDER-4.3 shows the exported helpers in a host-side snippet', async ({ page, lab }) => {
+  await lab.open('slider');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(
+    call('keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })'),
+  ).toHaveText('[35,45]');
+});

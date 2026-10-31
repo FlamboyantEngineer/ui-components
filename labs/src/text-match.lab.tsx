@@ -1,7 +1,15 @@
 import { useCallback, useId, useMemo, useState } from 'react';
-import { splitMatchTerms, textMatchesTerms } from '../../src/components/text-match/index.js';
+import {
+  findTermRanges,
+  findWordMatches,
+  isWordMatchAt,
+  normalizeMatchText,
+  splitMatchTerms,
+  textMatchesTerms,
+} from '../../src/components/text-match/index.js';
 import { TextMatch, TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const sample = 'Go to the top of the Line-height list to add Favorites';
 const queries = ['(none)', 'to', 'fav', 'line height', 'pear'] as const;
@@ -121,6 +129,28 @@ mountLab(
       description="Type a query. Every label marks it as you type, and the provider counts the labels that registered."
     >
       <FilterDemo />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="The matching rules TextMatch uses, for a host that filters or highlights its own text the same way."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "normalizeMatchText('Crème Brûlée', { ignoreAccents: true })",
+            normalizeMatchText('Crème Brûlée', { ignoreAccents: true }),
+          ],
+          [
+            "findWordMatches('tea, steam, teapot', 'tea')",
+            JSON.stringify(findWordMatches('tea, steam, teapot', 'tea')),
+          ],
+          ["isWordMatchAt('steam', 1, 'tea')", String(isWordMatchAt('steam', 1, 'tea'))],
+          [
+            "findTermRanges('Lemon tart and lime tea', ['lem', 'tea'])",
+            JSON.stringify(findTermRanges('Lemon tart and lime tea', ['lem', 'tea'])),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

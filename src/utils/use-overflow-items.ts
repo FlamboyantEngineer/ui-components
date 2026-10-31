@@ -20,7 +20,6 @@ import {
 import { flushSync } from 'react-dom';
 import { useResizeObserver } from './use-resize-observer.js';
 
-export { resolveOverflowCount } from './overflow-measure.js';
 export type { OverflowCollapseFrom, OverflowCountInput } from './overflow-measure.js';
 
 export interface OverflowItemsOptions<T> {

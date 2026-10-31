@@ -315,3 +315,14 @@ test.describe('Split View lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-SPLIT-VIEW-3.4 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('split-view');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(
+    call("resolveResizeKeyboardValue({ key: 'ArrowRight', shiftKey: true }, input)"),
+  ).toHaveText('51');
+});

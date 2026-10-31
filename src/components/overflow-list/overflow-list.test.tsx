@@ -3,7 +3,7 @@ import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { resolveOverflowCount } from '../../utils/use-overflow-items.js';
+import { resolveOverflowCount } from '../../utils/overflow-measure.js';
 import { OverflowList } from './overflow-list.js';
 import { stubTextLayout } from '../../../test/overflow-fixtures.js';
 

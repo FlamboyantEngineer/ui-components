@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import {
-  DEFAULT_OVERLAY_GAP,
-  DEFAULT_OVERLAY_GUTTER,
-  DEFAULT_SUBMENU_OVERLAP,
-} from './overlay-defaults.js';
+import { DEFAULT_OVERLAY_GAP } from './overlay-defaults.js';
 import {
   createOverlayPointRect,
   resolveOverlayPlacement,
-  resolveSubmenuPlacement,
   toOverlayRect,
   type OverlayRect,
 } from './overlay-position.js';
@@ -275,79 +270,9 @@ describe('sides, alignment and outputs', () => {
   });
 });
 
-describe('resolveSubmenuPlacement', () => {
-  const overlaySize = { width: 120, height: 100 };
-
-  it('UIC-OVERLAY-POSITION-2.1 opens on the reading side when it fits or has more room', () => {
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 40, top: 20, width: 100, height: 24 }),
-        overlaySize,
-        visibleRect,
-      }),
-    ).toMatchObject({ side: 'right', left: 140 - DEFAULT_SUBMENU_OVERLAP });
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 250, top: 20, width: 100, height: 24 }),
-        overlaySize,
-        visibleRect,
-      }),
-    ).toMatchObject({ side: 'left', left: 136 });
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 40, top: 20, width: 100, height: 24 }),
-        overlaySize: { width: 320, height: 100 },
-        visibleRect,
-        overlap: 0,
-      }),
-    ).toMatchObject({ side: 'right', left: 80 });
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 250, top: 20, width: 100, height: 24 }),
-        overlaySize,
-        visibleRect,
-        dir: 'rtl',
-      }),
-    ).toMatchObject({ side: 'left', left: 136 });
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 40, top: 20, width: 100, height: 24 }),
-        overlaySize,
-        visibleRect,
-        dir: 'rtl',
-      }),
-    ).toMatchObject({ side: 'right' });
-  });
-
-  it('UIC-OVERLAY-POSITION-2.2 extends down, up, or toward the roomier side, constrained', () => {
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 40, top: 20, width: 100, height: 24 }),
-        overlaySize,
-        visibleRect,
-      }),
-    ).toMatchObject({ direction: 'down', top: 20, constrained: false, maxHeight: 100 });
-    expect(
-      resolveSubmenuPlacement({
-        triggerRect: rect({ left: 40, top: 250, width: 100, height: 24 }),
-        overlaySize,
-        visibleRect,
-      }),
-    ).toMatchObject({ direction: 'up', top: 174 });
-    const tall = resolveSubmenuPlacement({
-      triggerRect: rect({ left: 40, top: 100, width: 100, height: 24 }),
-      overlaySize: { width: 120, height: 400 },
-      visibleRect,
-    });
-    expect(tall).toMatchObject({ direction: 'down', constrained: true, maxHeight: 192, top: 100 });
-    expect(tall.maxHeight).toBe(200 - DEFAULT_OVERLAY_GUTTER);
-    const content = resolveSubmenuPlacement({
-      triggerRect: rect({ left: 40, top: 250, width: 100, height: 24 }),
-      overlaySize,
-      visibleRect,
-      contentRect: rect({ left: 0, top: 0, width: 400, height: 1000 }),
-      mode: 'content',
-    });
-    expect(content).toMatchObject({ direction: 'down', top: 250 });
+describe('withdrawn submenu solver', () => {
+  it('UIC-OVERLAY-POSITION-2.1 UIC-OVERLAY-POSITION-2.2 leaves submenus to React Aria', async () => {
+    const position = await import('./overlay-position.js');
+    expect('resolveSubmenuPlacement' in position).toBe(false);
   });
 });

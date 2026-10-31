@@ -240,3 +240,9 @@ test.describe('Portal lab', () => {
     });
   }
 });
+
+test('UIC-PORTAL-2.1 shows the exported helpers in a host-side snippet', async ({ page, lab }) => {
+  await lab.open('portal');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("isLayerAbove('tooltip', 'modal')")).toHaveText('true');
+});

@@ -11,6 +11,8 @@ import {
 import { useState } from 'react';
 import { ActionRow, type ActionRowAction } from '../../src/components/action-row/action-row.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { actionVerbs, orderActions } from '../../src/components/action-row/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'pending', 'with lead'] as const;
@@ -338,6 +340,22 @@ mountLab(
       description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection, except the Escape that cancels an input method candidate in the note field."
     >
       <SelectionBar />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="The standard verbs in their drawing order, and orderActions sorting a host list the same way, such as for a menu of the same actions."
+    >
+      <LabHelperCalls
+        calls={[
+          ['Object.keys(actionVerbs)', Object.keys(actionVerbs).join(', ')],
+          [
+            "orderActions([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])",
+            orderActions<ActionRowAction>([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])
+              .map((action) => action.verb)
+              .join(', '),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

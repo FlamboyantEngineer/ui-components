@@ -110,3 +110,16 @@ test.describe('Shortcut lab', () => {
     await expect(output).toHaveText('Ctrl+Shift+1');
   });
 });
+
+test('UIC-SHORTCUT-1.2 UIC-SHORTCUT-1.3 UIC-SHORTCUT-1.4 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('shortcut');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("formatShortcut('Ctrl+Shift+K', 'mac')")).toHaveText('⇧⌘K');
+  await expect(
+    call("formatShortcutAccessibleText('Ctrl+Shift+K', { platform: 'mac' })"),
+  ).toHaveText('Shift Command K');
+  await expect(call("detectShortcutPlatform({ platform: 'MacIntel' })")).toHaveText('mac');
+});

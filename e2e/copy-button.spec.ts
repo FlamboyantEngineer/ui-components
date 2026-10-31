@@ -86,3 +86,14 @@ test.describe('Copy Button lab', () => {
     await expect(status).toHaveText('Feedback: idle');
   });
 });
+
+test('UIC-CLIPBOARD-1.3 copies a note as rich text from the host', async ({
+  page,
+  lab,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await lab.open('copy-button');
+  await page.getByRole('button', { name: 'Copy the note as rich text' }).click();
+  await expect(page.locator('[data-lab-output="rich-copy"]')).toHaveText(/^(rich|text)$/);
+});

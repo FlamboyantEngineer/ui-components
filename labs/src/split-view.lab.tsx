@@ -1,9 +1,10 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { ResizeHandle } from '../../src/components/split-view/index.js';
+import { ResizeHandle, resolveResizeKeyboardValue } from '../../src/components/split-view/index.js';
 import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 // Lab-only frames so the panes are visible with or without a stylesheet.
 const frame = (width: number | string, height: number): CSSProperties => ({
@@ -328,6 +329,27 @@ mountLab(
           </SplitView>
         </div>
       </UiProvider>
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="The window-splitter key rules, for a host that draws its own separator."
+    >
+      <LabHelperCalls
+        calls={[
+          ...(['ArrowRight', 'Shift+ArrowRight', 'End'] as const).map(
+            (press) =>
+              [
+                `resolveResizeKeyboardValue({ key: '${press.replace('Shift+', '')}', shiftKey: ${String(press.startsWith('Shift+'))} }, input)`,
+                String(
+                  resolveResizeKeyboardValue(
+                    { key: press.replace('Shift+', ''), shiftKey: press.startsWith('Shift+') },
+                    { orientation: 'vertical', value: 50, minValue: 20, maxValue: 80, extent: 100 },
+                  ),
+                ),
+              ] as const,
+          ),
+        ]}
+      />
     </LabSection>
   </>,
 );

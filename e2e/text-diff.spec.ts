@@ -199,3 +199,19 @@ test.describe('Text Diff lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-DIFF-3.1 UIC-SYNCED-SCROLL-1.2 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('text-diff');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("diffSequences(['oak', 'ash', 'elm'], ['oak', 'elm', 'yew'])")).toHaveText(
+    '[{"kind":"equal","items":["oak"]},{"kind":"delete","items":["ash"]},{"kind":"equal","items":["elm"]},{"kind":"insert","items":["yew"]}]',
+  );
+  await expect(
+    call(
+      "mapScrollOffset(150, [{ key: 'a', offset: 100 }, { key: 'b', offset: 200 }], [{ key: 'a', offset: 300 }, { key: 'b', offset: 500 }])",
+    ),
+  ).toHaveText('400');
+});
