@@ -7,6 +7,7 @@ import {
   pickDataAttributes,
   splitDataAttributes,
 } from './hooks.js';
+import type { BaseProps } from './props.js';
 
 describe('createHooks', () => {
   const hooks = createHooks('button', ['glyph', 'label']);
@@ -98,6 +99,12 @@ describe('caller attribute helpers', () => {
     const [data, rest] = splitDataAttributes(props);
     expect(data).toEqual(picked);
     expect(rest).toEqual({ title: 't' });
+  });
+
+  it('UIC-HOOKS-2.3 takes a typed caller null, which omits the attribute', () => {
+    const props: BaseProps = { className: 'caller', 'data-row': 2, 'data-none': null };
+    const root = createHooks('row').root({ className: props.className, props });
+    expect(root).toEqual({ className: 'ui-row caller', 'data-row': '2' });
   });
 
   it('joins class names', () => {
