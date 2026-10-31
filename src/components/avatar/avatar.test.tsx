@@ -1,4 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -185,6 +187,70 @@ describe('Avatar', () => {
     expect(container.querySelector('img')).toHaveAttribute('src', '/cached.png');
     complete.mockRestore();
     width.mockRestore();
+  });
+
+  it('UIC-AVATAR-1.5 counts a picture that failed before hydration as failed', async () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    const width = vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+    const onLoadingStatusChange = vi.fn();
+    const element = (
+      <Avatar name="Maria Santos" src="/gone.png" onLoadingStatusChange={onLoadingStatusChange} />
+    );
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(element);
+    expect(host.querySelector('img')).toHaveAttribute('src', '/gone.png');
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, element);
+    });
+    expect(onLoadingStatusChange.mock.calls).toEqual([['loading'], ['error']]);
+    expect(host.querySelector('img')).toBeNull();
+    expect(host.querySelector('.ui-avatar')).not.toHaveAttribute('data-loading');
+    expect(host.querySelector('.ui-avatar__initials')).toHaveTextContent('MS');
+    act(() => app?.unmount());
+    host.remove();
+    complete.mockRestore();
+    width.mockRestore();
+  });
+
+  it('UIC-AVATAR-1.4 UIC-AVATAR-1.5 tries a new responsive candidate after a failure', () => {
+    const onLoadingStatusChange = vi.fn();
+    const avatar = (imageProps: { srcSet: string; crossOrigin?: 'anonymous' }) => (
+      <Avatar
+        name="Maria Santos"
+        src="/fallback.png"
+        imageProps={imageProps}
+        onLoadingStatusChange={onLoadingStatusChange}
+      />
+    );
+    const { container, rerender } = render(avatar({ srcSet: '/bad.png 1x' }));
+    fireEvent.error(container.querySelector('img') as HTMLImageElement);
+    expect(container.querySelector('img')).toBeNull();
+
+    rerender(avatar({ srcSet: '/good.png 1x' }));
+    const image = container.querySelector('img') as HTMLImageElement;
+    expect(image).toHaveAttribute('srcset', '/good.png 1x');
+    expect(onLoadingStatusChange).toHaveBeenLastCalledWith('loading');
+    fireEvent.load(image);
+    expect(onLoadingStatusChange).toHaveBeenLastCalledWith('loaded');
+
+    rerender(avatar({ srcSet: '/good.png 1x', crossOrigin: 'anonymous' }));
+    expect(onLoadingStatusChange).toHaveBeenLastCalledWith('loading');
+    const next = container.querySelector('img') as HTMLImageElement;
+    expect(next).not.toBe(image);
+    fireEvent.error(image);
+    expect(onLoadingStatusChange).toHaveBeenLastCalledWith('loading');
+    expect(container.querySelector('img')).toBe(next);
+  });
+
+  it('UIC-AVATAR-1.5 leaves a lazy picture loading until it settles', () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(false);
+    const { container } = render(
+      <Avatar name="Maria Santos" src="/later.png" imageProps={{ loading: 'lazy' }} />,
+    );
+    expect(root(container)).toHaveAttribute('data-loading', 'true');
+    expect(container.querySelector('img')).toHaveAttribute('loading', 'lazy');
+    complete.mockRestore();
   });
 
   it('UIC-AVATAR-1.6 sets the picture attributes on the image only', () => {

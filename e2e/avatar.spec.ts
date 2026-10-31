@@ -94,6 +94,25 @@ test.describe('Avatar lab', () => {
     await expect(avatar).toHaveAccessibleName('Jon Berg');
   });
 
+  test('UIC-AVATAR-1.4 tries a new responsive candidate after the first one fails', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    const avatar = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-avatar="candidate"]');
+    await expect(avatar.locator('.ui-avatar__initials')).toHaveText('PN');
+    await expect(avatar.locator('img')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Offer a working candidate' }).click();
+    const image = avatar.locator('img');
+    await expect(image).toBeVisible();
+    await expect(avatar).not.toHaveAttribute('data-loading');
+    expect(await image.evaluate((node) => (node as HTMLImageElement).naturalWidth)).toBeGreaterThan(
+      0,
+    );
+  });
+
   test('UIC-AVATAR-1.2 UIC-AVATAR-3.1 names avatars, hides decorative ones and passes axe', async ({
     page,
     lab,

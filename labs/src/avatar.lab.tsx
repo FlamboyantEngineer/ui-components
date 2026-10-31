@@ -51,6 +51,31 @@ function PictureFallback() {
   );
 }
 
+/** A picture whose responsive candidate fails, then is replaced by a working one. */
+function ResponsiveCandidate() {
+  const [candidate, setCandidate] = useState<'broken' | 'working'>('broken');
+  return (
+    <div>
+      <Avatar
+        name="Priya Nair"
+        size="lg"
+        src={brokenPicture}
+        imageProps={{ srcSet: `${candidate === 'broken' ? brokenPicture : samplePicture} 1x` }}
+        data-lab-avatar="candidate"
+      />
+      <p>
+        <Button
+          size="sm"
+          onPress={() => setCandidate('working')}
+          isDisabled={candidate === 'working'}
+        >
+          Offer a working candidate
+        </Button>
+      </p>
+    </div>
+  );
+}
+
 function LoadingStatus() {
   const [picture, setPicture] = useState<keyof typeof pictures>('none');
   const [log, setLog] = useState<AvatarLoadingStatus[]>([]);
@@ -180,6 +205,12 @@ mountLab(
         description="Break the picture: the initials replace it. Restore it: the new address is tried again."
       >
         <PictureFallback />
+      </LabSection>
+      <LabSection
+        title="Responsive candidate"
+        description="The only srcset candidate fails, so the initials show. Offering a working candidate, with the same src, tries the picture again."
+      >
+        <ResponsiveCandidate />
       </LabSection>
     </div>
     <AvatarPresenceCases />
