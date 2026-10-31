@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import { useMarkdownBlocks } from './markdown-block-cache.js';
 import { listMarkdownHeadings } from './markdown-headings.js';
 import type { MarkdownDocument, MarkdownNode } from './markdown-nodes.js';
@@ -51,20 +52,13 @@ export function Markdown({
     stream.current = parseStreamingMarkdown(prepareStreamingMarkdown(source), stream.current);
     return stream.current.document;
   }, [source, isStreaming]);
-  const headingKey = useMemo(
-    () =>
-      listMarkdownHeadings(tree)
-        .map((heading) => heading.id)
-        .join('\n'),
-    [tree],
+  // The ids by content, so the blocks keep their context while the headings stay the same.
+  const headings = useStableArray(
+    useMemo(() => listMarkdownHeadings(tree).map((heading) => heading.id), [tree]),
   );
   const context = useMemo(
-    () => ({
-      renderNode,
-      headingIdPrefix,
-      headingIds: new Set(headingKey ? headingKey.split('\n') : []),
-    }),
-    [renderNode, headingIdPrefix, headingKey],
+    () => ({ renderNode, headingIdPrefix, headingIds: new Set(headings) }),
+    [renderNode, headingIdPrefix, headings],
   );
   const blocks = useMarkdownBlocks(tree.children, context, isStreaming);
   return (

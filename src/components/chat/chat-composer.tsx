@@ -3,6 +3,7 @@
 import { CloseGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
@@ -124,6 +125,7 @@ interface BannerContent {
 }
 
 const noQueue: readonly ChatQueuedMessage[] = [];
+const noTokens: ChatMessageText['tokens'] = [];
 
 /** The text the composer edits: the reader's message or a queued one, kept while its words do. */
 function useEditValue({ state, messages, options }: ChatComposerProps) {
@@ -137,10 +139,12 @@ function useEditValue({ state, messages, options }: ChatComposerProps) {
     source = entry && { text: entry.text, tokens: toComposerTokens(entry.tokens ?? []) };
   }
   // A new value restarts the edit, so it changes with the words only, not with the message object.
-  const key = source && JSON.stringify(source);
+  const hasSource = source !== undefined;
+  const text = source?.text ?? '';
+  const tokens = useStableArray(source?.tokens ?? noTokens);
   return useMemo(
-    () => (key === undefined ? undefined : (JSON.parse(key) as ComposerMessage)),
-    [key],
+    (): ComposerMessage | undefined => (hasSource ? { text, tokens: [...tokens] } : undefined),
+    [hasSource, text, tokens],
   );
 }
 
