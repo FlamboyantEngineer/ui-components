@@ -13,7 +13,7 @@ Verification: `src/utils/use-synced-scroll.test.ts`
 
 ### UIC-SYNCED-SCROLL-1.2 - Matched anchors
 
-With `getAnchors(container)`, which returns a container's anchors in reading order as keys and offsets from the top of its content, the hook shall map the scrolled container's position onto each other container with `mapScrollOffset(offset, from, to)` and clamp it to that container's scroll range. Each container’s anchors are read once per handled scroll. `mapScrollOffset` pairs the anchors whose keys both lists hold; between two pairs the offset moves in proportion, before the first pair and after the last it keeps its distance from that anchor, and with no pair it is returned unchanged.
+With `getAnchors(container)`, which returns a container's anchors in reading order as keys and offsets from the top of its content, the hook shall map the scrolled container's position onto each other container with `mapScrollOffset(offset, from, to)` and clamp it to that container's scroll range. `mapScrollOffset` pairs the anchors whose keys both lists hold; between two pairs the offset moves in proportion, before the first pair and after the last it keeps its distance from that anchor, and with no pair it is returned unchanged.
 
 Implementation: `src/utils/use-synced-scroll.ts`
 Verification: `src/utils/use-synced-scroll.test.ts`
@@ -24,3 +24,10 @@ A position the hook sets shall not scroll the containers again when its own scro
 
 Implementation: `src/utils/use-synced-scroll.ts`
 Verification: `src/utils/use-synced-scroll.test.ts`
+
+### UIC-SYNCED-SCROLL-1.4 - Kept anchors
+
+The hook shall read a container's anchors once and keep them until the container or its content changes: a `ResizeObserver` on the container and its direct children, a `MutationObserver` on its subtree (nodes, text and attributes), a change of its `scrollHeight` or `clientHeight`, or a new `getAnchors` function forgets them. A scroll then only maps the offset, without reading the layout of the rows; `getAnchors` should therefore be a stable function. `mapScrollOffset` pairs two anchor lists once and reuses the pairs for as long as both lists are kept, so it expects lists it is given not to be edited afterwards. Where `ResizeObserver` is missing, each container's anchors are read once per handled scroll.
+
+Implementation: `src/utils/use-synced-scroll.ts`, `src/utils/scroll-offset-map.ts`
+Verification: `src/utils/use-synced-scroll.test.ts`, `e2e/text-diff.spec.ts`

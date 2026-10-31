@@ -9,8 +9,10 @@ export interface ScrollAnchor {
   offset: number;
 }
 
+type AnchorPairs = ReadonlyArray<readonly [number, number]>;
+
 /** The index of the last pair whose source offset is at most `offset`, or -1. */
-function findPair(pairs: ReadonlyArray<readonly [number, number]>, offset: number): number {
+function findPair(pairs: AnchorPairs, offset: number): number {
   let low = 0;
   let high = pairs.length - 1;
   let found = -1;
@@ -26,21 +28,39 @@ function findPair(pairs: ReadonlyArray<readonly [number, number]>, offset: numbe
   return found;
 }
 
+const pairTables = new WeakMap<
+  readonly ScrollAnchor[],
+  WeakMap<readonly ScrollAnchor[], AnchorPairs>
+>();
+
+/** The offsets of the anchors both lists hold, in `from`'s order; built once per pair of lists. */
+function pairAnchors(from: readonly ScrollAnchor[], to: readonly ScrollAnchor[]): AnchorPairs {
+  const tables = pairTables.get(from) ?? new WeakMap<readonly ScrollAnchor[], AnchorPairs>();
+  pairTables.set(from, tables);
+  const known = tables.get(to);
+  if (known) return known;
+  const targets = new Map(to.map((anchor) => [anchor.key, anchor.offset]));
+  const pairs = from.flatMap((anchor): Array<readonly [number, number]> => {
+    const target = targets.get(anchor.key);
+    return target === undefined ? [] : [[anchor.offset, target]];
+  });
+  tables.set(to, pairs);
+  return pairs;
+}
+
 /**
  * Maps a scroll offset of one container onto another through the anchors both have: between two
  * matched anchors the offset moves in proportion, before the first and after the last it keeps its
- * distance from that anchor. Without a matched anchor the offset is returned unchanged.
+ * distance from that anchor. Without a matched anchor the offset is returned unchanged. The pairing
+ * of two lists is kept for as long as both lists are, so mapping again through the same lists only
+ * searches.
  */
 export function mapScrollOffset(
   offset: number,
   from: readonly ScrollAnchor[],
   to: readonly ScrollAnchor[],
 ): number {
-  const targets = new Map(to.map((anchor) => [anchor.key, anchor.offset]));
-  const pairs = from.flatMap((anchor): Array<readonly [number, number]> => {
-    const target = targets.get(anchor.key);
-    return target === undefined ? [] : [[anchor.offset, target]];
-  });
+  const pairs = pairAnchors(from, to);
   const first = pairs[0];
   if (!first) return offset;
   const index = findPair(pairs, offset);
