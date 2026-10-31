@@ -10,6 +10,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, NativeProps, Orientation } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { Menu, MenuOverlay, MenuTrigger, type MenuProps } from '../menu/menu.js';
 import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -43,9 +44,10 @@ export function Menubar({
   size = 'md',
   className,
   children,
+  ref,
   ...rest
 }: MenubarProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [rootRef, setRootRef] = useForwardedRef(ref);
   const { direction } = useLocale();
   const { context, onKeyDownCapture } = useMenubarState({
     rootRef,
@@ -55,7 +57,7 @@ export function Menubar({
   });
   return (
     <div
-      {...mergeProps(rest, { ref: rootRef, onKeyDownCapture })}
+      {...mergeProps(rest, { ref: setRootRef, onKeyDownCapture })}
       {...hooks.root({ className, props: rest, data: { orientation, size } })}
       role="menubar"
       aria-orientation={orientation}

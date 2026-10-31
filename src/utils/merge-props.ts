@@ -68,6 +68,10 @@ export function mergeRefs<T>(...refs: ReadonlyArray<Ref<T> | undefined>): RefCal
  * Merges props objects left to right. Handlers named `on` + a capital letter run in order,
  * `className`s are joined, `style` objects are merged, refs are combined with `mergeRefs`, and any
  * other prop comes from the last object that sets it to something other than `undefined`.
+ *
+ * Two refs merge into a new callback each call, so merging them during render hands the element a
+ * new ref every render, which React detaches and attaches again on each commit. A component that
+ * merges its own ref with a caller's merges them once, with `useForwardedRef`, and passes one ref.
  */
 export function mergeProps<T extends readonly object[]>(...props: T): MergedProps<T> {
   const merged: Record<string, unknown> = {};

@@ -64,10 +64,10 @@ Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec
 
 ### UIC-TEXT-DIFF-2.2 - Moving between changes
 
-A `ui-text-diff__navigation` element in the header shall hold `ui-text-diff__previous` and `ui-text-diff__next` [Icon Buttons](BUTTON.md), named by the provider's `textDiffPreviousChange` and `textDiffNextChange` strings. Before any move, Next goes to the first change and Previous is disabled; Previous is disabled at the first change and Next at the last, and both with no change. Moving to a change publishes `data-current` on its rows and focuses its first row: in the split layout its first added line in the new pane, or its first removed line when it adds none. The current change resets when either text changes.
+A `ui-text-diff__navigation` element in the header shall hold `ui-text-diff__previous` and `ui-text-diff__next` [Icon Buttons](BUTTON.md), named by the provider's `textDiffPreviousChange` and `textDiffNextChange` strings. Before any move, Next goes to the first change and Previous is disabled; Previous is disabled at the first change and Next at the last, and both with no change. Moving to a change publishes `data-current` on its rows and focuses its first row: in the split layout its first added line in the new pane, or its first removed line when it adds none. The current change resets when either text changes; the state that follows a comparison keeps one setter while the comparison stays the same.
 
-Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/text-diff-table.tsx`, `src/core/diff-strings.ts`
-Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`
+Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/text-diff-table.tsx`, `src/core/diff-strings.ts`, `src/utils/use-state-for.ts`
+Verification: `src/components/text-diff/text-diff.test.tsx`, `src/utils/use-state-for.test.ts`, `e2e/text-diff.spec.ts`
 
 ### UIC-TEXT-DIFF-2.3 - Keyboard
 
