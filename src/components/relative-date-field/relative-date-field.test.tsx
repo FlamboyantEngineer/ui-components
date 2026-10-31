@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
+import { Form } from '../form/form.js';
 import { RelativeDateField } from './relative-date-field.js';
 
 const getNow = () => new Date(2026, 4, 23, 10, 30, 0);
@@ -242,6 +243,27 @@ describe('RelativeDateField', () => {
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expectHooksMatchSpec(container, 'RELATIVE-DATE-FIELD', { callerAttributes: ['data-testid'] });
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-1.6 UIC-FIELD-3.9 shows a range endpoint error from its form and blocks submission', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    renderInLocale(
+      <Form validationErrors={{ 'trip-start': 'Endpoint rejected' }} onSubmit={onSubmit}>
+        <RelativeDateField
+          label="Trip"
+          mode="date-range"
+          startName="trip-start"
+          endName="trip-end"
+          defaultValue={{ start: '2026-04-20', end: '2026-04-22' }}
+          getNow={getNow}
+        />
+        <button type="submit">Save</button>
+      </Form>,
+    );
+    expect(screen.getByText('Endpoint rejected')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   describe('UIC-RELATIVE-DATE-FIELD-1.6 form value', () => {

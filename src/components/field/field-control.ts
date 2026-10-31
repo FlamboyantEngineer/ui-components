@@ -2,6 +2,7 @@
 
 import {
   useFieldState,
+  type FieldErrorSource,
   type FieldIssue,
   type FieldState,
   type FieldStateOptions,
@@ -66,6 +67,8 @@ export interface FieldControlOptions<T> extends FieldValueContract<T> {
   emptyValue?: T | undefined;
   /** The control's own check, which runs before the caller's `validate`. */
   check?: ((value: T) => FieldIssue | null) | undefined;
+  /** Further form names whose external errors belong to the field (`FieldStateOptions`). */
+  errorSources?: readonly FieldErrorSource<T>[] | undefined;
 }
 
 export interface FieldControl<T, Rest> {
@@ -150,6 +153,7 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
       defaultValue: own.defaultValue !== undefined ? own.defaultValue : options.initialValue,
       emptyValue: own.emptyValue !== undefined ? own.emptyValue : options.emptyValue,
       validate: (value) => check?.(value) ?? own.validate?.(value) ?? null,
+      errorSources: options.errorSources,
     },
     { isEqual, hasOwnHistory },
   );

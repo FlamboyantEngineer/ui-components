@@ -23,6 +23,7 @@ import {
   selectShownValidation,
   useExternalIssues,
   useFieldReveal,
+  type FieldErrorSource,
   type FieldIssue,
   type FieldIssues,
   type FieldValidation,
@@ -36,6 +37,7 @@ export type {
   FieldValidationMode,
 } from './field-scope.js';
 export type {
+  FieldErrorSource,
   FieldIssue,
   FieldIssues,
   FieldSeverity,
@@ -78,6 +80,11 @@ export interface FieldStateOptions<T> {
   validationBehavior?: FieldValidationBehavior | undefined;
   /** The form name. Errors an enclosing form gives for it show until the value changes. */
   name?: string | undefined;
+  /**
+   * Further form names the field submits under, such as a range's ends: errors an enclosing form
+   * gives for each show until the part of the value it reads changes.
+   */
+  errorSources?: readonly FieldErrorSource<T>[] | undefined;
   /** An empty value is an error, and the field cannot be cleared. */
   isRequired?: boolean | undefined;
   isReadOnly?: boolean | undefined;
@@ -282,6 +289,7 @@ function useFieldValidation<T>(
   const external = useExternalIssues(value, {
     errors: scope.validationErrors,
     name: options.name,
+    sources: options.errorSources,
     isEqual,
   });
   const draft = draftIssue ? [draftIssue] : [];
