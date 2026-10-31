@@ -122,7 +122,7 @@ export function ButtonActionCases() {
         </LabSection>
         <LabSection
           title="Asynchronous: Form submission"
-          description="A submit action button submits its form with the press that starts the action and refuses repeat submissions until you finish it."
+          description="A submit action button submits its form with the press that starts the action, by pointer, Enter or Space, and refuses repeat submissions until you finish it."
         >
           <SubmitForm />
         </LabSection>

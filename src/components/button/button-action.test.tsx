@@ -90,6 +90,34 @@ describe('Button', () => {
     expect(onSubmit).toHaveBeenCalledTimes(2);
   });
 
+  it.each([
+    { type: 'submit', event: 'submit' },
+    { type: 'reset', event: 'reset' },
+  ] as const)(
+    'UIC-BUTTON-21.2 lets the Space press that starts the action $type its form, then refuses repeats',
+    async ({ type, event }) => {
+      const user = userEvent.setup();
+      const onFormEvent = vi.fn((formEvent: React.FormEvent) => formEvent.preventDefault());
+      const onPress = vi.fn(() => new Promise<void>(() => undefined));
+      render(
+        <form {...{ [event === 'submit' ? 'onSubmit' : 'onReset']: onFormEvent }}>
+          <Button type={type} pendingDelay={500} onPress={onPress}>
+            Save
+          </Button>
+        </form>,
+      );
+      screen.getByRole('button', { name: 'Save' }).focus();
+      await user.keyboard(' ');
+      expect(onPress).toHaveBeenCalledOnce();
+      expect(onFormEvent).toHaveBeenCalledOnce();
+      await user.keyboard(' ');
+      await user.keyboard('{Enter}');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onPress).toHaveBeenCalledOnce();
+      expect(onFormEvent).toHaveBeenCalledOnce();
+    },
+  );
+
   it('UIC-BUTTON-21.3 settles after a rejection and reports it', async () => {
     const user = userEvent.setup();
 
