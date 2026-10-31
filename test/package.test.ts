@@ -176,10 +176,13 @@ describe('hosted lab browser suite', () => {
   };
 
   it('UIC-LABS-1.7 builds the labs once and hands the build to the browser jobs', () => {
+    const key = 'key: labs-build-${{ github.sha }}';
     expect(job('labs-build')).toContain('run: npm run build:labs');
-    expect(job('labs-build')).toContain('actions/upload-artifact');
+    expect(job('labs-build')).toContain('actions/cache/save');
+    expect(job('labs-build')).toContain(key);
     expect(job('labs')).toContain('needs: labs-build');
-    expect(job('labs')).toContain('actions/download-artifact');
+    expect(job('labs')).toContain('actions/cache/restore');
+    expect(job('labs')).toContain(key);
     expect(job('labs')).not.toContain('build:labs');
   });
 
@@ -192,13 +195,9 @@ describe('hosted lab browser suite', () => {
     expect(labs).toContain('--project=webkit --project=mobile-webkit');
   });
 
-  it('UIC-LABS-1.7 uploads the traces of a failing browser job', () => {
-    const labs = job('labs');
-    expect(labs).toMatch(
-      /if: failure\(\)\n\s+uses: actions\/upload-artifact@v\d+\n(?:.*\n)*?\s+path: test-results\//,
-    );
+  it('UIC-LABS-1.7 records no traces, which a run would not keep', () => {
     expect(readFileSync(join(process.cwd(), 'playwright.config.ts'), 'utf8')).toContain(
-      "trace: process.env.CI ? 'retain-on-failure' : 'off'",
+      "trace: 'off'",
     );
   });
 });
