@@ -1,5 +1,7 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -23,11 +25,24 @@ function shown(container: HTMLElement): string | undefined {
   return container.querySelector('.ui-carousel__slide:not([hidden])')?.textContent?.split(' ')[0];
 }
 
+/** Stubs the reduced-motion media query; the returned function changes the preference. */
 function mockReducedMotion(matches: boolean) {
+  const listeners = new Set<() => void>();
+  const list = {
+    matches,
+    addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+  };
   vi.stubGlobal(
     'matchMedia',
-    vi.fn(() => ({ matches, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+    vi.fn(() => list),
   );
+  return (next: boolean) => {
+    list.matches = next;
+    act(() => {
+      for (const listener of listeners) listener();
+    });
+  };
 }
 
 afterEach(() => {
@@ -358,6 +373,48 @@ describe('Carousel', () => {
     });
     expect(shown(container)).toBe('Lisbon');
     expect(root(container)).not.toHaveAttribute('data-rotating');
+  });
+
+  it('UIC-CAROUSEL-3.4 follows a reduced-motion preference that changes until the reader chooses', async () => {
+    const setReducedMotion = mockReducedMotion(false);
+    const user = userEvent.setup();
+    const { container } = render(
+      <Carousel aria-label="Cities" autoplay>
+        {slides()}
+      </Carousel>,
+    );
+    expect(screen.getByRole('button', { name: 'Stop automatic slide show' })).toBeInTheDocument();
+    setReducedMotion(true);
+    expect(screen.getByRole('button', { name: 'Start automatic slide show' })).toBeInTheDocument();
+    expect(root(container)).not.toHaveAttribute('data-rotating');
+    setReducedMotion(false);
+    expect(screen.getByRole('button', { name: 'Stop automatic slide show' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Stop automatic slide show' }));
+    setReducedMotion(true);
+    setReducedMotion(false);
+    expect(screen.getByRole('button', { name: 'Start automatic slide show' })).toBeInTheDocument();
+  });
+
+  it('UIC-CAROUSEL-3.4 hydrates the server HTML without a mismatch, then stops for reduced motion', () => {
+    mockReducedMotion(true);
+    const carousel = (
+      <Carousel aria-label="Cities" autoplay>
+        {slides()}
+      </Carousel>
+    );
+    const host = document.createElement('div');
+    document.body.append(host);
+    host.innerHTML = renderToString(carousel);
+    expect(root(host)).toHaveAttribute('data-rotating');
+    const errors: unknown[] = [];
+    let hydrated: ReturnType<typeof hydrateRoot> | undefined;
+    act(() => {
+      hydrated = hydrateRoot(host, carousel, { onRecoverableError: (error) => errors.push(error) });
+    });
+    expect(errors).toEqual([]);
+    expect(root(host)).not.toHaveAttribute('data-rotating');
+    act(() => hydrated?.unmount());
+    host.remove();
   });
 
   it('UIC-CAROUSEL-4.2 forwards the class name, caller attributes and id', () => {

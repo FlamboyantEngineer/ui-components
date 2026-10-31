@@ -8,7 +8,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
+import { usePrefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 
 interface CarouselAutoplayOptions {
   /** Whether the carousel rotates on its own at all. */
@@ -42,7 +42,7 @@ export interface CarouselAutoplay {
 /**
  * Advances a carousel every `interval` while it is enabled and not stopped, pausing while the
  * pointer rests on it or focus is inside it, except on its rotation button. A reader who prefers
- * reduced motion starts with rotation stopped.
+ * reduced motion has rotation stopped, following the preference until they start or stop it.
  */
 export function useCarouselAutoplay({
   isEnabled,
@@ -50,7 +50,10 @@ export function useCarouselAutoplay({
   index,
   onAdvance,
 }: CarouselAutoplayOptions): CarouselAutoplay {
-  const [isStopped, setStopped] = useState(prefersReducedMotion);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  // The reader's own choice from the rotation button, or null to follow their motion preference.
+  const [choice, setChoice] = useState<boolean | null>(null);
+  const isStopped = choice ?? prefersReducedMotion;
   const [isHovered, setHovered] = useState(false);
   const [isFocused, setFocused] = useState(false);
   const rotationRef = useRef<HTMLButtonElement | HTMLAnchorElement | null>(null);
@@ -65,7 +68,7 @@ export function useCarouselAutoplay({
   return {
     isRotating,
     isStopped,
-    toggle: () => setStopped((stopped) => !stopped),
+    toggle: () => setChoice(!isStopped),
     rotationRef,
     pauseHandlers: {
       onPointerEnter: (event) => setHovered(event.pointerType === 'mouse'),

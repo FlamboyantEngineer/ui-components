@@ -73,10 +73,10 @@ Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts
 
 ### UIC-CAROUSEL-3.4 - Reduced motion
 
-When the reader prefers reduced motion (`prefers-reduced-motion: reduce`), an `autoplay` carousel shall start stopped, with the button offering to start it.
+When the reader prefers reduced motion (`prefers-reduced-motion: reduce`), an `autoplay` carousel shall be stopped, with the button offering to start it. The carousel follows the preference while the page is open, stopping or resuming when the reader changes it, until the reader starts or stops rotation with the button; their choice then holds. The server renders the carousel rotating and the client applies the preference after hydration, so the server HTML and the first client render agree.
 
-Implementation: `src/components/carousel/use-carousel-autoplay.ts`
-Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts`
+Implementation: `src/components/carousel/use-carousel-autoplay.ts`, `src/utils/prefers-reduced-motion.ts`
+Verification: `src/components/carousel/carousel.test.tsx`, `src/utils/prefers-reduced-motion.test.tsx`, `e2e/carousel.spec.ts`
 
 ## UIC-CAROUSEL-4 - Accessibility and hooks
 

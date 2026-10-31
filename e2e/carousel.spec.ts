@@ -119,4 +119,20 @@ test.describe('Carousel lab', () => {
     await lab.open('carousel', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-CAROUSEL-3.4 follows a reduced-motion setting changed while the page is open', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('carousel');
+    const carousel = page.locator('[data-lab-carousel="autoplay"]');
+    await expect(carousel).toHaveAttribute('data-rotating', 'true');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(
+      carousel.getByRole('button', { name: 'Start automatic slide show' }),
+    ).toBeVisible();
+    await expect(carousel).not.toHaveAttribute('data-rotating');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect(carousel).toHaveAttribute('data-rotating', 'true');
+  });
 });
