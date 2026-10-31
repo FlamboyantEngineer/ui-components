@@ -171,8 +171,8 @@ describe('RichMessageComposer references', () => {
     // Focus from the keyboard keeps the caret where the composer put it: at the end.
     await user.tab();
     await user.keyboard('!');
-    expect(JSON.parse(storage.getItem('draft') ?? '')).toEqual({ ...draft, text: `${text}!` });
     unmount();
+    expect(JSON.parse(storage.getItem('draft') ?? '')).toEqual({ ...draft, text: `${text}!` });
     const { unmount: unmountRestored } = render(
       <UiProvider storage={storage}>
         <RichMessageComposer persistKey="draft" getReference={getReference} />

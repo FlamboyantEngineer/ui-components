@@ -76,7 +76,7 @@ export function useDockPanelState(options: DockPanelStateOptions): DockPanelStat
   const [stored, setStored] = usePersistentState<DockPanelStoredState>(
     options.persistKey,
     {},
-    storedStateCodec,
+    { codec: storedStateCodec },
   );
   const [liveSize, setLiveSize] = useState<number | null>(null);
   const isSizeControlled = options.size !== undefined;

@@ -177,6 +177,8 @@ export {
 export type {
   GlyphProps,
   PersistCodec,
+  PersistentState,
+  PersistentStateOptions,
   UiFormatMessage,
   UiHref,
   UiLinkProps,

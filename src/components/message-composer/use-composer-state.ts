@@ -40,6 +40,8 @@ export interface ComposerState<T> {
   /** The draft, also while another message is being edited. */
   draft: T;
   setValue: (next: T) => void;
+  /** Writes a persisted draft's pending change to storage now, as when the composer loses focus. */
+  flushDraft: () => void;
   isEditing: boolean;
   /** The value can be sent now. */
   canSubmit: boolean;
@@ -64,13 +66,19 @@ interface EditState<T> {
   value: T;
 }
 
-/** The draft: controlled by `value`, or the composer's own, kept under `persistKey`. */
+/** How long typing pauses before the persisted draft is written to storage. */
+export const DRAFT_WRITE_DELAY = 300;
+
+/**
+ * The draft: controlled by `value`, or the composer's own, kept under `persistKey`. Typing updates
+ * the draft at once; storage hears of it once typing pauses, or when `flush` is called.
+ */
 function useDraft<T>(options: ComposerStateOptions<T>) {
   const { value, onChange, format } = options;
-  const [own, setOwn] = usePersistentState(
+  const [own, setOwn, flush] = usePersistentState(
     options.persistKey,
     () => options.defaultValue ?? format.empty,
-    format.codec,
+    { codec: format.codec, writeDelay: DRAFT_WRITE_DELAY },
   );
   const isControlled = value !== undefined;
   const draft = isControlled ? value : own;
@@ -79,7 +87,7 @@ function useDraft<T>(options: ComposerStateOptions<T>) {
     if (!isControlled) setOwn(next);
     onChange?.(next);
   };
-  return [draft, setDraft] as const;
+  return [draft, setDraft, flush] as const;
 }
 
 /** The message being edited: starts from each new `editValue` and leaves the draft alone. */
@@ -117,7 +125,7 @@ function stepHistory(
  */
 export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerState<T> {
   const { format, editValue, onEditLast, history = [] } = options;
-  const [draft, setDraft] = useDraft(options);
+  const [draft, setDraft, flushDraft] = useDraft(options);
   const [edit, setEdit] = useEditedMessage(editValue, format.empty);
   const [recalled, setRecalled] = useState<Recalled | null>(null);
   const submission = useDraftSubmission({
@@ -156,6 +164,7 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
     value,
     draft,
     setValue: isEditing ? setEdit : setDraft,
+    flushDraft,
     isEditing,
     canSubmit,
     isSubmitting: submission.isSubmitting,

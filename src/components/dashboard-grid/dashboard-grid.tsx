@@ -132,7 +132,7 @@ function useDashboardLayout(
   const [own, setOwn] = usePersistentState<DashboardGridItem[]>(
     props.layout === undefined ? props.persistKey : undefined,
     () => [...(props.defaultLayout ?? [])],
-    dashboardLayoutCodec,
+    { codec: dashboardLayoutCodec },
   );
   const layout = normalizeDashboardLayout(props.layout ?? own, columns);
   const commit = (next: DashboardGridItem[]) => {

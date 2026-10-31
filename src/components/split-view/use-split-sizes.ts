@@ -111,7 +111,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   const [committed, setCommitted] = usePersistentState<number[]>(
     persistedKey,
     () => resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize)),
-    codec,
+    { codec: codec },
   );
   const [live, setLive] = useState<Owned<readonly number[]> | null>(null);
   const preview = live?.owner === owner ? live.value : null;

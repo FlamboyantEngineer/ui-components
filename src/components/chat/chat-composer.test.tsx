@@ -54,15 +54,16 @@ describe('Chat composer', () => {
     );
     await user.click(box());
     await user.keyboard('Half packed');
-    expect(JSON.parse(storage.getItem('chat-draft:trip') ?? '')).toEqual({
-      text: 'Half packed',
-      tokens: [],
-    });
+    // Switching conversations writes the last one's draft before reading the next one's.
     rerender(
       <UiProvider storage={storage}>
         <TestChat conversationId="other" onSend={() => undefined} />
       </UiProvider>,
     );
+    expect(JSON.parse(storage.getItem('chat-draft:trip') ?? '')).toEqual({
+      text: 'Half packed',
+      tokens: [],
+    });
     expect(box()).toHaveTextContent('');
   });
 
