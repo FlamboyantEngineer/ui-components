@@ -31,6 +31,7 @@ import type { EmojiGridOptions } from './emoji-grid.js';
 import { loadEmojiData, resolveEmojiLocale } from './emoji-locale.js';
 import { EmojiPickerDismissContext } from './emoji-picker-context.js';
 import { useEmojiSupport } from './emoji-support.js';
+import { callSettling } from '../../utils/is-thenable.js';
 
 interface EmojiData {
   emoji: readonly NativeEmoji[] | null;
@@ -173,7 +174,8 @@ function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
   });
   useEffect(() => {
     let current = true;
-    latest.current().then(
+    // A loader that throws fails as one that rejects.
+    Promise.resolve(callSettling(latest.current)).then(
       (emoji) => current && setResult({ loadKey, emoji, failed: false }),
       () => current && setResult({ loadKey, emoji: null, failed: true }),
     );

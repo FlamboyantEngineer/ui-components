@@ -9,7 +9,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from 'react';
-import { isThenable } from '../../utils/is-thenable.js';
+import { callSettling, isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -277,7 +277,8 @@ function askSource(session: CompletionSession, lookup: Lookup, isNewSource: bool
     if (!holdsSessionText(session) || !hasSessionSource(session)) return closeCompletions(session);
     session.setState((state) => toState(answer, lookup, state.revision + 1));
   };
-  const answer = lookUp(completions, lookup);
+  // A source that throws is a source that rejects: the lookup is dropped quietly.
+  const answer = callSettling(() => lookUp(completions, lookup));
   if (!isThenable(answer)) return show(answer);
   session.setState((state) =>
     isNewSource ? hideCompletionState(state) : toPendingState(state, lookup),
