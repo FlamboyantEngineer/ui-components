@@ -7,7 +7,7 @@ Unstyled, accessible React components that expose documented styling hooks for a
 - **Generic API.** Neutral names and props (`Button`, `variant`, `size`). Built-in glyphs default to [Heroicons](https://heroicons.com) and can be replaced per glyph.
 - **Static labs.** Every component has a lab page under `labs/` that shows its full variant, size and state matrix with a stylesheet picker. The built labs ship as a separate release archive so a host can serve them.
 
-The library is preparing its initial `0.1.0` release. APIs and styling hooks are experimental until `1.0.0`; development changes are described in changesets without migration notices or deprecation periods. See [versioning](CONTRIBUTING.md#versioning).
+The library is in `0.x` development; `v0.1.0` is its first release. APIs and styling hooks are experimental until `1.0.0`; development changes are described in changesets without migration notices or deprecation periods. See [versioning](CONTRIBUTING.md#versioning).
 
 ## Install
 
@@ -177,7 +177,7 @@ Labs are static HTML files; any static file server works. In a lab, the toolbar'
 labs/provider.html?stylesheet=/assets/app.css&theme=dark
 ```
 
-The published package contains the built labs in `labs/` ([specs/LABS.md](specs/LABS.md)).
+The package ships no labs except the reference stylesheet; the built labs are the separate `ui-components-labs-<version>.tgz` release archive ([specs/LABS.md](specs/LABS.md)).
 
 ## Develop
 
@@ -185,7 +185,7 @@ Node.js 22 is required.
 
 ```sh
 npm ci
-npm run check       # lint, format, typecheck, no-reference, specs, labs, structure, unit tests, builds, public types, package
+npm run check       # lint, format, types, references, specs, labs, structure, client boundaries, builds, unit tests, public types, package, labs archive
 npm run test:labs   # Playwright against the built labs
 ```
 

@@ -5,19 +5,19 @@
 - `dev` is the integration branch. Work happens on short-lived branches cut from `dev` and merged back into `dev` by pull request.
 - `main` is always releasable. It is updated only from `dev`, through a reviewed release pull request once the full checks pass on `dev`.
 - Before a pull request merges, both check runs must pass (hosted CI runs `npm run check` itself, so the gate list lives only in `scripts/check.mjs`):
-  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, unit tests, build, public types, labs build, standalone lab archive and package contents. `scripts/check.mjs` runs them side by side in two stages and prints each one's output when it fails; Prettier and the typecheck keep caches in `node_modules/.cache/`.
+  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, client boundaries, build, labs build, unit tests, public types, package contents and the standalone lab archive. `scripts/check.mjs` runs them side by side in two stages and prints each one's output when it fails; Prettier and the typecheck keep caches in `node_modules/.cache/`.
   - `npm run test:labs`: Playwright against the built labs (run `npm run build:labs` first).
 - Locally, run the checks that cover your change ([AGENTS.md](AGENTS.md#gates) lists them): `npm run test:changed` runs only the unit tests related to your changes since `origin/dev`, and each changed component's browser tests run by name.
 - Every pull request that changes the published package adds a changeset (`npx changeset`).
 
 ## Versioning
 
-The library is in initial development. APIs and styling hooks are experimental until `1.0.0`. During `0.x` development:
+The library is in `0.x` development; `v0.1.0` is its first release. APIs and styling hooks are experimental until `1.0.0`. During `0.x` development:
 
 - Use **minor** changesets for API additions, removals and reorganizations, including styling hooks and peer dependency requirements.
 - Use **patch** changesets for fixes that preserve the API.
 - Remove obsolete APIs and migrate repository usage directly, without deprecation periods, compatibility shims or migration notices. Describe the current capabilities in changesets.
-- The pending initial-release changeset targets `0.1.0`. `npx changeset version` generates package versions and the changelog ([Releasing](#releasing)).
+- `npx changeset version` turns the pending changesets into the next version and its changelog entry ([Releasing](#releasing)).
 
 Starting at `1.0.0`, releases follow the compatibility rules below. Styling hooks are public API, the same as props and exports.
 
