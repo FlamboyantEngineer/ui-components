@@ -11,6 +11,7 @@ import {
   useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
+  type FieldIssue,
   type FieldState,
 } from '../field/field.js';
 import { ColorEntry } from './color-field-entry.js';
@@ -112,7 +113,12 @@ export function ColorField({
   ...props
 }: ColorFieldProps) {
   const strings = useUiStrings();
-  const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null });
+  // A value that is no colour, such as one loaded from elsewhere, is invalid rather than empty.
+  const check = (value: string | null): FieldIssue | null =>
+    value !== null && value.trim() !== '' && toColorText(value) === null
+      ? { severity: 'error', message: strings.colorUnreadable }
+      : null;
+  const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null, check });
   const [shownFormat, setFormat] = useControllableState(format, defaultFormat, onFormatChange);
   const storedFormat = valueFormat ?? (hasAlpha(shownFormat) ? 'hexa' : 'hex');
   const color = toColorText(state.value);

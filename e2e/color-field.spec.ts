@@ -367,4 +367,26 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('Escape');
     await lab.expectAccessible();
   });
+
+  test('UIC-COLOR-FIELD-4.3 makes a typed colour the value before it commits', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const input = field(page, 'typing').getByRole('textbox', { name: 'Text colour' });
+    await input.fill('#aabbcc');
+    await expect(output(page, 'Typed value')).toHaveText('#aabbcc');
+    await expect(output(page, 'Typed committed')).toHaveText('none');
+    await expect(input).toHaveValue('#aabbcc');
+    await input.press('Escape');
+    await expect(output(page, 'Typed value')).toHaveText('#2e8b57');
+    await expect(input).toHaveValue('#2E8B57');
+  });
+
+  test('UIC-COLOR-FIELD-2.4 reports a stored value that is no colour', async ({ page, lab }) => {
+    await lab.open('color-field');
+    const unreadable = field(page, 'unreadable');
+    await expect(unreadable).toHaveAttribute('data-validation', 'invalid');
+    await expect(unreadable).toContainText('Enter a color, such as #3366ff.');
+  });
 });
