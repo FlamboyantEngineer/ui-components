@@ -27,7 +27,7 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`, `e2e/calend
 
 ### UIC-CALENDAR-VIEW-1.4 - Today
 
-`getNow` (the runtime's clock by default) shall decide today in the view's time zone. Today's cell carries `aria-current="date"` and `data-today`, and in the week view today's column header publishes `data-today` too.
+`getNow` (the provider's clock by default, else the current time) shall decide today in the view's time zone (`timeZone`, else the provider's, else the browser's). A server render and its hydration never read the clock ([UIC-PROVIDER-8.2](PROVIDER.md)): they mark no day as today, and without `date` or `defaultDate` they draw only the busy (`aria-busy`) root, which fills in on the first client render. The Today button reads the clock when pressed. Today's cell carries `aria-current="date"` and `data-today`, and in the week view today's column header publishes `data-today` too.
 
 Implementation: `src/components/calendar-view/calendar-view.tsx`, `src/components/calendar-view/calendar-day.tsx`, `src/components/calendar-view/calendar-week.tsx`
 Verification: `src/components/calendar-view/calendar-view.test.tsx`, `e2e/calendar-view.spec.ts`

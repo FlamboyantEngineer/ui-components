@@ -22,8 +22,11 @@ interface PresetCalendarProps {
   kind: RelativeDateKind;
   value: RelativeDateValue | null;
   bounds: RelativeDateBounds;
-  /** The field clock's `YYYY-MM-DD` day, which the calendar shows while there is no value. */
-  today: string;
+  /**
+   * The field clock's `YYYY-MM-DD` day, which the calendar shows while there is no value; unknown
+   * before the clock may be read.
+   */
+  today: string | undefined;
   /** Receives the picked `YYYY-MM-DD` day, or the picked range of days. */
   onPick: (picked: string | RelativeDateRange) => void;
 }
@@ -61,7 +64,7 @@ export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCal
   const limits = {
     minValue: values.minValue,
     maxValue: values.maxValue,
-    defaultFocusedValue: parseIsoDate(today),
+    defaultFocusedValue: today ? parseIsoDate(today) : undefined,
   };
   if (kind === 'date-range') {
     return (

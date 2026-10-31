@@ -1,3 +1,4 @@
+import { requireDefined } from '../../utils/require-defined.js';
 import { describe, expect, it } from 'vitest';
 import { createTimelineAxis, type TimelineItem } from './timeline-geometry.js';
 import { layoutTimeline, resolveTimelineLayout } from './timeline-layout.js';
@@ -97,17 +98,19 @@ describe('timeline layout', () => {
   });
 
   it('UIC-TIMELINE-1.2 UIC-TIMELINE-2.1 shows a draft without moving the range', () => {
-    const { axis: drafted, layout } = layoutTimeline({
-      rows,
-      items: items.slice(0, 2),
-      draft: { id: 'a', start: '2026-03-20', end: '2026-03-21' },
-      dependencies: [],
-      range: undefined,
-      scale: 'day',
-      today: '2026-03-01',
-      locale: 'en-US',
-      rowHeight: 36,
-    });
+    const { axis: drafted, layout } = requireDefined(
+      layoutTimeline({
+        rows,
+        items: items.slice(0, 2),
+        draft: { id: 'a', start: '2026-03-20', end: '2026-03-21' },
+        dependencies: [],
+        range: undefined,
+        scale: 'day',
+        today: '2026-03-01',
+        locale: 'en-US',
+        rowHeight: 36,
+      }),
+    );
     expect(drafted.range).toEqual({ start: '2026-03-01', end: '2026-03-06' });
     expect(layout.rowItems.get('one')?.[0]?.read.start).toBe('2026-03-20');
   });

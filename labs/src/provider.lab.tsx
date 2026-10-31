@@ -4,6 +4,7 @@ import { glyphCatalog, glyphNames } from './glyph-catalog.js';
 import * as languages from '../../src/core/locales/index.js';
 import type { UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ProviderClock } from './provider-clock-cases.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
 import { OptionalOptions, StorageSwitch } from './provider-storage-cases.js';
 
@@ -226,6 +227,12 @@ mountLab(
       description="Type a draft, then turn the French locale or client routing on and off: the draft and its focus stay, the locale follows, and the link routes through navigate only while routing is on."
     >
       <OptionalOptions />
+    </LabSection>
+    <LabSection
+      title="Clock and time zone"
+      description="A provider with a fixed clock at 23:30 UTC on October 31. Switch its time zone: today, the relative words, the field and the day headings all follow it."
+    >
+      <ProviderClock />
     </LabSection>
   </>,
 );

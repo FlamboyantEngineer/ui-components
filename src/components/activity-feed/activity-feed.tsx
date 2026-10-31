@@ -3,6 +3,7 @@
 import { useId, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { useNow, useTimeZone } from '../../core/clock.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -45,7 +46,7 @@ export interface ActivityFeedProps
     BaseProps,
     AriaLabellingProps,
     Pick<NativeProps<'div'>, 'ref'>,
-    Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow'> {
+    Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
   /** The events, in the order to show them (usually newest first). */
   items: readonly ActivityFeedItem[];
   /** How entries are grouped. Defaults to `day`. */
@@ -62,7 +63,7 @@ export interface ActivityFeedProps
   renderEmptyState?: (() => ReactNode) | undefined;
 }
 
-type EntryOptions = Pick<ActivityFeedProps, 'fallbackAfterDays' | 'getNow'>;
+type EntryOptions = Pick<ActivityFeedProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
 
 const hooks = createHooks('activity-feed', [
   'filter',
@@ -81,8 +82,6 @@ const hooks = createHooks('activity-feed', [
   'detail',
   'load-more',
 ]);
-
-const currentTime = () => new Date();
 
 /** The marker beside an entry: its glyph, else its person's avatar, else an empty dot. */
 function EntryMarker({ item }: { item: ActivityFeedItem }) {
@@ -122,6 +121,7 @@ function Entry({ item, options }: { item: ActivityFeedItem; options: EntryOption
           value={item.time}
           fallbackAfterDays={options.fallbackAfterDays}
           getNow={options.getNow}
+          timeZone={options.timeZone}
           placeholder={strings.unknownTime}
           className={hooks.slotClass('time')}
         />
@@ -138,15 +138,17 @@ function DayGroups({
   headingLevel,
 }: {
   items: readonly ActivityFeedItem[];
-  options: EntryOptions & { getNow: () => Date };
+  options: EntryOptions;
   headingLevel: HeadingLevel | undefined;
 }) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const baseId = useId();
   const Heading = `h${useHeadingLevel(headingLevel)}` as const;
+  // Before the clock may be read every heading is its date, as the server rendered it.
   const groups = groupByDay(items, {
-    now: options.getNow(),
+    now: useNow(options.getNow),
+    timeZone: useTimeZone(options.timeZone),
     locale,
     unknownLabel: capitalizeText(strings.unknownTime, locale),
   });
@@ -180,7 +182,7 @@ function FeedList({
   labelling,
 }: Required<Pick<ActivityFeedProps, 'items' | 'groupBy' | 'isLoading'>> &
   Pick<ActivityFeedProps, 'headingLevel'> & {
-    options: EntryOptions & { getNow: () => Date };
+    options: EntryOptions;
     labelling: AriaLabellingProps;
   }) {
   const strings = useUiStrings();
@@ -216,7 +218,8 @@ export function ActivityFeed({
   isLoading = false,
   renderEmptyState,
   fallbackAfterDays,
-  getNow = currentTime,
+  getNow,
+  timeZone,
   className,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -241,7 +244,7 @@ export function ActivityFeed({
     content = (
       <FeedList
         {...{ items, groupBy, headingLevel, isLoading, labelling }}
-        options={{ fallbackAfterDays, getNow }}
+        options={{ fallbackAfterDays, getNow, timeZone }}
       />
     );
   }

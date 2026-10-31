@@ -65,6 +65,16 @@ export interface UiProviderProps {
   useHref?: UiHref | undefined;
   /** Where components persist layout state. Defaults to an in-memory store. */
   storage?: UiStorage | undefined;
+  /**
+   * The clock components read now and today from. Defaults to the current time. Server renders and
+   * hydration never read it, so their output matches (`useNow`).
+   */
+  getNow?: (() => Date) | undefined;
+  /**
+   * The IANA time zone days and times are read in, such as `Europe/Paris`. Defaults to the
+   * browser's; server renders and hydration use UTC until it is given.
+   */
+  timeZone?: string | undefined;
   /** The components that use these services. */
   children?: ReactNode;
 }
@@ -148,6 +158,13 @@ interface UiContextValue {
   renderLink: UiLinkRenderer;
   router: UiRouter;
   storage: UiStorage;
+  clock: UiClock;
+}
+
+/** The clock and time zone a provider supplies; unset values fall back to the device's. */
+export interface UiClock {
+  getNow: () => Date;
+  timeZone: string | undefined;
 }
 
 const renderAnchor: UiLinkRenderer = (props) => <a {...props} />;
@@ -166,6 +183,7 @@ const defaultContext: UiContextValue = {
   renderLink: renderAnchor,
   router: { navigate: navigateNatively },
   storage: createMemoryStorage(),
+  clock: { getNow: () => new Date(), timeZone: undefined },
 };
 
 const UiContext = createContext<UiContextValue>(defaultContext);
@@ -190,6 +208,8 @@ export function UiProvider({
   navigate,
   useHref,
   storage,
+  getNow,
+  timeZone,
   children,
 }: UiProviderProps) {
   const parent = useContext(UiContext);
@@ -207,6 +227,13 @@ export function UiProvider({
     () => (navigate ? { navigate, useHref } : parent.router),
     [navigate, useHref, parent.router],
   );
+  const clock = useMemo(
+    () =>
+      getNow || timeZone
+        ? { getNow: getNow ?? parent.clock.getNow, timeZone: timeZone ?? parent.clock.timeZone }
+        : parent.clock,
+    [getNow, timeZone, parent.clock],
+  );
   const value = useMemo<UiContextValue>(
     () => ({
       ...text,
@@ -214,8 +241,19 @@ export function UiProvider({
       renderLink: renderLink ?? parent.renderLink,
       router,
       storage: storage ?? parent.storage,
+      clock,
     }),
-    [text, parent.glyphs, parent.renderLink, parent.storage, icons, renderLink, router, storage],
+    [
+      text,
+      parent.glyphs,
+      parent.renderLink,
+      parent.storage,
+      icons,
+      renderLink,
+      router,
+      storage,
+      clock,
+    ],
   );
   const outerLocale = useLocale().locale;
   // The same wrappers whatever the options, so adding or removing one never remounts the children.
@@ -250,6 +288,11 @@ export function useUiStrings(): UiStrings {
 export function useFormatMessage(): UiFormatMessage {
   const { locale } = useContext(UiContext);
   return useCallback((message, values) => formatMessage(message, values, locale), [locale]);
+}
+
+/** The provider's clock and time zone, inherited from outer providers. */
+export function useUiClock(): UiClock {
+  return useContext(UiContext).clock;
 }
 
 /** The storage adapter for persisted layout state. */

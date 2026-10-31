@@ -1,6 +1,7 @@
 'use client';
 
-import { getLocalTimeZone, parseIsoDate, useLocale } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -19,20 +20,23 @@ import {
   describeRelativeDate,
   describeRelativeRange,
   findRelativeBoundIssue,
+  formatDay,
+  formatDayRange,
   formatRelativePeriod,
   formatRelativePreset,
   resolvePickedDate,
   resolveRelativePreset,
   resolveRelativeRange,
-  toLocalDay,
+  toZonedDay,
   type RelativeDateBounds,
   type RelativeDateComputedPreset,
   type RelativeDateKind,
   type RelativeDatePreset,
   type RelativeDateRange,
+  type RelativeDateText,
   type RelativeDateValue,
 } from './relative-date.js';
-import { getDateFormatter } from '../../utils/intl-format.js';
+import { formatStableTime } from '../../utils/relative-time.js';
 
 /** A `YYYY-MM-DD` date or local `YYYY-MM-DDTHH:mm` date and time, or a `{ start, end }` range of dates. */
 export type RelativeDateFieldValue<K extends RelativeDateKind = 'date'> = K extends 'date-range'
@@ -54,8 +58,13 @@ export interface RelativeDateFieldProps<K extends RelativeDateKind = 'date'>
         | RelativeDateComputedPreset<NonNullable<RelativeDateFieldValue<K>>>
       )[]
     | undefined;
-  /** The clock presets and relative text count from. Defaults to the current time. */
+  /** The clock presets and relative text count from. Defaults to the provider's, else the current time. */
   getNow?: (() => Date) | undefined;
+  /**
+   * The IANA time zone days are read in, such as `Europe/Paris`, as in `DateTimeField`. Defaults to
+   * the provider's, else the browser's.
+   */
+  timeZone?: string | undefined;
   /** The trigger's text while there is no value. Defaults to the provider string. */
   placeholder?: string | undefined;
   /** Values this many days away or more read as absolute dates. Defaults to 7. */
@@ -72,6 +81,7 @@ type AnyPreset = RelativeDatePreset | RelativeDateComputedPreset<RelativeDateVal
 
 interface PresetContext {
   now: Date;
+  timeZone: string;
   kind: RelativeDateKind;
   locale: string;
 }
@@ -93,15 +103,18 @@ const DEFAULT_RANGE_PRESETS: readonly RelativeDatePreset[] = [
 
 const hooks = createHooks('relative-date-field', ['preview']);
 
-const currentTime = () => new Date();
-
-function resolvePreset(preset: AnyPreset, { now, kind }: PresetContext): RelativeDateValue {
+function resolvePreset(preset: AnyPreset, context: PresetContext): RelativeDateValue {
+  const { now, timeZone, kind } = context;
   if ('getValue' in preset) return preset.getValue(now);
-  if (kind === 'date-range') return resolveRelativeRange(preset, now);
-  return resolveRelativePreset(preset, { now, kind });
+  if (kind === 'date-range') return resolveRelativeRange(preset, { now, timeZone });
+  return resolveRelativePreset(preset, { now, timeZone, kind });
 }
 
-function labelPreset(preset: AnyPreset, context: PresetContext, strings: UiStrings): string {
+function labelPreset(
+  preset: AnyPreset,
+  context: Pick<PresetContext, 'kind' | 'locale'>,
+  strings: UiStrings,
+): string {
   if ('getValue' in preset) return preset.label;
   if (context.kind !== 'date-range' || preset.label || preset.amount === 0) {
     return formatRelativePreset(preset, context.locale);
@@ -110,20 +123,33 @@ function labelPreset(preset: AnyPreset, context: PresetContext, strings: UiStrin
   return preset.amount < 0 ? strings.lastPeriod(period) : strings.nextPeriod(period);
 }
 
-/** The value read relative to now: a date or instant, or a range of dates. */
-function describeValue(value: RelativeDateValue | null, options: PresetContext & { days: number }) {
-  if (!value) return null;
-  const describe = { now: options.now, locale: options.locale, fallbackAfterDays: options.days };
-  return typeof value === 'string'
-    ? describeRelativeDate(value, describe)
-    : describeRelativeRange(value, describe);
+interface DescribeOptions {
+  now: Date | null;
+  timeZone: string;
+  locale: string;
+  fallbackAfterDays: number;
 }
 
-/** A `YYYY-MM-DD` date as a localized date; unreadable text is kept. */
-function formatDay(text: string, locale: string): string {
-  const date = parseIsoDate(text);
-  if (!date) return text;
-  return getDateFormatter(locale, { dateStyle: 'medium' }).format(date.toDate(getLocalTimeZone()));
+/**
+ * The value read relative to now: a date or instant, or a range of dates. Before the clock may be
+ * read it is the absolute text alone, the same on a server and in the client hydrating it.
+ */
+function describeValue(
+  value: RelativeDateValue | null,
+  { now, ...options }: DescribeOptions,
+): RelativeDateText | null {
+  if (!value) return null;
+  if (now) {
+    const describe = { ...options, now };
+    return typeof value === 'string'
+      ? describeRelativeDate(value, describe)
+      : describeRelativeRange(value, describe);
+  }
+  const absolute =
+    typeof value === 'string'
+      ? formatStableTime(value, options.locale)
+      : formatDayRange(value, options.locale);
+  return absolute === null ? null : { relative: absolute, absolute, relation: undefined };
 }
 
 /** The field's own check: a value outside the bounds is invalid, with the bound in the message. */
@@ -133,7 +159,7 @@ function useBoundCheck(bounds: RelativeDateBounds) {
   return (value: RelativeDateValue | null): FieldIssue | null => {
     const issue = findRelativeBoundIssue(value, bounds);
     if (!issue) return null;
-    const limit = formatDay(issue.limit, locale);
+    const limit = formatDay(issue.limit, locale) ?? issue.limit;
     const message =
       issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
     return { severity: 'error', message };
@@ -155,8 +181,8 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
   }
   return (
     <span {...hooks.slot('preview')}>
-      <time dateTime={value.start}>{formatDay(value.start, locale)}</time> –{' '}
-      <time dateTime={value.end}>{formatDay(value.end, locale)}</time>
+      <time dateTime={value.start}>{formatDay(value.start, locale) ?? value.start}</time> –{' '}
+      <time dateTime={value.end}>{formatDay(value.end, locale) ?? value.end}</time>
     </span>
   );
 }
@@ -186,25 +212,32 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
     props,
     { initialValue: null as RelativeDateFieldValue<K>, emptyValue: null, check },
   );
-  const getNow = props.getNow ?? currentTime;
+  const getNow = useGetNow(props.getNow);
+  const now = useNow(props.getNow);
+  const timeZone = useTimeZone(props.timeZone);
   const presets = (props.presets ??
     (kind === 'date-range' ? DEFAULT_RANGE_PRESETS : DEFAULT_PRESETS)) as readonly AnyPreset[];
-  const context: PresetContext = { now: getNow(), kind, locale };
+  // Presets resolve against the clock read when one is picked; before then they are all enabled.
+  const context = (at: Date): PresetContext => ({ now: at, timeZone, kind, locale });
   const value = (state.value ?? null) as RelativeDateValue | null;
-  const text = describeValue(value, { ...context, days: props.fallbackAfterDays ?? 7 });
+  const fallbackAfterDays = props.fallbackAfterDays ?? 7;
+  const text = describeValue(value, { now, timeZone, locale, fallbackAfterDays });
   const items = presets.map((preset, index) => ({
     id: String(index),
-    label: labelPreset(preset, context, strings),
-    isDisabled: findRelativeBoundIssue(resolvePreset(preset, context), bounds) !== null,
+    label: labelPreset(preset, { kind, locale }, strings),
+    isDisabled:
+      now !== null && findRelativeBoundIssue(resolvePreset(preset, context(now)), bounds) !== null,
   }));
   const commit = (next: RelativeDateValue) => {
     state.setValue(next as RelativeDateFieldValue<K>);
     state.commit();
   };
   const pickDate = (picked: string | RelativeDateRange) => {
-    const now = getNow();
     if (typeof picked !== 'string') commit(picked);
-    else commit(resolvePickedDate(picked, { now, kind: kind === 'date-time' ? kind : 'date' }));
+    else {
+      const pickedKind = kind === 'date-time' ? kind : 'date';
+      commit(resolvePickedDate(picked, { now: getNow(), timeZone, kind: pickedKind }));
+    }
   };
   const data = { valueKind: kind, relation: text?.relation };
   return (
@@ -226,7 +259,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
             placeholder={props.placeholder ?? strings.selectPlaceholder}
             onPick={(id) => {
               const preset = presets[Number(id)];
-              if (preset) commit(resolvePreset(preset, { ...context, now: getNow() }));
+              if (preset) commit(resolvePreset(preset, context(getNow())));
             }}
             aside={
               props.showCalendar ? (
@@ -234,7 +267,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
                   kind={kind}
                   value={value}
                   bounds={bounds}
-                  today={toLocalDay(context.now)}
+                  today={now ? toZonedDay(now, timeZone) : undefined}
                   onPick={pickDate}
                 />
               ) : null
