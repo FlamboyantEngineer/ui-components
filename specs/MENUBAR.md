@@ -34,7 +34,7 @@ Verification: `src/components/menubar/menubar.test.tsx`, `src/components/menubar
 
 ### UIC-MENUBAR-1.5 - Hooks and caller attributes
 
-`Menubar` shall carry the root hooks below and `MenubarMenu` the item hooks, each appending the caller's `className` and forwarding caller `data-*` attributes and `id` to its element; `Menubar` forwards the other attributes of a `div`, and its own hook values win over caller attributes of the same name.
+`Menubar` shall carry the root hooks below and `MenubarMenu` the item hooks, each appending the caller's `className` and forwarding caller `data-*` attributes and `id` to its element; `Menubar` forwards the other attributes of a `div` and its `ref`, which stays attached across renders (a callback ref is not detached and attached again on each commit), and its own hook values win over caller attributes of the same name.
 
 Implementation: `src/components/menubar/menubar.tsx`
 Verification: `src/components/menubar/menubar.test.tsx`

@@ -167,6 +167,21 @@ describe('Menubar', () => {
     expect(top('Edit')).toHaveFocus();
   });
 
+  it('UIC-MENUBAR-1.5 keeps the caller ref attached across renders', () => {
+    const ref = vi.fn();
+    const { rerender } = render(
+      <Menubar aria-label="Editor" ref={ref}>
+        <MenubarMenu label="File" items={fileEntries} />
+      </Menubar>,
+    );
+    rerender(
+      <Menubar aria-label="Editor" ref={ref} title="Main menus">
+        <MenubarMenu label="File" items={fileEntries} />
+      </Menubar>,
+    );
+    expect(ref.mock.calls).toEqual([[screen.getByRole('menubar')]]);
+  });
+
   it('UIC-MENUBAR-1.5 carries its hooks and the caller attributes', async () => {
     const user = userEvent.setup();
     render(
