@@ -222,10 +222,10 @@ Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action
 
 ### UIC-BUTTON-21.7 - Pending delay
 
-`pendingDelay` (milliseconds, 0 by default) shall hold back the pending state, internal or controlled, until the action has run that long, so an action that settles sooner never flashes the spinner. The button refuses repeat presses from the first press either way. An action button is never a link, so it takes no `href`.
+`pendingDelay` (milliseconds, 0 by default) shall hold back the pending state, internal or controlled, until the action has run that long, so an action that settles sooner never flashes the spinner. The button refuses activation from the first press either way: while an action it started is unsettled or the caller's `isPending` holds, before and after the indicator shows, it refuses its own `onPress`, its press lifecycle callbacks and the handlers a trigger it sits in adds (a `MenuTrigger`'s or `PopoverTrigger`'s, by pointer, keyboard including a menu's arrow keys, or programmatic and virtual click), keeping focus, hover and its tooltip. A submit or reset button still submits or resets with the press that started the action, as UIC-BUTTON-21.2 describes. An action button is never a link, so it takes no `href`.
 
-Implementation: `src/components/button/button-action.tsx`, `src/utils/use-delayed-flag.ts`
-Verification: `src/components/button/button-action.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/button-action.spec.ts`
+Implementation: `src/components/button/button-action.tsx`, `src/components/button/button-state.tsx`, `src/utils/use-delayed-flag.ts`
+Verification: `src/components/button/button-action.test.tsx`, `src/components/button/button-inherited-press.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/button-action.spec.ts`, `e2e/button.spec.ts`
 
 ## UIC-BUTTON-3 - Unified options
 

@@ -197,8 +197,12 @@ export function Button({
   });
   const own = { ...rest, isDisabled: useInheritedDisabled(rest) };
   const selection = useButtonSelection(own);
-  const action = useButtonAction({ ...own, ...selection, onError, pendingDelay });
-  const options = { platform: useDetectedPlatform(), isTooltipName: presentation.isTooltipName };
+  const { isBusy, ...action } = useButtonAction({ ...own, ...selection, onError, pendingDelay });
+  const options = {
+    platform: useDetectedPlatform(),
+    isTooltipName: presentation.isTooltipName,
+    isBusy,
+  };
   const isLink = rest.href !== undefined;
   const hookProps = hooks.root({
     className,
