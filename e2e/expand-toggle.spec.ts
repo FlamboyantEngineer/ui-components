@@ -82,6 +82,25 @@ test.describe('Expand Toggle lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-EXPAND-TOGGLE-1.7 stays disabled and silent in a disabled disclosure', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const demo = page.locator('[data-lab-case="disabled-disclosure"]');
+    const toggle = demo.getByRole('button', { name: 'Berry details' });
+    const output = demo.locator('[data-lab-output]');
+    await expect(toggle).toBeDisabled();
+    await toggle.click({ force: true });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(output).toHaveText('Reported 0 changes');
+    await demo.getByRole('button', { name: 'Enable the disclosure' }).click();
+    await expect(toggle).toBeEnabled();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(output).toHaveText('Reported 1 changes');
+  });
+
   test('UIC-EXPAND-TOGGLE-1.8 shows a busy indicator while children load', async ({
     page,
     lab,
