@@ -358,7 +358,7 @@ The text controls take them as follows; a control that takes a part names it wit
 | `CodeEditor`                            | `placeholder`, `enterKeyHint` (autofill, spelling and the keyboard stay off for code) |
 | `RelativeDateField`                     | `placeholder` (the trigger's text while there is no value)                            |
 
-`autoFocus` belongs to `Field`, so every field control takes it: the field focuses its control once when it mounts, or the control's first focusable element when it is a group, such as date segments or pin cells.
+`autoFocus` belongs to `Field`, so every field control takes it: the field focuses its control once when it mounts, or, when the control is a group, its chosen option (a checked radio or segment) else its first focusable element, such as date segments or pin cells. The restore button returns focus the same way.
 
 Implementation: `src/components/field/field-control.ts`, `src/components/field/field.tsx`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`, `src/components/number-field/number-field.tsx`, `src/components/pin-input/pin-input.tsx`, `src/components/tags-input/tags-input.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/relative-date-field/relative-date-field.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `src/components/search-field/search-field.test.tsx`, `src/components/field/field-text-input.test.tsx`

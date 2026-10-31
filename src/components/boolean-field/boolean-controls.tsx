@@ -127,6 +127,7 @@ function SegmentedControl({
   return (
     <>
       <SegmentedChoice
+        ref={control.ref}
         id={aria.id}
         aria-label={aria['aria-label']}
         aria-labelledby={aria['aria-labelledby']}

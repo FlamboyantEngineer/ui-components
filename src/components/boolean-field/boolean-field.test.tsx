@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Form } from '../form/form.js';
 import { BooleanField, type BooleanFieldVariant } from './boolean-field.js';
 
 function root(container: HTMLElement) {
@@ -520,5 +521,38 @@ describe('BooleanField', () => {
       'True',
     );
     expect(screen.getByRole('button', { name: 'False Ripe' })).toBeInTheDocument();
+  });
+
+  it('UIC-BOOLEAN-FIELD-2.3 focuses the segmented choice from autoFocus, the form and restore', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <BooleanField label="Value" variant="segmented" autoFocus defaultValue={true} />,
+    );
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'True' })).toHaveFocus());
+    unmount();
+
+    const { rerender } = render(
+      <Form>
+        <BooleanField label="Value" variant="segmented" isRequired allowsUnset />
+        <button type="submit">Submit</button>
+      </Form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(screen.getByRole('radio', { name: 'Unset' })).toHaveFocus();
+
+    rerender(
+      <Form>
+        <BooleanField label="Value" variant="checkbox" isRequired allowsUnset />
+        <button type="submit">Submit</button>
+      </Form>,
+    );
+    rerender(
+      <Form>
+        <BooleanField label="Value" variant="segmented" isRequired />
+        <button type="submit">Submit</button>
+      </Form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(screen.getByRole('radio', { name: 'False' })).toHaveFocus();
   });
 });
