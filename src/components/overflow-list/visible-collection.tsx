@@ -21,21 +21,25 @@ export interface VisibleCollectionProps {
 }
 
 interface VisibleItems {
-  keys: ReadonlySet<Key>;
+  /** `null` renders every item. */
+  keys: ReadonlySet<Key> | null;
   /** The renderer the items' own collections (a menu inside an item) use. */
   outer: CollectionRenderer;
 }
 
 const VisibleItemsContext = createContext<VisibleItems | null>(null);
 
-/** Renders the collection's items in view; the others stay in the collection, unrendered. */
+/**
+ * Renders the collection's items in view; the others stay in the collection, unrendered. It
+ * renders every item while nothing is filtered too, so filtering never changes the items' parent.
+ */
 function VisibleCollectionRoot({ collection }: CollectionRootProps) {
   const visible = useContext(VisibleItemsContext);
   if (!visible) return null;
   return (
     <CollectionRendererContext value={visible.outer}>
       {[...collection]
-        .filter((node) => visible.keys.has(node.key))
+        .filter((node) => visible.keys?.has(node.key) ?? true)
         .map((node) => (
           <Fragment key={String(node.key)}>{node.render?.(node)}</Fragment>
         ))}
@@ -55,8 +59,7 @@ export function VisibleCollection({ keys, children }: VisibleCollectionProps) {
     () => ({ ...outer, CollectionRoot: VisibleCollectionRoot }),
     [outer],
   );
-  const visible = useMemo(() => (keys ? { keys, outer } : null), [keys, outer]);
-  if (visible === null) return children;
+  const visible = useMemo(() => ({ keys, outer }), [keys, outer]);
   return (
     <CollectionRendererContext value={renderer}>
       <VisibleItemsContext value={visible}>{children}</VisibleItemsContext>

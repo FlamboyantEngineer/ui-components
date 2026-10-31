@@ -48,7 +48,7 @@ Verification: `src/utils/use-overflow-items.test.tsx`
 
 ### UIC-OVERFLOW-LIST-1.7 - React Aria collections
 
-When the container's children are committed by a renderer that runs after the hook's own commit (a React Aria collection fills in its items one render later), `useOverflowItems` shall measure again as soon as they arrive, before the browser paints. `VisibleCollection` (internal to the library) renders only the top-level items whose keys it is given of the React Aria collection component inside it, such as a tab list or a breadcrumb trail, while every item stays in the component's collection, so selection, panels and keyboard navigation still reach hidden items; collections inside the items render as usual.
+When the container's children are committed by a renderer that runs after the hook's own commit (a React Aria collection fills in its items one render later), `useOverflowItems` shall measure again as soon as they arrive, before the browser paints. `VisibleCollection` (internal to the library) renders only the top-level items whose keys it is given of the React Aria collection component inside it, such as a tab list or a breadcrumb trail, while every item stays in the component's collection, so selection, panels and keyboard navigation still reach hidden items; collections inside the items render as usual. Items keep their elements, focus and state when the component starts or stops filtering, such as a trail that grows past two crumbs or shrinks back.
 
 Implementation: `src/utils/use-overflow-items.ts`, `src/components/overflow-list/visible-collection.tsx`
 Verification: `src/components/tabs/tab-list.test.tsx`, `src/components/breadcrumb/breadcrumb.test.tsx`

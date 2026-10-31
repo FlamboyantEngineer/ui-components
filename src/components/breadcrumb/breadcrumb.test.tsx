@@ -381,6 +381,18 @@ describe('Breadcrumb', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 
+  it('UIC-BREADCRUMB-1.7 UIC-OVERFLOW-LIST-1.7 keeps a focused crumb as the trail grows past two crumbs and back', () => {
+    const { rerender } = render(<Breadcrumb items={trail.slice(0, 2)} overflow="menu" />);
+    const home = crumb('Home');
+    home.focus();
+    rerender(<Breadcrumb items={trail} overflow="menu" />);
+    expect(crumb('Home')).toBe(home);
+    expect(home).toHaveFocus();
+    rerender(<Breadcrumb items={trail.slice(0, 2)} overflow="menu" />);
+    expect(crumb('Home')).toBe(home);
+    expect(home).toHaveFocus();
+  });
+
   it('UIC-BREADCRUMB-1.8 offers the places beside a crumb in a menu after its link', async () => {
     const onSibling = vi.fn();
     const onAction = vi.fn();
