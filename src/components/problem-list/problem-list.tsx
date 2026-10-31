@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useSyncExternalStore, type RefObject } from 'react';
+import { useId, useState, useSyncExternalStore } from 'react';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { FieldSeverity } from '../field/field.js';
@@ -29,12 +29,12 @@ const noProblems: readonly FormProblem[] = [];
 const noSource: FormProblemSource = { subscribe: () => () => {}, getProblems: () => noProblems };
 
 /** A problem the caller gives, reaching the element its `targetId` names in the list's tree. */
-function fromItem(item: ProblemListItem, rootRef: RefObject<HTMLElement | null>): ShownProblem {
+function fromItem(item: ProblemListItem, root: HTMLElement | null): ShownProblem {
   const { targetId } = item;
   return {
     ...item,
     severity: item.severity ?? 'error',
-    focus: targetId ? () => getElementByIdFrom(rootRef.current, targetId)?.focus() : undefined,
+    focus: targetId ? () => getElementByIdFrom(root, targetId)?.focus() : undefined,
   };
 }
 
@@ -71,17 +71,16 @@ export function ProblemList({
   const formSource = useFormProblems();
   const source = (problems === undefined ? formSource : null) ?? noSource;
   const collected = useSyncExternalStore(source.subscribe, source.getProblems, source.getProblems);
-  const rootRef = useRef<HTMLElement>(null);
+  // The list's root finds a target by id in its own document, so it is held in state.
+  const [root, setRoot] = useState<HTMLElement | null>(null);
   const shown =
-    problems === undefined
-      ? collected.map(fromForm)
-      : problems.map((item) => fromItem(item, rootRef));
+    problems === undefined ? collected.map(fromForm) : problems.map((item) => fromItem(item, root));
   const errors = shown.filter(({ severity }) => severity === 'error').length;
   const data = { severity: worstSeverity(shown), empty: shown.length === 0 };
   return (
     <section
       {...hooks.root({ className, props: rest, data })}
-      ref={rootRef}
+      ref={setRoot}
       id={id}
       aria-labelledby={titleId}
     >

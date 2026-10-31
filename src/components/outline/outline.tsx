@@ -167,7 +167,9 @@ function useCurrentHeading(
  */
 export function Outline(props: OutlineProps) {
   const { headings, isPending = false, emptyMessage, isNumbered = false } = props;
-  const { className, id, 'aria-label': ariaLabel, 'aria-labelledby': labelledBy } = props;
+  const { className, id, ref, numberOptions, onNavigate } = props;
+  const { 'aria-label': ariaLabel, 'aria-labelledby': labelledBy } = props;
+  const { 'aria-describedby': describedBy, 'aria-details': details } = props;
   const strings = useUiStrings();
   const baseId = useId();
   const roots = useMemo(() => nestOutlineHeadings(headings), [headings]);
@@ -181,13 +183,13 @@ export function Outline(props: OutlineProps) {
     currentAncestors,
     hasToggles: parents.length > 0,
     isNumbered,
-    numberOptions: props.numberOptions,
+    numberOptions,
     isExpanded,
     setExpanded,
     onFollow: (event, headingId) => {
       if (!isPlainClick(event)) return;
       event.preventDefault();
-      props.onNavigate?.(headingId);
+      onNavigate?.(headingId);
       revealHeading(event.currentTarget.ownerDocument, headingId);
     },
   };
@@ -196,11 +198,11 @@ export function Outline(props: OutlineProps) {
     <nav
       {...hooks.root({ className, props, data: { numbered: isNumbered, pending: isPending } })}
       id={id}
-      ref={props.ref}
+      ref={ref}
       aria-label={ariaLabel ?? (labelledBy ? undefined : strings.outline)}
       aria-labelledby={labelledBy}
-      aria-describedby={props['aria-describedby']}
-      aria-details={props['aria-details']}
+      aria-describedby={describedBy}
+      aria-details={details}
       aria-busy={isPending || undefined}
     >
       {hasNotice ? (

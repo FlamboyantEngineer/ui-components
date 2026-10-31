@@ -24,9 +24,10 @@ export function TaskItemView({
   const isEditable = editor?.isEditable ?? false;
   const isDisabled = editor?.isDisabled ?? false;
   const box = useRef<HTMLSpanElement>(null);
-  const isChecked = nodeProps.node.attrs.checked === true;
+  const { node, getPos, contentDOMRef } = nodeProps;
+  const isChecked = node.attrs.checked === true;
   const setChecked = useEditorEventCallback((view, checked: boolean) => {
-    view.dispatch(view.state.tr.setNodeAttribute(nodeProps.getPos(), 'checked', checked));
+    view.dispatch(view.state.tr.setNodeAttribute(getPos(), 'checked', checked));
   });
   // The editor leaves events on the checkbox to it, so a press ticks the box instead of moving the caret.
   useStopEvent((_view, event) => box.current?.contains(event.target as Node | null) ?? false);
@@ -48,7 +49,7 @@ export function TaskItemView({
           onChange={setChecked}
         />
       </span>
-      <div {...hooks.slot('task-content')} ref={nodeProps.contentDOMRef}>
+      <div {...hooks.slot('task-content')} ref={contentDOMRef}>
         {children}
       </div>
     </li>

@@ -1,6 +1,6 @@
 // The controller driving a fake streaming agent, with its event log beside the conversation.
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
 import { ChatAttachmentList } from '../../src/components/chat-attachment/chat-attachment.js';
@@ -123,9 +123,9 @@ export function ChatControllerDemo() {
   const [scenario, setScenario] = useState<LabScenario>('answer');
   const [log, setLog] = useState<string[]>([]);
   const [allowed, setAllowed] = useState<readonly string[]>([]);
-  const started = useRef(Date.now());
+  const [started] = useState(() => Date.now());
   const append = (line: string) => {
-    const seconds = ((Date.now() - started.current) / 1000).toFixed(1);
+    const seconds = ((Date.now() - started) / 1000).toFixed(1);
     setLog((lines) => [...lines.slice(-199), `+${seconds} s ${line}`]);
   };
   const chat = useChatController({

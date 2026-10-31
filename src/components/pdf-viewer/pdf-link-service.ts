@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { PdfLinkService } from './pdf-engine.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
@@ -54,4 +55,16 @@ export function createLinkService(actions: LinkServiceActions): PdfLinkService {
     // Optional content (layers) shows as the document sets it.
     executeSetOCGState: () => undefined,
   };
+}
+
+/** The link service carrying out the viewer's actions, the same while the actions stay the same. */
+export function useLinkService({
+  followDestination,
+  goToPage,
+  readPosition,
+}: LinkServiceActions): PdfLinkService {
+  return useMemo(
+    () => createLinkService({ followDestination, goToPage, readPosition }),
+    [followDestination, goToPage, readPosition],
+  );
 }

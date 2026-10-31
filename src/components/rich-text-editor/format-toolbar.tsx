@@ -26,7 +26,7 @@ const hooks = createHooks('format-toolbar', ['block-type', 'link-editor']);
 export function FormatToolbar({ className, children, ...rest }: FormatToolbarProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
-  const focusReturn = useFocusReturn(controller);
+  const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const label = rest['aria-labelledby']
     ? undefined
     : (rest['aria-label'] ?? strings.textFormatting);
@@ -37,14 +37,14 @@ export function FormatToolbar({ className, children, ...rest }: FormatToolbarPro
       className={mergeClassNames(hooks.className, className)}
       justify="start"
       space="xs"
-      ref={focusReturn.ref}
+      ref={returnFocusRef}
     >
       <FormatButtons controller={controller} items={getHistoryItems(strings)} />
       <ToolbarRowSeparator />
       <BlockTypeSelect
         controller={controller}
         className={hooks.slotClass('block-type')}
-        onCommand={focusReturn.request}
+        onCommand={returnFocus}
       />
       <ToolbarRowSeparator />
       <FormatButtons controller={controller} items={getMarkItems(strings)} />
@@ -52,7 +52,7 @@ export function FormatToolbar({ className, children, ...rest }: FormatToolbarPro
         <LinkButton
           controller={controller}
           className={hooks.slotClass('link-editor')}
-          onCommand={focusReturn.request}
+          onCommand={returnFocus}
         />
       ) : null}
       <ToolbarRowSeparator />

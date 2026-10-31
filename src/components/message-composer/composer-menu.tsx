@@ -21,7 +21,7 @@ import {
   SubmenuTrigger,
 } from '../menu/menu.js';
 import type { ShortcutProps } from '../shortcut/shortcut.js';
-import { useComposerControlsValue } from './composer-controls.js';
+import { useComposerControlsValue, type ComposerControlsValue } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerToken } from './composer-message.js';
 import { attachChosenFiles } from './use-file-drop.js';
@@ -129,6 +129,34 @@ function renderItem(item: MessageComposerMenuItem, helpers: MessageComposerHelpe
 }
 
 /**
+ * What a menu item's action can do to the composer. Text and pills hand focus back to the input
+ * once the menu has closed; attaching opens the hidden file chooser.
+ */
+function useComposerHelpers(composer: ComposerControlsValue) {
+  const { ref: returnFocusRef, request: returnFocus } = useFocusHandback(composer.focusInput);
+  const chooserRef = useRef<HTMLInputElement>(null);
+  const helpers: MessageComposerHelpers = {
+    insertText: (text) => {
+      composer.insertText(text);
+      returnFocus();
+    },
+    insertPill: (pill) => {
+      composer.insertPill(pill);
+      returnFocus();
+    },
+    attachFiles: () => {
+      const chooser = chooserRef.current;
+      if (!chooser) return;
+      // Choosing the same file again still reports it.
+      chooser.value = '';
+      chooser.click();
+    },
+    focusInput: returnFocus,
+  };
+  return { helpers, returnFocusRef, chooserRef };
+}
+
+/**
  * The "+" button among the composer's controls and the menu it opens above the composer: the host's
  * sections of items, optionally led by a search field. Insertions take focus back to the input once
  * the menu has closed and given focus back to the button. The file chooser behind `attachFiles` is a
@@ -142,32 +170,13 @@ export function MessageComposerMenuButton({
   const strings = useUiStrings();
   const composer = useComposerControlsValue('MessageComposerMenuButton');
   const { rootRef, isDisabled, onAttach } = composer;
-  const handback = useFocusHandback(composer.focusInput);
-  const chooserRef = useRef<HTMLInputElement>(null);
-  const helpers: MessageComposerHelpers = {
-    insertText: (text) => {
-      composer.insertText(text);
-      handback.request();
-    },
-    insertPill: (pill) => {
-      composer.insertPill(pill);
-      handback.request();
-    },
-    attachFiles: () => {
-      const chooser = chooserRef.current;
-      if (!chooser) return;
-      // Choosing the same file again still reports it.
-      chooser.value = '';
-      chooser.click();
-    },
-    focusInput: handback.request,
-  };
+  const { helpers, returnFocusRef, chooserRef } = useComposerHelpers(composer);
   return (
     <>
       <MenuTrigger>
         <Button
           {...props}
-          ref={handback.ref}
+          ref={returnFocusRef}
           className={mergeClassNames(hooks.slotClass('menu-button'), props.className)}
           icon={PlusGlyph}
           label={strings.composerMenu}
