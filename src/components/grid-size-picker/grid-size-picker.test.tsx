@@ -54,8 +54,9 @@ describe('GridSizePicker', () => {
     await user.hover(cell(3, 4));
     expect(readout(container)).toHaveTextContent('3 × 4');
     expect(cell(3, 4)).toHaveAttribute('data-active', 'true');
-    expect(cell(3, 4)).toHaveAttribute('tabindex', '0');
-    expect(cell(1, 1)).toHaveAttribute('tabindex', '-1');
+    // The pointer previews; the tab stop stays on the focused cell.
+    expect(cell(3, 4)).toHaveAttribute('tabindex', '-1');
+    expect(cell(1, 1)).toHaveAttribute('tabindex', '0');
     expect(cell(2, 2)).toHaveAttribute('data-in-range', 'true');
     expect(cell(3, 4)).toHaveAttribute('data-in-range', 'true');
     expect(cell(4, 4)).not.toHaveAttribute('data-in-range');
@@ -227,15 +228,58 @@ describe('GridSizePicker', () => {
     expect(cell(2, 2)).toHaveAttribute('data-active', 'true');
   });
 
-  it('UIC-GRID-SIZE-PICKER-2.5 keeps focus in the grid when the preview shrinks it', async () => {
+  it('UIC-GRID-SIZE-PICKER-1.3 keeps the focused cell in the grid while the pointer previews a smaller size', async () => {
     const user = userEvent.setup();
     render(<GridSizePicker onSelect={() => {}} />);
     await user.tab();
     await user.keyboard('{Control>}{End}{/Control}');
     expect(cell(10, 10)).toHaveFocus();
     await user.hover(cell(1, 1));
-    expect(screen.getAllByRole('gridcell')).toHaveLength(25);
-    expect(cell(1, 1)).toHaveFocus();
+    expect(screen.getAllByRole('gridcell')).toHaveLength(100);
+    expect(cell(10, 10)).toHaveFocus();
+    expect(cell(1, 1)).toHaveAttribute('data-active', 'true');
+  });
+
+  it('UIC-GRID-SIZE-PICKER-2.1 moves from the focused cell, wherever the pointer previews', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const { container } = render(<GridSizePicker onSelect={onSelect} />);
+    await user.tab();
+    await user.hover(cell(3, 3));
+    expect(readout(container)).toHaveTextContent('3 × 3');
+    await user.keyboard('{ArrowRight}');
+    expect(cell(1, 2)).toHaveFocus();
+    expect(readout(container)).toHaveTextContent('1 × 2');
+    // The pointer moves on: the keys still start from the focused cell.
+    await user.hover(cell(4, 2));
+    await user.keyboard('{ArrowDown}');
+    expect(cell(2, 2)).toHaveFocus();
+    await user.hover(cell(5, 5));
+    await user.keyboard('{End}');
+    expect(cell(2, 10)).toHaveFocus();
+    await user.hover(cell(1, 1));
+    await user.keyboard('{Home}');
+    expect(cell(2, 1)).toHaveFocus();
+    expect(container.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+    // Enter chooses the focused size; a click chooses the pointed one.
+    await user.hover(cell(4, 4));
+    await user.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenLastCalledWith({ rows: 2, columns: 1 });
+    await user.click(cell(4, 4));
+    expect(onSelect).toHaveBeenLastCalledWith({ rows: 4, columns: 4 });
+  });
+
+  it('UIC-GRID-SIZE-PICKER-2.1 mirrors keys from the focused cell right to left', async () => {
+    const user = userEvent.setup();
+    render(
+      <UiProvider locale="ar">
+        <GridSizePicker onSelect={() => {}} />
+      </UiProvider>,
+    );
+    await user.tab();
+    await user.hover(cell(3, 3));
+    await user.keyboard('{ArrowLeft}');
+    expect(cell(1, 2)).toHaveFocus();
   });
 
   it('UIC-GRID-SIZE-PICKER-2.5 keeps focus in a picker that becomes disabled as it shrinks', async () => {
