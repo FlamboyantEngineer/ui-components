@@ -55,6 +55,13 @@ The most recently opened modal shall stack on top and alone respond to Escape an
 Implementation: `src/components/modal-controller/modal-controller.tsx`, `src/components/modal/modal.tsx`
 Verification: `src/components/modal-controller/modal-controller.test.tsx`, `e2e/modal-controller.spec.ts`
 
+### UIC-MODAL-CONTROLLER-2.3 - Another controller
+
+Given another controller, `ModalHost` shall drop the modals it showed and show the new controller's afresh, including the one-at-a-time mounting of UIC-MODAL-CONTROLLER-2.1: modal IDs are unique within a controller only, so a modal of the new controller never takes the draft, pending action, error or focus of the old controller's modal with the same ID, and the old controller's later actions and updates change nothing shown. Updates from the same controller keep each modal's state.
+
+Implementation: `src/components/modal-controller/modal-controller.tsx`
+Verification: `src/components/modal-controller/modal-host-replace.test.tsx`, `e2e/modal-controller.spec.ts`
+
 ## Markup
 
 `ModalHost` renders no element of its own: each open modal carries the hooks of [Modal](MODAL.md), or of the modal its `render` draws.

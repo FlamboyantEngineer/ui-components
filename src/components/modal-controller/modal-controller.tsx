@@ -176,8 +176,22 @@ export function createModalController(): ModalController {
   };
 }
 
-/** Renders a controller's open modals, the most recently opened on top. Render it once. */
-export function ModalHost({ controller }: ModalHostProps) {
+/** A key per controller, so a host given another controller starts its modals afresh. */
+const controllerKeys = new WeakMap<ModalController, number>();
+let lastControllerKey = 0;
+
+function keyOf(controller: ModalController): number {
+  let key = controllerKeys.get(controller);
+  if (key === undefined) {
+    lastControllerKey += 1;
+    key = lastControllerKey;
+    controllerKeys.set(controller, key);
+  }
+  return key;
+}
+
+/** One controller's open modals, the most recently opened on top. */
+function ControllerModals({ controller }: ModalHostProps) {
   const entries = useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -198,4 +212,13 @@ export function ModalHost({ controller }: ModalHostProps) {
       ))}
     </>
   );
+}
+
+/**
+ * Renders a controller's open modals, the most recently opened on top. Render it once. Given another
+ * controller, it drops the modals it showed and shows the new controller's from scratch: modal IDs
+ * are unique within one controller only, so no draft, pending state or focus carries across.
+ */
+export function ModalHost({ controller }: ModalHostProps) {
+  return <ControllerModals key={keyOf(controller)} controller={controller} />;
 }
