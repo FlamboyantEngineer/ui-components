@@ -1,10 +1,9 @@
 'use client';
 
 import { CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
-import { useRef, type ReactNode, type RefObject } from 'react';
+import { useEffect, useId, useState, useRef, type ReactNode, type RefObject } from 'react';
 import {
   ButtonContext,
-  FieldError,
   Group,
   Input,
   Label,
@@ -15,20 +14,23 @@ import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button, ButtonSpinner } from '../button/button.js';
-import type {
-  FieldLabelLayout,
-  FieldTextInputProps,
-  FieldValidationBehavior,
+import {
+  FieldMessage,
+  resolveFieldValidation,
+  toIssueList,
+  type FieldIssues,
+  type FieldLabelLayout,
+  type FieldTextInputProps,
+  type FieldValidation,
+  type FieldValidationBehavior,
 } from '../field/field.js';
 
 export type SearchFieldSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;
-
-/** A query's check: an error message, or several, for an invalid query; `true` or nothing when valid. */
-export type SearchFieldValidate = (value: string) => string | string[] | true | null | undefined;
 
 export interface SearchFieldProps
   extends BaseProps, FieldTextInputProps, FocusEventProps, KeyboardEventProps {
@@ -48,11 +50,12 @@ export interface SearchFieldProps
   name?: string | undefined;
   isDisabled?: boolean | undefined;
   isReadOnly?: boolean | undefined;
-  /** Marks the query invalid, which shows `errorMessage` in the `label-control` layout. */
-  isInvalid?: boolean | undefined;
-  /** Checks the query; its messages show while the query is invalid. */
-  validate?: SearchFieldValidate | undefined;
-  /** `native` (the default) also reports `validate`'s error to the browser's constraint validation. */
+  /**
+   * Checks the query, as a field's `validate` does: an `error` issue makes it invalid, a `warning`
+   * only advises. The first message shows below the box in the `label-control` layout.
+   */
+  validate?: ((value: string) => FieldIssues) | undefined;
+  /** `native` also reports an error to the browser's constraint validation. Defaults to `aria`. */
   validationBehavior?: FieldValidationBehavior | undefined;
   /** Names the clear button. Defaults to the provider's `clearSearch`. */
   clearLabel?: string | undefined;
@@ -67,11 +70,6 @@ export interface SearchFieldProps
   labelLayout?: SearchFieldLabelLayout | undefined;
   /** In the `label-control` layout, help text below the box, which describes the input. */
   description?: ReactNode;
-  /**
-   * In the `label-control` layout, the message shown below the box while the query is invalid.
-   * Defaults to the messages of `validate`.
-   */
-  errorMessage?: ReactNode;
   /** Results are loading: a spinner shows after the input. */
   isPending?: boolean | undefined;
   /** Receives the input, so a caller can move focus to it. */
@@ -96,7 +94,7 @@ const hooks = createHooks('search-field', [
   'spinner',
   'clear',
   'description',
-  'error',
+  'message',
 ]);
 
 /**
@@ -137,10 +135,88 @@ function SearchBox({
   );
 }
 
+/** The query, controlled by the caller or held here, so `validate` can check it as it changes. */
+function useQuery({
+  value,
+  defaultValue,
+  onChange,
+}: Pick<SearchFieldProps, 'value' | 'defaultValue' | 'onChange'>) {
+  const [own, setOwn] = useState(defaultValue ?? '');
+  const query = value ?? own;
+  const change = (next: string) => {
+    if (value === undefined) setOwn(next);
+    onChange?.(next);
+  };
+  return { query, change };
+}
+
+/**
+ * The query's validation from `validate`, and in the `native` behavior its error as the input's
+ * custom validity, so a form submit is refused while the query is invalid.
+ */
+function useQueryValidation(
+  query: string,
+  {
+    validate,
+    validationBehavior = 'aria',
+    input,
+  }: {
+    validate: SearchFieldProps['validate'];
+    validationBehavior: FieldValidationBehavior | undefined;
+    input: RefObject<HTMLInputElement | null>;
+  },
+): FieldValidation {
+  const strings = useUiStrings();
+  const { validation } = resolveFieldValidation(toIssueList(validate?.(query)), false, strings);
+  const validity =
+    validationBehavior === 'native' && validation.status === 'invalid'
+      ? (validation.message ?? '')
+      : '';
+  useEffect(() => {
+    const element = input.current;
+    element?.setCustomValidity(validity);
+    return () => element?.setCustomValidity('');
+  }, [input, validity]);
+  return validation;
+}
+
+/** The label, the box and the description and message below it, for the `label-control` layout. */
+function LabelledBox({
+  label,
+  box,
+  description,
+  messageId,
+  validation,
+}: {
+  label: string;
+  box: ReactNode;
+  description: ReactNode;
+  messageId: string;
+  validation: FieldValidation;
+}) {
+  return (
+    <>
+      <Label {...hooks.slot('label')}>{label}</Label>
+      <Group {...hooks.slot('group')} role="presentation">
+        {box}
+      </Group>
+      {isEmptyNode(description) ? null : (
+        <Text {...hooks.slot('description')} slot="description">
+          {description}
+        </Text>
+      )}
+      <FieldMessage id={messageId} validation={validation} hooks={hooks}>
+        {validation.message}
+      </FieldMessage>
+    </>
+  );
+}
+
 /**
  * A search or filter box: a search glyph, the query input, a spinner while results load and a clear
- * button while it holds text. Escape clears the query and Enter submits it. In the `label-control`
- * layout it also draws its label, description and error message around the box.
+ * button while it holds text. Escape clears the query and Enter submits it. `validate` checks the
+ * query as a field does. In the `label-control` layout it also draws its label, description and
+ * validation message around the box.
  */
 export function SearchField({
   label,
@@ -150,31 +226,45 @@ export function SearchField({
   size = 'md',
   labelLayout = 'control-only',
   description,
-  errorMessage,
   isPending = false,
   inputRef,
   className,
   onClear,
   spellCheck,
+  value,
+  defaultValue,
+  onChange,
+  validate,
+  validationBehavior,
   ...rest
 }: SearchFieldProps) {
   const strings = useUiStrings();
   const ownInput = useRef<HTMLInputElement>(null);
   const input = inputRef ?? ownInput;
+  const messageId = useId();
+  const { query, change } = useQuery({ value, defaultValue, onChange });
+  const validation = useQueryValidation(query, { validate, validationBehavior, input });
+  const isInvalid = validation.status === 'invalid';
   const hasLabel = labelLayout === 'label-control';
-  const data = { size, labelLayout, pending: isPending };
+  const hasMessage = hasLabel && validation.message !== undefined;
+  const data = { size, labelLayout, pending: isPending, validation: validation.status };
   return (
     <AriaSearchField
       {...rest}
       {...hooks.root({ className, props: rest, data })}
       aria-label={hasLabel ? undefined : label}
+      aria-describedby={hasMessage ? messageId : undefined}
       spellCheck={spellCheck?.toString()}
+      value={query}
+      onChange={change}
+      isInvalid={isInvalid}
+      validationBehavior="aria"
       onClear={onClear}
     >
-      {({ isEmpty, isDisabled, isReadOnly, state }) => {
+      {({ isEmpty, isDisabled, isReadOnly }) => {
         const clear = () => {
           input.current?.focus();
-          state.setValue('');
+          change('');
           onClear?.();
         };
         const box = (
@@ -189,18 +279,13 @@ export function SearchField({
         );
         if (!hasLabel) return box;
         return (
-          <>
-            <Label {...hooks.slot('label')}>{label}</Label>
-            <Group {...hooks.slot('group')} role="presentation">
-              {box}
-            </Group>
-            {description ? (
-              <Text {...hooks.slot('description')} slot="description">
-                {description}
-              </Text>
-            ) : null}
-            <FieldError {...hooks.slot('error')}>{errorMessage}</FieldError>
-          </>
+          <LabelledBox
+            label={label}
+            box={box}
+            description={description}
+            messageId={messageId}
+            validation={validation}
+          />
         );
       }}
     </AriaSearchField>

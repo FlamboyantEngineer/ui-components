@@ -94,10 +94,24 @@ test.describe('Search Field lab', () => {
     expect(group?.height).toBe(28);
     await expect(input).toHaveAccessibleDescription('Type at least three letters.');
     await input.fill('Os');
-    await expect(labelled.locator('.ui-search-field__error')).toHaveText('Too short.');
+    const message = labelled.locator('.ui-search-field__message');
+    await expect(message).toHaveText('Too short.');
+    await expect(message).toHaveAttribute('data-severity', 'error');
+    await expect(message).toHaveCSS(
+      'color',
+      await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--ref-danger)';
+        document.body.append(probe);
+        const color = getComputedStyle(probe).color;
+        probe.remove();
+        return color;
+      }),
+    );
     await expect(input).toHaveAccessibleDescription('Type at least three letters. Too short.');
     await input.fill('Oslo');
-    await expect(labelled.locator('.ui-search-field__error')).toHaveCount(0);
+    await expect(message).toBeEmpty();
+    await expect(input).toHaveAccessibleDescription('Type at least three letters.');
     await lab.expectAccessible();
   });
 

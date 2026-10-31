@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { FieldIssues } from '../field/field.js';
 import { SearchField } from './search-field.js';
 
 describe('SearchField', () => {
@@ -170,38 +171,79 @@ describe('SearchField', () => {
     expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['label', 'group'] });
   });
 
-  it('UIC-SEARCH-FIELD-2.2 describes the input and shows its error message below the box', async () => {
+  it('UIC-SEARCH-FIELD-2.2 checks the query with field issues and shows the message below the box', async () => {
     const user = userEvent.setup();
-    const { container, rerender } = render(
+    const validate = (value: string): FieldIssues => {
+      if (value.length > 0 && value.length < 3) return { severity: 'error', message: 'Too short.' };
+      return value === 'paris' ? { severity: 'warning', message: 'Did you mean Paris?' } : null;
+    };
+    const { container } = render(
       <SearchField
         label="Find a city"
         labelLayout="label-control"
         description="Type at least three letters."
-        validationBehavior="aria"
-        validate={(value) => (value.length > 0 && value.length < 3 ? 'Too short.' : null)}
+        validate={validate}
       />,
     );
+    const root = container.querySelector('.ui-search-field');
     const input = screen.getByRole('searchbox', { name: 'Find a city' });
+    const message = container.querySelector('.ui-search-field__message');
     expect(container.querySelector('.ui-search-field__description')).toHaveTextContent(
       'Type at least three letters.',
     );
     expect(input).toHaveAccessibleDescription('Type at least three letters.');
-    expect(container.querySelector('.ui-search-field__error')).toBeNull();
+    expect(message).toBeEmptyDOMElement();
+    expect(message).toHaveAttribute('aria-live', 'polite');
+    expect(root).toHaveAttribute('data-validation', 'valid');
     await user.type(input, 'Os');
-    expect(container.querySelector('.ui-search-field__error')).toHaveTextContent('Too short.');
-    expect(container.querySelector('.ui-search-field')).toHaveAttribute('data-invalid', 'true');
+    expect(message).toHaveTextContent('Too short.');
+    expect(message).toHaveAttribute('data-severity', 'error');
+    expect(root).toHaveAttribute('data-invalid', 'true');
+    expect(root).toHaveAttribute('data-validation', 'invalid');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAccessibleDescription('Type at least three letters. Too short.');
-    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['description', 'error'] });
-    rerender(
-      <SearchField
-        label="Find a city"
-        labelLayout="label-control"
-        isInvalid
-        errorMessage="No such city."
-      />,
+    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['description', 'message'] });
+    await user.clear(input);
+    await user.type(input, 'paris');
+    expect(message).toHaveTextContent('Did you mean Paris?');
+    expect(message).toHaveAttribute('data-severity', 'warning');
+    expect(root).not.toHaveAttribute('data-invalid');
+    expect(root).toHaveAttribute('data-validation', 'warning');
+  });
+
+  it('UIC-SEARCH-FIELD-2.2 checks a controlled query and refuses a form submit only with native validation', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+    const validate = (value: string): FieldIssues =>
+      value === 'xx' ? { severity: 'error', message: 'No such city.' } : null;
+    const { rerender } = render(
+      <form onSubmit={(event) => onSubmit(event.nativeEvent as SubmitEvent)}>
+        <SearchField label="Find" value="xx" validate={validate} />
+        <button type="submit">Go</button>
+      </form>,
     );
-    expect(container.querySelector('.ui-search-field__error')).toHaveTextContent('No such city.');
-    expect(container.querySelector('.ui-search-field__description')).toBeNull();
+    const input = screen.getByRole<HTMLInputElement>('searchbox', { name: 'Find' });
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input.validity.valid).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Go' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    rerender(
+      <form onSubmit={(event) => onSubmit(event.nativeEvent as SubmitEvent)}>
+        <SearchField label="Find" value="xx" validate={validate} validationBehavior="native" />
+        <button type="submit">Go</button>
+      </form>,
+    );
+    expect(input.validity.customError).toBe(true);
+    expect(input.validationMessage).toBe('No such city.');
+    await user.click(screen.getByRole('button', { name: 'Go' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    rerender(
+      <form onSubmit={(event) => onSubmit(event.nativeEvent as SubmitEvent)}>
+        <SearchField label="Find" value="oslo" validate={validate} validationBehavior="native" />
+        <button type="submit">Go</button>
+      </form>,
+    );
+    expect(input.validity.valid).toBe(true);
   });
 
   it('UIC-SEARCH-FIELD-2.3 shows a busy indicator while results load', () => {

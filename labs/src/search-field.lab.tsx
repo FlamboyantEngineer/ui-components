@@ -40,8 +40,9 @@ function LabelledSearch() {
       labelLayout="label-control"
       placeholder="City"
       description="Type at least three letters."
-      validationBehavior="aria"
-      validate={(value) => (value.length > 0 && value.length < 3 ? 'Too short.' : null)}
+      validate={(value) =>
+        value.length > 0 && value.length < 3 ? { severity: 'error', message: 'Too short.' } : null
+      }
       data-lab-field="labelled"
     />
   );

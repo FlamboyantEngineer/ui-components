@@ -146,9 +146,16 @@
   font-size: var(--ref-font-size-sm);
 }
 
-.ui-search-field__error {
-  color: var(--ref-danger);
+.ui-search-field__message {
   font-size: var(--ref-font-size-sm);
+}
+
+.ui-search-field__message[data-severity='error'] {
+  color: var(--ref-danger);
+}
+
+.ui-search-field__message[data-severity='warning'] {
+  color: var(--ref-warning);
 }
 
 .ui-search-field__spinner {
