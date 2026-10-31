@@ -61,10 +61,10 @@ Verification: `src/components/code-block/code-block-content.test.ts`, `src/compo
 
 ### UIC-CODE-BLOCK-4.1 - Code block override
 
-`createCodeBlockOverride(options)` shall return a `renderNode` for [Markdown](MARKDOWN.md) that draws every code block node, fenced or indented, as a `CodeBlock` of its text headed by its fence language, and leaves every other node to the default rendering. A `console`, `terminal` or `shell-session` fence is a `terminal` block. `tokenizers` maps fence languages to `tokenize` functions; `onApply` shows Apply on every block and receives the block's value and its fence language (`null` without one); `applyLabel` names it. A streaming `Markdown` shows an unclosed fence through it as a growing block.
+`createCodeBlockOverride(options)` shall return a `renderNode` for [Markdown](MARKDOWN.md) that draws every code block node, fenced or indented, as a `CodeBlock` of its text headed by its fence language, and leaves every other node to the default rendering. A `console`, `terminal` or `shell-session` fence is a `terminal` block. `tokenizers` maps fence languages to `tokenize` functions, read from its own entries only: a fence language the map does not register, even one an ordinary object inherits (`constructor`, `toString`, `__proto__`), draws plain code, while an entry the map does register under such a name highlights; `onApply` shows Apply on every block and receives the block's value and its fence language (`null` without one); `applyLabel` names it. A streaming `Markdown` shows an unclosed fence through it as a growing block.
 
 Implementation: `src/components/code-block/markdown-code-block.tsx`
-Verification: `src/components/code-block/markdown-code-block.test.tsx`, `e2e/code-block.spec.ts`
+Verification: `src/components/code-block/markdown-code-block.test.tsx`, `src/components/code-block/markdown-code-languages.test.tsx`, `e2e/code-block.spec.ts`
 
 ## UIC-CODE-BLOCK-5 - Integration
 
