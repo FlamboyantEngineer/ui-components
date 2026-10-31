@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { TableStatus } from './table-body.js';
 import type { TableSelectionBarProps } from './table-bulk-edit.js';
 import { createCellGrid } from './table-cell-range.js';
-import type { TableCellsView, TableRowModel } from './table-row.js';
+import type { TableCellsView, TableRowModel } from './table-row-model.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 import type { TableStructure } from './table-structure.js';
 import type { CellEditing } from './use-cell-editing.js';

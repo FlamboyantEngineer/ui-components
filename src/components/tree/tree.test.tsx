@@ -7,7 +7,8 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';
-import { Tree, type TreeItemState, type TreeProps } from './tree.js';
+import { Tree } from './tree.js';
+import type { TreeItemState, TreeProps } from './tree-props.js';
 
 interface Food {
   id: string;

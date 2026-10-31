@@ -14,14 +14,14 @@ Row keys retain their primitive type, including numeric `1` and text `"1"`. Coll
 
 Column ids containing whitespace shall likewise remain distinct in accessible names, sorting, widths and cell editing.
 
-Implementation: `src/components/table/table.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table-body.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table-body.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-1.2 - Column hooks
 
 Data column headers and cells shall publish `data-kind="data"`, `data-align` (`start` by default, `center` or `end` from the column's `align`) and `data-column` with the column id; the selection and actions columns and their cells publish `data-kind="selection"` and `data-kind="actions"`.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/table.test.tsx`
 
 ### UIC-TABLE-1.3 - Accessible column names
@@ -42,14 +42,14 @@ Verification: `src/components/table/table.test.tsx`
 
 `getRowAttributes(row)` shall return the caller's `data-*` attributes for a data row, nested rows included, which the row element carries beside its hooks so a stylesheet can mark whole rows (for example `data-change="added"` or `data-status="missing"`). They are caller hooks the caller documents: string and number values render as given, `true` renders `"true"`, and `false` or `undefined` leave the attribute out. A hook value the table or React Aria writes on the row (such as `data-selected`) wins over a caller attribute of the same name.
 
-Implementation: `src/components/table/table.tsx`, `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-1.6 - Cell wrapping
 
 `cellWrap` shall set how the table's cells wrap their text: `nowrap` (the default) keeps one line, `wrap` breaks between words and `anywhere` also breaks inside long unspaced values such as identifiers. A column's own `cellWrap` overrides it. Every data cell, summary cell and group aggregate cell of a data column publishes its resolved mode as `data-wrap` in every row, nested rows included, whatever its content, so the stylesheet draws the mode, for example with `white-space` and `overflow-wrap`. The mode changes no value, content, selection, action, focus or editing behaviour of the cell, and columns keep their widths and resizing. A virtualized table keeps its fixed row height, so its stylesheet clips wrapped text.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-footer.tsx`, `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-footer.tsx`, `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ## UIC-TABLE-2 - Sorting and filtering
@@ -130,7 +130,7 @@ Verification: `src/components/table/table-locale.test.tsx`, `src/components/tabl
 
 The table shall select rows through the selection props (`selectionMode` `none`, `single` or `multiple`, `selectionBehavior` `toggle` or `replace`, `selectedKeys`, `defaultSelectedKeys`, `disabledKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`), controlled or not; without `selectedKeys` the table holds the selection itself and hands it to React Aria's grid. Multiple selection adds a leading checkbox column whose header checkbox selects every enabled row; each checkbox draws the `check` glyph when selected, the `minus` glyph when indeterminate and nothing otherwise, and takes React Aria's localized names. Disabled rows are never selected.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-aria-keys.test.ts`, `src/components/table/use-table-selection.test.tsx`
 
 ### UIC-TABLE-3.2 - Row action
@@ -144,14 +144,14 @@ Verification: `src/components/table/table.test.tsx`
 
 `renderRowActions(row)` shall render its content in a trailing actions cell per row, in a column `actionsColumnWidth` pixels wide (44 by default). Controls in it perform their own action without selecting or activating the row.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/table.test.tsx`
 
 ### UIC-TABLE-3.4 - Focus on cell controls
 
 A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell.
 
-Implementation: `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/table-cell-focus.test.tsx`, `e2e/table.spec.ts`
 
 ## UIC-TABLE-4 - Column sizing
@@ -190,14 +190,14 @@ Verification: `src/components/table/column-sizing.test.ts`
 
 With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer from anywhere on it, the handle's cell included ([UIC-DRAG-HANDLE-2.2](DRAG-HANDLE.md#uic-drag-handle-22---dragging-from-the-handles-cell)), or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. A dragged row carries its `id` as text (`text/plain`) to other drop targets. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them.
 
-Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-5.2 - Fixed rows
 
 A row for which `reorder.canMove` returns false shall not move: its handle is disabled, drags starting on it are refused and Alt+Arrow keys leave it in place. Disabled rows are never dragged. Other rows may still be dropped beside it.
 
-Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`
 
 ### UIC-TABLE-5.3 - Keyboard moves
@@ -218,7 +218,7 @@ Verification: `src/components/table/table-rows.test.ts`
 
 `reorder.dragTrigger="handle"` shall let only a row's enabled drag handle start its pointer drag: rows render without `draggable`, and a primary press on the handle makes its row draggable until the press or the drag ends ([UIC-DRAG-HANDLE-2.1](DRAG-HANDLE.md#uic-drag-handle-21---dragging-by-the-handle-only)), so a press elsewhere in the row selects, activates or does what the browser does with it, without dragging. `row`, the default, drags from anywhere on the row. Keyboard drags start from the handle either way.
 
-Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-row.tsx`, `src/components/drag-handle/drag-handle.tsx`
+Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-5.6 - Drag preview
@@ -322,7 +322,7 @@ Verification: `src/components/table/use-column-reorder.test.tsx`, `e2e/table.spe
 
 A column with `pin` (`start` or `end`) shall be drawn among the first or last columns, keeping their order, and stay at its edge while the scroll area scrolls sideways: its header, cells and summary cell publish `data-pinned` and the measured `--ui-table-pin-offset`, the width of the pinned columns between it and its edge from React Aria's column widths, from which the stylesheet makes it sticky. The selection column pins with the start columns and the actions column with the end columns. Offsets follow every width React Aria lays out, live during a resize. A virtualized table positions every cell itself and pins nothing.
 
-Implementation: `src/components/table/table-columns.ts`, `src/components/table/use-pinned-offsets.ts`, `src/components/table/table-header.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table-columns.ts`, `src/components/table/use-pinned-offsets.ts`, `src/components/table/table-header.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-pinned-offsets.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-8.7 - Column groups
@@ -345,14 +345,14 @@ Verification: `src/components/table/table-columns.test.ts`
 
 With `getChildRows`, each row's child rows shall be drawn under it while it is expanded, through React Aria's expandable rows: the grid becomes a `treegrid`, rows carry `aria-level` and, with children, `aria-expanded`, and ArrowRight and ArrowLeft on a focused row expand and collapse it. The tree column (the column whose id is `treeColumn` when it is drawn, else the first drawn data column) holds an expand button (`ui-table__expand`, React Aria's `chevron` slot, which names it `Expand <row>` or `Collapse <row>`, drawing the expand toggle's chevron) for rows with children and a spacer (`ui-table__expand-spacer`) for the others, and its cells publish the measured `--ui-table-level` from 1. `expandedKeys` (controlled) or `defaultExpandedKeys` choose the expanded rows, and `onExpandedChange` receives the expanded keys after each change.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-tree.ts`
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-tree.ts`
 Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`, `src/components/table/table-aria-keys.test.ts`
 
 ### UIC-TABLE-9.2 - Detail rows
 
 `renderRowDetail(row)` shall make each row with content expandable, drawing that content in a full-width detail row (`ui-table__detail-row`, whose `ui-table__detail-cell` spans every column) under the row while it is expanded, before its child rows. A detail row is named by its spanning cell, like the notice row ([UIC-TABLE-6.1](#uic-table-61---notice-row)). It can take focus, so its controls stay reachable, but it is never selected, dragged or passed to `onRowAction`.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-spanning-row.tsx`, `src/components/table/use-table-grid.ts`
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-spanning-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-9.3 - Sorting and filtering nested rows
@@ -391,7 +391,7 @@ Verification: `src/components/table/use-table-rows.test.tsx`
 
 A cell of a column with `allowsEditing` in an enabled row (UIC-TABLE-11.4) shall open its editor on F2 or Enter while the cell has focus, or on a double click, and publish `data-editing` while it is open. One cell is edited at a time. While the editor is open the grid's arrow-key navigation and type-ahead are off, so the editor keeps its keys.
 
-Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-cell-editor.tsx`
+Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-cell-editor.tsx`
 Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-11.2 - Default editor
@@ -480,7 +480,7 @@ Verification: `src/components/table/table-groups.test.ts`
 
 `cellSelection` (`none` by default) shall turn on spreadsheet mode over the data cells of the rows a reader sees: `cell` selects the focused cell, and `range` also selects rectangles of cells. A press on a data cell selects and focuses it; with `range`, Shift with a press or with an arrow key (mirrored right to left) extends the selection from its anchor, and dragging over cells extends it to the cell under the pointer. Focus reaching a cell selects it unless it returns to the anchor, and focus reaching a data row moves on to its cell in the selected column, else its first data cell. Presses on data cells select cells, not rows; controls inside cells keep their presses. `selectedRange` (controlled, `null` for none) or `defaultSelectedRange` hold the selection as an anchor and a focus (`rowKey`, `columnId`), reported through `onSelectedRangeChange`. Selected cells publish `data-in-range`, `aria-selected="true"` and, on its edges, `data-range-top`, `data-range-bottom`, `data-range-start` and `data-range-end`.
 
-Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/use-cell-pointer.ts`, `src/components/table/table-row.tsx`, `src/components/table/use-table-model.ts`
+Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/use-cell-pointer.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/use-table-model.ts`
 Verification: `src/components/table/use-cell-selection.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-14.2 - Copying
@@ -512,7 +512,7 @@ In `range` mode, the bottom end cell of a selection holding an editable cell sha
 
 Numeric runs shall be checked within floating-point precision and retain the decimals of scientific-notation values. Tiny uneven values repeat rather than being mistaken for a progression. Reading a source series shall not allocate a filtered numeric copy or spread its precisions into arguments.
 
-Implementation: `src/components/table/use-cell-pointer.ts`, `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/use-cell-pointer.ts`, `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-14.6 - Typing and moving

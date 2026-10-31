@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
-import { Tree, type TreeProps } from './tree.js';
+import { Tree } from './tree.js';
+import type { TreeProps } from './tree-props.js';
 
 interface Food {
   id: string;

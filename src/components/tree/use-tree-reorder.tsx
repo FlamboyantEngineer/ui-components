@@ -18,7 +18,7 @@ import {
   type CollectionDragAndDropOptions,
   type CollectionDropTarget,
 } from '../../utils/use-reorder-drag-and-drop.js';
-import type { TreeItemData } from './tree.js';
+import type { TreeItemData } from './tree-props.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
 import { useLatest } from '../../utils/use-latest.js';

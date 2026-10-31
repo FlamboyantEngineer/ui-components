@@ -10,7 +10,7 @@
 
 Library item lookups and loaded key collection shall retain reading order through iterative tree walks, with no repeated descendant-array copies. A lookup stops before reading the matched item's children.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/utils/walk-tree.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`, `src/utils/walk-tree.ts`
 Verification: `src/components/tree/tree.test.tsx`, `src/utils/walk-tree.test.ts`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-1.2 - Row anatomy
@@ -24,7 +24,7 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 The expand button shall draw built-in glyphs: `chevron-right` when collapsed and `chevron-down` when expanded, or `plus` and `minus` with `expandGlyph="plus-minus"`. The root publishes the choice as `data-expand-glyph`.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/tree.test.tsx`
 
 ## UIC-TREE-2 - Expansion
@@ -33,7 +33,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 A row with children shall expand and collapse from its expand button, named by the provider's `expand` or `collapse` string together with the row's label, and from ArrowRight and ArrowLeft (React Aria). Pressing a branch row also toggles it when the tree has no selection, no `onAction` and the row no link. Expansion is controlled with `expandedKeys` and `onExpandedChange`, or uncontrolled from `defaultExpandedKeys`.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/use-tree-expansion.ts`, `src/components/tree/tree-row.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/use-tree-expansion.ts`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-2.2 - Children not loaded yet
@@ -54,7 +54,7 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 With `onLoadChildren`, the loading row of an expanded row that has children but none loaded shall ask for them once it comes into view (React Aria's loading sentinel), calling `onLoadChildren` with the item; the owner adds the children to its items. While a returned promise is pending the loading row shows, as for `isItemPending`. A rejection shall show its message (or the provider's `actionFailed` string) in the row as an [InlineError](INLINE-ERROR.md) (`ui-tree__load-error`) whose retry button asks again; the row does not ask again on its own after a failure or a success.
 
-Implementation: `src/components/tree/use-tree-loads.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`
+Implementation: `src/components/tree/use-tree-loads.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/use-tree-loads.test.tsx`, `e2e/tree.spec.ts`
 
 ## UIC-TREE-3 - Interaction
@@ -63,7 +63,7 @@ Verification: `src/components/tree/use-tree-loads.test.tsx`, `e2e/tree.spec.ts`
 
 The tree shall be one tab stop. ArrowDown and ArrowUp move between visible rows, Home and End to the first and last row, and printable keys run typeahead over the text values (React Aria).
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-aria-keys.ts`
 Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-3.2 - Selection and disabled rows
@@ -72,14 +72,14 @@ The selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defa
 
 Initial selection and disabled key iterables are read once for the model and primitive, so a one-shot generator has the same effect as a set or array.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-aria-keys.ts`
 Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`
 
 ### UIC-TREE-3.3 - Row actions
 
 `onAction` shall receive the key of the row the reader activates: on press, or on Enter and double-click when selection replaces on press (React Aria). Controls from `renderActions` act on their own without selecting or activating the row.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-aria-keys.ts`
 Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`
 
 ### UIC-TREE-3.4 - Link rows
@@ -100,7 +100,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 `onItemKeyDown` shall receive each keydown in a row, with the row's item, before the tree's own keyboard handling. When it returns `true` the tree prevents the key's default and does nothing more with it. Keys typed in an editable element inside a row, such as a rename field, reach neither the owner hook nor reordering.
 
-Implementation: `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree.tsx`
+Implementation: `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree.test.tsx`
 
 ## UIC-TREE-4 - States and options
@@ -109,35 +109,35 @@ Verification: `src/components/tree/tree.test.tsx`
 
 `isPending` shall set `aria-busy="true"` and `data-pending` on the tree. A pending tree with no items shall show one loading row holding a small loading `EmptyState` (a polite status, also `ui-tree__empty`) that reads the provider's `loading` string.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`
 Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-4.2 - Empty
 
 A tree with no items that is not pending shall show `emptyMessage` in a small empty `EmptyState` (also `ui-tree__empty`), and nothing without it. React Aria publishes `data-empty` on the tree.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`
 Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-4.3 - Options
 
 `size` (`sm` by default, `md`, `lg`: the row spacing), `variant` (`default`, or `picker` for a tree the reader chooses one row from, whose unavailable rows the stylesheet greys out) and `wrap` (labels may wrap instead of ellipsizing) shall publish `data-size`, `data-variant` and `data-wrap` on the tree.
 
-Implementation: `src/components/tree/tree.tsx`, `labs/reference/tree.css`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-4.4 - Hooks and caller attributes
 
 `Tree` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the tree element.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-aria-keys.ts`
 Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`
 
 ### UIC-TREE-4.5 - Virtualization
 
 `virtualized` shall render the tree through React Aria's `Virtualizer` with its list layout and publish `data-virtualized` on the tree: only the visible rows in view of the tree, plus a small buffer, are in the document, at `rowHeight` pixels each (28, 32 or 40 by default at size `sm`, `md` or `lg`), and scrolling the tree reaches the last row. The stylesheet bounds the tree's height.
 
-Implementation: `src/components/tree/tree.tsx`, `labs/reference/tree.css`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ## UIC-TREE-5 - Checkbox selection
@@ -155,7 +155,7 @@ With `selectionPropagation` and multiple selection, selecting or deselecting a r
 
 Selection propagation and indeterminate-state calculations shall walk loaded hierarchies without recursive JavaScript calls, including deeply nested branches.
 
-Implementation: `src/components/tree/use-tree-selection.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree.tsx`
+Implementation: `src/components/tree/use-tree-selection.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.ts`
 
 ## UIC-TREE-6 - Filtering
@@ -166,7 +166,7 @@ While `filterText` is not blank, the tree shall show only the loaded rows whose 
 
 Filtering shall walk loaded hierarchies without recursive JavaScript calls and evaluate the match callback once per item in preorder, including deeply nested branches.
 
-Implementation: `src/components/tree/use-tree-filter.ts`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`
+Implementation: `src/components/tree/use-tree-filter.ts`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/use-tree-filter.test.tsx`, `e2e/tree.spec.ts`
 
 ## UIC-TREE-7 - Renaming
@@ -182,7 +182,7 @@ Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
 
 The rename shall act on the row the owner draws now, found by its key among the shown rows. F2 opens no field on a row in `disabledKeys`. Enter, and focus leaving the field, check the row again before renaming: it must still be shown, outside `disabledKeys` and accepted by `canRename`, and `onRename` receives the current item rather than the one F2 opened. When a render leaves the open field's row disabled, outside the shown rows or refused by `canRename`, the field closes without renaming; when the field held focus, focus returns to the row, or to the tree when the row takes no focus.
 
-Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/tree.tsx`
+Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.spec.ts`
 
 ## Hooks

@@ -21,7 +21,9 @@ import {
   type TableGroupNode,
 } from './table-groups.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import { TableDataRow, TableExpandButton, type TableRowModel } from './table-row.js';
+import { TableExpandButton } from './table-data-cell.js';
+import { TableDataRow } from './table-row.js';
+import type { TableRowModel } from './table-row-model.js';
 import { getCellValue, type TableColumn, type TableRow } from './table-rows.js';
 import {
   actionsColumnId,
