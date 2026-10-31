@@ -3,7 +3,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import { Field, FieldFormValue, useFieldControl, type FieldInputProps } from '../field/field.js';
 import {
   createEditorPlugins,
   createEditorState,
@@ -47,7 +47,7 @@ function DocumentFormValue({
   isDisabled: boolean;
 }) {
   const json = useMemo(() => JSON.stringify(value), [value]);
-  return <input type="hidden" name={name} value={json} disabled={isDisabled} />;
+  return <FieldFormValue name={name} value={json} isDisabled={isDisabled} />;
 }
 
 /**

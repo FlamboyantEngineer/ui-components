@@ -18,6 +18,7 @@ import {
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { FieldFormValue } from '../field/field.js';
 import type { ControlSize } from '../../core/props.js';
 import { ComboboxChips, type ComboboxChipsProps } from './combobox-chips.js';
 import {
@@ -166,14 +167,12 @@ export function ComboboxInputs({
 }) {
   const state = useContext(ComboBoxStateContext);
   if (!name || isCustom) return null;
-  const keys = Array.isArray(state?.value) ? state.value : [state?.value ?? ''];
-  return keys.map((key) => (
-    <input
-      key={String(key)}
-      type="hidden"
-      name={name}
-      value={String(fromCollectionKey(key))}
-      disabled={isDisabled}
-    />
-  ));
+  const value = state?.value ?? null;
+  const submitted =
+    value === null
+      ? null
+      : typeof value === 'object'
+        ? value.map((key) => String(fromCollectionKey(key)))
+        : String(fromCollectionKey(value));
+  return <FieldFormValue name={name} value={submitted} isDisabled={isDisabled} />;
 }

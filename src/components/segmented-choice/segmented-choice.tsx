@@ -18,7 +18,7 @@ import {
   type SegmentedChoiceValue,
 } from './choice-selection.js';
 import type { PendingChangeHandler } from './pending-change.js';
-import { useScopedDisabled } from '../field/field.js';
+import { FieldFormValue, useScopedDisabled } from '../field/field.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 
@@ -178,19 +178,6 @@ function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
   );
 }
 
-/** Hidden inputs that submit the selected values with a form. */
-function ChoiceInputs({ name, values, isDisabled }: ChoiceInputsProps) {
-  return values.map((value) => (
-    <input key={value} type="hidden" name={name} value={value} disabled={isDisabled} />
-  ));
-}
-
-interface ChoiceInputsProps {
-  name: string;
-  values: readonly string[];
-  isDisabled: boolean | undefined;
-}
-
 /**
  * One of a few mutually exclusive values, drawn as a run of segments, or with
  * `selectionMode="multiple"` a group of toggles that press independently. A selection indicator
@@ -271,9 +258,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
           countMax={countMax}
         />
       ))}
-      {name ? (
-        <ChoiceInputs name={name} values={selection.selectedKeys} isDisabled={isDisabled} />
-      ) : null}
+      <FieldFormValue name={name} value={selection.selectedKeys} isDisabled={isDisabled} />
     </ToggleButtonGroup>
   );
 }

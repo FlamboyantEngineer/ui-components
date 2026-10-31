@@ -7,6 +7,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   Field,
+  FieldFormValue,
   useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
@@ -165,14 +166,7 @@ export function ColorField({
               allowsEyeDropper={allowsEyeDropper}
             />
           </DialogTrigger>
-          {props.name ? (
-            <input
-              type="hidden"
-              name={props.name}
-              value={state.value ?? ''}
-              disabled={state.isDisabled}
-            />
-          ) : null}
+          <FieldFormValue name={props.name} value={state.value} isDisabled={state.isDisabled} />
         </ColorPicker>
       )}
     </Field>

@@ -5,6 +5,7 @@ import { Input } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
+  FieldFormValue,
   useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
@@ -97,14 +98,11 @@ function SignatureControls({ control, state, mode, onModeChange, name }: Signatu
           }}
         />
       )}
-      {name ? (
-        <input
-          type="hidden"
-          name={name}
-          value={value ? JSON.stringify(value) : ''}
-          disabled={state.isDisabled}
-        />
-      ) : null}
+      <FieldFormValue
+        name={name}
+        value={value ? JSON.stringify(value) : null}
+        isDisabled={state.isDisabled}
+      />
     </>
   );
 }

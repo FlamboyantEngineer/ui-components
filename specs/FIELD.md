@@ -365,7 +365,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `src/components/s
 
 ### UIC-FIELD-8.4 - Form value
 
-A field control whose own input does not submit its value shall submit it through one shared part, `FieldFormValue`: hidden inputs under the field's `name`, holding one value (`null` or `undefined` submit an empty string) or one input per value of a list (an empty list submits nothing). Without a `name` it renders nothing, and a disabled field submits nothing. TextField (with `displayValue`), NumberField's radix input, PinInput, TagsInput, FileField, DateTimeField, RelativeDateField and every BooleanField variant submit through it.
+A field control whose own input does not submit its value shall submit it through one shared part, `FieldFormValue`: hidden inputs under the field's `name`, holding one value (`null` or `undefined` submit an empty string) or one input per value of a list (an empty list submits nothing). Without a `name` it renders nothing, and a disabled field submits nothing. TextField (with `displayValue`), NumberField's radix input, PinInput, TagsInput, FileField, DateTimeField, RelativeDateField, ColorField, SelectField (list and tree), Combobox, SegmentedChoice, SignaturePad, RichTextEditor and every BooleanField variant submit through it.
 
 Implementation: `src/components/field/field-form-value.tsx`
 Verification: `src/components/field/field-form-value.test.tsx`, `src/components/boolean-field/boolean-field.test.tsx`

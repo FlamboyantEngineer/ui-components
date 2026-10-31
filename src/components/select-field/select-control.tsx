@@ -18,7 +18,12 @@ import {
   type SelectKeysValue,
   type SelectModel,
 } from './select-model.js';
-import { flattenPickerItems, toAriaControlProps, usePickerEmptyContent } from '../field/field.js';
+import {
+  FieldFormValue,
+  flattenPickerItems,
+  toAriaControlProps,
+  usePickerEmptyContent,
+} from '../field/field.js';
 import { toSelectKeys, type SelectFieldOption } from './select-options.js';
 import { SelectTrigger } from './select-trigger.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
@@ -146,17 +151,11 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
           onFilterTextChange={actions.changeFilter}
         />
       </AriaSelect>
-      {props.name
-        ? submitted.map((key) => (
-            <input
-              key={toCollectionKey(key)}
-              type="hidden"
-              name={props.name}
-              value={String(key)}
-              disabled={state.isDisabled}
-            />
-          ))
-        : null}
+      <FieldFormValue
+        name={props.name}
+        value={submitted.map(String)}
+        isDisabled={state.isDisabled}
+      />
       {isMultiple ? (
         <SelectChips
           label={label}
