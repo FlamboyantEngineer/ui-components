@@ -13,7 +13,7 @@ import {
 } from './pdf-search.js';
 import { pdfRequestLimit, type LoadedPdf } from './use-pdf-document.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import { mapBounded } from '../../utils/map-bounded.js';
+import { mapBounded } from './map-bounded.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 

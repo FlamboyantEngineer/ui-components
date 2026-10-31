@@ -3,7 +3,7 @@ import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { encodeQr } from '../../utils/encode-qr.js';
+import { encodeQr } from './encode-qr.js';
 import { QrCode } from './qr-code.js';
 
 function svg(container: HTMLElement): SVGSVGElement {

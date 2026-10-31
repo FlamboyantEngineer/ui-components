@@ -5,7 +5,7 @@ import { revealRange } from './code-geometry.js';
 import { useCodeHover, type CodeHoverModel, type MarkedDiagnostic } from './code-hover.js';
 import type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
 import { findDiagnosticRange, matchBracket, type BracketMatch } from './code-ranges.js';
-import { findLineStarts } from '../../utils/find-line-starts.js';
+import { findLineStarts } from './find-line-starts.js';
 import { splitSegments, type CodeDecorations, type CodeSegment } from './code-segments.js';
 import type { Completions, CompletionsModel } from '../completion-list/completion-list.js';
 import { useCodeCompletion } from './use-code-completion.js';

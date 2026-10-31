@@ -5,7 +5,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { encodeQr, type QrErrorCorrection } from '../../utils/encode-qr.js';
+import { encodeQr, type QrErrorCorrection } from './encode-qr.js';
 
 export interface QrCodeProps extends BaseProps, AriaLabellingProps {
   /** The text to encode, such as a URL. */

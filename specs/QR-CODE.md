@@ -8,22 +8,22 @@
 
 `encodeQr(text, { errorCorrection })` shall encode `text` as its UTF-8 bytes in one byte-mode segment (mode indicator, a character count of 8 bits up to version 9 and 16 bits from version 10, the bytes, a terminator of up to four zero bits, zero bits to a whole codeword, then the alternating pad codewords `0xEC` and `0x11`), in the smallest version from 1 to 40 that holds them at the error correction level, which defaults to `medium`. It returns `{ version, errorCorrection, mask, size, modules }`, where `size` is `version × 4 + 17` and `modules` holds the rows of the symbol, top to bottom, with `true` for a dark module and no quiet zone. Text too long for version 40 at that level returns `undefined`.
 
-Implementation: `src/utils/encode-qr.ts`, `src/utils/qr-codewords.ts`
-Verification: `src/utils/encode-qr.test.ts`, `src/utils/qr-codewords.test.ts`
+Implementation: `src/components/qr-code/encode-qr.ts`, `src/components/qr-code/qr-codewords.ts`
+Verification: `src/components/qr-code/encode-qr.test.ts`, `src/components/qr-code/qr-codewords.test.ts`
 
 ### UIC-QR-CODE-1.2 - Error correction
 
 The error correction level shall be `low`, `medium`, `quartile` or `high` (about 7, 15, 25 and 30 percent of the symbol recoverable). The data codewords are split into the blocks the standard sets for the version and level, each block gets its Reed–Solomon error correction codewords over GF(2^8) with the polynomial `0x11D`, and the final sequence interleaves the data codewords block by block, then the error correction codewords.
 
-Implementation: `src/utils/qr-codewords.ts`, `src/utils/qr-reed-solomon.ts`
-Verification: `src/utils/qr-reed-solomon.test.ts`, `src/utils/qr-codewords.test.ts`, `src/utils/encode-qr.test.ts`
+Implementation: `src/components/qr-code/qr-codewords.ts`, `src/components/qr-code/qr-reed-solomon.ts`
+Verification: `src/components/qr-code/qr-reed-solomon.test.ts`, `src/components/qr-code/qr-codewords.test.ts`, `src/components/qr-code/encode-qr.test.ts`
 
 ### UIC-QR-CODE-1.3 - Patterns, placement and mask
 
 The encoder shall draw the finder patterns with their separators, the timing patterns, the alignment patterns, the dark module, the format information (level and mask with their BCH code, in both copies) and, from version 7, the version information; place the codeword bits in two-module columns from the lower right corner, alternately upward and downward, skipping function modules; and apply the one of the eight masks whose symbol scores the lowest penalty (runs of five or more modules of one colour, 2 × 2 blocks of one colour, finder-like patterns with the quiet zone counted as light, and the dark share away from one half), the first mask winning a tie. The result matches a reference encoder module for module.
 
-Implementation: `src/utils/encode-qr.ts`, `src/utils/qr-matrix.ts`, `src/utils/qr-penalty.ts`
-Verification: `src/utils/encode-qr.test.ts`
+Implementation: `src/components/qr-code/encode-qr.ts`, `src/components/qr-code/qr-matrix.ts`, `src/components/qr-code/qr-penalty.ts`
+Verification: `src/components/qr-code/encode-qr.test.ts`
 
 ## UIC-QR-CODE-2 - Drawing
 

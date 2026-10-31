@@ -1,4 +1,4 @@
-import { isElement } from './is-element.js';
+import { isElement } from '../../utils/is-element.js';
 
 /** Controls and editable content that handle their own presses and pointer drags. */
 const interactiveSelector = [

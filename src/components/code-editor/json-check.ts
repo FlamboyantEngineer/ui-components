@@ -2,7 +2,7 @@
 // diagnostics and as the field's message.
 
 import type { UiStrings } from '../../core/strings.js';
-import { findLineStarts } from '../../utils/find-line-starts.js';
+import { findLineStarts } from './find-line-starts.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeDiagnostic } from './code-editor.js';
 import type { FieldIssue } from '../field/field.js';

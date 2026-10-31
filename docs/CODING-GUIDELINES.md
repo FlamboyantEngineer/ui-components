@@ -22,7 +22,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 ## Structure
 
-**S1. Five places for code.** `src/core/` holds the contracts every component uses (hooks, provider, props, glyphs, strings, storage); `src/components/<name>/` holds one component or one family; `src/utils/` holds framework-free helpers and generic React hooks used by more than one component; `src/primitives/` holds the named re-exports of React Aria building blocks, one module per area (`specs/PRIMITIVES.md`); `src/testing/` holds the helpers hosts use in their own tests, which import only `@testing-library/dom` (`specs/TESTING.md`). Nothing else lives in `src/`.
+**S1. Five places for code.** `src/core/` holds the contracts every component uses (hooks, provider, props, glyphs, strings, storage); `src/components/<name>/` holds one component or one family; `src/utils/` holds framework-free helpers, generic React hooks and small collection render helpers (a drop indicator, a keyed item slot) used by more than one component, and a helper used by one component lives beside it; `src/primitives/` holds the named re-exports of React Aria building blocks, one module per area (`specs/PRIMITIVES.md`); `src/testing/` holds the helpers hosts use in their own tests, which import only `@testing-library/dom` (`specs/TESTING.md`). Nothing else lives in `src/`.
 
 **S2. A component directory contains** `index.ts`, the main module `<name>.tsx`, optional helper modules, and the unit tests `<module>.test.ts(x)` beside the modules they test. **(enforced)**
 
