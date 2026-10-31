@@ -1,5 +1,5 @@
 import { PlusGlyph } from '../../core/glyphs.js';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -366,6 +366,70 @@ describe('Combobox', () => {
     expect(input()).toHaveFocus();
     await user.keyboard('{ArrowDown}');
     expect(input()).toHaveAttribute('aria-activedescendant');
+  });
+
+  it('UIC-COMBOBOX-5.5 lets text fields and selects in the list header keep focus', async () => {
+    const user = userEvent.setup();
+    const fruitInput = () => screen.getByRole('combobox', { name: 'Fruit' });
+    render(
+      <Combobox
+        label="Fruit"
+        defaultItems={fruit}
+        listHeader={
+          <>
+            <input aria-label="Filter options" />
+            <select aria-label="Season">
+              <option>Any</option>
+              <option>Summer</option>
+            </select>
+          </>
+        }
+      />,
+    );
+    await user.click(fruitInput());
+    await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
+    const filter = screen.getByRole('textbox', { name: 'Filter options' });
+    await user.click(filter);
+    expect(filter).toHaveFocus();
+    await user.keyboard('ap');
+    expect(filter).toHaveValue('ap');
+    expect(fruitInput()).toHaveValue('');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    await user.tab();
+    expect(screen.getByRole('combobox', { name: 'Season' })).toHaveFocus();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Season' }), 'Summer');
+    expect(screen.getByRole('combobox', { name: 'Season' })).toHaveFocus();
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
+  it('UIC-COMBOBOX-5.5 gives focus back after a checkbox press and on Escape in the list header', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        label="Fruit"
+        defaultItems={fruit}
+        listHeader={
+          <>
+            <label>
+              <input type="checkbox" /> In season
+            </label>
+            <input aria-label="Filter options" />
+          </>
+        }
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
+    const checkbox = screen.getByRole('checkbox', { name: 'In season' });
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(input()).toHaveFocus();
+    await user.click(screen.getByRole('textbox', { name: 'Filter options' }));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+    expect(input()).toHaveFocus();
   });
 
   it('UIC-COMBOBOX-5.6 opens from defaultOpen and reports the open state the reader asks for', async () => {
