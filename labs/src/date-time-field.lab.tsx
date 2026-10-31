@@ -7,6 +7,7 @@ import {
   type DateTimeFieldMode,
   type DateTimeFieldProps,
 } from '../../src/components/date-time-field/date-time-field.js';
+import { Form as UiForm } from '../../src/components/form/form.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
@@ -222,6 +223,33 @@ function Form() {
   );
 }
 
+/** A range the server refused at one end: the error shows and blocks until that end changes. */
+function ServerErrors() {
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <UiForm
+      validationErrors={{ checkout: 'This end date is fully booked.' }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted('sent');
+      }}
+    >
+      <DateTimeField
+        label="Stay"
+        mode="date-range"
+        startName="checkin"
+        endName="checkout"
+        defaultValue={{ start: '2026-04-20', end: '2026-04-22' }}
+        data-lab-field="server-error"
+      />
+      <button type="submit">Book</button>
+      <p>
+        Booking: <output data-lab-output="Booking">{submitted}</output>
+      </p>
+    </UiForm>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -281,6 +309,12 @@ mountLab(
     </LabSection>
     <LabSection title="Forms" description="Named fields submit their canonical values.">
       <Form />
+    </LabSection>
+    <LabSection
+      title="Errors for a range's ends"
+      description="A form's error under a range's end name shows on the field and blocks submitting until that end changes."
+    >
+      <ServerErrors />
     </LabSection>
   </>,
 );

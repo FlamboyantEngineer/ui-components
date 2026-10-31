@@ -223,4 +223,21 @@ test.describe('Date Time Field lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-DATE-TIME-FIELD-4.4 shows a range end error from its form until that end changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const stay = field(page, 'server-error');
+    const booking = page.locator('[data-lab-output="Booking"]');
+    await expect(stay.getByText('This end date is fully booked.')).toBeVisible();
+    await page.getByRole('button', { name: 'Book' }).click();
+    await expect(booking).toHaveText('none');
+    await stay.getByRole('spinbutton', { name: /^day/ }).nth(1).focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(stay.getByText('This end date is fully booked.')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Book' }).click();
+    await expect(booking).toHaveText('sent');
+  });
 });

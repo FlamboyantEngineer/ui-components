@@ -18,6 +18,7 @@ export type {
   FieldEnterKeyHint,
   FieldInputMode,
   FieldInputProps,
+  FieldErrorSource,
   FieldIssue,
   FieldIssues,
   FieldDensity,

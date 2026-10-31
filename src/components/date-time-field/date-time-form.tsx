@@ -1,4 +1,4 @@
-import { FieldFormValue } from '../field/field.js';
+import { FieldFormValue, type FieldErrorSource } from '../field/field.js';
 import type { DateFieldValue } from './date-values.js';
 
 interface DateFormNames {
@@ -7,6 +7,19 @@ interface DateFormNames {
   /** The form names of a range's ends. */
   startName?: string | undefined;
   endName?: string | undefined;
+}
+
+/**
+ * The error sources of a range's ends: errors an enclosing form gives under `startName` or `endName`
+ * belong to the field and clear once that end changes.
+ */
+export function toEndpointErrorSources<T>(names: DateFormNames): FieldErrorSource<T>[] {
+  const end = (key: 'start' | 'end') => (value: T) =>
+    typeof value === 'object' && value !== null ? (value as Record<string, unknown>)[key] : null;
+  return [
+    { name: names.startName, select: end('start') },
+    { name: names.endName, select: end('end') },
+  ];
 }
 
 /**

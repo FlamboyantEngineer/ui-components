@@ -6,6 +6,7 @@ import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useState } from 'react';
 import type { UiStrings } from '../../core/strings.js';
 import type { FieldValidationErrors, FieldValidationMode } from './field-scope.js';
+import { isFieldValueEqual } from './field-value.js';
 
 export type FieldSeverity = 'error' | 'warning';
 
@@ -137,31 +138,65 @@ function toErrorList(entry: string | readonly string[] | undefined): FieldIssue[
 }
 
 /**
- * The external errors given for the field's name. A new errors object shows them again; they clear
- * once the value changes from the value they were given for.
+ * A further form name whose external errors belong to the field, such as one end of a range: they
+ * clear once the part of the value `select` reads changes.
+ */
+export interface FieldErrorSource<T> {
+  name: string | undefined;
+  select: (value: T) => unknown;
+}
+
+interface ShownErrors<T> {
+  errors: FieldValidationErrors | undefined;
+  value: T;
+  /** The names whose errors cleared because their part of the value changed. */
+  cleared: ReadonlySet<string>;
+}
+
+/**
+ * The external errors given for the field's name and its further names. A new errors object shows
+ * them again; each name's errors clear once its part of the value (the whole value for the field's
+ * own name) changes from the value they were given for.
  */
 export function useExternalIssues<T>(
   value: T,
   {
     errors,
     name,
+    sources = [],
     isEqual,
   }: {
     errors: FieldValidationErrors | undefined;
     name: string | undefined;
+    sources?: readonly FieldErrorSource<T>[] | undefined;
     /** Whether the value is still the one the errors were given for. */
     isEqual: (left: T, right: T) => boolean;
   },
 ): FieldIssue[] {
-  const [shown, setShown] = useState({ errors, value, isCleared: false });
+  const [shown, setShown] = useState<ShownErrors<T>>({ errors, value, cleared: new Set() });
+  const named = [{ name, hasChanged: (given: T) => !isEqual(value, given) }].concat(
+    sources.map((source) => ({
+      name: source.name,
+      hasChanged: (given: T) => !isFieldValueEqual(source.select(value), source.select(given)),
+    })),
+  );
   let current = shown;
   if (errors !== shown.errors) {
-    current = { errors, value, isCleared: false };
+    current = { errors, value, cleared: new Set() };
     setShown(current);
-  } else if (!shown.isCleared && !isEqual(value, shown.value)) {
-    current = { ...shown, isCleared: true };
-    setShown(current);
+  } else {
+    const changed = named.flatMap((entry) =>
+      entry.name && !shown.cleared.has(entry.name) && entry.hasChanged(shown.value)
+        ? [entry.name]
+        : [],
+    );
+    if (changed.length > 0) {
+      current = { ...shown, cleared: new Set([...shown.cleared, ...changed]) };
+      setShown(current);
+    }
   }
-  if (current.isCleared || !name || !errors) return [];
-  return toErrorList(errors[name]);
+  if (!errors) return [];
+  return named.flatMap((entry) =>
+    entry.name && !current.cleared.has(entry.name) ? toErrorList(errors[entry.name]) : [],
+  );
 }

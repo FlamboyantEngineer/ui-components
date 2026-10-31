@@ -13,7 +13,7 @@ import {
 } from '../field/field.js';
 import type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
 import { createDateUnavailableCheck } from './date-states.js';
-import { DateFormInputs } from './date-time-form.js';
+import { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
 import {
   DateControl,
   DateRangeControl,
@@ -155,6 +155,7 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
     initialValue: empty,
     emptyValue: empty,
     check,
+    errorSources: toEndpointErrorSources(props),
   });
   const committed = state.committedValue;
   const previous =
@@ -202,7 +203,7 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
 }
 
 export { CalendarBody } from './date-time-calendar.js';
-export { DateFormInputs } from './date-time-form.js';
+export { DateFormInputs, toEndpointErrorSources } from './date-time-form.js';
 export { formatDateValue } from './date-values.js';
 export type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
 export type { DateRangeValue, DateTimeFieldGranularity, DateTimeFieldMode } from './date-values.js';

@@ -5,7 +5,11 @@ import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import { DateFormInputs, type DateRangeValue } from '../date-time-field/date-time-field.js';
+import {
+  DateFormInputs,
+  toEndpointErrorSources,
+  type DateRangeValue,
+} from '../date-time-field/date-time-field.js';
 import {
   Field,
   useFieldControl,
@@ -228,7 +232,12 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   const check = useBoundCheck(bounds);
   const { state, field } = useFieldControl<RelativeDateFieldValue<K>, RelativeDateFieldProps<K>>(
     props,
-    { initialValue: null as RelativeDateFieldValue<K>, emptyValue: null, check },
+    {
+      initialValue: null as RelativeDateFieldValue<K>,
+      emptyValue: null,
+      check,
+      errorSources: toEndpointErrorSources(props),
+    },
   );
   const getNow = useGetNow(props.getNow);
   const now = useNow(props.getNow);

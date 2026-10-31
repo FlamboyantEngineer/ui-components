@@ -142,10 +142,10 @@ Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/co
 
 ### UIC-DATE-TIME-FIELD-4.4 - Form values
 
-`name` shall add a hidden input to the field's form holding a single value's canonical text (empty without a value), and `startName` and `endName` hidden inputs holding a range's start and end. A disabled field's inputs are disabled, so its form submits none of them. [Relative Date Field](RELATIVE-DATE-FIELD.md) submits through the same inputs, so either field of a mode gives a form the same entries.
+`name` shall add a hidden input to the field's form holding a single value's canonical text (empty without a value), and `startName` and `endName` hidden inputs holding a range's start and end. A disabled field's inputs are disabled, so its form submits none of them. [Relative Date Field](RELATIVE-DATE-FIELD.md) submits through the same inputs, so either field of a mode gives a form the same entries. Errors a [Form](FORM.md) gives in `validationErrors` under `startName` or `endName` belong to the field ([UIC-FIELD-3.9](FIELD.md#uic-field-39---external-errors)): it shows them, they block the form's submission, and each clears once its own end changes, while the other end's error stays until a new errors object or its own end changes.
 
-Implementation: `src/components/date-time-field/date-time-form.tsx`, `src/components/date-time-field/date-time-field.tsx`
-Verification: `src/components/date-time-field/date-time-form.test.tsx`
+Implementation: `src/components/date-time-field/date-time-form.tsx`, `src/components/date-time-field/date-time-field.tsx`, `src/components/field/field-validation.ts`
+Verification: `src/components/date-time-field/date-time-form.test.tsx`, `src/components/relative-date-field/relative-date-field.test.tsx`
 
 ### UIC-DATE-TIME-FIELD-4.5 - Incomplete drafts
 

@@ -270,6 +270,7 @@ export type { FieldRestoreButtonProps } from './field-restore-button.js';
 export { useFieldState } from './field-state.js';
 export type {
   FieldAsyncValidate,
+  FieldErrorSource,
   FieldIssue,
   FieldIssues,
   FieldSeverity,
