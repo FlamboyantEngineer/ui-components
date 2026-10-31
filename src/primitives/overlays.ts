@@ -4,6 +4,7 @@
 
 export {
   Dialog,
+  DialogContext,
   DialogTrigger,
   Modal,
   ModalOverlay,
@@ -28,6 +29,7 @@ export {
   UNSTABLE_ToastRegion,
   UNSTABLE_ToastStateContext,
 } from 'react-aria-components';
+export { useOverlayTriggerState, useTooltipTriggerState } from 'react-stately';
 export type {
   Placement,
   QueuedToast,
@@ -39,5 +41,7 @@ export {
   useInteractOutside,
   useModalOverlay,
   useOverlayPosition,
+  useOverlayTrigger,
+  usePreviewTrigger,
   useTooltipTrigger,
 } from 'react-aria';

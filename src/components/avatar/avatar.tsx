@@ -253,7 +253,15 @@ export function Avatar(props: AvatarProps) {
       {status?.trim() ? <span {...hooks.slot('indicator')} aria-hidden="true" /> : null}
     </AvatarRoot>
   );
-  return hasTooltip ? <Tooltip content={accessibleName}>{element}</Tooltip> : element;
+  // A pressable avatar keeps its tooltip trigger while the tooltip is off, so turning it on or off
+  // keeps the button and its focus.
+  return hasTooltip || card || onPress ? (
+    <Tooltip content={accessibleName} isDisabled={!hasTooltip}>
+      {element}
+    </Tooltip>
+  ) : (
+    element
+  );
 }
 
 export { resolveAvatarColor, DEFAULT_AVATAR_COLOR_COUNT } from './avatar-color.js';

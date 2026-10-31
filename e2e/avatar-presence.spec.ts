@@ -153,4 +153,25 @@ test.describe('Avatar presence', () => {
     await expect(card).toHaveCount(0);
     await page.clock.resume();
   });
+
+  test('UIC-AVATAR-11.9 keeps focus on the avatar when its card and tooltip arrive', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    const avatar = page
+      .locator('[data-lab-family="avatar-presence-cases"]')
+      .locator('[data-lab-avatar="late"]');
+    await page.getByRole('button', { name: 'Load the profile in a second' }).click();
+    await avatar.focus();
+    await expect(avatar).toHaveClass(/ui-user-card__trigger/);
+    await expect(avatar).toBeFocused();
+    await page.keyboard.press('Enter');
+    const card = page.getByRole('dialog', { name: 'Ines Duarte' });
+    await expect(card).toBeVisible();
+    await expect(page.locator('[data-lab-output="late-presses"]')).toHaveText('1');
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(avatar).toBeFocused();
+  });
 });

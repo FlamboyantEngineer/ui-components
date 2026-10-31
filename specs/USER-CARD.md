@@ -62,6 +62,13 @@ Verification: `src/components/user-card/user-card.test.tsx`
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
+### UIC-USER-CARD-2.5 - Without a card
+
+Without `card` (`undefined`, `null` or `false`), `UserCardTrigger` shall be a plain button that runs `onPress`, with no `ui-user-card__trigger` class, `aria-haspopup` or `aria-expanded`. A card that arrives or leaves later, or a change of `trigger`, keeps the same button element and its focus.
+
+Implementation: `src/components/user-card/user-card.tsx`
+Verification: `src/components/user-card/user-card.test.tsx`
+
 ### UIC-USER-CARD-2.2 - Opening and dismissing
 
 A click, Enter or Space on the trigger shall open its `card` in a popover in the `ui-user-card__popover` slot, placed below the trigger and flipped or shifted to stay in the viewport, on the `dropdown` overlay layer (the [Popover](POPOVER.md#uic-popover-15---layering-and-transitions)'s floating panel), with focus moved into the card. Escape and a press outside shall close it and return focus to the trigger.
