@@ -16,6 +16,7 @@ import { createJsonChecker } from './json-check.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
 import { formatJson } from './json-text.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** The field's control props the surface takes: all of them but the validation behaviour. */
 function toSurfaceControlProps(control: FieldControlProps) {
@@ -93,13 +94,15 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
     state.commit();
   };
   // A disabled editor keeps the button, disabled, so disabling never changes the editor's size.
+  const hasFormat = isJson && !state.isReadOnly;
+  // One shape whatever the language and read-only state, so the host's toolbar keeps its elements.
   const toolbar =
-    !isJson || state.isReadOnly ? (
-      suppliedToolbar
-    ) : (
+    isEmptyNode(suppliedToolbar) && !hasFormat ? null : (
       <>
         {suppliedToolbar}
-        <CodeFormat isDisabled={state.isDisabled || !isFormattable} onPress={format} />
+        {hasFormat ? (
+          <CodeFormat isDisabled={state.isDisabled || !isFormattable} onPress={format} />
+        ) : null}
       </>
     );
   return {

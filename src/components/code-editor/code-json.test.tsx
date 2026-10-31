@@ -138,6 +138,38 @@ describe('CodeEditor', () => {
     expect(screen.queryByRole('button', { name: 'Format' })).not.toBeInTheDocument();
   });
 
+  it('UIC-CODE-EDITOR-10.1 keeps the caller toolbar as the button comes and goes', async () => {
+    const user = userEvent.setup();
+    const tree = (props: { isReadOnly?: boolean; language?: 'json' | 'text' }) => (
+      <CodeEditor
+        language="json"
+        label="Settings"
+        defaultValue="[1]"
+        toolbar={
+          <>
+            <strong>Settings</strong>
+            <button type="button">Count</button>
+          </>
+        }
+        {...props}
+      />
+    );
+    const { rerender } = render(tree({}));
+    const count = screen.getByRole('button', { name: 'Count' });
+    await user.click(count);
+    expect(count).toHaveFocus();
+    rerender(tree({ isReadOnly: true }));
+    expect(screen.queryByRole('button', { name: 'Format' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Count' })).toBe(count);
+    expect(count).toHaveFocus();
+    rerender(tree({ language: 'text' }));
+    expect(screen.getByRole('button', { name: 'Count' })).toBe(count);
+    rerender(tree({}));
+    expect(screen.getByRole('button', { name: 'Format' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Count' })).toBe(count);
+    expect(count).toHaveFocus();
+  });
+
   it('UIC-CODE-EDITOR-11.1 UIC-FIELD-1.11 commits on leaving the field and restores the committed text while dirty', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
