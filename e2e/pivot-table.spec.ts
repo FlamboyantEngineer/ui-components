@@ -87,6 +87,17 @@ test.describe('Pivot Table lab', () => {
     await lab.expectAccessible('[data-lab-field="quarters"]');
   });
 
+  test('UIC-PIVOT-TABLE-1.1 UIC-PIVOT-TABLE-1.2 draws a field a record lacks as empty', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pivot-table');
+    const missing = field(page, 'missing');
+    await expect(rowHeaders(missing)).toHaveText(['Maker 1', '(empty)']);
+    await expect(missing.locator('tbody .ui-pivot-table__value')).toHaveText(['1', '0']);
+    await expect(missing).not.toContainText('native code');
+  });
+
   test('UIC-PIVOT-TABLE-2.6 keeps a sort on its region and value as columns arrive and move', async ({
     page,
     lab,

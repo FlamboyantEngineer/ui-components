@@ -248,6 +248,29 @@ describe('PivotTable', { timeout: 20_000 }, () => {
     expect(within(expanded).getAllByRole('row', { name: /Apple$/ })).toHaveLength(1);
   });
 
+  it('UIC-PIVOT-TABLE-1.1 UIC-PIVOT-TABLE-1.2 draws fields a record lacks as empty, whatever their names', () => {
+    const { container } = render(
+      <PivotTable
+        aria-label="Notes"
+        records={[{}, { constructor: 'Kept', toString: 'yes' }]}
+        fields={[
+          { id: 'constructor', label: 'Maker' },
+          { id: 'toString', label: 'Text' },
+        ]}
+        layout={{
+          rows: ['constructor'],
+          columns: [],
+          values: [{ field: 'toString', aggregate: 'count' }],
+        }}
+      />,
+    );
+    expect(container).not.toHaveTextContent('native code');
+    expect(rowTexts(container)).toEqual([
+      ['Kept', '1'],
+      ['(empty)', '0'],
+    ]);
+  });
+
   it('UIC-PIVOT-TABLE-2.6 sorts groups by a column on a header press', async () => {
     const user = userEvent.setup();
     const { container } = render(

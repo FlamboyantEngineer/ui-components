@@ -85,8 +85,13 @@ interface KeyGroup {
   records: PivotRecord[];
 }
 
+/** A record's own value in a field; a member it inherits, such as `toString`, is no field. */
+function readField(record: PivotRecord, field: string): unknown {
+  return Object.hasOwn(record, field) ? record[field] : undefined;
+}
+
 function readKey(record: PivotRecord, field: string): PivotKey {
-  const value = record[field];
+  const value = readField(record, field);
   if (value === undefined || value === null || value === '') return null;
   // JSON has no non-finite numbers: NaN would share the empty group's `null` key.
   if (typeof value === 'number' && !Number.isFinite(value)) return String(value);
@@ -130,7 +135,7 @@ function isPresent(value: unknown): boolean {
  * `average` read the finite numbers and give `null` without one; a function gets every value.
  */
 function aggregateValue(records: readonly PivotRecord[], value: PivotValue): number | null {
-  const values = records.map((record) => record[value.field]);
+  const values = records.map((record) => readField(record, value.field));
   const { aggregate = 'sum' } = value;
   if (typeof aggregate === 'function') return aggregate(values);
   if (aggregate === 'count') return values.filter(isPresent).length;
