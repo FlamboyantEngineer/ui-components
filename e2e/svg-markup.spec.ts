@@ -100,6 +100,20 @@ test.describe('SVG Markup lab', () => {
     await expect.poll(fill).toBe('rgb(219, 39, 119)');
   });
 
+  test('UIC-SVG-MARKUP-1.1 UIC-SVG-MARKUP-2.1 keeps the space between text spans', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('svg-markup');
+    const drawing = page.getByRole('img', { name: 'Orchard map label' });
+    await expect(drawing.locator('text')).toHaveText('Orchard map');
+    const gap = await drawing.locator('text').evaluate((text: SVGTextElement) => {
+      return text.getStartPositionOfChar(8).x - text.getEndPositionOfChar(6).x;
+    });
+    // `map` starts a space's width after `Orchard` ends.
+    expect(gap).toBeGreaterThan(1);
+  });
+
   test('UIC-SVG-MARKUP-2.3 exposes only labelled drawings', async ({ page, lab }) => {
     await lab.open('svg-markup');
     const alone = page.locator('[data-lab-cell="naming=labelled placement=standalone"]');

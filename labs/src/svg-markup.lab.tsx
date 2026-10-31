@@ -21,6 +21,11 @@ const hostReferenceMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><set href=
  */
 const timedMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><rect id="7" width="10" height="24" fill="#64748b"/><rect id="ñu" x="14" width="10" height="24" fill="#2563eb"><set attributeName="fill" to="#db2777" begin="7.click; ñu.click+0s; 17.click; ñandú.click" dur="indefinite"/></rect></svg>`;
 
+/** A label of two spans separated by a space, as drawing tools export text. */
+const labelMarkup = `<svg ${svgNamespace} viewBox="0 0 48 24">
+  <text x="2" y="15" font-size="9" fill="currentColor"><tspan>Orchard</tspan> <tspan>map</tspan></text>
+</svg>`;
+
 /** Two drawings that both name their gradient `tone`, with different colours. */
 const toneMarkup = (color: string) =>
   `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="url(#tone)"/></svg>`;
@@ -88,6 +93,12 @@ mountLab(
           );
         }}
       />
+    </LabSection>
+    <LabSection
+      title="Text"
+      description="Whitespace inside text stays, so words in separate spans keep their space; indentation between other elements is dropped."
+    >
+      <SvgMarkup markup={labelMarkup} label="Orchard map label" />
     </LabSection>
     <LabSection
       title="Isolated references"

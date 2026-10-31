@@ -6,10 +6,10 @@
 
 ### UIC-SVG-MARKUP-1.1 - Element tree
 
-`parseSvgMarkup` shall return the markup's root `<svg>` element as a frozen tree of elements (tag and attribute names in their SVG spelling, attributes with entities decoded) and text. Freezing a deeply nested tree shall not depend on JavaScript's call-stack depth. Comments, processing instructions, doctypes and whitespace-only text are dropped, CDATA sections become text, an unmatched closing tag closes the nearest open element of that name, and markup without a root `<svg>` element throws.
+`parseSvgMarkup` shall return the markup's root `<svg>` element as a frozen tree of elements (tag and attribute names in their SVG spelling, attributes with entities decoded) and text. Freezing a deeply nested tree shall not depend on JavaScript's call-stack depth. Comments, processing instructions and doctypes are dropped, and so is whitespace-only text outside a `<text>` element, which only indents the markup; inside one (its `tspan`, `textPath` and `a` children included) whitespace is kept as written, so words in separate spans keep their space and `xml:space="preserve"` text keeps its spacing. CDATA sections become text, an unmatched closing tag closes the nearest open element of that name, and markup without a root `<svg>` element throws.
 
 Implementation: `src/components/svg-markup/parse-svg-markup.ts`, `src/utils/markup.ts`
-Verification: `src/components/svg-markup/parse-svg-markup.test.ts`
+Verification: `src/components/svg-markup/parse-svg-markup.test.ts`, `src/components/svg-markup/svg-text-whitespace.test.tsx`, `e2e/svg-markup.spec.ts`
 
 ### UIC-SVG-MARKUP-1.2 - Unsafe content
 
@@ -41,7 +41,7 @@ Verification: `src/components/svg-markup/svg-markup.test.tsx`, `src/components/s
 `SvgMarkup` shall render the parsed tree as React elements, converting attribute names to React props (`class` to `className`, hyphenated names such as `stroke-width` to camel case, `xlink:href` to `xlinkHref`, `data-*` and `aria-*` unchanged) and `style` text to style objects, so the rendered markup matches the source. Large sibling lists, at the root or inside a group, shall not be limited by the runtime's function argument count. It never sets `innerHTML`.
 
 Implementation: `src/components/svg-markup/svg-markup.tsx`
-Verification: `src/components/svg-markup/svg-markup.test.tsx`, `e2e/svg-markup.spec.ts`
+Verification: `src/components/svg-markup/svg-markup.test.tsx`, `src/components/svg-markup/svg-text-whitespace.test.tsx`, `e2e/svg-markup.spec.ts`
 
 ### UIC-SVG-MARKUP-2.2 - Root attributes
 
