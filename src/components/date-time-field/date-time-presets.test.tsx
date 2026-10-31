@@ -137,6 +137,33 @@ describe('DateTimeField availability and presets', () => {
     });
   });
 
+  it('UIC-DATE-TIME-FIELD-3.2 keeps presets with equal labels apart and a preset focused when relabelled', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const field = (label: string) => (
+      <DateTimeField
+        label="Visit"
+        onCommit={onCommit}
+        presets={[
+          { label, value: '2026-04-17' },
+          { label: 'Soon', value: '2026-04-20' },
+          { label: 'Soon', value: '2026-04-21' },
+        ]}
+      />
+    );
+    const { rerender } = renderInLocale(field('Friday'));
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    const soon = screen.getAllByRole('button', { name: 'Soon' });
+    expect(soon).toHaveLength(2);
+    const friday = screen.getByRole('button', { name: 'Friday' });
+    friday.focus();
+    rerender(<UiProvider locale="en-US">{field('Vendredi')}</UiProvider>);
+    expect(screen.getByRole('button', { name: 'Vendredi' })).toBe(friday);
+    expect(friday).toHaveFocus();
+    await user.click(soon[1] as HTMLElement);
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-21');
+  });
+
   it('UIC-DATE-TIME-FIELD-3.2 disables a preset on an unavailable date and has none for times', async () => {
     const user = userEvent.setup();
     const { unmount } = renderInLocale(

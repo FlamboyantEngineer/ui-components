@@ -41,6 +41,34 @@ describe('ColorField picker', () => {
     expect(onCommit).toHaveBeenCalledWith('#336699');
   });
 
+  it('UIC-COLOR-FIELD-4.1 offers a repeated swatch as separate pickable options', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    render(
+      <ColorField
+        label="Accent"
+        defaultValue="#336699"
+        swatches={['#ffffff', '#cc3300', '#ffffff']}
+        onChange={onChange}
+      />,
+    );
+    await user.click(trigger('Accent'));
+    const swatches = within(await screen.findByRole('dialog')).getByRole('listbox', {
+      name: 'Color swatches',
+    });
+    const options = within(swatches).getAllByRole('option');
+    expect(options).toHaveLength(3);
+    await user.click(options[2] as HTMLElement);
+    expect(onChange).toHaveBeenLastCalledWith('#ffffff');
+    expect(options[2]).toHaveAttribute('aria-selected', 'true');
+    await user.click(options[1] as HTMLElement);
+    await user.click(options[0] as HTMLElement);
+    expect(options[0]).toHaveAttribute('aria-selected', 'true');
+    expect(errors).not.toHaveBeenCalled();
+    errors.mockRestore();
+  });
+
   it('UIC-COLOR-FIELD-4.1 renders every declared part across its modes', async () => {
     const user = userEvent.setup();
     vi.stubGlobal(

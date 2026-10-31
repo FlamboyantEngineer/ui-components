@@ -79,8 +79,9 @@ export function ColorFieldPanel({
               <ColorChannelInputs format={format} />
               {swatches.length > 0 ? (
                 <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
-                  {swatches.map((swatch) => (
-                    <ColorSwatchPickerItem key={swatch} color={swatch} />
+                  {swatches.map((swatch, index) => (
+                    // Swatches may repeat a colour: each place is its own option.
+                    <ColorSwatchPickerItem key={`${index} ${swatch}`} color={swatch} />
                   ))}
                 </ColorSwatchPicker>
               ) : null}

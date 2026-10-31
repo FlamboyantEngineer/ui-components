@@ -161,9 +161,10 @@ function DatePresets({ settings, onPick }: Pick<CalendarPopoverProps, 'settings'
   if (settings.presets.length === 0) return null;
   return (
     <div {...hooks.slot('presets')}>
-      {settings.presets.map((preset) => (
+      {settings.presets.map((preset, index) => (
         <Button
-          key={preset.label}
+          // Labels may repeat or change with the locale: a preset is its place and its value.
+          key={`${index} ${JSON.stringify(preset.value)}`}
           variant="ghost"
           size="sm"
           className={hooks.slotClass('preset')}

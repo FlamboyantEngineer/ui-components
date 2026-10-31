@@ -229,6 +229,23 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Preset committed')).toHaveText('#e69500');
   });
 
+  test('UIC-COLOR-FIELD-4.1 picks either place of a colour listed twice', async ({ page, lab }) => {
+    await lab.open('color-field');
+    const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
+    await trigger.click();
+    const swatches = page
+      .getByRole('dialog', { name: 'Label colour' })
+      .getByRole('listbox', { name: 'Color swatches' });
+    const options = swatches.getByRole('option');
+    await expect(options).toHaveCount(7);
+    await options.nth(6).click();
+    await expect(trigger).toHaveAccessibleName('Label colour #CC3300');
+    await expect(options.nth(6)).toHaveAttribute('aria-selected', 'true');
+    await options.nth(2).click();
+    await options.nth(0).click();
+    await expect(options.nth(0)).toHaveAttribute('aria-selected', 'true');
+  });
+
   test('UIC-COLOR-FIELD-4.2 discards a screen sample once its picker closes', async ({
     page,
     lab,

@@ -130,10 +130,11 @@ function Availability() {
         presets={[
           { label: 'Start of April', value: '2026-04-01' },
           { label: 'Mid April', value: '2026-04-15' },
+          { label: 'Mid April', value: '2026-04-16' },
           { label: 'A Saturday', value: '2026-04-18' },
           { label: 'Last year', value: '2025-04-15' },
         ]}
-        description="Weekends are unavailable; presets the field refuses are disabled."
+        description="Weekends are unavailable; presets the field refuses are disabled. Two presets share the label Mid April and each sets its own day."
         onCommit={setCommitted}
         data-lab-field="availability"
       />

@@ -20,7 +20,8 @@ const formats = [
   'hsb',
   'hsba',
 ] as const satisfies readonly ColorFieldFormat[];
-const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d'];
+// The first colour comes back at the end: each place is its own swatch.
+const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d', '#cc3300'];
 
 function Sample({
   state,
