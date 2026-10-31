@@ -5,7 +5,6 @@ import { ComboBoxStateContext } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
@@ -13,6 +12,7 @@ import { toIconProps } from '../icon/icon.js';
 import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import type { ComboboxOption } from './combobox-options.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 export interface ComboboxChipsProps {
   /** The combobox's label text, which names the group of chips. */
@@ -23,8 +23,6 @@ export interface ComboboxChipsProps {
   /** Chips offer a remove button and answer Delete and Backspace. */
   isEditable: boolean;
 }
-
-const hooks = createHooks('combobox', ['chips', 'chip-icon']);
 
 /**
  * The chosen options, in value order. An option the suggestions no longer list (the caller filtered

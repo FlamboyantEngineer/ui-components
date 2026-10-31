@@ -10,7 +10,6 @@ import {
   type RefObject,
 } from 'react';
 import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
@@ -22,6 +21,7 @@ import { ModalHeader } from './modal-header.js';
 import { claimPrimaryShortcut } from './modal-shortcut.js';
 import { useModalActions, type ModalActions } from './use-modal-actions.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { modalHooks as hooks } from './modal-hooks.js';
 
 type ModalDialogProps = Omit<
   ModalProps,
@@ -58,8 +58,6 @@ interface EscapeOptions {
   shouldCloseOnEscape: ModalProps['shouldCloseOnEscape'];
   close: () => void;
 }
-
-const hooks = createHooks('modal', ['dialog', 'body']);
 
 function ModalBody({
   children,

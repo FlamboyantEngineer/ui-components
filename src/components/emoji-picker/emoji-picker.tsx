@@ -4,7 +4,6 @@ import { useRef, type ReactNode } from 'react';
 import { Dialog, DialogTrigger } from '../../primitives/index.js';
 import { PopoverPanel } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
@@ -19,6 +18,7 @@ import {
   type SkinToneState,
 } from './emoji-picker-state.js';
 import { EmojiPickerSkinTones } from './skin-tone-picker.js';
+import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 export interface EmojiPickerProps
   extends
@@ -46,8 +46,6 @@ export interface EmojiPickerTriggerProps extends Omit<EmojiPickerProps, 'childre
   /** The button that opens the picker, such as a `Button` or `Button`. */
   children: ReactNode;
 }
-
-const hooks = createHooks('emoji-picker', ['popover', 'footer']);
 
 /** The search field, the body and a footer with the preview and the skin tones. */
 function EmojiPickerLayout({ hideSkinTones }: Pick<EmojiPickerProps, 'hideSkinTones'>) {

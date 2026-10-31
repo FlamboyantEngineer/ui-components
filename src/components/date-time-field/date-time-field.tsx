@@ -3,7 +3,6 @@
 import { useLocale } from '../../primitives/index.js';
 import type { Tone } from '../../core/props.js';
 import type { OpenStateProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
@@ -30,6 +29,7 @@ import {
   type DateTimeFieldGranularity,
   type DateTimeFieldMode,
 } from './date-values.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 /**
  * An ISO 8601 text for a single mode (`YYYY-MM-DD`, `HH:mm`, `YYYY-MM-DDTHH:mm` or a zoned date and
@@ -85,8 +85,6 @@ export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
 }
 
 type AnyDateTimeFieldProps = DateTimeFieldProps<DateTimeFieldMode>;
-
-const hooks = createHooks('date-time-field');
 
 const controls = {
   date: DateControl,

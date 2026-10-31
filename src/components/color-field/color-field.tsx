@@ -13,7 +13,8 @@ import {
   type FieldState,
 } from '../field/field.js';
 import { ColorEntry } from './color-field-entry.js';
-import { ColorFieldPanel, colorFieldHooks as hooks } from './color-field-panel.js';
+import { ColorFieldPanel } from './color-field-panel.js';
+import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import {
   formatColor,
   hasAlpha,

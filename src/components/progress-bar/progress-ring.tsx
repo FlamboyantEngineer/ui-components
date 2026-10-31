@@ -1,6 +1,4 @@
-import { createHooks } from '../../core/hooks.js';
-
-const hooks = createHooks('progress-bar', ['ring', 'track', 'fill']);
+import { progressBarHooks as hooks } from './progress-bar-hooks.js';
 
 /** The ring's circumference, normalised through `pathLength` so offsets read as percentages. */
 const ringLength = 100;

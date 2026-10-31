@@ -18,7 +18,6 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
-import { createHooks } from '../../core/hooks.js';
 import type { ControlSize, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -38,6 +37,7 @@ import {
   type ComboboxOption,
 } from './combobox-options.js';
 import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 /** Draws an option's content in the list, from the option and its row's state. */
 export type ComboboxOptionRenderer = (option: ComboboxOption, state: SelectableState) => ReactNode;
@@ -76,21 +76,6 @@ interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
   /** Whether the list is open, as the combobox's open state says. */
   isOpen: boolean;
 }
-
-const hooks = createHooks('combobox', [
-  'popover',
-  'listbox',
-  'section',
-  'section-header',
-  'option',
-  'option-icon',
-  'option-label',
-  'option-description',
-  'create',
-  'load-more',
-  'empty',
-  'list-header',
-]);
 
 function OptionRow({
   option,

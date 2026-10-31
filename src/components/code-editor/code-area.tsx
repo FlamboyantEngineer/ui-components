@@ -5,7 +5,8 @@ import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
 import { toCompletionInputAttributes } from '../completion-list/completion-list.js';
 import type { FieldTextInputProps } from '../field/field.js';
-import { CodeHighlight, codeEditorHooks as hooks } from './code-layers.js';
+import { CodeHighlight } from './code-layers.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
 
 /**

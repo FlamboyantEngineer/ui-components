@@ -1,0 +1,33 @@
+import { createHooks } from '../../core/hooks.js';
+
+/** The hook classes every module of the date-time-field family writes (specs/DATE-TIME-FIELD.md). */
+export const dateTimeFieldHooks = createHooks('date-time-field', [
+  'picker',
+  'group',
+  'previous',
+  'input',
+  'segment',
+  'separator',
+  'button',
+  'calendar',
+  'calendar-select',
+  'calendar-select-button',
+  'calendar-select-popover',
+  'calendar-select-list',
+  'calendar-select-option',
+  'popover',
+  'dialog',
+  'calendar-header',
+  'calendar-heading',
+  'calendar-nav',
+  'calendar-months',
+  'calendar-grid',
+  'calendar-head',
+  'calendar-weekday',
+  'calendar-body',
+  'calendar-cell',
+  'presets',
+  'preset',
+  'actions',
+  'action',
+]);

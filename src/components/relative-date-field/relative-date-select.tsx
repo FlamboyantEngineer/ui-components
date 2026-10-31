@@ -13,12 +13,12 @@ import {
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { RelativeDateText } from './relative-date.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
+import { relativeDateFieldHooks as hooks } from './relative-date-field-hooks.js';
 
 /** One preset of the list, with whether the field's bounds refuse it. */
 interface RelativePresetItem {
@@ -40,16 +40,6 @@ interface PresetSelectProps {
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
 }
-
-const hooks = createHooks('relative-date-field', [
-  'select',
-  'trigger',
-  'value',
-  'chevron',
-  'popover',
-  'listbox',
-  'option',
-]);
 
 function RelativeTrigger({
   control,

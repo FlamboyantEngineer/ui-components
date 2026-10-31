@@ -6,11 +6,11 @@ import {
   CheckboxGroupStateContext,
   RadioGroup as AriaRadioGroup,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
 import { ChoiceContext, type ChoiceGroupProps } from './choice-group.js';
+import { choiceGroupHooks as hooks } from './choice-group-hooks.js';
 
 interface ChoiceBoxProps {
   control: FieldControlProps;
@@ -18,7 +18,6 @@ interface ChoiceBoxProps {
   config: Pick<ChoiceGroupProps, 'name' | 'orientation' | 'selectAllLabel'>;
   children: ReactNode;
 }
-const hooks = createHooks('choice-group', ['box', 'select-all']);
 
 function useChoiceControl(publish: SlotRef, value: string | null | string[]) {
   const box = useRef<HTMLDivElement>(null);

@@ -8,13 +8,13 @@ import {
   SelectValueContext,
   useSlottedContext,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface SelectTriggerProps {
   ref: Ref<HTMLButtonElement>;
@@ -31,17 +31,6 @@ interface SelectTriggerProps {
   /** Handles keys before the select does, to open the filter from a printable key. */
   onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void;
 }
-
-const hooks = createHooks('select-field', [
-  'frame',
-  'trigger',
-  'previous',
-  'value',
-  'value-icon',
-  'value-label',
-  'chevron',
-  'clear',
-]);
 
 function OptionIcon({ option, slot }: { option: ChosenSelectOption; slot: 'value-icon' }) {
   return option.icon ? (

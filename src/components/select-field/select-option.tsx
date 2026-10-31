@@ -5,11 +5,11 @@ import type { ReactNode } from 'react';
 import { Collection, Header, ListBoxSection } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { createHooks } from '../../core/hooks.js';
 import type { Key, SelectableState } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { PickerOptionRow, isPickerSection } from '../field/field.js';
 import { type SelectFieldItem, type SelectFieldOption } from './select-options.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 /** Draws an option's content in the list instead of its icon, label and description. */
 export type SelectFieldOptionRenderer = (
@@ -24,16 +24,6 @@ export interface SelectOptionsDisplay {
   blockedKeys: ReadonlySet<Key>;
   renderOption?: SelectFieldOptionRenderer | undefined;
 }
-
-const hooks = createHooks('select-field', [
-  'section',
-  'section-header',
-  'option',
-  'option-check',
-  'option-icon',
-  'option-label',
-  'option-description',
-]);
 
 function OptionRow({
   id,

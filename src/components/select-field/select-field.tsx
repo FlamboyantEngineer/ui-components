@@ -4,7 +4,6 @@ import type { Ref } from 'react';
 import type { TreeItemData } from '../tree/tree.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 import type { OpenStateProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import { SelectControl } from './select-control.js';
@@ -12,6 +11,7 @@ import type { SelectFieldOptionRenderer } from './select-option.js';
 import { flattenPickerItems } from '../field/field.js';
 import { type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
 
@@ -56,8 +56,6 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   /** Receives the trigger button, the field's focusable control, while it is on the page. */
   triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
-
-const hooks = createHooks('select-field');
 
 /**
  * A field that chooses one value or several from a list (React Aria `Select`), with the field

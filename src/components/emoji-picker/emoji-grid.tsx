@@ -9,7 +9,6 @@ import {
   Virtualizer,
   type Key,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {
   applySkinTone,
@@ -18,6 +17,7 @@ import {
   type EmojiEntry,
   type SkinTone,
 } from './emoji-catalog.js';
+import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 interface EmojiGridProps extends BaseProps {
   /** The visible label that names the grid. */
@@ -36,7 +36,6 @@ interface EmojiGridProps extends BaseProps {
 /** The grid props a picker shares between every grid it draws. */
 export type EmojiGridOptions = Omit<EmojiGridProps, 'label' | 'entries' | keyof BaseProps>;
 
-const hooks = createHooks('emoji-picker', ['section', 'label', 'grid', 'cell', 'image']);
 // Grid keys stay inside the picker, even at the grid's edges where React Aria lets them bubble,
 // so they never reach shortcuts of the surface that owns it.
 const gridKeys = new Set([

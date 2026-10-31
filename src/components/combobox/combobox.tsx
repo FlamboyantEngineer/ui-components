@@ -3,7 +3,6 @@
 import { useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -18,6 +17,7 @@ import {
   type ComboboxModelOptions,
 } from './combobox-state.js';
 import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-suggestions.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 export type ComboboxSize = ControlSize;
 
@@ -111,8 +111,6 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   /** Focuses the input when the combobox mounts. */
   autoFocus?: boolean | undefined;
 }
-
-const hooks = createHooks('combobox', ['label', 'description', 'error']);
 
 /** What the chips of a multiple combobox need: the text naming their group, and the options. */
 

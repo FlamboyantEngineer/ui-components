@@ -3,10 +3,11 @@
 import { cloneElement, isValidElement, type ReactNode, type RefObject } from 'react';
 import { OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from '../../primitives/index.js';
 import type { OpenStateProps } from '../../core/events.js';
-import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { TOOLTIP_DELAY, TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
+import { tooltipHooks as hooks } from './tooltip-hooks.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -62,8 +63,6 @@ interface TooltipPanelProps extends Pick<TooltipProps, 'placement'>, TooltipPane
   /** For a panel driven through `TooltipTriggerStateContext`: the element it is positioned against. */
   triggerRef?: RefObject<Element | null> | undefined;
 }
-
-const hooks = createHooks('tooltip', ['arrow', 'content']);
 
 /** The tooltip panel with its hooks; inside a `TooltipTrigger` or standalone with `triggerRef`. */
 export function TooltipPanel({

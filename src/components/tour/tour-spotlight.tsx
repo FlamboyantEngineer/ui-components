@@ -1,10 +1,10 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 import { Portal } from '../portal/portal.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { tourHooks as hooks } from './tour-hooks.js';
 
 interface TourSpotlightProps {
   /** The element the step points at; without one the spotlight is an empty point at the centre. */
@@ -25,8 +25,6 @@ interface SpotlightBox {
 interface SpotlightMeasurement extends SpotlightBox {
   hasTarget: boolean;
 }
-
-const hooks = createHooks('tour', ['spotlight']);
 
 /** The target's box, or a point at the centre of the spotlight's window without a target. */
 function measure(target: Element | null, spotlight: Element): SpotlightBox {

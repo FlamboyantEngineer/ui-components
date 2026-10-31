@@ -1,13 +1,13 @@
 'use client';
 
 import { Button as AriaButton } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { KeyedValue } from '../../utils/stable-keys.js';
 import { getDisplayName, splitAvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import type { AvatarGroupPerson } from './avatar-group.js';
+import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
 
 interface AvatarGroupOverflowMenuProps extends Pick<AvatarProps, 'colorCount'> {
   /** The `+N` count. */
@@ -19,8 +19,6 @@ interface AvatarGroupOverflowMenuProps extends Pick<AvatarProps, 'colorCount'> {
   /** Reports the chosen person's id. */
   onAction?: ((id: string) => void) | undefined;
 }
-
-const hooks = createHooks('avatar-group', ['overflow', 'menu']);
 
 /** The `+N` count as a button that opens a menu of the people it hides. */
 export function AvatarGroupOverflowMenu({

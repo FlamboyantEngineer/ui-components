@@ -3,11 +3,11 @@
 import { ChevronDownGlyph, CloseGlyph } from '../../core/glyphs.js';
 import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import type { FieldControlProps } from '../field/field.js';
 import { Button } from '../button/button.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface TreeSelectTriggerProps {
   control: FieldControlProps;
@@ -27,8 +27,6 @@ interface TreeSelectTriggerProps {
   /** The popover the trigger opens. */
   popover: ReactNode;
 }
-
-const hooks = createHooks('select-field', ['frame', 'trigger', 'value', 'chevron', 'clear']);
 
 /**
  * The frame of a tree select field: the trigger, named by the field's label and its value, with a

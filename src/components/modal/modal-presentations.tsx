@@ -10,13 +10,14 @@ import {
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
-import { createHooks, dataAttributes, type HookProps } from '../../core/hooks.js';
+import { dataAttributes, type HookProps } from '../../core/hooks.js';
 import type { Placement } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { Portal, useLayerZIndex } from '../portal/portal.js';
 import { ModalShownContext, retainedStyle } from './modal-retained.js';
 import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
+import { modalHooks as hooks } from './modal-hooks.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */
 interface ModalOpenState {
@@ -63,8 +64,6 @@ interface FloatingModalProps extends ModalPresentationProps {
 interface AnchoredModalProps extends ModalPresentationProps, ModalDismissal {
   placement: Placement;
 }
-
-const hooks = createHooks('modal', ['panel']);
 
 /** How the dialog may be dismissed: `isDismissDisabled` refuses outside presses and Escape. */
 export function resolveDismissal({

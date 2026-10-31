@@ -18,7 +18,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **N7. Shared vocabularies come from `src/core/props.ts`.** Sizes are `Size` values (`xs`, `sm`, `md`, `lg`, `xl`), tones are `Tone` values (`neutral`, `info`, `success`, `warning`, `danger`), orientation is `Orientation`, density is `Density` (`tight`, `compact`, `default`, `comfortable`, with `default` as the baseline). Control heights are `ControlSize`; use it rather than a component-named alias. A component that offers another subset derives it: `type StepsDensity = Extract<Density, 'default' | 'compact'>`. Never invent a synonym (`error` for `danger`, `medium` for `md`, `regular` for `default`).
 
-**N8. Hooks follow the contract.** Root class `ui-<name>`, slot class `ui-<name>__<slot>`, data attributes and values in kebab-case, all built with `createHooks` (`specs/HOOK-CONTRACT.md`).
+**N8. Hooks follow the contract.** Root class `ui-<name>`, slot class `ui-<name>__<slot>`, data attributes and values in kebab-case, all built with `createHooks` (`specs/HOOK-CONTRACT.md`). A component calls `createHooks` once: a component whose modules share hooks declares them in one `<name>-hooks.ts` module that the others import. **(one call per name enforced)**
 
 ## Structure
 

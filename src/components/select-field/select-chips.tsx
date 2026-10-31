@@ -5,7 +5,6 @@ import { Tag, TagGroup, TagList } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
@@ -13,6 +12,7 @@ import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface SelectChipsProps {
   /** The field's label, which names the group of chips. */
@@ -30,16 +30,6 @@ interface SelectChipsProps {
   onRemove: (keys: Set<Key>) => void;
   onRestore: (key: Key) => void;
 }
-
-const hooks = createHooks('select-field', [
-  'chips',
-  'chip-list',
-  'chip',
-  'chip-icon',
-  'chip-label',
-  'chip-remove',
-  'removed',
-]);
 
 function ChipIcon({ option }: { option: ChosenSelectOption }) {
   return option.icon ? (

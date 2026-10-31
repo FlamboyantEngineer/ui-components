@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, type CSSProperties } from 'react';
 import { Select as AriaSelect } from '../../primitives/index.js';
-import { createHooks, measuredProperty } from '../../core/hooks.js';
+import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
@@ -21,6 +21,7 @@ import {
 import { flattenPickerItems, toAriaControlProps, usePickerEmptyContent } from '../field/field.js';
 import { toSelectKeys, type SelectFieldOption } from './select-options.js';
 import { SelectTrigger } from './select-trigger.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 export type { SelectConfig, SelectKeysValue } from './select-model.js';
 
@@ -34,8 +35,6 @@ interface SelectControlProps extends SelectConfig {
 
 /** Lists with more options than this filter by default. */
 const FILTER_THRESHOLD = 10;
-
-const hooks = createHooks('select-field', ['select']);
 
 /** The open list's props: its items, how they are drawn, the filter and the search's state. */
 function useListProps(

@@ -2,23 +2,12 @@
 
 import { CloseGlyph } from '../../core/glyphs.js';
 import { Fragment, useId, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Button } from '../button/button.js';
 import { RecordLabelText, type RecordLabelProps } from './record-label.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
-
-const hooks = createHooks('record-label', [
-  'label',
-  'preview',
-  'header',
-  'version',
-  'type',
-  'state',
-  'name',
-  'remove',
-]);
+import { recordLabelHooks as hooks } from './record-label-hooks.js';
 
 /**
  * The label, opening the preview from the link of an available record. The trigger stays while the

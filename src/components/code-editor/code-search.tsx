@@ -1,7 +1,7 @@
 'use client';
 
 import { FindBar } from '../find-bar/find-bar.js';
-import { codeEditorHooks as hooks } from './code-layers.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import type { CodeSearchModel } from './use-code-search.js';
 
 interface CodeSearchPanelProps {

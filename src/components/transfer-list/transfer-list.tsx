@@ -9,12 +9,12 @@ import {
   ChevronRightGlyph,
 } from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { TransferPane, type TransferListItem, type TransferListSide } from './transfer-pane.js';
 import { useTransferList, type TransferSide } from './use-transfer-list.js';
+import { transferListHooks as hooks } from './transfer-list-hooks.js';
 
 export type { TransferListItem, TransferListSide } from './transfer-pane.js';
 
@@ -46,8 +46,6 @@ interface MoveButtonsProps {
   toLabel: string;
   onTransfer: (from: TransferListSide, keys: ReadonlySet<Key>) => void;
 }
-
-const hooks = createHooks('transfer-list', ['actions', 'move', 'reorder']);
 
 /** The two buttons that move one side's selected items, or all it shows, to the other side. */
 function MoveButtons({ from, side, toLabel, onTransfer }: MoveButtonsProps) {

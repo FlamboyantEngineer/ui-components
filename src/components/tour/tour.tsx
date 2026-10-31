@@ -2,7 +2,6 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 import { booleanCodec } from '../../utils/json-codec.js';
@@ -11,6 +10,7 @@ import { TourPanel } from './tour-panel.js';
 import { TourSpotlight } from './tour-spotlight.js';
 import { useTourTarget, type TourTarget } from './use-tour-target.js';
 import { clamp } from '../../utils/clamp.js';
+import { tourHooks as hooks } from './tour-hooks.js';
 
 export type { TourTarget } from './use-tour-target.js';
 
@@ -44,8 +44,6 @@ export interface TourProps extends BaseProps, OpenStateProps {
   /** Called with the shown step's index when the reader skips the tour, with Skip or Escape. */
   onSkip?: ((step: number) => void) | undefined;
 }
-
-const hooks = createHooks('tour', ['arrow']);
 
 /** The open state: the caller's when controlled, else our own, closed once the tour is completed. */
 function useTourOpenState({

@@ -1,7 +1,8 @@
 import { Fragment, memo, type ReactNode, type Ref } from 'react';
-import { createHooks, measuredProperty } from '../../core/hooks.js';
+import { measuredProperty } from '../../core/hooks.js';
 import type { FieldSeverity } from '../field/field.js';
 import type { CodeSegment } from './code-segments.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 
 /** A run of source text. `type` names its kind (`keyword`, `string`, …) for the stylesheet. */
 export interface CodeToken {
@@ -48,34 +49,6 @@ interface CodeDiagnosticsProps {
   id: string;
   diagnostics: readonly CodeDiagnostic[];
 }
-
-export const codeEditorHooks = createHooks('code-editor', [
-  'toolbar',
-  'surface',
-  'gutter',
-  'line',
-  'line-number',
-  'line-text',
-  'code',
-  'highlight',
-  'token',
-  'mark',
-  'match',
-  'bracket',
-  'caret',
-  'input',
-  'diagnostics',
-  'diagnostic',
-  'announcement',
-  'tooltip',
-  'popover',
-  'search',
-  'format',
-  'scrollbars',
-  'scroll-marker',
-]);
-
-const hooks = codeEditorHooks;
 
 function renderSegment(segment: CodeSegment | null, index: number, caretRef: Ref<HTMLSpanElement>) {
   if (segment === null) return <span key={index} {...hooks.slot('caret')} ref={caretRef} />;

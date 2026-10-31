@@ -1,12 +1,13 @@
 'use client';
 
 import type { ReactNode, Ref } from 'react';
-import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button, type ButtonVariant } from '../button/button.js';
 import type { ModalAction, ModalCancelAction, ModalProps, ModalTone } from './modal.js';
 import type { ModalActionSlot, ModalActions } from './use-modal-actions.js';
+import { modalHooks as hooks } from './modal-hooks.js';
 
 interface ModalFooterProps extends Pick<
   ModalProps,
@@ -35,16 +36,6 @@ interface FooterMessage {
   tone: ModalTone;
   content: ReactNode;
 }
-
-const hooks = createHooks('modal', [
-  'footer',
-  'footer-content',
-  'message',
-  'actions',
-  'cancel',
-  'secondary',
-  'primary',
-]);
 
 /** The one message the footer shows: `error`, else an action's failure, as an alert; else `status`. */
 function resolveFooterMessage(error: ReactNode, failure: string | null, status: ReactNode) {

@@ -13,7 +13,6 @@ import {
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
@@ -24,6 +23,7 @@ import {
 } from './carousel-parts.js';
 import { useCarouselAutoplay } from './use-carousel-autoplay.js';
 import { clamp } from '../../utils/clamp.js';
+import { carouselHooks as hooks } from './carousel-hooks.js';
 
 export type { CarouselPagination } from './carousel-parts.js';
 
@@ -47,8 +47,6 @@ export interface CarouselProps extends BaseProps, AriaLabellingProps, RefProps<H
   /** The time each slide shows with `autoplay`, in milliseconds. Defaults to 5000. */
   interval?: number | undefined;
 }
-
-const hooks = createHooks('carousel', ['viewport', 'slide']);
 
 const defaultInterval = 5000;
 

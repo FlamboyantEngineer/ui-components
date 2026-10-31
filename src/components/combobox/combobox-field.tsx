@@ -16,7 +16,6 @@ import {
   Input,
 } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import type { ControlSize } from '../../core/props.js';
@@ -26,6 +25,7 @@ import {
   type ComboboxCompletion,
   type ComboboxOption,
 } from './combobox-options.js';
+import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 interface ComboboxFieldProps {
   variant: 'default' | 'search';
@@ -52,15 +52,6 @@ interface Selection {
   text: string;
   start: number;
 }
-
-const hooks = createHooks('combobox', [
-  'field',
-  'search-icon',
-  'input',
-  'spinner',
-  'clear',
-  'button',
-]);
 
 /**
  * Empties the input and, for a single combobox, the selection, then returns focus to the input. A

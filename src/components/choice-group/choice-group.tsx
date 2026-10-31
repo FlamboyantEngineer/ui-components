@@ -1,10 +1,10 @@
 'use client';
 
 import { createContext, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import type { ControlSize, Orientation } from '../../core/props.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import { ChoiceBox } from './choice-box.js';
+import { choiceGroupHooks as hooks } from './choice-group-hooks.js';
 
 export type ChoiceGroupSelectionMode = 'single' | 'multiple';
 export type ChoiceGroupValue<M extends ChoiceGroupSelectionMode = 'single'> = M extends 'multiple'
@@ -41,7 +41,6 @@ export const ChoiceContext = createContext<ChoiceSettings>({
   isInvalid: false,
   isRequired: false,
 });
-const hooks = createHooks('choice-group');
 
 /** A field that chooses one value with radios or several with checkboxes. Each pick commits. */
 export function ChoiceGroup<M extends ChoiceGroupSelectionMode = 'single'>({

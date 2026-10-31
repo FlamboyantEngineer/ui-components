@@ -3,13 +3,14 @@
 import type { ReactNode } from 'react';
 import { DialogTrigger } from '../../primitives/index.js';
 import type { KeyboardEventProps, OpenStateProps, OverlayDismissProps } from '../../core/events.js';
-import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement, Size, Tone } from '../../core/props.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
 import { ModalDialog } from './modal-dialog.js';
 import type { ModalFocusTarget } from './modal-focus.js';
 import { ModalPresentation, resolveDismissal, useModalOpenState } from './modal-presentations.js';
 import { useRetention } from './modal-retained.js';
+import { modalHooks as hooks } from './modal-hooks.js';
 
 /** Emphasis of the dialog: `danger` marks a destructive decision; the others its kind of news. */
 export type ModalTone = Tone;
@@ -123,8 +124,6 @@ export interface ModalProps
    */
   keepMounted?: boolean | undefined;
 }
-
-const hooks = createHooks('modal');
 
 /**
  * A blocking dialog over the page: title, body and a footer with Cancel, secondary and primary
