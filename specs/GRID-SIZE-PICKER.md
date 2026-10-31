@@ -27,7 +27,7 @@ Verification: `src/components/grid-size-picker/grid-size.test.ts`, `src/componen
 
 ### UIC-GRID-SIZE-PICKER-1.4 - Choosing
 
-A click on a cell shall call `onSelect` with its size as `{ rows, columns }`; Enter or Space calls it with the size of the focused cell, which is the cell a screen reader announced even when the pointer previews another one.
+A press on a cell shall call `onSelect` with its size as `{ rows, columns }`; Enter or Space calls it with the size of the focused cell, which is the cell a screen reader announced even when the pointer previews another one. Cells take React Aria's press and hover interactions: a pointer press focuses the pressed cell, a touch that moves off the cell before it lifts or is cancelled chooses nothing, a screen reader's virtual click chooses the cell, and a touch does not preview by hovering.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`

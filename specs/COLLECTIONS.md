@@ -31,3 +31,10 @@ The geometry a virtualized layout needs shall be plain props with documented def
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`
+
+### UIC-COLLECTIONS-1.5 - Collections outside the building blocks
+
+A collection component shall render through the building block's collection (list box, grid list, table, tree) unless that building block cannot render what the component needs, and a component that renders its own collection roles shall say so in its spec, with the reason and the keyboard contract it keeps in place of the building block's (focus, typeahead, selection and actions). [Relation Matrix](RELATION-MATRIX.md#uic-relation-matrix-42---the-librarys-own-grid) is such a component: it windows columns, which React Aria's table cannot.
+
+Implementation: `src/components/relation-matrix/relation-matrix.tsx`
+Verification: `src/components/relation-matrix/relation-matrix.test.tsx`

@@ -103,6 +103,21 @@ describe('GridSizePicker', () => {
     expect(onSelect).toHaveBeenCalledTimes(3);
   });
 
+  it('UIC-GRID-SIZE-PICKER-1.4 focuses the pressed cell and chooses nothing when the press leaves it', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(<GridSizePicker onSelect={onSelect} />);
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: cell(2, 3) },
+      { target: document.body },
+      { keys: '[/MouseLeft]' },
+    ]);
+    expect(cell(2, 3)).toHaveFocus();
+    expect(onSelect).not.toHaveBeenCalled();
+    await user.pointer({ keys: '[TouchA]', target: cell(3, 3) });
+    expect(onSelect).toHaveBeenLastCalledWith({ rows: 3, columns: 3 });
+  });
+
   it('UIC-GRID-SIZE-PICKER-1.4 chooses the focused cell with Enter while the pointer previews another', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();

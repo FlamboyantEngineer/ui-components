@@ -1,9 +1,10 @@
 'use client';
 
-import { useId, type ReactNode, type RefObject } from 'react';
-import { Popover } from '../../primitives/index.js';
+import { useId, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import { Popover, useHover, usePress } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
@@ -85,19 +86,27 @@ function CompletionOption({
   documentationId: string | undefined;
 }) {
   const isActive = item.id === props.activeKey;
+  const { pressProps } = usePress({
+    // A press inserts the option without taking focus from the editor.
+    preventFocusOnPress: true,
+    onPress: () => props.onAction(item.id),
+  });
+  const { hoverProps } = useHover({
+    onHoverStart: () => {
+      if (!isActive) props.onActiveKeyChange?.(item.id);
+    },
+  });
   return (
     <div
+      {...mergeProps(pressProps, hoverProps, {
+        // Nor its caret: a press does not move the document's selection into the option.
+        onMouseDown: (event: MouseEvent) => event.preventDefault(),
+      })}
       {...hooks.slot('option', { focused: isActive, kind: item.kind })}
       id={getCompletionOptionId(listId, item.id)}
       role="option"
       aria-selected={isActive}
       aria-describedby={isActive ? documentationId : undefined}
-      // A press inserts the option without taking focus from the editor.
-      onPointerDown={(event) => event.preventDefault()}
-      onPointerMove={() => {
-        if (!isActive) props.onActiveKeyChange?.(item.id);
-      }}
-      onClick={() => props.onAction(item.id)}
     >
       {props.renderItem ? (
         props.renderItem(item, { isActive })

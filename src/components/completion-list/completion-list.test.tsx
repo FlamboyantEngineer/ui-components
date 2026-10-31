@@ -127,6 +127,27 @@ describe('CompletionList', () => {
     expect(input).toHaveFocus();
   });
 
+  it('UIC-COMPLETION-LIST-1.3 acts only on a press released over the option, and a touch does not hover', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(<Harness onAction={onAction} />);
+    const input = screen.getByRole('textbox');
+    input.focus();
+    const jon = await screen.findByRole('option', { name: 'Jon Berg' });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: jon },
+      { target: document.body },
+      { keys: '[/MouseLeft]' },
+    ]);
+    expect(onAction).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    const team = screen.getByRole('option', { name: 'Team A' });
+    await user.pointer({ keys: '[TouchA]', target: team });
+    expect(onAction).toHaveBeenCalledWith('team a');
+    expect(team).toHaveAttribute('aria-selected', 'false');
+    expect(input).toHaveFocus();
+  });
+
   it('UIC-COMPLETION-LIST-1.4 shows the active documentation, an empty state and a footer', async () => {
     const { rerender } = render(<Harness activeKey="jon" footer="3 matches" />);
     const jon = await screen.findByRole('option', { name: 'Jon Berg' });

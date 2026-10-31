@@ -17,3 +17,4 @@ export {
 } from 'react-aria-components';
 export type { ButtonProps, KeyboardEvent, LinkProps, PressEvent } from 'react-aria-components';
 export { useHover } from 'react-aria/useHover';
+export { usePress } from 'react-aria/usePress';
