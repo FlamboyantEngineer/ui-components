@@ -139,6 +139,31 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     expect(order()).toEqual(['Wash', 'Pinned', 'Dry', 'Fold']);
   });
 
+  it('UIC-TABLE-5.3 leaves Alt+Arrow to a text control inside a row', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    render(
+      <Table
+        aria-label="Tasks"
+        rows={tasks}
+        columns={[
+          { id: 'title', header: 'Title' },
+          {
+            id: 'note',
+            header: 'Note',
+            renderCell: (task) => <input aria-label={`Note for ${task.title}`} />,
+          },
+        ]}
+        reorder={{ onMove }}
+      />,
+    );
+    const note = screen.getByRole('textbox', { name: 'Note for Dry' });
+    await user.click(note);
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}{Alt>}{ArrowUp}{/Alt}');
+    expect(onMove).not.toHaveBeenCalled();
+    expect(note).toHaveFocus();
+  });
+
   it('UIC-TABLE-5.5 drags a row by its handle only', async () => {
     const user = userEvent.setup();
     render(<Tasks onMove={() => {}} reorder={{ dragTrigger: 'handle' }} />);

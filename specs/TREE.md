@@ -98,7 +98,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-3.6 - Owner keys
 
-`onItemKeyDown` shall receive each keydown in a row, with the row's item, before the tree's own keyboard handling. When it returns `true` the tree prevents the key's default and does nothing more with it. Keys typed in an editable element inside a row, such as a rename field, reach neither the owner hook nor reordering.
+`onItemKeyDown` shall receive each keydown in a row, with the row's item, before the tree's own keyboard handling. When it returns `true` the tree prevents the key's default and does nothing more with it. Keys typed in an editable element inside a row (a field such as a rename field, editable content of any `contenteditable` value but `false`, or an element with role `textbox` or `combobox`) reach neither the owner hook nor reordering.
 
 Implementation: `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree.test.tsx`

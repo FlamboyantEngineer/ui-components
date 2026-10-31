@@ -22,6 +22,7 @@ import {
 import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
 import { tableHooks } from './table-hooks.js';
 import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 
 /** Opt-in row reordering: which rows move and what to do with a move. */
@@ -65,8 +66,12 @@ interface IndexedReorderSnapshot<T> extends ReorderSnapshot<T> {
 
 const moveKeys: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 };
 
-/** The key of the body or footer row of this table that holds `target`, or null. */
+/**
+ * The key of the body or footer row of this table that holds `target`, or null. A text control in
+ * a row, such as the cell editor, keeps Alt+Arrow for its caret.
+ */
 function findRowKey(target: EventTarget, root: Element): string | null {
+  if (isEditableTarget(target)) return null;
   const row = isElement(target) ? target.closest('[role="row"]') : null;
   if (!row || row.closest(`.${tableHooks.className}`) !== root) return null;
   return row.closest('thead') ? null : row.getAttribute('data-key');

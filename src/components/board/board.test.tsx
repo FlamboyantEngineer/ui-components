@@ -442,6 +442,30 @@ describe('Board', () => {
     expect(onMove).toHaveBeenCalledTimes(2);
   });
 
+  it('UIC-BOARD-2.3 leaves Alt+Arrow to a plaintext-only editable in a card', () => {
+    const onMove = vi.fn<(move: BoardMove) => void>();
+    render(
+      <TaskBoard
+        onMove={onMove}
+        renderCard={(task) => (
+          <span contentEditable="plaintext-only" aria-label={`${task.title} notes`} />
+        )}
+      />,
+    );
+    for (const key of ['ArrowDown', 'ArrowRight']) {
+      const event = new KeyboardEvent('keydown', {
+        key,
+        altKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      act(() => {
+        screen.getByLabelText('Make soup notes').dispatchEvent(event);
+      });
+    }
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
   it('UIC-BOARD-2.3 mirrors keyboard moves right to left', async () => {
     const onMove = vi.fn<(move: BoardMove) => void>();
     render(

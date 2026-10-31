@@ -243,6 +243,28 @@ describe('NavigationRail', () => {
     expect(screen.getByRole('link', { name: 'South field' })).toHaveFocus();
   });
 
+  it('UIC-NAVIGATION-RAIL-1.5 leaves the caret keys to a field in a section', async () => {
+    const user = userEvent.setup();
+    render(
+      <NavigationRail aria-label="Main navigation">
+        <NavigationRailSection title="Pinned">
+          <li>
+            <input aria-label="Filter" />
+          </li>
+          <NavigationRailItem label="Harvest plan" href="/plan" />
+        </NavigationRailSection>
+      </NavigationRail>,
+    );
+    const filter = screen.getByRole<HTMLInputElement>('textbox', { name: 'Filter' });
+    await user.click(filter);
+    await user.keyboard('plan{Home}');
+    expect(filter).toHaveFocus();
+    expect(filter.selectionStart).toBe(0);
+    await user.keyboard('{End}{ArrowDown}');
+    expect(filter).toHaveFocus();
+    expect(filter.selectionStart).toBe(4);
+  });
+
   it('UIC-NAVIGATION-RAIL-2.1 names each list by its section title', async () => {
     const user = userEvent.setup();
     render(
