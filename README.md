@@ -11,7 +11,7 @@ The library is preparing its initial `0.1.0` release. APIs and styling hooks are
 
 ## Install
 
-Each release is a `v<version>` tag in this repository, on a commit that holds the built package, so installing it needs no build or source checkout. The repository is private, so git needs a token that can read it.
+Each release is a `v<version>` tag in this repository, on a commit that holds the built package (`dist/` and the reference stylesheet) and no `prepare` script, so installing it installs no development dependencies and builds nothing. The repository is private, so git needs a token that can read it.
 
 1. Create a token that can read `FlamboyantEngineer/ui-components`:
    - **Locally:** a fine-grained personal access token with read access to the repository's contents (or a classic token with the `repo` scope).
@@ -30,7 +30,7 @@ Each release is a `v<version>` tag in this repository, on a commit that holds th
 
    The lockfile records the tag's commit. The tarball is also attached to the tag's GitHub Release.
 
-To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points and their declarations. Runnable labs are a separate download: extract `ui-components-labs-<version>.tgz` and serve its `labs/` directory with a static HTTP server. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
+To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points, their declarations and the reference stylesheet. Runnable labs are a separate download: extract `ui-components-labs-<version>.tgz` and serve its `labs/` directory with a static HTTP server. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
 
 The package ships the neutral reference stylesheet at `labs/build/reference.css` (also `@flamboyantengineer/ui-components/reference.css`): one self-contained file a host can copy into its assets or import, built when npm prepares the package.
 

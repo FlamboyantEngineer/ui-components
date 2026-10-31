@@ -216,9 +216,18 @@ function stopServer() {
 }
 
 try {
+  // Built once here and packed as built, so packing runs no package script.
+  execFileSync('npm', ['run', 'build:package'], { cwd: root, stdio: 'inherit' });
   const output = execFileSync(
     'npm',
-    ['pack', '--json', '--foreground-scripts=false', '--pack-destination', workDir],
+    [
+      'pack',
+      '--json',
+      '--ignore-scripts',
+      '--foreground-scripts=false',
+      '--pack-destination',
+      workDir,
+    ],
     { cwd: root, encoding: 'utf8' },
   );
   const [pack] = JSON.parse(output);
