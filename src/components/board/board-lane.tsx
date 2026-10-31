@@ -4,6 +4,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
+import { hasIcon, Icon, toIconProps } from '../icon/icon.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BoardLane } from './board.js';
 import { BoardCell, type BoardCellOptions } from './board-cell.js';
@@ -73,6 +74,9 @@ export function BoardLaneGroup<T extends { id: Key }>({
           label={isCollapsed ? strings.expandPanel(lane.title) : strings.collapsePanel(lane.title)}
           className={hooks.slotClass('lane-toggle')}
         />
+        {hasIcon(lane.icon) ? (
+          <Icon {...toIconProps(lane.icon)} className={hooks.slotClass('lane-icon')} />
+        ) : null}
         <span id={titleId} {...hooks.slot('lane-title')}>
           {lane.title}
         </span>

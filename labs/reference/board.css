@@ -244,6 +244,13 @@
 }
 
 .ui-board__column-toggle,
-.ui-board__lane-toggle {
+.ui-board__lane-toggle,
+.ui-board__column-icon,
+.ui-board__lane-icon {
   flex: none;
+}
+
+.ui-board__column-icon,
+.ui-board__lane-icon {
+  color: var(--ref-muted);
 }
