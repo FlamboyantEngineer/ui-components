@@ -20,7 +20,7 @@ Verification: `src/components/file-field/file-field.test.tsx`
 
 ### UIC-FILE-FIELD-1.3 - Checks before upload
 
-`acceptedFileTypes`, `maxSize` and `maxFiles` shall check the chosen and dropped files as `FileUpload` does, `maxFiles` counting the held files and the uploads together; the upload reports the refusals, and `onSelect` receives the accepted files.
+`acceptedFileTypes`, `maxSize` and `maxFiles` shall check the chosen and dropped files as `FileUpload` does, `maxFiles` counting the held files and the uploads together, and the files handed on to `onSelect` until `value` or `uploads` changes, however often the field renders for its own reasons; the upload reports the refusals, and `onSelect` receives the accepted files.
 
 Implementation: `src/components/file-field/file-field.tsx`
 Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`

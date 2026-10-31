@@ -526,6 +526,32 @@ describe('FileUpload', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('1 file is over the file limit.');
   });
 
+  it('UIC-FILE-UPLOAD-2.6 counts handed-on files through its own renders until the owner gives a new list', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    const props = { label: 'Attach', allowsMultiple: true, maxFiles: 1, onSelect, onReject };
+    const view = render(<FileUpload {...props} files={[]} />);
+    const one = file('one.txt', 'text/plain');
+    const two = file('two.txt', 'text/plain');
+    await user.upload(chooser(view.container), one);
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith([one]);
+    // The owner has not listed one.txt yet; its own status render keeps the count.
+    fireEvent.dragEnter(requireDefined(root(view.container)), filesTransfer([two]));
+    await user.upload(chooser(view.container), two);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onReject).toHaveBeenLastCalledWith([{ file: two, reason: 'count' }]);
+
+    // Listing it: the list counts it once, not twice.
+    view.rerender(<FileUpload {...props} files={[{ id: 'one', name: 'one.txt' }]} />);
+    await user.upload(chooser(view.container), two);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    // Removing or refusing it: a new empty list frees the place.
+    view.rerender(<FileUpload {...props} files={[]} />);
+    await user.upload(chooser(view.container), two);
+    expect(onSelect).toHaveBeenLastCalledWith([two]);
+  });
+
   it('UIC-FILE-UPLOAD-2.7 refuses as unchecked a file whose check throws, behind an offer still waiting', async () => {
     const user = userEvent.setup({ applyAccept: false });
     const onSelect = vi.fn();

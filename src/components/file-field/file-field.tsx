@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -10,6 +10,7 @@ import {
   useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
+  type FieldState,
 } from '../field/field.js';
 import {
   FileUpload,
@@ -74,6 +75,23 @@ function toUploadItem(item: FileFieldItem, added: ReadonlySet<Key>): FileUploadI
   return { id, name, size, type, previewUrl, change: added.has(id) ? 'added' : undefined };
 }
 
+const noUploads: readonly FileUploadItem[] = [];
+
+/**
+ * The upload's list: the held files, those added since the commit marked, then the uploads. It is
+ * the same list until one of them changes, so the upload keeps counting the files it handed on
+ * while the field renders for its own reasons.
+ */
+function useUploadList(
+  { value, committedValue, isDirty }: FieldState<FileFieldItem[]>,
+  uploads: readonly FileUploadItem[],
+): FileUploadItem[] {
+  return useMemo(() => {
+    const added = isDirty ? compareFileItems(value, committedValue).added : new Set<Key>();
+    return [...value.map((item) => toUploadItem(item, added)), ...uploads];
+  }, [value, committedValue, isDirty, uploads]);
+}
+
 /**
  * A field whose value is a list of stored files: the library's `FileUpload` chooses and checks new
  * files and hands them to the owner, who uploads them, reports the uploads in progress and adds the
@@ -84,7 +102,7 @@ function toUploadItem(item: FileFieldItem, added: ReadonlySet<Key>): FileUploadI
  */
 export function FileField({
   onSelect,
-  uploads = [],
+  uploads = noUploads,
   onUploadRemove,
   allowsMultiple = false,
   variant,
@@ -102,6 +120,7 @@ export function FileField({
   );
   const { value, committedValue } = state;
   const changes = state.isDirty ? compareFileItems(value, committedValue) : null;
+  const files = useUploadList(state, uploads);
   const held = new Map(value.map((item) => [item.id, item]));
   const isFull = maxFiles !== undefined && value.length + uploads.length >= maxFiles;
   const apply = (next: FileFieldItem[]) => {
@@ -126,10 +145,7 @@ export function FileField({
             acceptedFileTypes={acceptedFileTypes}
             maxSize={maxSize}
             maxFiles={maxFiles}
-            files={[
-              ...value.map((item) => toUploadItem(item, changes?.added ?? new Set())),
-              ...uploads,
-            ]}
+            files={files}
             onSelect={onSelect}
             onRemove={remove}
             {...toUploadControlProps(control)}

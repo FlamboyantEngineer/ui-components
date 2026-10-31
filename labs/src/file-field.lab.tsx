@@ -204,6 +204,32 @@ function MediaFiles() {
   );
 }
 
+/**
+ * An owner that takes 2 s to arrange its upload rows: a second file chosen meanwhile is refused,
+ * since the first one already fills the field.
+ */
+function SlowOwner() {
+  const storage = useSimulatedStorage([]);
+  const [received, setReceived] = useState(0);
+  return (
+    <div style={{ width: 420 }}>
+      <FileField
+        label="Cover letter"
+        value={storage.value}
+        onChange={storage.setValue}
+        uploads={storage.uploads}
+        onSelect={(files) => {
+          setReceived((count) => count + files.length);
+          window.setTimeout(() => storage.select(files), 2000);
+        }}
+        onUploadRemove={storage.removeUpload}
+        data-lab-field="slow"
+      />
+      <LabOutput name="slow-received">{received}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -233,6 +259,12 @@ mountLab(
         maxSize={1024 * 1024}
         isRequired
       />
+    </LabSection>
+    <LabSection
+      title="Slow owner"
+      description="The owner takes 2 s to start the upload. Choose a file, then another before its row appears: the second is refused as over the limit."
+    >
+      <SlowOwner />
     </LabSection>
     <LabSection
       title="Previews and actions"

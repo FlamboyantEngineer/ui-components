@@ -87,6 +87,33 @@ test.describe('File Field lab', () => {
     await expect(target.locator('.ui-field__message')).toHaveText('');
   });
 
+  test('UIC-FILE-FIELD-1.3 UIC-FILE-UPLOAD-2.6 counts a file handed on before the owner lists it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-field');
+    const target = field(page, 'slow');
+    const chooser = target.locator('input[type="file"]');
+    await chooser.setInputFiles({
+      name: 'One.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('one'),
+    });
+    await expect(page.locator('[data-lab-output="slow-received"]')).toHaveText('1');
+    await chooser.setInputFiles({
+      name: 'Two.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('two'),
+    });
+    await expect(target.locator('.ui-file-upload__rejections')).toHaveText(
+      '1 file is over the file limit.',
+    );
+    await expect(page.locator('[data-lab-output="slow-received"]')).toHaveText('1');
+    await expect(page.locator('[data-lab-output="slow-value"]')).toHaveCount(0);
+    await expect(target.locator('.ui-file-upload__file')).toHaveCount(1);
+    await expect(target.locator('.ui-file-upload__file')).toContainText('One.txt');
+  });
+
   test('UIC-FILE-FIELD-2.2 draws owner previews and actions', async ({ page, lab }) => {
     await lab.open('file-field');
     const target = field(page, 'media');
