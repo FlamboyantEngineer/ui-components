@@ -51,8 +51,9 @@ export default function Page() {
   );
 }
 `;
+// A glyph from /core travels to a client component as a client reference.
 const SUBPATH_PAGE = `import { Button } from '${manifest.name}/button';
-import { UiProvider } from '${manifest.name}/core';
+import { PlusGlyph, UiProvider } from '${manifest.name}/core';
 import { Disclosure } from '${manifest.name}/disclosure';
 import { splitTextDiff } from '${manifest.name}/inline-text-diff';
 
@@ -63,6 +64,7 @@ export default function Page() {
       <main>
         <p id="diff">{\`Added \${diff.added}\`}</p>
         <Button>Save</Button>
+        <Button startIcon={PlusGlyph}>Add row</Button>
         <Disclosure title="Opening hours">
           <p>Nine to five.</p>
         </Disclosure>
@@ -265,7 +267,7 @@ try {
     '1 sanitized node',
     'class="ui-badge',
   ]);
-  await checkPage(browser, origin, '/subpaths', ['Added new']);
+  await checkPage(browser, origin, '/subpaths', ['Added new', 'Add row', 'class="ui-glyph']);
   await checkMarkup(origin, '/helpers', ['Streamed box 1 true 200 40-50']);
   stopServer();
 

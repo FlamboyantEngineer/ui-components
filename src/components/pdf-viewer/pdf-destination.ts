@@ -1,6 +1,7 @@
 import type { PdfPage, PdfRef, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfPoint, PdfRect } from './page-geometry.js';
-import { toPageRotation, type LoadedPdf } from './use-pdf-document.js';
+import { toPageRotation } from './page-geometry.js';
+import type { LoadedPdf } from './use-pdf-document.js';
 
 /** Where the reader is sent: a page, and the spot on it in points when there is one. */
 export interface PdfTarget {

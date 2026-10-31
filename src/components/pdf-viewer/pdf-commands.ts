@@ -2,7 +2,7 @@
 
 import { downloadBlob } from '../../utils/download.js';
 import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
-import { renderPageBitmap } from './use-page-render.js';
+import { renderPageBitmap } from './page-bitmap.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
 // Printed pages are drawn at 150 dots per inch: sharp on paper without huge bitmaps.

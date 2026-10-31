@@ -7,7 +7,8 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { createValueStore, useStoreValue, type ValueStore } from '../../utils/value-store.js';
+import { useStoreValue } from '../../utils/use-store-value.js';
+import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
   filterCharacterCategories,

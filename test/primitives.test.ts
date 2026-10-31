@@ -14,6 +14,7 @@ const ARIA_SOURCE =
 const PRIMITIVES_IMPORT =
   /(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s+'[./]*(?:src\/)?primitives\/index\.js'/g;
 const AREA_EXPORT = /export\s+(type\s+)?\{([^}]*)\}\s*from\s+'([^']+)';/g;
+const AREA_FUNCTION = /^export function (\w+)/gm;
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -46,6 +47,9 @@ function areaExports() {
         expect(exported.has(name), `${name} is exported by two areas`).toBe(false);
         exported.set(name, { area, isType: Boolean(isType) });
       }
+    }
+    for (const [, name = ''] of text.matchAll(AREA_FUNCTION)) {
+      exported.set(name, { area, isType: false });
     }
   }
   return { areas, exported };
@@ -87,13 +91,19 @@ describe('primitives boundary', { timeout: 30_000 }, () => {
     expect(await isRejected('src/components/probe/probe.tsx', primitivesProbe)).toBe(false);
   });
 
-  it('UIC-PRIMITIVES-1.2 groups the inventory by area and re-exports every area', () => {
-    const { areas } = areaExports();
+  it('UIC-PRIMITIVES-1.2 groups the inventory by area and re-exports every area by name', () => {
+    const { areas, exported } = areaExports();
     const index = readFileSync(join(primitivesDir, 'index.ts'), 'utf8');
-    const listed = [...index.matchAll(/export \* from '\.\/([a-z0-9-]+)\.js';/g)].map(
-      ([, area]) => `${area}.ts`,
-    );
-    expect(listed.sort()).toEqual(areas.sort());
+    expect(index).not.toMatch(/^export \*/m);
+    const listed = [...index.matchAll(AREA_EXPORT)].map(([, , list = '', from = '']) => ({
+      area: from.replace(/^\.\/|\.js$/g, ''),
+      names: names(list),
+    }));
+    expect(listed.map(({ area }) => `${area}.ts`).sort()).toEqual(areas.sort());
+    for (const { area, names: reexported } of listed) {
+      const own = [...exported].filter(([, entry]) => entry.area === `${area}.ts`);
+      expect(reexported.sort(), area).toEqual(own.map(([name]) => name).sort());
+    }
   });
 
   it('UIC-PRIMITIVES-1.2 re-exports exactly the building blocks the library uses', () => {

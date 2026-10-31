@@ -49,11 +49,6 @@ const closedSnapshot: MenuControllerSnapshot = Object.freeze({
   items: undefined,
 });
 
-/** Whether an anchor is an element rather than a point. */
-export function isElementAnchor(anchor: MenuAnchor): anchor is Element {
-  return typeof (anchor as Element).getBoundingClientRect === 'function';
-}
-
 /** Creates a menu controller. Each controller drives one rendered menu. */
 export function createMenuController(): MenuController {
   let snapshot = closedSnapshot;

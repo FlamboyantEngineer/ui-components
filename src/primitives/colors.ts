@@ -1,6 +1,7 @@
 'use client';
 
-// Colour fields, pickers, sliders, swatches and colour values.
+// Colour fields, pickers, sliders and swatches. The colour values they edit are server-safe and
+// live in color-values.ts.
 
 export {
   ColorArea,
@@ -11,6 +12,4 @@ export {
   ColorSwatch,
   ColorSwatchPickerContext,
   ColorThumb,
-  parseColor,
 } from 'react-aria-components';
-export type { Color } from 'react-aria-components';

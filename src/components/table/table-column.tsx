@@ -14,6 +14,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { getColumnBounds, type TableColumnSize } from './column-sizing.js';
 import { tableHooks as hooks } from './table-hooks.js';
+import { getColumnText } from './table-columns.js';
 import { useColumnDrag } from './use-column-drag.js';
 import type { TableColumnDrag } from './use-column-reorder.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
@@ -43,13 +44,6 @@ const sortGlyphs: Readonly<Record<SortDirection | 'none', GlyphComponent>> = {
   descending: SortDescendingGlyph,
   none: SortNoneGlyph,
 };
-
-/** The accessible name of a column. */
-export function getColumnText<T>(column: TableColumn<T>): string {
-  if (column.textValue) return column.textValue;
-  const { header } = column;
-  return typeof header === 'string' || typeof header === 'number' ? String(header) : column.id;
-}
 
 /**
  * One data column header: its content (the label, which drags a reorderable column, the sort glyph

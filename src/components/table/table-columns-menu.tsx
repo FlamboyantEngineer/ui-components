@@ -3,7 +3,7 @@
 import type { Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { getColumnText } from './table-column.js';
+import { getColumnText } from './table-columns.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn } from './table-rows.js';
 

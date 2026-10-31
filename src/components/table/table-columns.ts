@@ -141,3 +141,10 @@ export function groupColumnCells(
   }
   return cells;
 }
+
+/** The accessible name of a column. */
+export function getColumnText<T>(column: TableColumn<T>): string {
+  if (column.textValue) return column.textValue;
+  const { header } = column;
+  return typeof header === 'string' || typeof header === 'number' ? String(header) : column.id;
+}

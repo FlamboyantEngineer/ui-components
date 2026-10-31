@@ -38,7 +38,6 @@ export {
   TreeItem,
   TreeItemContent,
   TreeLoadMoreItem,
-  useAsyncList,
   Virtualizer,
   WaterfallLayout,
 } from 'react-aria-components';

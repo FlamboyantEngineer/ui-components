@@ -7,8 +7,10 @@
 // A module needs the client when it uses a React API the server build of React leaves out (state,
 // effects, refs, context), calls a hook, imports React DOM or a client package (React Aria), or
 // writes a function into JSX (an event handler, a render function). A module that renders a client
-// component needs the client too, since the props it passes may hold functions. A client module
-// must not use `export *`, which a framework cannot resolve across the boundary.
+// component needs the client too, since the props it passes may hold functions, and so does a
+// module that calls or reads a client module's export: on the server that export is a client
+// reference, which renders as a tag or travels as a component but holds no value. No module
+// re-exports a client module with `export *`, which a framework cannot resolve across the boundary.
 //
 // An entry point (`index.ts`) exports a value through a client module only when the value is client
 // code: a component, a hook or a helper in CLIENT_HELPERS, which needs the browser. Every other
@@ -172,11 +174,38 @@ function resolveModule(from, specifier) {
   return [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find(existsSync) ?? null;
 }
 
-/** The module that defines an export, following re-exports through entry points. */
+/** Whether a module declares an export of that name, or re-exports it from a package. */
+function declares(source, name) {
+  return source.statements.some((statement) => {
+    if (ts.isExportDeclaration(statement)) {
+      const clause = statement.exportClause;
+      const isLocal = !statement.moduleSpecifier || !statement.moduleSpecifier.text.startsWith('.');
+      return (
+        isLocal &&
+        clause !== undefined &&
+        ts.isNamedExports(clause) &&
+        clause.elements.some((element) => element.name.text === name)
+      );
+    }
+    const isExported = ts.canHaveModifiers(statement)
+      ? ts.getModifiers(statement)?.some((item) => item.kind === ts.SyntaxKind.ExportKeyword)
+      : false;
+    if (!isExported) return false;
+    if (ts.isVariableStatement(statement)) {
+      return statement.declarationList.declarations.some(
+        (declaration) => ts.isIdentifier(declaration.name) && declaration.name.text === name,
+      );
+    }
+    return statement.name?.text === name;
+  });
+}
+
+/** The module that defines an export, following re-exports through entry points, or null. */
 function definingModule(path, name, seen = new Set()) {
   const module = modules.get(path);
   if (!module || seen.has(path)) return null;
   seen.add(path);
+  if (declares(module.source, name)) return path;
   for (const statement of module.source.statements) {
     if (!ts.isExportDeclaration(statement) || !statement.moduleSpecifier) continue;
     const target = resolveModule(path, statement.moduleSpecifier.text);
@@ -190,11 +219,11 @@ function definingModule(path, name, seen = new Set()) {
       if (element) return definingModule(target, (element.propertyName ?? element.name).text);
     }
   }
-  return path;
+  return null;
 }
 
-/** The modules that define the components a module renders, by their JSX tag names. */
-function renderedModules(module) {
+/** The modules a module's value imports come from, by local name, with the exports they name. */
+function importedValues(module) {
   const imports = new Map();
   for (const statement of module.source.statements) {
     if (!ts.isImportDeclaration(statement) || statement.importClause?.isTypeOnly) continue;
@@ -202,16 +231,51 @@ function renderedModules(module) {
     const bindings = statement.importClause?.namedBindings;
     if (!target || !bindings || !ts.isNamedImports(bindings)) continue;
     for (const element of bindings.elements) {
-      imports.set(element.name.text, { target, name: (element.propertyName ?? element.name).text });
+      if (element.isTypeOnly) continue;
+      const name = (element.propertyName ?? element.name).text;
+      imports.set(element.name.text, { name, origin: definingModule(target, name) });
     }
   }
+  return imports;
+}
+
+const isTagName = (node) =>
+  (ts.isJsxOpeningElement(node.parent) ||
+    ts.isJsxSelfClosingElement(node.parent) ||
+    ts.isJsxClosingElement(node.parent)) &&
+  node.parent.tagName === node;
+
+/**
+ * The imported exports a module uses other than as a JSX tag or a component reference: called,
+ * read or passed on. On the server, an export of a client module is a client reference, which
+ * renders as a tag or travels as a component prop but holds no value to call or read.
+ */
+function valueUses(module, imports) {
+  const used = new Map();
+  const visit = (node) => {
+    if (ts.isImportDeclaration(node) || ts.isTypeNode(node)) return;
+    if (ts.isIdentifier(node) && imports.has(node.text) && !isTagName(node)) {
+      const binding = imports.get(node.text);
+      const isMemberName = ts.isPropertyAccessExpression(node.parent) && node.parent.name === node;
+      const isCalled = ts.isCallExpression(node.parent) && node.parent.expression === node;
+      const isReference = COMPONENT.test(binding.name) && !isCalled;
+      if (!isMemberName && !isReference) used.set(node.text, binding);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(module.source);
+  return [...used.values()];
+}
+
+/** The modules that define the components a module renders, by their JSX tag names. */
+function renderedModules(module, imports) {
   const rendered = new Set();
   const visit = (node) => {
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
       let tag = node.tagName;
       while (ts.isPropertyAccessExpression(tag)) tag = tag.expression;
       const binding = ts.isIdentifier(tag) ? imports.get(tag.text) : undefined;
-      if (binding) rendered.add(definingModule(binding.target, binding.name));
+      if (binding) rendered.add(binding.origin);
     }
     ts.forEachChild(node, visit);
   };
@@ -219,16 +283,23 @@ function renderedModules(module) {
   return [...rendered].filter(Boolean);
 }
 
-for (const module of modules.values()) module.rendered = renderedModules(module);
+for (const module of modules.values()) {
+  const imports = importedValues(module);
+  module.rendered = renderedModules(module, imports);
+  module.used = valueUses(module, imports).filter((use) => use.origin);
+}
 for (let changed = true; changed; ) {
   changed = false;
   for (const module of modules.values()) {
     if (module.reason) continue;
     const client = module.rendered.find((path) => modules.get(path)?.reason);
+    const use = module.used.find(({ origin }) => modules.get(origin)?.reason);
     if (client) {
       module.reason = `renders a client component from ${relative(root, client)}`;
-      changed = true;
+    } else if (use) {
+      module.reason = `uses ${use.name} from client ${relative(root, use.origin)} as a value`;
     }
+    changed ||= Boolean(module.reason);
   }
 }
 
@@ -236,8 +307,14 @@ const problems = [];
 for (const { path, text, source, reason } of modules.values()) {
   const marked = hasDirective(source);
   const name = relative(root, path);
-  if (reason && source.statements.some((s) => ts.isExportDeclaration(s) && !s.exportClause)) {
+  const starred = source.statements
+    .filter((s) => ts.isExportDeclaration(s) && !s.exportClause && s.moduleSpecifier)
+    .map((s) => resolveModule(path, s.moduleSpecifier.text));
+  if (reason && starred.length > 0) {
     problems.push(`${name}: a client module re-exports with \`export *\``);
+  }
+  for (const target of starred.filter((item) => modules.get(item)?.reason)) {
+    problems.push(`${name}: re-exports client ${relative(root, target)} with \`export *\``);
   }
   if (Boolean(reason) === marked) continue;
   if (fix) {
@@ -252,8 +329,12 @@ for (const { path, text, source, reason } of modules.values()) {
   }
 }
 
+// The package's entry points; the building blocks under src/primitives are internal.
+const isEntryPoint = (path) =>
+  path.endsWith(`${'/'}index.ts`) && !relative(root, path).startsWith(`src${'/'}primitives`);
+
 for (const { path, source } of modules.values()) {
-  if (!path.endsWith(`${'/'}index.ts`)) continue;
+  if (!isEntryPoint(path)) continue;
   for (const statement of source.statements) {
     if (!ts.isExportDeclaration(statement) || statement.isTypeOnly || !statement.moduleSpecifier) {
       continue;
