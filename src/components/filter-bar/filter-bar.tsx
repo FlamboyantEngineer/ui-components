@@ -6,7 +6,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
+import { assignOccurrenceKeys, toOccurrenceKey } from '../../utils/stable-keys.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { filterBarHooks as hooks } from './filter-bar-hooks.js';
@@ -61,7 +61,7 @@ export function FilterBar({
     if (!field) return;
     const occurrence = value.filter((condition) => condition.field === field.id).length;
     setValue([...value, createFilterCondition(field)]);
-    setOpenKey(`${field.id}:${occurrence}`);
+    setOpenKey(toOccurrenceKey(field.id, occurrence));
   };
   const remove = (index: number) => {
     setValue(value.filter((_, at) => at !== index));

@@ -22,7 +22,7 @@ export function announceMessage(
   if (!entry) return;
   settings.announcer.message({
     author: entry.authorName ?? null,
-    text: entry.summary ?? readMessageText(runtime.registry.element(key)),
+    text: entry.summary ?? readMessageText(runtime, key),
   });
 }
 

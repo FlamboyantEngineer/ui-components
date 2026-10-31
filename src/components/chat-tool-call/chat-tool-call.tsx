@@ -91,11 +91,6 @@ function useToolCallExpansion({
   return [shown, setExpanded];
 }
 
-/** The card's trigger, where focus goes when the approval leaves while holding it. */
-function findTrigger(root: HTMLElement | null): HTMLElement | null {
-  return root?.querySelector<HTMLElement>(`.${hooks.slotClass('heading')} button`) ?? null;
-}
-
 /**
  * One call of a tool by an assistant, as a collapsible card: a trigger with the status, the label
  * and the duration, a body with the error of a failed call and the arguments and result as JSON
@@ -125,7 +120,7 @@ export function ChatToolCall({
   className,
   ...rest
 }: ChatToolCallProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [expanded, setExpanded] = useToolCallExpansion({
     status,
     isExpanded,
@@ -143,7 +138,6 @@ export function ChatToolCall({
         data: { variant, status, kind, autoApproved: approval?.isAutoApproved },
       })}
       id={id}
-      ref={rootRef}
       aria-busy={status === 'running' || undefined}
       onKeyDownCapture={approvalState.onKeyDownCapture}
     >
@@ -159,6 +153,7 @@ export function ChatToolCall({
           status={status}
           durationMs={durationMs}
           isAutoApproved={approval?.isAutoApproved ?? false}
+          triggerRef={triggerRef}
         />
         <DisclosurePanel className={hooks.slotClass('body')}>
           {status === 'failed' && error ? <ToolCallError message={error} /> : null}
@@ -176,7 +171,7 @@ export function ChatToolCall({
           onApprove={onApprove}
           onDeny={onDeny}
           onAlwaysAllow={onAlwaysAllow}
-          getFallbackFocus={() => findTrigger(rootRef.current)}
+          getFallbackFocus={() => triggerRef.current}
         />
       ) : null}
     </div>

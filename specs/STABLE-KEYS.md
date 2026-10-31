@@ -6,7 +6,7 @@
 
 ### UIC-STABLE-KEYS-1.1 - Identity and occurrence
 
-`assignOccurrenceKeys(values, identity)` shall return each value, in order, with the key `<identity>:<n>`, where `n` counts the earlier values with the same identity from zero. Keys are unique within the list, independent of where unequal values sit, and the input is left unchanged.
+`assignOccurrenceKeys(values, identity)` shall return each value, in order, with the key `<identity>:<n>`, where `n` counts the earlier values with the same identity from zero. Keys are unique within the list, independent of where unequal values sit, and the input is left unchanged. `toOccurrenceKey(identity, n)` returns the same key, so a caller can name the entry it is about to add (such as the chip a filter bar opens) without rebuilding the format.
 
 Implementation: `src/utils/stable-keys.ts`
 Verification: `src/utils/stable-keys.test.tsx`

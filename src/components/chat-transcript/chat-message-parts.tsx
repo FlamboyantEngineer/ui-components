@@ -9,7 +9,7 @@ import {
   SuccessGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefCallback } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -35,6 +35,8 @@ type ChatMessageBodyProps = Pick<
   isCancelled: boolean;
   delivery: ChatMessageDelivery | undefined;
   onRetry: (() => void) | undefined;
+  /** Records the content element with the transcript. */
+  contentRef: RefCallback<HTMLElement>;
 };
 
 export const chatMessageHooks = createHooks('chat-message', [
@@ -188,6 +190,7 @@ export function ChatMessageBody({
   reactions,
   actions,
   children,
+  contentRef,
   time,
   getNow,
 }: ChatMessageBodyProps) {
@@ -202,7 +205,9 @@ export function ChatMessageBody({
           onPress={quotedId && onQuotePress ? () => onQuotePress(quotedId) : undefined}
         />
       ) : null}
-      <div {...hooks.slot('content')}>{children}</div>
+      <div ref={contentRef} {...hooks.slot('content')}>
+        {children}
+      </div>
       <ChatMessageFooter
         time={time}
         getNow={getNow}

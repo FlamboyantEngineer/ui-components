@@ -1,5 +1,5 @@
 export { clamp } from './clamp.js';
-export { assignOccurrenceKeys } from './stable-keys.js';
+export { assignOccurrenceKeys, toOccurrenceKey } from './stable-keys.js';
 export type { KeyedValue } from './stable-keys.js';
 export { mergeProps, mergeRefs } from './merge-props.js';
 export type { MergedProps } from './merge-props.js';
