@@ -212,11 +212,16 @@ function useCompletionState(options: CompletionsOptions) {
   const latest = useLatest({ state, options });
   const session = { state, setState, requestRef, lookup, source, latest };
   const isLocked = options.isLocked || options.completions === undefined;
+  // Locking hides the list in the same render; the effect drops the session's pending request.
+  const [wasLocked, setWasLocked] = useState(isLocked);
+  if (isLocked !== wasLocked) {
+    setWasLocked(isLocked);
+    if (isLocked) setState(hideCompletionState);
+  }
   useLayoutEffect(() => {
     if (!isLocked) return;
     requestRef.current += 1;
     lookup.current = null;
-    setState(hideCompletionState);
   }, [isLocked]);
   // A value the control was given from outside, such as a controlled replacement, ends the session:
   // its answer and range belong to the text it was looked up for. A new source answers it again.

@@ -109,6 +109,7 @@ export function useTreeRename<T extends TreeItemData>(
     const input = inputRef.current;
     editingRef.current = null;
     if (input && input === input.ownerDocument.activeElement) focusNear(input);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- focus leaves the committed field before it unmounts.
     setEditingKey(null);
   }, [isRevoked]);
   return useMemo(() => {

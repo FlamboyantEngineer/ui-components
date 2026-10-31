@@ -42,6 +42,7 @@ export function useTourTarget(target: TourTarget | undefined, isOpen: boolean) {
     if (!isOpen) return;
     const element = lookUp.current();
     element?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The target is looked up in the committed document.
     setResolved({ element });
   }, [target, isOpen, container, lookUp]);
   const follow = useLatest(() =>

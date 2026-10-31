@@ -20,6 +20,7 @@ export function usePopoverGutter(panel: HTMLElement | null): number {
   const measure = () => setGutter(measurePopoverGutter(panel));
   useResizeObserver([panel, panel?.ownerDocument.documentElement], measure);
   useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The gutter is measured from the committed panel's containing block.
     setGutter(measurePopoverGutter(panel));
   }, [panel]);
   return gutter;

@@ -177,6 +177,7 @@ function useTabStop(triggers: RefObject<Map<string, TriggerEntry>>, version: num
   useLayoutEffect(() => {
     if (tabKey !== null && triggers.current.has(tabKey)) return;
     const first = sortByDocumentOrder(triggers.current)[0]?.[0] ?? null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The registry is filled by ref callbacks, so the first item is known only after commit.
     if (first !== tabKey) setTabKey(first);
   }, [triggers, tabKey, version]);
   return [tabKey, setTabKey] as const;
@@ -201,6 +202,7 @@ function useOpenMenu(
     const items = triggers.current;
     if (pending.current && !items.has(pending.current.key)) pending.current = null;
     if (openKey === null || items.has(openKey)) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The registry is filled by ref callbacks, so a removed item is known only after commit.
     setOpenKey(null);
     const owner = getOwnerDocument(rootRef.current);
     const active = owner.activeElement;

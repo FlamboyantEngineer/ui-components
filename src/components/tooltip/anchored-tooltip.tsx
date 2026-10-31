@@ -103,6 +103,7 @@ function useAnchorElement(anchor: TooltipAnchor | null | undefined, isOpen: bool
   // update stops there, since setting the same element renders nothing.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- runs after every commit on purpose
   useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- A ref's element is known only once the commit has attached it.
     setElement(read.current());
   });
   const isElementAnchor = isOpen && anchor != null && !isVirtualAnchor(anchor);

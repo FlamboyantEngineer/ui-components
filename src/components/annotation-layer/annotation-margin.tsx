@@ -59,6 +59,7 @@ function useMarginGeometry(margin: HTMLElement | null, layer: HTMLElement | null
     const next = { offset, heights };
     setGeometry((current) => (isSameGeometry(current, next) ? current : next));
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Card heights and the margin's offset exist only once the cards are committed.
   useLayoutEffect(measure);
   useResizeObserver(() => [margin, ...cards.current.values()], measure);
   const register = (id: Key) => (element: HTMLElement | null) => {

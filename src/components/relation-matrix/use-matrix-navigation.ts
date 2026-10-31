@@ -125,6 +125,7 @@ export function useMatrixNavigation({
       const active = root.current.ownerDocument.activeElement;
       const hasDroppedFocus = isFocusWithin && !root.current.contains(active);
       shouldFocus.current ||= hasDroppedFocus;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- whether the cell held focus is known only once its removal is committed.
       moveTo(focus);
     }
     if (!shouldFocus.current) return;

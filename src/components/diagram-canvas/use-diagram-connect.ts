@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { DiagramNode } from './diagram-model.js';
@@ -46,11 +46,18 @@ export function useDiagramConnect({
 }): DiagramConnect {
   const strings = useUiStrings();
   const [connecting, setConnecting] = useState<DiagramConnecting | null>(null);
-  useLayoutEffect(() => {
-    if (isEditing || !connecting) return;
+  // Leaving edit mode drops the connection in the same render; the effect announces it once.
+  const [cancelCount, setCancelCount] = useState(0);
+  if (!isEditing && connecting) {
     setConnecting(null);
+    setCancelCount((count) => count + 1);
+  }
+  const announcedCountRef = useRef(0);
+  useLayoutEffect(() => {
+    if (cancelCount === announcedCountRef.current) return;
+    announcedCountRef.current = cancelCount;
     announce(strings.diagramConnectCancelled);
-  }, [isEditing, connecting, announce, strings.diagramConnectCancelled]);
+  }, [cancelCount, announce, strings.diagramConnectCancelled]);
   const labelOf = (id: Key) => nodes.find((node) => node.id === id)?.label ?? String(id);
   const cancel = () => {
     if (!connecting) return;

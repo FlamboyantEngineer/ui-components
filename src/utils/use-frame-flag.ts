@@ -6,7 +6,6 @@ import { useLayoutEffect, useState, type RefObject } from 'react';
 export function useFrameFlag(isActive: boolean, ownerRef: RefObject<Element | null>): boolean {
   const [isReady, setReady] = useState(false);
   useLayoutEffect(() => {
-    setReady(false);
     if (!isActive) return;
     const view = ownerRef.current?.ownerDocument.defaultView ?? window;
     let isCurrent = true;
@@ -16,6 +15,7 @@ export function useFrameFlag(isActive: boolean, ownerRef: RefObject<Element | nu
     return () => {
       isCurrent = false;
       view.cancelAnimationFrame(frame);
+      setReady(false);
     };
   }, [isActive, ownerRef]);
   return isActive && isReady;

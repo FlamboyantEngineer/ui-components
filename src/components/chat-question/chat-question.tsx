@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -84,9 +84,11 @@ export function ChatQuestion({
 }: ChatQuestionProps) {
   const strings = useUiStrings();
   const { rootRef, settle } = useSettledFocus(status);
-  // The live region exists before its text arrives, so the text is announced.
+  // The live region exists before its text arrives, so the text is announced: the empty region must
+  // be committed first.
   const [isAnnounced, setAnnounced] = useState(false);
-  useEffect(() => setAnnounced(true), []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the empty live region commits first
+  useLayoutEffect(() => setAnnounced(true), []);
   const first = questions[0]?.question;
   const name = first === undefined ? undefined : strings.questionAsked(first, questions.length);
   const isPending = status === 'pending';

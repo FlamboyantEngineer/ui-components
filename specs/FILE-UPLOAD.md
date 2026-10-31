@@ -143,7 +143,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-3.5 - Image previews
 
-A listed file whose `file` is an image (`image/*`) shall show a thumbnail (`ui-file-upload__file-preview`, an `<img>` with an empty `alt`, since its name is beside it) from a temporary URL the upload revokes when the file changes or leaves the list; a file without one shows its `previewUrl` instead.
+A listed file whose `file` is an image (`image/*`) shall show a thumbnail (`ui-file-upload__file-preview`, an `<img>` with an empty `alt`, since its name is beside it) from a temporary URL the upload creates while rendering and revokes when the file changes or leaves the list (a Strict Mode remount keeps it); a file without one shows its `previewUrl` instead.
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

@@ -220,6 +220,15 @@ export function useCellEditing<T extends TableRow>({
   const refocus = useRef<Refocus | null>(null);
   const latest = useLatest(onCellEdit);
 
+  // A row disabled or gone, or a column no longer editable, closes the editor in the same render,
+  // discarding the draft; the commit then forgets the open cell and returns focus to it.
+  const isStillEditable = useIsStillEditable(rows, columns, disabledRowKeys);
+  if (editing && !isStillEditable(editing)) setEditing(null);
+  useLayoutEffect(() => {
+    if (editing !== null || open.current === null) return;
+    refocus.current = { cell: open.current, move: undefined };
+    open.current = null;
+  }, [editing]);
   useRefocus(root, refocus);
 
   const end = useCallback((restoreFocus: boolean, move?: CellMove): boolean => {
@@ -247,11 +256,6 @@ export function useCellEditing<T extends TableRow>({
     end(true);
   }, [end]);
 
-  // A row disabled or gone, or a column no longer editable, closes the editor, discarding the draft.
-  const isStillEditable = useIsStillEditable(rows, columns, disabledRowKeys);
-  useLayoutEffect(() => {
-    if (editing && !isStillEditable(editing)) end(true);
-  }, [editing, isStillEditable, end]);
   const dismiss = useCallback(() => {
     end(false);
   }, [end]);
