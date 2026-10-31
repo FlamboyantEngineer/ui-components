@@ -126,6 +126,34 @@ test.describe('Loading Overlay lab', () => {
     await expect(region).not.toHaveAttribute('tabindex');
   });
 
+  for (const [save, first, tabs] of [
+    ['Save, note first', 'inner', 1],
+    ['Save, panel first', 'outer', 2],
+  ] as const) {
+    test(`UIC-LOADING-OVERLAY-3.4 returns focus from nested regions when the ${first} one ends first`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('loading-overlay');
+      const demo = page.locator('[data-lab-demo="nested-regions"]');
+      const outer = demo.locator('[data-lab-region="outer"]');
+      const inner = demo.locator('[data-lab-region="inner"]');
+      const button = demo.getByRole('button', { name: save });
+      await demo.getByRole('textbox', { name: 'Note' }).focus();
+      for (let tab = 0; tab < tabs; tab += 1) await page.keyboard.press('Tab');
+      await expect(button).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(outer).toBeFocused();
+      const ended = first === 'inner' ? inner : outer;
+      await expect(ended).not.toHaveAttribute('data-loading');
+      const still = first === 'inner' ? outer : inner;
+      await expect(still).toHaveAttribute('data-loading');
+      await expect(still).toBeFocused();
+      await expect(still).not.toHaveAttribute('data-loading');
+      await expect(button).toBeFocused();
+    });
+  }
+
   test('UIC-LOADING-OVERLAY-2.4 UIC-ENTER-EXIT-1.3 fades the region cover out before removing it', async ({
     page,
     lab,

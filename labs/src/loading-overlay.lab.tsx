@@ -99,6 +99,48 @@ function RegionDemo() {
   );
 }
 
+/** Lab-only stand-in for two loads finishing after the given delays. */
+function useTimedLoad(): [boolean, (duration: number) => void] {
+  const [duration, setDuration] = useState<number | null>(null);
+  useEffect(() => {
+    if (duration === null) return undefined;
+    const timer = setTimeout(() => setDuration(null), duration);
+    return () => clearTimeout(timer);
+  }, [duration]);
+  return [duration !== null, setDuration];
+}
+
+function NestedDemo() {
+  const [isOuterLoading, startOuter] = useTimedLoad();
+  const [isInnerLoading, startInner] = useTimedLoad();
+  const save = (outer: number, inner: number) => {
+    startOuter(outer);
+    startInner(inner);
+  };
+  return (
+    <div data-lab-demo="nested-regions">
+      <LoadingRegion isLoading={isOuterLoading} label="Loading panel" data-lab-region="outer">
+        <div style={{ width: 360, minHeight: 240, padding: 12 }}>
+          <p>Panel</p>
+          <LoadingRegion isLoading={isInnerLoading} label="Saving note" data-lab-region="inner">
+            <div style={{ minHeight: 140 }}>
+              <p>
+                <label>
+                  Note <input name="note" defaultValue="Plums" />
+                </label>
+              </p>
+              <p>
+                <Button onPress={() => save(1600, 800)}>Save, note first</Button>{' '}
+                <Button onPress={() => save(800, 1600)}>Save, panel first</Button>
+              </p>
+            </div>
+          </LoadingRegion>
+        </div>
+      </LoadingRegion>
+    </div>
+  );
+}
+
 function DelayDemo() {
   const [isLoading, setLoading] = useState(false);
   return (
@@ -189,6 +231,12 @@ mountLab(
       description="Start loading to block the form, then stop it, or press Apply to save for a moment: focus waits on the region and returns to Apply. The cover fades in and out with useEnterExit."
     >
       <RegionDemo />
+    </LabSection>
+    <LabSection
+      title="Nested regions"
+      description="A note's region inside a panel's region. Each Save blocks both, then ends them in the named order: focus waits on whichever region still blocks and returns to the button once both end."
+    >
+      <NestedDemo />
     </LabSection>
     <LabSection
       title="Blocking inside a shadow root"

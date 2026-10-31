@@ -92,6 +92,13 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `src/ut
 Implementation: `src/components/loading-overlay/use-blocked-focus.ts`, `src/utils/focus-target.ts`
 Verification: `src/components/loading-overlay/loading-region-shadow.test.tsx`, `e2e/loading-overlay.spec.ts`
 
+### UIC-LOADING-OVERLAY-3.4 - Nested regions
+
+When `LoadingRegion`s nest, focus shall wait on the outermost region that blocks it and return to the element that had it once every region around that element has ended, whichever region starts or ends first: a region that ends while an outer one still blocks hands its return target to the outer region, and a region that ends while it holds focus inside a region still blocking moves focus to that region instead of into inert content. Focus the reader moved elsewhere meanwhile stays where it is.
+
+Implementation: `src/components/loading-overlay/use-blocked-focus.ts`
+Verification: `src/components/loading-overlay/loading-region-nested.test.tsx`, `e2e/loading-overlay.spec.ts`
+
 ## UIC-LOADING-OVERLAY-4 - Hooks
 
 ### UIC-LOADING-OVERLAY-4.1 - Hooks and caller attributes
