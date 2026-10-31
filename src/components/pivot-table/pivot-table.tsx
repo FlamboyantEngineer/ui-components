@@ -36,6 +36,20 @@ function toTableRow(group: PivotRow, order: number): PivotTableRow {
   return { id: group.key, group, order };
 }
 
+/** A group's child rows, the same array for a group each time it is asked; nothing when flat. */
+function useChildRows(isNested: boolean) {
+  return useMemo(() => {
+    if (!isNested) return undefined;
+    const known = new WeakMap<PivotRow, PivotTableRow[]>();
+    return ({ group }: PivotTableRow) => {
+      if (!group) return undefined;
+      const rows = known.get(group) ?? group.children.map(toTableRow);
+      known.set(group, rows);
+      return rows;
+    };
+  }, [isNested]);
+}
+
 /**
  * A pivot of plain records: rows grouped by row fields in expandable groups, columns by column
  * fields, cells aggregating value fields, with row and column totals and sortable columns, drawn
@@ -67,17 +81,16 @@ export function PivotTable({
     onLayoutChange,
   );
   const result = useMemo(() => pivot(records, current, locale), [records, current, locale]);
-  const { columns, groups } = createPivotColumns({
-    result,
-    layout: current,
-    fields,
-    strings,
-    locale,
-  });
-  const rows: PivotTableRow[] =
-    current.rows.length > 0
-      ? result.rows.map(toTableRow)
-      : [{ id: 'total', group: null, order: 0 }];
+  const { columns, groups } = useMemo(
+    () => createPivotColumns({ result, layout: current, fields, strings, locale }),
+    [result, current, fields, strings, locale],
+  );
+  const isGrouped = current.rows.length > 0;
+  const rows = useMemo<PivotTableRow[]>(
+    () => (isGrouped ? result.rows.map(toTableRow) : [{ id: 'total', group: null, order: 0 }]),
+    [result, isGrouped],
+  );
+  const getChildRows = useChildRows(current.rows.length > 1);
   return (
     <div {...hooks.root({ className, props: rest })} id={id}>
       {fieldChooser ? (
@@ -92,9 +105,7 @@ export function PivotTable({
         columns={columns}
         columnGroups={groups}
         rows={rows}
-        getChildRows={
-          current.rows.length > 1 ? (row) => row.group?.children.map(toTableRow) : undefined
-        }
+        getChildRows={getChildRows}
         expandedKeys={expandedKeys}
         defaultExpandedKeys={defaultExpandedKeys}
         onExpandedChange={onExpandedChange}

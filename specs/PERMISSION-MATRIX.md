@@ -39,6 +39,13 @@ Each role column shall be identified by its role's `id` and the id's type, so `1
 Implementation: `src/components/permission-matrix/permission-matrix.tsx`
 Verification: `src/components/permission-matrix/permission-matrix-roles.test.tsx`, `e2e/permission-matrix.spec.ts`
 
+### UIC-PERMISSION-MATRIX-1.6 - Stable table columns
+
+The matrix shall hand its `Table` the same `columns` and `rows` while only the grants change, so a toggle does not rebuild the table's column layout or cell grid: the columns are derived from the roles, groups and provider strings alone, and the cells read the grants, inherited and committed grants and the change handler from a context.
+
+Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `src/components/permission-matrix/permission-matrix-cells.tsx`
+Verification: `src/components/permission-matrix/permission-matrix-identity.test.tsx`
+
 ## UIC-PERMISSION-MATRIX-2 - Grants
 
 ### UIC-PERMISSION-MATRIX-2.1 - Changes as data

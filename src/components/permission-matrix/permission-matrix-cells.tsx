@@ -1,5 +1,6 @@
 'use client';
 
+import { createContext, useContext } from 'react';
 import { LockGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -17,10 +18,21 @@ export interface PermissionCellContext {
   onChange: (change: PermissionMatrixChange) => void;
 }
 
+/**
+ * The grants for the matrix's cells. A context rather than a column closure, so the matrix's columns
+ * stay the same while the grants change.
+ */
+export const PermissionCellsContext = createContext<PermissionCellContext | null>(null);
+
+function usePermissionCells(): PermissionCellContext {
+  const context = useContext(PermissionCellsContext);
+  if (!context) throw new Error('Permission cells render inside a PermissionMatrix.');
+  return context;
+}
+
 interface GrantCheckboxProps {
   role: PermissionMatrixRole;
   permission: PermissionMatrixPermission;
-  context: PermissionCellContext;
 }
 
 interface GroupCheckboxProps {
@@ -28,7 +40,6 @@ interface GroupCheckboxProps {
   /** The group's name. */
   label: string;
   permissions: readonly PermissionMatrixPermission[];
-  context: PermissionCellContext;
 }
 
 /** A role's column header: its label, and a lock read as the provider's `readOnlyRole` when read only. */
@@ -52,8 +63,9 @@ export function PermissionRoleHeader({ role }: { role: PermissionMatrixRole }) {
  * The checkbox of one role and permission: ticked while granted, drawn mixed while only
  * inherited, read only in a read-only role, and dirty while it differs from the committed grants.
  */
-export function PermissionGrantCheckbox({ role, permission, context }: GrantCheckboxProps) {
+export function PermissionGrantCheckbox({ role, permission }: GrantCheckboxProps) {
   const strings = useUiStrings();
+  const context = usePermissionCells();
   const isGranted = context.grants.has(role.id, permission.id);
   const isInherited = context.inherited.has(role.id, permission.id);
   const isDirty = isGranted !== context.committed.has(role.id, permission.id);
@@ -78,8 +90,9 @@ export function PermissionGrantCheckbox({ role, permission, context }: GrantChec
  * A group header's checkbox for one role: ticked while the role holds every permission of the
  * group, mixed while it holds some; a press grants them all, or revokes them all once all are held.
  */
-export function PermissionGroupCheckbox({ role, label, permissions, context }: GroupCheckboxProps) {
+export function PermissionGroupCheckbox({ role, label, permissions }: GroupCheckboxProps) {
   const strings = useUiStrings();
+  const context = usePermissionCells();
   const keys: Key[] = permissions.map((permission) => permission.id);
   const held = keys.filter((key) => context.grants.has(role.id, key)).length;
   const isAll = keys.length > 0 && held === keys.length;

@@ -16,6 +16,7 @@ import {
   type PermissionMatrixGrant,
 } from './permission-grants.js';
 import {
+  PermissionCellsContext,
   PermissionGrantCheckbox,
   PermissionGroupCheckbox,
   PermissionRoleHeader,
@@ -112,25 +113,18 @@ const roleColumnId = (id: Key) => `role-${typeof id}-${String(id)}`;
 
 function roleColumn(
   role: PermissionMatrixRole,
-  options: { context: PermissionCellContext; readOnlyText: string; grouping: PermissionGrouping },
+  options: { readOnlyText: string; grouping: PermissionGrouping },
 ): TableColumn {
-  const { context, readOnlyText, grouping } = options;
+  const { readOnlyText, grouping } = options;
   return {
     id: roleColumnId(role.id),
     minWidth: roleMinWidth,
     header: <PermissionRoleHeader role={role} />,
     textValue: role.isReadOnly ? `${role.label}, ${readOnlyText}` : role.label,
     align: 'center',
-    renderCell: (permission) => (
-      <PermissionGrantCheckbox role={role} permission={permission} context={context} />
-    ),
+    renderCell: (permission) => <PermissionGrantCheckbox role={role} permission={permission} />,
     aggregate: (rows) => (
-      <PermissionGroupCheckbox
-        role={role}
-        label={grouping.labelRows(rows)}
-        permissions={rows}
-        context={context}
-      />
+      <PermissionGroupCheckbox role={role} label={grouping.labelRows(rows)} permissions={rows} />
     ),
   };
 }
@@ -177,31 +171,34 @@ export function PermissionMatrix({
       onChange?.(next, change);
     },
   };
-  const columns: TableColumn[] = [
-    {
-      id: permissionColumnId,
-      header: strings.permissions,
-      isRowHeader: true,
-      pin: 'start',
-      minWidth: permissionMinWidth,
-      getValue: (permission) => permission.label,
-    },
-    ...roles.map((role) =>
-      roleColumn(role, { context, readOnlyText: strings.readOnlyRole, grouping }),
-    ),
-  ];
+  const columns = useMemo<TableColumn[]>(
+    () => [
+      {
+        id: permissionColumnId,
+        header: strings.permissions,
+        isRowHeader: true,
+        pin: 'start',
+        minWidth: permissionMinWidth,
+        getValue: (permission) => permission.label,
+      },
+      ...roles.map((role) => roleColumn(role, { readOnlyText: strings.readOnlyRole, grouping })),
+    ],
+    [roles, grouping, strings],
+  );
   return (
     <div {...rest} {...hooks.root({ className, props: rest })}>
-      <Table
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
-        aria-describedby={ariaDescribedBy}
-        aria-details={ariaDetails}
-        columns={columns}
-        rows={permissions}
-        groupBy={grouping.groupBy}
-        renderGroupLabel={grouping.renderGroupLabel}
-      />
+      <PermissionCellsContext value={context}>
+        <Table
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
+          aria-describedby={ariaDescribedBy}
+          aria-details={ariaDetails}
+          columns={columns}
+          rows={permissions}
+          groupBy={grouping.groupBy}
+          renderGroupLabel={grouping.renderGroupLabel}
+        />
+      </PermissionCellsContext>
     </div>
   );
 }
