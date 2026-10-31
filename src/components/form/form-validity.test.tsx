@@ -1,6 +1,13 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import {
+  createRef,
+  useImperativeHandle,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -222,18 +229,23 @@ describe('Form validity', () => {
 
   it('UIC-FORM-2.2 keeps problems and blockers in document order when keyed fields move', async () => {
     const onValidityChange = vi.fn<(blockers: readonly FormBlocker[]) => void>();
-    let problems: () => readonly string[] = () => [];
-    function ProblemReader() {
+    const reader = createRef<{ problems: () => readonly string[] }>();
+    function ProblemReader({ ref }: { ref: Ref<{ problems: () => readonly string[] }> }) {
       const source = requireDefined(useFormProblems());
-      problems = () => source.getProblems().map((problem) => problem.label);
+      useImperativeHandle(
+        ref,
+        () => ({ problems: () => source.getProblems().map((problem) => problem.label) }),
+        [source],
+      );
       return null;
     }
+    const problems = () => requireDefined(reader.current).problems();
     const view = (names: readonly string[]) => (
       <Form aria-label="Record" validationMode="immediate" onValidityChange={onValidityChange}>
         {names.map((name) => (
           <TextField key={name} label={name} isRequired />
         ))}
-        <ProblemReader />
+        <ProblemReader ref={reader} />
       </Form>
     );
     const { rerender } = render(view(['Alpha', 'Blue', 'Gamma']));

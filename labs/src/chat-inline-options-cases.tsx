@@ -60,10 +60,19 @@ function replyAfter(count: number): ChatMessageData {
   };
 }
 
+/** A place a custom part draws, reporting each render it commits. */
+function SavedPlace({ name, onDraw }: { name: string; onDraw: () => void }) {
+  useEffect(() => {
+    onDraw();
+  });
+  return <strong>{name}</strong>;
+}
+
 /** A host that renders on every word and passes every option inline. */
 function InlineOptionsHost() {
   const [count, setCount] = useState(words.length);
-  const [tally] = useState(() => ({ draws: 0 }));
+  // Counted from the first stream, so only a saved place drawn again while a reply streams counts.
+  const [redraws, setRedraws] = useState<number | null>(null);
   useEffect(() => {
     if (count >= words.length) return undefined;
     const timer = window.setTimeout(() => setCount((value) => value + 1), tick);
@@ -76,14 +85,14 @@ function InlineOptionsHost() {
         <Button
           isDisabled={isPlaying}
           onPress={() => {
-            tally.draws = 0;
+            setRedraws(0);
             setCount(0);
           }}
         >
           Stream a reply
         </Button>
         <span>{isPlaying ? 'Streaming' : 'Done'}</span>
-        <span>Saved place drawn again: {tally.draws}</span>
+        <span>Saved place drawn again: {redraws ?? 0}</span>
       </Cluster>
       <div style={{ height: 360 }}>
         <Chat
@@ -98,10 +107,12 @@ function InlineOptionsHost() {
               <circle cx="8" cy="8" r="6" />
             </svg>
           }
-          renderPart={(part: ChatCustomPart) => {
-            tally.draws += 1;
-            return <strong>{String(part.data)}</strong>;
-          }}
+          renderPart={(part: ChatCustomPart) => (
+            <SavedPlace
+              name={String(part.data)}
+              onDraw={() => setRedraws((value) => (value === null ? null : value + 1))}
+            />
+          )}
           onCopy={() => undefined}
           onRetry={() => undefined}
           placeholder="Ask the trip planner…"

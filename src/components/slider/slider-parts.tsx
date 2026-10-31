@@ -199,7 +199,7 @@ export function SliderControl<T extends SliderValue>({
   const { name, onChangeEnd, ...aria } = rest;
   const inputRef = useObjectRef<HTMLInputElement>(control.ref);
   // The value set during this interaction; the field state's value is the last render's.
-  const latest = useLatest(state.value);
+  const valueRef = useLatest(state.value);
   const isLocked = state.isReadOnly || state.isDisabled;
   const minValue = aria.minValue ?? 0;
   const maxValue = aria.maxValue ?? 100;
@@ -224,13 +224,13 @@ export function SliderControl<T extends SliderValue>({
       value={state.value}
       onChange={(next) => {
         if (isLocked) return;
-        latest.current = normalize(next, latest.current);
-        state.setValue(latest.current);
+        valueRef.current = normalize(next, valueRef.current);
+        state.setValue(valueRef.current);
       }}
       onChangeEnd={() => {
         if (isLocked) return;
         state.commit();
-        onChangeEnd?.(latest.current);
+        onChangeEnd?.(valueRef.current);
       }}
     >
       {valueLabel === 'output' ? <SliderOutput {...hooks.slot('output')} /> : null}

@@ -91,16 +91,14 @@ function VirtualGroupRow({ cells, height }: { cells: GroupCells; height: number 
   };
   let start = 0;
   let left = 0;
-  const placed = cells.map((cell) => {
-    const width = Array.from({ length: cell.span }, (_, at) => widthOf(start + at)).reduce(
-      (sum, next) => sum + next,
-      0,
-    );
-    const place = { ...cell, index: start, style: { position: 'absolute', left, width, height } };
+  const placed = [];
+  for (const cell of cells) {
+    let width = 0;
+    for (let at = start; at < start + cell.span; at += 1) width += widthOf(at);
+    placed.push({ ...cell, index: start, style: { position: 'absolute', left, width, height } });
     start += cell.span;
     left += width;
-    return place;
-  });
+  }
   return (
     <div role="row" style={{ position: 'absolute', top: 0, left: 0, width: left, height }}>
       {placed.map(({ key, group, span, index, style }) =>
