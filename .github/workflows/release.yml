@@ -1,0 +1,38 @@
+name: Release
+
+# `npm run release` tags v<version> on a commit that holds the built package; pushing that tag
+# packs the library tarball from it, builds and packs the standalone labs, and attaches both
+# archives to the tag's GitHub Release, which it creates from the version's changelog entry.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # The tag already holds dist/ and the reference stylesheet, so the tarball packs them as built.
+      - name: Pack the library
+        run: npm pack --ignore-scripts
+      - name: Build and pack the labs
+        run: npm run build:labs && npm run pack:labs
+      - name: Attach the archives to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            node -e "const [, v] = process.argv; const log = require('fs').readFileSync('CHANGELOG.md', 'utf8'); const start = log.indexOf('## ' + v); const end = log.indexOf('\n## ', start + 1); console.log(start === -1 ? v : log.slice(start, end === -1 ? undefined : end).trim());" "${TAG#v}" > notes.md
+            gh release create "$TAG" --verify-tag --title "$TAG" --notes-file notes.md
+          fi
+          gh release upload "$TAG" ./*.tgz --clobber
