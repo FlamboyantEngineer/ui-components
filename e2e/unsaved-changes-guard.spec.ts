@@ -135,6 +135,29 @@ test.describe('Unsaved Changes Guard lab', () => {
     );
   });
 
+  test('UIC-UNSAVED-CHANGES-GUARD-2.7 follows a source that loses its save while asking', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('unsaved-changes-guard');
+    const demo = page.locator('[data-lab-demo="changing"]');
+    await demo.getByRole('button', { name: 'Leave, then go offline' }).click();
+    const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
+    await expect(dialog.locator('.ui-modal__actions button')).toHaveText([
+      'Stay',
+      'Discard',
+      'Save',
+    ]);
+    await page.clock.runFor(1000);
+    await expect(dialog.locator('.ui-modal__actions button')).toHaveText(['Stay', 'Discard']);
+    await expect(dialog).toHaveAccessibleDescription(
+      'Your changes are not saved. Leave and discard them?',
+    );
+    await dialog.getByRole('button', { name: 'Discard' }).click();
+    await expect(demo.locator('[data-lab-answer]')).toHaveText('Left');
+  });
+
   test('UIC-UNSAVED-CHANGES-GUARD-1.1 UIC-UNSAVED-CHANGES-GUARD-1.2 UIC-UNSAVED-CHANGES-GUARD-3.1 asks a nested guard about its own sources', async ({
     page,
     lab,

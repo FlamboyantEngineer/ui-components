@@ -29,10 +29,20 @@ export interface UnsavedChangesStore {
   /** The same object until the summary changes. */
   getSummary(): UnsavedChangesSummary;
   subscribe(listener: () => void): () => void;
-  /** Saves every dirty source, one after another; rejects with the first failure. */
+  /**
+   * Saves every dirty source, one after another; rejects with the first failure, or with an error
+   * `isUnsavable` recognizes at a dirty source that cannot save.
+   */
   save(): Promise<void>;
   /** Discards every dirty source, one after another. */
   discard(): Promise<void>;
+}
+
+const unsavable = Symbol('unsavable');
+
+/** Whether Save stopped at a dirty source without `onSave`; nothing after it ran. */
+export function isUnsavable(error: unknown): boolean {
+  return error instanceof Error && error.cause === unsavable;
 }
 
 const cleanSummary: UnsavedChangesSummary = { isDirty: false, labels: [], canSave: false };
@@ -53,6 +63,29 @@ function isSameSummary(a: UnsavedChangesSummary, b: UnsavedChangesSummary): bool
     a.labels.length === b.labels.length &&
     a.labels.every((label, index) => label === b.labels[index])
   );
+}
+
+/**
+ * Runs `run` on each dirty registration once, in registration order. The registrations are read
+ * afresh before each one, so a removed source is skipped, a replaced one runs its current actions,
+ * and one that became dirty meanwhile takes its turn.
+ */
+async function runInTurn(
+  entries: ReadonlyMap<string, UnsavedChangesEntry>,
+  run: (entry: UnsavedChangesEntry) => void | Promise<unknown>,
+) {
+  const done = new Set<string>();
+  for (;;) {
+    const next = [...entries].find(([key, entry]) => entry.isDirty && !done.has(key));
+    if (!next) return;
+    done.add(next[0]);
+    await run(next[1]);
+  }
+}
+
+function saveEntry(entry: UnsavedChangesEntry) {
+  if (!entry.onSave) throw new Error('A dirty source cannot save.', { cause: unsavable });
+  return entry.onSave();
 }
 
 /** A store of dirty registrations whose summary a guard subscribes to. */
@@ -81,11 +114,7 @@ export function createUnsavedChangesStore(): UnsavedChangesStore {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    async save() {
-      for (const entry of dirtyEntries()) await entry.onSave?.();
-    },
-    async discard() {
-      for (const entry of dirtyEntries()) await entry.onDiscard?.();
-    },
+    save: () => runInTurn(entries, saveEntry),
+    discard: () => runInTurn(entries, (entry) => entry.onDiscard?.()),
   };
 }
