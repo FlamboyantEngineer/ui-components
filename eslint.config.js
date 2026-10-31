@@ -12,6 +12,11 @@ const STYLING_PACKAGES = [
   { group: ['@linaria/*', 'styled-jsx', 'jss', 'react-jss', 'clsx', 'classnames'] },
 ];
 
+// The React Compiler's rule set, every rule at error: code the compiler cannot optimise fails lint.
+const REACT_COMPILER_RULES = Object.fromEntries(
+  Object.keys(reactHooks.configs['recommended-latest'].rules).map((rule) => [rule, 'error']),
+);
+
 // React Aria and its companion packages load only in src/primitives (specs/PRIMITIVES.md).
 const ARIA_PACKAGES = {
   group: [
@@ -229,15 +234,11 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}', 'labs/src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: {
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
+      // The React Compiler's rules, all at error (C7). State an effect sets synchronously renders
+      // twice: derive it, or say why the DOM must commit first.
+      ...REACT_COMPILER_RULES,
       'no-restricted-imports': ['error', { patterns: [ARIA_PACKAGES] }],
     },
-  },
-  {
-    // State an effect sets synchronously renders twice; derive it, or say why the DOM must commit first.
-    files: ['src/**/*.{ts,tsx}'],
-    rules: { 'react-hooks/set-state-in-effect': 'error' },
   },
   {
     // Labs use the public API: a component's entry point or main module, never its helpers.

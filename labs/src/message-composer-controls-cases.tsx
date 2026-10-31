@@ -11,7 +11,7 @@ import {
 // drops its label, and the same row at narrower widths, where the controls shrink to their icons.
 // Lab-only layout is inline.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChatModelPicker } from '../../src/components/chat-model-picker/chat-model-picker.js';
 import {
@@ -75,9 +75,14 @@ function ContextControl({ count }: { count: number }) {
  */
 function RenderCount() {
   useMessageComposerControls();
-  const [tally] = useState(() => ({ renders: 0 }));
-  tally.renders += 1;
-  return <span data-lab-output="leading-send-renders">Rendered {tally.renders} times</span>;
+  const output = useRef<HTMLSpanElement>(null);
+  const renders = useRef(0);
+  // Counted as each render commits, and written straight to the element, so counting renders nothing.
+  useEffect(() => {
+    renders.current += 1;
+    if (output.current) output.current.textContent = `Rendered ${renders.current} times`;
+  });
+  return <span ref={output} data-lab-output="leading-send-renders" />;
 }
 
 /** The choices the controls hold, shared by every composer of the section. */

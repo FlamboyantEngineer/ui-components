@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, useState } from 'react';
+import { createRef, useImperativeHandle, useState, type Ref } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -92,10 +92,10 @@ describe('Tour', () => {
 
   it('UIC-TOUR-1.2 follows a ref target that is replaced or removed while its step shows', async () => {
     const saveRef = createRef<HTMLButtonElement>();
-    let setVersion: (version: string | null) => void = () => {};
-    function Replacing() {
-      const [version, setOwnVersion] = useState<string | null>('first');
-      setVersion = setOwnVersion;
+    const replacing = createRef<{ setVersion: (version: string | null) => void }>();
+    function Replacing({ ref }: { ref: Ref<{ setVersion: (version: string | null) => void }> }) {
+      const [version, setVersion] = useState<string | null>('first');
+      useImperativeHandle(ref, () => ({ setVersion }), []);
       return (
         <div>
           {version === null ? null : (
@@ -113,14 +113,14 @@ describe('Tour', () => {
       const top = this.dataset.version === 'second' ? 120 : 40;
       return { top, left: 30, width: 80, height: 24, right: 110, bottom: top + 24 } as DOMRect;
     });
-    render(<Replacing />);
+    render(<Replacing ref={replacing} />);
     await screen.findByRole('dialog', { name: 'Save' });
     const spotlight = () => document.querySelector('.ui-tour__spotlight') as HTMLElement;
     expect(spotlight().style.top).toBe('40px');
-    act(() => setVersion('second'));
+    act(() => replacing.current?.setVersion('second'));
     await waitFor(() => expect(spotlight().style.top).toBe('120px'));
     expect(spotlight()).not.toHaveAttribute('data-target-missing');
-    act(() => setVersion(null));
+    act(() => replacing.current?.setVersion(null));
     await waitFor(() => expect(spotlight()).toHaveAttribute('data-target-missing', 'true'));
     expect(screen.getByRole('dialog', { name: 'Save' })).toBeInTheDocument();
     expect(document.querySelector('.ui-tour__arrow')).toBeNull();

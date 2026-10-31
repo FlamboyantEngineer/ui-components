@@ -72,7 +72,6 @@ function LatePreview() {
   const [isLoaded, setLoaded] = useState(false);
   const [isStacked, setStacked] = useState(false);
   useEffect(() => {
-    setLoaded(false);
     const timer = window.setTimeout(() => setLoaded(true), 1000);
     return () => window.clearTimeout(timer);
   }, [loads]);
@@ -80,7 +79,13 @@ function LatePreview() {
   return (
     <div data-lab-demo="late-preview" data-loaded={isLoaded}>
       <p>
-        <Button size="sm" onPress={() => setLoads((count) => count + 1)}>
+        <Button
+          size="sm"
+          onPress={() => {
+            setLoaded(false);
+            setLoads((count) => count + 1);
+          }}
+        >
           Reload preview
         </Button>{' '}
         <Button size="sm" onPress={() => setStacked((stacked) => !stacked)}>
