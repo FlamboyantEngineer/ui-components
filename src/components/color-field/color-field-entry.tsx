@@ -9,10 +9,12 @@ import type { UiStrings } from '../../core/strings.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   toAriaControlProps,
+  toSpellCheckAttribute,
   type FieldControlProps,
   type FieldIssue,
   type FieldState,
 } from '../field/field.js';
+import type { ColorFieldTextInputProps } from './color-field.js';
 import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -26,6 +28,8 @@ interface ColorEntryProps {
   format: ColorFieldFormat;
   valueFormat: ColorFieldFormat;
   placeholder: string;
+  /** The typed input's native text-entry attributes. */
+  textInput: Omit<ColorFieldTextInputProps, 'placeholder'>;
 }
 
 /**
@@ -76,6 +80,7 @@ export function ColorEntry({
   format,
   valueFormat,
   placeholder,
+  textInput,
 }: ColorEntryProps) {
   const strings = useUiStrings();
   const [draft, setDraft] = useState<ColorDraft | null>(null);
@@ -127,6 +132,7 @@ export function ColorEntry({
       <TextField
         {...toAriaControlProps(control)}
         className={hooks.slotClass('entry')}
+        spellCheck={toSpellCheckAttribute(textInput.spellCheck)}
         value={current?.text ?? (color ? formatColor(color, format) : '')}
         onChange={type}
         onBlur={() => finish({ shouldCommit: false })}
@@ -138,7 +144,14 @@ export function ColorEntry({
           else event.continuePropagation();
         }}
       >
-        <Input {...hooks.slot('input')} ref={inputRef} placeholder={placeholder} />
+        <Input
+          {...hooks.slot('input')}
+          ref={inputRef}
+          placeholder={placeholder}
+          autoComplete={textInput.autoComplete}
+          inputMode={textInput.inputMode}
+          enterKeyHint={textInput.enterKeyHint}
+        />
       </TextField>
     </div>
   );

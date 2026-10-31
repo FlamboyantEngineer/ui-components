@@ -5,7 +5,12 @@ import type { TreeItemData } from '../tree/tree.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 import type { OpenStateProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import {
+  Field,
+  useFieldControl,
+  type FieldInputProps,
+  type FieldTextInputProps,
+} from '../field/field.js';
 import { SelectControl } from './select-control.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { flattenPickerItems } from '../field/field.js';
@@ -21,7 +26,11 @@ export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M 
   : Key | null;
 
 interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
-  extends FieldInputProps<SelectFieldValue<M>>, OpenStateProps {
+  extends
+    FieldInputProps<SelectFieldValue<M>>,
+    OpenStateProps,
+    /** `placeholder` is the trigger's text while nothing is chosen; it defaults to the provider string. */
+    Pick<FieldTextInputProps, 'placeholder'> {
   /**
    * The choices, in display order, and groups of them shown as headed sections; a multiple value
    * follows this order. Group ids must differ from option ids.
@@ -31,8 +40,6 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   mode?: 'list' | undefined;
   /** `single` (the default) or `multiple`. */
   selectionMode?: M | undefined;
-  /** The trigger's text while nothing is chosen. Defaults to the provider string. */
-  placeholder?: string | undefined;
   /** A single select lists a first option with this label that chooses no value. */
   emptyLabel?: string | undefined;
   /** Draws a filter input in the open list. Defaults to on for more than 10 options or a search. */

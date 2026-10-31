@@ -571,6 +571,24 @@ describe('SelectTreeField', () => {
     expect(trigger(/^Place /)).toBeDisabled();
   });
 
+  it('UIC-SELECT-FIELD-9.1 gives the trigger the field control props', () => {
+    const props = {
+      mode: 'tree',
+      id: 'place',
+      label: 'Place',
+      description: 'Where to go.',
+      items: places,
+      getTextValue,
+      defaultValue: 'peru',
+    } as const;
+    const { rerender } = render(<SelectField {...props} />);
+    const button = trigger('Place Peru');
+    expect(button).toHaveAttribute('id', 'place-control');
+    expect(button).toHaveAccessibleDescription('Where to go.');
+    rerender(<SelectField {...props} isDisabled />);
+    expect(trigger('Place Peru')).toBeDisabled();
+  });
+
   it('UIC-SELECT-FIELD-10.5 reports no opening while read-only', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
