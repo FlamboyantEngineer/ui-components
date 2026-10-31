@@ -24,6 +24,29 @@ test.describe('Provider lab', () => {
     ).toBeVisible();
   });
 
+  test('UIC-PROVIDER-3.3 UIC-PROVIDER-5.2 keeps a draft while the locale and routing come and go', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('provider');
+    const options = page.locator('[data-lab-case="options"]');
+    const draft = options.getByRole('textbox', { name: 'Draft note' });
+    const amount = options.getByRole('textbox', { name: 'Amount' });
+    await expect(amount).toHaveValue('1,234.5');
+    await draft.fill('unsaved draft');
+    await options.getByText('French locale').click();
+    await expect(amount).toHaveValue('1\u202f234,5');
+    await options.getByText('Client routing').click();
+    await options.getByRole('link', { name: 'Options' }).click();
+    await expect(options.locator('[data-lab-output="route"]')).toHaveText('#options');
+    await options.getByText('French locale').click();
+    await options.getByText('Client routing').click();
+    await expect(amount).toHaveValue('1,234.5');
+    await expect(draft).toHaveValue('unsaved draft');
+    await options.getByRole('link', { name: 'Options' }).click();
+    await expect(page).toHaveURL(/#options$/);
+  });
+
   test('UIC-PROVIDER-7.1 pauses a page shortcut while a menu or a field popup is open', async ({
     page,
     lab,

@@ -13,7 +13,7 @@ import {
   type Ref,
   type SetStateAction,
 } from 'react';
-import { I18nProvider, RouterProvider } from '../primitives/index.js';
+import { I18nProvider, RouterProvider, useLocale } from '../primitives/index.js';
 import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
 import { mergeClassNames } from './hooks.js';
 import { OverlayPresenceScope } from './overlay-presence.js';
@@ -78,16 +78,29 @@ export interface PersistCodec<T> {
   stringify(value: T): string;
 }
 
+/** Client-side navigation for React Aria links, inherited by nested providers. */
+interface UiRouter {
+  navigate: UiNavigate;
+  useHref?: UiHref | undefined;
+}
+
 interface UiContextValue {
   glyphs: Partial<GlyphMap>;
   messages: UiMessages;
   locale: string;
   strings: UiStrings;
   renderLink: UiLinkRenderer;
+  router: UiRouter;
   storage: UiStorage;
 }
 
 const renderAnchor: UiLinkRenderer = (props) => <a {...props} />;
+
+/**
+ * Loads `href` as a native link would. React Aria only calls it for a same-window, same-origin link
+ * without modifier keys or `download`, and opens every other link natively itself.
+ */
+const navigateNatively: UiNavigate = (href) => window.location.assign(href);
 
 const defaultContext: UiContextValue = {
   glyphs: {},
@@ -95,6 +108,7 @@ const defaultContext: UiContextValue = {
   locale: 'en-US',
   strings: defaultStrings,
   renderLink: renderAnchor,
+  router: { navigate: navigateNatively },
   storage: createMemoryStorage(),
 };
 
@@ -108,8 +122,9 @@ const jsonCodec: PersistCodec<never> = {
 /**
  * Supplies glyphs, text, locale, link rendering and storage to every component below it.
  * Components work without a provider, using Heroicons, English text and in-memory storage.
- * Nested providers merge over their parent. Changing `messages` or `locale` re-renders the
- * components below in the new language.
+ * Nested providers merge over their parent. Changing any option re-renders the components below
+ * without remounting them: the locale and router wrappers are always present, and inherit the
+ * outer ones while their option is absent.
  */
 export function UiProvider({
   icons,
@@ -132,30 +147,34 @@ export function UiProvider({
       strings: isSameText ? parent.strings : compileStrings(merged, resolvedLocale),
     };
   }, [parent.messages, parent.locale, parent.strings, messages, locale]);
+  const router = useMemo(
+    () => (navigate ? { navigate, useHref } : parent.router),
+    [navigate, useHref, parent.router],
+  );
   const value = useMemo<UiContextValue>(
     () => ({
       ...text,
       glyphs: icons ? { ...parent.glyphs, ...omitUndefined(icons) } : parent.glyphs,
       renderLink: renderLink ?? parent.renderLink,
+      router,
       storage: storage ?? parent.storage,
     }),
-    [text, parent.glyphs, parent.renderLink, parent.storage, icons, renderLink, storage],
+    [text, parent.glyphs, parent.renderLink, parent.storage, icons, renderLink, router, storage],
   );
-
-  let content = (
-    <OverlayPresenceScope>
-      <UiContext.Provider value={value}>{children}</UiContext.Provider>
-    </OverlayPresenceScope>
-  );
-  if (navigate) {
-    content = (
-      <RouterProvider navigate={navigate} {...(useHref ? { useHref } : {})}>
-        {content}
+  const outerLocale = useLocale().locale;
+  // The same wrappers whatever the options, so adding or removing one never remounts the children.
+  return (
+    <I18nProvider locale={locale ?? outerLocale}>
+      <RouterProvider
+        navigate={router.navigate}
+        {...(router.useHref ? { useHref: router.useHref } : {})}
+      >
+        <OverlayPresenceScope>
+          <UiContext.Provider value={value}>{children}</UiContext.Provider>
+        </OverlayPresenceScope>
       </RouterProvider>
-    );
-  }
-  if (locale) content = <I18nProvider locale={locale}>{content}</I18nProvider>;
-  return content;
+    </I18nProvider>
+  );
 }
 
 /** Resolves a provider override, using the supplied default when the key is unlisted. */

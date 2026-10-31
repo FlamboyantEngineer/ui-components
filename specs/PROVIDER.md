@@ -52,10 +52,10 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-3.3 - Switching language on the fly
 
-Changing a provider's `messages` or `locale` shall rerender every component below it in the new language without remounting it, so a language menu can switch a running page. The provider compiles messages again only when its messages or locale change.
+Changing a provider's `messages` or `locale` shall rerender every component below it in the new language without remounting it, so a language menu can switch a running page. The provider compiles messages again only when its messages or locale change. Giving or removing any option, `locale` and `navigate` included, also keeps every component below mounted with its state and focus, in nested providers too: the provider always renders the same wrappers, and a wrapper whose option is absent passes on the outer one.
 
 Implementation: `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`, `e2e/languages.spec.ts`
+Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`, `e2e/languages.spec.ts`, `e2e/provider.spec.ts`
 
 ### UIC-PROVIDER-3.4 - Locale rules
 
@@ -85,7 +85,7 @@ Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`
 `UiProvider`'s `locale` prop shall set the locale React Aria uses for formatting, collation and text direction below it. Without it, React Aria uses the outer locale or the browser's.
 
 Implementation: `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`
+Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`
 
 ## UIC-PROVIDER-5 - Links
 
@@ -98,10 +98,10 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-5.2 - Client-side navigation for React Aria links
 
-When the host passes `navigate` (and optionally `useHref`), React Aria links, menu items and tabs with an `href` shall navigate through it instead of a full page load.
+When the host passes `navigate` (and optionally `useHref`), React Aria links, menu items and tabs with an `href` shall navigate through it instead of a full page load. A nested provider without `navigate` uses the outer provider's; with none, links load their page as native links do, and a link with a target, a download or a modifier key always opens natively.
 
 Implementation: `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`
+Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`, `e2e/provider.spec.ts`
 
 ## UIC-PROVIDER-6 - Storage
 

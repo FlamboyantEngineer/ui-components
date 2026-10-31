@@ -5,7 +5,7 @@ import * as languages from '../../src/core/locales/index.js';
 import type { UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { PausedShortcut } from './provider-overlay-cases.js';
-import { StorageSwitch } from './provider-storage-cases.js';
+import { OptionalOptions, StorageSwitch } from './provider-storage-cases.js';
 
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
@@ -220,6 +220,12 @@ mountLab(
       description="Switch adapters and keys without remounting the counter. Each stored value stays with its own adapter and key."
     >
       <StorageSwitch />
+    </LabSection>
+    <LabSection
+      title="Options that come and go"
+      description="Type a draft, then turn the French locale or client routing on and off: the draft and its focus stay, the locale follows, and the link routes through navigate only while routing is on."
+    >
+      <OptionalOptions />
     </LabSection>
   </>,
 );
