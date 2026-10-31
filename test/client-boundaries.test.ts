@@ -1,29 +1,16 @@
 // @vitest-environment node
 import { execFileSync, spawnSync } from 'node:child_process';
-import {
-  copyFileSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { walk as walkFiles } from '../scripts/lib/script.mjs';
 
+const walk = walkFiles as (dir: string) => string[];
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 const isMarked = (path: string) => read(path).startsWith("'use client';\n");
-
-function walk(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const full = join(dir, name);
-    return statSync(full).isDirectory() ? walk(full) : [full];
-  });
-}
 
 describe('client boundaries', () => {
   it('UIC-SERVER-COMPONENTS-1.1 UIC-SERVER-COMPONENTS-1.2 marks exactly the modules that need the client', () => {
@@ -54,12 +41,11 @@ describe('client boundaries', () => {
     // A scratch library beside the checker; inside node_modules so it resolves TypeScript.
     const dir = mkdtempSync(join(root, 'node_modules', '.client-boundaries-'));
     try {
-      mkdirSync(join(dir, 'scripts'));
+      mkdirSync(join(dir, 'scripts/lib'), { recursive: true });
       mkdirSync(join(dir, 'src'));
-      copyFileSync(
-        join(root, 'scripts/check-client-boundaries.mjs'),
-        join(dir, 'scripts/check-client-boundaries.mjs'),
-      );
+      for (const script of ['check-client-boundaries.mjs', 'lib/script.mjs']) {
+        copyFileSync(join(root, 'scripts', script), join(dir, 'scripts', script));
+      }
       const files = {
         'client.ts': [
           "'use client';",

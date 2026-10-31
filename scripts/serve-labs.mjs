@@ -5,16 +5,9 @@
 import { createReadStream, realpathSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { option, root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-
-function option(name, fallback) {
-  const index = process.argv.indexOf(`--${name}`);
-  return index === -1 ? fallback : process.argv[index + 1];
-}
-
-const port = Number(option('port', process.env.PORT ?? 4173));
+const port = Number(option('port', process.env.PORT ?? '4173'));
 const host = option('host', '127.0.0.1');
 const dir = realpathSync(resolve(root, option('dir', 'labs')));
 

@@ -10,11 +10,12 @@ import { dirname, join } from 'node:path';
 import * as esbuild from 'esbuild';
 import { labsDir, labSourceDir, listLabSources } from './lib/labs.mjs';
 import { BROWSER_TARGETS } from './lib/reference-stylesheet.mjs';
+import { flag } from './lib/script.mjs';
 
 const outdir = join(labsDir, 'build');
-const dev = process.argv.includes('--dev');
-const watch = process.argv.includes('--watch');
-const referenceOnly = process.argv.includes('--reference');
+const dev = flag('dev');
+const watch = flag('watch');
+const referenceOnly = flag('reference');
 
 const labNames = referenceOnly ? [] : listLabSources();
 const entryPoints = {

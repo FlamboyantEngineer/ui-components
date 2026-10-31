@@ -9,12 +9,11 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { runNpm } from './lib/npm.mjs';
+import { packTarball } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 import { extractTarGz } from './lib/tar.mjs';
+import { reportProblems, root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const STYLING_DEPENDENCY =
   /^(@heroui\/|tailwind|styled-components$|@emotion\/|@stitches\/|@vanilla-extract\/|goober$|@linaria\/|styled-jsx$|jss$|react-jss$)/;
 // Import attributes (`with { type: 'json' }`) need recent toolchains, so the build emits none.
@@ -35,18 +34,7 @@ const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-package-'));
 
 try {
-  const output = runNpm(
-    [
-      'pack',
-      '--json',
-      '--ignore-scripts',
-      '--foreground-scripts=false',
-      '--pack-destination',
-      workDir,
-    ],
-    { cwd: root },
-  );
-  const [pack] = JSON.parse(output);
+  const pack = packTarball(root, workDir);
   const files = new Set(pack.files.map((file) => file.path));
 
   for (const required of [
@@ -136,8 +124,4 @@ try {
   rmSync(workDir, { recursive: true, force: true });
 }
 
-if (problems.length > 0) {
-  console.error('Package problems:');
-  for (const problem of problems) console.error(`  ${problem}`);
-  process.exit(1);
-}
+reportProblems(problems, { heading: 'Package problems' });

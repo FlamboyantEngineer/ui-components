@@ -17,3 +17,22 @@ export function runNpm(args, options = {}) {
 export function startNpm(args, options = {}) {
   return spawn('npm', args, { ...options, shell });
 }
+
+/**
+ * Packs the package in `cwd` into `destination` as built, without running its scripts, and returns
+ * npm's description of the tarball (its `filename`, `size` and `files`).
+ */
+export function packTarball(cwd, destination = cwd) {
+  const output = runNpm(
+    [
+      'pack',
+      '--json',
+      '--ignore-scripts',
+      '--foreground-scripts=false',
+      '--pack-destination',
+      destination,
+    ],
+    { cwd },
+  );
+  return JSON.parse(output)[0];
+}

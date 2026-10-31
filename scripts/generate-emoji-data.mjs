@@ -17,11 +17,10 @@
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { root } from './lib/script.mjs';
 
 const require = createRequire(import.meta.url);
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const dataDir = join(root, 'node_modules/emojibase-data');
 const outDir = join(root, 'src/components/emoji-picker');
 /** @type {Array<{ group?: number, order: number } & Record<string, unknown>>} */

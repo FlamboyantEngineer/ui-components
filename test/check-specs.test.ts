@@ -24,11 +24,10 @@ function requirement(id: string) {
 function check(headings: string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
   dirs.push(dir);
-  for (const sub of ['scripts', 'specs', 'src']) mkdirSync(join(dir, sub));
-  copyFileSync(
-    join(process.cwd(), 'scripts/check-specs.mjs'),
-    join(dir, 'scripts/check-specs.mjs'),
-  );
+  for (const sub of ['scripts/lib', 'specs', 'src']) mkdirSync(join(dir, sub), { recursive: true });
+  for (const script of ['check-specs.mjs', 'lib/script.mjs']) {
+    copyFileSync(join(process.cwd(), 'scripts', script), join(dir, 'scripts', script));
+  }
   const lines = ['# Sample', ''];
   for (const heading of headings) {
     lines.push(...(heading.startsWith('## ') ? [heading, ''] : requirement(heading)));

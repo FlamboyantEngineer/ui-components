@@ -6,27 +6,17 @@
 //   node scripts/check-public-types.mjs --dir <path>         check another declaration directory
 //   node scripts/check-public-types.mjs button menu          check only these components
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { option, reportProblems, root, walk } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const LEAK =
   /(?:from\s+|import\(\s*)['"]((?:\.{1,2}\/)+(?:\.\.\/)*primitives\/[^'"]*|react-aria(?:-components)?(?:\/[^'"]*)?|react-stately(?:\/[^'"]*)?|@react-(?:aria|stately|types)\/[^'"]*|@internationalized\/[^'"]*)['"]/g;
 
 const args = process.argv.slice(2);
-const dirIndex = args.indexOf('--dir');
-const dir = dirIndex === -1 ? join(root, 'dist') : resolve(args[dirIndex + 1] ?? '');
-const components = args.filter(
-  (arg, index) => !arg.startsWith('--') && (dirIndex === -1 || index !== dirIndex + 1),
-);
-
-function walk(path) {
-  return readdirSync(path).flatMap((name) => {
-    const full = join(path, name);
-    return statSync(full).isDirectory() ? walk(full) : [full];
-  });
-}
+const dirOption = option('dir');
+const dir = dirOption === undefined ? join(root, 'dist') : resolve(dirOption);
+const components = args.filter((arg) => !arg.startsWith('--') && arg !== dirOption);
 
 if (!existsSync(dir)) {
   console.error(`${relative(root, dir) || dir} does not exist; run npm run build first.`);
@@ -47,11 +37,8 @@ for (const path of files) {
   }
 }
 
-if (problems.length > 0) {
-  console.error(problems.join('\n'));
-  console.error(
-    `\n${problems.length} public declaration(s) expose building blocks; declare library-owned types instead (UIC-PRIMITIVES-2.1).`,
-  );
-  process.exit(1);
-}
-console.log(`No building block exposed in ${files.length} public declaration files.`);
+reportProblems(problems, {
+  heading: `${problems.length} public declaration(s) expose building blocks`,
+  hint: 'Declare library-owned types instead (UIC-PRIMITIVES-2.1).',
+  success: `No building block exposed in ${files.length} public declaration files.`,
+});

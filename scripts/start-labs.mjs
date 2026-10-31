@@ -5,12 +5,11 @@
 //   node scripts/start-labs.mjs [--dry-run] [--port 4173] [--host 127.0.0.1] [--dir labs]
 
 import { lstatSync, readdirSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { runNpm } from './lib/npm.mjs';
+import { flag, root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const dryRun = process.argv.includes('--dry-run');
+const dryRun = flag('dry-run');
 
 // What labs/build is made from. npm rewrites node_modules/.package-lock.json on every install.
 const BUILD_SOURCES = [

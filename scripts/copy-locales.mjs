@@ -3,10 +3,9 @@
 // `./locales/<language>.json` for hosts and translation tools that read them as data.
 
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const from = join(root, 'src/core/locales');
 const to = join(root, 'dist/core/locales');
 

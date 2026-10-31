@@ -1,11 +1,12 @@
 // Shared lab discovery and page templates for build-labs, check-labs and new-lab.
 
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { REFERENCE_LAYER } from './reference-stylesheet.mjs';
 
-export const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+import { root } from './script.mjs';
+
+export { root };
 export const labsDir = join(root, 'labs');
 export const labSourceDir = join(labsDir, 'src');
 export const referenceDir = join(labsDir, 'reference');
