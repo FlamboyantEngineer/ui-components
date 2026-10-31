@@ -231,5 +231,21 @@ mountLab(
         </UiProvider>
       </div>
     </LabSection>
+    <LabSection
+      title="Right to left"
+      description="An Arabic locale, right to left: the days run from the right, the chevrons mirror, and the overlapping Team lunch and Design review on 18 March pack from the right edge."
+    >
+      <div style={frame(900)} data-lab-demo="rtl" dir="rtl">
+        <UiProvider locale="ar-EG">
+          <CalendarView
+            events={events}
+            timeZone="UTC"
+            getNow={getNow}
+            defaultDate="2026-03-18"
+            defaultView="week"
+          />
+        </UiProvider>
+      </div>
+    </LabSection>
   </>,
 );

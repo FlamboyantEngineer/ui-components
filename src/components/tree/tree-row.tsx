@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  ChevronDownGlyph,
-  ChevronRightGlyph,
-  MinusGlyph,
-  PlusGlyph,
-  type GlyphComponent,
-} from '../../core/glyphs.js';
+import { MinusGlyph, PlusGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The anatomy of one tree row, inside React Aria's row content.
 
 import type { ReactNode } from 'react';
@@ -16,6 +10,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
+import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
@@ -40,26 +35,25 @@ export type RowContentOptions<T extends TreeItemData> = Pick<
   | 'loads'
 > & { isMovable: (key: Key) => boolean; hasReorder: boolean };
 
-const expandGlyphs: Record<
-  TreeExpandGlyph,
-  { expanded: GlyphComponent; collapsed: GlyphComponent }
-> = {
-  chevron: { expanded: ChevronDownGlyph, collapsed: ChevronRightGlyph },
-  'plus-minus': { expanded: MinusGlyph, collapsed: PlusGlyph },
-};
+/** The expand glyph: the shared chevron, pointing to the inline end while collapsed, or plus-minus. */
+function useTreeExpandGlyph(glyph: TreeExpandGlyph, isExpanded: boolean): GlyphComponent {
+  const chevron = useExpandGlyph(isExpanded);
+  if (glyph === 'chevron') return chevron;
+  return isExpanded ? MinusGlyph : PlusGlyph;
+}
 
 /** The expand button of a row with children, or a spacer holding its place. */
 function TreeExpandButton({ state, glyph }: { state: TreeItemState; glyph: TreeExpandGlyph }) {
   const strings = useUiStrings();
+  const icon = useTreeExpandGlyph(glyph, state.isExpanded);
   if (!state.hasChildItems) return <span {...hooks.slot('expand-spacer')} aria-hidden="true" />;
-  const glyphs = expandGlyphs[glyph];
   return (
     <AriaButton
       slot="chevron"
       className={hooks.slotClass('expand')}
       aria-label={state.isExpanded ? strings.collapse : strings.expand}
     >
-      <Icon icon={state.isExpanded ? glyphs.expanded : glyphs.collapsed} size="sm" />
+      <Icon icon={icon} size="sm" />
     </AriaButton>
   );
 }

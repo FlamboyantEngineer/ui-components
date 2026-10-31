@@ -4,7 +4,6 @@ import {
   ArrowLeftGlyph,
   ArrowRightGlyph,
   ChevronDownGlyph,
-  ChevronRightGlyph,
   ChevronUpGlyph,
   EditGlyph,
   MinusGlyph,
@@ -18,6 +17,7 @@ import {
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import type {
   CompareTreeNode,
   ComparedTreeRow,
@@ -167,8 +167,8 @@ export function TreeCompareRowContent<T extends CompareTreeNode>(props: {
 }) {
   const { row, isExpanded, renderLabel } = props;
   const { change } = row;
-  const branch =
-    row.children.length > 0 ? (isExpanded ? ChevronDownGlyph : ChevronRightGlyph) : null;
+  const chevron = useExpandGlyph(isExpanded);
+  const branch = row.children.length > 0 ? chevron : null;
   return (
     <span {...hooks.slot('row', { change })}>
       <TreeCompareCell node={row.left} side="left" branch={null} renderLabel={renderLabel} />

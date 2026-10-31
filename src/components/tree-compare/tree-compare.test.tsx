@@ -167,6 +167,20 @@ describe('TreeCompare', () => {
     expect(branch()).toHaveAttribute('data-glyph', 'chevron-right');
   });
 
+  it('UIC-TREE-COMPARE-2.3 points the collapsed branch glyph to the inline end right to left', async () => {
+    const user = userEvent.setup();
+    render(
+      <UiProvider locale="ar-EG">
+        <Compare />
+      </UiProvider>,
+    );
+    await user.click(within(row('Setup')).getByRole('button', { name: /^Collapse/ }));
+    expect(row('Setup').querySelector('.ui-tree-compare__branch')).toHaveAttribute(
+      'data-glyph',
+      'chevron-left',
+    );
+  });
+
   it('UIC-TREE-COMPARE-3.1 expands both sides together, from the rows with differences below', async () => {
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();

@@ -199,6 +199,24 @@ test.describe('Calendar View lab', () => {
     );
   });
 
+  test('UIC-CALENDAR-VIEW-2.5 packs overlapping events from the right edge right to left', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const day = page.locator(
+      '[data-lab-demo="rtl"] [data-date="2026-03-18"] .ui-calendar-view__timed',
+    );
+    const [first, second] = await day
+      .locator(':scope > *')
+      .evaluateAll((blocks) =>
+        blocks
+          .filter((block) => block instanceof HTMLElement && block.style.width === '50%')
+          .map((block) => block.getBoundingClientRect().x),
+      );
+    expect(first).toBeGreaterThan(second ?? Infinity);
+  });
+
   test('UIC-CALENDAR-VIEW-1.5 follows the provider locale', async ({ page, lab }) => {
     await lab.open('calendar-view');
     const french = page.locator('[data-lab-demo="locale"]');

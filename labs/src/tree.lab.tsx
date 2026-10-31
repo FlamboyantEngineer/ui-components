@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LockedRenameTree } from './tree-rename-lock.js';
@@ -420,6 +421,22 @@ mountLab(
       description="Press the lock button, then F2 on Review and type: when the row locks, its field closes without renaming and focus stays in the tree. Unlock to rename it again."
     >
       <LockedRenameTree />
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="An Arabic locale, right to left: rows indent from the right and a collapsed folder's chevron points left, toward the inline end, as ArrowLeft expands it."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <UiProvider locale="ar-EG">
+          <Tree
+            aria-label="Library"
+            items={LIBRARY}
+            getTextValue={name}
+            getIcon={icon}
+            defaultExpandedKeys={['recipes']}
+          />
+        </UiProvider>
+      </div>
     </LabSection>
   </>,
 );

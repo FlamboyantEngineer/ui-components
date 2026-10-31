@@ -13,6 +13,7 @@ import {
   Heading,
   OverlayTriggerStateContext,
   Popover,
+  useLocale,
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useGetNow, useTimeZone } from '../../core/clock.js';
@@ -91,13 +92,15 @@ export function CalendarBody({
   heading: DateTimeFieldCalendarHeading;
 }) {
   const strings = useUiStrings();
+  // Previous sits at the inline start and points there; right to left that is the right edge.
+  const isRtl = useLocale().direction === 'rtl';
   return (
     <>
       {/* The month navigation is no page banner, wherever the calendar is drawn. */}
       <header {...hooks.slot('calendar-header')} role="none">
         <Button
           slot="previous"
-          icon={ChevronLeftGlyph}
+          icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
           label={strings.previous}
           size="sm"
           className={hooks.slotClass('calendar-nav')}
@@ -109,7 +112,7 @@ export function CalendarBody({
         )}
         <Button
           slot="next"
-          icon={ChevronRightGlyph}
+          icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
           label={strings.next}
           size="sm"
           className={hooks.slotClass('calendar-nav')}

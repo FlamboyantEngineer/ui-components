@@ -466,6 +466,33 @@ describe('CalendarView', () => {
     expect(release).toHaveAttribute('tabindex', '0');
   });
 
+  it('UIC-CALENDAR-VIEW-2.5 packs concurrent events from the inline start right to left', () => {
+    const overlapping: CalendarViewEvent[] = [
+      { id: 'a', title: 'Standup', start: '2026-03-18T09:00:00Z', end: '2026-03-18T10:00:00Z' },
+      { id: 'b', title: 'Sync', start: '2026-03-18T09:30:00Z', end: '2026-03-18T10:30:00Z' },
+    ];
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <CalendarView
+          events={overlapping}
+          defaultView="week"
+          timeZone="UTC"
+          getNow={getNow}
+          defaultDate="2026-03-18"
+        />
+      </UiProvider>,
+    );
+    const blocks = [
+      ...container.querySelectorAll<HTMLElement>(
+        '[data-date="2026-03-18"] .ui-calendar-view__timed > *',
+      ),
+    ];
+    expect(blocks.map((block) => [block.style.right, block.style.left])).toEqual([
+      ['0%', ''],
+      ['50%', ''],
+    ]);
+  });
+
   it('UIC-CALENDAR-VIEW-4.2 mirrors arrow keys right to left', async () => {
     render(
       <UiProvider locale="ar-EG">

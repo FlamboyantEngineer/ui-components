@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import type { FormEvent, ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { UiProvider } from '../../core/provider.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
@@ -449,6 +450,20 @@ describe('DateTimeField calendar', () => {
     await user.keyboard('{ArrowRight}{Enter}');
     expect(onCommit).toHaveBeenCalledWith('2026-04-14');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('UIC-DATE-TIME-FIELD-2.1 points the month buttons to the inline start and end right to left', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <DateTimeField label="Due" defaultValue="2026-04-13" />
+      </UiProvider>,
+    );
+    await user.click(requireDefined(container.querySelector('.ui-date-time-field__button')));
+    const glyphs = [
+      ...screen.getByRole('dialog').querySelectorAll('.ui-date-time-field__calendar-nav'),
+    ].map((button) => button.querySelector('[data-glyph]')?.getAttribute('data-glyph'));
+    expect(glyphs).toEqual(['chevron-right', 'chevron-left']);
   });
 
   it('UIC-DATE-TIME-FIELD-2.1 refuses days outside the bounds and shows two months for a range', async () => {
