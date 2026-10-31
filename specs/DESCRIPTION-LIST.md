@@ -20,7 +20,7 @@ Verification: `src/components/description-list/description-list.test.tsx`
 
 ### UIC-DESCRIPTION-LIST-1.3 - Layout and columns
 
-`layout` (`inline` by default, or `stacked`) and `columns` (`1` by default, `2`, `3` or `4`) shall be published as `data-layout` and `data-columns` on the root. The stylesheet aligns inline rows on shared label and value tracks, puts stacked values below their labels, and may lay rows out in up to four columns. The reference sheet wraps long values without clipping and reduces several columns to one on a viewport narrower than 44rem.
+`layout` (`inline` by default, or `stacked`) and `columns` (`1` by default, `2`, `3` or `4`) shall be published as `data-layout` and `data-columns` on the root. The stylesheet aligns inline rows on shared label and value tracks, puts stacked values below their labels, and may lay rows out in up to four columns. The reference sheet wraps long values without clipping and reduces several columns to one on a viewport narrower than 44rem. Its layout rules reach only a list's own rows, so a list nested in a row's value keeps its own layout, columns and spans.
 
 Implementation: `src/components/description-list/description-list.tsx`, `labs/reference/description-list.css`
 Verification: `src/components/description-list/description-list.test.tsx`, `e2e/description-list.spec.ts`

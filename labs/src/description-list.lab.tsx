@@ -66,6 +66,34 @@ function FocusableRows() {
   );
 }
 
+/** A two-column list nested in a row of another, each with its own layout. */
+function NestedLists({
+  outer,
+  inner,
+}: {
+  outer: 'inline' | 'stacked';
+  inner: 'inline' | 'stacked';
+}) {
+  return (
+    <div style={{ width: 720 }}>
+      <DescriptionList layout={outer}>
+        <DescriptionRow label="Order">A-1042</DescriptionRow>
+        <DescriptionRow label="Shipment">
+          <DescriptionList layout={inner} columns={2} data-lab-inner="">
+            <DescriptionRow label="Carrier" secondary="Tracked daily">
+              Rail freight
+            </DescriptionRow>
+            <DescriptionRow label="Crates">{12}</DescriptionRow>
+            <DescriptionRow label="Route" span={2}>
+              Lisbon to Porto, then by road to the warehouse
+            </DescriptionRow>
+          </DescriptionList>
+        </DescriptionRow>
+      </DescriptionList>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -109,6 +137,15 @@ mountLab(
             </DescriptionList>
           </div>
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Nested lists"
+      description="A two-column list inside a row of another list keeps its own layout, columns, spans and secondary values, whichever layout the outer list has."
+    >
+      <StateMatrix
+        axes={{ outer: ['inline', 'stacked'], inner: ['inline', 'stacked'] }}
+        render={({ outer, inner }) => <NestedLists outer={outer} inner={inner} />}
       />
     </LabSection>
     <LabSection

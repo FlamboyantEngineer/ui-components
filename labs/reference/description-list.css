@@ -1,5 +1,7 @@
 /* Description List */
 
+/* Layout rules reach only a list's own rows (> combinators), so a nested list keeps its own. */
+
 .ui-description-list {
   --ref-description-list-columns: 1;
   display: grid;
@@ -44,10 +46,10 @@
 
 /* A row covering the whole line, or more columns than the list has, spans the full line. */
 .ui-description-list__row[data-span='full'],
-.ui-description-list[data-columns='1'] .ui-description-list__row:not([data-span='1']),
+.ui-description-list[data-columns='1'] > .ui-description-list__row:not([data-span='1']),
 .ui-description-list[data-columns='2']
-  .ui-description-list__row:is([data-span='3'], [data-span='4']),
-.ui-description-list[data-columns='3'] .ui-description-list__row[data-span='4'] {
+  > .ui-description-list__row:is([data-span='3'], [data-span='4']),
+.ui-description-list[data-columns='3'] > .ui-description-list__row[data-span='4'] {
   grid-column: 1 / -1;
 }
 
@@ -74,24 +76,25 @@
   gap: 12px;
 }
 
-.ui-description-list[data-layout='stacked'] .ui-description-list__row {
+.ui-description-list[data-layout='stacked'] > .ui-description-list__row {
   grid-column: span var(--ref-description-list-span);
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
 }
 
-.ui-description-list[data-layout='stacked'] .ui-description-list__row[data-span='full'],
+.ui-description-list[data-layout='stacked'] > .ui-description-list__row[data-span='full'],
 .ui-description-list[data-layout='stacked'][data-columns='1']
-  .ui-description-list__row:not([data-span='1']),
+  > .ui-description-list__row:not([data-span='1']),
 .ui-description-list[data-layout='stacked'][data-columns='2']
-  .ui-description-list__row:is([data-span='3'], [data-span='4']),
+  > .ui-description-list__row:is([data-span='3'], [data-span='4']),
 .ui-description-list[data-layout='stacked'][data-columns='3']
-  .ui-description-list__row[data-span='4'] {
+  > .ui-description-list__row[data-span='4'] {
   grid-column: 1 / -1;
 }
 
 .ui-description-list[data-layout='stacked']
-  :is(.ui-description-list__value, .ui-description-list__secondary) {
+  > .ui-description-list__row
+  > :is(.ui-description-list__value, .ui-description-list__secondary) {
   grid-column: auto;
 }
 
@@ -100,7 +103,7 @@
     --ref-description-list-columns: 1;
   }
 
-  .ui-description-list .ui-description-list__row.ui-description-list__row {
+  .ui-description-list > .ui-description-list__row.ui-description-list__row {
     grid-column: 1 / -1;
   }
 }
