@@ -49,6 +49,11 @@ export interface TranscriptRegistry {
   /** The message id of a child key: the message's own id, else the key. */
   idFor(key: string): string;
   listen(listener: TranscriptEntryListener): () => void;
+  /**
+   * Forgets the keys and ids of every message that is not registered now, for another
+   * conversation: its messages registered before the transcript's own commit, so they stay.
+   */
+  forgetUnmounted(): void;
 }
 
 const emptyView: TranscriptView = {
@@ -67,12 +72,18 @@ export function createTranscriptRegistry(): TranscriptRegistry {
   const listeners = new Set<TranscriptEntryListener>();
   const keysById = new Map<string, string>();
   const idsByKey = new Map<string, string>();
+  const forgetId = (key: string, id: string) => {
+    idsByKey.delete(key);
+    if (keysById.get(id) === key) keysById.delete(id);
+  };
   return {
     view: createValueStore(emptyView),
     register(key, entry) {
       const previous = entries.get(key);
       entries.set(key, entry);
       registered.add(key);
+      const previousId = idsByKey.get(key);
+      if (previousId !== undefined && previousId !== entry.id) forgetId(key, previousId);
       if (entry.id !== undefined && entry.id !== key) {
         keysById.set(entry.id, key);
         idsByKey.set(key, entry.id);
@@ -100,6 +111,10 @@ export function createTranscriptRegistry(): TranscriptRegistry {
     listen(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    forgetUnmounted() {
+      for (const key of registered) if (!entries.has(key)) registered.delete(key);
+      for (const [key, id] of idsByKey) if (!entries.has(key)) forgetId(key, id);
     },
   };
 }

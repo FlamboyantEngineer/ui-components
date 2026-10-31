@@ -173,6 +173,8 @@ export function readMessageText(element: HTMLElement | null): string {
 
 /** Starts over for another conversation. */
 export function resetConversation(runtime: TranscriptRuntime) {
+  runtime.registry.forgetUnmounted();
+  runtime.seen.clear();
   runtime.keeper.reset();
   runtime.activeKey = null;
   runtime.unseen.clear();
