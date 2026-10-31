@@ -51,17 +51,37 @@ export function listenPointerRelease(options: {
   return stop;
 }
 
-/** Arms a native drag until the press or drag ends, sharing cleanup across handle-driven rows. */
+/**
+ * Arms a native drag until the press or drag ends, sharing cleanup across handle-driven rows. A
+ * native drag cancels its pointer stream as it starts, so a cancellation disarms only once the
+ * task that cancelled has passed without the element's drag starting.
+ */
 export function armElementDrag(element: Element): void {
   armedElements.get(element)?.();
+  const view = element.ownerDocument.defaultView;
+  let isDragging = false;
+  let timer: number | undefined;
   const disarm = () => {
     element.removeAttribute('draggable');
     stop();
+    view?.clearTimeout(timer);
+    element.removeEventListener('dragstart', start);
     element.removeEventListener('dragend', disarm);
     armedElements.delete(element);
   };
-  const stop = listenPointerRelease({ element, onRelease: disarm });
+  const start = () => {
+    isDragging = true;
+  };
+  const onCancel = () => {
+    if (isDragging) return;
+    if (!view) return disarm();
+    timer = view.setTimeout(() => {
+      if (!isDragging) disarm();
+    }, 0);
+  };
+  const stop = listenPointerRelease({ element, onRelease: disarm, onCancel });
   element.setAttribute('draggable', 'true');
   armedElements.set(element, disarm);
+  element.addEventListener('dragstart', start);
   element.addEventListener('dragend', disarm);
 }

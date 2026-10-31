@@ -53,6 +53,18 @@ test.describe('Drag Handle lab', () => {
     await page.mouse.up();
     await expect(output).toHaveText('Order: Banana, Cherry, Apple, Fig');
     await expect(apple).not.toHaveAttribute('draggable');
+    // A press the browser cancels before any drag starts leaves the row unarmed.
+    const banana = list.getByRole('row', { name: 'Banana' });
+    const bananaHandle = await list.getByRole('button', { name: 'Drag Banana' }).boundingBox();
+    if (!bananaHandle) throw new Error('no handle');
+    await page.mouse.move(bananaHandle.x + bananaHandle.width / 2, bananaHandle.y + 5);
+    await page.mouse.down();
+    await expect(banana).toHaveAttribute('draggable', 'true');
+    await banana.dispatchEvent('pointercancel', { pointerId: 1, bubbles: true });
+    await expect(banana).not.toHaveAttribute('draggable');
+    await page.mouse.up();
+    await banana.dragTo(cherry, { sourcePosition: { x: 80, y: 10 } });
+    await expect(output).toHaveText('Order: Banana, Cherry, Apple, Fig');
     await lab.expectAccessible();
   });
 });
