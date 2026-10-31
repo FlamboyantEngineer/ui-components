@@ -9,8 +9,13 @@ interface PointerDragOptions<E extends Element, T> {
   isDisabled?: boolean | undefined;
   /** A mode change abandons the current gesture without disabling future presses. */
   resetKey?: unknown;
-  /** Clears a gesture's preview when a mode change abandons it; unmounting does not call this. */
+  /**
+   * Clears a gesture's preview when a mode change abandons it. Unmounting calls it only with
+   * `cancelsOnUnmount`, for a preview that lives above the element owning the gesture.
+   */
   onCancel?: ((state: T) => void) | undefined;
+  /** Also call `onCancel` when the element unmounts mid-gesture. Defaults to false. */
+  cancelsOnUnmount?: boolean | undefined;
   /** Return the gesture's starting data, or null to refuse the press. */
   onStart: (event: PointerEvent<E>) => T | null;
   onMove: (event: PointerEvent<E>, state: T) => void;
@@ -34,6 +39,7 @@ interface PointerDrag<E extends Element, T> {
 export function usePointerDrag<E extends Element, T>(options: PointerDragOptions<E, T>) {
   const active = useRef<PointerDrag<E, T> | null>(null);
   const onCancel = useLatest(options.onCancel);
+  const cancelsOnUnmount = useLatest(options.cancelsOnUnmount ?? false);
   const isDisabled = options.isDisabled ?? false;
   const cancel = useCallback(() => {
     const drag = active.current;
@@ -43,9 +49,10 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
   }, []);
   useEffect(
     () => () => {
-      cancel();
+      const drag = cancel();
+      if (drag && cancelsOnUnmount.current) onCancel.current?.(drag.state);
     },
-    [cancel],
+    [cancel, cancelsOnUnmount, onCancel],
   );
   useLayoutEffect(() => {
     const drag = active.current;

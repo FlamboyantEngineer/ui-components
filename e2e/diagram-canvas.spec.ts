@@ -127,7 +127,7 @@ test.describe('Diagram Canvas lab', () => {
     const box = await viewportBox(page);
     await part(page, 'Pump').click();
     await expect(output(page, 'selection')).toHaveText('pump');
-    await part(page, 'Filter').click({ modifiers: ['Shift'] });
+    await part(page, 'Filter').click({ modifiers: ['ControlOrMeta'] });
     await expect(output(page, 'selection')).toHaveText('pump, filter');
     const source = await centreOf(part(page, 'Source tank'));
     const pump = await centreOf(part(page, 'Pump'));
@@ -164,6 +164,29 @@ test.describe('Diagram Canvas lab', () => {
     await page.keyboard.press('Shift+ArrowUp');
     await expect(output(page, 'nodes')).toContainText('Pump 260,100;');
     await expect(plant(page).locator('.ui-diagram-canvas__status')).toHaveText('Pump moved');
+  });
+
+  test('UIC-DIAGRAM-CANVAS-4.3 discards a move when the dragged parts are removed mid-drag', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    await viewportBox(page);
+    const pump = part(page, 'Pump');
+    await pump.click();
+    await part(page, 'Filter').click({ modifiers: ['ControlOrMeta'] });
+    const before = await output(page, 'nodes').textContent();
+    await page.getByRole('button', { name: 'Remove selected in 2 seconds' }).click();
+    const start = await centreOf(pump);
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x + 40, start.y + 30, { steps: 4 });
+    await expect(pump).toHaveAttribute('data-moving', 'true');
+    await expect(pump).toHaveCount(0, { timeout: 5000 });
+    await expect(plant(page).locator('[data-moving]')).toHaveCount(0);
+    await page.mouse.up();
+    const kept = (before ?? '').split('; ').filter((entry) => !/^(Pump|Filter) /.test(entry));
+    await expect(output(page, 'nodes')).toHaveText(kept.join('; '));
   });
 
   test('UIC-DIAGRAM-CANVAS-4.3 leaves presses and text selection to controls inside nodes', async ({

@@ -487,6 +487,62 @@ describe('DiagramCanvas nodes', () => {
     expect(onConnect).not.toHaveBeenCalled();
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.3 discards a move whose node leaves the canvas mid-drag', async () => {
+    const user = userEvent.setup();
+    const onNodesChange = vi.fn();
+    const props = {
+      'aria-label': 'Pipes',
+      edges: pipeEdges,
+      defaultViewport: { x: 0, y: 0, zoom: 100 },
+      defaultSelectedKeys: ['pump', 'tank'],
+      isEditing: true,
+      onNodesChange,
+    };
+    const { container, rerender } = render(<DiagramCanvas {...props} nodes={pipeNodes} />);
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
+    expect(node('Tank')).toHaveAttribute('data-moving', 'true');
+    const withoutPump = pipeNodes.filter((item) => item.id !== 'pump');
+    rerender(<DiagramCanvas {...props} nodes={withoutPump} />);
+    expect(node('Tank')).not.toHaveAttribute('data-moving');
+    expect(node('Tank').style).toMatchObject({ left: '300px', top: '200px' });
+    expect(container.querySelector('[data-moving]')).toBeNull();
+    expect(onNodesChange).not.toHaveBeenCalled();
+
+    rerender(<DiagramCanvas {...props} nodes={pipeNodes} view="canvas" />);
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
+    rerender(<DiagramCanvas {...props} nodes={pipeNodes} view="outline" />);
+    rerender(<DiagramCanvas {...props} nodes={pipeNodes} view="canvas" />);
+    expect(container.querySelector('[data-moving]')).toBeNull();
+    expect(node('Pump').style).toMatchObject({ left: '0px', top: '0px' });
+    expect(onNodesChange).not.toHaveBeenCalled();
+  });
+
+  it('UIC-DIAGRAM-CANVAS-5.1 gives up a connection whose port leaves the canvas mid-drag', async () => {
+    const user = userEvent.setup();
+    const onConnect = vi.fn();
+    const props = {
+      'aria-label': 'Pipes',
+      nodes: pipeNodes,
+      edges: pipeEdges,
+      defaultViewport: { x: 0, y: 0, zoom: 100 },
+      isEditing: true,
+      onConnect,
+    };
+    const { container, rerender } = render(<DiagramCanvas {...props} view="canvas" />);
+    const root = () => requireDefined(container.querySelector('.ui-diagram-canvas'));
+    await drag(user, screen.getByRole('button', { name: 'Pump, outlet' }), {
+      clientX: 200,
+      clientY: 120,
+    });
+    expect(root()).toHaveAttribute('data-connecting', 'true');
+    rerender(<DiagramCanvas {...props} view="outline" />);
+    expect(root()).not.toHaveAttribute('data-connecting');
+    rerender(<DiagramCanvas {...props} view="canvas" />);
+    expect(container.querySelector('.ui-diagram-canvas__connection-preview')).toBeNull();
+    await press(user, screen.getByRole('button', { name: 'Valve, inlet' }));
+    expect(onConnect).not.toHaveBeenCalled();
+  });
+
   it('UIC-DIAGRAM-CANVAS-5.1 connects by dragging from a port to a node, with a preview edge', async () => {
     const user = userEvent.setup();
     const onConnect = vi.fn();

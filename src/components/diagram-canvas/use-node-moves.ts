@@ -115,6 +115,8 @@ export function useNodeMoves(options: NodeMovesOptions): NodeMoves {
       const origin = active?.origins.get(active.anchor);
       const at = active ? moved?.get(active.anchor) : undefined;
       if (!active || !moved || !at || (at.x === origin?.x && at.y === origin.y)) return false;
+      // An anchor the host removed mid-drag ends the drag without a move.
+      if (!nodes.some((node) => node.id === active.anchor)) return false;
       commit(active.anchor, moved);
       return true;
     },

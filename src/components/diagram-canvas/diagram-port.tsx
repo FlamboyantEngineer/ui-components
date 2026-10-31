@@ -49,6 +49,8 @@ export function DiagramPortView({
   const data = { side: port.side, connectSource: isConnectSource };
   const drag = usePointerDrag<HTMLButtonElement, { x: number; y: number; isDragging: boolean }>({
     isDisabled: !isEditing,
+    // The connection lives in the canvas: a port removed mid-drag must not leave it in progress.
+    cancelsOnUnmount: true,
     onCancel: () => connect().cancel(),
     onStart: (event) => {
       event.stopPropagation();

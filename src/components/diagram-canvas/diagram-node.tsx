@@ -79,6 +79,8 @@ function useNodePointer(id: Key, controller: RefObject<DiagramController>, isEdi
   return usePointerDrag<HTMLElement, PointerStart>({
     capture: false,
     resetKey: isEditing,
+    // The preview lives in the canvas: a node removed or hidden mid-drag must not leave it behind.
+    cancelsOnUnmount: true,
     onCancel: () => controller.current.moves.cancel(),
     onStart: (event) => {
       const { selection, moves, connect } = controller.current;
