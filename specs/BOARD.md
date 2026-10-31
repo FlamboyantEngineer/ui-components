@@ -29,7 +29,7 @@ Verification: `src/components/board/board.test.tsx`, `src/components/board/board
 
 ### UIC-BOARD-1.4 - Collapsing columns and lanes
 
-Each column header and lane header shall hold an [ExpandToggle](EXPAND-TOGGLE.md) (`ui-board__column-toggle`, `ui-board__lane-toggle`) named by the provider's `collapsePanel` or `expandPanel` string with the title. A collapsed column publishes `data-collapsed` on its header and cells, and its cells stay as empty placeholders, so the stylesheet can draw a narrow column while the lanes keep their columns aligned; a collapsed lane publishes `data-collapsed` and hides its cells. The collapsed columns are controlled with `collapsedColumns` and `onCollapsedColumnsChange` or uncontrolled from `defaultCollapsedColumns`, and the collapsed lanes likewise with `collapsedLanes`, `onCollapsedLanesChange` and `defaultCollapsedLanes`. With `persistKey`, the uncontrolled collapsed columns and lanes are remembered through the provider storage adapter ([PROVIDER.md](PROVIDER.md)) under `<persistKey>:columns` and `<persistKey>:lanes`, as lists of keys in which numeric and text keys stay distinct. A stored value that is not a list of keys falls back to the default collapsed columns or lanes.
+Each column header and lane header shall hold an [ExpandToggle](EXPAND-TOGGLE.md) (`ui-board__column-toggle`, `ui-board__lane-toggle`) named by the provider's `collapsePanel` or `expandPanel` string with the title. A collapsed column publishes `data-collapsed` on its header and cells, and its cells stay as empty placeholders, so the stylesheet can draw a narrow column while the lanes keep their columns aligned. The reference sheet draws a collapsed column as a 44px panel that starts in the header row, toggle first, and runs its title (cut when too long), count and actions down over its placeholder cells, so collapsing any set of columns leaves the header row at its height with none collapsed; a collapsed lane publishes `data-collapsed` and hides its cells. The collapsed columns are controlled with `collapsedColumns` and `onCollapsedColumnsChange` or uncontrolled from `defaultCollapsedColumns`, and the collapsed lanes likewise with `collapsedLanes`, `onCollapsedLanesChange` and `defaultCollapsedLanes`. With `persistKey`, the uncontrolled collapsed columns and lanes are remembered through the provider storage adapter ([PROVIDER.md](PROVIDER.md)) under `<persistKey>:columns` and `<persistKey>:lanes`, as lists of keys in which numeric and text keys stay distinct. A stored value that is not a list of keys falls back to the default collapsed columns or lanes.
 
 Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/board-lane.tsx`, `src/components/board/use-board-collapse.ts`, `src/components/board/board-cell.tsx`
 Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
@@ -68,6 +68,13 @@ With `renderColumnActions`, each column header shall end with a `ui-board__colum
 
 Implementation: `src/components/board/board.tsx`, `src/components/board/board-column-header.tsx`, `labs/reference/board.css`
 Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
+
+### UIC-BOARD-1.10 - Header icons
+
+A `BoardColumn` or `BoardLane` with an `icon` (an icon component or a rendered element, as `Button` takes) shall draw it as a decorative icon, hidden from assistive technology, in a `ui-board__column-icon` or `ui-board__lane-icon` slot between the collapse toggle and the title; without one no slot renders. The title alone still names the column's or lane's cells and the count reads as before. `renderColumnActions` receives the column entry with its `icon`. The reference sheet keeps the icon from shrinking, aligned with the title, and upright in a collapsed column, without making the header row taller ([UIC-BOARD-1.4](#uic-board-14---collapsing-columns-and-lanes)).
+
+Implementation: `src/components/board/board.tsx`, `src/components/board/board-column-header.tsx`, `src/components/board/board-lane.tsx`, `labs/reference/board.css`
+Verification: `src/components/board/board-icons.test.tsx`, `e2e/board.spec.ts`
 
 ## UIC-BOARD-2 - Card moves
 
@@ -135,12 +142,14 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `ui-board__column`          | slot      |                   | A column header.                                                                     |
 | `ui-board__column-handle`   | slot      |                   | A column's drag handle (also `ui-button`).                                           |
 | `ui-board__column-toggle`   | slot      |                   | A column's collapse toggle (also `ui-expand-toggle`).                                |
+| `ui-board__column-icon`     | slot      |                   | A column's decorative icon (also `ui-icon`).                                         |
 | `ui-board__column-title`    | slot      |                   | A column's title.                                                                    |
 | `ui-board__column-count`    | slot      |                   | A column's card count, against its limit.                                            |
 | `ui-board__column-actions`  | slot      |                   | The caller's controls at the end of a column header.                                 |
 | `ui-board__lane`            | slot      |                   | A lane (`role="group"`).                                                             |
 | `ui-board__lane-header`     | slot      |                   | A lane's header.                                                                     |
 | `ui-board__lane-toggle`     | slot      |                   | A lane's collapse toggle (also `ui-expand-toggle`).                                  |
+| `ui-board__lane-icon`       | slot      |                   | A lane's decorative icon (also `ui-icon`).                                           |
 | `ui-board__lane-title`      | slot      |                   | A lane's title.                                                                      |
 | `ui-board__lane-count`      | slot      |                   | A lane's card count.                                                                 |
 | `ui-board__cells`           | slot      |                   | The row of cells of a lane, or of a board without lanes.                             |

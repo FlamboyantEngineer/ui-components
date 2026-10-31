@@ -243,4 +243,73 @@ test.describe('Board lab', () => {
     await expect(moved).toBeInViewport();
     await expect(todo.getByRole('row', { name, exact: true })).toHaveCount(0);
   });
+
+  test('UIC-BOARD-1.10 draws header icons upright without a taller header row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = page.locator('[data-lab-demo="lanes"] .ui-board');
+    const row = board.locator('.ui-board__columns');
+    const height = (await row.boundingBox())?.height;
+    await expect(board.locator('.ui-board__column-icon')).toHaveCount(4);
+    await expect(board.locator('.ui-board__lane-icon')).toHaveCount(2);
+    await board.getByRole('button', { name: 'Collapse Doing' }).click();
+    const icon = board.locator('.ui-board__column[data-collapsed] .ui-board__column-icon');
+    await expect(icon).toBeVisible();
+    const box = await icon.boundingBox();
+    expect(box?.width).toBeGreaterThan(0);
+    expect(Math.abs((box?.width ?? 0) - (box?.height ?? 0))).toBeLessThan(1);
+    expect(await icon.evaluate((node) => getComputedStyle(node).transform)).toBe('none');
+    expect((await row.boundingBox())?.height).toBe(height);
+    await lab.expectAccessible('[data-lab-demo="lanes"]');
+  });
+
+  test('UIC-BOARD-1.4 keeps the header row one height while columns collapse', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    for (const demo of ['moves', 'lanes']) {
+      const board = page.locator(`[data-lab-demo="${demo}"] .ui-board`);
+      const row = board.locator('.ui-board__columns');
+      const height = (await row.boundingBox())?.height;
+      const toggles = board.locator('.ui-board__column-toggle');
+      for (const index of [1, 0, 3]) {
+        await toggles.nth(index).click();
+        expect((await row.boundingBox())?.height).toBe(height);
+      }
+      const headers = await board.locator('.ui-board__column').evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const box = node.getBoundingClientRect();
+          return {
+            left: box.left,
+            right: box.right,
+            collapsed: node.hasAttribute('data-collapsed'),
+          };
+        }),
+      );
+      for (const [index, header] of headers.entries()) {
+        if (header.collapsed) expect(Math.round(header.right - header.left)).toBe(44);
+        const next = headers[index + 1];
+        if (next) expect(header.right).toBeLessThanOrEqual(next.left);
+      }
+      const collapsed = board.locator('.ui-board__column[data-collapsed]').first();
+      await expect(collapsed.locator('.ui-board__column-title')).toBeVisible();
+      await expect(collapsed.locator('.ui-board__column-count')).toBeVisible();
+      await expect(collapsed.locator('.ui-board__column-actions')).toBeVisible();
+    }
+    const long = page.locator('[data-lab-cell="state=collapsed long title"]');
+    const longRow = await long.locator('.ui-board__columns').boundingBox();
+    const plainRow = await page
+      .locator('[data-lab-cell="state=cards"] .ui-board__columns')
+      .boundingBox();
+    expect(longRow?.height).toBe(plainRow?.height);
+    const title = long.locator('.ui-board__column[data-collapsed] .ui-board__column-title');
+    expect(await title.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+    await expect(
+      long.getByRole('button', { name: /Waiting for parts from the hardware store/ }),
+    ).toBeVisible();
+    await lab.expectAccessible();
+  });
 });

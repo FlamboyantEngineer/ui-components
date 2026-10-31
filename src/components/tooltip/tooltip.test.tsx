@@ -296,6 +296,21 @@ describe('Tooltip', () => {
     await advance(3000);
   });
 
+  it("UIC-TOOLTIP-1.9 keeps a trigger's own name and still adds no description", async () => {
+    render(
+      <Tooltip relationship="label" content="Inbox">
+        <AriaButton aria-label="Inbox, 3 unread">
+          <svg aria-hidden="true" />
+        </AriaButton>
+      </Tooltip>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Inbox, 3 unread' });
+    await tabTo(trigger);
+    expect(tooltip()).toHaveTextContent('Inbox');
+    expect(trigger).toHaveAccessibleName('Inbox, 3 unread');
+    expect(trigger).toHaveAccessibleDescription('');
+  });
+
   it('UIC-TOOLTIP-1.9 describes the trigger when the hint is not a string', async () => {
     render(
       <Tooltip relationship="label" content={<strong>Underline</strong>}>

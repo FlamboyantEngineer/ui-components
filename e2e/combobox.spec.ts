@@ -455,6 +455,33 @@ test.describe('Combobox lab', () => {
     await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('option', { name: 'Pears 0' })).toBeVisible();
   });
+
+  test('UIC-COMBOBOX-5.5 keeps focus in a text filter in the list header', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const input = section(page, 'Filter in the list header').getByRole('combobox', {
+      name: 'City by first letters',
+    });
+    await input.click();
+    await page.keyboard.press('ArrowDown');
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option')).toHaveCount(12);
+    const filter = page.getByRole('textbox', { name: 'Starts with' });
+    await filter.click();
+    await page.keyboard.type('pa');
+    await expect(filter).toBeFocused();
+    await expect(filter).toHaveValue('pa');
+    await expect(input).toHaveValue('');
+    await expect(listbox.getByRole('option')).toHaveText(['Paris']);
+    // The text field keeps its own keys: Enter commits the filter, and Escape would revert an edit.
+    await page.keyboard.press('Enter');
+    await expect(filter).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(listbox).toHaveCount(0);
+    await expect(input).toBeFocused();
+  });
 });
 
 for (const [device, viewport] of [

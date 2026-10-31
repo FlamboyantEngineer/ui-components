@@ -20,6 +20,7 @@ import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import type { BoardCardReveal } from './board-cell.js';
 import { BoardColumnHeader } from './board-column-header.js';
+import type { IconSource } from '../icon/icon.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import { BoardCells, BoardLaneGroup } from './board-lane.js';
 import {
@@ -41,6 +42,8 @@ export interface BoardColumn {
   title: string;
   /** The most cards the column should hold; more publish `data-over-limit`. */
   limit?: number | undefined;
+  /** A decorative icon before the title: an icon component or a rendered element. */
+  icon?: IconSource;
 }
 
 /** A lane (swimlane) of the board: a row that repeats every column. */
@@ -48,6 +51,8 @@ export interface BoardLane {
   id: Key;
   /** The header text, which also names the lane. */
   title: string;
+  /** A decorative icon before the title: an icon component or a rendered element. */
+  icon?: IconSource;
 }
 
 export interface BoardProps<T extends { id: Key }> extends BaseProps, AriaLabellingProps {
@@ -190,6 +195,7 @@ function BoardColumnHeaders<T>({
           key={toKeyIdentity(column.id)}
           columnKey={column.id}
           title={column.title}
+          icon={column.icon}
           titleId={model.columnTitleId(index)}
           count={model.countColumn(column.id)}
           limit={column.limit}

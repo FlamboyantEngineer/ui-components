@@ -59,7 +59,7 @@ Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-3.1 - No stylesheet and no variables
 
-Library modules shall import no stylesheet, depend on no styling package, and require no CSS custom property. A component renders correctly unstyled, with only browser defaults. The package includes reference stylesheets for its standalone labs; components never load them. Components may expose the measured custom properties described in UIC-HOOKS-3.2.
+Library modules shall import no stylesheet, depend on no styling package, and require no CSS custom property. A component renders correctly unstyled, with only browser defaults. The package includes reference stylesheets for its standalone labs; components never load them. The package ships ES modules only: each conditional export lists `types`, `import` and, last, a `default` condition that points at the same ES module, so resolvers that do not assert `import` (Node's `require(esm)`, Jest) still find it. Components may expose the measured custom properties described in UIC-HOOKS-3.2.
 
 Implementation: `eslint.config.js`, `eslint-rules/index.js`, `scripts/check-package.mjs`, `package.json`
 Verification: `test/lint-rules.test.ts`, `test/package.test.ts`, `e2e/accessibility.spec.ts`

@@ -141,7 +141,7 @@ test.describe('Segmented Choice lab', () => {
     await expect(
       page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Fit width' }),
     ).toBeVisible();
-    await expect(width).not.toHaveAttribute('aria-describedby');
+    await expect(width).toHaveAccessibleDescription('');
     await page.keyboard.press('ArrowRight');
     await expect(group.getByRole('radio', { name: 'Fit page' })).toBeFocused();
     await expect(

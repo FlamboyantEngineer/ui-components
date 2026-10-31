@@ -1,4 +1,11 @@
-import { MoreVerticalGlyph } from '../../src/core/glyphs.js';
+import {
+  CalendarGlyph,
+  CheckGlyph,
+  EditGlyph,
+  FolderGlyph,
+  MoreVerticalGlyph,
+  SearchGlyph,
+} from '../../src/core/glyphs.js';
 import { useState, type CSSProperties } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
@@ -23,15 +30,15 @@ interface Task {
 }
 
 const columns: BoardColumn[] = [
-  { id: 'todo', title: 'To do' },
-  { id: 'doing', title: 'Doing', limit: 2 },
-  { id: 'review', title: 'Review', limit: 3 },
-  { id: 'done', title: 'Done' },
+  { id: 'todo', title: 'To do', icon: CalendarGlyph },
+  { id: 'doing', title: 'Doing', limit: 2, icon: EditGlyph },
+  { id: 'review', title: 'Review', limit: 3, icon: SearchGlyph },
+  { id: 'done', title: 'Done', icon: CheckGlyph },
 ];
 
 const lanes: BoardLane[] = [
-  { id: 'garden', title: 'Garden' },
-  { id: 'kitchen', title: 'Kitchen' },
+  { id: 'garden', title: 'Garden', icon: FolderGlyph },
+  { id: 'kitchen', title: 'Kitchen', icon: FolderGlyph },
 ];
 
 const tasks: Task[] = [
@@ -81,6 +88,13 @@ const states = {
     columns: columns.slice(1, 2),
   },
   collapsed: { items: tasks, columns: columns.slice(0, 2) },
+  'collapsed long title': {
+    items: tasks,
+    columns: [
+      columns[0] as BoardColumn,
+      { id: 'doing', title: 'Waiting for parts from the hardware store', limit: 2 },
+    ],
+  },
 } as const;
 
 const columnMenu = [
@@ -231,7 +245,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Columns with cards and drag handles, empty cells, a column over its limit and a collapsed column."
+      description="Columns with cards and drag handles, empty cells, a column over its limit, and a collapsed column, whose long title is cut rather than making the header row taller."
     >
       <StateMatrix
         axes={{ state: Object.keys(states) as Array<keyof typeof states> }}
@@ -244,7 +258,7 @@ mountLab(
               getColumn={getColumn}
               getTextValue={getTextValue}
               renderCard={renderCard}
-              defaultCollapsedColumns={state === 'collapsed' ? ['doing'] : []}
+              defaultCollapsedColumns={state.startsWith('collapsed') ? ['doing'] : []}
               onMove={() => {}}
             />
           </div>
@@ -259,7 +273,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Lanes"
-      description="The columns repeated per area. Lanes and columns collapse, and the board remembers which ones through the provider storage."
+      description="The columns repeated per area, with icons before the column and lane titles. Lanes and columns collapse, and the board remembers which ones through the provider storage."
     >
       <LaneBoard />
     </LabSection>
