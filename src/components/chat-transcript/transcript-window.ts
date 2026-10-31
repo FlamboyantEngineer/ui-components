@@ -21,14 +21,14 @@ export interface WindowModel {
 }
 
 /** What an unmeasured child is taken to be before anything is measured, in pixels. */
-const FALLBACK_HEIGHT = 64;
+const fallbackHeight = 64;
 /** How many children the window holds before the viewport can be measured. */
-const INITIAL_WINDOW = 30;
+const initialWindow = 30;
 
-/** The last `INITIAL_WINDOW` children, where a transcript starts. */
+/** The last `initialWindow` children, where a transcript starts. */
 export function resolveTailRange(keys: readonly string[]): WindowRange | null {
   const last = keys.at(-1);
-  const first = keys[Math.max(0, keys.length - INITIAL_WINDOW)];
+  const first = keys[Math.max(0, keys.length - initialWindow)];
   return first === undefined || last === undefined ? null : { first, last };
 }
 
@@ -40,7 +40,7 @@ export function createWindowModel(): WindowModel {
   let total = 0;
 
   const estimate = (key: string) =>
-    heights.get(key) ?? (heights.size > 0 ? total / heights.size : FALLBACK_HEIGHT);
+    heights.get(key) ?? (heights.size > 0 ? total / heights.size : fallbackHeight);
 
   return {
     spacerRef(element) {

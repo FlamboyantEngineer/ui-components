@@ -14,14 +14,14 @@ export interface Completion {
   insertText?: string | undefined;
 }
 
-const WORD_SEPARATOR = /[\s._\-/:]/;
+const wordSeparator = /[\s._\-/:]/;
 
 function isWordStart(label: string, index: number): boolean {
   if (index === 0) return true;
   const previous = label[index - 1] ?? '';
   const character = label[index] ?? '';
   return (
-    WORD_SEPARATOR.test(previous) ||
+    wordSeparator.test(previous) ||
     (character !== character.toLowerCase() && previous === previous.toLowerCase())
   );
 }

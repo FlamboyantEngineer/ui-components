@@ -72,7 +72,7 @@ interface CodeHoverTooltipProps {
 }
 
 /** How long the tip stays after the pointer leaves, so the pointer can move into it. */
-const LEAVE_DELAY = 200;
+const leaveDelay = 200;
 
 function diagnosticsAt(marked: readonly MarkedDiagnostic[], offset: number) {
   return marked
@@ -135,7 +135,7 @@ export function useCodeHover({
 
   const onPointerLeave = () => {
     hold();
-    timer.current = setTimeout(() => setTip(null), LEAVE_DELAY);
+    timer.current = setTimeout(() => setTip(null), leaveDelay);
   };
   return {
     tip,

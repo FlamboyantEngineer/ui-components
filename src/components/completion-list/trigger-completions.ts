@@ -20,16 +20,16 @@ interface TriggerMatch {
   query: string;
 }
 
-const SPACE = /\s/;
+const spacePattern = /\s/;
 
 function isQuery(query: string, trigger: CompletionTrigger): boolean {
   if (query.startsWith(' ')) return false;
-  return trigger.allowsSpaces ? !query.includes('\n') : !SPACE.test(query);
+  return trigger.allowsSpaces ? !query.includes('\n') : !spacePattern.test(query);
 }
 
 /** Whether a trigger character at `at` starts a query: at the start or after white space. */
 function isTriggerStart(value: string, at: number): boolean {
-  return at === 0 || SPACE.test(value[at - 1] ?? '');
+  return at === 0 || spacePattern.test(value[at - 1] ?? '');
 }
 
 /**
@@ -50,7 +50,7 @@ function findCompletionTrigger(
     if (trigger && isTriggerStart(value, at) && isQuery(query, trigger)) {
       return { trigger, at, query };
     }
-    if (SPACE.test(character) && !spaces) return null;
+    if (spacePattern.test(character) && !spaces) return null;
   }
   return null;
 }

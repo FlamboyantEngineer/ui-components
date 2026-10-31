@@ -11,6 +11,7 @@ import { Checkbox } from '../checkbox/checkbox.js';
 import { SearchField } from '../search-field/search-field.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { listFacetOptions, type FacetListOption } from './facet-options.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
 
 export interface FacetListProps extends BaseProps {
   /** The facet's name: the visible heading, which names the group of values. */
@@ -106,7 +107,7 @@ export function FacetList({
   defaultValue = emptyValue,
   onChange,
   limit = 5,
-  filterable = options.length > 10,
+  filterable = isFilterableLength(options.length),
   selectedFirst = false,
   className,
   id,

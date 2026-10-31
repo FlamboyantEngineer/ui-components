@@ -29,7 +29,6 @@ export interface FilterBarProps extends BaseProps, AriaLabellingProps {
 const emptyValue: readonly FilterCondition[] = [];
 
 /** The add menu lists its fields behind a search field from this many on. */
-const FILTERABLE_FIELD_COUNT = 8;
 
 /**
  * A row of active filters as chips, each reading `Field operator value` and opening its editor in a
@@ -106,7 +105,7 @@ export function FilterBar({
         variant="ghost"
         size="sm"
         className={hooks.slotClass('add')}
-        filterable={fields.length >= FILTERABLE_FIELD_COUNT}
+        filterable={isFilterableLength(fields.length)}
         items={fields.map((field) => ({ id: field.id, label: field.label }))}
         onAction={add}
       />
@@ -131,4 +130,5 @@ export type {
   FilterOption,
   FilterValue,
 } from './filter-model.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
 export type { FilterOperator } from '../../core/strings/query.js';

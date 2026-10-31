@@ -39,11 +39,11 @@ export interface TextCompletions {
   };
 }
 
-const TEXT_WORD_BEFORE_CARET = /[\p{L}\p{N}_-]+$/u;
+const textWordBeforeCaret = /[\p{L}\p{N}_-]+$/u;
 
 /** The letters, digits, `_` and `-` that end at `caret`, or `''`. */
 function findTextQuery(value: string, caret: number): string {
-  return TEXT_WORD_BEFORE_CARET.exec(value.slice(0, caret))?.[0] ?? '';
+  return textWordBeforeCaret.exec(value.slice(0, caret))?.[0] ?? '';
 }
 
 /**

@@ -2,9 +2,9 @@
 
 import { getNumberFormat } from './intl-format.js';
 
-const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
+const byteUnits = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
 
-const STEP = 1024;
+const bytesPerUnit = 1024;
 
 /**
  * A byte count in the largest binary unit that keeps it at 1 or more: `512 B`, `1.5 KB`, `20.0 MB`.
@@ -14,11 +14,11 @@ const STEP = 1024;
 export function formatBytes(bytes: number, locale?: string): string {
   const size = Number.isFinite(bytes) && bytes > 0 ? bytes : 0;
   let exponent = 0;
-  while (size >= STEP ** (exponent + 1) && exponent < UNITS.length - 1) exponent += 1;
+  while (size >= bytesPerUnit ** (exponent + 1) && exponent < byteUnits.length - 1) exponent += 1;
   const digits = exponent === 0 ? 0 : 1;
   const number = getNumberFormat(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  }).format(size / STEP ** exponent);
-  return `${number} ${UNITS[exponent]}`;
+  }).format(size / bytesPerUnit ** exponent);
+  return `${number} ${byteUnits[exponent]}`;
 }

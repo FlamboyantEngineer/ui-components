@@ -4,8 +4,8 @@ import type { Node } from 'prosemirror-model';
 import type { MessageComposerMessage, MessageComposerToken } from '../composer-message.js';
 import { composerSchema as schema, getPillText, type PillAttributes } from './composer-schema.js';
 
-const OPENING_FENCE = /^```([^`\s]*)$/;
-const CLOSING_FENCE = '```';
+const openingFence = /^```([^`\s]*)$/;
+const closingFence = '```';
 
 /** A pill's token without its range: `recordType` only when the pill has one. */
 function toPillToken({ kind, id, label, recordType }: PillAttributes) {
@@ -59,9 +59,9 @@ export function serializeComposerDocument(doc: Node): MessageComposerMessage {
   const writer = createWriter();
   doc.forEach((block) => {
     if (!block.type.spec.code) return writeParagraph(writer, block);
-    writer.line(`${CLOSING_FENCE}${String(block.attrs.language ?? '')}`);
+    writer.line(`${closingFence}${String(block.attrs.language ?? '')}`);
     for (const line of block.textContent.split('\n')) writer.line(line);
-    writer.line(CLOSING_FENCE);
+    writer.line(closingFence);
   });
   return writer.finish();
 }
@@ -86,8 +86,8 @@ function parseLine(line: string, start: number, tokens: MessageComposerToken[]) 
 
 /** Where the code block opened at `open` closes, or -1 when it never does. */
 function findClosingFence(lines: readonly string[], open: number): number {
-  if (!OPENING_FENCE.test(lines[open] ?? '')) return -1;
-  return lines.findIndex((line, index) => index > open && line === CLOSING_FENCE);
+  if (!openingFence.test(lines[open] ?? '')) return -1;
+  return lines.findIndex((line, index) => index > open && line === closingFence);
 }
 
 /**
@@ -108,7 +108,7 @@ export function parseComposerMessage(message: MessageComposerMessage): Node {
       continue;
     }
     const code = lines.slice(index + 1, close).join('\n');
-    const language = OPENING_FENCE.exec(line)?.[1] ?? '';
+    const language = openingFence.exec(line)?.[1] ?? '';
     blocks.push(schema.node('codeBlock', { language }, code ? schema.text(code) : undefined));
     start += lines.slice(index, close + 1).join('\n').length + 1;
     index = close + 1;

@@ -22,9 +22,9 @@ const quotes = new Set(['"', "'", '`']);
 const closers = new Set([')', ']', '}']);
 
 /** Characters before which an opening bracket or quote gets its partner. */
-const PAIR_FOLLOWER = /^(?:$|[\s)\]},;:])/;
+const pairFollower = /^(?:$|[\s)\]},;:])/;
 
-const WORD_CHARACTER = /[\w$]/;
+const wordCharacter = /[\w$]/;
 
 function lineStartAt(value: string, offset: number): number {
   return value.lastIndexOf('\n', offset - 1) + 1;
@@ -120,9 +120,9 @@ export function breakLine(value: string, selection: CodeSelection, size: number)
 
 /** Whether typing `character` inserts its partner: a bracket or quote before space or a closer. */
 function canPair(value: string, selection: CodeSelection, character: string): boolean {
-  if (!PAIR_FOLLOWER.test(value.slice(selection.end))) return false;
+  if (!pairFollower.test(value.slice(selection.end))) return false;
   if (!quotes.has(character)) return true;
-  return !WORD_CHARACTER.test(value[selection.start - 1] ?? '');
+  return !wordCharacter.test(value[selection.start - 1] ?? '');
 }
 
 /**

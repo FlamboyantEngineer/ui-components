@@ -143,13 +143,18 @@ describe('FilterBar', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 
-  it('UIC-FILTER-BAR-2.3 searches the add menu from eight fields', async () => {
+  it('UIC-FILTER-BAR-2.3 searches the add menu from eleven fields', async () => {
     const user = userEvent.setup();
-    const many = Array.from({ length: 8 }, (_, index) => ({
+    const many = Array.from({ length: 11 }, (_, index) => ({
       id: `field-${index}`,
       label: `Field ${index + 1}`,
       type: 'text' as const,
     }));
+    const { unmount } = render(<FilterBar fields={many.slice(0, 10)} />);
+    await user.click(screen.getByRole('button', { name: 'Add filter' }));
+    expect(await screen.findByRole('menuitem', { name: 'Field 10' })).toBeInTheDocument();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    unmount();
     render(<FilterBar fields={many} />);
     await user.click(screen.getByRole('button', { name: 'Add filter' }));
     expect(await screen.findByRole('searchbox')).toBeInTheDocument();
