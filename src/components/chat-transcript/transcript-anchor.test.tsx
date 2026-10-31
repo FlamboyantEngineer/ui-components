@@ -6,6 +6,7 @@ import {
   getViewport,
   installTranscriptLayout,
   offsetInViewport,
+  resizeContent,
   scrollViewport,
   uninstallTranscriptLayout,
   type TranscriptLayout,
@@ -75,7 +76,7 @@ describe('ChatTranscript anchor mode', () => {
     expect(spacer()).toHaveStyle({ height: '100px' });
     expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
     layout.heights.set('m8', 400);
-    rerender(<Chat extra={2} streaming />);
+    resizeContent();
     expect(offsetInViewport(article('m7'))).toBe(0);
     expect(spacer()).toHaveStyle({ height: '0px' });
     expect(distanceToBottom(viewport)).toBe(250);
@@ -89,7 +90,7 @@ describe('ChatTranscript anchor mode', () => {
     rerender(<Chat extra={2} streaming />);
     scrollViewport(viewport, 280);
     layout.heights.set('m8', 120);
-    rerender(<Chat extra={2} streaming />);
+    resizeContent();
     expect(viewport.scrollTop).toBe(280);
     expect(offsetInViewport(article('m7'))).toBe(20);
     expect(spacer()).toHaveStyle({ height: '30px' });
@@ -102,7 +103,7 @@ describe('ChatTranscript anchor mode', () => {
     rerender(<Chat extra={2} streaming />);
     viewport.scrollTop = 280;
     layout.heights.set('m8', 120);
-    rerender(<Chat extra={2} streaming />);
+    resizeContent();
     expect(offsetInViewport(article('m7'))).toBe(20);
   });
 

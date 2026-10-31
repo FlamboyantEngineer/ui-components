@@ -1,7 +1,7 @@
 // A small vertical layout for transcript tests: jsdom computes no geometry, so the scroll viewport,
 // the blocks in it and their rectangles are derived here from the markup.
 
-import { fireEvent } from '@testing-library/react';
+import { act, fireEvent } from '@testing-library/react';
 
 /** The sizes the fake layout gives the transcript's parts, in pixels. Tests change them freely. */
 export interface TranscriptLayout {
@@ -18,6 +18,8 @@ export interface TranscriptLayout {
 }
 
 const VIEWPORT = 'ui-scroll-region__viewport';
+/** The callbacks of the resize observers the transcript created, until it disconnects them. */
+const resizeCallbacks = new Set<() => void>();
 const scrollTops = new WeakMap<Element, number>();
 const patched = ['clientHeight', 'scrollHeight', 'scrollTop'] as const;
 let layout: TranscriptLayout | null = null;
@@ -126,6 +128,22 @@ export function installTranscriptLayout(sizes: Partial<TranscriptLayout> = {}): 
     if (!position) return rect(0, 0);
     return rect(position.top - (position.viewport as HTMLElement).scrollTop, heightOf(this));
   };
+  // Observers notice size changes only when a test says the layout changed (`resizeContent`).
+  Object.assign(window, {
+    ResizeObserver: class {
+      readonly #callback: () => void;
+      constructor(callback: () => void) {
+        this.#callback = () => callback();
+      }
+      observe() {
+        resizeCallbacks.add(this.#callback);
+      }
+      unobserve() {}
+      disconnect() {
+        resizeCallbacks.delete(this.#callback);
+      }
+    },
+  });
   return layout;
 }
 
@@ -134,7 +152,19 @@ const originalRect = Element.prototype.getBoundingClientRect;
 export function uninstallTranscriptLayout() {
   for (const key of patched) Reflect.deleteProperty(HTMLElement.prototype, key);
   Element.prototype.getBoundingClientRect = originalRect;
+  Reflect.deleteProperty(window, 'ResizeObserver');
+  resizeCallbacks.clear();
   layout = null;
+}
+
+/**
+ * Tells the transcript's resize observers the content or viewport changed size, as a browser does
+ * after a message grows (a streamed token) or the viewport resizes.
+ */
+export function resizeContent() {
+  act(() => {
+    for (const callback of resizeCallbacks) callback();
+  });
 }
 
 /** The transcript's scroll viewport. */

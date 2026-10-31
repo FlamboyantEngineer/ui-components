@@ -27,13 +27,13 @@ export function announceMessage(
 /**
  * Handles what arrived: the reader's own message brings the view to it (anchored at the top in
  * anchor mode, else following the bottom); messages from others are announced, a streaming one
- * once it completes.
+ * once it completes. Returns whether it settled the scroll position.
  */
 export function applyArrivals(
   runtime: TranscriptRuntime,
   settings: TranscriptSettings,
   arrivals: readonly string[],
-) {
+): boolean {
   let sent: string | null = null;
   for (const key of arrivals) {
     const entry = runtime.registry.entry(key);
@@ -42,10 +42,11 @@ export function applyArrivals(
     else if (entry.status === 'streaming') runtime.streaming.add(key);
     else if (entry.status === 'complete') announceMessage(runtime, settings, key);
   }
-  if (sent === null) return;
+  if (sent === null) return false;
   runtime.unseen.clear();
   if (settings.scrollMode === 'anchor') runtime.keeper.anchor(sent);
   else runtime.keeper.holdBottom();
+  return true;
 }
 
 /** Counts the messages from others that arrived below the view. */
