@@ -34,17 +34,17 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.5 - Block quotes
 
-Lines starting with `>` shall become a `blockquote` whose content is parsed as blocks, so quotes nest and hold any block. A paragraph line without the marker continues the quote's paragraph (a lazy continuation). Five thousand nested block quotes shall parse without recursive calls; deferred container frames retain depth-first source order for reference definitions, inline content and heading ids.
+Lines starting with `>` shall become a `blockquote` whose content is parsed as blocks, so quotes nest and hold any block. A line without the marker continues the quote only while the quote's last line leaves a paragraph open, nested quotes and list items included, and the line starts no other block (a lazy continuation); after a heading, a thematic break, a table, indented code or a fenced code block, open or closed, the quote ends and the line is read outside it. Five thousand nested block quotes shall parse without recursive calls; deferred container frames retain depth-first source order for reference definitions, inline content and heading ids.
 
-Implementation: `src/components/markdown/markdown-containers.ts`, `src/components/markdown/parse-markdown.ts`
-Verification: `src/components/markdown/parse-markdown.test.ts`
+Implementation: `src/components/markdown/markdown-containers.ts`, `src/components/markdown/markdown-paragraph-state.ts`, `src/components/markdown/parse-markdown.ts`
+Verification: `src/components/markdown/parse-markdown.test.ts`, `src/components/markdown/markdown-lazy-continuation.test.ts`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-1.6 - Lists
 
-Items marked `-`, `+` or `*`, or numbered with `.` or `)`, shall become `list` nodes of `listItem`s whose content (the lines indented to the item's content column, and lazy paragraph lines) is parsed as blocks, so lists nest. A change of bullet or delimiter starts a new list; an ordered list's `start` is its first number. A list is `tight` unless a blank line separates two items or two blocks of an item. A continuation may follow two hundred thousand blank lines without exceeding the function argument limit.
+Items marked `-`, `+` or `*`, or numbered with `.` or `)`, shall become `list` nodes of `listItem`s whose content (the lines indented to the item's content column, and lazy lines that continue a paragraph the item's last line leaves open, as for block quotes) is parsed as blocks, so lists nest. A change of bullet or delimiter starts a new list; an ordered list's `start` is its first number. A list is `tight` unless a blank line separates two items or two blocks of an item. A continuation may follow two hundred thousand blank lines without exceeding the function argument limit.
 
-Implementation: `src/components/markdown/markdown-containers.ts`, `src/components/markdown/markdown-lines.ts`
-Verification: `src/components/markdown/parse-markdown.test.ts`
+Implementation: `src/components/markdown/markdown-containers.ts`, `src/components/markdown/markdown-paragraph-state.ts`, `src/components/markdown/markdown-lines.ts`
+Verification: `src/components/markdown/parse-markdown.test.ts`, `src/components/markdown/markdown-lazy-continuation.test.ts`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-1.7 - Task lists
 
