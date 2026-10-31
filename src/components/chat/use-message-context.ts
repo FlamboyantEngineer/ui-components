@@ -2,10 +2,10 @@
 
 import { useLatest } from '../../utils/use-latest.js';
 import { useEqualValue } from '../../utils/use-equal-value.js';
-import { isValidElement, useMemo, useRef, type ReactNode } from 'react';
+import { isValidElement, useMemo, type ReactNode } from 'react';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { ChatFeedback } from '../chat-message-actions/chat-message-actions.js';
-import type { ChatToolRenderer } from '../chat-parts/chat-parts.js';
+import type { ChatPartsProps } from '../chat-parts/chat-parts.js';
 import type { ChatCommandHandlers } from './chat-commands.js';
 import type { ChatComposerOptions } from './chat-composer.js';
 import type { ChatParticipantIndex, ChatThinkingUntil } from './chat-model.js';
@@ -14,7 +14,10 @@ import type { ChatState } from './use-chat-state.js';
 
 /** The chat props every message reads. */
 export interface ChatMessageOptions
-  extends ChatPartOptions, Pick<ChatComposerOptions, 'conversationId' | 'onEdit' | 'onReply'> {
+  extends
+    ChatPartOptions,
+    Pick<ChatPartsProps, 'toolRenderers' | 'renderPart' | 'getReference'>,
+    Pick<ChatComposerOptions, 'conversationId' | 'onEdit' | 'onReply'> {
   currentUserId: string;
   getNow?: (() => Date) | undefined;
   onRetry?: ((messageId: string) => void) | undefined;
@@ -86,48 +89,11 @@ function useSameNode(node: ReactNode): ReactNode {
 }
 
 /**
- * The options of the render in progress. Parts call `renderPart`, `getReference`, the tool
- * renderers and `getNow` while they render, so a message that renders with new options draws with
- * them, while one that does not render keeps its drawing.
- */
-function useRenderedOptions(options: ChatMessageOptions) {
-  const ref = useRef(options);
-  ref.current = options;
-  return ref;
-}
-
-/** The tool renderers: one per name while the names and what each replaces stay the same. */
-function useToolRenderers(
-  options: ChatMessageOptions,
-  current: { current: ChatMessageOptions },
-): ChatMessageOptions['toolRenderers'] {
-  const { toolRenderers } = options;
-  const replaces = useShallowStable(
-    Object.fromEntries(
-      Object.entries(toolRenderers ?? {}).map(([name, renderer]) => [name, renderer.replaces]),
-    ),
-  );
-  const hasRenderers = toolRenderers !== undefined;
-  return useMemo(() => {
-    if (!hasRenderers) return undefined;
-    const renderers: Record<string, ChatToolRenderer> = {};
-    for (const [name, kind] of Object.entries(replaces)) {
-      renderers[name] = {
-        replaces: kind,
-        render: (call, handlers) => current.current.toolRenderers?.[name]?.render(call, handlers),
-      };
-    }
-    return renderers;
-  }, [hasRenderers, replaces, current]);
-}
-
-/**
  * The part options, each callback present while the chat's is and calling the one of the latest
  * render, so callbacks written inline keep every message that did not change from rendering again.
  */
 function usePartOptions(options: ChatMessageOptions): ChatPartOptions {
-  const current = useRenderedOptions(options);
-  const toolRenderers = useToolRenderers(options, current);
+  const current = useLatest(options);
   const has = [
     options.onApprove,
     options.onDeny,
@@ -135,10 +101,8 @@ function usePartOptions(options: ChatMessageOptions): ChatPartOptions {
     options.onAnswerQuestion,
     options.onDismissQuestion,
     options.onApplyCode,
-    options.renderPart,
-    options.getReference,
   ].map((callback) => callback !== undefined);
-  const [approve, deny, alwaysAllow, answer, dismiss, applyCode, renderPart, getReference] = has;
+  const [approve, deny, alwaysAllow, answer, dismiss, applyCode] = has;
   const callbacks = useMemo(
     (): ChatPartOptions => ({
       onApprove: approve ? (id) => current.current.onApprove?.(id) : undefined,
@@ -151,28 +115,14 @@ function usePartOptions(options: ChatMessageOptions): ChatPartOptions {
       onApplyCode: applyCode
         ? (code, part) => current.current.onApplyCode?.(code, part)
         : undefined,
-      renderPart: renderPart ? (part) => current.current.renderPart?.(part) : undefined,
-      getReference: getReference
-        ? (reference) => current.current.getReference?.(reference)
-        : undefined,
     }),
-    [approve, deny, alwaysAllow, answer, dismiss, applyCode, renderPart, getReference, current],
+    [approve, deny, alwaysAllow, answer, dismiss, applyCode, current],
   );
   const { textFormat, expandsActivity, questionAnsweredMark } = options;
   return useShallowStable({
     ...callbacks,
-    ...{ textFormat, expandsActivity, questionAnsweredMark, toolRenderers },
+    ...{ textFormat, expandsActivity, questionAnsweredMark },
   });
-}
-
-/** `getNow` while the chat passes one, calling the one of the latest render. */
-function useGetNow(options: ChatMessageOptions): (() => Date) | undefined {
-  const current = useRenderedOptions(options);
-  const hasNow = options.getNow !== undefined;
-  return useMemo(
-    () => (hasNow ? () => current.current.getNow?.() ?? new Date() : undefined),
-    [hasNow, current],
-  );
 }
 
 /**
@@ -196,7 +146,6 @@ export function useMessageContext(
     [hasRetry, latest],
   );
   const parts = usePartOptions(options);
-  const getNow = useGetNow(options);
   const thinkingIcon = useSameNode(options.thinkingIcon);
   const reasons = useShallowStable(options.feedbackReasons ?? noReasons);
   const feedbackReasons = options.feedbackReasons && reasons;
@@ -204,7 +153,7 @@ export function useMessageContext(
   const { thinkingText, thinkingUntil = 'text' } = options;
   return useShallowStable({
     ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
-    ...{ conversationId, parts, getNow, onRetry },
+    ...{ conversationId, parts, onRetry },
     ...{ thinkingText, thinkingIcon, thinkingUntil },
     onQuotePress: state.jumpTo,
     onExpandedPartsChange: state.setExpandedParts,

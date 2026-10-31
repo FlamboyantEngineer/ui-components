@@ -73,6 +73,8 @@ export interface ButtonProps
 
 **C5. No dead code.** No unused exports, parameters, branches or files. **(enforced: lint for unused variables, parameters and imports; unused exports and files are checked in review)**
 
+**C6. Refs stay out of render.** Never read or write a ref's `current` while rendering; read refs in effects and event handlers. A value render needs lives in state: an object made once comes from a `useState` initializer, and an element render measures is held through a callback ref (`ref={setElement}`). Keep the latest value for handlers with `useLatest`, which writes in a layout effect, an equal value with `useEqualValue`, and merged refs with `useMergedRefs`. A hook that returns refs beside render values is destructured at the top of its caller (`const { ref, isOpen } = useThing()`), never read field by field, and only a `RefObject` has a field named `current`. A handler that reads a ref is made inside the hook that owns the ref, not built in render and passed to a plain function.
+
 ## TypeScript
 
 Adapted from the agent-rules TypeScript set ([coding-rules/README.md](coding-rules/README.md)). They apply to every TypeScript file. The enforced ones run in `npm run lint` through the `ui-components/typescript` configs in `eslint.config.js`, which load the TypeScript program; ESLint runs with a 6 GB heap for that reason.
