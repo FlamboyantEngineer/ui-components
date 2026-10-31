@@ -4,6 +4,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const dirs: string[] = [];
 
@@ -72,5 +73,25 @@ describe('check-specs', () => {
       'UIC-SAMPLE-4.1 is not under its group heading ## UIC-SAMPLE-4',
     );
     expect(result.stderr).toContain('group UIC-SAMPLE-1 comes after group 2');
+  });
+
+  it('requires a requirement naming each util the package exports, not internal helpers', () => {
+    const exported = (index: string) => {
+      const result = check(['## UIC-SAMPLE-1 - First', 'UIC-SAMPLE-1.1']);
+      const dir = requireDefined(dirs.at(-1));
+      mkdirSync(join(dir, 'src/utils'));
+      for (const name of ['shared', 'internal'])
+        writeFileSync(join(dir, `src/utils/${name}.ts`), '');
+      writeFileSync(join(dir, 'src/utils/index.ts'), index);
+      expect(result.status).toBe(0);
+      return spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+    };
+    const unnamed = exported("export { share } from './shared.js';\n");
+    expect(unnamed.status).toBe(1);
+    expect(unnamed.stderr).toContain(
+      'src/utils/shared.ts is exported by src/utils/index.ts but is not the Implementation: of any spec requirement',
+    );
+    expect(unnamed.stderr).not.toContain('internal');
+    expect(exported("export { sample } from '../sample.js';\n").status).toBe(0);
   });
 });

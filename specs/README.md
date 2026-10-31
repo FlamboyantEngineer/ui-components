@@ -16,6 +16,8 @@ Each file in this directory specifies one component, one family of components, o
 
 A component's hooks are listed only in its own spec. A family spec (for example a menu with items and sections) lists the hooks of every component in the family. No hook is declared in two specs.
 
+Every component directory is the `Implementation:` of some requirement, and so is every util the package exports from `src/utils/index.ts`; internal helpers in `src/utils/` are covered through the requirements of the components that use them. `npm run check:specs` enforces both.
+
 ## File format
 
 - File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `MODAL.md`).
