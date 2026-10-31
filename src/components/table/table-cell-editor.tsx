@@ -16,9 +16,14 @@ import {
 } from './table-rows.js';
 import type { CellEditing, CellMove } from './use-cell-editing.js';
 
-/** The text a cell's editor starts with: the cell's text or number. */
+/**
+ * The text a cell's editor starts with: the cell's text or number, `true` or `false`, or a date's
+ * ISO form. Left untouched, the editor reports the cell's own value, so no type is lost.
+ */
 function formatEditorText(value: TableCellValue): string {
-  return isTextValue(value) ? String(value) : '';
+  if (isTextValue(value) || typeof value === 'boolean') return String(value);
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? '' : value.toISOString();
+  return '';
 }
 
 interface TableCellEditorViewProps<T> {
@@ -31,6 +36,8 @@ interface TableCellEditorViewProps<T> {
 
 interface DefaultEditorProps {
   initialText: string;
+  /** The cell's value, reported as it is while the text is the untouched `initialText`. */
+  original: { value: TableCellValue } | null;
   label: string;
   /** Reads the text as the cell's value, with the column's message when it refuses it. */
   read: (text: string) => CellReading;
@@ -80,9 +87,14 @@ function DefaultCellEditor(props: DefaultEditorProps) {
   const [error, setError] = useState<string | null>(null);
   // Leaving the document fires blur too: only the first way out counts.
   const isDone = useRef(false);
+  // Untouched text reports the cell's own value rather than a reading of its text.
+  const readText = (): CellReading =>
+    props.original && text === props.initialText
+      ? { value: props.original.value, error: null }
+      : read(text);
   const commit = (event: KeyboardEvent) => {
     event.preventDefault();
-    const reading = read(text);
+    const reading = readText();
     setError(reading.error);
     if (reading.error !== null || isDone.current) return;
     isDone.current = true;
@@ -91,7 +103,7 @@ function DefaultCellEditor(props: DefaultEditorProps) {
   const release = () => {
     if (isDone.current) return;
     isDone.current = true;
-    const reading = read(text);
+    const reading = readText();
     if (reading.error === null) props.onRelease(reading.value);
     else props.onDismiss();
   };
@@ -155,6 +167,8 @@ export function TableCellEditorView<T extends TableRow>({
   return (
     <DefaultCellEditor
       initialText={editing.editing?.text ?? formatEditorText(value)}
+      // A typed character that opened the editor replaces the value, so it is never untouched.
+      original={editing.editing?.text === undefined ? { value } : null}
       label={label}
       read={(text) => readCellText(row, column, text)}
       onCommit={(next, move) => editing.commit(toEdit(next), move)}
