@@ -4,7 +4,13 @@ import type { ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import { Field, useFieldControl, type FieldInputProps, type FieldIssue } from '../field/field.js';
+import {
+  Field,
+  useFieldControl,
+  type FieldInputProps,
+  type FieldIssue,
+  type FieldTextInputProps,
+} from '../field/field.js';
 import { RadixControl } from './radix-control.js';
 import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
 import { DecimalControl } from './decimal-control.js';
@@ -16,7 +22,17 @@ import { numberFieldHooks as hooks, type NumberSteps } from './number-field-part
  */
 export type NumberFieldCommitBehavior = 'snap' | 'validate';
 
-export interface NumberFieldProps extends FieldInputProps<number | null> {
+/**
+ * The text-entry attributes a number field hands its input: its keyboard and spelling follow from
+ * the number's format, so it takes the hint, autofill and the Enter key's label.
+ */
+export type NumberFieldTextInputProps = Pick<
+  FieldTextInputProps,
+  'placeholder' | 'autoComplete' | 'enterKeyHint'
+>;
+
+export interface NumberFieldProps
+  extends FieldInputProps<number | null>, NumberFieldTextInputProps {
   /** Number base. Nondecimal bases edit integers and show 0b, 0o or 0x prefixes. Defaults to 10. */
   radix?: NumberFieldRadix | undefined;
   /** The smallest value. */
@@ -29,8 +45,6 @@ export interface NumberFieldProps extends FieldInputProps<number | null> {
   formatOptions?: Intl.NumberFormatOptions | undefined;
   /** What a commit does with a value outside the rules. Defaults to `snap`. */
   commitBehavior?: NumberFieldCommitBehavior | undefined;
-  /** A hint shown while the control is empty. */
-  placeholder?: string | undefined;
   /** Leave out the decrement and increment buttons; the arrow keys still step the value. */
   hideStepper?: boolean | undefined;
   /** Content inside the frame before the number, such as a literal prefix (`$`). */
@@ -53,6 +67,8 @@ export type NumberControlConfig = Pick<
   | 'step'
   | 'formatOptions'
   | 'placeholder'
+  | 'autoComplete'
+  | 'enterKeyHint'
   | 'hideStepper'
   | 'startAdornment'
   | 'endAdornment'
@@ -114,6 +130,8 @@ function checkNumber(value: number | null, rules: NumberRules): FieldIssue | nul
 export function NumberField({
   radix = 10,
   placeholder,
+  autoComplete,
+  enterKeyHint,
   hideStepper = false,
   startAdornment,
   endAdornment,
@@ -153,6 +171,8 @@ export function NumberField({
         const config = {
           ...rest,
           placeholder,
+          autoComplete,
+          enterKeyHint,
           hideStepper,
           startAdornment,
           endAdornment,

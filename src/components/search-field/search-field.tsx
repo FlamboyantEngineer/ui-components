@@ -20,6 +20,7 @@ import {
   FieldMessage,
   resolveFieldValidation,
   toIssueList,
+  toSpellCheckAttribute,
   type FieldIssues,
   type FieldLabelLayout,
   type FieldTextInputProps,
@@ -271,7 +272,7 @@ export function SearchField({
       {...hooks.root({ className, props: rest, data })}
       aria-label={hasLabel ? undefined : label}
       aria-describedby={hasMessage ? messageId : undefined}
-      spellCheck={spellCheck?.toString()}
+      spellCheck={toSpellCheckAttribute(spellCheck)}
       value={query}
       onChange={change}
       isInvalid={isInvalid}

@@ -3,4 +3,5 @@ export type {
   NumberFieldCommitBehavior,
   NumberFieldRadix,
   NumberFieldProps,
+  NumberFieldTextInputProps,
 } from './number-field.js';

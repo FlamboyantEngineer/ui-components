@@ -4,13 +4,19 @@ import type { FocusEvent, Ref, RefObject, TextareaHTMLAttributes } from 'react';
 import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
 import { toCompletionInputAttributes } from '../completion-list/completion-list.js';
+import type { FieldTextInputProps } from '../field/field.js';
 import { CodeHighlight, codeEditorHooks as hooks } from './code-layers.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
 
-/** The caller's props the text area takes as they are. */
-export interface CodeTextAreaProps extends AriaLabellingProps, KeyboardEventProps {
-  /** Shown while the source is empty. */
-  placeholder?: string | undefined;
+/**
+ * The caller's props the text area takes as they are. Of the text-entry attributes it takes the
+ * hint and the Enter key label; autofill, spelling and the virtual keyboard stay off for code.
+ */
+export interface CodeTextAreaProps
+  extends
+    AriaLabellingProps,
+    KeyboardEventProps,
+    Pick<FieldTextInputProps, 'placeholder' | 'enterKeyHint'> {
   /** The form name: a form submits the source under it. */
   name?: string | undefined;
   /** The id of the element holding the message for an invalid source. */

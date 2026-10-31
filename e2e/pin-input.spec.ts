@@ -66,12 +66,15 @@ test.describe('Pin Input lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-PIN-INPUT-2.1 UIC-PIN-INPUT-2.5 types a code and completes once per code', async ({
+  test('UIC-PIN-INPUT-2.1 UIC-PIN-INPUT-2.5 UIC-FIELD-8.3 types a code and completes once per code', async ({
     page,
     lab,
   }) => {
     await lab.open('pin-input');
     const otp = field(page, 'otp');
+    await expect(cells(otp).first()).toHaveAttribute('autocomplete', 'one-time-code');
+    await expect(cells(otp).nth(1)).toHaveAttribute('autocomplete', 'off');
+    await expect(cells(otp).nth(5)).toHaveAttribute('enterkeyhint', 'done');
     await cells(otp).first().click();
     await page.keyboard.type('13579');
     await expect(cells(otp).nth(5)).toBeFocused();

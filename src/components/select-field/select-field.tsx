@@ -53,8 +53,6 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   virtualized?: boolean | undefined;
   /** The form name the chosen ids are submitted under. */
   name?: string | undefined;
-  /** Focuses the trigger when the field mounts. */
-  autoFocus?: boolean | undefined;
   /** Receives the trigger button, the field's focusable control, while it is on the page. */
   triggerRef?: Ref<HTMLButtonElement> | undefined;
 }

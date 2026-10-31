@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import {
+  Field,
+  useFieldControl,
+  type FieldInputProps,
+  type FieldTextInputProps,
+} from '../field/field.js';
 import { checkTag, hasTagDelimiter, resolveTagEntry, type TagRules } from './tag-entry.js';
 import { TagsInputControl, tagsInputHooks as hooks } from './tags-input-parts.js';
 
-export interface TagsInputProps extends FieldInputProps<string[]> {
-  /** A hint shown in the input while it is empty. */
-  placeholder?: string | undefined;
+export interface TagsInputProps extends FieldInputProps<string[]>, FieldTextInputProps {
   /** The text typed in the input and not yet added, controlled. */
   inputValue?: string | undefined;
   /** Called with the input's text as it changes. */
@@ -42,6 +45,10 @@ const defaultDelimiters: readonly string[] = [','];
  */
 export function TagsInput({
   placeholder,
+  autoComplete,
+  inputMode,
+  spellCheck,
+  enterKeyHint,
   inputValue,
   onInputChange,
   delimiters = defaultDelimiters,
@@ -98,7 +105,7 @@ export function TagsInput({
           state={state}
           label={field.label}
           entry={entry}
-          placeholder={placeholder}
+          textInput={{ placeholder, autoComplete, inputMode, spellCheck, enterKeyHint }}
           name={rest.name}
         />
       )}

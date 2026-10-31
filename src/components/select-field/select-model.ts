@@ -36,7 +36,6 @@ export interface SelectConfig {
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
   name?: string | undefined;
-  autoFocus?: boolean | undefined;
   triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
 

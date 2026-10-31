@@ -32,6 +32,14 @@ export type FieldInputMode =
   | 'decimal'
   | 'search';
 
+/** The label of the virtual keyboard's Enter key. */
+export type FieldEnterKeyHint = 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send';
+
+/** The native `spellcheck` attribute for `spellCheck`: left out when the browser chooses. */
+export function toSpellCheckAttribute(spellCheck: boolean | undefined) {
+  return spellCheck === undefined ? undefined : String(spellCheck);
+}
+
 /**
  * The native text-entry attributes a text control hands its input: the hint, autofill, the virtual
  * keyboard, spelling and first focus. Length and format rules are `StringRules`.
@@ -45,7 +53,9 @@ export interface FieldTextInputProps {
   inputMode?: FieldInputMode | undefined;
   /** Whether the browser checks spelling. Defaults to the browser's choice. */
   spellCheck?: boolean | undefined;
-  /** Focuses the control when it mounts. */
+  /** The label of the virtual keyboard's Enter key, such as `search`, `send` or `done`. */
+  enterKeyHint?: FieldEnterKeyHint | undefined;
+  /** Focuses the control when it mounts; every field control takes it through `Field`. */
   autoFocus?: boolean | undefined;
 }
 
@@ -95,6 +105,7 @@ const layoutKeys = new Set<string>([
   'menu',
   'onMenuAction',
   'renderMessage',
+  'autoFocus',
   'className',
   'id',
 ]);

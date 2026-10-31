@@ -86,6 +86,8 @@ function Draft() {
       <TagsInput
         label="Keywords"
         placeholder="Type a keyword"
+        enterKeyHint="enter"
+        spellCheck={false}
         inputValue={text}
         onInputChange={setText}
         data-lab-field="draft"

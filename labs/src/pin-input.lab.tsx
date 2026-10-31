@@ -55,6 +55,7 @@ function OneTimeCode() {
         description="Enter the 6 digits we sent. The lab accepts 135790."
         length={6}
         autoComplete="one-time-code"
+        enterKeyHint="done"
         onComplete={verify}
         validate={(value) =>
           value === rejected ? { severity: 'error', message: 'That code is not right.' } : null

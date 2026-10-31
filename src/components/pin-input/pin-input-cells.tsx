@@ -1,20 +1,18 @@
 'use client';
 
-import {
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type InputHTMLAttributes,
-  type KeyboardEvent,
-} from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Group, Input, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
-import { FieldFormValue, type FieldControlProps, type FieldState } from '../field/field.js';
+import {
+  FieldFormValue,
+  type FieldControlProps,
+  type FieldEnterKeyHint,
+  type FieldState,
+} from '../field/field.js';
 import {
   filterPinCharacters,
   findActivePinCell,
@@ -30,7 +28,8 @@ interface PinCellOptions {
   mask: boolean;
   placeholder: string | undefined;
   /** The first cell's autocomplete hint; the others never autocomplete. */
-  autoComplete: InputHTMLAttributes<HTMLInputElement>['autoComplete'];
+  autoComplete: string;
+  enterKeyHint: FieldEnterKeyHint | undefined;
 }
 
 interface PinInputCellsProps {
@@ -214,6 +213,7 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
             aria-label={strings.characterPosition(index + 1, length)}
             {...cellControl}
             placeholder={cells.placeholder}
+            enterKeyHint={cells.enterKeyHint}
             tabIndex={index === tabbable ? 0 : -1}
             value={value[index] ?? ''}
             onChange={(event) => {

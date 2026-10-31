@@ -84,6 +84,8 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
     endAdornment,
     showScrubber,
     placeholder,
+    autoComplete,
+    enterKeyHint,
     commitBehavior = 'snap',
     ...rest
   } = config;
@@ -109,6 +111,8 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
             {...hooks.slot('input')}
             ref={control.ref}
             placeholder={placeholder}
+            autoComplete={autoComplete}
+            enterKeyHint={enterKeyHint}
             {...entry.toInputProps(inputState)}
           />
           {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
