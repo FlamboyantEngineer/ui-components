@@ -5,7 +5,6 @@ import {
   useCallback,
   useLayoutEffect,
   useRef,
-  useState,
   useContext,
   type MouseEvent,
   type ReactNode,
@@ -23,6 +22,7 @@ import {
 import type { OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
@@ -61,6 +61,8 @@ export interface MenuOverlayProps extends MenuPopoverProps {
 
 const hooks = createHooks('menu-popover');
 
+const noTrigger: RefObject<Element | null> = { current: null };
+
 const MenuLayerContext = createContext<PortalProps['layer']>(undefined);
 const MenuNonModalContext = createContext(true);
 const MenuSurfaceContext = createContext<Set<HTMLElement> | null>(null);
@@ -94,54 +96,53 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
 }
 
 /**
- * Keeps a nonmodal root menu open while the page scrolls, following its trigger. React Aria closes
- * it on any scroll of the trigger's scroll containers, the page included; only a scroll of an
- * element holding the trigger still closes it, since the popover cannot follow that.
+ * Keeps a root menu on its trigger, or its point, as the page moves under it or the point changes.
+ * A nonmodal one also stays open while the page scrolls: React Aria closes it on any scroll of the
+ * trigger's scroll containers, the page included; only a scroll of an element holding the trigger
+ * still closes it, since the popover cannot follow that.
  */
-function usePageScrollFollow(isActive: boolean, props: MenuOverlayProps) {
+function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverlayProps) {
   const state = useContext(OverlayTriggerStateContext);
+  const popover = useSlottedContext(PopoverContext);
   const isOpen = props.isOpen ?? state?.isOpen ?? false;
   const setOpen = props.onOpenChange ?? state?.setOpen;
+  const triggerRef = props.triggerRef ?? popover?.triggerRef ?? noTrigger;
+  const isActive = isNonModal && !isSubmenu;
   const isPageScrolling = useRef(false);
-  // Pausing position updates for one render makes React Aria place the popover again.
-  const [isPaused, setPaused] = useState(false);
-  useLayoutEffect(() => {
-    if (isPaused) setPaused(false);
-  }, [isPaused]);
+  const shouldUpdatePosition = useFollowAnchor({
+    anchorRef: triggerRef,
+    isOpen: isOpen && !isSubmenu,
+    target: props.getTargetRect,
+  });
   useLayoutEffect(() => {
     if (!isActive || !isOpen) return;
     // A layout effect, so this capture listener sees each scroll before React Aria's.
+    const view = triggerRef.current?.ownerDocument.defaultView ?? window;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let frame: number | undefined;
     const onScroll = (event: Event) => {
-      isPageScrolling.current = !(event.target instanceof Element);
+      isPageScrolling.current = !(event.target instanceof view.Element);
       if (!isPageScrolling.current) return;
       clearTimeout(timer);
       timer = setTimeout(() => {
         isPageScrolling.current = false;
       });
-      // A sticky or fixed trigger stays put as the page scrolls; the popover follows it.
-      frame ??= requestAnimationFrame(() => {
-        frame = undefined;
-        setPaused(true);
-      });
     };
     const options = { capture: true, passive: true };
-    window.addEventListener('scroll', onScroll, options);
+    view.addEventListener('scroll', onScroll, options);
     return () => {
       clearTimeout(timer);
-      if (frame !== undefined) cancelAnimationFrame(frame);
       isPageScrolling.current = false;
-      window.removeEventListener('scroll', onScroll, options);
+      view.removeEventListener('scroll', onScroll, options);
     };
-  }, [isActive, isOpen]);
-  if (!isActive) return {};
+  }, [isActive, isOpen, triggerRef]);
+  if (isSubmenu) return {};
+  if (!isActive) return { shouldUpdatePosition };
   return {
     isOpen,
     onOpenChange: (open: boolean) => {
       if (open || !isPageScrolling.current) setOpen?.(open);
     },
-    shouldUpdatePosition: !isPaused,
+    shouldUpdatePosition,
   };
 }
 
@@ -168,7 +169,7 @@ export function MenuOverlay({
   const resolved = layer ?? inherited ?? 'dropdown';
   const zIndex = useLayerZIndex(resolved);
   const isSubmenu = useSlottedContext(PopoverContext)?.trigger === 'SubmenuTrigger';
-  const open = usePageScrollFollow(nonModal && !isSubmenu, rest);
+  const open = useMenuFollow(isSubmenu, nonModal, rest);
   return (
     <>
       <PopoverPresence />
