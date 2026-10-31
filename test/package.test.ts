@@ -29,7 +29,15 @@ describe('package manifest', () => {
     expect(manifest.exports['./*']).toEqual({
       types: './dist/components/*/index.d.ts',
       import: './dist/components/*/index.js',
+      default: './dist/components/*/index.js',
     });
+    // Resolvers that do not assert `import` (require(esm), Jest) fall through to `default`.
+    for (const entry of Object.values(manifest.exports)) {
+      if (typeof entry === 'string') continue;
+      const conditions = entry as Record<string, string>;
+      expect(Object.keys(conditions)).toEqual(['types', 'import', 'default']);
+      expect(conditions.default).toBe(conditions.import);
+    }
     const dependencies = [
       ...Object.keys(manifest.dependencies),
       ...Object.keys(manifest.peerDependencies),
@@ -58,6 +66,7 @@ describe('package manifest', () => {
     expect(manifest.exports['./testing']).toEqual({
       types: './dist/testing/index.d.ts',
       import: './dist/testing/index.js',
+      default: './dist/testing/index.js',
     });
     for (const name of ['@testing-library/dom', '@testing-library/user-event']) {
       expect(manifest.peerDependencies[name]).toBeDefined();
@@ -69,6 +78,7 @@ describe('package manifest', () => {
     expect(manifest.exports['./locales']).toEqual({
       types: './dist/core/locales/index.d.ts',
       import: './dist/core/locales/index.js',
+      default: './dist/core/locales/index.js',
     });
     expect(manifest.exports['./locales/*.json']).toBe('./dist/core/locales/*.json');
     expect(manifest.dependencies['intl-messageformat']).toBeDefined();
