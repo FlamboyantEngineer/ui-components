@@ -13,7 +13,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.2 - Custom actions
 
-An action with `verb: 'custom'` shall draw its `icon` (an imported icon component or rendered element) and be named by its required `label`. Its optional `isSelected` makes it a toggle: `aria-pressed` reports `true` or `false` and `data-selected` marks the pressed state. Its `ref` reaches the button, so a caller can return focus to it.
+An action with `verb: 'custom'` shall draw its `icon` (an imported icon component or rendered element) and be named by its required `label`. Its icon is optional: without one the button shows its `label` as visible text, which names it, and keeps its toggle, pending, disabled and menu semantics. Its optional `isSelected` makes it a toggle: `aria-pressed` reports `true` or `false` and `data-selected` marks the pressed state. Its `ref` reaches the button, so a caller can return focus to it.
 
 Implementation: `src/components/action-row/action-row.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`

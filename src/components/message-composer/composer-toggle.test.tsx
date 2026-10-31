@@ -35,6 +35,22 @@ describe('MessageComposerToggle', () => {
     expectHooksMatchSpec(container, 'MESSAGE-COMPOSER', { slots: ['toggle'] });
   });
 
+  it('UIC-MESSAGE-COMPOSER-6.4 keeps the label of a toggle without an icon while compact', async () => {
+    const user = userEvent.setup();
+    const row = installComposerRow();
+    const { container } = render(
+      <MessageComposer startControls={<MessageComposerToggle label="Plan" icon={undefined} />} />,
+    );
+    expect(plan()).toHaveTextContent('Plan');
+    row.resize(container, 100, 300);
+    expect(plan()).toHaveTextContent('Plan');
+    expect(plan()).toHaveAttribute('data-content', 'label');
+    await user.click(plan());
+    expect(plan()).toHaveAttribute('aria-pressed', 'true');
+    row.resize(container, 600, 300);
+    expect(plan()).toHaveTextContent('Plan');
+  });
+
   it('UIC-MESSAGE-COMPOSER-8.1 follows a controlled state and starts from defaultSelected', async () => {
     const user = userEvent.setup();
     function Controlled() {

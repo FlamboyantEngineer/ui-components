@@ -24,6 +24,19 @@ test.describe('Action Row lab', () => {
     ]);
   });
 
+  test('UIC-ACTION-ROW-1.2 shows the label of a custom action without an icon', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('action-row');
+    const row = page.locator('[data-lab-case="no-icon"]');
+    const schedule = row.getByRole('button', { name: 'Schedule' });
+    await expect(schedule).toHaveText('Schedule');
+    await expect(schedule).toBeVisible();
+    expect(requireDefined(await schedule.boundingBox()).width).toBeGreaterThan(40);
+    await expect(schedule).toHaveAttribute('aria-pressed', 'false');
+  });
+
   test('UIC-ACTION-ROW-2.2 sizes every action button', async ({ page, lab }) => {
     await lab.open('action-row');
     for (const [size, edge] of [

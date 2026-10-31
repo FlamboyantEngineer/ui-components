@@ -64,6 +64,22 @@ describe('MessageComposerSelect', () => {
     expect(trigger()).not.toHaveTextContent('Ask first');
   });
 
+  it('UIC-MESSAGE-COMPOSER-6.4 keeps the label of a trigger whose option has no icon while compact', async () => {
+    const row = installComposerRow();
+    const { container, user } = renderSelect({
+      options: [
+        { id: 'ask', label: 'Ask first', icon: undefined },
+        { id: 'auto', label: 'Run on its own', icon: CheckGlyph },
+      ],
+    });
+    row.resize(container, 100, 300);
+    expect(trigger()).toHaveAccessibleName('Approval: Ask first');
+    expect(trigger()).toHaveTextContent('Ask first');
+    expect(trigger()).toHaveAttribute('aria-haspopup', 'true');
+    await user.click(trigger());
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+  });
+
   it('UIC-MESSAGE-COMPOSER-7.1 disables the trigger with its own flag or the composer, and renders nothing without options', async () => {
     const { user, rerender } = renderSelect({ isDisabled: true });
     expect(trigger()).toBeDisabled();

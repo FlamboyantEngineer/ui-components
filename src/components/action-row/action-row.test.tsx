@@ -109,6 +109,37 @@ describe('ActionRow', () => {
     expectHooksMatchSpec(container, 'ACTION-ROW');
   });
 
+  it('UIC-ACTION-ROW-1.2 shows the label of a custom action without an icon, keeping its states', async () => {
+    const onPress = vi.fn();
+    render(
+      <ActionRow
+        actions={[
+          { verb: 'custom', id: 'schedule', label: 'Schedule', onPress, isSelected: false },
+          {
+            verb: 'custom',
+            id: 'more',
+            label: 'More',
+            items: [{ id: 'archive', label: 'Archive' }],
+            onAction: noop,
+          },
+          { verb: 'custom', id: 'wait', label: 'Wait', isPending: true },
+        ]}
+      />,
+    );
+    const schedule = screen.getByRole('button', { name: 'Schedule' });
+    expect(schedule).toHaveTextContent('Schedule');
+    expect(schedule).toHaveAttribute('data-content', 'label');
+    expect(schedule).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(schedule);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    const more = screen.getByRole('button', { name: 'More' });
+    expect(more).toHaveTextContent('More');
+    expect(more).toHaveAttribute('aria-haspopup', 'true');
+    await userEvent.click(more);
+    expect(await screen.findByRole('menuitem', { name: 'Archive' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Wait/ })).toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('UIC-ACTION-ROW-1.3 draws custom actions in their order, then the verbs in a fixed order', () => {
     const actions: ActionRowAction[] = [
       { verb: 'cancel', id: 'cancel', onPress: noop },

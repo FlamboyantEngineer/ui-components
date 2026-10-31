@@ -9,6 +9,7 @@ import { Icon, type IconSource } from '../icon/icon.js';
 import { hasIcon, toIconProps } from '../icon/icon.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useButtonAction, type ButtonActionProps } from './button-action.js';
 import {
   toAriaButtonProps,
@@ -49,7 +50,10 @@ export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BasePr
   align?: ButtonAlign | undefined;
   /** Shows an icon-only button. Name it with `label` or `aria-label`. `null` and `false` show none. */
   icon?: IconSource;
-  /** The accessible name of an icon-only button. */
+  /**
+   * The accessible name of an icon-only button. Without an icon and without children it is the
+   * button's visible label, so a control whose optional icon is absent stays named.
+   */
   label?: string | undefined;
   /** An icon before the label. */
   startIcon?: IconSource;
@@ -75,7 +79,10 @@ type ButtonHint = Pick<ButtonProps, 'tooltip' | 'shortcut'>;
 type ButtonPartsProps = Pick<
   ButtonProps,
   'children' | 'content' | 'icon' | 'startIcon' | 'endIcon' | 'isPending' | 'pendingLabel'
->;
+> & {
+  /** The label shown when there is neither an icon nor any children. */
+  fallbackLabel?: string | undefined;
+};
 
 const hooks = createHooks('button', ['spinner', 'start-icon', 'label', 'end-icon', 'icon']);
 
@@ -92,7 +99,8 @@ export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
  * so the button keeps its size and its name; a stylesheet draws the spinner over them.
  */
 function ButtonParts({
-  children,
+  children: given,
+  fallbackLabel,
   content,
   icon,
   startIcon,
@@ -100,6 +108,7 @@ function ButtonParts({
   isPending,
   pendingLabel,
 }: ButtonPartsProps) {
+  const children = isEmptyNode(given) ? fallbackLabel : given;
   return (
     <>
       {isPending ? (
@@ -125,7 +134,7 @@ function ButtonParts({
 /** Wraps a button in a `Tooltip` when it has a hint or a shortcut, which follows the hint. */
 function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
   const keys = shortcut && toKeyShortcuts(shortcut) ? <Shortcut chord={shortcut} /> : null;
-  const hint = isEmptyHint(tooltip) ? null : tooltip;
+  const hint = isEmptyNode(tooltip) ? null : tooltip;
   if (hint === null && keys === null) return button;
   const content = (
     <>
@@ -135,10 +144,6 @@ function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
     </>
   );
   return <Tooltip content={content}>{button}</Tooltip>;
-}
-
-function isEmptyHint(tooltip: ReactNode): boolean {
-  return tooltip == null || tooltip === false || tooltip === '';
 }
 
 /** The icon mode owns its accessible name and defaults, independently of action timing. */
@@ -208,6 +213,7 @@ export function Button({
   const parts = (
     <ButtonParts
       content={content}
+      fallbackLabel={presentation.isIcon ? undefined : label}
       icon={icon}
       startIcon={startIcon}
       endIcon={endIcon}
