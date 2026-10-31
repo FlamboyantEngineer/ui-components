@@ -114,6 +114,7 @@ function Presets() {
 
 function Typing() {
   const [committed, setCommitted] = useState('none');
+  const [typed, setTyped] = useState('#2e8b57');
   return (
     <>
       <ColorField
@@ -121,10 +122,12 @@ function Typing() {
         defaultValue="#2e8b57"
         allowsTyping
         swatches={swatches}
-        description="Type hex, rgb() or hsl(); Enter, or leaving the field, commits. Enter and Escape that an input method composition owns stay with it."
+        description="Type hex, rgb() or hsl(): a colour is the value as it is typed; Enter, or leaving the field, commits. Enter and Escape that an input method composition owns stay with it."
+        onChange={(value) => setTyped(value ?? 'empty')}
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="typing"
       />
+      <LabOutput name="Typed value">{typed}</LabOutput>
       <LabOutput name="Typed committed">{committed}</LabOutput>
     </>
   );
@@ -224,6 +227,12 @@ mountLab(
       description="Pick, then restore, undo with Ctrl+Z, or use the field menu."
     >
       <Saved />
+    </LabSection>
+    <LabSection
+      title="Unreadable stored colour"
+      description="A stored value that is no colour shows no colour and is invalid."
+    >
+      <ColorField label="Imported colour" defaultValue="not-a-colour" data-lab-field="unreadable" />
     </LabSection>
     <LabSection title="Form value" description="A named field submits its stored colour.">
       <FormValue />

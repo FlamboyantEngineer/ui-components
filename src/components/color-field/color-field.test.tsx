@@ -251,4 +251,17 @@ describe('ColorField', () => {
     rerender(<ColorField label="Accent" value="#ffff00" isPending />);
     expect(root(container)).toHaveAttribute('data-validation', 'pending');
   });
+
+  it('UIC-COLOR-FIELD-2.4 reports a value that is no colour as invalid', () => {
+    const { container, rerender } = render(
+      <ColorField label="Accent" value="not-a-colour" isRequired />,
+    );
+    const field = container.querySelector('.ui-field');
+    expect(field).toHaveAttribute('data-validation', 'invalid');
+    expect(screen.getByText('Enter a color, such as #3366ff.')).toBeInTheDocument();
+    rerender(<ColorField label="Accent" value="336699" isRequired />);
+    expect(field).toHaveAttribute('data-validation', 'valid');
+    rerender(<ColorField label="Accent" value={null} />);
+    expect(field).toHaveAttribute('data-validation', 'valid');
+  });
 });
