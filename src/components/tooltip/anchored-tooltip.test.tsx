@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -114,5 +114,46 @@ describe('AnchoredTooltip', () => {
       expect(detached).not.toHaveAttribute('aria-describedby');
       unmount();
     }
+  });
+
+  it('UIC-TOOLTIP-2.4 follows a stable ref to a replacement element and back from removal', () => {
+    function Swapped({ shown }: { shown: 'first' | 'second' | 'none' }) {
+      const ref = useRef<HTMLButtonElement>(null);
+      return (
+        <>
+          {shown === 'none' ? null : (
+            <button key={shown} ref={ref} type="button">
+              {shown}
+            </button>
+          )}
+          <AnchoredTooltip isOpen anchor={ref} id="swap-hint" content="Swap hint" />
+        </>
+      );
+    }
+    const { rerender } = render(<Swapped shown="first" />);
+    const first = screen.getByRole('button', { name: 'first' });
+    expect(first).toHaveAttribute('aria-describedby', 'swap-hint');
+    rerender(<Swapped shown="second" />);
+    expect(first).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('button', { name: 'second' })).toHaveAccessibleDescription('Swap hint');
+    rerender(<Swapped shown="none" />);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    rerender(<Swapped shown="first" />);
+    expect(screen.getByRole('button', { name: 'first' })).toHaveAccessibleDescription('Swap hint');
+  });
+
+  it('UIC-TOOLTIP-2.4 hides when its anchor leaves the page outside its renders, and returns', async () => {
+    const host = document.createElement('button');
+    host.textContent = 'Host';
+    document.body.append(host);
+    render(<AnchoredTooltip isOpen anchor={host} id="host-hint" content="Host hint" />);
+    expect(host).toHaveAttribute('aria-describedby', 'host-hint');
+    act(() => host.remove());
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    expect(host).not.toHaveAttribute('aria-describedby');
+    act(() => document.body.append(host));
+    await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent('Host hint'));
+    expect(host).toHaveAttribute('aria-describedby', 'host-hint');
+    host.remove();
   });
 });

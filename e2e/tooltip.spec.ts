@@ -231,4 +231,40 @@ test.describe('Anchored tooltip lab', () => {
     await expect(button).toHaveAccessibleDescription('');
     await expect(button).toHaveAccessibleName('Add a row');
   });
+
+  test('UIC-TOOLTIP-2.4 follows a stable ref to a replacement anchor and hides while it is gone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const demo = page.locator('[data-lab-demo="anchored-swap"]');
+    const hint = page.getByRole('tooltip', { name: 'Current stage' });
+    // The hint sits just above or below its anchor (it flips near the page's end).
+    const beside = async (name: string) => {
+      const anchor = await demo.getByRole('button', { name, exact: true }).boundingBox();
+      const box = await hint.boundingBox();
+      const top = anchor?.y ?? 0;
+      const bottom = top + (anchor?.height ?? 0);
+      const gap = Math.min(
+        Math.abs((box?.y ?? 0) - bottom),
+        Math.abs((box?.y ?? 0) + (box?.height ?? 0) - top),
+      );
+      expect(gap).toBeLessThan(20);
+      expect(Math.abs((box?.x ?? 0) - (anchor?.x ?? 0))).toBeLessThan(120);
+    };
+    await expect(demo.getByRole('button', { name: 'Draft' })).toHaveAccessibleDescription(
+      'Current stage',
+    );
+    await expect(async () => beside('Draft')).toPass();
+    await demo.getByRole('button', { name: 'Show Review' }).click();
+    await expect(
+      demo.getByRole('button', { name: 'Review', exact: true }),
+    ).toHaveAccessibleDescription('Current stage');
+    await expect(async () => beside('Review')).toPass();
+    await demo.getByRole('button', { name: 'Remove the stage' }).click();
+    await expect(hint).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Show Draft' }).click();
+    await expect(hint).toBeVisible();
+    await expect(async () => beside('Draft')).toPass();
+  });
 });
