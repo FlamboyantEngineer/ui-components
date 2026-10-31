@@ -18,6 +18,8 @@ const samples = {
     '<thead><tr><th scope="col">Fruit</th><th scope="col">Crates</th></tr></thead>',
     '<tbody><tr><td>Apple</td><td>1,240</td></tr><tr><td>Pear</td><td>86</td></tr></tbody></table>',
   ].join(''),
+  'table shorthand':
+    '<table><caption>Crates by hand</caption><col><col class="count"><tr><th scope="col">Fruit<th scope="col">Crates<tr><td>Quince<td>12</table>',
   lists: [
     '<ul><li>Apples<ul><li>Bramley</li><li>Cox</li></ul></li><li>Pears</ul>',
     '<ol start="3"><li>Wash<li>Core</ol>',
@@ -59,7 +61,7 @@ mountLab(
   <>
     <LabSection
       title="Content"
-      description="Rich text, a table, lists with a disclosure and code, at body size and at a small size."
+      description="Rich text, a table, a table written in shorthand (columns without a column group, rows without a body), lists with a disclosure and code, at body size and at a small size."
     >
       <StateMatrix
         axes={{ content: Object.keys(samples), text: ['body', 'small'] }}

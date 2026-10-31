@@ -10,6 +10,7 @@ import {
   pushOpen,
   type OpenElements,
 } from '../../utils/open-elements.js';
+import { fosterElement, prepareTablePart, tableContexts, tableParts } from './html-table.js';
 
 export interface RawElement {
   tag: string;
@@ -86,9 +87,6 @@ const rawTextElements: ReadonlySet<string> = new Set([
   'xmp',
 ]);
 
-/** Elements whose text children are dropped, as React cannot render text there. */
-const tableStructure = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr', 'colgroup']);
-
 const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
 /** Elements that close an open paragraph. */
@@ -110,14 +108,8 @@ const impliedEnds: ReadonlyMap<string, ImpliedEnd> = new Map([
   ['li', impliedEnd('li', 'ul ol table td th')],
   ['dt', impliedEnd('dt dd', 'dl table td th')],
   ['dd', impliedEnd('dt dd', 'dl table td th')],
-  ['tr', impliedEnd('tr', 'table thead tbody tfoot')],
-  ['td', impliedEnd('td th', 'tr table')],
-  ['th', impliedEnd('td th', 'tr table')],
-  ['thead', impliedEnd('thead tbody tfoot', 'table')],
-  ['tbody', impliedEnd('thead tbody tfoot', 'table')],
-  ['tfoot', impliedEnd('thead tbody tfoot', 'table')],
   ['a', impliedEnd('a', 'table td th')],
-  ...headings.map((tag) => [tag, impliedEnd(headings.join(' '), 'p')] as const),
+  ...headings.map((tag) => [tag, impliedEnd(headings.join(' '), 'p table')] as const),
 ]);
 
 type Stack = OpenElements<RawElement>;
@@ -134,16 +126,16 @@ function appendElement(stack: Stack, element: RawElement): void {
 
 function openElement(stack: Stack, token: MarkupOpenToken): void {
   const tag = token.tag.toLowerCase();
-  if (paragraphClosers.has(tag)) applyImpliedEnd(stack, paragraphEnd);
-  const rule = impliedEnds.get(tag);
-  if (rule) applyImpliedEnd(stack, rule);
-  if (tag === 'tr' && currentOpen(stack).tag === 'table') {
-    const body: RawElement = { tag: 'tbody', attributes: {}, children: [] };
-    appendElement(stack, body);
-    pushOpen(stack, body, body.tag);
-  }
   const element: RawElement = { tag, attributes: token.attributes, children: [] };
-  appendElement(stack, element);
+  if (tableParts.has(tag)) {
+    if (!prepareTablePart(stack, tag)) return;
+    appendElement(stack, element);
+  } else {
+    if (paragraphClosers.has(tag)) applyImpliedEnd(stack, paragraphEnd);
+    const rule = impliedEnds.get(tag);
+    if (rule) applyImpliedEnd(stack, rule);
+    if (!fosterElement(stack, element)) appendElement(stack, element);
+  }
   if (!token.isSelfClosing && !voidElements.has(tag)) pushOpen(stack, element, tag);
 }
 
@@ -154,7 +146,7 @@ function closeElement(stack: Stack, tag: string): void {
 
 function addText(stack: Stack, text: string): void {
   const parent = currentOpen(stack);
-  if (tableStructure.has(parent.tag)) return;
+  if (tableContexts.has(parent.tag)) return;
   const last = parent.children[parent.children.length - 1];
   if (typeof last === 'string') parent.children[parent.children.length - 1] = last + text;
   else parent.children.push(text);

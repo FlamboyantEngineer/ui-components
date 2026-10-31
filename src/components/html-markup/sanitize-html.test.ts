@@ -109,7 +109,9 @@ describe('sanitizeHtml', () => {
       ),
     ).toBe('<p class="note" data-user="7" lang="fr" title="T">t</p>');
     expect(clean('<span class="ui-link">t</span>')).toBe('<span>t</span>');
-    expect(clean('<td colspan="2" rowspan="3">x</td>')).toBe('<td colspan="2" rowspan="3">x</td>');
+    expect(clean('<table><td colspan="2" rowspan="3">x</td></table>')).toBe(
+      '<table><tbody><tr><td colspan="2" rowspan="3">x</td></tr></tbody></table>',
+    );
   });
 
   it('UIC-HTML-MARKUP-1.5 keeps relative URLs and allowed schemes, read as a browser reads them', () => {
