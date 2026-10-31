@@ -6,7 +6,7 @@
 
 ### UIC-DOCK-PANEL-1.1 - Panel and panes
 
-`DockPanel` shall render a `<section>` region named by `label`, holding the launcher toolbar, the separator while it shows, and a `ui-dock-panel__body` element. The panes render, through a portal, into one `ui-dock-panel__panes` element that the body holds, and the drawer while it is open (UIC-DOCK-PANEL-4.1); on the server and until the page hydrates they render in place in the body. Its panes are its `DockPanelPane` children, in order; other children are ignored. The root publishes `position` in `data-position`: `end` (the default), `start` or `bottom`, with `start` and `end` following the reading direction.
+`DockPanel` shall render a `<section>` region named by `label`, holding the launcher toolbar, the separator while it shows, and a `ui-dock-panel__body` element. The panes render, through a portal, into one `ui-dock-panel__panes` element that the body holds, and the drawer while it is open (UIC-DOCK-PANEL-4.1); on the server and until the page hydrates they render in place in the body. Its panes are its `DockPanelPane` children, in order; other children are ignored. The root publishes `position` in `data-position`: `end` (the default), `start` or `bottom`, with `start` and `end` following the reading direction. In the reference sheet a docked panel fills a host that sets its height, never growing past it, and is as tall as its open pane in a host that sets none.
 
 Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-parts.tsx`, `labs/reference/dock-panel.css`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
