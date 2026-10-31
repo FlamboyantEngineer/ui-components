@@ -134,6 +134,13 @@ A native reset of the form the field's control belongs to (or the form around th
 Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/tags-input/tags-input.test.tsx`, `e2e/form.spec.ts`
 
+### UIC-FIELD-2.7 - Plain input
+
+A field given `tracksChanges: false` shall be a plain input, as a control embedded in a larger editor or filter is: its committed value is its value, so it is never dirty and shows no Restore, and `commit()` does nothing and never calls `onCommit`. Its value, `onChange`, validation, undo and redo, clear and set to default work as for any field. A caller that embeds a field never mirrors its value into `committedValue` to get this.
+
+Implementation: `src/components/field/field-state.ts`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-state.test.tsx`, `src/components/field/field.test.tsx`
+
 ## UIC-FIELD-3 - Validation
 
 ### UIC-FIELD-3.1 - Status and message

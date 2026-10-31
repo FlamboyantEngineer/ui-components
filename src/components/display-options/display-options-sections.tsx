@@ -59,7 +59,7 @@ export function GroupBySection({ properties, value, onChange }: DisplayOptionsSe
       placeholder={strings.noGrouping}
       options={options.map(({ id, label }) => ({ id, label }))}
       value={value.groupBy}
-      committedValue={value.groupBy}
+      tracksChanges={false}
       onChange={(groupBy) => onChange({ ...value, groupBy })}
     />
   );
@@ -80,7 +80,7 @@ export function SortSection({ properties, value, onChange }: DisplayOptionsSecti
         placeholder={strings.noSorting}
         options={options.map(({ id, label }) => ({ id, label }))}
         value={sort?.column ?? null}
-        committedValue={sort?.column ?? null}
+        tracksChanges={false}
         onChange={(column) =>
           onChange({
             ...value,

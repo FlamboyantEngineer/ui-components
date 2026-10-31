@@ -73,7 +73,7 @@ export function BlockTypeSelect({ controller, className, onCommand }: OverlayCon
       placeholder={strings.blockType}
       options={items.map(({ id, label, icon }) => ({ id, label, icon }))}
       value={value}
-      committedValue={value}
+      tracksChanges={false}
       onChange={choose}
       isDisabled={!controller.isEditable}
     />

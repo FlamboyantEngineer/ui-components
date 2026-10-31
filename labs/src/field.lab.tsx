@@ -224,6 +224,21 @@ function DirtyAndRestore() {
   );
 }
 
+function PlainInput() {
+  const [text, setText] = useState('Plum');
+  return (
+    <>
+      <SampleField
+        label="Filter text"
+        options={{ defaultValue: 'Plum', emptyValue: '', tracksChanges: false, onChange: setText }}
+        menu={['clear']}
+        data-lab-field="plain"
+      />
+      <LabOutput name="Plain value">{text}</LabOutput>
+    </>
+  );
+}
+
 function RemovedValues() {
   const [values, setValues] = useState(['Apple', 'Pear']);
   const removed = ['Apple', 'Pear', 'Plum'].filter((value) => !values.includes(value));
@@ -389,6 +404,12 @@ mountLab(
     <CompactFieldsSection />
     <LabSection title="Dirty and restore" description="Restore puts the committed value back.">
       <DirtyAndRestore />
+    </LabSection>
+    <LabSection
+      title="Plain input"
+      description="A field that tracks no changes: never dirty and no Restore, while undo still works."
+    >
+      <PlainInput />
     </LabSection>
     <LabSection
       title="Restore button"

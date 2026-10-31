@@ -157,6 +157,28 @@ describe('useFieldState', () => {
     expect(result.current.value).toBe('Pear');
   });
 
+  it('UIC-FIELD-2.7 tracks no changes when tracksChanges is false', () => {
+    const onCommit = vi.fn();
+    const onChange = vi.fn();
+    const options = { value: 'Apple', tracksChanges: false, onChange, onCommit, emptyValue: '' };
+    const { result, rerender } = renderField(options);
+    act(() => result.current.setValue('Pear'));
+    expect(onChange).toHaveBeenCalledWith('Pear');
+    rerender({ ...options, value: 'Pear' });
+    act(() => result.current.commit());
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(result.current.committedValue).toBe('Pear');
+    expect(result.current.isDirty).toBe(false);
+    expect(result.current.canUndo).toBe(true);
+    act(() => result.current.undo());
+    expect(onChange).toHaveBeenLastCalledWith('Apple');
+    rerender({ ...options, value: 'Apple' });
+    expect(result.current.canClear).toBe(true);
+    act(() => result.current.clear());
+    expect(onChange).toHaveBeenLastCalledWith('');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
   it('UIC-FIELD-2.2 commits a changed value once and makes it the committed value', () => {
     const onCommit = vi.fn();
     const { result } = renderField({ defaultValue: 'Apple', onCommit });

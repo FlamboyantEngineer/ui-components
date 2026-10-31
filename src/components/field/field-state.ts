@@ -51,6 +51,13 @@ export interface FieldStateOptions<T> {
   defaultValue?: T | undefined;
   /** The value last committed (saved), controlled. Dirty state and Restore compare against it. */
   committedValue?: T | undefined;
+  /**
+   * Whether the field tracks changes: dirty state, Restore and commits. `false` makes it a plain
+   * input, as a control embedded in a larger editor is: the committed value is the value, so it is
+   * never dirty and shows no Restore, and it never calls `onCommit`. Undo and redo still step through
+   * the values it showed. Defaults to `true`.
+   */
+  tracksChanges?: boolean | undefined;
   /** The value the Clear action sets. Without it the field cannot be cleared. */
   emptyValue?: T | undefined;
   onChange?: ((value: T) => void) | undefined;
@@ -182,6 +189,15 @@ function useOwnValues<T>({ value, committedValue, defaultValue }: FieldStateOpti
   return { draft, setDraft, committed, setCommitted };
 }
 
+/** The committed value: the caller's, else the field's own, else the value when it tracks no changes. */
+function toCommittedValue<T>(
+  options: FieldStateOptions<T>,
+  { committed, value, tracksChanges }: { committed: T; value: T; tracksChanges: boolean },
+): T {
+  if (!tracksChanges) return value;
+  return options.committedValue !== undefined ? options.committedValue : committed;
+}
+
 /**
  * The history of the values the field shows, recording the value during render when it is new,
  * unless the control keeps its own history.
@@ -229,7 +245,7 @@ function useCommit<T>(
   const [, rerender] = useReducer((count: number) => count + 1, 0);
   const commit = useCallback(() => {
     const current = latest.current;
-    if (current.isLocked) return;
+    if (current.isLocked || current.options.tracksChanges === false) return;
     if (current.isUnsettled) {
       pending.current = true;
       rerender();
@@ -312,7 +328,8 @@ export function useFieldState<T>(
   const scope = useFieldScope();
   const { draft, setDraft, committed, setCommitted } = useOwnValues(options);
   const value = options.value !== undefined ? options.value : draft;
-  const committedValue = options.committedValue !== undefined ? options.committedValue : committed;
+  const tracksChanges = options.tracksChanges !== false;
+  const committedValue = toCommittedValue(options, { committed, value, tracksChanges });
   const isDisabled = Boolean(options.isDisabled || scope.isDisabled);
   const isReadOnly = Boolean(options.isReadOnly || scope.isReadOnly);
   const isLocked = isReadOnly || isDisabled;

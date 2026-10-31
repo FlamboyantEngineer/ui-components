@@ -182,7 +182,7 @@ export function CommentComposer({
         multiline
         minRows={2}
         value={draft}
-        committedValue={draft}
+        tracksChanges={false}
         onChange={setDraft}
         isDisabled={isDisabled}
         autoFocus={autoFocus}

@@ -65,7 +65,7 @@ export function QuestionTextField({
       labelLayout="control-only"
       placeholder={strings.questionAnswerPlaceholder}
       value={draft.otherText}
-      committedValue={draft.otherText}
+      tracksChanges={false}
       onChange={(otherText) => onDraftChange({ ...draft, otherText })}
       isReadOnly={isReadOnly}
       isRequired={!isReadOnly}

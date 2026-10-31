@@ -91,6 +91,18 @@ test.describe('Field lab', () => {
     await expect(stacked.getByRole('textbox')).toBeFocused();
   });
 
+  test('UIC-FIELD-2.7 keeps a plain input clean while it changes', async ({ page, lab }) => {
+    await lab.open('field');
+    const plain = field(page, 'plain');
+    const input = plain.getByRole('textbox', { name: 'Filter text' });
+    await input.fill('Pear');
+    await input.press('Enter');
+    await expect(page.locator('[data-lab-output="Plain value"]')).toHaveText('Pear');
+    await expect(plain).not.toHaveAttribute('data-dirty');
+    await expect(plain.getByRole('button', { name: 'Restore Filter text' })).toHaveCount(0);
+    await lab.expectAccessible();
+  });
+
   test('UIC-FIELD-3.2 shows each status with its message', async ({ page, lab }) => {
     await lab.open('field');
     const expected = [

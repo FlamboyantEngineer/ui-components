@@ -82,8 +82,8 @@ function renderTextEditor<T>({ value, onChange, label, isPending }: InlineEditEd
       label={label}
       labelLayout="control-only"
       value={text}
-      // The draft is the field's committed value, so the field never shows its own dirty state.
-      committedValue={text}
+      // The draft is the field's value; the editor tracks changes, not the field.
+      tracksChanges={false}
       onChange={(next) => onChange(next as T)}
       isPending={isPending}
     />

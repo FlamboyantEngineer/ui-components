@@ -80,6 +80,7 @@ const stateKeys = new Set<string>([
   'value',
   'defaultValue',
   'committedValue',
+  'tracksChanges',
   'emptyValue',
   'onChange',
   'onCommit',
