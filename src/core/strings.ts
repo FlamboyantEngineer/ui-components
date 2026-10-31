@@ -140,5 +140,13 @@ export function compileStrings(messages: UiMessages, locale: string): UiStrings 
   return strings as unknown as UiStrings;
 }
 
-/** The built-in English text. */
-export const defaultStrings: UiStrings = compileStrings(en, DEFAULT_LOCALE);
+let defaultStrings: UiStrings | undefined;
+
+/**
+ * The built-in English text, compiled on first use rather than when the library loads, so
+ * importing a component does no string work until one renders outside every provider.
+ */
+export function getDefaultStrings(): UiStrings {
+  defaultStrings ??= compileStrings(en, DEFAULT_LOCALE);
+  return defaultStrings;
+}

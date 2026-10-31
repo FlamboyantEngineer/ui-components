@@ -20,7 +20,9 @@ import {
 } from './provider.js';
 import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
 import { en } from './locales/index.js';
-import { defaultStrings } from './strings.js';
+import { getDefaultStrings } from './strings.js';
+
+const defaultStrings = getDefaultStrings();
 
 function Probe() {
   const strings = useUiStrings();

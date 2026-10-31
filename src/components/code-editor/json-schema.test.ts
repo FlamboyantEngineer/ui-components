@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { defaultStrings } from '../../core/strings.js';
+import { getDefaultStrings } from '../../core/strings.js';
+
+const defaultStrings = getDefaultStrings();
 import { findSubschema, validateJsonSchema, type JsonSchema } from './json-schema.js';
 import { parseJsonTree } from './json-tree.js';
 

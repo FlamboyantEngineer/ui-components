@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { defaultStrings } from '../../core/strings.js';
+import { getDefaultStrings } from '../../core/strings.js';
+
+const defaultStrings = getDefaultStrings();
 import { countCodePoints, validateString } from './string-rules.js';
 
 describe('validateString', () => {
