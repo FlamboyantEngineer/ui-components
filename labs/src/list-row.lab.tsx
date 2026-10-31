@@ -232,7 +232,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="List view reordering"
-      description="Select rows with the leading checkboxes. Drag a row, or press Enter on its leading drag handle and use the arrow keys, to reorder. Controls stay beside the text."
+      description="Select rows with the leading checkboxes. Drag a row, or press Enter on its leading drag handle and use the arrow keys, to reorder. Controls stay beside the text. Arrange turns reordering off and on; the selection stays."
     >
       <div style={{ width: 300 }}>
         <ReorderCase />

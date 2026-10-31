@@ -228,3 +228,20 @@ test('UIC-LIST-ROW-2.2 draws row content inside a host-owned element', async ({ 
   await expect(host).toContainText('Edited today');
   await expect(host.getByRole('listitem')).toHaveCount(0);
 });
+
+test('UIC-LIST-ROW-3.3 keeps the selection when reordering turns off and on', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-row');
+  const reorder = page.locator('[data-lab-reorder]');
+  const banana = reorder.getByRole('row', { name: /^Banana/ });
+  await banana.locator('.ui-list-view-item__checkbox').click();
+  const arrange = reorder.getByRole('button', { name: 'Arrange' });
+  await arrange.click();
+  await expect(reorder.locator('.ui-list-view-item__drag-handle')).toHaveCount(0);
+  await expect(banana).toHaveAttribute('aria-selected', 'true');
+  await arrange.click();
+  await expect(reorder.locator('.ui-list-view-item__drag-handle').first()).toBeVisible();
+  await expect(banana).toHaveAttribute('aria-selected', 'true');
+});
