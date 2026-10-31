@@ -16,7 +16,7 @@ const cities: ComboboxOption[] = ['Paris', 'Lima', 'Oslo', 'Lisbon'].map((name) 
 function* fruitItems(): Generator<ComboboxItem> {
   yield { id: 'a', label: 'Apple' };
   yield { id: 2, label: 'Banana' };
-  yield { id: 'citrus', title: 'Citrus', options: [{ id: 'lemon', label: 'Lemon' }] };
+  yield { id: 'citrus', label: 'Citrus', options: [{ id: 'lemon', label: 'Lemon' }] };
 }
 
 /** A reusable iterable that counts how often it is read. */

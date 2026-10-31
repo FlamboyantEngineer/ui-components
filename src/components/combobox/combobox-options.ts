@@ -1,25 +1,13 @@
-import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
-import type { IconSource } from '../icon/icon.js';
+import type { PickerItem, PickerOption, PickerSection } from '../field/field.js';
 
-/** One suggestion. */
-export interface ComboboxOption {
-  id: Key;
-  /** The text shown, matched while typing, and written to the input when chosen. */
-  label: string;
-  description?: ReactNode;
-  icon?: IconSource;
-  isDisabled?: boolean | undefined;
-}
+/** One suggestion; its label is written to the input when chosen. */
+export type ComboboxOption = PickerOption;
 
-/** A titled group of suggestions. */
-export interface ComboboxSection {
-  id: Key;
-  title: ReactNode;
-  options: readonly ComboboxOption[];
-}
+/** A section of suggestions, led by its `label` when it has one. */
+export type ComboboxSection = PickerSection;
 
-export type ComboboxItem = ComboboxOption | ComboboxSection;
+export type ComboboxItem = PickerItem;
 
 /** The text the reader typed, and the option the input now completes it with. */
 export interface ComboboxCompletion {
@@ -35,15 +23,6 @@ export interface ComboboxCompletion {
 interface OptionCollection {
   [Symbol.iterator](): Iterator<{ key: Key; type: string }>;
   getChildren?(key: Key): Iterable<{ key: Key; type: string }>;
-}
-
-export function isSection(item: ComboboxItem): item is ComboboxSection {
-  return 'options' in item;
-}
-
-/** Every option, in display order, sections opened. */
-export function flattenOptions(items: Iterable<ComboboxItem> | undefined): ComboboxOption[] {
-  return [...(items ?? [])].flatMap((item) => (isSection(item) ? [...item.options] : [item]));
 }
 
 /** Whether an option's label is `text`, ignoring case and surrounding spaces. */

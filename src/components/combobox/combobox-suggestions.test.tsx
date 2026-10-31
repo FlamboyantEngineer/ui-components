@@ -14,7 +14,7 @@ const fruit: ComboboxItem[] = [
   { id: 'banana', label: 'Banana' },
   {
     id: 'citrus',
-    title: 'Citrus',
+    label: 'Citrus',
     options: [
       { id: 'lemon', label: 'Lemon' },
       { id: 'lime', label: 'Lime', isDisabled: true },

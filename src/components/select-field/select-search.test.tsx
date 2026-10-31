@@ -165,11 +165,11 @@ describe('SelectField search', () => {
     const user = userEvent.setup();
     let releasePage: () => void = () => {};
     const loadOptions = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
-      if (cursor === undefined) return { options: catalogue.slice(0, 2), cursor: 'page-2' };
+      if (cursor === undefined) return { items: catalogue.slice(0, 2), cursor: 'page-2' };
       await new Promise<void>((resolve) => {
         releasePage = resolve;
       });
-      return { options: catalogue.slice(2) };
+      return { items: catalogue.slice(2) };
     });
     render(
       <SelectField

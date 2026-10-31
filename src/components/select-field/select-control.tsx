@@ -4,7 +4,6 @@ import { useMemo, useRef, type CSSProperties } from 'react';
 import { Select as AriaSelect } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -19,8 +18,8 @@ import {
   type SelectKeysValue,
   type SelectModel,
 } from './select-model.js';
-import { flattenSelectItems, toSelectKeys, type SelectFieldOption } from './select-options.js';
-import type { SelectSearch } from './select-search.js';
+import { flattenPickerItems, usePickerEmptyContent } from '../field/field.js';
+import { toSelectKeys, type SelectFieldOption } from './select-options.js';
 import { SelectTrigger } from './select-trigger.js';
 
 export type { SelectConfig, SelectKeysValue } from './select-model.js';
@@ -38,23 +37,16 @@ const FILTER_THRESHOLD = 10;
 
 const hooks = createHooks('select-field', ['select']);
 
-function emptyMessage(search: SelectSearch | null, strings: UiStrings) {
-  if (search?.isLoading) return strings.loading;
-  if (search?.hasFailed) return strings.searchFailed;
-  if (search?.isTooShort) return strings.typeToSearch(search.minSearchLength);
-  return strings.noResults;
-}
-
 /** The open list's props: its items, how they are drawn, the filter and the search's state. */
 function useListProps(
   props: Omit<SelectControlProps, 'control' | 'label'>,
   model: SelectModel,
 ): Omit<SelectListProps, 'filterText' | 'onFilterTextChange'> {
-  const strings = useUiStrings();
   const { search } = model;
+  const renderEmpty = usePickerEmptyContent(search);
   const isFilterable =
     props.filterable ??
-    (Boolean(search) || flattenSelectItems(props.options).length > FILTER_THRESHOLD);
+    (Boolean(search) || flattenPickerItems(props.options).length > FILTER_THRESHOLD);
   return {
     items: model.listed,
     isMultiple: props.isMultiple,
@@ -64,7 +56,7 @@ function useListProps(
     isFilterable,
     filtersLocally: !search,
     isLoading: Boolean(search?.isLoading),
-    emptyMessage: emptyMessage(search, strings),
+    emptyMessage: renderEmpty(),
     more: search?.hasMore ? { isLoading: search.isLoadingMore, onLoadMore: search.loadMore } : null,
   };
 }
@@ -86,7 +78,7 @@ function useTrigger(
     [control.ref, props.triggerRef],
   );
   const placeholder = props.placeholder ?? strings.selectPlaceholder;
-  const options = flattenSelectItems(props.options);
+  const options = flattenPickerItems(props.options);
   const count = model.keys.length;
   const texts = [
     model.empty?.label ?? placeholder,

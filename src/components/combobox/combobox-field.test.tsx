@@ -2,14 +2,15 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Combobox, type ComboboxItem } from './combobox.js';
-import { findCompletion, findFirstOptionKey, flattenOptions } from './combobox-options.js';
+import { flattenPickerItems } from '../field/field.js';
+import { findCompletion, findFirstOptionKey } from './combobox-options.js';
 
 const fruit: ComboboxItem[] = [
   { id: 'grape', label: 'Grape' },
   { id: 'apricot', label: 'Apricot', isDisabled: true },
   { id: 'apple', label: 'Apple' },
   { id: 'papaya', label: 'Papaya' },
-  { id: 'citrus', title: 'Citrus', options: [{ id: 'lemon', label: 'Lemon' }] },
+  { id: 'citrus', label: 'Citrus', options: [{ id: 'lemon', label: 'Lemon' }] },
 ];
 
 function input() {
@@ -120,7 +121,7 @@ describe('Combobox entry', () => {
   });
 
   it('UIC-COMBOBOX-3.4 finds completions and first options from the suggestions', () => {
-    const options = flattenOptions(fruit);
+    const options = flattenPickerItems(fruit);
     expect(findCompletion(options, 'Le')).toEqual({ typed: 'Le', text: 'Lemon', key: 'lemon' });
     expect(findCompletion(options, 'apr')).toBeNull();
     expect(findCompletion(options, 'apple')).toBeNull();

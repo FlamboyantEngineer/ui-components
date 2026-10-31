@@ -4,8 +4,9 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useFilter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
-import { flattenOptions, type ComboboxCompletion, type ComboboxItem } from './combobox-options.js';
-import { useComboboxSearch, useEmptyContent, type ComboboxLoader } from './combobox-search.js';
+import { flattenPickerItems, usePickerEmptyContent } from '../field/field.js';
+import type { ComboboxCompletion, ComboboxItem } from './combobox-options.js';
+import { useComboboxSearch, type ComboboxLoader } from './combobox-search.js';
 
 interface InputTextOptions {
   inputValue?: string | undefined;
@@ -40,7 +41,7 @@ export function useInlineCompletionState({
   completesInline?: boolean | undefined;
   suggestions: readonly ComboboxItem[];
 }) {
-  const options = useMemo(() => flattenOptions(suggestions), [suggestions]);
+  const options = useMemo(() => flattenPickerItems(suggestions), [suggestions]);
   const [completion, setCompletion] = useState<ComboboxCompletion | null>(null);
   const { contains } = useFilter({ sensitivity: 'base' });
   const completionFilter = useCallback(
@@ -84,12 +85,12 @@ export function useComboboxModel(options: ComboboxModelOptions) {
   const isOpen = open && !isLocked;
   const input = useInputText(options);
   const search = useComboboxSearch({ ...options, isOpen, text: input.text });
-  const renderEmpty = useEmptyContent({ search, renderEmptyState: options.renderEmptyState });
+  const renderEmpty = usePickerEmptyContent(search, options.renderEmptyState);
   const source = options.items ?? options.defaultItems;
   // A generator yields only once, so each source is read once and every projection shares the copy.
   const given = useMemo(() => Array.from(source ?? []), [source]);
   const suggestions = search && !search.isTooShort ? search.results : given;
-  const flatOptions = useMemo(() => flattenOptions(suggestions), [suggestions]);
+  const flatOptions = useMemo(() => flattenPickerItems(suggestions), [suggestions]);
   const more = search?.hasMore
     ? { onLoadMore: search.loadMore, isLoading: search.isLoadingMore }
     : {};

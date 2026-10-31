@@ -5,9 +5,9 @@ import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { FieldState } from '../field/field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
+import { flattenPickerItems } from '../field/field.js';
 import {
   diffSelectKeys,
-  flattenSelectItems,
   mergeSelectOptions,
   orderSelectKeys,
   resolveSelectOptions,
@@ -78,7 +78,7 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
   const emptyKey = useId();
   const search = useSelectSearch(config);
   const isRemote = Boolean(config.loadOptions);
-  const known = mergeSelectOptions(flattenSelectItems(config.options), search.seen);
+  const known = mergeSelectOptions(flattenPickerItems(config.options), search.seen);
   const keys = toChosenKeys(state.value, known);
   const chosen = resolveSelectOptions(keys, known);
   const diff = state.isDirty

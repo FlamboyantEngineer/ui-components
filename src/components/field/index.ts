@@ -8,6 +8,9 @@ export {
   useFieldState,
 } from './field.js';
 export type {
+  PickerItem,
+  PickerOption,
+  PickerSection,
   FieldAsyncValidate,
   FieldControl,
   FieldControlOptions,
