@@ -52,7 +52,7 @@
   box-shadow: inset 3px 0 0 var(--ref-accent);
 }
 
-.ui-tree__item[data-current]:dir(rtl) {
+[dir='rtl'] .ui-tree__item[data-current] {
   box-shadow: inset -3px 0 0 var(--ref-accent);
 }
 

@@ -39,11 +39,11 @@
   background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
 }
 
-.ui-toolbar-scroller__fade[data-edge='start']:dir(rtl) {
+[dir='rtl'] .ui-toolbar-scroller__fade[data-edge='start'] {
   background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
 }
 
-.ui-toolbar-scroller__fade[data-edge='end']:dir(rtl) {
+[dir='rtl'] .ui-toolbar-scroller__fade[data-edge='end'] {
   background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
 }
 

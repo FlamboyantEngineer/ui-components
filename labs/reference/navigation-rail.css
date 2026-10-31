@@ -143,7 +143,7 @@
   box-shadow: inset 3px 0 0 var(--ref-accent);
 }
 
-.ui-navigation-rail__link[data-current]:dir(rtl) {
+[dir='rtl'] .ui-navigation-rail__link[data-current] {
   box-shadow: inset -3px 0 0 var(--ref-accent);
 }
 

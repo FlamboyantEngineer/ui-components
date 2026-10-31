@@ -63,7 +63,7 @@
   box-shadow: inset var(--ref-segmented-bar-separator) 0 0 var(--ref-surface);
 }
 
-.ui-segmented-bar:dir(rtl) .ui-segmented-bar__segment + .ui-segmented-bar__segment {
+[dir='rtl'] .ui-segmented-bar .ui-segmented-bar__segment + .ui-segmented-bar__segment {
   box-shadow: inset calc(-1 * var(--ref-segmented-bar-separator)) 0 0 var(--ref-surface);
 }
 
@@ -168,7 +168,8 @@
     transform-origin: left center;
   }
 
-  .ui-segmented-bar:dir(rtl)
+  [dir='rtl']
+    .ui-segmented-bar
     .ui-segmented-bar__track[data-animation-state='running']
     > .ui-segmented-bar__segment {
     transform-origin: right center;

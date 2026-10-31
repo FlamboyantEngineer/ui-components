@@ -72,7 +72,7 @@
 }
 
 /* The move glyphs point at the side the items move to, in either reading direction. */
-.ui-transfer-list__move:dir(rtl) .ui-icon {
+[dir='rtl'] .ui-transfer-list__move .ui-icon {
   transform: scaleX(-1);
 }
 

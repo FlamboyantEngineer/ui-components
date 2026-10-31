@@ -90,6 +90,19 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page the rail sits on the right and the current page's bar runs down its start edge, on the right."
+    >
+      <div dir="rtl" style={{ display: 'flex', height: 160 }} data-lab-demo="rtl">
+        <NavigationRail aria-label="Lists, right to left">
+          <NavigationRailSection title="Lists">
+            <NavigationRailItem label="Groceries" href="#groceries" icon={FolderGlyph} isCurrent />
+            <NavigationRailItem label="Shared lists" href="#shared" icon={UsersGlyph} />
+          </NavigationRailSection>
+        </NavigationRail>
+      </div>
+    </LabSection>
+    <LabSection
       title="Workspace"
       description="Press items to move the current page; groups open when the current page moves inside. Collapse the rail or drag its edge, then reload: both persist. Up and Down move between entries."
     >

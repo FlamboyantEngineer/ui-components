@@ -65,6 +65,46 @@ describe('shipped reference stylesheet', () => {
       expect(version).toBeGreaterThanOrEqual(colorMix[browser] ?? Infinity);
     }
   });
+
+  it('UIC-LABS-1.6 uses only the selectors and values every floor browser supports', async () => {
+    const { BROWSER_FLOOR } = await loadReference();
+    const partials = join(process.cwd(), 'labs/reference');
+    const css = readdirSync(partials)
+      .map((file) => readFileSync(join(partials, file), 'utf8'))
+      .join('\n');
+    // The first release of each engine with the feature. An unsupported selector or value drops its
+    // whole selector list or declaration, so the floor has to carry every feature the sheet uses.
+    const features: { pattern: RegExp; since: Record<string, number> }[] = [
+      {
+        pattern: /color-mix\(/,
+        since: { chrome: 111, edge: 111, firefox: 113, safari: 16.2, ios_saf: 16.2 },
+      },
+      {
+        pattern: /:has\(/,
+        since: { chrome: 105, edge: 105, firefox: 121, safari: 15.4, ios_saf: 15.4 },
+      },
+      {
+        pattern: /\bsubgrid\b/,
+        since: { chrome: 117, edge: 117, firefox: 71, safari: 16, ios_saf: 16 },
+      },
+      {
+        pattern: /@container\b/,
+        since: { chrome: 105, edge: 105, firefox: 110, safari: 16, ios_saf: 16 },
+      },
+      {
+        pattern: /:dir\(/,
+        since: { chrome: 120, edge: 120, firefox: 49, safari: 16.4, ios_saf: 16.4 },
+      },
+    ];
+    for (const { pattern, since } of features) {
+      if (!pattern.test(css)) continue;
+      for (const [browser, version] of Object.entries(BROWSER_FLOOR)) {
+        expect(version, `${pattern.source} in ${browser}`).toBeGreaterThanOrEqual(
+          since[browser] ?? Infinity,
+        );
+      }
+    }
+  });
 });
 
 describe('package manifest', () => {

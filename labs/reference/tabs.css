@@ -231,10 +231,10 @@
 .ui-tabs__tab[data-drop-position='after'] {
   box-shadow: inset -2px 0 0 var(--ref-accent);
 }
-.ui-tabs__tab[data-drop-position='before']:dir(rtl) {
+[dir='rtl'] .ui-tabs__tab[data-drop-position='before'] {
   box-shadow: inset -2px 0 0 var(--ref-accent);
 }
-.ui-tabs__tab[data-drop-position='after']:dir(rtl) {
+[dir='rtl'] .ui-tabs__tab[data-drop-position='after'] {
   box-shadow: inset 2px 0 0 var(--ref-accent);
 }
 .ui-tabs__list[data-orientation='vertical'] .ui-tabs__tab[data-drop-position='before'] {
