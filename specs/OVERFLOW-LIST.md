@@ -6,7 +6,7 @@
 
 ### UIC-OVERFLOW-LIST-1.1 - Measured row
 
-`OverflowList` shall render each of `items` through `renderItem(item, index)` in a `ui-overflow-list__item` element inside its `ui-overflow-list` root. While all of them fit in the root's content box it renders them all and no indicator. Otherwise it renders as many as fit from the kept end beside a `ui-overflow-list__overflow` element holding `renderOverflow(hiddenItems)`, publishes `data-overflowing`, and does not render the hidden items, which reach the user only through the indicator.
+`OverflowList` shall render each of `items` through `renderItem(item, index)`, keyed by `getKey(item)`, in a `ui-overflow-list__item` element inside its `ui-overflow-list` root. While all of them fit in the root's content box it renders them all and no indicator. Otherwise it renders as many as fit from the kept end beside a `ui-overflow-list__overflow` element holding `renderOverflow(hiddenItems)`, publishes `data-overflowing`, and does not render the hidden items, which reach the user only through the indicator.
 
 Implementation: `src/components/overflow-list/overflow-list.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/overflow-list.css`
 Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`
@@ -52,6 +52,13 @@ When the container's children are committed by a renderer that runs after the ho
 
 Implementation: `src/utils/use-overflow-items.ts`, `src/components/overflow-list/visible-collection.tsx`
 Verification: `src/components/tabs/tab-list.test.tsx`, `src/components/breadcrumb/breadcrumb.test.tsx`
+
+### UIC-OVERFLOW-LIST-1.8 - Item identity
+
+`getKey(item)` shall be an item's identity, unique in `items`; a number and the string of its digits are different items. A kept item keeps its element, and so its state and focus, while the list reorders, inserts or removes items around it, from either collapsing end, including through the commit that measures the new list. An item that leaves for the indicator is unmounted and loses its state; when it is kept again it mounts afresh.
+
+Implementation: `src/components/overflow-list/overflow-list.tsx`
+Verification: `src/components/overflow-list/overflow-list-identity.test.tsx`, `e2e/overflow-list.spec.ts`
 
 ## UIC-OVERFLOW-LIST-2 - Composition
 
