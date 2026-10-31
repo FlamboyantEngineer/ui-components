@@ -4,6 +4,7 @@ import {
   memo,
   useEffect,
   useId,
+  useMemo,
   useRef,
   type KeyboardEvent,
   type ReactNode,
@@ -180,6 +181,10 @@ function DiagramNodeElement<T>({
   const strings = useUiStrings();
   const descriptionId = useId();
   const element = useRef<HTMLDivElement>(null);
+  const nodeRef = useMemo(
+    () => mergeRefs(element, registerTarget({ node: node.id })),
+    [registerTarget, node.id],
+  );
   const rect = resolveNodeRect(node);
   const pointer = useNodePointer(node.id, controller, isEditing);
   const onKeyDown = useNodeKeys(node, controller);
@@ -200,7 +205,7 @@ function DiagramNodeElement<T>({
         moving: isMoving,
         connectSource: connectPort !== null,
       })}
-      ref={mergeRefs(element, registerTarget({ node: node.id }))}
+      ref={nodeRef}
       role="group"
       tabIndex={0}
       aria-roledescription={strings.diagramNode}

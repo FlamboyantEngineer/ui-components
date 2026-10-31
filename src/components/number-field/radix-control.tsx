@@ -1,10 +1,10 @@
 'use client';
 
 import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { Button as AriaButton, Input, TextField as AriaTextField } from '../../primitives/index.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { mergeRefs } from '../../utils/merge-props.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import {
   FieldFormValue,
   toAriaControlProps,
@@ -94,7 +94,7 @@ export function RadixControl(props: RadixControlProps) {
     maxValue,
     name,
   } = config;
-  const input = useRef<HTMLInputElement>(null);
+  const [input, inputRef] = useForwardedRef<HTMLInputElement>(control.ref);
   const strings = useUiStrings();
   const entry = useRadixEntry(props);
   const stepper = (direction: 1 | -1) => {
@@ -142,7 +142,7 @@ export function RadixControl(props: RadixControlProps) {
           aria-valuemin={minValue}
           aria-valuemax={maxValue}
           inputMode={props.radix === 16 ? 'text' : 'numeric'}
-          ref={mergeRefs(input, control.ref)}
+          ref={inputRef}
           placeholder={placeholder}
           autoComplete={autoComplete}
           enterKeyHint={enterKeyHint}

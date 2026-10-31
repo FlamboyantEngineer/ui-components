@@ -178,6 +178,10 @@ function DiagramViewportArea<T>({
   }) {
   const strings = useUiStrings();
   const ref = useRef<HTMLDivElement>(null);
+  const viewportRef = useMemo(
+    () => mergeRefs(ref, controller.setViewportElement),
+    [controller.setViewportElement],
+  );
   const { viewport, stepZoom } = controller.view;
   const { marquee, pointerProps } = useBackgroundPointer(controller, selectionMode);
   const { dropProps, isDropTarget } = usePaletteDrop({ ref, palette });
@@ -193,7 +197,7 @@ function DiagramViewportArea<T>({
   return (
     <div
       {...hooks.slot('viewport', { dropTarget: isDropTarget })}
-      ref={mergeRefs(ref, controller.setViewportElement)}
+      ref={viewportRef}
       tabIndex={-1}
       style={{ position: 'relative', touchAction: 'none' }}
       {...mergeProps(dropProps, pointerProps, {

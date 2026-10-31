@@ -443,4 +443,12 @@ describe('MessageComposer', () => {
     expect(keys).toEqual(['a']);
     expectHooksMatchSpec(container, 'MESSAGE-COMPOSER', { callerAttributes: ['data-testid'] });
   });
+
+  it('UIC-MESSAGE-COMPOSER-2.1 keeps the caller ref attached while the reader types', async () => {
+    const user = userEvent.setup();
+    const ref = vi.fn();
+    render(<MessageComposer aria-label="Reply" ref={ref} onSubmit={() => undefined} />);
+    await user.type(screen.getByRole('textbox', { name: 'Reply' }), 'Hello');
+    expect(ref.mock.calls).toEqual([[screen.getByRole('textbox', { name: 'Reply' })]]);
+  });
 });

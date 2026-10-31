@@ -59,7 +59,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-2.1 - Hooks and caller attributes
 
-Both composers shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to their root, and put their `ref`, focus and keyboard handlers on the input (the text area, or the rich composer's text box). The caller's key handlers run for the keys the completion list and the composer (UIC-MESSAGE-COMPOSER-1.2, 3.3 to 3.5, 4.3, 4.5) do not use.
+Both composers shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to their root, and put their `ref`, focus and keyboard handlers on the input (the text area, or the rich composer's text box). The text area's `ref` stays attached across renders: a callback ref is called again only when the caller passes a new one. The caller's key handlers run for the keys the completion list and the composer (UIC-MESSAGE-COMPOSER-1.2, 3.3 to 3.5, 4.3, 4.5) do not use.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-content.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`

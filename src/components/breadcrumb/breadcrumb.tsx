@@ -1,7 +1,15 @@
 'use client';
 
 import { ChevronDownGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
+import {
+  useMemo,
+  type ComponentProps,
+  type KeyboardEvent,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+  type RefCallback,
+} from 'react';
 import {
   Breadcrumb as AriaBreadcrumb,
   Breadcrumbs as AriaBreadcrumbs,
@@ -92,6 +100,17 @@ interface CrumbMenuProps {
 }
 
 /** The index of the crumb a navigation key moves focus to, or `undefined` for other keys. */
+type CrumbListProps = Omit<ComponentProps<'ol'>, 'ref'> & {
+  listRef: Ref<HTMLOListElement> | undefined;
+  containerRef: RefCallback<HTMLElement>;
+};
+
+/** The crumb list, merging the list's ref with the overflow measurement once per ref pair. */
+function CrumbList({ listRef, containerRef, ...props }: CrumbListProps) {
+  const ref = useMemo(() => mergeRefs(listRef, containerRef), [listRef, containerRef]);
+  return <ol {...props} ref={ref} />;
+}
+
 function resolveFocusTarget(key: string, { index, count, rtl }: FocusPosition) {
   const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
   const backward = rtl ? 'ArrowRight' : 'ArrowLeft';
@@ -249,7 +268,7 @@ export function Breadcrumb({
             aria-labelledby={labelledBy}
             onKeyDown={(event) => moveFocus(event, rtl)}
           >
-            <ol {...listProps} ref={mergeRefs(listRef, containerRef)} />
+            <CrumbList {...listProps} listRef={listRef} containerRef={containerRef} />
           </nav>
         )}
       >
