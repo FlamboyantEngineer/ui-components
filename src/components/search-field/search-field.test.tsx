@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { pressReset, readPantry, ResetForm } from '../../../test/reset-fixtures.js';
 import type { FieldIssues } from '../field/field.js';
 import { SearchField } from './search-field.js';
 
@@ -297,5 +298,36 @@ describe('SearchField', () => {
     // The usual behaviour stays: Escape clears the query.
     await user.keyboard('{Escape}');
     expect(bare).toHaveValue('');
+  });
+
+  it('UIC-SEARCH-FIELD-1.6 keeps its query through a cancelled native reset and resets otherwise', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const validate = vi.fn(() => null);
+    const field = (cancels: boolean) => (
+      <ResetForm cancels={cancels}>
+        <SearchField
+          label="Label"
+          name="label"
+          defaultValue="cumin"
+          onChange={onChange}
+          validate={validate}
+        />
+      </ResetForm>
+    );
+    const { rerender } = render(field(true));
+    const box = screen.getByRole('searchbox', { name: 'Label' });
+    await user.type(box, 's');
+    onChange.mockClear();
+    validate.mockClear();
+    await pressReset(user);
+    expect(box).toHaveValue('cumins');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(validate).not.toHaveBeenCalled();
+    expect(readPantry()).toEqual([['label', 'cumins']]);
+    rerender(field(false));
+    await pressReset(user);
+    expect(box).toHaveValue('cumin');
+    expect(onChange.mock.calls).toEqual([['cumin']]);
   });
 });

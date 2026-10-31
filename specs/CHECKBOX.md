@@ -39,6 +39,13 @@ With `slot="selection"`, a checkbox inside a selectable list row, tree row or ca
 Implementation: `src/components/checkbox/checkbox.tsx`
 Verification: `src/components/checkbox/checkbox.test.tsx`
 
+### UIC-CHECKBOX-1.6 - Native form reset
+
+A native reset of the form the checkbox submits with (a reset button or `form.reset()`) shall apply once every listener has seen it, and never when one cancelled it (`preventDefault` in the form's `onReset`, as a form that asks first does): then the box keeps its state and reports no change. A reset that goes through puts back the state the box mounted with: an uncontrolled box returns to `defaultSelected`, and a controlled one reports that state through `onChange` once. The submitted value follows. A selection checkbox (UIC-CHECKBOX-1.5) takes no part.
+
+Implementation: `src/components/checkbox/checkbox.tsx`, `src/utils/use-reset-held-value.ts`, `src/utils/use-native-reset.ts`
+Verification: `src/components/checkbox/checkbox.test.tsx`
+
 ## UIC-CHECKBOX-2 - Three states
 
 ### UIC-CHECKBOX-2.1 - Cycling three states

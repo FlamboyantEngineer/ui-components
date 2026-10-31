@@ -8,6 +8,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useInputRef, useResetHeldValue } from '../../utils/use-reset-held-value.js';
 import type { FieldValidationBehavior } from '../field/field.js';
 import { useScopedDisabled } from '../field/field.js';
 
@@ -45,12 +46,28 @@ export interface CheckboxProps extends BaseProps, AriaLabellingProps {
 
 const hooks = createHooks('checkbox', ['box', 'glyph', 'label']);
 
-/** A tick box on a native checkbox input, with an optional visible label. */
+/**
+ * A tick box on a native checkbox input, with an optional visible label. A native form reset
+ * applies once every listener has seen it, and never when one cancelled it.
+ */
 export function Checkbox({ children, size = 'md', className, ...rest }: CheckboxProps) {
   const isDisabled = useScopedDisabled(rest.isDisabled);
+  const input = useInputRef(rest.inputRef);
+  const held = useResetHeldValue({
+    value: rest.isSelected,
+    defaultValue: rest.defaultSelected ?? false,
+    onChange: rest.onChange,
+    ref: input.ref,
+  });
+  // A selection checkbox takes its state from the row, card or tree row it sits in.
+  const selection =
+    rest.slot === undefined ? { isSelected: held.value, onChange: held.onChange } : {};
   return (
     <AriaCheckbox
       {...rest}
+      {...selection}
+      defaultSelected={undefined}
+      inputRef={input.setRef}
       isDisabled={isDisabled}
       {...hooks.root({ className, props: rest, data: { size } })}
     >

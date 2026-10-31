@@ -141,6 +141,13 @@ A chip of a multiple combobox shall draw its option's `icon` (a built-in icon co
 Implementation: `src/components/combobox/combobox-chips.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
 
+### UIC-COMBOBOX-3.6 - Native form reset
+
+A native reset of the form the combobox submits with shall apply once every listener has seen it, and never when one cancelled it: then the chosen options, the input's text and the submitted values stay, with no change reported. A reset that goes through puts back the value the combobox mounted with: an uncontrolled combobox returns to `defaultValue`, and a controlled one reports that value through `onChange` once. People Picker, built on the combobox, does the same.
+
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-reset.tsx`, `src/utils/use-native-reset.ts`
+Verification: `src/components/combobox/combobox.test.tsx`
+
 ## UIC-COMBOBOX-4 - Long lists and option content
 
 ### UIC-COMBOBOX-4.1 - Virtualized list

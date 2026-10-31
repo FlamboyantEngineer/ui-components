@@ -32,6 +32,13 @@ Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
 Implementation: `src/components/switch/switch.tsx`
 Verification: `src/components/switch/switch.test.tsx`
 
+### UIC-SWITCH-1.5 - Native form reset
+
+A native reset of the form the switch submits with shall apply once every listener has seen it, and never when one cancelled it: then the switch keeps its state and reports no change. A reset that goes through puts back the state the switch mounted with: an uncontrolled switch returns to `defaultSelected`, and a controlled one reports that state through `onChange` once. The submitted value follows.
+
+Implementation: `src/components/switch/switch.tsx`, `src/utils/use-reset-held-value.ts`, `src/utils/use-native-reset.ts`
+Verification: `src/components/switch/switch.test.tsx`
+
 ## Hooks
 
 | Hook                 | Kind      | Values                 | Description                                |

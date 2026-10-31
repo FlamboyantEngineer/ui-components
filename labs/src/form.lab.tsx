@@ -1,10 +1,13 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { Combobox } from '../../src/components/combobox/combobox.js';
 import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
+import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
@@ -150,6 +153,12 @@ function Delivery() {
 }
 
 /** Reset asks first: while "Keep edits" is on, the form cancels the reset and nothing changes. */
+const spices = [
+  { id: 'cumin', label: 'Cumin' },
+  { id: 'paprika', label: 'Paprika' },
+  { id: 'saffron', label: 'Saffron' },
+];
+
 function ConfirmedReset() {
   const [keepsEdits, setKeepsEdits] = useState(true);
   const [resets, setResets] = useState('none');
@@ -167,6 +176,20 @@ function ConfirmedReset() {
       >
         <TextField label="Shelf" name="shelf" defaultValue="Spices" data-lab-field="shelf" />
         <NumberField label="Jars" name="jars" defaultValue={12} data-lab-field="jars" />
+        <SearchField label="Label" name="label" defaultValue="Cumin" data-lab-field="label" />
+        <Combobox
+          label="Spice"
+          name="spice"
+          defaultItems={spices}
+          defaultValue="cumin"
+          data-lab-field="spice"
+        />
+        <Checkbox name="sealed" defaultSelected data-lab-field="sealed">
+          Sealed
+        </Checkbox>
+        <Switch name="labelled" data-lab-field="labelled">
+          Labelled
+        </Switch>
         <Button type="reset">Reset</Button>
         <LabOutput name="Reset">{resets}</LabOutput>
       </form>
@@ -238,7 +261,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Cancelled reset"
-      description="Edit the fields and press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
+      description="Edit the fields, the search, the combobox, the checkbox and the switch, then press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
     >
       <ConfirmedReset />
     </LabSection>

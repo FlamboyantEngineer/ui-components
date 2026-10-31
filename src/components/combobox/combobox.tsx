@@ -9,6 +9,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
 import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
+import { ComboboxReset, useHeldChange } from './combobox-reset.js';
 import type { ComboboxItem } from './combobox-options.js';
 import type { ComboboxLoader } from './combobox-search.js';
 import {
@@ -197,13 +198,12 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   const isMultiple = aria.selectionMode === 'multiple';
   const naming = useChipsLabel({ label, aria, isEnabled: isMultiple });
   const list = { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
+  const reset = useHeldChange((next) => onChange?.(decodeComboboxValue(next) as ComboboxValue<M>));
   return (
     <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
       {...aria}
       {...values}
-      onChange={
-        onChange ? (next) => onChange(decodeComboboxValue(next) as ComboboxValue<M>) : undefined
-      }
+      onChange={reset.onChange}
       name={aria.allowsCustomValue ? name : undefined}
       {...hooks.root({ className, props: aria, data: { variant, size, pending: model.isPending } })}
       {...(model.isControlled ? { items: suggestions } : { defaultItems: suggestions })}
@@ -214,6 +214,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
       isReadOnly={isReadOnly}
       allowsEmptyCollection={allowsEmptyCollection}
     >
+      <ComboboxReset {...reset} input={input} isControlled={aria.value !== undefined} />
       <ComboboxLabel label={label} labelRef={naming.labelRef} />
       <ComboboxField
         variant={variant}

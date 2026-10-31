@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { pressReset, readPantry, ResetForm } from '../../../test/reset-fixtures.js';
 import { Switch } from './switch.js';
 
 describe('Switch', () => {
@@ -118,5 +119,35 @@ describe('Switch', () => {
     expect(root).toHaveAttribute('data-size', 'md');
     const small = render(<Switch size="sm">Small</Switch>).container;
     expect(small.querySelector('.ui-switch')).toHaveAttribute('data-size', 'sm');
+  });
+
+  it('UIC-SWITCH-1.5 keeps its state through a cancelled native reset and resets otherwise', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ResetForm cancels>
+        <Switch name="lights" defaultSelected onChange={onChange}>
+          Lights
+        </Switch>
+      </ResetForm>,
+    );
+    const lights = screen.getByRole('switch', { name: 'Lights' });
+    await user.click(lights);
+    onChange.mockClear();
+    await pressReset(user);
+    expect(lights).not.toBeChecked();
+    expect(onChange).not.toHaveBeenCalled();
+    expect(readPantry()).toEqual([]);
+    rerender(
+      <ResetForm cancels={false}>
+        <Switch name="lights" defaultSelected onChange={onChange}>
+          Lights
+        </Switch>
+      </ResetForm>,
+    );
+    await pressReset(user);
+    expect(lights).toBeChecked();
+    expect(onChange.mock.calls).toEqual([[true]]);
+    expect(readPantry()).toEqual([['lights', 'on']]);
   });
 });
