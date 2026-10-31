@@ -41,11 +41,19 @@ test.describe('every lab', () => {
       expect(problems, 'complete matrices with unique cell addresses').toEqual([]);
     });
 
-    for (const theme of ['light', 'dark']) {
-      test(`UIC-LABS-3.4 ${name} passes axe in the ${theme} theme`, async ({ lab }) => {
-        await lab.open(name, theme === 'dark' ? { theme } : {});
-        await lab.expectAccessible();
-      });
-    }
+    // One page load scans both themes: the chrome's theme picker flips the root attribute in place.
+    test(`UIC-LABS-3.4 ${name} passes axe in the light and dark themes`, async ({ page, lab }) => {
+      await lab.open(name, { theme: 'light' });
+      for (const theme of ['light', 'dark']) {
+        await test.step(`${theme} theme`, async () => {
+          await page
+            .locator('#lab-chrome')
+            .getByLabel('Theme', { exact: true })
+            .selectOption(theme);
+          await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+          await lab.expectAccessible();
+        });
+      }
+    });
   }
 });
