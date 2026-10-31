@@ -59,3 +59,10 @@ Verification: `src/components/projection/projection.test.tsx`
 
 Implementation: `src/components/projection/projection.tsx`
 Verification: `src/components/projection/projection.test.tsx`
+
+### UIC-PROJECTION-1.9 - Publisher identity
+
+The content an outlet or `useProjectedContent` renders shall be keyed by its publishing `ProjectionContent`, so React state inside it belongs to that publisher alone. Updates from the same publisher keep that state; when another publisher takes over the slot, when the top one leaves and an earlier one is restored, when the outlet changes `slot`, and when the outlet passes between content and its `fallback`, the newly shown content mounts afresh and inherits no state from what was shown before. An obscured publisher's content is unmounted while another one is shown and mounts afresh when restored.
+
+Implementation: `src/components/projection/projection.tsx`
+Verification: `src/components/projection/projection-owners.test.tsx`, `e2e/projection.spec.ts`

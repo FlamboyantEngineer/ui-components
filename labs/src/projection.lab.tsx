@@ -6,6 +6,7 @@ import {
   useProjectedContent,
 } from '../../src/components/projection/projection.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { DraftTakeover } from './projection-drafts.js';
 
 const declarations = ['none', 'one', 'two'] as const;
 
@@ -162,6 +163,12 @@ mountLab(
       description="An inner provider owns only the caption slot, read with useProjectedContent so the caption element exists only while it has content; the page title passes through to the outer outlet."
     >
       <ScopedPanel />
+    </LabSection>
+    <LabSection
+      title="Taking over a slot"
+      description="Edit the draft note, then let the review note take over: it starts from its own text, and the draft note comes back from its own text when the review note leaves."
+    >
+      <DraftTakeover />
     </LabSection>
   </>,
 );

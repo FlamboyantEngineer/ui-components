@@ -2,8 +2,10 @@
 
 import {
   createContext,
+  Fragment,
   useCallback,
   useContext,
+  useId,
   useLayoutEffect,
   useMemo,
   useState,
@@ -37,15 +39,16 @@ export interface ProjectionOutletProps {
 
 interface ProjectionEntry {
   readonly content: ReactNode;
-  readonly owner: object;
+  /** The publishing `ProjectionContent`, unique in the React root. */
+  readonly owner: string;
 }
 
 type ProjectionState = ReadonlyMap<string, readonly ProjectionEntry[]>;
 
 interface ProjectionActions {
   /** Adds the owner's content at the top of the slot's stack, or replaces it in place. */
-  publish(slot: string, owner: object, content: ReactNode): void;
-  withdraw(slot: string, owner: object): void;
+  publish(slot: string, owner: string, content: ReactNode): void;
+  withdraw(slot: string, owner: string): void;
 }
 
 // Two contexts: publishing re-renders the outlets, never the components that publish.
@@ -68,7 +71,7 @@ export function ProjectionProvider({ slots, children }: ProjectionProviderProps)
   const owned = useSlotOwnership(slots, parentActions);
   const [ownState, setState] = useState<ProjectionState>(() => new Map());
 
-  const publish = useCallback((slot: string, owner: object, content: ReactNode) => {
+  const publish = useCallback((slot: string, owner: string, content: ReactNode) => {
     setState((current) => {
       const entries = current.get(slot) ?? [];
       const index = entries.findIndex((entry) => entry.owner === owner);
@@ -82,7 +85,7 @@ export function ProjectionProvider({ slots, children }: ProjectionProviderProps)
     });
   }, []);
 
-  const withdraw = useCallback((slot: string, owner: object) => {
+  const withdraw = useCallback((slot: string, owner: string) => {
     setState((current) => {
       const entries = current.get(slot);
       if (!entries?.some((entry) => entry.owner === owner)) return current;
@@ -128,7 +131,7 @@ export function ProjectionProvider({ slots, children }: ProjectionProviderProps)
  */
 export function ProjectionContent({ slot, children }: ProjectionContentProps) {
   const actions = useContext(ProjectionActionsContext);
-  const [owner] = useState<object>(() => ({}));
+  const owner = useId();
 
   // Leaving the slot (unmount or a new slot name) withdraws the content.
   useLayoutEffect(() => {
@@ -146,15 +149,16 @@ export function ProjectionContent({ slot, children }: ProjectionContentProps) {
 
 /**
  * The content of the most recently mounted `ProjectionContent` for `slot`, or `undefined` while the
- * slot has none, so a component can leave out the element that would hold it.
+ * slot has none, so a component can leave out the element that would hold it. The content is keyed
+ * by its publisher: state inside it survives the publisher's updates and never passes to another.
  */
 export function useProjectedContent(slot: string): ReactNode {
-  const content = useContext(ProjectionStateContext)?.get(slot)?.at(-1)?.content;
-  return isEmptyNode(content) ? undefined : content;
+  const entry = useContext(ProjectionStateContext)?.get(slot)?.at(-1);
+  if (!entry || isEmptyNode(entry.content)) return undefined;
+  return <Fragment key={entry.owner}>{entry.content}</Fragment>;
 }
 
 /** Renders the content of the most recently mounted `ProjectionContent` for its slot. */
 export function ProjectionOutlet({ slot, fallback = null }: ProjectionOutletProps) {
-  const content = useProjectedContent(slot);
-  return <>{content ?? fallback}</>;
+  return useProjectedContent(slot) ?? <Fragment key="fallback">{fallback}</Fragment>;
 }
