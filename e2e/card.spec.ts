@@ -361,6 +361,17 @@ test.describe('Card lab', () => {
     await expect(card.getByRole('button', { name: 'Water' })).toBeVisible();
     await expect(card.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
     await expect(crates).toHaveValue('Unsaved');
+    // An Escape the search box takes to clear itself stays there; the next one closes More.
+    const find = card.getByRole('textbox', { name: 'Find a tree in Plum row 7' });
+    await find.fill('Pear');
+    await page.keyboard.press('Escape');
+    await expect(find).toHaveValue('');
+    await expect(find).toBeFocused();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(more).toBeFocused();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await more.click();
     await card.getByRole('button', { name: 'Water' }).focus();
     await page.keyboard.press('Escape');
     await expect(more).toBeFocused();

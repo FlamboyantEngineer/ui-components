@@ -181,7 +181,7 @@ function useHeaderParts({
 function CustomHeader(props: CardHeaderProps) {
   const parts = useHeaderParts(props);
   const regions = useRegions(props);
-  const onKeyDown = useMoreEscape(props.more, regions.ids.more);
+  const onKeyDown = useMoreEscape(props.more, regions.ids);
   const { abbreviation, toggle, titleId } = props;
   const isAbbreviated = props.presentation === 'minimal' && abbreviation !== undefined;
   // Without an abbreviation the content keeps the title on screen, so it stays in place.
@@ -217,7 +217,7 @@ function CustomHeader(props: CardHeaderProps) {
  */
 export function CardHeader(props: CardHeaderProps) {
   const regions = useRegions(props);
-  const onKeyDown = useMoreEscape(props.more, regions.ids.more);
+  const onKeyDown = useMoreEscape(props.more, regions.ids);
   if (!isEmptyNode(props.header)) return <CustomHeader {...props} />;
   const { title, titleId, toggle } = props;
   const has = {

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -275,6 +275,75 @@ describe('Card adaptive presentation', () => {
     expect(more).toHaveFocus();
     expect(more).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: 'Water' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CARD-7.2 leaves a composing or handled Escape to the control in a revealed region', async () => {
+    const user = userEvent.setup();
+    let cancelsEscape = false;
+    const onFieldKeyDown = vi.fn((event: React.KeyboardEvent) => {
+      if (event.key === 'Escape' && cancelsEscape) event.preventDefault();
+    });
+    render(
+      <RecordCard
+        presentationSteps={steps}
+        meta={<input aria-label="Filter" onKeyDown={onFieldKeyDown} />}
+      />,
+    );
+    await resize(cardRoot(), 260);
+    const more = screen.getByRole('button', { name: 'More Orchard row' });
+    await user.click(more);
+    const field = screen.getByRole('textbox', { name: 'Filter' });
+    act(() => field.focus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot mark a key as part of a composition
+    expect(fireEvent.keyDown(field, { key: 'Escape', isComposing: true })).toBe(true);
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(field).toHaveFocus();
+
+    cancelsEscape = true;
+    await user.keyboard('{Escape}');
+    expect(onFieldKeyDown).toHaveBeenCalled();
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(field).toHaveFocus();
+
+    cancelsEscape = false;
+    await user.keyboard('{Escape}');
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    expect(more).toHaveFocus();
+  });
+
+  it('UIC-CARD-7.2 closes only the More whose region holds the Escape in nested cards', async () => {
+    const user = userEvent.setup();
+    const inner = (
+      <Card
+        title="Inner row"
+        description="Three trees"
+        actions={<button type="button">Prune</button>}
+        isCollapsible
+        presentationSteps={steps}
+      >
+        Inner notes
+      </Card>
+    );
+    render(<RecordCard presentationSteps={steps} meta={inner} />);
+    const [outerRoot, innerRoot] = Array.from(document.querySelectorAll<HTMLElement>('.ui-card'));
+    await resize(requireDefined(outerRoot), 260);
+    const outerMore = screen.getByRole('button', { name: 'More Orchard row' });
+    await user.click(outerMore);
+    await resize(requireDefined(innerRoot), 260);
+    const innerMore = screen.getByRole('button', { name: 'More Inner row' });
+    await user.click(innerMore);
+    // The inner card's toggle is not in a region its More revealed: the outer region holds it.
+    act(() => screen.getByRole('button', { name: 'Details Inner row' }).focus());
+    await user.keyboard('{Escape}');
+    expect(outerMore).toHaveAttribute('aria-expanded', 'false');
+    expect(outerMore).toHaveFocus();
+    await user.click(outerMore);
+    expect(innerMore).toHaveAttribute('aria-expanded', 'true');
+    act(() => screen.getByRole('button', { name: 'Prune' }).focus());
+    await user.keyboard('{Escape}');
+    expect(innerMore).toHaveAttribute('aria-expanded', 'false');
+    expect(innerMore).toHaveFocus();
+    expect(outerMore).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('UIC-CARD-7.2 keeps moved header content mounted with its state across presentations', async () => {
