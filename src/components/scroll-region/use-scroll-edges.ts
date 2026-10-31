@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { contentChanges } from './observe-viewport.js';
+import type { SharedViewportObserver } from './use-shared-viewport-observer.js';
 
 /** How far the content reaches past each edge of the viewport, in whole pixels. */
 export interface ScrollEdges {
@@ -47,57 +47,14 @@ export function readScrollEdges(element: HTMLElement): ScrollEdges {
 }
 
 /**
- * Calls `onChange` when the viewport or a child resizes or a child comes or goes, at once, and when
- * content deeper inside changes (text, attributes, nodes, a loaded image), once per animation frame
- * for however many changes it brings. Returns the cleanup.
- */
-function followContent(
-  element: HTMLElement,
-  view: Window & typeof globalThis,
-  onChange: () => void,
-): () => void {
-  let frame: number | null = null;
-  const schedule = () => {
-    frame ??= view.requestAnimationFrame(() => {
-      frame = null;
-      onChange();
-    });
-  };
-  const resize =
-    typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(onChange) : null;
-  const observeChildren = () => {
-    resize?.disconnect();
-    for (const target of [element, ...element.children]) resize?.observe(target);
-  };
-  const mutations = new view.MutationObserver((records) => {
-    const isChildChange = records.some(
-      (record) => record.type === 'childList' && record.target === element,
-    );
-    if (!isChildChange) return schedule();
-    observeChildren();
-    onChange();
-  });
-  mutations.observe(element, contentChanges);
-  element.addEventListener('load', schedule, true);
-  observeChildren();
-  onChange();
-  return () => {
-    resize?.disconnect();
-    mutations.disconnect();
-    element.removeEventListener('load', schedule, true);
-    if (frame !== null) view.cancelAnimationFrame(frame);
-  };
-}
-
-/**
  * The viewport's edge distances, read when it scrolls, resizes or its children change (without
- * waiting for an animation frame, so scrolling and resizing schedule none), and once a frame when
- * content deeper inside changes. Scrolling to the top or
- * bottom calls the edge callbacks; with `stickToBottom` a viewport scrolled to the bottom follows
+ * waiting for an animation frame), and once a frame when content deeper inside changes, through the
+ * region's shared observer. Scrolling to the top or bottom calls the edge callbacks; with `stickToBottom` a viewport scrolled to the bottom follows
  * new content until the reader scrolls up.
  */
 export function useScrollEdges(
   viewport: RefObject<HTMLDivElement | null>,
+  observer: SharedViewportObserver,
   { enabled, stickToBottom, onTopReached, onBottomReached }: ScrollEdgesOptions,
 ): { edges: ScrollEdges; onScroll: () => void } {
   const [edges, setEdges] = useState(noEdges);
@@ -131,11 +88,9 @@ export function useScrollEdges(
   );
 
   useEffect(() => {
-    const element = viewport.current;
-    const view = element?.ownerDocument.defaultView;
-    if (!enabled || !element || !view) return undefined;
-    return followContent(element, view, () => read(false));
-  }, [enabled, read, viewport]);
+    if (!enabled) return undefined;
+    return observer.subscribe(() => read(false));
+  }, [enabled, observer, read]);
 
   const onScroll = useCallback(() => read(true), [read]);
   return { edges: enabled ? edges : noEdges, onScroll };

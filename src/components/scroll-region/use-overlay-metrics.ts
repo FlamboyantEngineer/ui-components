@@ -2,7 +2,7 @@
 
 import { findMaximum } from '../../utils/find-maximum.js';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import { observeViewport } from './observe-viewport.js';
+import type { SharedViewportObserver } from './use-shared-viewport-observer.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** Registers a sticky header to keep the vertical thumb below; returns its unregistration. */
@@ -28,6 +28,8 @@ export interface OverlayMetrics {
 
 interface OverlayMetricsOptions {
   viewport: RefObject<HTMLElement | null>;
+  /** The viewport's observer, shared with the other hooks that measure it. */
+  observer: SharedViewportObserver;
   /** Overlay mode is on; otherwise nothing is measured. */
   enabled: boolean;
   /** Measure registered headers and keep the vertical thumb below them. */
@@ -104,50 +106,59 @@ function readMetrics(element: HTMLElement, tracks: Tracks, header: number): Over
  */
 export function useOverlayMetrics({
   viewport,
+  observer,
   enabled,
   headerInset,
 }: OverlayMetricsOptions): OverlayMeasurement {
   const headers = useRef(new Set<HTMLElement>());
   const tracks = useRef<Tracks>({ x: null, y: null });
-  const observer = useRef<{ observe(): void; schedule(): void } | null>(null);
   const [metrics, setMetrics] = useState(emptyMetrics);
 
-  const registerHeader = useCallback<HeaderRegistration>((element) => {
-    if (!element) return undefined;
-    headers.current.add(element);
-    observer.current?.observe();
-    return () => {
-      headers.current.delete(element);
-      observer.current?.observe();
-    };
-  }, []);
-  const verticalTrackRef = useCallback((element: HTMLElement | null) => {
-    tracks.current.y = element;
-    observer.current?.observe();
-  }, []);
-  const horizontalTrackRef = useCallback((element: HTMLElement | null) => {
-    tracks.current.x = element;
-    observer.current?.observe();
-  }, []);
-  const schedule = useCallback(() => observer.current?.schedule(), []);
+  const registerHeader = useCallback<HeaderRegistration>(
+    (element) => {
+      if (!element) return undefined;
+      headers.current.add(element);
+      observer.observe();
+      return () => {
+        headers.current.delete(element);
+        observer.observe();
+      };
+    },
+    [observer],
+  );
+  const verticalTrackRef = useCallback(
+    (element: HTMLElement | null) => {
+      tracks.current.y = element;
+      observer.observe();
+    },
+    [observer],
+  );
+  const horizontalTrackRef = useCallback(
+    (element: HTMLElement | null) => {
+      tracks.current.x = element;
+      observer.observe();
+    },
+    [observer],
+  );
+  const schedule = useCallback(() => {
+    if (enabled) observer.schedule();
+  }, [enabled, observer]);
 
   useEffect(() => {
     const element = viewport.current;
-    const view = element?.ownerDocument.defaultView;
-    if (!enabled || !element || !view) return undefined;
+    if (!enabled || !element) return undefined;
     const measure = () => {
       const header = headerInset ? measureHeaders(headers.current) : 0;
       const next = readMetrics(element, tracks.current, header);
       setMetrics((previous) => (isShallowEqual(previous, next) ? previous : next));
     };
-    const getExtraTargets = () => [...headers.current, tracks.current.x, tracks.current.y];
-    const current = observeViewport(element, view, { measure, getExtraTargets, subtree: true });
-    observer.current = current;
+    const unwatch = observer.watch(() => [...headers.current, tracks.current.x, tracks.current.y]);
+    const unsubscribe = observer.subscribe(measure);
     return () => {
-      observer.current = null;
-      current.disconnect();
+      unsubscribe();
+      unwatch();
     };
-  }, [enabled, headerInset, viewport]);
+  }, [enabled, headerInset, observer, viewport]);
 
   return {
     metrics,

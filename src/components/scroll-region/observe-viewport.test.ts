@@ -158,4 +158,27 @@ describe('observeViewport', () => {
     expect(measure).toHaveBeenCalledTimes(1);
     current.disconnect();
   });
+
+  it('UIC-SCROLL-REGION-2.7 UIC-SCROLL-REGION-4.1 measures resizes and child changes at once in immediate mode', () => {
+    const element = document.createElement('div');
+    const measure = vi.fn();
+    const current = observeViewport(element, window, { measure, subtree: true, immediate: true });
+    expect(frames.size).toBe(0);
+    mutate('attributes');
+    expect(frames.size).toBe(1);
+    resize();
+    expect(measure).toHaveBeenCalledTimes(1);
+    expect(frames.size).toBe(0);
+    FakeMutationObserver.instances[0]?.callback(
+      [{ type: 'childList', target: element } as unknown as MutationRecord],
+      {} as MutationObserver,
+    );
+    expect(measure).toHaveBeenCalledTimes(2);
+    mutate('childList');
+    expect(measure).toHaveBeenCalledTimes(2);
+    expect(frames.size).toBe(1);
+    current.disconnect();
+    resize();
+    expect(measure).toHaveBeenCalledTimes(2);
+  });
 });

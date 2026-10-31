@@ -66,9 +66,9 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.7 - Updates and cleanup
 
-Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content anywhere inside the viewport mutates (nodes, text or attributes such as a class or style, so a nested change that resizes no child counts), when an image inside it loads and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport and no longer counts as focused, so its tracks hide again by the visibility mode. Unmounting releases every observer and pending frame; later reports do nothing.
+Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize and when a child of the viewport comes or goes, at once, and when content anywhere inside the viewport mutates (nodes, text or attributes such as a class or style, so a nested change that resizes no child counts), when an image inside it loads and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. A region observes its viewport once: the overlay geometry, the edge distances and the overview share one resize observer, one mutation observer and one frame of reads. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport and no longer counts as focused, so its tracks hide again by the visibility mode. Unmounting releases every observer and pending frame; later reports do nothing.
 
-Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
+Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/use-shared-viewport-observer.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `src/components/scroll-region/observe-viewport.test.ts`
 
 ### UIC-SCROLL-REGION-2.8 - Scrollbar visibility
@@ -142,7 +142,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-4.5 - Scroll spy
 
-`useScrollSpy(viewportRef, { ids, offset })` shall return the id of the current section of a scrolling viewport, such as a region's (its `ref`): the last of `ids` whose top has reached `offset` pixels (0 by default) below the viewport's top, the first before any has, and the last once the viewport is scrolled to its end. Ids without an element are skipped. It updates as the viewport scrolls or resizes and when the ids or the offset change, for a table of contents to mark its current entry; `resolveScrollSpy(viewport, options)` exposes the rule.
+`useScrollSpy(viewportRef, { ids, offset })` shall return the id of the current section of a scrolling viewport, such as a region's (its `ref`): the last of `ids` whose top has reached `offset` pixels (0 by default) below the viewport's top, the first before any has, and the last once the viewport is scrolled to its end. Ids without an element are skipped. It updates as the viewport scrolls or resizes, reading the sections' positions at most once per animation frame however many scroll events arrive, and when the ids or the offset change, for a table of contents to mark its current entry; `resolveScrollSpy(viewport, options)` exposes the rule.
 
 Implementation: `src/components/scroll-region/use-scroll-spy.ts`
 Verification: `src/components/scroll-region/use-scroll-spy.test.tsx`, `e2e/scroll-region.spec.ts`

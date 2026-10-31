@@ -31,6 +31,7 @@ import {
   type OverlayMetrics,
 } from './use-overlay-metrics.js';
 import { useScrollOverview, type ScrollOverviewPaint } from './use-scroll-overview.js';
+import { useSharedViewportObserver } from './use-shared-viewport-observer.js';
 import { DEFAULT_SCROLLBAR_HIDE_DELAY } from './scroll-region-defaults.js';
 
 export type ScrollRegionAxis = 'x' | 'y' | 'both' | 'none';
@@ -203,16 +204,17 @@ function useRegionBehaviour(
 ) {
   const scrolls = axis !== 'none';
   const headerInset = scrollbarInset === 'header';
-  const measurement = useOverlayMetrics({ viewport, enabled: overlay, headerInset });
+  const observer = useSharedViewportObserver(viewport);
+  const measurement = useOverlayMetrics({ viewport, observer, enabled: overlay, headerInset });
   const overflow = resolveOverflow(measurement.metrics, axis, overlay);
   const activity = useScrollActivity(scrollbarVisibility, scrollbarHideDelay);
-  const scrollEdges = useScrollEdges(viewport, {
+  const scrollEdges = useScrollEdges(viewport, observer, {
     enabled: scrolls,
     stickToBottom,
     onTopReached,
     onBottomReached,
   });
-  const paint = useScrollOverview(viewport, {
+  const paint = useScrollOverview(viewport, observer, {
     markers: overview,
     layers: overviewLayers,
     enabled: !overlay,
@@ -323,6 +325,7 @@ export { useScrollSpy } from './use-scroll-spy.js';
 
 export { OverlayScrollbars } from './overlay-scrollbars.js';
 export { useOverlayMetrics } from './use-overlay-metrics.js';
+export { useSharedViewportObserver } from './use-shared-viewport-observer.js';
 
 export {
   DEFAULT_SCROLLBAR_HIDE_DELAY,
