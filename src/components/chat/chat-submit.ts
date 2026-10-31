@@ -1,6 +1,3 @@
-// Sending the composer's message as the chat's edit, queued text, reply, new message or message
-// sent now (specs/CHAT.md, UIC-CHAT-3.7).
-
 import { isThenable } from '../../utils/is-thenable.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
 import type { ChatComposerProps } from './chat-composer.js';

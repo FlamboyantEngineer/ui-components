@@ -1,8 +1,4 @@
 'use client';
-
-// The chat composer's public handle and draft reports, for the host's own controls outside the
-// chat (specs/CHAT.md, UIC-CHAT-3.11).
-
 import { useEffect, useImperativeHandle, type Ref, type RefObject } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ChatTextToken } from '../chat-parts/chat-parts.js';

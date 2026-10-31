@@ -39,7 +39,6 @@ export interface TranscriptSettings {
   requestRender: () => void;
 }
 
-/** The transcript's long-lived state, outside React: elements, scroll keeping and bookkeeping. */
 /** A message to bring into view; `focus: false` leaves focus where it is. */
 export interface RevealTarget {
   key: string;
@@ -47,6 +46,7 @@ export interface RevealTarget {
   focus?: boolean | undefined;
 }
 
+/** The transcript's long-lived state, outside React: elements, scroll keeping and bookkeeping. */
 export interface TranscriptRuntime {
   registry: TranscriptRegistry;
   keeper: ScrollKeeper;

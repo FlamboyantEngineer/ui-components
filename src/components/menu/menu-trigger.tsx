@@ -16,7 +16,7 @@ import type { OpenStateProps } from '../../core/events.js';
 import { MenuTriggerPress } from './menu-trigger-press.js';
 
 export interface MenuTriggerProps extends OpenStateProps {
-  /** The trigger (a `Button`, an `Button` or another pressable), then its `MenuPopover`. */
+  /** The trigger (a `Button` or another pressable), then its `MenuPopover`. */
   children: ReactNode;
   /**
    * Keeps the trigger mounted as it is but opens nothing: the trigger gets no popup props and an

@@ -82,7 +82,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-4.1 - Title and close button
 
-`title` shall render as the dialog's level-2 heading in the `ui-drawer__title` slot of the `ui-drawer__header` row and name the dialog. `showCloseButton` shall add an `Button` in the `ui-drawer__close` slot at the end of the header, named by the provider's `close` string and drawing its `close` glyph, that closes the drawer like Escape.
+`title` shall render as the dialog's level-2 heading in the `ui-drawer__title` slot of the `ui-drawer__header` row and name the dialog. `showCloseButton` shall add a `Button` in the `ui-drawer__close` slot at the end of the header, named by the provider's `close` string and drawing its `close` glyph, that closes the drawer like Escape.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`

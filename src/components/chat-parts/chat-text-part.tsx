@@ -1,9 +1,4 @@
 'use client';
-
-// A text part: Markdown with code blocks and citations, or plain text keeping its line breaks,
-// with mention and command tokens as pills and record references as record chips in both
-// (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-2).
-
 import { Fragment, useMemo, type ReactNode } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useLatest } from '../../utils/use-latest.js';

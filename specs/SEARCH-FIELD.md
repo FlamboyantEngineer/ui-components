@@ -20,7 +20,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 
 ### UIC-SEARCH-FIELD-1.3 - Clear button
 
-While the box holds text and is editable, it shall show a clear button (`ui-search-field__clear`) after the input: an `Button` with the `close` glyph or, with `clearText`, a `Button` showing that text, named by `clearLabel` (the provider string `clearSearch` by default) either way. The button is reached by Tab after the input. Pressing it empties the query (`onChange` with `''`, then `onClear`) and puts focus back in the input. An empty, read-only or disabled box shows no clear button.
+While the box holds text and is editable, it shall show a clear button (`ui-search-field__clear`) after the input: a `Button` with the `close` glyph or, with `clearText`, a `Button` showing that text, named by `clearLabel` (the provider string `clearSearch` by default) either way. The button is reached by Tab after the input. Pressing it empties the query (`onChange` with `''`, then `onClear`) and puts focus back in the input. An empty, read-only or disabled box shows no clear button.
 
 Implementation: `src/components/search-field/search-field.tsx`, `src/core/strings.ts`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`

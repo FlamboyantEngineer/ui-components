@@ -1,7 +1,4 @@
 'use client';
-
-// One part of a message, drawn by the component for its type (specs/CHAT-PARTS.md).
-
 import { useId, type ReactNode } from 'react';
 import { ChatPlan, ChatReasoning } from '../chat-activity/chat-activity.js';
 import { ChatAttachmentList } from '../chat-attachment/chat-attachment.js';

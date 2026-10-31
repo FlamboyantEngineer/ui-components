@@ -73,7 +73,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.2 - Revealing masked text
 
-With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, an `Button` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it.
+With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, a `Button` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`

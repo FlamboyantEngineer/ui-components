@@ -4,9 +4,6 @@ import {
   FileTextGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-// The attachment data contract and what is derived from it: the kind of file (from its media type
-// or, for a generic type, its name), its glyph, its status and the URLs it may show.
-
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 

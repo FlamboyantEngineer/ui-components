@@ -136,7 +136,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`
 
 ### UIC-FILE-UPLOAD-3.4 - Removing a file
 
-With `onRemove`, each file shall have an `Button` (`ui-file-upload__file-remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove` with the file's `id`. When the owner then drops the file and focus went with its row, focus moves to the next file's remove button, else the previous file's, else the command.
+With `onRemove`, each file shall have a `Button` (`ui-file-upload__file-remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove` with the file's `id`. When the owner then drops the file and focus went with its row, focus moves to the next file's remove button, else the previous file's, else the command.
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/components/file-upload/file-upload.tsx`, `src/utils/use-removal-focus.ts`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

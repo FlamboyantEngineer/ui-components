@@ -16,9 +16,6 @@ import {
   XCircleGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-
-// The parts of a tool call's card: the title in its trigger and the body its panel shows.
-
 import { useId, useMemo, type ReactNode, type Ref } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';

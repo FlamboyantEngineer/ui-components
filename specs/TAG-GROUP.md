@@ -57,7 +57,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 
 ### UIC-TAG-GROUP-2.2 - Removal
 
-With `onRemove`, each enabled tag shall publish `data-allows-removing` and end with a remove button (`ui-tag-group__remove`, an `Button` with the `close` glyph named by the provider string `remove` read with the tag's name, "Remove Apple"). Pressing it, or Delete or Backspace on a focused tag, calls `onRemove` with the set of keys to remove: that tag's, or every selected tag's when the focused tag is selected. When the caller removes the focused tag, focus moves to a neighbouring tag. Without `onRemove`, tags draw no remove button, ignore Delete and Backspace and stay focusable, so a read-only set stays readable and navigable.
+With `onRemove`, each enabled tag shall publish `data-allows-removing` and end with a remove button (`ui-tag-group__remove`, a `Button` with the `close` glyph named by the provider string `remove` read with the tag's name, "Remove Apple"). Pressing it, or Delete or Backspace on a focused tag, calls `onRemove` with the set of keys to remove: that tag's, or every selected tag's when the focused tag is selected. When the caller removes the focused tag, focus moves to a neighbouring tag. Without `onRemove`, tags draw no remove button, ignore Delete and Backspace and stay focusable, so a read-only set stays readable and navigable.
 
 Implementation: `src/components/tag-group/tag-group.tsx`, `src/core/strings.ts`
 Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`

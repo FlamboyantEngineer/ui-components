@@ -27,7 +27,7 @@ Verification: `src/components/field/field.test.tsx`
 
 ### UIC-FIELD-1.4 - Help
 
-`help` shall draw a help button (`ui-field__help`, an `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
+`help` shall draw a help button (`ui-field__help`, a `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
 
 Implementation: `src/components/field/field-parts.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -231,7 +231,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-4.2 - Restore button
 
-`FieldRestoreButton` shall be an `Button` with the `restore` glyph named by the provider string `restoreValue` from its `label`, whose pointer press does not move focus. It takes the `Button` props (`onPress`, `isDisabled`, `size`, `className`, `data-*`) and works from the keyboard like any button.
+`FieldRestoreButton` shall be a `Button` with the `restore` glyph named by the provider string `restoreValue` from its `label`, whose pointer press does not move focus. It takes the `Button` props (`onPress`, `isDisabled`, `size`, `className`, `data-*`) and works from the keyboard like any button.
 
 Implementation: `src/components/field/field-restore-button.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-restore-button.test.tsx`

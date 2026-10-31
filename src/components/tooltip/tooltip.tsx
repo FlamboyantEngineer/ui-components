@@ -25,7 +25,7 @@ export type TooltipTriggerType = 'hover' | 'focus';
 export interface TooltipProps extends OpenStateProps, TooltipPanelBaseProps {
   /** The hint. Plain text or inline content; never interactive. */
   content: ReactNode;
-  /** The trigger: a React Aria focusable such as `Button`, `Button` or `Link`. */
+  /** The trigger: a React Aria focusable such as `Button` or `Link`. */
   children: ReactNode;
   /** Milliseconds the pointer rests on the trigger before the hint opens. Defaults to 500. */
   delay?: number | undefined;

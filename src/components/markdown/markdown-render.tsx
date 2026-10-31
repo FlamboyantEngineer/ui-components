@@ -1,8 +1,4 @@
 'use client';
-
-// Builds the React elements of a parsed Markdown tree, leaves first and without recursion
-// (specs/MARKDOWN.md).
-
 import { createElement, Fragment, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { mapTree } from '../../utils/map-tree.js';
