@@ -1,9 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { I18nProvider, Link, useLocale } from '../primitives/index.js';
-import { UiProvider, useFormatMessage, type UiNavigate } from './provider.js';
+import { CloseGlyph, PauseGlyph } from './glyphs.js';
+import {
+  UiProvider,
+  useFormatMessage,
+  useGlyph,
+  useUiStrings,
+  type UiNavigate,
+} from './provider.js';
 
 // Optional provider options come and go without remounting the children (UIC-PROVIDER-3.3).
 
@@ -98,5 +105,31 @@ describe('UiProvider options', () => {
       </I18nProvider>,
     );
     expect(screen.getByRole('status', { name: 'Count' })).toHaveTextContent(/^1\s234,5 fichiers$/);
+  });
+
+  it('UIC-PROVIDER-3.3 republishes nothing for inline messages and icons that hold the same entries', () => {
+    const onRender = vi.fn();
+    function Consumer() {
+      const strings = useUiStrings();
+      const Glyph = useGlyph('close', CloseGlyph);
+      onRender();
+      return <output aria-label="Close text">{`${strings.close} ${Glyph === PauseGlyph}`}</output>;
+    }
+    function Host({ label, children }: { label: string; children: ReactNode }) {
+      return (
+        <UiProvider messages={{ close: label }} icons={{ close: PauseGlyph }}>
+          {children}
+        </UiProvider>
+      );
+    }
+    const child = <Consumer />;
+    const { rerender } = render(<Host label="Shut">{child}</Host>);
+    expect(onRender).toHaveBeenCalledTimes(1);
+    rerender(<Host label="Shut">{child}</Host>);
+    rerender(<Host label="Shut">{child}</Host>);
+    expect(onRender).toHaveBeenCalledTimes(1);
+    rerender(<Host label="Dismiss">{child}</Host>);
+    expect(onRender).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('status', { name: 'Close text' })).toHaveTextContent('Dismiss true');
   });
 });

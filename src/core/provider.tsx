@@ -26,6 +26,7 @@ import { en } from './locales/index.js';
 import { compileStrings, defaultStrings, type UiMessages, type UiStrings } from './strings.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
 import { useLatest } from '../utils/use-latest.js';
+import { useShallowStable } from '../utils/use-shallow-stable.js';
 
 /** Props a link renderer receives. It must render an element that navigates to `href`. */
 export interface UiLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -48,11 +49,15 @@ export type UiHref = (href: string) => string;
 export type UiFormatMessage = (message: string, values?: MessageValues) => string;
 
 export interface UiProviderProps {
-  /** Replaces built-in glyphs by name. Unlisted glyphs keep their default (or the outer provider's). */
+  /**
+   * Replaces built-in glyphs by name. Unlisted glyphs keep their default (or the outer provider's).
+   * Compared by its entries, so an object written inline costs nothing while they stay the same.
+   */
   icons?: Partial<GlyphMap> | undefined;
   /**
    * A language file, or part of one: built-in text by key, as ICU MessageFormat messages. Unlisted
-   * keys keep the outer provider's text, and English below every provider.
+   * keys keep the outer provider's text, and English below every provider. Compared by its entries,
+   * so an object written inline recompiles nothing while they stay the same.
    */
   messages?: Partial<UiMessages> | undefined;
   /** BCP 47 locale for the messages' plurals, numbers and lists, and for formatting, collation and direction. */
@@ -193,6 +198,14 @@ const jsonCodec: PersistCodec<never> = {
   stringify: (value) => JSON.stringify(value),
 };
 
+const noOption = {};
+
+/** An optional options object, or the one an earlier render passed while its entries are the same. */
+function useShallowStableOption<T extends object>(option: T | undefined): T | undefined {
+  const stable = useShallowStable<object>(option ?? noOption) as T;
+  return option && stable;
+}
+
 /**
  * Supplies glyphs, text, locale, link rendering and storage to every component below it.
  * Components work without a provider, using Heroicons, English text and in-memory storage.
@@ -201,8 +214,8 @@ const jsonCodec: PersistCodec<never> = {
  * outer ones while their option is absent.
  */
 export function UiProvider({
-  icons,
-  messages,
+  icons: iconsProp,
+  messages: messagesProp,
   locale,
   renderLink,
   navigate,
@@ -213,6 +226,8 @@ export function UiProvider({
   children,
 }: UiProviderProps) {
   const parent = useContext(UiContext);
+  const icons = useShallowStableOption(iconsProp);
+  const messages = useShallowStableOption(messagesProp);
   // The locale React Aria uses below: this provider's, else the outer one's (a parent provider's,
   // a host's I18nProvider or the browser's), so the text formats as the components do.
   const outerLocale = useLocale().locale;
