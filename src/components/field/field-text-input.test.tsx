@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { CodeEditor } from '../code-editor/code-editor.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { NumberField } from '../number-field/number-field.js';
+import { PortalContainerProvider } from '../portal/portal.js';
 import { PinInput } from '../pin-input/pin-input.js';
 import { RelativeDateField } from '../relative-date-field/relative-date-field.js';
 import { SelectField } from '../select-field/select-field.js';
@@ -126,5 +127,29 @@ describe('Field text input props', () => {
       </>,
     );
     expect(screen.getByRole('textbox', { name: 'Fruit' })).toHaveFocus();
+  });
+
+  it('UIC-FIELD-8.3 UIC-PORTAL-1.7 takes focus in another window from the element focused there before it mounts', () => {
+    // A frame stands in for a popup window the host renders into through a portal container: it
+    // keeps its own focused element while the script's document focuses another.
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const owner = frame.contentDocument;
+    if (!owner) throw new Error('The frame has no document');
+    const host = owner.body.appendChild(owner.createElement('div'));
+    const elsewhere = document.body.appendChild(document.createElement('button'));
+    const Popup = ({ field }: { field: boolean }) => (
+      <PortalContainerProvider container={owner.body}>
+        <button type="button">Open</button>
+        {field ? <TagsInput label="Fruit" autoFocus /> : null}
+      </PortalContainerProvider>
+    );
+    const view = render(<Popup field={false} />, { container: host });
+    within(host).getByRole('button', { name: 'Open' }).focus();
+    elsewhere.focus();
+    view.rerender(<Popup field />);
+    expect(owner.activeElement).toBe(within(host).getAllByRole('textbox')[0]);
+    view.unmount();
+    frame.remove();
+    elsewhere.remove();
   });
 });

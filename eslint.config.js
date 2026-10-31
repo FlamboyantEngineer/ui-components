@@ -44,6 +44,12 @@ const STORAGE_GLOBALS = ['localStorage', 'sessionStorage'].map((name) => ({
 
 // Components listen, look up and measure in their own element's document and window, which is a
 // frame's or a popup window's when they render there (specs/PORTAL.md, UIC-PORTAL-1.7).
+const STORAGE_PROPERTIES = ['localStorage', 'sessionStorage'].map((property) => ({
+  object: 'window',
+  property,
+  message: 'Persist through the UiProvider storage adapter (useUiStorage).',
+}));
+
 const OWNER_WINDOW_GLOBALS = [
   'document',
   'window',
@@ -250,19 +256,7 @@ export default tseslint.config(
         { patterns: [...STYLING_PACKAGES, ARIA_PACKAGES, VISUALLY_HIDDEN_PRIMITIVE] },
       ],
       'no-restricted-globals': ['error', ...STORAGE_GLOBALS],
-      'no-restricted-properties': [
-        'error',
-        {
-          object: 'window',
-          property: 'localStorage',
-          message: 'Persist through the UiProvider storage adapter (useUiStorage).',
-        },
-        {
-          object: 'window',
-          property: 'sessionStorage',
-          message: 'Persist through the UiProvider storage adapter (useUiStorage).',
-        },
-      ],
+      'no-restricted-properties': ['error', ...STORAGE_PROPERTIES],
     },
   },
   {
@@ -270,6 +264,16 @@ export default tseslint.config(
     ignores: ['src/**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-globals': ['error', ...STORAGE_GLOBALS, ...OWNER_WINDOW_GLOBALS],
+      'no-restricted-properties': [
+        'error',
+        ...STORAGE_PROPERTIES,
+        ...['document', 'window'].map((property) => ({
+          object: 'globalThis',
+          property,
+          message:
+            "Read it from the component's own element: getOwnerDocument or getOwnerWindow (src/utils/owner-window.ts).",
+        })),
+      ],
     },
   },
   {

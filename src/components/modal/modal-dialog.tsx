@@ -15,6 +15,8 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
 import { getDeepActiveElement } from '../../utils/focus-target.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { usePortalContainer } from '../portal/portal.js';
 import { ModalShownContext } from './modal-retained.js';
 import { ModalFooter } from './modal-footer.js';
 import { ModalHeader } from './modal-header.js';
@@ -134,7 +136,11 @@ function ModalOpening({
   returnsToOpener,
   dialogRef,
 }: ModalOpeningProps) {
-  const [opener] = useState(() => (returnsToOpener ? getDeepActiveElement() : null));
+  // The dialog has no element yet: the opener is focused in its portal container's document.
+  const container = usePortalContainer();
+  const [opener] = useState(() =>
+    returnsToOpener ? getDeepActiveElement(getOwnerDocument(container)) : null,
+  );
   useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
   useExitComplete(onExitComplete);
   return null;

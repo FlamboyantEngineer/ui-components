@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { PortalContainerProvider } from '../portal/portal.js';
 import { Modal, type ModalProps } from './modal.js';
 
 type PageProps = Pick<ModalProps, 'initialFocus' | 'finalFocus' | 'isNonModal'>;
@@ -111,5 +112,38 @@ describe('Modal focus targets', () => {
     expect(await screen.findByRole('button', { name: 'Save' })).toHaveFocus();
     await user.keyboard('{Escape}');
     await waitFor(() => expect(opener).toHaveFocus());
+  });
+
+  it('UIC-MODAL-3.4 UIC-PORTAL-1.7 returns focus from a floating dialog to the opener focused in its portal container document', async () => {
+    // A frame stands in for a popup window the host renders into through a portal container: it
+    // keeps its own focused element while the script's document focuses another.
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const owner = frame.contentDocument;
+    if (!owner) throw new Error('The frame has no document');
+    vi.spyOn(owner, 'hasFocus').mockReturnValue(true);
+    const { body } = owner;
+    const host = body.appendChild(owner.createElement('div'));
+    const elsewhere = document.body.appendChild(document.createElement('button'));
+    function Popup({ isOpen }: { isOpen: boolean }) {
+      return (
+        <PortalContainerProvider container={body}>
+          <button type="button">Open</button>
+          <Modal title="Rename" isNonModal isOpen={isOpen} onOpenChange={() => {}}>
+            <p>Body</p>
+          </Modal>
+        </PortalContainerProvider>
+      );
+    }
+    const view = render(<Popup isOpen={false} />, { container: host });
+    const opener = within(host).getByRole('button', { name: 'Open' });
+    act(() => opener.focus());
+    act(() => elsewhere.focus());
+    view.rerender(<Popup isOpen />);
+    await waitFor(() => expect(owner.querySelector('[role="dialog"]')).not.toBeNull());
+    view.rerender(<Popup isOpen={false} />);
+    await waitFor(() => expect(owner.activeElement).toBe(opener));
+    view.unmount();
+    frame.remove();
+    elsewhere.remove();
   });
 });

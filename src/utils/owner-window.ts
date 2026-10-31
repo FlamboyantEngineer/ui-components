@@ -8,6 +8,15 @@ export function getOwnerDocument(node: Node | null | undefined): Document {
   return node.nodeType === 9 ? (node as Document) : (node.ownerDocument ?? document);
 }
 
+/**
+ * The document `node` belongs to, the script's own without a node, or null on the server, for a
+ * read made in render before the component has an element.
+ */
+export function findOwnerDocument(node: Node | null | undefined): Document | null {
+  if (node) return getOwnerDocument(node);
+  return typeof document === 'undefined' ? null : document;
+}
+
 /** The window `node`'s document belongs to, or the script's own window without a node. */
 export function getOwnerWindow(node: Node | null | undefined): Window & typeof globalThis {
   return (getOwnerDocument(node).defaultView as (Window & typeof globalThis) | null) ?? window;
