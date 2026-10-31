@@ -3,8 +3,7 @@
 import type { Ref } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { Key } from '../../core/props.js';
-import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
+import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import type { SelectFieldSelectionMode, SelectFieldValue } from './select-field.js';
 import type { TreeItemData } from '../tree/tree.js';
 import { TreeSelectControl } from './tree-select-control.js';
@@ -80,7 +79,7 @@ export function SelectTreeField<
         <TreeSelectControl
           {...config}
           control={control}
-          state={state as unknown as FieldState<Key | Key[] | null>}
+          state={state}
           label={field.label}
           isMultiple={isMultiple}
           valueDisplay={valueDisplay}

@@ -180,7 +180,7 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
             defaultOpen={props.defaultOpen}
             onOpenChange={props.onOpenChange}
             control={control}
-            state={state as unknown as FieldState<DateFieldValue>}
+            state={state}
             mode={mode}
             bounds={props}
             settings={toSettings(all, (value) => !check(value), state)}

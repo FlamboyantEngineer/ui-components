@@ -6,8 +6,8 @@ import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
-import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
-import { SelectControl, type SelectKeysValue } from './select-control.js';
+import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import { SelectControl } from './select-control.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { flattenPickerItems } from '../field/field.js';
 import { type SelectFieldItem } from './select-options.js';
@@ -95,7 +95,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
         <SelectControl
           {...config}
           control={control}
-          state={state as unknown as FieldState<SelectKeysValue>}
+          state={state}
           label={field.label}
           isMultiple={isMultiple}
         />
