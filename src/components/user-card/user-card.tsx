@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useContext, useRef, type ReactNode } from 'react';
-import { Button as AriaButton, Dialog, DialogTrigger } from '../../primitives/index.js';
+import { createContext, useContext, useId, useRef, type ReactNode } from 'react';
+import { Button as AriaButton, Dialog, Provider } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, PressEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -10,15 +10,14 @@ import { useUiStrings } from '../../core/provider.js';
 import { getDisplayName, splitAvatarIdentity, type AvatarIdentity } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { DescriptionList, DescriptionRow } from '../description-list/description-list.js';
-import {
-  HoverCard,
-  HoverCardTrigger,
-  type HoverCardTriggerProps,
-} from '../hover-card/hover-card.js';
+import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
 import type { IconSource } from '../icon/icon.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { Skeleton } from '../skeleton/skeleton.js';
 import { UserIdentity, type UserIdentityProps } from '../user-identity/user-identity.js';
+import { restoreFocus, useCardOpening, type UserCardTriggerType } from './user-card-opening.js';
+
+export type { UserCardTriggerType } from './user-card-opening.js';
 
 /** One labelled fact about the person, such as a team or a local time. */
 export interface UserCardDetail {
@@ -56,9 +55,6 @@ export interface UserCardProps
   isLoading?: boolean | undefined;
 }
 
-/** `press` opens the card on a click, Enter or Space; `hover` on hover, keyboard focus or long press. */
-export type UserCardTriggerType = 'press' | 'hover';
-
 export interface UserCardTriggerProps
   extends
     OpenStateProps,
@@ -67,8 +63,11 @@ export interface UserCardTriggerProps
     BaseProps {
   /** Opens nothing and refuses presses. */
   isDisabled?: boolean | undefined;
-  /** The card to open, usually a `UserCard`. */
-  card: ReactNode;
+  /**
+   * The card to open, usually a `UserCard`. Without one the trigger is a plain button; a card that
+   * arrives or leaves later keeps the same button, and its focus.
+   */
+  card?: ReactNode;
   /** What the trigger shows: an avatar, a name or a user identity row. */
   children: ReactNode;
   /**
@@ -154,19 +153,6 @@ function CardActions({ actions, onAction }: Pick<UserCardProps, 'actions' | 'onA
 }
 
 /**
- * Moves focus to `element` the way React Aria's focus scopes restore it: through the cancelable
- * `react-aria-focus-scope-restore` event, which a preview trigger takes to refocus itself without
- * reopening its card.
- */
-function restoreFocus(element: HTMLElement) {
-  const event = new CustomEvent('react-aria-focus-scope-restore', {
-    bubbles: true,
-    cancelable: true,
-  });
-  if (element.dispatchEvent(event)) element.focus();
-}
-
-/**
  * The card's dialog. React Aria's Dialog takes focus when it mounts, which suits a card that its
  * trigger opens on press; a card shown on hover or in place must not move focus, so there it is a
  * plain dialog element.
@@ -247,7 +233,8 @@ export function UserCard(props: UserCardProps) {
 /**
  * Makes its content (an avatar, a name, a user identity row) a button that opens `card` in a
  * popover on the `dropdown` layer, on press or, with `trigger="hover"`, in a `HoverCard` on hover and
- * keyboard focus. Escape and the card's actions close it, returning focus to the trigger.
+ * keyboard focus. Escape and the card's actions close it, returning focus to the trigger. The button
+ * stays the same element while `card` comes and goes.
  */
 export function UserCardTrigger({
   card,
@@ -259,11 +246,26 @@ export function UserCardTrigger({
   delay,
   closeDelay,
   className,
+  onPress,
+  isDisabled,
   ...rest
 }: UserCardTriggerProps) {
   const [isOpen, setOpen] = useControllableState(isOpenProp, defaultOpen, onOpenChange);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const hasCard = card !== undefined && card !== null && card !== false;
   const isPreview = trigger === 'hover';
+  const fallbackId = useId();
+  const triggerId = rest.id ?? fallbackId;
+  const opening = useCardOpening({
+    mode: hasCard ? trigger : undefined,
+    isOpen,
+    setOpen,
+    buttonRef,
+    triggerId,
+    delay,
+    closeDelay,
+    isDisabled,
+  });
   const owner: UserCardOwner = {
     isPreview,
     dismiss: (action) => {
@@ -274,32 +276,33 @@ export function UserCardTrigger({
       if (isPreview && hadFocus && buttonRef.current) restoreFocus(buttonRef.current);
     },
   };
-  const ownedCard = (
+  const popover = hasCard ? (
     <UserCardOwnerContext.Provider value={owner}>{card}</UserCardOwnerContext.Provider>
-  );
-  const button = (
-    <AriaButton {...rest} ref={buttonRef} {...hooks.slot('trigger', undefined, className)}>
-      {children}
-    </AriaButton>
-  );
-  if (isPreview) {
-    return (
-      <HoverCardTrigger
-        isOpen={isOpen}
-        onOpenChange={setOpen}
-        delay={delay}
-        closeDelay={closeDelay}
-        isDisabled={rest.isDisabled}
-      >
-        {button}
-        <HoverCard className={hooks.slotClass('popover')}>{ownedCard}</HoverCard>
-      </HoverCardTrigger>
-    );
-  }
+  ) : null;
   return (
-    <DialogTrigger isOpen={isOpen} onOpenChange={setOpen}>
-      {button}
-      <PopoverPanel className={hooks.slotClass('popover')}>{ownedCard}</PopoverPanel>
-    </DialogTrigger>
+    // The same providers and button render with or without a card, so the button keeps its focus.
+    <Provider values={opening.contexts as never}>
+      <AriaButton
+        {...rest}
+        {...opening.triggerProps}
+        id={triggerId}
+        ref={buttonRef}
+        isDisabled={isDisabled}
+        onPress={(event) => {
+          onPress?.(event);
+          opening.onPress?.();
+        }}
+        // The slot marks a button that opens a card.
+        {...(hasCard ? hooks.slot('trigger', undefined, className) : { className })}
+      >
+        {children}
+      </AriaButton>
+      {popover && isPreview ? (
+        <HoverCard className={hooks.slotClass('popover')}>{popover}</HoverCard>
+      ) : null}
+      {popover && !isPreview ? (
+        <PopoverPanel className={hooks.slotClass('popover')}>{popover}</PopoverPanel>
+      ) : null}
+    </Provider>
   );
 }

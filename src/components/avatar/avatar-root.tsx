@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Button as AriaButton, Focusable } from '../../primitives/index.js';
+import { Focusable } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { toImageProps } from '../icon/icon.js';
 import { UserCardTrigger } from '../user-card/user-card.js';
@@ -14,7 +14,11 @@ interface AvatarRootProps extends BaseProps, Pick<AvatarProps, 'onPress' | 'card
   children: ReactNode;
 }
 
-/** Interactive avatars use their root as the trigger, leaving the status dot outside the picture. */
+/**
+ * Interactive avatars use their root as the trigger, leaving the status dot outside the picture.
+ * A pressable avatar is always a card trigger, with or without a card, so a card that arrives or
+ * leaves keeps the same button and its focus.
+ */
 export function AvatarRoot({
   onPress,
   card,
@@ -24,17 +28,11 @@ export function AvatarRoot({
   children,
   ...rest
 }: AvatarRootProps) {
-  if (card)
+  if (card || onPress)
     return (
       <UserCardTrigger {...rest} card={card} trigger={cardTrigger} onPress={onPress}>
         {children}
       </UserCardTrigger>
-    );
-  if (onPress)
-    return (
-      <AriaButton {...rest} onPress={onPress}>
-        {children}
-      </AriaButton>
     );
   const image = (
     <span {...rest} {...toImageProps(imageLabel)}>

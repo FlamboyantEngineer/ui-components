@@ -240,6 +240,35 @@ describe('UserCardTrigger', () => {
     expectHooksMatchSpec(document.body, 'USER-CARD', { slots: ['trigger', 'popover'] });
   });
 
+  it('UIC-USER-CARD-2.5 is a plain button without a card and keeps it when one arrives', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const { rerender } = render(
+      <UserCardTrigger card={null} onPress={onPress}>
+        Maria Santos
+      </UserCardTrigger>,
+    );
+    const button = screen.getByRole('button', { name: 'Maria Santos' });
+    expect(button).not.toHaveAttribute('aria-haspopup');
+    expect(button).not.toHaveAttribute('aria-expanded');
+    expect(button).not.toHaveClass('ui-user-card__trigger');
+    await user.click(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    rerender(
+      <UserCardTrigger card={<UserCard name="Maria Santos" />} onPress={onPress}>
+        Maria Santos
+      </UserCardTrigger>,
+    );
+    expect(screen.getByRole('button', { name: 'Maria Santos' })).toBe(button);
+    expect(button).toHaveFocus();
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
+    expect(onPress).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-USER-CARD-2.1 publishes the disabled state and stays closed', async () => {
     renderTrigger({ isDisabled: true });
     const trigger = screen.getByRole('button', { name: 'Maria Santos' });

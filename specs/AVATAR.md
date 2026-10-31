@@ -143,6 +143,13 @@ With `card` and `cardTrigger="hover"`, the card shall open on hover and keyboard
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/user-card/user-card.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
 
+### UIC-AVATAR-11.9 - Stable button
+
+A pressable avatar (with `onPress` or `card`) shall keep the same button element, and its focus, while `card`, `cardTrigger` or `nameTooltip` change, so a card or tooltip that becomes available later does not interrupt keyboard navigation. The button carries the `ui-user-card__trigger` class and the card's ARIA state only while it has a card.
+
+Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar-root.tsx`, `src/components/user-card/user-card.tsx`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
 ## UIC-AVATAR-4 - Unified options
 
 ### UIC-AVATAR-4.1 - Optional presence

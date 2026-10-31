@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
@@ -24,6 +25,35 @@ function PressCounter() {
       />
       <p>
         Presses: <output data-lab-output="presses">{presses}</output>
+      </p>
+    </div>
+  );
+}
+
+/** An avatar whose card and name tooltip arrive a second after asking, as a profile would load. */
+function LateProfile() {
+  const [stage, setStage] = useState<'none' | 'loading' | 'loaded'>('none');
+  const [presses, setPresses] = useState(0);
+  useEffect(() => {
+    if (stage !== 'loading') return;
+    const timer = setTimeout(() => setStage('loaded'), 1000);
+    return () => clearTimeout(timer);
+  }, [stage]);
+  const isLoaded = stage === 'loaded';
+  return (
+    <div>
+      <Avatar
+        name="Ines Duarte"
+        data-lab-avatar="late"
+        onPress={() => setPresses((count) => count + 1)}
+        nameTooltip={isLoaded}
+        card={isLoaded ? <UserCard name="Ines Duarte" description="Design" /> : undefined}
+      />{' '}
+      <Button size="sm" onPress={() => setStage(isLoaded ? 'none' : 'loading')}>
+        {isLoaded ? 'Forget the profile' : 'Load the profile in a second'}
+      </Button>
+      <p>
+        Presses: <output data-lab-output="late-presses">{presses}</output>
       </p>
     </div>
   );
@@ -139,6 +169,12 @@ export function AvatarPresenceCases() {
               <UserCard name="Sam Okafor" status="idle" statusLabel="Idle" description="Design" />
             }
           />
+        </LabSection>
+        <LabSection
+          title="Presence: Card arriving later"
+          description="Load the profile, then Tab back to the avatar: when the card and name tooltip arrive, the avatar keeps focus and Enter opens the card."
+        >
+          <LateProfile />
         </LabSection>
       </>
     </div>

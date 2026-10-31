@@ -291,4 +291,38 @@ describe('Avatar tooltips and hover cards', () => {
     await advance(1000);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('UIC-AVATAR-11.9 keeps the focused button while a card or name tooltip comes and goes', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const card = <UserCard name="Alice" />;
+    const { rerender } = render(<Avatar name="Alice" onPress={onPress} />);
+    const button = screen.getByRole('button', { name: 'Alice' });
+    await user.tab();
+    expect(button).toHaveFocus();
+    expect(button).not.toHaveClass('ui-user-card__trigger');
+    expect(button).not.toHaveAttribute('aria-expanded');
+
+    const steps = [
+      { card },
+      { card, cardTrigger: 'hover' as const },
+      { card: undefined, nameTooltip: true },
+      { card, nameTooltip: true },
+      {},
+    ];
+    for (const step of steps) {
+      rerender(<Avatar name="Alice" onPress={onPress} {...step} />);
+      expect(screen.getByRole('button', { name: 'Alice' })).toBe(button);
+      expect(button).toHaveFocus();
+      if (step.card) expect(button).toHaveClass('ui-user-card__trigger');
+      else expect(button).not.toHaveClass('ui-user-card__trigger');
+    }
+
+    rerender(<Avatar name="Alice" onPress={onPress} card={card} />);
+    await user.keyboard('{Enter}');
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole('dialog', { name: 'Alice' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(button).toHaveFocus());
+  });
 });
