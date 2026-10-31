@@ -157,6 +157,13 @@ With `persistKey` and no `selectedKey`, `Tabs` shall start from the selection st
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
+### UIC-TABS-3.8 - Renaming a tab that changes
+
+An edit shall end without renaming when its tab leaves the list, turns disabled (through `Tabs` `isDisabled`, `disabledKeys` or the tab's own `isDisabled`) or its list stops taking renames (`onRename` removed), and the tab coming back does not reopen it. Focus the field held moves to the tab when it can take focus, else to the selected or first enabled tab. Enter and focus leaving the field check that the tab is still in the list and enabled before renaming, and rename with the list's current `onRename` and `validateName`.
+
+Implementation: `src/components/tabs/tab-rename.tsx`
+Verification: `src/components/tabs/tab-rename-eligibility.test.tsx`, `e2e/tabs.spec.ts`
+
 ## Hooks
 
 | Hook                     | Kind      | Values                   | Description                                                                |

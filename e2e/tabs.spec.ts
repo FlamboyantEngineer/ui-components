@@ -407,4 +407,19 @@ test.describe('Tabs lab', () => {
       page.locator('[data-lab-demo="remembered"]').getByRole('tab', { selected: true }),
     ).toHaveText('Winter');
   });
+
+  test('UIC-TABS-3.8 ends a rename without renaming when the tabs lock', async ({ page, lab }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="locking"]');
+    await demo.getByRole('button', { name: 'Lock in a second' }).click();
+    await demo.getByRole('tab', { name: 'Soup' }).focus();
+    await page.keyboard.press('F2');
+    const field = demo.getByRole('textbox', { name: 'Rename Soup' });
+    await expect(field).toBeFocused();
+    await page.keyboard.type('Broth');
+    await expect(field).toHaveCount(0);
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="locking"]')).toHaveText('Last change: none');
+    await expect(demo.getByRole('tab', { name: 'Soup' })).toBeVisible();
+  });
 });
