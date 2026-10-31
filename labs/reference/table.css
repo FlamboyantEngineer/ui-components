@@ -162,7 +162,30 @@
 .ui-table__column[data-focus-visible] {
   box-shadow: var(--ref-focus-inset);
 }
+/* The content spans the header, its padding included, so a dragged column lands anywhere on it. */
+.ui-table__column-content {
+  display: flex;
+  align-items: center;
+  box-sizing: content-box;
+  height: 100%;
+  min-width: 0;
+  margin-inline: -8px;
+  padding-inline: 8px;
+}
+.ui-table[data-virtualized] .ui-table__column-content {
+  flex: 1 1 auto;
+}
+.ui-table__column[data-align='center'] .ui-table__column-content {
+  justify-content: center;
+}
+.ui-table__column[data-align='end'] .ui-table__column-content {
+  justify-content: flex-end;
+}
+.ui-table__column[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
 .ui-table__column-label {
+  min-width: 0;
   display: inline-block;
   max-width: 100%;
   overflow: hidden;

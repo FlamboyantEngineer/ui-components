@@ -27,7 +27,7 @@ import {
   selectionColumnId,
   type TableStructure,
 } from './table-structure.js';
-import type { TableColumnDropTarget } from './use-column-reorder.js';
+import type { TableColumnDrag } from './use-column-reorder.js';
 import { computePinOffsets, type TablePinOffsets } from './use-pinned-offsets.js';
 
 /** What the header row shows: widths, groups, pins, the sort, drops and filters. */
@@ -42,7 +42,8 @@ export interface TableHeaderModel<T> {
   sort: readonly SortDescriptor[];
   /** Several columns can sort at once, so sorted headers show their priority. */
   isMultipleSort: boolean;
-  dropTarget: TableColumnDropTarget | null;
+  /** The shared column drag, or null while no column reorders. */
+  columnDrag: TableColumnDrag | null;
   /** The filter button of a filterable column, else null. */
   renderFilter: (column: TableColumn<T>) => ReactNode;
   isFiltered: (column: TableColumn<T>) => boolean;
@@ -141,7 +142,6 @@ function getHeaderState<T>(
 ): TableColumnHeaderState {
   const pin = getColumnPin(structure, column);
   const sortIndex = model.sort.findIndex((descriptor) => descriptor.column === column.id);
-  const isDropTarget = model.dropTarget?.id === column.id;
   return {
     width: resolveColumnWidth(column, model.widths[column.id]),
     isRowHeader: getRowHeaderColumns(structure.columns).includes(column),
@@ -149,7 +149,7 @@ function getHeaderState<T>(
     pinOffset: pin ? model.pinOffsets[column.id] : undefined,
     sortDirection: model.sort[sortIndex]?.direction,
     sortPriority: model.isMultipleSort && sortIndex !== -1 ? sortIndex + 1 : undefined,
-    dropPosition: isDropTarget ? model.dropTarget?.position : undefined,
+    drag: model.columnDrag,
     isFiltered: model.isFiltered(column),
     filter: model.renderFilter(column),
     probe: null,

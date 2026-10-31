@@ -1,4 +1,4 @@
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { act, createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -36,36 +36,52 @@ function renderCities(props: Partial<TableProps<City>> = {}, locale?: string) {
   );
 }
 
-/** A drag event with the pointer position and data transfer jsdom's plain events lack. */
-function dragEvent(type: 'dragStart' | 'dragOver' | 'drop', target: Element, clientX = 0) {
-  const event = createEvent[type](target);
+/** A data transfer that keeps what a drag writes, as jsdom has none. */
+function createDataTransfer() {
   const data = new Map<string, string>();
-  Object.defineProperty(event, 'clientX', { value: clientX });
-  Object.defineProperty(event, 'dataTransfer', {
-    value: {
-      setData: (format: string, value: string) => data.set(format, value),
-      getData: (format: string) => data.get(format) ?? '',
-      effectAllowed: 'all',
-      dropEffect: 'none',
-      types: [],
+  return {
+    items: {
+      add: (value: string, type: string) => data.set(type, value),
+      *[Symbol.iterator]() {
+        for (const type of data.keys()) yield { kind: 'string', type };
+      },
     },
-  });
+    get types() {
+      return [...data.keys()];
+    },
+    getData: (type: string) => data.get(type) ?? '',
+    clearData: () => data.clear(),
+    effectAllowed: 'all',
+    dropEffect: 'none',
+  };
+}
+
+type DragType = 'dragStart' | 'dragEnter' | 'dragOver' | 'drop' | 'dragEnd';
+
+/** A drag event with the pointer position and data transfer jsdom's plain events lack. */
+function drag(type: DragType, target: Element, options: { transfer: object; clientX?: number }) {
+  const event = createEvent[type](target);
+  Object.defineProperty(event, 'dataTransfer', { value: options.transfer });
+  Object.defineProperty(event, 'clientX', { value: options.clientX ?? 0 });
+  Object.defineProperty(event, 'clientY', { value: 10 });
   fireEvent(target, event);
   return event;
 }
 
+/** A header's drop target: the content beside its resizer. */
+const content = (name: string) =>
+  requireDefined(header(name).querySelector('.ui-table__column-content'));
+
+/** Starts dragging a column by its label, as the browser does once the drag begins. */
+async function startDrag(name: string, transfer: object) {
+  const label = requireDefined(header(name).querySelector('.ui-table__column-label'));
+  drag('dragStart', label, { transfer });
+  await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+  return label;
+}
+
 function box(element: Element, left: number, width: number) {
-  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
-    left,
-    width,
-    right: left + width,
-    top: 0,
-    bottom: 40,
-    height: 40,
-    x: left,
-    y: 0,
-    toJSON: () => ({}),
-  });
+  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(new DOMRect(left, 0, width, 40));
 }
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
@@ -100,34 +116,50 @@ describe('Table column reordering', { timeout: 15_000 }, () => {
     expect(headers()).toEqual(['Code', 'Country', 'Name', 'People']);
   });
 
-  it('UIC-TABLE-8.4 drops a dragged label before or after another header', () => {
+  it('UIC-TABLE-8.4 drops a dragged label before or after another header', async () => {
     const onColumnLayoutChange = vi.fn();
     renderCities({ onColumnLayoutChange });
-    const label = requireDefined(header('Country').querySelector('.ui-table__column-label'));
-    expect(label).toHaveAttribute('draggable', 'true');
-    const people = header('People');
+    const transfer = createDataTransfer();
+    const people = content('People');
     box(people, 300, 100);
-    dragEvent('dragStart', label);
-    const over = dragEvent('dragOver', people, 380);
+    const label = await startDrag('Country', transfer);
+    expect(label).toHaveAttribute('draggable', 'true');
+    expect(header('Country')).toHaveAttribute('data-dragging', 'true');
+    expect(transfer.types).toContain('text/plain');
+    drag('dragEnter', people, { transfer, clientX: 380 });
+    const over = drag('dragOver', people, { transfer, clientX: 380 });
     expect(over.defaultPrevented).toBe(true);
-    expect(people).toHaveAttribute('data-drop-position', 'after');
-    dragEvent('dragOver', people, 310);
-    expect(people).toHaveAttribute('data-drop-position', 'before');
-    dragEvent('drop', people, 380);
+    expect(header('People')).toHaveAttribute('data-drop-position', 'after');
+    drag('dragOver', people, { transfer, clientX: 310 });
+    expect(header('People')).toHaveAttribute('data-drop-position', 'before');
+    drag('drop', people, { transfer, clientX: 380 });
+    drag('dragEnd', label, { transfer });
     expect(headers()).toEqual(['Code', 'Name', 'People', 'Country']);
-    expect(people).not.toHaveAttribute('data-drop-position');
+    expect(header('People')).not.toHaveAttribute('data-drop-position');
     expect(onColumnLayoutChange).toHaveBeenCalledTimes(1);
   });
 
-  it('UIC-TABLE-8.4 refuses drops beside a column pinned to another edge', () => {
-    renderCities();
-    const label = requireDefined(header('Name').querySelector('.ui-table__column-label'));
-    const code = header('Code');
+  it('UIC-TABLE-8.4 refuses drops beside a column pinned to another edge or from another table', async () => {
+    const onColumnLayoutChange = vi.fn();
+    renderCities({ onColumnLayoutChange });
+    const code = content('Code');
     box(code, 0, 80);
-    dragEvent('dragStart', label);
-    dragEvent('dragOver', code, 10);
-    dragEvent('drop', code, 10);
+    const transfer = createDataTransfer();
+    const label = await startDrag('Name', transfer);
+    drag('dragEnter', code, { transfer, clientX: 10 });
+    drag('drop', code, { transfer, clientX: 10 });
+    drag('dragEnd', label, { transfer });
     expect(headers()).toEqual(['Code', 'Name', 'Country', 'People']);
     expect(header('People').querySelector('[draggable]')).toBeNull();
+
+    const foreign = createDataTransfer();
+    foreign.items.add('name', 'application/x-ui-table-column-other');
+    const country = content('Country');
+    box(country, 200, 100);
+    drag('dragEnter', country, { transfer: foreign, clientX: 280 });
+    drag('dragOver', country, { transfer: foreign, clientX: 280 });
+    expect(header('Country')).not.toHaveAttribute('data-drop-position');
+    drag('drop', country, { transfer: foreign, clientX: 280 });
+    expect(onColumnLayoutChange).not.toHaveBeenCalled();
   });
 });
