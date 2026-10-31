@@ -178,6 +178,38 @@ function ChangingActions() {
   );
 }
 
+/** A more action that loads its entries on demand: its button keeps focus as they arrive. */
+function LoadedEntries() {
+  const [items, setItems] = useState<ActionRowAction['items']>([]);
+  const [last, setLast] = useState('none');
+  const more: ActionRowAction = {
+    verb: 'more',
+    id: 'more',
+    items,
+    onPress: () => {
+      setLast('load');
+      setTimeout(() => {
+        setItems([
+          { id: 'export', label: 'Export' },
+          { id: 'print', label: 'Print' },
+        ]);
+      }, 300);
+    },
+    onAction: (key) => setLast(String(key)),
+  };
+  return (
+    <div data-lab-case="loaded">
+      <ActionRow toolbar aria-label="Loaded entries" actions={[more]} />
+      <button type="button" onClick={() => setItems([])}>
+        Clear entries
+      </button>
+      <p>
+        Last action: <output data-lab-output="last">{last}</output>
+      </p>
+    </div>
+  );
+}
+
 /** Menu actions whose item ids repeat: each overflow submenu still reports to its own action. */
 function SharedIdMenus() {
   const [last, setLast] = useState('none');
@@ -328,6 +360,12 @@ mountLab(
       description="Archive removes itself: focus moves to Share's own button, and Enter then runs Share. Restore archive brings it back."
     >
       <ChangingActions />
+    </LabSection>
+    <LabSection
+      title="Menu entries that load"
+      description="More starts without entries and loads them when pressed. As they arrive it keeps its button and focus, so Enter then opens the menu. Clear entries makes it a plain button again."
+    >
+      <LoadedEntries />
     </LabSection>
     <LabSection
       title="Overflow menus that share item ids"

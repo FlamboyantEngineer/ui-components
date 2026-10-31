@@ -197,6 +197,28 @@ test.describe('Action Row lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ACTION-ROW-1.6 keeps the more button and its focus as its entries load', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="loaded"]');
+    const more = demo.getByRole('button', { name: 'More' });
+    await more.focus();
+    const element = await more.elementHandle();
+    await page.keyboard.press('Enter');
+    await expect(more).toHaveAttribute('aria-haspopup', 'true');
+    await expect(more).toBeFocused();
+    expect(await element?.evaluate((node) => node.isConnected)).toBe(true);
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: 'Print' }).click();
+    await expect(demo.locator('[data-lab-output="last"]')).toHaveText('print');
+    await demo.getByRole('button', { name: 'Clear entries' }).click();
+    await expect(more).not.toHaveAttribute('aria-haspopup');
+    expect(await element?.evaluate((node) => node.isConnected)).toBe(true);
+    await lab.expectAccessible();
+  });
+
   test('UIC-ACTION-ROW-2.5 reports an overflow submenu choice to its own action', async ({
     page,
     lab,

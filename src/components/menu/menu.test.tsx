@@ -334,6 +334,34 @@ describe('Menu', () => {
     expect(screen.getByRole('menuitem', { name: /Apple/ })).toHaveFocus();
   });
 
+  it('UIC-MENU-4.1 keeps a disabled trigger as a plain button and closes its menu', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const tree = (isDisabled: boolean) => (
+      <MenuTrigger isDisabled={isDisabled}>
+        <Button onPress={onPress}>Actions</Button>
+        <MenuPopover>
+          <Menu items={fruitEntries} />
+        </MenuPopover>
+      </MenuTrigger>
+    );
+    const { rerender } = render(tree(false));
+    const trigger = screen.getByRole('button', { name: 'Actions' });
+    await user.click(trigger);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    rerender(tree(true));
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Actions' })).toBe(trigger);
+    expect(trigger).not.toHaveAttribute('aria-haspopup');
+    expect(trigger).not.toHaveAttribute('aria-expanded');
+    onPress.mockClear();
+    await user.click(trigger);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    rerender(tree(false));
+    expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+  });
+
   it('UIC-MENU-4.1 follows a controlled open state', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

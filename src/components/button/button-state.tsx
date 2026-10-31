@@ -20,6 +20,7 @@ import {
   type ShortcutPlatform,
 } from '../shortcut/shortcut.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
+import { toDisabledPressProps } from './disabled-press.js';
 
 /** The states a button passes to `render` with the `<button>`'s props. */
 export interface ButtonRenderState extends InteractionState {
@@ -288,12 +289,14 @@ export function toAriaButtonProps(
     ...rest
   } = omitOwnProps(props);
   const focusableDisabled = isDisabled && focusableWhenDisabled;
+  const nativeDisabled = isDisabled && !focusableWhenDisabled;
   return {
     ...rest,
     ref: ref as Ref<HTMLButtonElement> | undefined,
     type: focusableDisabled ? 'button' : type,
-    isDisabled: isDisabled && !focusableWhenDisabled,
+    isDisabled: nativeDisabled,
     onPress: focusableDisabled ? undefined : onPress,
+    ...toDisabledPressProps(nativeDisabled),
     ...(isSelected && !statesToggle(props) ? { 'aria-pressed': true } : {}),
     ...(focusableDisabled ? { 'aria-disabled': true } : {}),
     ...renderPassThrough({
