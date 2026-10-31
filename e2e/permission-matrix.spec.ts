@@ -76,4 +76,23 @@ test.describe('Permission Matrix lab', () => {
       'Granted Write recipes for Reviewer',
     );
   });
+
+  test('UIC-PERMISSION-MATRIX-1.5 keeps the focused checkbox on its role when the roles reorder', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('permission-matrix');
+    const editor = demo(page, 'editor');
+    await editor.getByRole('button', { name: 'Reverse roles in 1.5 seconds' }).click();
+    await toggle(editor, 'Write recipes for Reviewer');
+    const write = editor.getByRole('checkbox', { name: 'Write recipes for Reviewer' });
+    await expect(write).toBeFocused();
+    await expect(editor.getByRole('columnheader').nth(1)).toHaveText('Guest');
+    await expect(write).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(write).not.toBeChecked();
+    await expect(editor.locator('[data-lab-output]')).toHaveText(
+      'Revoked Write recipes for Reviewer',
+    );
+  });
 });

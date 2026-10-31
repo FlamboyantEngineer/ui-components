@@ -76,11 +76,14 @@ function RoleEditor() {
   const [committed, setCommitted] = useState(saved);
   const [value, setValue] = useState(saved);
   const [output, setOutput] = useState('No change yet');
+  const [order, setOrder] = useState(roles);
+  const reverseSoon = () =>
+    window.setTimeout(() => setOrder((current) => [...current].reverse()), 1500);
   return (
     <div data-lab-demo="editor">
       <PermissionMatrix
         aria-label="Site roles"
-        roles={roles}
+        roles={order}
         permissions={permissions}
         groups={groups}
         inherited={inherited}
@@ -100,6 +103,7 @@ function RoleEditor() {
       >
         Save
       </Button>
+      <Button onPress={reverseSoon}>Reverse roles in 1.5 seconds</Button>
       <output data-lab-output>{output}</output>
     </div>
   );
@@ -131,7 +135,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editing roles"
-      description="Tick cells or whole groups; changed cells are marked dirty until saved. Guest reads recipes and Reviewer uploads photos through an inherited role, drawn mixed until granted directly. Arrow keys move between checkboxes and Space toggles."
+      description="Tick cells or whole groups; changed cells are marked dirty until saved. Guest reads recipes and Reviewer uploads photos through an inherited role, drawn mixed until granted directly. Arrow keys move between checkboxes and Space toggles. Reversing the roles keeps the focused checkbox on its role."
     >
       <RoleEditor />
     </LabSection>

@@ -107,14 +107,16 @@ function useGrouping(
   }, [groups, emptyLabel]);
 }
 
+/** A role's column id, from its id and the id's type, so `1` and `'1'` stay apart. */
+const roleColumnId = (id: Key) => `role-${typeof id}-${String(id)}`;
+
 function roleColumn(
   role: PermissionMatrixRole,
-  index: number,
   options: { context: PermissionCellContext; readOnlyText: string; grouping: PermissionGrouping },
 ): TableColumn {
   const { context, readOnlyText, grouping } = options;
   return {
-    id: `role-${index}`,
+    id: roleColumnId(role.id),
     minWidth: roleMinWidth,
     header: <PermissionRoleHeader role={role} />,
     textValue: role.isReadOnly ? `${role.label}, ${readOnlyText}` : role.label,
@@ -184,8 +186,8 @@ export function PermissionMatrix({
       minWidth: permissionMinWidth,
       getValue: (permission) => permission.label,
     },
-    ...roles.map((role, index) =>
-      roleColumn(role, index, { context, readOnlyText: strings.readOnlyRole, grouping }),
+    ...roles.map((role) =>
+      roleColumn(role, { context, readOnlyText: strings.readOnlyRole, grouping }),
     ),
   ];
   return (
