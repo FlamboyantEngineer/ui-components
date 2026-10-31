@@ -213,14 +213,14 @@ describe('TagsInput', () => {
     const onCommit = vi.fn();
     render(<TagsInput label="Fruit" onCommit={onCommit} />);
     const input = screen.getByRole('textbox', { name: 'Fruit' });
-     
+
     fireEvent.compositionStart(input);
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
     fireEvent.input(input, { target: { value: 'alpha,' }, isComposing: true });
     expect(input).toHaveValue('alpha,');
     expect(tagTexts()).toEqual([]);
     expect(onCommit).not.toHaveBeenCalled();
-     
+
     fireEvent.compositionEnd(input, { data: 'alpha,' });
     expect(tagTexts()).toEqual(['alpha']);
     expect(input).toHaveValue('');
@@ -228,7 +228,7 @@ describe('TagsInput', () => {
     // A cancelled composition leaves its text as typed, and ordinary typing goes on.
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
     fireEvent.input(input, { target: { value: 'bl' }, isComposing: true });
-     
+
     fireEvent.compositionEnd(input, { data: '' });
     expect(input).toHaveValue('bl');
     await user.type(input, 'ue,');

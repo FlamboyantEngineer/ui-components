@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -263,5 +263,50 @@ describe('ColorField typing', () => {
     expect(input()).toHaveValue('#aabbc');
     await user.click(screen.getByRole('button', { name: 'Use red' }));
     expect(input()).toHaveValue('#FF0000');
+  });
+});
+
+describe('ColorField native reset', () => {
+  it('UIC-COLOR-FIELD-4.3 UIC-FIELD-2.6 keeps typed text through a cancelled reset and drops it otherwise', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    let keepsEdits = true;
+    render(
+      <form
+        aria-label="Lid"
+        onReset={(event) => {
+          if (keepsEdits) event.preventDefault();
+        }}
+      >
+        <ColorField
+          label="Accent"
+          name="accent"
+          allowsTyping
+          defaultValue="#336699"
+          onChange={onChange}
+        />
+      </form>,
+    );
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Lid' });
+    const reset = async () => {
+      act(() => form.reset());
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    };
+    await user.clear(input());
+    await user.type(input(), '#12');
+    onChange.mockClear();
+    await reset();
+    expect(input()).toHaveValue('#12');
+    expect(input()).toHaveFocus();
+    await user.type(input(), '3456');
+    expect(onChange).toHaveBeenLastCalledWith('#123456');
+    await reset();
+    expect(input()).toHaveValue('#123456');
+    expect(new FormData(form).get('accent')).toBe('#123456');
+    keepsEdits = false;
+    await user.type(input(), '{Backspace}');
+    await reset();
+    await waitFor(() => expect(input()).toHaveValue('#336699'));
+    expect(new FormData(form).get('accent')).toBe('#336699');
   });
 });
