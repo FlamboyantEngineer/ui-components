@@ -36,6 +36,34 @@ function Toggles() {
   );
 }
 
+/** Buttons and links the checkbox hides with the native attribute, at natural and full width. */
+function HiddenButtons() {
+  const [hidden, setHidden] = useState(true);
+  return (
+    <div data-lab-demo="hidden">
+      <label>
+        <input
+          type="checkbox"
+          checked={hidden}
+          onChange={(event) => setHidden(event.target.checked)}
+        />{' '}
+        Hide the buttons
+      </label>
+      <p>
+        <Button hidden={hidden}>Save draft</Button>{' '}
+        <Button hidden={hidden} variant="primary" href="#reports">
+          Open reports
+        </Button>
+      </p>
+      <div style={{ width: 220 }}>
+        <Button hidden={hidden} fullWidth variant="ghost">
+          Full-width action
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <div data-lab-family="button-main">
@@ -152,6 +180,12 @@ mountLab(
         description="A button with defaultSelected keeps its own pressed state; one with isSelected and onChange leaves it to its caller. Pin panel gains a hint while pinned and loses it again, keeping keyboard focus."
       >
         <Toggles />
+      </LabSection>
+      <LabSection
+        title="Hidden"
+        description="The native hidden attribute hides a button or link at any width or variant: it takes no space, no focus and no press until it is shown again."
+      >
+        <HiddenButtons />
       </LabSection>
       <LabSection
         title="Caller hook precedence"

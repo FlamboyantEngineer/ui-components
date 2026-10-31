@@ -221,4 +221,32 @@ test.describe('Button lab', () => {
     await expect(pin).toHaveAttribute('data-lab-probe', 'kept');
     await expect(page.getByRole('tooltip')).toHaveCount(0);
   });
+
+  test('UIC-BUTTON-1.10 hides a hidden button or link under the reference stylesheet', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const demo = page.locator('[data-lab-family="button-main"] [data-lab-demo="hidden"]');
+    const buttons = demo.locator('.ui-button');
+    await expect(buttons).toHaveCount(3);
+    for (const button of await buttons.all()) {
+      await expect(button).toBeHidden();
+      expect(await button.evaluate((node) => getComputedStyle(node).display)).toBe('none');
+    }
+    const toggle = demo.getByRole('checkbox', { name: 'Hide the buttons' });
+    await toggle.focus();
+    await page.keyboard.press('Tab');
+    await expect(buttons.first()).not.toBeFocused();
+    await toggle.uncheck();
+    for (const button of await buttons.all()) await expect(button).toBeVisible();
+    await toggle.focus();
+    await page.keyboard.press('Tab');
+    await expect(demo.getByRole('button', { name: 'Save draft' })).toBeFocused();
+    expect(
+      await demo
+        .getByRole('button', { name: 'Full-width action' })
+        .evaluate((node) => getComputedStyle(node).display),
+    ).toBe('flex');
+  });
 });

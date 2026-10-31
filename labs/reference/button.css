@@ -124,6 +124,10 @@
   display: flex;
   width: 100%;
 }
+/* A hidden button keeps the native hidden behaviour over the display rules above. */
+.ui-button[hidden] {
+  display: none;
+}
 .ui-button[data-align='start'] {
   justify-content: flex-start;
   text-align: start;
