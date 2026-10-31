@@ -107,6 +107,33 @@ function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
   );
 }
 
+/** Menu actions whose item ids repeat: each overflow submenu still reports to its own action. */
+function SharedIdMenus() {
+  const [last, setLast] = useState('none');
+  const menuAction = (id: string, label: string): ActionRowAction => ({
+    verb: 'custom',
+    id,
+    icon: id === 'sheet' ? CopyGlyph : SortAscendingGlyph,
+    label,
+    onAction: (key) => setLast(`${id} ${String(key)}`),
+    items: [
+      { id: 'open', label: `Open ${id}` },
+      { id: 'share', label: `Share ${id}` },
+    ],
+  });
+  return (
+    <div style={{ width: 30 }} data-lab-case="shared-ids">
+      <ActionRow
+        overflow="menu"
+        actions={[menuAction('sheet', 'Sheet'), menuAction('chart', 'Chart')]}
+      />
+      <p>
+        Last action: <output data-lab-output="last">{last}</output>
+      </p>
+    </div>
+  );
+}
+
 function SelectionBar() {
   const [selected, setSelected] = useState(['Apple', 'Cherry']);
   const fruit = ['Apple', 'Banana', 'Cherry'];
@@ -217,6 +244,12 @@ mountLab(
         axes={{ width: ['wide', 'narrow'] }}
         render={({ width }) => <CollapsingRow width={width} />}
       />
+    </LabSection>
+    <LabSection
+      title="Overflow menus that share item ids"
+      description="Both actions' menus have an Open item with the same id. Collapsed into the more menu, each submenu still reports to its own action."
+    >
+      <SharedIdMenus />
     </LabSection>
     <LabSection
       title="Selection bar"

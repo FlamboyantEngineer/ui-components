@@ -150,6 +150,23 @@ test.describe('Action Row lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ACTION-ROW-2.5 reports an overflow submenu choice to its own action', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="shared-ids"]');
+    await demo.getByRole('button', { name: '2 more items' }).click();
+    await page.getByRole('menuitem', { name: 'Chart' }).click();
+    await page.getByRole('menuitem', { name: 'Open chart' }).click();
+    await expect(demo.locator('[data-lab-output="last"]')).toHaveText('chart open');
+    await demo.getByRole('button', { name: '2 more items' }).click();
+    await page.getByRole('menuitem', { name: 'Sheet' }).click();
+    await page.getByRole('menuitem', { name: 'Open sheet' }).click();
+    await expect(demo.locator('[data-lab-output="last"]')).toHaveText('sheet open');
+    await lab.expectAccessible();
+  });
+
   test('UIC-ACTION-ROW-3.1 shows the selection count and clears it', async ({ page, lab }) => {
     await lab.open('action-row');
     const demo = page.locator('[data-lab-case="selection"]');
