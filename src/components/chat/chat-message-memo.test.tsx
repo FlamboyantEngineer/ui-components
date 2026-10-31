@@ -115,6 +115,17 @@ describe('Chat message memoisation (UIC-CHAT-1.5)', () => {
     expect(screen.queryByRole('button', { name: 'Approve' })).not.toBeInTheDocument();
   });
 
+  it('draws every message again when a render option comes or goes', () => {
+    const drawn: string[] = [];
+    const messages = [saved];
+    const { rerenderWith } = renderChat({ ...inlineOptions(drawn, 'v1'), messages });
+    expect(article('saved')).toHaveTextContent('Booking v1');
+    const { toolRenderers: _tools, ...withoutTools } = inlineOptions(drawn, 'v2');
+    rerenderWith({ ...withoutTools, messages });
+    expect(article('saved')).not.toHaveTextContent('Booking');
+    expect(article('saved')).toHaveTextContent('saved-card v2');
+  });
+
   it('draws a thinking icon that changes, and keeps one that draws the same', () => {
     const drawn: string[] = [];
     const messages = [saved, reply('wait', { status: 'streaming', parts: [] })];

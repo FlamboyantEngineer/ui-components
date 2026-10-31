@@ -96,6 +96,8 @@ function useSequence(
 ) {
   const { messages, firstUnreadId, readPositions, currentUserId } = props;
   const { participants } = context;
+  const { renderPart, getReference, toolRenderers, getNow } = props;
+  const rendering = { renderPart, getReference, toolRenderers, getNow };
   const items = useMemo(
     () => groupChatMessages(messages, { firstUnreadId }),
     [messages, firstUnreadId],
@@ -107,7 +109,7 @@ function useSequence(
   );
   return items.map((item) => {
     if (item.kind === 'date') {
-      return <ChatDateSeparator key={item.key} date={item.date} getNow={context.getNow} />;
+      return <ChatDateSeparator key={item.key} date={item.date} getNow={getNow} />;
     }
     if (item.kind === 'unread') return <ChatUnreadDivider key={item.key} />;
     const { message } = item;
@@ -120,6 +122,7 @@ function useSequence(
         readers={readers.get(message.id)}
         expandedParts={expanded[message.id]}
         context={context}
+        rendering={rendering}
         display={display}
       />
     );

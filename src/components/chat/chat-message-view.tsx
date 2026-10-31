@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, type ReactNode } from 'react';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatStatusLine } from '../chat-activity/chat-activity.js';
 import { ChatMessageActionsMenu } from '../chat-message-actions/chat-message-actions.js';
@@ -44,16 +45,24 @@ export type ChatPartOptions = Pick<
   | 'onDismissQuestion'
   | 'questionAnsweredMark'
   | 'onApplyCode'
-  | 'renderPart'
-  | 'getReference'
 >;
+
+/**
+ * The options a message calls while it renders. A message draws with the ones of the render it
+ * renders in, but a new function alone does not render a message again.
+ */
+export interface ChatRenderOptions extends Pick<
+  ChatPartsProps,
+  'toolRenderers' | 'renderPart' | 'getReference'
+> {
+  getNow: (() => Date) | undefined;
+}
 
 /** What every message of a chat shares; it keeps its identity while the chat's options do. */
 export interface ChatMessageContext extends ChatCommandContext {
   /** The conversation shown; its parts start afresh when it changes. */
   conversationId: string | undefined;
   parts: ChatPartOptions;
-  getNow: (() => Date) | undefined;
   onRetry: ((messageId: string) => void) | undefined;
   thinkingText: string | undefined;
   thinkingIcon: ReactNode;
@@ -72,6 +81,7 @@ interface ChatMessageViewProps {
   /** The reader's open and closed choices of the message's parts. */
   expandedParts: Readonly<Record<string, boolean>> | undefined;
   context: ChatMessageContext;
+  rendering: ChatRenderOptions;
   /** Whether the message shows its author's avatar and name, its time and its background. */
   display: ChatMessageDisplayOptions;
 }
@@ -116,6 +126,29 @@ function ThinkingLine({ message, context }: Pick<ChatMessageViewProps, 'message'
   );
 }
 
+const renderOptionKeys = ['renderPart', 'getReference', 'getNow', 'toolRenderers'] as const;
+
+/** Whether two sets of render options draw a message alike: the same options and tool layouts. */
+function drawsAlike(before: ChatRenderOptions, after: ChatRenderOptions): boolean {
+  const isSameSet = renderOptionKeys.every(
+    (key) => (before[key] === undefined) === (after[key] === undefined),
+  );
+  if (!isSameSet) return false;
+  const tools = Object.entries(before.toolRenderers ?? {});
+  const next = after.toolRenderers ?? {};
+  return (
+    tools.length === Object.keys(next).length &&
+    tools.every(([name, renderer]) => next[name]?.replaces === renderer.replaces)
+  );
+}
+
+/** A message renders again when its props change, or when its render options change shape. */
+function isSameView(before: ChatMessageViewProps, after: ChatMessageViewProps): boolean {
+  const { rendering: beforeRendering, ...beforeRest } = before;
+  const { rendering: afterRendering, ...afterRest } = after;
+  return isShallowEqual(beforeRest, afterRest) && drawsAlike(beforeRendering, afterRendering);
+}
+
 /**
  * One message of a chat: its author, time, status, delivery and quote, its parts, reactions and
  * readers, and the commands the chat offers for it in an action bar and a context menu.
@@ -127,8 +160,10 @@ export const ChatMessageView = memo(function ChatMessageView({
   readers,
   expandedParts,
   context,
+  rendering,
   display,
 }: ChatMessageViewProps) {
+  const { getNow, toolRenderers, renderPart, getReference } = rendering;
   const participant = context.participants.get(message.authorId ?? '');
   const quote = useQuote(quoted, context);
   const { onRetry } = context;
@@ -154,7 +189,7 @@ export const ChatMessageView = memo(function ChatMessageView({
           )}
           variant={toMessageVariant(origin, display)}
           time={message.createdAt}
-          getNow={context.getNow}
+          getNow={getNow}
           status={toDisplayStatus(message)}
           groupPosition={groupPosition}
           delivery={message.delivery}
@@ -176,6 +211,7 @@ export const ChatMessageView = memo(function ChatMessageView({
             // A card's drafts and requests belong to one conversation, even where ids repeat.
             key={context.conversationId}
             {...context.parts}
+            {...{ toolRenderers, renderPart, getReference }}
             parts={message.parts}
             messageId={id}
             isStreaming={message.status === 'streaming'}
@@ -189,4 +225,4 @@ export const ChatMessageView = memo(function ChatMessageView({
       )}
     </ChatMessageActionsMenu>
   );
-});
+}, isSameView);
