@@ -15,6 +15,9 @@ const people = [maria, jon, lena];
 
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
 
+/** A fixed reading clock, so the frozen section reads the same on every visit. */
+const getNow = () => new Date(2026, 3, 20, 10, 30);
+
 const quote = 'Ship the tasting samples by Friday';
 
 interface LabComment {
@@ -220,6 +223,31 @@ mountLab(
       description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen. Switch on the failure to see the error and the kept draft."
     >
       <LiveThread />
+    </LabSection>
+    <LabSection
+      title="Frozen clock"
+      description="Comments read against a fixed clock, with dates after seven days or after one."
+    >
+      <StateMatrix
+        axes={{ fallback: ['7 days', '1 day'] }}
+        render={({ fallback }) => (
+          <CommentThread isReadOnly>
+            {[
+              { id: 'a', author: jon, time: '2026-04-20T10:18:00', text: 'Pears are in.' },
+              { id: 'b', author: lena, time: '2026-04-17T16:00:00', text: 'Plums next week.' },
+            ].map((comment) => (
+              <CommentThreadReply
+                key={comment.id}
+                author={comment.author}
+                time={comment.time}
+                text={comment.text}
+                getNow={getNow}
+                fallbackAfterDays={fallback === '7 days' ? 7 : 1}
+              />
+            ))}
+          </CommentThread>
+        )}
+      />
     </LabSection>
     <LabSection
       title="Caller content"

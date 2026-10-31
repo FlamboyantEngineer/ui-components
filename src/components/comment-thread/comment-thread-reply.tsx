@@ -5,12 +5,12 @@ import { useContext, useRef, useState, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { CommentComposer } from '../comment-composer/comment-composer.js';
 import { Modal } from '../modal/modal.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { RelativeTime } from '../relative-time/relative-time.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import { CommentThreadContext } from './comment-thread-context.js';
 
@@ -24,7 +24,8 @@ export interface CommentEditorOptions {
   onCancel: () => void;
 }
 
-export interface CommentThreadReplyProps extends BaseProps {
+export interface CommentThreadReplyProps
+  extends BaseProps, Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
   /** Who wrote the comment. */
   author: AvatarIdentity;
   /** When it was posted: an ISO 8601 date and time. */
@@ -92,12 +93,18 @@ function useMenuEntries({
   ];
 }
 
+type TimeOptions = Pick<CommentThreadReplyProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
+
 /** The author, the live time and the edited marker. */
 function CommentAuthor({
   author,
   time,
   isEdited,
-}: Pick<CommentThreadReplyProps, 'author' | 'time'> & { isEdited: boolean }) {
+  timeOptions,
+}: Pick<CommentThreadReplyProps, 'author' | 'time'> & {
+  isEdited: boolean;
+  timeOptions: TimeOptions;
+}) {
   const strings = useUiStrings();
   return (
     <UserIdentity
@@ -106,11 +113,7 @@ function CommentAuthor({
       className={hooks.slotClass('author')}
       description={
         <>
-          <RelativeTime
-            value={time}
-            placeholder={strings.unknownTime}
-            className={hooks.slotClass('time')}
-          />
+          <Attribution time={time} {...timeOptions} className={hooks.slotClass('time')} />
           {isEdited ? (
             <>
               {' '}
@@ -194,6 +197,9 @@ export function CommentThreadReply({
   onEdit,
   onDelete,
   renderEditor = DefaultEditor,
+  fallbackAfterDays,
+  getNow,
+  timeZone,
   className,
   ...rest
 }: CommentThreadReplyProps) {
@@ -213,7 +219,12 @@ export function CommentThreadReply({
       aria-label={getDisplayName(author.name, strings.unnamed)}
     >
       <div {...hooks.slot('header')}>
-        <CommentAuthor author={author} time={time} isEdited={isEdited} />
+        <CommentAuthor
+          author={author}
+          time={time}
+          isEdited={isEdited}
+          timeOptions={{ fallbackAfterDays, getNow, timeZone }}
+        />
         {isReadOnly ? null : (
           <CommentMenu
             actions={actions}
