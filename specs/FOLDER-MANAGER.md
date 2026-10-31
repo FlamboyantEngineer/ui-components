@@ -94,6 +94,13 @@ A secondary click on a folder or root row shall select it (keeping a multiple se
 Implementation: `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
 
+### UIC-FOLDER-MANAGER-2.9 - Revoked edits
+
+An edit that is not pending shall end without calling back once its folder (a rename) or its parent (a new folder) leaves `folders`, or its `onRename` or `onCreate` goes. The manager is no longer busy, and focus that fell to the page with the name field moves to a selected folder still present, else the root row. The folder coming back does not reopen the field.
+
+Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/use-folder-manager.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`
+
 ## UIC-FOLDER-MANAGER-3 - Reordering
 
 ### UIC-FOLDER-MANAGER-3.1 - Moves
