@@ -412,7 +412,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Problems and hover tips"
-        description="Problems are underlined; rest the pointer on one, or on basket or pick, for a tip. F8 and Shift+F8 move between problems."
+        description="Problems are underlined; rest the pointer on one, or on basket or pick, for a tip. F8 and Shift+F8 move between problems. The tip follows the pointer without rendering the highlighted copy again."
       >
         <ProblemsEditor />
       </LabSection>
