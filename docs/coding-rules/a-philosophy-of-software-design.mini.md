@@ -1,3 +1,6 @@
+<!-- Vendored unchanged from https://github.com/ciembor/agent-rules-books at a7d7649044505b9c377c8dca28d2d6a543bc7f8c (a-philosophy-of-software-design/a-philosophy-of-software-design.mini.md). -->
+<!-- MIT License, Copyright (c) 2026 Maciej Ciemborowicz: the full notice is LICENSE.agent-rules-books in this folder and must travel with any copy of this file. -->
+
 # OBEY A Philosophy of Software Design by John Ousterhout
 
 ## When to use
