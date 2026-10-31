@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -80,5 +80,28 @@ describe('Table summary row', { timeout: 15_000 }, () => {
     expect(container.querySelector('.ui-table__footer')).toBeNull();
     const { container: empty } = renderFruit({ rows: [] });
     expect(empty.querySelector('.ui-table__footer')).toBeNull();
+  });
+
+  it('UIC-TABLE-12.1 UIC-TABLE-7.3 keeps the summary row of a virtualized table out of view on the page', () => {
+    // React Aria's virtualizer treats an unmocked test DOM as infinitely large.
+    const sizes = { clientWidth: 600, clientHeight: 200 };
+    for (const [name, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
+    }
+    const many = Array.from({ length: 500 }, (_, index) => ({
+      id: `fruit-${index}`,
+      name: `Fruit ${index + 1}`,
+      weight: 1,
+    }));
+    try {
+      renderFruit({ rows: many, virtualized: true, rowHeight: 28 });
+      const footer = requireDefined(document.querySelector('.ui-table__footer'));
+      expect(within(footer as HTMLElement).getByRole('row')).toHaveTextContent('500 fruit500 g');
+      expect(screen.queryByRole('row', { name: /Fruit 500/ })).not.toBeInTheDocument();
+    } finally {
+      for (const name of Object.keys(sizes)) {
+        Reflect.deleteProperty(HTMLElement.prototype, name);
+      }
+    }
   });
 });

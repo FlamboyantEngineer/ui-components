@@ -205,7 +205,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Virtualized"
-      description="3,000 stores, each a row group; only the rows in view are rendered."
+      description="3,000 stores, each a row group; only the rows in view are rendered, plus the totals row, which stays in the document while out of view."
     >
       <div data-lab-demo="virtualized" style={{ height: 320 }}>
         <PivotTable

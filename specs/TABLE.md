@@ -276,9 +276,9 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-7.3 - Virtualization
 
-`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer, are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`), and scrolling reaches the last row. The stylesheet bounds the scroll area's height.
+`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer and the summary row ([UIC-TABLE-12.1](#uic-table-121---summary-row)), are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`), and scrolling reaches the last row. The stylesheet bounds the scroll area's height.
 
-Implementation: `src/components/table/table.tsx`, `src/components/table/use-table-grid.ts`
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-layout.ts`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ## UIC-TABLE-8 - Column layout
@@ -419,9 +419,9 @@ Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.
 
 ### UIC-TABLE-12.1 - Summary row
 
-When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, takes no position among nested rows (`aria-posinset`, `aria-setsize`), and a notice hides it.
+When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, takes no position among nested rows (`aria-posinset`, `aria-setsize`), and a notice hides it. A virtualized table keeps the summary row in the document wherever it is scrolled, so its row group always holds the row.
 
-Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-layout.ts`, `src/core/content-strings.ts`
 Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-12.2 - Loading more

@@ -56,8 +56,6 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
   },
   'pivot-table': {
     'th-has-data-cells': 'The empty pivot has headers and no data cells.',
-    'aria-required-children':
-      'Known defect #703: the empty pivot renders an empty footer row group.',
   },
   board: {
     'aria-required-children': "An empty column's virtualized card grid has no rows.",

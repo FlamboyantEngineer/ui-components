@@ -120,7 +120,7 @@ test.describe('Pivot Table lab', () => {
     await lab.expectAccessible('[data-lab-field="sales"]');
   });
 
-  test('UIC-PIVOT-TABLE-2.8 renders a window of 3,000 row groups and scrolls to the last one', async ({
+  test('UIC-PIVOT-TABLE-2.8 UIC-TABLE-12.1 renders a window of 3,000 row groups and scrolls to the last one', async ({
     page,
     lab,
   }) => {
@@ -133,6 +133,8 @@ test.describe('Pivot Table lab', () => {
     );
     await expect(grid.getByRole('rowheader', { name: 'Store 0001' })).toBeVisible();
     expect(await grid.getByRole('row').count()).toBeLessThan(60);
+    // The summary row stays in the document while it is out of view.
+    await expect(grid.locator('.ui-table__footer').getByRole('row')).toHaveCount(1);
     await demo
       .locator('.ui-table__scroll')
       .evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
