@@ -6,7 +6,7 @@
 
 ### UIC-RELATIVE-TIME-1.1 - Time element
 
-`RelativeTime` shall render a `ui-relative-time` `<time>` element whose `dateTime` is `value` as given, an ISO 8601 date (`YYYY-MM-DD`) or date and time (local, or with an offset or `Z`, read as the local wall time of its instant). It publishes `data-relation` (`past`, `present` or `future`) and `data-format`: `relative` while the text reads relative to now, `absolute` once it reads as the absolute date.
+`RelativeTime` shall render a `ui-relative-time` `<time>` element whose `dateTime` is `value` as given, an ISO 8601 date (`YYYY-MM-DD`) or date and time (local, or with an offset, `Z` or a bracketed zone). A value with an offset or a zone keeps its exact instant, also in an hour that daylight saving time repeats, and reads on the local calendar day of that instant; a value with neither is local wall time, its first occurrence when the hour repeats. It publishes `data-relation` (`past`, `present` or `future`) and `data-format`: `relative` while the text reads relative to now, `absolute` once it reads as the absolute date.
 
 Implementation: `src/components/relative-time/relative-time.tsx`, `src/utils/relative-time.ts`
 Verification: `src/components/relative-time/relative-time.test.tsx`, `e2e/relative-time.spec.ts`

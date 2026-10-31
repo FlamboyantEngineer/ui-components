@@ -71,13 +71,19 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 
-/** A date, or a date and time read as local wall time (an offset or zone converts to it). */
+/**
+ * A date, or a date and time with its instant and the local calendar date of that instant. A value
+ * with an offset or a zone keeps its exact instant, also in an hour that daylight saving time
+ * repeats; a value without either is local wall time.
+ */
 function parseValue(value: string): ParsedValue | null {
   const date = parseIsoDate(value);
   if (date) return { date, instant: null };
-  const dateTime = parseIsoDateTime(value);
+  const zone = getLocalTimeZone();
+  const dateTime = parseIsoDateTime(value, zone);
   if (!dateTime) return null;
-  return { date: toCalendarDate(dateTime), instant: dateTime.toDate(getLocalTimeZone()) };
+  // Zoned in `zone`, so the instant is exact; `toDate` reads `zone` only for a floating value.
+  return { date: toCalendarDate(dateTime), instant: dateTime.toDate(zone) };
 }
 
 /** The local calendar day of a moment. */
