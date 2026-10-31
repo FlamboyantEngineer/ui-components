@@ -62,8 +62,13 @@ test.describe('Loading Overlay lab', () => {
     const input = demo.getByRole('textbox', { name: 'City' });
     const toggle = demo.getByRole('button', { name: 'Start loading' });
     await toggle.click();
-    await expect(region).toHaveAttribute('aria-busy', 'true');
+    await expect(region.locator('.ui-loading-region__content')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
     await expect(demo.getByRole('status')).toContainText('Saving city');
+    await expect(region).not.toHaveAttribute('aria-busy');
+    await expect(demo.locator('[aria-busy] [role="status"]')).toHaveCount(0);
     await expect(region.locator('.ui-loading-region__content')).toHaveAttribute('inert', '');
     expect(
       await input.evaluate((node: HTMLElement) => {
@@ -75,7 +80,7 @@ test.describe('Loading Overlay lab', () => {
     const content = await region.locator('.ui-loading-region__content').boundingBox();
     expect(overlay).toEqual(content);
     await demo.getByRole('button', { name: 'Stop loading' }).click();
-    await expect(region).not.toHaveAttribute('aria-busy');
+    await expect(region.locator('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     await input.focus();
     await expect(input).toBeFocused();
     await lab.expectAccessible();
@@ -93,9 +98,12 @@ test.describe('Loading Overlay lab', () => {
     await page.keyboard.press('Tab');
     await expect(apply).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(region).toHaveAttribute('aria-busy', 'true');
+    await expect(region.locator('.ui-loading-region__content')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
     await expect(region).toBeFocused();
-    await expect(region).not.toHaveAttribute('aria-busy');
+    await expect(region.locator('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     await expect(apply).toBeFocused();
     await expect(region).not.toHaveAttribute('tabindex');
   });
@@ -124,7 +132,7 @@ test.describe('Loading Overlay lab', () => {
     await expect(cover).not.toHaveAttribute('data-entering');
     await demo.getByRole('button', { name: 'Stop loading' }).click();
     await expect(cover).toHaveAttribute('data-exiting', 'true');
-    await expect(demo.locator('.ui-loading-region')).not.toHaveAttribute('aria-busy');
+    await expect(demo.locator('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     expect(await cover.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe('none');
     expect(await finish()).toBeGreaterThan(0);
     await expect(cover).toHaveCount(0);
@@ -142,7 +150,7 @@ test.describe('Loading Overlay lab', () => {
     const region = demo.locator('.ui-loading-region');
     await demo.getByRole('button', { name: 'Start searching' }).click();
     await page.clock.runFor(400);
-    await expect(region).not.toHaveAttribute('aria-busy');
+    await expect(region.locator('.ui-loading-region__content')).not.toHaveAttribute('aria-busy');
     await expect(region.locator('.ui-loading-overlay')).toHaveCount(0);
     await demo.getByRole('button', { name: 'Stop searching' }).click();
     await page.clock.runFor(1000);
@@ -150,7 +158,10 @@ test.describe('Loading Overlay lab', () => {
 
     await demo.getByRole('button', { name: 'Start searching' }).click();
     await page.clock.runFor(500);
-    await expect(region).toHaveAttribute('aria-busy', 'true');
+    await expect(region.locator('.ui-loading-region__content')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
     await expect(region.getByRole('status')).toContainText('Searching recipes');
     await expect(region.locator('.ui-loading-region__content')).toHaveAttribute('inert', '');
     // Axe times itself with timers, so the clock runs again before checking.

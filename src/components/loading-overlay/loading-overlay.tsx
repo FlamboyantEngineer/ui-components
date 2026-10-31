@@ -233,7 +233,7 @@ export function LoadingOverlay({
 }
 
 /**
- * A bounded region that blocks its own content while loading: it is marked busy, its content is
+ * A bounded region that blocks its own content while loading: its content is marked busy and made
  * inert (no pointer, focus or assistive-technology access) and a `LoadingOverlay` covers it; focus
  * that was in the content waits on the region and returns once loading ends. With
  * `delay` all of it waits until the work has lasted that long; the overlay stays mounted through its
@@ -260,10 +260,15 @@ export function LoadingRegion({
       {...regionHooks.root({ className, data: { loading: isBlocked } })}
       id={id}
       ref={rootRef}
-      aria-busy={isBlocked || undefined}
       tabIndex={isBlocked ? -1 : undefined}
     >
-      <div {...regionHooks.slot('content')} ref={contentRef} inert={isBlocked || undefined}>
+      {/* Only the content is busy: a busy ancestor would hold back the card's announcement. */}
+      <div
+        {...regionHooks.slot('content')}
+        ref={contentRef}
+        aria-busy={isBlocked || undefined}
+        inert={isBlocked || undefined}
+      >
         {children}
       </div>
       {isMounted ? (
