@@ -2,6 +2,14 @@
 // parser implies (specs/HTML-MARKUP.md). Policy filtering happens afterwards in sanitize-html.ts.
 
 import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+import {
+  closeOpen,
+  createOpenElements,
+  currentOpen,
+  findOpen,
+  pushOpen,
+  type OpenElements,
+} from '../../utils/open-elements.js';
 
 export interface RawElement {
   tag: string;
@@ -111,44 +119,40 @@ const impliedEnds: Readonly<Record<string, ImpliedEnd>> = {
   ...Object.fromEntries(headings.map((tag) => [tag, impliedEnd(headings.join(' '), 'p')])),
 };
 
-function current(stack: RawElement[]): RawElement {
-  return stack[stack.length - 1] as RawElement;
-}
+type Stack = OpenElements<RawElement>;
 
 /** Closes the nearest open element the rule names, unless a boundary comes first. */
-function applyImpliedEnd(stack: RawElement[], rule: ImpliedEnd): void {
-  for (let index = stack.length - 1; index > 0; index -= 1) {
-    const tag = (stack[index] as RawElement).tag;
-    if (rule.closes.has(tag)) {
-      stack.length = index;
-      return;
-    }
-    if (rule.stopAt.has(tag)) return;
-  }
+function applyImpliedEnd(stack: Stack, rule: ImpliedEnd): void {
+  const at = findOpen(stack, rule.closes);
+  if (at > 0 && at >= findOpen(stack, rule.stopAt)) closeOpen(stack, at);
 }
 
-function openElement(stack: RawElement[], token: MarkupOpenToken): void {
+function appendElement(stack: Stack, element: RawElement): void {
+  currentOpen(stack).children.push(element);
+}
+
+function openElement(stack: Stack, token: MarkupOpenToken): void {
   const tag = token.tag.toLowerCase();
   if (paragraphClosers.has(tag)) applyImpliedEnd(stack, paragraphEnd);
   const rule = impliedEnds[tag];
   if (rule) applyImpliedEnd(stack, rule);
-  if (tag === 'tr' && current(stack).tag === 'table') {
+  if (tag === 'tr' && currentOpen(stack).tag === 'table') {
     const body: RawElement = { tag: 'tbody', attributes: {}, children: [] };
-    current(stack).children.push(body);
-    stack.push(body);
+    appendElement(stack, body);
+    pushOpen(stack, body, body.tag);
   }
   const element: RawElement = { tag, attributes: token.attributes, children: [] };
-  current(stack).children.push(element);
-  if (!token.isSelfClosing && !voidElements.has(tag)) stack.push(element);
+  appendElement(stack, element);
+  if (!token.isSelfClosing && !voidElements.has(tag)) pushOpen(stack, element, tag);
 }
 
-function closeElement(stack: RawElement[], tag: string): void {
-  const at = stack.findLastIndex((element, index) => index > 0 && element.tag === tag);
-  if (at > 0) stack.length = at;
+function closeElement(stack: Stack, tag: string): void {
+  const at = findOpen(stack, [tag]);
+  if (at > 0) closeOpen(stack, at);
 }
 
-function addText(stack: RawElement[], text: string): void {
-  const parent = current(stack);
+function addText(stack: Stack, text: string): void {
+  const parent = currentOpen(stack);
   if (tableStructure.has(parent.tag)) return;
   const last = parent.children[parent.children.length - 1];
   if (typeof last === 'string') parent.children[parent.children.length - 1] = last + text;
@@ -163,7 +167,7 @@ function addText(stack: RawElement[], text: string): void {
  */
 export function buildHtmlTree(markup: string): RawNode[] {
   const root: RawElement = { tag: '#fragment', attributes: {}, children: [] };
-  const stack = [root];
+  const stack = createOpenElements(root);
   const tokens = skipDroppedElements(tokenizeMarkup(markup, { rawTextElements }), {
     isDropped: (token) => blockedElements.has(token.tag.toLowerCase()),
     isEmpty: (token) => token.isSelfClosing || voidElements.has(token.tag.toLowerCase()),

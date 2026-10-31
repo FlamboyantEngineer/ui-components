@@ -41,7 +41,7 @@ interface Scanner {
   rawTextElements: ReadonlySet<string> | undefined;
 }
 
-const tagPattern = /<(\/)?([A-Za-z_][\w:.-]*)((?:[^<>"']|"[^"]*"|'[^']*')*?)(\/)?>/y;
+const tagNamePattern = /[A-Za-z_][\w:.-]*/y;
 const attributePattern = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
 const entityPattern = /&(#x[0-9a-f]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});/gi;
 
@@ -179,21 +179,43 @@ function readRawText({ markup, tokens }: Scanner, tag: string, from: number): nu
   return match ? closer.lastIndex : markup.length;
 }
 
+/**
+ * Index of the `>` that ends a tag's attributes from `from`, skipping quoted values, or -1 when
+ * a `<` outside quotes, an unclosed quote or the end of the markup comes first. One pass, so an
+ * unterminated tag costs its length once.
+ */
+function findTagEnd(markup: string, from: number): number {
+  for (let index = from; index < markup.length; index += 1) {
+    const char = markup[index];
+    if (char === '>') return index;
+    if (char === '<') return -1;
+    if (char === '"' || char === "'") {
+      index = markup.indexOf(char, index + 1);
+      if (index === -1) return -1;
+    }
+  }
+  return -1;
+}
+
 function readTag(scanner: Scanner, open: number): number {
   const { markup, tokens } = scanner;
-  tagPattern.lastIndex = open;
-  const match = tagPattern.exec(markup);
-  if (!match) {
+  const isClosing = markup[open + 1] === '/';
+  tagNamePattern.lastIndex = open + (isClosing ? 2 : 1);
+  const name = tagNamePattern.exec(markup);
+  const nameEnd = tagNamePattern.lastIndex;
+  const close = name ? findTagEnd(markup, nameEnd) : -1;
+  if (!name || close === -1) {
     tokens.push({ type: 'text', text: '<' });
     return open + 1;
   }
-  const end = tagPattern.lastIndex;
-  const [, closing, tag = '', attributeSource = '', selfClosing] = match;
-  if (closing) {
+  const tag = name[0];
+  const end = close + 1;
+  if (isClosing) {
     tokens.push({ type: 'close', tag });
     return end;
   }
-  const isSelfClosing = Boolean(selfClosing);
+  const isSelfClosing = close > nameEnd && markup[close - 1] === '/';
+  const attributeSource = markup.slice(nameEnd, isSelfClosing ? close - 1 : close);
   tokens.push({ type: 'open', tag, attributes: parseAttributes(attributeSource), isSelfClosing });
   if (isSelfClosing || !scanner.rawTextElements?.has(tag.toLowerCase())) return end;
   return readRawText(scanner, tag, end);

@@ -2,7 +2,6 @@
 // autolinks and line breaks, with CommonMark's delimiter and bracket rules (specs/MARKDOWN.md).
 
 import { decodeEntities } from '../../utils/markup.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 import {
   isEscapable,
@@ -17,38 +16,32 @@ import {
 } from './markdown-inline-syntax.js';
 import { toPlainText } from './markdown-headings.js';
 import type { MarkdownInline } from './markdown-nodes.js';
+import {
+  itemText,
+  resolveEmphasis,
+  toNodes,
+  type Bracket,
+  type Item,
+} from './markdown-emphasis.js';
 
 /** Link reference definitions by normalized label. */
 type MarkdownDefinitions = ReadonlyMap<string, Omit<LinkTarget, 'end'>>;
-
-interface Delimiter {
-  kind: 'delimiter';
-  char: string;
-  count: number;
-  original: number;
-  canOpen: boolean;
-  canClose: boolean;
-}
-
-interface Bracket {
-  kind: 'bracket';
-  isImage: boolean;
-  isActive: boolean;
-  /** Index of the label's first character. */
-  start: number;
-}
-
-type Item = { kind: 'node'; node: MarkdownInline } | Delimiter | Bracket;
 
 interface InlineState {
   text: string;
   at: number;
   items: Item[];
+  /** The open brackets, innermost last, with their item positions. */
+  brackets: { bracket: Bracket; at: number }[];
+  /** Brackets below this depth are inactive: a link closed above them. */
+  activeDepth: number;
   buffer: string;
   definitions: MarkdownDefinitions;
 }
 
 const imageSchemes = ['http', 'https'];
+/** CommonMark's longest link label. */
+const maxLabelLength = 999;
 const entity = /^&(?:#x[0-9a-f]{1,6}|#[0-9]{1,7}|[a-z][a-z0-9]{1,31});/i;
 
 function skipSpaces(text: string, at: number): number {
@@ -66,63 +59,6 @@ function push(state: InlineState, node: MarkdownInline, end: number): true {
   state.items.push({ kind: 'node', node });
   state.at = end;
   return true;
-}
-
-function itemText(item: Delimiter | Bracket): string {
-  if (item.kind === 'delimiter') return item.char.repeat(item.count);
-  return item.isImage ? '![' : '[';
-}
-
-/** The items as nodes: leftover delimiters and brackets become text, adjacent texts merge. */
-function toNodes(items: readonly Item[]): MarkdownInline[] {
-  const nodes: MarkdownInline[] = [];
-  for (const item of items) {
-    const node: MarkdownInline =
-      item.kind === 'node' ? item.node : { type: 'text', text: itemText(item) };
-    const last = nodes[nodes.length - 1];
-    if (node.type === 'text' && last?.type === 'text') {
-      nodes[nodes.length - 1] = { type: 'text', text: last.text + node.text };
-    } else if (node.type !== 'text' || node.text) {
-      nodes.push(node);
-    }
-  }
-  return nodes;
-}
-
-function isOpenerFor(item: Item, closer: Delimiter): item is Delimiter {
-  if (item.kind !== 'delimiter' || item.char !== closer.char || !item.canOpen) return false;
-  if (closer.char === '~') return item.count === closer.count;
-  const isOddMatch =
-    (item.canClose || closer.canOpen) &&
-    (item.original + closer.original) % 3 === 0 &&
-    !(item.original % 3 === 0 && closer.original % 3 === 0);
-  return !isOddMatch;
-}
-
-/** Pairs delimiter runs into emphasis, strong and strikethrough nodes, innermost first. */
-function processEmphasis(items: Item[]): void {
-  for (let index = 0; index < items.length; index += 1) {
-    const closer = items[index] as Item;
-    if (closer.kind !== 'delimiter' || !closer.canClose) continue;
-    const openerAt = items.findLastIndex(
-      (item, position) => position < index && isOpenerFor(item, closer),
-    );
-    if (openerAt === -1) continue;
-    const opener = items[openerAt] as Delimiter;
-    const use = closer.char === '~' ? closer.count : Math.min(2, opener.count, closer.count);
-    const type = closer.char === '~' ? 'strikethrough' : use === 2 ? 'strong' : 'emphasis';
-    const inner = items.splice(openerAt + 1, index - openerAt - 1);
-    items.splice(openerAt + 1, 0, { kind: 'node', node: { type, children: toNodes(inner) } });
-    opener.count -= use;
-    closer.count -= use;
-    let closerAt = openerAt + 2;
-    if (opener.count === 0) {
-      items.splice(openerAt, 1);
-      closerAt -= 1;
-    }
-    if (closer.count === 0) items.splice(closerAt, 1);
-    index = closerAt - 1;
-  }
 }
 
 function readDelimiter(state: InlineState): boolean {
@@ -155,7 +91,9 @@ function readBracketTarget(state: InlineState, bracket: Bracket): LinkTarget | n
     const inline = readLinkTarget(text, after);
     if (inline) return inline;
   }
+  if (state.definitions.size === 0) return null;
   const reference = text[after] === '[' ? readLinkLabel(text, after) : null;
+  if (!reference?.label.trim() && at - bracket.start > maxLabelLength) return null;
   const label = reference?.label.trim() ? reference.label : text.slice(bracket.start, at);
   const definition = state.definitions.get(normalizeLabel(label));
   return definition ? { ...definition, end: reference?.end ?? after } : null;
@@ -163,8 +101,7 @@ function readBracketTarget(state: InlineState, bracket: Bracket): LinkTarget | n
 
 /** Link or image nodes for a closed bracket; an unsafe URL leaves its content as plain nodes. */
 function createLinkNodes(bracket: Bracket, target: LinkTarget, inner: Item[]): MarkdownInline[] {
-  processEmphasis(inner);
-  const children = toNodes(inner);
+  const children = toNodes(resolveEmphasis(inner));
   const { href, title } = target;
   if (bracket.isImage) {
     const alt = toPlainText(children);
@@ -177,11 +114,13 @@ function createLinkNodes(bracket: Bracket, target: LinkTarget, inner: Item[]): M
 
 function closeBracket(state: InlineState): boolean {
   flush(state);
-  const { items } = state;
-  const at = items.findLastIndex((item) => item.kind === 'bracket');
-  const bracket = items[at];
-  if (bracket?.kind !== 'bracket') return false;
-  const target = bracket.isActive ? readBracketTarget(state, bracket) : null;
+  const { items, brackets } = state;
+  const open = brackets.pop();
+  const isActive = brackets.length >= state.activeDepth;
+  state.activeDepth = Math.min(state.activeDepth, brackets.length);
+  if (!open) return false;
+  const { bracket, at } = open;
+  const target = isActive ? readBracketTarget(state, bracket) : null;
   if (!target) {
     items[at] = { kind: 'node', node: { type: 'text', text: itemText(bracket) } };
     return false;
@@ -189,12 +128,7 @@ function closeBracket(state: InlineState): boolean {
   const nodes = createLinkNodes(bracket, target, items.splice(at + 1));
   items.pop();
   for (const node of nodes) items.push({ kind: 'node', node });
-  if (!bracket.isImage) {
-    for (let index = 0; index < at; index += 1) {
-      const item = requireDefined(items[index]);
-      if (item.kind === 'bracket') item.isActive = false;
-    }
-  }
+  if (!bracket.isImage) state.activeDepth = brackets.length;
   state.at = target.end;
   return true;
 }
@@ -236,12 +170,14 @@ function readEntity(state: InlineState): boolean {
   return true;
 }
 
+/** Ends a line. The text before it is flushed, so the buffer only ever holds one line. */
 function readNewline(state: InlineState): boolean {
-  const isHard = / {2,}$/.test(state.buffer);
+  const isHard = state.buffer.endsWith('  ');
   state.buffer = state.buffer.trimEnd();
   const next = skipSpaces(state.text, state.at + 1);
   if (isHard) return push(state, { type: 'lineBreak' }, next);
   state.buffer += '\n';
+  flush(state);
   state.at = next;
   return true;
 }
@@ -249,7 +185,9 @@ function readNewline(state: InlineState): boolean {
 function openBracket(state: InlineState, isImage: boolean): true {
   flush(state);
   const start = state.at + (isImage ? 2 : 1);
-  state.items.push({ kind: 'bracket', isImage, isActive: true, start });
+  const bracket: Bracket = { kind: 'bracket', isImage, start };
+  state.brackets.push({ bracket, at: state.items.length });
+  state.items.push(bracket);
   state.at = start;
   return true;
 }
@@ -273,7 +211,15 @@ export function parseMarkdownInlines(
   text: string,
   definitions: MarkdownDefinitions,
 ): MarkdownInline[] {
-  const state: InlineState = { text, at: 0, items: [], buffer: '', definitions };
+  const state: InlineState = {
+    text,
+    at: 0,
+    items: [],
+    brackets: [],
+    activeDepth: 0,
+    buffer: '',
+    definitions,
+  };
   while (state.at < text.length) {
     const char = text[state.at] as string;
     if (readers[char]?.(state)) continue;
@@ -281,6 +227,5 @@ export function parseMarkdownInlines(
     state.at += 1;
   }
   flush(state);
-  processEmphasis(state.items);
-  return toNodes(state.items);
+  return toNodes(resolveEmphasis(state.items));
 }
