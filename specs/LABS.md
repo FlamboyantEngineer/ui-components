@@ -119,7 +119,7 @@ Verification: `e2e/lab-harness.spec.ts`
 
 ### UIC-LABS-3.4 - Accessible in both themes
 
-Every lab shall pass axe with the reference stylesheet in its light theme and in `?theme=dark`, to catch automated accessibility regressions and reference-palette contrast failures in either theme.
+Every lab shall pass axe with the reference stylesheet in its light theme and in `?theme=dark`, to catch automated accessibility regressions and reference-palette contrast failures in either theme. One page load scans both, switching the theme in place through the lab chrome.
 
 Implementation: `labs/reference/base.css`
 Verification: `e2e/accessibility.spec.ts`
