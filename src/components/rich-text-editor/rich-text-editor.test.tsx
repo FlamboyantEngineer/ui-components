@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { collectImports } from '../../../test/module-imports.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { getFieldUndo } from '../field/field.js';
 import {
@@ -92,6 +93,29 @@ describe('RichTextEditor', () => {
     ];
     expect(importers.filter((file) => !owners.some((owner) => file.startsWith(owner)))).toEqual([]);
     expect(getContentOf(renderEditor().container)).toHaveClass('ProseMirror');
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-1.2 shares one copy of its engine glue with the rich composer', () => {
+    const composer = join(process.cwd(), 'src/components/message-composer/rich');
+    const sources = readdirSync(composer)
+      .filter((file) => /\.tsx?$/.test(file) && !file.includes('.test.'))
+      .map((file) => readFileSync(join(composer, file), 'utf8'));
+    for (const name of ['decoratePlaceholder', 'useSyncedEditorState', 'toPixels']) {
+      expect(sources.filter((source) => source.includes(`function ${name}`))).toEqual([]);
+    }
+    const editorImports = [
+      ...collectImports(join(composer, 'rich-editor.tsx')),
+      ...collectImports(join(composer, 'rich-content.tsx')),
+    ];
+    expect(editorImports).toContain(
+      join(process.cwd(), 'src/components/rich-text-editor/rich-text-editor.tsx'),
+    );
+    expect(editorImports).toContain(join(process.cwd(), 'src/utils/read-line-box.ts'));
+    const entry = readFileSync(
+      join(process.cwd(), 'src/components/rich-text-editor/index.ts'),
+      'utf8',
+    );
+    expect(entry).not.toMatch(/useSyncedEditorState|decoratePlaceholder|useEditable/);
   });
 
   it('UIC-RICH-TEXT-EDITOR-1.3 reports each edit as JSON and starts from an empty paragraph', async () => {
