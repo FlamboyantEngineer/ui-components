@@ -41,6 +41,10 @@ export interface FieldStrings {
   tooLong: (maxLength: number) => string;
   /** The message of a text that does not match its expected format. */
   patternMismatch: string;
+  /** The message of an email field whose text is not an email address. */
+  emailMismatch: string;
+  /** The message of a URL field whose text is not an absolute URL. */
+  urlMismatch: string;
   /** Names a button that puts a field's committed value back, from the field's label. */
   restoreValue: (label: string) => string;
   /** Names a field's help button, from the field's label. */

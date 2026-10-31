@@ -421,6 +421,8 @@
   "tooShort": "{minLength, plural, one {Use at least # character.} other {Use at least # characters.}}",
   "tooLong": "{maxLength, plural, one {Use # character or fewer.} other {Use # characters or fewer.}}",
   "patternMismatch": "Enter a value in the expected format.",
+  "emailMismatch": "Enter an email address.",
+  "urlMismatch": "Enter a full URL, such as https://example.com.",
   "restoreValue": "Restore {label}",
   "fieldHelp": "Help for {label}",
   "fieldActions": "{label} actions",

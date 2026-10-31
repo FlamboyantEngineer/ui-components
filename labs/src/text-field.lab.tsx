@@ -269,6 +269,14 @@ mountLab(
         defaultValue={'OK\nbad\n42'}
         data-lab-field="multiline-rules"
       />
+      <TextField
+        label="Homepage"
+        type="url"
+        description="A URL field takes an absolute address."
+        defaultValue="example.com"
+        validationMode="immediate"
+        data-lab-field="url-check"
+      />
     </LabSection>
     <LabSection
       title="Dirty, restore, undo and the field menu"
