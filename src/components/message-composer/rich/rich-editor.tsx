@@ -1,10 +1,15 @@
 'use client';
 
 import { ProseMirror } from '@handlewithcare/react-prosemirror';
-import type { EditorState, Transaction } from 'prosemirror-state';
-import { Decoration, DecorationSet, type EditorView } from 'prosemirror-view';
-import { useCallback, useMemo, useState, type RefObject } from 'react';
+import type { EditorState } from 'prosemirror-state';
+import type { EditorView } from 'prosemirror-view';
+import { useCallback, useMemo, type RefObject } from 'react';
 import { useLatest } from '../../../utils/use-latest.js';
+import {
+  decoratePlaceholder,
+  useEditable,
+  useSyncedEditorState,
+} from '../../rich-text-editor/rich-text-editor.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
 import { isSameMessage, type MessageComposerMessage } from '../composer-message.js';
 import type { ComposerKeys } from '../composer-keys.js';
@@ -36,48 +41,24 @@ export interface RichComposerEditorProps {
 
 const placeholderClass = hooks.slotClass('placeholder');
 
-/** Marks the empty document's only line with the placeholder text. */
-function decoratePlaceholder(state: EditorState, placeholder: string | undefined): DecorationSet {
-  const { doc } = state;
-  const first = doc.firstChild;
-  const isEmpty = doc.childCount === 1 && first?.isTextblock && first.content.size === 0;
-  if (!placeholder || !first || !isEmpty) return DecorationSet.empty;
-  const attrs = { class: placeholderClass, 'data-placeholder': placeholder };
-  return DecorationSet.create(doc, [Decoration.node(0, first.nodeSize, attrs)]);
-}
-
 /**
  * The engine state, kept in step with the composer's message: an edit reports the new message, and
  * a message that differs from the shown document (sent, recalled, edited, restored) replaces it
  * with a fresh history and the caret at the end.
  */
-function useSyncedEditorState(
+function useComposerEditorState(
   value: MessageComposerMessage,
-  onEdit: (value: MessageComposerMessage) => void,
+  onChange: (value: MessageComposerMessage) => void,
 ) {
   const plugins = useMemo(() => createComposerPlugins(composerSchema), []);
-  const [state, setState] = useState(() =>
-    createComposerState(parseComposerMessage(value), plugins),
-  );
-  const [shown, setShown] = useState(value);
-  if (value !== shown) {
-    setShown(value);
-    if (!isSameMessage(value, serializeComposerDocument(state.doc))) {
-      setState(createComposerState(parseComposerMessage(value), plugins));
-    }
-  }
-  const latestEdit = useLatest(onEdit);
-  const dispatchTransaction = useCallback(
-    (tr: Transaction) => {
-      setState((current) => current.apply(tr));
-      if (!tr.docChanged) return;
-      const next = serializeComposerDocument(tr.doc);
-      setShown(next);
-      latestEdit.current(next);
-    },
-    [latestEdit],
-  );
-  return { state, dispatchTransaction };
+  return useSyncedEditorState({
+    schema: composerSchema,
+    value,
+    onChange,
+    parse: (message) => createComposerState(parseComposerMessage(message), plugins),
+    serialize: serializeComposerDocument,
+    isEqual: isSameMessage,
+  });
 }
 
 /** Pasted files go to `onAttach`; pasted text goes in as plain text, keeping its spacing. */
@@ -107,11 +88,12 @@ function usePasteHandlers(props: RichMessageComposerProps) {
 export function RichComposerEditor(editor: RichComposerEditorProps) {
   const { props, state } = editor;
   const isEditable = !props.isDisabled;
-  const synced = useSyncedEditorState(state.value, state.setValue);
+  const synced = useComposerEditorState(state.value, state.setValue);
   const paste = usePasteHandlers(props);
+  const editable = useEditable(isEditable);
   const { placeholder } = props;
   const decorations = useCallback(
-    (current: EditorState) => decoratePlaceholder(current, placeholder),
+    (current: EditorState) => decoratePlaceholder(current, placeholder, placeholderClass),
     [placeholder],
   );
   const pills = useMemo(
@@ -124,7 +106,7 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
         nodeViewComponents={composerNodeViews}
         state={synced.state}
         dispatchTransaction={synced.dispatchTransaction}
-        editable={() => isEditable}
+        editable={editable}
         decorations={decorations}
         handlePaste={paste.handlePaste}
         handleDrop={paste.handleDrop}

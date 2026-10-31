@@ -16,6 +16,7 @@ import {
 import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../../utils/merge-props.js';
+import { readLineBox } from '../../../utils/read-line-box.js';
 import { useResizeObserver } from '../../../utils/use-resize-observer.js';
 import { CompletionList, type CompletionListItem } from '../../completion-list/completion-list.js';
 import { UserIdentity } from '../../user-identity/user-identity.js';
@@ -38,10 +39,6 @@ import { useRichCompletions, type RichCompletionItem } from './use-rich-completi
 
 type RichCompletions = ReturnType<typeof useRichCompletions>;
 
-function toPixels(value: string | undefined): number {
-  return Number.parseFloat(value ?? '') || 0;
-}
-
 /**
  * Keeps the input between `minRows` and `maxRows` rows of its own line height; past that it
  * scrolls. The limits follow the row counts and, through the input's size, its font metrics.
@@ -49,12 +46,9 @@ function toPixels(value: string | undefined): number {
 function useRowLimits(ref: RefObject<HTMLElement | null>, minRows: number, maxRows: number) {
   const apply = useCallback(() => {
     const element = ref.current;
-    const style = element?.ownerDocument.defaultView?.getComputedStyle(element);
-    if (!element || !style) return;
-    const lineHeight = toPixels(style.lineHeight) || toPixels(style.fontSize) * 1.2 || 16;
-    const padding = toPixels(style.paddingTop) + toPixels(style.paddingBottom);
-    const border = toPixels(style.borderTopWidth) + toPixels(style.borderBottomWidth);
-    const frame = style.boxSizing === 'border-box' ? padding + border : 0;
+    const box = element && readLineBox(element);
+    if (!element || !box) return;
+    const { lineHeight, frame } = box;
     element.style.minHeight = `${minRows * lineHeight + frame}px`;
     element.style.maxHeight = `${maxRows * lineHeight + frame}px`;
   }, [ref, minRows, maxRows]);

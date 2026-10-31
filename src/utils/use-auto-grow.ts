@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, type RefObject } from 'react';
 import { clamp } from './clamp.js';
+import { readLineBox } from './read-line-box.js';
 import { useElementSize } from './use-element-size.js';
 
 export interface AutoGrowOptions {
@@ -13,18 +14,11 @@ export interface AutoGrowOptions {
   value: string;
 }
 
-function toPixels(value: string): number {
-  return Number.parseFloat(value) || 0;
-}
-
 /** Sets the text area's height to its text's, between the given rows, in its own line height. */
 function fitRows(area: HTMLTextAreaElement, minRows: number, maxRows: number) {
-  const style = area.ownerDocument.defaultView?.getComputedStyle(area);
-  if (!style) return;
-  const lineHeight = toPixels(style.lineHeight) || toPixels(style.fontSize) * 1.2 || 16;
-  const padding = toPixels(style.paddingTop) + toPixels(style.paddingBottom);
-  const border = toPixels(style.borderTopWidth) + toPixels(style.borderBottomWidth);
-  const frame = style.boxSizing === 'border-box' ? padding + border : 0;
+  const box = readLineBox(area);
+  if (!box) return;
+  const { lineHeight, padding, frame } = box;
   area.style.height = '0px';
   const content = clamp(area.scrollHeight - padding, minRows * lineHeight, maxRows * lineHeight);
   area.style.height = `${content + frame}px`;

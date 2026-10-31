@@ -4,12 +4,23 @@ import { useMemo, type ReactNode } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
-import { createEmptyDocument, isDocumentEmpty } from './editor-state.js';
+import {
+  createEditorPlugins,
+  createEditorState,
+  createEmptyDocument,
+  isDocumentEmpty,
+  replaceDocument,
+  toRichTextJson,
+} from './editor-state.js';
 import { EditorSurface, useSyncedEditorState, withEditorHistory } from './editor-surface.js';
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
 import { isRichTextEqual, type RichTextDocument } from './rich-text-document.js';
 import { getEngineSchema } from './engine-schema.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
+
+// The engine glue the rich composer shares (`message-composer/rich`), kept out of the entry point.
+export { decoratePlaceholder } from './editor-state.js';
+export { useEditable, useSyncedEditorState } from './editor-surface.js';
 
 export interface RichTextEditorProps extends FieldInputProps<RichTextDocument> {
   /** The node and mark types the document may hold. Defaults to the default schema. */
@@ -60,11 +71,16 @@ export function RichTextEditor(props: RichTextEditorProps) {
     hasOwnHistory: true,
   });
   const { field, rest } = fieldControl;
-  const editor = useSyncedEditorState(
-    engine,
-    fieldControl.state.value,
-    fieldControl.state.setValue,
-  );
+  const plugins = useMemo(() => createEditorPlugins(engine), [engine]);
+  // A new value is one undo step of the shown history; the documents share unchanged nodes.
+  const editor = useSyncedEditorState({
+    schema: engine,
+    value: fieldControl.state.value,
+    onChange: fieldControl.state.setValue,
+    parse: (value) => createEditorState(engine, value, plugins),
+    serialize: (doc) => toRichTextJson(doc) as RichTextDocument,
+    replace: replaceDocument,
+  });
   const state = withEditorHistory(fieldControl.state, editor);
   return (
     <Field
