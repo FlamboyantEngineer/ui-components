@@ -5,6 +5,7 @@
 
 import { useContext, useId, type FocusEvent, type JSX, type ReactNode } from 'react';
 import { Cell, Row, TableStateContext, type CellRenderProps } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 
 type CellElementProps = JSX.IntrinsicElements['td' | 'div'];
 
@@ -42,7 +43,7 @@ function TableCellElement({
 }
 
 export function renderCellElement(isVirtualized: boolean, isInRange = false, elementId?: string) {
-  return (props: CellElementProps, { id }: CellRenderProps) => (
+  return (props: CellElementProps, { id }: { id?: Key | undefined }) => (
     <TableCellElement
       props={elementId === undefined ? props : { ...props, id: elementId }}
       cellKey={id}

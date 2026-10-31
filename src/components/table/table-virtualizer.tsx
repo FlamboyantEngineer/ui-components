@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { TableLayout } from '../../primitives/index.js';
+import { useState, type ReactNode } from 'react';
+import { TableLayout, Virtualizer } from '../../primitives/index.js';
 
 type VisibleRect = Parameters<TableLayout<unknown>['getVisibleLayoutInfos']>[0];
 type VisibleInfo = ReturnType<TableLayout<unknown>['getVisibleLayoutInfos']>[number];
@@ -58,7 +58,21 @@ function createTableFooterLayout(): TableLayout<unknown> {
   return layout;
 }
 
-/** A virtualized table's layout that keeps its summary row in the document; stable per table. */
-export function useTableFooterLayout(): TableLayout<unknown> {
-  return useState(createTableFooterLayout)[0];
+/**
+ * The virtualizer of a virtualized table: React Aria's table layout at a fixed row height, keeping
+ * the summary row in the document.
+ */
+export function TableVirtualizer({
+  rowHeight,
+  children,
+}: {
+  rowHeight: number;
+  children: ReactNode;
+}) {
+  const [layout] = useState(createTableFooterLayout);
+  return (
+    <Virtualizer layout={layout} layoutOptions={{ rowHeight, headingHeight: rowHeight }}>
+      {children}
+    </Virtualizer>
+  );
 }
