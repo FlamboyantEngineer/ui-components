@@ -105,7 +105,7 @@ const taskList = [
 const guide = [
   '# Orchard guide',
   '',
-  'This guide covers [planting](#planting) and [harvest](#harvest).',
+  'This guide covers [planting](#planting), [harvest](#harvest) and [winter care](#apr%C3%A8s-r%C3%A9colte).',
   '',
   '## Planting',
   '',
@@ -118,6 +118,10 @@ const guide = [
   '## Harvest',
   '',
   'Pick when the fruit lifts away with a gentle twist.',
+  '',
+  '## Après-récolte',
+  '',
+  'Rake the leaves and mulch the young trees before the first frost.',
 ].join('\n');
 
 const unsafe = [
