@@ -34,7 +34,8 @@ function setKeys(value: object): string[] {
   return Object.keys(value).filter((key) => (value as Record<string, unknown>)[key] !== undefined);
 }
 
-function isSameData(left: unknown, right: unknown): boolean {
+/** Whether two JSON-like values hold the same data, an `undefined` key counting as absent. */
+export function isSameData(left: unknown, right: unknown): boolean {
   if (left === right) return true;
   if (typeof left !== 'object' || typeof right !== 'object' || !left || !right) return false;
   if (Array.isArray(left) || Array.isArray(right)) {

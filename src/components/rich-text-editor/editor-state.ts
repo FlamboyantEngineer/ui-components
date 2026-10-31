@@ -9,6 +9,7 @@ import { EditorState, type Plugin } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import {
   isRichTextEqual,
+  isSameData,
   type RichTextAttributes,
   type RichTextDocument,
   type RichTextMark,
@@ -89,13 +90,18 @@ export function createEditorState(
 }
 
 /**
- * The state with its document replaced by `document`, as one step of the undo history of its own,
- * or the same state when the documents are equal.
+ * The state with its document replaced by `document`, its content and its root attributes, as one
+ * step of the undo history of its own, or the same state when the documents are equal.
  */
 export function replaceDocument(state: EditorState, document: RichTextNode): EditorState {
   const next = readDocument(state.schema, document);
   if (next.eq(state.doc)) return state;
-  return state.apply(closeHistory(state.tr.replaceWith(0, state.doc.content.size, next.content)));
+  const { tr } = state;
+  if (!next.content.eq(state.doc.content)) tr.replaceWith(0, state.doc.content.size, next.content);
+  for (const [name, value] of Object.entries(next.attrs)) {
+    if (!isSameData(state.doc.attrs[name], value)) tr.setDocAttribute(name, value);
+  }
+  return state.apply(closeHistory(tr));
 }
 
 /** Marks the empty document's only block with the placeholder text. */
