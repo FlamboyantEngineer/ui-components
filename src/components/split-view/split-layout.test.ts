@@ -9,12 +9,12 @@ import {
   resolveInitialSplitSizes,
   resolveSplitPaneBasis,
   resolveSplitSeparator,
-  type SplitViewPane,
+  type SplitPaneSize,
 } from './split-layout.js';
 
-const three: SplitViewPane[] = [{}, {}, {}];
-const withRail: SplitViewPane[] = [{ unit: 'pixel', minSize: 120, maxSize: 400 }, {}, {}];
-const drawer: SplitViewPane[] = [{}, { collapsible: true, minSize: 20 }];
+const three: SplitPaneSize[] = [{}, {}, {}];
+const withRail: SplitPaneSize[] = [{ unit: 'pixel', minSize: 120, maxSize: 400 }, {}, {}];
+const drawer: SplitPaneSize[] = [{}, { collapsible: true, minSize: 20 }];
 
 describe('split layout', () => {
   it('UIC-SPLIT-VIEW-2.2 shares percent panes, fits bounds and lets the flexible pane fill', () => {
@@ -66,7 +66,7 @@ describe('split layout', () => {
     expect(
       applySplitSeparatorValue(withRail, sizes, { index: 0, available: 900, value: 300 }),
     ).toEqual([300, 50, 50]);
-    const trailing: SplitViewPane[] = [{}, { unit: 'pixel', minSize: 80 }];
+    const trailing: SplitPaneSize[] = [{}, { unit: 'pixel', minSize: 80 }];
     expect(resolveSplitSeparator(trailing, [100, 200], { index: 0, available: 50 })).toMatchObject({
       sized: 1,
       partner: 0,
@@ -77,7 +77,7 @@ describe('split layout', () => {
   });
 
   it('UIC-SPLIT-VIEW-2.5 keeps every pixel pane at its own size when no pane is in percent', () => {
-    const tools: SplitViewPane[] = [
+    const tools: SplitPaneSize[] = [
       { unit: 'pixel', minSize: 50, maxSize: 250 },
       { unit: 'pixel', minSize: 50, maxSize: 250, collapsible: true },
     ];
@@ -109,7 +109,7 @@ describe('split layout', () => {
     expect(isSplitPaneCollapsed(drawer[1], 0)).toBe(true);
     expect(isSplitPaneCollapsed(drawer[1], 20)).toBe(false);
     expect(isSplitPaneCollapsed({}, 0)).toBe(false);
-    const rail: SplitViewPane[] = [
+    const rail: SplitPaneSize[] = [
       { collapsible: true, collapsedSize: 4, minSize: 20 },
       { unit: 'pixel', collapsible: true, minSize: 100 },
     ];
@@ -128,11 +128,11 @@ describe('split layout', () => {
     const sizes = [60, 40];
     expect(collapseSplitPane(drawer, sizes, 0)).toBe(sizes);
     expect(expandSplitPane(drawer, sizes, { index: 1 })).toBe(sizes);
-    const middle: SplitViewPane[] = [{}, { collapsible: true }, {}];
+    const middle: SplitPaneSize[] = [{}, { collapsible: true }, {}];
     expect(collapseSplitPane(middle, [30, 30, 40], 1)).toEqual([30, 0, 70]);
-    const last: SplitViewPane[] = [{}, {}, { collapsible: true }];
+    const last: SplitPaneSize[] = [{}, {}, { collapsible: true }];
     expect(collapseSplitPane(last, [30, 30, 40], 2)).toEqual([30, 70, 0]);
-    const pixel: SplitViewPane[] = [{ unit: 'pixel', collapsible: true, minSize: 100 }, {}];
+    const pixel: SplitPaneSize[] = [{ unit: 'pixel', collapsible: true, minSize: 100 }, {}];
     expect(collapseSplitPane(pixel, [240, 100], 0)).toEqual([0, 100]);
     expect(expandSplitPane(pixel, [0, 100], { index: 0, size: 240 })).toEqual([240, 100]);
   });

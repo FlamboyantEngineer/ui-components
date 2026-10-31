@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useId, useImperativeHandle, useState, type KeyboardEvent } from 'react';
+import { Fragment, useImperativeHandle, useState, type KeyboardEvent } from 'react';
 import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useElementSize } from '../../utils/use-element-size.js';
@@ -134,7 +134,6 @@ export function ResizableSplitView({
   ...props
 }: ResizableSplitViewProps) {
   const strings = useUiStrings();
-  const generatedId = useId();
   const [sizeOptions, rest] = splitSizeProps(props);
   const split = useSplitSizes({ panes, ...sizeOptions });
   const [isResizing, setResizing] = useState(false);
@@ -153,7 +152,7 @@ export function ResizableSplitView({
     expand: split.expand,
     resize: (next) => split.update(next, 'set'),
   }));
-  const ids = panes.map((pane, index) => pane.id ?? `${generatedId}-${index}`);
+  const ids = panes.map((pane) => pane.id);
   const flexible = resolveFlexiblePane(panes);
   const containment = resolveContainment({ grow, fill, clip }, { fill: true, clip: true });
   const data = { orientation, resizable: true, resizing: isResizing, ...containment };

@@ -8,10 +8,8 @@ import { requireDefined } from '../../utils/require-defined.js';
 /** `percent`: a share of the space pixel panes leave. `pixel`: a fixed size the split keeps. */
 export type SplitViewPaneUnit = 'percent' | 'pixel';
 
-/** One pane of a resizable split. Sizes are in the pane's unit. */
-export interface SplitViewPane {
-  /** The pane element's id, named by the separators' `aria-controls`. Generated when omitted. */
-  id?: string | undefined;
+/** How a pane of a resizable split sizes. Sizes are in the pane's unit. */
+export interface SplitPaneSize {
   /** The pane's smallest open size. Percent panes default to 10, pixel panes to 0. */
   minSize?: number | undefined;
   /** The pane's largest size. Percent panes default to 90; pixel panes have no limit. */
@@ -22,6 +20,15 @@ export interface SplitViewPane {
   collapsible?: boolean | undefined;
   /** The size of the collapsed pane. Defaults to 0. */
   collapsedSize?: number | undefined;
+}
+
+/** One pane of a resizable split. */
+export interface SplitViewPane extends SplitPaneSize {
+  /**
+   * The pane's identity and its element's id, named by the separators' `aria-controls`: a pane keeps
+   * its content and its size as panes are inserted, removed or reordered around it.
+   */
+  id: string;
 }
 
 /** A separator of a split: the pane its value sizes, and the bounds of that value. */
@@ -49,7 +56,7 @@ interface PaneBounds {
 const defaultMinSize = 10;
 const defaultMaxSize = 90;
 
-function resolvePaneBounds(pane: SplitViewPane | undefined): PaneBounds {
+function resolvePaneBounds(pane: SplitPaneSize | undefined): PaneBounds {
   const pixel = pane?.unit === 'pixel';
   return {
     pixel,
@@ -77,7 +84,7 @@ function snapPaneSize(bounds: PaneBounds, size: number): number {
 }
 
 /** The percent pane beside `index` that gives or takes its share: the next one, else the previous. */
-function findPercentNeighbour(panes: readonly SplitViewPane[], index: number): number {
+function findPercentNeighbour(panes: readonly SplitPaneSize[], index: number): number {
   const isPercent = (candidate: number) =>
     candidate !== index && !resolvePaneBounds(panes[candidate]).pixel;
   const after = panes.findIndex((_, candidate) => candidate > index && isPercent(candidate));
@@ -87,7 +94,7 @@ function findPercentNeighbour(panes: readonly SplitViewPane[], index: number): n
 }
 
 /** Whether pane `index` is collapsed at `size`. */
-export function isSplitPaneCollapsed(pane: SplitViewPane | undefined, size: number): boolean {
+export function isSplitPaneCollapsed(pane: SplitPaneSize | undefined, size: number): boolean {
   return isShut(resolvePaneBounds(pane), size);
 }
 
@@ -95,7 +102,7 @@ export function isSplitPaneCollapsed(pane: SplitViewPane | undefined, size: numb
  * The pane that takes the space the others leave: the last percent pane, or -1 when every pane is
  * in pixels, so each keeps its own size and what they leave stays empty.
  */
-export function resolveFlexiblePane(panes: readonly SplitViewPane[]): number {
+export function resolveFlexiblePane(panes: readonly SplitPaneSize[]): number {
   return panes.findLastIndex((pane) => pane.unit !== 'pixel');
 }
 
@@ -159,7 +166,7 @@ function fillCollapsed(
  * its smallest size wins over theirs.
  */
 export function normalizeSplitSizes(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   sizes: readonly number[],
 ): number[] {
   const bounds = panes.map(resolvePaneBounds);
@@ -183,9 +190,28 @@ export function normalizeSplitSizes(
   return next;
 }
 
+/**
+ * Sizes taken for the panes `from` names, moved to the panes `to` names: a pane keeps its size by
+ * its id wherever it moves, and a new pane takes its `initial` size.
+ */
+export function alignSplitSizes(
+  sizes: readonly number[],
+  {
+    from,
+    to,
+    initial,
+  }: { from: readonly string[]; to: readonly string[]; initial: readonly number[] },
+): readonly number[] {
+  if (from.length === to.length && from.every((id, index) => id === to[index])) return sizes;
+  return to.map((id, index) => {
+    const at = from.indexOf(id);
+    return at === -1 ? (initial[index] ?? 0) : (sizes[at] ?? 0);
+  });
+}
+
 /** The starting sizes: the given ones, else equal shares for percent panes and the smallest size for pixel panes. */
 export function resolveInitialSplitSizes(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   defaultSizes?: readonly number[] | null,
 ): number[] {
   const shares = panes.filter((pane) => pane.unit !== 'pixel').length;
@@ -204,7 +230,7 @@ export function resolveInitialSplitSizes(
  * is unmeasured, up to the pane's largest size).
  */
 export function resolveSplitSeparator(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   sizes: readonly number[],
   { index, available }: { index: number; available: number },
 ): SplitSeparator {
@@ -240,7 +266,7 @@ export function resolveSplitSeparator(
  * half its smallest size, and a percent partner takes the complement, snapping shut the same way.
  */
 export function applySplitSeparatorValue(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   sizes: readonly number[],
   { index, available, value }: { index: number; available: number; value: number },
 ): number[] {
@@ -276,7 +302,7 @@ export function applySplitSeparatorValue(
  * takes the freed share. A pane that cannot collapse, or already has, keeps the sizes.
  */
 export function collapseSplitPane(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   sizes: readonly number[],
   index: number,
 ): readonly number[] {
@@ -298,7 +324,7 @@ export function collapseSplitPane(
  * and further when the opened pane would stay below its own.
  */
 export function expandSplitPane(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   sizes: readonly number[],
   { index, size }: { index: number; size?: number | undefined },
 ): readonly number[] {
@@ -327,7 +353,7 @@ export function expandSplitPane(
  * flexible one.
  */
 export function resolveSplitPaneBasis(
-  panes: readonly SplitViewPane[],
+  panes: readonly SplitPaneSize[],
   sizes: readonly number[],
   index: number,
 ): string | undefined {

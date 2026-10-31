@@ -6,6 +6,7 @@ import { createJsonCodec } from '../../utils/json-codec.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import {
+  alignSplitSizes,
   collapseSplitPane,
   expandSplitPane,
   isSplitPaneCollapsed,
@@ -109,13 +110,22 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     shape: toPaneShape(panes),
   });
   const codec = useMemo(() => createSizesCodec(panes), [panes]);
-  const [committed, setCommitted] = usePersistedValue<number[]>({
+  const getInitial = () =>
+    resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize));
+  const ids = panes.map((pane) => pane.id);
+  const [stored, setStored] = usePersistedValue<number[]>({
     value: undefined,
-    defaultValue: () =>
-      resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize)),
+    defaultValue: getInitial,
     persistKey: persistedKey,
     codec,
   });
+  // The panes the committed sizes were taken for: inserted, removed or moved panes keep theirs.
+  const [storedIds, setStoredIds] = useState(ids);
+  const committed = alignSplitSizes(stored, { from: storedIds, to: ids, initial: getInitial() });
+  const setCommitted = (next: number[]) => {
+    setStored(next);
+    setStoredIds(ids);
+  };
   const [live, setLive] = useState<Owned<readonly number[]> | null>(null);
   const preview = live?.owner === owner ? live.value : null;
   const current = normalizeSplitSizes(panes, controlled ?? preview ?? committed);
