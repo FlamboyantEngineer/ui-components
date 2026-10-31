@@ -100,10 +100,10 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-3.2 - Pressing the card
 
-A pointer click anywhere on a card with an action shall activate the action, with the same button and modifier keys, unless the click lands in an inner control (a link, a button, a form control or label, or an element with a widget role or a tab stop of its own) or in content portalled out of the card (a popover, menu or dialog the card opened), was already handled (`preventDefault`), or ends a text selection inside the card. Inner controls keep their own behaviour, and keyboard users reach the action and each inner control as separate tab stops.
+A pointer click anywhere on a card with an action shall activate the action, with the same button and modifier keys, unless the click lands in an inner control (a link, a button, a form control or label, or an element with a widget role, even a roving item out of the tab order, or a tab stop of its own), in an editor (inside an element whose `contenteditable` is anything but `false`, inherited or not), in an actionable card nested inside it (the innermost actionable card owns the click, and the cards around it do nothing) or in content portalled out of the card (a popover, menu or dialog the card opened), was already handled (`preventDefault`), or ends a text selection inside the card. Inner controls keep their own behaviour, and keyboard users reach the action and each inner control as separate tab stops.
 
 Implementation: `src/components/card/card-action.tsx`
-Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
+Verification: `src/components/card/card.test.tsx`, `src/components/card/card-action.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-3.3 - Slotted action in a custom header
 
