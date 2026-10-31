@@ -37,7 +37,7 @@ function renderItems(props: Partial<TableProps<Item>> = {}) {
   );
 }
 
-// A group row is named by its expand button, label and count.
+// A group row is named by its label and count.
 const groupRow = (name: RegExp) => screen.getByRole('row', { name });
 const dataNames = () =>
   [...document.querySelectorAll('.ui-table__row [role="rowheader"]')].map(
@@ -46,6 +46,17 @@ const dataNames = () =>
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table row groups', { timeout: 20_000 }, () => {
+  it('UIC-TABLE-13.2 names a group row by its label and count whichever column is the row header', () => {
+    renderItems({
+      columns: columns.map((column) =>
+        column.id === 'city' ? { ...column, isRowHeader: true } : column,
+      ),
+    });
+    expect(screen.getByRole('row', { name: 'Kind: Fruit 2 items' })).toHaveClass(
+      'ui-table__group-row',
+    );
+  });
+
   it('UIC-TABLE-1.6 publishes resolved wrapping on aggregate cells and grouped rows', () => {
     renderItems({
       cellWrap: 'wrap',
@@ -66,7 +77,7 @@ describe('Table row groups', { timeout: 20_000 }, () => {
   it('UIC-TABLE-13.1 UIC-TABLE-13.2 UIC-TABLE-13.3 draws group header rows with counts and aggregates', () => {
     const { container } = renderItems({ selectionMode: 'multiple', renderRowActions: () => 'act' });
     expect(screen.getByRole('treegrid', { name: 'Items' })).toBeInTheDocument();
-    const fruit = groupRow(/^Collapse Kind: Fruit 2 items$/);
+    const fruit = groupRow(/^Kind: Fruit 2 items$/);
     expect(fruit).toHaveClass('ui-table__group-row');
     expect(fruit).toHaveAttribute('aria-level', '1');
     expect(fruit).toHaveAttribute('aria-expanded', 'true');

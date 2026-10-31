@@ -13,6 +13,7 @@ import {
   selectionColumnId,
   type TableStructure,
 } from './table-structure.js';
+import { renderNamedRow } from './table-spanning-row.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
 
 interface TableFooterProps<T> {
@@ -29,15 +30,13 @@ type RowElementProps = JSX.IntrinsicElements['tr' | 'div'];
 
 /**
  * React Aria numbers a tree grid's summary row among the tree's rows with a negative position,
- * which is not a valid one: the row draws without a position in the tree.
+ * which is not a valid one: the row draws without a position in the tree. It is named "Summary",
+ * not by its row header cell, which a column without a footer leaves empty.
  */
-function createFooterRow(isVirtualized: boolean) {
+function createFooterRow(isVirtualized: boolean, name: string) {
+  const renderRow = renderNamedRow(isVirtualized, name);
   return ({ 'aria-posinset': _position, 'aria-setsize': _size, ...props }: RowElementProps) =>
-    isVirtualized ? (
-      <div {...(props as JSX.IntrinsicElements['div'])} />
-    ) : (
-      <tr {...(props as JSX.IntrinsicElements['tr'])} />
-    );
+    renderRow(props);
 }
 
 /** Whether any drawn column has a summary cell. */
@@ -66,7 +65,7 @@ export function TableFooter<T extends TableRow>({
         isDisabled
         disabledBehavior="selection"
         className={hooks.slotClass('footer-row')}
-        render={createFooterRow(structure.isVirtualized)}
+        render={createFooterRow(structure.isVirtualized, strings.summary)}
       >
         {structure.hasSelection ? (
           <Cell

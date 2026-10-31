@@ -54,12 +54,25 @@ export function renderCellElement(isVirtualized: boolean, isInRange = false, ele
 }
 
 /** A row element named by the element `labelId`. */
-function renderLabelledRow(isVirtualized: boolean, labelId: string) {
+export function renderLabelledRow(isVirtualized: boolean, labelId: string) {
   return (props: JSX.IntrinsicElements['tr' | 'div']) =>
     isVirtualized ? (
       <div {...(props as JSX.IntrinsicElements['div'])} aria-labelledby={labelId} />
     ) : (
       <tr {...(props as JSX.IntrinsicElements['tr'])} aria-labelledby={labelId} />
+    );
+}
+
+/**
+ * A row element named by `name` itself, whichever of its cells are row headers: React Aria names a
+ * row by its row header cells, which may be empty in a structural row.
+ */
+export function renderNamedRow(isVirtualized: boolean, name: string) {
+  return ({ 'aria-labelledby': _labelledBy, ...props }: JSX.IntrinsicElements['tr' | 'div']) =>
+    isVirtualized ? (
+      <div {...(props as JSX.IntrinsicElements['div'])} aria-label={name} />
+    ) : (
+      <tr {...(props as JSX.IntrinsicElements['tr'])} aria-label={name} />
     );
 }
 
