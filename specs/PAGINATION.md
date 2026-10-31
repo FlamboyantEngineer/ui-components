@@ -13,7 +13,7 @@ Verification: `src/components/pagination/pagination.test.tsx`, `e2e/pagination.s
 
 ### UIC-PAGINATION-1.2 - Current page
 
-The current page's button shall carry `aria-current="page"` and `data-current`. `page` controls the current page, else the pagination owns it starting at `defaultPage` (1 by default); a page outside 1 to `pageCount` shows the nearest one, and a `pageCount` below one counts as one.
+The current page's button shall carry `aria-current="page"` and `data-current`. `page` controls the current page, else the pagination owns it starting at `defaultPage` (1 by default); a page outside 1 to `pageCount` shows the nearest one, and a `pageCount` below one or not finite (`NaN`, `Infinity`) counts as one.
 
 Implementation: `src/components/pagination/pagination.tsx`
 Verification: `src/components/pagination/pagination.test.tsx`

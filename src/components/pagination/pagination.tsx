@@ -39,13 +39,18 @@ function listPages(from: number, to: number): number[] {
   return Array.from({ length: Math.max(0, to - from + 1) }, (_, index) => from + index);
 }
 
+/** The number of pages to offer: at least one, and one for a count that is not finite. */
+function toPageCount(pageCount: number) {
+  return Number.isFinite(pageCount) ? Math.max(1, Math.floor(pageCount)) : 1;
+}
+
 /**
  * The entries of a page list: every page when they fit in seven entries, else the first and last
  * pages, the current page with one page on each side, and a gap wherever pages are skipped. A gap
  * that would hide a single page shows that page instead.
  */
 export function getPaginationItems(page: number, pageCount: number): PaginationItem[] {
-  const count = Math.max(1, Math.floor(pageCount));
+  const count = toPageCount(pageCount);
   if (count <= maxEntries) return listPages(1, count);
   const current = clamp(page, 1, count);
   const lastMiddle = count - edgePages - 1;
@@ -80,7 +85,7 @@ export function Pagination({
   const { direction } = useLocale();
   const numberFormat = useNumberFormatter();
   const [requested, setPage] = useControllableState(page, defaultPage, onPageChange);
-  const count = Math.max(1, Math.floor(pageCount));
+  const count = toPageCount(pageCount);
   const current = clamp(requested, 1, count);
   const goTo = (next: number) => {
     if (next !== current) setPage(next);

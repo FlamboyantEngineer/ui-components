@@ -70,6 +70,22 @@ describe('Pagination', () => {
     expect(pageButtons()).toEqual(['1']);
   });
 
+  it('UIC-PAGINATION-1.2 reads a count that is not finite as one page', () => {
+    for (const pageCount of [Number.NaN, Number.POSITIVE_INFINITY]) {
+      const { unmount } = render(<Pagination pageCount={pageCount} page={4} />);
+      expect(pageButtons()).toEqual(['1']);
+      expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      unmount();
+    }
+  });
+
   it('UIC-PAGINATION-1.3 moves by page buttons, previous and next, and ignores the current page', async () => {
     const user = userEvent.setup();
     const onPageChange = vi.fn();
