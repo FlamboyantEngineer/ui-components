@@ -59,6 +59,48 @@ test.describe('Code Block lab', () => {
     await lab.expectAccessible('[data-lab-demo="long"]');
   });
 
+  test('UIC-CODE-BLOCK-1.3 measures again when highlighting widens the same code', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-block');
+    const demo = page.locator('[data-lab-demo="late-highlight"]');
+    const region = demo.locator('.ui-code-block__code');
+    const widths = () =>
+      region.evaluate((element) => ({
+        scroll: element.scrollWidth,
+        client: element.clientWidth,
+      }));
+    expect((await widths()).scroll).toBeLessThanOrEqual((await widths()).client);
+    await expect(region).not.toHaveAttribute('tabindex');
+    await expect(region).not.toHaveAttribute('data-overflowing');
+
+    const toggle = demo.getByRole('button', { name: 'Highlight' });
+    await toggle.click();
+    await expect(region).toHaveAttribute('data-overflowing', 'true');
+    await expect(region).toHaveAttribute('tabindex', '0');
+    const wide = await widths();
+    expect(wide.scroll).toBeGreaterThan(wide.client);
+    await demo.getByRole('button', { name: 'Copy code' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(region).toBeFocused();
+
+    await demo.getByRole('button', { name: 'Remove highlighting' }).click();
+    await expect(region).not.toHaveAttribute('data-overflowing');
+    await expect(region).not.toHaveAttribute('tabindex');
+
+    // Highlighting applied outside React, as an asynchronous highlighter might, counts as well.
+    await region.locator('code').evaluate((code) => {
+      const token = document.createElement('span');
+      token.className = 'ui-code-block__token';
+      token.dataset.token = 'wide';
+      token.textContent = code.textContent;
+      code.replaceChildren(token);
+    });
+    await expect(region).toHaveAttribute('data-overflowing', 'true');
+    await expect(region).toHaveAttribute('tabindex', '0');
+  });
+
   test('UIC-CODE-BLOCK-2.1 UIC-CODE-BLOCK-3.1 copies code exactly and a terminal block’s commands', async ({
     page,
     lab,

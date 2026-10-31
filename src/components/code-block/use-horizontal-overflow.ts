@@ -1,24 +1,44 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from 'react';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 
+/** Content changes that can widen the text without resizing the element: nodes, text, classes, styles. */
+const contentChanges: MutationObserverInit = {
+  childList: true,
+  subtree: true,
+  characterData: true,
+  attributeFilter: ['class', 'style'],
+};
+
 /**
- * Whether the element's content is wider than its box, measured after each change of `content` and
- * whenever the element resizes.
+ * Whether the element's content is wider than its box, measured after each render, whenever the
+ * element resizes, whenever its content changes outside React (such as asynchronous highlighting),
+ * and whenever the document's fonts finish loading, which changes text metrics in a box of fixed
+ * size.
  */
-export function useHorizontalOverflow(
-  ref: RefObject<HTMLElement | null>,
-  content: unknown,
-): boolean {
+export function useHorizontalOverflow(ref: RefObject<HTMLElement | null>): boolean {
   const [isOverflowing, setOverflowing] = useState(false);
   const measure = useCallback(() => {
     const element = ref.current;
     if (element) setOverflowing(element.scrollWidth > element.clientWidth + 1);
   }, [ref]);
   useResizeObserver([ref], measure);
+  // An unchanged result sets the same state, which React skips, so measuring every render settles.
   useLayoutEffect(() => {
     measure();
-  }, [measure, content]);
+  });
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return undefined;
+    const observer = new MutationObserver(measure);
+    observer.observe(element, contentChanges);
+    const fonts = element.ownerDocument.fonts as FontFaceSet | undefined;
+    fonts?.addEventListener('loadingdone', measure);
+    return () => {
+      observer.disconnect();
+      fonts?.removeEventListener('loadingdone', measure);
+    };
+  }, [ref, measure]);
   return isOverflowing;
 }

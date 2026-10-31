@@ -135,6 +135,32 @@ function MarkdownDemo() {
   );
 }
 
+/** Lab-only metrics: a fixed monospace line, and wide letters for the highlighted token. */
+const lateHighlightStyle = `
+[data-lab-demo="late-highlight"] .ui-code-block__code { font: 10px/24px monospace; }
+[data-lab-demo="late-highlight"] .ui-code-block__token[data-token="wide"] { letter-spacing: 10px; }
+`;
+
+const wideTokens = (source: string): CodeToken[] => [{ text: source, type: 'wide' }];
+
+/** The same code, highlighted later with a token whose letters the host spaces wider. */
+function LateHighlight() {
+  const [isHighlighted, setHighlighted] = useState(false);
+  return (
+    <div data-lab-demo="late-highlight">
+      <style>{lateHighlightStyle}</style>
+      <div style={{ width: 220 }}>
+        <CodeBlock code={'x'.repeat(20)} tokenize={isHighlighted ? wideTokens : undefined} />
+      </div>
+      <p>
+        <button type="button" onClick={() => setHighlighted(!isHighlighted)}>
+          {isHighlighted ? 'Remove highlighting' : 'Highlight'}
+        </button>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -178,6 +204,12 @@ mountLab(
       <div data-lab-demo="long" style={{ maxWidth: 420 }}>
         <CodeBlock code={longScript} language="ts" tokenize={tokenizeScript} />
       </div>
+    </LabSection>
+    <LabSection
+      title="Highlighting arrives later"
+      description="The code stays the same while highlighting spaces its letters wider: the code starts to overflow and joins the tab order, and leaves it once the highlighting is removed."
+    >
+      <LateHighlight />
     </LabSection>
     <LabSection
       title="Terminal"
