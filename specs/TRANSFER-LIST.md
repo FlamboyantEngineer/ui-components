@@ -63,10 +63,10 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 
 With `reorderable`, the root shall publish `data-reorderable`, the chosen side's rows reorder by drag and drop, by pointer or from each row's drag handle by keyboard ([UIC-LIST-ROW-3.5](LIST-ROW.md#uic-list-row-35---drag-and-drop)), dropped rows landing together in their order, and a `ui-transfer-list__reorder` group under the chosen side's header holds move up and move down `Button`s named by the provider's `moveItem` string. They move each selected chosen item one place, passing over the next unselected item, and are disabled while that would move nothing.
 
-Movement availability shall be derived from neighboring selected and unselected keys without allocating a reordered copy.
+Movement availability shall be derived from neighboring selected and unselected keys without allocating a reordered copy. The model leaves disabled rows out of a reorder on its own, whatever the drop reports.
 
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/transfer-moves.ts`
-Verification: `src/components/transfer-list/transfer-moves.test.ts`, `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
+Verification: `src/components/transfer-list/transfer-moves.test.ts`, `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`, `src/components/transfer-list/use-transfer-list.test.tsx`
 
 ### UIC-TRANSFER-LIST-2.5 - Disabled items and list
 

@@ -195,7 +195,7 @@ Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec
 
 ### UIC-TABLE-5.2 - Fixed rows
 
-A row for which `reorder.canMove` returns false shall not move: its handle is disabled, drags starting on it are refused and Alt+Arrow keys leave it in place. Disabled rows are never dragged. Other rows may still be dropped beside it.
+A row for which `reorder.canMove` returns false shall not move: its handle is disabled, drags starting on it are refused and Alt+Arrow keys leave it in place. Disabled rows are never dragged. Other rows may still be dropped beside it. A drop is checked against the rows as they are when it lands: of the dragged rows, only those still shown, enabled and accepted by `canMove` move, and a drop with none of them reports nothing.
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`

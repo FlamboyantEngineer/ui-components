@@ -224,9 +224,58 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     fireEvent(row('Dry'), createEvent.dragEnd(row('Dry'), { dataTransfer }));
   });
 
+  it('UIC-TABLE-5.2 moves only the dragged rows that may move now', () => {
+    const onMove = vi.fn();
+    const disabled = new Set(['dry']);
+    const { result } = renderHook(() =>
+      useTableReorder<Task>({
+        rows: tasks,
+        reorder: { canMove: (row) => !row.isPinned, onMove },
+        isRowDisabled: (row) => disabled.has(row.id),
+      }),
+    );
+    const drop = (keys: string[]) =>
+      result.current.dragAndDrop.onMove?.({
+        type: 'move',
+        target: { type: 'item', key: toCollectionKey('fold'), dropPosition: 'after' },
+        keys: new Set(keys.map(toCollectionKey)),
+        dropOperation: 'move',
+        x: 0,
+        y: 0,
+        isInternal: true,
+        items: [],
+      } as never);
+    void drop(['wash', 'pinned', 'dry', 'gone']);
+    expect(onMove).toHaveBeenCalledTimes(1);
+    expect(onMove).toHaveBeenLastCalledWith({
+      keys: ['wash'],
+      targetKey: 'fold',
+      position: 'after',
+    });
+    void drop(['pinned', 'dry']);
+    expect(onMove).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TABLE-5.2 drops nothing when the dragged row is disabled mid-drag', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    const { rerender } = render(<Tasks onMove={onMove} />);
+    row('Wash').focus();
+    await user.keyboard('{ArrowRight}{Enter}');
+    expect(row('Wash')).toHaveAttribute('data-dragging', 'true');
+    rerender(<Tasks onMove={onMove} reorder={{ canMove: (task) => task.id !== 'wash' }} />);
+    await user.keyboard('{Enter}');
+    expect(onMove).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+  });
+
   it("UIC-TABLE-5.1 carries the dragged rows' own ids as their text", () => {
     const { result } = renderHook(() =>
-      useTableReorder({ rows: [{ id: 'a b' }, { id: 1 }], reorder: { onMove() {} } }),
+      useTableReorder({
+        rows: [{ id: 'a b' }, { id: 1 }],
+        reorder: { onMove() {} },
+        isRowDisabled: () => false,
+      }),
     );
     const keys = new Set([toCollectionKey('a b'), toCollectionKey(1)]);
     expect(result.current.dragAndDrop.getItems(keys)).toEqual([

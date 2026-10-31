@@ -22,9 +22,15 @@ const fruit = [
   { id: 'damson', name: 'Damson', meta: 'Purple' },
 ];
 
-function Reorderable({ onMove }: { onMove: (move: ListViewMove) => void }) {
+function Reorderable({
+  onMove,
+  disabledKeys,
+}: {
+  onMove: (move: ListViewMove) => void;
+  disabledKeys?: string[];
+}) {
   return (
-    <ListView aria-label="Fruit" items={fruit} reorder={{ onMove }}>
+    <ListView aria-label="Fruit" items={fruit} reorder={{ onMove }} disabledKeys={disabledKeys}>
       {(item) => <ListViewItem title={item.name} />}
     </ListView>
   );
@@ -429,6 +435,30 @@ describe('ListView', () => {
     expect(handle).toHaveAttribute('tabindex', '-1');
     expectHooksMatchSpec(container, 'LIST-ROW', { slots: ['drag-handle'] });
   });
+
+  it(
+    'UIC-LIST-ROW-3.5 drops nothing when the dragged row is disabled mid-drag',
+    { timeout: 15_000 },
+    async () => {
+      const onMove = vi.fn<(move: ListViewMove) => void>();
+      const { rerender } = render(<Reorderable onMove={onMove} />);
+      const user = userEvent.setup();
+      screen.getByRole('row', { name: 'Apple' }).focus();
+      try {
+        await user.keyboard('{ArrowRight}{Enter}');
+        await waitFor(() => {
+          expect(
+            document.querySelectorAll('.ui-list-view__drop-indicator[data-drop-target]'),
+          ).toHaveLength(1);
+        });
+        rerender(<Reorderable onMove={onMove} disabledKeys={['apple']} />);
+        await user.keyboard('{ArrowDown}{Enter}');
+        expect(onMove).not.toHaveBeenCalled();
+      } finally {
+        await user.keyboard('{Escape}');
+      }
+    },
+  );
 
   it(
     'UIC-LIST-ROW-3.5 reports a keyboard drop as a move for the owner to apply',
