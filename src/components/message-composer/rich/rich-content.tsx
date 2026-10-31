@@ -5,10 +5,18 @@ import {
   useEditorEventCallback,
   useEditorEventListener,
 } from '@handlewithcare/react-prosemirror';
-import { useLayoutEffect, useRef, useState, type FocusEvent, type RefObject } from 'react';
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type RefObject,
+} from 'react';
 import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../../utils/merge-props.js';
+import { useResizeObserver } from '../../../utils/use-resize-observer.js';
 import { CompletionList, type CompletionListItem } from '../../completion-list/completion-list.js';
 import { UserIdentity } from '../../user-identity/user-identity.js';
 import { VisuallyHidden } from '../../visually-hidden/visually-hidden.js';
@@ -34,9 +42,12 @@ function toPixels(value: string | undefined): number {
   return Number.parseFloat(value ?? '') || 0;
 }
 
-/** Keeps the input between `minRows` and `maxRows` rows of its own line height; past that it scrolls. */
+/**
+ * Keeps the input between `minRows` and `maxRows` rows of its own line height; past that it
+ * scrolls. The limits follow the row counts and, through the input's size, its font metrics.
+ */
 function useRowLimits(ref: RefObject<HTMLElement | null>, minRows: number, maxRows: number) {
-  useLayoutEffect(() => {
+  const apply = useCallback(() => {
     const element = ref.current;
     const style = element?.ownerDocument.defaultView?.getComputedStyle(element);
     if (!element || !style) return;
@@ -46,7 +57,9 @@ function useRowLimits(ref: RefObject<HTMLElement | null>, minRows: number, maxRo
     const frame = style.boxSizing === 'border-box' ? padding + border : 0;
     element.style.minHeight = `${minRows * lineHeight + frame}px`;
     element.style.maxHeight = `${maxRows * lineHeight + frame}px`;
-  });
+  }, [ref, minRows, maxRows]);
+  useResizeObserver([ref], apply);
+  useLayoutEffect(apply, [apply]);
 }
 
 /**

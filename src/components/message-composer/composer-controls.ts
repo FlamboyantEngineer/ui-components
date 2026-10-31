@@ -8,10 +8,14 @@ import {
   useCallback,
   useContext,
   useLayoutEffect,
+  useMemo,
   useState,
   type RefObject,
 } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import type { ShortcutChord } from '../shortcut/shortcut.js';
 import type { ComposerFrameModel } from './composer-frame.js';
 import type { MessageComposerSharedProps } from './message-composer.js';
 
@@ -23,14 +27,78 @@ export interface MessageComposerControls {
   isDisabled: boolean;
 }
 
-/** What the built-in controls need from the composer around them. */
-export interface ComposerControlsValue extends MessageComposerControls {
-  props: MessageComposerSharedProps;
-  model: ComposerFrameModel;
+/** What the composer's actions do, each keeping its identity while the composer renders. */
+type ComposerControlActions = Pick<
+  ComposerFrameModel,
+  'submit' | 'insertText' | 'insertPill' | 'focusInput'
+> &
+  Pick<MessageComposerSharedProps, 'onAttach' | 'onCancel' | 'onStop'>;
+
+/**
+ * What the built-in controls need from the composer around them: flags, the first sending chord and
+ * actions that keep their identity, so typing re-renders no control until one of them changes.
+ */
+export interface ComposerControlsValue extends MessageComposerControls, ComposerControlActions {
+  isEditing: boolean;
+  canSubmit: boolean;
+  /** A reply is on its way. */
+  isPending: boolean;
+  /** The composer sends while a reply is on its way. */
+  allowsPendingSubmit: boolean;
+  /** The chord that sends, shown on the send button. */
+  submitShortcut: ShortcutChord | undefined;
   /** The composer's root, which its menus open against. */
   rootRef: RefObject<HTMLDivElement | null>;
   /** Tells the composer that the host placed the send button, so it adds none; returns the undo. */
   registerSendButton: () => () => void;
+}
+
+/**
+ * The actions of the latest render: the composer's own always, and the host's `onAttach`,
+ * `onCancel` and `onStop` while it passes them.
+ */
+function useControlActions(
+  props: MessageComposerSharedProps,
+  model: ComposerFrameModel,
+): ComposerControlActions {
+  const latest = useLatest({ props, model });
+  const hasAttach = props.onAttach !== undefined;
+  const hasCancel = props.onCancel !== undefined;
+  const hasStop = props.onStop !== undefined;
+  return useMemo(
+    () => ({
+      submit: () => latest.current.model.submit(),
+      insertText: (text: string) => latest.current.model.insertText(text),
+      insertPill: (pill: Parameters<ComposerFrameModel['insertPill']>[0]) =>
+        latest.current.model.insertPill(pill),
+      focusInput: () => latest.current.model.focusInput(),
+      onAttach: hasAttach ? (files: File[]) => latest.current.props.onAttach?.(files) : undefined,
+      onCancel: hasCancel ? () => latest.current.props.onCancel?.() : undefined,
+      onStop: hasStop ? () => latest.current.props.onStop?.() : undefined,
+    }),
+    [hasAttach, hasCancel, hasStop, latest],
+  );
+}
+
+/** The value the composer gives its controls, which keeps its identity while what they show does. */
+export function useComposerControls({
+  props,
+  model,
+  ...rest
+}: Pick<ComposerControlsValue, 'rootRef' | 'isCompact' | 'isDisabled' | 'registerSendButton'> & {
+  props: MessageComposerSharedProps;
+  model: ComposerFrameModel;
+}): ComposerControlsValue {
+  const actions = useControlActions(props, model);
+  return useShallowStable({
+    ...actions,
+    ...rest,
+    isEditing: model.isEditing,
+    canSubmit: model.canSubmit,
+    isPending: Boolean(props.isPending),
+    allowsPendingSubmit: Boolean(props.allowsPendingSubmit),
+    submitShortcut: model.keys.submit[0],
+  });
 }
 
 /** Gives the composer's controls what they read. */
@@ -64,18 +132,18 @@ export function useCompactRow(
 ): boolean {
   // The content's width when the row became compact; null while it is not.
   const [fullWidth, setFullWidth] = useState<number | null>(null);
-  const measure = () => {
+  const measure = useCallback(() => {
     const row = rowRef.current;
     if (!row) return;
-    if (fullWidth === null) {
-      if (row.scrollWidth > row.clientWidth) setFullWidth(row.scrollWidth);
-    } else if (row.clientWidth >= fullWidth) {
-      setFullWidth(null);
-    }
-  };
-  // The groups resize with their controls, which may outgrow a row that keeps its width.
+    setFullWidth((width) => {
+      if (width === null) return row.scrollWidth > row.clientWidth ? row.scrollWidth : null;
+      return row.clientWidth >= width ? null : width;
+    });
+  }, [rowRef]);
+  // The row and the groups, which resize with their controls and may outgrow a row that keeps its
+  // width, report every change of size; the first measure is at mount.
   useResizeObserver([rowRef, ...groupRefs], measure);
-  useLayoutEffect(measure);
+  useLayoutEffect(measure, [measure]);
   return fullWidth !== null;
 }
 
