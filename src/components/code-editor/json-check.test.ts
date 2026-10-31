@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { defaultStrings } from '../../core/strings.js';
+import { getDefaultStrings } from '../../core/strings.js';
+
+const defaultStrings = getDefaultStrings();
 import { checkJsonText, createJsonChecker } from './json-check.js';
 import type { JsonSchema } from './json-schema.js';
 

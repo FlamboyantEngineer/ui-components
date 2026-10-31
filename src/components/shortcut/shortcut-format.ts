@@ -1,6 +1,6 @@
 // Keyboard chord formatting: one canonical chord, shown in the notation of the reader's platform.
 
-import { defaultStrings } from '../../core/strings.js';
+import { getDefaultStrings } from '../../core/strings.js';
 
 export type ShortcutPlatform = 'mac' | 'windows' | 'linux';
 
@@ -179,8 +179,8 @@ export function formatShortcutAccessibleText(
   chord: ShortcutChord | ShortcutSequence,
   {
     platform = getShortcutPlatform(),
-    keyName = defaultStrings.shortcutKeyName,
-    joinSteps = defaultStrings.shortcutThen,
+    keyName = getDefaultStrings().shortcutKeyName,
+    joinSteps = getDefaultStrings().shortcutThen,
   }: ShortcutTextOptions = {},
 ): string {
   const names = spokenModifiers[platform === 'mac' ? 'mac' : 'other'];

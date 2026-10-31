@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { defaultStrings } from '../../core/strings.js';
+import { getDefaultStrings } from '../../core/strings.js';
+
+const defaultStrings = getDefaultStrings();
 import {
   checkTag,
   hasTagDelimiter,

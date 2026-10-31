@@ -38,10 +38,10 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-3.1 - Language files
 
-Every piece of text a component renders itself (button labels such as Close, live announcements, empty-state text, counted and listed text) shall come from a language file: a flat JSON object of ICU MessageFormat messages, one per text key, that defaults to English. Components read the compiled text through `useUiStrings()`. A message names its values (`{count}`, `{name}`), counts them with `plural`, picks words with `select`, and keeps apostrophes and angle brackets as written. A malformed message throws when it is formatted.
+Every piece of text a component renders itself (button labels such as Close, live announcements, empty-state text, counted and listed text) shall come from a language file: a flat JSON object of ICU MessageFormat messages, one per text key, that defaults to English. Components read the compiled text through `useUiStrings()`. A message names its values (`{count}`, `{name}`), counts them with `plural`, picks words with `select`, and keeps apostrophes and angle brackets as written. A malformed message throws when it is formatted. The built-in English text compiles on first use, when a component reads it outside every provider, so importing the library does no string work.
 
 Implementation: `src/core/message-format.ts`, `src/core/strings.ts`, `src/core/locales/`, `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`, `src/core/message-format.test.ts`
+Verification: `src/core/provider.test.tsx`, `src/core/message-format.test.ts`, `src/core/strings.test.ts`
 
 ### UIC-PROVIDER-3.2 - Replacing text
 

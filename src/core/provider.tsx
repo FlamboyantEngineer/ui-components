@@ -23,7 +23,7 @@ import { OverlayPresenceScope } from './overlay-presence.js';
 import { DEFAULT_LOCALE, formatMessage, type MessageValues } from './message-format.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
 import { en } from './locales/index.js';
-import { compileStrings, defaultStrings, type UiMessages, type UiStrings } from './strings.js';
+import { compileStrings, getDefaultStrings, type UiMessages, type UiStrings } from './strings.js';
 import { omitUndefined } from '../utils/omit-undefined.js';
 import { useLatest } from '../utils/use-latest.js';
 import { useShallowStable } from '../utils/use-shallow-stable.js';
@@ -184,7 +184,9 @@ const defaultContext: UiContextValue = {
   glyphs: {},
   messages: en,
   locale: DEFAULT_LOCALE,
-  strings: defaultStrings,
+  get strings() {
+    return getDefaultStrings();
+  },
   renderLink: renderAnchor,
   router: { navigate: navigateNatively },
   storage: createMemoryStorage(),
