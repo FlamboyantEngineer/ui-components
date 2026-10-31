@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -154,6 +154,41 @@ describe('CodeEditor completion sources', () => {
     expect(marked()).toBe('let a = pick([pear], count)');
     await user.keyboard('{Tab}2{Tab}');
     expect(marked()).toBe('let a = pick(pear, 2)|');
+  });
+
+  it('UIC-CODE-EDITOR-4.8 UIC-CODE-EDITOR-6.2 leaves keys an input method owns to it', async () => {
+    const user = userEvent.setup();
+    const onKeyDown = vi.fn();
+    render(<Editor completions={fruit} initialValue="let a = " onKeyDown={onKeyDown} />);
+    await user.click(input());
+    await user.keyboard('{End}pi');
+    await screen.findByRole('option', { name: /pick/ });
+    const composing = [
+      { key: 'Enter', keyCode: 229 },
+      { key: 'Tab', isComposing: true },
+      { key: 'Escape', isComposing: true },
+    ];
+    for (const key of composing) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode 229 on a keydown
+      expect(fireEvent.keyDown(input(), key)).toBe(true);
+    }
+    expect(input()).toHaveValue('let a = pi');
+    expect(screen.getByRole('option', { name: /pick/ })).toBeVisible();
+    await user.keyboard('{Enter}');
+    expect(marked()).toBe('let a = pick([fruit], count)');
+    for (const key of composing.slice(0, 2)) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- as above
+      expect(fireEvent.keyDown(input(), key)).toBe(true);
+    }
+    expect(marked()).toBe('let a = pick([fruit], count)');
+    // The caller still sees the keys.
+    expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'Escape' }));
+    await user.keyboard('{Tab}');
+    expect(marked()).toBe('let a = pick(fruit, [count])');
+    await user.keyboard('{End}');
+    // eslint-disable-next-line testing-library/prefer-user-event -- as above
+    expect(fireEvent.keyDown(input(), { key: 'Enter', keyCode: 229 })).toBe(true);
+    expect(input()).toHaveValue('let a = pick(fruit, count)');
   });
 
   it('UIC-CODE-EDITOR-4.8 indents a multiline snippet like its line and ends stepping outside it', async () => {

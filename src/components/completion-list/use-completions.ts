@@ -13,6 +13,7 @@ import { callSettling, isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** What a completion source knows about the place it completes. */
 export interface CompletionContext {
@@ -327,9 +328,10 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>): boolean => {
+    // Keys an input method owns, its confirming Enter included, never accept or dismiss.
+    if (isComposingKey(event.nativeEvent)) return false;
     // Escape also drops a lookup that has not answered yet.
     if (!isOpen && event.key === 'Escape') request.current += 1;
-    if (event.nativeEvent.isComposing) return false;
     const isRequest = isExplicitRequest(event) && Boolean(completions) && !isLocked;
     if (isRequest) track('explicit');
     else if (!isOpen || !choose(event.key, event.shiftKey)) return false;

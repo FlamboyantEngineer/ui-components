@@ -191,10 +191,10 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 
 ### UIC-CODE-EDITOR-6.1 - Editor edits
 
-The editor's own edits (line breaks, indentation, pairs, completions and replacements) shall go through the browser's editing, so undo and redo in the text area revert and repeat them one at a time among the reader's own typing, and `onChange` reports them. An edit made while focus is elsewhere, such as Replace or Replace all from the search bar, briefly moves focus to the text area for the edit and gives it back to the control that had it, with that field's selection. Without browser editing the edit goes through `onChange`, restoring the edit's selection once the new value is rendered. A read-only or disabled editor makes none of them.
+The editor's own edits (line breaks, indentation, pairs, completions and replacements) shall go through the browser's editing, so undo and redo in the text area revert and repeat them one at a time among the reader's own typing, and `onChange` reports them. An edit made while focus is elsewhere, such as Replace or Replace all from the search bar, briefly moves focus to the text area for the edit and gives it back to the control that had it, with that field's selection. Without browser editing the edit goes through `onChange`, restoring the edit's selection once the new value is rendered. A read-only or disabled editor makes none of them. Keys an input method owns (pressed during a composition, or reported with key code 229 as one ends) make no edit and neither accept, dismiss nor step through completions or snippet fields; they reach only the caller's `onKeyDown`.
 
-Implementation: `src/components/code-editor/use-code-edits.ts`, `src/components/code-editor/use-code-keys.ts`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+Implementation: `src/components/code-editor/use-code-edits.ts`, `src/components/code-editor/use-code-keys.ts`, `src/components/code-editor/code-area.tsx`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/use-code-completion.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-6.2 - Line breaks keep the indentation
 

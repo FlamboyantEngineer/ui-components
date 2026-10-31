@@ -13,6 +13,7 @@ import { matchInsertItems, type InsertMenuItem } from './insert-items.js';
 import { toEngineCommand } from './engine-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The text a slash command replaces: the slash and the query typed after it. */
 interface SlashRange {
@@ -92,7 +93,7 @@ export function useSlashMenu(
   });
 
   useEditorEventListener('keydown', (_view, event) => {
-    if (!isOpen || event.isComposing) return false;
+    if (!isOpen || isComposingKey(event)) return false;
     const count = matches.length;
     const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
     if (step !== undefined)
