@@ -111,6 +111,13 @@ When `onChange` returns a promise, the group shall show the new value at once an
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/choice-selection.ts`, `src/components/segmented-choice/pending-change.ts`
 Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
 
+### UIC-SEGMENTED-CHOICE-2.7 - Native reset
+
+A native reset of the form the group is in (a reset button or `form.reset()`) shall put back the value the group had when it mounted, as the browser does for its own controls and as fields do: an uncontrolled group shows its `defaultValue` again (no value or no pressed values when it had none), so its segments, their ARIA state and the values it submits agree, and `onChange` reports that value when the value in effect differs, which is how a controlled group puts it back. The reset applies once every listener has seen it, and a reset a listener cancels with `preventDefault` changes nothing. A change still pending ([UIC-SEGMENTED-CHOICE-2.6](#uic-segmented-choice-26---asynchronous-change)) is dropped: its promise settles without effect.
+
+Implementation: `src/components/segmented-choice/pending-change.ts`, `src/components/segmented-choice/segmented-choice.tsx`, `src/utils/use-native-reset.ts`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
+
 ## UIC-SEGMENTED-CHOICE-3 - States
 
 ### UIC-SEGMENTED-CHOICE-3.1 - Disabled

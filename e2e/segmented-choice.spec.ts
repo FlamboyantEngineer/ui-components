@@ -174,6 +174,25 @@ test.describe('Segmented Choice lab', () => {
     await expect(form.locator('[data-lab-output="submitted"]')).toHaveText(
       'Submitted: view=month style=bold,italic',
     );
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(form.getByRole('radio', { name: 'Week' })).toBeChecked();
+    await expect(form.getByRole('button', { name: 'Italic' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(form.locator('[data-lab-output="submitted"]')).toHaveText(
+      'Submitted: view=week style=bold',
+    );
+    await form.getByRole('radio', { name: 'Day' }).click();
+    await form.evaluate((element: HTMLFormElement) => {
+      element.addEventListener('reset', (event) => event.preventDefault(), { once: true });
+      element.reset();
+    });
+    await page.waitForTimeout(100);
+    await expect(form.getByRole('radio', { name: 'Day' })).toBeChecked();
+    await form.evaluate((element: HTMLFormElement) => element.reset());
+    await expect(form.getByRole('radio', { name: 'Week' })).toBeChecked();
     await lab.expectAccessible();
   });
 

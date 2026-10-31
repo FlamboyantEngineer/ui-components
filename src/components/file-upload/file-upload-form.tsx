@@ -13,6 +13,7 @@ import {
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { fileUploadHooks as hooks, type FileUploadItem } from './file-upload-files.js';
 
@@ -91,18 +92,12 @@ function useResetFiles(
   },
 ) {
   const latest = useLatest({ name, isDisabled, files });
+  useNativeReset(ref, () => {
+    if (ref.current) fillInput(ref.current, latest.current.files, held);
+  });
   useEffect(() => {
     const form = ref.current?.form;
-    const view = form?.ownerDocument.defaultView;
-    if (!form || !view) return undefined;
-    let timer: number | undefined;
-    const onReset = (event: Event) => {
-      view.clearTimeout(timer);
-      timer = view.setTimeout(() => {
-        const input = ref.current;
-        if (!event.defaultPrevented && input) fillInput(input, latest.current.files, held);
-      }, 0);
-    };
+    if (!form) return undefined;
     const onFormData = (event: FormDataEvent) => {
       const { name: key, isDisabled: isLeftOut, files: listed } = latest.current;
       const input = ref.current;
@@ -111,14 +106,9 @@ function useResetFiles(
       event.formData.delete(key);
       for (const file of listed) event.formData.append(key, file);
     };
-    form.addEventListener('reset', onReset);
     form.addEventListener('formdata', onFormData);
-    return () => {
-      view.clearTimeout(timer);
-      form.removeEventListener('reset', onReset);
-      form.removeEventListener('formdata', onFormData);
-    };
-  }, [ref, held, latest]);
+    return () => form.removeEventListener('formdata', onFormData);
+  }, [ref, latest]);
 }
 
 /**
