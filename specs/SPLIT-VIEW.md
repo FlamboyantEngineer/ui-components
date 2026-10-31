@@ -26,7 +26,7 @@ Verification: `src/components/split-view/split-view.test.tsx`
 
 ### UIC-SPLIT-VIEW-2.1 - Structure
 
-`SplitView` with `panes` (two or more) shall render each child in a `ui-split-view__pane` element, in pane order, with a `ResizeHandle` between each pair, and publish `data-resizable`. The first two panes publish `data-pane` `first` and `second`. Each pane's element has the pane's `id`, or a generated one, and each separator's `aria-controls` names the two panes beside it. Separators are named by `separatorLabel` (a text, or a function of the separator's index from 0), or the provider's `resize` string.
+`SplitView` with `panes` (two or more) shall render each child in a `ui-split-view__pane` element, in pane order, with a `ResizeHandle` between each pair, and publish `data-resizable`. The first two panes publish `data-pane` `first` and `second`. Each pane has a required `id`, its identity and its element's id, and each separator's `aria-controls` names the two panes beside it. A pane inserted, removed or moved around another leaves that pane's content, focus and size as they were: children and committed sizes follow the panes by `id`, a new pane starting at its default size. Separators are named by `separatorLabel` (a text, or a function of the separator's index from 0), or the provider's `resize` string.
 
 Implementation: `src/components/split-view/split-view.tsx`, `src/components/split-view/resizable-split-view.tsx`
 Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.spec.ts`

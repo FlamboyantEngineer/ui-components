@@ -122,6 +122,40 @@ function CollapsibleSplit() {
   );
 }
 
+/** A side pane opened before the list: the list keeps its draft, focus and size. */
+function OpeningSide() {
+  const [hasSide, setSide] = useState(false);
+  return (
+    <div style={{ display: 'grid', gap: 8 }} data-lab-split="opening">
+      <label>
+        <input
+          type="checkbox"
+          checked={hasSide}
+          onChange={(event) => setSide(event.target.checked)}
+        />{' '}
+        Show filters
+      </label>
+      <div style={frame('100%', 160)}>
+        <SplitView
+          panes={[
+            ...(hasSide ? [{ id: 'opening-side', unit: 'pixel' as const, minSize: 120 }] : []),
+            { id: 'opening-list', minSize: 20 },
+            { id: 'opening-detail' },
+          ]}
+        >
+          {[
+            ...(hasSide ? [<Pane key="side">Filters</Pane>] : []),
+            <div key="list" style={{ padding: 8 }}>
+              <input aria-label="List note" />
+            </div>,
+            <Pane key="detail">Details</Pane>,
+          ]}
+        </SplitView>
+      </div>
+    </div>
+  );
+}
+
 function PixelHandle({ isDisabled = false, label }: { isDisabled?: boolean; label: string }) {
   const [height, setHeight] = useState(60);
   const [status, setStatus] = useState('idle');
@@ -238,6 +272,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Opening a pane before another"
+      description="Resize the list, type a note in it, then tick Show filters: a pixel pane opens before the list, which keeps its note, focus and share. Untick to close it again."
+    >
+      <OpeningSide />
     </LabSection>
     <LabSection
       title="Pixel panes"

@@ -326,3 +326,28 @@ test('UIC-SPLIT-VIEW-3.4 shows the exported helpers in a host-side snippet', asy
     call("resolveResizeKeyboardValue({ key: 'ArrowRight', shiftKey: true }, input)"),
   ).toHaveText('51');
 });
+
+test("UIC-SPLIT-VIEW-2.1 keeps a pane's draft, focus and share as a pane opens before it", async ({
+  page,
+  lab,
+}) => {
+  await lab.open('split-view');
+  const demo = page.locator('[data-lab-split="opening"]');
+  await demo.getByRole('separator').focus();
+  await page.keyboard.press('Shift+ArrowRight');
+  const list = demo.locator('#opening-list');
+  const before = await list.evaluate((node) => node.getBoundingClientRect().width);
+  const note = demo.getByRole('textbox', { name: 'List note' });
+  await note.fill('Ripe');
+  const toggle = demo.getByRole('checkbox', { name: 'Show filters' });
+  // Toggle without moving focus, as a host command would.
+  await toggle.evaluate((node) => (node as HTMLInputElement).click());
+  await expect(demo.getByText('Filters', { exact: true })).toBeVisible();
+  await expect(note).toBeFocused();
+  await expect(note).toHaveValue('Ripe');
+  await expect(list).toHaveAttribute('style', /\b51%/);
+  await toggle.evaluate((node) => (node as HTMLInputElement).click());
+  await expect(demo.getByText('Filters', { exact: true })).toHaveCount(0);
+  await expect(note).toHaveValue('Ripe');
+  expect(await list.evaluate((node) => node.getBoundingClientRect().width)).toBeCloseTo(before, 0);
+});

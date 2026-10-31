@@ -145,18 +145,19 @@ describe('SplitView', () => {
 
     rerender(
       <UiProvider messages={{ resize: 'Redimensionner' }}>
-        <SplitView panes={[{}, {}]} separatorLabel="Resize fruit list">
+        <SplitView panes={[{ id: 'apples' }, { id: 'bananas' }]} separatorLabel="Resize fruit list">
           {[<p key="a">Apples</p>, <p key="b">Bananas</p>]}
         </SplitView>
       </UiProvider>,
     );
-    const generated = screen.getByRole('separator', { name: 'Resize fruit list' });
-    const [firstId, secondId] = requireDefined(generated.getAttribute('aria-controls')).split(' ');
-    expect(document.getElementById(requireDefined(firstId))).toHaveTextContent('Apples');
-    expect(document.getElementById(requireDefined(secondId))).toHaveTextContent('Bananas');
+    const named = screen.getByRole('separator', { name: 'Resize fruit list' });
+    expect(named).toHaveAttribute('aria-controls', 'apples bananas');
+    expect(document.getElementById('apples')).toHaveTextContent('Apples');
     rerender(
       <UiProvider messages={{ resize: 'Redimensionner' }}>
-        <SplitView panes={[{}, {}]}>{[<p key="a">Apples</p>, <p key="b">Bananas</p>]}</SplitView>
+        <SplitView panes={[{ id: 'apples' }, { id: 'bananas' }]}>
+          {[<p key="a">Apples</p>, <p key="b">Bananas</p>]}
+        </SplitView>
       </UiProvider>,
     );
     expect(screen.getByRole('separator', { name: 'Redimensionner' })).toBeInTheDocument();
@@ -369,6 +370,42 @@ describe('SplitView owners', () => {
 });
 
 describe('SplitView panes', () => {
+  it("UIC-SPLIT-VIEW-2.1 keeps a pane's content, focus and size when a pane is inserted before it", async () => {
+    const user = userEvent.setup();
+    const view = (withSide: boolean) => (
+      <SplitView
+        panes={[
+          ...(withSide ? [{ id: 'side', unit: 'pixel' as const, minSize: 120 }] : []),
+          { id: 'list', minSize: 20 },
+          { id: 'detail' },
+        ]}
+      >
+        {[
+          ...(withSide ? [<p key="side">Filters</p>] : []),
+          <input key="list" aria-label="List filter" />,
+          <p key="detail">Details</p>,
+        ]}
+      </SplitView>
+    );
+    const { container, rerender } = render(view(false));
+    screen.getByRole('separator').focus();
+    await user.keyboard('{Shift>}{ArrowRight}{/Shift}');
+    const listPane = () =>
+      requireDefined(container.querySelector<HTMLElement>('.ui-split-view__pane#list'));
+    const size = listPane().style.flexBasis;
+    expect(size).toBe('51%');
+    const input = screen.getByRole('textbox', { name: 'List filter' });
+    input.focus();
+    rerender(view(true));
+    expect(screen.getByRole('textbox', { name: 'List filter' })).toBe(input);
+    expect(input).toHaveFocus();
+    // The same share, now of the space the pixel pane leaves.
+    expect(listPane().style.flexBasis).toBe('calc(0.51 * (100% - 120px))');
+    rerender(view(false));
+    expect(screen.getByRole('textbox', { name: 'List filter' })).toBe(input);
+    expect(listPane().style.flexBasis).toBe(size);
+  });
+
   it('UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.2 lays out three panes with a separator between each pair', async () => {
     const user = userEvent.setup();
     const { container } = render(
