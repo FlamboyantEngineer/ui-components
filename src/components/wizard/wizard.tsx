@@ -39,11 +39,11 @@ export interface WizardProps extends BaseProps, AriaLabellingProps {
   /** The steps, in order. */
   steps: readonly WizardStep[];
   /** The shown step, controlled. */
-  currentId?: Key | undefined;
+  currentKey?: Key | undefined;
   /** The step shown first, uncontrolled. Defaults to the first step. */
-  defaultCurrentId?: Key | undefined;
+  defaultCurrentKey?: Key | undefined;
   /** Receives the step the wizard moves to. */
-  onCurrentIdChange?: ((id: Key) => void) | undefined;
+  onCurrentKeyChange?: ((id: Key) => void) | undefined;
   /**
    * Runs when the last step passes; a returned promise keeps Finish pending until it settles. It
    * never runs for a check the wizard has left. Once it runs it is the host's: leaving the step or
@@ -119,9 +119,9 @@ function WizardFooter({ navigation, steps, onCancel, finishLabel }: FooterProps)
  */
 export function Wizard({
   steps,
-  currentId,
-  defaultCurrentId,
-  onCurrentIdChange,
+  currentKey,
+  defaultCurrentKey,
+  onCurrentKeyChange,
   onFinish,
   onCancel,
   finishLabel,
@@ -132,9 +132,9 @@ export function Wizard({
 }: WizardProps) {
   const navigation = useWizardNavigation({
     steps,
-    currentId,
-    defaultCurrentId,
-    onCurrentIdChange,
+    currentKey,
+    defaultCurrentKey,
+    onCurrentKeyChange,
     onFinish,
   });
   const headingId = useId();
@@ -152,7 +152,7 @@ export function Wizard({
     <div role="group" {...rest} {...hooks.root({ className, props: rest, data })}>
       <Steps
         items={items}
-        currentId={step?.id}
+        currentKey={step?.id}
         orientation={orientation}
         isDisabled={navigation.isPending}
         onAction={navigation.goTo}

@@ -10,7 +10,7 @@ const cards = [
 
 describe('stackAnnotationCards', () => {
   it('UIC-ANNOTATION-LAYER-2.2 stacks cards in anchor order, each below the one before', () => {
-    expect(stackAnnotationCards(cards, { activeId: null, gap: 10 })).toEqual([
+    expect(stackAnnotationCards(cards, { currentKey: null, gap: 10 })).toEqual([
       { id: 'a', top: 0, isOrphaned: false },
       { id: 'b', top: 60, isOrphaned: false },
       { id: 'c', top: 120, isOrphaned: false },
@@ -19,7 +19,7 @@ describe('stackAnnotationCards', () => {
   });
 
   it('UIC-ANNOTATION-LAYER-2.2 keeps the active card at its anchor where the cards before it fit, never above the top', () => {
-    expect(stackAnnotationCards(cards, { activeId: 'b', gap: 10 })).toEqual([
+    expect(stackAnnotationCards(cards, { currentKey: 'b', gap: 10 })).toEqual([
       { id: 'a', top: 0, isOrphaned: false },
       { id: 'b', top: 60, isOrphaned: false },
       { id: 'c', top: 120, isOrphaned: false },
@@ -30,12 +30,12 @@ describe('stackAnnotationCards', () => {
       { id: 'y', anchorTop: 110, height: 40 },
       { id: 'z', anchorTop: 120, height: 40 },
     ];
-    expect(stackAnnotationCards(crowded, { activeId: 'z', gap: 8 })).toEqual([
+    expect(stackAnnotationCards(crowded, { currentKey: 'z', gap: 8 })).toEqual([
       { id: 'x', top: 24, isOrphaned: false },
       { id: 'y', top: 72, isOrphaned: false },
       { id: 'z', top: 120, isOrphaned: false },
     ]);
-    expect(stackAnnotationCards(crowded, { activeId: 'y', gap: 8 })).toEqual([
+    expect(stackAnnotationCards(crowded, { currentKey: 'y', gap: 8 })).toEqual([
       { id: 'x', top: 62, isOrphaned: false },
       { id: 'y', top: 110, isOrphaned: false },
       { id: 'z', top: 158, isOrphaned: false },
@@ -49,13 +49,13 @@ describe('stackAnnotationCards', () => {
         { id: 'a', anchorTop: 40, height: 20 },
         { id: 'lost', anchorTop: null, height: 10 },
       ],
-      { activeId: 'gone', gap: 8 },
+      { currentKey: 'gone', gap: 8 },
     );
     expect(placements).toEqual([
       { id: 'a', top: 40, isOrphaned: false },
       { id: 'gone', top: 68, isOrphaned: true },
       { id: 'lost', top: 106, isOrphaned: true },
     ]);
-    expect(stackAnnotationCards([], { activeId: null, gap: 8 })).toEqual([]);
+    expect(stackAnnotationCards([], { currentKey: null, gap: 8 })).toEqual([]);
   });
 });

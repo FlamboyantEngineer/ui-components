@@ -76,8 +76,8 @@ export interface TreeProps<T extends TreeItemData>
   onLoadChildren?: ((item: T) => unknown) | undefined;
   /** Makes the row itself a link. Navigation goes through the provider's `navigate` when set. */
   getHref?: ((item: T) => string | undefined) | undefined;
-  /** Whether the row is the current page or item: `aria-current` and `data-current`. */
-  isItemCurrent?: ((item: T) => boolean) | undefined;
+  /** The row that is the current page or item: `aria-current` and `data-current`. */
+  currentKey?: Key | null | undefined;
   /** An imported icon component or rendered element before the label. */
   getIcon?: ((item: T, state: TreeItemState) => IconSource) | undefined;
   /** The label. Defaults to the text value. */
@@ -140,7 +140,7 @@ function splitTreeProps<T extends TreeItemData>({
   hasChildItems,
   isItemPending,
   getHref,
-  isItemCurrent,
+  currentKey,
   getIcon,
   renderLabel,
   renderMeta,
@@ -180,7 +180,7 @@ function splitTreeProps<T extends TreeItemData>({
     hasChildItems,
     isItemPending,
     getHref,
-    isItemCurrent,
+    currentKey,
     getIcon,
     renderLabel,
     renderMeta,

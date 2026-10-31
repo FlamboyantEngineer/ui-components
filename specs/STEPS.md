@@ -13,14 +13,14 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 ### UIC-STEPS-1.2 - Status
 
-Each item shall publish its status as `data-status`: `complete`, `current`, `upcoming`, `error` or `skipped`. A step's own `status` wins; otherwise steps before `currentId` are `complete`, the step at `currentId` is `current` and the steps after it are `upcoming`, as every step is when `currentId` matches none.
+Each item shall publish its status as `data-status`: `complete`, `current`, `upcoming`, `error` or `skipped`. A step's own `status` wins; otherwise steps before `currentKey` are `complete`, the step at `currentKey` is `current` and the steps after it are `upcoming`, as every step is when `currentKey` matches none.
 
 Implementation: `src/components/steps/steps.tsx`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 ### UIC-STEPS-1.3 - Current step
 
-The item at `currentId` shall carry `aria-current="step"` and `data-current`, whatever its status, so a current step that failed reads as both current and `error`.
+The item at `currentKey` shall carry `aria-current="step"` and `data-current`, whatever its status, so a current step that failed reads as both current and `error`.
 
 Implementation: `src/components/steps/steps.tsx`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`

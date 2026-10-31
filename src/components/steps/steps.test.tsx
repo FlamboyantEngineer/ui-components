@@ -25,7 +25,7 @@ function itemOf(label: string): HTMLElement {
 
 describe('Steps', () => {
   it('UIC-STEPS-1.1 renders an ordered list with a marker, text and connector per step', () => {
-    const { container } = render(<Steps items={items} currentId="prepare" />);
+    const { container } = render(<Steps items={items} currentKey="prepare" />);
     const list = screen.getByRole('list');
     expect(list.tagName).toBe('OL');
     expect(list).toHaveClass('ui-steps');
@@ -44,7 +44,7 @@ describe('Steps', () => {
   });
 
   it('UIC-STEPS-1.2 reads each status from the current step unless the step sets its own', () => {
-    const { rerender } = render(<Steps items={items} currentId="review" />);
+    const { rerender } = render(<Steps items={items} currentKey="review" />);
     const statuses = () =>
       screen.getAllByRole('listitem').map((row) => row.getAttribute('data-status'));
     expect(statuses()).toEqual(['complete', 'complete', 'current', 'upcoming']);
@@ -55,7 +55,7 @@ describe('Steps', () => {
           { ...requireDefined(items[1]), status: 'skipped' },
           ...items.slice(2),
         ]}
-        currentId="review"
+        currentKey="review"
       />,
     );
     expect(statuses()).toEqual(['error', 'skipped', 'current', 'upcoming']);
@@ -67,7 +67,7 @@ describe('Steps', () => {
     const { container } = render(
       <Steps
         items={[requireDefined(items[0]), { ...requireDefined(items[1]), status: 'error' }]}
-        currentId="prepare"
+        currentKey="prepare"
       />,
     );
     const current = itemOf('Prepare');
@@ -89,7 +89,7 @@ describe('Steps', () => {
             { ...requireDefined(items[2]), status: 'skipped' },
             requireDefined(items[3]),
           ]}
-          currentId="import"
+          currentKey="import"
         />
       </I18nProvider>,
     );
@@ -104,7 +104,7 @@ describe('Steps', () => {
   it('UIC-STEPS-1.5 renders descriptions and optional marks', () => {
     render(
       <UiProvider messages={{ optional: 'May skip' }}>
-        <Steps items={items} currentId="upload" />
+        <Steps items={items} currentKey="upload" />
       </UiProvider>,
     );
     expect(itemOf('Upload').querySelector('.ui-steps__description')).toHaveTextContent(
@@ -115,11 +115,11 @@ describe('Steps', () => {
   });
 
   it('UIC-STEPS-1.6 publishes orientation and density, and compacts labels', () => {
-    const { container, rerender } = render(<Steps items={items} currentId="prepare" />);
+    const { container, rerender } = render(<Steps items={items} currentKey="prepare" />);
     const list = screen.getByRole('list');
     expect(list).toHaveAttribute('data-orientation', 'horizontal');
     expect(list).toHaveAttribute('data-density', 'default');
-    rerender(<Steps items={items} currentId="prepare" orientation="vertical" density="compact" />);
+    rerender(<Steps items={items} currentKey="prepare" orientation="vertical" density="compact" />);
     expect(list).toHaveAttribute('data-orientation', 'vertical');
     expect(list).toHaveAttribute('data-density', 'compact');
     expect(container.querySelector('.ui-steps__description')).toBeNull();
@@ -166,7 +166,7 @@ describe('Steps', () => {
           { ...requireDefined(items[1]), status: 'skipped' },
           ...items.slice(2),
         ]}
-        currentId="review"
+        currentKey="review"
         onAction={onAction}
       />,
     );
@@ -187,7 +187,7 @@ describe('Steps', () => {
   });
 
   it('UIC-STEPS-2.1 keeps steps as text without onAction', () => {
-    render(<Steps items={items} currentId="import" />);
+    render(<Steps items={items} currentKey="import" />);
     expect(screen.queryAllByRole('button')).toHaveLength(0);
     expect(itemOf('Upload').querySelector('.ui-steps__step')?.tagName).toBe('SPAN');
   });
@@ -199,7 +199,7 @@ describe('Steps', () => {
     const { container, rerender } = render(
       <Steps
         items={[{ ...requireDefined(items[0]), isDisabled: true }, ...items.slice(1)]}
-        currentId="review"
+        currentKey="review"
         onAction={onAction}
       />,
     );
@@ -209,7 +209,7 @@ describe('Steps', () => {
     await user.click(upload);
     expect(onAction).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Prepare Completed' })).toBeEnabled();
-    rerender(<Steps items={items} currentId="review" onAction={onAction} isDisabled />);
+    rerender(<Steps items={items} currentKey="review" onAction={onAction} isDisabled />);
     for (const button of screen.getAllByRole('button')) expect(button).toBeDisabled();
     expect(itemOf('Review')).toHaveAttribute('data-disabled', 'true');
     expectHooksMatchSpec(container, 'STEPS');
@@ -218,7 +218,7 @@ describe('Steps', () => {
   it('UIC-STEPS-2.3 publishes interaction states on pressable steps', async () => {
     const user = userEvent.setup();
 
-    const { container } = render(<Steps items={items} currentId="prepare" onAction={() => {}} />);
+    const { container } = render(<Steps items={items} currentKey="prepare" onAction={() => {}} />);
     const button = screen.getByRole('button', { name: 'Upload Completed Choose a file' });
     await user.hover(button);
     expect(button).toHaveAttribute('data-hovered', 'true');
@@ -252,7 +252,7 @@ describe('Steps', () => {
             { ...requireDefined(items[1]), status: 'error' },
             ...items.slice(2),
           ]}
-          currentId="review"
+          currentKey="review"
           onAction={() => {}}
         />
       </UiProvider>,
@@ -269,7 +269,7 @@ describe('Steps', () => {
       { id: 'one', label: 'Upload' },
       { id: 'two', label: 'Review' },
     ];
-    const { container, rerender } = render(<Steps items={items} currentId="two" isComplete />);
+    const { container, rerender } = render(<Steps items={items} currentKey="two" isComplete />);
     expect(screen.getAllByRole('listitem').map((item) => item.getAttribute('data-status'))).toEqual(
       ['complete', 'complete'],
     );

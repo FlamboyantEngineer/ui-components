@@ -67,7 +67,7 @@ function StateSample({
         states={doorStates}
         transitions={doorTransitions}
         orientation={orientation}
-        currentState={state === 'current' ? 'open' : undefined}
+        currentKey={state === 'current' ? 'open' : undefined}
         isEditing={state === 'editing'}
       />
     </div>
@@ -84,7 +84,7 @@ function Orders() {
         data-lab-field="orders"
         states={orderStates}
         transitions={orderTransitions}
-        currentState={current}
+        currentKey={current}
       />
       <p>
         {next.map((transition) => (

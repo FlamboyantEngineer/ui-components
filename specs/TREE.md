@@ -91,7 +91,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-3.5 - Current row
 
-`isItemCurrent` shall mark a row with `data-current` and `aria-current`: `page` on a link row and `true` otherwise.
+`currentKey` shall mark its row with `data-current` and `aria-current`: `page` on a link row and `true` otherwise.
 
 Implementation: `src/components/tree/tree-item.tsx`
 Verification: `src/components/tree/tree.test.tsx`

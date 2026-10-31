@@ -27,7 +27,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 ### UIC-CHAT-LIST-1.4 - Selection
 
-One conversation shall be selected at a time (`aria-selected`, `data-selected`): a press, Enter or Space on a row selects it and calls `onSelectionChange` with its id, and pressing the selected row keeps it selected. `selectedId` controls the selection (`null` for none); left out, the list keeps the reader's choice.
+One conversation shall be selected at a time (`aria-selected`, `data-selected`): a press, Enter or Space on a row selects it and calls `onSelectionChange` with its id, and pressing the selected row keeps it selected. `selectedKey` controls the selection (`null` for none); left out, the list keeps the reader's choice.
 
 Implementation: `src/components/chat-list/chat-list.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`

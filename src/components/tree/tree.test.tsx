@@ -118,7 +118,7 @@ describe('Tree', () => {
         selectionMode="single"
         defaultSelectedKeys={['apple']}
         disabledKeys={['pear']}
-        isItemCurrent={(item) => item.id === 'nuts'}
+        currentKey="nuts"
         renderMeta={(item, state) => {
           states.set(item.id, state);
           return null;
@@ -346,19 +346,23 @@ describe('Tree', () => {
       { id: 'notes', name: 'Notes' },
       { id: 'other', name: 'Other' },
     ];
-    const { container } = render(
+    const docs = (currentKey: string) => (
       <Tree
         aria-label="Docs"
         items={items}
         getTextValue={name}
         getHref={(item) => item.href}
-        isItemCurrent={(item) => item.id !== 'other'}
-      />,
+        currentKey={currentKey}
+      />
     );
+    const { container, rerender } = render(docs('guide'));
     expect(row('Guide')).toHaveAttribute('aria-current', 'page');
+    expect(row('Notes')).not.toHaveAttribute('aria-current');
+    rerender(docs('notes'));
     expect(row('Notes')).toHaveAttribute('aria-current', 'true');
+    expect(row('Guide')).not.toHaveAttribute('aria-current');
     expect(row('Other')).not.toHaveAttribute('aria-current');
-    expect(container.querySelectorAll('[data-current="true"]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-current="true"]')).toHaveLength(1);
     expectHooksMatchSpec(container, 'TREE');
   });
 

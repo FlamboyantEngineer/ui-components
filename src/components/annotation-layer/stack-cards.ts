@@ -19,7 +19,7 @@ interface CardPlacement {
 
 interface StackOptions {
   /** The card kept level with its anchor; the others move away from it. */
-  activeId: Key | null;
+  currentKey: Key | null;
   /** Space kept between two cards, in pixels. */
   gap: number;
 }
@@ -32,7 +32,7 @@ interface StackOptions {
  */
 export function stackAnnotationCards(
   cards: readonly CardInput[],
-  { activeId, gap }: StackOptions,
+  { currentKey, gap }: StackOptions,
 ): CardPlacement[] {
   const anchored = cards
     .filter((card) => card.anchorTop !== null)
@@ -40,7 +40,7 @@ export function stackAnnotationCards(
   const tops = anchored.map((card) => requireDefined(card.anchorTop));
   const active = Math.max(
     0,
-    anchored.findIndex((card) => card.id === activeId),
+    anchored.findIndex((card) => card.id === currentKey),
   );
   for (let index = active - 1; index >= 0; index -= 1) {
     const below = requireDefined(tops[index + 1]) - gap - requireDefined(anchored[index]).height;
