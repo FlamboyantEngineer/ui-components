@@ -149,9 +149,21 @@ function useTabStop(triggers: RefObject<Map<string, TriggerEntry>>, version: num
  * an open submenu, so a move away from an open menu closes it first, through React Aria's state so
  * its submenus close too, and focuses the next item once the closing menus have let focus go.
  */
-function useOpenMenu(triggers: RefObject<Map<string, TriggerEntry>>) {
+function useOpenMenu(triggers: RefObject<Map<string, TriggerEntry>>, version: number) {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const pending = useRef<Move | null>(null);
+  // A top-level item that leaves takes its menu with it: forget it as open or as a destination, and
+  // give focus the menu held to the bar's tab stop, so the next move or press has a place to start.
+  useLayoutEffect(() => {
+    const items = triggers.current;
+    if (pending.current && !items.has(pending.current.key)) pending.current = null;
+    if (openKey === null || items.has(openKey)) return;
+    setOpenKey(null);
+    const active = document.activeElement;
+    if (!pending.current && (!active || active === document.body)) {
+      focusTrigger(sortByDocumentOrder(items)[0]?.[1], undefined);
+    }
+  }, [triggers, openKey, version]);
   useLayoutEffect(() => {
     const move = pending.current;
     if (openKey !== null || !move) return;
@@ -179,7 +191,7 @@ function useOpenMenu(triggers: RefObject<Map<string, TriggerEntry>>) {
 export function useMenubarState({ rootRef, orientation, size, direction }: MenubarStateOptions) {
   const { triggers, register, version } = useTriggerRegistry();
   const [tabKey, setTabKey] = useTabStop(triggers, version);
-  const { openKey, close, moveTo, setOpen } = useOpenMenu(triggers);
+  const { openKey, close, moveTo, setOpen } = useOpenMenu(triggers, version);
 
   const apply = (action: MenubarKeyAction, { list, from, place }: KeyTarget) => {
     const [fromKey, fromTrigger] = list[from] ?? [];
