@@ -76,6 +76,13 @@ Backspace shall erase the focused cell's character, or in an empty cell the prev
 Implementation: `src/components/pin-input/pin-input-cells.tsx`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`
 
+### UIC-PIN-INPUT-2.8 - Native deletion
+
+A native deletion that empties a cell, such as Delete or Cut on its selected character or another deleting input event, shall remove that cell's character and keep focus on the cell; characters after it move up a cell, so the value keeps no gap. The new value goes through `onChange`, the field state and the form value like any edit, and a shorter code never calls `onComplete`. An empty cell, a read-only or a disabled field change nothing, and Backspace keeps its own handling (UIC-PIN-INPUT-2.2), erasing once.
+
+Implementation: `src/components/pin-input/pin-input-cells.tsx`
+Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`
+
 ### UIC-PIN-INPUT-2.3 - Moving between cells
 
 Left and Right Arrow shall move focus to the previous and next cell (mirrored in a right-to-left locale), Home to the first cell and End to the active cell: the first empty cell, or the last cell once every cell is filled. One cell is in the tab order, the focused cell while focus is in the code and the active cell otherwise, so Tab moves into and out of the code in one step. Focus never lands past the active cell: a press on a later cell focuses the active one.

@@ -279,6 +279,57 @@ describe('PinInput', () => {
     expect(focusedIndex()).toBe(0);
   });
 
+  it('UIC-PIN-INPUT-2.8 removes a character deleted or cut natively and keeps focus on its cell', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onComplete = vi.fn();
+    render(
+      <form aria-label="Verify">
+        <PinInput
+          label="Code"
+          length={4}
+          name="code"
+          defaultValue="1234"
+          onChange={onChange}
+          onComplete={onComplete}
+        />
+      </form>,
+    );
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Verify' });
+    await user.click(cells()[1] as HTMLElement);
+    await user.keyboard('{Delete}');
+    expect(values()).toEqual(['1', '3', '4', '']);
+    expect(onChange).toHaveBeenLastCalledWith('134');
+    expect(new FormData(form).get('code')).toBe('134');
+    expect(focusedIndex()).toBe(1);
+    await user.click(cells()[0] as HTMLElement);
+    await user.cut();
+    expect(values()).toEqual(['3', '4', '', '']);
+    expect(focusedIndex()).toBe(0);
+    await user.click(cells()[2] as HTMLElement);
+    expect(focusedIndex()).toBe(2);
+    await user.keyboard('{Delete}');
+    expect(values()).toEqual(['3', '4', '', '']);
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it('UIC-PIN-INPUT-2.8 deletes from masked cells, erases once with Backspace and refuses while read-only', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<PinInput label="Code" length={4} defaultValue="1234" mask />);
+    const masked = () => [...document.querySelectorAll<HTMLInputElement>('.ui-pin-input__cell')];
+    await user.click(masked()[3] as HTMLElement);
+    await user.keyboard('{Delete}');
+    expect(masked().map((cell) => cell.value)).toEqual(['1', '2', '3', '']);
+    await user.click(masked()[1] as HTMLElement);
+    await user.keyboard('{Backspace}');
+    expect(masked().map((cell) => cell.value)).toEqual(['1', '3', '', '']);
+    rerender(<PinInput label="Code" length={4} defaultValue="1234" mask isReadOnly />);
+    await user.click(masked()[0] as HTMLElement);
+    await user.keyboard('{Delete}');
+    expect(masked().map((cell) => cell.value)).toEqual(['1', '3', '', '']);
+  });
+
   it('UIC-PIN-INPUT-2.3 moves with the arrows, Home and End and keeps one cell in the tab order', async () => {
     const user = userEvent.setup();
     render(
