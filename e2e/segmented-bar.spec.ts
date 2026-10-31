@@ -110,4 +110,52 @@ test.describe('Segmented Bar lab', () => {
     ).toEqual(['50%', '50%']);
     await lab.expectAccessible();
   });
+
+  test('UIC-SEGMENTED-BAR-1.2 keeps many small parts and the majority inside the track', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-bar');
+    const geometry = (cell: string) =>
+      page.locator(`[data-lab-cell="${cell}"] .ui-segmented-bar__track`).evaluate((track) => {
+        const box = track.getBoundingClientRect();
+        const majority = track.lastElementChild?.getBoundingClientRect();
+        return {
+          width: box.width,
+          overflow: track.scrollWidth - track.clientWidth,
+          majority: majority?.width ?? 0,
+          inside: majority
+            ? majority.left >= box.left - 0.5 && majority.right <= box.right + 0.5
+            : false,
+          left: (majority?.left ?? 0) - box.left,
+        };
+      });
+    for (const width of [250, 150]) {
+      await page
+        .locator('[data-lab-resizable="many"]')
+        .evaluateAll(
+          (nodes, w) => nodes.forEach((node) => ((node as HTMLElement).style.width = `${w}px`)),
+          width,
+        );
+      for (const direction of ['ltr', 'rtl']) {
+        const whole = await geometry(`direction=${direction} remainder=none`);
+        expect(whole.overflow).toBe(0);
+        expect(whole.inside).toBe(true);
+        expect(Math.abs(whole.majority - whole.width * 0.9)).toBeLessThan(1);
+        // The majority comes last: after the small parts, at the inline end.
+        expect(Math.abs(whole.left - (direction === 'rtl' ? 0 : whole.width * 0.1))).toBeLessThan(
+          1,
+        );
+        const half = await geometry(`direction=${direction} remainder=explicit`);
+        expect(half.overflow).toBe(0);
+        expect(Math.abs(half.majority - half.width * 0.45)).toBeLessThan(1);
+      }
+    }
+    const legend = page
+      .locator('[data-lab-cell="direction=ltr remainder=none"]')
+      .getByRole('listitem')
+      .last();
+    await expect(legend).toContainText('Majority');
+    await expect(legend).toContainText('90%');
+  });
 });

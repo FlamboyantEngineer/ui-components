@@ -23,7 +23,6 @@
 .ui-segmented-bar__track {
   display: flex;
   grid-column: 1 / -1;
-  gap: 1px;
   height: 8px;
   overflow: hidden;
   border-radius: var(--ref-radius-full);
@@ -44,10 +43,28 @@
 }
 
 .ui-segmented-bar__segment {
-  /* Shrinking by width keeps the shares proportional around the gaps. */
-  flex: 0 1 auto;
-  min-width: 2px;
+  /*
+   * Each segment takes exactly its share, so the whole distribution fits the track at any count or
+   * width. The separator is drawn inside the segment, at most a third of it wide, so it takes no
+   * room and never hides a sliver; a share narrower than a pixel still draws, faintly.
+   */
+  flex: none;
+  min-width: 0;
   transition: width var(--ref-duration);
+}
+
+.ui-segmented-bar__track:not(svg) {
+  container-type: inline-size;
+}
+
+.ui-segmented-bar__segment + .ui-segmented-bar__segment {
+  --ref-segmented-bar-separator: min(1px, var(--ui-segment-share) * 1cqi / 3);
+
+  box-shadow: inset var(--ref-segmented-bar-separator) 0 0 var(--ref-surface);
+}
+
+.ui-segmented-bar:dir(rtl) .ui-segmented-bar__segment + .ui-segmented-bar__segment {
+  box-shadow: inset calc(-1 * var(--ref-segmented-bar-separator)) 0 0 var(--ref-surface);
 }
 
 .ui-segmented-bar__item:not([data-tone='neutral']) .ui-segmented-bar__swatch,
