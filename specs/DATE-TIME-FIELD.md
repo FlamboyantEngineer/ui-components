@@ -24,7 +24,7 @@ The value shall be `null` or an ISO 8601 text by mode, and the field shall write
 | `date-range`      | `{ start, end }` of `date` values                                           |                                                         |
 | `date-time-range` | `{ start, end }` of `date-time` values, floating or zoned                   | as `date-time` (UIC-DATE-TIME-FIELD-4.3)                |
 
-A floating date and time has no zone: its segments edit it as written. A text with an offset or a zone given to a floating field reads as the local wall time of its instant. A text the mode cannot read (`2026-02-30`, `25:00`, a date in a date-time mode) shows as empty segments and is never rewritten until the reader sets a value.
+`YYYY` is always four digits, so a year before 1000 keeps its leading zeros (`0099-04-20T12:30`). A floating date and time has no zone: its segments edit it as written. A text with an offset or a zone given to a floating field reads as the local wall time of its instant. A text the mode cannot read (`2026-02-30`, `25:00`, a date in a date-time mode) shows as empty segments and is never rewritten until the reader sets a value.
 
 Implementation: `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/primitives/date-values.ts`
 Verification: `src/components/date-time-field/date-values.test.ts`, `src/components/date-time-field/date-time-field.test.tsx`
