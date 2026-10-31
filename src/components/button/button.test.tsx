@@ -304,6 +304,23 @@ describe('Button', () => {
     expectHooksMatchSpec(document.body, 'BUTTON');
   });
 
+  it('UIC-BUTTON-2.1 presses on the first try once enabled after a press while disabled', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const { rerender } = render(
+      <Button isDisabled onPress={onPress}>
+        Save
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'Save' });
+    await user.click(button);
+    expect(onPress).not.toHaveBeenCalled();
+    rerender(<Button onPress={onPress}>Save</Button>);
+    expect(screen.getByRole('button', { name: 'Save' })).toBe(button);
+    await user.click(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-BUTTON-2.2 keeps focus, icons and label while pending and refuses presses', async () => {
     const user = userEvent.setup();
 

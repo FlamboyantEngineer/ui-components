@@ -64,6 +64,28 @@ function HiddenButtons() {
   );
 }
 
+/** A button disabled until a checkbox is ticked: a press while disabled leaves no press behind. */
+function EnabledLater() {
+  const [agreed, setAgreed] = useState(false);
+  const [sent, setSent] = useState(0);
+  return (
+    <div data-lab-demo="enabled-later">
+      <Button isDisabled={!agreed} onPress={() => setSent((count) => count + 1)}>
+        Send
+      </Button>{' '}
+      <label>
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={(event) => setAgreed(event.target.checked)}
+        />{' '}
+        I have read the notes
+      </label>
+      <p data-lab-output="sent">Sent: {sent}</p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <div data-lab-family="button-main">
@@ -194,6 +216,12 @@ mountLab(
         <Button fullWidth={false} data-full-width="true">
           Natural width
         </Button>
+      </LabSection>
+      <LabSection
+        title="Enabled later"
+        description="Send is disabled until the checkbox is ticked. Press it first, tick the box, then press it once: it sends on that first press."
+      >
+        <EnabledLater />
       </LabSection>
       <LabSection
         title="Swapped element"

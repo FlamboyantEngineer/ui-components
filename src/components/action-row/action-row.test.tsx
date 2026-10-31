@@ -538,6 +538,31 @@ describe('ActionRow', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('UIC-ACTION-ROW-1.6 keeps the button and its focus as menu items arrive and leave', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const row = (items: ActionRowAction['items']) => (
+      <ActionRow actions={[{ verb: 'more', id: 'more', items, onPress }]} />
+    );
+    const { rerender } = render(row([]));
+    await user.tab();
+    const more = screen.getByRole('button', { name: 'More' });
+    expect(more).toHaveFocus();
+    rerender(row([{ id: 'export', label: 'Export' }]));
+    expect(screen.getByRole('button', { name: 'More' })).toBe(more);
+    expect(more).toHaveFocus();
+    expect(more).toHaveAttribute('aria-haspopup', 'true');
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    rerender(row([]));
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'More' })).toBe(more);
+    expect(more).not.toHaveAttribute('aria-haspopup');
+    more.focus();
+    await user.keyboard('{Enter}');
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-ACTION-ROW-2.1 puts lead content before the actions and renders nothing when empty', () => {
     const { container, rerender } = render(
       <ActionRow lead={<span>Inbox</span>} actions={[{ verb: 'refresh', onPress: noop }]} />,

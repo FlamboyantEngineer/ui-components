@@ -16,14 +16,13 @@ import {
   Menu as AriaMenu,
   MenuContext,
   MenuLoadMoreItem,
-  MenuTrigger as AriaMenuTrigger,
   SearchField,
   SubmenuTrigger as AriaSubmenuTrigger,
   useFilter,
   useSlottedContext,
   Virtualizer,
 } from '../../primitives/index.js';
-import type { AriaLabellingProps, OpenStateProps, SelectionProps } from '../../core/events.js';
+import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -32,8 +31,9 @@ import { toCollectionSelectionProps } from '../../utils/collection-selection.js'
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { MenuSizeContext, type MenuSize } from './menu-context.js';
 import type { MenuItemProps, MenuItemRenderState, MenuSectionProps } from './menu-item.js';
-import { MenuTriggerPress } from './menu-trigger-press.js';
 import { renderMenuChildren } from './menu-entries.js';
+
+export { MenuTrigger, type MenuTriggerProps } from './menu-trigger.js';
 
 /** One action described as data. With `items` it opens a submenu of those entries. */
 export interface MenuItemEntry extends Omit<MenuItemProps, 'id' | 'children' | 'textValue'> {
@@ -89,11 +89,6 @@ export interface MenuProps extends BaseProps, AriaLabellingProps, SelectionProps
 }
 
 /** A trigger and the `MenuPopover` it opens. */
-export interface MenuTriggerProps extends OpenStateProps {
-  /** The trigger (a `Button`, an `Button` or another pressable), then its `MenuPopover`. */
-  children: ReactNode;
-}
-
 /** A `MenuItem` and the submenu it opens. */
 export interface SubmenuTriggerProps {
   /** The `MenuItem` that opens the submenu, then the submenu's `MenuPopover`. */
@@ -273,18 +268,6 @@ export function Menu(props: MenuProps) {
     <MenuSizeContext value={resolvedSize}>
       <MenuActionContext value={action}>{menu}</MenuActionContext>
     </MenuSizeContext>
-  );
-}
-
-/**
- * Opens its `MenuPopover` from its trigger (React Aria `MenuTrigger`): on press, Enter or Space,
- * and on Arrow Down or Arrow Up, which focus the first or last item.
- */
-export function MenuTrigger({ children, ...openState }: MenuTriggerProps) {
-  return (
-    <AriaMenuTrigger {...openState}>
-      <MenuTriggerPress>{children}</MenuTriggerPress>
-    </AriaMenuTrigger>
   );
 }
 

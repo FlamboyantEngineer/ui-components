@@ -53,19 +53,25 @@ function toPressProps(
   };
 }
 
-/** The action's menu, opened by its button (with the button's tooltip) at the button's end. */
+/**
+ * The action's menu, opened by its button (with the button's tooltip) at the button's end. Every
+ * action has one, disabled while it has no entries, so the button keeps its element as entries
+ * arrive and leave.
+ */
 function ActionRowMenu({
   action,
   size,
+  hasMenu,
   children,
 }: {
   action: ActionRowAction;
   size: ButtonSize;
+  hasMenu: boolean;
   children: ReactNode;
 }) {
   const menuSize: MenuSize = size === 'xs' ? 'sm' : size;
   return (
-    <MenuTrigger>
+    <MenuTrigger isDisabled={!hasMenu}>
       {children}
       <MenuPopover placement="bottom end">
         <Menu items={action.items} onAction={action.onAction} size={menuSize} />
@@ -111,9 +117,8 @@ function ActionRowButton({
       tooltip={action.tooltip ?? label}
     />
   );
-  if (!hasMenu) return button;
   return (
-    <ActionRowMenu action={action} size={size}>
+    <ActionRowMenu action={action} size={size} hasMenu={hasMenu}>
       {button}
     </ActionRowMenu>
   );

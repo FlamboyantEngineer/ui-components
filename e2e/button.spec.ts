@@ -74,6 +74,28 @@ test.describe('Button lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-BUTTON-2.1 sends on the first press once enabled after a press while disabled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const demo = page.locator('[data-lab-demo="enabled-later"]');
+    const send = demo.getByRole('button', { name: 'Send' });
+    await send.scrollIntoViewIfNeeded();
+    const box = await send.boundingBox();
+    if (!box) throw new Error('Send not rendered');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.up();
+    await expect(demo.locator('[data-lab-output="sent"]')).toHaveText('Sent: 0');
+    // The pointer stays on Send while the keyboard ticks the box.
+    await demo.getByRole('checkbox', { name: 'I have read the notes' }).focus();
+    await page.keyboard.press('Space');
+    await page.mouse.down();
+    await page.mouse.up();
+    await expect(demo.locator('[data-lab-output="sent"]')).toHaveText('Sent: 1');
+  });
+
   test('UIC-BUTTON-2.1 keeps a focusable disabled menu button shut while its tooltip explains it', async ({
     page,
     lab,
