@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { Table } from '../../src/components/table/table.js';
 import type { TableCellRange } from '../../src/components/table/index.js';
 import type { TableGroupBy } from '../../src/components/table/index.js';
@@ -253,6 +254,7 @@ export function Spreadsheet() {
   const [rows, setRows] = useState(stock.slice(0, 6));
   const [range, setRange] = useState<TableCellRange | null>(null);
   const [last, setLast] = useState('none');
+  const [organic, setOrganic] = useState<ReadonlySet<string>>(new Set());
   return (
     <div data-lab="spreadsheet">
       <Table
@@ -277,7 +279,29 @@ export function Spreadsheet() {
       <Table
         aria-label="Stock, one cell at a time"
         rows={stock.slice(0, 3)}
-        columns={sheetColumns.slice(0, 3)}
+        columns={[
+          ...sheetColumns.slice(0, 3),
+          {
+            id: 'organic',
+            header: 'Organic',
+            renderCell: (row) => (
+              <Switch
+                size="sm"
+                isSelected={organic.has(row.id)}
+                onChange={(isOn) =>
+                  setOrganic((current) => {
+                    const next = new Set(current);
+                    if (isOn) next.add(row.id);
+                    else next.delete(row.id);
+                    return next;
+                  })
+                }
+              >
+                {`Organic ${row.name}`}
+              </Switch>
+            ),
+          },
+        ]}
         cellSelection="cell"
         defaultSelectedRange={{
           anchor: { rowKey: 'apple', columnId: 'name' },

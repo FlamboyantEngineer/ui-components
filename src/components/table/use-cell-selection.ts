@@ -233,6 +233,7 @@ export function useCellSelection<T extends TableRow>(
       focusRowCell(event, range?.focus.columnId);
       return;
     }
+    if (pointer.isControlPress(event.target)) return;
     const isAnchor =
       bounds !== null &&
       range !== null &&

@@ -18,6 +18,7 @@ import { planFill, resolveFillTarget, type CellWrite } from './table-cell-writes
 import type { TableRow } from './table-rows.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { isElement } from '../../utils/is-element.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
 interface CellPointerOptions<T> {
   mode: TableCellSelectionMode;
@@ -32,6 +33,11 @@ interface CellPointerOptions<T> {
 interface CellPointer {
   /** The cells a dragged fill handle would fill, while it drags. */
   fillBounds: CellBounds | null;
+  /**
+   * Whether focus reaching `cell` comes from a press a control inside it kept, which React Aria
+   * answers by focusing the cell: that focus must not select the cell.
+   */
+  isControlPress: (cell: EventTarget) => boolean;
   rootProps: {
     onPointerDownCapture: (event: PointerEvent<HTMLElement>) => void;
     onPointerOver: (event: PointerEvent<HTMLElement>) => void;
@@ -39,15 +45,6 @@ interface CellPointer {
 }
 
 type DragKind = 'select' | 'fill';
-
-/** Controls inside a cell that keep their own presses. */
-const interactiveSelector =
-  'button, a, input, select, textarea, [role="button"], [role="checkbox"], [contenteditable="true"]';
-
-function isInteractive(target: Element, cell: HTMLElement): boolean {
-  const control = target.closest(interactiveSelector);
-  return control !== null && control !== cell && cell.contains(control);
-}
 
 /** The selection or fill gesture, including its live target and document-level ending. */
 function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
@@ -106,6 +103,7 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
 export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T>): CellPointer {
   const { mode, grid, range, setRange } = options;
   const drag = useCellDrag(options);
+  const controlCell = useRef<HTMLElement | null>(null);
   const press = (
     cell: HTMLElement,
     position: TableCellPosition,
@@ -134,7 +132,14 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
       return;
     }
     const cell = findDataCell(event.target, event.currentTarget);
-    if (!cell || isInteractive(event.target, cell) || cell.dataset['editing']) return;
+    controlCell.current = null;
+    if (!cell) return;
+    // Controls and editable content in the cell, and presses they handled, keep their gesture.
+    if (event.defaultPrevented || isInteractiveTarget(event.target, cell)) {
+      controlCell.current = cell;
+      return;
+    }
+    if (cell.dataset['editing']) return;
     const position = readCellPosition(grid, cell);
     if (!position) return;
     // The press is the table's: no row selection, no text selection.
@@ -147,5 +152,9 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
     const position = cell ? readCellPosition(grid, cell) : null;
     if (position) drag.extend(position);
   };
-  return { fillBounds: drag.fillBounds, rootProps: { onPointerDownCapture, onPointerOver } };
+  return {
+    fillBounds: drag.fillBounds,
+    isControlPress: (cell) => cell === controlCell.current,
+    rootProps: { onPointerDownCapture, onPointerOver },
+  };
 }

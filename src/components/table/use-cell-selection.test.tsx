@@ -136,6 +136,41 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(selectedText()).toEqual(['Pear']);
   });
 
+  it('UIC-TABLE-14.1 leaves presses on switches and editable content in a cell to them', async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    const onSelectedRangeChange = vi.fn();
+    const withControls: TableColumn<Item>[] = [
+      ...columns.slice(0, 2),
+      {
+        id: 'note',
+        header: 'Note',
+        renderCell: (row) => (
+          <>
+            <span role="switch" aria-checked="false" tabIndex={0} onPointerDown={onToggle}>
+              Flag {row.name}
+            </span>
+            <span
+              suppressContentEditableWarning
+              // React types allow no empty value; the attribute still counts as editable.
+              ref={(node) => node?.setAttribute('contenteditable', '')}
+            >
+              {row.note}
+            </span>
+          </>
+        ),
+      },
+    ];
+    render(<Sheet columns={withControls} onSelectedRangeChange={onSelectedRangeChange} />);
+    await user.click(screen.getByRole('switch', { name: 'Flag Pear' }));
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByText('blue'));
+    expect(onSelectedRangeChange).not.toHaveBeenCalled();
+    expect(selectedText()).toEqual([]);
+    await user.click(cell('Plum', 'name'));
+    expect(onSelectedRangeChange).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-TABLE-14.1 extends the range by dragging and takes a controlled range', async () => {
     const user = userEvent.setup();
     const onSelectedRangeChange = vi.fn();

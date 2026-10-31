@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isInteractiveTarget } from './is-interactive-target.js';
-import { requireDefined } from '../../utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 
 function render(markup: string) {
   const container = document.createElement('div');
@@ -26,6 +26,17 @@ describe('isInteractiveTarget', () => {
     expect(isInteractiveTarget(find('.plain'), container)).toBe(false);
     expect(isInteractiveTarget(container, container)).toBe(false);
     expect(isInteractiveTarget(null, container)).toBe(false);
+  });
+
+  it('UIC-TABLE-14.1 UIC-PDF-VIEWER-11.2 leaves presses on focusable and editable content to it', () => {
+    const { container, find } = render(
+      '<span class="tab" tabindex="0">Tab</span><span class="skip" tabindex="-1">Focus</span>' +
+        '<span contenteditable="">Edit</span><span contenteditable="plaintext-only">Text</span>',
+    );
+    expect(isInteractiveTarget(find('.tab'), container)).toBe(true);
+    expect(isInteractiveTarget(find('.skip'), container)).toBe(true);
+    expect(isInteractiveTarget(find('[contenteditable=""]'), container)).toBe(true);
+    expect(isInteractiveTarget(find('[contenteditable="plaintext-only"]'), container)).toBe(true);
   });
 
   it('UIC-DIAGRAM-CANVAS-4.3 ignores controls around the container', () => {

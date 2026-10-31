@@ -118,8 +118,8 @@ With `isEditing`, which publishes `data-editing` on the root, dragging a node sh
 
 Controls and editable content that `renderNode` puts in a node (links, buttons, fields, selects, labels, editable content and elements with a control role) shall own their presses: a press on one, or a press its own handler already prevented, starts no selection, move, pointer capture, connection completion or background pan, so the control activates and a drag in a field selects its text. A press on the rest of the node's content still selects and moves it.
 
-Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/is-interactive-target.ts`
-Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `src/components/diagram-canvas/is-interactive-target.test.ts`, `e2e/diagram-canvas.spec.ts`
+Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/utils/is-interactive-target.ts`
+Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `src/utils/is-interactive-target.test.ts`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-4.4 - Moving by keyboard
 
