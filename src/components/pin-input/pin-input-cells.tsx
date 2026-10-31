@@ -1,11 +1,18 @@
 'use client';
 
-import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from 'react';
 import { Group, Input, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
@@ -173,6 +180,29 @@ function useCellEdits(
 }
 
 /**
+ * An input method's provisional text, shown in its cell as typed: it changes no value and moves no
+ * focus until the composition ends, when its text is entered once (`fill`); a cancelled composition
+ * leaves the cell's own character.
+ */
+function useCellComposition(fill: (index: number, text: string) => void) {
+  const [composing, setComposing] = useState<{ index: number; text: string } | null>(null);
+  return {
+    textOf: (index: number, value: string) =>
+      composing?.index === index ? composing.text : (value[index] ?? ''),
+    /** Holds a composing edit's text, and tells whether it held it. */
+    compose: (event: ChangeEvent<HTMLInputElement>, index: number) => {
+      if (!isComposingInput(event.nativeEvent)) return false;
+      setComposing({ index, text: event.target.value });
+      return true;
+    },
+    end: (index: number, text: string) => {
+      setComposing(null);
+      if (text !== '') fill(index, text);
+    },
+  };
+}
+
+/**
  * The cells of a code, one input each, in a group named by the field's label. One cell is in the
  * tab order, and focus never lands past the cell that takes the next character, so the value has
  * no gaps. A hidden input submits the joined value.
@@ -190,11 +220,8 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
   const active = findActivePinCell(value, length);
   const isEditable = !state.isReadOnly && !state.isDisabled;
   const focusCell = (index: number) => slots.readAll('cell')[clamp(index, 0, active)]?.focus();
-  const { fill, erase, remove } = useCellEdits(state, {
-    slots,
-    cells: { length, type },
-    onComplete,
-  });
+  const { fill, erase, remove } = useCellEdits(state, { slots, cells, onComplete });
+  const composition = useCellComposition(fill);
   const keys = { value, active, isRtl: direction === 'rtl', isEditable, focusCell, erase };
   // One cell is in the tab order: the focused one, else the active one, never past the active one.
   const [focused, setFocused] = useState<number | null>(null);
@@ -234,12 +261,14 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
             placeholder={cells.placeholder}
             enterKeyHint={cells.enterKeyHint}
             tabIndex={index === tabbable ? 0 : -1}
-            value={value[index] ?? ''}
+            value={composition.textOf(index, value)}
             onChange={(event) => {
               const text = event.target.value;
+              if (composition.compose(event, index)) return;
               if (text === '') remove(index);
               else fill(index, readEnteredText(text, event.nativeEvent as PinInputEdit));
             }}
+            onCompositionEnd={(event) => composition.end(index, event.data)}
             onPaste={(event) => {
               event.preventDefault();
               fill(index, event.clipboardData.getData('text/plain'));

@@ -42,7 +42,7 @@ function Entry() {
     <>
       <TagsInput
         label="Ingredients"
-        description="Enter, a comma or a semicolon adds a tag; paste a list to add several. Duplicate entries are refused without losing later accepted tags."
+        description="Enter, a comma or a semicolon adds a tag; paste a list to add several. Duplicate entries are refused without losing later accepted tags. Text an input method composes stays whole until it is committed."
         delimiters={[',', ';']}
         value={tags}
         onChange={setTags}

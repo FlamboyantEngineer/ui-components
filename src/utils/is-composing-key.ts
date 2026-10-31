@@ -9,3 +9,11 @@ export type CompositionKey = Pick<KeyboardEvent, 'isComposing' | 'keyCode'>;
 export function isComposingKey(event: CompositionKey): boolean {
   return event.isComposing || event.keyCode === 229;
 }
+
+/**
+ * Whether an input event belongs to an input method composition: its text is provisional until the
+ * composition ends, so a control keeps it as typed and acts on the text `compositionend` settles.
+ */
+export function isComposingInput(event: Event): boolean {
+  return 'isComposing' in event && event.isComposing === true;
+}

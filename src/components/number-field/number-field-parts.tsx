@@ -1,5 +1,6 @@
 'use client';
 
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
 import { useId, type KeyboardEvent, type ReactNode } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
@@ -73,6 +74,8 @@ export function createModifierStepHandler(state: FieldState<number | null>, step
     const direction = arrowDirections[event.key];
     const size = modifierStep(event, steps);
     if (!direction || size === undefined || isLocked(state)) return;
+    // An input method composing in the input owns its arrows.
+    if (isComposingKey(event.nativeEvent)) return;
     event.preventDefault();
     state.setValue(addStep(draft, direction * size, steps));
     state.commit();

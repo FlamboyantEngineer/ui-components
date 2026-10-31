@@ -199,11 +199,40 @@ describe('TagsInput', () => {
     expect(input).toHaveValue(' Ma');
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
     fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set a key code on a keydown
+    fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
     expect(tagTexts()).toHaveLength(3);
     await user.clear(input);
     await user.type(input, '  {Enter}');
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(tagTexts()).toHaveLength(3);
+  });
+
+  it('UIC-TAGS-INPUT-2.1 keeps composed text whole until the composition ends, then splits it once', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<TagsInput label="Fruit" onCommit={onCommit} />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+     
+    fireEvent.compositionStart(input);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
+    fireEvent.input(input, { target: { value: 'alpha,' }, isComposing: true });
+    expect(input).toHaveValue('alpha,');
+    expect(tagTexts()).toEqual([]);
+    expect(onCommit).not.toHaveBeenCalled();
+     
+    fireEvent.compositionEnd(input, { data: 'alpha,' });
+    expect(tagTexts()).toEqual(['alpha']);
+    expect(input).toHaveValue('');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith(['alpha']);
+    // A cancelled composition leaves its text as typed, and ordinary typing goes on.
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
+    fireEvent.input(input, { target: { value: 'bl' }, isComposing: true });
+     
+    fireEvent.compositionEnd(input, { data: '' });
+    expect(input).toHaveValue('bl');
+    await user.type(input, 'ue,');
+    expect(tagTexts()).toEqual(['alpha', 'blue']);
   });
 
   it('UIC-TAGS-INPUT-1.1 commits the tags a caller changes', async () => {

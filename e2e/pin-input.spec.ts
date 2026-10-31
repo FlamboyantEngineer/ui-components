@@ -232,6 +232,25 @@ test.describe('Pin Input lab', () => {
     await expect(cells(masked).first()).toHaveAttribute('type', 'password');
   });
 
+  test('UIC-PIN-INPUT-2.1 keeps composed text in its cell until the input method commits it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pin-input');
+    const letters = matrixCell(page, 'type=alphabetic look=placeholder');
+    await cells(letters).first().click();
+    const ime = await page.context().newCDPSession(page);
+    await ime.send('Input.imeSetComposition', { text: 'k', selectionStart: 1, selectionEnd: 1 });
+    expect(await readValues(letters)).toEqual(['k', '', '', '']);
+    await expect(cells(letters).first()).toBeFocused();
+    await expect(cells(letters).first()).not.toHaveAttribute('data-filled');
+    await ime.send('Input.insertText', { text: 'k' });
+    await expect(cells(letters).nth(1)).toBeFocused();
+    expect(await readValues(letters)).toEqual(['k', '', '', '']);
+    await page.keyboard.type('m');
+    expect(await readValues(letters)).toEqual(['k', 'm', '', '']);
+  });
+
   test('UIC-PIN-INPUT-2.7 UIC-PIN-INPUT-1.6 restores, undoes, clears, submits and resets', async ({
     page,
     lab,
