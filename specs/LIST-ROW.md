@@ -13,7 +13,7 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 
 ### UIC-LIST-ROW-1.2 - One tab stop
 
-Exactly one enabled row's primary control shall be in the tab sequence: the first row until focus enters the list, then the row that last held focus, including focus on one of its trailing controls. Moving focus between rows shall re-render only the row losing the tab stop and the row taking it.
+Exactly one enabled row's primary control shall be in the tab sequence: the first row until focus enters the list, then the enabled row that last held focus, including focus on one of its trailing controls. Focus on a disabled row's trailing control leaves the tab stop where it was, and when the tab stop's row is disabled or removed it moves to a neighbouring enabled row. Moving focus between rows shall re-render only the row losing the tab stop and the row taking it.
 
 Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`
 Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts`
