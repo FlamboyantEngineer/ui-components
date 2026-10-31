@@ -12,6 +12,8 @@ import {
 import type { ScrollAnchor } from '../../src/utils/scroll-offset-map.js';
 import { useSyncedScroll } from '../../src/utils/use-synced-scroll.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { diffSequences, mapScrollOffset } from '../../src/utils/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const recipe = [
   'Lemon tart',
@@ -289,6 +291,33 @@ mountLab(
       description="useSyncedScroll with getAnchors: two lists of the same towns stay level at the town they share. Anchors are read once and again only after a list changes, so adding notes realigns the lists."
     >
       <AnchoredLists />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="diffSequences compares any two lists, and mapScrollOffset maps a scroll offset between panes that share anchors."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "diffSequences(['oak', 'ash', 'elm'], ['oak', 'elm', 'yew'])",
+            JSON.stringify(diffSequences(['oak', 'ash', 'elm'], ['oak', 'elm', 'yew'])),
+          ],
+          [
+            "mapScrollOffset(150, [{ key: 'a', offset: 100 }, { key: 'b', offset: 200 }], [{ key: 'a', offset: 300 }, { key: 'b', offset: 500 }])",
+            mapScrollOffset(
+              150,
+              [
+                { key: 'a', offset: 100 },
+                { key: 'b', offset: 200 },
+              ],
+              [
+                { key: 'a', offset: 300 },
+                { key: 'b', offset: 500 },
+              ],
+            ),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

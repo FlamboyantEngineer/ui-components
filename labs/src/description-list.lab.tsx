@@ -6,6 +6,8 @@ import {
 } from '../../src/components/description-list/description-list.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { formatDescriptionValue } from '../../src/components/description-list/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 const picked = '2024-09-14';
 const shipped = '2024-09-21';
@@ -170,6 +172,27 @@ mountLab(
             </DescriptionList>
           </UiProvider>
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="The value formatting DescriptionList applies, for a host that shows the same value elsewhere, such as in a tooltip."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "formatDescriptionValue(1234.5, { locale: 'fr-FR' })",
+            formatDescriptionValue(1234.5, { locale: 'fr-FR' }),
+          ],
+          [
+            "formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US' })",
+            formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US' }),
+          ],
+          [
+            "formatDescriptionValue({ start: 2, end: 5 }, { locale: 'en-US' })",
+            formatDescriptionValue({ start: 2, end: 5 }, { locale: 'en-US' }),
+          ],
+        ]}
       />
     </LabSection>
   </>,

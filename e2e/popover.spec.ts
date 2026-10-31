@@ -273,3 +273,14 @@ for (const mode of ['no arrow', 'arrow']) {
     }
   });
 }
+
+test('UIC-OVERLAY-POSITION-3.1 measures a scrolling frame for a host layer', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('popover');
+  await page.getByRole('button', { name: 'Measure the frame' }).click();
+  await expect(page.locator('[data-lab-output="boundary"]')).toHaveText(
+    /^visible \d+×\d+, content \d+×\d+, scrolls$/,
+  );
+});

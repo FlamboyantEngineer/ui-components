@@ -171,3 +171,14 @@ test.describe('Description List lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-DESCRIPTION-LIST-1.5 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('description-list');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(
+    call("formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US' })"),
+  ).toHaveText('Oak, Ash, and Elm');
+});

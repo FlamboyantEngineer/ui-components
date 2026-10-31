@@ -4,6 +4,7 @@ import { Button } from '../../src/components/button/button.js';
 import {
   List,
   ListRow,
+  ListRowContent,
   type ListHandle,
   type ListRowProps,
 } from '../../src/components/list-row/list-row.js';
@@ -243,6 +244,14 @@ mountLab(
     >
       <div style={{ width: 300 }}>
         <LongListCase />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Row content in a host row"
+      description="ListRowContent draws the title, meta and icon of a row inside an element the host owns, such as a grid cell or a menu item."
+    >
+      <div role="group" aria-label="Host row" data-lab-host-row style={{ width: 280 }}>
+        <ListRowContent title="Quarterly notes" meta="Edited today" icon={InfoGlyph} />
       </div>
     </LabSection>
   </>,

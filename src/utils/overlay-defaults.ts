@@ -5,8 +5,6 @@
 export const DEFAULT_OVERLAY_GUTTER = 8;
 /** Space between an anchor and an overlay the library positions itself, such as a toolbar. */
 export const DEFAULT_OVERLAY_GAP = 6;
-/** How far a submenu the library positions itself overlaps its parent menu. */
-export const DEFAULT_SUBMENU_OVERLAP = 6;
 
 /** Space between a field or trigger and its dropdown list, menu or panel. */
 export const DEFAULT_DROPDOWN_OFFSET = 4;

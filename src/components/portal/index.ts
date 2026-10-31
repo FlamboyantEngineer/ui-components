@@ -5,5 +5,5 @@ export type {
   PortalHostProps,
   PortalProps,
 } from './portal.js';
-export { defaultLayerZIndex, isLayerAbove, overlayLayers } from './layers.js';
+export { isLayerAbove, overlayLayers } from './layers.js';
 export type { OverlayLayer } from './layers.js';

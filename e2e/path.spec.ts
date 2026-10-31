@@ -111,3 +111,11 @@ test.describe('Path lab', () => {
     });
   }
 });
+
+test('UIC-PATH-1.3 shows the exported helpers in a host-side snippet', async ({ page, lab }) => {
+  await lab.open('path');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("formatFolderPath(folders, 'tomatoes')")).toHaveText(
+    '/Garden/Vegetable beds/Tomatoes',
+  );
+});

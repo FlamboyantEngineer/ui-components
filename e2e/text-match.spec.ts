@@ -82,3 +82,16 @@ test.describe('Text Match lab', () => {
     await expect(marks('decomposed', 'resume', 'ignored')).toHaveText('re\u0301sume\u0301');
   });
 });
+
+test('UIC-TEXT-MATCH-1.1 UIC-TEXT-MATCH-1.2 UIC-TEXT-MATCH-1.3 shows the exported helpers in a host-side snippet', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('text-match');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call("normalizeMatchText('Crème Brûlée', { ignoreAccents: true })")).toHaveText(
+    'creme brulee',
+  );
+  await expect(call("findWordMatches('tea, steam, teapot', 'tea')")).toHaveText('[0,12]');
+  await expect(call("isWordMatchAt('steam', 1, 'tea')")).toHaveText('false');
+});

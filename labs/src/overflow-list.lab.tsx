@@ -5,6 +5,8 @@ import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.j
 import { ToolbarRow } from '../../src/components/layout/index.js';
 import { OverflowList } from '../../src/components/overflow-list/overflow-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { resolveOverflowCount } from '../../src/utils/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 import { NoteRow } from './overflow-list-notes.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry', 'Fig', 'Grape'];
@@ -138,6 +140,24 @@ mountLab(
       description="Type a note in a kept item, then reverse, add or remove items: each note stays with its item, and focus with the field it is in. An item that leaves for the menu loses its note."
     >
       <NoteRow />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="The count OverflowList keeps visible, from measured sizes, for a host laying out its own strip."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            'resolveOverflowCount({ sizes: [60, 60, 60, 60], available: 200, gap: 8, indicatorSize: 40 })',
+            resolveOverflowCount({
+              sizes: [60, 60, 60, 60],
+              available: 200,
+              gap: 8,
+              indicatorSize: 40,
+            }),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

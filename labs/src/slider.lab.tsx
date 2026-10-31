@@ -9,6 +9,8 @@ import {
   type SliderValueLabel,
 } from '../../src/components/slider/slider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { keepThumbsApart } from '../../src/components/slider/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
@@ -240,6 +242,21 @@ mountLab(
       description="Each thumb submits under the slider's name; an invalid range blocks the submit."
     >
       <SavedForm />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="The spacing rule a range slider with minDistance applies, for a host that adjusts a range from its own inputs."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            'keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })',
+            JSON.stringify(
+              keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 }),
+            ),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

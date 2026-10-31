@@ -2,9 +2,10 @@ import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
-import { overlayLayers } from '../../src/components/portal/index.js';
+import { isLayerAbove, overlayLayers } from '../../src/components/portal/index.js';
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 
 // Lab-only presentation for the content placed in portals; the library draws none of it.
 const card: CSSProperties = {
@@ -436,6 +437,17 @@ mountLab(
       description="A dropdown-layer portal opened from a modal stays usable: choosing a colour keeps the dialog open."
     >
       <ColourDialog />
+    </LabSection>
+    <LabSection
+      title="Host helpers"
+      description="isLayerAbove compares two layers, for a host deciding whether its own overlay covers another."
+    >
+      <LabHelperCalls
+        calls={[
+          ["isLayerAbove('tooltip', 'modal')", String(isLayerAbove('tooltip', 'modal'))],
+          ["isLayerAbove('drawer', 'dropdown')", String(isLayerAbove('drawer', 'dropdown'))],
+        ]}
+      />
     </LabSection>
   </>,
 );
