@@ -138,7 +138,11 @@ export function CompletionList(props: CompletionListProps) {
   const label = props['aria-labelledby'] ? undefined : (props['aria-label'] ?? strings.suggestions);
   return (
     <>
-      <PopoverPresence isOpen={isShown} triggerRef={anchorRef} />
+      <PopoverPresence
+        isOpen={isShown}
+        triggerRef={anchorRef}
+        onClose={() => onOpenChange?.(false)}
+      />
       <Popover
         {...hooks.root({ className, props: rest })}
         isOpen={isShown}

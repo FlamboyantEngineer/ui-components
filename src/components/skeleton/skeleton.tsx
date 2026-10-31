@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { LoadingBoundaryProvider } from '../../core/loading-boundary.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { normalizeCount } from '../../utils/count.js';
@@ -29,6 +32,9 @@ export interface SkeletonTextProps extends BaseProps, Pick<SkeletonProps, 'anima
 const hooks = createHooks('skeleton', ['content']);
 const textHooks = createHooks('skeleton-text', ['line']);
 
+/** A skeleton has no focusable root to hold focus on; an overlay's own restoration applies. */
+function keepFocus() {}
+
 /**
  * A placeholder for content that is loading. Without children it is a decorative block of `shape`;
  * around real content it is the loading region, drawing the placeholder in the content's place
@@ -49,7 +55,9 @@ export function Skeleton({
   return (
     <div {...rest} {...hooks.root({ className, data })} aria-busy={isLoading || undefined}>
       <div {...hooks.slot('content')} inert={isLoading} aria-hidden={isLoading || undefined}>
-        {children}
+        <LoadingBoundaryProvider isSuspended={isLoading} holdFocus={keepFocus}>
+          {children}
+        </LoadingBoundaryProvider>
       </div>
     </div>
   );

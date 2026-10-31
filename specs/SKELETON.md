@@ -48,6 +48,13 @@ When `isLoading` turns false the skeleton shall drop `data-loading`, `data-anima
 Implementation: `src/components/skeleton/skeleton.tsx`
 Verification: `src/components/skeleton/skeleton.test.tsx`, `e2e/skeleton.spec.ts`
 
+### UIC-SKELETON-2.3 - Overlays opened from the content
+
+While loading, `Skeleton` shall close the library's interactive overlays opened from its content, as `LoadingRegion` does ([UIC-LOADING-OVERLAY-3.5](LOADING-OVERLAY.md#uic-loading-overlay-35---overlays-opened-from-the-content)), so a menu that renders outside the hidden content in a portal cannot be activated. A skeleton has no focusable root, so it does not hold focus: the overlay's own focus restoration applies.
+
+Implementation: `src/core/loading-boundary.tsx`, `src/components/skeleton/skeleton.tsx`, `src/components/popover/popover-presence.tsx`
+Verification: `src/components/loading-overlay/loading-region-overlays.test.tsx`
+
 ## UIC-SKELETON-3 - Text placeholder
 
 ### UIC-SKELETON-3.1 - Lines
