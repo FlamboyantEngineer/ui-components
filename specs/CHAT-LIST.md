@@ -55,7 +55,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 
 ### UIC-CHAT-LIST-1.8 - Loading
 
-While `isLoading`, the root shall carry `data-loading` and be busy (`aria-busy`), and four placeholder rows (`ui-chat-list__skeleton`, each a circle [Skeleton](SKELETON.md) and two text lines) stand in for the rows, with a status reading the provider string `loadingConversations`.
+While `isLoading`, the root shall carry `data-loading` and nothing in the list is marked busy (`aria-busy`), since the rows are replaced and a busy ancestor would hold back the status; four placeholder rows (`ui-chat-list__skeleton`, each a circle [Skeleton](SKELETON.md) and two text lines) stand in for the rows, with a status reading the provider string `loadingConversations`.
 
 Implementation: `src/components/chat-list/chat-list.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`

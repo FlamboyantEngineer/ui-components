@@ -74,8 +74,9 @@ test.describe('PDF Viewer lab', () => {
   }) => {
     await lab.open('pdf-viewer');
     const loading = matrixCell(page, 'state=loading').locator('.ui-pdf-viewer');
-    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(loading.getByRole('document')).toHaveAttribute('aria-busy', 'true');
     await expect(loading.locator('.ui-loading-overlay')).toBeVisible();
+    await expect(loading.locator('[aria-busy="true"] [role="status"]')).toHaveCount(0);
     await expect(loading.getByRole('slider', { name: 'Zoom level' })).toBeDisabled();
 
     const failed = matrixCell(page, 'state=error');

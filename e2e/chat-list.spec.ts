@@ -106,7 +106,7 @@ test.describe('Chat List lab', () => {
     await lab.open('chat-list');
     const loading = cell(page, 'state=loading');
     await expect(loading).toHaveAttribute('data-loading', 'true');
-    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(loading.locator('[aria-busy="true"]')).toHaveCount(0);
     await expect(loading.locator('.ui-chat-list__skeleton')).toHaveCount(4);
     await expect(loading.getByRole('status')).toHaveText('Loading conversations');
     await expect(cell(page, 'state=empty').locator('.ui-chat-list__empty')).toHaveText(

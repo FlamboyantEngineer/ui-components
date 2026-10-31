@@ -107,7 +107,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-4.1 - Loading
 
-`isPending` shall set `aria-busy="true"` and `data-pending` on the tree. A pending tree with no items shall show one loading row holding a small loading `EmptyState` (a polite status, also `ui-tree__empty`) that reads the provider's `loading` string.
+`isPending` shall set `data-pending` on the tree, and `aria-busy="true"` while the tree shows items; an empty pending tree is not busy, so no busy ancestor holds back its loading status. A pending tree with no items shall show one loading row holding a small loading `EmptyState` (a polite status, also `ui-tree__empty`) that reads the provider's `loading` string.
 
 Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`
 Verification: `src/components/tree/tree.test.tsx`

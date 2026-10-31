@@ -91,6 +91,8 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
         ref={scrollerRef}
         role="document"
         aria-label={label}
+        // Only the document is busy: the loading overlay's status sits beside it, not inside.
+        aria-busy={pdf.status === 'loading' || undefined}
         tabIndex={0}
         onScroll={pages.handleScroll}
         onKeyDown={onScrollerKeyDown}

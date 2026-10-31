@@ -164,11 +164,7 @@ export function ChatList({
     onSelectionChange?.(String(key));
   };
   return (
-    <div
-      {...rest}
-      {...listHooks.root({ className, props: rest, data: { loading: isLoading } })}
-      aria-busy={isLoading || undefined}
-    >
+    <div {...rest} {...listHooks.root({ className, props: rest, data: { loading: isLoading } })}>
       <ListHeader
         query={query}
         onSearch={(value) => {

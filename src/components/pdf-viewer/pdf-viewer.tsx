@@ -165,7 +165,6 @@ export function PdfViewer<
         },
       })}
       id={id}
-      aria-busy={pdf.status === 'loading' || undefined}
       style={measuredProperty('pdf-viewer-scale', String(zoom.scale))}
     >
       {toolbarSlot ? <ProjectionContent slot={toolbarSlot}>{toolbar}</ProjectionContent> : toolbar}

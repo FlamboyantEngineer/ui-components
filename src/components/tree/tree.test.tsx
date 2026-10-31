@@ -405,8 +405,9 @@ describe('Tree', () => {
   it('UIC-TREE-4.1 shows a loading row while an empty tree is pending', () => {
     const { container, rerender } = render(<FoodTree items={[]} isPending />);
     const tree = screen.getByRole('treegrid');
-    expect(tree).toHaveAttribute('aria-busy', 'true');
+    expect(tree).not.toHaveAttribute('aria-busy');
     expect(tree).toHaveAttribute('data-pending', 'true');
+    expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     const empty = container.querySelector('.ui-tree__empty');
     expect(empty).toHaveClass('ui-empty-state');
     expect(empty).toHaveAttribute('data-variant', 'loading');

@@ -282,11 +282,12 @@ describe('NotificationList', () => {
   it('UIC-NOTIFICATION-CENTER-1.7 shows the empty and loading states', () => {
     const { container, rerender, unmount } = render(<NotificationList items={[]} isLoading />);
     const root = container.firstElementChild as HTMLElement;
-    expect(root).toHaveAttribute('aria-busy', 'true');
+    expect(root).not.toHaveAttribute('aria-busy');
     expect(root.querySelector('.ui-notification-list__empty')).toHaveAttribute(
       'data-variant',
       'loading',
     );
+    expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     rerender(<NotificationList items={[]} />);
     expect(root).not.toHaveAttribute('aria-busy');
     expect(screen.getByRole('heading', { name: 'No notifications' })).toBeInTheDocument();
@@ -314,6 +315,12 @@ describe('NotificationList', () => {
       'data-pending',
       'true',
     );
+    expect(container.querySelector('.ui-notification-list__group')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(container.firstElementChild).not.toHaveAttribute('aria-busy');
+    expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     rerender(<NotificationList items={[]} getNow={getNow} hasMore onLoadMore={onLoadMore} />);
     expect(container.querySelector('.ui-notification-list__load-more')).toBeNull();
     expectHooksMatchSpec(container, 'NOTIFICATION-CENTER', { slots: ['empty'] });

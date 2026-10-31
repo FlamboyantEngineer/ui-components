@@ -54,8 +54,10 @@ describe('PdfViewer', () => {
   it('UIC-PDF-VIEWER-1.3 stays loading, busy and disabled while the source is pending', async () => {
     const { root, engine, container, rerender } = renderViewer({ source: null });
     expect(root).toHaveAttribute('data-loading', 'true');
-    expect(root).toHaveAttribute('aria-busy', 'true');
+    expect(root).not.toHaveAttribute('aria-busy');
+    expect(screen.getByRole('document')).toHaveAttribute('aria-busy', 'true');
     expect(container.querySelector('.ui-pdf-viewer__stage .ui-loading-overlay')).not.toBeNull();
+    expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     expect(screen.getByRole('slider', { name: 'Zoom level' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Fit page width' })).toBeDisabled();
     expect(screen.getByLabelText('Page')).toBeDisabled();
@@ -64,7 +66,7 @@ describe('PdfViewer', () => {
 
     rerender(<PdfViewer source="/files/Report.pdf" loadEngine={engine.loadEngine} />);
     await waitFor(() => expect(root).not.toHaveAttribute('data-loading'));
-    expect(root).not.toHaveAttribute('aria-busy');
+    expect(screen.getByRole('document')).not.toHaveAttribute('aria-busy');
     expect(container.querySelector('.ui-loading-overlay')).toBeNull();
   });
 
