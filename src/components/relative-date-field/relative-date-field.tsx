@@ -197,6 +197,25 @@ function toFormText(value: RelativeDateValue | null): string {
     : `${value.start}/${value.end}`;
 }
 
+/** Commits a picked value: a preset's, or a calendar day or range read in the field's zone. */
+function usePick<K extends RelativeDateKind>(
+  state: FieldState<RelativeDateFieldValue<K>>,
+  { kind, getNow, timeZone }: { kind: RelativeDateKind; getNow: () => Date; timeZone: string },
+) {
+  const commit = (next: RelativeDateValue) => {
+    state.setValue(next as RelativeDateFieldValue<K>);
+    state.commit();
+  };
+  const pickDate = (picked: string | RelativeDateRange) => {
+    if (typeof picked !== 'string') commit(picked);
+    else {
+      const pickedKind = kind === 'date-time' ? kind : 'date';
+      commit(resolvePickedDate(picked, { now: getNow(), timeZone, kind: pickedKind }));
+    }
+  };
+  return { commit, pickDate };
+}
+
 /**
  * A field that sets a date, an instant or a range of dates from relative presets (React Aria
  * `Select`), and with `showCalendar` from a calendar beside them: the trigger reads the value
@@ -231,17 +250,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
     isDisabled:
       now !== null && findRelativeBoundIssue(resolvePreset(preset, context(now)), bounds) !== null,
   }));
-  const commit = (next: RelativeDateValue) => {
-    state.setValue(next as RelativeDateFieldValue<K>);
-    state.commit();
-  };
-  const pickDate = (picked: string | RelativeDateRange) => {
-    if (typeof picked !== 'string') commit(picked);
-    else {
-      const pickedKind = kind === 'date-time' ? kind : 'date';
-      commit(resolvePickedDate(picked, { now: getNow(), timeZone, kind: pickedKind }));
-    }
-  };
+  const { commit, pickDate } = usePick(state, { kind, getNow, timeZone });
   const data = { valueKind: kind, relation: text?.relation };
   return (
     <Field

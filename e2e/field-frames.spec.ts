@@ -6,7 +6,7 @@ const frames: { lab: string; frame: string; focus?: string }[] = [
   { lab: 'field', frame: '.ui-field__control > input' },
   { lab: 'text-field', frame: '.ui-text-field__input:not(.ui-text-field__group *)' },
   { lab: 'text-field', frame: '.ui-text-field__group' },
-  { lab: 'search-field', frame: ".ui-search-field:not([data-label-layout='label-control'])" },
+  { lab: 'search-field', frame: '.ui-search-field__group' },
   { lab: 'number-field', frame: '.ui-number-field__group' },
   { lab: 'select-field', frame: '.ui-select-field__trigger' },
   { lab: 'combobox', frame: '.ui-combobox__field' },
