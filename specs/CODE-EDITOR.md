@@ -71,10 +71,10 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-2.3 - First line number
 
-`firstLineNumber` (1 by default) shall be the number of the gutter's first row, for an excerpt of a longer text; the rows count up from it. Diagnostics count lines the same way: their `line` and `endLine` name lines as the gutter numbers them, so the gutter rows (UIC-CODE-EDITOR-3.3), the marked ranges (UIC-CODE-EDITOR-3.4), the hover tips and F8 follow the line a diagnostic names, the list reads it as given, and a diagnostic naming a line outside the excerpt marks nothing.
+`firstLineNumber` (1 by default) shall be the number of the gutter's first row, for an excerpt of a longer text; the rows count up from it. Diagnostics count lines the same way: their `line` and `endLine` name lines as the gutter numbers them, so the gutter rows (UIC-CODE-EDITOR-3.3), the marked ranges (UIC-CODE-EDITOR-3.4), the hover tips and F8 follow the line a diagnostic names, the list reads it as given, and a diagnostic naming a line outside the excerpt marks nothing. A JSON field's own parse and schema problems (UIC-CODE-EDITOR-9.3, UIC-CODE-EDITOR-13.1) number their lines the same way, in their marks and in the field's message, so they sit with the caller's diagnostics on the same rows.
 
-Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-ranges.ts`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-ranges.test.ts`, `e2e/code-editor.spec.ts`
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-ranges.ts`, `src/components/code-editor/json-check.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-ranges.test.ts`, `src/components/code-editor/code-json.test.tsx`, `e2e/code-editor.spec.ts`, `e2e/code-json.spec.ts`
 
 ## UIC-CODE-EDITOR-3 - Diagnostics
 

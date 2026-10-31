@@ -11,6 +11,7 @@ import {
   toAriaControlProps,
   useFieldControl,
   type FieldControlProps,
+  type FieldIssue,
 } from '../field/field.js';
 import { createJsonChecker } from './json-check.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
@@ -45,20 +46,37 @@ function CodeFormat({ isDisabled, onPress }: { isDisabled: boolean; onPress: () 
   );
 }
 
-function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFieldProps) {
+/**
+ * The field's check: a JSON field's own parse and schema problem, numbering lines as the gutter
+ * does like the caller's diagnostics, else the caller's first error.
+ */
+function useCodeFieldCheck(props: CodeEditorFieldProps) {
   const strings = useUiStrings();
-  const { schema, language = 'text' } = props;
+  const { schema, language = 'text', firstLineNumber } = props;
   const isJson = language === 'json';
   const problem = props.diagnostics?.find(
     (problem) => !problem.severity || problem.severity === 'error',
   );
-  const check = useMemo(() => createJsonChecker(schema, strings), [schema, strings]);
+  const check = useMemo(
+    () => createJsonChecker({ schema, strings, firstLine: firstLineNumber }),
+    [schema, strings, firstLineNumber],
+  );
+  return {
+    check,
+    isJson,
+    checkField: (value: string): FieldIssue | null =>
+      (isJson ? check(value).issue : null) ??
+      (problem ? { severity: 'error', message: problem.message } : null),
+  };
+}
+
+function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFieldProps) {
+  const { schema, language = 'text' } = props;
+  const { check, isJson, checkField } = useCodeFieldCheck(props);
   const { state, field, rest } = useFieldControl<string, CodeEditorFieldProps>(props, {
     initialValue: '',
     emptyValue: '',
-    check: (value) =>
-      (isJson ? check(value).issue : null) ??
-      (problem ? { severity: 'error', message: problem.message } : null),
+    check: checkField,
   });
   const {
     indent = 2,

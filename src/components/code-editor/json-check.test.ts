@@ -8,11 +8,10 @@ import type { JsonSchema } from './json-schema.js';
 describe('JSON diagnostics', () => {
   it('UIC-CODE-EDITOR-13.1 maps errors across lines and keeps the first problem as the field message', () => {
     const source = '{\n "x": 0,\n "y": ["a",\n4]\n}';
-    const result = checkJsonText(
-      source,
-      { properties: { x: { minimum: 1 }, y: { items: { type: 'string' } } } },
-      defaultStrings,
-    );
+    const result = checkJsonText(source, {
+      schema: { properties: { x: { minimum: 1 }, y: { items: { type: 'string' } } } },
+      strings: defaultStrings,
+    });
     expect(result.diagnostics).toEqual([
       { message: 'Enter 1 or more.', line: 2, column: 7, endLine: 2, endColumn: 8 },
       { message: 'Expected string.', line: 4, column: 1, endLine: 4, endColumn: 2 },
@@ -31,7 +30,7 @@ describe('JSON diagnostics', () => {
         return 'integer';
       },
     };
-    const check = createJsonChecker(schema, defaultStrings);
+    const check = createJsonChecker({ schema, strings: defaultStrings });
     expect(check('1').issue).toBeNull();
     const afterFirst = reads;
     expect(check('1').issue).toBeNull();
