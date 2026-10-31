@@ -22,7 +22,7 @@ export type VersionAction = 'rename' | 'restore';
 
 interface VersionRowContext extends Pick<
   AttributionProps,
-  'showAvatar' | 'fallbackAfterDays' | 'getNow'
+  'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'
 > {
   currentKey: Key | null;
   locale: string;
@@ -109,6 +109,7 @@ export function renderVersionRow(
             showAvatar={context.showAvatar}
             fallbackAfterDays={context.fallbackAfterDays}
             getNow={context.getNow}
+            timeZone={context.timeZone}
             className={hooks.slotClass('attribution')}
           />
           {isEmptyNode(version.summary) ? null : (

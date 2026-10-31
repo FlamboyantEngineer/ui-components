@@ -125,6 +125,19 @@ describe('ChatList', () => {
     expect(badge).toHaveTextContent('2 unread messages');
   });
 
+  it('UIC-CHAT-LIST-1.3 reads the time with the caller fallback and zone in the row and its name', () => {
+    const old: ChatConversation = { id: 'old', title: 'Old trip', time: '2026-04-16T09:00:00' };
+    const { rerender } = render(<ChatList conversations={[old]} getNow={getNow} />);
+    expect(row(/^Old trip/)).toHaveAccessibleName('Old trip, 4 days ago');
+    rerender(
+      <ChatList conversations={[old]} getNow={getNow} fallbackAfterDays={2} timeZone="UTC" />,
+    );
+    const time = row(/^Old trip/).querySelector('.ui-chat-list__time');
+    expect(time).toHaveClass('ui-attribution');
+    expect(time).toHaveTextContent('Apr 16, 2026, 9:00 AM');
+    expect(row(/^Old trip/)).toHaveAccessibleName('Old trip, Apr 16, 2026, 9:00 AM');
+  });
+
   it('UIC-CHAT-LIST-1.4 selects one conversation by press or key and reports it', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();

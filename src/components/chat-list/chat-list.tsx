@@ -12,9 +12,14 @@ import { SearchField } from '../search-field/search-field.js';
 import { Skeleton, SkeletonText } from '../skeleton/skeleton.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import type { AttributionProps } from '../attribution/attribution.js';
 import { ChatListRow, listHooks, type ChatConversation } from './chat-list-row.js';
 
-export interface ChatListProps extends BaseProps, AriaLabellingProps {
+export interface ChatListProps
+  extends
+    BaseProps,
+    AriaLabellingProps,
+    Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
   /** The conversations, in the order to list them. */
   conversations: readonly ChatConversation[];
   /** The open conversation's id, controlled (`null` for none). Left out, the list keeps it. */
@@ -35,11 +40,7 @@ export interface ChatListProps extends BaseProps, AriaLabellingProps {
   emptyState?: ReactNode;
   /** Controls at the end of each row, such as a menu of the conversation's commands. */
   renderActions?: ((conversation: ChatConversation) => ReactNode) | undefined;
-  /** The clock the times are read against. Defaults to the current time. */
-  getNow?: (() => Date) | undefined;
 }
-
-const currentTime = () => new Date();
 
 /** How many placeholder rows stand in for the conversations while they load. */
 const skeletonRows = 4;
@@ -146,7 +147,9 @@ export function ChatList({
   isLoading = false,
   emptyState,
   renderActions,
-  getNow = currentTime,
+  fallbackAfterDays,
+  getNow,
+  timeZone,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledby,
   className,
@@ -183,7 +186,7 @@ export function ChatList({
           disallowEmptySelection
           selectedKeys={selected === null ? [] : [selected]}
           onSelectionChange={select}
-          dependencies={[renderActions, getNow]}
+          dependencies={[renderActions, fallbackAfterDays, getNow, timeZone]}
           renderEmptyState={() => (
             <ListEmptyState
               isLoading={isLoading}
@@ -196,7 +199,9 @@ export function ChatList({
             <ChatListRow
               conversation={conversation}
               renderActions={renderActions}
+              fallbackAfterDays={fallbackAfterDays}
               getNow={getNow}
+              timeZone={timeZone}
             />
           )}
         </GridList>

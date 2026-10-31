@@ -18,7 +18,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
-import { RelativeTime } from '../relative-time/relative-time.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { SegmentedBar } from '../segmented-bar/segmented-bar.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
@@ -42,7 +42,9 @@ export interface ApprovalPanelApprover {
   comment?: ReactNode;
 }
 
-export interface ApprovalPanelProps extends BaseProps, RefProps<HTMLElement> {
+type ApprovalTimeOptions = Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
+
+export interface ApprovalPanelProps extends BaseProps, RefProps<HTMLElement>, ApprovalTimeOptions {
   /** The approvers, in the order they show. */
   approvers: readonly ApprovalPanelApprover[];
   /** The approvals needed. Defaults to every approver. */
@@ -55,15 +57,15 @@ export interface ApprovalPanelProps extends BaseProps, RefProps<HTMLElement> {
   onRemind?: ((id: Key) => void) | undefined;
   /** Draws a Request again button on each decided approver's row that calls this with their id. */
   onRequestAgain?: ((id: Key) => void) | undefined;
-  /** The clock decision times are read against. Defaults to the current time. */
-  getNow?: (() => Date) | undefined;
   /** The reader's own decision, such as a `DecisionControl`, under the approvers. */
   children?: ReactNode;
 }
 
-type ApproverRowProps = Pick<ApprovalPanelProps, 'onRemind' | 'onRequestAgain' | 'getNow'> & {
+type ApproverRowProps = Pick<ApprovalPanelProps, 'onRemind' | 'onRequestAgain'> & {
   approver: ApprovalPanelApprover;
   isCurrent: boolean;
+  /** How the decision time reads. */
+  timeOptions: ApprovalTimeOptions;
 };
 
 const hooks = createHooks('approval-panel', [
@@ -154,7 +156,7 @@ function ApproverActions({ approver, onRemind, onRequestAgain }: ApproverRowProp
 
 function ApproverRow(props: ApproverRowProps) {
   const strings = useUiStrings();
-  const { approver, isCurrent, getNow } = props;
+  const { approver, isCurrent, timeOptions } = props;
   const { decision } = approver;
   return (
     <li {...hooks.slot('approver', { decision, current: isCurrent })}>
@@ -180,7 +182,7 @@ function ApproverRow(props: ApproverRowProps) {
         {strings.approvalDecision(decision)}
       </Badge>
       {approver.time ? (
-        <RelativeTime value={approver.time} getNow={getNow} className={hooks.slotClass('time')} />
+        <Attribution time={approver.time} {...timeOptions} className={hooks.slotClass('time')} />
       ) : null}
       {isEmptyNode(approver.comment) ? null : (
         <div {...hooks.slot('comment')}>{approver.comment}</div>
@@ -203,12 +205,15 @@ export function ApprovalPanel({
   currentApproverId,
   onRemind,
   onRequestAgain,
+  fallbackAfterDays,
   getNow,
+  timeZone,
   children,
   className,
   ...rest
 }: ApprovalPanelProps) {
   const strings = useUiStrings();
+  const timeOptions = { fallbackAfterDays, getNow, timeZone };
   const titleId = useId();
   const Heading = `h${useHeadingLevel(undefined)}` as const;
   const required = resolveRequired(requiredCount, approvers.length);
@@ -256,7 +261,7 @@ export function ApprovalPanel({
             isCurrent={approver.id === currentApproverId}
             onRemind={onRemind}
             onRequestAgain={onRequestAgain}
-            getNow={getNow}
+            timeOptions={timeOptions}
           />
         ))}
       </ul>

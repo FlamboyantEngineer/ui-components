@@ -13,7 +13,9 @@ import {
 import { isTimeFirst, parseAttributionTemplate } from './attribution-template.js';
 
 export interface AttributionProps
-  extends BaseProps, Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
+  extends
+    BaseProps,
+    Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow' | 'timeZone' | 'showTooltip'> {
   /** When it happened: an ISO 8601 date or date and time. */
   time: string | null | undefined;
   /** Who did it. */
@@ -71,6 +73,7 @@ export function Attribution({
   fallbackAfterDays,
   getNow,
   timeZone,
+  showTooltip,
   className,
   ...rest
 }: AttributionProps) {
@@ -100,6 +103,7 @@ export function Attribution({
             fallbackAfterDays={fallbackAfterDays}
             getNow={getNow}
             timeZone={timeZone}
+            showTooltip={showTooltip}
             capitalize={capitalize}
             placeholder={strings.unknownTime}
             className={hooks.slotClass('time')}

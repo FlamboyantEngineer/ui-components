@@ -142,3 +142,15 @@ test.describe('Chat List lab', () => {
     }
   });
 });
+
+test('UIC-CHAT-LIST-1.3 reads the time with the caller fallback in the row and its name', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chat-list');
+  const days = matrixCell(page, 'fallback=default').getByRole('row');
+  await expect(days).toHaveAccessibleName('Museum visit, 4 days ago');
+  const date = matrixCell(page, 'fallback=fallbackAfterDays 2').getByRole('row');
+  await expect(date.locator('.ui-chat-list__time')).toHaveText('Apr 16, 2026, 9:00 AM');
+  await expect(date).toHaveAccessibleName('Museum visit, Apr 16, 2026, 9:00 AM');
+});

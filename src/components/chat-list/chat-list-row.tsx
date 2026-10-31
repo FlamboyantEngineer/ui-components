@@ -5,14 +5,15 @@ import type { ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { PresenceStatus } from '../../core/props.js';
+import { useGetNow, useTimeZone } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { capitalizeText, describeRelativeTime } from '../../utils/relative-time.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, resolveStatusLabel, type AvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
-import { RelativeTime } from '../relative-time/relative-time.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
@@ -46,10 +47,12 @@ export interface ChatConversation {
   isMuted?: boolean | undefined;
 }
 
-interface ChatListRowProps {
+/** How a conversation's time reads, in its row and in the row's name. */
+type ChatListTimeOptions = Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
+
+interface ChatListRowProps extends ChatListTimeOptions {
   conversation: ChatConversation;
   renderActions: ((conversation: ChatConversation) => ReactNode) | undefined;
-  getNow: () => Date;
 }
 
 export const listHooks = createHooks('chat-list', [
@@ -70,10 +73,15 @@ export const listHooks = createHooks('chat-list', [
 ]);
 
 /** The time as the row shows it, for the row's name. */
-function useTimeText(value: string | undefined, getNow: () => Date): string | undefined {
+function useTimeText(
+  value: string | undefined,
+  { fallbackAfterDays = 7, getNow, timeZone }: ChatListTimeOptions,
+): string | undefined {
   const { locale } = useLocale();
+  const now = useGetNow(getNow);
+  const zone = useTimeZone(timeZone);
   const text = value
-    ? describeRelativeTime(value, { now: getNow(), locale, fallbackAfterDays: 7 })
+    ? describeRelativeTime(value, { now: now(), locale, fallbackAfterDays, timeZone: zone })
     : null;
   if (!text) return undefined;
   return text.isRelative ? capitalizeText(text.relative, locale) : text.relative;
@@ -96,11 +104,11 @@ function ConversationAvatar({ conversation }: { conversation: ChatConversation }
  * the host's actions. The row is named by its title, presence, unread count, muted state and time,
  * then the last message.
  */
-export function ChatListRow({ conversation, renderActions, getNow }: ChatListRowProps) {
+export function ChatListRow({ conversation, renderActions, ...timeOptions }: ChatListRowProps) {
   const strings = useUiStrings();
   const { title, lastMessage, time, isMuted = false, participants = [] } = conversation;
   const unread = normalizeCount(conversation.unreadCount) ?? 0;
-  const timeText = useTimeText(time, getNow);
+  const timeText = useTimeText(time, timeOptions);
   const [only] = participants;
   const presence =
     conversation.avatar || !only
@@ -128,9 +136,9 @@ export function ChatListRow({ conversation, renderActions, getNow }: ChatListRow
         <TextMatch>{title}</TextMatch>
       </span>
       {time ? (
-        <RelativeTime
-          value={time}
-          getNow={getNow}
+        <Attribution
+          time={time}
+          {...timeOptions}
           showTooltip={false}
           className={listHooks.slotClass('time')}
         />

@@ -83,8 +83,9 @@ describe('NotificationList', () => {
       'Maria Santos · Requirement 12 · 5 minutes ago',
     );
     const time = mention.querySelector('.ui-notification-list__time');
-    expect(time).toHaveClass('ui-relative-time');
-    expect(time).not.toHaveAttribute('tabindex');
+    expect(time).toHaveTextContent('5 minutes ago');
+    expect(time).toHaveClass('ui-attribution');
+    expect(time?.querySelector('.ui-relative-time')).not.toHaveAttribute('tabindex');
     const link = within(mention).getByRole('link');
     expect(link).toHaveAttribute('href', '/requirements/12');
     expect(row('Import finished').querySelector('[data-glyph="success"]')).not.toBeNull();

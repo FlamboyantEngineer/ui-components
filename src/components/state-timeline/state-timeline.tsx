@@ -39,7 +39,7 @@ export interface StateTimelineProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'>,
     RefProps<HTMLOListElement> {
   /** The state changes, oldest first; the last one is the current state. */
   entries: readonly StateTimelineEntry[];
@@ -55,7 +55,7 @@ interface TimelineRow {
 }
 
 type EntryProps = TimelineRow &
-  Pick<StateTimelineProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>;
+  Pick<StateTimelineProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
 
 const hooks = createHooks('state-timeline', [
   'entry',
@@ -84,7 +84,7 @@ function toRows(
   return direction === 'descending' ? rows.reverse() : rows;
 }
 
-function Entry({ entry, status, showAvatar, fallbackAfterDays, getNow }: EntryProps) {
+function Entry({ entry, status, ...attribution }: EntryProps) {
   const strings = useUiStrings();
   const isCurrent = status === 'current';
   const hasAttribution = status !== 'upcoming' && (entry.time || entry.person);
@@ -117,9 +117,7 @@ function Entry({ entry, status, showAvatar, fallbackAfterDays, getNow }: EntryPr
             <Attribution
               time={entry.time}
               person={entry.person}
-              showAvatar={showAvatar}
-              fallbackAfterDays={fallbackAfterDays}
-              getNow={getNow}
+              {...attribution}
               className={hooks.slotClass('attribution')}
             />
           ) : null}
@@ -141,6 +139,7 @@ export function StateTimeline({
   showAvatar,
   fallbackAfterDays,
   getNow,
+  timeZone,
   className,
   ...rest
 }: StateTimelineProps) {
@@ -160,6 +159,7 @@ export function StateTimeline({
           showAvatar={showAvatar}
           fallbackAfterDays={fallbackAfterDays}
           getNow={getNow}
+          timeZone={timeZone}
         />
       ))}
     </ol>

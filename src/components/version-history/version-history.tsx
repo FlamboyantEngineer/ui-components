@@ -52,7 +52,7 @@ export interface VersionHistoryProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow' | 'timeZone'>,
     RefProps<HTMLDivElement> {
   /** The versions, newest first. */
   versions: readonly VersionHistoryVersion[];
@@ -192,6 +192,7 @@ export function VersionHistory(props: VersionHistoryProps) {
     showAvatar: props.showAvatar,
     fallbackAfterDays: props.fallbackAfterDays,
     getNow: props.getNow,
+    timeZone: props.timeZone,
   };
   const isNamed = props['aria-label'] !== undefined || props['aria-labelledby'] !== undefined;
   return (
