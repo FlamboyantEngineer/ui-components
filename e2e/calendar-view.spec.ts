@@ -152,6 +152,33 @@ test.describe('Calendar View lab', () => {
     );
   });
 
+  for (const view of ['Month', 'Week'] as const) {
+    test(`UIC-CALENDAR-VIEW-2.2 keeps a focused event's button through repacked lanes (${view})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('calendar-view');
+      const calendar = page.locator('[data-lab-demo="live-lanes"]');
+      const output = calendar.locator('[data-lab-output]');
+      await calendar.getByRole('radio', { name: view }).click();
+      const inventory = calendar.getByRole('button', { name: /^Inventory count,/ });
+      await calendar.getByRole('button', { name: 'Add an earlier event in a second' }).click();
+      await inventory.focus();
+      const prep = calendar.getByRole('button', { name: /^Audit prep,/ });
+      await expect(prep).toBeVisible();
+      await expect(inventory).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(output).toHaveText('Opened inventory');
+      await calendar.getByRole('button', { name: 'Rename Audit prep in a second' }).click();
+      await prep.focus();
+      const renamed = calendar.getByRole('button', { name: /^Wrap-up,/ });
+      await expect(renamed).toBeVisible();
+      await expect(renamed).toBeFocused();
+      await page.keyboard.press('Space');
+      await expect(output).toHaveText('Opened prep');
+    });
+  }
+
   test('UIC-CALENDAR-VIEW-4.2 moves between days by keyboard', async ({ page, lab }) => {
     await lab.open('calendar-view');
     const calendar = interactive(page);

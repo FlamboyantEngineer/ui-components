@@ -27,7 +27,7 @@ export interface CalendarGrid {
   onFocus: (event: FocusEvent<HTMLElement>) => void;
 }
 
-const dayCellSelector = '[role="gridcell"][data-date]';
+export const dayCellSelector = '[role="gridcell"][data-date]';
 
 /**
  * Arrow keys, Home, End, PageUp and PageDown on a day cell move from that cell's day, make the day

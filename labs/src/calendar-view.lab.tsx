@@ -6,6 +6,7 @@ import {
   type CalendarViewEvent,
   type CalendarViewMode,
 } from '../../src/components/calendar-view/calendar-view.js';
+import { Button } from '../../src/components/button/button.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { fr } from '../../src/core/locales/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -104,6 +105,59 @@ function InteractiveCalendar() {
   );
 }
 
+const shelfDay: CalendarViewEvent[] = [
+  { id: 'inventory', title: 'Inventory count', start: '2026-03-20' },
+];
+
+/**
+ * All-day events that change a second after a button press, so the reader can focus an event
+ * first: one added before it, or one renamed so that it sorts into a later lane.
+ */
+function LiveLanes() {
+  const [items, setItems] = useState(shelfDay);
+  const [view, setView] = useState<CalendarViewMode>('month');
+  const [opened, setOpened] = useState('No event opened');
+  const later = (change: (current: CalendarViewEvent[]) => CalendarViewEvent[]) =>
+    window.setTimeout(() => setItems(change), 1000);
+  return (
+    <div style={frame(900)} data-lab-demo="live-lanes">
+      <p>
+        <Button
+          size="sm"
+          onPress={() =>
+            later((current) => [
+              ...current,
+              { id: 'prep', title: 'Audit prep', start: '2026-03-20' },
+            ])
+          }
+        >
+          Add an earlier event in a second
+        </Button>{' '}
+        <Button
+          size="sm"
+          onPress={() =>
+            later((current) =>
+              current.map((item) => (item.id === 'prep' ? { ...item, title: 'Wrap-up' } : item)),
+            )
+          }
+        >
+          Rename Audit prep in a second
+        </Button>
+      </p>
+      <CalendarView
+        events={items}
+        timeZone="UTC"
+        getNow={getNow}
+        defaultDate="2026-03-20"
+        view={view}
+        onViewChange={setView}
+        onEventAction={(key) => setOpened(`Opened ${String(key)}`)}
+      />
+      <output data-lab-output>{opened}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -135,6 +189,12 @@ mountLab(
       description="Move by month or week, back to today and between views; arrow keys, Home, End, PageUp and PageDown move between days. Press an event to open it, or +n more to list a crowded day. Each day shows its workload or a holiday."
     >
       <InteractiveCalendar />
+    </LabSection>
+    <LabSection
+      title="Events that change while focused"
+      description="Focus an event after pressing a button: a second later an event is added before it, or the added event is renamed so it sorts after the other. The focused event keeps its button and focus, and Enter opens it, not the event now in its lane."
+    >
+      <LiveLanes />
     </LabSection>
     <LabSection
       title="Clock changes"
