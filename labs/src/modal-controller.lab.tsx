@@ -107,6 +107,32 @@ function Results() {
   );
 }
 
+/** A modal whose finished exits the page counts. */
+function Exits() {
+  const [exits, setExits] = useState(0);
+  return (
+    <div data-lab-demo="exits">
+      <Button
+        size="sm"
+        onPress={() =>
+          controller.open({
+            title: 'Harvest note',
+            isDismissable: true,
+            onExitComplete: () => setExits((count) => count + 1),
+            content: <p>Close this note any way: it fades out before it leaves.</p>,
+            primaryAction: { label: 'Done', onPress: (close) => close() },
+          })
+        }
+      >
+        Open a note
+      </Button>
+      <p>
+        Finished exits: <output data-lab-output="exits">{exits}</output>
+      </p>
+    </div>
+  );
+}
+
 const workspaces = { North: createModalController(), South: createModalController() };
 
 /** Two workspaces, each with its own controller; one host shows the current one's modals. */
@@ -200,6 +226,12 @@ mountLab(
       >
         Open two at once
       </Button>
+    </LabSection>
+    <LabSection
+      title="Closing with an exit"
+      description="Close the note with Done, Cancel, Escape or a press outside: it runs its exit before leaving, and its onExitComplete counts once."
+    >
+      <Exits />
     </LabSection>
     <LabSection
       title="Switching controllers"

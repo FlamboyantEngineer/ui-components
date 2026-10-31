@@ -124,4 +124,21 @@ test.describe('Modal Controller lab', () => {
     await expect(south.getByRole('textbox', { name: 'Note' })).toHaveValue('South default');
     await expect(north).toHaveCount(0);
   });
+
+  test('UIC-MODAL-CONTROLLER-2.4 runs the exit of a closed modal once', async ({ page, lab }) => {
+    await lab.open('modal-controller');
+    const demo = page.locator('[data-lab-demo="exits"]');
+    const output = demo.locator('[data-lab-output="exits"]');
+    for (const [index, close] of [
+      async () => page.keyboard.press('Escape'),
+      async () => page.getByRole('button', { name: 'Cancel' }).click(),
+      async () => page.mouse.click(5, 5),
+    ].entries()) {
+      await demo.getByRole('button', { name: 'Open a note' }).click();
+      await expect(page.getByRole('dialog', { name: 'Harvest note' })).toBeVisible();
+      await close();
+      await expect(page.getByRole('dialog', { name: 'Harvest note' })).toHaveCount(0);
+      await expect(output).toHaveText(String(index + 1));
+    }
+  });
 });

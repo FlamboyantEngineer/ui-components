@@ -62,6 +62,13 @@ Given another controller, `ModalHost` shall drop the modals it showed and show t
 Implementation: `src/components/modal-controller/modal-controller.tsx`
 Verification: `src/components/modal-controller/modal-host-replace.test.tsx`, `e2e/modal-controller.spec.ts`
 
+### UIC-MODAL-CONTROLLER-2.4 - Closing with an exit
+
+A modal the controller closes (by its handle, Cancel, Escape, an outside press, an action's `close` or `closeAll`) shall leave the controller's list and settle its `result` at once, while `ModalHost` keeps it on the page, closed, until its exit ends: the `Modal` runs its exit and calls the entry's `onExitComplete` once, and focus returns as when a `Modal` closes. A host unmounted while the modal is open tears it down without an exit or `onExitComplete`. A modal drawn by `render` leaves the page as soon as it closes.
+
+Implementation: `src/components/modal-controller/modal-controller.tsx`
+Verification: `src/components/modal-controller/modal-host-exit.test.tsx`, `e2e/modal-controller.spec.ts`
+
 ## Markup
 
 `ModalHost` renders no element of its own: each open modal carries the hooks of [Modal](MODAL.md), or of the modal its `render` draws.
