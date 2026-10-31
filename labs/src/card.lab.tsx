@@ -207,6 +207,48 @@ function WaterfallDemo() {
   );
 }
 
+/** An uncontrolled selectable grid whose layout and virtualization the host switches. */
+function SwitchingDemo() {
+  const [mode, setMode] = useState<'grid' | 'virtual grid' | 'waterfall'>('grid');
+  return (
+    <div data-lab-demo="switching" style={{ width: 520 }}>
+      <p>
+        {(['grid', 'virtual grid', 'waterfall'] as const).map((next) => (
+          <button
+            key={next}
+            type="button"
+            aria-pressed={mode === next}
+            onClick={() => setMode(next)}
+          >
+            Show as {next}
+          </button>
+        ))}
+      </p>
+      <div style={{ height: 280 }}>
+        <CardGrid
+          aria-label="Recipes to switch"
+          items={recipes}
+          selectionMode="multiple"
+          defaultSelectedKeys={['salad']}
+          layout={mode === 'waterfall' ? 'waterfall' : 'grid'}
+          virtualized={mode === 'virtual grid'}
+          minItemSize={{ width: 150, height: 60 }}
+        >
+          {(recipe) => (
+            <CardGridItem textValue={recipe.name}>
+              {({ isSelected }) => (
+                <Card title={recipe.name} role="group" density="compact" isSelected={isSelected}>
+                  {recipe.text}
+                </Card>
+              )}
+            </CardGridItem>
+          )}
+        </CardGrid>
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -341,6 +383,12 @@ mountLab(
       description="The waterfall layout: cards of different heights in columns, only those in view rendered, in a 320px tall frame."
     >
       <WaterfallDemo />
+    </LabSection>
+    <LabSection
+      title="Switching layouts"
+      description="An uncontrolled selection that survives switching between the grid, the virtual grid and the waterfall: clear Green salad, select Tomato soup, then switch. The focused card keeps focus when the switch comes from the host rather than from these buttons."
+    >
+      <SwitchingDemo />
     </LabSection>
     <LabSection
       title="Collapsible records"
