@@ -20,6 +20,7 @@ import {
   type MenuSize,
 } from '../menu/menu.js';
 import { useActionFocus } from './use-action-focus.js';
+import { useActionPending, type ActionPress } from './use-action-pending.js';
 import { toActionContent, toActionKey, type ActionRowAction } from './action-verbs.js';
 
 interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
@@ -34,12 +35,16 @@ interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 
 const hooks = createHooks('action-row', ['actions', 'action', 'overflow']);
 
 /** An action without a menu presses and states its own popup; a menu trigger leaves both to the menu. */
-function toPressProps(action: ActionRowAction, hasMenu: boolean): Partial<ButtonProps> {
+function toPressProps(
+  action: ActionRowAction,
+  press: ActionPress,
+  hasMenu: boolean,
+): Partial<ButtonProps> {
   if (hasMenu) return {};
   return {
     'aria-expanded': action.isExpanded,
     'aria-haspopup': action['aria-haspopup'],
-    onPress: action.onPress,
+    onPress: press.onPress,
   };
 }
 
@@ -71,7 +76,15 @@ function toCustomButtonProps(action: ActionRowAction): Partial<ButtonProps> {
   return { ref: action.ref, isSelected: action.isSelected, 'aria-pressed': action.isSelected };
 }
 
-function ActionRowButton({ action, size }: { action: ActionRowAction; size: ButtonSize }) {
+function ActionRowButton({
+  action,
+  press,
+  size,
+}: {
+  action: ActionRowAction;
+  press: ActionPress;
+  size: ButtonSize;
+}) {
   const { icon, label, pendingLabel } = toActionContent(action, useUiStrings());
   const hasMenu = Boolean(action.items?.length);
   const button = (
@@ -79,14 +92,14 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       {...pickDataAttributes(action)}
       {...hooks.slot('action', { verb: action.verb })}
       {...toCustomButtonProps(action)}
-      {...toPressProps(action, hasMenu)}
+      {...toPressProps(action, press, hasMenu)}
       icon={icon}
       label={label}
       size={size}
       isDisabled={action.isDisabled}
       // A disabled action that explains itself in its tooltip stays focusable so the reason can be read.
       focusableWhenDisabled={action.tooltip !== undefined}
-      isPending={action.isPending}
+      isPending={press.isPending}
       pendingLabel={pendingLabel}
       aria-controls={action['aria-controls']}
       // A tooltip that only repeats the label names the button already, so it describes nothing.
@@ -122,23 +135,24 @@ function bindMenuEntries(entries: readonly MenuEntry[], action: ActionRowAction)
 }
 
 /** A hidden action as an overflow menu entry: a press, or a submenu of its own menu. */
-function toMenuEntry(action: ActionRowAction, key: string, strings: UiStrings): MenuItemEntry {
+function toMenuEntry({ action, key, press }: KeyedAction, strings: UiStrings): MenuItemEntry {
   const { icon, label } = toActionContent(action, strings);
   const entry = {
     id: key,
     label,
     icon,
     isDisabled: action.isDisabled,
-    isPending: action.isPending,
+    isPending: press.isPending,
   };
   return action.items?.length
     ? { ...entry, items: bindMenuEntries(action.items, action) }
-    : { ...entry, onPress: action.onPress as MenuItemEntry['onPress'] };
+    : { ...entry, onPress: press.onPress };
 }
 
 interface KeyedAction {
   action: ActionRowAction;
   key: string;
+  press: ActionPress;
 }
 
 /** The menu of the actions that do not fit, at the end of the row. */
@@ -151,7 +165,7 @@ function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: Bu
         size={size}
         placement="bottom end"
         label={strings.moreItems(keyed.length)}
-        items={keyed.map(({ action, key }) => toMenuEntry(action, key, strings))}
+        items={keyed.map((entry) => toMenuEntry(entry, strings))}
       />
     </div>
   );
@@ -172,12 +186,16 @@ export function ActionRowActions({
     items: isCollapsing ? actions : [],
   });
   const focusRef = useActionFocus();
-  const toKeyed = (action: ActionRowAction) => ({ action, key: toActionKey(action) });
+  const toPress = useActionPending();
+  const toKeyed = (action: ActionRowAction): KeyedAction => {
+    const key = toActionKey(action);
+    return { action, key, press: toPress(action, key) };
+  };
   const shown = (isCollapsing ? visibleItems : actions).map(toKeyed);
   const children = (
     <>
-      {shown.map(({ action, key }) => (
-        <ActionRowButton key={key} action={action} size={size} />
+      {shown.map(({ action, key, press }) => (
+        <ActionRowButton key={key} action={action} press={press} size={size} />
       ))}
       {isCollapsing && hiddenItems.length > 0 ? (
         <OverflowMenu keyed={hiddenItems.map(toKeyed)} size={size} />

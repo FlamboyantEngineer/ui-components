@@ -50,7 +50,10 @@ export type ActionVerb = keyof typeof actionVerbs;
 interface ActionRowActionBase
   extends
     Omit<BaseProps, 'className' | 'id'>,
-    Pick<ButtonProps, 'isDisabled' | 'isPending' | 'aria-controls' | 'aria-haspopup' | 'onPress'> {
+    Pick<
+      ButtonProps,
+      'isDisabled' | 'isPending' | 'aria-controls' | 'aria-haspopup' | 'onPress' | 'onError'
+    > {
   /** Tooltip text when it says more than the label (a shortcut, why the action is disabled). */
   tooltip?: string | undefined;
   /** A disclosure's state, published as `aria-expanded`. */

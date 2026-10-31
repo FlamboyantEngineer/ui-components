@@ -347,6 +347,88 @@ describe('ActionRow', () => {
     expectHooksMatchSpec(container, 'ACTION-ROW', { callerAttributes: ['data-section'] });
   });
 
+  it('UIC-ACTION-ROW-1.5 keeps an action that returns a promise pending in the row and in the overflow menu', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-action-row__action') ? 30 : 0;
+      return new DOMRect(0, 0, width, 30);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-action-row__actions') ? 40 : 0;
+    });
+    let settle: (() => void) | undefined;
+    const onSave = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+    );
+    const onRefresh = vi.fn();
+    const actions: ActionRowAction[] = [
+      { verb: 'refresh', onPress: onRefresh },
+      { verb: 'save', onPress: onSave },
+    ];
+    try {
+      const { rerender } = render(<ActionRow actions={actions} />);
+      const save = screen.getByRole('button', { name: /^Save/ });
+      await user.click(save);
+      await user.click(save);
+      save.focus();
+      await user.keyboard('{Enter}');
+      expect(onSave).toHaveBeenCalledTimes(1);
+      expect(save).toHaveAttribute('data-pending', 'true');
+      // A synchronous action runs on every press.
+      await user.click(screen.getByRole('button', { name: 'Refresh' }));
+      await user.click(screen.getByRole('button', { name: 'Refresh' }));
+      expect(onRefresh).toHaveBeenCalledTimes(2);
+
+      // The row narrows while the save is running: its overflow item stays pending.
+      rerender(<ActionRow overflow="menu" actions={actions} />);
+      const more = await screen.findByRole('button', { name: /^\d+ more/ });
+      await user.click(more);
+      const item = await screen.findByRole('menuitem', { name: /^Save/ });
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      await user.click(item);
+      await user.keyboard('{Enter}');
+      expect(onSave).toHaveBeenCalledTimes(1);
+      await user.keyboard('{Escape}');
+
+      settle?.();
+      await user.click(more);
+      await waitFor(() =>
+        expect(screen.getByRole('menuitem', { name: /^Save/ })).not.toHaveAttribute(
+          'aria-disabled',
+        ),
+      );
+      await user.click(screen.getByRole('menuitem', { name: /^Save/ }));
+      expect(onSave).toHaveBeenCalledTimes(2);
+      // Pending again, the menu item refuses the next choice after a reopen.
+      await user.click(more);
+      await user.click(await screen.findByRole('menuitem', { name: /^Save/ }));
+      expect(onSave).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('UIC-ACTION-ROW-1.5 hands a rejected action to its onError and ends its pending state', async () => {
+    const user = userEvent.setup();
+    const failure = new Error('Offline');
+    const onError = vi.fn();
+    const onSave = vi.fn(() => Promise.reject(failure));
+    render(<ActionRow actions={[{ verb: 'save', onPress: onSave, onError }]} />);
+    const save = screen.getByRole('button', { name: /^Save/ });
+    await user.click(save);
+    await waitFor(() => expect(onError).toHaveBeenCalledWith(failure));
+    expect(save).not.toHaveAttribute('data-pending');
+    await user.click(save);
+    expect(onSave).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-ACTION-ROW-1.6 opens a menu of typed items from an action', async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();
