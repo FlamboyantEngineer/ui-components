@@ -14,7 +14,6 @@ import { List } from '../list-row/list-row.js';
 import { LoadMore } from '../load-more/load-more.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { groupByDay, type DayGroup } from './group-by-day.js';
 import {
   NotificationRow,
@@ -22,7 +21,7 @@ import {
   type NotificationItem,
   type NotificationRowActions,
 } from './notification-row.js';
-import { useArrivalAnnouncement } from './use-arrival-announcement.js';
+import { ArrivalAnnouncement } from './arrival-announcement.js';
 import { useRemovalFocus } from './use-removal-focus.js';
 
 export type { NotificationItem } from './notification-row.js';
@@ -33,6 +32,11 @@ export type NotificationFilter = 'all' | 'unread';
 export interface NotificationListProps extends BaseProps, NotificationRowActions {
   /** The notifications, newest first. */
   items: readonly NotificationItem[];
+  /**
+   * Announces the notifications that arrive in a polite status. Defaults to `true`; turn it off
+   * where another status already announces them.
+   */
+  announcesArrivals?: boolean | undefined;
   /** Which notifications show (controlled). */
   filter?: NotificationFilter | undefined;
   /** Which notifications show at first. Defaults to `all`. */
@@ -156,6 +160,7 @@ function ListEmptyState({ filter, isLoading }: { filter: NotificationFilter; isL
  */
 export function NotificationList({
   items,
+  announcesArrivals = true,
   filter: filterProp,
   defaultFilter = 'all',
   onFilterChange,
@@ -176,7 +181,6 @@ export function NotificationList({
   const strings = useUiStrings();
   const { locale } = useLocale();
   const [filter, setFilter] = useControllableState(filterProp, defaultFilter, onFilterChange);
-  const announcement = useArrivalAnnouncement(items);
   const unread = unreadCount ?? countUnread(items);
   const shown = filter === 'unread' ? items.filter((item) => !item.isRead) : items;
   const groups = groupByDay(shown, {
@@ -215,9 +219,9 @@ export function NotificationList({
           className={hooks.slotClass('load-more')}
         />
       ) : null}
-      <VisuallyHidden role="status" className={hooks.slotClass('announcement')}>
-        {announcement}
-      </VisuallyHidden>
+      {announcesArrivals ? (
+        <ArrivalAnnouncement items={items} className={hooks.slotClass('announcement')} />
+      ) : null}
     </div>
   );
 }

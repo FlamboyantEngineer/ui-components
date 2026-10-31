@@ -176,6 +176,11 @@ describe('NotificationCenter', () => {
     };
     rerender(<NotificationCenter items={[second, arrival, ...items]} getNow={getNow} />);
     expect(status).toHaveTextContent('New notification: Lee Chen approved');
-    expect(dialog.querySelector('.ui-notification-list__announcement')).toHaveTextContent('');
+    expect(dialog.querySelector('.ui-notification-list__announcement')).toBeNull();
+    expect(
+      [...document.querySelectorAll('[role="status"]')].filter((node) =>
+        node.textContent?.includes('Lee Chen approved'),
+      ),
+    ).toEqual([status]);
   });
 });
