@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
@@ -71,5 +73,20 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     expect(
       await ruleIds("import './chrome.css';\nexport {};\n", 'labs/src/probe.ts'),
     ).not.toContain('ui/no-css-import');
+  });
+
+  it('re-enables every block-level fireEvent allowance it opens (T9)', () => {
+    const files = ['src', 'test', 'e2e', 'labs/src']
+      .flatMap((dir) =>
+        readdirSync(dir, { recursive: true }).map((name) => join(dir, String(name))),
+      )
+      .filter((path) => /\.tsx?$/.test(path));
+    const open = files.filter((path) => {
+      const text = readFileSync(path, 'utf8');
+      const count = (word: string) =>
+        text.split(`/* eslint-${word} testing-library/prefer-user-event */`).length - 1;
+      return count('disable') !== count('enable');
+    });
+    expect(open).toEqual([]);
   });
 });
