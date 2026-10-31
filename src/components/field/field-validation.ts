@@ -146,17 +146,47 @@ export interface FieldErrorSource<T> {
   select: (value: T) => unknown;
 }
 
+/** One name's errors: the value they were given for, and whether a change since cleared them. */
+interface NamedErrorState<T> {
+  value: T;
+  isCleared: boolean;
+}
+
 interface ShownErrors<T> {
   errors: FieldValidationErrors | undefined;
-  value: T;
-  /** The names whose errors cleared because their part of the value changed. */
-  cleared: ReadonlySet<string>;
+  /** Each name the field has had since the errors were given. */
+  names: ReadonlyMap<string, NamedErrorState<T>>;
+}
+
+/** A name's own entry in an error map, never an inherited member such as `constructor`. */
+function getOwnErrors(errors: FieldValidationErrors, name: string) {
+  return Object.hasOwn(errors, name) ? errors[name] : undefined;
+}
+
+/**
+ * The next state of each name's errors: a name seen for the first time keeps the current value as
+ * the one its errors were given for, and a seen name clears once its part of the value changes.
+ */
+function trackNames<T>(
+  names: ReadonlyMap<string, NamedErrorState<T>>,
+  named: readonly { name: string | undefined; hasChanged: (given: T) => boolean }[],
+  value: T,
+): ReadonlyMap<string, NamedErrorState<T>> {
+  let next: Map<string, NamedErrorState<T>> | null = null;
+  for (const { name, hasChanged } of named) {
+    if (!name) continue;
+    const state = names.get(name);
+    if (state && (state.isCleared || !hasChanged(state.value))) continue;
+    next ??= new Map(names);
+    next.set(name, state ? { ...state, isCleared: true } : { value, isCleared: false });
+  }
+  return next ?? names;
 }
 
 /**
  * The external errors given for the field's name and its further names. A new errors object shows
  * them again; each name's errors clear once its part of the value (the whole value for the field's
- * own name) changes from the value they were given for.
+ * own name) changes from the value it had when the field first had that name for those errors.
  */
 export function useExternalIssues<T>(
   value: T,
@@ -173,30 +203,20 @@ export function useExternalIssues<T>(
     isEqual: (left: T, right: T) => boolean;
   },
 ): FieldIssue[] {
-  const [shown, setShown] = useState<ShownErrors<T>>({ errors, value, cleared: new Set() });
+  const [shown, setShown] = useState<ShownErrors<T>>({ errors, names: new Map() });
   const named = [{ name, hasChanged: (given: T) => !isEqual(value, given) }].concat(
     sources.map((source) => ({
       name: source.name,
       hasChanged: (given: T) => !isFieldValueEqual(source.select(value), source.select(given)),
     })),
   );
-  let current = shown;
-  if (errors !== shown.errors) {
-    current = { errors, value, cleared: new Set() };
-    setShown(current);
-  } else {
-    const changed = named.flatMap((entry) =>
-      entry.name && !shown.cleared.has(entry.name) && entry.hasChanged(shown.value)
-        ? [entry.name]
-        : [],
-    );
-    if (changed.length > 0) {
-      current = { ...shown, cleared: new Set([...shown.cleared, ...changed]) };
-      setShown(current);
-    }
-  }
+  const base = errors === shown.errors ? shown.names : new Map<string, NamedErrorState<T>>();
+  const names = trackNames(base, named, value);
+  if (errors !== shown.errors || names !== shown.names) setShown({ errors, names });
   if (!errors) return [];
   return named.flatMap((entry) =>
-    entry.name && !current.cleared.has(entry.name) ? toErrorList(errors[entry.name]) : [],
+    entry.name && !names.get(entry.name)?.isCleared
+      ? toErrorList(getOwnErrors(errors, entry.name))
+      : [],
   );
 }

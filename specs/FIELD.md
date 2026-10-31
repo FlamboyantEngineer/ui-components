@@ -201,7 +201,7 @@ Verification: `src/components/field/field-async.test.tsx`, `src/components/field
 
 ### UIC-FIELD-3.9 - External errors
 
-A field with a `name` shall show the nearest form's `validationErrors` for that name (a message or a list) as errors with the validity `customError`, first among its issues and whatever its validation mode. They clear once the value differs from the value they were given for; a new errors object shows them again. `errorSources` names further form names the field submits under, such as a range's ends, each with the part of the value it reads: their errors show the same way and each clears once its own part changes.
+A field with a `name` shall show the nearest form's `validationErrors` for that name (a message or a list) as errors with the validity `customError`, first among its issues and whatever its validation mode. They clear once the value differs from the value the field had when it first had that name for those errors, so renaming the field shows the new name's errors and never inherits a cleared state from the old one; a new errors object shows them again. Only the map's own entries count, so a name such as `constructor` or `toString` finds no error unless the map has one under it. `errorSources` names further form names the field submits under, such as a range's ends, each with the part of the value it reads: their errors show the same way and each clears once its own part changes.
 
 Implementation: `src/components/field/field-validation.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/field/field-validation.test.tsx`, `src/components/field/field-control.test.tsx`
