@@ -27,7 +27,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-1.4 - Choosing
 
-Choosing an emoji shall call `onSelect` once with the selection: for a standard emoji its record, the glyph and hexcode in the current skin tone and the tone actually applied (`default` for an emoji that takes none); for a custom emoji its record. It shall then call `onRecentEmojiChange` with `recentEmoji` updated: the chosen emoji's key first, at most 24 long, with one key per emoji (a repeated key, or a key naming the same emoji in another skin tone, is dropped). Inside a dialog trigger, choosing closes the overlay.
+Choosing an emoji shall call `onSelect` once with the selection: for a standard emoji its record, the glyph and hexcode in the current skin tone and the tone actually applied (`default` for an emoji that takes none); for a custom emoji its record. It shall then call `onRecentEmojiChange` with `recentEmoji` updated: the chosen emoji's key first, at most 24 long, with one key per emoji (a repeated key, or a key naming the same emoji in another skin tone, is dropped). Inside an `EmojiPickerTrigger`, choosing closes the trigger's popover ([UIC-EMOJI-PICKER-3.1](#uic-emoji-picker-31---popover)); a picker anywhere else closes nothing, not even a modal, drawer or popover around it.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
 Verification: `src/components/emoji-picker/emoji-catalog.test.ts`, `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-3.1 - Popover
 
-`EmojiPickerTrigger` shall make the button it wraps open an `EmojiPicker` in a popover in the `ui-emoji-picker__popover` slot, with focus in the search field. The popover sits on the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="dropdown"` and takes the z-index of `useLayerZIndex('dropdown')`. Choosing an emoji or pressing Escape shall close it and return focus to the button; a press outside shall close it. Its other props reach the picker.
+`EmojiPickerTrigger` shall make the button it wraps open an `EmojiPicker` in a popover in the `ui-emoji-picker__popover` slot, with focus in the search field. The popover sits on the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="dropdown"` and takes the z-index of `useLayerZIndex('dropdown')`. Choosing an emoji or pressing Escape shall close it and return focus to the button (the picker closes only this popover, never an overlay around the trigger); a press outside shall close it. Its other props reach the picker.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
