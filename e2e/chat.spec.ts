@@ -199,6 +199,22 @@ test.describe('Chat lab', () => {
     await lab.expectAccessible('[data-lab-section="Thinking styles"]');
   });
 
+  test('UIC-CHAT-1.5 streams a reply without drawing earlier messages again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const demo = page.locator('[data-lab-demo="inline-options"]');
+    await expect(demo.locator('article[id="inline-2"]')).toContainText('Hill castle');
+    await demo.getByRole('button', { name: 'Stream a reply' }).click();
+    await expect(demo).toContainText('Streaming');
+    await expect(demo.locator('.ui-chat-status-line__icon circle')).toBeVisible();
+    await expect(demo).toContainText('Done', { timeout: 15_000 });
+    await expect(demo.locator('article[id="inline-4"]')).toContainText('beats the crowds.');
+    await expect(demo).toContainText('Saved place drawn again: 0');
+    await lab.expectAccessible('[data-lab-section="Inline options"]');
+  });
+
   test('UIC-CHAT-1.5 streams steps, a cited answer and its sources to the end', async ({
     page,
   }) => {
