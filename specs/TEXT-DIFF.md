@@ -43,7 +43,7 @@ Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec
 
 An unchanged run shall keep `context` lines (3 by default) next to each change it touches and fold the rest into one `ui-text-diff__fold` row; the start and the end of the text keep no context, so a run before the first change keeps only its last lines. A run no longer than its context, and every line of two texts without a change, stay whole. The fold row holds a `ui-text-diff__expand` [Button](BUTTON.md) reading the provider's `textDiffShowLines` string with the hidden count; pressing it shows the whole run and moves focus to the first line it showed. In the split layout the old pane's fold row repeats the text, hidden from assistive technology, and the new pane's holds the button. Opened folds close again when either text changes.
 
-Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/diff-rows.ts`, `src/components/text-diff/text-diff-table.tsx`, `src/core/diff-strings.ts`
+Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/diff-rows.ts`, `src/components/text-diff/text-diff-table.tsx`, `src/core/strings/diff.ts`
 Verification: `src/components/text-diff/diff-rows.test.ts`, `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`
 
 ### UIC-TEXT-DIFF-1.7 - Line widgets
@@ -59,14 +59,14 @@ Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec
 
 A `ui-text-diff__header` shall lead the diff with a `ui-text-diff__summary` holding two `ui-text-diff__count` elements, `+n` added lines (`data-change="added"`) and `−n` removed lines (`data-change="removed"`), hidden from assistive technology, followed by the provider's `textDiffSummary` string, visually hidden.
 
-Implementation: `src/components/text-diff/text-diff.tsx`, `src/core/diff-strings.ts`
+Implementation: `src/components/text-diff/text-diff.tsx`, `src/core/strings/diff.ts`
 Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`
 
 ### UIC-TEXT-DIFF-2.2 - Moving between changes
 
 A `ui-text-diff__navigation` element in the header shall hold `ui-text-diff__previous` and `ui-text-diff__next` [Icon Buttons](BUTTON.md), named by the provider's `textDiffPreviousChange` and `textDiffNextChange` strings. Before any move, Next goes to the first change and Previous is disabled; Previous is disabled at the first change and Next at the last, and both with no change. Moving to a change publishes `data-current` on its rows and focuses its first row: in the split layout its first added line in the new pane, or its first removed line when it adds none. The current change resets when either text changes; the state that follows a comparison keeps one setter while the comparison stays the same.
 
-Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/text-diff-table.tsx`, `src/core/diff-strings.ts`, `src/utils/use-state-for.ts`
+Implementation: `src/components/text-diff/text-diff.tsx`, `src/components/text-diff/text-diff-table.tsx`, `src/core/strings/diff.ts`, `src/utils/use-state-for.ts`
 Verification: `src/components/text-diff/text-diff.test.tsx`, `src/utils/use-state-for.test.ts`, `e2e/text-diff.spec.ts`
 
 ### UIC-TEXT-DIFF-2.3 - Keyboard
@@ -82,14 +82,14 @@ Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec
 
 Each line row's marker cell shall show `+` or `−` hidden from assistive technology beside the provider's `textDiffLine` string, visually hidden, which names the change and the line's numbers on the sides the table draws (`Added, new line 12`; `Unchanged, old line 3, new line 5`). The number cells' digits are hidden from assistive technology, an added or removed line's text is a native `<ins>` or `<del>`, and filler rows are hidden from assistive technology. Line rows take focus only from the navigation (`tabIndex` -1).
 
-Implementation: `src/components/text-diff/text-diff-table.tsx`, `src/core/diff-strings.ts`
+Implementation: `src/components/text-diff/text-diff-table.tsx`, `src/core/strings/diff.ts`
 Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`
 
 ### UIC-TEXT-DIFF-3.2 - Named, focusable panes
 
 The root shall be a `role="group"` taking the caller's labelling props. Each pane's scrolling viewport is a focusable (`tabIndex` 0) `role="group"` named by the provider's `textDiffLines` string in the unified layout, and by its `valueBefore` and `valueAfter` strings for the old and the new pane, so a keyboard reader can scroll it.
 
-Implementation: `src/components/text-diff/text-diff.tsx`, `src/core/diff-strings.ts`, `src/core/history-strings.ts`
+Implementation: `src/components/text-diff/text-diff.tsx`, `src/core/strings/diff.ts`, `src/core/strings/history.ts`
 Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`
 
 ### UIC-TEXT-DIFF-3.3 - Hooks and caller attributes

@@ -17,14 +17,14 @@ Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `e2e/chat-
 
 While its `status` is `streaming`, `ChatReasoning` shall be open, labelled by its `title` (what the reasoning is about now, such as "Checking opening hours"), else the provider string `chatReasoningStreaming` ("Thinking…"), with a decorative busy indicator (`ui-chat-reasoning__spinner`) after the label, and its panel shall be busy (`aria-busy="true"`) while the text streams in. With `expandsAutomatically` false it stays closed while it streams, until the reader opens it; it is busy and labelled the same.
 
-Implementation: `src/components/chat-activity/chat-reasoning.tsx`, `src/components/chat-activity/activity-disclosure.tsx`, `src/core/chat-activity-strings.ts`
+Implementation: `src/components/chat-activity/chat-reasoning.tsx`, `src/components/chat-activity/activity-disclosure.tsx`, `src/core/strings/chat-activity.ts`
 Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-1.3 - Complete
 
 Once its `status` is `complete`, `ChatReasoning` shall collapse, drop the busy indicator and `aria-busy`, and be labelled by the provider string `chatReasoningComplete` with `durationMs` in whole seconds, rounded: "Thought for 4 s", or minutes and seconds from a minute on ("Thought for 1 min 5 s"). Without a duration, or under half a second, the label reads "Thought for a moment".
 
-Implementation: `src/components/chat-activity/chat-reasoning.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/chat-activity-strings.ts`
+Implementation: `src/components/chat-activity/chat-reasoning.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/strings/chat-activity.ts`
 Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `src/components/chat-activity/chat-activity.test.ts`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-1.4 - Format
@@ -61,14 +61,14 @@ Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-acti
 
 While `isRunning`, `ChatSteps` shall be open, with a decorative busy indicator (`ui-chat-steps__spinner`) after its label, which is its `title` (what the run is doing now), else the provider string `chatStepsRunning` ("Working…"). With `expandsAutomatically` false it stays closed while it runs, until the reader opens it.
 
-Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/core/chat-activity-strings.ts`
+Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/core/strings/chat-activity.ts`
 Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-2.3 - End of the run
 
 Once the run ends (`isRunning` is false, the default), `ChatSteps` shall collapse, drop the busy indicator and be labelled by the provider string `chatStepsComplete` with its `actions`: how many tool calls of each kind it made, kinds in order, each as a phrase in the singular for one call and the plural for more (`read` "read a file" or "read files", `edit` "edited a file", `command` "ran a command", `search` "ran a search", `fetch` "fetched a page", `other` "used a tool"), joined by commas with the first letter in upper case ("Edited files, read files, ran a command"). Without `actions`, the label is how long the run took, `durationMs` in whole seconds, rounded ("Worked for 12 s"), or "Worked for a moment" without a duration.
 
-Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/chat-activity-strings.ts`
+Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/strings/chat-activity.ts`
 Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-2.4 - Reader's choice
@@ -98,21 +98,21 @@ Verification: `src/components/chat-activity/chat-plan.test.tsx`, `e2e/chat-activ
 
 Each step shall publish its `status` as `data-status` and show it with a decorative glyph: `pending` the `pending` glyph, `done` the `success` glyph, `failed` the `error` glyph and `skipped` the `skipped` glyph; a step `in-progress` shows the busy indicator in place of a glyph and is the current step (`aria-current="step"`). After the label, visually hidden status words from the provider string `chatPlanStepStatus` ("Pending", "In progress", "Done", "Failed", "Skipped") say where it stands.
 
-Implementation: `src/components/chat-activity/chat-plan.tsx`, `src/core/chat-activity-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/chat-activity/chat-plan.tsx`, `src/core/strings/chat-activity.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-activity/chat-plan.test.tsx`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-3.3 - Progress
 
 The progress shall read the provider string `chatPlanProgress` with the number of steps done and of all steps ("2 of 5 done").
 
-Implementation: `src/components/chat-activity/chat-plan.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/chat-activity-strings.ts`
+Implementation: `src/components/chat-activity/chat-plan.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/strings/chat-activity.ts`
 Verification: `src/components/chat-activity/chat-plan.test.tsx`, `src/components/chat-activity/chat-activity.test.ts`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-3.4 - Announcements
 
 `ChatPlan` shall announce the steps whose status changed in a visually hidden polite status, worded by the provider string `chatPlanChanged` ("Book the hotel: done. Pack the bags: in progress"), at most once every two seconds: changes that arrive sooner wait for the rest of the interval and are announced together, each with its latest status. The statuses of the first render, and steps added as pending, are not announced.
 
-Implementation: `src/components/chat-activity/chat-plan.tsx`, `src/components/chat-activity/activity-announcer.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/chat-activity-strings.ts`
+Implementation: `src/components/chat-activity/chat-plan.tsx`, `src/components/chat-activity/activity-announcer.tsx`, `src/components/chat-activity/chat-activity.ts`, `src/core/strings/chat-activity.ts`
 Verification: `src/components/chat-activity/chat-plan.test.tsx`, `src/components/chat-activity/chat-activity.test.ts`, `e2e/chat-activity.spec.ts`
 
 ### UIC-CHAT-ACTIVITY-3.5 - Hooks and caller attributes

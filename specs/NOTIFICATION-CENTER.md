@@ -26,7 +26,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 Each row whose notification is not read shall publish `data-unread` and show an `info` dot `Badge` (`ui-notification-list__unread`) that assistive technology reads as the provider's `unread` string.
 
-Implementation: `src/components/notification-center/notification-row.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/notification-center/notification-row.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-1.4 - Row actions
@@ -40,7 +40,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 The `ui-notification-list__toolbar` shall start with a small `SegmentedChoice` (`ui-notification-list__filter`) named by the provider's `notificationFilter` string, offering All (`allNotifications`) and Unread (`unread`) with the unread count: `unreadCount`, or the number of unread `items` without it. `filter` (controlled) or `defaultFilter` (`all` by default) picks which notifications show, `unread` showing only those not read; `onFilterChange` receives the reader's pick, and the root publishes `data-filter`.
 
-Implementation: `src/components/notification-center/notification-list.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/notification-center/notification-list.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-1.6 - Mark all read and caller controls
@@ -54,7 +54,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 While no notification shows, the list shall show a small `EmptyState` (`ui-notification-list__empty`): the loading state reading the provider's `loading` string while `isLoading`, else the `bell` glyph with `noUnreadNotifications` and `unreadNotificationsEmpty` under the unread filter, or `noNotifications` and `notificationsEmpty`. The root carries `aria-busy="true"` while `isLoading`.
 
-Implementation: `src/components/notification-center/notification-list.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/notification-center/notification-list.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-1.8 - Loading more
@@ -77,7 +77,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`
 
 `NotificationCenter` shall render a `ui-notification-center` `<span>` holding a `bell` `Button` (`ui-notification-center__trigger`) named by the provider's `notificationsWithCount` string for the unread count (`Notifications, 3 unread`, or `Notifications` with none), and an overlay `info` count `Badge` (`ui-notification-center__count`) of that count, capped at `countMax` (99 by default), hidden from assistive technology because the bell's name carries the count, and absent while the count is 0. The count is `unreadCount`, or the number of unread `items`.
 
-Implementation: `src/components/notification-center/notification-center.tsx`, `src/core/content-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/notification-center/notification-center.tsx`, `src/core/strings/content.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/notification-center/notification-center.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-2.2 - Panel
@@ -100,7 +100,7 @@ Verification: `src/components/notification-center/notification-center.test.tsx`
 
 A visually hidden polite status (`ui-notification-list__announcement`) shall announce the unread notifications that appear in `items` and are newer than every notification shown before: one by the provider's `newNotifications` string with its title (`New notification: …`), several by their count. Notifications present at first, the first page a list that started empty receives, older pages loaded later and notifications already read are not announced. With `announcesArrivals={false}` the list renders no status and keeps no arrival record, for a host that announces them elsewhere. `NotificationCenter` announces in its own status (`ui-notification-center__announcement`) whether its panel is open or not, and the list inside its panel takes `announcesArrivals={false}`, so one status per centre announces each arrival.
 
-Implementation: `src/components/notification-center/arrival-announcement.tsx`, `src/components/notification-center/notification-list.tsx`, `src/components/notification-center/notification-center.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/notification-center/arrival-announcement.tsx`, `src/components/notification-center/notification-list.tsx`, `src/components/notification-center/notification-center.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `src/components/notification-center/notification-center.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-3.2 - Keyboard

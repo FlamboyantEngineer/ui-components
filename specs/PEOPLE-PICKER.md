@@ -54,14 +54,14 @@ Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people
 
 Before a search (while the input is empty), the list shall start with `currentUser`, so the reader can pick themselves in one step. Wherever the current user is listed, their name is followed by the provider string `currentPerson` ("(you)") in `ui-people-picker__you`, which their option's accessible name includes.
 
-Implementation: `src/components/people-picker/people-picker.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/people-picker/people-picker.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
 
 ### UIC-PEOPLE-PICKER-3.3 - Recent people
 
 Before a search, `recent` people other than the current user shall be listed, in the given order, in a section headed by the provider string `recentPeople`. Without recent people there is no section.
 
-Implementation: `src/components/people-picker/people-picker.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/people-picker/people-picker.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
 
 ### UIC-PEOPLE-PICKER-3.4 - Hooks and caller attributes

@@ -38,7 +38,7 @@ Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmen
 
 The total slot shall read the whole through the provider's `totalCount` string (`30 total`); `showTotal={false}` hides it. Counts and the total are formatted for the locale with `formatOptions` (`Intl.NumberFormatOptions`, such as a unit).
 
-Implementation: `src/components/segmented-bar/segmented-bar.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/segmented-bar/segmented-bar.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmented-bar.spec.ts`
 
 ### UIC-SEGMENTED-BAR-1.6 - Sizes

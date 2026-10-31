@@ -8,7 +8,7 @@
 
 `Outline` shall render a `<nav>` named by `aria-label`, by `aria-labelledby`, or else by the provider's `outline` string. It holds an ordered list (`ui-outline__list`, `<ol>`) of the top entries; each entry is a `ui-outline__item` `<li>` publishing its heading's level in `data-level`, whose `ui-outline__row` holds a link (`ui-outline__link`, `<a href="#id">`) to the heading, with the heading's `label` in `ui-outline__label`, followed by the list of its own entries, if any.
 
-Implementation: `src/components/outline/outline.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/outline/outline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-1.2 - Nesting
@@ -63,7 +63,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 When any entry has entries under it, each row shall start with an extra-small [Expand Toggle](EXPAND-TOGGLE.md): entries with children get a toggle named by the provider's `sectionsIn` string for their label (`Sections in Design`), reporting `aria-expanded` and controlling their list (`aria-controls`), which is `hidden` while collapsed; other entries get the toggle's empty placeholder, so labels stay aligned. An expanded entry's item publishes `data-expanded`. An outline with no nesting draws no toggles.
 
-Implementation: `src/components/outline/outline.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/outline/outline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-4.2 - Expanded entries

@@ -8,7 +8,7 @@
 
 `CodeBlock` shall render a `ui-code-block` root, a `role="group"` named by its header's title (`ui-code-block__title` in `ui-code-block__header`): `title`, or else `language`, or else the provider's `codeBlockTitle` string for the variant (`Code`, `Terminal`). The root publishes `variant` (`code` by default) in `data-variant` and `language` in `data-language`.
 
-Implementation: `src/components/code-block/code-block.tsx`, `src/core/code-strings.ts`, `labs/reference/code-block.css`
+Implementation: `src/components/code-block/code-block.tsx`, `src/core/strings/code.ts`, `labs/reference/code-block.css`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
 
 ### UIC-CODE-BLOCK-1.2 - Code
@@ -38,14 +38,14 @@ Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.s
 
 The header's `ui-code-block__actions` shall hold a [Copy Button](COPY-BUTTON.md) (`ui-code-block__copy`) that copies the block's value: the code exactly as given, or for a `terminal` block with command lines, its commands without their prompts, one per line. It is named by the provider's `codeBlockCopy` string (`Copy code`), or in a terminal block by `codeBlockCopyCommands` with the number of commands, or `codeBlockCopyOutput` when it holds only output. It announces the copy as Copy Button does.
 
-Implementation: `src/components/code-block/code-block.tsx`, `src/core/code-strings.ts`
+Implementation: `src/components/code-block/code-block.tsx`, `src/core/strings/code.ts`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
 
 ### UIC-CODE-BLOCK-2.2 - Apply
 
 With `onApply`, the actions shall start with a small ghost [Button](BUTTON.md) (`ui-code-block__apply`) named by `applyLabel` or else the provider's `codeBlockApply` string (`Apply`); pressing it calls `onApply` with the block's value. Without `onApply` there is no Apply action.
 
-Implementation: `src/components/code-block/code-block.tsx`, `src/core/code-strings.ts`
+Implementation: `src/components/code-block/code-block.tsx`, `src/core/strings/code.ts`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
 
 ## UIC-CODE-BLOCK-3 - Terminal

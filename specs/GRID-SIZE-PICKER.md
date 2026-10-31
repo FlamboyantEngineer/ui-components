@@ -8,7 +8,7 @@
 
 `GridSizePicker` shall render a root `<div>` (`ui-grid-size-picker`) holding a `role="grid"` element (`ui-grid-size-picker__grid`) of `role="row"` elements (`ui-grid-size-picker__row`), each holding one `role="gridcell"` (`ui-grid-size-picker__cell`) per shown column, followed by the readout (`ui-grid-size-picker__readout`). The grid is named by `aria-label`, `aria-labelledby` or, without either, the provider's `gridSizePicker` string; it also takes `aria-describedby` and `aria-details`. Each cell is named by the provider's `gridSizeCell` string from the size it chooses (`3 rows by 4 columns`). The readout is hidden from assistive technology, since the focused cell already announces the size.
 
-Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`, `src/core/picker-strings.ts`
+Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`, `src/core/strings/picker.ts`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`
 
 ### UIC-GRID-SIZE-PICKER-1.2 - Preview and readout

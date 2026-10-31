@@ -36,7 +36,7 @@ Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/tr
 
 Choosing a transition with `confirmMessage` or `requiresComment` shall open a [Modal](MODAL.md) titled by the provider's `transitionTo` string for the target state, described by `confirmMessage`, whose primary action reads the transition's `label`, else that same title. With `requiresComment`, the body holds a required multiline [Text Field](TEXT-FIELD.md) (`ui-transition-menu__comment`) named by the provider's `comment` string, which takes focus, and the action stays disabled while the comment is blank. The action calls `onTransition` with `{ transition, to, comment }` (the trimmed comment, only when required) and closes the dialog once a returned promise settles, keeping it open with the failure if it rejects; Cancel closes it without a call.
 
-Implementation: `src/components/transition-menu/transition-menu.tsx`, `src/components/transition-menu/transition-dialog.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/transition-menu/transition-menu.tsx`, `src/components/transition-menu/transition-dialog.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/transition-menu.spec.ts`
 
 ### UIC-TRANSITION-MENU-1.6 - Disabled
@@ -59,7 +59,7 @@ Verification: `src/components/transition-menu/transition-menu.test.tsx`
 
 The trigger shall be named by the provider's `stateTrigger` string from `label` (the provider's `status` string by default) and the current state, so its name holds the visible state, and report the menu in `aria-haspopup` and `aria-expanded`; the menu is named by the same label. Enter, Space or ArrowDown open the menu with focus on its first item, arrow keys, Home and End move between items, reaching unavailable ones so their reason can be read, Enter chooses an available one and Escape closes it, returning focus to the trigger (React Aria). A dialog takes focus when it opens and returns it when it closes.
 
-Implementation: `src/components/transition-menu/transition-menu.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/transition-menu/transition-menu.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/transition-menu.spec.ts`
 
 ## Hooks

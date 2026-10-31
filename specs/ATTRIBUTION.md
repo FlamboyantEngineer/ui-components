@@ -8,7 +8,7 @@
 
 `Attribution` shall render a `ui-attribution` `<span>` holding `template` with its `{time}` token replaced by the time and its `{person}` token by the person, in order, and every other character kept as literal text (other braces included). Without `template` it uses the provider's `attribution` string (`{time} by {person}`) when there is a `person`, and `{time}` alone when there is not. `parseAttributionTemplate` splits a template into these parts.
 
-Implementation: `src/components/attribution/attribution.tsx`, `src/components/attribution/attribution-template.ts`, `src/core/content-strings.ts`
+Implementation: `src/components/attribution/attribution.tsx`, `src/components/attribution/attribution-template.ts`, `src/core/strings/content.ts`
 Verification: `src/components/attribution/attribution.test.tsx`, `src/components/attribution/attribution-template.test.ts`, `e2e/attribution.spec.ts`
 
 ### UIC-ATTRIBUTION-1.2 - Time

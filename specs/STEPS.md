@@ -36,7 +36,7 @@ Verification: `src/components/steps/steps.test.tsx`
 
 A step's `description` shall render in `ui-steps__description` after its label, and a step with `isOptional` shows the provider's `optional` string in `ui-steps__optional`.
 
-Implementation: `src/components/steps/steps.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/steps/steps.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 ### UIC-STEPS-1.6 - Orientation and variant
@@ -89,14 +89,14 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 The list shall be named by `aria-label` or `aria-labelledby`, else by the provider's `steps` string.
 
-Implementation: `src/components/steps/steps.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/steps/steps.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 ### UIC-STEPS-3.2 - Status words
 
 A settled step's label shall end with the provider's `stepStatus` words (`Completed`, `Has errors`, `Skipped`), visually hidden, so the status never rests on the marker alone. A pressable step is named by its content: the label, the status words, the optional mark and the description, so its name holds all of its visible text.
 
-Implementation: `src/components/steps/steps.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/steps/steps.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
 ## UIC-STEPS-4 - Unified options

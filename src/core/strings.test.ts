@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type * as Locales from './locales/index.js';
+import { en } from './locales/index.js';
+import { compileStrings, type UiStrings } from './strings.js';
+import * as modules from './strings/index.js';
 
 describe('default strings (UIC-PROVIDER-3.1)', () => {
   it('compiles the English text on first use, not when the library loads', async () => {
@@ -28,4 +31,17 @@ describe('default strings (UIC-PROVIDER-3.1)', () => {
     expect(getDefaultStrings()).toBe(strings);
     vi.doUnmock('./locales/index.js');
   }, 30_000);
+
+  it('UIC-PROVIDER-3.1 gathers the text of every module the strings index lists', () => {
+    const strings = compileStrings(en, 'en-US');
+    const functions = Object.values(modules).flatMap((module) => Object.keys(module.arguments));
+    expect(functions.length).toBeGreaterThan(0);
+    for (const key of functions) {
+      expect(typeof strings[key as keyof UiStrings], key).toBe('function');
+    }
+    expect(strings.chatReplyFailed).toBe(en.chatReplyFailed);
+    expect(strings.chatSourcesLabel(2)).toBe('2 sources');
+    // @ts-expect-error A key no module declares is not built-in text.
+    expect(strings.notDeclared).toBeUndefined();
+  });
 });

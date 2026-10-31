@@ -89,7 +89,7 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 
 The dialog shall be named by `aria-label`, or the provider's `commandPalette` string. The search field is a `role="searchbox"` input named and hinted by `placeholder`, or the provider's `searchCommands` string, that controls the `role="menu"` list of commands; its leading `search` glyph is decorative. Each command is a `menuitem` named by its text ([UIC-MENU-2.1](MENU.md#uic-menu-21---anatomy)).
 
-Implementation: `src/components/command-palette/command-palette.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/command-palette/command-palette.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`
 
 ### UIC-COMMAND-PALETTE-3.2 - Hooks and caller attributes

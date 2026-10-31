@@ -8,7 +8,7 @@
 
 `CommentComposer` shall render a `ui-comment-composer` element holding a multi-line `TextField` in the `ui-comment-composer__field` slot, growing from two rows with its text, then a `ui-comment-composer__actions` element with the cancel button when it applies ([UIC-COMMENT-COMPOSER-1.4](#uic-comment-composer-14---cancelling)) and a primary submit `Button` in `ui-comment-composer__submit`. The text box is named by `label`, by default the provider's `addComment` string, with no visible label, and hinted by `placeholder`, by default the label. The submit button reads `submitLabel`, by default the provider's `comment` string, publishes the `Ctrl+Enter` shortcut, and is disabled while the draft is blank.
 
-Implementation: `src/components/comment-composer/comment-composer.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/comment-composer/comment-composer.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`
 
 ### UIC-COMMENT-COMPOSER-1.2 - Submitting

@@ -8,7 +8,7 @@
 
 `ChatSources` shall render a `ui-chat-sources` root holding a label (`ui-chat-sources__label`) that reads the provider's `chatSourcesLabel` string for the number of sources (`3 sources`, `1 source`) and an ordered list (`ui-chat-sources__list`) named by it, with one `ui-chat-sources__item` per source in the order of `sources`, so each item's number is its citation number.
 
-Implementation: `src/components/chat-sources/chat-sources.tsx`, `src/core/chat-sources-strings.ts`, `labs/reference/chat-sources.css`
+Implementation: `src/components/chat-sources/chat-sources.tsx`, `src/core/strings/chat-sources.ts`, `labs/reference/chat-sources.css`
 Verification: `src/components/chat-sources/chat-sources.test.tsx`, `e2e/chat-sources.spec.ts`
 
 ### UIC-CHAT-SOURCES-1.2 - Source details
@@ -31,7 +31,7 @@ Verification: `src/components/chat-sources/chat-sources.test.tsx`
 
 `ChatCitation` shall render its `index` as `[n]` in a `ui-chat-citation__marker` span hidden from assistive technology, inside a `ui-chat-citation` trigger named by the provider's `chatCitationLabel` string with the number and the source's title (`Source 1: Lisbon weather`). With a `url`, the trigger is a [Link](LINK.md) to it, underlined on hover only (`underline="hover"`) and opening in a new tab (with Link's safe `rel` and new-tab text) when the URL is absolute `http` or `https`.
 
-Implementation: `src/components/chat-sources/chat-citation.tsx`, `src/core/chat-sources-strings.ts`, `labs/reference/chat-sources.css`
+Implementation: `src/components/chat-sources/chat-citation.tsx`, `src/core/strings/chat-sources.ts`, `labs/reference/chat-sources.css`
 Verification: `src/components/chat-sources/chat-citation.test.tsx`, `e2e/chat-sources.spec.ts`
 
 ### UIC-CHAT-SOURCES-2.2 - Preview

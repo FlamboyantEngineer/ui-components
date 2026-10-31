@@ -119,7 +119,7 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 The start thumb shall be named by the provider string `rangeMinimum` and the end thumb by `rangeMaximum`, each followed by the field label (`Minimum Price`, `Maximum Price`).
 
-Implementation: `src/components/slider/range-slider.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/slider/range-slider.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ## Hooks

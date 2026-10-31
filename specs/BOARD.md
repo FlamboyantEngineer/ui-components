@@ -17,7 +17,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 Each column header shall show its card count across lanes in a `ui-board__column-count` slot: the count alone, or `count/limit` for a column with a `limit`, read by assistive technology as the provider's `cardCount` string (`3 cards`, `3 cards, limit 5`, `6 cards, over the limit of 5`). A column holding more cards than its limit publishes `data-over-limit` on its header and on each of its cells.
 
-Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/use-board-model.ts`, `src/core/planning-strings.ts`, `labs/reference/board.css`
+Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/use-board-model.ts`, `src/core/strings/planning.ts`, `labs/reference/board.css`
 Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-1.3 - Lanes

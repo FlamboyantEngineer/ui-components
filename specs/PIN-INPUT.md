@@ -15,7 +15,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec
 
 The group shall be named by the field label (`aria-labelledby`, or `aria-label` in the `control-only` layout), and each cell by the provider string `characterPosition` from its position and the length ("Character 2 of 6"). Each cell is described by the field's description, decoration and message and carries `aria-required` while required and `aria-invalid` with `aria-errormessage` while invalid. The label points at the first cell, so pressing it focuses that cell, and the first cell is the element a restore, a form's submit validation and the native behavior's custom validity (UIC-FIELD-3.10) use. While invalid, disabled or read-only, the group publishes React Aria's `data-invalid`, `data-disabled` or `data-readonly`.
 
-Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`
 
 ### UIC-PIN-INPUT-1.3 - Character type

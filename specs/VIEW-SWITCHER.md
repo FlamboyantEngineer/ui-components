@@ -22,35 +22,35 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 
 The view whose `id` is `defaultViewKey` shall show a mark after its label (`ui-view-switcher__default`) holding the `star` glyph and the provider's `defaultView` string for assistive technology. While `isDirty`, the root publishes `data-dirty` and the selected view shows a modified mark (`ui-view-switcher__modified`) holding the provider's `viewModified` string for assistive technology; the stylesheet draws it.
 
-Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
 ### UIC-VIEW-SWITCHER-1.4 - Actions menu, save and reset
 
 When the selected view has actions, a small icon [Dropdown Menu](DROPDOWN-MENU.md) (`ui-view-switcher__actions`, the `more` glyph named by the provider's `viewActions` string for the view's label) shall offer them in groups split by separators: the settings actions, then naming and default, then deletion. While `isDirty`, `onSave` offers the provider's `save` action, which calls it with the view's `id`, and `onReset` offers `resetView`, which calls it with the `id`. Settings actions act on the current settings, so only the selected view offers them.
 
-Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/components/view-switcher/view-actions.ts`, `src/core/view-strings.ts`
+Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/components/view-switcher/view-actions.ts`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
 ### UIC-VIEW-SWITCHER-1.5 - Saving as a new view
 
 `onSaveAs` shall offer the provider's `saveViewAs` action, which opens a [Modal](MODAL.md) titled `newView` holding a required text field named by `viewName`, which takes focus. Save, or Enter in the field, runs the dialog's Save action ([UIC-MODAL-6.3](MODAL.md#uic-modal-63---primary-action-from-the-content)), which calls `onSaveAs` with the trimmed name, refused while it is blank, and closes the dialog once a returned promise settles, keeping Save pending meanwhile and the dialog open with the failure if it rejects. A repeated Enter or Control+Enter while it is pending calls `onSaveAs` no second time.
 
-Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
 ### UIC-VIEW-SWITCHER-1.6 - Renaming a view
 
 `onRename` shall offer the provider's `rename` action for every view, which opens the same dialog titled `renameView` with the field filled with the view's label; saving calls `onRename` with the view's `id` and the trimmed name.
 
-Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
 ### UIC-VIEW-SWITCHER-1.7 - Default view and deleting
 
 `onDefaultViewChange` shall offer the provider's `setDefaultView` action for every view but the default one, which calls it with the view's `id`. `onDelete` offers the provider's `delete` action (tone `danger`), disabled while only one view is left, which opens a [Confirm Dialog](MODAL.md) of tone `danger` titled by `deleteViewTitle` for the label, explaining with `deleteViewMessage`; confirming calls `onDelete` with the `id` and closes it once a returned promise settles.
 
-Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
 ### UIC-VIEW-SWITCHER-1.8 - Views in a menu
@@ -73,7 +73,7 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`
 
 The tab list, or the menu of views, shall be named by `aria-label` or `aria-labelledby`, else by the provider's `views` string. Arrow keys move between tabs and select them, and Shift+F10, the Context Menu key or a secondary click opens a tab's own menu of its view's actions ([Tabs](TABS.md)); dialogs take focus when they open and return it when they close.
 
-Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/view-switcher/view-switcher.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
 
 ## Hooks

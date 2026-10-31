@@ -10,7 +10,7 @@
 
 Numeric and text ids that read alike remain separate rows and selections in both sides; moving one reports its original key without moving its counterpart.
 
-Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/transfer-pane.tsx`, `src/core/picker-strings.ts`
+Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/transfer-pane.tsx`, `src/core/strings/picker.ts`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
 
 ### UIC-TRANSFER-LIST-1.2 - Value

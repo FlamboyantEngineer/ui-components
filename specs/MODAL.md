@@ -338,7 +338,7 @@ Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirma
 
 `alert(controller, options)` shall open, through `controller`, a `Modal` with `options` (tone `info` by default) and no Cancel, whose one action is labelled by `confirmLabel` or the provider's `ok` string and has focus, and return a promise that resolves once the dialog closes, by that action (after `onConfirm`, if any, succeeds), Escape, an outside press or `closeAll`.
 
-Implementation: `src/components/modal/modal-prompts.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/modal/modal-prompts.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/modal/modal-prompts.test.tsx`, `e2e/modal-confirmation.spec.ts`
 
 ### UIC-MODAL-22.3 - Prompt

@@ -131,4 +131,4 @@ export type {
   FilterOption,
   FilterValue,
 } from './filter-model.js';
-export type { FilterOperator } from '../../core/query-strings.js';
+export type { FilterOperator } from '../../core/strings/query.js';

@@ -33,14 +33,14 @@ Verification: `src/utils/pivot.test.ts`
 
 `PivotTable` shall pivot `records` by its layout and render a root `ui-pivot-table` holding the field chooser (UIC-PIVOT-TABLE-3.2) when `fieldChooser` is set, then a `Table` (`ui-pivot-table__table`) taking the caller's labelling props. The table's first column is the row header column, headed by the row fields' labels joined with `/`, or the provider's `pivotRows` string without row fields; then one column per pivot column and value, aligned to the end; then, with column fields, one row total column per value.
 
-Implementation: `src/components/pivot-table/pivot-table.tsx`, `src/components/pivot-table/pivot-columns.tsx`, `src/core/analysis-strings.ts`
+Implementation: `src/components/pivot-table/pivot-table.tsx`, `src/components/pivot-table/pivot-columns.tsx`, `src/core/strings/analysis.ts`
 Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
 
 ### UIC-PIVOT-TABLE-2.2 - Headers
 
 A key shall read as its field's `formatKey(key)`, else as text, and a `null` key as the provider's `pivotEmptyKey` string; a pivot column's label joins its keys with `/`. A value's label is its `label`, else the provider's `pivotValueLabel` string with the aggregation's `pivotAggregate` name and the field's label (`Sum of Boxes`), else, for a function, the field's label. With several values, each pivot column's value columns are headed by the values' labels under a column group headed by the column's label, and the row totals by the values' labels under a group headed by the `pivotTotal` string; with one value and column fields, each column is headed by its label under one group headed by the value's label, and the row total by `pivotTotal`; without column fields, the value columns are headed by the values' labels.
 
-Implementation: `src/components/pivot-table/pivot-columns.tsx`, `src/core/analysis-strings.ts`
+Implementation: `src/components/pivot-table/pivot-columns.tsx`, `src/core/strings/analysis.ts`
 Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
 
 ### UIC-PIVOT-TABLE-2.3 - Cells
@@ -100,7 +100,7 @@ The field chooser shall be a `Board` (`ui-pivot-table__chooser`) named by the pr
 
 Each card shall have a unique internal key, including repeated fields and field ids that resemble generated keys, so moving a repeated field never moves a different card.
 
-Implementation: `src/components/pivot-table/pivot-field-chooser.tsx`, `src/components/pivot-table/pivot-fields.ts`, `src/core/analysis-strings.ts`
+Implementation: `src/components/pivot-table/pivot-field-chooser.tsx`, `src/components/pivot-table/pivot-fields.ts`, `src/core/strings/analysis.ts`
 Verification: `src/components/pivot-table/pivot-fields.test.ts`, `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
 
 ### UIC-PIVOT-TABLE-3.3 - Moving fields

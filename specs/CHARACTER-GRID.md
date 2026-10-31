@@ -10,7 +10,7 @@
 
 Category and cell identities shall remain distinct when category IDs contain whitespace or separator characters. Choosing a cell always reports its original character entry.
 
-Implementation: `src/components/character-grid/character-grid.tsx`, `src/core/picker-strings.ts`
+Implementation: `src/components/character-grid/character-grid.tsx`, `src/core/strings/picker.ts`
 Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/character-grid.spec.ts`
 
 ### UIC-CHARACTER-GRID-1.2 - Choosing

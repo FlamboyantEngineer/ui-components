@@ -8,7 +8,7 @@
 
 `StateMachineView` shall render a `DiagramCanvas` (also `ui-state-machine-view`) named by `aria-label`, `aria-labelledby` or the provider's `stateMachine` string, with a node of 144 by 44 pixels for each state and an edge, labelled with the transition's `label`, for each transition, routed as curves, without a minimap. Each node holds a `ui-state-machine-view__state` element showing the state's label in `ui-state-machine-view__state-label`. The canvas's outline view lists the same states and transitions; `defaultView` chooses the view shown at first.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/core/diagram-strings.ts`
+Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/core/strings/diagram.ts`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-1.2 - Initial, final and current states

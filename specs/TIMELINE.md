@@ -135,14 +135,14 @@ Verification: `src/components/timeline/timeline-table-identity.test.tsx`
 
 The root shall be a `group` named by `aria-label` or `aria-labelledby`, or by the provider's `timeline` string without them. Each body row is a `group` labelled by its row name, so an item is announced with its row.
 
-Implementation: `src/components/timeline/timeline.tsx`, `src/components/timeline/timeline-chart.tsx`, `src/core/timeline-strings.ts`
+Implementation: `src/components/timeline/timeline.tsx`, `src/components/timeline/timeline-chart.tsx`, `src/core/strings/timeline.ts`
 Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
 
 ### UIC-TIMELINE-4.2 - Items are described buttons
 
 Each item shall be a `<button>` in the tab order, named by its `label` and described by a hidden text joining, with `. `, its days (`timelineDates` with the first and last days, or `timelineMilestone` with the day, written as medium dates for the locale), its progress (`timelineProgress` with a percentage), its predecessors' names (`timelineDependsOn`), `timelineConflict` when it is in conflict, and `timelineKeyboardHint` when it moves.
 
-Implementation: `src/components/timeline/timeline-item.tsx`, `src/core/timeline-strings.ts`
+Implementation: `src/components/timeline/timeline-item.tsx`, `src/core/strings/timeline.ts`
 Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
 
 ### UIC-TIMELINE-4.3 - Decorative parts

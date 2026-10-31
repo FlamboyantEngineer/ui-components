@@ -79,6 +79,21 @@ export type MessageArguments<S> = {
     : never;
 };
 
+/**
+ * A module of built-in text (`src/core/strings/`): the message values each of its text functions
+ * reads its arguments as, typed by the text `S` it declares.
+ */
+export interface StringModule<S> {
+  readonly arguments: MessageArguments<S>;
+  /** Carries the module's text type for `UiStrings`; never set. */
+  readonly text?: S;
+}
+
+/** Declares a module of built-in text from the message values its text functions read. */
+export function defineStrings<S>(args: MessageArguments<S>): StringModule<S> {
+  return { arguments: args };
+}
+
 /** A kebab-case value as a `select` branch name, which cannot hold `-`: `in-progress` → `inProgress`. */
 export function toSelectKey(value: string): string {
   return value.replace(/-(\w)/g, (_, letter: string) => letter.toUpperCase());

@@ -38,7 +38,7 @@ Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.t
 
 Otherwise `confirmLeave(options)` shall open a `Modal` titled by `options.title`, the guard's `title` or the provider's `unsavedChanges` string, and described by `options.message`, the guard's `message` or the provider's question: `saveBeforeLeaving` when Save is offered, `discardBeforeLeaving` otherwise. Under the message, the `ui-unsaved-changes-guard__list` list names the labels of the dirty editors in registration order; editors without a label are left out, and the list is left out when none has one. The question follows the dirty editors while it is open (see 2.7), and keeps what it showed while an action runs and while it closes.
 
-Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
 
 ### UIC-UNSAVED-CHANGES-GUARD-2.3 - Save

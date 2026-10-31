@@ -8,7 +8,7 @@
 
 `ChatMessageActions` shall render a React Aria `toolbar` (`ui-chat-message-actions`) named by `aria-label`, `aria-labelledby` or else the provider string `messageActions`, holding small ghost icon-only [Buttons](BUTTON.md) in this order, each only when its value or callback is given: Copy (`copyText`, `ui-chat-message-actions__copy`, named `copy`), Good response and Bad response (`onFeedback`, both `ui-chat-message-actions__rating`, named `goodResponse` and `badResponse`), Reply (`onReply`, `ui-chat-message-actions__reply`, named `reply`), React (`onReact`, `ui-chat-message-actions__react`, named `addReaction`), Edit (`onEdit`, `ui-chat-message-actions__edit`, named `edit`) and Delete (`onDelete`, `ui-chat-message-actions__delete`, named `delete`). Without any command it renders nothing.
 
-Implementation: `src/components/chat-message-actions/chat-message-actions.tsx`, `src/components/chat-message-actions/message-actions-bar.tsx`, `src/components/chat-message-actions/message-commands.ts`, `src/core/chat-actions-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/chat-message-actions/chat-message-actions.tsx`, `src/components/chat-message-actions/message-actions-bar.tsx`, `src/components/chat-message-actions/message-commands.ts`, `src/core/strings/chat-actions.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx`, `e2e/chat-message-actions.spec.ts`
 
 ### UIC-CHAT-MESSAGE-ACTIONS-1.2 - Keyboard

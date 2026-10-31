@@ -22,7 +22,7 @@ Verification: `src/components/wizard/wizard.test.tsx`
 
 The footer shall hold [Buttons](BUTTON.md) in the `ui-wizard__action` slot, each publishing `data-action`: `cancel` (the provider's `cancel` string) when `onCancel` is set, which it calls; `back` (`back`) on every step but the first; `skip` (`skip`) on an optional step that is not the last; and the primary submit button, `next` (`next`) or on the last step `finish` (`finishLabel`, else `finish`).
 
-Implementation: `src/components/wizard/wizard.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/wizard/wizard.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 
 ### UIC-WIZARD-1.4 - Orientation

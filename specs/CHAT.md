@@ -235,9 +235,9 @@ Verification: `src/components/chat/chat-search.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-6.1 - Hooks, strings and caller attributes
 
-`Chat` shall carry the hooks below, append the caller's `className` and forward `id` and caller `data-*` attributes to its root. Its parts keep their own components' hooks beside the slot classes. Its own strings come from the provider (`chat-widget-strings.ts`).
+`Chat` shall carry the hooks below, append the caller's `className` and forward `id` and caller `data-*` attributes to its root. Its parts keep their own components' hooks beside the slot classes. Its own strings come from the provider (`src/core/strings/chat-widget.ts`).
 
-Implementation: `src/components/chat/chat.tsx`, `src/components/chat/chat-hooks.ts`, `src/core/chat-widget-strings.ts`
+Implementation: `src/components/chat/chat.tsx`, `src/components/chat/chat-hooks.ts`, `src/core/strings/chat-widget.ts`
 Verification: `src/components/chat/chat.test.tsx`
 
 ## Hooks

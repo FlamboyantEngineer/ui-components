@@ -29,7 +29,7 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 
 `status` (`active`, `away`, `busy` or `idle`, the words a presence avatar uses) shall publish `data-status`, and without `children` the light shows the provider's `presenceStatus` string for it as its label (`Away`). The reference sheet colours each presence as the presence avatar's indicator does, over the tone.
 
-Implementation: `src/components/status-light/status-light.tsx`, `src/core/common-strings.ts`, `labs/reference/status-light.css`
+Implementation: `src/components/status-light/status-light.tsx`, `src/core/strings/common.ts`, `labs/reference/status-light.css`
 Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-light.spec.ts`
 
 ### UIC-STATUS-LIGHT-1.5 - Processing

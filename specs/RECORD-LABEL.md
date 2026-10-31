@@ -36,7 +36,7 @@ Verification: `src/components/record-label/record-label.test.tsx`, `e2e/record-l
 
 `unavailable` (`restricted` or `missing`, published in `data-unavailable`) shall show only that: the `lock` or `warning` glyph and the provider's `recordUnavailable` string (`Restricted item`, `Missing item`) in place of the icon and identifier, with no name and no link.
 
-Implementation: `src/components/record-label/record-label.tsx`, `src/core/content-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/record-label/record-label.tsx`, `src/core/strings/content.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/record-label/record-label.test.tsx`, `e2e/record-label.spec.ts`
 
 ### UIC-RECORD-LABEL-1.6 - Hooks and caller attributes

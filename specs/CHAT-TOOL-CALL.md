@@ -22,14 +22,14 @@ Verification: `src/components/chat-tool-call/format-tool-call.test.ts`, `src/com
 
 The root shall publish `status` as `data-status`: `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied` or `cancelled`. The status shows as text from the provider's `toolCallStatus` (`Pending`, `Running`, `Needs approval`, `Done`, `Failed`, `Denied`, `Cancelled`), which is part of the trigger's name, beside a status glyph: `clock`, `refresh`, `hand-raised`, the kind's glyph ([UIC-CHAT-TOOL-CALL-1.7](#uic-chat-tool-call-17---kind)), `error`, `no-symbol` and `x-circle` in that order. A `running` call is busy: the root carries `aria-busy="true"`.
 
-Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/chat-tool-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/strings/chat-tool.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-tool-call.spec.ts`
 
 ### UIC-CHAT-TOOL-CALL-1.4 - Duration
 
 Given `durationMs`, the duration shall show in the provider's `toolCallDuration` short form (`350 ms`, `1.2 s`, `2 min 5 s`), hidden from assistive technology, beside its long form for assistive technology (`350 milliseconds`, `1.2 seconds`, `2 minutes 5 seconds`), visually hidden.
 
-Implementation: `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/chat-tool-strings.ts`
+Implementation: `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/strings/chat-tool.ts`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`
 
 ### UIC-CHAT-TOOL-CALL-1.5 - Auto-approved
@@ -112,7 +112,7 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat
 
 While the call is `approval-requested` and `approval.decision` is unset, the approval is pending: after the disclosure, a `ui-chat-tool-call__approval` `group` labelled by its prompt (`ui-chat-tool-call__prompt`, the provider's `toolCallApprovalPrompt` from the label, `Allow “Search recipes”?`) shall hold a `ui-chat-tool-call__actions` row of small buttons (`ui-chat-tool-call__action`, with `data-action`), each only when its callback is given: Approve (`approve`, primary, the provider's `approve` string) calls `onApprove`; Deny (`deny`, the provider's `toolCallDeny`) opens the reason form ([UIC-CHAT-TOOL-CALL-4.2](#uic-chat-tool-call-42---deny-with-a-reason)); Always allow (`always`, the provider's `toolCallAlwaysAllow` from `approval.scopeLabel`, `Always allow in this conversation`) calls `onAlwaysAllow`. The body is open by default ([UIC-CHAT-TOOL-CALL-3.1](#uic-chat-tool-call-31---expanded-state)), so the reader sees what the tool will do.
 
-Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-approval.tsx`, `src/core/chat-tool-strings.ts`
+Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-approval.tsx`, `src/core/strings/chat-tool.ts`
 Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/chat-tool-call.spec.ts`
 
 ### UIC-CHAT-TOOL-CALL-4.2 - Deny with a reason
@@ -133,7 +133,7 @@ Verification: `src/components/chat-tool-call/use-tool-call-approval.test.tsx`, `
 
 Once `approval.decision` is set, whatever the status, the approval shall be resolved: the prompt leaves, the group publishes `data-decision` (`approved`, `denied` or `always`) and is labelled by the decision, which shows in a `ui-chat-tool-call__decision` status (`role="status"`, present while the approval shows, so a decision made while it is on the page is announced) as the provider's `toolCallDecision`: `Approved`, `Denied`, `Denied: <reason>` with `approval.reason`, or `Always allowed`. The keyboard shortcuts stop working. A call that leaves `approval-requested` without a decision shows no approval.
 
-Implementation: `src/components/chat-tool-call/tool-call-approval.tsx`, `src/core/chat-tool-strings.ts`
+Implementation: `src/components/chat-tool-call/tool-call-approval.tsx`, `src/core/strings/chat-tool.ts`
 Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/chat-tool-call.spec.ts`
 
 ### UIC-CHAT-TOOL-CALL-4.5 - Focus across changes

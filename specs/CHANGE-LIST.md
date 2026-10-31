@@ -17,7 +17,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 
 `variant` (`compact` by default, or `detailed`) shall be published as `data-variant` on the root. `compact` uses the list's `inline` layout and draws old → new on one line. `detailed` uses the `stacked` layout and draws two `ui-change-list__side` blocks, `data-side="before"` then `data-side="after"`, each starting with a `ui-change-list__caption` reading the provider's `valueBefore` or `valueAfter` string, then its value, or `ui-change-list__empty` reading the provider's `emptyValue` string when that side is unset.
 
-Implementation: `src/components/change-list/change-list.tsx`, `src/components/change-list/change-values.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/change-list/change-list.tsx`, `src/components/change-list/change-values.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`
 
 ### UIC-CHANGE-LIST-1.3 - Text values
@@ -31,7 +31,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 
 A `value` change shall draw its old value in a `<del>` (`ui-change-list__old`) and its new value in an `<ins>` (`ui-change-list__new`), each through `renderValue` (the text itself by default). In `compact`, an unset side is left out, and when both are set a decorative arrow (`ui-change-list__arrow`, hidden from assistive technology) sits between them beside the provider's `changedTo` string, visually hidden.
 
-Implementation: `src/components/change-list/change-values.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/change-list/change-values.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`
 
 ### UIC-CHANGE-LIST-1.5 - List values
@@ -52,7 +52,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 
 With no changes, `ChangeList` shall render what `renderEmptyState` returns, `null` included, else a small [Empty State](EMPTY-STATE.md) reading the provider's `noChanges` string, instead of the list.
 
-Implementation: `src/components/change-list/change-list.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/change-list/change-list.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/change-list/change-list.test.tsx`
 
 ### UIC-CHANGE-LIST-1.8 - Hooks and caller attributes

@@ -65,7 +65,7 @@ Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activi
 
 With no entries and not loading, the feed shall show what `renderEmptyState` returns, else a small [Empty State](EMPTY-STATE.md) reading the provider's `noActivity` string, in place of the list.
 
-Implementation: `src/components/activity-feed/activity-feed.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/activity-feed/activity-feed.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activity-feed.spec.ts`
 
 ## UIC-ACTIVITY-FEED-3 - Accessibility
@@ -74,7 +74,7 @@ Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activi
 
 The list shall be named by `aria-label` or `aria-labelledby`, else by the provider's `activity` string, and carry `aria-describedby` and `aria-details` when given; each day's list is named by its heading.
 
-Implementation: `src/components/activity-feed/activity-feed.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/activity-feed/activity-feed.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activity-feed.spec.ts`
 
 ### UIC-ACTIVITY-FEED-3.2 - Read-only output

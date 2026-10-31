@@ -15,7 +15,7 @@ Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/re
 
 Each row header and column header shall show how many of its cells are related in a `ui-relation-matrix__row-count` or `ui-relation-matrix__column-count` slot, as digits hidden from assistive technology, which reads the provider's `relationCount` text instead (`No relations`, `1 relation`, `3 relations`). A row or column without relations publishes `data-uncovered` (on the row, its row header and the column header). Relations are indexed by cell from `relations`: the first relation of a cell counts, and relations whose row or column is not on the matrix are left out.
 
-Implementation: `src/components/relation-matrix/relation-matrix-model.ts`, `src/components/relation-matrix/relation-matrix-header.tsx`, `src/components/relation-matrix/relation-matrix-row.tsx`, `src/core/relation-strings.ts`
+Implementation: `src/components/relation-matrix/relation-matrix-model.ts`, `src/components/relation-matrix/relation-matrix-header.tsx`, `src/components/relation-matrix/relation-matrix-row.tsx`, `src/core/strings/relation.ts`
 Verification: `src/components/relation-matrix/relation-matrix-model.test.ts`, `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/relation-matrix.spec.ts`
 
 ### UIC-RELATION-MATRIX-1.3 - Relation marks

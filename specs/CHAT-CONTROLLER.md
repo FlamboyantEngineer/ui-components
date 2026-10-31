@@ -113,7 +113,7 @@ Verification: `src/components/chat-controller/chat-controller.test.tsx`, `e2e/ch
 
 An `error` event, or `send` throwing or rejecting, shall end the reply with `status: 'error'` and the event's message, the thrown error's message, or the provider string `chatReplyFailed`. `retry()` shall run the failed turn again: it removes the failed reply and streams a new one to the same conversation, or, when the failed run continued an earlier reply, restores that reply as it stood and continues it again. It does nothing while a reply runs or when the last message did not fail. `props.onRetry(messageId)` retries only when `messageId` is that failed reply.
 
-Implementation: `src/components/chat-controller/chat-engine.ts`, `src/components/chat-controller/chat-run.ts`, `src/core/chat-controller-strings.ts`
+Implementation: `src/components/chat-controller/chat-engine.ts`, `src/components/chat-controller/chat-run.ts`, `src/core/strings/chat-controller.ts`
 Verification: `src/components/chat-controller/chat-controller.test.tsx`, `src/components/chat-controller/chat-responses.test.ts`, `e2e/chat-controller.spec.ts`
 
 ### UIC-CHAT-CONTROLLER-2.5 - Queue

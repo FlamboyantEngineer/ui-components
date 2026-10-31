@@ -50,7 +50,7 @@ Verification: `src/components/shortcut/shortcut-format.test.ts`
 
 A sequence shall be an array of chords pressed one after another, such as `['G', 'I']` or `['Ctrl+K', 'Ctrl+C']`. `formatShortcut` shall draw each chord in platform notation and join them with a space (`G I`, `⌘K ⌘C`), and `formatShortcutAccessibleText` shall join the chords' readable words with the provider string `shortcutSequence` (`G, then I`), which the `sequence` option replaces for one call. Chords with an empty key are skipped, a sequence of one chord reads as that chord, and `formatShortcutTooltip` and `formatShortcutDescription` take sequences too. `formatAriaKeyShortcuts` takes single chords only, because `aria-keyshortcuts` cannot express a sequence.
 
-Implementation: `src/components/shortcut/shortcut-format.ts`, `src/core/common-strings.ts`
+Implementation: `src/components/shortcut/shortcut-format.ts`, `src/core/strings/common.ts`
 Verification: `src/components/shortcut/shortcut-format.test.ts`
 
 ### UIC-SHORTCUT-1.8 - Matching key presses

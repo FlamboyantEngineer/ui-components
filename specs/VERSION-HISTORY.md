@@ -17,7 +17,7 @@ Verification: `src/components/version-history/version-history.test.tsx`, `e2e/ve
 
 A version's title shall be its trimmed `label` (`ui-version-history__label`), which makes it a named version publishing `data-named`, or for an automatic version its `time` as a medium date and short time for the locale (a date alone for a date), or the provider's `unknownTime` string, capitalized, when the time cannot be read; the title is also the row's text value for typeahead. The version whose `id` is `currentKey` publishes `data-current` and shows the provider's `currentVersion` string after its title (`ui-version-history__current`). Below the title, an [Attribution](ATTRIBUTION.md) (`ui-version-history__attribution`) says who saved it and when, with `showAvatar`, `fallbackAfterDays` and `getNow` passed on, followed by its `summary` (`ui-version-history__summary`) when it has one.
 
-Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-model.ts`, `src/core/history-strings.ts`
+Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-model.ts`, `src/core/strings/history.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`
 
 ### UIC-VERSION-HISTORY-1.3 - Selecting one or two versions
@@ -38,21 +38,21 @@ Verification: `src/components/version-history/version-history.test.tsx`, `e2e/ve
 
 With `onRestore`, every enabled version but the current one shall end its row with a menu ([Dropdown Menu](DROPDOWN-MENU.md), an icon button named by the provider's `versionActions` string for the title, `ui-version-history__actions`) offering the provider's `restoreVersion` action. It opens a [Confirm Dialog](MODAL.md) titled by the provider's `restoreVersionTitle` for the title, explaining with `restoreVersionMessage` and confirming with `restore`; confirming calls `onRestore` with the version's key and closes the dialog once a returned promise settles, keeping it open with the failure if it rejects. Cancel closes it without a call.
 
-Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-dialogs.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-dialogs.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`
 
 ### UIC-VERSION-HISTORY-1.6 - Naming a version
 
 With `onRename`, every enabled version's menu shall offer the provider's `nameVersion` action for an automatic version and `renameVersion` for a named one. It opens a [Modal](MODAL.md) with the same title holding a text field named by `versionName` and filled with the version's name; Save, or Enter in the field, runs the dialog's Save action ([UIC-MODAL-6.3](MODAL.md#uic-modal-63---primary-action-from-the-content)), which calls `onRename` with the key and the trimmed name when it changed (an empty name makes the version automatic again) and closes the dialog once a returned promise settles, keeping Save pending meanwhile and the dialog open with the failure if it rejects; an unchanged name only closes it. A repeated Enter or Control+Enter while it is pending calls `onRename` no second time.
 
-Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-dialogs.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-dialogs.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`
 
 ### UIC-VERSION-HISTORY-1.7 - Filters
 
 While `showFilters` is set (the default), the toolbar shall start with a [Switch](SWITCH.md) (`ui-version-history__named-only`) reading the provider's `namedVersionsOnly` string, which keeps only named versions, and a single-selection [Dropdown Menu](DROPDOWN-MENU.md) (`ui-version-history__person`) labelled by the provider's `versionsBy` string for the chosen person, offering `anyone` and then the names of the people who saved the versions, trimmed, once each, in order of first appearance; choosing a person keeps only their versions, whatever spaces surround their name. `filter` (controlled, `{ namedOnly, person }`) or `defaultFilter` (every version by default) set the filter, and `onFilterChange` receives it after each change. When the filters keep no version, the list shows a small [Empty State](EMPTY-STATE.md) reading the provider's `noMatchingVersions` string. Filtering leaves the selection as it is.
 
-Implementation: `src/components/version-history/version-toolbar.tsx`, `src/components/version-history/version-model.ts`, `src/core/history-strings.ts`
+Implementation: `src/components/version-history/version-toolbar.tsx`, `src/components/version-history/version-model.ts`, `src/core/strings/history.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`
 
 ### UIC-VERSION-HISTORY-1.8 - Disabled versions
@@ -66,7 +66,7 @@ Verification: `src/components/version-history/version-history.test.tsx`
 
 `onLoadMore` and `isLoading` shall load older versions inside the list ([UIC-COLLECTIONS-1.2](COLLECTIONS.md#uic-collections-12---loading-more-inside-a-collection)); while `isLoading` the root publishes `data-loading`, and a list without rows shows a small loading [Empty State](EMPTY-STATE.md). With `error`, a small error Empty State (`ui-version-history__error`) describing it, with a Retry button calling `onRetry` when given, replaces the list. With no versions at all and not loading, the list shows what `renderEmptyState` returns, else an Empty State reading the provider's `noVersions` string.
 
-Implementation: `src/components/version-history/version-history.tsx`, `src/core/history-strings.ts`
+Implementation: `src/components/version-history/version-history.tsx`, `src/core/strings/history.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`
 
 ### UIC-VERSION-HISTORY-1.10 - Hooks and caller attributes

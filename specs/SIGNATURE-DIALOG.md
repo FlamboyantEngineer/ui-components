@@ -8,7 +8,7 @@
 
 `SignatureDialog` shall render a `Modal` named by `title`, whose overlay also carries `ui-signature-dialog`, whose body starts with its children (what is signed: a summary of the change, a count) in `ui-signature-dialog__summary` when it has any, and whose footer holds Cancel and the Sign action, labelled by `confirmLabel` or the provider string `sign`. It takes the modal's `isOpen`, `defaultOpen`, `onOpenChange` and `size`; focus starts on the first entry and returns to where it was on close (UIC-MODAL-3).
 
-Implementation: `src/components/signature-dialog/signature-dialog.tsx`, `src/core/common-strings.ts`, `labs/reference/signature-dialog.css`
+Implementation: `src/components/signature-dialog/signature-dialog.tsx`, `src/core/strings/common.ts`, `labs/reference/signature-dialog.css`
 Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/signature-dialog.spec.ts`
 
 ### UIC-SIGNATURE-DIALOG-1.2 - Meaning
@@ -29,7 +29,7 @@ Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/
 
 The dialog shall show who signs, from `userName`, in `ui-signature-dialog__signer` (the provider string `signingAs`: "Signing as Ada Lovelace"), followed by a required password Text Field named by the provider string `password` (`type="password"`, `autoComplete="current-password"`). With `credentials="username-password"` a required user name Text Field (`userName`, `autoComplete="username"`) comes before the password, and the user name signed with is the one typed.
 
-Implementation: `src/components/signature-dialog/signature-form.tsx`, `src/core/common-strings.ts`, `src/core/content-strings.ts`
+Implementation: `src/components/signature-dialog/signature-form.tsx`, `src/core/strings/common.ts`, `src/core/strings/content.ts`
 Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/signature-dialog.spec.ts`
 
 ### UIC-SIGNATURE-DIALOG-1.5 - Hooks and caller attributes

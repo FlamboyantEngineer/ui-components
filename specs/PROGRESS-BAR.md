@@ -98,7 +98,7 @@ Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/pro
 
 The bar's range shall be 0 to the number of units and its value the number of `complete` units. The current unit does not count as completed: one completed unit of seven is `aria-valuenow="1"` and 14%, with the second segment current. The visible value text is the provider's `segmentCount` string (`1/7 · 14%`), with counts and percentage formatted for the locale.
 
-Implementation: `src/components/progress-bar/progress-segments.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/progress-bar/progress-segments.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/progress-bar/progress-segments.test.tsx`
 
 ### UIC-PROGRESS-BAR-4.3 - Current unit

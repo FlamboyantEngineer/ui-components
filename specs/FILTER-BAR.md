@@ -8,7 +8,7 @@
 
 A field (`{ id, label, type, operators?, options? }`) shall be of type `text`, `number`, `date`, `choice`, `person` or `boolean`, and offer the operators listed for it in `operators`, or else every operator of its type in this order: `text` contains, does not contain, is, is not, starts with, is empty, is not empty; `number` is, is not, is less than, is at most, is greater than, is at least, is between, is empty, is not empty; `date` is, is before, is after, is between, is empty, is not empty; `choice` and `person` is any of, is none of, is empty, is not empty; `boolean` is. Operators read through the provider string `filterOperator`.
 
-Implementation: `src/components/filter-bar/filter-model.ts`, `src/core/query-strings.ts`
+Implementation: `src/components/filter-bar/filter-model.ts`, `src/core/strings/query.ts`
 Verification: `src/components/filter-bar/filter-model.test.ts`, `src/components/filter-bar/filter-bar.test.tsx`
 
 ### UIC-FILTER-BAR-1.2 - Condition values
@@ -31,7 +31,7 @@ Verification: `src/components/filter-bar/filter-bar.test.tsx`
 
 Each condition on a known field shall draw a chip (`ui-filter-bar__chip`, a list item publishing `data-field`) holding a button that reads the field's label, the operator and the value, each in its own slot; dates read in the locale's medium style, numbers in the locale's format, ranges through the provider string `filterRange`, option values by their labels and booleans through `valueTrue` and `valueFalse`. A condition missing its value reads only its field and operator and publishes `data-incomplete` on its chip.
 
-Implementation: `src/components/filter-bar/filter-chip.tsx`, `src/components/filter-bar/filter-format.ts`, `src/core/query-strings.ts`
+Implementation: `src/components/filter-bar/filter-chip.tsx`, `src/components/filter-bar/filter-format.ts`, `src/core/strings/query.ts`
 Verification: `src/components/filter-bar/filter-bar.test.tsx`, `src/components/filter-bar/filter-format.test.tsx`, `e2e/filter-bar.spec.ts`
 
 ### UIC-FILTER-BAR-2.2 - Editor

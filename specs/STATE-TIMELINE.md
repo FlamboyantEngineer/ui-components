@@ -31,7 +31,7 @@ Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/stat
 
 Each entry shall publish `data-status`: `past` for every change but the last, `current` for the last, and `upcoming` for the states of `upcoming`. The current entry carries `aria-current="step"` and shows the provider's `currentState` text in `ui-state-timeline__current` after a space; each upcoming entry ends its header with a space and the provider's `upcomingState` text, visually hidden.
 
-Implementation: `src/components/state-timeline/state-timeline.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/state-timeline/state-timeline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/state-timeline.spec.ts`
 
 ### UIC-STATE-TIMELINE-1.5 - Direction
@@ -54,7 +54,7 @@ Verification: `src/components/state-timeline/state-timeline.test.tsx`
 
 The list shall be named by `aria-label` or `aria-labelledby`, else by the provider's `stateHistory` string.
 
-Implementation: `src/components/state-timeline/state-timeline.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/state-timeline/state-timeline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/state-timeline.spec.ts`
 
 ### UIC-STATE-TIMELINE-2.2 - Read-only output

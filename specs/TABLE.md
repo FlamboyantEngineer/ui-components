@@ -107,7 +107,7 @@ Verification: `src/components/table/table-column-filter.test.tsx`, `src/componen
 
 A column with `filter` shall draw a filter button in its header (`ui-table__column-filter`, an `Button` with the `filter` glyph named by the provider string `filterLabel` from the column's name) that opens an anchored dialog (`ui-table__column-filter-dialog`, a [Modal](MODAL.md) with `placement`) titled the same, holding the field of the filter's type: a `text` filter's [Text Field](TEXT-FIELD.md) named by the provider's `contains` string, a `number` filter's two [Number Fields](NUMBER-FIELD.md) for its bounds (`rangeFrom` and `rangeTo`), a `date` filter's date range [Date Time Field](DATE-TIME-FIELD.md), and a `set` filter's [Checkbox Group](CHOICE-GROUP.md) of its `options`, else the distinct values of the column in `rows`. Each change filters the rows at once and the `clearFilter` button empties the column's filter. The header publishes `data-filtered` while its column filters rows. The button is a focusable child of the header, reached with ArrowRight while the header keeps Enter for sorting.
 
-Implementation: `src/components/table/table-column-filter.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table.tsx`, `src/core/glyphs.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/table/table-column-filter.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table.tsx`, `src/core/glyphs.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/table/table-column-filter.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-2.9 - Filter matching
@@ -287,7 +287,7 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 When a column has `allowsHiding`, the toolbar shall draw a columns menu (`ui-table__columns-menu`, a [Dropdown Menu](DROPDOWN-MENU.md) labelled by the provider's `columns` string) with one checkable item per such column, in display order, ticked while it is shown. Toggling an item hides or shows its column at once and the menu stays open. Hidden columns draw no header or cells; a column hidden by the layout that does not allow hiding stays hidden.
 
-Implementation: `src/components/table/table-columns-menu.tsx`, `src/components/table/table-toolbar.tsx`, `src/components/table/use-column-layout.ts`, `src/core/content-strings.ts`
+Implementation: `src/components/table/table-columns-menu.tsx`, `src/components/table/table-toolbar.tsx`, `src/components/table/use-column-layout.ts`, `src/core/strings/content.ts`
 Verification: `src/components/table/use-column-layout.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-8.2 - Column layout
@@ -368,7 +368,7 @@ Verification: `src/components/table/table-tree.test.ts`, `src/components/table/t
 
 `pagination` shall show the top-level rows one page of `pageSize` at a time, after filtering and sorting, under a [Pagination](PAGINATION.md) (`ui-table__pagination`) named by the provider string `paginationOf` from the table's `aria-label`. `page` controls the page, else the table owns it starting at `defaultPage`, and `onPageChange` receives each page the reader moves to. A page beyond the last shows the last.
 
-Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/table.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/table.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/table/use-table-rows.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-10.2 - Pages from the caller
@@ -421,7 +421,7 @@ Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.
 
 When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, takes no position among nested rows (`aria-posinset`, `aria-setsize`), and a notice hides it. A virtualized table keeps the summary row in the document wherever it is scrolled, so its row group always holds the row.
 
-Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-12.2 - Loading more
@@ -446,7 +446,7 @@ Verification: `src/components/table/table-group-row.test.tsx`, `src/components/t
 
 A group header row (`ui-table__group-row`) shall draw one cell per column: after an empty selection cell, a `ui-table__group-cell` under the first data column, with its id and pin hooks and the measured `--ui-table-level` of its group, from which the label may spill over the empty cells beside it. It holds React Aria's expand button (`ui-table__expand`), the label (`ui-table__group-label`): `renderGroupLabel(group)`, else the provider's `groupHeading` from the grouping's name and the group's value (the provider's `emptyValue` for empty values, a date as its day), and the number of rows (`ui-table__group-count`) in the provider locale, hidden from assistive technology, which reads the provider's `itemCount` instead. The row's text value is the heading with its count. A group row can take focus but is never selected, dragged or passed to `onRowAction`, and the table draws no drag handles and reorders no rows while it is grouped.
 
-Implementation: `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`, `src/core/table-strings.ts`
+Implementation: `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`, `src/core/strings/table.ts`
 Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-13.3 - Aggregates
@@ -558,7 +558,7 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `src/components/t
 
 When a drawn column has `bulkEdit`, the selection bar shall end with an `edit` action named by the provider's `editSelected` that opens a dialog (`ui-table__bulk-edit`, a [Modal](MODAL.md)) titled by the provider's `editRows` with the count. It holds a [Select Field](SELECT-FIELD.md) named by the provider's `field` that chooses among those columns, the first by default, and the field of the chosen column's type named by the column: a [Text Field](TEXT-FIELD.md) for `text`, a [Number Field](NUMBER-FIELD.md) for `number`, a date [Date Time Field](DATE-TIME-FIELD.md) for `date` (`YYYY-MM-DD`), a [Boolean Field](BOOLEAN-FIELD.md) for `boolean` and a Select Field of `options` for `choice`. Its `apply` button sets the value in that column of every selected row, skipping values the column's `validateValue` refuses and cells that already hold the value, reports the edits in one `onCellsChange` batch and closes the dialog; each opening starts afresh.
 
-Implementation: `src/components/table/table-bulk-edit.tsx`, `src/core/table-strings.ts`
+Implementation: `src/components/table/table-bulk-edit.tsx`, `src/core/strings/table.ts`
 Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
 
 ## Hooks
