@@ -114,6 +114,15 @@ test.describe('SVG Markup lab', () => {
     expect(gap).toBeGreaterThan(1);
   });
 
+  test('UIC-SVG-MARKUP-1.2 keeps the case of custom property names', async ({ page, lab }) => {
+    await lab.open('svg-markup');
+    const circles = page.getByRole('img', { name: 'Leaf tokens' }).locator('circle');
+    const fill = (index: number) =>
+      circles.nth(index).evaluate((element) => getComputedStyle(element).fill);
+    expect(await fill(0)).toBe('rgb(22, 163, 74)');
+    expect(await fill(1)).toBe('rgb(220, 38, 38)');
+  });
+
   test('UIC-SVG-MARKUP-2.3 exposes only labelled drawings', async ({ page, lab }) => {
     await lab.open('svg-markup');
     const alone = page.locator('[data-lab-cell="naming=labelled placement=standalone"]');
