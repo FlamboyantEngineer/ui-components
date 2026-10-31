@@ -71,7 +71,7 @@ Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overfl
 
 ### UIC-OVERFLOW-LIST-2.2 - Hooks, caller attributes and semantics
 
-`OverflowList` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, ARIA attributes and `ref` to its root, and keep its own hook values over caller attributes of the same name. It adds no role: the caller gives the row its semantics (a group, a toolbar) and names the indicator, for example "3 more fruit".
+`OverflowList` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `ref` and the other native `<div>` props ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`) to its root, and keep its own hook values over caller attributes of the same name. It adds no role: the caller gives the row its semantics (a group, a toolbar) and names the indicator, for example "3 more fruit".
 
 Implementation: `src/components/overflow-list/overflow-list.tsx`
 Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`

@@ -15,7 +15,7 @@ import { useFocusVisible } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { isOverflowing } from '../../utils/is-overflowing.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { tabbableSelector } from '../../utils/tabbable.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -35,7 +35,7 @@ import { getOwnerDocument } from '../../utils/owner-window.js';
 type TruncationPointerHandler = 'onPointerEnter' | 'onPointerLeave' | 'onPointerDown';
 
 export interface TruncationTooltipProps
-  extends Omit<NativeProps<'span'>, 'children' | TruncationPointerHandler>, BaseProps {
+  extends Omit<ContainerProps<'span'>, 'children' | TruncationPointerHandler>, BaseProps {
   /** The text. The stylesheet cuts it (ellipsis or line clamp); the tooltip shows it whole. */
   children: ReactNode;
   /** Preferred side of the text. Defaults to `top`; the tooltip flips when it does not fit. */

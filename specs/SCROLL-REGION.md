@@ -8,7 +8,7 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 ### UIC-SCROLL-REGION-1.1 - Frame and viewport
 
-`ScrollRegion` shall render a root frame holding a `ui-scroll-region__viewport` that scrolls and holds the children. The caller's native props, `id`, `ref`, `tabIndex` and `onScroll` go to the viewport; `className`, `hidden` and caller `data-*` attributes go to the root. The viewport element stays the same across option changes.
+`ScrollRegion` shall render a root frame holding a `ui-scroll-region__viewport` that scrolls and holds the children. The caller's native props ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`), `id`, `ref`, `tabIndex` and `onScroll` go to the viewport; `className`, `hidden` and caller `data-*` attributes go to the root. The viewport element stays the same across option changes.
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`

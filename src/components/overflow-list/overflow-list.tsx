@@ -2,7 +2,7 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Key } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { useOverflowItems, type OverflowCollapseFrom } from '../../utils/use-overflow-items.js';
@@ -13,7 +13,7 @@ export interface OverflowListRenderState {
   isOverflowing: boolean;
 }
 
-export interface OverflowListProps<T> extends Omit<NativeProps<'div'>, 'children'>, BaseProps {
+export interface OverflowListProps<T> extends Omit<ContainerProps<'div'>, 'children'>, BaseProps {
   /** Every item, in order. */
   items: readonly T[];
   /**

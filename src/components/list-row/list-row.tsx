@@ -3,7 +3,7 @@
 import type { MouseEvent, ReactNode, Ref } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Tone } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconLabel } from '../icon-label/icon-label.js';
@@ -24,7 +24,7 @@ export interface ListHandle {
   focusFirst(): void;
 }
 
-export interface ListProps extends NativeProps<'ul'>, BaseProps {
+export interface ListProps extends ContainerProps<'ul'>, BaseProps {
   /** The rows are being loaded or updated: publishes `aria-busy` and `data-pending`. */
   isPending?: boolean | undefined;
   /** Ask the stylesheet for dividers between rows. */
@@ -36,7 +36,7 @@ export interface ListProps extends NativeProps<'ul'>, BaseProps {
 }
 
 export interface ListRowContentProps
-  extends Omit<NativeProps<'span'>, 'title' | 'children'>, BaseProps {
+  extends Omit<ContainerProps<'span'>, 'title' | 'children'>, BaseProps {
   /** The row's main text. */
   title: ReactNode;
   /** Secondary text below the title, such as a `MetaLine`. */
@@ -51,7 +51,7 @@ export type ListRowTone = Extract<Tone, 'neutral' | 'danger'>;
 
 export interface ListRowProps
   extends
-    Omit<NativeProps<'li'>, 'title' | 'children'>,
+    Omit<ContainerProps<'li'>, 'title' | 'children'>,
     BaseProps,
     Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
   /** Makes the row's primary control a link, rendered through the provider's link renderer. */

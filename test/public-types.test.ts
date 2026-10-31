@@ -14,6 +14,13 @@ import type {
 import type { PressEvent, PressEventProps } from '../src/core/events.js';
 import type { Key, Placement, Selection, SortDescriptor } from '../src/core/props.js';
 import type { ElementRender } from '../src/utils/render-element.js';
+import type { AspectRatioProps } from '../src/components/layout/aspect-ratio.js';
+import type { PageProps, StackProps } from '../src/components/layout/layout.js';
+import type { ContentsProps } from '../src/components/layout/wrappers.js';
+import type { ListProps } from '../src/components/list-row/list-row.js';
+import type { OverflowListProps } from '../src/components/overflow-list/overflow-list.js';
+import type { ScrollRegionProps } from '../src/components/scroll-region/scroll-region.js';
+import type { DescriptionListProps } from '../src/components/description-list/description-list.js';
 
 // Package names built from parts so the repository scan in primitives.test.ts skips this file.
 const ARIA = `${'react-aria'}-components`;
@@ -107,6 +114,20 @@ describe('public declarations', () => {
     });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('ProbeProps names unexported ProbeDraft');
+  });
+
+  it('UIC-COMPOSITION-2.4 forwards container props without raw HTML', () => {
+    expectTypeOf<ListProps>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<PageProps>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<StackProps<'ul'>>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<ContentsProps>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<AspectRatioProps>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<ScrollRegionProps>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<OverflowListProps<string>>().not.toHaveProperty('dangerouslySetInnerHTML');
+    expectTypeOf<ListProps>().toHaveProperty('onKeyDown');
+    expectTypeOf<PageProps>().toHaveProperty('aria-label');
+    expectTypeOf<DescriptionListProps>().toHaveProperty('hidden');
+    expectTypeOf<DescriptionListProps>().not.toHaveProperty('onClick');
   });
 
   it('UIC-PRIMITIVES-2.2 shapes the shared vocabulary so the building blocks accept it unchanged', () => {

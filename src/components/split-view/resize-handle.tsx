@@ -3,7 +3,7 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { resolveResizeKeyboardValue } from './resize-keyboard.js';
@@ -26,7 +26,7 @@ export interface ResizeKeyboardInput {
 export interface ResizeHandleProps
   extends
     Omit<
-      NativeProps<'div'>,
+      ContainerProps<'div'>,
       | 'children'
       | 'role'
       | 'onChange'

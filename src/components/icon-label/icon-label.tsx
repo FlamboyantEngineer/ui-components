@@ -1,13 +1,13 @@
 'use client';
 
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
 import { Icon, type IconSize, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
-export interface IconLabelProps extends BaseProps, Pick<HTMLAttributes<HTMLSpanElement>, 'hidden'> {
+export interface IconLabelProps extends BaseProps, Pick<NativeProps<'span'>, 'hidden'> {
   /** An imported icon component or rendered element. The icon is decorative; the label names it. */
   icon: IconSource;
   /** The text after the icon. */

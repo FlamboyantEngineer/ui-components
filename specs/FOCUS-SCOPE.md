@@ -13,7 +13,7 @@ Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scop
 
 ### UIC-FOCUS-SCOPE-1.2 - Hooks and caller attributes
 
-`FocusScope` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes and the `<div>`'s native props (a `role`, ARIA attributes, handlers), and keep its own hook values over caller attributes of the same name.
+`FocusScope` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes and the `<div>`'s native props (a `role`, ARIA attributes, handlers; [UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers), without `dangerouslySetInnerHTML`), and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/focus-scope/focus-scope.tsx`
 Verification: `src/components/focus-scope/focus-scope.test.tsx`

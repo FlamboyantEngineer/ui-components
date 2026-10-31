@@ -19,6 +19,7 @@ export type {
   DataAttributeValue,
   Key,
   NativeProps,
+  ContainerProps,
   RefProps,
   Orientation,
   Placement,

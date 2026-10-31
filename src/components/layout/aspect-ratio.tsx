@@ -1,10 +1,10 @@
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps } from '../../core/props.js';
 
 /** Width to height, landscape then portrait: `16-9` is sixteen wide by nine tall. */
 export type AspectRatioValue = '1-1' | '4-3' | '3-2' | '16-9' | '21-9' | '3-4' | '2-3' | '9-16';
 
-export interface AspectRatioProps extends NativeProps<'div'>, BaseProps {
+export interface AspectRatioProps extends ContainerProps<'div'>, BaseProps {
   /** Width to height of the box. Defaults to `1-1`. */
   ratio?: AspectRatioValue | undefined;
 }

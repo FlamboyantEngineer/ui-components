@@ -105,7 +105,7 @@ Verification: `src/components/split-view/split-view.test.tsx`
 
 ### UIC-SPLIT-VIEW-3.5 - Hooks and caller attributes
 
-`SplitView` and `ResizeHandle` shall carry the hooks below, append the caller's `className`, and forward native props, `ref` and caller `data-*` attributes to their root. A disabled `ResizeHandle` still passes pointer and key events to the caller's own handlers while ignoring them itself.
+`SplitView` and `ResizeHandle` shall carry the hooks below, append the caller's `className`, and forward native props ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`), `ref` and caller `data-*` attributes to their root. A disabled `ResizeHandle` still passes pointer and key events to the caller's own handlers while ignoring them itself.
 
 Implementation: `src/components/split-view/split-view.tsx`, `src/components/split-view/resizable-split-view.tsx`, `src/components/split-view/resize-handle.tsx`
 Verification: `src/components/split-view/split-view.test.tsx`

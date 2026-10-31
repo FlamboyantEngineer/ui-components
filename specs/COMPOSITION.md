@@ -41,6 +41,13 @@ Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test
 Implementation: `src/utils/join-ids.ts`
 Verification: `src/utils/join-ids.test.ts`
 
+### UIC-COMPOSITION-2.4 - Native props of containers
+
+A component shall declare the native props it takes. Most list them one by one (`Pick<NativeProps<E>, …>`). A container whose spec says it forwards its element's native props (the layout primitives, `ScrollRegion`, `SplitView`, `FocusScope`, `OverflowList`, `TruncationTooltip` and `List`) takes them through `ContainerProps<E>`: every attribute, ARIA attribute and handler of the element except `dangerouslySetInnerHTML`, which would replace the content the component renders. No props interface reaches for React's `HTMLAttributes` types.
+
+Implementation: `src/core/props.ts`
+Verification: `test/public-types.test.ts`
+
 ## UIC-COMPOSITION-3 - Slots
 
 ### UIC-COMPOSITION-3.1 - Slot props
