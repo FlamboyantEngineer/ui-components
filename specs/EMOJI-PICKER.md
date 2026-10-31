@@ -73,7 +73,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-3.1 - Popover
 
-`EmojiPickerTrigger` shall make the button it wraps open an `EmojiPicker` in a popover in the `ui-emoji-picker__popover` slot, with focus in the search field. Choosing an emoji or pressing Escape shall close it and return focus to the button; a press outside shall close it. Its other props reach the picker.
+`EmojiPickerTrigger` shall make the button it wraps open an `EmojiPicker` in a popover in the `ui-emoji-picker__popover` slot, with focus in the search field. The popover sits on the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="dropdown"` and takes the z-index of `useLayerZIndex('dropdown')`. Choosing an emoji or pressing Escape shall close it and return focus to the button; a press outside shall close it. Its other props reach the picker.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
@@ -170,40 +170,41 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ## Hooks
 
-| Hook                             | Kind      | Values                           | Description                                                   |
-| -------------------------------- | --------- | -------------------------------- | ------------------------------------------------------------- |
-| `ui-emoji-picker`                | root      |                                  | The picker (`role="dialog"`).                                 |
-| `ui-emoji-picker__popover`       | slot      |                                  | The popover holding a picker opened by `EmojiPickerTrigger`.  |
-| `ui-emoji-picker__search`        | slot      |                                  | The search field.                                             |
-| `ui-emoji-picker__search-input`  | slot      |                                  | The search input.                                             |
-| `ui-emoji-picker__search-clear`  | slot      |                                  | The clear button.                                             |
-| `ui-emoji-picker__categories`    | slot      |                                  | The category tabs (also `ui-tabs`).                           |
-| `ui-emoji-picker__section`       | slot      |                                  | A labelled grid.                                              |
-| `ui-emoji-picker__label`         | slot      |                                  | The visible label of a grid.                                  |
-| `ui-emoji-picker__grid`          | slot      |                                  | The grid of emoji (`role="grid"`).                            |
-| `ui-emoji-picker__cell`          | slot      |                                  | One emoji (`role="row"`).                                     |
-| `ui-emoji-picker__image`         | slot      |                                  | A custom emoji's image.                                       |
-| `ui-emoji-picker__message`       | slot      |                                  | The loading, failure or no-results message.                   |
-| `ui-emoji-picker__footer`        | slot      |                                  | The footer holding the preview and the skin tones.            |
-| `ui-emoji-picker__preview`       | slot      |                                  | The decorative preview of the hovered or focused emoji.       |
-| `ui-emoji-picker__preview-emoji` | slot      |                                  | The previewed glyph or image.                                 |
-| `ui-emoji-picker__preview-label` | slot      |                                  | The previewed label.                                          |
-| `ui-emoji-picker__skin-tones`    | slot      |                                  | The skin tone radio group.                                    |
-| `ui-emoji-picker__skin-tone`     | slot      |                                  | One skin tone radio (a `<label>`).                            |
-| `data-loading`                   | state     | `true`                           | The standard emoji are loading.                               |
-| `data-empty`                     | state     | `true`                           | The search field is empty (React Aria).                       |
-| `data-layout`                    | attribute | `grid`                           | The grid's layout (React Aria).                               |
-| `data-orientation`               | attribute | `vertical`, `horizontal`         | The grid's and the radio group's axis (React Aria).           |
-| `data-collection`                | attribute |                                  | React Aria's collection identifier; not for styling.          |
-| `data-key`                       | attribute |                                  | A cell's key: its glyph or `:shortcode:` (React Aria).        |
-| `data-selected`                  | state     | `true`                           | The selected skin tone (React Aria).                          |
-| `data-hovered`                   | state     | `true`                           | Pointer over a cell, skin tone, input or button (React Aria). |
-| `data-pressed`                   | state     | `true`                           | A cell, skin tone or button is being pressed (React Aria).    |
-| `data-focused`                   | state     | `true`                           | Focus on or within the element (React Aria).                  |
-| `data-focus-visible`             | state     | `true`                           | Keyboard focus on or within the element (React Aria).         |
-| `data-focus-within`              | state     | `true`                           | Focus within the grid (React Aria).                           |
-| `data-focus-visible-within`      | state     | `true`                           | Keyboard focus within a cell (React Aria).                    |
-| `data-placement`                 | state     | `top`, `bottom`, `left`, `right` | The popover's resolved side (React Aria).                     |
-| `data-trigger`                   | state     | `DialogTrigger`                  | Which React Aria trigger opened the popover.                  |
-| `data-entering`                  | state     | `true`                           | The popover is opening (React Aria).                          |
-| `data-exiting`                   | state     | `true`                           | The popover is closing (React Aria).                          |
+| Hook                             | Kind      | Values                           | Description                                                           |
+| -------------------------------- | --------- | -------------------------------- | --------------------------------------------------------------------- |
+| `ui-emoji-picker`                | root      |                                  | The picker (`role="dialog"`).                                         |
+| `ui-emoji-picker__popover`       | slot      |                                  | The popover holding a picker opened by `EmojiPickerTrigger`.          |
+| `ui-emoji-picker__search`        | slot      |                                  | The search field.                                                     |
+| `ui-emoji-picker__search-input`  | slot      |                                  | The search input.                                                     |
+| `ui-emoji-picker__search-clear`  | slot      |                                  | The clear button.                                                     |
+| `ui-emoji-picker__categories`    | slot      |                                  | The category tabs (also `ui-tabs`).                                   |
+| `ui-emoji-picker__section`       | slot      |                                  | A labelled grid.                                                      |
+| `ui-emoji-picker__label`         | slot      |                                  | The visible label of a grid.                                          |
+| `ui-emoji-picker__grid`          | slot      |                                  | The grid of emoji (`role="grid"`).                                    |
+| `ui-emoji-picker__cell`          | slot      |                                  | One emoji (`role="row"`).                                             |
+| `ui-emoji-picker__image`         | slot      |                                  | A custom emoji's image.                                               |
+| `ui-emoji-picker__message`       | slot      |                                  | The loading, failure or no-results message.                           |
+| `ui-emoji-picker__footer`        | slot      |                                  | The footer holding the preview and the skin tones.                    |
+| `ui-emoji-picker__preview`       | slot      |                                  | The decorative preview of the hovered or focused emoji.               |
+| `ui-emoji-picker__preview-emoji` | slot      |                                  | The previewed glyph or image.                                         |
+| `ui-emoji-picker__preview-label` | slot      |                                  | The previewed label.                                                  |
+| `ui-emoji-picker__skin-tones`    | slot      |                                  | The skin tone radio group.                                            |
+| `ui-emoji-picker__skin-tone`     | slot      |                                  | One skin tone radio (a `<label>`).                                    |
+| `data-loading`                   | state     | `true`                           | The standard emoji are loading.                                       |
+| `data-empty`                     | state     | `true`                           | The search field is empty (React Aria).                               |
+| `data-layout`                    | attribute | `grid`                           | The grid's layout (React Aria).                                       |
+| `data-orientation`               | attribute | `vertical`, `horizontal`         | The grid's and the radio group's axis (React Aria).                   |
+| `data-collection`                | attribute |                                  | React Aria's collection identifier; not for styling.                  |
+| `data-key`                       | attribute |                                  | A cell's key: its glyph or `:shortcode:` (React Aria).                |
+| `data-selected`                  | state     | `true`                           | The selected skin tone (React Aria).                                  |
+| `data-hovered`                   | state     | `true`                           | Pointer over a cell, skin tone, input or button (React Aria).         |
+| `data-pressed`                   | state     | `true`                           | A cell, skin tone or button is being pressed (React Aria).            |
+| `data-focused`                   | state     | `true`                           | Focus on or within the element (React Aria).                          |
+| `data-focus-visible`             | state     | `true`                           | Keyboard focus on or within the element (React Aria).                 |
+| `data-focus-within`              | state     | `true`                           | Focus within the grid (React Aria).                                   |
+| `data-focus-visible-within`      | state     | `true`                           | Keyboard focus within a cell (React Aria).                            |
+| `data-layer`                     | attribute | `dropdown`                       | On the popover: its overlay layer; the z-index is set inline from it. |
+| `data-placement`                 | state     | `top`, `bottom`, `left`, `right` | The popover's resolved side (React Aria).                             |
+| `data-trigger`                   | state     | `DialogTrigger`                  | Which React Aria trigger opened the popover.                          |
+| `data-entering`                  | state     | `true`                           | The popover is opening (React Aria).                                  |
+| `data-exiting`                   | state     | `true`                           | The popover is closing (React Aria).                                  |

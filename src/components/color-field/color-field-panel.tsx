@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  ColorArea,
-  ColorSlider,
-  ColorThumb,
-  Dialog,
-  SliderTrack,
-  Popover,
-} from '../../primitives/index.js';
-import { PopoverPresence } from '../popover/popover.js';
+import { ColorArea, ColorSlider, ColorThumb, Dialog, SliderTrack } from '../../primitives/index.js';
+import { PopoverPanel } from '../popover/popover.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -76,8 +69,11 @@ export function ColorFieldPanel({
   const strings = useUiStrings();
   return (
     <>
-      <PopoverPresence />
-      <Popover {...hooks.slot('popover')} placement="bottom start" offset={4}>
+      <PopoverPanel
+        {...hooks.slot('popover', { layer: 'dropdown' })}
+        placement="bottom start"
+        offset={4}
+      >
         <Dialog {...hooks.slot('dialog')} aria-label={label}>
           {({ close }) => (
             <>
@@ -122,7 +118,7 @@ export function ColorFieldPanel({
             </>
           )}
         </Dialog>
-      </Popover>
+      </PopoverPanel>
     </>
   );
 }
