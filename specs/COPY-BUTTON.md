@@ -8,7 +8,7 @@
 
 Pressing the button by pointer or keyboard shall copy `value`, whitespace included, and call `onCopy` with whether it reached the clipboard. After a successful copy, the `ui-copy-button` root publishes `data-copied`, the button draws the `check` glyph instead of `copy`, and the `ui-copy-button__status` live region (`role="status"`, visually hidden) reads the provider's `copied` string, until `timeout` milliseconds (2000 by default) after the last copy; then all three return to rest and the live region empties. Every copy is announced: a copy that repeats the outcome shown still changes the live region (it adds or drops a trailing zero-width space), so a reader who copies again hears it again. The button keeps its name throughout.
 
-If writes overlap, only the latest requested copy changes the feedback; `onCopy` still reports each write's result when it settles.
+If writes overlap, only the latest requested copy changes the feedback and the live region: an earlier copy that settles later neither copies through the selection fallback (UIC-CLIPBOARD-2.3) nor announces again. `onCopy` still reports each write's result when it settles.
 
 Implementation: `src/components/copy-button/copy-button.tsx`, `src/utils/use-clipboard.ts`, `labs/reference/copy-button.css`
 Verification: `src/components/copy-button/copy-button.test.tsx`, `e2e/copy-button.spec.ts`

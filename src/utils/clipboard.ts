@@ -15,6 +15,11 @@ export interface CopyOptions {
    * is missing or refuses. Defaults to true.
    */
   fallback?: boolean | undefined;
+  /**
+   * Withdraws the copy: once aborted, a copy whose asynchronous write was missing or refused skips
+   * the selection fallback and resolves false. A write the browser already took is not undone.
+   */
+  signal?: AbortSignal | undefined;
 }
 
 export interface RichCopyOptions extends CopyOptions {
@@ -96,6 +101,11 @@ function copyWithSelection(formats: Record<string, string>): boolean {
   }
 }
 
+/** Whether a copy may still try the selection fallback: it is on and the copy is not withdrawn. */
+function mayFallBack(options: CopyOptions): boolean {
+  return options.fallback !== false && !options.signal?.aborted;
+}
+
 /**
  * Copies plain text, exactly as given. Resolves true once the clipboard holds it and false when
  * there is nothing to copy or every way was refused.
@@ -103,7 +113,7 @@ function copyWithSelection(formats: Record<string, string>): boolean {
 export async function copyText(text: string, options: CopyOptions = {}): Promise<boolean> {
   if (!text) return false;
   if (await writeText(getDefaultClipboard(options), text)) return true;
-  return options.fallback === false ? false : copyWithSelection({ 'text/plain': text });
+  return mayFallBack(options) && copyWithSelection({ 'text/plain': text });
 }
 
 /**
@@ -137,6 +147,6 @@ export async function copyRichText(
     }
   }
   if (text && (await writeText(clipboard, text))) return 'text';
-  if (options.fallback === false) return 'failed';
+  if (!mayFallBack(options)) return 'failed';
   return copyWithSelection({ 'text/plain': text, 'text/html': html }) ? 'rich' : 'failed';
 }

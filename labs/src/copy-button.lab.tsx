@@ -40,7 +40,6 @@ function CopyFeedbackDemo() {
             })
           : Promise.resolve(),
     },
-    fallback: false,
   });
   return (
     <div data-lab-demo="feedback">
@@ -96,7 +95,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overlapping copy feedback"
-      description="This simulated clipboard lets writes finish out of order. Start the earlier copy, copy the latest, then refuse the earlier: feedback still follows the latest request. Reset also ignores a pending write."
+      description="This simulated clipboard lets writes finish out of order. Start the earlier copy, copy the latest, then refuse the earlier: feedback still follows the latest request, and the refused copy does not fall back to a selection copy over the latest text. Reset also ignores a pending write."
     >
       <CopyFeedbackDemo />
     </LabSection>

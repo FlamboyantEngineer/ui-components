@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -45,6 +45,8 @@ export function CopyButton({
   const { copy, status } = useClipboard({ timeout });
   // Counts settled copies: a repeated outcome still changes the live region, so it is announced.
   const [settled, setSettled] = useState(0);
+  // The latest press: an earlier copy that settles later announces nothing.
+  const latest = useRef(0);
   const announcements: Record<CopyStatus, string> = {
     idle: '',
     copied: strings.copied,
@@ -69,8 +71,9 @@ export function CopyButton({
         isDisabled={isDisabled}
         onPress={() => {
           // Each press starts a write; the clipboard hook owns which result stays visible.
+          const press = ++latest.current;
           void copy(value).then((copied) => {
-            setSettled((count) => count + 1);
+            if (press === latest.current) setSettled((count) => count + 1);
             onCopy?.(copied);
           });
         }}
