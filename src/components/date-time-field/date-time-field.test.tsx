@@ -4,6 +4,7 @@ import type { FormEvent, ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
 import { DateTimeField } from './date-time-field.js';
 
@@ -220,6 +221,43 @@ describe('DateTimeField field', () => {
     );
     expect(root(container)).toHaveAttribute('data-validation', 'warning');
     expect(screen.getByText('A Saturday.')).toBeInTheDocument();
+  });
+
+  it('UIC-DATE-TIME-FIELD-1.5 keeps the calendar closed while read-only or disabled', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { unmount } = renderInLocale(
+      <>
+        <DateTimeField label="Due" isOpen isReadOnly defaultValue="2026-04-13" />
+        <DateTimeField label="Stay" mode="date-range" isOpen isDisabled />
+        <Fieldset legend="Locked" isDisabled>
+          <DateTimeField label="Start" defaultOpen />
+        </Fieldset>
+      </>,
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    unmount();
+    function Lockable({ isReadOnly }: { isReadOnly: boolean }) {
+      return (
+        <DateTimeField
+          label="When"
+          mode="date-time"
+          isReadOnly={isReadOnly}
+          onOpenChange={onOpenChange}
+        />
+      );
+    }
+    const { rerender } = renderInLocale(<Lockable isReadOnly={false} />);
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    onOpenChange.mockClear();
+    rerender(
+      <UiProvider locale="en-US">
+        <Lockable isReadOnly />
+      </UiProvider>,
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 
   it('UIC-DATE-TIME-FIELD-1.5 marks invalid, read-only and disabled pickers', async () => {

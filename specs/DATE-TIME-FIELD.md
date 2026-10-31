@@ -45,7 +45,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `src/co
 
 ### UIC-DATE-TIME-FIELD-1.5 - States
 
-The field base's validation shall apply (required, `validate`, `isPending`), and an invalid field marks its picker invalid (`data-invalid`). A read-only field shows read-only segments and never opens its calendar; a disabled field disables its segments and button.
+The field base's validation shall apply (required, `validate`, `isPending`), and an invalid field marks its picker invalid (`data-invalid`). A read-only field shows read-only segments and never opens its calendar; a disabled field, or one in a disabled `Fieldset`, disables its segments and button. While read-only or disabled, in every mode, the calendar stays closed whatever `isOpen` or `defaultOpen` ask, and a calendar open when the field locks closes, without reporting a change of `isOpen`.
 
 Implementation: `src/components/date-time-field/date-time-pickers.tsx`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`

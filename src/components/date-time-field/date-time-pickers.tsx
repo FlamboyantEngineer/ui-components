@@ -22,6 +22,7 @@ import {
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import { useMemo, type ReactNode } from 'react';
 import { useToday } from '../../core/clock.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import { Glyph } from '../../core/provider.js';
 import {
   FieldPreviousValue,
@@ -104,15 +105,22 @@ function pickerProps({ control, settings }: DatePickerControlProps) {
   };
 }
 
-/** The props the date pickers share: open state, the time settings and unavailable dates. */
-function datePickerProps(props: DatePickerControlProps) {
-  const { isOpen, defaultOpen, onOpenChange, settings, mode } = props;
+/**
+ * The props the date pickers share: open state, the time settings and unavailable dates. The
+ * calendar stays closed while the field is disabled or read-only, whatever `isOpen` asks, and one
+ * open when the field locks closes; the caller's `isOpen` is not reported changed.
+ */
+function useDatePickerProps(props: DatePickerControlProps) {
+  const { isOpen, defaultOpen, onOpenChange, settings, mode, state } = props;
   const hasTime = toSingleMode(mode) === 'date-time';
+  const [open, setOpen] = useControllableState(isOpen, Boolean(defaultOpen), onOpenChange);
+  const isLocked = state.isReadOnly || state.isDisabled;
   return {
     ...pickerProps(props),
-    isOpen,
-    defaultOpen,
-    onOpenChange,
+    isOpen: open && !isLocked,
+    onOpenChange: (next: boolean) => {
+      if (!isLocked) setOpen(next);
+    },
     granularity: hasTime ? (settings.granularity ?? 'minute') : ('day' as const),
     hideTimeZone: settings.hideTimeZone,
     isDateUnavailable: toUnavailableCheck(settings.isDateUnavailable),
@@ -198,7 +206,7 @@ export function DateControl(props: DatePickerControlProps) {
   );
   return (
     <DatePicker<DateValue>
-      {...datePickerProps(props)}
+      {...useDatePickerProps(props)}
       {...useBoundValues(props)}
       placeholderValue={usePlaceholderValue(props)}
       value={value}
@@ -237,7 +245,7 @@ export function DateRangeControl(props: DatePickerControlProps) {
   const toText = (date: DateValue) => formatIsoDate(date, granularity);
   return (
     <DateRangePicker<DateValue>
-      {...datePickerProps(props)}
+      {...useDatePickerProps(props)}
       {...useBoundValues(props)}
       placeholderValue={usePlaceholderValue(props)}
       value={value}
