@@ -63,6 +63,30 @@ test.describe('RecordLabel chip mode', () => {
     await expect(card).toHaveCount(0);
   });
 
+  test('UIC-RECORD-LABEL-11.7 names and describes the link by the caller', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('record-label');
+    const cases = page.locator('[data-lab-family="record-chip-cases"]');
+    const stacked = cases
+      .locator(cell('link=linked layout=stacked'))
+      .getByRole('link', { name: 'TEST-48 Cold start at minus twenty, a test' });
+    await expect(stacked).toHaveAccessibleDescription(
+      'Opens the record in the side panel. Cold start at minus twenty',
+    );
+    await stacked.focus();
+    await expect(page.locator('.ui-record-label__preview')).toContainText('owned by Jon Berg');
+    await expect(stacked).toHaveAccessibleDescription(
+      /^Opens the record in the side panel\. Cold start at minus twenty /,
+    );
+    const plain = cases.locator(cell('link=plain layout=inline'));
+    await expect(plain.getByRole('link')).toHaveCount(0);
+    await expect(plain.locator('.ui-record-label__accessible-label')).toHaveText(
+      'TEST-48 Cold start at minus twenty, a test',
+    );
+  });
+
   test('UIC-RECORD-LABEL-11.4 removes references from a field', async ({ page, lab }) => {
     await lab.open('record-label');
     const field = page

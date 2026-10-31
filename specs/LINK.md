@@ -80,7 +80,7 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-3.1 - Role and name
 
-A link shall have the `link` role (native on an `<a href>`, set on a `<span>`) and be named by its content, including the hidden new-tab text; the external glyph is hidden from assistive technology.
+A link shall have the `link` role (native on an `<a href>`, set on a `<span>`) and be named by its content, including the hidden new-tab text; the external glyph is hidden from assistive technology. The caller's `aria-describedby` stays first in the link's description when a trigger around it, such as a [Hover Card](HOVER-CARD.md)'s, adds its own.
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`

@@ -97,6 +97,10 @@ export function RecordChipParts({
   preview,
   onRemove,
   className,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
+  'aria-describedby': ariaDescribedBy,
+  'aria-details': ariaDetails,
   ...rest
 }: RecordLabelProps) {
   const nameId = useId();
@@ -113,7 +117,13 @@ export function RecordChipParts({
       isExternal={isExternal}
       unavailable={unavailable}
       name={isStacked ? undefined : text}
-      aria-describedby={isStacked && text ? nameId : undefined}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={
+        [ariaDescribedBy, isStacked && text ? nameId : undefined].filter(Boolean).join(' ') ||
+        undefined
+      }
+      aria-details={ariaDetails}
       className={hooks.slotClass('label')}
     />
   );
