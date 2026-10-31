@@ -63,14 +63,16 @@ function isStripWheel(strip: HTMLElement, event: WheelEvent): boolean {
 
 /** The strip's next scroll position for wheel input along its dominant axis, or null for none. */
 function resolveWheelScrollPosition(strip: HTMLElement, event: WheelEvent): number | null {
-  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+  const isHorizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+  const delta = isHorizontal ? event.deltaX : event.deltaY;
   const range = Math.max(0, strip.scrollWidth - strip.clientWidth);
   if (delta === 0 || range === 0) return null;
   const unit =
     event.deltaMode === 1 ? wheelLineHeight : event.deltaMode === 2 ? strip.clientWidth : 1;
-  // Right-to-left scroll positions run from 0 down to -range.
+  // Right-to-left scroll positions run from 0 down to -range. Horizontal travel is physical and
+  // keeps its sign; vertical travel means "toward the inline end", which is leftward there.
   const rtl = isRtl(strip);
-  const offset = (rtl ? -delta : delta) * unit;
+  const offset = (rtl && !isHorizontal ? -delta : delta) * unit;
   const next = Math.min(rtl ? 0 : range, Math.max(rtl ? -range : 0, strip.scrollLeft + offset));
   return next === strip.scrollLeft ? null : next;
 }

@@ -27,7 +27,7 @@ Verification: `src/utils/use-scroll-strip-overflow.test.ts`, `e2e/scroll-region.
 
 ### UIC-SCROLL-STRIP-1.4 - Right to left
 
-In a right-to-left strip, edges shall be reported from the inline start and the wheel shall scroll toward the inline end.
+In a right-to-left strip, edges shall be reported from the inline start. Vertical wheel travel shall scroll toward the inline end (leftward), while horizontal wheel travel follows the pointer as in a native scroller: a swipe left scrolls leftward, toward the inline end, and a swipe right scrolls back toward the inline start.
 
 Implementation: `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/utils/use-scroll-strip-overflow.test.ts`
