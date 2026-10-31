@@ -165,6 +165,30 @@ describe('NavigationRail', () => {
     expect(rail.style.getPropertyValue('--ui-navigation-rail-width')).toBe('300px');
   });
 
+  it('UIC-NAVIGATION-RAIL-1.4 abandons a drag when the persist key changes', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage({ 'a:width': '200', 'b:width': '260' });
+    const persisted = (persistKey: string) => (
+      <UiProvider storage={storage}>
+        <Rail persistKey={persistKey} isResizable />
+      </UiProvider>
+    );
+    const { rerender } = render(persisted('a'));
+    const handle = screen.getByRole('separator');
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle, coords: { clientX: 200 } },
+      { coords: { clientX: 300 } },
+    ]);
+    expect(nav()).toHaveAttribute('data-resizing', 'true');
+    rerender(persisted('b'));
+    expect(nav()).not.toHaveAttribute('data-resizing');
+    expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('260px');
+    await user.pointer([{ coords: { clientX: 320 } }, { keys: '[/MouseLeft]' }]);
+    expect(storage.getItem('a:width')).toBe('200');
+    expect(storage.getItem('b:width')).toBe('260');
+    expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('260px');
+  });
+
   it('UIC-NAVIGATION-RAIL-1.3 draws a width outside the bounds at the nearest bound', () => {
     render(<Rail isResizable width={900} />);
     expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('400px');

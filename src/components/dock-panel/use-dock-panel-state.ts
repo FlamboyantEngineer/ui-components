@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import type { Key } from '../../core/props.js';
+import { useUiStorage } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { booleanCodec, keyCodec, numberCodec } from '../../utils/json-codec.js';
 import { isKey } from '../../utils/is-key.js';
+import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 
 interface DockPanelStateOptions {
   /** The panes that can be selected, in order. */
@@ -37,6 +39,11 @@ export interface DockPanelState {
   changeSize: (size: number) => void;
   /** The size after a drag or a key step, which a persisted panel saves. */
   commitSize: (size: number) => void;
+  /**
+   * Changes with the persist key, the storage and the bounds: a drag or a live size taken for
+   * another owner is dropped, never committed.
+   */
+  sizeOwner: object;
 }
 
 /** The first candidate that names an enabled pane, else the first enabled pane. */
@@ -80,7 +87,13 @@ export function useDockPanelState(options: DockPanelStateOptions): DockPanelStat
     persistKey: toValueKey(persistKey, 'size'),
     codec: numberCodec,
   });
-  const [liveSize, setLiveSize] = useState<number | null>(null);
+  const sizeOwner = useShallowStable({
+    persistKey,
+    storage: useUiStorage(),
+    minSize: options.minSize,
+    maxSize: options.maxSize,
+  });
+  const [liveSize, setLiveSize] = useOwnedPreview<number>(sizeOwner);
   const isSizeControlled = options.size !== undefined;
 
   return {
@@ -98,5 +111,6 @@ export function useDockPanelState(options: DockPanelStateOptions): DockPanelStat
       setLiveSize(null);
       commitSize(size);
     },
+    sizeOwner,
   };
 }

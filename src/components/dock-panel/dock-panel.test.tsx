@@ -533,6 +533,26 @@ describe('DockPanel persistence', () => {
     );
   }
 
+  it('UIC-DOCK-PANEL-3.3 abandons a resize when the persist key changes', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage({ 'side:size': '320', 'other:size': '400' });
+    const { container, rerender } = render(persisted(storage));
+    const separator = screen.getByRole('separator');
+    prepareCapture(separator);
+    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
+    await user.pointer({ target: separator, coords: { clientX: 450 } });
+    expect(root(container)).toHaveAttribute('data-resizing', 'true');
+    expect(root(container).style.width).toBe('370px');
+    rerender(persisted(storage, { persistKey: 'other' }));
+    expect(root(container)).not.toHaveAttribute('data-resizing');
+    expect(root(container).style.width).toBe('400px');
+    await user.pointer({ target: separator, coords: { clientX: 420 } });
+    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 420 } });
+    expect(storage.getItem('side:size')).toBe('320');
+    expect(storage.getItem('other:size')).toBe('400');
+    expect(root(container).style.width).toBe('400px');
+  });
+
   it('UIC-DOCK-PANEL-3.3 saves and restores the selection, expanded state and size', async () => {
     const user = userEvent.setup();
     const storage = createMemoryStorage();

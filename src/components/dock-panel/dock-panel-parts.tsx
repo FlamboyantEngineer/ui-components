@@ -152,6 +152,7 @@ export function DockPanelSeparator({
       onChange={state.changeSize}
       onChangeEnd={state.commitSize}
       onResizingChange={onResizingChange}
+      resetKey={state.sizeOwner}
     />
   );
 }

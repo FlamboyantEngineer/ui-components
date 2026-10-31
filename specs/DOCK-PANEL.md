@@ -80,7 +80,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-3.3 - Persisted state
 
-With `persistKey`, the panel shall restore its uncontrolled selection, expanded state and size from the provider storage under `<persistKey>:selected`, `<persistKey>:expanded` and `<persistKey>:size` and save each as it changes, the size when a drag ends or after a key step, never during a drag. A stored value that cannot be read, or a stored pane that is no longer enabled, falls back to the defaults.
+With `persistKey`, the panel shall restore its uncontrolled selection, expanded state and size from the provider storage under `<persistKey>:selected`, `<persistKey>:expanded` and `<persistKey>:size` and save each as it changes, the size when a drag ends or after a key step, never during a drag. A drag running when the persist key, the storage adapter or the size bounds change shall be abandoned: its live size is dropped, `data-resizing` clears, and its release commits nothing under either key. A stored value that cannot be read, or a stored pane that is no longer enabled, falls back to the defaults.
 
 Implementation: `src/components/dock-panel/use-dock-panel-state.ts`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
