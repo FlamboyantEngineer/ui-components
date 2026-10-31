@@ -173,19 +173,20 @@ function AvatarContent({
   picture: AvatarPicture;
 }) {
   const { name, src, imageProps, initials, kind } = identity;
+  const { status, generation, imageRef, settle } = picture;
   if (kind === 'group') return <Glyph icon={UsersGlyph} className={hooks.slotClass('glyph')} />;
-  if (picture.status === 'loading' || picture.status === 'loaded') {
+  if (status === 'loading' || status === 'loaded') {
     return (
       <img
         {...imageProps}
         // A new element per request, so events of a departed request never reach the handlers.
-        key={picture.generation}
+        key={generation}
         {...hooks.slot('image')}
-        ref={picture.imageRef}
+        ref={imageRef}
         src={src?.trim()}
         alt=""
-        onLoad={() => picture.settle('loaded')}
-        onError={() => picture.settle('error')}
+        onLoad={() => settle('loaded')}
+        onError={() => settle('error')}
       />
     );
   }

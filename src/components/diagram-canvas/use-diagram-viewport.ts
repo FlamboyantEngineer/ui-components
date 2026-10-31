@@ -1,5 +1,6 @@
 'use client';
 
+import { useLatest } from '../../utils/use-latest.js';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { clamp } from '../../utils/clamp.js';
@@ -54,8 +55,7 @@ function revealAxis(offset: number, [start, end]: [number, number], size: number
 
 /** The wheel pans the view, or zooms it around the pointer with Ctrl or Command. */
 function useWheel(element: HTMLElement | null, state: DiagramViewportState): void {
-  const latest = useRef(state);
-  latest.current = state;
+  const latest = useLatest(state);
   useEffect(() => {
     if (!element) return undefined;
     // React registers wheel listeners as passive, so only a native listener can keep the page from
@@ -73,7 +73,7 @@ function useWheel(element: HTMLElement | null, state: DiagramViewportState): voi
     };
     element.addEventListener('wheel', onWheel, { passive: false });
     return () => element.removeEventListener('wheel', onWheel);
-  }, [element]);
+  }, [element, latest]);
 }
 
 /**
@@ -128,13 +128,12 @@ export function useDiagramViewport(options: DiagramViewportOptions): DiagramView
   const state = { viewport, setViewport, zoomTo, stepZoom, fit, reveal, size };
   useWheel(element, state);
   const fitted = useRef(isGiven);
-  const latestFit = useRef(fit);
-  latestFit.current = fit;
+  const latestFit = useLatest(fit);
   useLayoutEffect(() => {
     // An unstyled viewport may measure empty before the host stylesheet loads; fit once it has room.
     if (fitted.current || !size || size.width === 0 || size.height === 0 || !bounds) return;
     fitted.current = true;
     latestFit.current();
-  }, [size, bounds]);
+  }, [size, bounds, latestFit]);
   return state;
 }

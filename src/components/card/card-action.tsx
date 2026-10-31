@@ -4,7 +4,7 @@
 // that is not meant for an inner control or a text selection activates it.
 
 import {
-  useMemo,
+  useCallback,
   useRef,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
@@ -14,7 +14,6 @@ import { Button as AriaButton } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
@@ -121,7 +120,9 @@ function repeatClick(action: HTMLElement, event: ReactMouseEvent<HTMLElement>) {
 export function useCardAction(options: CardActionOptions): CardAction {
   const action = useRef<HTMLElement | null>(null);
   const isActionable = hasCardAction(options);
-  const actionRef = useMemo(() => mergeRefs<HTMLElement>(action), []);
+  const actionRef = useCallback((node: HTMLElement | null) => {
+    action.current = node;
+  }, []);
   const onClick = (event: ReactMouseEvent<HTMLElement>) => {
     const element = action.current;
     if (!isActionable || !element || event.defaultPrevented) return;

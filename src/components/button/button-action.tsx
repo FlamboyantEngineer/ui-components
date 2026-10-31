@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, type MouseEvent } from 'react';
+import { useCallback, useRef, useState, type MouseEvent, type RefObject } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { isThenable } from '../../utils/is-thenable.js';
@@ -65,9 +65,9 @@ export function usePendingAction({
  * lets that click submit and refuses the repeats, also during `pendingDelay`. Space presses before
  * its click, so the action is already running when that click arrives.
  */
-function guardActivation(
+function useActivationGuard(
   type: 'submit' | 'reset',
-  guard: { isBusy: () => boolean; isAdmitted: () => boolean },
+  guard: { isBusy: () => boolean; admitted: RefObject<boolean> },
   render: ButtonProps['render'],
 ): ElementRender<'button', ButtonRenderState> {
   return (props, state) => {
@@ -75,7 +75,7 @@ function guardActivation(
       ...props,
       type,
       onClick: (event: MouseEvent<HTMLButtonElement>) => {
-        if (guard.isBusy() && !guard.isAdmitted()) event.preventDefault();
+        if (guard.isBusy() && !guard.admitted.current) event.preventDefault();
         props.onClick?.(event);
       },
     };
@@ -111,12 +111,15 @@ export function useButtonAction({
     [run, isBusy, onPress],
   );
   const submits = !isDisabled && (type === 'submit' || type === 'reset');
+  const guarded = useActivationGuard(
+    type === 'reset' ? 'reset' : 'submit',
+    { isBusy, admitted },
+    render,
+  );
   return {
     onPress: href === undefined ? handlePress : onPress,
     isPending: href === undefined && showsPending,
-    render: submits
-      ? guardActivation(type, { isBusy, isAdmitted: () => admitted.current }, render)
-      : render,
+    render: submits ? guarded : render,
     /** Activation is refused from the start of the pending state, ahead of its indicator. */
     isBusy: href === undefined && pending,
   };

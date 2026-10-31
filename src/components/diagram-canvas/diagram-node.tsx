@@ -1,5 +1,6 @@
 'use client';
 
+import { useLatest } from '../../utils/use-latest.js';
 import {
   memo,
   useEffect,
@@ -189,14 +190,13 @@ function DiagramNodeElement<T>({
   const pointer = useNodePointer(node.id, controller, isEditing);
   const onKeyDown = useNodeKeys(node, controller);
   const reveal = () => controller.current.view.reveal(rect);
-  const revealRef = useRef(reveal);
-  revealRef.current = reveal;
+  const revealRef = useLatest(reveal);
   // Keep a node moved by the keyboard in view.
   useEffect(() => {
     if (element.current && element.current === element.current.ownerDocument.activeElement) {
       revealRef.current();
     }
-  }, [node.x, node.y]);
+  }, [node.x, node.y, revealRef]);
   const text = [node.description, isSelected ? strings.diagramSelected : '', description];
   return (
     <div

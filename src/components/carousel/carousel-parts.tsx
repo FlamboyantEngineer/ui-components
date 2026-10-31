@@ -31,6 +31,26 @@ interface CarouselPaginationProps {
   renderThumbnail?: ((index: number) => ReactNode) | undefined;
 }
 
+/** Starts or stops the slides' rotation. */
+function RotationButton({
+  rotation,
+  viewportId,
+}: Required<Pick<CarouselControlsProps, 'rotation' | 'viewportId'>>) {
+  const strings = useUiStrings();
+  const { rotationRef, isStopped, toggle } = rotation;
+  return (
+    <Button
+      ref={rotationRef}
+      icon={isStopped ? PlayGlyph : PauseGlyph}
+      label={isStopped ? strings.startSlideRotation : strings.stopSlideRotation}
+      size="sm"
+      className={hooks.slotClass('rotation')}
+      aria-controls={viewportId}
+      onPress={toggle}
+    />
+  );
+}
+
 /** The rotation button, then the previous and next buttons. */
 export function CarouselControls({
   viewportId,
@@ -44,17 +64,7 @@ export function CarouselControls({
   const isRtl = useLocale().direction === 'rtl';
   return (
     <div {...hooks.slot('controls')}>
-      {rotation ? (
-        <Button
-          ref={rotation.rotationRef}
-          icon={rotation.isStopped ? PlayGlyph : PauseGlyph}
-          label={rotation.isStopped ? strings.startSlideRotation : strings.stopSlideRotation}
-          size="sm"
-          className={hooks.slotClass('rotation')}
-          aria-controls={viewportId}
-          onPress={rotation.toggle}
-        />
-      ) : null}
+      {rotation ? <RotationButton rotation={rotation} viewportId={viewportId} /> : null}
       <Button
         icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
         label={strings.previousSlide}

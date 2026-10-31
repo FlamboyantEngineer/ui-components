@@ -108,7 +108,11 @@ function commit(root: Root, element: ReactElement): Promise<void> {
 function Measured({ options }: { options?: ElementSizeOptions | undefined }): ReactElement {
   const ref = useRef<HTMLDivElement | null>(null);
   sizes.push(useElementSize(ref, options));
-  return createElement('section', { 'data-row': 'true' }, createElement('div', { ref }));
+  return (
+    <section data-row="true">
+      <div ref={ref} />
+    </section>
+  );
 }
 
 async function render(root: Root, options?: ElementSizeOptions): Promise<void> {
@@ -288,7 +292,7 @@ test('UIC-MEASUREMENT-2.5 follows a stable ref to an element that mounts late or
   function Panel({ elementKey }: { elementKey: string | null }): ReactElement | null {
     const ref = useRef<HTMLDivElement>(null);
     sizes.push(useElementSize(ref));
-    return elementKey === null ? null : createElement('div', { ref, key: elementKey });
+    return elementKey === null ? null : <div ref={ref} key={elementKey} />;
   }
   const root = createRoot(document.body.appendChild(document.createElement('div')));
   roots.push(root);

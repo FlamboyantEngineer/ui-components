@@ -1,6 +1,7 @@
 'use client';
 
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
+import { useLayoutEffect, type ReactNode } from 'react';
 import {
   useObjectRef,
   Slider as AriaSlider,
@@ -198,8 +199,7 @@ export function SliderControl<T extends SliderValue>({
   const { name, onChangeEnd, ...aria } = rest;
   const inputRef = useObjectRef<HTMLInputElement>(control.ref);
   // The value set during this interaction; the field state's value is the last render's.
-  const latest = useRef(state.value);
-  latest.current = state.value;
+  const latest = useLatest(state.value);
   const isLocked = state.isReadOnly || state.isDisabled;
   const minValue = aria.minValue ?? 0;
   const maxValue = aria.maxValue ?? 100;

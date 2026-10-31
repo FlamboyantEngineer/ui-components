@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useRef, type Ref, type RefCallback, type RefObject } from 'react';
-import { mergeRefs } from './merge-props.js';
+import { useRef, type Ref, type RefCallback, type RefObject } from 'react';
+import { useMergedRefs } from './use-merged-refs.js';
 
 /**
  * A ref object for a component's own use, and the ref callback to put on its element, which also
@@ -9,6 +9,6 @@ import { mergeRefs } from './merge-props.js';
  */
 export function useForwardedRef<T>(ref: Ref<T> | undefined): [RefObject<T | null>, RefCallback<T>] {
   const own = useRef<T | null>(null);
-  const setRef = useMemo(() => mergeRefs(own, ref), [ref]);
+  const setRef = useMergedRefs(own, ref);
   return [own, setRef];
 }

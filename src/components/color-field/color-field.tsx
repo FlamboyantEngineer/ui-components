@@ -84,12 +84,13 @@ const emptyPickerColor = '#808080';
  */
 function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
   const valueId = useId();
-  const aria = toAriaControlProps(control);
+  const { ref, ...rest } = control;
+  const aria = toAriaControlProps(rest);
   return (
     <AriaButton
       {...hooks.slot('trigger')}
       id={aria.id}
-      ref={control.ref}
+      ref={ref}
       aria-label={aria['aria-label']}
       // A button takes no state props but the disabled one; it is named by the label, then its text.
       aria-labelledby={`${aria['aria-labelledby'] ?? aria.id} ${valueId}`}

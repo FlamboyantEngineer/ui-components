@@ -1,5 +1,6 @@
 'use client';
 
+import { useLatest } from '../../utils/use-latest.js';
 import {
   useEffect,
   useRef,
@@ -58,14 +59,13 @@ export function useCarouselAutoplay({
   const [isHovered, setHovered] = useState(false);
   const [isFocused, setFocused] = useState(false);
   const rotationRef = useRef<HTMLButtonElement | HTMLAnchorElement | null>(null);
-  const advance = useRef(onAdvance);
-  advance.current = onAdvance;
+  const advance = useLatest(onAdvance);
   const isRotating = isEnabled && !isStopped && !isHovered && !isFocused;
   useEffect(() => {
     if (!isRotating) return undefined;
     const timer = setTimeout(() => advance.current(), interval);
     return () => clearTimeout(timer);
-  }, [isRotating, interval, index]);
+  }, [isRotating, interval, index, advance]);
   return {
     isRotating,
     isStopped,

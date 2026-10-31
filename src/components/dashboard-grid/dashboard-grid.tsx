@@ -6,6 +6,7 @@ import {
   memo,
   useCallback,
   useContext,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -178,10 +179,11 @@ function useTileMoves({
   const pending = useRef<TileGesture | null>(null);
   const refocus = useRef<{ id: Key; kind: TileMoveKind } | null>(null);
   const shown = gesture && resolveGesture(gesture, committed.layout, columns);
-  if (gesture && (!isEditing || !shown)) {
-    pending.current = null;
-    setGesture(null);
-  }
+  if (gesture && (!isEditing || !shown)) setGesture(null);
+  // A gesture the render dropped leaves nothing for its commit.
+  useLayoutEffect(() => {
+    if (!gesture) pending.current = null;
+  }, [gesture]);
   // The handlers read the grid as it is when they run, so the tiles keep the same ones.
   const latest = useLatest({ element, committed, columns, rowHeight });
   const handlers = useMemo(

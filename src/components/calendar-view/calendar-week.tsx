@@ -112,15 +112,16 @@ function WeekDay({
 
 /** The week view: day headers, then the days of the focused day's week with all-day bars and a time grid. */
 export function CalendarWeek({ grid, titleId, ...rest }: CalendarWeekProps) {
+  const { ref, onKeyDown, onFocus } = grid;
   const days = getWeekDays(rest.day.focused, rest.day.format.locale);
   const { segments, laneCount } = layoutWeek(days, rest.events, { spansOnly: true });
   return (
     <div
-      ref={grid.ref}
+      ref={ref}
       role="grid"
       aria-labelledby={titleId}
-      onKeyDown={grid.onKeyDown}
-      onFocus={grid.onFocus}
+      onKeyDown={onKeyDown}
+      onFocus={onFocus}
       {...hooks.slot('grid')}
     >
       <div role="row" {...hooks.slot('weekdays')}>

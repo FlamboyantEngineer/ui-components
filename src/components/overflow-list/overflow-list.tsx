@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Key } from '../../core/props.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { useOverflowItems, type OverflowCollapseFrom } from '../../utils/use-overflow-items.js';
 
@@ -54,7 +54,7 @@ export function OverflowList<T>({
   ...rest
 }: OverflowListProps<T>) {
   const { containerRef, visibleItems, hiddenItems } = useOverflowItems({ items, collapseFrom });
-  const rootRef = useMemo(() => mergeRefs(containerRef, ref), [containerRef, ref]);
+  const rootRef = useMergedRefs(containerRef, ref);
   const isOverflowing = hiddenItems.length > 0;
   const offset = collapseFrom === 'start' ? items.length - visibleItems.length : 0;
   const indicator = isOverflowing ? (

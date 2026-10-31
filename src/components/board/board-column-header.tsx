@@ -97,7 +97,18 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
   const { onCollapsedChange, drag, onStep, actions } = props;
   const strings = useUiStrings();
   const { direction, locale } = useLocale();
-  const header = useColumnHeaderDrag({ columnKey, title, drag });
+  const {
+    ref,
+    props: dragProps,
+    isDragging,
+    dropPosition,
+    describedBy,
+    startDrag,
+  } = useColumnHeaderDrag({
+    columnKey,
+    title,
+    drag,
+  });
   const onHandleKeyDown = (event: KeyboardEvent) => {
     const step = steps[event.key];
     if (!step || !isMoveChord(event)) return;
@@ -108,14 +119,14 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
     keyIdentity: toKeyIdentity(columnKey),
     collapsed: isCollapsed,
     overLimit: isOverLimit,
-    dragging: header.isDragging,
-    dropTarget: header.dropPosition !== null,
-    position: header.dropPosition,
+    dragging: isDragging,
+    dropTarget: dropPosition !== null,
+    position: dropPosition,
   };
   return (
     <div
-      ref={header.ref}
-      {...(drag ? header.props : {})}
+      ref={ref}
+      {...(drag ? dragProps : {})}
       {...hooks.slot('column', data)}
       data-key={columnKey}
     >
@@ -125,8 +136,8 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
           size="sm"
           label={strings.moveColumn(title)}
           className={hooks.slotClass('column-handle')}
-          aria-describedby={header.describedBy}
-          onPress={header.startDrag}
+          aria-describedby={describedBy}
+          onPress={startDrag}
           onKeyDown={onHandleKeyDown}
           render={(domProps) => <button {...domProps} aria-keyshortcuts={columnShortcuts} />}
         />

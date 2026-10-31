@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
@@ -104,7 +104,9 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
     (orientation === 'vertical' && direction === 'rtl' ? -1 : 1) *
     (sizedPane === 'before' ? 1 : -1);
   const latest = useRef(value);
-  if (!isResizing) latest.current = value;
+  useLayoutEffect(() => {
+    if (!isResizing) latest.current = value;
+  }, [isResizing, value]);
 
   const axisCoordinate = (event: PointerEvent) =>
     orientation === 'vertical' ? event.clientX : event.clientY;
