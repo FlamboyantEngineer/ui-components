@@ -108,7 +108,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components
 
 ### UIC-CODE-EDITOR-3.5 - Next and previous problem
 
-F8 in the text area shall select the next marked range after the caret and Shift+F8 the previous one, wrapping at either end, scroll it into view, show its hover tip and read its message out in a polite status (`ui-code-editor__announcement`, visually hidden), which renders while the editor has `diagnostics`. Without a marked range the keys do nothing.
+F8 in the text area shall select the next marked range after the caret and Shift+F8 the previous one, wrapping at either end, scroll it into view, show its hover tip on the next animation frame (after any scrolling the browser does to reveal the selection, so that scrolling neither closes the tip nor leaves it pointing at the range's old place) and read its message out in a polite status (`ui-code-editor__announcement`, visually hidden), which renders while the editor has `diagnostics`. Without a marked range the keys do nothing.
 
 Implementation: `src/components/code-editor/use-code-editor.ts`, `src/components/code-editor/use-code-keys.ts`, `src/components/code-editor/code-geometry.ts`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`

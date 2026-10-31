@@ -50,7 +50,11 @@ interface CodeHoverTip {
 
 export interface CodeHoverModel {
   tip: CodeHoverTip | null;
-  /** Shows the tip of a range the keyboard moved to. */
+  /**
+   * Shows the tip of a range the keyboard moved to, on the next animation frame: the browser's own
+   * scrolling to reveal the selection has landed by then, so it neither closes the tip nor leaves it
+   * pointing at the range's old place.
+   */
   showAt(range: CodeRange): void;
   onPointerMove(event: PointerEvent<HTMLTextAreaElement>): void;
   /** Hides the tip shortly, unless the pointer moves into it. */
@@ -87,6 +91,7 @@ export function useCodeHover({
 }: CodeHoverOptions): CodeHoverModel {
   const [tip, setTip] = useState<CodeHoverTip | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const frame = useRef<number | null>(null);
   const copy = useRef<ReadCopy | null>(null);
   // Pointer moves read the copy's text nodes from the last render instead of walking it each time.
   const readCopy = (highlight: HTMLElement): CopyText => {
@@ -99,11 +104,22 @@ export function useCodeHover({
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
   }, []);
+  const cancelShow = useCallback(() => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+  }, []);
   const close = useCallback(() => {
     hold();
+    cancelShow();
     setTip(null);
-  }, [hold]);
-  useEffect(() => hold, [hold]);
+  }, [hold, cancelShow]);
+  useEffect(
+    () => () => {
+      hold();
+      cancelShow();
+    },
+    [hold, cancelShow],
+  );
 
   const tipAt = (offset: number, range: CodeRange): CodeHoverTip | null => {
     const highlight = highlightRef.current;
@@ -120,7 +136,14 @@ export function useCodeHover({
   };
   return {
     tip,
-    showAt: (range) => setTip(tipAt(range.start, range)),
+    showAt(range) {
+      hold();
+      cancelShow();
+      frame.current = requestAnimationFrame(() => {
+        frame.current = null;
+        setTip(tipAt(range.start, range));
+      });
+    },
     onPointerMove(event) {
       const highlight = highlightRef.current;
       if (!highlight || event.buttons !== 0 || inputRef.current === null) return;
