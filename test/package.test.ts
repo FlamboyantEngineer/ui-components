@@ -234,6 +234,10 @@ describe('hosted CI', () => {
       'src/index.ts',
       'src/components/*/index.ts',
       'labs/reference/**',
+      'scripts/prepare.mjs',
+      'scripts/copy-locales.mjs',
+      'scripts/build-labs.mjs',
+      'scripts/lib/**',
     ]) {
       expect(filters).toContain(`- ${path}\n`);
     }

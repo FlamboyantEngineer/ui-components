@@ -109,7 +109,7 @@ Adapted from the agent-rules TypeScript set ([coding-rules/README.md](coding-rul
 
 - `tsconfig.json` checks library source, tests, labs and configs with Node's globals, which the tests need.
 - `tsconfig.build.json` checks library source again without them (`types: []`), as the build compiles it.
-- `tsconfig.scripts.json` checks the Node scripts and local lint rules as JavaScript (`checkJs`). An unannotated parameter there is `any`, and everything else is strict.
+- `tsconfig.scripts.json` checks the Node scripts, local lint rules and `eslint.config.js` as JavaScript (`checkJs`). An unannotated parameter there is `any`, and everything else is strict.
 - Library source compiles in both global environments, so a timer handle is typed `ReturnType<typeof setTimeout>`, which holds in both.
 - Beyond `strict`, the programs set `noUncheckedIndexedAccess`, `noImplicitOverride`, `noImplicitReturns` and `noFallthroughCasesInSwitch`.
 - Three flags are deliberately off:
