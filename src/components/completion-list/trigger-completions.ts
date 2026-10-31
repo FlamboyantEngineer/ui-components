@@ -2,6 +2,7 @@
 
 import type { Completion } from './completion-match.js';
 import type { CompletionAnswer, CompletionSource } from './use-completions.js';
+import { findLineStart } from '../../utils/find-line-start.js';
 
 /** A character that opens completions for the query typed after it. */
 export interface CompletionTrigger {
@@ -41,7 +42,7 @@ function findCompletionTrigger(
   caret: number,
   triggers: readonly CompletionTrigger[],
 ): TriggerMatch | null {
-  const lineStart = value.lastIndexOf('\n', caret - 1) + 1;
+  const lineStart = findLineStart(value, caret);
   const spaces = triggers.some((trigger) => trigger.allowsSpaces);
   for (let at = caret - 1; at >= lineStart; at -= 1) {
     const character = value[at] ?? '';

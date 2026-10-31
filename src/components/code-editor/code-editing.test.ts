@@ -51,6 +51,20 @@ describe('code editing', () => {
     expect(outdentSelection('a\nb', caret(1), 2)).toBeNull();
   });
 
+  it('UIC-CODE-EDITOR-6.2 UIC-CODE-EDITOR-6.3 puts offset 0 on the first line, even before a leading line break', () => {
+    expect(applied('', indentSelection('', caret(0), 2))).toBe('  |');
+    expect(applied('\nabc', indentSelection('\nabc', caret(0), 2))).toBe('  |\nabc');
+    expect(applied('\n\nabc', indentSelection('\n\nabc', caret(1), 4))).toBe('\n    |\nabc');
+    expect(applied('\nabc', indentSelection('\nabc', { start: 0, end: 4 }, 2))).toBe('[\n  abc]');
+    expect(applied('\n  abc', outdentSelection('\n  abc', { start: 0, end: 6 }, 2))).toBe(
+      '[\nabc]',
+    );
+    expect(outdentSelection('\n  abc', caret(0), 2)).toBeNull();
+    expect(applied('\nabc', breakLine('\nabc', caret(0), 2))).toBe('\n|\nabc');
+    // A selection ending at a line's start still leaves that line out.
+    expect(applied('a\nb', indentSelection('a\nb', { start: 0, end: 2 }, 2))).toBe('[  a\n]b');
+  });
+
   it('UIC-CODE-EDITOR-6.4 pairs brackets and quotes before space or a closer, and wraps a selection', () => {
     expect(applied('', insertPair('', caret(0), '('))).toBe('(|)');
     expect(applied('f()', insertPair('f()', caret(2), '['))).toBe('f([|])');

@@ -1,6 +1,8 @@
 // Text edits a code editor makes for its keys: indentation, line breaks and bracket pairs. Each
 // function reads the text and the selection and returns the edit to apply, or `null` for none.
 
+import { findLineStart } from '../../utils/find-line-start.js';
+
 /** A selection in the source, as text offsets; `start === end` is a caret. */
 export interface CodeSelection {
   start: number;
@@ -26,10 +28,6 @@ const pairFollower = /^(?:$|[\s)\]},;:])/;
 
 const wordCharacter = /[\w$]/;
 
-function lineStartAt(value: string, offset: number): number {
-  return value.lastIndexOf('\n', offset - 1) + 1;
-}
-
 function lineEndAt(value: string, offset: number): number {
   const end = value.indexOf('\n', offset);
   return end === -1 ? value.length : end;
@@ -42,7 +40,7 @@ function leadingSpace(line: string): string {
 /** The lines a selection touches: a selection ending at a line start leaves that line out. */
 function selectedLines(value: string, { start, end }: CodeSelection) {
   const last = end > start && value[end - 1] === '\n' ? end - 1 : end;
-  const from = lineStartAt(value, start);
+  const from = findLineStart(value, start);
   const to = lineEndAt(value, last);
   return { from, to, lines: value.slice(from, to).split('\n') };
 }
@@ -73,7 +71,7 @@ function shiftLines(value: string, selection: CodeSelection, size: number): Code
  */
 export function indentSelection(value: string, selection: CodeSelection, size: number): CodeEdit {
   if (selection.start === selection.end) {
-    const column = selection.start - lineStartAt(value, selection.start);
+    const column = selection.start - findLineStart(value, selection.start);
     const text = ' '.repeat(size - (column % size));
     const caret = selection.start + text.length;
     return { ...selection, text, selection: { start: caret, end: caret } };
@@ -106,7 +104,7 @@ export function outdentSelection(
  * bracket, and a closing bracket right after the caret moves to a line of its own.
  */
 export function breakLine(value: string, selection: CodeSelection, size: number): CodeEdit {
-  const lineStart = lineStartAt(value, selection.start);
+  const lineStart = findLineStart(value, selection.start);
   const indentation = leadingSpace(value.slice(lineStart, selection.start));
   const before = value.slice(lineStart, selection.start).trimEnd().at(-1) ?? '';
   const after = value.slice(selection.end, lineEndAt(value, selection.end)).trimStart();
@@ -177,5 +175,5 @@ export function deletePair(value: string, selection: CodeSelection): CodeEdit | 
 
 /** The leading spaces and tabs of the line holding `offset`. */
 export function indentationAt(value: string, offset: number): string {
-  return leadingSpace(value.slice(lineStartAt(value, offset)));
+  return leadingSpace(value.slice(findLineStart(value, offset)));
 }
