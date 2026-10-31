@@ -1,11 +1,12 @@
 'use client';
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
 import { isKey } from '../../utils/is-key.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 
 /** A folder being named: a new one under `key`, or the folder `key` being renamed. */
@@ -36,6 +37,8 @@ interface FolderActionsOptions<T extends FolderItem> extends FolderCallbacks<T> 
   select: (key: Key | null) => void;
   /** Called when an edit or delete ends, with the folder whose row should take focus. */
   onSettle: (key: Key | null) => void;
+  /** Called when an edit ends because its folder, its parent or its callback left. */
+  onRevoke: () => void;
 }
 
 export interface FolderActions<T extends FolderItem> {
@@ -66,11 +69,49 @@ async function runEdit(
   return isKey(created) ? created : current.key;
 }
 
+/** Whether an edit's folder (rename) or parent (create) and its callback are still there. */
+function isEditAvailable(
+  current: FolderEdit,
+  folders: readonly FolderItem[],
+  { onCreate, onRename }: Pick<FolderCallbacks<FolderItem>, 'onCreate' | 'onRename'>,
+): boolean {
+  const isPresent = current.key === null || findFolderPath(folders, current.key).length > 0;
+  const hasCallback = current.kind === 'rename' ? onRename !== undefined : onCreate !== undefined;
+  return isPresent && (current.kind === 'create' || current.key !== null) && hasCallback;
+}
+
+/** Ends an edit that is not pending once its folder, its parent or its callback leaves. */
+function useEditRevocation({
+  edit,
+  folders,
+  onCreate,
+  onRename,
+  onRevoke,
+  setEdit,
+}: Pick<FolderCallbacks<FolderItem>, 'onCreate' | 'onRename'> & {
+  edit: FolderEdit | null;
+  folders: readonly FolderItem[];
+  onRevoke: () => void;
+  setEdit: (next: null) => void;
+}) {
+  const isRevoked =
+    edit !== null && !edit.isPending && !isEditAvailable(edit, folders, { onCreate, onRename });
+  const end = useLatest(() => {
+    setEdit(null);
+    onRevoke();
+  });
+  useLayoutEffect(() => {
+    if (isRevoked) end.current();
+  }, [isRevoked, end]);
+}
+
 /**
  * The folder manager's edits and deletes. Each runs the caller's callback, which may return a
  * promise: while it is pending the edit ignores further submits, and a refusal keeps the edit open
  * with the typed name and shows the error's message. Once the manager unmounts, a pending action
  * settles nothing: it neither selects, moves focus nor reports its refusal.
+ * An edit that is not pending ends without a callback once its folder (rename) or parent (create)
+ * leaves `folders`, or its callback goes; the folder coming back does not reopen it.
  */
 export function useFolderActions<T extends FolderItem>({
   folders,
@@ -80,6 +121,7 @@ export function useFolderActions<T extends FolderItem>({
   getDeleteBlockedReason,
   select,
   onSettle,
+  onRevoke,
 }: FolderActionsOptions<T>): FolderActions<T> {
   const strings = useUiStrings();
   const [edit, setEditState] = useState<FolderEdit | null>(null);
@@ -99,6 +141,8 @@ export function useFolderActions<T extends FolderItem>({
     setEdit(null);
     onSettle(current.kind === 'rename' ? current.key : key);
   };
+
+  useEditRevocation({ edit, folders, onCreate, onRename, onRevoke, setEdit });
 
   const submit = async (text: string) => {
     const current = latest.current;
