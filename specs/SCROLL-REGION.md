@@ -66,7 +66,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.7 - Updates and cleanup
 
-Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content mutates and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport and no longer counts as focused, so its tracks hide again by the visibility mode. Unmounting releases every observer and pending frame; later reports do nothing.
+Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content anywhere inside the viewport mutates (nodes, text or attributes such as a class or style, so a nested change that resizes no child counts), when an image inside it loads and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport and no longer counts as focused, so its tracks hide again by the visibility mode. Unmounting releases every observer and pending frame; later reports do nothing.
 
 Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `src/components/scroll-region/observe-viewport.test.ts`
@@ -114,7 +114,7 @@ Verification: `src/utils/scroll-overview.test.ts`
 
 ### UIC-SCROLL-REGION-4.1 - Edge distances
 
-A region that scrolls on some axis shall publish, in either scrollbar mode, how far the content reaches past each edge of the viewport in whole pixels: `--ui-scroll-region-overflow-y-start` (scrolled past the top), `--ui-scroll-region-overflow-y-end` (left below the bottom), `--ui-scroll-region-overflow-x-start` and `--ui-scroll-region-overflow-x-end` (past the inline start and end, so the right edge is the start right to left), with `data-overflow-y-start`, `data-overflow-y-end`, `data-overflow-x-start` and `data-overflow-x-end` while each is above zero, for the stylesheet to fade or shadow the edges. They update when the viewport scrolls, resizes or its children change, without waiting for an animation frame. A region with `axis="none"` publishes none.
+A region that scrolls on some axis shall publish, in either scrollbar mode, how far the content reaches past each edge of the viewport in whole pixels: `--ui-scroll-region-overflow-y-start` (scrolled past the top), `--ui-scroll-region-overflow-y-end` (left below the bottom), `--ui-scroll-region-overflow-x-start` and `--ui-scroll-region-overflow-x-end` (past the inline start and end, so the right edge is the start right to left), with `data-overflow-y-start`, `data-overflow-y-end`, `data-overflow-x-start` and `data-overflow-x-end` while each is above zero, for the stylesheet to fade or shadow the edges. They update when the viewport scrolls, resizes or its children change, without waiting for an animation frame, and once per animation frame when content deeper inside changes as overlay geometry does ([UIC-SCROLL-REGION-2.7](#uic-scroll-region-27---updates-and-cleanup)). A change that mutates nothing inside the viewport, such as a stylesheet swap, is read on the next resize or scroll. A region with `axis="none"` publishes none.
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-edges.ts`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
@@ -135,7 +135,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-4.4 - Stick to bottom
 
-With `stickToBottom`, the viewport shall start scrolled to the bottom and stay there when its content or size changes while the reader is at the bottom (within a pixel), as a log or a conversation does. Scrolling up releases it, and scrolling back to the bottom pins it again.
+With `stickToBottom`, the viewport shall start scrolled to the bottom and stay there when its content or size changes while the reader is at the bottom (within a pixel), as a log or a conversation does, including content that changes deeper than the viewport's children. A scroll the browser makes as the content's extent changes, such as scroll anchoring, does not release it; only the reader's own scrolling does. Scrolling up releases it, and scrolling back to the bottom pins it again.
 
 Implementation: `src/components/scroll-region/use-scroll-edges.ts`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`

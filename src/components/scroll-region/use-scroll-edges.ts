@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { contentChanges } from './observe-viewport.js';
 
 /** How far the content reaches past each edge of the viewport, in whole pixels. */
 export interface ScrollEdges {
@@ -46,8 +47,52 @@ export function readScrollEdges(element: HTMLElement): ScrollEdges {
 }
 
 /**
+ * Calls `onChange` when the viewport or a child resizes or a child comes or goes, at once, and when
+ * content deeper inside changes (text, attributes, nodes, a loaded image), once per animation frame
+ * for however many changes it brings. Returns the cleanup.
+ */
+function followContent(
+  element: HTMLElement,
+  view: Window & typeof globalThis,
+  onChange: () => void,
+): () => void {
+  let frame: number | null = null;
+  const schedule = () => {
+    frame ??= view.requestAnimationFrame(() => {
+      frame = null;
+      onChange();
+    });
+  };
+  const resize =
+    typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(onChange) : null;
+  const observeChildren = () => {
+    resize?.disconnect();
+    for (const target of [element, ...element.children]) resize?.observe(target);
+  };
+  const mutations = new view.MutationObserver((records) => {
+    const isChildChange = records.some(
+      (record) => record.type === 'childList' && record.target === element,
+    );
+    if (!isChildChange) return schedule();
+    observeChildren();
+    onChange();
+  });
+  mutations.observe(element, contentChanges);
+  element.addEventListener('load', schedule, true);
+  observeChildren();
+  onChange();
+  return () => {
+    resize?.disconnect();
+    mutations.disconnect();
+    element.removeEventListener('load', schedule, true);
+    if (frame !== null) view.cancelAnimationFrame(frame);
+  };
+}
+
+/**
  * The viewport's edge distances, read when it scrolls, resizes or its children change (without
- * waiting for an animation frame, so scrolling and resizing schedule none). Scrolling to the top or
+ * waiting for an animation frame, so scrolling and resizing schedule none), and once a frame when
+ * content deeper inside changes. Scrolling to the top or
  * bottom calls the edge callbacks; with `stickToBottom` a viewport scrolled to the bottom follows
  * new content until the reader scrolls up.
  */
@@ -58,17 +103,25 @@ export function useScrollEdges(
   const [edges, setEdges] = useState(noEdges);
   const previous = useRef(noEdges);
   const isPinned = useRef(true);
+  const lastRange = useRef(0);
   const latest = useLatest({ stickToBottom, onTopReached, onBottomReached });
 
   const read = useCallback(
     (fromScroll: boolean) => {
       const element = viewport.current;
       if (!element) return;
+      // A scroll that comes with a new extent is the browser's (scroll anchoring or clamping on a
+      // content change), not the reader's, so it keeps the reader's pin.
+      const range = element.scrollHeight - element.clientHeight;
+      const isReader = fromScroll && range === lastRange.current;
+      lastRange.current = range;
+      if (!isReader && latest.current.stickToBottom && isPinned.current)
+        element.scrollTop = element.scrollHeight;
       const next = readScrollEdges(element);
       const before = previous.current;
       previous.current = next;
+      if (isReader) isPinned.current = next.yEnd <= 1;
       if (fromScroll) {
-        isPinned.current = next.yEnd <= 1;
         if (before.yStart > 0 && next.yStart === 0) latest.current.onTopReached?.();
         if (before.yEnd > 0 && next.yEnd === 0) latest.current.onBottomReached?.();
       }
@@ -81,29 +134,8 @@ export function useScrollEdges(
     const element = viewport.current;
     const view = element?.ownerDocument.defaultView;
     if (!enabled || !element || !view) return undefined;
-    const onChange = () => {
-      if (latest.current.stickToBottom && isPinned.current)
-        element.scrollTop = element.scrollHeight;
-      read(false);
-    };
-    const resize =
-      typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(onChange) : null;
-    const observeChildren = () => {
-      resize?.disconnect();
-      for (const target of [element, ...element.children]) resize?.observe(target);
-    };
-    const mutations = new view.MutationObserver(() => {
-      observeChildren();
-      onChange();
-    });
-    mutations.observe(element, { childList: true });
-    observeChildren();
-    onChange();
-    return () => {
-      resize?.disconnect();
-      mutations.disconnect();
-    };
-  }, [enabled, read, viewport, latest]);
+    return followContent(element, view, () => read(false));
+  }, [enabled, read, viewport]);
 
   const onScroll = useCallback(() => read(true), [read]);
   return { edges: enabled ? edges : noEdges, onScroll };

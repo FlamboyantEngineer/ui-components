@@ -402,6 +402,48 @@ test.describe('Scroll Region lab', () => {
     await expect.poll(atBottom).toBe(true);
   });
 
+  test('UIC-SCROLL-REGION-2.7 UIC-SCROLL-REGION-4.4 follows nested content that resizes no child', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const viewport = page.getByRole('log', { name: 'Sorting' });
+    const thumb = page.locator(
+      '[data-lab-region="nested-log"] .ui-scroll-region__thumb[data-orientation="vertical"]',
+    );
+    const range = async () => {
+      const { scrollHeight, clientHeight } = await metrics(viewport);
+      return String(scrollHeight - clientHeight);
+    };
+    const atBottom = async () => {
+      const { scrollTop, scrollHeight, clientHeight } = await metrics(viewport);
+      return scrollHeight - clientHeight - scrollTop <= 1;
+    };
+    await viewport.scrollIntoViewIfNeeded();
+    await expect.poll(atBottom).toBe(true);
+    const before = await range();
+    await expect(thumb).toHaveAttribute('aria-valuemax', before);
+
+    await page.getByRole('button', { name: 'Add lines' }).click();
+    await expect.poll(range).not.toBe(before);
+    await expect.poll(atBottom).toBe(true);
+    await expect(thumb).toHaveAttribute('aria-valuemax', await range());
+
+    await page.getByRole('button', { name: 'Space lines' }).click();
+    await expect.poll(atBottom).toBe(true);
+    await expect(thumb).toHaveAttribute('aria-valuemax', await range());
+
+    await viewport.evaluate((node) => {
+      node.scrollTop = 0;
+    });
+    await page.getByRole('button', { name: 'Add lines' }).click();
+    await expect(thumb).toHaveAttribute('aria-valuemax', await range());
+    expect((await metrics(viewport)).scrollTop).toBe(0);
+    await page.getByRole('button', { name: 'Remove lines' }).click();
+    await expect(thumb).toHaveAttribute('aria-valuemax', await range());
+    expect((await metrics(viewport)).scrollTop).toBe(0);
+  });
+
   test('UIC-SCROLL-REGION-4.5 marks the chapter at the top of the scrolled text', async ({
     page,
     lab,

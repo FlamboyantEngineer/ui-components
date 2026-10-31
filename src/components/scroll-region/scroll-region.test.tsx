@@ -1055,4 +1055,79 @@ describe('ScrollRegion', () => {
     resizeAll();
     expect(viewport.scrollTop).toBe(500);
   });
+
+  it('UIC-SCROLL-REGION-4.4 stays pinned through a browser scroll that comes with new content', () => {
+    const geometry = { clientHeight: 100, scrollHeight: 300, clientWidth: 120, scrollWidth: 120 };
+    viewports.set('anchored', geometry);
+    render(
+      <ScrollRegion id="anchored" stickToBottom>
+        <p>Entries</p>
+      </ScrollRegion>,
+    );
+    const viewport = requireDefined(document.getElementById('anchored'));
+    trackScrollTop(viewport);
+    resizeAll();
+    fireEvent.scroll(viewport);
+    expect(viewport.scrollTop).toBe(200);
+    // Scroll anchoring moves the viewport a little as the content grows, before any frame.
+    geometry.scrollHeight = 500;
+    scrollTo(viewport, 210);
+    expect(viewport.scrollTop).toBe(400);
+    fireEvent.scroll(viewport);
+    scrollTo(viewport, 100);
+    geometry.scrollHeight = 600;
+    resizeAll();
+    expect(viewport.scrollTop).toBe(100);
+  });
+
+  it('UIC-SCROLL-REGION-2.7 UIC-SCROLL-REGION-4.1 UIC-SCROLL-REGION-4.4 follows nested content changes that resize no child', async () => {
+    const geometry = { clientHeight: 200, scrollHeight: 400, clientWidth: 300, scrollWidth: 300 };
+    viewports.set('log', geometry);
+    const { container } = render(
+      <ScrollRegion id="log" stickToBottom scrollbar="overlay">
+        <div style={{ height: 100 }}>
+          <pre>line 1</pre>
+        </div>
+      </ScrollRegion>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const viewport = requireDefined(document.getElementById('log'));
+    trackScrollTop(viewport);
+    resizeAll();
+    expect(viewport.scrollTop).toBe(200);
+    fireEvent.scroll(viewport);
+    const lines = requireDefined(viewport.querySelector('pre'));
+    const vertical = requireDefined(thumb('log'));
+    expect(vertical).toHaveAttribute('aria-valuemax', '200');
+    const edge = () => root.style.getPropertyValue('--ui-scroll-region-overflow-y-end');
+    // Changes deeper than the children: text, then a style, each read once a frame.
+    const change = async (scrollHeight: number, apply: () => void) => {
+      geometry.scrollHeight = scrollHeight;
+      await act(async () => apply());
+      flushFrames();
+    };
+    await change(800, () => {
+      requireDefined(lines.firstChild).textContent = 'line 1\nline 2';
+    });
+    expect(viewport.scrollTop).toBe(600);
+    expect(vertical).toHaveAttribute('aria-valuemax', '600');
+    expect(edge()).toBe('0px');
+    fireEvent.scroll(viewport);
+    await change(900, () => lines.setAttribute('style', 'font-size: 2em'));
+    expect(viewport.scrollTop).toBe(700);
+    expect(vertical).toHaveAttribute('aria-valuemax', '700');
+
+    // A reader who scrolled up stays put and sees the content below grow and shrink.
+    scrollTo(viewport, 100);
+    await change(1000, () => {
+      requireDefined(lines.firstChild).textContent = 'line 1\nline 2\nline 3';
+    });
+    expect(viewport.scrollTop).toBe(100);
+    expect(edge()).toBe('700px');
+    expect(vertical).toHaveAttribute('aria-valuemax', '800');
+    await change(500, () => lines.removeAttribute('style'));
+    expect(viewport.scrollTop).toBe(100);
+    expect(edge()).toBe('200px');
+    expect(vertical).toHaveAttribute('aria-valuemax', '300');
+  });
 });
