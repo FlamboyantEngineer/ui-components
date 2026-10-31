@@ -97,6 +97,13 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-suggestions.test.tsx`
 
+### UIC-COMBOBOX-2.9 - Suggestion sources
+
+`items` and `defaultItems` shall accept any iterable of options and sections, generators included. The combobox reads each source once, when it receives that source object, and draws the list, the chips, inline completion and the add row from that one copy; a new source object is read again. Chosen keys reach `onChange` and the form as the caller's ids.
+
+Implementation: `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox.tsx`
+Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
+
 ## UIC-COMBOBOX-3 - Picking and entering
 
 ### UIC-COMBOBOX-3.1 - Multiple selection with chips

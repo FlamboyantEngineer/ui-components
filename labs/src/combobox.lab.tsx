@@ -116,15 +116,21 @@ function Remote() {
   );
 }
 
+/** The cities as a single-use generator, which the combobox reads once. */
+function* listCities(): Generator<ComboboxOption> {
+  yield* cities;
+}
+
 function Multiple() {
   const [chosen, setChosen] = useState<Key[]>(['lima', 'oslo']);
+  const [source] = useState(listCities);
   return (
     <>
       <Combobox
         label="Cities"
         size="xs"
         selectionMode="multiple"
-        defaultItems={cities}
+        defaultItems={source}
         value={chosen}
         onChange={setChosen}
         description="Pick several; remove a chip with its button or Backspace."
@@ -444,7 +450,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Multiple selection"
-      description="Typed search text stays until a choice is made. Picking keeps the list open and adds a chip; the chips are a tag group."
+      description="Typed search text stays until a choice is made. Picking keeps the list open and adds a chip; the chips are a tag group. The suggestions come from a generator, read once."
     >
       <Multiple />
     </LabSection>

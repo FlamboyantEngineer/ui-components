@@ -195,7 +195,10 @@ test.describe('Combobox lab', () => {
     await lab.expectAccessible('.ui-combobox__popover');
   });
 
-  test('UIC-COMBOBOX-3.1 picks several cities as removable chips', async ({ page, lab }) => {
+  test('UIC-COMBOBOX-2.9 UIC-COMBOBOX-3.1 picks several cities from a generator as removable chips', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('combobox');
     const area = section(page, 'Multiple selection');
     const output = area.locator('[data-lab-output="cities"]');
