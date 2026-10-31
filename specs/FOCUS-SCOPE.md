@@ -64,10 +64,10 @@ Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scop
 
 ### UIC-FOCUS-SCOPE-2.7 - Final focus
 
-`finalFocus`, a ref or a function asked at that moment, shall receive focus when the scope unmounts instead of the element focused when it mounted, provided focus was still inside the scope or on the body; a reader who moved focus elsewhere keeps their place.
+`finalFocus`, a ref or a function asked at that moment, shall receive focus when the scope unmounts instead of the element focused when it mounted, provided focus was still inside the scope or on the body; a reader who moved focus elsewhere keeps their place. Focus is read from the scope's own document, so a scope that a page's React renders into a same-origin frame restores focus inside the frame, and does not pull focus back into the frame once the page around it holds focus. Targets from a frame's window count as elements as well as the page's own.
 
 Implementation: `src/components/focus-scope/focus-scope.tsx`, `src/utils/focus-target.ts`
-Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scope.spec.ts`
+Verification: `src/components/focus-scope/focus-scope.test.tsx`, `src/utils/focus-target.test.ts`, `e2e/focus-scope.spec.ts`
 
 ## UIC-FOCUS-SCOPE-3 - Focus manager
 

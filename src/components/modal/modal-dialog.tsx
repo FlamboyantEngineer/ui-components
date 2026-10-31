@@ -14,6 +14,7 @@ import { createHooks } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
+import { getDeepActiveElement } from '../../utils/focus-target.js';
 import { ModalShownContext } from './modal-retained.js';
 import { ModalFooter } from './modal-footer.js';
 import { ModalHeader } from './modal-header.js';
@@ -132,7 +133,7 @@ function ModalOpening({
   returnsToOpener,
   dialogRef,
 }: ModalOpeningProps) {
-  const [opener] = useState(() => (returnsToOpener ? document.activeElement : null));
+  const [opener] = useState(() => (returnsToOpener ? getDeepActiveElement() : null));
   useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
   useExitComplete(onExitComplete);
   return null;
