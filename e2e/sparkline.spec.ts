@@ -55,7 +55,8 @@ test.describe('Sparkline lab', () => {
   }) => {
     await lab.open('sparkline');
     const gaps = page.locator('[data-lab-cell="shape=gaps"] .ui-sparkline__line');
-    expect((await gaps.getAttribute('d'))?.match(/M/g)).toHaveLength(3);
+    expect((await gaps.getAttribute('d'))?.match(/M/g)).toHaveLength(2);
+    await expect(page.locator('[data-lab-cell="shape=gaps"] .ui-sparkline__dot')).toHaveCount(1);
     const empty = page.locator('[data-lab-cell="shape=empty"]').getByRole('img');
     await expect(empty).toHaveAttribute('data-empty', 'true');
     await expect(empty).toHaveAccessibleDescription('No data');
@@ -86,5 +87,58 @@ test.describe('Sparkline lab', () => {
     await expect(page.locator('[data-lab-demo="ticks"] p')).toHaveText(
       'Value ticks: 0, 5, 10, 15, 20, 25, 30',
     );
+  });
+
+  test('UIC-SPARKLINE-1.1 UIC-SPARKLINE-1.2 UIC-SPARKLINE-1.3 shows sparse and constant series', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('sparkline');
+    const cell = (shape: string, variant: string) =>
+      page.locator(`[data-lab-cell="shape=${shape} variant=${variant}"]`).getByRole('img');
+    /** Each visible dot's centre, in the drawing's own coordinates. */
+    const dotCentres = (image: ReturnType<typeof cell>) =>
+      image.locator('.ui-sparkline__dot').evaluateAll((dots) =>
+        dots.map((dot) => {
+          const box = (dot as SVGGraphicsElement).getBBox();
+          return box.width > 0 && box.height > 0
+            ? [box.x + box.width / 2, box.y + box.height / 2]
+            : null;
+        }),
+      );
+    const bounds = (image: ReturnType<typeof cell>, part: string) =>
+      image.locator(`.ui-sparkline__${part}`).evaluate((node) => {
+        const path = node as SVGPathElement;
+        const { y, height } = path.getBBox();
+        return { top: y, bottom: y + height, length: path.getTotalLength() };
+      });
+
+    for (const variant of ['line', 'area']) {
+      const single = cell('single', variant);
+      await expect(single).not.toHaveAttribute('data-empty');
+      expect(await dotCentres(single)).toEqual([[40, 12]]);
+      await expect(single.locator('.ui-sparkline__line')).toHaveCount(0);
+      expect(await dotCentres(cell('isolated', variant))).toEqual([
+        [3, 21],
+        [40, 12],
+        [77, 3],
+      ]);
+      await expect(cell('isolated', variant).locator('.ui-sparkline__line')).toHaveCount(0);
+    }
+    const mixed = cell('mixed', 'line');
+    expect(await dotCentres(mixed)).toHaveLength(1);
+    expect(
+      (await mixed.locator('.ui-sparkline__line').getAttribute('d'))?.match(/M/g),
+    ).toHaveLength(2);
+
+    const positive = cell('positive', 'area');
+    expect(await bounds(positive, 'line')).toMatchObject({ top: 12, bottom: 12, length: 74 });
+    expect(await bounds(positive, 'area')).toMatchObject({ top: 12, bottom: 21 });
+    expect(await bounds(cell('negative', 'area'), 'area')).toMatchObject({ top: 3, bottom: 12 });
+    const zero = cell('zero', 'area');
+    expect(await bounds(zero, 'line')).toMatchObject({ top: 12, bottom: 12, length: 74 });
+    expect(await bounds(zero, 'area')).toMatchObject({ top: 12, bottom: 12 });
+    await expect(zero).toHaveAccessibleDescription('Low 0, high 0, last 0');
+    await lab.expectAccessible();
   });
 });

@@ -67,6 +67,30 @@ describe('Sparkline', () => {
     expectHooksMatchSpec(document.body, 'SPARKLINE');
   });
 
+  it('UIC-SPARKLINE-1.3 draws a value alone between gaps as a dot', () => {
+    render(
+      <Sparkline
+        aria-label="Readings"
+        values={[1, Number.NaN, 2, 3, 4]}
+        variant="area"
+        width={46}
+        height={26}
+      />,
+    );
+    const image = screen.getByRole('img');
+    expect(image).not.toHaveAttribute('data-empty');
+    expect(image.querySelector('.ui-sparkline__line')).toHaveAttribute(
+      'd',
+      'M23,16.33L33,9.67L43,3',
+    );
+    const dots = image.querySelectorAll('.ui-sparkline__dot');
+    expect(dots).toHaveLength(1);
+    expect(dots[0]).toHaveAttribute('cx', '3');
+    expect(dots[0]).toHaveAttribute('cy', '23');
+    expect(image).toHaveAccessibleDescription('Low 1, high 4, last 4');
+    expectHooksMatchSpec(document.body, 'SPARKLINE', { slots: ['area', 'line', 'dot'] });
+  });
+
   it('UIC-SPARKLINE-1.4 marks the lowest, highest and last values', () => {
     render(
       <Sparkline

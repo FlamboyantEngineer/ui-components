@@ -93,6 +93,15 @@ function CalendarEdges() {
   );
 }
 
+const sparse = {
+  single: [6],
+  isolated: [1, Number.NaN, 2, Number.NaN, 3],
+  mixed: [4, 6, Number.NaN, 5, Infinity, 7, 8],
+  positive: [5, 5, 5],
+  negative: [-5, -5, -5],
+  zero: [0, 0, 0],
+} as const;
+
 const gapped = [4, 6, 5, Number.NaN, Number.NaN, 7, 9, 8, Number.NaN, 6];
 
 const regions = [
@@ -195,6 +204,20 @@ mountLab(
             variant="area"
             markers={['last']}
           />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Sparse and constant series"
+      description="With no markers: a single value, values alone between gaps drawn as dots, and constant series whose areas fill to the bottom, the top, or not at all at zero."
+    >
+      <StateMatrix
+        axes={{
+          shape: Object.keys(sparse) as Array<keyof typeof sparse>,
+          variant: ['line', 'area'],
+        }}
+        render={({ shape, variant }) => (
+          <Sparkline aria-label={`${shape} readings`} values={sparse[shape]} variant={variant} />
         )}
       />
     </LabSection>
