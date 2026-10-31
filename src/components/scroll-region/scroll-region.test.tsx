@@ -436,6 +436,39 @@ describe('ScrollRegion', () => {
     expect(viewport.scrollTop).toBe(160);
   });
 
+  it.each([{ ctrlKey: true }, { metaKey: true }])(
+    'UIC-SCROLL-REGION-2.4 leaves a zoom wheel over a thumb to the browser (%o)',
+    (modifier) => {
+      viewports.set('region', {
+        clientHeight: 100,
+        scrollHeight: 300,
+        clientWidth: 120,
+        scrollWidth: 120,
+      });
+      const outer = vi.fn();
+      render(
+        <div onWheel={outer}>
+          <ScrollRegion id="region" scrollbar="overlay">
+            Content
+          </ScrollRegion>
+        </div>,
+      );
+      flushFrames();
+      flushFrames();
+      const viewport = requireDefined(document.getElementById('region'));
+      trackScrollTop(viewport);
+      viewport.scrollBy = vi.fn() as typeof viewport.scrollBy;
+      const vertical = requireDefined(thumb('region'));
+      expect(fireEvent.wheel(vertical, { deltaY: 40, ...modifier })).toBe(true);
+      expect(viewport.scrollBy).not.toHaveBeenCalled();
+      expect(viewport.scrollTop).toBe(0);
+      expect(outer).toHaveBeenCalledOnce();
+      expect(fireEvent.wheel(vertical, { deltaY: 40 })).toBe(false);
+      expect(viewport.scrollBy).toHaveBeenCalledOnce();
+      expect(outer).toHaveBeenCalledOnce();
+    },
+  );
+
   it('UIC-SCROLL-REGION-2.5 gives no header ref outside an inset overlay region', () => {
     const refs: unknown[] = [];
     function Probe() {
