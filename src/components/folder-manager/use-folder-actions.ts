@@ -6,7 +6,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
 import { isKey } from '../../utils/is-key.js';
-import { useIsMounted } from '../../utils/use-is-mounted.js';
+import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 
 /** A folder being named: a new one under `key`, or the folder `key` being renamed. */
 export interface FolderEdit {
@@ -86,7 +86,7 @@ export function useFolderActions<T extends FolderItem>({
   const [isDeleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const latest = useRef<FolderEdit | null>(null);
-  const isMounted = useIsMounted();
+  const beginAction = useLifetimeSignal();
   const setEdit = (next: FolderEdit | null) => {
     latest.current = next;
     setEditState(next);
@@ -106,14 +106,15 @@ export function useFolderActions<T extends FolderItem>({
     const name = text.trim();
     if (!name || name === current.original) return finish(current, current.key);
     setEdit({ ...current, name, isPending: true });
+    const signal = beginAction();
     try {
       const key = await runEdit(current, name, { onCreate, onRename });
-      if (!isMounted.current) return;
+      if (signal.aborted) return;
       setMessage(null);
       if (current.kind === 'create') select(key);
       finish(current, key);
     } catch (error) {
-      if (!isMounted.current) return;
+      if (signal.aborted) return;
       setEdit({ ...current, name, isPending: false });
       setMessage(toErrorMessage(error, strings.actionFailed));
     }
@@ -125,15 +126,16 @@ export function useFolderActions<T extends FolderItem>({
     const parentKey = findFolderPath(folders, targets[0]?.id ?? null).at(-2)?.id ?? null;
     setDeleting(true);
     setMessage(null);
+    const signal = beginAction();
     try {
       for (const folder of targets) await onDelete?.(folder.id);
-      if (!isMounted.current) return;
+      if (signal.aborted) return;
       select(parentKey);
       onSettle(parentKey);
     } catch (error) {
-      if (isMounted.current) setMessage(toErrorMessage(error, strings.actionFailed));
+      if (!signal.aborted) setMessage(toErrorMessage(error, strings.actionFailed));
     } finally {
-      if (isMounted.current) setDeleting(false);
+      if (!signal.aborted) setDeleting(false);
     }
   };
 

@@ -15,7 +15,7 @@ import {
   type SignatureDialogEntry,
 } from '../signature-dialog/signature-dialog.js';
 import { TextField } from '../text-field/text-field.js';
-import { useIsMounted } from '../../utils/use-is-mounted.js';
+import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 import { useLatest } from '../../utils/use-latest.js';
 
 /** One decision the reader can make: approve, reject, or a score on a vote. */
@@ -105,7 +105,7 @@ export function useDecisionSubmission({
   const [error, setError] = useState<string | null>(null);
   const running = useRef(false);
   const latest = useLatest(details);
-  const isMounted = useIsMounted();
+  const beginSubmission = useLifetimeSignal();
   useEffect(() => {
     if (isDisabled) setSigning(false);
   }, [isDisabled]);
@@ -113,11 +113,12 @@ export function useDecisionSubmission({
     if (isDisabled || running.current) return;
     running.current = true;
     const sent = details;
+    const signal = beginSubmission();
     try {
       await onSubmit({ ...sent, signature });
       const current = latest.current;
       const isUnchanged = current.decision === sent.decision && current.comment === sent.comment;
-      if (isMounted.current && isUnchanged) onSubmitted();
+      if (!signal.aborted && isUnchanged) onSubmitted();
     } finally {
       running.current = false;
     }

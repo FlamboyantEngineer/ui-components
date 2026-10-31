@@ -15,7 +15,7 @@ import {
 import { useControllableState } from '../../core/controllable-state.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { useIsMounted } from '../../utils/use-is-mounted.js';
+import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 
 interface InlineEditStateOptions<T> {
   value: T;
@@ -98,6 +98,8 @@ function useEditSession<T>(isEditing: boolean) {
 interface SaveAttempt<T> {
   session: number;
   value: T;
+  /** Aborts when the inline edit unmounts. */
+  signal: AbortSignal;
 }
 
 /**
@@ -132,7 +134,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
   const [pending, setPending] = useState<SaveAttempt<T> | null>(null);
   const saving = useRef<SaveAttempt<T> | null>(null);
   const queued = useRef<{ request: SaveRequest<T>; focusReturn: FocusReturn } | null>(null);
-  const isMounted = useIsMounted();
+  const beginSave = useLifetimeSignal();
   const latest = useLatest(options);
   const takeQueued = () => {
     const request = queued.current;
@@ -140,7 +142,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     return request;
   };
   const settle = (attempt: SaveAttempt<T>, error: string | null) => {
-    if (!isMounted.current || saving.current !== attempt) return false;
+    if (attempt.signal.aborted || saving.current !== attempt) return false;
     if (latest.current.session !== attempt.session) return false;
     saving.current = null;
     setPending(null);
@@ -150,7 +152,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     return false;
   };
   const save = async (next: T, focusReturn: FocusReturn) => {
-    const attempt = { session, value: next };
+    const attempt = { session, value: next, signal: beginSave() };
     saving.current = attempt;
     queued.current = null;
     setError(null);
@@ -176,7 +178,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
   };
   const commit = (request: SaveRequest<T>, focusReturn: FocusReturn = 'read') => {
     if (request) setDraft({ value: request.value });
-    if (saving.current?.session === session && isMounted.current) {
+    if (saving.current?.session === session && !saving.current.signal.aborted) {
       queued.current = { request, focusReturn };
       return;
     }
