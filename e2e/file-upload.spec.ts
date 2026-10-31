@@ -260,6 +260,58 @@ test.describe('File Upload lab', () => {
     await expect(page.locator('[data-lab-output="form-sent"]')).toHaveText('Signed.pdf');
   });
 
+  test('UIC-FILE-UPLOAD-4.2 keeps submitting the listed files after a native reset', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const form = page.locator('[data-lab-form="upload"]');
+    const sent = page.locator('[data-lab-output="form-sent"]');
+    const pdf = (name: string) => ({ name, mimeType: 'application/pdf', buffer: Buffer.alloc(64) });
+    await form.locator('input[type="file"]:not([hidden])').setInputFiles([pdf('Signed.pdf')]);
+    await expect(form.locator('.ui-file-upload__file')).toHaveCount(1);
+    const formData = () =>
+      form.evaluate((element: HTMLFormElement) =>
+        new FormData(element).getAll('attachments').map((entry) => {
+          const file = entry as File;
+          return `${file.name}:${file.size}`;
+        }),
+      );
+    expect(await formData()).toEqual(['Signed.pdf:64']);
+
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(form.locator('.ui-file-upload__file')).toHaveCount(1);
+    expect(await formData()).toEqual(['Signed.pdf:64']);
+    await form.getByRole('button', { name: 'Send' }).click();
+    await expect(sent).toHaveText('Signed.pdf');
+
+    // A submit in the same task as the reset, before the input is filled again.
+    const immediate = await form.evaluate((element: HTMLFormElement) => {
+      element.reset();
+      const valid = element.checkValidity();
+      const names = new FormData(element)
+        .getAll('attachments')
+        .map((entry) => (entry as File).name);
+      return { valid, names };
+    });
+    expect(immediate).toEqual({ valid: true, names: ['Signed.pdf'] });
+    await expect
+      .poll(() =>
+        form.evaluate(
+          (element) =>
+            element.querySelector<HTMLInputElement>('input[name="attachments"]')?.files?.length,
+        ),
+      )
+      .toBe(1);
+
+    // A cancelled reset changes nothing.
+    await form.evaluate((element: HTMLFormElement) => {
+      element.addEventListener('reset', (event) => event.preventDefault(), { once: true });
+      element.reset();
+    });
+    expect(await formData()).toEqual(['Signed.pdf:64']);
+  });
+
   test('UIC-FILE-UPLOAD-1.1 passes axe in the dark theme', async ({ lab }) => {
     await lab.open('file-upload', { theme: 'dark' });
     await lab.expectAccessible();

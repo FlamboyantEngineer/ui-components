@@ -34,10 +34,10 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.5 - Action states and attributes
 
-`isDisabled` shall disable an action natively, except that a disabled action with its own `tooltip` stays focusable (`aria-disabled="true"`) so the tooltip explaining it can be read. `isPending` shows Icon Button's busy indicator and refuses presses; a pending `save` names its indicator with the provider's `saving` string. `isExpanded` publishes `aria-expanded`; `aria-controls` and `aria-haspopup` pass through, and the action's `data-*` attributes are forwarded to its button, which also publishes its verb in `data-verb`. `onPress` runs on activation.
+`isDisabled` shall disable an action natively, except that a disabled action with its own `tooltip` stays focusable (`aria-disabled="true"`) so the tooltip explaining it can be read. `isPending` shows Icon Button's busy indicator and refuses presses; a pending `save` names its indicator with the provider's `saving` string. `isExpanded` publishes `aria-expanded`; `aria-controls` and `aria-haspopup` pass through, and the action's `data-*` attributes are forwarded to its button, which also publishes its verb in `data-verb`. `onPress` runs on activation. When it returns a promise, the action is pending until the promise settles, with the same busy indicator and refused presses whether the action is a button or an item of the overflow menu, and while it moves between the two as the row resizes; the row tracks it by the action's identity (UIC-ACTION-ROW-1.7). A rejection reaches the action's `onError`, or is rethrown, as with [Button](BUTTON.md). The caller's `isPending`, when set, wins over the tracked state.
 
-Implementation: `src/components/action-row/action-row.tsx`
-Verification: `src/components/action-row/action-row.test.tsx`
+Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/use-action-pending.ts`
+Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ### UIC-ACTION-ROW-1.6 - Menu actions
 
@@ -85,7 +85,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-2.5 - Overflow menu
 
-`overflow` shall publish `data-overflow` on the root: `visible` (the default) keeps every action, and `menu` renders only the actions that fit in the actions slot, in their order from the start, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them. While actions are hidden, a `ui-action-row__overflow` element at the end of the slot holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) of the row's size, named by the provider's `moreItems` text with the count, listing each hidden action by its label and icon with its disabled and pending states: choosing an action runs its `onPress`, and an action with `items` opens them as a submenu. A choice in that submenu, in its sections and nested submenus too, calls the item's own `onAction` and that action's `onAction` with the item's `id`, and never another action's: item ids need be unique only within one action's menu. Inside a toolbar the arrow keys reach the menu button.
+`overflow` shall publish `data-overflow` on the root: `visible` (the default) keeps every action, and `menu` renders only the actions that fit in the actions slot, in their order from the start, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them. While actions are hidden, a `ui-action-row__overflow` element at the end of the slot holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) of the row's size, named by the provider's `moreItems` text with the count, listing each hidden action by its label and icon with its disabled and pending states (including a press still running, UIC-ACTION-ROW-1.5): choosing an action runs its `onPress`, and an action with `items` opens them as a submenu. A choice in that submenu, in its sections and nested submenus too, calls the item's own `onAction` and that action's `onAction` with the item's `id`, and never another action's: item ids need be unique only within one action's menu. Inside a toolbar the arrow keys reach the menu button.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/action-row.css`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
@@ -94,7 +94,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-3.1 - Selected count and clearing
 
-With `selectedCount` the row shall be a collection's selection bar: it renders only while the count is above zero, publishes `data-selection`, and draws a `ui-action-row__selection` slot before the lead holding a `ui-action-row__clear` [Icon Button](BUTTON.md) (`close`, named by the provider's `clearSelection` string, when `onClearSelection` is set) and a `ui-action-row__count` status (`role="status"`) with the provider's `selectedCount` text, so a change of count is announced. Pressing the clear button, or Escape inside the row that nothing in it handled, calls `onClearSelection`. The row's actions are the bulk actions.
+With `selectedCount` the row shall be a collection's selection bar: it renders only while the count is above zero, publishes `data-selection`, and draws a `ui-action-row__selection` slot before the lead holding a `ui-action-row__clear` [Icon Button](BUTTON.md) (`close`, named by the provider's `clearSelection` string, when `onClearSelection` is set) and a `ui-action-row__count` status (`role="status"`) with the provider's `selectedCount` text, so a change of count is announced. Pressing the clear button, or Escape inside the row that nothing in it handled, calls `onClearSelection`. An Escape that an input method composition owns (pressed while composing, or reported with key code 229) cancels the composition only and leaves the selection. The row's actions are the bulk actions.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`, `labs/reference/action-row.css`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`

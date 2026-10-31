@@ -115,6 +115,13 @@ With `view` `table`, the root shall hold a library [Table](TABLE.md) in the `ui-
 Implementation: `src/components/timeline/timeline-table.tsx`, `src/components/timeline/timeline.tsx`
 Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
 
+### UIC-TIMELINE-3.2 - Stable table inputs
+
+The table view shall hand its `Table` the same `columns` while the provider strings and locale are unchanged, and the same `rows` while the timeline's rows and items are unchanged, so a selection change does not rebuild the table's column layout or cell grid.
+
+Implementation: `src/components/timeline/timeline-table.tsx`
+Verification: `src/components/timeline/timeline-table-identity.test.tsx`
+
 ## UIC-TIMELINE-4 - Accessibility
 
 ### UIC-TIMELINE-4.1 - Named group

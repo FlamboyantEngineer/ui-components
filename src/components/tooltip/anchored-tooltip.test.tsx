@@ -43,6 +43,12 @@ describe('AnchoredTooltip', () => {
     expect(chip).toHaveAttribute('aria-describedby', 'chip-help');
   });
 
+  it('UIC-TOOLTIP-1.5 UIC-TOOLTIP-2.1 sits on the tooltip layer like the child-trigger tooltip', () => {
+    render(<HostChip isOpen />);
+    expect(tooltip()).toHaveAttribute('data-layer', 'tooltip');
+    expect(tooltip()?.style.zIndex).toBe('150');
+  });
+
   it('UIC-TOOLTIP-2.1 UIC-TOOLTIP-2.4 points at an SVG element and cleans up when unmounted open', () => {
     function Shape({ isShown }: { isShown: boolean }) {
       const [circle, setCircle] = useState<SVGCircleElement | null>(null);

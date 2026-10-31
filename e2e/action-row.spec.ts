@@ -153,6 +153,34 @@ test.describe('Action Row lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ACTION-ROW-1.5 refuses a running action again from the overflow menu', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="slow-save"]');
+    const more = demo.getByRole('button', { name: '2 more items' });
+    await more.click();
+    await page.getByRole('menuitem', { name: /^Save/ }).click();
+    await expect(demo.locator('[data-lab-output="saves"]')).toHaveText('1');
+    await more.click();
+    const save = page.getByRole('menuitem', { name: /^Save/ });
+    await expect(save).toHaveAttribute('aria-disabled', 'true');
+    await save.focus();
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="saves"]')).toHaveText('1');
+    await page.keyboard.press('Escape');
+    await page.clock.runFor(2000);
+    await more.click();
+    await expect(page.getByRole('menuitem', { name: /^Save/ })).not.toHaveAttribute(
+      'aria-disabled',
+    );
+    await page.getByRole('menuitem', { name: /^Save/ }).click();
+    await expect(demo.locator('[data-lab-output="saves"]')).toHaveText('2');
+    await lab.expectAccessible();
+  });
+
   test('UIC-ACTION-ROW-1.7 moves focus to the next action when the focused one leaves', async ({
     page,
     lab,
@@ -192,6 +220,11 @@ test.describe('Action Row lab', () => {
     const status = demo.getByRole('status');
     await expect(status).toHaveText('2 selected');
     await demo.getByLabel('Banana').check();
+    await expect(status).toHaveText('3 selected');
+    // An Escape that an input method composition owns leaves the selection.
+    await demo
+      .getByRole('textbox', { name: 'Note for the selection' })
+      .dispatchEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true });
     await expect(status).toHaveText('3 selected');
     await demo.getByRole('button', { name: 'Edit selected' }).focus();
     // The first Escape may close the focused action's tooltip; the next reaches the row.

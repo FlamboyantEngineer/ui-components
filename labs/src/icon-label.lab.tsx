@@ -53,5 +53,19 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Collapsible"
+      description="A collapsible label in columns of each width, alone and in a row beside other content: its text hides when its own room is under 8rem."
+    >
+      <StateMatrix
+        axes={{ placement: ['alone', 'in a row'], room: ['96px', '160px', '320px'] }}
+        render={({ placement, room }) => (
+          <div style={{ width: room, display: placement === 'in a row' ? 'flex' : 'block' }}>
+            <IconLabel icon={InfoGlyph} label="Collapsible settings" collapsible />
+            {placement === 'in a row' ? <span aria-hidden>⋯</span> : null}
+          </div>
+        )}
+      />
+    </LabSection>
   </>,
 );

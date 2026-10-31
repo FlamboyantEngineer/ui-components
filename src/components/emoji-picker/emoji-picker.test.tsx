@@ -364,7 +364,9 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     await userEvent.click(button);
     const dialog = await screen.findByRole('dialog', { name: 'Emoji picker' });
     expect(dialog).toHaveAttribute('data-testid', 'picker');
-    expect(dialog.closest('.ui-emoji-picker__popover')).not.toBeNull();
+    const popover = dialog.closest<HTMLElement>('.ui-emoji-picker__popover');
+    expect(popover).toHaveAttribute('data-layer', 'dropdown');
+    expect(popover?.style.zIndex).toBe('130');
     await screen.findByRole('grid');
     expect(screen.getByRole('searchbox')).toHaveFocus();
     expectHooksMatchSpec(document.body, 'EMOJI-PICKER', { slots: ['popover'] });

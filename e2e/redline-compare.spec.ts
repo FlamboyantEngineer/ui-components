@@ -114,6 +114,20 @@ test.describe('Redline Compare lab', () => {
     await expect(rows.nth(3)).toHaveAttribute('data-resolution', 'rejected');
   });
 
+  test('UIC-REDLINE-COMPARE-1.2 compares a rewritten document without ids quickly', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('redline-compare');
+    const demo = page.locator('[data-lab-demo="large-input"]');
+    await demo.getByRole('button', { name: /^Load 400 rewritten paragraphs/ }).click();
+    const output = demo.locator('[data-lab-output="elapsed"]');
+    await expect(output).toHaveText(/^\d+ characters in \d+ ms$/);
+    const elapsed = Number(/in (\d+) ms/.exec((await output.textContent()) ?? '')?.[1]);
+    expect(elapsed).toBeLessThan(5000);
+    await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
+  });
+
   test('UIC-REDLINE-COMPARE-4.1 passes axe in both themes', async ({ page, lab }) => {
     await lab.open('redline-compare');
     await expect(page.getByRole('group', { name: /^Pump maintenance/ })).toBeVisible();

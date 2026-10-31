@@ -159,6 +159,41 @@ test.describe('Text Diff lab', () => {
     }).toPass();
   });
 
+  test('UIC-SYNCED-SCROLL-1.2 UIC-SYNCED-SCROLL-1.4 realigns matched items after a list changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-diff');
+    const demo = page.locator('[data-lab-demo="anchored"]');
+    const plain = demo.getByRole('group', { name: 'Towns', exact: true });
+    const noted = demo.getByRole('group', { name: 'Towns with notes' });
+    /** The distance of a town's item below the top of its list's viewport. */
+    const offset = (list: typeof plain, town: string) =>
+      list.evaluate(
+        (element, name) =>
+          (element.querySelector(`li[data-town="${name}"]`)?.getBoundingClientRect().top ?? 0) -
+          element.getBoundingClientRect().top,
+        town,
+      );
+    const scrollToTown = async (town: string) => {
+      await plain.evaluate(
+        (element, distance) => {
+          element.scrollTop += distance;
+        },
+        await offset(plain, town),
+      );
+    };
+    const isLevel = async (town: string) =>
+      Math.abs((await offset(noted, town)) - (await offset(plain, town)));
+    await scrollToTown('Braga 4');
+    await expect.poll(() => isLevel('Braga 4')).toBeLessThan(2);
+    await demo.getByRole('button', { name: 'Add notes' }).click();
+    await scrollToTown('Faro 13');
+    await expect.poll(() => isLevel('Faro 13')).toBeLessThan(2);
+    await scrollToTown('Porto 2');
+    await expect.poll(() => isLevel('Porto 2')).toBeLessThan(2);
+  });
+
   test('is accessible', async ({ lab }) => {
     await lab.open('text-diff');
     await lab.expectAccessible();

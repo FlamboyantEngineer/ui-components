@@ -1,7 +1,7 @@
 // Aligns the blocks of two rich documents (specs/REDLINE-COMPARE.md): a block-level redline.
 
 import type { Key } from '../core/props.js';
-import { diffSequences, diffWords, type WordDiffHunk } from './diff.js';
+import { diffSequences, diffWords, splitWords, type WordDiffHunk } from './diff.js';
 import { requireDefined } from './require-defined.js';
 import { toKeyIdentity } from './to-key-identity.js';
 
@@ -87,6 +87,9 @@ interface Alignment<B extends DocumentBlock> {
 /** Paired blocks without ids share at least this fraction of their characters. */
 const similarityThreshold = 0.5;
 
+/** The most word diffs a deleted block runs against inserted blocks while looking for its pair. */
+const maxSimilarityDiffs = 8;
+
 const toIdentity = (block: DocumentBlock) =>
   block.id === undefined ? `text:${block.text}` : `id:${toKeyIdentity(block.id)}`;
 
@@ -161,22 +164,72 @@ function measureSimilarity(oldText: string, newText: string): number {
   return (2 * kept) / total;
 }
 
+/** How many times a text holds each of its word tokens. */
+type TokenCounts = ReadonlyMap<string, number>;
+
+function countTokens(text: string): TokenCounts {
+  const counts = new Map<string, number>();
+  for (const token of splitWords(text)) counts.set(token, (counts.get(token) ?? 0) + 1);
+  return counts;
+}
+
+/**
+ * Whether two texts could reach the similarity threshold, checked without a diff: a word diff
+ * keeps at most the shorter text, and at most the tokens both texts hold, as often as both do.
+ */
+function couldBeSimilar(
+  [oldText, oldCounts]: readonly [string, TokenCounts],
+  [newText, newCounts]: readonly [string, TokenCounts],
+): boolean {
+  const needed = similarityThreshold * (oldText.length + newText.length);
+  if (2 * Math.min(oldText.length, newText.length) < needed) return false;
+  const [fewer, more] =
+    oldCounts.size <= newCounts.size ? [oldCounts, newCounts] : [newCounts, oldCounts];
+  let shared = 0;
+  for (const [token, count] of fewer) {
+    shared += Math.min(count, more.get(token) ?? 0) * token.length;
+  }
+  return 2 * shared >= needed;
+}
+
+/** Each block's text with its token counts, counted once, on first use. */
+function createTokenCache(blocks: readonly DocumentBlock[]) {
+  const cache = new Map<number, readonly [string, TokenCounts]>();
+  return (index: number) => {
+    let entry = cache.get(index);
+    if (!entry) {
+      const { text } = requireDefined(blocks[index]);
+      entry = [text, countTokens(text)];
+      cache.set(index, entry);
+    }
+    return entry;
+  };
+}
+
 /**
  * Pairs the deleted and inserted blocks of a run that have no ids and read alike, in order: each
- * deleted block takes the first similar inserted block after the last one taken.
+ * deleted block takes the first similar inserted block after the last one taken. Inserted blocks
+ * whose lengths or shared words rule the threshold out are skipped without a diff, and a deleted
+ * block runs at most `maxSimilarityDiffs` diffs, so a long rewritten run stays near linear.
  */
 function* pairSimilar<B extends DocumentBlock>(alignment: Alignment<B>, run: ChangeRun) {
   const { oldBlocks, newBlocks, movedTo, movedFrom } = alignment;
   const isFree = (block: B) => block.id === undefined;
+  const oldTokens = createTokenCache(oldBlocks);
+  const newTokens = createTokenCache(newBlocks);
   let from = 0;
   for (let deleted = 0; deleted < run.deleted.length; deleted += 1) {
     const oldIndex = requireDefined(run.deleted[deleted]);
     const oldBlock = requireDefined(oldBlocks[oldIndex]);
     if (!isFree(oldBlock) || movedTo.has(oldIndex)) continue;
+    let diffs = 0;
     for (let inserted = from; inserted < run.inserted.length; inserted += 1) {
       const newIndex = requireDefined(run.inserted[inserted]);
       const newBlock = requireDefined(newBlocks[newIndex]);
       if (!isFree(newBlock) || movedFrom.has(newIndex)) continue;
+      if (!couldBeSimilar(oldTokens(oldIndex), newTokens(newIndex))) continue;
+      if (diffs === maxSimilarityDiffs) break;
+      diffs += 1;
       if (measureSimilarity(oldBlock.text, newBlock.text) < similarityThreshold) continue;
       yield [deleted, inserted] as const;
       from = inserted + 1;

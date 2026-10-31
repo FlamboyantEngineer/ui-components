@@ -115,6 +115,29 @@ function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
   );
 }
 
+/** A save that takes a while, in a row narrow enough to put it in the overflow menu. */
+function SlowSave() {
+  const [saves, setSaves] = useState(0);
+  const save = () => {
+    setSaves((count) => count + 1);
+    return new Promise<void>((resolve) => setTimeout(resolve, 2000));
+  };
+  return (
+    <div style={{ width: 30 }} data-lab-case="slow-save">
+      <ActionRow
+        overflow="menu"
+        actions={[
+          { verb: 'refresh', onPress: noop },
+          { verb: 'save', onPress: save },
+        ]}
+      />
+      <p>
+        Saves started: <output data-lab-output="saves">{saves}</output>
+      </p>
+    </div>
+  );
+}
+
 /** An action that removes itself: focus moves to the next action's own button. */
 function ChangingActions() {
   const [hasArchive, setHasArchive] = useState(true);
@@ -202,6 +225,7 @@ function SelectionBar() {
       <ActionRow
         toolbar
         aria-label="Bulk actions"
+        lead={<input aria-label="Note for the selection" placeholder="Note" />}
         selectedCount={selected.length}
         onClearSelection={() => setSelected([])}
         actions={[
@@ -292,6 +316,12 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Pending action in the overflow menu"
+      description="Save takes two seconds. Choose it from the more menu, reopen the menu: Save is busy and refuses another choice until the first save ends."
+    >
+      <SlowSave />
+    </LabSection>
+    <LabSection
       title="Actions that come and go"
       description="Archive removes itself: focus moves to Share's own button, and Enter then runs Share. Restore archive brings it back."
     >
@@ -305,7 +335,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Selection bar"
-      description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection."
+      description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection, except the Escape that cancels an input method candidate in the note field."
     >
       <SelectionBar />
     </LabSection>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -53,35 +54,39 @@ function toEntries(rows: readonly TimelineRow[], items: readonly TimelineItem[])
     .map(({ entry }) => entry);
 }
 
+const percentFormat: Intl.NumberFormatOptions = { style: 'percent' };
+
 function useColumns(): TableProps<TableEntry>['columns'] {
   const strings = useUiStrings();
   const days = useDateFormatter({ dateStyle: 'medium', timeZone: 'UTC' });
-  const percent = useNumberFormatter({ style: 'percent' });
-  const day = (date: string) => (date ? days.format(new Date(date)) : '');
-  return [
-    { id: 'name', header: strings.timelineItemColumn, isRowHeader: true, allowsSorting: true },
-    { id: 'row', header: strings.timelineRowColumn, allowsSorting: true },
-    {
-      id: 'start',
-      header: strings.timelineStartColumn,
-      allowsSorting: true,
-      renderCell: (entry) => day(entry.start),
-    },
-    {
-      id: 'end',
-      header: strings.timelineEndColumn,
-      allowsSorting: true,
-      renderCell: (entry) => day(entry.end),
-    },
-    {
-      id: 'progress',
-      header: strings.timelineProgressColumn,
-      align: 'end',
-      getValue: (entry) => entry.progress ?? null,
-      renderCell: (entry) =>
-        entry.progress === undefined ? '' : percent.format(clamp(entry.progress, 0, 1)),
-    },
-  ];
+  const percent = useNumberFormatter(percentFormat);
+  return useMemo(() => {
+    const day = (date: string) => (date ? days.format(new Date(date)) : '');
+    return [
+      { id: 'name', header: strings.timelineItemColumn, isRowHeader: true, allowsSorting: true },
+      { id: 'row', header: strings.timelineRowColumn, allowsSorting: true },
+      {
+        id: 'start',
+        header: strings.timelineStartColumn,
+        allowsSorting: true,
+        renderCell: (entry) => day(entry.start),
+      },
+      {
+        id: 'end',
+        header: strings.timelineEndColumn,
+        allowsSorting: true,
+        renderCell: (entry) => day(entry.end),
+      },
+      {
+        id: 'progress',
+        header: strings.timelineProgressColumn,
+        align: 'end',
+        getValue: (entry) => entry.progress ?? null,
+        renderCell: (entry) =>
+          entry.progress === undefined ? '' : percent.format(clamp(entry.progress, 0, 1)),
+      },
+    ];
+  }, [strings, days, percent]);
 }
 
 /**
@@ -97,13 +102,15 @@ export function TimelineTable({
   selectedKeys,
   onSelectionChange,
 }: TimelineTableProps) {
+  const columns = useColumns();
+  const entries = useMemo(() => toEntries(rows, items), [rows, items]);
   return (
     <Table
       className={hooks.slotClass('table')}
       aria-label={label}
       aria-labelledby={labelledBy}
-      columns={useColumns()}
-      rows={toEntries(rows, items)}
+      columns={columns}
+      rows={entries}
       selectionMode={selectionMode}
       selectedKeys={selectedKeys}
       onSelectionChange={onSelectionChange}

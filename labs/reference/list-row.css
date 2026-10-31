@@ -17,7 +17,7 @@
 }
 
 .ui-list-row {
-  container-type: inline-size;
+  container: ui-list-row / inline-size;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -85,7 +85,7 @@
   padding-inline-end: 8px;
 }
 
-@container (max-width: 250px) {
+@container ui-list-row (width <= 250px) {
   .ui-list-row__trailing {
     flex-basis: 100%;
     padding-inline: 8px;

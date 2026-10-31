@@ -219,7 +219,7 @@ export function AnchoredTooltip({
   const target = usePortalTarget();
   if (!phase.isMounted || !target) return null;
   const resolvedPlacement = position.placement ?? undefined;
-  const data = { variant, placement: resolvedPlacement };
+  const data = { variant, placement: resolvedPlacement, layer: 'tooltip' };
   // Straight into the container, as React Aria's own tooltip: a `Portal` wrapper, which has no size,
   // would become the containing block the positioning measures against.
   return createPortal(

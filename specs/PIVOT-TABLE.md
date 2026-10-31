@@ -71,6 +71,13 @@ Every column shall sort on a header press (the table's own sort, ascending, desc
 Implementation: `src/components/pivot-table/pivot-columns.tsx`
 Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
 
+### UIC-PIVOT-TABLE-2.7 - Stable table inputs
+
+The pivot table shall hand its `Table` the same `columns`, `columnGroups`, `rows` and `getChildRows` across a render whose records, fields, layout and locale are unchanged (an expansion or a class name change), and `getChildRows` shall return the same array for a group each time, so the table keeps its memoised column layout and cell grid.
+
+Implementation: `src/components/pivot-table/pivot-table.tsx`
+Verification: `src/components/pivot-table/pivot-table-identity.test.tsx`
+
 ## UIC-PIVOT-TABLE-3 - Field chooser
 
 ### UIC-PIVOT-TABLE-3.1 - Layout

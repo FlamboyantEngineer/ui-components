@@ -4,6 +4,7 @@ import { Button as AriaButton } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
+import { PortalContainerProvider } from '../portal/portal.js';
 import { Tooltip } from './tooltip.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
@@ -218,6 +219,25 @@ describe('Tooltip', () => {
     expect(panel).toHaveAttribute('data-placement', 'bottom');
     expect(panel?.querySelector('.ui-tooltip__arrow')).toHaveAttribute('data-placement', 'bottom');
     expectHooksMatchSpec(document.body, 'TOOLTIP', { slots: ['arrow', 'content'] });
+  });
+
+  it('UIC-TOOLTIP-1.5 sits on the tooltip layer with its z-index, above menus and below toasts', () => {
+    render(
+      <>
+        <Tooltip content="Layered" defaultOpen>
+          <Button>Default</Button>
+        </Tooltip>
+        <PortalContainerProvider layerZIndex={{ tooltip: 900 }}>
+          <Tooltip content="Raised" defaultOpen>
+            <Button>Raised</Button>
+          </Tooltip>
+        </PortalContainerProvider>
+      </>,
+    );
+    const layered = screen.getByRole('tooltip', { name: 'Layered' });
+    expect(layered).toHaveAttribute('data-layer', 'tooltip');
+    expect(layered.style.zIndex).toBe('150');
+    expect(screen.getByRole('tooltip', { name: 'Raised' }).style.zIndex).toBe('900');
   });
 
   it('UIC-TOOLTIP-1.6 defaults to the default variant', () => {

@@ -35,7 +35,17 @@
   min-width: 0;
 }
 
-@container (max-width: 44rem) {
+/*
+ * A collapsible label is its own container: it takes the room it is given, 12rem where nothing
+ * constrains it, and hides its text, kept for assistive technology, when that room is under 8rem.
+ */
+.ui-icon-label[data-collapsible] {
+  container: ui-icon-label / inline-size;
+  display: flex;
+  contain-intrinsic-inline-size: 12rem;
+}
+
+@container ui-icon-label (width < 8rem) {
   .ui-icon-label[data-collapsible] .ui-icon-label__label {
     position: absolute;
     width: 1px;

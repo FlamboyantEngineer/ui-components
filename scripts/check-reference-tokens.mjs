@@ -3,7 +3,8 @@
 // base tokens instead of literal colours, radii, type, focus rings, state opacity and durations;
 // every token is defined once, used, and not a literal copy of another; component-scoped tokens
 // carry their partial's name. A state rule never sizes or places a box (UIC-LABS-3.6), and a
-// control takes its height from the control scale at every size (UIC-LABS-3.7).
+// control takes its height from the control scale at every size (UIC-LABS-3.7). Containers and
+// container queries are named (UIC-LABS-3.1).
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -164,6 +165,25 @@ for (const declaration of declarations) {
   ) {
     problems.push(
       `${where(declaration)}: a dirty field marks its whole frame; use border-color: var(--ref-dirty) or outline: var(--ref-dirty-outline)`,
+    );
+  }
+}
+
+// Containers: every container is named after its component and every query names the container it
+// reads, so a query never resolves against an unrelated ancestor (UIC-LABS-3.1).
+for (const declaration of declarations) {
+  if (declaration.property === 'container-type') {
+    problems.push(
+      `${where(declaration)}: an unnamed container; write container: ui-<component> / ${declaration.value}`,
+    );
+  }
+}
+for (const file of files) {
+  const css = stripComments(readFileSync(join(referenceDir, file), 'utf8'));
+  for (const match of css.matchAll(/@container\s+(?!ui-[\w-]+\s)/g)) {
+    const line = css.slice(0, match.index).split('\n').length;
+    problems.push(
+      `labs/reference/${file}:${line}: a container query without a name; write @container ui-<component> (…)`,
     );
   }
 }

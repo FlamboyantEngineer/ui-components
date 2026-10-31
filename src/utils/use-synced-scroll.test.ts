@@ -21,6 +21,7 @@ const anchors = (offsets: number[]): ScrollAnchor[] =>
   offsets.map((offset, index) => ({ key: index, offset }));
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   document.body.replaceChildren();
 });
 
@@ -48,6 +49,24 @@ describe('mapScrollOffset', () => {
     expect(mapScrollOffset(75, from, to)).toBe(130);
     expect(mapScrollOffset(42, [], to)).toBe(42);
     expect(mapScrollOffset(42, from, [{ key: 'other', offset: 0 }])).toBe(42);
+  });
+
+  it('UIC-SYNCED-SCROLL-1.4 pairs two anchor lists once', () => {
+    const reads = vi.fn();
+    const counted = (offsets: number[]) =>
+      new Proxy(anchors(offsets), {
+        get(target, property, receiver) {
+          if (property === 'flatMap' || property === 'map') reads(property);
+          return Reflect.get(target, property, receiver) as unknown;
+        },
+      });
+    const from = counted([0, 20, 40]);
+    const to = counted([0, 50, 100]);
+    expect(mapScrollOffset(10, from, to)).toBe(25);
+    expect(mapScrollOffset(30, from, to)).toBe(75);
+    expect(reads).toHaveBeenCalledTimes(2);
+    expect(mapScrollOffset(10, to, from)).toBe(4);
+    expect(reads).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -111,13 +130,59 @@ describe('useSyncedScroll', () => {
     scrollTo(first, 0);
     expect(second.scrollTop).toBe(200);
   });
-  it("UIC-SYNCED-SCROLL-1.2 reads each container's anchors once per scroll", () => {
+  it("UIC-SYNCED-SCROLL-1.4 reads each container's anchors once per scroll without observers", () => {
+    vi.stubGlobal('ResizeObserver', undefined);
     const containers = [createContainer(300), createContainer(400), createContainer(500)];
     const getAnchors = vi.fn((_container: HTMLElement) => anchors([0, 100, 200]));
     renderHook(() => useSyncedScroll(containers, { getAnchors }));
     scrollTo(requireDefined(containers[0]), 100);
     for (const container of containers) expect(container.scrollTop).toBe(100);
     expect(getAnchors.mock.calls.map(([container]) => container)).toEqual(containers);
+    scrollTo(requireDefined(containers[0]), 50);
+    expect(getAnchors).toHaveBeenCalledTimes(6);
+  });
+
+  it('UIC-SYNCED-SCROLL-1.4 keeps anchors across scrolls until the containers change', async () => {
+    const resized: Array<() => void> = [];
+    const observed: Element[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resized.push(callback);
+        }
+        observe(element: Element) {
+          observed.push(element);
+        }
+        disconnect() {
+          observed.length = 0;
+        }
+      },
+    );
+    const first = createContainer(300);
+    const second = createContainer(400);
+    first.append(document.createElement('p'));
+    const getAnchors = vi.fn((_container: HTMLElement) => anchors([0, 100, 200]));
+    const { unmount } = renderHook(() => useSyncedScroll([first, second], { getAnchors }));
+    expect(observed).toEqual([first, requireDefined(first.firstElementChild), second]);
+    for (const top of [20, 60, 100, 140]) scrollTo(first, top);
+    expect(second.scrollTop).toBe(140);
+    expect(getAnchors).toHaveBeenCalledTimes(2);
+
+    second.append(document.createElement('p'));
+    await Promise.resolve();
+    expect(observed).toContain(second.firstElementChild);
+    scrollTo(first, 120);
+    expect(getAnchors).toHaveBeenCalledTimes(4);
+    requireDefined(resized[0])();
+    scrollTo(first, 80);
+    expect(getAnchors).toHaveBeenCalledTimes(6);
+    Object.defineProperty(second, 'scrollHeight', { configurable: true, value: 450 });
+    scrollTo(first, 40);
+    expect(getAnchors).toHaveBeenCalledTimes(7);
+    expect(getAnchors).toHaveBeenLastCalledWith(second);
+    unmount();
+    expect(observed).toHaveLength(0);
   });
 
   it('UIC-SYNCED-SCROLL-1.3 retains pending echoes across a re-render', () => {
