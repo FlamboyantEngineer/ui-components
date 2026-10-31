@@ -73,18 +73,10 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
   const drag = useRef<DragOrigin<T> | null>(null);
   const fillTarget = useRef<CellBounds | null>(null);
   const stop = useRef<(() => void) | null>(null);
-  const latest = useLatest(options);
+  const latestRef = useLatest(options);
   useEffect(() => () => stop.current?.(), []);
-  useLayoutEffect(() => {
-    const origin = drag.current;
-    if (!origin || isOriginKept(origin, options)) return;
-    stop.current?.();
-    stop.current = null;
-    finish(false);
-  });
-
   const finish = (shouldCommit: boolean) => {
-    const { bounds, grid, write, setRange } = latest.current;
+    const { bounds, grid, write, setRange } = latestRef.current;
     const target = fillTarget.current;
     if (shouldCommit && drag.current?.kind === 'fill' && bounds && target) {
       write(planFill(grid, bounds, target));
@@ -94,9 +86,16 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
     fillTarget.current = null;
     setFillBounds(null);
   };
+  useLayoutEffect(() => {
+    const origin = drag.current;
+    if (!origin || isOriginKept(origin, options)) return;
+    stop.current?.();
+    stop.current = null;
+    finish(false);
+  });
   const begin = (kind: DragKind, event: PointerEvent<HTMLElement>) => {
     stop.current?.();
-    const { mode, grid, range } = latest.current;
+    const { mode, grid, range } = latestRef.current;
     drag.current = { kind, mode, grid, range };
     const end = (shouldCommit: boolean) => {
       stop.current = null;
@@ -110,7 +109,7 @@ function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
     });
   };
   const extend = (position: TableCellPosition) => {
-    const { grid, range, bounds, setRange } = latest.current;
+    const { grid, range, bounds, setRange } = latestRef.current;
     if (!drag.current || !range) return;
     if (drag.current.kind === 'select') {
       setRange({ anchor: range.anchor, focus: position });

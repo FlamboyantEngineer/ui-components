@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 /**
  * A value the caller may control. A defined `value` wins; otherwise the hook holds its own copy,
@@ -16,13 +16,16 @@ export function useControllableState<T>(
   const [own, setOwn] = useState(defaultValue);
   const isControlled = value !== undefined;
   const shown = isControlled ? value : own;
-  // Updated by each uncontrolled set, so a second set in the same event compares with the first.
-  let current = shown;
+  // The last uncontrolled set and the value shown when it was made: a second set before the field
+  // renders again compares with the first one's value, not with the value still shown.
+  const lastSetRef = useRef<{ from: T; to: T } | null>(null);
   const setValue = (next: T) => {
+    const last = lastSetRef.current;
+    const current = last && Object.is(last.from, shown) ? last.to : shown;
     if (Object.is(next, current)) return;
     if (!isControlled) {
       setOwn(next);
-      current = next;
+      lastSetRef.current = { from: shown, to: next };
     }
     onChange?.(next);
   };

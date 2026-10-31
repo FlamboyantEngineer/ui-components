@@ -52,4 +52,24 @@ describe('useControllableState', () => {
     act(() => notANumber.current[1](Number.NaN));
     expect(onChange).toHaveBeenCalledTimes(3);
   });
+
+  it('UIC-COMPOSITION-5.1 compares a second set in the same event with the first', () => {
+    const onChange = vi.fn();
+    const { result } = renderHook(() => useControllableState<string>(undefined, 'a', onChange));
+    act(() => {
+      result.current[1]('b');
+      result.current[1]('b');
+    });
+    expect(onChange.mock.calls).toEqual([['b']]);
+    expect(result.current[0]).toBe('b');
+    act(() => {
+      result.current[1]('a');
+      result.current[1]('b');
+      result.current[1]('b');
+    });
+    expect(onChange.mock.calls).toEqual([['b'], ['a'], ['b']]);
+    expect(result.current[0]).toBe('b');
+    act(() => result.current[1]('b'));
+    expect(onChange).toHaveBeenCalledTimes(3);
+  });
 });

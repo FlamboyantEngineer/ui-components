@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useRef, useState, type RefObject } from 'react';
+import { useContext, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
@@ -23,19 +23,19 @@ type ResetProbe = RefObject<() => boolean>;
  * `ComboboxReset` needs to apply the reset or undo it.
  */
 export function useHeldChange(report: (value: ComboboxStateValue) => void) {
-  const probe: ResetProbe = useRef(() => false);
+  const probeRef: ResetProbe = useRef(() => false);
   return {
-    probe,
+    probeRef,
     report,
     onChange: (value: ComboboxStateValue) => {
-      if (!probe.current()) report(value);
+      if (!probeRef.current()) report(value);
     },
   };
 }
 
 interface ComboboxResetProps {
   input: RefObject<HTMLInputElement | null>;
-  probe: ResetProbe;
+  probeRef: ResetProbe;
   isControlled: boolean;
   /** Reports a value the reset put back to an uncontrolled combobox. */
   report: (value: ComboboxStateValue) => void;
@@ -47,12 +47,12 @@ interface ComboboxResetProps {
  * a cancelled reset puts them back, and one that went through leaves the value the combobox
  * mounted with, reported once.
  */
-export function ComboboxReset({ input, probe, isControlled, report }: ComboboxResetProps) {
+export function ComboboxReset({ input, probeRef, isControlled, report }: ComboboxResetProps) {
   const state = useContext(ComboBoxStateContext);
   const read = () => (state?.value ?? null) as ComboboxStateValue;
   const [initial] = useState(read);
   const snapshot = useRef<{ value: ComboboxStateValue; text: string } | null>(null);
-  probe.current = useNativeReset(
+  const isResetting = useNativeReset(
     input,
     () => {
       const before = snapshot.current;
@@ -74,5 +74,8 @@ export function ComboboxReset({ input, probe, isControlled, report }: ComboboxRe
       },
     },
   );
+  useLayoutEffect(() => {
+    probeRef.current = isResetting;
+  });
   return null;
 }

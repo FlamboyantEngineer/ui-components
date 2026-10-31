@@ -153,6 +153,7 @@ function useStandardEntries(options: TabMenuOptions) {
 export function useTabMenu(options: TabMenuOptions): TabMenu {
   const listStandard = useStandardEntries(options);
   const { getMenuItems, shared } = options;
+  const { menuKey: menuKeyRef } = shared;
   return useMemo<TabMenu>(() => {
     const getEntries = (key: Key) => getMenuItems?.(key, listStandard(key)) ?? [];
     return {
@@ -160,13 +161,13 @@ export function useTabMenu(options: TabMenuOptions): TabMenu {
       isEnabled: getMenuItems !== undefined,
       getEntries,
       showFor: (key) => {
-        shared.menuKey.current = key;
+        menuKeyRef.current = key;
         shared.controller.setItems(getEntries(key));
       },
-      openKey: () => (shared.controller.isOpen() ? shared.menuKey.current : null),
+      openKey: () => (shared.controller.isOpen() ? menuKeyRef.current : null),
       isAvailable: (key, state) => isTabAvailable(shared, key, state),
     };
-  }, [getMenuItems, listStandard, shared]);
+  }, [getMenuItems, listStandard, shared, menuKeyRef]);
 }
 
 /**

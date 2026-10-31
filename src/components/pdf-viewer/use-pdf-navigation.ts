@@ -77,25 +77,25 @@ function useNavigationRequests(
   reported: RefObject<number[]>,
 ): RefObject<PdfTarget | null> {
   const { page, revealRect, document } = options;
-  const pending = useRef<PdfTarget | null>(null);
-  const latest = useLatest(options);
+  const pendingRef = useRef<PdfTarget | null>(null);
+  const latestRef = useLatest(options);
   useLayoutEffect(() => {
-    const { defaultPage, page: current } = latest.current;
+    const { defaultPage, page: current } = latestRef.current;
     if (document && defaultPage !== undefined && current === undefined) {
-      pending.current = { pageIndex: defaultPage, rect: null };
+      pendingRef.current = { pageIndex: defaultPage, rect: null };
     }
-  }, [document, latest]);
+  }, [document, latestRef]);
   useLayoutEffect(() => {
     if (page === undefined || consumeEcho(reported.current, page)) return;
-    if (page !== latest.current.pages.currentPage)
-      pending.current = { pageIndex: page, rect: null };
-  }, [page, latest, reported]);
+    if (page !== latestRef.current.pages.currentPage)
+      pendingRef.current = { pageIndex: page, rect: null };
+  }, [page, latestRef, reported]);
   const rectKey = toRectKey(revealRect);
   useLayoutEffect(() => {
-    const rect = latest.current.revealRect;
-    if (rect) pending.current = { pageIndex: rect.pageIndex, rect };
-  }, [rectKey, latest]);
-  return pending;
+    const rect = latestRef.current.revealRect;
+    if (rect) pendingRef.current = { pageIndex: rect.pageIndex, rect };
+  }, [rectKey, latestRef]);
+  return pendingRef;
 }
 
 /**
@@ -109,38 +109,38 @@ export function usePdfNavigation(options: UsePdfNavigationOptions): {
   const { isReady, scale, pageCount, scrollerRef, pages } = options;
   const { currentPage, elements, scrollToPage } = pages;
   const reported = useRef<number[]>([]);
-  const pending = useNavigationRequests(options, reported);
-  const latest = useLatest(options);
+  const pendingRef = useNavigationRequests(options, reported);
+  const latestRef = useLatest(options);
 
   const serve = useCallback(() => {
-    const request = pending.current;
+    const request = pendingRef.current;
     const scroller = scrollerRef.current;
     if (!request || !scroller || scroller.clientHeight === 0 || pageCount === 0) return;
     const pageIndex = clamp(request.pageIndex, 0, pageCount - 1);
     if (!elements.current.has(pageIndex)) return;
-    pending.current = null;
+    pendingRef.current = null;
     scrollToPage(pageIndex, request.rect ? scaleRect(request.rect, scale) : undefined);
-  }, [elements, pageCount, pending, scale, scrollToPage, scrollerRef]);
+  }, [elements, pageCount, pendingRef, scale, scrollToPage, scrollerRef]);
   useLayoutEffect(serve);
   // A hidden viewer measures nothing; being shown again is a resize.
   useResizeObserver([scrollerRef], serve);
 
   const lastReport = useRef<number | null>(null);
   useEffect(() => {
-    if (!isReady || pending.current || lastReport.current === currentPage) return;
+    if (!isReady || pendingRef.current || lastReport.current === currentPage) return;
     lastReport.current = currentPage;
-    const { page, onPageChange } = latest.current;
+    const { page, onPageChange } = latestRef.current;
     if (page === currentPage) return;
     if (page !== undefined) reported.current.push(currentPage);
     onPageChange?.(currentPage);
-  }, [currentPage, isReady, latest, pending]);
+  }, [currentPage, isReady, latestRef, pendingRef]);
 
   const goTo = useCallback(
     (target: PdfTarget) => {
-      pending.current = target;
+      pendingRef.current = target;
       serve();
     },
-    [pending, serve],
+    [pendingRef, serve],
   );
   return { goTo };
 }
@@ -152,7 +152,7 @@ export function usePageViewports<V extends PdfViewport, C extends PdfTextContent
   scale,
   onPageViewports,
 }: UsePageViewportsOptions<V, C>): void {
-  const latest = useLatest(onPageViewports);
+  const latestRef = useLatest(onPageViewports);
   useEffect(() => {
     const viewports = new Map<number, V>();
     loaded?.pages.forEach((_, pageIndex) => {
@@ -160,6 +160,6 @@ export function usePageViewports<V extends PdfViewport, C extends PdfTextContent
       const viewport = loaded.getViewport(pageIndex, scale);
       if (viewport) viewports.set(pageIndex, viewport);
     });
-    latest.current?.(viewports);
-  }, [latest, loaded, nearPages, scale]);
+    latestRef.current?.(viewports);
+  }, [latestRef, loaded, nearPages, scale]);
 }

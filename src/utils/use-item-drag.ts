@@ -41,7 +41,8 @@ interface ItemDragState<Move extends ItemMove> {
 export function useItemDrag<K extends Key, Move extends ItemMove>(
   options: ItemDragOptions<K, Move>,
 ): ItemDragState<Move> {
-  const { ref, key, textValue, dragType, dragging, isDisabled, resolveMove, onMove } = options;
+  const { ref, key, textValue, dragType, isDisabled, resolveMove, onMove } = options;
+  const { dragging: draggingRef } = options;
   const [dropPosition, setDropPosition] = useState<Move['position'] | null>(null);
   const { dragProps, dragButtonProps, isDragging } = useDrag({
     hasDragButton: true,
@@ -49,10 +50,10 @@ export function useItemDrag<K extends Key, Move extends ItemMove>(
     getItems: () => [{ [dragType]: String(key), 'text/plain': textValue }],
     getAllowedDropOperations: () => ['move'],
     onDragStart: () => {
-      if (dragging) dragging.current = key;
+      if (draggingRef) draggingRef.current = key;
     },
     onDragEnd: () => {
-      if (dragging) dragging.current = null;
+      if (draggingRef) draggingRef.current = null;
     },
   });
   const showDrop = (point: { x: number; y: number }) =>

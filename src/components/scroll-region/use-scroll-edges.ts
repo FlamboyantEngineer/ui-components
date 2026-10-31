@@ -53,7 +53,7 @@ export function readScrollEdges(element: HTMLElement): ScrollEdges {
  * new content until the reader scrolls up.
  */
 export function useScrollEdges(
-  viewport: RefObject<HTMLDivElement | null>,
+  viewportRef: RefObject<HTMLDivElement | null>,
   observer: SharedViewportObserver,
   { enabled, stickToBottom, onTopReached, onBottomReached }: ScrollEdgesOptions,
 ): { edges: ScrollEdges; onScroll: () => void } {
@@ -61,30 +61,30 @@ export function useScrollEdges(
   const previous = useRef(noEdges);
   const isPinned = useRef(true);
   const lastRange = useRef(0);
-  const latest = useLatest({ stickToBottom, onTopReached, onBottomReached });
+  const latestRef = useLatest({ stickToBottom, onTopReached, onBottomReached });
 
   const read = useCallback(
     (fromScroll: boolean) => {
-      const element = viewport.current;
+      const element = viewportRef.current;
       if (!element) return;
       // A scroll that comes with a new extent is the browser's (scroll anchoring or clamping on a
       // content change), not the reader's, so it keeps the reader's pin.
       const range = element.scrollHeight - element.clientHeight;
       const isReader = fromScroll && range === lastRange.current;
       lastRange.current = range;
-      if (!isReader && latest.current.stickToBottom && isPinned.current)
+      if (!isReader && latestRef.current.stickToBottom && isPinned.current)
         element.scrollTop = element.scrollHeight;
       const next = readScrollEdges(element);
       const before = previous.current;
       previous.current = next;
       if (isReader) isPinned.current = next.yEnd <= 1;
       if (fromScroll) {
-        if (before.yStart > 0 && next.yStart === 0) latest.current.onTopReached?.();
-        if (before.yEnd > 0 && next.yEnd === 0) latest.current.onBottomReached?.();
+        if (before.yStart > 0 && next.yStart === 0) latestRef.current.onTopReached?.();
+        if (before.yEnd > 0 && next.yEnd === 0) latestRef.current.onBottomReached?.();
       }
       setEdges((current) => (isShallowEqual(current, next) ? current : next));
     },
-    [viewport, latest],
+    [viewportRef, latestRef],
   );
 
   useEffect(() => {

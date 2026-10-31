@@ -370,14 +370,14 @@ export function usePersistentState<T>(
     setState(current);
   }
 
-  const latest = useLatest({ ...current, codec, writeDelay });
+  const latestRef = useLatest({ ...current, codec, writeDelay });
   const delayed = useDelayedWrite(current);
 
   const setValue = useCallback<Dispatch<SetStateAction<T>>>(
     (action) => {
-      const { key, storage, codec, value, writeDelay } = latest.current;
+      const { key, storage, codec, value, writeDelay } = latestRef.current;
       const next = typeof action === 'function' ? (action as (previous: T) => T)(value) : action;
-      latest.current.value = next;
+      latestRef.current.value = next;
       if (key !== undefined && storage !== undefined) {
         const write = { storage, key, encode: () => codec.stringify(next) };
         delayed.schedule(write, writeDelay);
@@ -385,7 +385,7 @@ export function usePersistentState<T>(
       }
       setState({ key, storage, value: next });
     },
-    [latest, delayed],
+    [latestRef, delayed],
   );
 
   return [current.value, setValue, delayed.flush];
