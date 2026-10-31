@@ -1,7 +1,7 @@
 'use client';
 
 import { FolderGlyph } from '../../core/glyphs.js';
-import { useCallback, useRef, type KeyboardEvent } from 'react';
+import { useCallback, useState, type KeyboardEvent } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
@@ -60,19 +60,13 @@ function toFolderKeys<T extends FolderItem>(keys: Selection, nodes: readonly Fol
  * rows, since it remembers where a Shift range starts, or else the rows.
  */
 function useTreeSelection(rows: readonly Key[]) {
-  const last = useRef<Selection | null>(null);
-  const current = last.current;
+  const [last, remember] = useState<Selection | null>(null);
   const isSame =
-    current !== null &&
-    current !== 'all' &&
-    current.size === rows.length &&
-    rows.every((key) => current.has(key));
-  return {
-    selectedKeys: isSame ? current : rows,
-    remember: (selection: Selection) => {
-      last.current = selection;
-    },
-  };
+    last !== null &&
+    last !== 'all' &&
+    last.size === rows.length &&
+    rows.every((key) => last.has(key));
+  return { selectedKeys: isSame ? last : rows, remember };
 }
 
 /** The row node under an event target, matched against the rendered rows by key. */
@@ -144,7 +138,7 @@ function useFolderKeys<T extends FolderItem>(model: FolderManagerModel<T>, entri
 }
 
 /** A branch whose subfolders failed to load: the reason and a retry, in the row's meta slot. */
-function createLoadErrorRenderer<T extends FolderItem>({ loads }: FolderManagerModel<T>) {
+function createLoadErrorRenderer<T extends FolderItem>(loads: FolderManagerModel<T>['loads']) {
   return (node: FolderNode<T>) => {
     const error = loads.errorOf(node.id);
     if (!error) return null;
@@ -164,63 +158,63 @@ export function FolderTree<T extends FolderItem>({
   ...tree
 }: FolderTreeProps<T>) {
   const strings = useUiStrings();
-  const { actions, nameRef, isBusy } = model;
+  const { actions, nameRef, regionRef, isBusy, editKey, messageId, nodes, selectedRows } = model;
+  const { select, appliedQuery, loads, expansion, query } = model;
   const { edit, message } = actions;
   const renderLabel = useCallback(
     (node: FolderNode<T>) =>
-      edit && node.id === model.editKey ? (
+      edit && node.id === editKey ? (
         <FolderNameInput
           edit={edit}
-          messageId={message ? model.messageId : undefined}
+          messageId={message ? messageId : undefined}
           inputRef={nameRef}
           onBlur={(name) => void actions.submit(name)}
         />
       ) : (
         <TextMatch>{node.name}</TextMatch>
       ),
-    [edit, message, model.editKey, model.messageId, nameRef, actions],
+    [edit, message, editKey, messageId, nameRef, actions],
   );
   const keys = useFolderKeys(model, menuEntries);
-  const selection = useTreeSelection(model.selectedRows);
+  const selection = useTreeSelection(selectedRows);
   const isMultiple = tree.selectionMode === 'multiple';
   return (
     <ContextMenuTrigger isDisabled={menuEntries.length === 0}>
       <div
         {...hooks.slot('tree')}
-        ref={model.regionRef}
+        ref={regionRef}
         onKeyDownCapture={keys.onKeyDownCapture}
         onContextMenu={(event) => {
-          const node = nodeAt(event.target, model.nodes);
+          const node = nodeAt(event.target, nodes);
           if (!node || node.kind === 'draft' || isBusy) return;
-          if (!model.selectedRows.includes(node.id))
-            model.select(node.folder ? [node.folder.id] : []);
+          if (!selectedRows.includes(node.id)) select(node.folder ? [node.folder.id] : []);
         }}
       >
-        <TextMatchProvider query={model.appliedQuery}>
+        <TextMatchProvider query={appliedQuery}>
           <Tree<FolderNode<T>>
-            items={model.nodes}
+            items={nodes}
             aria-label={tree['aria-label']}
             aria-labelledby={tree['aria-labelledby']}
             getTextValue={(node) => node.name}
             getIcon={() => FolderGlyph}
             renderLabel={renderLabel}
-            renderMeta={createLoadErrorRenderer(model)}
+            renderMeta={createLoadErrorRenderer(loads)}
             hasChildItems={(node) => node.isLazy}
-            isItemPending={(node) => model.loads.isLoading(node.id)}
+            isItemPending={(node) => loads.isLoading(node.id)}
             selectionMode={tree.selectionMode}
             selectionBehavior="replace"
             disallowEmptySelection={!isMultiple}
             selectedKeys={selection.selectedKeys}
             onSelectionChange={(next) => {
               selection.remember(next);
-              const chosen = toFolderKeys(next, model.nodes);
+              const chosen = toFolderKeys(next, nodes);
               const isDraft = next !== 'all' && next.has(folderDraftKey);
-              if (!isDraft && (isMultiple || chosen.length <= 1)) model.select(chosen);
+              if (!isDraft && (isMultiple || chosen.length <= 1)) select(chosen);
             }}
-            expandedKeys={model.expansion.expandedKeys}
-            onExpandedChange={model.expansion.onExpandedChange}
+            expandedKeys={expansion.expandedKeys}
+            onExpandedChange={expansion.onExpandedChange}
             isPending={tree.isPending}
-            emptyMessage={model.query.trim() ? strings.noResults : undefined}
+            emptyMessage={query.trim() ? strings.noResults : undefined}
             onItemKeyDown={keys.onItemKeyDown}
             reorder={reorderOf(tree, isBusy)}
             virtualized={tree.virtualized}

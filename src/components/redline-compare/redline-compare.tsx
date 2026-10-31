@@ -117,7 +117,11 @@ export function RedlineCompare<B extends DocumentBlock>({
   const strings = useUiStrings();
   const baseId = useId();
   const comparison = useMemo(() => compareBlocks(oldBlocks, newBlocks), [oldBlocks, newBlocks]);
-  const navigation = useRedlineNavigation(comparison, baseId, ref);
+  const { move, setRootRef, canMove, rowId, current, goTo } = useRedlineNavigation(
+    comparison,
+    baseId,
+    ref,
+  );
   const [ownDecisions, setOwnDecisions] = useStateFor(comparison, noDecisions);
   const decisions = resolutions ?? ownDecisions;
   const isSplit = layout === 'split';
@@ -128,8 +132,8 @@ export function RedlineCompare<B extends DocumentBlock>({
   };
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.altKey || event.ctrlKey || event.metaKey || isEditableTarget(event.target)) return;
-    if (event.key === 'n') navigation.move(1);
-    else if (event.key === 'p') navigation.move(-1);
+    if (event.key === 'n') move(1);
+    else if (event.key === 'p') move(-1);
     else return;
     event.preventDefault();
   };
@@ -139,15 +143,11 @@ export function RedlineCompare<B extends DocumentBlock>({
       {...rest}
       {...hooks.root({ className, props: rest, data: { layout } })}
       aria-label={rest['aria-label'] ?? (labelledBy ? undefined : strings.redlineComparison)}
-      ref={navigation.setRootRef}
+      ref={setRootRef}
       role="group"
       onKeyDown={onKeyDown}
     >
-      <RedlineCompareHeader
-        counts={comparison.counts}
-        canMove={navigation.canMove}
-        onMove={navigation.move}
-      />
+      <RedlineCompareHeader counts={comparison.counts} canMove={canMove} onMove={move} />
       {isSplit ? (
         <RedlineCompareColumns
           labels={{ old: oldLabel ?? strings.valueBefore, new: newLabel ?? strings.valueAfter }}
@@ -158,14 +158,14 @@ export function RedlineCompare<B extends DocumentBlock>({
           <RedlineRow
             key={row.key}
             row={row}
-            rowId={navigation.rowId(row.key)}
+            rowId={rowId(row.key)}
             isSplit={isSplit}
-            isCurrent={row.key === navigation.current}
+            isCurrent={row.key === current}
             decision={decisions[row.key]}
             onResolve={
               onResolve && isChangeRow(row) ? (decision) => resolve(row, decision) : undefined
             }
-            onJump={() => navigation.goTo(requireDefined(row.counterpartKey))}
+            onJump={() => goTo(requireDefined(row.counterpartKey))}
           />
         ))}
       </ol>

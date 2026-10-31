@@ -5,6 +5,7 @@ import {
   useCallback,
   useLayoutEffect,
   useRef,
+  useState,
   useContext,
   type MouseEvent,
   type ReactNode,
@@ -77,8 +78,8 @@ const MenuSurfaceContext = createContext<Set<HTMLElement> | null>(null);
 function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuOverlayProps) {
   const state = useContext(RootMenuTriggerStateContext);
   const inherited = useContext(MenuSurfaceContext);
-  const own = useRef(new Set<HTMLElement>());
-  const group = inherited ?? own.current;
+  const [own] = useState(() => new Set<HTMLElement>());
+  const group = inherited ?? own;
   const [surface, forwardRef] = useForwardedRef(ref);
   const setRef = useCallback(
     (element: HTMLElement | null) => {
@@ -170,7 +171,7 @@ export function MenuOverlay({
 }: MenuOverlayProps) {
   const inheritedNonModal = useContext(MenuNonModalContext);
   const nonModal = isNonModal ?? inheritedNonModal;
-  const surface = useMenuSurface({ ...rest, ref, isNonModal: nonModal });
+  const { group, ref: surfaceRef } = useMenuSurface({ ...rest, ref, isNonModal: nonModal });
   const inherited = useContext(MenuLayerContext);
   const resolved = layer ?? inherited ?? 'dropdown';
   const zIndex = useLayerZIndex(resolved);
@@ -182,7 +183,7 @@ export function MenuOverlay({
       <AriaPopover
         {...rest}
         {...open}
-        ref={surface.ref}
+        ref={surfaceRef}
         isNonModal={nonModal}
         {...hooks.root({ className, props: rest, data: { layer: resolved } })}
         offset={offset ?? (isSubmenu ? SUBMENU_OFFSET : DEFAULT_DROPDOWN_OFFSET)}
@@ -190,7 +191,7 @@ export function MenuOverlay({
         containerPadding={containerPadding}
         style={{ zIndex }}
       >
-        <MenuSurfaceContext value={surface.group}>
+        <MenuSurfaceContext value={group}>
           <MenuNonModalContext value={nonModal}>
             <MenuLayerContext value={resolved}>{children}</MenuLayerContext>
           </MenuNonModalContext>
