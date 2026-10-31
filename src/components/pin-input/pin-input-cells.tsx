@@ -127,6 +127,43 @@ function useCellWriter(
 }
 
 /**
+ * The edits the cells make: `fill` writes entered characters from a cell on, `erase` is Backspace
+ * (the cell's character, or the one before an empty cell, then focus moves back), and `remove` is a
+ * native deletion (Delete, Cut, a deleting input event) that empties a cell: its character goes and
+ * the later ones close up, while focus stays on the cell. Locked fields refuse every edit.
+ */
+function useCellEdits(
+  state: FieldState<string>,
+  options: {
+    slots: CellSlots;
+    length: number;
+    type: PinInputType;
+    onComplete: PinInputCellsProps['onComplete'];
+  },
+) {
+  const { length, type } = options;
+  const write = useCellWriter(state, options);
+  const { value } = state;
+  const isEditable = !state.isReadOnly && !state.isDisabled;
+  const without = (index: number) => value.slice(0, index) + value.slice(index + 1);
+  return {
+    fill: (index: number, text: string) => {
+      const characters = filterPinCharacters(text, type);
+      if (characters === '' || !isEditable) return;
+      const next = writePinCharacters(value, { index, characters, length });
+      write(next, Math.min(index + characters.length, length - 1));
+    },
+    erase: (index: number) => {
+      const target = index < value.length ? index : index - 1;
+      if (target >= 0) write(without(target), Math.max(index - 1, 0));
+    },
+    remove: (index: number) => {
+      if (isEditable && index < value.length) write(without(index), index);
+    },
+  };
+}
+
+/**
  * The cells of a code, one input each, in a group named by the field's label. One cell is in the
  * tab order, and focus never lands past the cell that takes the next character, so the value has
  * no gaps. A hidden input submits the joined value.
@@ -140,22 +177,11 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
     () => mergeRefs(control.ref, slots.refAt('cell', 0)),
     [control.ref, slots],
   );
-  const write = useCellWriter(state, { slots, length, onComplete });
   const { value } = state;
   const active = findActivePinCell(value, length);
   const isEditable = !state.isReadOnly && !state.isDisabled;
   const focusCell = (index: number) => slots.readAll('cell')[clamp(index, 0, active)]?.focus();
-  const fill = (index: number, text: string) => {
-    const characters = filterPinCharacters(text, type);
-    if (characters === '' || !isEditable) return;
-    const next = writePinCharacters(value, { index, characters, length });
-    write(next, Math.min(index + characters.length, length - 1));
-  };
-  const erase = (index: number) => {
-    const target = index < value.length ? index : index - 1;
-    if (target >= 0)
-      write(value.slice(0, target) + value.slice(target + 1), Math.max(index - 1, 0));
-  };
+  const { fill, erase, remove } = useCellEdits(state, { slots, length, type, onComplete });
   const keys = { value, active, isRtl: direction === 'rtl', isEditable, focusCell, erase };
   // One cell is in the tab order: the focused one, else the active one, never past the active one.
   const [focused, setFocused] = useState<number | null>(null);
@@ -190,9 +216,11 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
             placeholder={cells.placeholder}
             tabIndex={index === tabbable ? 0 : -1}
             value={value[index] ?? ''}
-            onChange={(event) =>
-              fill(index, readEnteredText(event.target.value, value[index] ?? ''))
-            }
+            onChange={(event) => {
+              const text = event.target.value;
+              if (text === '') remove(index);
+              else fill(index, readEnteredText(text, value[index] ?? ''));
+            }}
             onPaste={(event) => {
               event.preventDefault();
               fill(index, event.clipboardData.getData('text/plain'));

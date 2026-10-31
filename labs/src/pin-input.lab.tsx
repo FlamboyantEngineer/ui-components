@@ -144,7 +144,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Dirty, restore, undo and the field menu"
-      description="Edit the code, then restore, undo with Ctrl+Z, or use the field menu."
+      description="Edit the code, or delete or cut a selected character (the later ones close up), then restore, undo with Ctrl+Z, or use the field menu."
     >
       <DirtyAndRestore />
     </LabSection>

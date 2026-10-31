@@ -153,6 +153,23 @@ test.describe('Pin Input lab', () => {
     await expect(otp.locator(':focus')).toHaveCount(0);
   });
 
+  test('UIC-PIN-INPUT-2.8 removes a character deleted or cut from its cell', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pin-input');
+    const door = field(page, 'dirty');
+    await cells(door).nth(1).click();
+    await page.keyboard.press('Delete');
+    expect(await readValues(door)).toEqual(['1', '5', '7', '']);
+    await expect(cells(door).nth(1)).toBeFocused();
+    await cells(door).first().click();
+    await page.keyboard.press('ControlOrMeta+x');
+    await expect.poll(() => readValues(door)).toEqual(['5', '7', '', '']);
+    await expect(cells(door).first()).toBeFocused();
+    await expect(door).toHaveAttribute('data-dirty', 'true');
+  });
+
   test('UIC-PIN-INPUT-1.3 UIC-PIN-INPUT-1.4 takes only its characters and masks them', async ({
     page,
     lab,
