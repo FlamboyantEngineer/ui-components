@@ -2,7 +2,7 @@
 
 // The sections, links and groups a navigation rail lists.
 
-import { useContext, useId, useState, type JSX, type ReactNode } from 'react';
+import { useContext, useId, useState, type ReactNode } from 'react';
 import {
   Button as AriaButton,
   Disclosure as AriaDisclosure,
@@ -95,11 +95,6 @@ function ItemCount({ id, count, description, isCollapsed }: ItemCountProps) {
       </span>
     </>
   );
-}
-
-// The tooltip of a collapsed group repeats the label the button is named by, so it describes nothing.
-function renderUndescribedButton(props: JSX.IntrinsicElements['button']) {
-  return <button {...props} aria-describedby={undefined} />;
 }
 
 interface EntryContentProps {
@@ -251,12 +246,13 @@ export function NavigationRailGroup({
         isExpanded={isOpen && !rail.isCollapsed}
         onExpandedChange={changeExpanded}
       >
-        <Tooltip content={label} placement="end" isDisabled={!rail.isCollapsed}>
-          <AriaButton
-            className={hooks.slotClass('group-trigger')}
-            slot="trigger"
-            render={renderUndescribedButton}
-          >
+        <Tooltip
+          content={label}
+          relationship="label"
+          placement="end"
+          isDisabled={!rail.isCollapsed}
+        >
+          <AriaButton className={hooks.slotClass('group-trigger')} slot="trigger">
             <EntryContent label={label} icon={icon} isCollapsed={rail.isCollapsed} />
             <Glyph icon={glyph} className={hooks.slotClass('indicator')} />
           </AriaButton>

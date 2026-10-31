@@ -1,10 +1,10 @@
 'use client';
 
-import type { ReactElement, Ref } from 'react';
+import type { Ref } from 'react';
 import { SelectionIndicator, ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Orientation, Size } from '../../core/props.js';
+import type { BaseProps, Orientation, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
@@ -128,11 +128,6 @@ function renderGroupState(
   };
 }
 
-// The tooltip of an icon-only segment repeats its name, so it adds no description.
-function renderWithoutDescription(props: NativeProps<'button'>): ReactElement {
-  return <button {...props} aria-describedby={undefined} />;
-}
-
 /** The shown text of a positive count, or `null` when the option shows none. */
 function formatOptionCount(count: number | null | undefined, max: number): string | null {
   const value = normalizeCount(count);
@@ -149,7 +144,6 @@ function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
       id={option.value}
       isDisabled={option.isDisabled}
       aria-label={showsIconOnly || count !== null ? name : undefined}
-      render={showsIconOnly ? renderWithoutDescription : undefined}
       {...hooks.slot('segment', { value: option.value })}
     >
       <SelectionIndicator className={hooks.slotClass('indicator')} />
@@ -170,7 +164,14 @@ function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
       )}
     </ToggleButton>
   );
-  return showsIconOnly ? <Tooltip content={option.label}>{segment}</Tooltip> : segment;
+  // The tooltip of an icon-only segment repeats its name, so it adds no description.
+  return showsIconOnly ? (
+    <Tooltip content={option.label} relationship="label">
+      {segment}
+    </Tooltip>
+  ) : (
+    segment
+  );
 }
 
 /** Hidden inputs that submit the selected values with a form. */

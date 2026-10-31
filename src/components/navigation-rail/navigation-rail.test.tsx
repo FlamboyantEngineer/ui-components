@@ -482,7 +482,7 @@ describe('NavigationRail', () => {
     expect(trigger.querySelector('.ui-navigation-rail__label')).toHaveClass('ui-visually-hidden');
     await user.hover(trigger);
     expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent('Fields');
-    expect(trigger).not.toHaveAttribute('aria-describedby');
+    expect(trigger).toHaveAccessibleDescription('');
     await user.click(trigger);
     expect(onCollapsedChange).toHaveBeenCalledWith(false);
     expect(nav()).not.toHaveAttribute('data-collapsed');

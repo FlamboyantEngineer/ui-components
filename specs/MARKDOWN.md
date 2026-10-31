@@ -99,10 +99,10 @@ Verification: `src/components/markdown/markdown-scaling.test.tsx`, `e2e/markdown
 
 ### UIC-MARKDOWN-2.1 - Elements
 
-`Markdown` shall render `source` inside a `<div>` root, each node as its element: `<h1>`–`<h6>`, `<p>`, `<blockquote>`, `<ul>`, `<ol>` (with `start` when it is not 1), `<li>`, `<em>`, `<strong>`, `<del>`, `<br>`, `<img>` with `alt` and `title` in the `ui-markdown__image` slot, and a [Separator](SEPARATOR.md) for a thematic break. The paragraphs of a tight list's items render without `<p>`. The elements are built without recursive calls, so every document `parseMarkdown` returns renders, five thousand nested block quotes included; how deep a tree the host's renderer can mount is its own limit.
+`Markdown` shall render `source` inside a `<div>` root, each node as its element: `<h1>`–`<h6>`, `<p>`, `<blockquote>`, `<ul>`, `<ol>` (with `start` when it is not 1), `<li>`, `<em>`, `<strong>`, `<del>`, `<br>`, `<img>` with `alt` and `title` in the `ui-markdown__image` slot, and a [Separator](SEPARATOR.md) for a thematic break. An image's source comes from the content, so the `<img>` sends no referrer (`referrerpolicy="no-referrer"`), loads lazily (`loading="lazy"`) and decodes asynchronously (`decoding="async"`): opening a document does not tell a remote image's server the page's URL or that an unread image was reached. A `renderNode` override that draws the image (for example through an image proxy) sets its own attributes. The paragraphs of a tight list's items render without `<p>`. The elements are built without recursive calls, so every document `parseMarkdown` returns renders, five thousand nested block quotes included; how deep a tree the host's renderer can mount is its own limit.
 
-Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`, `labs/reference/markdown.css`
-Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`, `labs/reference/markdown.css`, `src/utils/safe-url.ts`
+Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/markdown-images.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.2 - Heading ids
 

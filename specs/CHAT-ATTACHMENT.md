@@ -13,10 +13,10 @@ Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/co
 
 ### UIC-CHAT-ATTACHMENT-1.2 - Image thumbnail
 
-An `image` attachment with a `thumbnailUrl` or a `url` shall show that image (`ui-chat-attachment__thumbnail`, the thumbnail preferred) and publish `data-display="thumbnail"`; no name shows beside it, so the image is named by the file name. With `onPreview`, the image sits in a ghost `Button` (`ui-chat-attachment__preview`) named by the provider string `viewAttachment` with the file name, which calls `onPreview`, and the image itself is decorative. An image that fails to load gives way to the file chip.
+An `image` attachment with a `thumbnailUrl` or a `url` shall show that image (`ui-chat-attachment__thumbnail`, the thumbnail preferred) and publish `data-display="thumbnail"`; no name shows beside it, so the image is named by the file name. With `onPreview`, the image sits in a ghost `Button` (`ui-chat-attachment__preview`) named by the provider string `viewAttachment` with the file name, which calls `onPreview`, and the image itself is decorative. An image that fails to load gives way to the file chip. The thumbnail's address comes from the message, so it sends no referrer (`referrerpolicy="no-referrer"`), loads lazily (`loading="lazy"`) and decodes asynchronously (`decoding="async"`): opening a long conversation does not tell a remote server the page's URL or that a thumbnail far above was reached.
 
-Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/components/chat-attachment/attachment-parts.tsx`, `src/core/chat-attachment-strings.ts`
-Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/chat-attachment.spec.ts`
+Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/components/chat-attachment/attachment-parts.tsx`, `src/core/chat-attachment-strings.ts`, `src/utils/safe-url.ts`
+Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/components/chat-attachment/chat-attachment-images.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-1.3 - File chip
 

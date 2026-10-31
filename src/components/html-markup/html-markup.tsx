@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { mapTree } from '../../utils/map-tree.js';
+import { untrustedImageProps } from '../../utils/safe-url.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   defaultHtmlPolicy,
@@ -62,7 +63,13 @@ function renderDefaultElement(element: HtmlElementNode, children: ReactNode): Re
       </UiLink>
     );
   }
-  return createElement(element.tag, props, ...(element.children.length > 0 ? [children] : []));
+  // Content attributes a host's policy keeps (`referrerpolicy`, `loading`) override the defaults.
+  const elementProps = element.tag === 'img' ? { ...untrustedImageProps, ...props } : props;
+  return createElement(
+    element.tag,
+    elementProps,
+    ...(element.children.length > 0 ? [children] : []),
+  );
 }
 
 type ElementRenderer = HtmlMarkupProps['renderElement'];

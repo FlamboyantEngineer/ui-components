@@ -144,3 +144,10 @@ Every field frame in the reference stylesheet, the box a value is typed or picke
 
 Implementation: `labs/reference/base.css`, `labs/reference/field.css`, `labs/reference/text-field.css`, `labs/reference/message-composer.css`, `scripts/check-reference-tokens.mjs`
 Verification: `e2e/field-frames.spec.ts`, `test/reference-tokens.test.ts`
+
+### UIC-LABS-3.9 - Reduced motion
+
+Under `prefers-reduced-motion: reduce`, every hook element of the reference stylesheet and its pseudo-elements shall settle at once: one rule in `labs/reference/base.css` drops every animation and transition duration to zero, so enter and exit animations still end, spinners rest as a still ring and transition delays stay. A partial adds its own reduced-motion override only to draw a different still state.
+
+Implementation: `labs/reference/base.css`
+Verification: `e2e/reduced-motion.spec.ts`

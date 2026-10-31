@@ -58,6 +58,23 @@ test.describe('HTML Markup lab', () => {
     ).toHaveText('the storage guide');
   });
 
+  test('UIC-HTML-MARKUP-2.1 loads images lazily without sending the page as referrer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('html-markup');
+    const image = page.locator('[data-lab-images]').getByRole('img', { name: 'A pear' });
+    await expect(image).toHaveAttribute('referrerpolicy', 'no-referrer');
+    await expect(image).toHaveAttribute('loading', 'lazy');
+    await expect(image).toHaveAttribute('decoding', 'async');
+    await image.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() =>
+        image.evaluate((element: HTMLImageElement) => element.complete && element.naturalWidth > 0),
+      )
+      .toBe(true);
+  });
+
   test('UIC-HTML-MARKUP-2.3 UIC-HTML-MARKUP-2.4 replaces elements and marks the find query', async ({
     page,
     lab,

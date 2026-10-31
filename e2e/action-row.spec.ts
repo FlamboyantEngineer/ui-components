@@ -62,7 +62,7 @@ test.describe('Action Row lab', () => {
     await expect(row.getByRole('button', { name: 'Add note' })).toBeFocused();
     const tooltip = page.getByRole('tooltip');
     await expect(tooltip).toHaveText('Add note');
-    await expect(tooltip).toHaveClass(/ui-action-row__tooltip/);
+    await expect(tooltip).toHaveClass(/ui-tooltip/);
 
     const reason = page.locator('[data-lab-case="disabled-reason"]').getByRole('button', {
       name: 'Delete',
@@ -70,7 +70,10 @@ test.describe('Action Row lab', () => {
     // React Aria opens hover tooltips once the pointer has moved since the last keyboard input.
     await page.mouse.move(0, 0);
     await reason.hover();
-    await expect(page.getByRole('tooltip')).toHaveText('Only the owner can delete this file');
+    // The focus tooltip may still be fading out.
+    await expect(page.locator('.ui-tooltip:not([data-exiting])')).toHaveText(
+      'Only the owner can delete this file',
+    );
     await expect(reason).toHaveAttribute('aria-disabled', 'true');
   });
 
@@ -147,6 +150,23 @@ test.describe('Action Row lab', () => {
     await expect(page.locator('[data-lab-row="narrow"] [data-lab-output="last"]')).toHaveText(
       'delete',
     );
+    await lab.expectAccessible();
+  });
+
+  test('UIC-ACTION-ROW-2.5 reports an overflow submenu choice to its own action', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="shared-ids"]');
+    await demo.getByRole('button', { name: '2 more items' }).click();
+    await page.getByRole('menuitem', { name: 'Chart' }).click();
+    await page.getByRole('menuitem', { name: 'Open chart' }).click();
+    await expect(demo.locator('[data-lab-output="last"]')).toHaveText('chart open');
+    await demo.getByRole('button', { name: '2 more items' }).click();
+    await page.getByRole('menuitem', { name: 'Sheet' }).click();
+    await page.getByRole('menuitem', { name: 'Open sheet' }).click();
+    await expect(demo.locator('[data-lab-output="last"]')).toHaveText('sheet open');
     await lab.expectAccessible();
   });
 

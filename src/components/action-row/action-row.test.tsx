@@ -202,11 +202,11 @@ describe('ActionRow', () => {
     const refresh = screen.getByRole('button', { name: 'Refresh' });
     expect(refresh).toHaveFocus();
     const tooltip = await screen.findByRole('tooltip', { name: 'Refresh' });
-    expect(tooltip).toHaveClass('ui-action-row__tooltip');
+    expect(tooltip).toHaveClass('ui-tooltip');
     // A tooltip that only repeats the label does not describe the button as well.
     expect(refresh).not.toHaveAttribute('aria-describedby');
     expect(refresh).toHaveAccessibleDescription('');
-    expectHooksMatchSpec(document.body, 'ACTION-ROW', { slots: ['tooltip'] });
+    expectHooksMatchSpec(document.body, 'ACTION-ROW', { slots: ['action'] });
   });
 
   it('UIC-ACTION-ROW-1.5 publishes disabled, pending, expanded and caller states on the button', async () => {
@@ -511,6 +511,82 @@ describe('ActionRow', () => {
       await userEvent.click(await screen.findByRole('menuitem', { name: 'More' }));
       await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
       expect(onAction.mock.calls[0]?.[0]).toBe('rename');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('UIC-ACTION-ROW-2.5 binds each overflow submenu to its own action, whatever ids the menus share', async () => {
+    const user = userEvent.setup();
+    let rowWidth = 0;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-action-row__action') ? 30 : 0;
+      return new DOMRect(0, 0, width, 30);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-action-row__actions') ? rowWidth : 0;
+    });
+    const onFirst = vi.fn();
+    const onSecond = vi.fn();
+    const onOwnItem = vi.fn();
+    const actions: ActionRowAction[] = [
+      {
+        verb: 'custom',
+        id: 'first',
+        icon: InfoGlyph,
+        label: 'First',
+        onAction: onFirst,
+        items: [{ id: 'open', label: 'Open first' }],
+      },
+      {
+        verb: 'custom',
+        id: 'second',
+        icon: HelpGlyph,
+        label: 'Second',
+        onAction: onSecond,
+        items: [
+          { id: 'open', label: 'Open second', onAction: onOwnItem },
+          {
+            type: 'section',
+            id: 'more',
+            title: 'More',
+            items: [{ id: 1, label: 'Nested', items: [{ id: 'open', label: 'Open deep' }] }],
+          },
+        ],
+      },
+    ];
+    try {
+      const { rerender } = render(<ActionRow overflow="menu" actions={actions} />);
+      await user.click(await screen.findByRole('button', { name: '2 more items' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Second' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Open second' }));
+      expect(onFirst).not.toHaveBeenCalled();
+      expect(onSecond.mock.calls).toEqual([['open']]);
+      expect(onOwnItem).toHaveBeenCalledTimes(1);
+
+      await user.click(screen.getByRole('button', { name: '2 more items' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'First' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Open first' }));
+      expect(onFirst.mock.calls).toEqual([['open']]);
+
+      await user.click(screen.getByRole('button', { name: '2 more items' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Second' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Nested' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Open deep' }));
+      expect(onSecond.mock.calls).toEqual([['open'], ['open']]);
+      expect(onFirst).toHaveBeenCalledTimes(1);
+
+      // The same actions, once the row is wide enough to show them, keep the same owners.
+      rowWidth = 100;
+      rerender(<ActionRow overflow="visible" actions={actions} />);
+      await user.click(screen.getByRole('button', { name: 'Second' }));
+      await user.click(await screen.findByRole('menuitem', { name: 'Open second' }));
+      expect(onSecond.mock.calls).toEqual([['open'], ['open'], ['open']]);
+      expect(onFirst).toHaveBeenCalledTimes(1);
     } finally {
       vi.restoreAllMocks();
     }

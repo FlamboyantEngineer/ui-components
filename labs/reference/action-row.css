@@ -32,17 +32,6 @@
   flex: none;
 }
 
-.ui-action-row__tooltip {
-  max-width: 240px;
-  padding: 4px 8px;
-  border-radius: var(--ref-radius-sm);
-  background: var(--ref-text);
-  box-shadow: var(--ref-shadow);
-  color: var(--ref-canvas);
-  font-size: var(--ref-font-size-sm);
-  line-height: 1.4;
-}
-
 /*
  * A row collapsing into a menu gives its actions slot the room the lead leaves, whatever actions it
  * shows, so the slot's width never depends on how many fit; each action keeps its width.
