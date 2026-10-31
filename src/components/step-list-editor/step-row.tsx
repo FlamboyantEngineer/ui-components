@@ -111,6 +111,7 @@ export function StepRow(props: StepRowProps) {
   const strings = useUiStrings();
   const label = strings.stepLabel(number);
   const row = useStepRowDrag({ id: step.id, label, drag: isReadOnly ? null : drag });
+  const { ref, props: rowProps, handleProps, isDragging, dropPosition } = row;
   const onKeyDownCapture = (event: KeyboardEvent<HTMLLIElement>) => {
     const delta = moveKeys[event.key];
     // Keys from an open menu reach the step through its portal; only the step's own keys move it.
@@ -131,13 +132,13 @@ export function StepRow(props: StepRowProps) {
     );
   return (
     <li
-      ref={row.ref}
-      {...row.props}
+      ref={ref}
+      {...rowProps}
       {...hooks.slot('step', {
         dirty: isDirty,
-        dragging: row.isDragging,
-        dropTarget: row.dropPosition !== null,
-        position: row.dropPosition,
+        dragging: isDragging,
+        dropTarget: dropPosition !== null,
+        position: dropPosition,
       })}
       data-key={step.id}
       onKeyDownCapture={onKeyDownCapture}
@@ -148,7 +149,7 @@ export function StepRow(props: StepRowProps) {
           size="sm"
           label={strings.moveStep(number)}
           className={hooks.slotClass('handle')}
-          {...row.handleProps}
+          {...handleProps}
         />
       )}
       <span {...hooks.slot('number')} aria-hidden="true">

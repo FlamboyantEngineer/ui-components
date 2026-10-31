@@ -111,11 +111,12 @@ export function withEditorHistory(
 /** The editable document inside the field: its toolbar, the content and the floating chrome. */
 export function EditorSurface(props: EditorSurfaceProps) {
   const { control, placeholder } = props;
+  const { ref: contentRef, ...content } = control;
   const { state, dispatchTransaction } = props.editor;
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [contentAttributes, setContentAttributes] = useState<ContentAttributes>({});
-  const isDisabled = Boolean(control.disabled);
-  const isEditable = !control.readOnly && !isDisabled;
+  const isDisabled = Boolean(content.disabled);
+  const isEditable = !content.readOnly && !isDisabled;
   const context = useMemo<RichTextEditorContextValue>(
     () => ({ isEditable, isDisabled, surfaceRef, setContentAttributes }),
     [isEditable, isDisabled],
@@ -143,21 +144,21 @@ export function EditorSurface(props: EditorSurfaceProps) {
           <div {...hooks.slot('surface')} ref={surfaceRef} style={{ position: 'relative' }}>
             <ProseMirrorDoc
               {...contentAttributes}
-              {...hooks.slot('content', { readonly: control.readOnly, disabled: control.disabled })}
-              ref={control.ref}
-              id={control.id}
+              {...hooks.slot('content', { readonly: content.readOnly, disabled: content.disabled })}
+              ref={contentRef}
+              id={content.id}
               role="textbox"
               aria-multiline="true"
-              aria-label={control['aria-label']}
-              aria-labelledby={control['aria-labelledby']}
-              aria-describedby={control['aria-describedby']}
-              aria-errormessage={control['aria-errormessage']}
-              aria-invalid={control['aria-invalid']}
-              aria-required={control['aria-required']}
-              aria-readonly={control.readOnly || undefined}
-              aria-disabled={control.disabled || undefined}
+              aria-label={content['aria-label']}
+              aria-labelledby={content['aria-labelledby']}
+              aria-describedby={content['aria-describedby']}
+              aria-errormessage={content['aria-errormessage']}
+              aria-invalid={content['aria-invalid']}
+              aria-required={content['aria-required']}
+              aria-readonly={content.readOnly || undefined}
+              aria-disabled={content.disabled || undefined}
               aria-placeholder={placeholder}
-              tabIndex={control.readOnly && !control.disabled ? 0 : undefined}
+              tabIndex={content.readOnly && !content.disabled ? 0 : undefined}
             />
             {props.children}
           </div>

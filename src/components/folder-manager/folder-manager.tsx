@@ -181,16 +181,12 @@ export function FolderManager<
   const availability = availabilityOf(context);
   const { message } = model.actions;
   const { className, id, folders, rootLabel, maxDepth, isPending = false, onMove } = props;
-  const { selectionMode = 'single', virtualized, rowHeight } = props;
+  const { selectionMode = 'single', virtualized, rowHeight, ref, filterable } = props;
   const label = props['aria-label'];
   return (
-    <div
-      {...hooks.root({ className, props, data: { pending: model.isBusy } })}
-      id={id}
-      ref={props.ref}
-    >
+    <div {...hooks.root({ className, props, data: { pending: model.isBusy } })} id={id} ref={ref}>
       <FolderToolbar {...toolbarOf(context, availability)} />
-      {props.filterable ? (
+      {filterable ? (
         <SearchField
           className={hooks.slotClass('filter')}
           label={strings.filterLabel(label ?? strings.search)}
