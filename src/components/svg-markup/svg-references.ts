@@ -4,6 +4,7 @@
 
 import { walkTree } from '../../utils/walk-tree.js';
 import type { SvgElementNode } from './parse-svg-markup.js';
+import { scopeTimingList } from './svg-timing.js';
 
 /** Rewrites one element's attributes for its instance; null drops the element. */
 export type SvgReferenceScope = (
@@ -29,9 +30,6 @@ const freeTextAttribute = /^(?:class|lang|role|xml:lang|xml:space|aria-.+|data-.
 /** A `url(#id)` reference, quoted or not. The policy has already refused every other `url()`. */
 const urlReference = /url\(\s*(["']?)#([^"')]*)\1\s*\)/gi;
 
-/** A syncbase or event timing value that names an element: `id.end`, `id.click+1s`. */
-const timingReference = /^([A-Za-z_][\w-]*)\.([A-Za-z][\w-]*.*)$/s;
-
 const definedIdsByTree = new WeakMap<SvgElementNode, ReadonlySet<string>>();
 
 /** The IDs a drawing defines below its root, which its caller owns. Cached per parsed tree. */
@@ -49,9 +47,12 @@ function definedIds(tree: SvgElementNode): ReadonlySet<string> {
   return ids;
 }
 
-/** A useId value as an ID prefix that needs no escaping in a fragment, `url()` or timing value. */
+/**
+ * A useId value as an ID prefix of word characters only, which needs no escaping in a fragment or
+ * `url()` and holds none of the `.`, `+`, `-` and `\` that split a timing value.
+ */
 function toPrefix(instanceId: string): string {
-  return `${instanceId.replace(/[^\w-]/g, '_')}-`;
+  return `${instanceId.replace(/\W/g, '_')}_`;
 }
 
 /**
@@ -87,20 +88,7 @@ export function createSvgReferenceScope(
       .filter((declaration): declaration is string => declaration !== null)
       .join(';');
 
-  const scopeTiming = (value: string): string | null => {
-    const kept = value
-      .split(';')
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .map((item) => {
-        const match = timingReference.exec(item);
-        if (!match) return item;
-        const target = scoped(match[1] ?? '');
-        return target === null ? null : `${target}.${match[2] ?? ''}`;
-      })
-      .filter((item): item is string => item !== null);
-    return kept.length > 0 ? kept.join(';') : null;
-  };
+  const scopeTiming = (value: string) => scopeTimingList(value, prefix, (id) => ids.has(id));
 
   const scopeIdList = (value: string): string | null => {
     const kept = value

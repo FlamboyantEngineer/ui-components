@@ -54,7 +54,7 @@ test.describe('SVG Markup lab', () => {
     );
     await expect(stop.first()).toHaveAttribute('stop-color', '#f59e0b');
     const circle = page.locator('[data-lab-cell="markup=gradient placement=standalone"] circle');
-    await expect(circle).toHaveAttribute('fill', /^url\(#.+-sunrise\)$/);
+    await expect(circle).toHaveAttribute('fill', /^url\(#.+_sunrise\)$/);
   });
 
   test("UIC-SVG-MARKUP-1.4 keeps each drawing's references away from the page and other drawings", async ({
@@ -82,6 +82,22 @@ test.describe('SVG Markup lab', () => {
       expect(await stop.evaluate((element) => getComputedStyle(element).stopColor)).toBe(color);
     }
     await lab.expectAccessible();
+  });
+
+  test('UIC-SVG-MARKUP-1.4 starts animations from the drawing only, whatever the ID', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('svg-markup');
+    const drawing = page.getByRole('img', { name: 'Drawing started by its own bars' });
+    const target = drawing.locator('rect').nth(1);
+    const fill = () => target.evaluate((element) => getComputedStyle(element).fill);
+    await page.getByRole('button', { name: 'Page button 17' }).click();
+    await page.getByRole('button', { name: 'Page button ñandú' }).click();
+    await page.waitForTimeout(100);
+    expect(await fill()).toBe('rgb(37, 99, 235)');
+    await drawing.locator('rect').first().click();
+    await expect.poll(fill).toBe('rgb(219, 39, 119)');
   });
 
   test('UIC-SVG-MARKUP-2.3 exposes only labelled drawings', async ({ page, lab }) => {

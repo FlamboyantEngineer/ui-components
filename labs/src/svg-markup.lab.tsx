@@ -15,6 +15,12 @@ const attack = 'window.unsafe = true';
 /** A drawing that tries to hide the page's own status mark through a fragment reference. */
 const hostReferenceMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><set href="#lab-host-status" attributeName="opacity" to="0" begin="0s" dur="indefinite"/><use href="#lab-host-status"/><circle cx="12" cy="12" r="4" fill="url(#lab-host-paint)"/></svg>`;
 
+/**
+ * A drawing whose animation starts on a click of its own numeric or accented elements, and also
+ * names page buttons with such IDs, which must not start it.
+ */
+const timedMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><rect id="7" width="10" height="24" fill="#64748b"/><rect id="ñu" x="14" width="10" height="24" fill="#2563eb"><set attributeName="fill" to="#db2777" begin="7.click; ñu.click+0s; 17.click; ñandú.click" dur="indefinite"/></rect></svg>`;
+
 /** Two drawings that both name their gradient `tone`, with different colours. */
 const toneMarkup = (color: string) =>
   `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="url(#tone)"/></svg>`;
@@ -85,7 +91,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Isolated references"
-      description="Each drawing's IDs are its own: a reference to the page or another drawing is dropped, and drawings that reuse an ID keep their own gradients."
+      description="Each drawing's IDs are its own: a reference to the page or another drawing is dropped, and drawings that reuse an ID keep their own gradients. Animation timing reaches the drawing's own numeric and accented IDs, never the page's buttons."
     >
       <p data-lab-host="">
         Page status:{' '}
@@ -93,6 +99,15 @@ mountLab(
           <rect id="lab-host-status" width="24" height="24" fill="green" />
         </svg>{' '}
         Drawing: <SvgMarkup markup={hostReferenceMarkup} label="Drawing aimed at the page" />
+      </p>
+      <p data-lab-timing="">
+        <button type="button" id="17">
+          Page button 17
+        </button>{' '}
+        <button type="button" id="ñandú">
+          Page button ñandú
+        </button>{' '}
+        <SvgMarkup markup={timedMarkup} label="Drawing started by its own bars" />
       </p>
       <p data-lab-colliding="">
         <SvgMarkup markup={toneMarkup('#2563eb')} label="Blue tone" />{' '}
