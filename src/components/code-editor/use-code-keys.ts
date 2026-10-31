@@ -1,5 +1,6 @@
 'use client';
 
+import { readCommandKey } from '../shortcut/shortcut.js';
 import { useRef, type KeyboardEvent, type RefObject } from 'react';
 import {
   breakLine,
@@ -80,7 +81,7 @@ export function useCodeKeys(options: CodeKeysOptions) {
   };
 
   const handleShortcut = (event: KeyboardEvent<HTMLTextAreaElement>): boolean => {
-    const key = event.key.toLowerCase();
+    const key = readCommandKey(event);
     const isCommand = (event.ctrlKey || event.metaKey) && !event.altKey;
     if (event.key === 'F8' && !hasModifier(event))
       return options.onProblem(event.shiftKey ? -1 : 1);

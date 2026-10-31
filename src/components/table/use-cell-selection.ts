@@ -1,5 +1,6 @@
 'use client';
 
+import { readCommandKey } from '../shortcut/shortcut.js';
 import {
   useLayoutEffect,
   useMemo,
@@ -98,7 +99,7 @@ function resolveKeyAction(
   }
   if (event.key === 'Delete' || event.key === 'Backspace') return { type: 'clear' };
   if (!(event.ctrlKey || event.metaKey) || event.altKey) return null;
-  const letter = event.key.toLowerCase();
+  const letter = readCommandKey(event);
   if (letter === 'd') return { type: 'fill-down' };
   return letter === 'r' ? { type: 'fill-right' } : null;
 }

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
@@ -56,6 +56,13 @@ describe('Field undo and redo', () => {
     await user.keyboard('{Control>}y{/Control}');
     expect(fruit).toHaveValue('Figs');
     expect(city).toHaveValue('Oslox');
+    // On a Cyrillic layout the Z and Y keys type я and н.
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event types a key by its US layout and cannot press a Cyrillic letter on its key
+    fireEvent.keyDown(fruit, { key: 'я', code: 'KeyZ', ctrlKey: true });
+    expect(fruit).toHaveValue('Fig');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event types a key by its US layout and cannot press a Cyrillic letter on its key
+    fireEvent.keyDown(fruit, { key: 'н', code: 'KeyY', ctrlKey: true });
+    expect(fruit).toHaveValue('Figs');
   });
 
   it('UIC-FIELD-5.2 leaves chords it cannot apply to the browser and other handlers', async () => {

@@ -235,7 +235,7 @@ Verification: `src/components/pdf-viewer/pdf-search.test.ts`, `src/components/pd
 
 ### UIC-PDF-VIEWER-5.8 - Find shortcut
 
-With focus in the viewer or its toolbar, Ctrl or Command with F shall focus the viewer's find field and select its text, instead of opening the browser's find. While `renderSearch` draws the find controls, the shortcut is left to the browser.
+With focus in the viewer or its toolbar, Ctrl or Command with F (on a non-Latin layout, the key in the F key's place, [UIC-SHORTCUT-1.8](SHORTCUT.md)) shall focus the viewer's find field and select its text, instead of opening the browser's find. While `renderSearch` draws the find controls, the shortcut is left to the browser.
 
 Implementation: `src/components/pdf-viewer/use-pdf-keyboard.ts`, `src/components/pdf-viewer/pdf-viewer-search.tsx`
 Verification: `src/components/pdf-viewer/use-pdf-keyboard.test.tsx`, `e2e/pdf-viewer.spec.ts`

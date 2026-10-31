@@ -245,6 +245,20 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(document.querySelector('[data-fill-target]')).toBeNull();
   });
 
+  it('UIC-TABLE-14.5 fills down on the D key of a non-Latin layout', async () => {
+    const user = userEvent.setup();
+    const onBatch = vi.fn();
+    render(<Sheet onBatch={onBatch} columns={uncheckedColumns} />);
+    await user.click(cell('Apple', 'name'));
+    await user.keyboard('{Shift>}{ArrowDown}{/Shift}');
+    // On a Cyrillic layout the D key types в.
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event types a key by its US layout and cannot press a Cyrillic letter on its key
+    fireEvent.keyDown(document.activeElement as Element, { key: 'в', code: 'KeyD', ctrlKey: true });
+    expect(onBatch).toHaveBeenLastCalledWith([
+      expect.objectContaining({ columnId: 'name', value: 'Apple' }),
+    ]);
+  });
+
   it('UIC-TABLE-14.5 fills by dragging the fill handle and down and right with the keyboard', async () => {
     const user = userEvent.setup();
     const onBatch = vi.fn();

@@ -247,7 +247,7 @@ Verification: `src/components/field/field-history.test.ts`, `src/components/fiel
 
 ### UIC-FIELD-5.2 - Shortcuts
 
-Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. Only the field holding focus changes. A chord with nothing to undo or redo, one already handled, or one pressed in a menu the field opened is left alone.
+Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes. A chord with nothing to undo or redo, one already handled, or one pressed in a menu the field opened is left alone.
 
 Implementation: `src/components/field/field-undo.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-undo.test.tsx`, `e2e/field.spec.ts`

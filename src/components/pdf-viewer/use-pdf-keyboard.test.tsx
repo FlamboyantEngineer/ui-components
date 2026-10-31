@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderReady, stubLayout } from '../../../test/pdf-fixtures.js';
@@ -83,6 +83,11 @@ describe('PdfViewer keyboard', () => {
     expect(field).toHaveFocus();
     expect((field as HTMLInputElement).selectionStart).toBe(0);
     expect((field as HTMLInputElement).selectionEnd).toBe(4);
+    focus(scroller());
+    // On a Cyrillic layout the F key types а.
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event types a key by its US layout and cannot press a Cyrillic letter on its key
+    fireEvent.keyDown(scroller(), { key: 'а', code: 'KeyF', ctrlKey: true });
+    expect(field).toHaveFocus();
 
     view.update({ renderSearch: () => null });
     focus(scroller());
