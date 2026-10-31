@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
 import type { OutlineEntry } from './outline-tree.js';
@@ -31,14 +31,14 @@ export function useOutlineExpansion(
   const controlled = expandedKeys === undefined ? undefined : new Set<Key>(expandedKeys);
   // A toggle belongs to its heading: one whose heading left the outline is forgotten, so a later
   // heading with the same id starts from the defaults.
-  useEffect(() => {
+  const [prunedFor, setPrunedFor] = useState(parents);
+  if (prunedFor !== parents) {
+    setPrunedFor(parents);
     const ids = new Set<Key>(parents.map((parent) => parent.heading.id));
-    setToggled((current) =>
-      [...current.keys()].every((key) => ids.has(key))
-        ? current
-        : new Map([...current].filter(([key]) => ids.has(key))),
-    );
-  }, [parents]);
+    if (![...toggled.keys()].every((key) => ids.has(key))) {
+      setToggled(new Map([...toggled].filter(([key]) => ids.has(key))));
+    }
+  }
 
   const isExpanded = ({ heading }: OutlineEntry): boolean => {
     if (controlled) return controlled.has(heading.id);

@@ -28,6 +28,7 @@ export function useFollowAnchor({ anchorRef, isOpen, target }: FollowAnchorOptio
     if (isOpen) setPaused(true);
   }
   useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The paused render must commit so React Aria measures afresh before resuming.
     if (isPaused) setPaused(false);
   }, [isPaused]);
   useEffect(() => {

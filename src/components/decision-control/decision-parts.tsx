@@ -1,7 +1,7 @@
 'use client';
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -106,9 +106,12 @@ export function useDecisionSubmission({
   const running = useRef(false);
   const latest = useLatest(details);
   const beginSubmission = useLifetimeSignal();
-  useEffect(() => {
+  // Disabling ends a signature in progress.
+  const [wasDisabled, setWasDisabled] = useState(isDisabled);
+  if (isDisabled !== wasDisabled) {
+    setWasDisabled(isDisabled);
     if (isDisabled) setSigning(false);
-  }, [isDisabled]);
+  }
   const submit = async (signature: SignatureDetails | null) => {
     if (isDisabled || running.current) return;
     running.current = true;

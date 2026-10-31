@@ -1,7 +1,7 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -91,16 +91,25 @@ function getFileUploadStatus({ progress, error }: FileUploadItem): FileUploadSta
 
 /** A temporary URL for an image file, revoked when the file changes or the row goes. */
 function useImageUrl(file: File | undefined): string | undefined {
-  const [url, setUrl] = useState<string | undefined>(undefined);
+  const url = useMemo(
+    () =>
+      file?.type.startsWith('image/') && typeof URL.createObjectURL === 'function'
+        ? URL.createObjectURL(file)
+        : undefined,
+    [file],
+  );
+  // Revoked a microtask after cleanup: a remount of the same URL (Strict Mode) cancels it.
+  const revoking = useRef<string | null>(null);
   useEffect(() => {
-    if (!file?.type.startsWith('image/') || typeof URL.createObjectURL !== 'function') {
-      setUrl(undefined);
-      return undefined;
-    }
-    const created = URL.createObjectURL(file);
-    setUrl(created);
-    return () => URL.revokeObjectURL(created);
-  }, [file]);
+    if (url === undefined) return undefined;
+    if (revoking.current === url) revoking.current = null;
+    return () => {
+      revoking.current = url;
+      queueMicrotask(() => {
+        if (revoking.current === url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [url]);
   return url;
 }
 

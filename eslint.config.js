@@ -235,6 +235,11 @@ export default tseslint.config(
     },
   },
   {
+    // State an effect sets synchronously renders twice; derive it, or say why the DOM must commit first.
+    files: ['src/**/*.{ts,tsx}'],
+    rules: { 'react-hooks/set-state-in-effect': 'error' },
+  },
+  {
     // Labs use the public API: a component's entry point or main module, never its helpers.
     files: ['labs/src/**/*.{ts,tsx}'],
     plugins: { ui: local },

@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -728,7 +728,7 @@ describe('FileUpload', () => {
       vi.unstubAllGlobals();
     });
 
-    it('UIC-FILE-UPLOAD-3.5 shows image thumbnails and revokes their temporary URLs', () => {
+    it('UIC-FILE-UPLOAD-3.5 shows image thumbnails and revokes their temporary URLs', async () => {
       const createObjectURL = vi.fn(() => 'blob:photo');
       const revokeObjectURL = vi.fn();
       vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL }));
@@ -752,7 +752,29 @@ describe('FileUpload', () => {
       expect(createObjectURL).toHaveBeenCalledWith(photo);
       expectHooksMatchSpec(container, 'FILE-UPLOAD', { slots: ['file-preview'] });
       unmount();
-      expect(revokeObjectURL).toHaveBeenCalledWith('blob:photo');
+      await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:photo'));
+    });
+
+    it('UIC-FILE-UPLOAD-3.5 keeps a thumbnail URL through a Strict Mode remount', async () => {
+      const createObjectURL = vi.fn(() => 'blob:photo');
+      const revokeObjectURL = vi.fn();
+      vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL }));
+      const listed: FileUploadItem[] = [
+        { id: 'photo', name: 'photo.png', file: file('photo.png', 'image/png') },
+      ];
+      const { container, unmount } = render(
+        <StrictMode>
+          <FileUpload label="Attachments" files={listed} onSelect={() => {}} />
+        </StrictMode>,
+      );
+      await Promise.resolve();
+      expect(revokeObjectURL).not.toHaveBeenCalled();
+      expect(container.querySelector('.ui-file-upload__file-preview')).toHaveAttribute(
+        'src',
+        'blob:photo',
+      );
+      unmount();
+      await waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:photo'));
     });
   });
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -43,9 +43,11 @@ export function useTreeLoads(
 ): TreeLoads {
   const strings = useUiStrings();
   const [loads, setLoads] = useState<ReadonlyMap<Key, BranchLoad>>(() => new Map());
-  useEffect(() => {
+  const [prunedFor, setPrunedFor] = useState(() => isListed);
+  if (prunedFor !== isListed) {
+    setPrunedFor(() => isListed);
     setLoads((current) => pruneLoads(current, isListed));
-  }, [isListed]);
+  }
   // Requests can repeat before the loading state renders: the running ones are tracked here too.
   const running = useRef(new Set<Key>());
   const latest = useLatest(onLoad);
