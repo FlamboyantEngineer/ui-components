@@ -11,11 +11,12 @@ const printScale = 150 / 72;
 /** Each page as an image at the print resolution, as the document itself sets it. */
 async function drawPrintedPages<V extends PdfViewport, C extends PdfTextContent>(
   loaded: LoadedPdf<V, C>,
+  owner: Document,
 ): Promise<string[]> {
   const urls: string[] = [];
   for (const page of loaded.pages) {
     const viewport = page.getViewport({ scale: printScale });
-    const canvas = document.createElement('canvas');
+    const canvas = owner.createElement('canvas');
     canvas.width = Math.floor(viewport.width);
     canvas.height = Math.floor(viewport.height);
     await renderPageBitmap({ loaded, page, viewport }, canvas).promise;
@@ -57,20 +58,21 @@ async function fillPrintFrame(frame: HTMLIFrameElement, urls: readonly string[])
 
 /**
  * Prints every page through the browser's print dialog: the pages are drawn as images into a
- * hidden frame, which is printed and removed once printing is over.
+ * hidden frame in the viewer's document `owner`, which is printed and removed once printing is over.
  */
 export async function printPdf<V extends PdfViewport, C extends PdfTextContent>(
   loaded: LoadedPdf<V, C>,
+  owner: Document,
 ): Promise<void> {
-  const frame = document.createElement('iframe');
+  const frame = owner.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
   frame.tabIndex = -1;
   frame.style.position = 'fixed';
   frame.style.width = '0';
   frame.style.height = '0';
   frame.style.visibility = 'hidden';
-  document.body.append(frame);
-  const urls = await drawPrintedPages(loaded);
+  owner.body.append(frame);
+  const urls = await drawPrintedPages(loaded, owner);
   const release = () => {
     frame.remove();
     for (const url of urls) URL.revokeObjectURL(url);

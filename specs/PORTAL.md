@@ -48,6 +48,13 @@ Components rendered into another window's document, a same-origin frame or a pop
 Implementation: `src/utils/is-element.ts`, `src/utils/focus-target.ts`, `eslint.config.js`
 Verification: `src/utils/is-element.test.ts`
 
+### UIC-PORTAL-1.7 - Own document and window
+
+Components shall listen, look up and measure in the document and window of their own element (`getOwnerDocument`, `getOwnerWindow`), so in a same-origin frame or a popup window they hear that window's keys and presses, find ids in their own tree (its shadow root, else its document), hit-test, read the focused element and computed styles, schedule animation frames and read the pixel ratio there. An overlay with no element yet reads the document of its portal container. Lint rejects the script's `document`, `window`, `getComputedStyle`, `requestAnimationFrame` and `cancelAnimationFrame` in `src/components`, except where a choice is made in render before there is an element (eye-dropper and touch-pointer support, the default portal container and the pane host a dock panel creates), where the controller owns no element, and for leaving or opening a page. Timers use the bare `setTimeout` and `clearTimeout`.
+
+Implementation: `src/utils/owner-window.ts`, `eslint.config.js`
+Verification: `src/utils/owner-window.test.ts`, `src/components/problem-list/problem-list.test.tsx`, `src/components/pdf-viewer/page-bitmap.test.ts`
+
 ## UIC-PORTAL-2 - Layers
 
 ### UIC-PORTAL-2.1 - Layer order

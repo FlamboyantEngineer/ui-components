@@ -5,6 +5,7 @@
 
 import { useMemo, useRef, type FocusEvent, type ReactNode, type RefObject } from 'react';
 import { isSameRadioGroup, listTabStops, type TabDirection } from '../../utils/tabbable.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 type GuardKind = 'before' | 'after' | 'start' | 'end';
 
@@ -202,7 +203,7 @@ function isPlainTab(event: KeyboardEvent): boolean {
 function onTabKeyDown(event: KeyboardEvent) {
   restoreTabOrder();
   if (!isPlainTab(event)) return;
-  const owner = (event.currentTarget as Document | null) ?? document;
+  const owner = getOwnerDocument(event.currentTarget as Node | null);
   const active = owner.activeElement;
   if (!active || active === owner.body) return;
   const direction: TabDirection = event.shiftKey ? 'backward' : 'forward';

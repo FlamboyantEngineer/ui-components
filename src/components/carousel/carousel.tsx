@@ -74,7 +74,8 @@ function useSlideFocus(index: number) {
     viewportRef.current?.querySelector<HTMLElement>(`:scope > [data-current]`)?.focus();
   }, [index]);
   const markIfFocusInside = () => {
-    pending.current = viewportRef.current?.contains(document.activeElement) ?? false;
+    const viewport = viewportRef.current;
+    pending.current = viewport?.contains(viewport.ownerDocument.activeElement) ?? false;
   };
   return { viewportRef, markIfFocusInside };
 }

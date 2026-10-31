@@ -37,6 +37,25 @@ const VISUALLY_HIDDEN_PRIMITIVE = {
   message: 'Use the library VisuallyHidden (src/components/visually-hidden/visually-hidden.js).',
 };
 
+const STORAGE_GLOBALS = ['localStorage', 'sessionStorage'].map((name) => ({
+  name,
+  message: 'Persist through the UiProvider storage adapter (useUiStorage).',
+}));
+
+// Components listen, look up and measure in their own element's document and window, which is a
+// frame's or a popup window's when they render there (specs/PORTAL.md, UIC-PORTAL-1.7).
+const OWNER_WINDOW_GLOBALS = [
+  'document',
+  'window',
+  'getComputedStyle',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+].map((name) => ({
+  name,
+  message:
+    "Read it from the component's own element: getOwnerDocument or getOwnerWindow (src/utils/owner-window.ts).",
+}));
+
 const PRIMITIVES_MODULES = {
   group: ['**/src/primitives', '**/src/primitives/**'],
   message: 'Labs use the public API, not src/primitives (UIC-PRIMITIVES-1.4).',
@@ -166,17 +185,7 @@ export default tseslint.config(
         'error',
         { patterns: [...STYLING_PACKAGES, ARIA_PACKAGES, VISUALLY_HIDDEN_PRIMITIVE] },
       ],
-      'no-restricted-globals': [
-        'error',
-        {
-          name: 'localStorage',
-          message: 'Persist through the UiProvider storage adapter (useUiStorage).',
-        },
-        {
-          name: 'sessionStorage',
-          message: 'Persist through the UiProvider storage adapter (useUiStorage).',
-        },
-      ],
+      'no-restricted-globals': ['error', ...STORAGE_GLOBALS],
       'no-restricted-properties': [
         'error',
         {
@@ -190,6 +199,13 @@ export default tseslint.config(
           message: 'Persist through the UiProvider storage adapter (useUiStorage).',
         },
       ],
+    },
+  },
+  {
+    files: ['src/components/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-globals': ['error', ...STORAGE_GLOBALS, ...OWNER_WINDOW_GLOBALS],
     },
   },
   {

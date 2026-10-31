@@ -138,6 +138,8 @@ export function usePortalTarget(): Element | null {
   const { container } = useContext(PortalContext);
   const isClient = useIsClient();
   if (!isClient) return null;
+  // Without a portal host, portals render into the script's own document.
+  // eslint-disable-next-line no-restricted-globals
   return container === undefined ? document.body : container;
 }
 

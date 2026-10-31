@@ -22,7 +22,7 @@ Verification: `src/components/problem-list/problem-list.test.tsx`
 
 ### UIC-PROBLEM-LIST-1.3 - Jump to the field
 
-A problem that can be reached shall be a `Button` (`ui-problem-list__jump`) holding its text: pressing it moves focus to the element whose id is its `targetId`, or to its field's control inside a form, then calls `onAction` with its id. A problem with neither a target nor `onAction` is plain text.
+A problem that can be reached shall be a `Button` (`ui-problem-list__jump`) holding its text: pressing it moves focus to the element whose id is its `targetId` in the list's own tree (its shadow root, else its document, a frame's for a list rendered there), or to its field's control inside a form, then calls `onAction` with its id. A problem with neither a target nor `onAction` is plain text.
 
 Implementation: `src/components/problem-list/problem-list-items.tsx`, `src/components/problem-list/problem-list.tsx`
 Verification: `src/components/problem-list/problem-list.test.tsx`, `e2e/problem-list.spec.ts`

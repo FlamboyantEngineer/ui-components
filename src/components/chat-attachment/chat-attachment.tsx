@@ -25,6 +25,7 @@ import {
   chatAttachmentHooks as hooks,
   useThumbnail,
 } from './attachment-parts.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 export type {
   ChatAttachmentData,
@@ -51,9 +52,10 @@ function useRetryFocus(status: ChatAttachmentStatus, rootRef: RefObject<HTMLDivE
   useLayoutEffect(() => {
     if (!retried.current || status === 'error') return;
     retried.current = false;
-    const active = document.activeElement;
-    if (active && active !== document.body) return;
     const root = rootRef.current;
+    const owner = getOwnerDocument(root);
+    const active = owner.activeElement;
+    if (active && active !== owner.body) return;
     (root?.querySelector<HTMLElement>(`.${hooks.slotClass('remove')}`) ?? root)?.focus();
   }, [status, rootRef]);
   return () => {

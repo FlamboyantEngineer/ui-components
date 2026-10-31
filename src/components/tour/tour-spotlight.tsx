@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 import { Portal } from '../portal/portal.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface TourSpotlightProps {
   /** The element the step points at; without one the spotlight is an empty point at the centre. */
@@ -27,9 +28,11 @@ interface SpotlightMeasurement extends SpotlightBox {
 
 const hooks = createHooks('tour', ['spotlight']);
 
-function measure(target: Element | null): SpotlightBox {
+/** The target's box, or a point at the centre of the spotlight's window without a target. */
+function measure(target: Element | null, spotlight: Element): SpotlightBox {
   if (!target) {
-    return { top: window.innerHeight / 2, left: window.innerWidth / 2, width: 0, height: 0 };
+    const view = getOwnerWindow(spotlight);
+    return { top: view.innerHeight / 2, left: view.innerWidth / 2, width: 0, height: 0 };
   }
   const { top, left, width, height } = target.getBoundingClientRect();
   return { top, left, width, height };
@@ -44,7 +47,7 @@ function useSpotlightBox(target: Element | null, element: HTMLDivElement | null)
     return autoUpdateOverlay({
       anchor: target ?? element,
       overlay: element,
-      update: () => setBox({ ...measure(target), hasTarget: target !== null }),
+      update: () => setBox({ ...measure(target, element), hasTarget: target !== null }),
     });
   }, [target, element]);
   useLayoutEffect(() => {

@@ -27,12 +27,13 @@ function groupByRun(ranges: readonly PdfMatchRange[]): Map<number, PdfMatchRange
 }
 
 function markRun(run: HTMLElement, text: string, ranges: readonly PdfMatchRange[]) {
-  const nodes = document.createDocumentFragment();
+  const owner = run.ownerDocument;
+  const nodes = owner.createDocumentFragment();
   let current: HTMLElement | null = null;
   let offset = 0;
   for (const range of ranges) {
-    nodes.append(document.createTextNode(text.slice(offset, range.start)));
-    const mark = document.createElement('span');
+    nodes.append(owner.createTextNode(text.slice(offset, range.start)));
+    const mark = owner.createElement('span');
     mark.className = pdfViewerHooks.slotClass('match');
     mark.textContent = text.slice(range.start, range.end);
     if (range.isCurrent) {
@@ -42,7 +43,7 @@ function markRun(run: HTMLElement, text: string, ranges: readonly PdfMatchRange[
     nodes.append(mark);
     offset = range.end;
   }
-  nodes.append(document.createTextNode(text.slice(offset)));
+  nodes.append(owner.createTextNode(text.slice(offset)));
   run.replaceChildren(nodes);
   return current;
 }

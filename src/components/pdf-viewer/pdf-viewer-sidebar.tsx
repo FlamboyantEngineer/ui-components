@@ -69,6 +69,8 @@ function PdfViewerOutline({
       defaultExpandedKeys={tree.expanded}
       onAction={(key) => {
         const node = tree.byId.get(key)?.node;
+        // A new tab opens the same from any window, so the script's own opens it.
+        // eslint-disable-next-line no-restricted-globals
         if (node?.url) window.open(node.url, '_blank', 'noopener,noreferrer');
         else if (node?.dest) followDestination(node.dest);
       }}

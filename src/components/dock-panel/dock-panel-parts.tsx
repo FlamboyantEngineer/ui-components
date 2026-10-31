@@ -155,7 +155,10 @@ export function DockPanelSeparator({
   );
 }
 
+// The pane host is made once, in render, before any holder exists; appending it to a holder in
+// another window's document adopts it there.
 function createPaneHost(): PaneHost {
+  // eslint-disable-next-line no-restricted-globals
   const element = document.createElement('div');
   element.className = hooks.slotClass('panes');
   const holders: { body: HTMLElement | null; drawer: HTMLElement | null } = {
@@ -199,6 +202,7 @@ function usePaneHost(): PaneHost | null {
     () => true,
     () => false,
   );
+  // eslint-disable-next-line no-restricted-globals -- see createPaneHost
   const [host] = useState(() => (typeof document === 'undefined' ? null : createPaneHost()));
   return isHydrated ? host : null;
 }

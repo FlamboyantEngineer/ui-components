@@ -101,13 +101,18 @@ function preventUnload(event: BeforeUnloadEvent) {
   event.returnValue = '';
 }
 
-/** Asks the browser to confirm leaving the page while `isActive`. */
+/**
+ * Asks the browser to confirm leaving the page while `isActive`. The guard renders no element, and
+ * leaving is the script's own page, so it listens on the script's window.
+ */
 function useUnloadConfirmation(isActive: boolean) {
+  /* eslint-disable no-restricted-globals */
   useEffect(() => {
     if (!isActive) return undefined;
     window.addEventListener('beforeunload', preventUnload);
     return () => window.removeEventListener('beforeunload', preventUnload);
   }, [isActive]);
+  /* eslint-enable no-restricted-globals */
 }
 
 /**

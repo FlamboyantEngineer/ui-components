@@ -63,10 +63,13 @@ function noteRequest(
  * test environment), after the current task. Returns its cancel.
  */
 function scheduleFlush(flush: () => void): () => void {
+  // The controller owns no element, so it paces its writes with the script's own window.
+  /* eslint-disable no-restricted-globals */
   if (typeof requestAnimationFrame === 'function') {
     const frame = requestAnimationFrame(flush);
     return () => cancelAnimationFrame(frame);
   }
+  /* eslint-enable no-restricted-globals */
   const timer = setTimeout(flush, 0);
   return () => clearTimeout(timer);
 }

@@ -30,6 +30,7 @@ import {
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** Checks a new tab name: a message says why it is refused; nothing accepts it. */
 export type TabNameValidate = (key: Key, name: string) => string | null | undefined;
@@ -167,16 +168,19 @@ function TabRenameField({ tabKey, name, rename, listRef }: TabRenameFieldProps) 
   // the list has handled the focus.
   useEffect(() => {
     const tab = findTabElement(listRef.current, tabKey);
+    const view = getOwnerWindow(tab);
     let frame = 0;
     const refocus = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        if (!isDone.current && document.activeElement === tab) inputRef.current?.focus();
+      view.cancelAnimationFrame(frame);
+      frame = view.requestAnimationFrame(() => {
+        if (!isDone.current && tab?.ownerDocument.activeElement === tab) {
+          inputRef.current?.focus();
+        }
       });
     };
     tab?.addEventListener('focus', refocus);
     return () => {
-      cancelAnimationFrame(frame);
+      view.cancelAnimationFrame(frame);
       tab?.removeEventListener('focus', refocus);
     };
   }, [listRef, tabKey]);

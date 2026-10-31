@@ -16,6 +16,7 @@ import {
 import type { Orientation } from '../../core/props.js';
 import type { MenuSize } from '../menu/menu.js';
 import { resolveMenubarKey, type MenubarKeyAction, type MenubarKeyPlace } from './menubar-keys.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** Where focus goes in a menu the bar opens: its first or last item, or (`null`) the menu itself. */
 type MenuFocus = 'first' | 'last' | null;
@@ -149,7 +150,11 @@ function useTabStop(triggers: RefObject<Map<string, TriggerEntry>>, version: num
  * an open submenu, so a move away from an open menu closes it first, through React Aria's state so
  * its submenus close too, and focuses the next item once the closing menus have let focus go.
  */
-function useOpenMenu(triggers: RefObject<Map<string, TriggerEntry>>, version: number) {
+function useOpenMenu(
+  triggers: RefObject<Map<string, TriggerEntry>>,
+  version: number,
+  rootRef: RefObject<HTMLElement | null>,
+) {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const pending = useRef<Move | null>(null);
   // A top-level item that leaves takes its menu with it: forget it as open or as a destination, and
@@ -159,11 +164,12 @@ function useOpenMenu(triggers: RefObject<Map<string, TriggerEntry>>, version: nu
     if (pending.current && !items.has(pending.current.key)) pending.current = null;
     if (openKey === null || items.has(openKey)) return;
     setOpenKey(null);
-    const active = document.activeElement;
-    if (!pending.current && (!active || active === document.body)) {
+    const owner = getOwnerDocument(rootRef.current);
+    const active = owner.activeElement;
+    if (!pending.current && (!active || active === owner.body)) {
       focusTrigger(sortByDocumentOrder(items)[0]?.[1], undefined);
     }
-  }, [triggers, openKey, version]);
+  }, [triggers, openKey, version, rootRef]);
   useLayoutEffect(() => {
     const move = pending.current;
     if (openKey !== null || !move) return;
@@ -191,7 +197,7 @@ function useOpenMenu(triggers: RefObject<Map<string, TriggerEntry>>, version: nu
 export function useMenubarState({ rootRef, orientation, size, direction }: MenubarStateOptions) {
   const { triggers, register, version } = useTriggerRegistry();
   const [tabKey, setTabKey] = useTabStop(triggers, version);
-  const { openKey, close, moveTo, setOpen } = useOpenMenu(triggers, version);
+  const { openKey, close, moveTo, setOpen } = useOpenMenu(triggers, version, rootRef);
 
   const apply = (action: MenubarKeyAction, { list, from, place }: KeyTarget) => {
     const [fromKey, fromTrigger] = list[from] ?? [];

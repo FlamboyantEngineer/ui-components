@@ -18,6 +18,7 @@ import {
   type MatrixPosition,
 } from './matrix-navigation.js';
 import { isElement } from '../../utils/is-element.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface MatrixNavigationOptions {
   root: RefObject<HTMLDivElement | null>;
@@ -85,7 +86,7 @@ function revealCell(root: HTMLElement, cell: HTMLElement, position: MatrixPositi
     else if (box.bottom > bottom) root.scrollTop += box.bottom - bottom;
   }
   if (position.column >= 0) {
-    const isRightToLeft = getComputedStyle(root).direction === 'rtl';
+    const isRightToLeft = getOwnerWindow(root).getComputedStyle(root).direction === 'rtl';
     const inset = corner?.width ?? 0;
     const left = view.left + root.clientLeft + (isRightToLeft ? 0 : inset);
     const right = view.left + root.clientLeft + root.clientWidth - (isRightToLeft ? inset : 0);
@@ -121,7 +122,8 @@ export function useMatrixNavigation({
     if (!root.current) return;
     if (isLost) {
       // The focused item went: its place takes over, and takes DOM focus if the cell held it.
-      const hasDroppedFocus = isFocusWithin && !root.current.contains(document.activeElement);
+      const active = root.current.ownerDocument.activeElement;
+      const hasDroppedFocus = isFocusWithin && !root.current.contains(active);
       shouldFocus.current ||= hasDroppedFocus;
       moveTo(focus);
     }

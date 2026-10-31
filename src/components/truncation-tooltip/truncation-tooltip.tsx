@@ -30,6 +30,7 @@ import { Button } from '../button/button.js';
 import { TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** The pointer handlers the component owns on its text. */
 type TruncationPointerHandler = 'onPointerEnter' | 'onPointerLeave' | 'onPointerDown';
@@ -123,17 +124,18 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Tru
  * Closes on Escape, consuming the key only while the tooltip is open. An Escape that belongs to an
  * input method's composition is left to the focused editor.
  */
-function useEscapeToClose({ isOpen, close }: TruncationState) {
+function useEscapeToClose({ isOpen, close }: TruncationState, ref: RefObject<Element | null>) {
   useEffect(() => {
     if (!isOpen) return;
+    const owner = getOwnerDocument(ref.current);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || isComposingKey(event)) return;
       event.stopPropagation();
       close();
     };
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [isOpen, close]);
+    owner.addEventListener('keydown', onKeyDown, true);
+    return () => owner.removeEventListener('keydown', onKeyDown, true);
+  }, [isOpen, close, ref]);
 }
 
 /**
@@ -206,7 +208,7 @@ export function TruncationTooltip({
   const [ref, setRef] = useForwardedRef(callerRef);
   const state = useTruncationState(ref);
   useFocusReveal(ref, state);
-  useEscapeToClose(state);
+  useEscapeToClose(state, ref);
   const pointerHandlers = createPointerHandlers(state, delay);
   const [expanded, setExpanded] = useControllableState(
     isExpanded,

@@ -33,6 +33,7 @@ import {
   SUBMENU_OFFSET,
 } from '../../utils/overlay-defaults.js';
 import { isElement } from '../../utils/is-element.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps {
   /**
@@ -124,7 +125,7 @@ function useMenuFollow(isSubmenu: boolean, isNonModal: boolean, props: MenuOverl
   useLayoutEffect(() => {
     if (!isActive || !isOpen) return;
     // A layout effect, so this capture listener sees each scroll before React Aria's.
-    const view = triggerRef.current?.ownerDocument.defaultView ?? window;
+    const view = getOwnerWindow(triggerRef.current);
     let timer: ReturnType<typeof setTimeout> | undefined;
     const onScroll = (event: Event) => {
       isPageScrolling.current = !(event.target instanceof view.Element);

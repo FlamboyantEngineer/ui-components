@@ -70,7 +70,7 @@ export function useColumnReorder<T>({
     refocus.current = null;
     if (!pending) return;
     const header = listHeaders(pending.root).find((item) => item.dataset['column'] === pending.id);
-    if (header && header !== document.activeElement) header.focus();
+    if (header && header !== header.ownerDocument.activeElement) header.focus();
   });
 
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {

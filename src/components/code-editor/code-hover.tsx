@@ -17,6 +17,7 @@ import { codeEditorHooks as hooks, type CodeDiagnostic } from './code-layers.js'
 import type { CodeRange } from './code-ranges.js';
 import type { CodeSegment } from './code-segments.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** A diagnostic and the source it marks. */
 export interface MarkedDiagnostic {
@@ -91,7 +92,8 @@ export function useCodeHover({
 }: CodeHoverOptions): CodeHoverModel {
   const [tip, setTip] = useState<CodeHoverTip | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const frame = useRef<number | null>(null);
+  // Cancels the frame a keyboard move asked for, in the window that runs it.
+  const frame = useRef<(() => void) | null>(null);
   const copy = useRef<ReadCopy | null>(null);
   // Pointer moves read the copy's text nodes from the last render instead of walking it each time.
   const readCopy = (highlight: HTMLElement): CopyText => {
@@ -105,7 +107,7 @@ export function useCodeHover({
     timer.current = null;
   }, []);
   const cancelShow = useCallback(() => {
-    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current?.();
     frame.current = null;
   }, []);
   const close = useCallback(() => {
@@ -139,10 +141,12 @@ export function useCodeHover({
     showAt(range) {
       hold();
       cancelShow();
-      frame.current = requestAnimationFrame(() => {
+      const view = getOwnerWindow(highlightRef.current);
+      const id = view.requestAnimationFrame(() => {
         frame.current = null;
         setTip(tipAt(range.start, range));
       });
+      frame.current = () => view.cancelAnimationFrame(id);
     },
     onPointerMove(event) {
       const highlight = highlightRef.current;

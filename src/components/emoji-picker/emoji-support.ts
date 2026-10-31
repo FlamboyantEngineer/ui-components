@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** What the platform draws, as far as a canvas can tell. */
 interface EmojiSupport {
@@ -93,7 +94,9 @@ export function useEmojiSupport(
   const [support, setSupport] = useState<EmojiSupport | null>(null);
   useLayoutEffect(() => {
     if (!isEnabled) return;
-    setSupport(detectEmojiSupport(ref.current ? getComputedStyle(ref.current).fontFamily : ''));
+    const element = ref.current;
+    const font = element ? getOwnerWindow(element).getComputedStyle(element).fontFamily : '';
+    setSupport(detectEmojiSupport(font));
   }, [isEnabled, ref]);
   return isEnabled ? support : unknownSupport;
 }
