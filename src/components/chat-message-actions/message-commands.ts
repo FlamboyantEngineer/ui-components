@@ -3,6 +3,7 @@
 import { useState, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
+import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
 import type { EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
 
 /** A reply rated good (`up`) or bad (`down`). */
@@ -134,13 +135,14 @@ export function splitCommands<T extends ChatMessageCommandProps>(props: T) {
   return [commands, rest] as const;
 }
 
-/** Copies `copyText`, counts finished copies and reports a copy that reached the clipboard. */
+/** Copies `copyText`, counts the latest copy's outcomes and reports a copy that reached the clipboard. */
 function useCopyCommand({ copyText, onCopy }: ChatMessageCommandProps) {
   const clipboard = useClipboard();
-  const [copies, setCopies] = useState(0);
+  const [copies, startCopy] = useLatestSettledCount();
   const copy = () => {
+    const settle = startCopy();
     void clipboard.copy(copyText ?? '').then((isCopied) => {
-      setCopies((count) => count + 1);
+      settle();
       if (isCopied) onCopy?.();
     });
   };

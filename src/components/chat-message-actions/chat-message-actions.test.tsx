@@ -119,6 +119,29 @@ describe('ChatMessageActions', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
+  it('UIC-CHAT-MESSAGE-ACTIONS-1.3 announces only the latest of two quick copies', async () => {
+    const user = userEvent.setup();
+    let settleFirst!: () => void;
+    vi.spyOn(navigator.clipboard, 'writeText')
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            settleFirst = resolve;
+          }),
+      )
+      .mockResolvedValueOnce(undefined);
+    render(<ChatMessageActions copyText="Lisbon in May" />);
+    const copy = screen.getByRole('button', { name: 'Copy' });
+    await user.click(copy);
+    await user.click(copy);
+    const status = screen.getByRole('status');
+    await waitFor(() => expect(status).toHaveTextContent('Copied'));
+    const announced = status.textContent ?? '';
+    await act(async () => settleFirst());
+    // The superseded copy leaves the live region as the latest copy set it.
+    expect(status).toHaveTextContent(new RegExp(`^${announced}$`));
+  });
+
   it('UIC-CHAT-MESSAGE-ACTIONS-1.3 shows and announces a refused copy', async () => {
     const user = userEvent.setup();
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('Denied'));

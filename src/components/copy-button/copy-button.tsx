@@ -1,12 +1,12 @@
 'use client';
 
 import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
-import { useRef, useState } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
+import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
 import { Button, type ButtonProps } from '../button/button.js';
 
 export interface CopyButtonProps
@@ -43,10 +43,9 @@ export function CopyButton({
 }: CopyButtonProps) {
   const strings = useUiStrings();
   const { copy, status } = useClipboard({ timeout });
-  // Counts settled copies: a repeated outcome still changes the live region, so it is announced.
-  const [settled, setSettled] = useState(0);
-  // The latest press: an earlier copy that settles later announces nothing.
-  const latest = useRef(0);
+  // Counts the latest press's settled copies: a repeated outcome still changes the live region, so
+  // it is announced, and an earlier copy that settles later announces nothing.
+  const [settled, startCopy] = useLatestSettledCount();
   const announcements: Record<CopyStatus, string> = {
     idle: '',
     copied: strings.copied,
@@ -71,9 +70,9 @@ export function CopyButton({
         isDisabled={isDisabled}
         onPress={() => {
           // Each press starts a write; the clipboard hook owns which result stays visible.
-          const press = ++latest.current;
+          const settle = startCopy();
           void copy(value).then((copied) => {
-            if (press === latest.current) setSettled((count) => count + 1);
+            settle();
             onCopy?.(copied);
           });
         }}
