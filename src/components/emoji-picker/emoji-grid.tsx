@@ -1,7 +1,14 @@
 'use client';
 
-import { useId, type KeyboardEvent, type ReactNode, type Ref } from 'react';
-import { GridList, GridListItem, type Key } from '../../primitives/index.js';
+import { useId, useMemo, type KeyboardEvent, type ReactNode, type Ref } from 'react';
+import {
+  GridLayout,
+  GridList,
+  GridListItem,
+  Size,
+  Virtualizer,
+  type Key,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {
@@ -22,6 +29,8 @@ interface EmojiGridProps extends BaseProps {
   onActiveChange: (entry: EmojiEntry) => void;
   renderEmoji?: ((unicode: string) => ReactNode) | undefined;
   gridRef?: Ref<HTMLDivElement> | undefined;
+  /** Renders only the cells in view of the grid, which scrolls itself. */
+  virtualized?: boolean | undefined;
 }
 
 /** The grid props a picker shares between every grid it draws. */
@@ -42,6 +51,14 @@ const gridKeys = new Set([
   'Enter',
   ' ',
 ]);
+
+// Eight square cells a row with 2-pixel gaps, as the reference sheet draws the plain grid.
+const virtualLayout = {
+  minItemSize: new Size(28, 28),
+  maxColumns: 8,
+  minSpace: new Size(2, 2),
+  preserveAspectRatio: true,
+};
 
 function stopGridKeys(event: KeyboardEvent) {
   if (gridKeys.has(event.key)) event.stopPropagation();
@@ -70,19 +87,44 @@ export function EmojiGrid({
   onActiveChange,
   renderEmoji,
   gridRef,
+  virtualized = false,
   className,
   ...rest
 }: EmojiGridProps) {
   const labelId = useId();
-  const byKey = new Map(entries.map((entry) => [getEmojiKey(entry), entry]));
+  const byKey = useMemo(
+    () => new Map(entries.map((entry) => [getEmojiKey(entry), entry])),
+    [entries],
+  );
   const choose = (key: Key) => {
     const entry = byKey.get(String(key));
     if (entry) onSelect(entry);
   };
+  const grid = (
+    <GridList
+      ref={gridRef}
+      {...hooks.slot('grid', { virtualized })}
+      aria-labelledby={labelId}
+      layout="grid"
+      onAction={choose}
+    >
+      {entries.map((entry) => (
+        <GridListItem
+          key={getEmojiKey(entry)}
+          id={getEmojiKey(entry)}
+          className={hooks.slotClass('cell')}
+          textValue={getEmojiLabel(entry)}
+          onHoverStart={() => onActiveChange(entry)}
+        >
+          <EmojiContent entry={entry} skinTone={skinTone} renderEmoji={renderEmoji} />
+        </GridListItem>
+      ))}
+    </GridList>
+  );
   return (
     <div
       {...rest}
-      {...hooks.slot('section', undefined, className)}
+      {...hooks.slot('section', { virtualized }, className)}
       onFocus={(event) => {
         const entry = byKey.get((event.target as HTMLElement).dataset.key ?? '');
         if (entry) onActiveChange(entry);
@@ -92,25 +134,13 @@ export function EmojiGrid({
       <div {...hooks.slot('label')} id={labelId}>
         {label}
       </div>
-      <GridList
-        ref={gridRef}
-        className={hooks.slotClass('grid')}
-        aria-labelledby={labelId}
-        layout="grid"
-        onAction={choose}
-      >
-        {entries.map((entry) => (
-          <GridListItem
-            key={getEmojiKey(entry)}
-            id={getEmojiKey(entry)}
-            className={hooks.slotClass('cell')}
-            textValue={getEmojiLabel(entry)}
-            onHoverStart={() => onActiveChange(entry)}
-          >
-            <EmojiContent entry={entry} skinTone={skinTone} renderEmoji={renderEmoji} />
-          </GridListItem>
-        ))}
-      </GridList>
+      {virtualized ? (
+        <Virtualizer layout={GridLayout} layoutOptions={virtualLayout}>
+          {grid}
+        </Virtualizer>
+      ) : (
+        grid
+      )}
     </div>
   );
 }

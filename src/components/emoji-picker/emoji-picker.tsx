@@ -27,7 +27,7 @@ export interface EmojiPickerProps
     EmojiSources,
     EmojiChoiceHandlers,
     EmojiChoiceFilters,
-    Pick<EmojiPickerStateOptions, 'loadEmoji' | 'renderEmoji'>,
+    Pick<EmojiPickerStateOptions, 'loadEmoji' | 'renderEmoji' | 'virtualized'>,
     BaseProps {
   /** Hide the skin tone choice, for a host that sets the tone elsewhere. */
   hideSkinTones?: boolean | undefined;
@@ -80,6 +80,7 @@ export function EmojiPicker({
   autoFocus,
   loadEmoji,
   renderEmoji,
+  virtualized,
   categories,
   emojiVersion,
   filterEmoji,
@@ -101,6 +102,7 @@ export function EmojiPicker({
     autoFocus,
     loadEmoji,
     renderEmoji,
+    virtualized,
     categories,
     emojiVersion,
     filterEmoji,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { GridList, GridListHeader, GridListItem, GridListSection } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -132,19 +132,21 @@ function useSections(
   query: string,
   recent: readonly CharacterGridCharacter[],
 ) {
-  const strings = useUiStrings();
-  const shown: CharacterSection[] = filterCharacterCategories(categories, query).map(
-    (category) => ({ key: `category-${category.id}`, ...category }),
-  );
-  if (query.trim() === '' && recent.length > 0) {
-    shown.unshift({ key: 'recent', label: strings.recentCharacters, characters: recent });
-  }
-  const byKey = new Map<Key, CharacterGridCharacter>();
-  shown.forEach((section) => {
-    for (const character of section.characters)
-      byKey.set(getCellKey(section.key, character.char), character);
-  });
-  return { sections: shown, byKey };
+  const { recentCharacters } = useUiStrings();
+  return useMemo(() => {
+    const shown: CharacterSection[] = filterCharacterCategories(categories, query).map(
+      (category) => ({ key: `category-${category.id}`, ...category }),
+    );
+    if (query.trim() === '' && recent.length > 0) {
+      shown.unshift({ key: 'recent', label: recentCharacters, characters: recent });
+    }
+    const byKey = new Map<Key, CharacterGridCharacter>();
+    shown.forEach((section) => {
+      for (const character of section.characters)
+        byKey.set(getCellKey(section.key, character.char), character);
+    });
+    return { sections: shown, byKey };
+  }, [categories, query, recent, recentCharacters]);
 }
 
 /**

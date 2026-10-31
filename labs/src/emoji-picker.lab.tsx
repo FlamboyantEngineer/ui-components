@@ -120,6 +120,14 @@ mountLab(
       <Reactions />
     </LabSection>
     <LabSection
+      title="Virtualized"
+      description="Only the emoji in view of each grid render; the grid scrolls itself, and Home and End still reach every emoji."
+    >
+      <div data-lab-demo="virtualized">
+        <EmojiPicker aria-label="Emoji, virtualized" virtualized />
+      </div>
+    </LabSection>
+    <LabSection
       title="Custom emoji and drawing"
       description="Image emoji under their own tab, and flags drawn as region codes by renderEmoji."
     >

@@ -155,6 +155,34 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(drawn?.dataset.glyphText).toBe('👋🏿');
   });
 
+  it('UIC-EMOJI-PICKER-1.6 renders only the emoji in view of a virtualized grid and reaches the last', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(304);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(160);
+    const user = userEvent.setup();
+    const many: CustomEmoji[] = Array.from({ length: 400 }, (_, index) => ({
+      shortcode: `sticker_${index}`,
+      src: `/sticker-${index}.png`,
+    }));
+    const { container } = render(
+      <EmojiPicker loadEmoji={loadFixture} customEmoji={many} virtualized />,
+    );
+    const grid = await screen.findByRole('grid', { name: 'Custom' });
+    expect(grid).toHaveAttribute('data-virtualized', 'true');
+    expect(container.querySelector('.ui-emoji-picker__section')).toHaveAttribute(
+      'data-virtualized',
+      'true',
+    );
+    expect(within(grid).getAllByRole('row').length).toBeLessThan(120);
+    const first = within(grid).getByRole('row', { name: ':sticker_0:' });
+    expect(first.parentElement?.style.position).toBe('absolute');
+    await user.click(first);
+    await user.keyboard('{End}');
+    await waitFor(() =>
+      expect(within(grid).getByRole('row', { name: ':sticker_399:' })).toHaveFocus(),
+    );
+    expectHooksMatchSpec(container, 'EMOJI-PICKER');
+  });
+
   it('UIC-EMOJI-PICKER-1.3 moves through the grid from the keyboard without leaking keys', async () => {
     const outerKeys: string[] = [];
     render(

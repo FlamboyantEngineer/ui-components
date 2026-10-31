@@ -130,6 +130,8 @@ export interface EmojiPickerStateOptions
   loadEmoji?: (() => Promise<readonly NativeEmoji[]>) | undefined;
   /** Draws a standard emoji's glyph, such as an image from an emoji font, in place of the text. */
   renderEmoji?: ((unicode: string) => ReactNode) | undefined;
+  /** Renders only the emoji in view of each grid, which then scrolls itself. */
+  virtualized?: boolean | undefined;
   /** The picker element, whose font the platform support is measured in. */
   rootRef: RefObject<HTMLElement | null>;
 }
@@ -296,6 +298,7 @@ export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPick
       onActiveChange: activeEmoji.set,
       renderEmoji: options.renderEmoji,
       gridRef,
+      virtualized: options.virtualized,
     },
     gridRef,
     tone,
