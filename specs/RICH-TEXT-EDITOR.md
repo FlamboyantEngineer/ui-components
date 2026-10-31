@@ -107,7 +107,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/
 
 ### UIC-RICH-TEXT-EDITOR-4.2 - Value changes from outside, commit and restore
 
-When the value changes to a document other than the one shown (a controlled change, the field's restore, clear or set to default), the editor shall replace its document in one step of its own in the undo history (UIC-RICH-TEXT-EDITOR-3.4); an unchanged document is left alone. The field commits when focus leaves it (UIC-FIELD-1.11), so Tab from the edited content reaches the restore button without committing, and focus in the editor's own chrome or popovers commits nothing; while the value differs from the committed value the field is dirty and its restore button puts the committed document back.
+When the value changes to a document other than the one shown (a controlled change, the field's restore, clear or set to default), the editor shall replace its document, the content and the root attributes of a caller schema's `doc`, in one step of its own in the undo history (UIC-RICH-TEXT-EDITOR-3.4), so later edits keep the replaced attributes; an unchanged document is left alone. The field commits when focus leaves it (UIC-FIELD-1.11), so Tab from the edited content reaches the restore button without committing, and focus in the editor's own chrome or popovers commits nothing; while the value differs from the committed value the field is dirty and its restore button puts the committed document back.
 
 Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/rich-text-editor.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`

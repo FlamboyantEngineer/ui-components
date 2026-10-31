@@ -153,6 +153,7 @@ export function LockedChromeEditor() {
 
 const noteSchema = createRichTextSchema({
   nodes: {
+    doc: { content: 'block+', attrs: { edition: { default: 1 } } },
     codeBlock: null,
     callout: {
       group: 'block',
@@ -197,15 +198,21 @@ function HighlightButton() {
 
 const calloutDocument: RichTextDocument = {
   type: 'doc',
+  attrs: { edition: 1 },
   content: [
     paragraph(text('Bring a '), text('basket', [{ type: 'highlight' }]), text(' to the market.')),
     { type: 'callout', content: [paragraph(text('The stalls open at nine.'))] },
   ],
 };
 
-/** A schema with a callout block and a highlight mark, and without code blocks. */
+/**
+ * A schema with a callout block, a highlight mark and an `edition` on the document, and without
+ * code blocks. Next edition replaces the document with the next edition number, which later edits
+ * keep.
+ */
 export function CustomSchemaEditor() {
   const [value, setValue] = useState(calloutDocument);
+  const edition = Number(value.attrs?.edition ?? 1);
   return (
     <>
       <RichTextEditor
@@ -223,6 +230,12 @@ export function CustomSchemaEditor() {
       >
         <InsertMenu items={[calloutItem]} />
       </RichTextEditor>
+      <Button size="sm" onPress={() => setValue({ ...value, attrs: { edition: edition + 1 } })}>
+        Next edition
+      </Button>
+      <p>
+        Edition: <output data-lab-output="custom-edition">{edition}</output>
+      </p>
       <p>
         HTML:{' '}
         <output data-lab-output="custom-html">

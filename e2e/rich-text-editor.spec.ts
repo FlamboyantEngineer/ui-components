@@ -533,4 +533,21 @@ test.describe('Rich Text Editor lab', () => {
     await expect(output(page, 'form-submits')).toHaveText('1');
     await expect(output(page, 'form')).toContainText('https://example.com/pears');
   });
+
+  test('UIC-RICH-TEXT-EDITOR-4.2 keeps a replaced document attribute through later edits', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    await page.getByRole('button', { name: 'Next edition' }).click();
+    await expect(output(page, 'custom-edition')).toHaveText('2');
+    await content(page, 'custom').locator('p').first().click();
+    await pressEnd(page);
+    await page.keyboard.type(' Today.');
+    await expect(content(page, 'custom').locator('p').first()).toContainText('market. Today.');
+    await expect(output(page, 'custom-edition')).toHaveText('2');
+    await page.keyboard.press('Control+z');
+    await page.keyboard.press('Control+z');
+    await expect(output(page, 'custom-edition')).toHaveText('1');
+  });
 });
