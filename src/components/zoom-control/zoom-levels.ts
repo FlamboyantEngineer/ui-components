@@ -20,6 +20,19 @@ export function resolveZoomLevels(levels: readonly number[], value: number) {
   return { index, previous, next };
 }
 
+/**
+ * The slider's stops: the levels, with a value between them (or past them) as a stop of its own, so
+ * one step from it reaches the neighbouring level on either side, endpoints included, and the
+ * value stays where the slider can return to it. `index` is the value's stop.
+ */
+export function resolveSliderStops(levels: readonly number[], value: number) {
+  const onLevel = levels.findIndex((level) => Math.abs(level - value) < tolerance);
+  if (onLevel !== -1) return { stops: levels, index: onLevel };
+  const after = levels.findIndex((level) => level > value);
+  const index = after === -1 ? levels.length : after;
+  return { stops: [...levels.slice(0, index), value, ...levels.slice(index)], index };
+}
+
 /** The zoom levels, in percent, a control steps through when the caller gives none. */
 export const defaultZoomLevels: readonly number[] = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
