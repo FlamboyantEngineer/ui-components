@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { createSafeStorage } from '../../../src/core/storage.js';
 import {
   applySettings,
   defaultSettings,
@@ -61,8 +62,9 @@ describe('readSettings', () => {
 
   it('ignores an invalid theme attribute and survives refusing storage', () => {
     expect(readSettings('?themeAttribute=1bad', null).themeAttribute).toBe('data-theme');
-    expect(readSettings('', throwingStorage)).toEqual(defaultSettings);
-    expect(() => rememberSettings(defaultSettings, throwingStorage)).not.toThrow();
+    const refusing = createSafeStorage(throwingStorage);
+    expect(readSettings('', refusing)).toEqual(defaultSettings);
+    expect(() => rememberSettings(defaultSettings, refusing)).not.toThrow();
   });
 });
 
@@ -81,8 +83,9 @@ describe('settings round trip', () => {
   });
 
   it('writes the query string and keeps unrelated parameters', () => {
-    expect(settingsSearch(defaultSettings, '?case=3')).toBe('?case=3&stylesheet=reference');
-    expect(settingsSearch({ ...defaultSettings, theme: '' })).toBe('?stylesheet=reference&theme=');
+    expect(settingsSearch(defaultSettings, '?case=3')).toBe('?case=3');
+    expect(settingsSearch(defaultSettings, '?stylesheet=none')).toBe('');
+    expect(settingsSearch({ ...defaultSettings, theme: '' })).toBe('?theme=');
     expect(
       settingsSearch({ stylesheet: { kind: 'none' }, theme: 'dark', themeAttribute: 'data-mode' }),
     ).toBe('?stylesheet=none&theme=dark&themeAttribute=data-mode');

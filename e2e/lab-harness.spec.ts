@@ -104,6 +104,15 @@ test.describe('lab harness', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
+  test('UIC-LABS-2.3 leaves a setting at its default out of the query string', async ({ page }) => {
+    await page.goto(formatLabUrl('index', { stylesheet: 'reference', theme: 'dark' }));
+    await waitForLab(page);
+    await expect(page.getByRole('link', { name: 'Provider' })).toHaveAttribute(
+      'href',
+      'provider.html?theme=dark',
+    );
+  });
+
   test('UIC-LABS-1.1 the index lists every lab and carries the settings into it', async ({
     page,
   }) => {
