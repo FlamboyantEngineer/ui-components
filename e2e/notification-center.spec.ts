@@ -135,6 +135,8 @@ test.describe('Notification Center lab', () => {
     await live.getByRole('button', { name: /^Notifications/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Notifications' });
     await expect(dialog.getByText('Build 1 passed')).toBeVisible();
+    // The bell's status is the only one: the list in the panel renders none.
+    await expect(dialog.locator('.ui-notification-list__announcement')).toHaveCount(0);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Add a notification' }).click();
     await expect(status).toHaveText('New notification: Build 2 passed');

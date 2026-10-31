@@ -1,10 +1,11 @@
 'use client';
 
-// Words the notifications that arrive while a list is shown, for a polite live region.
+// Announces the notifications that arrive while a list is shown, in a polite live region.
 
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { VisuallyHidden, type VisuallyHiddenElement } from '../visually-hidden/visually-hidden.js';
 
 interface Arrivals {
   /** Every key shown so far. */
@@ -21,9 +22,6 @@ interface ArrivalEntry {
   isRead?: boolean | undefined;
 }
 
-/** Set by a notification centre that announces arrivals itself, so the list inside stays quiet. */
-export const ArrivalAnnouncerContext = createContext(false);
-
 function latestTime(items: readonly ArrivalEntry[], since: number): number {
   return items.reduce((latest, item) => {
     const time = Date.parse(item.time);
@@ -37,9 +35,8 @@ function latestTime(items: readonly ArrivalEntry[], since: number): number {
  * the first page of a list that started empty, older pages loaded later and entries already read
  * are never announced.
  */
-export function useArrivalAnnouncement(items: readonly ArrivalEntry[]): string {
+function useArrivalAnnouncement(items: readonly ArrivalEntry[]): string {
   const strings = useUiStrings();
-  const isAnnouncedAbove = useContext(ArrivalAnnouncerContext);
   const [arrivals, setArrivals] = useState<Arrivals>(() => ({
     seen: new Set(items.map((item) => item.id)),
     latest: latestTime(items, -Infinity),
@@ -59,5 +56,22 @@ export function useArrivalAnnouncement(items: readonly ArrivalEntry[]): string {
       message: fresh[0] ? strings.newNotifications(fresh.length, fresh[0].title) : arrivals.message,
     });
   }
-  return isAnnouncedAbove ? '' : arrivals.message;
+  return arrivals.message;
+}
+
+interface ArrivalAnnouncementProps {
+  items: readonly ArrivalEntry[];
+  /** The status's hook class. */
+  className: string;
+  elementType?: VisuallyHiddenElement | undefined;
+}
+
+/** The visually hidden polite status that announces the arrivals among `items`. */
+export function ArrivalAnnouncement({ items, className, elementType }: ArrivalAnnouncementProps) {
+  const announcement = useArrivalAnnouncement(items);
+  return (
+    <VisuallyHidden elementType={elementType} role="status" className={className}>
+      {announcement}
+    </VisuallyHidden>
+  );
 }

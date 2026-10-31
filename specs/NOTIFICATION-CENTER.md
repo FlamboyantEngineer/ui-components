@@ -98,9 +98,9 @@ Verification: `src/components/notification-center/notification-center.test.tsx`
 
 ### UIC-NOTIFICATION-CENTER-3.1 - Announcing arrivals
 
-A visually hidden polite status (`ui-notification-list__announcement`) shall announce the unread notifications that appear in `items` and are newer than every notification shown before: one by the provider's `newNotifications` string with its title (`New notification: …`), several by their count. Notifications present at first, the first page a list that started empty receives, older pages loaded later and notifications already read are not announced. `NotificationCenter` announces in its own status (`ui-notification-center__announcement`) whether its panel is open or not, and the list inside its panel stays silent.
+A visually hidden polite status (`ui-notification-list__announcement`) shall announce the unread notifications that appear in `items` and are newer than every notification shown before: one by the provider's `newNotifications` string with its title (`New notification: …`), several by their count. Notifications present at first, the first page a list that started empty receives, older pages loaded later and notifications already read are not announced. With `announcesArrivals={false}` the list renders no status and keeps no arrival record, for a host that announces them elsewhere. `NotificationCenter` announces in its own status (`ui-notification-center__announcement`) whether its panel is open or not, and the list inside its panel takes `announcesArrivals={false}`, so one status per centre announces each arrival.
 
-Implementation: `src/components/notification-center/use-arrival-announcement.ts`, `src/components/notification-center/notification-list.tsx`, `src/components/notification-center/notification-center.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/notification-center/arrival-announcement.tsx`, `src/components/notification-center/notification-list.tsx`, `src/components/notification-center/notification-center.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `src/components/notification-center/notification-center.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-3.2 - Keyboard
