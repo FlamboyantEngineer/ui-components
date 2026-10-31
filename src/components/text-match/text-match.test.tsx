@@ -12,10 +12,10 @@ import {
 import { TextMatch, TextMatchProvider } from './text-match.js';
 
 describe('text matching helpers', () => {
-  it('UIC-TEXT-MATCH-1.1 normalizes case and separators without moving indexes', () => {
+  it('UIC-TEXT-MATCH-1.1 normalizes case, composition and separators', () => {
     expect(normalizeMatchText('Line-Height/Top_Margin')).toBe('line height top margin');
-    expect(normalizeMatchText('Line-Height')).toHaveLength('Line-Height'.length);
-    expect(normalizeMatchText('İstanbul')).toHaveLength('İstanbul'.length);
+    expect(normalizeMatchText('Cafe\u0301')).toBe('caf\u00e9');
+    expect(normalizeMatchText('İstanbul', { ignoreAccents: true })).toBe('istanbul');
     expect(splitMatchTerms('  Page  size/orientation ')).toEqual(['page', 'size', 'orientation']);
     expect(splitMatchTerms('')).toEqual([]);
   });
@@ -73,6 +73,42 @@ describe('accent-insensitive matching', () => {
     expect(findTermRanges('Café crème', ['cafe'])).toEqual([]);
     expect(textMatchesTerms('Crème brûlée', ['creme', 'brulee'], options)).toBe(true);
     expect(textMatchesTerms('Crème brûlée', ['creme'])).toBe(false);
+  });
+
+  it('UIC-TEXT-MATCH-1.4 matches composed and decomposed accents alike, in the text and the query', () => {
+    const options = { ignoreAccents: true };
+    const terms = splitMatchTerms('resume', options);
+    expect(textMatchesTerms('r\u00e9sum\u00e9', terms, options)).toBe(true);
+    expect(textMatchesTerms('re\u0301sume\u0301', terms, options)).toBe(true);
+    expect(textMatchesTerms('re\u0301sume', terms, options)).toBe(true);
+    expect(
+      textMatchesTerms('re\u0301sume', splitMatchTerms('re\u0301sume\u0301', options), options),
+    ).toBe(true);
+    expect(findTermRanges('Le re\u0301sume\u0301 final', terms, options)).toEqual([
+      { start: 3, end: 11, term: 0 },
+    ]);
+    // Accent-sensitive matching treats both compositions as the same accented letter.
+    expect(textMatchesTerms('re\u0301sume\u0301', splitMatchTerms('r\u00e9sum\u00e9'))).toBe(true);
+    expect(findTermRanges('r\u00e9sum\u00e9', ['re\u0301sume\u0301'])).toEqual([
+      { start: 0, end: 6, term: 0 },
+    ]);
+    expect(textMatchesTerms('re\u0301sume\u0301', ['resume'])).toBe(false);
+    expect(textMatchesTerms('r\u00e9sum\u00e9', ['resume'])).toBe(false);
+  });
+
+  it('UIC-TEXT-MATCH-1.2 UIC-TEXT-MATCH-1.3 keeps whole characters and Unicode words', () => {
+    expect(findTermRanges('\u{10400}ab', ['ab'], { matchWords: true })).toEqual([]);
+    expect(findTermRanges('cafe\u0301ab', ['ab'], { matchWords: true })).toEqual([]);
+    expect(
+      findTermRanges('cafe\u0301ab', ['ab'], { matchWords: true, ignoreAccents: true }),
+    ).toEqual([]);
+    expect(findTermRanges('\u{10400} ab', ['ab'], { matchWords: true })).toEqual([
+      { start: 3, end: 5, term: 0 },
+    ]);
+    expect(findTermRanges('ab\u{10400}', ['ab'], { matchWords: true })).toEqual([]);
+    // An astral letter folds to another of the same length; its range spans both code units.
+    expect(findTermRanges('x \u{10400}y', ['\u{10428}'])).toEqual([{ start: 2, end: 4, term: 0 }]);
+    expect(findTermRanges('Stra\u00dfe', ['stra'])).toEqual([{ start: 0, end: 4, term: 0 }]);
   });
 
   it('UIC-TEXT-MATCH-1.2 never ends a range between a letter and its combining mark', () => {

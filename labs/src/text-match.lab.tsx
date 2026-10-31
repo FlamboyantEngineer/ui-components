@@ -7,6 +7,10 @@ const sample = 'Go to the top of the Line-height list to add Favorites';
 const queries = ['(none)', 'to', 'fav', 'line height', 'pear'] as const;
 const dessertMenu = 'Café crème, crème brûlée and a café au lait';
 const dessertQueries = ['cafe', 'café', 'creme brulee', 'lait creme cafe'] as const;
+const compositions = {
+  composed: 'Send your r\u00e9sum\u00e9 today',
+  decomposed: 'Send your re\u0301sume\u0301 today',
+} as const;
 const cities = [
   'Lisbon',
   'Porto',
@@ -91,6 +95,23 @@ mountLab(
         render={({ query, accents }) => (
           <TextMatchProvider query={query} ignoreAccents={accents === 'ignored'}>
             <TextMatch>{dessertMenu}</TextMatch>
+          </TextMatchProvider>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Composed and decomposed accents"
+      description="The same sentence with résumé written as composed letters or as letters followed by combining accents. Both match the same queries, and each mark covers whole letters with their accents."
+    >
+      <StateMatrix
+        axes={{
+          text: ['composed', 'decomposed'],
+          query: ['resume', 'r\u00e9sum\u00e9'],
+          accents: ['exact', 'ignored'],
+        }}
+        render={({ text, query, accents }) => (
+          <TextMatchProvider query={query} ignoreAccents={accents === 'ignored'}>
+            <TextMatch>{compositions[text as keyof typeof compositions]}</TextMatch>
           </TextMatchProvider>
         )}
       />
