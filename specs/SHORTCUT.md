@@ -53,6 +53,13 @@ A sequence shall be an array of chords pressed one after another, such as `['G',
 Implementation: `src/components/shortcut/shortcut-format.ts`, `src/core/common-strings.ts`
 Verification: `src/components/shortcut/shortcut-format.test.ts`
 
+### UIC-SHORTCUT-1.8 - Matching key presses
+
+`matchesChord(event, chord)` shall tell whether a key press is exactly the chord on the platform, with exactly its modifiers held (`Ctrl` is Command on macOS, `Control` always the Control key), so a component acts on the chord it shows and names in `aria-keyshortcuts`. A Latin letter or digit matches the letter or digit the key types, so a letter a layout moved (`q` on the A key) is only that letter. Any other character matches as typed, upper-cased, and also as the letter or digit key in its place on a US layout (its `code`): `я` on a Cyrillic layout matches both `Control+Я` and `Control+Z`, `!` for Shift+1 both `Ctrl+Shift+!` and `Ctrl+Shift+1`, `π` for Option+P both `Alt+π` and `Alt+P`. A symbol chord names every modifier held, so Shift+/ is `Ctrl+Shift+?`. A press with AltGr held that types a character other than a Latin letter or digit is text entry, as when AltGr+Q types `@`, and never matches, even though Windows also reports it as Control+Alt. `isChordPress` adds that a repeated key and a key of a text composition never match.
+
+Implementation: `src/components/shortcut/shortcut-match.ts`
+Verification: `src/components/shortcut/shortcut-match.test.ts`, `e2e/shortcut.spec.ts`
+
 ## UIC-SHORTCUT-2 - Shortcut
 
 ### UIC-SHORTCUT-2.1 - Keycaps

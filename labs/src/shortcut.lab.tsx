@@ -1,4 +1,5 @@
-import { KeyHints, Shortcut } from '../../src/components/shortcut/shortcut.js';
+import { useState, type KeyboardEvent } from 'react';
+import { KeyHints, Shortcut, matchesChord } from '../../src/components/shortcut/shortcut.js';
 import {
   formatShortcutDescription,
   formatShortcutTooltip,
@@ -26,6 +27,34 @@ const sequences = {
   'Ctrl+K Ctrl+C': ['Ctrl+K', 'Ctrl+C'],
   'Ctrl+K Shift+↑': ['Ctrl+K', 'Shift+↑'],
 } as const;
+
+const tried = ['Control+Я', 'Control+Z', 'Control+Alt+Q', 'Ctrl+Shift+1'] as const;
+
+/** Names the chords a key press in the field matches, as a command would read them. */
+function ChordTester() {
+  const [matched, setMatched] = useState('Press a chord in the field');
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(event.key)) return;
+    const hits = tried.filter((chord) => matchesChord(event.nativeEvent, chord));
+    setMatched(hits.length > 0 ? hits.join(', ') : 'No chord');
+  };
+  return (
+    <div style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
+      <label>
+        Chord field <input type="text" onKeyDown={onKeyDown} />
+      </label>
+      <p>
+        Watching{' '}
+        {tried.map((chord) => (
+          <span key={chord}>
+            <Shortcut chord={chord} />{' '}
+          </span>
+        ))}
+      </p>
+      <output data-lab-output="chord">{matched}</output>
+    </div>
+  );
+}
 
 mountLab(
   <>
@@ -86,6 +115,12 @@ mountLab(
         <Shortcut chord="Ctrl+S" /> · <code>{formatShortcutTooltip('Save', 'Ctrl+S')}</code> ·{' '}
         <code>{formatShortcutDescription('Saves the draft', 'Ctrl+S')}</code>
       </p>
+    </LabSection>
+    <LabSection
+      title="Matching key presses"
+      description="A Cyrillic я matches both Control+Я and Control+Z; AltGr typing @ on the Q key is text, not Control+Alt+Q."
+    >
+      <ChordTester />
     </LabSection>
   </>,
 );
