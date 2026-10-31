@@ -204,6 +204,40 @@ describe('TruncationTooltip', () => {
     expect(outer).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-TRUNCATION-TOOLTIP-1.4 leaves a composing Escape to the focused editor', async () => {
+    const keys: string[] = [];
+    render(
+      <>
+        <TruncationTooltip>{FULL_TEXT}</TruncationTooltip>
+        <input
+          aria-label="Note"
+          onKeyDown={(event) => keys.push(event.nativeEvent.isComposing ? 'composing' : event.key)}
+        />
+      </>,
+    );
+    const text = screen.getByText(FULL_TEXT);
+    setBox(text, { cut: true });
+    const note = screen.getByRole('textbox', { name: 'Note' });
+    act(() => note.focus());
+    await rest(text);
+    await advance(500);
+    expect(tooltip()).not.toBeNull();
+    // An input method owns Escape while it composes; user-event cannot set isComposing.
+    fireEvent.compositionStart(note);
+    // eslint-disable-next-line testing-library/prefer-user-event
+    fireEvent.keyDown(note, { key: 'Escape', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event
+    fireEvent.keyDown(note, { key: 'Escape', keyCode: 229 });
+    expect(keys).toEqual(['composing', 'Escape']);
+    expect(tooltip()).not.toBeNull();
+    expect(note).toHaveFocus();
+    fireEvent.compositionEnd(note);
+    await user.keyboard('{Escape}');
+    expect(tooltip()).toBeNull();
+    expect(keys).toEqual(['composing', 'Escape']);
+    expect(note).toHaveFocus();
+  });
+
   it('UIC-TRUNCATION-TOOLTIP-1.5 keeps its own panel inside a control that has a hint', async () => {
     render(
       <Tooltip content="Open the file">
