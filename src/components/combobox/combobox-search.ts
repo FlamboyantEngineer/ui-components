@@ -66,6 +66,7 @@ export function useComboboxSearch({
 }: ComboboxSearchOptions): RemoteSearch<ComboboxItem> | null {
   const search = useRemoteSearch<ComboboxItem>({
     load: loadItems && isOpen ? toLoader(loadItems) : undefined,
+    source: loadItems,
     minSearchLength,
     searchDelay,
   });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRemoteSearch, type RemoteSearch } from '../../utils/use-remote-search.js';
 import { mergeSelectOptions, type SelectFieldOption } from './select-options.js';
 
@@ -40,7 +40,7 @@ function toPage(result: readonly SelectFieldOption[] | SelectFieldPage): SelectF
 
 /**
  * Searches options through the caller's loader with the shared remote search, remembering every
- * option a search returns.
+ * option a search returns. Another loader searches the latest query again from its first page.
  */
 export function useSelectSearch({
   loadOptions,
@@ -60,8 +60,16 @@ export function useSelectSearch({
           return { items: page.options, cursor: page.cursor };
         }
       : undefined,
+    source: loadOptions,
     minSearchLength,
     searchDelay,
+  });
+  const searchedWith = useRef(loadOptions);
+  // Searching reaches outside React, so a new loader searches once it renders.
+  useEffect(() => {
+    if (searchedWith.current === loadOptions) return;
+    searchedWith.current = loadOptions;
+    if (loadOptions) search.searchNow(search.query);
   });
   return { ...search, seen };
 }
