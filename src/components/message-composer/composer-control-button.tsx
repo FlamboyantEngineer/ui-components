@@ -6,7 +6,7 @@ import { ChevronDownGlyph } from '../../core/glyphs.js';
 
 import type { ReactNode } from 'react';
 import { Button, type ButtonProps } from '../button/button.js';
-import type { IconSource } from '../icon/icon.js';
+import { hasIcon, type IconSource } from '../icon/icon.js';
 import { useMessageComposerControls } from './composer-controls.js';
 
 interface ComposerControlButtonProps extends Omit<
@@ -27,7 +27,7 @@ interface ComposerControlButtonProps extends Omit<
 
 /**
  * A small ghost button among the composer's controls, disabled with the composer: its icon and label,
- * or, while the composer is compact, its icon alone, named and hinted by `name`.
+ * or, while the composer is compact and it has an icon, its icon alone, named and hinted by `name`.
  */
 export function ComposerControlButton({
   icon,
@@ -45,7 +45,8 @@ export function ComposerControlButton({
     size: 'sm',
     isDisabled: isDisabled || composer.isDisabled,
   } as const;
-  if (composer.isCompact)
+  // Without a compact icon the control keeps its label rather than becoming an empty button.
+  if (composer.isCompact && hasIcon(compactIcon))
     return <Button {...button} icon={compactIcon} label={name} tooltip={name} />;
   return (
     <Button

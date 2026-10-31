@@ -78,10 +78,10 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-2.1 - Disabled
 
-`isDisabled` shall set the native `disabled` attribute and `data-disabled`. With `focusableWhenDisabled` the button stays in the focus order with `aria-disabled="true"` and `data-disabled`, refuses activation by pointer, Enter and Space, and never submits a form.
+`isDisabled` shall set the native `disabled` attribute and `data-disabled`. With `focusableWhenDisabled` the button stays in the focus order with `aria-disabled="true"` and `data-disabled`, keeps its focus, hover and tooltip, and never submits a form. It refuses every activation by pointer, keyboard (Enter, Space and the arrow keys a menu trigger opens with) or programmatic and virtual click: its own `onPress` and press lifecycle callbacks (`onPressStart`, `onPressEnd`, `onPressUp`, `onPressChange`) and the handlers a trigger it sits in adds, such as a `MenuTrigger`'s or `PopoverTrigger`'s, never run. A `render` callback receives `isDisabled: true`.
 
-Implementation: `src/components/button/button.tsx`
-Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
+Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
+Verification: `src/components/button/button.test.tsx`, `src/components/button/button-inherited-press.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-2.2 - Pending
 
@@ -122,7 +122,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-11.1 - Icon and name
 
-`Button` shall draw its `icon` (an imported icon component or rendered element) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error.
+`Button` shall draw its `icon` (an imported icon component or rendered element) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error. An `icon` of `undefined`, `null` or `false` is no icon (as for `startIcon` and `endIcon`): the button stays a labelled button, in both button and link modes, with its children as its label, its `secondary` default and `data-content="label"`, so a conditional icon such as `icon={isDone && CheckGlyph}` never selects icon-only mode. A button with no icon and no children shows its `label` as its visible text (in the `ui-button__label` slot), so a control whose optional icon is absent stays visible and named.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
@@ -222,10 +222,10 @@ Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action
 
 ### UIC-BUTTON-21.7 - Pending delay
 
-`pendingDelay` (milliseconds, 0 by default) shall hold back the pending state, internal or controlled, until the action has run that long, so an action that settles sooner never flashes the spinner. The button refuses repeat presses from the first press either way. An action button is never a link, so it takes no `href`.
+`pendingDelay` (milliseconds, 0 by default) shall hold back the pending state, internal or controlled, until the action has run that long, so an action that settles sooner never flashes the spinner. The button refuses activation from the first press either way: while an action it started is unsettled or the caller's `isPending` holds, before and after the indicator shows, it refuses its own `onPress`, its press lifecycle callbacks and the handlers a trigger it sits in adds (a `MenuTrigger`'s or `PopoverTrigger`'s, by pointer, keyboard including a menu's arrow keys, or programmatic and virtual click), keeping focus, hover and its tooltip. A submit or reset button still submits or resets with the press that started the action, as UIC-BUTTON-21.2 describes. An action button is never a link, so it takes no `href`.
 
-Implementation: `src/components/button/button-action.tsx`, `src/utils/use-delayed-flag.ts`
-Verification: `src/components/button/button-action.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/button-action.spec.ts`
+Implementation: `src/components/button/button-action.tsx`, `src/components/button/button-state.tsx`, `src/utils/use-delayed-flag.ts`
+Verification: `src/components/button/button-action.test.tsx`, `src/components/button/button-inherited-press.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/button-action.spec.ts`, `e2e/button.spec.ts`
 
 ## UIC-BUTTON-3 - Unified options
 

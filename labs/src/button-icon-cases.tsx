@@ -7,9 +7,30 @@ import {
   MoreGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
+
+/** An icon that comes and goes with a condition: `false` or `null` leaves a labelled button. */
+function ConditionalIcon() {
+  const [isEditing, setEditing] = useState(true);
+  return (
+    <LabSection
+      title="Conditional icon"
+      description="icon={isEditing && EditGlyph}: while the condition holds the button is icon-only; when it is false the button shows its text, as with no icon at all."
+    >
+      <div data-lab-demo="conditional-icon">
+        <Button icon={isEditing && EditGlyph} label="Edit" onPress={() => setEditing(!isEditing)}>
+          Done
+        </Button>{' '}
+        <Button icon={null} href="#help">
+          Help
+        </Button>
+      </div>
+    </LabSection>
+  );
+}
 
 export function ButtonIconCases() {
   return (
@@ -76,6 +97,7 @@ export function ButtonIconCases() {
             <Button icon={HelpGlyph} label="Open help" tooltip="Open help" href="#help" />
           </div>
         </LabSection>
+        <ConditionalIcon />
       </>
     </div>
   );

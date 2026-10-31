@@ -390,6 +390,25 @@ describe('SegmentedChoice', () => {
     });
   });
 
+  it('UIC-SEGMENTED-CHOICE-1.7 keeps the label of an icon-only segment whose icon is null or false', () => {
+    render(
+      <SegmentedChoice
+        aria-label="Layout"
+        iconOnly
+        options={[
+          { value: 'list', label: 'List view', icon: null },
+          { value: 'grid', label: 'Grid view', icon: false },
+        ]}
+        defaultValue="list"
+      />,
+    );
+    for (const name of ['List view', 'Grid view']) {
+      const segment = screen.getByRole('radio', { name });
+      expect(segment).not.toHaveAttribute('aria-label');
+      expect(segment.querySelector('.ui-segmented-choice__label')).toHaveTextContent(name);
+    }
+  });
+
   it('UIC-SEGMENTED-CHOICE-1.7 names icon-only segments by label and shows it in a tooltip', async () => {
     const user = userEvent.setup();
     render(
