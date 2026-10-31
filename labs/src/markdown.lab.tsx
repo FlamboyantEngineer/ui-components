@@ -202,7 +202,7 @@ mountLab(
   <>
     <LabSection
       title="Constructs"
-      description="Each kind of block and inline at body size and at a small size: headings, emphasis, lists, code, a table, quotes, a break and links."
+      description="Each kind of block and inline at body size and at a small size: headings, emphasis, lists, code, a table, quotes, a break and links. A code block names its language only in data-language; the Streaming section highlights code through createCodeBlockOverride."
     >
       <StateMatrix
         axes={{ content: Object.keys(samples), text: ['body', 'small'] }}

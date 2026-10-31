@@ -87,6 +87,8 @@ test.describe('Markdown lab', () => {
     const code = page.locator('[data-lab-cell="content=code text=body"]');
     const block = code.locator('.ui-markdown__code-block').first();
     await expect(block).toHaveAttribute('data-language', 'sh');
+    // Only the hook attribute names the language: highlighters go through an override.
+    await expect(block.locator('code')).not.toHaveAttribute('class');
     await expect(block).toHaveCSS('font-family', /monospace/);
     await expect(code.locator('.ui-markdown__code-block')).toHaveCount(2);
     await expect(code.locator('.ui-markdown__code')).toHaveText('press --batch 4');
