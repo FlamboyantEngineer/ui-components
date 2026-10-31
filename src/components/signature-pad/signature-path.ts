@@ -57,7 +57,12 @@ function simplifyStroke(points: readonly SignaturePoint[]): SignaturePoint[] {
     if (!last || isFarEnough(last, point)) kept.push(point);
   }
   const final = points.at(-1);
-  if (final && kept.length > 1 && kept.at(-1) !== final) kept[kept.length - 1] = final;
+  const [first] = kept;
+  if (!final || !first || kept.at(-1) === final) return kept;
+  // The last position ends the stroke even when every point stayed close to the first; a stroke
+  // that ends where it started stays a dot.
+  if (kept.length > 1) kept[kept.length - 1] = final;
+  else if (final.x !== first.x || final.y !== first.y) kept.push(final);
   return kept;
 }
 

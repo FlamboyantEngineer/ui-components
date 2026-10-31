@@ -117,6 +117,40 @@ function InForm() {
   );
 }
 
+/**
+ * A required pad counts typed spaces as unsigned, and turning typing off returns an empty pad to
+ * drawing.
+ */
+function BlankValue() {
+  const [allowsTyping, setAllowsTyping] = useState(true);
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <Form
+      aria-label="Blank value"
+      validationBehavior="aria"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted('sent');
+      }}
+    >
+      <SignaturePad
+        label="Witness"
+        name="witness"
+        isRequired
+        allowsTyping={allowsTyping}
+        data-lab-field="blank"
+      />
+      <Button onPress={() => setAllowsTyping((current) => !current)}>
+        {allowsTyping ? 'Turn typing off' : 'Turn typing on'}
+      </Button>
+      <Button type="submit" variant="primary">
+        Witness it
+      </Button>
+      <LabOutput name="Witnessed">{submitted}</LabOutput>
+    </Form>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Layouts and states" description="Every label layout against every state.">
@@ -148,6 +182,12 @@ mountLab(
     </LabSection>
     <LabSection title="In a form" description="Confirm without signing to see the message.">
       <InForm />
+    </LabSection>
+    <LabSection
+      title="Blank values"
+      description="Choose Type and type only spaces: Witness it still shows the message. Clear the name and turn typing off to return to drawing."
+    >
+      <BlankValue />
     </LabSection>
   </>,
 );

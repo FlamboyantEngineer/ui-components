@@ -24,6 +24,42 @@ describe('signature paths', () => {
     ).toBe('M0 0 L10 5.1');
   });
 
+  it('UIC-SIGNATURE-PAD-2.2 ends a short stroke at its last position and keeps a returning one a dot', () => {
+    expect(
+      formatSignatureStroke([
+        { x: 0, y: 0 },
+        { x: 0.5, y: 0.5 },
+      ]),
+    ).toBe('M0 0 L0.5 0.5');
+    expect(
+      formatSignatureStroke([
+        { x: 0, y: 0 },
+        { x: 0.4, y: 0.2 },
+        { x: 0.8, y: 0.6 },
+        { x: 1, y: 1 },
+      ]),
+    ).toBe('M0 0 L1 1');
+    expect(
+      formatSignatureStroke([
+        { x: 3, y: 3 },
+        { x: 3.5, y: 3.5 },
+        { x: 3, y: 3 },
+      ]),
+    ).toBe('M3 3 L3 3');
+    expect(
+      formatSignatureStroke([
+        { x: 3, y: 3 },
+        { x: 3, y: 3 },
+      ]),
+    ).toBe('M3 3 L3 3');
+    expect(
+      formatSignatureStroke([
+        { x: 0, y: 0 },
+        { x: 0.04, y: 0 },
+      ]),
+    ).toBe('M0 0 L0 0');
+  });
+
   it('UIC-SIGNATURE-PAD-2.2 drops positions too close together, keeps the last and draws a dot for one', () => {
     expect(formatSignatureStroke([])).toBe('');
     expect(formatSignatureStroke([{ x: 12.34, y: 56.78 }])).toBe('M12.3 56.8 L12.3 56.8');
@@ -40,7 +76,7 @@ describe('signature paths', () => {
         { x: 5, y: 5 },
         { x: 5.2, y: 5.2 },
       ]),
-    ).toBe('M5 5 L5 5');
+    ).toBe('M5 5 L5.2 5.2');
   });
 
   it('UIC-SIGNATURE-PAD-2.4 writes standalone SVG markup and a data URL, escaping path data', () => {
