@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import type { CompletionSource } from '../../src/components/completion-list/completion-list.js';
+import type {
+  Completion,
+  CompletionSource,
+} from '../../src/components/completion-list/completion-list.js';
+import { Button } from '../../src/components/button/button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection } from './chrome/index.js';
 
@@ -27,6 +31,32 @@ function ReloadedField() {
   );
 }
 
+const colours: Completion[] = [{ label: 'blue' }, { label: 'brown' }];
+
+/** Planets, from a source that answers after a second and a half. */
+const planets: CompletionSource = () =>
+  new Promise((resolve) => {
+    setTimeout(() => resolve([{ label: 'Bellatrix' }, { label: 'Betelgeuse' }]), 1500);
+  });
+
+/** A field whose host switches its completions between planets and colours. */
+function SwitchedField() {
+  const [isColours, setColours] = useState(false);
+  return (
+    <div data-lab-demo="switched">
+      <TextField
+        label="Name"
+        defaultValue="b"
+        completions={isColours ? colours : planets}
+        description={isColours ? 'Completing colours.' : 'Completing planets.'}
+      />
+      <Button onPress={() => setColours((value) => !value)}>
+        {isColours ? 'Complete planets' : 'Complete colours'}
+      </Button>
+    </div>
+  );
+}
+
 export function ReloadedTextSection() {
   return (
     <LabSection
@@ -34,6 +64,17 @@ export function ReloadedTextSection() {
       description="Press Ctrl+Space in the field: the host reloads its text half a second later, before the answer comes, so the answer is dropped and no list opens. Ask again: the reload now brings the same text, so the list opens, and Enter inserts at the caret."
     >
       <ReloadedField />
+    </LabSection>
+  );
+}
+
+export function SwitchedSourceSection() {
+  return (
+    <LabSection
+      title="Switched completions"
+      description="Press Ctrl+Space at the end of the field, then switch to colours before the planets answer: the colours answer at once and the late planets never show. Switching back while the colours are open hides them until the planets answer."
+    >
+      <SwitchedField />
     </LabSection>
   );
 }

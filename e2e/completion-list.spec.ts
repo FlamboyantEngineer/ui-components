@@ -47,6 +47,36 @@ test.describe('Completion List lab', () => {
     await expect(field).toHaveValue('Reloaded from the alpha');
   });
 
+  test('UIC-COMPLETION-LIST-2.7 drops a late answer from completions the host switched', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('completion-list');
+    const demo = page.locator('[data-lab-demo="switched"]');
+    const field = demo.getByRole('textbox', { name: 'Name' });
+    // Other demos on the page draw lists of their own.
+    const options = () => page.locator('.ui-text-field__completions').getByRole('option');
+    await field.focus();
+    await field.press('End');
+    await field.press('Control+Space');
+    // A script click switches the source while the field keeps focus.
+    await demo.getByRole('button', { name: 'Complete colours' }).evaluate((button: HTMLElement) => {
+      button.click();
+    });
+    await expect(options()).toHaveText(['blue', 'brown']);
+    await page.clock.runFor(2000);
+    await expect(options()).toHaveText(['blue', 'brown']);
+    await demo.getByRole('button', { name: 'Complete planets' }).evaluate((button: HTMLElement) => {
+      button.click();
+    });
+    await expect(field).not.toHaveAttribute('aria-controls');
+    await page.clock.runFor(2000);
+    await expect(options()).toHaveText(['Bellatrix', 'Betelgeuse']);
+    await field.press('Enter');
+    await expect(field).toHaveValue('Bellatrix');
+  });
+
   test('UIC-COMPLETION-LIST-1.1 UIC-COMPLETION-LIST-1.2 UIC-COMPLETION-LIST-1.4 opens below the editor with the active documentation', async ({
     page,
     lab,
