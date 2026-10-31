@@ -1,6 +1,8 @@
 'use client';
 
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -88,7 +90,13 @@ export function ColorEntry({
   const { setDraftIssue } = state;
   // After every commit: the field keeps the issue it has while the report says the same.
   useLayoutEffect(() => setDraftIssue(draftIssue));
+  const input = useRef<HTMLInputElement>(null);
+  const inputRef = useMemo(() => mergeRefs<HTMLInputElement>(control.ref, input), [control.ref]);
+  // The building block puts the first text back on the form's own reset listener, before a
+  // listener that cancels the reset has run: the typed text stays until the reset goes through.
+  const isResetting = useNativeReset(input, () => setDraft(null));
   const type = (text: string) => {
+    if (isResetting()) return;
     const typed = storeColorText(text, valueFormat);
     const isCleared = typed === null && !text.trim() && !state.isRequired;
     const value = typed !== null || isCleared ? typed : state.value;
@@ -130,7 +138,7 @@ export function ColorEntry({
           else event.continuePropagation();
         }}
       >
-        <Input {...hooks.slot('input')} ref={control.ref} placeholder={placeholder} />
+        <Input {...hooks.slot('input')} ref={inputRef} placeholder={placeholder} />
       </TextField>
     </div>
   );

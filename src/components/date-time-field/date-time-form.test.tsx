@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Form } from '../form/form.js';
@@ -77,5 +78,65 @@ describe('DateTimeField range errors from a form', () => {
       </Form>,
     );
     expect(screen.queryByText('End rejected')).not.toBeInTheDocument();
+  });
+});
+
+describe('DateTimeField native reset', () => {
+  function segmentTexts(container: HTMLElement) {
+    return [...container.querySelectorAll('.ui-date-time-field__segment')]
+      .filter((segment) => segment.getAttribute('data-type') !== 'literal')
+      .map((segment) => segment.textContent);
+  }
+
+  function Pantry({ children }: { children: React.ReactNode }) {
+    const [keepsEdits, setKeepsEdits] = useState(true);
+    return (
+      <form
+        aria-label="Pantry"
+        onReset={(event) => {
+          if (keepsEdits) event.preventDefault();
+        }}
+      >
+        {children}
+        <button type="button" onClick={() => setKeepsEdits(false)}>
+          Allow reset
+        </button>
+        <button type="reset">Reset</button>
+      </form>
+    );
+  }
+
+  it('UIC-DATE-TIME-FIELD-4.5 UIC-FIELD-2.6 keeps segments typed in part through a cancelled reset', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <Pantry>
+        <DateTimeField label="Due" name="due" onChange={onChange} />
+        <DateTimeField label="Stay" mode="date-range" startName="from" endName="to" />
+        <DateTimeField label="At" mode="time" name="at" />
+      </Pantry>,
+    );
+    const [month, , , startMonth, startDay, , endMonth, , , hour] =
+      screen.getAllByRole('spinbutton');
+    await user.click(month as HTMLElement);
+    await user.keyboard('4');
+    await user.click(startMonth as HTMLElement);
+    await user.keyboard('5');
+    await user.click(startDay as HTMLElement);
+    await user.keyboard('1');
+    await user.click(endMonth as HTMLElement);
+    await user.keyboard('6');
+    await user.click(hour as HTMLElement);
+    await user.keyboard('9');
+    const typed = segmentTexts(container);
+    expect(typed.filter((text) => /\d/.test(text ?? ''))).toHaveLength(5);
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(segmentTexts(container)).toEqual(typed));
+    expect(onChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Allow reset' }));
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() =>
+      expect(segmentTexts(container).filter((text) => /\d/.test(text ?? ''))).toEqual([]),
+    );
   });
 });

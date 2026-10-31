@@ -208,6 +208,20 @@ test.describe('Form lab', () => {
     await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('cancelled');
     await expect(shelf).toHaveValue('Baking');
     await expect(jars).toHaveValue('7');
+    // A date typed in part and a colour's typed text are drafts the building blocks clear on the
+    // form's own reset listener; a cancelled reset keeps them.
+    const bestBefore = page.locator('[data-lab-field="best-before"]');
+    const month = bestBefore.getByRole('spinbutton', { name: /month/i });
+    await month.click();
+    await page.keyboard.type('4');
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(month).toHaveText('4');
+    const lid = form.getByRole('textbox', { name: 'Lid colour' });
+    await lid.fill('#12');
+    await form.evaluate((node) => (node as HTMLFormElement).reset());
+    await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('cancelled');
+    await expect(lid).toHaveValue('#12');
+    await lid.press('Escape');
     const keepsEdits = page.getByRole('switch', { name: 'Keep edits' });
     await keepsEdits.focus();
     await page.keyboard.press('Space');
@@ -216,5 +230,7 @@ test.describe('Form lab', () => {
     await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('done');
     await expect(shelf).toHaveValue('Spices');
     await expect(jars).toHaveValue('12');
+    await expect(month).toHaveText('mm');
+    await expect(lid).toHaveValue('#336699');
   });
 });
