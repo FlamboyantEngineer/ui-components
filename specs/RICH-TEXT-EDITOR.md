@@ -174,10 +174,10 @@ Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/ri
 
 ### UIC-RICH-TEXT-EDITOR-6.3 - Link editor
 
-The link button (pressed on a link) shall open a `Popover` (`ui-format-toolbar__link-editor`, or `ui-selection-toolbar__link-editor` in the selection toolbar) with a `linkAddress` text field holding the current link's address, an Apply button (disabled for an empty or unsafe address) that submits on Enter, and a `removeLink` button while the selection has a link. Applying or removing runs `set-link`, closes the popover and returns focus to the document.
+The link button (pressed on a link) shall open a `Popover` (`ui-format-toolbar__link-editor`, or `ui-selection-toolbar__link-editor` in the selection toolbar) with a `linkAddress` text field holding the current link's address, an Apply button (disabled for an empty or unsafe address) that submits on Enter, and a `removeLink` button while the selection has a link. Applying or removing runs `set-link`, closes the popover and returns focus to the document. The link editor is a form of its own: applying, removing or cancelling never submits a form around the editor (a plain form or `Form`), and its address field is not one of that form's fields.
 
 Implementation: `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/use-focus-return.ts`
-Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
+Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-7 - Selection Toolbar
 

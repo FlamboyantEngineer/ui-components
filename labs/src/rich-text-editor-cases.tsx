@@ -263,20 +263,34 @@ export function ControlledEditor() {
   );
 }
 
-/** A named editor in a form: Submit shows the JSON the form sends, Reset puts the note back. */
+/**
+ * A named editor in a form: Submit shows the JSON the form sends and counts the submits, Reset
+ * puts the note back. Applying a link from the toolbar submits nothing.
+ */
 export function FormEditor() {
   const [submitted, setSubmitted] = useState('none');
+  const [submits, setSubmits] = useState(0);
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault();
         setSubmitted(String(new FormData(event.currentTarget).get('notes')));
+        setSubmits((count) => count + 1);
       }}
     >
-      <RichTextEditor label="Notes" name="notes" defaultValue={shortNote} data-lab-editor="form" />
+      <RichTextEditor
+        label="Notes"
+        name="notes"
+        defaultValue={shortNote}
+        data-lab-editor="form"
+        toolbar={<FormatToolbar />}
+      />
       <button type="submit">Submit</button> <button type="reset">Reset</button>
       <p>
         Submitted: <output data-lab-output="form">{submitted}</output>
+      </p>
+      <p>
+        Submits: <output data-lab-output="form-submits">{submits}</output>
       </p>
     </form>
   );
