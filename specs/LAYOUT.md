@@ -20,7 +20,7 @@ Verification: `src/components/layout/layout.test.tsx`
 
 ### UIC-LAYOUT-1.3 - Hooks and caller attributes
 
-Every primitive shall carry the hooks below, append the caller's `className`, and forward native props, `ref` and caller `data-*` attributes to its element. Where a caller attribute has the name of a hook attribute, the primitive's value wins.
+Every primitive shall carry the hooks below, append the caller's `className`, and forward native props ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`), `ref` and caller `data-*` attributes to its element. Where a caller attribute has the name of a hook attribute, the primitive's value wins.
 
 Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `src/components/layout/wrappers.tsx`, `src/components/layout/grid-item.tsx`, `src/components/layout/aspect-ratio.tsx`
 Verification: `src/components/layout/layout.test.tsx`, `src/components/layout/grid-item.test.tsx`, `src/components/layout/aspect-ratio.test.tsx`

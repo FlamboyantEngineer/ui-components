@@ -1,6 +1,6 @@
 import { createElement, type ComponentPropsWithRef, type ReactElement } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Size } from '../../core/props.js';
 import { interleaveDividers } from './dividers.js';
 
 // Other components reach the toolbar row through this main module.
@@ -60,11 +60,11 @@ export interface LayoutContainmentProps {
 export type PolymorphicLayoutProps<E extends LayoutElement, Own extends object> = Own & {
   /** The element to render. Defaults to `div`. */
   as?: E | undefined;
-} & Omit<ComponentPropsWithRef<NoInfer<E>>, keyof Own | 'as' | 'style'>;
+} & Omit<ComponentPropsWithRef<NoInfer<E>>, keyof Own | 'as' | 'style' | 'dangerouslySetInnerHTML'>;
 
-export type ViewProps = NativeProps<'section'> & BaseProps & LayoutContainmentProps;
+export type ViewProps = ContainerProps<'section'> & BaseProps & LayoutContainmentProps;
 
-export interface PageProps extends NativeProps<'section'>, BaseProps, LayoutContainmentProps {
+export interface PageProps extends ContainerProps<'section'>, BaseProps, LayoutContainmentProps {
   /** Maximum content width. Defaults to `wide`. */
   width?: PageWidth | undefined;
   /** Padding around the content. Defaults to `3xl`. */
@@ -117,9 +117,10 @@ export interface GridOwnProps extends BaseProps, LayoutContainmentProps {
 
 export type GridProps<E extends LayoutElement = 'div'> = PolymorphicLayoutProps<E, GridOwnProps>;
 
-export type FlexRowProps = NativeProps<'div'> & BaseProps & LayoutContainmentProps;
+export type FlexRowProps = ContainerProps<'div'> & BaseProps & LayoutContainmentProps;
 
-export interface InlineFieldProps extends NativeProps<'label'>, BaseProps, LayoutContainmentProps {
+export interface InlineFieldProps
+  extends ContainerProps<'label'>, BaseProps, LayoutContainmentProps {
   /** Gap between label and control. Defaults to `xs`. */
   space?: LayoutSpace | undefined;
   /** Cross-axis alignment. Defaults to `center`. */
@@ -132,7 +133,8 @@ export interface InlineFieldProps extends NativeProps<'label'>, BaseProps, Layou
   inline?: boolean | undefined;
 }
 
-export interface StatusBarProps extends NativeProps<'footer'>, BaseProps, LayoutContainmentProps {
+export interface StatusBarProps
+  extends ContainerProps<'footer'>, BaseProps, LayoutContainmentProps {
   /** Gap between items. Defaults to `xs`. */
   space?: LayoutSpace | undefined;
   /** Distribution of items. Defaults to `between`. */

@@ -40,6 +40,16 @@ export type NativeProps<E extends keyof JSX.IntrinsicElements> = Omit<
   keyof BaseProps | 'style'
 >;
 
+/**
+ * The native props a container forwards to its element as they are (attributes, ARIA attributes,
+ * handlers), for components whose spec says so (UIC-COMPOSITION-2.4). `dangerouslySetInnerHTML` is
+ * left out: it would replace the content the component renders.
+ */
+export type ContainerProps<E extends keyof JSX.IntrinsicElements> = Omit<
+  NativeProps<E>,
+  'dangerouslySetInnerHTML'
+>;
+
 /** Block and box sizes. A component that offers fewer derives its own with `Extract<Size, …>`. */
 export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 

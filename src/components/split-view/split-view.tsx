@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode, Ref } from 'react';
-import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
@@ -38,7 +38,7 @@ export interface SplitViewHandle {
 }
 
 interface SplitViewBaseProps
-  extends Omit<NativeProps<'div'>, 'children'>, BaseProps, LayoutContainmentProps {
+  extends Omit<ContainerProps<'div'>, 'children'>, BaseProps, LayoutContainmentProps {
   /** `horizontal` (the default) puts the panes side by side; `vertical` stacks them. */
   orientation?: Orientation | undefined;
 }

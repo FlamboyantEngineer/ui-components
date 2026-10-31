@@ -48,7 +48,7 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 
 ### UIC-LIST-ROW-1.7 - List hooks and caller attributes
 
-`List` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and the other native list props to the `<ul>`. A caller's key and blur handlers run before the list's own; arrow navigation skips a key whose default the caller prevented.
+`List` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and the other native list props ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`) to the `<ul>`. A caller's key and blur handlers run before the list's own; arrow navigation skips a key whose default the caller prevented.
 
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`
@@ -106,7 +106,7 @@ Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-2.8 - Row hooks and caller attributes
 
-`ListRow` and `ListRowContent` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and the other native props to their root. The component's own attributes win over caller attributes of the same name.
+`ListRow` and `ListRowContent` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and the other native props ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`) to their root. The component's own attributes win over caller attributes of the same name.
 
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`

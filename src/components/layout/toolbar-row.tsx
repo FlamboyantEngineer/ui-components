@@ -11,7 +11,7 @@ import {
 import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
 import type { ButtonGroupDensity } from '../button-group/button-group.js';
 import { Separator } from '../separator/separator.js';
 import { ScrollStrip, useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
@@ -37,7 +37,7 @@ export type ToolbarRowOverflow = 'wrap' | 'scroll' | 'none';
 export type ToolbarRowGroupDensity = Extract<ButtonGroupDensity, 'default' | 'attached'>;
 
 export interface ToolbarRowProps
-  extends Omit<NativeProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
+  extends Omit<ContainerProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
   /** `toolbar` (default) moves focus by arrow keys, `group` keeps tab stops, `none` has no role. */
   role?: ToolbarRowRole | undefined;
   /** `surface` asks the stylesheet for a surface behind the row. Defaults to `plain`. */

@@ -1,13 +1,13 @@
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps } from '../../core/props.js';
 import { resolveContainment, type LayoutContainmentProps } from './layout.js';
 
-export type ContentsProps = NativeProps<'div'> & BaseProps;
+export type ContentsProps = ContainerProps<'div'> & BaseProps;
 
-export type InlineContentsProps = NativeProps<'span'> & BaseProps;
+export type InlineContentsProps = ContainerProps<'span'> & BaseProps;
 
 export interface EmbeddedFrameProps
-  extends Omit<NativeProps<'iframe'>, 'title'>, BaseProps, LayoutContainmentProps {
+  extends Omit<ContainerProps<'iframe'>, 'title'>, BaseProps, LayoutContainmentProps {
   /** The frame's accessible name. */
   title: string;
 }

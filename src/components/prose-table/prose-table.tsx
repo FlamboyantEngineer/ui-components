@@ -1,6 +1,6 @@
-import type { ReactNode, TableHTMLAttributes } from 'react';
+import type { ReactNode } from 'react';
 import { createHooks, dataAttributes } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** Text alignment of a column, as in Markdown's `:---`, `:---:` and `---:`. */
@@ -27,7 +27,7 @@ export interface ProseTableRow {
 }
 
 export interface ProseTableProps
-  extends BaseProps, Pick<TableHTMLAttributes<HTMLTableElement>, 'aria-label' | 'aria-labelledby'> {
+  extends BaseProps, Pick<NativeProps<'table'>, 'aria-label' | 'aria-labelledby'> {
   /** Column headings, one per column. */
   header: readonly ProseTableColumn[];
   /** Body rows. A row with fewer cells than headings is padded with empty cells. */

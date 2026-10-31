@@ -41,7 +41,7 @@ Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `
 
 ### UIC-TRUNCATION-TOOLTIP-1.6 - Hooks and caller attributes
 
-`TruncationTooltip` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes to the text, except the pointer handlers it owns (`onPointerEnter`, `onPointerLeave`, `onPointerDown`). A component whose root is the text that may be cut, such as [Path](PATH.md), renders its root as a `TruncationTooltip`.
+`TruncationTooltip` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`) to the text, except the pointer handlers it owns (`onPointerEnter`, `onPointerLeave`, `onPointerDown`). A component whose root is the text that may be cut, such as [Path](PATH.md), renders its root as a `TruncationTooltip`.
 
 Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`
 Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`

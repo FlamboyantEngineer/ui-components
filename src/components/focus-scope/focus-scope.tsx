@@ -6,7 +6,7 @@ import {
   useFocusManager as useAriaFocusManager,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps } from '../../core/props.js';
 import { resolveFocusTarget, useFocusReturn, type FocusTarget } from '../../utils/focus-target.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 
@@ -37,7 +37,7 @@ export interface FocusManager {
 }
 
 export interface FocusScopeProps
-  extends Omit<NativeProps<'div'>, 'children' | 'autoFocus'>, BaseProps {
+  extends Omit<ContainerProps<'div'>, 'children' | 'autoFocus'>, BaseProps {
   /** The content whose focus the scope manages. */
   children?: ReactNode;
   /** Keeps Tab and Shift+Tab inside the scope while set. */

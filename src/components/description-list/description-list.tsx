@@ -1,9 +1,9 @@
 'use client';
 
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   formatDescriptionValue,
@@ -19,7 +19,7 @@ export type DescriptionRowSpan = DescriptionListColumns | 'full';
 export interface DescriptionListProps
   extends
     BaseProps,
-    Pick<HTMLAttributes<HTMLDListElement>, 'hidden' | 'aria-label' | 'aria-labelledby'>,
+    Pick<NativeProps<'dl'>, 'hidden' | 'aria-label' | 'aria-labelledby'>,
     RefProps<HTMLDListElement> {
   /** `DescriptionRow` elements. */
   children?: ReactNode;
@@ -31,7 +31,7 @@ export interface DescriptionListProps
 
 /** The attributes a row forwards when the caller makes it a focus target. */
 type RowAttributes = Pick<
-  HTMLAttributes<HTMLDivElement>,
+  NativeProps<'div'>,
   | 'tabIndex'
   | 'onClick'
   | 'onKeyDown'

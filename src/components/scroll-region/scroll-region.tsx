@@ -9,7 +9,7 @@ import {
   type RefObject,
 } from 'react';
 import { measuredProperty, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps } from '../../core/props.js';
 import type { ScrollOverviewLayer, ScrollOverviewMarker } from '../../utils/scroll-overview.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import {
@@ -39,7 +39,8 @@ export type ScrollRegionOverscroll = 'contain' | 'auto';
 export type ScrollRegionScrollbar = 'native' | 'overlay';
 export type ScrollRegionScrollbarInset = 'none' | 'header';
 
-export interface ScrollRegionProps extends NativeProps<'div'>, BaseProps, LayoutContainmentProps {
+export interface ScrollRegionProps
+  extends ContainerProps<'div'>, BaseProps, LayoutContainmentProps {
   /** The axes that scroll. Defaults to `y`. */
   axis?: ScrollRegionAxis | undefined;
   /** Whether scroll chaining stops at this region. Defaults to `contain`. */
