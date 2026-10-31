@@ -84,7 +84,6 @@ export {
 } from './tree-reorder.js';
 export type {
   TreeDropPosition,
-  TreeKey,
   TreeKeyboardMove,
   TreeMove,
   TreeMoveDirection,

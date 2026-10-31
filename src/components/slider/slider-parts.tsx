@@ -10,7 +10,7 @@ import {
   SliderTrack,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { Orientation, Size } from '../../core/props.js';
+import type { Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import {
   toAriaControlProps,
@@ -18,8 +18,6 @@ import {
   type FieldInputProps,
   type FieldState,
 } from '../field/field.js';
-
-export type SliderSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** Where the value shows: in an output beside the track, in a label on each thumb, or nowhere. */
 export type SliderValueLabel = 'output' | 'thumb' | 'none';
@@ -54,8 +52,6 @@ export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequire
   marks?: readonly SliderMark[] | undefined;
   /** Where the value shows. Defaults to `output`. */
   valueLabel?: SliderValueLabel | undefined;
-  /** Track and thumb size. Defaults to `md`. */
-  size?: SliderSize | undefined;
 }
 
 type SliderValue = number | [number, number];

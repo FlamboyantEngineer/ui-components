@@ -1,8 +1,7 @@
 // Pure move computations for reordering a tree's rows: which moves are allowed, and the items
 // that result from one. Components report moves; owners apply and persist them.
 
-/** A tree item key, as React Aria collections use it. */
-export type TreeKey = string | number;
+import type { Key } from '../core/props.js';
 
 /** Where a moved row lands: beside the target row, or inside it as its last child. */
 export type TreeDropPosition = 'before' | 'after' | 'inside';
@@ -10,9 +9,9 @@ export type TreeDropPosition = 'before' | 'after' | 'inside';
 /** One move: the row `key` takes the slot before or after `targetKey`, or goes inside it. */
 export interface TreeMove {
   /** The moved row. */
-  key: TreeKey;
+  key: Key;
   /** The row the moved row lands beside or inside. */
-  targetKey: TreeKey;
+  targetKey: Key;
   /** Where the moved row lands relative to the target. */
   position: TreeDropPosition;
 }
@@ -20,9 +19,9 @@ export interface TreeMove {
 /** A drop of several rows: the rows `keys` land together before or after `targetKey`, or inside it. */
 export interface TreeMultipleMove {
   /** The dragged rows. */
-  keys: Iterable<TreeKey>;
+  keys: Iterable<Key>;
   /** The row the dragged rows land beside or inside. */
-  targetKey: TreeKey;
+  targetKey: Key;
   /** Where the dragged rows land relative to the target. */
   position: TreeDropPosition;
 }
@@ -33,7 +32,7 @@ export type TreeMoveDirection = 'up' | 'down' | 'in' | 'out';
 /** A keyboard chord on a row: which row, and which way it asks to move. */
 export interface TreeKeyboardMove {
   /** The focused row. */
-  key: TreeKey;
+  key: Key;
   /** The direction the chord asks for. */
   direction: TreeMoveDirection;
 }
@@ -41,9 +40,9 @@ export interface TreeKeyboardMove {
 /** A visible row as the move rules see it. */
 export interface TreeMoveRow<T> {
   /** The row's key. */
-  key: TreeKey;
+  key: Key;
   /** The parent row's key; `null` at the top level. */
-  parentKey: TreeKey | null;
+  parentKey: Key | null;
   /** The caller's item. */
   item: T;
   /** Whether the row can be moved and can take a moved row right now. */
@@ -64,21 +63,21 @@ export interface TreeMoveRules<T> {
 /** The minimal shape of nested tree data: a key and optional children of the same shape. */
 export interface TreeMoveItem<T> {
   /** The item's key, unique in the tree. */
-  id: TreeKey;
+  id: Key;
   /** The item's children. */
   children?: readonly T[] | undefined;
 }
 
 export interface VisibleTreeRowsOptions<T> {
   /** The keys of rows whose children are shown. */
-  expandedKeys: Iterable<TreeKey>;
+  expandedKeys: Iterable<Key>;
   /** Children of an item. Defaults to its `children` property. */
   getChildren?: ((item: T) => readonly T[] | undefined) | undefined;
   /** Whether a row can move. Defaults to every row. */
   isMovable?: ((item: T) => boolean) | undefined;
 }
 
-type RowIndex<T> = ReadonlyMap<TreeKey, TreeMoveRow<T>>;
+type RowIndex<T> = ReadonlyMap<Key, TreeMoveRow<T>>;
 
 /** A row placed beside or inside a target row. */
 interface Placement<T> {
@@ -96,11 +95,7 @@ function findSiblings<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): 
 }
 
 /** Whether the row `key`, or one of its ancestors, is one of `ancestors`. */
-function isWithinAny<T>(
-  index: RowIndex<T>,
-  key: TreeKey | null,
-  ancestors: ReadonlySet<TreeKey>,
-): boolean {
+function isWithinAny<T>(index: RowIndex<T>, key: Key | null, ancestors: ReadonlySet<Key>): boolean {
   for (let current = key; current !== null; current = index.get(current)?.parentKey ?? null) {
     if (ancestors.has(current)) return true;
   }
@@ -108,7 +103,7 @@ function isWithinAny<T>(
 }
 
 /** Whether the row `key`, or one of its ancestors, is `ancestor`. */
-function isWithin<T>(index: RowIndex<T>, key: TreeKey | null, ancestor: TreeKey): boolean {
+function isWithin<T>(index: RowIndex<T>, key: Key | null, ancestor: Key): boolean {
   return isWithinAny(index, key, new Set([ancestor]));
 }
 
@@ -124,7 +119,7 @@ function isSameSlot<T>(rows: readonly TreeMoveRow<T>[], placement: Placement<T>)
 /** Whether the owner lets the row leave its siblings for `parentKey`'s children. */
 function canEnter<T>(
   index: RowIndex<T>,
-  { source, parentKey }: { source: TreeMoveRow<T>; parentKey: TreeKey | null },
+  { source, parentKey }: { source: TreeMoveRow<T>; parentKey: Key | null },
   rules: TreeMoveRules<T>,
 ): boolean {
   const parent = parentKey === null ? null : index.get(parentKey);
@@ -153,7 +148,7 @@ function resolveSiblingStep<T>(
   return { key: row.key, targetKey: target.key, position: direction === 'up' ? 'before' : 'after' };
 }
 
-function findItem<T extends TreeMoveItem<T>>(items: readonly T[], key: TreeKey): T | undefined {
+function findItem<T extends TreeMoveItem<T>>(items: readonly T[], key: Key): T | undefined {
   for (const item of items) {
     if (item.id === key) return item;
     const found = item.children ? findItem(item.children, key) : undefined;
@@ -193,7 +188,7 @@ export function readTreeChildren<T>(item: T): readonly T[] | undefined {
 }
 
 /** The rows a tree shows, in order: top-level items and the children of expanded items. */
-export function getVisibleTreeRows<T extends { id: TreeKey }>(
+export function getVisibleTreeRows<T extends { id: Key }>(
   items: readonly T[],
   {
     expandedKeys,
@@ -203,7 +198,7 @@ export function getVisibleTreeRows<T extends { id: TreeKey }>(
 ): TreeMoveRow<T>[] {
   const expanded = new Set(expandedKeys);
   const rows: TreeMoveRow<T>[] = [];
-  const visit = (level: readonly T[], parentKey: TreeKey | null) => {
+  const visit = (level: readonly T[], parentKey: Key | null) => {
     for (const item of level) {
       const children = getChildren(item);
       const isExpanded = expanded.has(item.id) && Boolean(children?.length);
@@ -253,7 +248,7 @@ export function resolveTreeDrop<T>(
 }
 
 /** The dragged rows in the order shown, leaving out rows inside another dragged row. */
-function findOutermostRows<T>(rows: readonly TreeMoveRow<T>[], keys: ReadonlySet<TreeKey>) {
+function findOutermostRows<T>(rows: readonly TreeMoveRow<T>[], keys: ReadonlySet<Key>) {
   const index = indexRows(rows);
   return rows.filter((row) => keys.has(row.key) && !isWithinAny(index, row.parentKey, keys));
 }

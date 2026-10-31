@@ -19,9 +19,15 @@ beforeAll(() => {
 
 describe('CommentThreadReply', () => {
   it('UIC-COMMENT-THREAD-2.1 draws the author, a live time, the edited marker and the body', () => {
-    const time = minutesAgo(5);
+    const time = '2026-04-20T10:25:00';
     const { container } = render(
-      <CommentThreadReply author={ana} time={time} isEdited text="Plain text">
+      <CommentThreadReply
+        author={ana}
+        time={time}
+        getNow={() => new Date(2026, 3, 20, 10, 30)}
+        isEdited
+        text="Plain text"
+      >
         <strong>Rich body</strong>
       </CommentThreadReply>,
     );
@@ -31,9 +37,10 @@ describe('CommentThreadReply', () => {
     const author = article.querySelector('.ui-comment-thread-reply__author');
     expect(author).toHaveClass('ui-user-identity');
     expect(author).toHaveAttribute('data-size', 'sm');
-    const timeElement = article.querySelector('time.ui-comment-thread-reply__time');
-    expect(timeElement).toHaveClass('ui-relative-time');
-    expect(timeElement).toHaveAttribute('datetime', time);
+    const attribution = article.querySelector('.ui-comment-thread-reply__time');
+    expect(attribution).toHaveClass('ui-attribution');
+    expect(attribution?.querySelector('time.ui-relative-time')).toHaveAttribute('datetime', time);
+    expect(attribution).toHaveTextContent('5 minutes ago');
     expect(article.querySelector('.ui-comment-thread-reply__edited')).toHaveTextContent('Edited');
     expect(article.querySelector('.ui-comment-thread-reply__body')).toHaveTextContent('Rich body');
     expectHooksMatchSpec(container, 'COMMENT-THREAD', {
@@ -45,6 +52,21 @@ describe('CommentThreadReply', () => {
         'ui-comment-thread-reply__body',
       ],
     });
+  });
+
+  it('UIC-COMMENT-THREAD-2.1 reads the time against fallbackAfterDays', () => {
+    render(
+      <CommentThreadReply
+        author={ana}
+        time="2026-04-10T09:00:00"
+        getNow={() => new Date(2026, 3, 20, 10, 30)}
+        fallbackAfterDays={1}
+        timeZone="UTC"
+        text="Older"
+      />,
+    );
+    const time = screen.getByRole('article').querySelector('.ui-comment-thread-reply__time');
+    expect(time).toHaveTextContent('Apr 10, 2026');
   });
 
   it('UIC-COMMENT-THREAD-2.1 shows the text without children, and an unknown time', () => {

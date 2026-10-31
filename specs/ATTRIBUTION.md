@@ -1,6 +1,6 @@
 # Attribution
 
-`Attribution` says who did something and when in one sentence, such as `Edited 5 minutes ago by Maria Santos`: literal text from a template, a live [Relative Time](RELATIVE-TIME.md) and the person's name, which can open their [User Card](USER-CARD.md). History rows, comments and notifications use it.
+`Attribution` says who did something and when in one sentence, such as `Edited 5 minutes ago by Maria Santos`: literal text from a template, a live [Relative Time](RELATIVE-TIME.md) and the person's name, which can open their [User Card](USER-CARD.md). History rows, state timelines, change lists, activity feeds, comments and notifications use it, so every "who did it and when" reads one way.
 
 ## UIC-ATTRIBUTION-1 - Contract
 
@@ -13,7 +13,7 @@ Verification: `src/components/attribution/attribution.test.tsx`, `src/components
 
 ### UIC-ATTRIBUTION-1.2 - Time
 
-The time shall be a `RelativeTime` in the `ui-attribution__time` slot, reading `time` against `getNow` with `fallbackAfterDays` ([UIC-RELATIVE-TIME-1.2](RELATIVE-TIME.md#uic-relative-time-12---relative-words)), live and with its absolute-date tooltip. It is capitalized only when it starts the sentence (`Yesterday by Maria Santos`, but `Edited yesterday by Maria Santos`). A missing or unreadable `time` reads as the provider's `unknownTime` string.
+The time shall be a `RelativeTime` in the `ui-attribution__time` slot, reading `time` against `getNow` with `fallbackAfterDays` in `timeZone` ([UIC-RELATIVE-TIME-1.2](RELATIVE-TIME.md#uic-relative-time-12---relative-words)), live and with its absolute-date tooltip. It is capitalized only when it starts the sentence (`Yesterday by Maria Santos`, but `Edited yesterday by Maria Santos`). A missing or unreadable `time` reads as the provider's `unknownTime` string.
 
 Implementation: `src/components/attribution/attribution.tsx`, `src/components/attribution/attribution-template.ts`
 Verification: `src/components/attribution/attribution.test.tsx`, `src/components/attribution/attribution-template.test.ts`, `e2e/attribution.spec.ts`

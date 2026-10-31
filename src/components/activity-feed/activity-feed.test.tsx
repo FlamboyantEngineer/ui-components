@@ -80,9 +80,12 @@ describe('ActivityFeed', () => {
     expect(marker(2)?.querySelector('.ui-avatar')).toBeNull();
     const time = (index: number) =>
       requireDefined(entries[index]).querySelector('.ui-activity-feed__time');
-    expect(time(0)).toHaveClass('ui-relative-time');
+    expect(time(0)).toHaveClass('ui-attribution');
     expect(time(0)).toHaveTextContent('5 minutes ago');
-    expect(time(0)).toHaveAttribute('datetime', '2026-04-20T10:25:00');
+    expect(time(0)?.querySelector('time.ui-relative-time')).toHaveAttribute(
+      'datetime',
+      '2026-04-20T10:25:00',
+    );
     expect(time(3)).toHaveTextContent(/^Apr 14, 2026$/);
     expect(time(4)).toHaveTextContent('Unknown time');
     expect(

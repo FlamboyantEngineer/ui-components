@@ -64,7 +64,7 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comm
 
 ### UIC-COMMENT-THREAD-2.1 - Author, time and body
 
-`CommentThreadReply` shall render a `ui-comment-thread-reply` `<article>` whose `ui-comment-thread-reply__header` holds a small `UserIdentity` of `author` (`ui-comment-thread-reply__author`) with, on its description line, a `RelativeTime` of `time` (`ui-comment-thread-reply__time`; the provider's `unknownTime` string when it is missing) and, with `isEdited`, the provider's `edited` string in `ui-comment-thread-reply__edited` and `data-edited` on the root. The body follows in `ui-comment-thread-reply__body`: the children as the caller renders them, else `text`. `reactions`, such as a [Reaction Bar](REACTION-BAR.md), render after it in `ui-comment-thread-reply__reactions`. The article is named by the author's display name.
+`CommentThreadReply` shall render a `ui-comment-thread-reply` `<article>` whose `ui-comment-thread-reply__header` holds a small `UserIdentity` of `author` (`ui-comment-thread-reply__author`) with, on its description line, an [Attribution](ATTRIBUTION.md) of `time` alone (`ui-comment-thread-reply__time`) read against `getNow` with `fallbackAfterDays` and `timeZone`, the provider's `unknownTime` string when it is missing, and, with `isEdited`, the provider's `edited` string in `ui-comment-thread-reply__edited` and `data-edited` on the root. The body follows in `ui-comment-thread-reply__body`: the children as the caller renders them, else `text`. `reactions`, such as a [Reaction Bar](REACTION-BAR.md), render after it in `ui-comment-thread-reply__reactions`. The article is named by the author's display name.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2e/comment-thread.spec.ts`
@@ -125,7 +125,7 @@ Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`
 | `ui-comment-thread-reply`            | root  |        | One comment (`<article>`).                                    |
 | `ui-comment-thread-reply__header`    | slot  |        | The author and the menu.                                      |
 | `ui-comment-thread-reply__author`    | slot  |        | The author (also `ui-user-identity`).                         |
-| `ui-comment-thread-reply__time`      | slot  |        | When it was posted (also `ui-relative-time`).                 |
+| `ui-comment-thread-reply__time`      | slot  |        | When it was posted (also `ui-attribution`).                   |
 | `ui-comment-thread-reply__edited`    | slot  |        | The edited marker.                                            |
 | `ui-comment-thread-reply__actions`   | slot  |        | The comment menu button (also `ui-dropdown-menu`).            |
 | `ui-comment-thread-reply__body`      | slot  |        | The body.                                                     |

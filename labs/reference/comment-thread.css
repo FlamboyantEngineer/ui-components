@@ -95,10 +95,14 @@
   flex: none;
 }
 
-.ui-comment-thread-reply__time,
+.ui-comment-thread-reply .ui-comment-thread-reply__time,
 .ui-comment-thread-reply__edited {
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
+}
+
+.ui-comment-thread-reply__time .ui-attribution__time {
+  color: inherit;
 }
 
 .ui-comment-thread-reply__edited::before {

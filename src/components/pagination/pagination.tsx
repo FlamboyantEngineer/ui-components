@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { useLocale } from '../../primitives/index.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -77,7 +77,8 @@ export function Pagination({
   ...rest
 }: PaginationProps) {
   const strings = useUiStrings();
-  const { locale, direction } = useLocale();
+  const { direction } = useLocale();
+  const numberFormat = useNumberFormatter();
   const [requested, setPage] = useControllableState(page, defaultPage, onPageChange);
   const count = Math.max(1, Math.floor(pageCount));
   const current = clamp(requested, 1, count);
@@ -116,7 +117,7 @@ export function Pagination({
                 data-current={item === current || undefined}
                 onPress={() => goTo(item)}
               >
-                {item.toLocaleString(locale)}
+                {numberFormat.format(item)}
               </Button>
             ) : (
               <span {...hooks.slot('ellipsis')} aria-hidden="true">

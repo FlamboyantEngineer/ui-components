@@ -21,6 +21,11 @@ function ThreeState() {
 }
 
 describe('Checkbox', () => {
+  it('UIC-CHECKBOX-1.1 focuses its input with autoFocus, as Switch does', () => {
+    render(<Checkbox autoFocus>Subscribe</Checkbox>);
+    expect(screen.getByRole('checkbox', { name: 'Subscribe' })).toHaveFocus();
+  });
+
   it('UIC-CHECKBOX-1.1 names the input with any label content, zero included, and drops empty content', () => {
     render(
       <>
