@@ -5,7 +5,8 @@ import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 // days the reader navigates by keyboard, holding all-day bars, timed events and `+n more` lists.
 
 import { useId, useMemo, type ReactNode } from 'react';
-import { getLocalTimeZone, parseIsoDate, useLocale } from '../../primitives/index.js';
+import { parseIsoDate, useLocale } from '../../primitives/index.js';
+import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -61,11 +62,17 @@ export interface CalendarViewProps extends BaseProps {
   views?: readonly CalendarViewMode[] | undefined;
   /** The focused day as `YYYY-MM-DD`, controlled; its month or week is on show. */
   date?: string | undefined;
-  /** The focused day at first, uncontrolled. Defaults to today. */
+  /**
+   * The focused day at first, uncontrolled. Defaults to today, so without it a server render draws
+   * an empty, busy calendar that fills in once hydrated.
+   */
   defaultDate?: string | undefined;
   /** Called with the day the reader moves to, by keyboard, navigation or focus. */
   onDateChange?: ((date: string) => void) | undefined;
-  /** The IANA time zone that places events on days and hours. Defaults to the runtime's. */
+  /**
+   * The IANA time zone that places events on days and hours. Defaults to the provider's, else the
+   * browser's.
+   */
   timeZone?: string | undefined;
   /** The most rows of events a month cell shows, its `+n more` button included. Defaults to 3. */
   maxEvents?: number | undefined;
@@ -73,7 +80,7 @@ export interface CalendarViewProps extends BaseProps {
   onEventAction?: ((key: Key) => void) | undefined;
   /** Draws extra content in each day cell, such as a marker or a count. */
   renderDay?: ((day: CalendarViewDay) => ReactNode) | undefined;
-  /** The clock that decides today. Defaults to `new Date()`. */
+  /** The clock that decides today. Defaults to the provider's, else the current time. */
   getNow?: (() => Date) | undefined;
 }
 
@@ -156,38 +163,80 @@ export function CalendarView({
   className,
   ...rest
 }: CalendarViewProps) {
-  const zone = timeZone ?? getLocalTimeZone();
-  const today = getDayOf((getNow?.() ?? new Date()).getTime(), zone);
-  const titleId = useId();
-  const format = useCalendarFormat(zone);
+  const zone = useTimeZone(timeZone);
+  const readNow = useGetNow(getNow);
+  const now = useNow(getNow);
+  const today = now ? getDayOf(now.getTime(), zone) : null;
   const [mode, setMode] = useControllableState(view, defaultView, onViewChange);
-  const [focusedText, setFocused] = useControllableState(date, defaultDate ?? today, onDateChange);
-  const focused = parseIsoDate(focusedText)?.toString() ?? today;
-  const placed = useMemo(() => readEvents(events, zone), [events, zone]);
+  const [focusedText, setFocused] = useControllableState<string | null>(
+    date,
+    defaultDate ?? null,
+    (next) => {
+      if (next !== null) onDateChange?.(next);
+    },
+  );
+  const focused = parseIsoDate(focusedText ?? '')?.toString() ?? today;
+  const root = { ...rest, ...hooks.root({ className, props: rest, data: { view: mode } }) };
+  // Without a date the calendar opens on today, which a server render and its hydration cannot
+  // know: the calendar draws once the clock may be read.
+  if (focused === null) return <div {...root} aria-busy="true" />;
+  return (
+    <div {...root}>
+      <CalendarContent
+        {...{ events, mode, views, focused, today, maxEvents, onEventAction, renderDay }}
+        timeZone={zone}
+        onFocusedChange={setFocused}
+        onModeChange={setMode}
+        getToday={() => getDayOf(readNow().getTime(), zone)}
+      />
+    </div>
+  );
+}
+
+/** The toolbar and the grid of a calendar whose focused day is known. */
+function CalendarContent(
+  props: Required<Pick<CalendarViewProps, 'events' | 'views' | 'maxEvents'>> &
+    Pick<CalendarViewProps, 'onEventAction' | 'renderDay'> & {
+      mode: CalendarViewMode;
+      focused: string;
+      /** Today in the calendar's zone; `null` until the clock may be read. */
+      today: string | null;
+      timeZone: string;
+      onFocusedChange: (date: string) => void;
+      onModeChange: (mode: CalendarViewMode) => void;
+      /** Reads today from the clock, for the Today button. */
+      getToday: () => string;
+    },
+) {
+  const { events, mode, views, focused, today, timeZone, maxEvents, onEventAction } = props;
+  const { renderDay, onFocusedChange, onModeChange, getToday } = props;
+  const titleId = useId();
+  const format = useCalendarFormat(timeZone);
+  const placed = useMemo(() => readEvents(events, timeZone), [events, timeZone]);
   const grid = useCalendarGrid({
     focused,
-    setFocused,
+    setFocused: onFocusedChange,
     mode,
     isInPeriod: (day) => mode === 'week' || isSameMonth(day, focused),
   });
   const days = mode === 'week' ? getWeekDays(focused, format.locale) : [];
   const onMove = (direction: -1 | 0 | 1) =>
-    setFocused(
+    onFocusedChange(
       direction === 0
-        ? today
+        ? getToday()
         : shiftDay(focused, { [mode === 'month' ? 'months' : 'weeks']: direction }),
     );
   const day = { focused, today, format, renderDay };
   const event = { format, onEventAction };
   return (
-    <div {...rest} {...hooks.root({ className, props: rest, data: { view: mode } })}>
+    <>
       <CalendarToolbar
         mode={mode}
         views={views}
         title={format.formatTitle(mode, days, focused)}
         titleId={titleId}
         onMove={onMove}
-        onModeChange={setMode}
+        onModeChange={onModeChange}
       />
       {mode === 'month' ? (
         <CalendarMonth
@@ -203,11 +252,11 @@ export function CalendarView({
           events={placed}
           grid={grid}
           titleId={titleId}
-          timeZone={zone}
+          timeZone={timeZone}
           day={day}
           event={event}
         />
       )}
-    </div>
+    </>
   );
 }

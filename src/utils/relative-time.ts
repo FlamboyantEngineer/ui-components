@@ -26,8 +26,10 @@ export type RelativeTimeUnitStyle = 'long' | 'short' | 'narrow';
 /** An `Intl.DateTimeFormat` date or time style. */
 export type RelativeTimeStyle = 'full' | 'long' | 'medium' | 'short';
 
-/** The absolute text's styles. */
+/** The absolute text's styles and zone. */
 interface AbsoluteTimeStyles {
+  /** The IANA time zone days and times are read in. Defaults to the device's. */
+  timeZone?: string | undefined;
   /** The absolute date's style. Defaults to `medium`. */
   dateStyle?: RelativeTimeStyle | undefined;
   /** The absolute time's style, for a date and time. Defaults to `short`. */
@@ -76,19 +78,18 @@ const HOUR = 60 * MINUTE;
  * with an offset or a zone keeps its exact instant, also in an hour that daylight saving time
  * repeats; a value without either is local wall time.
  */
-function parseValue(value: string): ParsedValue | null {
+function parseValue(value: string, zone: string): ParsedValue | null {
   const date = parseIsoDate(value);
   if (date) return { date, instant: null };
-  const zone = getLocalTimeZone();
   const dateTime = parseIsoDateTime(value, zone);
   if (!dateTime) return null;
   // Zoned in `zone`, so the instant is exact; `toDate` reads `zone` only for a floating value.
   return { date: toCalendarDate(dateTime), instant: dateTime.toDate(zone) };
 }
 
-/** The local calendar day of a moment. */
-function toDay(moment: Date): CalendarDate {
-  return toCalendarDate(fromDate(moment, getLocalTimeZone()));
+/** The calendar day of a moment in `zone`. */
+function toDay(moment: Date, zone: string): CalendarDate {
+  return toCalendarDate(fromDate(moment, zone));
 }
 
 /**
@@ -136,10 +137,9 @@ function relationOf(distance: number): RelativeTimeRelation {
   return distance > 0 ? 'future' : 'past';
 }
 
-/** Milliseconds from `now` to the next local midnight, when day counts move on. */
-function untilMidnight(now: Date): number {
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  return midnight.getTime() - now.getTime();
+/** Milliseconds from `now` to the next midnight in `zone`, when day counts move on. */
+function untilMidnight(now: Date, zone: string): number {
+  return toDay(now, zone).add({ days: 1 }).toDate(zone).getTime() - now.getTime();
 }
 
 /**
@@ -188,12 +188,14 @@ function describeInstant(
 function formatAbsolute(
   parsed: ParsedValue,
   locale: string,
-  { dateStyle = 'medium', timeStyle = 'short' }: AbsoluteTimeStyles,
+  { dateStyle = 'medium', timeStyle = 'short', timeZone }: AbsoluteTimeStyles,
 ): string {
+  const zone = timeZone ?? getLocalTimeZone();
   return getDateFormatter(locale, {
     dateStyle,
     timeStyle: parsed.instant ? timeStyle : undefined,
-  }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
+    timeZone: zone,
+  }).format(parsed.instant ?? parsed.date.toDate(zone));
 }
 
 /**
@@ -205,7 +207,7 @@ export function formatAbsoluteTime(
   locale: string,
   styles: AbsoluteTimeStyles = {},
 ): string | null {
-  const parsed = parseValue(value);
+  const parsed = parseValue(value, styles.timeZone ?? getLocalTimeZone());
   return parsed ? formatAbsolute(parsed, locale, styles) : null;
 }
 
@@ -221,7 +223,7 @@ const zoneDesignator = /(?:Z|[+-]\d{2}(?::?\d{2})?|\])$/i;
 export function formatStableTime(
   value: string,
   locale: string,
-  { dateStyle = 'medium', timeStyle = 'short' }: AbsoluteTimeStyles = {},
+  { dateStyle = 'medium', timeStyle = 'short' }: Omit<AbsoluteTimeStyles, 'timeZone'> = {},
 ): string | null {
   const date = parseIsoDate(value);
   if (date)
@@ -250,10 +252,11 @@ export function describeRelativeTime(
   value: string,
   options: RelativeTimeOptions,
 ): RelativeTimeText | null {
-  const parsed = parseValue(value);
+  const zone = options.timeZone ?? getLocalTimeZone();
+  const parsed = parseValue(value, zone);
   if (!parsed) return null;
   const { locale, now } = options;
-  const days = parsed.date.compare(toDay(now));
+  const days = parsed.date.compare(toDay(now, zone));
   const formatter = getRelativeTimeFormat(locale, { numeric: 'auto', style: options.unitStyle });
   const absolute = formatAbsolute(parsed, locale, options);
   const offset = parsed.instant ? parsed.instant.getTime() - now.getTime() : 0;
@@ -262,7 +265,7 @@ export function describeRelativeTime(
   // A future instant read in days starts reading in hours once it is nearer than a day.
   const untilHours = parsed.instant && offset > 0 ? offset - dayDistance + 1 : Infinity;
   if (Math.abs(days) >= options.fallbackAfterDays) {
-    const nextChange = days > 0 ? Math.min(untilMidnight(now), untilHours) : null;
+    const nextChange = days > 0 ? Math.min(untilMidnight(now, zone), untilHours) : null;
     return {
       relative: absolute,
       absolute,
@@ -276,6 +279,6 @@ export function describeRelativeTime(
     absolute,
     relation: relationOf(days),
     isRelative: true,
-    nextChange: Math.min(untilMidnight(now), untilHours),
+    nextChange: Math.min(untilMidnight(now, zone), untilHours),
   };
 }

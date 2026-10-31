@@ -10,6 +10,7 @@ import type { FieldState } from '../field/field.js';
 import { ColorChannelInputs, ColorFormatChoice } from './color-field-channels.js';
 import { ColorFieldEyeDropper } from './color-field-eye-dropper.js';
 import { hasAlpha, type ColorFieldFormat } from './color-values.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 
 interface ColorFieldPanelProps {
   label: string;
@@ -72,7 +73,7 @@ export function ColorFieldPanel({
       <PopoverPanel
         {...hooks.slot('popover', { layer: 'dropdown' })}
         placement="bottom start"
-        offset={4}
+        offset={DEFAULT_DROPDOWN_OFFSET}
       >
         <Dialog {...hooks.slot('dialog')} aria-label={label}>
           {({ close }) => (

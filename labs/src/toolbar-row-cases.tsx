@@ -19,7 +19,7 @@ import {
   ToolbarRowSeparator,
   type ToolbarRowGroupDensity,
   type ToolbarRowOverflow,
-} from '../../src/components/layout/toolbar-row.js';
+} from '../../src/components/layout/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { StateMatrix } from './chrome/index.js';
 

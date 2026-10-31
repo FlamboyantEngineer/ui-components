@@ -2,6 +2,11 @@
 // or a point. Pure functions over rects; `overlay-geometry.ts` measures the DOM for them.
 
 import { alignCrossAxis, clampFinite, resolveAnchorPoint, solveMainAxis } from './overlay-axis.js';
+import {
+  DEFAULT_OVERLAY_GAP,
+  DEFAULT_OVERLAY_GUTTER,
+  DEFAULT_SUBMENU_OVERLAP,
+} from './overlay-defaults.js';
 
 /** A box in viewport coordinates, like `DOMRect`. */
 export interface OverlayRect {
@@ -102,13 +107,6 @@ export interface SubmenuPlacement {
   maxHeight: number;
   constrained: boolean;
 }
-
-/** Space kept between an overlay and the boundary edges. */
-export const DEFAULT_OVERLAY_GUTTER = 8;
-/** Space between an anchor and its overlay. */
-export const DEFAULT_OVERLAY_GAP = 6;
-/** How far a submenu overlaps its parent menu. */
-export const DEFAULT_SUBMENU_OVERLAP = 6;
 
 /** The rects a placement is solved in: vertical room by mode, horizontal room as given. */
 function resolveSolvingRects(input: OverlayPlacementInput | SubmenuPlacementInput) {

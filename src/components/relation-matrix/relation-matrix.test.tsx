@@ -226,6 +226,31 @@ describe('RelationMatrix', () => {
     expect(cell(0, 0)).toHaveFocus();
   });
 
+  it('UIC-RELATION-MATRIX-4.2 UIC-COLLECTIONS-1.5 keeps its own grid contract: one tab stop, no typeahead, no selection', async () => {
+    const user = userEvent.setup();
+    const onCellAction = vi.fn();
+    render(
+      <>
+        <Matrix onCellAction={onCellAction} />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.tab();
+    expect(cell(0, 0)).toHaveFocus();
+    await user.keyboard('R');
+    expect(cell(0, 0)).toHaveFocus();
+    await user.keyboard('{Shift>}{ArrowDown}{/Shift}');
+    expect(cell(1, 0)).toHaveFocus();
+    expect(document.querySelector('[aria-selected], [data-selected]')).toBeNull();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(cell(1, 0)).toHaveFocus();
+    await user.keyboard('{Control>}{Home}{/Control}{Enter} ');
+    expect(cell(-1, -1)).toHaveFocus();
+    expect(onCellAction).not.toHaveBeenCalled();
+  });
+
   it('UIC-RELATION-MATRIX-3.1 renders only the rows and columns in view while virtualized', () => {
     const manyRows = Array.from({ length: 400 }, (_, index) => ({
       id: `r${index}`,

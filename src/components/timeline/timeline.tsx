@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, type Ref } from 'react';
-import { getLocalTimeZone, today as todayIn, useLocale } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps, SelectionProps } from '../../core/events.js';
 import type { BaseProps, Key, Selection } from '../../core/props.js';
@@ -52,7 +53,10 @@ export interface TimelineProps
   scale?: TimelineScale | undefined;
   /** The days shown. Defaults to the items' days widened to whole units of the scale, plus one on each side. */
   range?: TimelineRange | undefined;
-  /** The day the today marker marks (`YYYY-MM-DD`). Defaults to the current day in the local time zone. */
+  /**
+   * The day the today marker marks (`YYYY-MM-DD`). Defaults to the current day in the provider's
+   * time zone, else the browser's; a server render and its hydration draw no marker.
+   */
   today?: string | undefined;
   /** The chart or the table view. Defaults to `chart`. */
   view?: TimelineView | undefined;
@@ -137,13 +141,11 @@ export function Timeline({
   const { locale } = useLocale();
   const { selectionMode, selectedKeys, defaultSelectedKeys, onSelectionChange, ...elementProps } =
     rest;
-  const selection = useItemSelection(
-    { selectionMode, selectedKeys, defaultSelectedKeys, onSelectionChange },
-    items,
-  );
+  const selection = useItemSelection(rest, items);
   const expansion = useRowExpansion({ expandedKeys, defaultExpandedKeys, onExpandedChange }, rows);
   const [draft, setDraft] = useState<TimelineItemChange | null>(null);
-  const day = today ?? todayIn(getLocalTimeZone()).toString();
+  const currentDay = useToday();
+  const day = today ?? currentDay;
   const named = rest['aria-label'] !== undefined || rest['aria-labelledby'] !== undefined;
   const actions: TimelineChartActions = {
     isSelectable: selection.selectionMode !== 'none',
@@ -155,7 +157,7 @@ export function Timeline({
     onExpandedChange: expansion.change,
   };
   const visibleRows = flattenTimelineRows(rows, expansion.expanded);
-  const { axis, layout } = layoutTimeline({
+  const laidOut = layoutTimeline({
     rows: visibleRows,
     items,
     draft,
@@ -172,6 +174,7 @@ export function Timeline({
       aria-label={named ? undefined : strings.timeline}
       {...elementProps}
       {...hooks.root({ className, props: elementProps, data: { scale, view } })}
+      aria-busy={(view === 'chart' && !laidOut) || undefined}
     >
       {view === 'table' ? (
         <TimelineTable
@@ -183,17 +186,17 @@ export function Timeline({
           selectedKeys={selection.selected}
           onSelectionChange={selection.replace}
         />
-      ) : (
+      ) : laidOut ? (
         <TimelineChart
-          axis={axis}
+          axis={laidOut.axis}
           scale={scale}
           rows={visibleRows}
-          layout={layout}
+          layout={laidOut.layout}
           rowHeight={rowHeight}
           today={day}
           actions={actions}
         />
-      )}
+      ) : null}
     </div>
   );
 }

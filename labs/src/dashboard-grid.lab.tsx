@@ -2,13 +2,13 @@ import { useState, type CSSProperties } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Card } from '../../src/components/card/card.js';
-import { BarChart } from '../../src/components/chart/bar-chart.js';
-import { DonutChart } from '../../src/components/chart/donut-chart.js';
+import { BarChart } from '../../src/components/chart/index.js';
+import { DonutChart } from '../../src/components/chart/index.js';
 import {
   DashboardGrid,
   type DashboardGridItem,
 } from '../../src/components/dashboard-grid/dashboard-grid.js';
-import { DashboardTile } from '../../src/components/dashboard-grid/dashboard-tile.js';
+import { DashboardTile } from '../../src/components/dashboard-grid/index.js';
 import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
 import { useUiStorage } from '../../src/core/provider.js';
 import { requireDefined } from '../../src/utils/require-defined.js';

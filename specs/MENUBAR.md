@@ -76,6 +76,13 @@ Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`
 Implementation: `src/components/menubar/menubar.tsx`
 Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`
 
+### UIC-MENUBAR-2.6 - Menus that leave
+
+When a `MenubarMenu` leaves the bar, the bar shall forget it as the open menu and as the destination of a move between menus, without remounting the other items: its menu and submenus close with it, and the remaining items open by press, hover, keyboard and the arrow keys as before, as do menus added later, also after every menu has left. Focus the open menu held then moves to the bar's tab stop (its first item); focus elsewhere stays.
+
+Implementation: `src/components/menubar/menubar-state.ts`
+Verification: `src/components/menubar/menubar-removal.test.tsx`, `e2e/menubar.spec.ts`
+
 ## Hooks
 
 | Hook                  | Kind      | Values                   | Description                                                               |

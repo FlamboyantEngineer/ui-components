@@ -5,6 +5,7 @@ import { useId, useRef, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps } from '../../core/props.js';
+import { useNow, useTimeZone } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -14,7 +15,6 @@ import { List } from '../list-row/list-row.js';
 import { LoadMore } from '../load-more/load-more.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { groupByDay, type DayGroup } from './group-by-day.js';
 import {
   NotificationRow,
@@ -22,7 +22,7 @@ import {
   type NotificationItem,
   type NotificationRowActions,
 } from './notification-row.js';
-import { useArrivalAnnouncement } from './use-arrival-announcement.js';
+import { ArrivalAnnouncement } from './arrival-announcement.js';
 import { useRemovalFocus } from './use-removal-focus.js';
 
 export type { NotificationItem } from './notification-row.js';
@@ -33,6 +33,11 @@ export type NotificationFilter = 'all' | 'unread';
 export interface NotificationListProps extends BaseProps, NotificationRowActions {
   /** The notifications, newest first. */
   items: readonly NotificationItem[];
+  /**
+   * Announces the notifications that arrive in a polite status. Defaults to `true`; turn it off
+   * where another status already announces them.
+   */
+  announcesArrivals?: boolean | undefined;
   /** Which notifications show (controlled). */
   filter?: NotificationFilter | undefined;
   /** Which notifications show at first. Defaults to `all`. */
@@ -54,8 +59,6 @@ export interface NotificationListProps extends BaseProps, NotificationRowActions
 }
 
 type ListGroupProps = { group: DayGroup<NotificationItem>; actions: NotificationRowActions };
-
-const currentTime = () => new Date();
 
 function countUnread(items: readonly NotificationItem[]): number {
   return items.filter((item) => !item.isRead).length;
@@ -156,6 +159,7 @@ function ListEmptyState({ filter, isLoading }: { filter: NotificationFilter; isL
  */
 export function NotificationList({
   items,
+  announcesArrivals = true,
   filter: filterProp,
   defaultFilter = 'all',
   onFilterChange,
@@ -169,19 +173,19 @@ export function NotificationList({
   onReadChange,
   onDismiss,
   renderActions,
-  getNow = currentTime,
+  getNow,
   className,
   ...rest
 }: NotificationListProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const [filter, setFilter] = useControllableState(filterProp, defaultFilter, onFilterChange);
-  const announcement = useArrivalAnnouncement(items);
   const unread = unreadCount ?? countUnread(items);
   const shown = filter === 'unread' ? items.filter((item) => !item.isRead) : items;
   const groups = groupByDay(shown, {
     getDate: (item) => item.time,
-    now: getNow(),
+    now: useNow(getNow),
+    timeZone: useTimeZone(),
     locale,
     unknownLabel: strings.earlier,
   });
@@ -215,9 +219,9 @@ export function NotificationList({
           className={hooks.slotClass('load-more')}
         />
       ) : null}
-      <VisuallyHidden role="status" className={hooks.slotClass('announcement')}>
-        {announcement}
-      </VisuallyHidden>
+      {announcesArrivals ? (
+        <ArrivalAnnouncement items={items} className={hooks.slotClass('announcement')} />
+      ) : null}
     </div>
   );
 }

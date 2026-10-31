@@ -23,6 +23,7 @@ import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
+import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 
 /** A named value offered beside the calendar, such as `Last 7 days`. */
 export interface DateTimeFieldPreset<V> {
@@ -229,8 +230,8 @@ export function CalendarPopover({ mode, settings, onPick, children }: CalendarPo
       <PopoverPresence />
       <Popover
         {...hooks.slot('popover', { layer: 'dropdown' })}
-        offset={4}
-        containerPadding={8}
+        offset={DEFAULT_DROPDOWN_OFFSET}
+        containerPadding={DEFAULT_OVERLAY_GUTTER}
         style={{ zIndex }}
       >
         <Dialog className={hooks.slotClass('dialog')}>

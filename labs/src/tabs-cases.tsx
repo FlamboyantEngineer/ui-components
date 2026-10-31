@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
@@ -216,6 +216,61 @@ export function RememberedTabs() {
       <Button variant="secondary" size="sm" onPress={() => setMount(mount + 1)}>
         Remount
       </Button>
+    </div>
+  );
+}
+
+/** Renameable tabs with a menu that lock themselves a second after Lock is pressed. */
+export function LockingTabs() {
+  const [names, setNames] = useState(['Soup', 'Salad', 'Stew']);
+  const [isLocked, setLocked] = useState(false);
+  const [isLocking, setLocking] = useState(false);
+  const [last, setLast] = useState('none');
+  useEffect(() => {
+    if (!isLocking) return undefined;
+    // Lab-only stand-in for the host locking the tabs while the reader edits one.
+    const timer = setTimeout(() => {
+      setLocking(false);
+      setLocked(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isLocking]);
+  return (
+    <div data-lab-demo="locking" style={{ width: 420 }}>
+      <p>
+        <Button onPress={() => setLocking(true)} isDisabled={isLocked || isLocking}>
+          Lock in a second
+        </Button>{' '}
+        <Button onPress={() => setLocked(false)} isDisabled={!isLocked}>
+          Unlock
+        </Button>
+      </p>
+      <Tabs isDisabled={isLocked}>
+        <TabList
+          aria-label="Courses"
+          onRename={(key, name) => {
+            setLast(`renamed ${String(key)}`);
+            setNames((current) => current.map((item) => (item === key ? name : item)));
+          }}
+          onRemove={(keys) => {
+            setLast(`deleted ${[...keys].join(', ')}`);
+            setNames((current) => current.filter((item) => !keys.has(item)));
+          }}
+          getMenuItems={(_key, standard) => standard}
+        >
+          {names.map((name) => (
+            <Tab key={name} id={name}>
+              {name}
+            </Tab>
+          ))}
+        </TabList>
+        {names.map((name) => (
+          <TabPanel key={name} id={name}>
+            The {name.toLowerCase()} course.
+          </TabPanel>
+        ))}
+      </Tabs>
+      <p data-lab-output="locking">Last change: {last}</p>
     </div>
   );
 }

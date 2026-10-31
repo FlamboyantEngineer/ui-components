@@ -85,7 +85,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-2.7 - Popover
 
-The list's popover (`ui-combobox__popover`) shall sit on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')` ([PORTAL.md](PORTAL.md)), 4 pixels below the field and at least as wide as the field, which it publishes as `--ui-trigger-width`, with the listbox (`ui-combobox__listbox`) inside.
+The list's popover (`ui-combobox__popover`) shall sit on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')` ([PORTAL.md](PORTAL.md)), `DEFAULT_DROPDOWN_OFFSET` (4 pixels) below the field and at least as wide as the field, which it publishes as `--ui-trigger-width`, with the listbox (`ui-combobox__listbox`) inside.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`

@@ -82,6 +82,20 @@ The matrix shall be a `grid` with `aria-rowcount` and `aria-colcount` counting t
 Implementation: `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-header.tsx`, `src/components/relation-matrix/relation-matrix-row.tsx`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/relation-matrix.spec.ts`
 
+### UIC-RELATION-MATRIX-4.2 - The library's own grid
+
+The matrix shall render its own grid rather than React Aria's `Table` or `GridList` (UIC-COLLECTIONS-1.5): React Aria's table renders every column of each row, so it cannot window columns (UIC-RELATION-MATRIX-3.1). The grid therefore writes its roles, `aria-rowindex`, `aria-colindex`, counts and a roving `tabIndex` itself, and keeps this keyboard contract, which differs from the library's tables on purpose:
+
+- One tab stop: Tab and Shift+Tab leave the grid from the focused cell and return to it.
+- Movement by UIC-RELATION-MATRIX-2.1 only, through the headers too. Typed characters do not move focus: there is no typeahead.
+- No selection: no cell, row or column is selected, nothing publishes `aria-selected` or `data-selected`, and Shift with a movement key only moves.
+- Enter and Space act on a body cell (UIC-RELATION-MATRIX-2.2) and do nothing on a header.
+
+The provider's `related` text is looked up once per row, not per cell.
+
+Implementation: `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-row.tsx`, `src/components/relation-matrix/use-matrix-navigation.ts`
+Verification: `src/components/relation-matrix/relation-matrix.test.tsx`
+
 ## Hooks
 
 | Hook                               | Kind      | Values                                            | Description                                                           |

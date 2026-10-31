@@ -7,7 +7,7 @@ import {
   SaveGlyph,
   UndoGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import {
@@ -165,6 +165,38 @@ function VerticalBar() {
   );
 }
 
+/** A bar whose File menu leaves a second after Remove File is pressed, open or not. */
+function ChangingBar() {
+  const [hasFile, setHasFile] = useState(true);
+  const [isLeaving, setLeaving] = useState(false);
+  useEffect(() => {
+    if (!isLeaving) return undefined;
+    // Lab-only stand-in for the host dropping a menu while the reader has it open.
+    const timer = setTimeout(() => {
+      setLeaving(false);
+      setHasFile(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isLeaving]);
+  return (
+    <div data-lab-demo="changing">
+      <p>
+        <button type="button" onClick={() => setLeaving(true)} disabled={!hasFile || isLeaving}>
+          Remove File in a second
+        </button>{' '}
+        <button type="button" onClick={() => setHasFile(true)} disabled={hasFile}>
+          Restore File
+        </button>
+      </p>
+      <Menubar aria-label="Changing menus">
+        {hasFile ? <MenubarMenu key="file" label="File" items={fileEntries} /> : null}
+        <MenubarMenu key="edit" label="Edit" items={editEntries} />
+        <MenubarMenu key="help" label="Help" items={helpEntries} />
+      </Menubar>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -193,6 +225,12 @@ mountLab(
       description="Arrow Up and Down move along the column; Arrow Right opens a menu beside it and Arrow Left closes it."
     >
       <VerticalBar />
+    </LabSection>
+    <LabSection
+      title="Menus that leave"
+      description="Press Remove File, then open File and its Open recent submenu: when File leaves, its menus close, focus moves to Edit, and Edit and Help open as before. Restore File brings it back."
+    >
+      <ChangingBar />
     </LabSection>
     <LabSection
       title="Right to left"

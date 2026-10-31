@@ -16,6 +16,7 @@ import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { Portal, useLayerZIndex } from '../portal/portal.js';
 import { ModalShownContext, retainedStyle } from './modal-retained.js';
+import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** The open state a dialog shares with the overlays and trigger around it. */
 interface ModalOpenState {
@@ -188,8 +189,8 @@ function AnchoredModal({
       isOpen={state.isOpen}
       onOpenChange={state.setOpen}
       placement={placement}
-      offset={8}
-      containerPadding={8}
+      offset={POPOVER_OFFSET}
+      containerPadding={DEFAULT_OVERLAY_GUTTER}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       // A popover always closes on an outside press; a dialog only when dismissable.
       shouldCloseOnInteractOutside={(element) =>

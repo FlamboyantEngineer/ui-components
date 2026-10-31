@@ -26,6 +26,12 @@ import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';
+import {
+  DEFAULT_DROPDOWN_OFFSET,
+  DEFAULT_OVERLAY_GUTTER,
+  SUBMENU_CROSS_OFFSET,
+  SUBMENU_OFFSET,
+} from '../../utils/overlay-defaults.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps {
   /**
@@ -155,7 +161,7 @@ export function MenuOverlay({
   layer,
   offset,
   crossOffset,
-  containerPadding = 8,
+  containerPadding = DEFAULT_OVERLAY_GUTTER,
   className,
   children,
   ref,
@@ -179,8 +185,8 @@ export function MenuOverlay({
         ref={surface.ref}
         isNonModal={nonModal}
         {...hooks.root({ className, props: rest, data: { layer: resolved } })}
-        offset={offset ?? (isSubmenu ? -2 : 4)}
-        crossOffset={crossOffset ?? (isSubmenu ? -4 : 0)}
+        offset={offset ?? (isSubmenu ? SUBMENU_OFFSET : DEFAULT_DROPDOWN_OFFSET)}
+        crossOffset={crossOffset ?? (isSubmenu ? SUBMENU_CROSS_OFFSET : 0)}
         containerPadding={containerPadding}
         style={{ zIndex }}
       >

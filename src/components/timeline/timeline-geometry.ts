@@ -134,15 +134,16 @@ export function readTimelineItem(item: TimelineItem): ReadItem | null {
 
 /**
  * The caller's range when it is readable; otherwise the items' first to last day (today when there
- * are none), widened to whole units of the scale plus one unit on each side.
+ * are none), widened to whole units of the scale plus one unit on each side. `null` when there is
+ * neither a range nor an item and today is unknown, before the clock may be read.
  */
 export function resolveTimelineRange(options: {
   range: TimelineRange | undefined;
   items: readonly TimelineItem[];
   scale: TimelineScale;
-  today: string;
+  today: string | null;
   locale: string;
-}): TimelineRange {
+}): TimelineRange | null {
   const { range, items, scale, today, locale } = options;
   if (range && isTimelineDate(range.start) && isTimelineDate(range.end)) {
     if (range.end >= range.start) return range;
@@ -155,9 +156,12 @@ export function resolveTimelineRange(options: {
     if (low === undefined || read.start < low) low = read.start;
     if (high === undefined || read.end > high) high = read.end;
   }
+  const from = low ?? today;
+  const to = high ?? today;
+  if (from === null || to === null) return null;
   const unit = timelineScales[scale].minor;
-  const first = floorToTimeUnit(low ?? today, unit, locale);
-  const last = floorToTimeUnit(high ?? today, unit, locale);
+  const first = floorToTimeUnit(from, unit, locale);
+  const last = floorToTimeUnit(to, unit, locale);
   return {
     start: addTimeUnits(first, unit, -1),
     end: addTimeUnits(addTimeUnits(last, unit, 2), 'day', -1),

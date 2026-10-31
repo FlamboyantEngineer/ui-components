@@ -352,6 +352,23 @@ describe('NotificationList', () => {
     expect(container.querySelector('.ui-notification-list__announcement')).toHaveTextContent('');
   });
 
+  it('UIC-NOTIFICATION-CENTER-3.1 renders no status with announcesArrivals off', () => {
+    const first = items.slice(0, 2);
+    const { container, rerender } = render(
+      <NotificationList items={first} getNow={getNow} announcesArrivals={false} />,
+    );
+    const arrival = {
+      id: 'n7',
+      title: 'Ada Park assigned you',
+      time: new Date(2026, 4, 20, 10, 29).toISOString(),
+    };
+    rerender(
+      <NotificationList items={[arrival, ...first]} getNow={getNow} announcesArrivals={false} />,
+    );
+    expect(container.querySelector('.ui-notification-list__announcement')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   it('UIC-NOTIFICATION-CENTER-3.2 makes each day one tab stop with arrow keys between rows', async () => {
     render(<NotificationList items={items.slice(0, 3)} getNow={getNow} onAction={() => {}} />);
     await userEvent.tab();

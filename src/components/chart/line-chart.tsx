@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode, Ref } from 'react';
-import { getLocalTimeZone, useLocale, useNumberFormatter } from '../../primitives/index.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
+import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -51,7 +52,10 @@ export interface LineChartProps
   maxValue?: number | undefined;
   /** How values are formatted on the axis, in names, the tooltip and the table. */
   formatOptions?: Intl.NumberFormatOptions | undefined;
-  /** The IANA time zone that reads dates and places date ticks. Defaults to the runtime's. */
+  /**
+   * The IANA time zone that reads dates and places date ticks. Defaults to the provider's, else the
+   * browser's once hydrated (UTC on a server and while hydrating).
+   */
   timeZone?: string | undefined;
   /** Heads the table's column of x values. Defaults to the provider's `chartCategory` string. */
   categoryLabel?: string | undefined;
@@ -182,7 +186,7 @@ export function LineChart({
   minValue,
   maxValue,
   formatOptions,
-  timeZone = getLocalTimeZone(),
+  timeZone: timeZoneProp,
   categoryLabel,
   summary,
   showSummary,
@@ -195,6 +199,7 @@ export function LineChart({
   ...rest
 }: LineChartProps) {
   const strings = useUiStrings();
+  const timeZone = useTimeZone(timeZoneProp);
   const { width, element, frameRef } = useChartFrame(ref);
   const format = useNumberFormatter(formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });

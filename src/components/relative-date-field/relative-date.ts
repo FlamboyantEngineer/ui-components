@@ -63,7 +63,19 @@ export interface RelativeDateText {
   relative: string;
   /** The value as a localized date, or date and time. */
   absolute: string;
-  relation: RelativeDateRelation;
+  /** Where the value lies against now; unknown before the clock may be read. */
+  relation: RelativeDateRelation | undefined;
+}
+
+/** Now, and the IANA time zone days are read in (the device's without one). */
+interface ZonedNow {
+  now: Date;
+  timeZone?: string | undefined;
+}
+
+interface RelativeDateOptions extends ZonedNow {
+  locale: string;
+  fallbackAfterDays: number;
 }
 
 /** The earliest and latest `YYYY-MM-DD` dates a value may fall on. */
@@ -72,9 +84,9 @@ export interface RelativeDateBounds {
   maxValue?: string | undefined;
 }
 
-/** The local calendar day of a moment. */
-function toDay(moment: Date): CalendarDate {
-  return toCalendarDate(fromDate(moment, getLocalTimeZone()));
+/** The calendar day of a moment in `timeZone`, the device's zone without one. */
+function toDay(moment: Date, timeZone: string | undefined): CalendarDate {
+  return toCalendarDate(fromDate(moment, timeZone ?? getLocalTimeZone()));
 }
 
 /** A range is past once it ends before today, future while it starts after, present around it. */
@@ -83,9 +95,9 @@ function rangeRelation(range: RelativeDateRange, today: string): RelativeDateRel
   return range.start > today ? 'future' : 'present';
 }
 
-/** The local calendar day of a moment, as `YYYY-MM-DD`. */
-export function toLocalDay(now: Date): string {
-  return toDay(now).toString();
+/** The calendar day of a moment in `timeZone` (the device's without one), as `YYYY-MM-DD`. */
+export function toZonedDay(now: Date, timeZone?: string | undefined): string {
+  return toDay(now, timeZone).toString();
 }
 
 /**
@@ -94,7 +106,7 @@ export function toLocalDay(now: Date): string {
  */
 export function describeRelativeDate(
   value: string,
-  options: { now: Date; locale: string; fallbackAfterDays: number },
+  options: RelativeDateOptions,
 ): RelativeDateText | null {
   const text = describeRelativeTime(value, options);
   if (!text) return null;
@@ -109,24 +121,40 @@ export function describeRelativeDate(
  */
 export function describeRelativeRange(
   range: RelativeDateRange,
-  options: { now: Date; locale: string; fallbackAfterDays: number },
+  options: RelativeDateOptions,
 ): RelativeDateText | null {
   const start = describeRelativeDate(range.start, options);
   const end = describeRelativeDate(range.end, options);
-  const startDate = parseIsoDate(range.start);
-  const endDate = parseIsoDate(range.end);
-  if (!start || !end || !startDate || !endDate) return null;
-  const zone = getLocalTimeZone();
-  const today = toLocalDay(options.now);
-  const absolute = getDateFormatter(options.locale, { dateStyle: 'medium' }).formatRange(
-    startDate.toDate(zone),
-    endDate.toDate(zone),
-  );
+  const absolute = formatDayRange(range, options.locale);
+  if (!start || !end || absolute === null) return null;
   return {
     relative: `${start.relative} – ${end.relative}`,
     absolute,
-    relation: rangeRelation(range, today),
+    relation: rangeRelation(range, toZonedDay(options.now, options.timeZone)),
   };
+}
+
+/** A `YYYY-MM-DD` date as a localized date, the same in every zone; `null` unless it is a date. */
+export function formatDay(text: string, locale: string): string | null {
+  const date = parseIsoDate(text);
+  if (!date) return null;
+  return getDateFormatter(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+    date.toDate('UTC'),
+  );
+}
+
+/**
+ * A range of `YYYY-MM-DD` dates as a localized range, the same in every zone; `null` unless both
+ * ends are dates.
+ */
+export function formatDayRange(range: RelativeDateRange, locale: string): string | null {
+  const start = parseIsoDate(range.start);
+  const end = parseIsoDate(range.end);
+  if (!start || !end) return null;
+  return getDateFormatter(locale, { dateStyle: 'medium', timeZone: 'UTC' }).formatRange(
+    start.toDate('UTC'),
+    end.toDate('UTC'),
+  );
 }
 
 /** A preset's label: its own, or one such as `Today`, `Next week` or `In 3 days`. */
@@ -151,18 +179,21 @@ export function formatRelativePeriod(preset: RelativeDatePreset, locale: string)
 /** The value a preset stands for, counted from `now`, as a date or a local date and time. */
 export function resolveRelativePreset(
   preset: RelativeDatePreset,
-  options: { now: Date; kind: 'date' | 'date-time' },
+  options: ZonedNow & { kind: 'date' | 'date-time' },
 ): string {
   const duration = { [`${preset.unit}s`]: preset.amount };
-  const moment = fromDate(options.now, getLocalTimeZone()).add(duration);
+  const moment = fromDate(options.now, options.timeZone ?? getLocalTimeZone()).add(duration);
   return options.kind === 'date'
     ? toCalendarDate(moment).toString()
     : formatIsoDate(toCalendarDateTime(moment));
 }
 
 /** The range a preset stands for: from the point it names to today, or from today to it. */
-export function resolveRelativeRange(preset: RelativeDatePreset, now: Date): RelativeDateRange {
-  const today = toDay(now);
+export function resolveRelativeRange(
+  preset: RelativeDatePreset,
+  { now, timeZone }: ZonedNow,
+): RelativeDateRange {
+  const today = toDay(now, timeZone);
   const other = today.add({ [`${preset.unit}s`]: preset.amount }).toString();
   return preset.amount < 0
     ? { start: other, end: today.toString() }
@@ -172,11 +203,12 @@ export function resolveRelativeRange(preset: RelativeDatePreset, now: Date): Rel
 /** A picked `YYYY-MM-DD` day as a value: the date, or that day at the current time of day. */
 export function resolvePickedDate(
   date: string,
-  options: { now: Date; kind: 'date' | 'date-time' },
+  options: ZonedNow & { kind: 'date' | 'date-time' },
 ): string {
   const day = parseIsoDate(date);
   if (options.kind === 'date' || !day) return date;
-  const moment = toCalendarDateTime(fromDate(options.now, getLocalTimeZone()));
+  const zone = options.timeZone ?? getLocalTimeZone();
+  const moment = toCalendarDateTime(fromDate(options.now, zone));
   return formatIsoDate(moment.set({ year: day.year, month: day.month, day: day.day }));
 }
 

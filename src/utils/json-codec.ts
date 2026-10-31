@@ -4,12 +4,16 @@ import { isKey } from './is-key.js';
 
 /**
  * A codec that stores a value as JSON and reads it back through `read`, which returns the value or
- * throws when the stored data is not one, so the persisted state falls back to its default.
+ * throws when the stored data is not one, so the persisted state falls back to its default. `write`
+ * turns the value into the data stored, when that differs from the value itself.
  */
-export function createJsonCodec<T>(read: (value: unknown) => T): PersistCodec<T> {
+export function createJsonCodec<T>(
+  read: (value: unknown) => T,
+  write: (value: T) => unknown = (value) => value,
+): PersistCodec<T> {
   return {
     parse: (raw) => read(JSON.parse(raw)),
-    stringify: (value) => JSON.stringify(value),
+    stringify: (value) => JSON.stringify(write(value)),
   };
 }
 
@@ -27,6 +31,19 @@ export function createListCodec<T>(isEntry: (value: unknown) => value is T): Per
 /** A stored boolean, such as whether a section is open. */
 export const booleanCodec = createJsonCodec((value): boolean => {
   if (typeof value !== 'boolean') throw new TypeError('Not a stored boolean');
+  return value;
+});
+
+/** A stored collection key; numbers and strings stay distinct. `null`, for no key, is never read back. */
+export const keyCodec = createJsonCodec((value): Key | null => {
+  if (!isKey(value)) throw new TypeError('Not a stored key');
+  return value;
+});
+
+/** A stored finite number, such as a size. */
+export const numberCodec = createJsonCodec((value): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value))
+    throw new TypeError('Not a stored number');
   return value;
 });
 

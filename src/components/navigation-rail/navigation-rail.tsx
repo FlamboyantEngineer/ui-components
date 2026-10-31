@@ -6,17 +6,13 @@ import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.j
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { booleanCodec } from '../../utils/json-codec.js';
+import { booleanCodec, numberCodec } from '../../utils/json-codec.js';
+import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
-import {
-  NavigationRailContext,
-  navigationRailHooks as hooks,
-  usePersistedValue,
-  widthCodec,
-} from './navigation-rail-state.js';
+import { NavigationRailContext, navigationRailHooks as hooks } from './navigation-rail-state.js';
 
 export interface NavigationRailProps extends BaseProps, AriaLabellingProps {
   /** The `NavigationRailSection`s. */
@@ -172,7 +168,7 @@ export function NavigationRail({
     defaultValue: defaultWidth,
     onChange: onWidthChange,
     persistKey: persistKey === undefined ? undefined : `${persistKey}:width`,
-    codec: widthCodec,
+    codec: numberCodec,
   });
   const [liveWidth, setLiveWidth] = useState<number | null>(null);
   // A stored or controlled width outside the bounds is drawn at the nearest bound.

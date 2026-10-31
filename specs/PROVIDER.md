@@ -1,6 +1,6 @@
 # Provider
 
-`UiProvider` supplies the services components need from their host: glyphs, text, locale, link rendering and storage, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
+`UiProvider` supplies the services components need from their host: glyphs, text, locale, link rendering, storage and the clock, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
 
 ## UIC-PROVIDER-1 - Defaults
 
@@ -126,6 +126,13 @@ Verification: `src/core/provider.test.tsx`, `src/utils/json-codec.test.ts`
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider-delayed-write.test.tsx`
 
+### UIC-PROVIDER-6.4 - Controlled or persisted values
+
+`usePersistedValue({ value, defaultValue, onChange, persistKey, codec })` shall be the one way a component persists a value its caller may also control. While `value` is defined it is the value, storage is neither read nor written, and setting the value only reports it through `onChange`. While `value` is undefined the component holds the value, starting from what is stored under `persistKey` through the codec, else from `defaultValue`, and setting it stores it and reports it. Without `persistKey` the held value is plain state. Navigation Rail, Tabs, Dock Panel and Split View persist through it, and their codecs are built with `createJsonCodec`, whose optional `write` turns a value into the data stored.
+
+Implementation: `src/utils/use-persisted-value.ts`, `src/utils/json-codec.ts`
+Verification: `src/utils/use-persisted-value.test.tsx`, `src/utils/json-codec.test.ts`
+
 ## UIC-PROVIDER-7 - Overlay presence
 
 ### UIC-PROVIDER-7.1 - Interactive overlays
@@ -148,6 +155,22 @@ The outermost `UiProvider` shall hold one overlay presence for every component b
 
 Implementation: `src/core/overlay-presence.tsx`, `src/core/provider.tsx`
 Verification: `src/core/overlay-presence.test.tsx`
+
+## UIC-PROVIDER-8 - Clock
+
+### UIC-PROVIDER-8.1 - One clock and time zone
+
+`UiProvider`'s `getNow` and `timeZone` props shall be the clock and the IANA time zone that every component reading now or today uses when it is not given its own: `RelativeTime`, `Attribution`, `RelativeDateField`, `ActivityFeed`, `NotificationList`, `CalendarView`, `Timeline` and `LineChart`. A nested provider without them uses its parent's. Without a provider the clock is the current time and the zone the browser's. `useNow(getNow?)`, `useToday(timeZone?, getNow?)` and `useTimeZone(timeZone?)` read the same sources for host components.
+
+Implementation: `src/core/clock.ts`, `src/core/provider.tsx`
+Verification: `src/core/clock.test.tsx`
+
+### UIC-PROVIDER-8.2 - Hydration-stable reads
+
+A server render and the hydration of its markup shall never read the clock or the device's time zone, so their output matches wherever and whenever each runs: `useNow` and `useToday` return `null` and `useTimeZone` returns the given or provided zone, else UTC. The first client render after hydration reads them, and a render on the client alone reads them from the start. Components show what does not depend on now until then: absolute dates instead of relative words, date headings instead of `Today`, no today marker, and an empty, busy calendar or timeline when nothing else places it.
+
+Implementation: `src/core/clock.ts`
+Verification: `src/core/clock.test.tsx`, `src/core/clock-hydration.test.tsx`
 
 ## Hooks
 

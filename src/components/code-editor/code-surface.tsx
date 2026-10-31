@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode, Ref, RefObject } from 'react';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import {
   ControlCompletionList,

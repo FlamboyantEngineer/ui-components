@@ -5,6 +5,7 @@ import {
   createCalendarDayReader,
   formatRelativeDay,
   type CalendarDay,
+  type CalendarDayClock,
 } from '../../utils/calendar-day.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 
@@ -17,11 +18,9 @@ export interface DayGroup<T> {
   items: T[];
 }
 
-interface GroupByDayOptions<T> {
+interface GroupByDayOptions<T> extends CalendarDayClock {
   /** The entry's ISO 8601 date or date and time. */
   getDate: (item: T) => string;
-  /** The moment `Today` is read against. */
-  now: Date;
   locale: string;
   /** Labels the group of entries whose date cannot be read. */
   unknownLabel: string;
@@ -34,6 +33,7 @@ function labelDay(day: CalendarDay, locale: string) {
     month: 'long',
     day: 'numeric',
     year: day.isThisYear ? undefined : 'numeric',
+    timeZone: 'UTC',
   });
   return formatter.format(day.start);
 }
@@ -45,7 +45,7 @@ function labelDay(day: CalendarDay, locale: string) {
  */
 export function groupByDay<T>(items: readonly T[], options: GroupByDayOptions<T>): DayGroup<T>[] {
   const groups = new Map<string, DayGroup<T>>();
-  const readDay = createCalendarDayReader(options.now);
+  const readDay = createCalendarDayReader(options);
   for (const item of items) {
     const day = readDay(options.getDate(item));
     const key = day ? day.key : '';

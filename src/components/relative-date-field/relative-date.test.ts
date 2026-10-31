@@ -88,11 +88,11 @@ describe('relative date', () => {
   });
 
   it('UIC-RELATIVE-DATE-FIELD-2.3 resolves, counts and describes relative ranges', () => {
-    expect(resolveRelativeRange({ amount: -7, unit: 'day' }, now)).toEqual({
+    expect(resolveRelativeRange({ amount: -7, unit: 'day' }, { now })).toEqual({
       start: '2026-05-16',
       end: '2026-05-23',
     });
-    expect(resolveRelativeRange({ amount: 1, unit: 'month' }, now)).toEqual({
+    expect(resolveRelativeRange({ amount: 1, unit: 'month' }, { now })).toEqual({
       start: '2026-05-23',
       end: '2026-06-23',
     });

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import { ToolbarRow } from '../../src/components/layout/toolbar-row.js';
+import { ToolbarRow } from '../../src/components/layout/index.js';
 import { OverflowList } from '../../src/components/overflow-list/overflow-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { NoteRow } from './overflow-list-notes.js';

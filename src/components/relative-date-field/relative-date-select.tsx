@@ -18,6 +18,7 @@ import { Glyph } from '../../core/provider.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { RelativeDateText } from './relative-date.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** One preset of the list, with whether the field's bounds refuse it. */
 interface RelativePresetItem {
@@ -113,7 +114,7 @@ export function PresetSelect({
       <PopoverPresence />
       <Popover
         {...hooks.slot('popover', { layer: 'dropdown' })}
-        offset={4}
+        offset={DEFAULT_DROPDOWN_OFFSET}
         style={{ ...triggerWidthProperty, zIndex }}
       >
         <ListBox className={hooks.slotClass('listbox')} items={items}>

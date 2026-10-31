@@ -15,7 +15,7 @@ Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts
 
 ### UIC-TIMELINE-1.2 - Range
 
-The chart shall show the days of `range` (`{ start, end }`, both `YYYY-MM-DD` and included). Without a readable range (or one that ends before it starts) it shows the items' first to last day (today when there are no items), widened to whole units of the scale and one more unit on each side. The first and last days shall be found in one pass without sorting the items' dates. The range comes from the items as given, so it does not shift while a drag is in progress.
+The chart shall show the days of `range` (`{ start, end }`, both `YYYY-MM-DD` and included). Without a readable range (or one that ends before it starts) it shows the items' first to last day (today when there are no items; before the clock may be read, the chart is left out and the root is busy until it can), widened to whole units of the scale and one more unit on each side. The first and last days shall be found in one pass without sorting the items' dates. The range comes from the items as given, so it does not shift while a drag is in progress.
 
 Implementation: `src/components/timeline/timeline-geometry.ts`, `src/utils/time-scale.ts`
 Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/components/timeline/timeline.test.tsx`
@@ -57,7 +57,7 @@ Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/componen
 
 ### UIC-TIMELINE-1.8 - Today marker
 
-When `today` (`YYYY-MM-DD`, the current day in the local time zone by default) falls in the range, the body shall draw a `ui-timeline__today` marker at the middle of that day, spanning the body's height.
+When `today` (`YYYY-MM-DD`, by default the current day by the provider's clock and time zone, unknown on a server and while hydrating) falls in the range, the body shall draw a `ui-timeline__today` marker at the middle of that day, spanning the body's height.
 
 Implementation: `src/components/timeline/timeline-chart.tsx`, `src/components/timeline/timeline.tsx`
 Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`

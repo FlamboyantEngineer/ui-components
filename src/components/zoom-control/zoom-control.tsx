@@ -10,7 +10,12 @@ import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
 import { Button } from '../button/button.js';
 import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
-import { defaultZoomLevels, resolveZoomLevels, sortZoomLevels } from './zoom-levels.js';
+import {
+  defaultZoomLevels,
+  resolveSliderStops,
+  resolveZoomLevels,
+  sortZoomLevels,
+} from './zoom-levels.js';
 
 export interface ZoomControlProps
   extends Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>, BaseProps {
@@ -57,8 +62,7 @@ interface ZoomButtonProps {
 interface ZoomSliderProps {
   id: string;
   levels: readonly number[];
-  /** The nearest level's index, and the levels the step buttons request. */
-  targets: ReturnType<typeof resolveZoomLevels>;
+  value: number;
   valueText: string;
   isDisabled: boolean;
   onRequest: (value: number) => void;
@@ -103,11 +107,12 @@ function ZoomButton({ slot, icon, label, target, size, isDisabled, onRequest }: 
 }
 
 /**
- * A native range input over the level indices. One step from a value between levels requests the
- * neighbouring level on that side, as the step buttons do, rather than skipping it.
+ * A native range input over the slider's stops: the levels, and the current value as a stop of its
+ * own while it lies between them. One step, Home, End or a drag requests the level at the new stop,
+ * so every neighbouring level is reachable, endpoints included, and the current value too.
  */
-function ZoomSlider({ id, levels, targets, valueText, isDisabled, onRequest }: ZoomSliderProps) {
-  const { index, previous, next } = targets;
+function ZoomSlider({ id, levels, value, valueText, isDisabled, onRequest }: ZoomSliderProps) {
+  const { stops, index } = resolveSliderStops(levels, value);
   const strings = useUiStrings();
   return (
     <input
@@ -115,17 +120,15 @@ function ZoomSlider({ id, levels, targets, valueText, isDisabled, onRequest }: Z
       id={id}
       type="range"
       min={0}
-      max={Math.max(0, levels.length - 1)}
+      max={Math.max(0, stops.length - 1)}
       step={1}
       value={index}
       disabled={isDisabled}
       aria-label={strings.zoomLevel}
       aria-valuetext={valueText}
       onChange={(event) => {
-        const position = Number.parseInt(event.currentTarget.value, 10);
-        const step = { [index - 1]: previous, [index + 1]: next }[position];
-        const level = step ?? levels[position];
-        if (level !== undefined) onRequest(level);
+        const stop = stops[Number.parseInt(event.currentTarget.value, 10)];
+        if (stop !== undefined) onRequest(stop);
       }}
     />
   );
@@ -180,7 +183,7 @@ export function ZoomControl({
       <ZoomSlider
         id={sliderId}
         levels={sorted}
-        targets={targets}
+        value={current}
         valueText={valueText}
         isDisabled={isDisabled}
         onRequest={request}

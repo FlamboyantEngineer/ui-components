@@ -11,7 +11,8 @@ import type { CalendarFormat } from './use-calendar-format.js';
 /** What a calendar grid's day cells share. */
 export interface CalendarDayContext {
   focused: string;
-  today: string;
+  /** Today, or `null` until the clock may be read. */
+  today: string | null;
   format: CalendarFormat;
   renderDay: ((day: CalendarViewDay) => ReactNode) | undefined;
 }

@@ -6,6 +6,7 @@ import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   DisabledRemovalTabs,
+  LockingTabs,
   MealTabs,
   RememberedTabs,
   TypedKeyTabs,
@@ -254,6 +255,12 @@ mountLab(
       description="Double-click a tab or press F2 to rename it (names must be unique); drag a tab or press Alt+Arrow to move it; right-click or press Shift+F10 for its menu."
     >
       <MealTabs />
+    </LabSection>
+    <LabSection
+      title="Tabs that lock while editing"
+      description="Press Lock in a second, then rename a tab with F2 and type: when the tabs lock, the edit ends without renaming and focus stays on the tabs."
+    >
+      <LockingTabs />
     </LabSection>
     <LabSection
       title="Vertical reorder"

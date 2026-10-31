@@ -1,8 +1,8 @@
 // Measures the DOM for overlay placement: the boundary an overlay must stay in, the scroll container
 // that bounds it, and the measured geometry to render. Nothing here writes to the DOM.
 
+import { DEFAULT_OVERLAY_GUTTER } from './overlay-defaults.js';
 import {
-  DEFAULT_OVERLAY_GUTTER,
   resolveOverlayPlacement,
   toOverlayRect,
   type OverlayAlign,

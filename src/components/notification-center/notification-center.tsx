@@ -10,9 +10,8 @@ import { Badge } from '../badge/badge.js';
 import { Drawer, DrawerTrigger } from '../drawer/drawer.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { NotificationList, type NotificationListProps } from './notification-list.js';
-import { ArrivalAnnouncerContext, useArrivalAnnouncement } from './use-arrival-announcement.js';
+import { ArrivalAnnouncement } from './arrival-announcement.js';
 
 export type {
   NotificationFilter,
@@ -24,7 +23,10 @@ export type {
 export type NotificationCenterPresentation = 'popover' | 'drawer';
 
 export interface NotificationCenterProps
-  extends NotificationListProps, OpenStateProps, Pick<OverlayPositionProps, 'placement'> {
+  extends
+    Omit<NotificationListProps, 'announcesArrivals'>,
+    OpenStateProps,
+    Pick<OverlayPositionProps, 'placement'> {
   /** How the list opens. Defaults to `popover`. */
   presentation?: NotificationCenterPresentation | undefined;
   /** Unread counts above this show as `<max>+` on the bell. Defaults to 99. */
@@ -55,14 +57,10 @@ export function NotificationCenter({
   const strings = useUiStrings();
   const [dataAttributes, listProps] = splitDataAttributes(rest);
   const [isOpen, setOpen] = useControllableState(isOpenProp, defaultOpen, onOpenChange);
-  const announcement = useArrivalAnnouncement(listProps.items);
   const unread = listProps.unreadCount ?? listProps.items.filter((item) => !item.isRead).length;
   const heading = title ?? strings.notifications;
-  const list = (
-    <ArrivalAnnouncerContext value={true}>
-      <NotificationList {...listProps} />
-    </ArrivalAnnouncerContext>
-  );
+  // The bell announces arrivals whether the panel is open or not, so the list stays silent.
+  const list = <NotificationList {...listProps} announcesArrivals={false} />;
   const bell = (
     <Button
       icon={BellGlyph}
@@ -104,9 +102,11 @@ export function NotificationCenter({
         aria-hidden
         className={hooks.slotClass('count')}
       />
-      <VisuallyHidden elementType="span" role="status" className={hooks.slotClass('announcement')}>
-        {announcement}
-      </VisuallyHidden>
+      <ArrivalAnnouncement
+        items={listProps.items}
+        elementType="span"
+        className={hooks.slotClass('announcement')}
+      />
     </span>
   );
 }

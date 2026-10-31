@@ -262,4 +262,22 @@ test.describe('Menubar lab', () => {
     await top(page, 'View').click();
     await lab.expectAccessible('.ui-menu-popover');
   });
+
+  test('UIC-MENUBAR-2.6 opens the other menus after the open one leaves', async ({ page, lab }) => {
+    await lab.open('menubar');
+    const demo = page.locator('[data-lab-demo="changing"]');
+    const bar = demo.getByRole('menubar', { name: 'Changing menus' });
+    await demo.getByRole('button', { name: 'Remove File in a second' }).click();
+    await bar.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Open recent' }).hover();
+    await expect(page.getByRole('menuitem', { name: 'Report.pdf' })).toBeVisible();
+    await expect(bar.getByRole('menuitem', { name: 'File' })).toHaveCount(0);
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    const edit = bar.getByRole('menuitem', { name: 'Edit' });
+    await expect(edit).toBeFocused();
+    await edit.click();
+    await expect(edit).toHaveAttribute('aria-expanded', 'true');
+    await bar.getByRole('menuitem', { name: 'Help' }).hover();
+    await expect(page.getByRole('menuitem', { name: 'Guide' })).toBeVisible();
+  });
 });

@@ -544,13 +544,12 @@ describe('DockPanel persistence', () => {
       { keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } },
       { coords: { clientX: 460 } },
     ]);
-    expect(JSON.parse(requireDefined(storage.getItem('side')))).toEqual({ selectedKey: 'people' });
+    expect(storage.getItem('side:selected')).toBe('"people"');
+    expect(storage.getItem('side:size')).toBeNull();
     await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 460 } });
-    expect(JSON.parse(requireDefined(storage.getItem('side')))).toEqual({
-      selectedKey: 'people',
-      size: 360,
-    });
+    expect(storage.getItem('side:size')).toBe('360');
     await user.click(screen.getByRole('button', { name: 'Collapse Details' }));
+    expect(storage.getItem('side:expanded')).toBe('false');
     unmount();
     const { container } = render(persisted(storage));
     expect(root(container)).not.toHaveAttribute('data-expanded');
@@ -560,12 +559,13 @@ describe('DockPanel persistence', () => {
   });
 
   it('UIC-DOCK-PANEL-3.3 falls back to the defaults for unreadable values and unavailable panes', () => {
-    const { container, unmount } = render(persisted(createMemoryStorage({ side: 'not json' })));
+    const unreadable = { 'side:selected': '{', 'side:expanded': '{', 'side:size': '{' };
+    const { container, unmount } = render(persisted(createMemoryStorage(unreadable)));
     expect(pane('Files')).toBeVisible();
     expect(root(container).style.width).toBe('320px');
     unmount();
-    const stored = JSON.stringify({ selectedKey: 'locked', isExpanded: 'yes', size: 'wide' });
-    const { container: nextContainer } = render(persisted(createMemoryStorage({ side: stored })));
+    const stored = { 'side:selected': '"locked"', 'side:expanded': '"yes"', 'side:size': '"wide"' };
+    const { container: nextContainer } = render(persisted(createMemoryStorage(stored)));
     expect(pane('Files')).toBeVisible();
     expect(root(nextContainer).style.width).toBe('320px');
   });
@@ -576,7 +576,8 @@ describe('DockPanel persistence', () => {
     await userEvent.click(screen.getByRole('button', { name: 'People' }));
     act(() => screen.getByRole('separator').focus());
     await userEvent.keyboard('{ArrowLeft}');
-    expect(storage.getItem('side')).toBeNull();
+    expect(storage.getItem('side:selected')).toBeNull();
+    expect(storage.getItem('side:size')).toBeNull();
   });
 });
 

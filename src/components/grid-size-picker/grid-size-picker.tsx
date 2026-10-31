@@ -1,11 +1,12 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useHover, useLocale, usePress } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { getShownGridSize, moveGridSize, type GridSize } from './grid-size.js';
 
 export type { GridSize } from './grid-size.js';
@@ -65,8 +66,13 @@ function GridCell({
   const size = { rows, columns };
   const isPreview = isSameSize(size, preview);
   const isFocused = isSameSize(size, focused);
+  // A press, or Enter or Space on the focused cell, chooses this cell's size: the focused cell,
+  // not a hovered one, is the size the reader hears.
+  const { pressProps } = usePress({ isDisabled, onPress: () => onSelect(size) });
+  const { hoverProps } = useHover({ isDisabled, onHoverStart: () => onPreview(size) });
   return (
     <div
+      {...mergeProps(pressProps, hoverProps)}
       {...hooks.slot('cell', {
         inRange: rows <= preview.rows && columns <= preview.columns,
         active: isPreview,
@@ -75,16 +81,7 @@ function GridCell({
       role="gridcell"
       aria-label={strings.gridSizeCell(rows, columns)}
       tabIndex={isFocused && !isDisabled ? 0 : -1}
-      onPointerEnter={isDisabled ? undefined : () => onPreview(size)}
       onFocus={isDisabled ? undefined : () => onFocusCell(size)}
-      onClick={isDisabled ? undefined : () => onSelect(size)}
-      onKeyDown={(event) => {
-        // The focused cell, not a hovered one, is the size the reader hears and chooses.
-        if (isDisabled || (event.key !== 'Enter' && event.key !== ' ')) return;
-        event.preventDefault();
-        event.stopPropagation();
-        onSelect({ rows, columns });
-      }}
     />
   );
 }

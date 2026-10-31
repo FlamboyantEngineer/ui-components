@@ -27,7 +27,9 @@ export { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';
 export type { ContentsProps, EmbeddedFrameProps, InlineContentsProps } from './wrappers.js';
 export { ToolbarRow, ToolbarRowGroup, ToolbarRowSeparator } from './toolbar-row.js';
 export type {
+  ToolbarRowGroupDensity,
   ToolbarRowGroupProps,
+  ToolbarRowOverflow,
   ToolbarRowProps,
   ToolbarRowRole,
   ToolbarRowSeparatorProps,
