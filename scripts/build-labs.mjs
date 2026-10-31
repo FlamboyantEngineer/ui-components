@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import * as esbuild from 'esbuild';
 import { labsDir, labSourceDir, listLabSources } from './lib/labs.mjs';
+import { BROWSER_TARGETS } from './lib/reference-stylesheet.mjs';
 
 const outdir = join(labsDir, 'build');
 const dev = process.argv.includes('--dev');
@@ -48,7 +49,8 @@ const options = {
   splitting: true,
   format: 'esm',
   platform: 'browser',
-  target: 'es2022',
+  // The JavaScript level and the browser floor, which also lowers or prefixes the stylesheet's CSS.
+  target: ['es2022', ...BROWSER_TARGETS],
   jsx: 'automatic',
   minify: !dev,
   sourcemap: dev ? 'linked' : false,

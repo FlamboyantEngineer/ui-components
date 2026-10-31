@@ -7,6 +7,7 @@ import { collectPackages } from './module-imports.js';
 
 const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
   files: string[];
+  browserslist: string[];
   scripts: Record<string, string>;
   exports: Record<string, unknown>;
   sideEffects: boolean;
@@ -19,13 +20,18 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
 };
 
 describe('shipped reference stylesheet', () => {
-  it('UIC-LABS-1.6 UIC-LABS-3.1 rejects the lab page rules', async () => {
+  const loadReference = async () => {
     const moduleUrl = pathToFileURL(join(process.cwd(), 'scripts/lib/reference-stylesheet.mjs'));
-    const { referenceStylesheetProblems } = (await import(moduleUrl.href)) as {
+    return (await import(moduleUrl.href)) as {
       referenceStylesheetProblems: (css: string) => string[];
+      BROWSER_FLOOR: Record<string, number>;
     };
-    const required =
-      '.ui-field[data-density=compact]{} .ui-card[data-density=compact]{} .ui-button{}';
+  };
+  const required =
+    '@layer ui-reference{.ui-field[data-density=compact]{} .ui-card[data-density=compact]{} .ui-button{}}';
+
+  it('UIC-LABS-1.6 UIC-LABS-3.1 rejects the lab page rules and rules outside its layer', async () => {
+    const { referenceStylesheetProblems } = await loadReference();
     expect(referenceStylesheetProblems(required)).toEqual([]);
     expect(
       referenceStylesheetProblems(`${required} #lab-root{padding:0} [data-lab-cell] td{}`),
@@ -33,6 +39,16 @@ describe('shipped reference stylesheet', () => {
       'labs/build/reference.css styles the lab page (#lab-root)',
       'labs/build/reference.css styles the lab page ([data-lab-cell)',
     ]);
+    expect(referenceStylesheetProblems('.ui-button{} @layer ui-reference{}')).toContain(
+      'labs/build/reference.css does not sit in the ui-reference layer',
+    );
+  });
+
+  it('UIC-LABS-1.6 states the build target as the browserslist hosts read', async () => {
+    const { BROWSER_FLOOR } = await loadReference();
+    expect(manifest.browserslist).toEqual(
+      Object.entries(BROWSER_FLOOR).map(([browser, version]) => `${browser} >= ${version}`),
+    );
   });
 });
 
