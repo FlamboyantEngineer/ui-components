@@ -48,6 +48,7 @@ const tree = () => screen.getByRole('treegrid', { name: 'Food' });
 const revocations: [string, Changes, () => HTMLElement][] = [
   ['canRename', { canRename: (item) => item.id !== 'nuts' }, () => row('Nuts')],
   ['disabledKeys', { disabledKeys: ['nuts'] satisfies Key[] }, tree],
+  ['onRename', { onRename: undefined }, () => row('Nuts')],
 ];
 
 describe('Tree renaming as rows change', () => {
@@ -98,6 +99,19 @@ describe('Tree renaming as rows change', () => {
     await startRename(user, 'Nuts', 'Seeds');
     locked.add('nuts');
     await user.click(row('Rice'));
+    expect(onRename).not.toHaveBeenCalled();
+  });
+
+  it('UIC-TREE-7.2 keeps the field closed when onRename comes back', async () => {
+    const user = userEvent.setup();
+    const { onRename, update } = renderTree();
+    await startRename(user, 'Nuts', 'Seeds');
+    update({ onRename: undefined });
+    update({});
+    expect(field()).not.toBeInTheDocument();
+    expect(row('Nuts')).toHaveFocus();
+    await user.keyboard('{F2}');
+    expect(field()).toHaveValue('Nuts');
     expect(onRename).not.toHaveBeenCalled();
   });
 

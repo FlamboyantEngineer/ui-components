@@ -102,7 +102,8 @@ export function useTreeRename<T extends TreeItemData>(
     () => ({ canRename, items, getChildren, disabledKeys }),
     [canRename, items, getChildren, disabledKeys],
   );
-  const isRevoked = editingKey !== null && findRenameable(editingKey, scope) === null;
+  const isRevoked =
+    editingKey !== null && (onRename === undefined || findRenameable(editingKey, scope) === null);
   useLayoutEffect(() => {
     if (!isRevoked) return;
     const input = inputRef.current;
@@ -111,7 +112,8 @@ export function useTreeRename<T extends TreeItemData>(
     setEditingKey(null);
   }, [isRevoked]);
   return useMemo(() => {
-    if (!onRename) return null;
+    // A field open as `onRename` goes stays one render, so the revocation can move its focus.
+    if (!onRename && editingKey === null) return null;
     const finish = (isCommit: boolean) => {
       const key = editingRef.current;
       if (key === null) return;
@@ -119,7 +121,7 @@ export function useTreeRename<T extends TreeItemData>(
       setEditingKey(null);
       const item = findRenameable(key, scope);
       const name = inputRef.current?.value.trim() ?? '';
-      if (isCommit && item && name !== '' && name !== getTextValue(item)) onRename(item, name);
+      if (isCommit && item && name !== '' && name !== getTextValue(item)) onRename?.(item, name);
     };
     return {
       editingKey,

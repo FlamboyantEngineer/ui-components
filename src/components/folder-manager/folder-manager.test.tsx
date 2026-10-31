@@ -779,6 +779,18 @@ describe('FolderManager', () => {
     expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Vegetables']);
   });
 
+  it('UIC-FOLDER-MANAGER-7.1 sets the query aside while the search box is gone', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Manager filterable />);
+    await user.type(screen.getByRole('searchbox', { name: 'Filter folders' }), 'ber');
+    expect(rowNames()).toEqual(['Fruit', 'Berries']);
+    rerender(<Manager filterable={false} />);
+    expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Vegetables']);
+    expect(row('Berries').querySelector('mark')).toBeNull();
+    rerender(<Manager filterable />);
+    expect(rowNames()).toEqual(['Fruit', 'Berries']);
+  });
+
   it('UIC-FOLDER-MANAGER-7.1 expands a collapsed root row to show the matches', async () => {
     const user = userEvent.setup();
     render(<Manager filterable rootLabel="All folders" />);
