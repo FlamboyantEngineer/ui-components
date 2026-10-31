@@ -9,7 +9,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { hasIcon, toIconProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import {
   useChoiceSelection,
@@ -141,7 +141,7 @@ function formatOptionCount(count: number | null | undefined, max: number): strin
 
 function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
   const strings = useUiStrings();
-  const showsIconOnly = iconOnly && option.icon !== undefined;
+  const showsIconOnly = iconOnly && hasIcon(option.icon);
   const count = formatOptionCount(option.count, countMax);
   const name = count === null ? option.label : strings.labelWithCount(option.label, count);
   const segment = (
@@ -153,7 +153,7 @@ function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
       {...hooks.slot('segment', { value: option.value })}
     >
       <SelectionIndicator className={hooks.slotClass('indicator')} />
-      {option.icon ? (
+      {hasIcon(option.icon) ? (
         <Icon
           {...toIconProps(option.icon)}
           size={size === 'xs' ? 'sm' : size}

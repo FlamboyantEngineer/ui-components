@@ -48,7 +48,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ### UIC-SEGMENTED-CHOICE-1.7 - Icon-only segments
 
-With `iconOnly` every segment with an `icon` shall show only that icon, take its `label` as its accessible name (`aria-label`) and show the label in a [Tooltip](TOOLTIP.md) on hover and keyboard focus. The tooltip repeats the name, so it adds no description. The root publishes `data-icon-only`; a segment without an icon keeps its label.
+With `iconOnly` every segment with an `icon` shall show only that icon, take its `label` as its accessible name (`aria-label`) and show the label in a [Tooltip](TOOLTIP.md) on hover and keyboard focus. The tooltip repeats the name, so it adds no description. The root publishes `data-icon-only`; a segment without an icon (`undefined`, `null` or `false`) keeps its label.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
