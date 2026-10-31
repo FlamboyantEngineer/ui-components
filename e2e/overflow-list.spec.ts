@@ -118,4 +118,37 @@ test.describe('Overflow List lab', () => {
     await expect(demo.locator('[data-lab-output="last"]')).toHaveText('Last tool: Link');
     await lab.expectAccessible();
   });
+
+  test('UIC-OVERFLOW-LIST-1.8 keeps notes with their items as the list reorders and grows', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('overflow-list');
+    const demo = page.locator('[data-lab-demo="notes"]');
+    const row = demo.getByRole('group', { name: 'Notes' });
+    const note = (name: string) => row.getByRole('textbox', { name });
+    await note('Pear').fill('ripe');
+    await note('Date').fill('sour');
+
+    await demo.getByRole('button', { name: 'Reverse' }).click();
+    await expect(row.locator('.ui-overflow-list__item')).toHaveText([
+      'Date',
+      'Lime',
+      'Kiwi',
+      'Pear',
+      'Plum',
+    ]);
+    await expect(note('Date')).toHaveValue('sour');
+    await expect(note('Pear')).toHaveValue('ripe');
+
+    await demo.getByRole('button', { name: 'Add first' }).click();
+    await expect(row).toHaveAttribute('data-overflowing', 'true');
+    await expect(note('Fig')).toHaveValue('');
+    await expect(note('Pear')).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Remove first' }).click();
+    await expect(row).not.toHaveAttribute('data-overflowing');
+    await expect(note('Pear')).toHaveValue('');
+    await expect(note('Date')).toHaveValue('sour');
+    await lab.expectAccessible();
+  });
 });

@@ -2,7 +2,7 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, Key, NativeProps } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { useOverflowItems, type OverflowCollapseFrom } from '../../utils/use-overflow-items.js';
@@ -16,6 +16,11 @@ export interface OverflowListRenderState {
 export interface OverflowListProps<T> extends Omit<NativeProps<'div'>, 'children'>, BaseProps {
   /** Every item, in order. */
   items: readonly T[];
+  /**
+   * The item's identity, unique in `items`. An item keeps its element, state and focus while the
+   * list reorders, grows or shrinks around it; `1` and `'1'` are different items.
+   */
+  getKey: (item: T) => Key;
   /** Draws one item. `index` is the item's position in `items`. */
   renderItem: (item: T, index: number) => ReactNode;
   /** Draws the indicator for the items that do not fit, such as a "+N" count or a "more" menu. */
@@ -28,12 +33,18 @@ export interface OverflowListProps<T> extends Omit<NativeProps<'div'>, 'children
 
 const hooks = createHooks('overflow-list', ['item', 'overflow']);
 
+/** A React key that keeps a number apart from the string of its digits. */
+function toElementKey(key: Key): string {
+  return `${typeof key}:${String(key)}`;
+}
+
 /**
  * One row of items that keeps as many as fit and hands the rest to an indicator at one end, such as
  * a "+N" count or a "more" menu. The row measures itself; the stylesheet lays it out on one line.
  */
 export function OverflowList<T>({
   items,
+  getKey,
   renderItem,
   renderOverflow,
   collapseFrom = 'end',
@@ -60,7 +71,7 @@ export function OverflowList<T>({
         <>
           {collapseFrom === 'start' ? indicator : null}
           {visibleItems.map((item, index) => (
-            <div key={offset + index} {...hooks.slot('item')}>
+            <div key={toElementKey(getKey(item))} {...hooks.slot('item')}>
               {renderItem(item, offset + index)}
             </div>
           ))}

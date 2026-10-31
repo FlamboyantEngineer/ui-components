@@ -5,6 +5,7 @@ import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.j
 import { ToolbarRow } from '../../src/components/layout/toolbar-row.js';
 import { OverflowList } from '../../src/components/overflow-list/overflow-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { NoteRow } from './overflow-list-notes.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Dragon fruit', 'Elderberry', 'Fig', 'Grape'];
 const tools = ['Cut', 'Copy', 'Paste', 'Bold', 'Italic', 'Underline', 'Link'];
@@ -36,6 +37,7 @@ function FruitRow({ collapseFrom }: { collapseFrom: 'start' | 'end' }) {
       role="group"
       aria-label="Fruit"
       items={fruit}
+      getKey={(name) => name}
       collapseFrom={collapseFrom}
       renderItem={(name) => <Badge>{name}</Badge>}
       renderOverflow={(hidden) => <MoreFruit hidden={hidden} />}
@@ -73,6 +75,7 @@ function ToolRow() {
       <Frame width={330}>
         <OverflowList
           items={tools}
+          getKey={(tool) => tool}
           render={(props) => (
             <ToolbarRow
               {...props}
@@ -129,6 +132,12 @@ mountLab(
       description="The render prop swaps the root for a React Aria toolbar: arrow keys move between the visible tools and the menu of the others."
     >
       <ToolRow />
+    </LabSection>
+    <LabSection
+      title="Reordering"
+      description="Type a note in a kept item, then reverse, add or remove items: each note stays with its item, and focus with the field it is in. An item that leaves for the menu loses its note."
+    >
+      <NoteRow />
     </LabSection>
   </>,
 );

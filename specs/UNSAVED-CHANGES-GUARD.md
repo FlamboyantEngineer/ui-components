@@ -36,7 +36,7 @@ Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.t
 
 ### UIC-UNSAVED-CHANGES-GUARD-2.2 - The question
 
-Otherwise `confirmLeave(options)` shall open a `Modal` titled by `options.title`, the guard's `title` or the provider's `unsavedChanges` string, and described by `options.message`, the guard's `message` or the provider's question: `saveBeforeLeaving` when Save is offered, `discardBeforeLeaving` otherwise. Under the message, the `ui-unsaved-changes-guard__list` list names the labels of the dirty editors in registration order; editors without a label are left out, and the list is left out when none has one. The dialog keeps what it showed when it was asked while it closes.
+Otherwise `confirmLeave(options)` shall open a `Modal` titled by `options.title`, the guard's `title` or the provider's `unsavedChanges` string, and described by `options.message`, the guard's `message` or the provider's question: `saveBeforeLeaving` when Save is offered, `discardBeforeLeaving` otherwise. Under the message, the `ui-unsaved-changes-guard__list` list names the labels of the dirty editors in registration order; editors without a label are left out, and the list is left out when none has one. The question follows the dirty editors while it is open (see 2.7), and keeps what it showed while an action runs and while it closes.
 
 Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/core/common-strings.ts`
 Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
@@ -68,6 +68,13 @@ A `confirmLeave` made while the dialog is open shall resolve the earlier one `fa
 
 Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`
 Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
+
+### UIC-UNSAVED-CHANGES-GUARD-2.7 - Sources that change under the question
+
+While the dialog is open and no action runs, its list, its question, its tone and whether it offers Save shall follow the editors that are dirty now, not those dirty when it was asked: an editor that loses its `onSave` turns Save into a Discard-only question, and one that gains it brings Save back. Save and Discard read the registrations afresh before each editor and after every awaited action, and each editor dirty at its turn runs once, with the action it has registered then: an editor removed meanwhile is skipped and its old actions never run, a replaced action runs in place of the one registered when the reader chose, and an editor that became dirty meanwhile takes its turn. When Save reaches a dirty editor without `onSave`, including one under a nested guard, it stops there without an error, keeps the dialog open and does not resolve `confirmLeave`, which then offers Discard alone. After a failed action the dialog follows the editors again.
+
+Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/components/unsaved-changes-guard/unsaved-changes-store.ts`
+Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard-sources.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
 
 ## UIC-UNSAVED-CHANGES-GUARD-3 - Nesting
 

@@ -22,6 +22,7 @@ import {
   toAriaLinkProps,
   toKeyShortcuts,
   useButtonSelection,
+  useInheritedDisabled,
   type ButtonStateProps,
 } from './button-state.js';
 
@@ -228,8 +229,9 @@ export function Button({
     variant,
     content,
   });
-  const selection = useButtonSelection(rest);
-  const { isBusy, ...action } = useButtonAction({ ...rest, ...selection, onError, pendingDelay });
+  const own = { ...rest, isDisabled: useInheritedDisabled(rest) };
+  const selection = useButtonSelection(own);
+  const { isBusy, ...action } = useButtonAction({ ...own, ...selection, onError, pendingDelay });
   const platform = useDetectedPlatform();
   const options = { platform, isTooltipName: presentation.isTooltipName, isBusy };
   const isLink = rest.href !== undefined;
@@ -268,7 +270,7 @@ export function Button({
     </AriaLink>
   ) : (
     <AriaButton
-      {...toAriaButtonProps({ ...rest, ...selection, ...action }, options)}
+      {...toAriaButtonProps({ ...own, ...selection, ...action }, options)}
       {...hookProps}
       aria-label={presentation.isIcon ? presentation.name : rest['aria-label']}
     >

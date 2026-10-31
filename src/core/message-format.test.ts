@@ -37,6 +37,20 @@ describe('formatMessage', () => {
     expect(() => formatMessage('{count, plural, one {# file}')).toThrow();
   });
 
+  it('UIC-PROVIDER-3.6 reads undefined and null arguments as empty and throws on omitted ones', () => {
+    const choice = '{state, select, done {Done} other {Open}}';
+    const count = '{count, plural, one {# file} other {# files}}';
+    for (const empty of [undefined, null]) {
+      expect(formatMessage('Hello {name}', { name: empty })).toBe('Hello ');
+      expect(formatMessage(choice, { state: empty })).toBe('Open');
+      expect(formatMessage(count, { count: empty })).toBe('0 files');
+    }
+    for (const message of ['Hello {name}', choice, count]) {
+      expect(() => formatMessage(message, {})).toThrow(/was not provided/);
+    }
+    expect(() => formatMessage('Hello {name}', { nmae: 'Ana' })).toThrow(/"name"/);
+  });
+
   it('UIC-PROVIDER-3.1 turns kebab-case values into select branch names', () => {
     expect(toSelectKey('in-progress')).toBe('inProgress');
     expect(toSelectKey('done')).toBe('done');
