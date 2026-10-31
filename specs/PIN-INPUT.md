@@ -6,7 +6,7 @@
 
 ### UIC-PIN-INPUT-1.1 - Field control
 
-`PinInput` shall render a `Field` around a React Aria `Group` (`ui-pin-input__group`, role `group`) holding `length` cells (`ui-pin-input__cell`, React Aria `Input` elements), built with `useFieldControl`. Its root element is the field's root, which carries `ui-pin-input` beside `ui-field`. The value is the cells' characters joined from the first cell, with no gap: a field given no value, committed value or default starts empty, and Clear empties it. Cell `n` shows the value's `n`th character, and publishes `data-filled` while it holds one; the root publishes `data-complete` while the value fills every cell.
+`PinInput` shall render a `Field` around a React Aria `Group` (`ui-pin-input__group`, role `group`) holding `length` cells (`ui-pin-input__cell`, React Aria `Input` elements), built with `useFieldControl`. Its root element is the field's root, which carries `ui-pin-input` beside `ui-field`. The value is the cells' characters joined from the first cell, with no gap: a field given no value, committed value or default starts empty, and Clear empties it. Cell `n` shows the value's `n`th character, and publishes `data-filled` while it holds one; the root publishes `data-complete` while the value is a full code: exactly `length` characters, each one its cells take (UIC-PIN-INPUT-2.6).
 
 Implementation: `src/components/pin-input/pin-input.tsx`, `src/components/pin-input/pin-input-cells.tsx`, `labs/reference/pin-input.css`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`
@@ -20,7 +20,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec
 
 ### UIC-PIN-INPUT-1.3 - Character type
 
-`type` shall choose the characters a cell takes: `numeric` (the default) takes the digits 0 to 9 and gives the cells `inputMode="numeric"`; `alphanumeric` takes Latin letters and digits, and `alphabetic` Latin letters, both with `inputMode="text"`. Other characters are dropped from typing, pasting and autofill.
+`type` shall choose the characters a cell takes: `numeric` (the default) takes the digits 0 to 9 and gives the cells `inputMode="numeric"`; `alphanumeric` takes Latin letters and digits, and `alphabetic` Latin letters, both with `inputMode="text"`. Other characters are dropped from typing, pasting and autofill; a value the caller supplies is checked, not rewritten (UIC-PIN-INPUT-2.6).
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`, `e2e/pin-input.spec.ts`
@@ -34,7 +34,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec
 
 ### UIC-PIN-INPUT-1.5 - Autocomplete
 
-`autoComplete` shall go on the first cell (`off` by default), so `one-time-code` lets the browser offer a code it received by message; the other cells never autocomplete. A code filled into one cell at once spreads across the cells from that one, as a paste does.
+`autoComplete` shall go on the first cell (`off` by default), so `one-time-code` lets the browser offer a code it received by message; the other cells never autocomplete. A code filled into one cell at once spreads across the cells from that one, as a paste does. The cell tells autofill from typing by the input event, not by the text's length: typing (`insertText`, or an input method's composition text) writes only the event's `data`, beside the cell's old character when that was not selected, while any other change to the cell's text (autofill, a replacement, an input event with no type) counts whole, even when it holds the old character, so a two-character code autofilled into a filled cell keeps both characters.
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`
 
 `PinInput` shall carry the hooks below on top of the field's, append the caller's `className` to its root and forward caller `data-*` attributes to it. A caller `id` goes on the root, and the first cell's id derives from it (`<id>-control`).
 
-Implementation: `src/components/pin-input/pin-input.tsx`
+Implementation: `src/components/pin-input/pin-input.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`
 
 ## UIC-PIN-INPUT-2 - Entering a code
@@ -92,17 +92,17 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin
 
 ### UIC-PIN-INPUT-2.5 - Completion
 
-A change that leaves every cell filled with a new value shall commit it and call `onComplete` once with it; both receive the value the field renders, so a caller that changes the typed value (to upper case, say) gets its own value back. Focus leaving the field also commits the value (UIC-FIELD-1.11); Tab from the cells reaches the restore button first.
+An edit from the cells whose rendered value is a full code (UIC-PIN-INPUT-2.6) shall commit it and call `onComplete` once with it. Both follow the value the field renders after the caller accepts, changes or refuses the edit: a caller that changes the typed value (to upper case, say) gets its own value back, an edit the caller cuts to a partial code commits nothing until focus leaves the field, an edit it refuses does nothing, and a value the caller sets on its own is not an edit, so it neither completes nor commits. Focus leaving the field also commits the value (UIC-FIELD-1.11); Tab from the cells reaches the restore button first.
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`
 
 ### UIC-PIN-INPUT-2.6 - Partly filled code
 
-A value with some cells filled and others empty shall be invalid with the provider string `tooShort` for the length (validity `tooShort`), before the caller's `validate`; an empty value is valid unless the field is required.
+A value shall be checked as it is, whether typed, supplied as `value`, `defaultValue` or `committedValue`, and again when `length` or `type` changes, before the caller's `validate`: a character its cells do not take makes it invalid with the provider string `patternMismatch` (validity `patternMismatch`), then more characters than `length` with `tooLong` and fewer with `tooShort` for the length. The field never rewrites a supplied value: the cells show its first `length` characters, the error blocks a form's submit, and the form value stays the value. An empty value is valid unless the field is required.
 
-Implementation: `src/components/pin-input/pin-input.tsx`
-Verification: `src/components/pin-input/pin-input.test.tsx`
+Implementation: `src/components/pin-input/pin-input.tsx`, `src/components/pin-input/pin-value.ts`
+Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`, `e2e/pin-input.spec.ts`
 
 ### UIC-PIN-INPUT-2.7 - Field behaviour
 

@@ -71,6 +71,7 @@ describe('Table pagination', { timeout: 15_000 }, () => {
     renderItems({
       pagination: { pageSize: 2, page: 9 },
       defaultSortDescriptor: { column: 'amount', direction: 'descending' },
+      filterable: true,
       defaultFilter: { query: 'item' },
     });
     expect(names()).toEqual(['Item 1']);

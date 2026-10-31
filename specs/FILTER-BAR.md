@@ -36,9 +36,9 @@ Verification: `src/components/filter-bar/filter-bar.test.tsx`, `src/components/f
 
 ### UIC-FILTER-BAR-2.2 - Editor
 
-Pressing a chip's button shall open a [Popover](POPOVER.md) titled with the field's label (`ui-filter-bar__editor`, while the chip publishes `data-open`) holding a select of the field's operators (`ui-filter-bar__operator`, left out when the field offers one operator) and the value control the operator takes (`ui-filter-bar__value`): a text field, a number field, two number fields for a range, a date field, a date range field, a multiple select of the options for `choice`, a multiple [People Picker](PEOPLE-PICKER.md) of the options for `person`, which knows the chosen people from the options (UIC-PEOPLE-PICKER-3.5) so their chips read their names before any search, segmented true and false for `boolean`, and nothing for `empty` and `not-empty`. Each edit reports a new value at once, and the chip follows it.
+Pressing a chip's button shall open a [Popover](POPOVER.md) titled with the field's label (`ui-filter-bar__editor`, while the chip publishes `data-open`) holding a select of the field's operators (`ui-filter-bar__operator`, left out when the field offers one operator) and the value control the operator takes (`ui-filter-bar__value`): a text field, a number field, two number fields for a range, a date field, a date range field, a multiple select of the options for `choice`, a multiple [People Picker](PEOPLE-PICKER.md) of the options for `person`, which knows the chosen people from the options (UIC-PEOPLE-PICKER-3.5) so their chips read their names before any search, segmented true and false for `boolean`, and nothing for `empty` and `not-empty`. Each edit reports a new value at once, and the chip follows it. When a controlled host removes the open chip's condition, its editor is gone for good: a condition of the same field added later in the same place does not open its editor.
 
-Implementation: `src/components/filter-bar/filter-chip.tsx`, `src/components/filter-bar/filter-editor.tsx`
+Implementation: `src/components/filter-bar/filter-chip.tsx`, `src/components/filter-bar/filter-editor.tsx`, `src/components/filter-bar/filter-bar.tsx`
 Verification: `src/components/filter-bar/filter-bar.test.tsx`, `src/components/filter-bar/filter-editor.test.tsx`, `e2e/filter-bar.spec.ts`
 
 ### UIC-FILTER-BAR-2.3 - Adding

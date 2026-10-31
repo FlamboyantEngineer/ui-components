@@ -230,7 +230,7 @@ export function Table<T extends TableRow>({
 }: TableProps<T>) {
   const strings = useUiStrings();
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
-  const grid = useTableGrid(gridProps);
+  const grid = useTableGrid({ ...gridProps, filterable });
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];

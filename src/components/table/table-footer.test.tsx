@@ -41,6 +41,7 @@ describe('Table summary row', { timeout: 15_000 }, () => {
       onRowAction,
       renderRowActions: () => null,
       pagination: { pageSize: 1 },
+      filterable: true,
       defaultFilter: { query: 'p' },
     });
     const footer = container.querySelector('tfoot.ui-table__footer') as HTMLElement;

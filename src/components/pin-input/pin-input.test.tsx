@@ -141,6 +141,55 @@ describe('PinInput', () => {
     expect(onComplete).toHaveBeenCalledWith('4821');
   });
 
+  it('UIC-PIN-INPUT-1.5 reads autofill in a filled cell whole and typing beside a character by its data', async () => {
+    const user = userEvent.setup();
+    const onComplete = vi.fn();
+    const onCommit = vi.fn();
+    const { rerender } = render(
+      <PinInput
+        key="a"
+        label="Code"
+        length={2}
+        defaultValue="11"
+        onComplete={onComplete}
+        onCommit={onCommit}
+      />,
+    );
+    const autofill = (index: number, value: string) =>
+      // eslint-disable-next-line testing-library/prefer-user-event -- autofill replaces the cell's text in one input event with no typed data; user-event types per character
+      fireEvent.input(cells()[index] as HTMLElement, {
+        target: { value },
+        inputType: 'insertReplacementText',
+      });
+    autofill(0, '23');
+    expect(values()).toEqual(['2', '3']);
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith('23');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('23');
+    // Autofill whose text starts or ends with the cell's character still counts whole.
+    autofill(0, '21');
+    expect(values()).toEqual(['2', '1']);
+    autofill(0, '12');
+    expect(values()).toEqual(['1', '2']);
+    expect(onComplete.mock.calls).toEqual([['23'], ['21'], ['12']]);
+    // An empty cell takes autofill whole too.
+    rerender(<PinInput key="b" label="Code" length={2} onComplete={onComplete} />);
+    autofill(0, '45');
+    expect(values()).toEqual(['4', '5']);
+    expect(onComplete).toHaveBeenLastCalledWith('45');
+    // Typing with the caret before or after a cell's character writes only the typed one.
+    rerender(<PinInput key="c" label="Code" length={2} defaultValue="11" />);
+    await user.type(cells()[0] as HTMLElement, '7', {
+      initialSelectionStart: 1,
+      initialSelectionEnd: 1,
+    });
+    expect(values()).toEqual(['7', '1']);
+    await user.type(cells()[0] as HTMLElement, '8', {
+      initialSelectionStart: 0,
+      initialSelectionEnd: 0,
+    });
+    expect(values()).toEqual(['8', '1']);
+  });
+
   it('UIC-PIN-INPUT-1.6 submits the joined value under its name, and nothing while disabled', async () => {
     const user = userEvent.setup();
     let submitted: FormDataEntryValue[] = [];
@@ -444,6 +493,64 @@ describe('PinInput', () => {
     expect(root(container)).not.toHaveAttribute('data-dirty');
   });
 
+  it('UIC-PIN-INPUT-2.5 completes from the code the caller renders, once per edit', async () => {
+    const user = userEvent.setup();
+    const onComplete = vi.fn();
+    const onCommit = vi.fn();
+    function Owned({ accept }: { accept: (next: string) => string | null }) {
+      const [value, setValue] = useState('');
+      return (
+        <>
+          <PinInput
+            label="Code"
+            length={4}
+            value={value}
+            onChange={(next) => {
+              const accepted = accept(next);
+              if (accepted !== null) setValue(accepted);
+            }}
+            onComplete={onComplete}
+            onCommit={onCommit}
+          />
+          <button type="button" onClick={() => setValue('9876')}>
+            Fill
+          </button>
+        </>
+      );
+    }
+    const { rerender } = render(<Owned key="cut" accept={(next) => next.slice(0, 3)} />);
+    await user.click(cells()[0] as HTMLElement);
+    await user.paste('1234');
+    expect(values()).toEqual(['1', '2', '3', '']);
+    expect(focusedIndex()).toBe(3);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
+    // A value the caller sets itself is not an edit: it neither completes nor commits.
+    await user.click(screen.getByRole('button', { name: 'Fill' }));
+    expect(values()).toEqual(['9', '8', '7', '6']);
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('123');
+
+    rerender(<Owned key="ignore" accept={() => null} />);
+    await user.click(cells()[0] as HTMLElement);
+    await user.paste('1234');
+    expect(values()).toEqual(['', '', '', '']);
+    expect(focusedIndex()).toBe(0);
+    rerender(<Owned key="drop" accept={(next) => next.replace(/[0-9]/g, '')} />);
+    await user.click(cells()[0] as HTMLElement);
+    await user.paste('1234');
+    expect(values()).toEqual(['', '', '', '']);
+    expect(onComplete).not.toHaveBeenCalled();
+
+    rerender(<Owned key="pad" accept={(next) => next.padEnd(4, '0')} />);
+    await user.click(cells()[0] as HTMLElement);
+    await user.keyboard('5');
+    expect(values()).toEqual(['5', '0', '0', '0']);
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith('5000');
+    expect(onCommit).toHaveBeenLastCalledWith('5000');
+    expect(onCommit).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-PIN-INPUT-2.5 UIC-FIELD-1.11 keeps an edited code until focus leaves the field', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
@@ -482,6 +589,46 @@ describe('PinInput', () => {
     expect(message(container)).toBe('Try another code.');
     await user.keyboard('{Backspace}{ArrowRight}5');
     expect(root(container)).toHaveAttribute('data-validation', 'valid');
+  });
+
+  it('UIC-PIN-INPUT-2.6 reports a supplied code of the wrong length or characters and blocks its form', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => event.preventDefault());
+    function Verify(props: Omit<PinInputProps, 'label'>) {
+      return (
+        <Form aria-label="Verify" onSubmit={onSubmit}>
+          <PinInput label="Code" name="code" validationMode="immediate" {...props} />
+          <button type="submit">Verify</button>
+        </Form>
+      );
+    }
+    const { container, rerender } = render(<Verify length={4} value="12x456" />);
+    expect(values()).toEqual(['1', '2', 'x', '4']);
+    expect(message(container)).toBe('Enter a value in the expected format.');
+    expect(root(container)).not.toHaveAttribute('data-complete');
+    await user.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    rerender(<Verify length={4} value="1234" />);
+    expect(root(container)).toHaveAttribute('data-complete', 'true');
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    rerender(<Verify length={2} value="1234" />);
+    expect(values()).toEqual(['1', '2']);
+    expect(message(container)).toBe('Use 2 characters or fewer.');
+    expect(root(container)).not.toHaveAttribute('data-complete');
+    rerender(<Verify length={6} value="1234" />);
+    expect(message(container)).toBe('Use at least 6 characters.');
+    rerender(<Verify length={4} type="alphabetic" value="1234" />);
+    expect(message(container)).toBe('Enter a value in the expected format.');
+    rerender(<Verify length={4} type="alphabetic" value="abcd" />);
+    expect(root(container)).toHaveAttribute('data-complete', 'true');
+    await user.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    rerender(<Verify length={4} value="" />);
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    rerender(<Verify length={4} value="" isRequired />);
+    expect(message(container)).toBe('A value is required.');
   });
 
   it('UIC-PIN-INPUT-2.7 shows dirty state, restores, undoes and clears from the menu', async () => {

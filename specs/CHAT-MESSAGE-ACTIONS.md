@@ -87,9 +87,9 @@ Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx
 
 ### UIC-CHAT-MESSAGE-ACTIONS-3.4 - Open overlays
 
-The buttons that open an overlay shall have `aria-haspopup="dialog"` and `aria-expanded`, and while an overlay is open the toolbar carries `data-open`, so a stylesheet that shows the bar on hover or focus keeps it while the reader works in the overlay. Keys, secondary clicks and presses in the overlays stop at the bar, so they never reach the message around it (React passes events from portals up the component tree).
+The buttons that open an overlay shall have `aria-haspopup="dialog"` and `aria-expanded`, and while an overlay is open the toolbar carries `data-open`, so a stylesheet that shows the bar on hover or focus keeps it while the reader works in the overlay. Keys, secondary clicks and presses in the overlays stop at the bar, so they never reach the message around it (React passes events from portals up the component tree). An open overlay whose command goes (`onFeedback` or `feedbackReasons`, `onReact`, `onDelete`) closes for good: the pending rating is dropped, the toolbar drops `data-open`, and the command coming back does not reopen it.
 
-Implementation: `src/components/chat-message-actions/message-actions-bar.tsx`, `src/components/chat-message-actions/message-command-overlays.tsx`
+Implementation: `src/components/chat-message-actions/message-actions-bar.tsx`, `src/components/chat-message-actions/message-command-overlays.tsx`, `src/components/chat-message-actions/message-commands.ts`
 Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx`, `e2e/chat-message-actions.spec.ts`
 
 ## UIC-CHAT-MESSAGE-ACTIONS-4 - Context menu

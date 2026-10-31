@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Form } from '../form/form.js';
 import { ColorField } from './color-field.js';
 
 function input() {
@@ -36,6 +37,24 @@ describe('ColorField typing', () => {
     });
   });
 
+  it('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-4.3 keeps an untouched hex alpha when a colour digit changes', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <ColorField
+        label="Accent"
+        allowsTyping
+        format="hexa"
+        defaultValue="#12345601"
+        onCommit={onCommit}
+      />,
+    );
+    expect(input()).toHaveValue('#12345601');
+    await user.clear(input());
+    await user.type(input(), '#22345601{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('#22345601');
+  });
+
   it('UIC-COLOR-FIELD-4.3 commits a typed colour in any form on Enter or blur', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -52,18 +71,22 @@ describe('ColorField typing', () => {
     expect(input()).toHaveValue('#336699');
     await user.clear(input());
     await user.type(input(), 'rgb(255, 0, 0)');
-    expect(onChange).not.toHaveBeenCalled();
+    // A typed colour is the value at once; it commits on Enter.
+    expect(onChange).toHaveBeenLastCalledWith('#ff0000');
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input()).toHaveValue('rgb(255, 0, 0)');
     await user.keyboard('{Enter}');
     expect(onCommit).toHaveBeenLastCalledWith('#ff0000');
     expect(input()).toHaveValue('#FF0000');
     await user.clear(input());
     await user.type(input(), '00aa00');
-    // Leaving the input applies the text; leaving the field commits it.
+    // Tab reaches the restore button; leaving the field commits.
+    await user.tab();
+    expect(screen.getByRole('button', { name: /Restore/ })).toHaveFocus();
+    expect(onCommit).toHaveBeenLastCalledWith('#ff0000');
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('#00aa00');
-    await user.click(input());
-    await user.keyboard('{Control>}z{/Control}');
-    expect(input()).toHaveValue('#FF0000');
+    expect(input()).toHaveValue('#00AA00');
   });
 
   it('UIC-COLOR-FIELD-4.3 UIC-FIELD-1.11 reaches the restore button by Tab and commits on leaving the field', async () => {
@@ -184,5 +207,61 @@ describe('ColorField typing', () => {
     await user.type(input(), '0');
     await user.keyboard('{Escape}');
     expect(input()).toHaveValue('#0C0000');
+  });
+
+  it('UIC-COLOR-FIELD-4.3 submits the colour typed while the input keeps focus', async () => {
+    const user = userEvent.setup();
+    const submitted: Array<FormDataEntryValue | null> = [];
+    render(
+      <Form
+        aria-label="Theme"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submitted.push(new FormData(event.currentTarget).get('accent'));
+        }}
+      >
+        <ColorField label="Accent" name="accent" allowsTyping defaultValue="#123456" />
+      </Form>,
+    );
+    await user.clear(input());
+    await user.type(input(), '#aabbcc');
+    screen.getByRole<HTMLFormElement>('form', { name: 'Theme' }).requestSubmit();
+    await waitFor(() => expect(submitted).toEqual(['#aabbcc']));
+    expect(input()).toHaveFocus();
+    await user.type(input(), 'x');
+    screen.getByRole<HTMLFormElement>('form', { name: 'Theme' }).requestSubmit();
+    expect(submitted).toEqual(['#aabbcc']);
+    await user.keyboard('{Escape}');
+    expect(input()).toHaveValue('#123456');
+  });
+
+  it('UIC-COLOR-FIELD-4.3 retires typed text when the value is replaced from outside', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ColorField label="Accent" allowsTyping value="#123456" onChange={onChange} />,
+    );
+    // The owner keeps its value, so the typed colour is refused and the text put back.
+    await user.tripleClick(input());
+    await user.paste('#aabbcc');
+    expect(onChange).toHaveBeenLastCalledWith('#aabbcc');
+    expect(input()).toHaveValue('#123456');
+    function Owner() {
+      const [value, setValue] = useState<string | null>('#123456');
+      return (
+        <>
+          <ColorField label="Accent" allowsTyping value={value} onChange={setValue} />
+          <button type="button" onClick={() => setValue('#ff0000')}>
+            Use red
+          </button>
+        </>
+      );
+    }
+    rerender(<Owner />);
+    await user.clear(input());
+    await user.type(input(), '#aabbc');
+    expect(input()).toHaveValue('#aabbc');
+    await user.click(screen.getByRole('button', { name: 'Use red' }));
+    expect(input()).toHaveValue('#FF0000');
   });
 });

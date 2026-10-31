@@ -50,10 +50,21 @@ function findDraftIssue(
 }
 
 /**
+ * Typed text and the value it was typed against: `value` is the value the text left the field
+ * with, `before` the value it started from.
+ */
+interface ColorDraft {
+  text: string;
+  value: string | null;
+  before: string | null;
+}
+
+/**
  * The typeable closed control: a swatch button that opens the picker, then a text input showing the
- * colour in its format. Typed text applies when focus leaves the input and commits on Enter, or once
- * focus leaves the field: a colour in any CSS form sets the value, empty text clears an optional
- * one, and anything else is put back.
+ * colour in its format. Typed text that is a colour in any CSS form sets the value as it is typed,
+ * and empty text clears an optional one; the value commits on Enter or once focus leaves the field.
+ * Other text blocks the form until it is corrected; Escape, Enter or leaving the input puts back the
+ * value the typing started from. A value replaced from outside retires the typed text.
  */
 export function ColorEntry({
   control,
@@ -65,21 +76,35 @@ export function ColorEntry({
   placeholder,
 }: ColorEntryProps) {
   const strings = useUiStrings();
-  const [draft, setDraft] = useState<string | null>(null);
-  // Text that cannot become the value blocks the form until it is corrected or put back.
-  const draftIssue = findDraftIssue(draft, { valueFormat, isRequired: state.isRequired, strings });
+  const [draft, setDraft] = useState<ColorDraft | null>(null);
+  // A value that is not the one the text left the field with comes from elsewhere.
+  if (draft && draft.value !== state.value) setDraft(null);
+  const current = draft?.value === state.value ? draft : null;
+  const draftIssue = findDraftIssue(current?.text ?? null, {
+    valueFormat,
+    isRequired: state.isRequired,
+    strings,
+  });
   const { setDraftIssue } = state;
   // After every commit: the field keeps the issue it has while the report says the same.
   useLayoutEffect(() => setDraftIssue(draftIssue));
-  // Leaving the input only applies the text: the field commits once focus leaves it, so Tab
-  // reaches its restore button.
-  const apply = ({ shouldCommit }: { shouldCommit: boolean }) => {
-    if (draft === null) return;
+  const type = (text: string) => {
+    const typed = storeColorText(text, valueFormat);
+    const isCleared = typed === null && !text.trim() && !state.isRequired;
+    const value = typed !== null || isCleared ? typed : state.value;
+    if (value !== state.value) state.setValue(value);
+    setDraft({ text, value, before: current?.before ?? state.value });
+  };
+  const putBack = () => {
+    if (!current) return;
     setDraft(null);
-    const typed = storeColorText(draft, valueFormat);
-    const isCleared = typed === null && !draft.trim() && state.canClear;
-    if (typed === null && !isCleared) return;
-    state.setValue(typed);
+    if (current.before !== state.value) state.setValue(current.before);
+  };
+  // Leaving the input keeps the colour typed, or puts back the value text that is none started
+  // from; the field commits once focus leaves it, so Tab reaches its restore button.
+  const finish = ({ shouldCommit }: { shouldCommit: boolean }) => {
+    if (draftIssue) putBack();
+    else setDraft(null);
     if (shouldCommit) state.commit();
   };
   return (
@@ -94,14 +119,14 @@ export function ColorEntry({
       <TextField
         {...toAriaControlProps(control)}
         className={hooks.slotClass('entry')}
-        value={draft ?? (color ? formatColor(color, format) : '')}
-        onChange={setDraft}
-        onBlur={() => apply({ shouldCommit: false })}
+        value={current?.text ?? (color ? formatColor(color, format) : '')}
+        onChange={type}
+        onBlur={() => finish({ shouldCommit: false })}
         onKeyDown={(event) => {
           // Keys an input method composition owns neither apply nor drop the draft.
           if (isComposingKey(event.nativeEvent)) event.continuePropagation();
-          else if (event.key === 'Enter') apply({ shouldCommit: true });
-          else if (event.key === 'Escape' && draft !== null) setDraft(null);
+          else if (event.key === 'Enter') finish({ shouldCommit: true });
+          else if (event.key === 'Escape' && current) putBack();
           else event.continuePropagation();
         }}
       >

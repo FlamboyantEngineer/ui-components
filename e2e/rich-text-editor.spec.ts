@@ -512,4 +512,25 @@ test.describe('Rich Text Editor lab', () => {
     await expect(content(page, 'form')).toHaveText('Pick the pears on Friday.');
     expect(await submittedText()).toEqual(['Pick the pears on Friday.']);
   });
+
+  test('UIC-RICH-TEXT-EDITOR-6.3 applies a link without submitting the form around the editor', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const form = page.locator('form').filter({ has: editor(page, 'form') });
+    await content(page, 'form').click();
+    await page.keyboard.press('Control+a');
+    await form.getByRole('button', { name: 'Link' }).click();
+    await page.getByRole('textbox', { name: 'Link address' }).fill('https://example.com/pears');
+    await page.keyboard.press('Enter');
+    await expect(content(page, 'form').locator('a')).toHaveAttribute(
+      'href',
+      'https://example.com/pears',
+    );
+    await expect(output(page, 'form-submits')).toHaveText('0');
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(output(page, 'form-submits')).toHaveText('1');
+    await expect(output(page, 'form')).toContainText('https://example.com/pears');
+  });
 });

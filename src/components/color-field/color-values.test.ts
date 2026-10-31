@@ -20,6 +20,14 @@ describe('color values', () => {
     expect(formatColor('not a colour', 'hex')).toBe('not a colour');
   });
 
+  it('UIC-COLOR-FIELD-3.1 keeps every hex alpha byte exact', () => {
+    for (let byte = 0; byte < 256; byte += 1) {
+      const text = `#123456${byte.toString(16).padStart(2, '0')}`;
+      expect(storeColorText(formatColor(text, 'hexa'), 'hexa')).toBe(text);
+    }
+    expect(formatColor('#1234567f', 'rgba')).toBe('rgba(18, 52, 86, 0.5)');
+  });
+
   it('UIC-COLOR-FIELD-3.2 lists the inputs of each format', () => {
     expect(describeFormatInputs('hex')).toEqual({ hasHex: true, space: undefined, channels: [] });
     expect(describeFormatInputs('hexa').channels).toEqual(['alpha']);

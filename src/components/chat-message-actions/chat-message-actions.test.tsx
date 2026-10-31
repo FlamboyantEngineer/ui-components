@@ -326,6 +326,32 @@ describe('ChatMessageActions', () => {
     expect(toolbar).not.toHaveAttribute('data-open');
   });
 
+  it('UIC-CHAT-MESSAGE-ACTIONS-3.4 closes an overlay for good when its command goes', async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn();
+    const onFeedback = vi.fn();
+    const { rerender } = render(<ChatMessageActions onDelete={onDelete} />);
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await screen.findByRole('alertdialog');
+    rerender(<ChatMessageActions />);
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    rerender(<ChatMessageActions onDelete={onDelete} />);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('toolbar')).not.toHaveAttribute('data-open');
+
+    rerender(<ChatMessageActions onFeedback={onFeedback} feedbackReasons={reasons} />);
+    const down = screen.getByRole('button', { name: 'Bad response' });
+    await user.click(down);
+    await screen.findByRole('dialog', { name: 'What went wrong?' });
+    rerender(<ChatMessageActions onFeedback={onFeedback} />);
+    expect(down).toHaveAttribute('aria-pressed', 'false');
+    rerender(<ChatMessageActions onFeedback={onFeedback} feedbackReasons={reasons} />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(down).toHaveAttribute('aria-pressed', 'false');
+    expect(onFeedback).not.toHaveBeenCalled();
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
   it('UIC-CHAT-MESSAGE-ACTIONS-3.4 keeps keys and secondary clicks in its overlays from the message around it', async () => {
     const user = userEvent.setup();
     const onKeyDown = vi.fn();
