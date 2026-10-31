@@ -35,16 +35,18 @@ const VisibleItemsContext = createContext<VisibleItems | null>(null);
  */
 function VisibleCollectionRoot({ collection }: CollectionRootProps) {
   const visible = useContext(VisibleItemsContext);
-  if (!visible) return null;
-  return (
-    <CollectionRendererContext value={visible.outer}>
-      {[...collection]
-        .filter((node) => visible.keys?.has(node.key) ?? true)
-        .map((node) => (
-          <Fragment key={String(node.key)}>{node.render?.(node)}</Fragment>
-        ))}
-    </CollectionRendererContext>
+  const keys = visible?.keys;
+  // The same elements while the collection and the keys stay the same, so a parent's own update
+  // (a scroll) does not draw the items again.
+  const items = useMemo(
+    () =>
+      [...collection]
+        .filter((node) => keys?.has(node.key) ?? true)
+        .map((node) => <Fragment key={String(node.key)}>{node.render?.(node)}</Fragment>),
+    [collection, keys],
   );
+  if (!visible) return null;
+  return <CollectionRendererContext value={visible.outer}>{items}</CollectionRendererContext>;
 }
 
 /**
