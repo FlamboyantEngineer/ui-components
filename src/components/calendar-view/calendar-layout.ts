@@ -10,7 +10,10 @@ export interface PlacedEvent {
   event: CalendarViewEvent;
   /** Given as dates (`YYYY-MM-DD`): it lasts whole days. */
   isAllDay: boolean;
-  /** Lasts whole days or at least 24 hours: drawn as a bar across the days it covers. */
+  /**
+   * Lasts whole days, or at least one wall-clock day in the view's zone (so midnight to midnight on
+   * a day the clocks change still counts): drawn as a bar across the days it covers.
+   */
   isSpan: boolean;
   /** The first day it covers. */
   startDay: string;
@@ -49,7 +52,6 @@ interface DayBlock {
 }
 
 const hourLength = 3_600_000;
-const dayLength = 24 * hourLength;
 
 function maxDay(first: string, second: string): string {
   return first >= second ? first : second;
@@ -73,7 +75,9 @@ function readTimed(event: CalendarViewEvent, timeZone: string): PlacedEvent | nu
   const end = Math.max(start, given);
   const startDay = getDayOf(start, timeZone);
   const endDay = maxDay(startDay, getDayOf(Math.max(start, end - 1), timeZone));
-  return { event, isAllDay: false, isSpan: end - start >= dayLength, startDay, endDay, start, end };
+  // A wall-clock day, not 24 elapsed hours: a day the clocks change lasts 23 or 25 hours.
+  const isSpan = end >= startTime.add({ days: 1 }).toDate().getTime();
+  return { event, isAllDay: false, isSpan, startDay, endDay, start, end };
 }
 
 /** The events read in `timeZone`; events whose start is not an ISO 8601 date or date-time are left out. */

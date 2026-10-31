@@ -51,6 +51,32 @@ describe('calendar layout', () => {
     expect(back?.endDay).toBe('2026-03-09');
   });
 
+  it('UIC-CALENDAR-VIEW-2.3 judges bars by wall-clock days on days the clocks change', () => {
+    const timeZone = 'America/New_York';
+    const placed = readEvents(
+      [
+        // 23 elapsed hours: the clocks go forward on 8 March.
+        { id: 'spring', title: 'Spring', start: '2026-03-08T00:00', end: '2026-03-09T00:00' },
+        // 25 elapsed hours, but short of the next day's midnight: the clocks go back on 1 November.
+        { id: 'fall', title: 'Fall', start: '2026-11-01T00:00', end: '2026-11-01T23:30' },
+        { id: 'autumn', title: 'Autumn', start: '2026-11-01T00:00', end: '2026-11-02T00:00' },
+      ],
+      timeZone,
+    );
+    const [spring, fall, autumn] = placed;
+    expect((spring?.end ?? 0) - (spring?.start ?? 0)).toBe(23 * 3_600_000);
+    expect(spring?.isSpan).toBe(true);
+    expect((fall?.end ?? 0) - (fall?.start ?? 0)).toBe(24.5 * 3_600_000);
+    expect(fall?.isSpan).toBe(false);
+    expect(autumn?.isSpan).toBe(true);
+    const bars = layoutWeek(getWeekDays('2026-03-08', 'en-US'), placed.slice(0, 1), {
+      spansOnly: true,
+    });
+    expect(bars.segments.map((segment) => [segment.placed.event.id, segment.span])).toEqual([
+      ['spring', 1],
+    ]);
+  });
+
   it('UIC-CALENDAR-VIEW-2.3 packs a week into lanes, bars first and longer first', () => {
     const placed = readEvents(
       [

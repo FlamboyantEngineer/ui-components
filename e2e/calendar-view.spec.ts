@@ -94,6 +94,12 @@ test.describe('Calendar View lab', () => {
       expect(await offset(demo, day, /^Noon call/)).toBeCloseTo(noon, 2);
       expect(await offset(demo, next, /^Noon call/)).toBeCloseTo(noon, 2);
     }
+    const openDay = page
+      .locator('[data-lab-demo="clock-change-2026-03-08"]')
+      .getByRole('button', { name: /^Open day/ });
+    await expect(
+      openDay.locator('xpath=ancestor::*[contains(@class,"ui-calendar-view__all-day")]'),
+    ).toHaveCount(1);
     expect(await offset('2026-03-08', '2026-03-08', /^Night shift/)).toBeCloseTo(
       (await label('2026-03-08', '1 AM')) + 0.5 / 24,
       2,
