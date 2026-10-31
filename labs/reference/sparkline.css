@@ -20,6 +20,10 @@
   stroke: none;
 }
 
+.ui-sparkline__dot {
+  fill: currentColor;
+}
+
 .ui-sparkline__marker {
   fill: currentColor;
   stroke: var(--ref-canvas);

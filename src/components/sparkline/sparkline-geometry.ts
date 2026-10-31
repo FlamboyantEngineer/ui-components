@@ -2,8 +2,7 @@
 
 import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
-import { clamp } from '../../utils/clamp.js';
-import { createLinearScale } from '../../utils/linear-scale.js';
+import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
 
 /** A value the sparkline can mark. */
 export type SparklineMarker = 'min' | 'max' | 'last';
@@ -27,10 +26,12 @@ interface SparklineGeometryInput {
 }
 
 export interface SparklineGeometry {
-  /** Path data of the line: one subpath per run of finite values. */
+  /** Path data of the line: one subpath per run of two or more finite values. */
   line: string;
-  /** Path data of the area between each run and the baseline. */
+  /** Path data of the area between each such run and the baseline. */
   area: string;
+  /** The finite values with no finite neighbour, which no line reaches. */
+  dots: SparklinePoint[];
   /** The first lowest, the first highest and the last finite values; empty without any. */
   points: Partial<Record<SparklineMarker, SparklinePoint>>;
 }
@@ -78,9 +79,24 @@ function findMarkedPoints(points: readonly SparklinePoint[]): SparklineGeometry[
 }
 
 /**
+ * Where the area meets the zero line: at zero inside the y domain, and otherwise at the edge
+ * nearest zero, even when the domain is a single value.
+ */
+function findBaseline(y: LinearScale): number {
+  const [low, high] = y.domain;
+  const [bottom, top] = y.range;
+  // The value at the top edge may be the lower one when a caller reverses the range.
+  const [lowEdge, highEdge] = low <= high ? [bottom, top] : [top, bottom];
+  if (0 < Math.min(low, high)) return lowEdge;
+  if (0 > Math.max(low, high)) return highEdge;
+  return round(y.map(0));
+}
+
+/**
  * Lays out a series in a box: index along x, value along y (higher values higher up), inset so
- * edge markers stay whole. Values that are not finite numbers leave gaps. The area fills toward
- * zero, stopping at the edge nearest zero when zero is outside the value range.
+ * edge markers stay whole. Values that are not finite numbers leave gaps, and a finite value
+ * between gaps becomes a dot. The area fills toward zero, stopping at the edge nearest zero when
+ * zero is outside the value range.
  */
 export function resolveSparklineGeometry(input: SparklineGeometryInput): SparklineGeometry {
   const { values, width, height } = input;
@@ -102,10 +118,12 @@ export function resolveSparklineGeometry(input: SparklineGeometryInput): Sparkli
       : null,
   );
   const runs = splitRuns(points);
-  const baseline = round(y.map(clamp(0, Math.min(...y.domain), Math.max(...y.domain))));
+  const paths = runs.filter((run) => run.length > 1);
+  const baseline = findBaseline(y);
   return {
-    line: runs.map(toLine).join(''),
-    area: runs.map((run) => toArea(run, baseline)).join(''),
+    line: paths.map(toLine).join(''),
+    area: paths.map((run) => toArea(run, baseline)).join(''),
+    dots: runs.filter((run) => run.length === 1).flat(),
     points: findMarkedPoints(runs.flat()),
   };
 }

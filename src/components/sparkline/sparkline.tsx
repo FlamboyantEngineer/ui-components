@@ -18,7 +18,7 @@ export type { SparklineMarker } from './sparkline-geometry.js';
 export type SparklineVariant = 'line' | 'area';
 
 export interface SparklineProps extends BaseProps, AriaLabellingProps {
-  /** The series, in order. Values that are not finite numbers leave gaps. */
+  /** The series, in order. Values that are not finite numbers leave gaps; a value alone between them is a dot. */
   values: readonly number[];
   /** Line or filled area. Defaults to `line`. */
   variant?: SparklineVariant | undefined;
@@ -38,7 +38,7 @@ export interface SparklineProps extends BaseProps, AriaLabellingProps {
   ref?: Ref<SVGSVGElement> | undefined;
 }
 
-const hooks = createHooks('sparkline', ['area', 'line', 'marker']);
+const hooks = createHooks('sparkline', ['area', 'line', 'dot', 'marker']);
 
 /** The text that describes the series: its lowest, highest and last values, or that it has none. */
 function useSeriesSummary(
@@ -89,8 +89,13 @@ export function Sparkline({
       focusable="false"
     >
       <desc id={summaryId}>{summary}</desc>
-      {variant === 'area' && !isEmpty ? <path {...hooks.slot('area')} d={geometry.area} /> : null}
-      {isEmpty ? null : <path {...hooks.slot('line')} d={geometry.line} fill="none" />}
+      {variant === 'area' && geometry.area ? (
+        <path {...hooks.slot('area')} d={geometry.area} />
+      ) : null}
+      {geometry.line ? <path {...hooks.slot('line')} d={geometry.line} fill="none" /> : null}
+      {geometry.dots.map((dot) => (
+        <circle key={dot.index} {...hooks.slot('dot')} cx={dot.x} cy={dot.y} r={1.5} />
+      ))}
       {markers.map((marker) => {
         const point = geometry.points[marker];
         return point ? (

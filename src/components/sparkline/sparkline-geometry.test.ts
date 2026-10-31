@@ -23,7 +23,25 @@ describe('resolveSparklineGeometry', () => {
 
   it('UIC-SPARKLINE-1.2 centres equal values and a single value', () => {
     expect(resolveSparklineGeometry({ ...box, values: [4, 4] }).line).toBe('M3,13L43,13');
-    expect(resolveSparklineGeometry({ ...box, values: [7] }).line).toBe('M23,13');
+    const single = resolveSparklineGeometry({ ...box, values: [7] });
+    expect(single.line).toBe('');
+    expect(single.dots).toEqual([{ index: 0, value: 7, x: 23, y: 13 }]);
+  });
+
+  it('UIC-SPARKLINE-1.2 fills equal values to the edge nearest zero, or to zero itself', () => {
+    expect(resolveSparklineGeometry({ ...box, values: [5, 5, 5] }).area).toBe(
+      'M3,13L23,13L43,13L43,23L3,23Z',
+    );
+    expect(resolveSparklineGeometry({ ...box, values: [-5, -5] }).area).toBe(
+      'M3,13L43,13L43,3L3,3Z',
+    );
+    expect(resolveSparklineGeometry({ ...box, values: [0, 0] }).area).toBe(
+      'M3,13L43,13L43,13L3,13Z',
+    );
+    const pinned = { ...box, values: [5, 5], minValue: 5, maxValue: 5 };
+    expect(resolveSparklineGeometry(pinned).area).toBe('M3,13L43,13L43,23L3,23Z');
+    const reversed = { ...box, values: [15, 25], minValue: 30, maxValue: 10 };
+    expect(resolveSparklineGeometry(reversed).area).toBe('M3,8L43,18L43,3L3,3Z');
   });
 
   it('UIC-SPARKLINE-1.2 fills the area toward zero, to the edge nearest zero outside the range', () => {
@@ -45,14 +63,31 @@ describe('resolveSparklineGeometry', () => {
       ...box,
       values: [0, 10, Number.NaN, 10, Infinity],
     });
-    expect(geometry.line).toBe('M3,23L13,3M33,3');
-    expect(geometry.area).toBe('M3,23L13,3L13,23L3,23ZM33,3L33,23L33,23Z');
+    expect(geometry.line).toBe('M3,23L13,3');
+    expect(geometry.area).toBe('M3,23L13,3L13,23L3,23Z');
+    expect(geometry.dots).toEqual([{ index: 3, value: 10, x: 33, y: 3 }]);
     expect(resolveSparklineGeometry({ ...box, values: [Number.NaN] })).toEqual({
       line: '',
       area: '',
+      dots: [],
       points: {},
     });
     expect(resolveSparklineGeometry({ ...box, values: [] }).points).toEqual({});
+  });
+
+  it('UIC-SPARKLINE-1.3 draws each finite value between gaps as a dot, joining none', () => {
+    const geometry = resolveSparklineGeometry({
+      ...box,
+      values: [1, Number.NaN, 2, -Infinity, 3],
+    });
+    expect(geometry.line).toBe('');
+    expect(geometry.area).toBe('');
+    expect(geometry.dots.map(({ x, y }) => [x, y])).toEqual([
+      [3, 23],
+      [23, 13],
+      [43, 3],
+    ]);
+    expect(geometry.points.last?.value).toBe(3);
   });
 
   it('UIC-SPARKLINE-1.4 finds the first lowest, the first highest and the last finite values', () => {
