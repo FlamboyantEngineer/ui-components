@@ -3,7 +3,7 @@
 // One timer for every relative time on the page: each subscriber asks to be woken at a moment, and
 // the clock keeps a single timeout for the earliest one.
 
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 
 type Wake = () => void;
@@ -62,11 +62,20 @@ export function subscribeClock(at: number, wake: Wake): () => void {
   };
 }
 
-/** Renders the calling component again `delay` milliseconds from now, on the shared clock. */
-export function useClockTick(delay: number | null): void {
+/**
+ * Renders the calling component again `delay` milliseconds from now, on the shared clock. `now` is
+ * the time the caller read its words against: a wake that finds it where the previous wake left it
+ * means a frozen clock, which no wake can move on, so the caller waits for its next render instead
+ * of waking again.
+ */
+export function useClockTick(delay: number | null, now: number): void {
   const [tick, wake] = useReducer((count: number) => count + 1, 0);
+  const scheduled = useRef<{ tick: number; now: number } | null>(null);
   useEffect(() => {
+    const previous = scheduled.current;
+    scheduled.current = { tick, now };
     if (delay === null) return undefined;
+    if (previous && previous.tick !== tick && previous.now === now) return undefined;
     return subscribeClock(Date.now() + delay, wake);
-  }, [delay, tick]);
+  }, [delay, tick, now]);
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   RelativeTime,
@@ -70,6 +70,27 @@ function LiveStamp() {
       <Button size="sm" onPress={() => setStamp(new Date().toISOString())}>
         Save now
       </Button>
+    </div>
+  );
+}
+
+/** A clock stopped exactly one minute before the value, where the words would change next. */
+function FrozenClock() {
+  const reads = useRef(0);
+  const [count, setCount] = useState<number | null>(null);
+  const getFrozenNow = () => {
+    reads.current += 1;
+    return new Date(2026, 3, 20, 10, 30);
+  };
+  return (
+    <div data-lab-demo="frozen-clock">
+      <p>
+        Due <RelativeTime value={instant(20, 10, 31)} getNow={getFrozenNow} showTooltip={false} />
+      </p>
+      <Button size="sm" onPress={() => setCount(reads.current)}>
+        Count clock reads
+      </Button>{' '}
+      <output data-lab-output="reads">{count ?? 'not counted'}</output>
     </div>
   );
 }
@@ -215,6 +236,12 @@ mountLab(
       description="Stamped on the real clock: it reads now, then seconds and minutes ago, updating on one timer shared by every timestamp on the page."
     >
       <LiveStamp />
+    </LabSection>
+    <LabSection
+      title="Frozen clock"
+      description="A fixed clock stopped exactly at a boundary where the words would change. The timestamp wakes at most once to find the clock unmoved, then waits for a new render instead of waking again every millisecond."
+    >
+      <FrozenClock />
     </LabSection>
     <LabSection
       title="Shared clock"
