@@ -5,7 +5,7 @@ import {
   useEditorEventCallback,
   useEditorEventListener,
 } from '@handlewithcare/react-prosemirror';
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type FocusEvent, type RefObject } from 'react';
 import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../../utils/merge-props.js';
@@ -166,7 +166,14 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
   useRichKeys(completions, actions, (label) => setStatus(strings.removedFromMessage(label)));
   const focus = useFocusRing({ isTextInput: true });
   const hover = useHover({ isDisabled: !isEditable });
-  const handlers = { onFocus: props.onFocus, onBlur: props.onBlur, onKeyDown: props.onKeyDown };
+  const handlers = {
+    onFocus: props.onFocus,
+    onBlur: (event: FocusEvent<HTMLDivElement>) => {
+      state.flushDraft();
+      props.onBlur?.(event);
+    },
+    onKeyDown: props.onKeyDown,
+  };
   const data = {
     focused: focus.isFocused,
     focusVisible: focus.isFocusVisible,

@@ -99,6 +99,29 @@ describe('MessageComposer conversations', () => {
     expect(input()).toHaveValue('First!');
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.6 writes the stored draft once typing pauses, or when focus leaves', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage();
+    const setItem = vi.spyOn(storage, 'setItem');
+    render(
+      <UiProvider storage={storage}>
+        <MessageComposer persistKey="draft" onSubmit={() => undefined} />
+        <button type="button">Elsewhere</button>
+      </UiProvider>,
+    );
+    await user.click(input());
+    await user.keyboard('Pack the tent');
+    expect(input()).toHaveValue('Pack the tent');
+    expect(setItem).not.toHaveBeenCalled();
+    await user.tab();
+    expect(setItem).toHaveBeenCalledTimes(1);
+    expect(storage.getItem('draft')).toBe('{"text":"Pack the tent","tokens":[]}');
+    await user.click(input());
+    await user.keyboard(' and stove');
+    await vi.waitFor(() => expect(setItem).toHaveBeenCalledTimes(2));
+    expect(storage.getItem('draft')).toBe('{"text":"Pack the tent and stove","tokens":[]}');
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.6 keeps the draft in the provider storage per key', async () => {
     const user = userEvent.setup();
     const storage = createMemoryStorage({ 'draft:b': '{"text":"Stored","tokens":[]}' });
@@ -114,16 +137,16 @@ describe('MessageComposer conversations', () => {
     expect(input()).toHaveValue('Hello');
     await user.click(input());
     await user.keyboard(' there');
-    expect(storage.getItem('draft:a')).toBe('{"text":"Hello there","tokens":[]}');
     rerender(<Conversation draftKey="draft:b" />);
+    expect(storage.getItem('draft:a')).toBe('{"text":"Hello there","tokens":[]}');
     expect(input()).toHaveValue('Stored');
     rerender(<Conversation draftKey="draft:a" />);
     expect(input()).toHaveValue('Hello there');
     await user.click(input());
     await user.keyboard('{Enter}');
     expect(onSubmit).toHaveBeenCalledWith('Hello there');
-    expect(storage.getItem('draft:a')).toBe('{"text":"","tokens":[]}');
     unmount();
+    expect(storage.getItem('draft:a')).toBe('{"text":"","tokens":[]}');
     storage.setItem('draft:c', '{"text":3}');
     render(<Conversation draftKey="draft:c" />);
     expect(input()).toHaveValue('Hello');

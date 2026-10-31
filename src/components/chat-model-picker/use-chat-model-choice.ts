@@ -89,7 +89,7 @@ export function useChatModelChoice(props: ChatModelPickerProps): ChatModelChoice
   const [stored, setStored] = usePersistentState<StoredChoice>(
     props.persistKey,
     {},
-    storedChoiceCodec,
+    { codec: storedChoiceCodec },
   );
   const model = resolveModel(models, props.model, [stored.model, props.defaultModel]);
   const modelEfforts = listModelEfforts(model, efforts);

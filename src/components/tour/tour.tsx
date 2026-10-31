@@ -54,7 +54,9 @@ function useTourOpenState({
   onOpenChange,
   persistKey,
 }: Pick<TourProps, 'isOpen' | 'defaultOpen' | 'onOpenChange' | 'persistKey'>) {
-  const [isCompleted, setCompleted] = usePersistentState(persistKey, false, booleanCodec);
+  const [isCompleted, setCompleted] = usePersistentState(persistKey, false, {
+    codec: booleanCodec,
+  });
   const [ownOpen, setOwnOpen] = useState(defaultOpen);
   const complete = () => {
     if (persistKey !== undefined) setCompleted(true);

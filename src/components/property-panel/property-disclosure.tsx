@@ -51,7 +51,7 @@ export function useScopedExpansion({
   const [ownExpanded, setOwnExpanded] = usePersistentState(
     isExpanded === undefined ? persistKey : undefined,
     defaultExpanded,
-    booleanCodec,
+    { codec: booleanCodec },
   );
   return {
     isExpanded: isFiltering ? isExpandedWhileFiltering : (isExpanded ?? ownExpanded),

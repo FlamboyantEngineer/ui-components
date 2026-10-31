@@ -24,7 +24,7 @@ export function useRecentCharacters(
   persistKey: string | undefined,
   categories: readonly CharacterGridCategory[],
 ): RecentCharacters {
-  const [stored, setStored] = usePersistentState(persistKey, () => [], charListCodec);
+  const [stored, setStored] = usePersistentState(persistKey, () => [], { codec: charListCodec });
   const known = new Map<string, CharacterGridCharacter>();
   for (const character of categories.flatMap((category) => category.characters)) {
     if (!known.has(character.char)) known.set(character.char, character);
