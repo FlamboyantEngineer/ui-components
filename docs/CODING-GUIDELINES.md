@@ -1,6 +1,6 @@
 # Coding Guidelines
 
-Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests also follow [TESTING-GUIDELINES.md](TESTING-GUIDELINES.md). They are strict on purpose: one way to name, place, compose and write each thing keeps a large library predictable. Rules marked **(enforced)** fail `npm run check`; the others are checked in review.
+Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests also follow [TESTING-GUIDELINES.md](TESTING-GUIDELINES.md). They are strict on purpose: one way to name, place, compose and write each thing keeps a large library predictable. Rules marked **(enforced)** fail `npm run check`; the others are checked in review. Lint applies the size limits (C1), the no-class rule (I1) and the naming convention (N3, N6) to library source, `src/` without its tests; in labs, tests and browser tests those rules are checked in review.
 
 ## Naming
 
@@ -14,7 +14,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **N5. Prop names follow one vocabulary.** States are `is*` booleans (`isDisabled`, `isSelected`, `isPending`, `isInvalid`, `isRequired`, `isReadOnly`, `isOpen`, `isExpanded`); options that are not states are plain words (`variant`, `size`, `orientation`, `truncate`); events are `on<Event>` (`onPress`, `onChange`, `onAction`, `onOpenChange`); controlled pairs are `value`/`defaultValue` with `onChange` (or `<thing>`/`default<Thing>` with `on<Thing>Change`); render callbacks are `render<Part>`; accessors are `get<Value>`. Collection keys, selections, placements, sorting and events use the shared types in `src/core/` (`Key`, `Selection`, `Placement`, `SortDescriptor`, `PressEvent`); values are plain data (dates as ISO 8601 strings, colours as CSS colour strings).
 
-**N6. Functions say what they do.** Hooks are `use<Thing>`; pure functions start with a verb (`formatPath`, `resolveOverlayPlacement`, `createModalController`); predicates start with `is`, `has` or `can`. Module constants are `UPPER_SNAKE_CASE` only for exported primitive defaults (`DEFAULT_OVERLAY_GAP`); everything else is camelCase. **(enforced: naming convention)**
+**N6. Functions say what they do.** Hooks are `use<Thing>`; pure functions start with a verb (`formatPath`, `resolveOverlayPlacement`, `createModalController`); predicates start with `is`, `has` or `can`. Module constants are `UPPER_SNAKE_CASE` only for exported primitive defaults (`DEFAULT_OVERLAY_GAP`); everything else is camelCase. **(enforced: naming convention, for camelCase and PascalCase in library source; keeping `UPPER_SNAKE_CASE` to exported primitive defaults is checked in review)**
 
 **N7. Shared vocabularies come from `src/core/props.ts`.** Sizes are `Size` values (`xs`, `sm`, `md`, `lg`, `xl`), tones are `Tone` values (`neutral`, `info`, `success`, `warning`, `danger`), orientation is `Orientation`. A component that offers a subset derives it: `type ButtonSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>`. Never invent a synonym (`error` for `danger`, `medium` for `md`).
 
@@ -38,7 +38,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 ## Inheritance and composition
 
-**I1. Function components only.** No classes in library source, including subclasses of third-party classes: wrap or compose them instead. **(enforced)**
+**I1. Function components only.** No classes in library source, including subclasses of third-party classes: wrap or compose them instead. **(enforced in library source)**
 
 **I2. Props are declared by the library.** Every component that renders an element has props that extend `BaseProps` (`className`, `id`, caller `data-*`) and the shared prop groups it supports (`PressEventProps`, `FocusEventProps`, `AriaLabellingProps`, `OpenStateProps`, `SelectionProps` and the others in `src/core/events.ts`), then declares its own props. It never extends or exposes a building block's props or types: a building block is how the component works today, not its API ([specs/PRIMITIVES.md](../specs/PRIMITIVES.md)). Declare only what the spec documents and the tests and lab use; inside the component, pass the props on to the building block. A component whose element the caller may swap takes `render` typed `ElementRender<E, State>` with a library-declared state ([specs/COMPOSITION.md](../specs/COMPOSITION.md)):
 
@@ -59,7 +59,7 @@ export interface ButtonProps
 
 ## Simplicity
 
-**C1. Small units.** A function has at most 80 lines and a cyclomatic complexity of at most 15, nests at most three levels deep, and takes at most three parameters (pass an options object instead). A module has at most 300 lines; split helpers into sibling modules before that. **(enforced)**
+**C1. Small units.** A function has at most 80 lines and a cyclomatic complexity of at most 15, nests at most three levels deep, and takes at most three parameters (pass an options object instead). A module has at most 300 lines; split helpers into sibling modules before that. **(enforced in library source)**
 
 **C2. No speculative surface.** Every prop, export and option is exercised by a unit test and shown in the lab. Remove what nothing uses.
 
@@ -67,7 +67,7 @@ export interface ButtonProps
 
 **C4. Comments explain why, not what.** Document public props in one line of TSDoc; comment only non-obvious constraints and workarounds. No commented-out code, no narration, no decorative separators.
 
-**C5. No dead code.** No unused exports, parameters, branches or files. **(enforced: lint for unused code)**
+**C5. No dead code.** No unused exports, parameters, branches or files. **(enforced: lint for unused variables, parameters and imports; unused exports and files are checked in review)**
 
 ## TypeScript
 
