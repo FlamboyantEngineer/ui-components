@@ -7,7 +7,7 @@ import {
 } from '../../src/components/annotation-layer/annotation-layer.js';
 import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
-import { CommentThreadReply } from '../../src/components/comment-thread/comment-thread-reply.js';
+import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import type { Key } from '../../src/core/props.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';

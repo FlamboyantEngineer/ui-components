@@ -9,7 +9,7 @@ import {
 import {
   formatSignatureDataUrl,
   formatSignatureSvg,
-} from '../../src/components/signature-pad/signature-path.js';
+} from '../../src/components/signature-pad/index.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';

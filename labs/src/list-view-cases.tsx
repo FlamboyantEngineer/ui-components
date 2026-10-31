@@ -8,7 +8,7 @@ import {
   ListViewSection,
   type ListViewItemProps,
   type ListViewMove,
-} from '../../src/components/list-row/list-view.js';
+} from '../../src/components/list-row/index.js';
 
 export const selections = ['none', 'single', 'multiple', 'replace'] as const;
 

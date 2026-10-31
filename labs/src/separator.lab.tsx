@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ToolbarRow, ToolbarRowSeparator } from '../../src/components/layout/toolbar-row.js';
+import { ToolbarRow, ToolbarRowSeparator } from '../../src/components/layout/index.js';
 import { Menu, MenuItem, MenuSeparator } from '../../src/components/menu/menu.js';
 import { Separator } from '../../src/components/separator/separator.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';

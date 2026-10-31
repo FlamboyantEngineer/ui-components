@@ -11,17 +11,14 @@ import {
 } from '../../src/core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { AppFrame, AppFrameContent } from '../../src/components/app-frame/app-frame.js';
-import {
-  AppFrameBand,
-  AppFrameBandContent,
-} from '../../src/components/app-frame/app-frame-band.js';
+import { AppFrameBand, AppFrameBandContent } from '../../src/components/app-frame/index.js';
 import { Button } from '../../src/components/button/button.js';
-import { ToolbarRowGroup } from '../../src/components/layout/toolbar-row.js';
+import { ToolbarRowGroup } from '../../src/components/layout/index.js';
 import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
 import {
   NavigationRailItem,
   NavigationRailSection,
-} from '../../src/components/navigation-rail/navigation-rail-items.js';
+} from '../../src/components/navigation-rail/index.js';
 import { SaveStatus } from '../../src/components/save-status/save-status.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { KitchenRail, kitchenPages, type KitchenPage } from './navigation-rail-cases.js';

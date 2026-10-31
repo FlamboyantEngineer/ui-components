@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { DragHandle } from '../../src/components/drag-handle/drag-handle.js';
-import {
-  ListView,
-  ListViewItem,
-  type ListViewMove,
-} from '../../src/components/list-row/list-view.js';
+import { ListView, ListViewItem, type ListViewMove } from '../../src/components/list-row/index.js';
 import { Table } from '../../src/components/table/table.js';
-import { applyTableMove, type TableColumn } from '../../src/components/table/table-rows.js';
+import { applyTableMove, type TableColumn } from '../../src/components/table/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 interface Fruit {

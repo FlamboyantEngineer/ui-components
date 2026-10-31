@@ -27,10 +27,10 @@ Verification: `test/primitives.test.ts`
 
 ### UIC-PRIMITIVES-1.4 - Labs use the public API
 
-The labs show hosts how to use the library, so they shall import only its public API, from the component and core modules that `src/index.ts` exports, and never `src/primitives/`. Lint rejects a lab import of any module under `src/primitives/`, as it rejects a lab import of React Aria and its companion packages.
+The labs show hosts how to use the library, so they shall import only its public API, from the component and core modules that `src/index.ts` exports, and never `src/primitives/`. Lint rejects a lab import of any module under `src/primitives/`, as it rejects a lab import of React Aria and its companion packages. A lab imports a component through its entry point (`src/components/<name>/index.js`) or its main module (`<name>.js`), never through one of its helper modules, so every symbol a lab uses is one a host can import; lint (`ui/component-imports`) rejects the rest.
 
-Implementation: `eslint.config.js`
-Verification: `test/primitives.test.ts`
+Implementation: `eslint.config.js`, `eslint-rules/index.js`
+Verification: `test/primitives.test.ts`, `test/lint-rules.test.ts`
 
 ## UIC-PRIMITIVES-2 - A library-owned public API
 
