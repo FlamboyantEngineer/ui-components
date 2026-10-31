@@ -13,6 +13,7 @@ import type {
 import type { InteractionState, NativeProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { renderLinkElement } from '../link/link.js';
+import { ButtonContext, useSlottedContext } from '../../primitives/index.js';
 import {
   formatAriaKeyShortcuts,
   type ShortcutChord,
@@ -243,6 +244,19 @@ function statesToggle(
     props['aria-checked'] !== undefined ||
     props.role !== undefined
   );
+}
+
+/**
+ * Whether the button is disabled: its own `isDisabled`, or else the disabled state a component
+ * around it supplies to its slot (a disabled `Disclosure`'s trigger), so leaving the prop out never
+ * enables a control its parent disabled. `slot={null}` opts out of the parent's state.
+ */
+export function useInheritedDisabled({
+  isDisabled,
+  slot,
+}: Pick<ButtonStateProps, 'isDisabled' | 'slot'>) {
+  const inherited = useSlottedContext(ButtonContext, slot);
+  return isDisabled ?? inherited?.isDisabled ?? false;
 }
 
 /**

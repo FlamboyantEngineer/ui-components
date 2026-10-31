@@ -111,6 +111,27 @@ function LazyRow() {
   );
 }
 
+/** A disclosure disabled until the reader enables it, with the toggle's reports printed. */
+function DisabledDisclosure() {
+  const [isDisabled, setDisabled] = useState(true);
+  const [reports, setReports] = useState(0);
+  return (
+    <div data-lab-case="disabled-disclosure">
+      <button type="button" onClick={() => setDisabled(!isDisabled)}>
+        {isDisabled ? 'Enable the disclosure' : 'Disable the disclosure'}
+      </button>
+      <Disclosure isDisabled={isDisabled}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ExpandToggle label="Berry details" onExpandedChange={() => setReports(reports + 1)} />
+          <span>Berries</span>
+        </div>
+        <DisclosurePanel>Currants and gooseberries ripen in summer.</DisclosurePanel>
+      </Disclosure>
+      <output data-lab-output>{`Reported ${reports} changes`}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Sizes and states" description="A leaf keeps an empty box of the same size.">
@@ -146,6 +167,12 @@ mountLab(
           <DisclosurePanel>Lemon, orange and lime grow in warm climates.</DisclosurePanel>
         </Disclosure>
       </div>
+    </LabSection>
+    <LabSection
+      title="Disabled disclosure"
+      description="A disabled Disclosure disables its toggle too: it leaves the tab order and reports nothing until the disclosure is enabled again."
+    >
+      <DisabledDisclosure />
     </LabSection>
     <LabSection
       title="Loading children"

@@ -16,6 +16,7 @@ import {
   toAriaLinkProps,
   toKeyShortcuts,
   useButtonSelection,
+  useInheritedDisabled,
   type ButtonStateProps,
 } from './button-state.js';
 
@@ -194,8 +195,9 @@ export function Button({
     shortcut: rest.shortcut,
     'aria-label': rest['aria-label'],
   });
-  const selection = useButtonSelection(rest);
-  const action = useButtonAction({ ...rest, ...selection, onError, pendingDelay });
+  const own = { ...rest, isDisabled: useInheritedDisabled(rest) };
+  const selection = useButtonSelection(own);
+  const action = useButtonAction({ ...own, ...selection, onError, pendingDelay });
   const options = { platform: useDetectedPlatform(), isTooltipName: presentation.isTooltipName };
   const isLink = rest.href !== undefined;
   const hookProps = hooks.root({
@@ -233,7 +235,7 @@ export function Button({
     </AriaLink>
   ) : (
     <AriaButton
-      {...toAriaButtonProps({ ...rest, ...selection, ...action }, options)}
+      {...toAriaButtonProps({ ...own, ...selection, ...action }, options)}
       {...hookProps}
       aria-label={presentation.isIcon ? presentation.name : rest['aria-label']}
     >
