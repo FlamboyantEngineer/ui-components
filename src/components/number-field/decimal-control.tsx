@@ -63,7 +63,7 @@ function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOp
       isLeaving.current = false;
     },
     onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
-      modifiedStep(event);
+      modifiedStep(event, Number.isNaN(input.numberValue) ? null : input.numberValue);
       if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
         finishUnchanged(input.numberValue);
       }

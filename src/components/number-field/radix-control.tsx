@@ -2,7 +2,12 @@
 
 import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { useState, type KeyboardEvent } from 'react';
-import { Button as AriaButton, Input, TextField as AriaTextField } from '../../primitives/index.js';
+import {
+  Button as AriaButton,
+  Group,
+  Input,
+  TextField as AriaTextField,
+} from '../../primitives/index.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import {
@@ -14,6 +19,7 @@ import {
 import type { NumberControlConfig } from './number-field.js';
 import {
   addStep,
+  modifierStep,
   NumberAdornment,
   NumberScrubber,
   numberFieldHooks as hooks,
@@ -52,14 +58,22 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
     setDraft(formatRadixNumber(next, radix));
     if (commit) state.commit();
   };
-  const step = (direction: number, event?: { shiftKey: boolean; altKey: boolean }) => {
+  /**
+   * Steps the number the input shows: by `step` onto the step grid, as React Aria's plain arrows
+   * and steppers do in a decimal field, or by a modifier's step (`modifier`) without snapping.
+   */
+  const step = (direction: number, modifier?: number) => {
     if (state.isDisabled || state.isReadOnly) return;
-    const amount =
-      (event?.shiftKey ? steps.largeStep : event?.altKey ? steps.smallStep : undefined) ??
-      steps.step;
     const parsed = parseRadixNumber(draft, radix);
     const value = parsed !== null && Number.isNaN(parsed) ? state.value : parsed;
-    const next = addStep(value, direction * amount, steps);
+    const next =
+      modifier === undefined
+        ? snapNumberValue(addStep(value, direction * steps.step, steps), {
+            minValue: steps.minValue,
+            maxValue: steps.maxValue,
+            step: steps.step,
+          })
+        : addStep(value, direction * modifier, steps);
     state.setValue(next);
     setDraft(formatRadixNumber(next, radix));
     state.commit();
@@ -72,8 +86,12 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
     }
     if (event.key === 'Tab') finish(false);
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      // A modified arrow without its step does nothing, as in a decimal field.
+      const isModified = event.shiftKey || event.altKey;
+      const modifier = isModified ? modifierStep(event, steps) : undefined;
+      if (isModified && modifier === undefined) return;
       event.preventDefault();
-      step(event.key === 'ArrowUp' ? 1 : -1, event);
+      step(event.key === 'ArrowUp' ? 1 : -1, modifier);
     }
   };
   return { draft, setDraft, finish, step, onKeyDown };
@@ -128,7 +146,7 @@ export function RadixControl(props: RadixControlProps) {
       value={entry.draft}
       onChange={entry.setDraft}
     >
-      <div {...hooks.slot('group')}>
+      <Group {...hooks.slot('group')}>
         {hideStepper ? null : stepper(-1)}
         {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
         <NumberAdornment side="start">{startAdornment}</NumberAdornment>
@@ -151,7 +169,7 @@ export function RadixControl(props: RadixControlProps) {
         />
         <NumberAdornment side="end">{endAdornment}</NumberAdornment>
         {hideStepper ? null : stepper(1)}
-      </div>
+      </Group>
       <FieldFormValue
         name={name}
         value={state.value === null ? null : String(state.value)}
