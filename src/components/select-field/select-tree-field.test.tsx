@@ -366,14 +366,14 @@ describe('SelectTreeField', () => {
     const onCommit = vi.fn();
     const tree = (children: Place[]): Place[] => [{ id: 'p', name: 'Parent', children }];
     const props = {
-      mode: 'tree',
+      mode: 'tree' as const,
       label: 'Place',
-      selectionMode: 'multiple',
+      selectionMode: 'multiple' as const,
       getTextValue,
       onChange,
       onCommit,
       defaultValue: ['p', 'a'],
-    } as const;
+    };
     const { rerender } = render(
       <SelectField {...props} items={tree([{ id: 'a', name: 'Alpha' }])} />,
     );
