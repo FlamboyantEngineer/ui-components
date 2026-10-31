@@ -142,6 +142,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@internationalized/date": "^3.12.4",
+    "entities": "^8.1.0",
     "intl-messageformat": "^12.1.4",
     "react-aria": "^3.53.1",
     "react-aria-components": "^1.22.1"

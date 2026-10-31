@@ -1,5 +1,7 @@
 // A DOM-free tokenizer and entity decoder shared by the markup readers (specs/MARKUP.md).
 
+import { decodeHTML, decodeHTMLAttribute, decodeHTMLStrict } from 'entities/decode';
+
 interface MarkupTextToken {
   readonly type: 'text';
   readonly text: string;
@@ -25,6 +27,11 @@ type MarkupToken = MarkupTextToken | MarkupOpenToken | MarkupCloseToken;
 interface TokenizeMarkupOptions {
   /** Lower-case names of elements whose content is raw text up to their closing tag. */
   rawTextElements?: ReadonlySet<string> | undefined;
+  /**
+   * `html` decodes references as an HTML parser does, also legacy names without a `;` (`&copy`)
+   * and numeric references a browser remaps; `strict` (the default) decodes as `decodeEntities`.
+   */
+  references?: 'html' | 'strict' | undefined;
 }
 
 interface SkipDroppedElementsOptions {
@@ -39,69 +46,12 @@ interface Scanner {
   markup: string;
   tokens: MarkupToken[];
   rawTextElements: ReadonlySet<string> | undefined;
+  decode: ReferenceDecoders;
 }
 
 const tagNamePattern = /[A-Za-z_][\w:.-]*/y;
 const attributePattern = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
 const entityPattern = /&(#x[0-9a-f]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});/gi;
-
-const namedEntities: Readonly<Record<string, string>> = {
-  amp: '&',
-  lt: '<',
-  gt: '>',
-  quot: '"',
-  apos: "'",
-  nbsp: '\u00a0',
-  ensp: '\u2002',
-  emsp: '\u2003',
-  thinsp: '\u2009',
-  shy: '\u00ad',
-  copy: '©',
-  reg: '®',
-  trade: '™',
-  hellip: '…',
-  mdash: '—',
-  ndash: '–',
-  lsquo: '‘',
-  rsquo: '’',
-  sbquo: '‚',
-  ldquo: '“',
-  rdquo: '”',
-  bdquo: '„',
-  laquo: '«',
-  raquo: '»',
-  bull: '•',
-  middot: '·',
-  dagger: '†',
-  Dagger: '‡',
-  para: '¶',
-  sect: '§',
-  deg: '°',
-  plusmn: '±',
-  times: '×',
-  divide: '÷',
-  minus: '−',
-  le: '≤',
-  ge: '≥',
-  ne: '≠',
-  asymp: '≈',
-  infin: '∞',
-  micro: 'µ',
-  frac12: '½',
-  frac14: '¼',
-  frac34: '¾',
-  sup2: '²',
-  sup3: '³',
-  euro: '€',
-  pound: '£',
-  yen: '¥',
-  cent: '¢',
-  larr: '←',
-  rarr: '→',
-  uarr: '↑',
-  darr: '↓',
-  harr: '↔',
-};
 
 function decodeCodePoint(value: number): string {
   const isSurrogate = value >= 0xd800 && value <= 0xdfff;
@@ -109,8 +59,9 @@ function decodeCodePoint(value: number): string {
 }
 
 /**
- * Decodes numeric character references and the common named entities (`&amp;`, `&nbsp;`,
- * `&mdash;`, …). An unknown name stays as written; a reference to no character becomes U+FFFD.
+ * Decodes numeric character references and every named character reference of HTML (`&amp;`,
+ * `&eacute;`, `&alpha;`, `&NotNestedGreaterGreater;`), each ended by its `;` and matched with its
+ * case. An unknown name stays as written; a reference to no character becomes U+FFFD.
  */
 export function decodeEntities(text: string): string {
   if (!text.includes('&')) return text;
@@ -118,16 +69,30 @@ export function decodeEntities(text: string): string {
     const lower = entity.toLowerCase();
     if (lower.startsWith('#x')) return decodeCodePoint(Number.parseInt(lower.slice(2), 16));
     if (lower.startsWith('#')) return decodeCodePoint(Number.parseInt(lower.slice(1), 10));
-    return namedEntities[entity] ?? namedEntities[lower] ?? match;
+    return decodeHTMLStrict(match);
   });
 }
 
-function parseAttributes(source: string): Record<string, string> {
+/** How a tokenizer decodes character references in text and attribute values. */
+interface ReferenceDecoders {
+  text: (text: string) => string;
+  attribute: (value: string) => string;
+}
+
+const strictDecoders: ReferenceDecoders = { text: decodeEntities, attribute: decodeEntities };
+
+/** An HTML parser's decoding, legacy references without a `;` included. */
+const htmlDecoders: ReferenceDecoders = {
+  text: (text) => (text.includes('&') ? decodeHTML(text) : text),
+  attribute: (value) => (value.includes('&') ? decodeHTMLAttribute(value) : value),
+};
+
+function parseAttributes(source: string, decode: ReferenceDecoders): Record<string, string> {
   const attributes: Record<string, string> = {};
   for (const match of source.matchAll(attributePattern)) {
     const name = match[1];
     if (!name || Object.hasOwn(attributes, name)) continue;
-    attributes[name] = decodeEntities(match[2] ?? match[3] ?? match[4] ?? '');
+    attributes[name] = decode.attribute(match[2] ?? match[3] ?? match[4] ?? '');
   }
   return attributes;
 }
@@ -216,7 +181,12 @@ function readTag(scanner: Scanner, open: number): number {
   }
   const isSelfClosing = close > nameEnd && markup[close - 1] === '/';
   const attributeSource = markup.slice(nameEnd, isSelfClosing ? close - 1 : close);
-  tokens.push({ type: 'open', tag, attributes: parseAttributes(attributeSource), isSelfClosing });
+  tokens.push({
+    type: 'open',
+    tag,
+    attributes: parseAttributes(attributeSource, scanner.decode),
+    isSelfClosing,
+  });
   if (isSelfClosing || !scanner.rawTextElements?.has(tag.toLowerCase())) return end;
   return readRawText(scanner, tag, end);
 }
@@ -229,13 +199,14 @@ function readTag(scanner: Scanner, open: number): number {
  */
 export function tokenizeMarkup(markup: string, options: TokenizeMarkupOptions = {}): MarkupToken[] {
   const tokens: MarkupToken[] = [];
-  const scanner: Scanner = { markup, tokens, rawTextElements: options.rawTextElements };
+  const decode = options.references === 'html' ? htmlDecoders : strictDecoders;
+  const scanner: Scanner = { markup, tokens, rawTextElements: options.rawTextElements, decode };
   let index = 0;
   while (index < markup.length) {
     const open = markup.indexOf('<', index);
     const textEnd = open === -1 ? markup.length : open;
     if (textEnd > index) {
-      tokens.push({ type: 'text', text: decodeEntities(markup.slice(index, textEnd)) });
+      tokens.push({ type: 'text', text: decode.text(markup.slice(index, textEnd)) });
     }
     if (open === -1) break;
     index = readNonElement(scanner, open) ?? readTag(scanner, open);

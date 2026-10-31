@@ -104,4 +104,14 @@ test.describe('HTML Markup lab', () => {
     await expect(table.locator(':scope > tbody > tr')).toHaveCount(2);
     await expect(table.getByRole('cell', { name: 'Quince' })).toBeVisible();
   });
+
+  test('UIC-MARKUP-1.3 decodes every named character reference as a browser does', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('html-markup');
+    await expect(page.locator('[data-lab-references]')).toHaveText(
+      'Café ö α ≤ ⪢̸ © 2026 &EACUTE; &constructor;',
+    );
+  });
 });
