@@ -39,12 +39,12 @@ function useCalendarValues(value: RelativeDateValue | null, bounds: RelativeDate
     const startDate = parseIsoDate(start);
     const endDate = parseIsoDate(end);
     return {
-      date: single ? parseIsoDate(toValueDate(single)) : null,
+      date: single ? parseIsoDate(toValueDate(single, bounds.timeZone)) : null,
       range: startDate && endDate ? { start: startDate, end: endDate } : null,
       minValue: parseIsoDate(bounds.minValue),
       maxValue: parseIsoDate(bounds.maxValue),
     };
-  }, [single, start, end, bounds.minValue, bounds.maxValue]);
+  }, [single, start, end, bounds.minValue, bounds.maxValue, bounds.timeZone]);
 }
 
 /**
@@ -61,7 +61,8 @@ export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCal
   const limits = {
     minValue: values.minValue,
     maxValue: values.maxValue,
-    defaultFocusedValue: today ? parseIsoDate(today) : undefined,
+    defaultFocusedValue:
+      values.date ?? values.range?.start ?? (today ? parseIsoDate(today) : undefined),
   };
   if (kind === 'date-range') {
     return (
