@@ -1,5 +1,5 @@
 import { en } from './locales/index.js';
-import { formatMessage, type MessageValues } from './message-format.js';
+import { DEFAULT_LOCALE, formatMessage, type MessageValues } from './message-format.js';
 import { analysisArguments, type AnalysisStrings } from './analysis-strings.js';
 import { chatArguments, type ChatStrings } from './chat-strings.js';
 import { chatActionsArguments, type ChatActionsStrings } from './chat-actions-strings.js';
@@ -141,4 +141,4 @@ export function compileStrings(messages: UiMessages, locale: string): UiStrings 
 }
 
 /** The built-in English text. */
-export const defaultStrings: UiStrings = compileStrings(en, 'en-US');
+export const defaultStrings: UiStrings = compileStrings(en, DEFAULT_LOCALE);

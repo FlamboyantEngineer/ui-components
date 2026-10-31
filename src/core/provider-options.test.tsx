@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { Link, useLocale } from '../primitives/index.js';
-import { UiProvider, type UiNavigate } from './provider.js';
+import { I18nProvider, Link, useLocale } from '../primitives/index.js';
+import { UiProvider, useFormatMessage, type UiNavigate } from './provider.js';
 
 // Optional provider options come and go without remounting the children (UIC-PROVIDER-3.3).
 
@@ -79,5 +79,24 @@ describe('UiProvider options', () => {
     expect(outerNavigate).toHaveBeenCalledTimes(1);
     expect(draft()).toHaveValue('unsaved draft');
     expect(onMount).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-PROVIDER-3.4 UIC-PROVIDER-4.1 formats its text in the locale of a host I18nProvider', () => {
+    function Count() {
+      const format = useFormatMessage();
+      return (
+        <output aria-label="Count">
+          {format('{n, number} {n, plural, one {fichier} other {fichiers}}', { n: 1234.5 })}
+        </output>
+      );
+    }
+    render(
+      <I18nProvider locale="fr-FR">
+        <UiProvider>
+          <Count />
+        </UiProvider>
+      </I18nProvider>,
+    );
+    expect(screen.getByRole('status', { name: 'Count' })).toHaveTextContent(/^1\s234,5 fichiers$/);
   });
 });
