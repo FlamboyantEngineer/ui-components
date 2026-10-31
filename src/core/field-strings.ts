@@ -71,6 +71,8 @@ export interface FieldStrings {
   valueUnset: string;
   /** Stands for an empty colour value. */
   noColor: string;
+  /** Names a list of colour swatches to pick from. */
+  colorSwatches: string;
   /** The message of typed text that is not a colour. */
   colorUnreadable: string;
   /** Names the hexadecimal input of a colour picker. */

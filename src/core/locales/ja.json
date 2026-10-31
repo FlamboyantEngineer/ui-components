@@ -428,6 +428,7 @@
   "valueFalse": "いいえ",
   "valueUnset": "未設定",
   "noColor": "色なし",
+  "colorSwatches": "カラースウォッチ",
   "colorUnreadable": "色を入力してください (例: #3366ff)。",
   "hexColor": "16 進数の色",
   "colorFormat": "色の形式",

@@ -36,7 +36,7 @@ Verification: `src/components/color-swatch/color-swatch.test.tsx`
 
 ### UIC-COLOR-SWATCH-2.1 - Swatch list
 
-`ColorSwatchPicker` shall render a React Aria colour swatch picker (`ui-color-swatch-picker`): a single-selection `listbox`, named by its `aria-label` (React Aria's `Color swatches` by default), laid out as a `grid` (the default) or a `stack` and publishing `data-layout`. Each `ColorSwatchPickerItem` is an `option` (`ui-color-swatch-picker__item`) drawing its `color` as a `ColorSwatch`, named by the colour's name in the locale or by `colorName`. The item whose colour equals the picker's `value` (or `defaultValue`), a CSS colour string compared as a colour whatever its spelling, is selected (`aria-selected`, `data-selected`). A disabled item (`isDisabled`) stays listed but cannot be picked. An item whose `color` React Aria does not read ([UIC-COLOR-SWATCH-1.2](#uic-color-swatch-12---empty-swatch)) is left out, and a `value` or `defaultValue` it does not read counts as no value, instead of throwing.
+`ColorSwatchPicker` shall render a React Aria single-selection `listbox` (`ui-color-swatch-picker`), named by its `aria-label` (the provider's `colorSwatches` string, `Color swatches`, without `aria-label` or `aria-labelledby`), laid out as a `grid` (the default) or a `stack` and publishing `data-layout`. Each `ColorSwatchPickerItem` is an `option` (`ui-color-swatch-picker__item`) drawing its `color` as a `ColorSwatch`, named by the colour's name in the locale or by `colorName`. The item whose colour equals the picker's `value` (or `defaultValue`), a CSS colour string compared as a colour whatever its spelling, is selected (`aria-selected`, `data-selected`). A disabled item (`isDisabled`) stays listed but cannot be picked. An item whose `color` React Aria does not read ([UIC-COLOR-SWATCH-1.2](#uic-color-swatch-12---empty-swatch)) is left out, and a `value` or `defaultValue` it does not read counts as no value ([UIC-COLOR-SWATCH-2.4](#uic-color-swatch-24---no-value)), instead of throwing. Inside a React Aria colour picker, such as the [Color Field](COLOR-FIELD.md)'s, the list follows and sets that picker's colour.
 
 Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-swatch/color-swatch-picker.test.tsx`, `e2e/color-swatch.spec.ts`
@@ -47,6 +47,20 @@ The list shall take one tab stop; the arrow keys move between swatches (in two d
 
 Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-swatch/color-swatch-picker.test.tsx`, `e2e/color-swatch.spec.ts`
+
+### UIC-COLOR-SWATCH-2.4 - No value
+
+A controlled `value` that is empty or unreadable shall pick nothing, and the list stays controlled: a press reports the item through `onChange` and the list keeps showing `value`. Without `value` the list holds its own pick, starting at `defaultValue`, or at nothing without one; a later `defaultValue` changes nothing.
+
+Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
+Verification: `src/components/color-swatch/color-swatch-picker-values.test.tsx`, `e2e/color-swatch.spec.ts`
+
+### UIC-COLOR-SWATCH-2.5 - Equal colours
+
+Items shall be options in their own right whatever their colour: equal colours, in the same spelling or another (`#ff0000`, `rgb(255, 0, 0)`, `hsl(0, 100%, 50%)`), are separate options that never collide. Every item of the picked colour is selected together, disabled ones included, and picking one reports that item's own `color` string, also after items are added, removed or reordered.
+
+Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
+Verification: `src/components/color-swatch/color-swatch-picker-values.test.tsx`, `e2e/color-swatch.spec.ts`
 
 ### UIC-COLOR-SWATCH-2.3 - Picker hooks and caller attributes
 

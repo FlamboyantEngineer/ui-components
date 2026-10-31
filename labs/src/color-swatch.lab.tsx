@@ -4,6 +4,7 @@ import {
   ColorSwatchPicker,
   ColorSwatchPickerItem,
 } from '../../src/components/color-swatch/color-swatch.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
@@ -28,6 +29,47 @@ function Palette() {
       </ColorSwatchPicker>
       <p>
         Picked: <output data-lab-output="picked">{picked}</output>
+      </p>
+    </>
+  );
+}
+
+const reds = ['#cc3300', 'rgb(204, 51, 0)', 'hsl(15, 100%, 40%)'] as const;
+
+/** A controlled picker with one colour in three spellings, whose value the buttons set. */
+function ControlledPalette() {
+  const [value, setValue] = useState('#2e8b57');
+  const [reported, setReported] = useState('');
+  return (
+    <>
+      <p>
+        <Button size="sm" onPress={() => setValue('rgb(204, 51, 0)')}>
+          Set red
+        </Button>{' '}
+        <Button size="sm" onPress={() => setValue('not a colour')}>
+          Set unreadable
+        </Button>{' '}
+        <Button size="sm" onPress={() => setValue('')}>
+          Clear
+        </Button>
+      </p>
+      <ColorSwatchPicker
+        aria-label="Controlled palette"
+        value={value}
+        onChange={(color) => {
+          setReported(color);
+          setValue(color);
+        }}
+        data-lab-picker="controlled"
+      >
+        {reds.map((color) => (
+          <ColorSwatchPickerItem key={color} color={color} colorName={`Red, ${color}`} />
+        ))}
+        <ColorSwatchPickerItem color="#2e8b57" />
+      </ColorSwatchPicker>
+      <p>
+        Value: <output data-lab-output="value">{value}</output>, reported:{' '}
+        <output data-lab-output="reported">{reported}</output>
       </p>
     </>
   );
@@ -62,6 +104,12 @@ mountLab(
       description="Arrow keys move between swatches, Enter or Space picks; the last one is disabled."
     >
       <Palette />
+    </LabSection>
+    <LabSection
+      title="Controlled values and equal colours"
+      description="One red in three spellings is three options picked together; an unreadable or empty value picks nothing."
+    >
+      <ControlledPalette />
     </LabSection>
     <LabSection title="Picker layouts and sizes" description="A grid or a stack of swatches.">
       <StateMatrix

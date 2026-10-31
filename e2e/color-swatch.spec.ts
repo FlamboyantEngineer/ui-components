@@ -73,6 +73,25 @@ test.describe('Color Swatch lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-COLOR-SWATCH-2.4 UIC-COLOR-SWATCH-2.5 keeps a controlled value and picks equal colours together', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-swatch');
+    const picker = page.locator('[data-lab-picker="controlled"]');
+    const selected = picker.locator('[role="option"][aria-selected="true"]');
+    await expect(selected).toHaveCount(1);
+    await page.getByRole('button', { name: 'Set red' }).click();
+    await expect(selected).toHaveCount(3);
+    await page.getByRole('button', { name: 'Set unreadable' }).click();
+    await expect(selected).toHaveCount(0);
+    await picker.getByRole('option', { name: 'Red, hsl(15, 100%, 40%)' }).click();
+    await expect(page.locator('[data-lab-output="reported"]')).toHaveText('hsl(15, 100%, 40%)');
+    await expect(selected).toHaveCount(3);
+    await page.getByRole('button', { name: 'Clear' }).click();
+    await expect(selected).toHaveCount(0);
+  });
+
   test('UIC-COLOR-SWATCH-1.1 passes axe in the dark theme', async ({ lab }) => {
     await lab.open('color-swatch', { theme: 'dark' });
     await lab.expectAccessible();
