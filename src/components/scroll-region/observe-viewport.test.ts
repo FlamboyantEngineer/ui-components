@@ -30,8 +30,8 @@ function runFrame() {
   for (const callback of pending) callback(0);
 }
 
-function mutate() {
-  FakeMutationObserver.instances[0]?.callback([], {} as MutationObserver);
+function mutate(type: MutationRecordType = 'childList') {
+  FakeMutationObserver.instances[0]?.callback([{ type } as MutationRecord], {} as MutationObserver);
 }
 
 function resize() {
@@ -112,6 +112,41 @@ describe('observeViewport', () => {
     expect(frames.size).toBe(0);
     expect(measure).not.toHaveBeenCalled();
     expect(FakeMutationObserver.instances[0]?.disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-SCROLL-REGION-2.7 remeasures nested text, attribute and image changes without rewatching', () => {
+    const element = document.createElement('div');
+    element.replaceChildren(document.createElement('p'));
+    const measure = vi.fn();
+    const current = observeViewport(element, window, { measure, subtree: true });
+    const observer = requireDefined(FakeResizeObserver.instances[0]);
+    expect(FakeMutationObserver.instances[0]?.observe).toHaveBeenCalledWith(element, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true,
+    });
+    runFrame();
+    measure.mockClear();
+    observer.observe.mockClear();
+    mutate('characterData');
+    mutate('attributes');
+    element.firstElementChild?.dispatchEvent(new Event('load'));
+    runFrame();
+    expect(measure).toHaveBeenCalledTimes(1);
+    expect(observer.observe).not.toHaveBeenCalled();
+    current.disconnect();
+    element.firstElementChild?.dispatchEvent(new Event('load'));
+    expect(frames.size).toBe(0);
+  });
+
+  it('UIC-SCROLL-REGION-2.7 watches only direct children without the subtree option', () => {
+    const element = document.createElement('div');
+    const current = observeViewport(element, window, { measure: vi.fn() });
+    expect(FakeMutationObserver.instances[0]?.observe).toHaveBeenCalledWith(element, {
+      childList: true,
+    });
+    current.disconnect();
   });
 
   it('UIC-SCROLL-REGION-2.7 still measures mutations without a resize observer', () => {

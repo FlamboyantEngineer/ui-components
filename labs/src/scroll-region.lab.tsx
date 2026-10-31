@@ -176,6 +176,41 @@ function Log() {
   );
 }
 
+/** A log whose lines grow inside a fixed-height child, so no child of the viewport resizes. */
+function NestedLog() {
+  const [count, setCount] = useState(12);
+  const [isSpaced, setSpaced] = useState(false);
+  const text = Array.from({ length: count }, (_, index) => `Parcel ${index + 1} sorted`).join('\n');
+  return (
+    <div style={{ display: 'grid', gap: 8, width: 360 }}>
+      <div style={frame(360, 140)} data-lab-region="nested-log">
+        <ScrollRegion
+          stickToBottom
+          scrollbar="overlay"
+          role="log"
+          aria-label="Sorting"
+          tabIndex={0}
+        >
+          <div style={{ height: 40 }}>
+            <pre style={{ margin: 0, lineHeight: isSpaced ? 2 : 1.25 }}>{text}</pre>
+          </div>
+        </ScrollRegion>
+      </div>
+      <p>
+        <button type="button" onClick={() => setCount((current) => current + 4)}>
+          Add lines
+        </button>{' '}
+        <button type="button" onClick={() => setCount((current) => Math.max(1, current - 8))}>
+          Remove lines
+        </button>{' '}
+        <button type="button" onClick={() => setSpaced((current) => !current)}>
+          {isSpaced ? 'Tighten lines' : 'Space lines'}
+        </button>
+      </p>
+    </div>
+  );
+}
+
 function Chapters() {
   const ref = useRef<HTMLDivElement>(null);
   const ids = chapters.map((chapter) => `chapter-${chapter.toLowerCase()}`);
@@ -419,6 +454,12 @@ mountLab(
       description="A log that follows new arrivals while scrolled to the bottom; scroll up to stop following. Reaching the top and bottom is counted."
     >
       <Log />
+    </LabSection>
+    <LabSection
+      title="Nested content changes"
+      description="The lines grow inside a child of fixed height, so no child of the viewport resizes; the log still follows them, and its overlay scrollbar and edges update. Spacing the lines changes only a style."
+    >
+      <NestedLog />
     </LabSection>
     <LabSection
       title="Scroll spy"

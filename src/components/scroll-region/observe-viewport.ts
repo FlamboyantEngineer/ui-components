@@ -2,12 +2,31 @@
 // animation frame whenever the viewport, its children or other watched elements resize, or its
 // content changes.
 
+/**
+ * The content changes that can change the scrollable extent without resizing the viewport or its
+ * children: nodes, text and attributes (such as a class or style) anywhere inside it.
+ */
+export const contentChanges: MutationObserverInit = {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  characterData: true,
+};
+
+/** Whether a batch of mutations added or removed nodes, so the watched children may differ. */
+function hasNodeChanges(records: readonly MutationRecord[]): boolean {
+  return records.some((record) => record.type === 'childList');
+}
+
 interface ViewportObserverOptions {
   /** Reads the layout; called at most once per animation frame. */
   measure: () => void;
   /** Elements watched besides the viewport and its children, read again on every content change. */
   getExtraTargets?: (() => Iterable<Element | null>) | undefined;
-  /** Watch content changes anywhere inside the viewport, not only its children. */
+  /**
+   * Watch content changes anywhere inside the viewport (`contentChanges`) and images loading in it,
+   * not only its children.
+   */
   subtree?: boolean | undefined;
 }
 
@@ -57,8 +76,12 @@ export function observeViewport(
     }
     schedule();
   };
-  const mutations = new view.MutationObserver(observe);
-  mutations.observe(element, { childList: true, subtree });
+  // Only added or removed nodes can change the watched children; other changes just remeasure.
+  const mutations = new view.MutationObserver((records) =>
+    hasNodeChanges(records) ? observe() : schedule(),
+  );
+  mutations.observe(element, subtree ? contentChanges : { childList: true });
+  if (subtree) element.addEventListener('load', schedule, true);
   observe();
   return {
     schedule,
@@ -68,6 +91,7 @@ export function observeViewport(
       resize?.disconnect();
       observed.clear();
       mutations.disconnect();
+      element.removeEventListener('load', schedule, true);
       if (frame !== null) view.cancelAnimationFrame(frame);
       frame = null;
     },
