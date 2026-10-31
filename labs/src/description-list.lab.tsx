@@ -181,16 +181,23 @@ mountLab(
       <LabHelperCalls
         calls={[
           [
-            "formatDescriptionValue(1234.5, { locale: 'fr-FR' })",
-            formatDescriptionValue(1234.5, { locale: 'fr-FR' }),
+            "formatDescriptionValue(1234.5, { locale: 'fr-FR', timeZone: 'UTC' })",
+            formatDescriptionValue(1234.5, { locale: 'fr-FR', timeZone: 'UTC' }),
           ],
           [
-            "formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US' })",
-            formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US' }),
+            "formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US', timeZone: 'UTC' })",
+            formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US', timeZone: 'UTC' }),
           ],
           [
-            "formatDescriptionValue({ start: 2, end: 5 }, { locale: 'en-US' })",
-            formatDescriptionValue({ start: 2, end: 5 }, { locale: 'en-US' }),
+            "formatDescriptionValue({ start: 2, end: 5 }, { locale: 'en-US', timeZone: 'UTC' })",
+            formatDescriptionValue({ start: 2, end: 5 }, { locale: 'en-US', timeZone: 'UTC' }),
+          ],
+          [
+            "formatDescriptionValue('2026-10-30T13:30:00Z', { locale: 'en-US', timeZone: 'Pacific/Kiritimati' })",
+            formatDescriptionValue('2026-10-30T13:30:00Z', {
+              locale: 'en-US',
+              timeZone: 'Pacific/Kiritimati',
+            }),
           ],
         ]}
       />

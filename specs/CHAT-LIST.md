@@ -20,10 +20,10 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 ### UIC-CHAT-LIST-1.3 - Row names
 
-A row shall be named by the provider string `conversationLabel` from its title, the presence of its one participant in words (unless it has its own `avatar`): their `presenceLabel`, or the provider's `presenceStatus` string for their `presence`, its unread count, whether it is muted and its time as the row shows it, followed by its last message. Typing the first letters of a title moves to that row.
+A row shall be named by the provider string `conversationLabel` from its title, the presence of its one participant in words (unless it has its own `avatar`): their `presenceLabel`, or the provider's `presenceStatus` string for their `presence`, its unread count, whether it is muted and its time as the row shows it, followed by its last message. Typing the first letters of a title moves to that row. The time reads as the row shows it ([UIC-RELATIVE-TIME-2.3](RELATIVE-TIME.md)): the stable absolute text on the server and while hydrating, then the words against `getNow` (the provider's clock by default) in the reader's time zone, renamed on the shared clock when they change.
 
-Implementation: `src/components/chat-list/chat-list-row.tsx`, `src/core/strings/chat-list.ts`
-Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
+Implementation: `src/components/chat-list/chat-list-row.tsx`, `src/core/strings/chat-list.ts`, `src/components/chat-list/chat-list.tsx`, `src/core/clock.ts`
+Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`, `src/components/chat-list/chat-list-server.test.tsx`
 
 ### UIC-CHAT-LIST-1.4 - Selection
 

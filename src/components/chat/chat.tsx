@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, type ReactNode } from 'react';
+import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -96,9 +97,10 @@ function useSequence(
 ) {
   const { messages, firstUnreadId, readPositions, currentUserId } = props;
   const { participants } = context;
+  const timeZone = useTimeZone();
   const items = useMemo(
-    () => groupChatMessages(messages, { firstUnreadId }),
-    [messages, firstUnreadId],
+    () => groupChatMessages(messages, { firstUnreadId, timeZone }),
+    [messages, firstUnreadId, timeZone],
   );
   const byId = useMemo(() => new Map(messages.map((message) => [message.id, message])), [messages]);
   const readers = useMemo(

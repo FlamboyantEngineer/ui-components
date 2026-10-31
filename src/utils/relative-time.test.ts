@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resetLocalTimeZone, setLocalTimeZone } from '../primitives/index.js';
+import { inTimeZone } from '../../test/time-zones.js';
+import { getLocalTimeZone } from '../primitives/index.js';
 import {
   capitalizeText,
   describeRelativeTime,
@@ -8,7 +9,8 @@ import {
 } from './relative-time.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
-const options = { now, locale: 'en-US', fallbackAfterDays: 7 };
+const timeZone = getLocalTimeZone();
+const options = { now, locale: 'en-US', fallbackAfterDays: 7, timeZone };
 const seconds = { ...options, precision: 'second' as const };
 const minute = 60_000;
 const hour = 60 * minute;
@@ -16,20 +18,6 @@ const hour = 60 * minute;
 const at = (hours: number, minutes: number, seconds = 0) =>
   new Date(2026, 4, 23, hours, minutes, seconds).toISOString();
 const plain = (text: string | undefined) => text?.replace(/\s/g, ' ');
-
-/** Runs `read` with the process and the date library in `timeZone`. */
-function inTimeZone<T>(timeZone: string, read: () => T): T {
-  const previous = process.env.TZ;
-  process.env.TZ = timeZone;
-  setLocalTimeZone(timeZone);
-  try {
-    return read();
-  } finally {
-    if (previous === undefined) delete process.env.TZ;
-    else process.env.TZ = previous;
-    resetLocalTimeZone();
-  }
-}
 
 describe('describeRelativeTime', () => {
   it('UIC-RELATIVE-TIME-2.1 words instants within a day in seconds and says when the words change', () => {
@@ -198,11 +186,13 @@ describe('describeRelativeTime', () => {
 
 describe('formatAbsoluteTime', () => {
   it('UIC-RELATIVE-TIME-1.3 formats the absolute text alone, without reading the clock', () => {
-    expect(plain(formatAbsoluteTime('2026-05-21T09:00', 'en-US') ?? undefined)).toBe(
+    expect(plain(formatAbsoluteTime('2026-05-21T09:00', 'en-US', { timeZone }) ?? undefined)).toBe(
       'May 21, 2026, 9:00 AM',
     );
-    expect(formatAbsoluteTime('2026-05-21', 'en-US', { dateStyle: 'long' })).toBe('May 21, 2026');
-    expect(formatAbsoluteTime('soon', 'en-US')).toBeNull();
+    expect(formatAbsoluteTime('2026-05-21', 'en-US', { dateStyle: 'long', timeZone })).toBe(
+      'May 21, 2026',
+    );
+    expect(formatAbsoluteTime('soon', 'en-US', { timeZone })).toBeNull();
   });
 });
 
@@ -210,6 +200,7 @@ describe('describeRelativeTime across daylight saving time', () => {
   // 01:45 EDT on the night New York repeats the hour from 01:00 to 02:00.
   const repeated = {
     ...options,
+    timeZone: 'America/New_York',
     now: new Date('2026-11-01T05:45:00Z'),
     dateStyle: 'short' as const,
     timeStyle: 'long' as const,
@@ -250,7 +241,11 @@ describe('describeRelativeTime across daylight saving time', () => {
   });
 
   it('UIC-RELATIVE-TIME-2.1 dates an instant by its local calendar day', () => {
-    const late = { ...options, now: new Date('2026-11-01T05:45:00Z') };
+    const late = {
+      ...options,
+      timeZone: 'America/New_York',
+      now: new Date('2026-11-01T05:45:00Z'),
+    };
     // 03:30 UTC on November 2 is still November 1 in New York, so it reads today.
     const text = inTimeZone('America/New_York', () =>
       describeRelativeTime('2026-11-02T03:30:00Z', late),

@@ -3,6 +3,7 @@
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useState, type ReactNode } from 'react';
 import { GridList, useFilter } from '../../primitives/index.js';
+import { useGetNow } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -35,11 +36,9 @@ export interface ChatListProps extends BaseProps, AriaLabellingProps {
   emptyState?: ReactNode;
   /** Controls at the end of each row, such as a menu of the conversation's commands. */
   renderActions?: ((conversation: ChatConversation) => ReactNode) | undefined;
-  /** The clock the times are read against. Defaults to the current time. */
+  /** The clock the times are read against. Defaults to the provider's clock. */
   getNow?: (() => Date) | undefined;
 }
-
-const currentTime = () => new Date();
 
 /** How many placeholder rows stand in for the conversations while they load. */
 const skeletonRows = 4;
@@ -146,13 +145,14 @@ export function ChatList({
   isLoading = false,
   emptyState,
   renderActions,
-  getNow = currentTime,
+  getNow: getNowProp,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledby,
   className,
   ...rest
 }: ChatListProps) {
   const strings = useUiStrings();
+  const getNow = useGetNow(getNowProp);
   const [query, setQuery] = useState('');
   const [ownSelection, setOwnSelection] = useState<string | null>(null);
   const shown = useShownConversations({ conversations, onSearchChange }, query);

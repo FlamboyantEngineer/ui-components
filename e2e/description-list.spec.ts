@@ -179,6 +179,12 @@ test('UIC-DESCRIPTION-LIST-1.5 shows the exported helpers in a host-side snippet
   await lab.open('description-list');
   const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
   await expect(
-    call("formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US' })"),
+    call("formatDescriptionValue(['Oak', 'Ash', 'Elm'], { locale: 'en-US', timeZone: 'UTC' })"),
   ).toHaveText('Oak, Ash, and Elm');
+  // An instant reads in the zone the host passes: the next day in Kiritimati.
+  await expect(
+    call(
+      "formatDescriptionValue('2026-10-30T13:30:00Z', { locale: 'en-US', timeZone: 'Pacific/Kiritimati' })",
+    ),
+  ).toHaveText('Oct 31, 2026');
 });

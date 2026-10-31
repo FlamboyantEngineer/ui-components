@@ -80,10 +80,10 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`
 
 ### UIC-CHAT-TRANSCRIPT-2.4 - Name and id
 
-`ChatMessage` shall be named, through `aria-labelledby`, by a `hidden` element holding the provider string `chatMessageLabel` of the author's display name and the time's absolute date and time (the absolute text the time's tooltip shows, [UIC-RELATIVE-TIME-1.3](RELATIVE-TIME.md#uic-relative-time-13---absolute-date)), so the name keeps the author and the time while the header hides them; with neither the article has no name. The `id` is the article's DOM id, by which a transcript finds the message.
+`ChatMessage` shall be named, through `aria-labelledby`, by a `hidden` element holding the provider string `chatMessageLabel` of the author's display name and the time's absolute date and time (the absolute text the time's tooltip shows, [UIC-RELATIVE-TIME-1.3](RELATIVE-TIME.md#uic-relative-time-13---absolute-date)), so the name keeps the author and the time while the header hides them; with neither the article has no name. The `id` is the article's DOM id, by which a transcript finds the message. The absolute date and time reads in the reader's time zone from the provider (`useTimeZone`), so a server render and its hydration name the message alike.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`
-Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`, `src/core/clock.ts`
+Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`, `src/components/chat-transcript/chat-message-server.test.tsx`
 
 ### UIC-CHAT-TRANSCRIPT-2.5 - Author presence
 
@@ -305,7 +305,7 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-6.3 - Local days
 
-Days shall follow the calendar of `options.timeZone` (an IANA time zone, the reader's by default): a `createdAt` with an offset or `Z` is read as that instant, a floating one as wall time in the zone, so two messages either side of midnight in that zone fall on different days even when they are minutes apart.
+Days shall follow the calendar of `options.timeZone` (an IANA time zone the caller always gives: the reader's, from `useTimeZone`): a `createdAt` with an offset or `Z` is read as that instant, a floating one as wall time in the zone, so two messages either side of midnight in that zone fall on different days even when they are minutes apart.
 
 Implementation: `src/components/chat-transcript/chat-grouping.ts`
 Verification: `src/components/chat-transcript/chat-grouping.test.ts`

@@ -30,6 +30,11 @@ export type DescriptionFormatOptions =
 export interface DescriptionFormatInput {
   /** A BCP 47 locale, such as `fr-FR`. */
   locale: string;
+  /**
+   * The IANA time zone an instant reads in when `formatOptions` names none: the reader's, from
+   * `useTimeZone`, so a server render and its hydration agree.
+   */
+  timeZone: string;
   formatOptions?: DescriptionFormatOptions | undefined;
   /**
    * Joins the ends of a date range no localized range format reads, such as unreadable text.
@@ -54,12 +59,10 @@ function isRange(
  */
 function formatDate(
   value: DateValue,
-  { locale, formatOptions, joinRange }: DescriptionFormatInput,
+  { locale, timeZone, formatOptions, joinRange }: DescriptionFormatInput,
 ) {
-  const format = getDateTimeFormat(
-    locale,
-    (formatOptions as Intl.DateTimeFormatOptions | undefined) ?? defaultDateOptions,
-  );
+  const options = (formatOptions as Intl.DateTimeFormatOptions | undefined) ?? defaultDateOptions;
+  const format = getDateTimeFormat(locale, { ...options, timeZone: options.timeZone ?? timeZone });
   const zone = format.resolvedOptions().timeZone;
   const read = (date: string) => readTimeInstant(date, zone);
   if (typeof value === 'string') {

@@ -111,7 +111,10 @@ export function describeRelativeDate(
   value: string,
   options: RelativeDateOptions,
 ): RelativeDateText | null {
-  const text = describeRelativeTime(value, options);
+  const text = describeRelativeTime(value, {
+    ...options,
+    timeZone: options.timeZone ?? getLocalTimeZone(),
+  });
   if (!text) return null;
   const relative = capitalizeText(text.relative, options.locale);
   return {

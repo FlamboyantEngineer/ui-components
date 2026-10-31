@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
@@ -179,12 +180,14 @@ export function VersionHistory(props: VersionHistoryProps) {
   const { className, isLoading = false, ...rest } = props;
   const strings = useUiStrings();
   const { locale } = useLocale();
+  const timeZone = useTimeZone();
   const { selected, select, filter, setFilter } = useVersionState(props);
   const dialog = useVersionDialog();
   const comparison = orderForComparison(versions, selected);
   const context = {
     currentKey,
     locale,
+    timeZone,
     strings,
     canRename: onRename !== undefined,
     canRestore: onRestore !== undefined,

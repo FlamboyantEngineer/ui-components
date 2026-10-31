@@ -1,4 +1,4 @@
-import { getLocalTimeZone, parseIsoDateTime, toCalendarDate } from '../../primitives/index.js';
+import { parseIsoDateTime, toCalendarDate } from '../../primitives/index.js';
 import type { ChatMessageDelivery, ChatMessageGroupPosition } from './chat-message.js';
 
 /** The fields of a message that decide where it groups. */
@@ -19,8 +19,11 @@ export interface GroupChatMessagesOptions {
   firstUnreadId?: string | undefined;
   /** The longest pause between two messages of one group, in milliseconds. Defaults to 5 minutes. */
   maxGap?: number | undefined;
-  /** The IANA time zone whose days the date separators follow. Defaults to the reader's. */
-  timeZone?: string | undefined;
+  /**
+   * The IANA time zone whose days the date separators follow: the reader's, from `useTimeZone`, so a
+   * server render and its hydration agree.
+   */
+  timeZone: string;
 }
 
 /**
@@ -96,7 +99,7 @@ function placeMessages<M extends ChatGroupableMessage>(
   messages: readonly M[],
   options: GroupChatMessagesOptions,
 ): Array<Placed<M> | { kind: 'date'; date: string } | { kind: 'unread' }> {
-  const timeZone = options.timeZone ?? getLocalTimeZone();
+  const { timeZone } = options;
   const maxGap = options.maxGap ?? defaultMaxGap;
   const entries: Array<Placed<M> | { kind: 'date'; date: string } | { kind: 'unread' }> = [];
   let previous: Placed<M> | null = null;
@@ -125,14 +128,14 @@ function placeMessages<M extends ChatGroupableMessage>(
 
 /**
  * Turns messages, oldest first, into the sequence to render: a date separator before the first
- * message of each day (in `timeZone`, the reader's by default), the unread divider before
+ * message of each day (in `timeZone`), the unread divider before
  * `firstUnreadId`, and each message with its group position. Consecutive messages by one author
  * group while each follows the last within `maxGap`; a date change, the unread divider, a system
  * notice, a message without an author and a failed send break groups.
  */
 export function groupChatMessages<M extends ChatGroupableMessage>(
   messages: readonly M[],
-  options: GroupChatMessagesOptions = {},
+  options: GroupChatMessagesOptions,
 ): Array<ChatSequenceItem<M>> {
   const entries = placeMessages(messages, options);
   return entries.map((entry, index): ChatSequenceItem<M> => {
