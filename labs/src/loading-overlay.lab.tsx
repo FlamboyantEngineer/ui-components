@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '../../src/components/button/button.js';
 import {
   LoadingCard,
@@ -20,6 +21,42 @@ function cardProps(progress: (typeof progressStates)[number], extras: string): L
     ...(extras !== 'label only' ? { description: 'Preparing pages and figures.' } : {}),
     ...(extras === 'hint and step' ? { hint: longHint, step: { current: 6, total: 9 } } : {}),
   };
+}
+
+/** A region rendered into an open shadow root, as a web component would hold it. */
+function ShadowRegionDemo() {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [root, setRoot] = useState<ShadowRoot | null>(null);
+  const [isSaving, setSaving] = useState(false);
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    if (host) setRoot(host.shadowRoot ?? host.attachShadow({ mode: 'open' }));
+  }, []);
+  useEffect(() => {
+    if (!isSaving) return undefined;
+    // Lab-only stand-in for the save finishing.
+    const timer = setTimeout(() => setSaving(false), 1500);
+    return () => clearTimeout(timer);
+  }, [isSaving]);
+  const region = (
+    <LoadingRegion isLoading={isSaving} label="Saving note">
+      <p>
+        <label>
+          Note <input name="note" defaultValue="Bring the charts" />
+        </label>
+      </p>
+    </LoadingRegion>
+  );
+  return (
+    <>
+      <p>
+        <Button onPress={() => setSaving(true)}>Save note</Button>
+      </p>
+      <div data-lab-demo="shadow-region" ref={hostRef}>
+        {root ? createPortal(region, root) : null}
+      </div>
+    </>
+  );
 }
 
 function RegionDemo() {
@@ -152,6 +189,12 @@ mountLab(
       description="Start loading to block the form, then stop it, or press Apply to save for a moment: focus waits on the region and returns to Apply. The cover fades in and out with useEnterExit."
     >
       <RegionDemo />
+    </LabSection>
+    <LabSection
+      title="Blocking inside a shadow root"
+      description="The region lives in an open shadow root, unstyled there. Focus the note, then save it from outside (with a pointer, focus moves to the button): focus in the note waits on the region and returns to the note."
+    >
+      <ShadowRegionDemo />
     </LabSection>
     <LabSection
       title="Show delay"

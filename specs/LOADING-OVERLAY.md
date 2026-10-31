@@ -85,6 +85,13 @@ With `delay` (milliseconds), `LoadingRegion` shall stay usable and unmarked unti
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/utils/use-delayed-flag.ts`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/loading-overlay.spec.ts`
 
+### UIC-LOADING-OVERLAY-3.3 - Focus in shadow roots
+
+`LoadingRegion` shall read focus in its own tree and follow it into open shadow roots, so the blocking and return of [UIC-LOADING-OVERLAY-3.1](#uic-loading-overlay-31---blocking-while-loading) hold for a region inside a shadow root, inside nested shadow roots, and for an element inside a shadow host within ordinary content: that element, not its host, gets focus back. Focus counts as moved elsewhere unless it sits on the region or nowhere in the page.
+
+Implementation: `src/components/loading-overlay/use-blocked-focus.ts`, `src/utils/focus-target.ts`
+Verification: `src/components/loading-overlay/loading-region-shadow.test.tsx`, `e2e/loading-overlay.spec.ts`
+
 ## UIC-LOADING-OVERLAY-4 - Hooks
 
 ### UIC-LOADING-OVERLAY-4.1 - Hooks and caller attributes
