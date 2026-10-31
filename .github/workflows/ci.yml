@@ -1,8 +1,10 @@
 name: CI
 
+# Pushes to the long-lived branches and every pull request, each run once: a pull request from this
+# repository or a fork runs on its pull_request event, not again on its branch push.
 on:
   push:
-    branches: ['**']
+    branches: [dev, main]
   pull_request:
 
 concurrency:
@@ -14,13 +16,11 @@ permissions:
 
 jobs:
   check:
-    # Pushes cover branches in this repository; pull requests only add runs for forks.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -36,14 +36,13 @@ jobs:
     # the minimum supported React, then the rich-text peers (scripts/check-git-install.mjs).
     # It runs when a change can reach installation: the manifest, lockfile, build setup, entry points or
     # the reference stylesheet the package ships.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
         id: changes
         with:
           filters: |
@@ -64,7 +63,7 @@ jobs:
               - scripts/build-labs.mjs
               - scripts/lib/reference-stylesheet.mjs
               - .github/workflows/ci.yml
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: steps.changes.outputs.install == 'true'
         with:
           node-version-file: .nvmrc
@@ -75,12 +74,11 @@ jobs:
 
   server-components:
     # An installed-package Next.js consumer: production build, server rendering and hydration.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -88,7 +86,7 @@ jobs:
       - name: Playwright version
         id: playwright
         run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: browsers
         with:
           path: ~/.cache/ms-playwright
@@ -104,12 +102,11 @@ jobs:
 
   labs-build:
     # The labs are built once; the browser jobs restore the build from the cache.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -117,7 +114,7 @@ jobs:
       - name: Build labs
         run: npm run build:labs
       # Saved under this commit, so the browser jobs of this run restore exactly this build.
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: labs/build/
           key: labs-build-${{ github.sha }}
@@ -139,13 +136,13 @@ jobs:
           - { name: webkit, browser: webkit, args: --project=webkit --project=mobile-webkit }
     name: labs (${{ matrix.name }})
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: labs/build/
           key: labs-build-${{ github.sha }}
@@ -153,7 +150,7 @@ jobs:
       - name: Playwright version
         id: playwright
         run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: browsers
         with:
           path: ~/.cache/ms-playwright

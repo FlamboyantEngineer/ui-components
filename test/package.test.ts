@@ -218,6 +218,39 @@ describe('hosted lab browser suite', () => {
   });
 });
 
+describe('repository workflows', () => {
+  const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
+  const workflows = ['.github/workflows/ci.yml', '.github/workflows/release.yml'];
+
+  it('pins every action to a commit with its version in a comment', () => {
+    for (const path of workflows) {
+      const uses = [...read(path).matchAll(/uses: (\S+)(.*)$/gm)];
+      expect(uses.length, path).toBeGreaterThan(0);
+      for (const [, action = '', comment = ''] of uses) {
+        expect(action, path).toMatch(/@[0-9a-f]{40}$/);
+        expect(comment, `${path} ${action}`).toMatch(/^ # v\d+\.\d+\.\d+$/);
+      }
+    }
+  });
+
+  it('runs CI once per change and updates npm packages and actions weekly', () => {
+    const ci = read('.github/workflows/ci.yml');
+    expect(ci).toContain('branches: [dev, main]');
+    expect(ci).not.toContain('github.event.pull_request.head.repo');
+    const bot = read('.github/dependabot.yml');
+    expect(bot).toContain('package-ecosystem: npm');
+    expect(bot).toContain('package-ecosystem: github-actions');
+  });
+
+  it('UIC-LABS-1.2 attaches both archives to the release of a pushed tag', () => {
+    const release = read('.github/workflows/release.yml');
+    expect(release).toContain("tags: ['v*']");
+    expect(release).toContain('npm pack --ignore-scripts');
+    expect(release).toContain('npm run pack:labs');
+    expect(release).toContain('gh release upload "$TAG" ./*.tgz --clobber');
+  });
+});
+
 describe('optional rich-text peers', () => {
   const RICH_TEXT_PEER = /^(prosemirror-|@handlewithcare\/react-prosemirror|react-reconciler)/;
   const componentsDir = join(process.cwd(), 'src/components');
