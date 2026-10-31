@@ -32,12 +32,22 @@ export function isAutoGrowing({ minRows, maxRows }: Pick<AutoGrowOptions, 'minRo
 /**
  * Grows a text area with its text between `minRows` and `maxRows` (one row and no limit by default),
  * when either is set. Past `maxRows` the text area scrolls. A new width (a stylesheet or font that
- * loads late, a resized container) wraps the text anew, so it measures again.
+ * loads late, a resized container) wraps the text anew, so it measures again. The height it writes
+ * is its own while it grows: once neither limit is set, or the hook unmounts, the text area gets back
+ * the inline height it had before, so the stylesheet (or the caller's height) sizes it again.
  */
 export function useAutoGrow(area: RefObject<HTMLTextAreaElement | null>, options: AutoGrowOptions) {
   const { minRows, maxRows, value } = options;
   const isEnabled = isAutoGrowing(options);
   const width = useElementSize(area, { enabled: isEnabled })?.width;
+  useLayoutEffect(() => {
+    const element = area.current;
+    if (!isEnabled || !element) return undefined;
+    const before = element.style.height;
+    return () => {
+      element.style.height = before;
+    };
+  }, [area, isEnabled]);
   useLayoutEffect(() => {
     if (isEnabled && area.current) fitRows(area.current, minRows ?? 1, maxRows ?? Infinity);
   }, [area, isEnabled, minRows, maxRows, value, width]);

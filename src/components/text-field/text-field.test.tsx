@@ -336,6 +336,13 @@ describe('TextField', () => {
     expectHooksMatchSpec(container, 'TEXT-FIELD');
     rerender(<TextField label="Notes" multiline />);
     expect(root(container)).not.toHaveAttribute('data-autosize');
+    expect(area.style.height).toBe('');
+    await user.type(area, '{Enter}Seven');
+    expect(area.style.height).toBe('');
+    rerender(<TextField label="Notes" multiline maxRows={2} />);
+    expect(area.style.height).toBe('40px');
+    rerender(<TextField label="Notes" multiline />);
+    expect(area.style.height).toBe('');
   });
 
   it('UIC-TEXT-FIELD-3.4 counts trimmed text with trim, as the length rules do', () => {
