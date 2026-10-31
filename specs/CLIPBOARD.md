@@ -25,6 +25,13 @@ Verification: `src/utils/clipboard.test.ts`
 Implementation: `src/utils/clipboard.ts`
 Verification: `src/utils/clipboard.test.ts`
 
+### UIC-CLIPBOARD-1.4 - Withdrawn copies
+
+With `signal`, `copyText` and `copyRichText` shall skip the selection fallback once the signal is aborted, resolving false or `failed` when the asynchronous write is missing or refused. A write the browser has already taken cannot be withdrawn: the library only prevents the fallback copy it would start itself.
+
+Implementation: `src/utils/clipboard.ts`
+Verification: `src/utils/clipboard.test.ts`
+
 ## UIC-CLIPBOARD-2 - Copy feedback
 
 ### UIC-CLIPBOARD-2.1 - Copied state with a timeout
@@ -37,6 +44,13 @@ Verification: `src/utils/use-clipboard.test.ts`, `src/components/copy-button/cop
 ### UIC-CLIPBOARD-2.2 - Refused copies and unmounting
 
 A copy that does not reach the clipboard shall set `status` to `failed` for the same timeout. Unmounting clears the pending timeout, and a copy that settles after unmounting changes nothing.
+
+Implementation: `src/utils/use-clipboard.ts`
+Verification: `src/utils/use-clipboard.test.ts`
+
+### UIC-CLIPBOARD-2.3 - Superseded copies
+
+Each `copy` shall withdraw the copy requested before it (UIC-CLIPBOARD-1.4), as `reset()` and unmounting withdraw a pending one, so a superseded copy whose asynchronous write is refused never falls back to a selection copy that would overwrite the newer text, whichever settles first. It still resolves its own result, false when refused, and changes no status or timer. The latest copy keeps its fallback.
 
 Implementation: `src/utils/use-clipboard.ts`
 Verification: `src/utils/use-clipboard.test.ts`

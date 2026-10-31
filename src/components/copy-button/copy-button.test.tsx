@@ -96,6 +96,35 @@ describe('CopyButton', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Copied');
   });
 
+  it('UIC-COPY-BUTTON-1.1 neither copies nor announces an earlier refused write of a changed value', async () => {
+    const user = userEvent.setup();
+    const execCommand = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { configurable: true, value: execCommand });
+    let refuseEarlier: ((error: Error) => void) | undefined;
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockImplementationOnce(
+        () => new Promise<void>((_resolve, reject) => (refuseEarlier = reject)),
+      )
+      .mockResolvedValueOnce();
+    const onCopy = vi.fn();
+    const { rerender } = render(<CopyButton value="old record" onCopy={onCopy} />);
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    rerender(<CopyButton value="new record" onCopy={onCopy} />);
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(writeText.mock.calls).toEqual([['old record'], ['new record']]);
+    const announcement = () => screen.getByRole('status').textContent;
+    const announced = announcement();
+    expect(announced).toContain('Copied');
+    await act(async () => refuseEarlier?.(new Error('Denied')));
+    expect(execCommand).not.toHaveBeenCalled();
+    expect(announcement()).toBe(announced);
+    expect(onCopy.mock.calls).toEqual([[true], [false]]);
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(announcement()).not.toBe(announced);
+    Reflect.deleteProperty(document, 'execCommand');
+  });
+
   it('UIC-COPY-BUTTON-1.3 takes its name and announcements from the label and provider strings', async () => {
     const user = userEvent.setup();
     render(

@@ -138,4 +138,62 @@ describe('useClipboard', () => {
     expect(await copy).toBe(true);
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  describe('UIC-CLIPBOARD-2.3 superseded copies', () => {
+    /** Records the text each selection-fallback copy supplies. */
+    function installFallback() {
+      const copied: string[] = [];
+      const execCommand = vi.fn(() => {
+        copied.push(document.getSelection()?.toString() ?? '');
+        return true;
+      });
+      Object.defineProperty(document, 'execCommand', { configurable: true, value: execCommand });
+      return copied;
+    }
+
+    afterEach(() => {
+      Reflect.deleteProperty(document, 'execCommand');
+    });
+
+    it.each([
+      { name: 'the newer copy settles first', newerFirst: true },
+      { name: 'the older copy settles first', newerFirst: false },
+    ])('never falls back for an older refused copy when $name', async ({ newerFirst }) => {
+      const fallbackCopies = installFallback();
+      const { clipboard, writes } = createDeferredClipboard();
+      const { result } = renderHook(() => useClipboard({ clipboard }));
+      const older = result.current.copy('old record');
+      const newer = result.current.copy('new record');
+      const settle = async (index: number) => {
+        await act(async () => {
+          if (index === 0) writes[0]?.reject(new Error('Denied'));
+          else writes[1]?.resolve();
+        });
+      };
+      for (const index of newerFirst ? [1, 0] : [0, 1]) await settle(index);
+      expect(await older).toBe(false);
+      expect(await newer).toBe(true);
+      expect(fallbackCopies).toEqual([]);
+      expect(result.current.status).toBe('copied');
+    });
+
+    it('lets the latest copy fall back, and withdraws a copy on reset and unmount', async () => {
+      const fallbackCopies = installFallback();
+      const { clipboard, writes } = createDeferredClipboard();
+      const { result, unmount } = renderHook(() => useClipboard({ clipboard }));
+      const latest = result.current.copy('latest');
+      await act(async () => writes[0]?.reject(new Error('Denied')));
+      expect(await latest).toBe(true);
+      expect(fallbackCopies).toEqual(['latest']);
+      const reset = result.current.copy('reset');
+      act(() => result.current.reset());
+      await act(async () => writes[1]?.reject(new Error('Denied')));
+      expect(await reset).toBe(false);
+      const unmounted = result.current.copy('unmounted');
+      unmount();
+      writes[2]?.reject(new Error('Denied'));
+      expect(await unmounted).toBe(false);
+      expect(fallbackCopies).toEqual(['latest']);
+    });
+  });
 });

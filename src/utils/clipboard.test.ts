@@ -101,6 +101,32 @@ describe('copyText', () => {
   });
 });
 
+describe('copy signal', () => {
+  it('UIC-CLIPBOARD-1.4 skips the selection fallback of a withdrawn copy', async () => {
+    const capture = installCopyCommand(true);
+    const controller = new AbortController();
+    let refuse: ((error: Error) => void) | undefined;
+    const clipboard = {
+      writeText: () => new Promise<void>((_resolve, reject) => (refuse = reject)),
+    };
+    const copy = copyText('Oslo', { clipboard, signal: controller.signal });
+    controller.abort();
+    refuse?.(new Error('Denied'));
+    await expect(copy).resolves.toBe(false);
+    expect(capture.data).toEqual({});
+    const rich = copyRichText(
+      { text: 'Oslo', html: '<b>Oslo</b>' },
+      { clipboard: null, signal: controller.signal },
+    );
+    await expect(rich).resolves.toBe('failed');
+    expect(capture.data).toEqual({});
+    await expect(
+      copyText('Oslo', { clipboard: null, signal: new AbortController().signal }),
+    ).resolves.toBe(true);
+    expect(capture.data).toEqual({ 'text/plain': 'Oslo' });
+  });
+});
+
 describe('copyRichText', () => {
   class Item {
     constructor(readonly values: Record<string, Blob>) {}
