@@ -109,6 +109,45 @@ function SavedGroup() {
   );
 }
 
+/**
+ * Hiding a ticked choice keeps it in the value, but it no longer counts or submits; a ticked disabled
+ * choice still submits.
+ */
+function ChangingChoices() {
+  const [isPlumListed, setPlumListed] = useState(true);
+  const [submitted, setSubmitted] = useState('none');
+  const listed = fruit.filter((option) => isPlumListed || option.value !== 'plum');
+  return (
+    <form
+      aria-label="Changing basket"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted(new FormData(event.currentTarget).getAll('fruit').join(', ') || 'none');
+      }}
+    >
+      <ChoiceGroup
+        selectionMode="multiple"
+        label="Picked fruit"
+        name="fruit"
+        defaultValue={['pear', 'plum']}
+        isRequired
+        data-lab-field="changing"
+      >
+        {listed.map(({ label, ...option }) => (
+          <Choice key={option.value} {...option} isDisabled={option.value === 'pear'}>
+            {label}
+          </Choice>
+        ))}
+      </ChoiceGroup>
+      <Button onPress={() => setPlumListed((listed) => !listed)}>
+        {isPlumListed ? 'Remove Plum' : 'Restore Plum'}
+      </Button>
+      <Button type="submit">Send picked fruit</Button>
+      <LabOutput name="Picked fruit sent">{submitted}</LabOutput>
+    </form>
+  );
+}
+
 export const multipleChoices = (
   <div data-lab-family="multiple">
     <LabSection
@@ -160,6 +199,12 @@ export const multipleChoices = (
       description="Each ticked value submits under the group's name."
     >
       <SavedGroup />
+    </LabSection>
+    <LabSection
+      title="Multiple choices: Changing choices"
+      description="Pear is ticked but disabled and still submits. Removing Plum keeps it in the value without submitting it; restoring Plum shows it ticked again."
+    >
+      <ChangingChoices />
     </LabSection>
   </div>
 );

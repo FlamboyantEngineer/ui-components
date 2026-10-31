@@ -1,6 +1,14 @@
 'use client';
 
-import { useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from 'react';
 import {
   CheckboxGroup as AriaCheckboxGroup,
   CheckboxGroupStateContext,
@@ -8,7 +16,12 @@ import {
 } from '../../primitives/index.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { Checkbox } from '../checkbox/checkbox.js';
-import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
+import {
+  FieldFormValue,
+  toAriaControlProps,
+  type FieldControlProps,
+  type FieldState,
+} from '../field/field.js';
 import { ChoiceContext, type ChoiceGroupProps } from './choice-group.js';
 import { choiceGroupHooks as hooks } from './choice-group-hooks.js';
 
@@ -16,30 +29,41 @@ interface ChoiceBoxProps {
   control: FieldControlProps;
   state: FieldState<string | null | string[]>;
   config: Pick<ChoiceGroupProps, 'name' | 'orientation' | 'selectAllLabel'>;
+  /** The values of the choices on screen, enabled or not; `null` until they are read. */
+  listed: readonly string[] | null;
+  onListedChange: Dispatch<SetStateAction<readonly string[] | null>>;
   children: ReactNode;
 }
 
-function useChoiceControl(publish: SlotRef, value: string | null | string[]) {
+function keepEqualList(next: string[]) {
+  return <L extends readonly string[] | null>(previous: L): L | string[] =>
+    previous?.length === next.length && previous.every((key, index) => key === next[index])
+      ? previous
+      : next;
+}
+
+function useChoiceControl(
+  publish: SlotRef,
+  value: string | null | string[],
+  onListedChange: ChoiceBoxProps['onListedChange'],
+) {
   const box = useRef<HTMLDivElement>(null);
-  const [enabled, setEnabled] = useState<string[]>([]);
+  const [enabled, setEnabled] = useState<readonly string[]>([]);
   useLayoutEffect(() => {
     const update = () => {
-      const inputs = [
+      const listed = [
         ...(box.current?.querySelectorAll<HTMLInputElement>(
           'input[type=radio],input[type=checkbox]',
         ) ?? []),
-      ].filter((input) => !input.disabled && !input.closest(`.${hooks.slotClass('select-all')}`));
+      ].filter((input) => !input.closest(`.${hooks.slotClass('select-all')}`));
+      const inputs = listed.filter((input) => !input.disabled);
       publish(
         (Array.isArray(value) ? inputs[0] : inputs.find((input) => input.checked)) ??
           inputs[0] ??
           null,
       );
-      const next = inputs.map((input) => input.value);
-      setEnabled((previous) =>
-        previous.length === next.length && previous.every((key, index) => key === next[index])
-          ? previous
-          : next,
-      );
+      setEnabled(keepEqualList(inputs.map((input) => input.value)));
+      onListedChange(keepEqualList(listed.map((input) => input.value)));
     };
     update();
     const observer = new MutationObserver(update);
@@ -51,7 +75,7 @@ function useChoiceControl(publish: SlotRef, value: string | null | string[]) {
         attributeFilter: ['disabled', 'value'],
       });
     return () => observer.disconnect();
-  }, [publish, value]);
+  }, [publish, value, onListedChange]);
   useLayoutEffect(() => {
     if (Array.isArray(value)) return;
     const element = box.current;
@@ -100,8 +124,37 @@ function SelectAll({
   );
 }
 
-export function ChoiceBox({ control, state, config, children }: ChoiceBoxProps) {
-  const { box, enabled } = useChoiceControl(control.ref, state.value);
+/**
+ * A disabled choice's input is left out of its form, so a selected one is submitted through a hidden
+ * input instead, as its selection still counts.
+ */
+function HeldChoices({
+  name,
+  enabled,
+  listed,
+  state,
+}: {
+  name: string | undefined;
+  enabled: readonly string[];
+  listed: readonly string[] | null;
+  state: FieldState<string | null | string[]>;
+}) {
+  const value = state.value;
+  const keys = value === null ? [] : Array.isArray(value) ? value : [value];
+  const held = keys.filter((key) => listed?.includes(key) && !enabled.includes(key));
+  return <FieldFormValue name={name} value={held} isDisabled={state.isDisabled} />;
+}
+
+export function ChoiceBox({
+  control,
+  state,
+  config,
+  listed,
+  onListedChange,
+  children,
+}: ChoiceBoxProps) {
+  const { box, enabled } = useChoiceControl(control.ref, state.value, onListedChange);
+  const held = <HeldChoices name={config.name} enabled={enabled} listed={listed} state={state} />;
   const { selectionMode } = useContext(ChoiceContext);
   const { selectAllLabel, orientation = 'vertical', ...rest } = config;
   const aria = toAriaControlProps(control);
@@ -121,6 +174,7 @@ export function ChoiceBox({ control, state, config, children }: ChoiceBoxProps) 
         onChange={pick}
       >
         {children}
+        {held}
       </AriaRadioGroup>
     );
   const { 'aria-errormessage': _message, ...groupAria } = aria;
@@ -135,6 +189,7 @@ export function ChoiceBox({ control, state, config, children }: ChoiceBoxProps) 
     >
       {selectAllLabel ? <SelectAll label={selectAllLabel} enabled={enabled} state={state} /> : null}
       {children}
+      {held}
     </AriaCheckboxGroup>
   );
 }

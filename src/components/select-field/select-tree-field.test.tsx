@@ -423,6 +423,28 @@ describe('SelectTreeField', () => {
     expect(container.querySelector('.ui-select-field__value')).toHaveTextContent('Nepal');
   });
 
+  it('UIC-SELECT-FIELD-9.3 lets a node whose id is empty text satisfy a required field', async () => {
+    const user = userEvent.setup();
+    const blank: Place[] = [{ id: '', name: 'Unassigned' }, ...places];
+    const { container } = render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={blank}
+        getTextValue={getTextValue}
+        defaultValue={null}
+        isRequired
+      />,
+    );
+    const field = container.querySelector('.ui-field');
+    expect(field).toHaveAttribute('data-validation', 'invalid');
+    await user.click(trigger(/Place/));
+    await user.click(row('Unassigned'));
+    expect(trigger(/Unassigned/)).toBeInTheDocument();
+    expect(field).toHaveAttribute('data-validation', 'valid');
+    expect(field).toHaveAttribute('data-filled', 'true');
+  });
+
   it('UIC-SELECT-FIELD-10.5 clears, stays shut while read-only and disables the trigger', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

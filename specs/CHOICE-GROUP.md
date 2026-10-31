@@ -73,7 +73,7 @@ Verification: `src/components/choice-group/choice-group.test.tsx`
 
 ### UIC-CHOICE-GROUP-3.1 - Validation, dirty state and undo
 
-A required group with no radio selected shall be invalid (UIC-FIELD-3.1). `ChoiceGroup` shows each validation status, shows dirty state with a restore button, undoes and redoes with the field's chords from its radios, and offers the field menu, whose Clear selects none.
+A required group with no listed radio selected shall be invalid (UIC-FIELD-3.1, UIC-CHOICE-GROUP-3.3). `ChoiceGroup` shows each validation status, shows dirty state with a restore button, undoes and redoes with the field's chords from its radios, and offers the field menu, whose Clear selects none.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/choice-group/choice-group.test.tsx`, `e2e/choice-group.spec.ts`
@@ -84,6 +84,13 @@ The field's control reference shall be the selected radio's input, or the first 
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`
 Verification: `src/components/choice-group/choice-group.test.tsx`, `e2e/choice-group.spec.ts`
+
+### UIC-CHOICE-GROUP-3.3 - Choices on screen
+
+In both modes only the choices on screen shall count. A stored key whose `Choice` is removed, or that no `Choice` ever listed, stays in the value, so it returns with its choice and select-all keeps it (UIC-CHOICE-GROUP-4.4), but it is shown as nothing, submitted as nothing and does not fill a required group, which is invalid while no listed choice is selected. A selected disabled choice still counts: it fills a required group and, with `name`, is submitted through a hidden input, as a disabled input leaves its form. A disabled group submits nothing. `""` is a real choice value, which fills a required group. Before the choices are read (on the server) every stored key counts.
+
+Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`
+Verification: `src/components/choice-group/choice-group.test.tsx`, `src/components/choice-group/choice-group-multiple.test.tsx`
 
 ## UIC-CHOICE-GROUP-4 - Multiple selection
 
@@ -103,7 +110,7 @@ Verification: `src/components/choice-group/choice-group-multiple.test.tsx`
 
 ### UIC-CHOICE-GROUP-4.3 - Validation and accessibility
 
-A required group with nothing ticked shall be invalid (UIC-FIELD-3.1). The group is described by the field's description, decoration and message; while invalid it and its boxes publish `data-invalid` and the boxes report `aria-invalid`. The group carries no `aria-errormessage`, which its role does not take. The field's control reference is the first enabled option's input, so a restore, a form's submit validation and the native behavior's custom validity (UIC-FIELD-3.10) use it.
+A required group with no listed option ticked shall be invalid (UIC-FIELD-3.1, UIC-CHOICE-GROUP-3.3). The group is described by the field's description, decoration and message; while invalid it and its boxes publish `data-invalid` and the boxes report `aria-invalid`. The group carries no `aria-errormessage`, which its role does not take. The field's control reference is the first enabled option's input, so a restore, a form's submit validation and the native behavior's custom validity (UIC-FIELD-3.10) use it.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`
 Verification: `src/components/choice-group/choice-group-multiple.test.tsx`, `e2e/choice-group-multiple.spec.ts`

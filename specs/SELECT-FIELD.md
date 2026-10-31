@@ -13,7 +13,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-1.2 - Value and commit
 
-A single select's value shall be the chosen option's `id` or `null`; a multiple select's is the list of chosen ids in the options' order, without repeats, ids no option names keeping their place after the others. The field takes `value` with `onChange` or holds the value itself from `committedValue` or `defaultValue`, and every pick, chip removal and value restore sets the value and commits it at once, so `onCommit` hears each change. Numeric and text keys with the same spelling remain distinct in options, chips and callbacks, while form inputs submit the original key text. A single value of `''` stands for no value, as a native select's empty option does (the form submits it empty and a required field reports it missing), but while an option has the id `''` the trigger shows that option as the choice.
+A single select's value shall be the chosen option's `id` or `null`; a multiple select's is the list of chosen ids in the options' order, without repeats, ids no option names keeping their place after the others. The field takes `value` with `onChange` or holds the value itself from `committedValue` or `defaultValue`, and every pick, chip removal and value restore sets the value and commits it at once, so `onCommit` hears each change. Numeric and text keys with the same spelling remain distinct in options, chips and callbacks, while form inputs submit the original key text. A single value of `''` stands for no value, as a native select's empty option does (the form submits it empty and a required field reports it missing), but while an option of `options` has the id `''` that option is the choice: the trigger shows it, the field is filled and it satisfies a required field.
 
 Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`, `src/components/select-field/select-options.ts`
 Verification: `src/components/select-field/select-field.test.tsx`, `src/components/select-field/select-options.test.ts`
@@ -234,9 +234,9 @@ Verification: `src/components/select-field/tree-index.test.ts`, `src/components/
 
 ### UIC-SELECT-FIELD-9.3 - Single choice
 
-In a single choice, pressing a row, or Enter or Space on the focused row, shall make its node the value, commit it and close the popover; doing so on the chosen row keeps the value and closes the popover. Pressing the expand button only expands or collapses its row.
+In a single choice, pressing a row, or Enter or Space on the focused row, shall make its node the value, commit it and close the popover; doing so on the chosen row keeps the value and closes the popover. Pressing the expand button only expands or collapses its row. A node whose id is `''` is a value like any other: chosen, it fills the field and satisfies a required field; only `null` (or an empty list in multiple choice) is no value.
 
-Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`
+Implementation: `src/components/select-field/select-tree-field.tsx`, `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`
 Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
 
 ### UIC-SELECT-FIELD-9.4 - Value display

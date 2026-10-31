@@ -1,6 +1,5 @@
 'use client';
 
-import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
@@ -131,7 +130,7 @@ function toFieldData(
     readonly: state.isReadOnly,
     disabled: state.isDisabled,
     touched: state.isTouched,
-    filled: !isEmptyValue(state.value),
+    filled: !state.isEmpty,
   };
 }
 

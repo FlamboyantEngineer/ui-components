@@ -353,6 +353,17 @@ describe('useFieldState', () => {
     expect(status({ value: 'fine', isRequired: true })).toEqual({ status: 'valid' });
   });
 
+  it('UIC-FIELD-3.1 takes what empty is from the control', () => {
+    const isEmpty = (value: string | null) => value === null;
+    const { result, rerender } = renderHook(
+      (value: string | null) => useFieldState({ value, isRequired: true }, { isEmpty }),
+      { initialProps: '' as string | null },
+    );
+    expect([result.current.validation.status, result.current.isEmpty]).toEqual(['valid', false]);
+    rerender(null);
+    expect([result.current.validation.status, result.current.isEmpty]).toEqual(['invalid', true]);
+  });
+
   it('UIC-FIELD-3.1 takes its messages from the provider strings', () => {
     const { result } = renderHook(() => useFieldState({ value: '', isRequired: true }), {
       wrapper: ({ children }) => (
