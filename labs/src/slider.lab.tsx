@@ -5,9 +5,9 @@ import {
   RangeSlider,
   Slider,
   type RangeValue,
-  type SliderSize,
   type SliderValueLabel,
 } from '../../src/components/slider/slider.js';
+import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { keepThumbsApart } from '../../src/components/slider/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
@@ -21,10 +21,10 @@ import {
 
 // A slider always holds a value, so it has no required state.
 const sliderStates = fieldStates.filter((state) => state !== 'required');
-const sizes = ['sm', 'md', 'lg'] as const satisfies readonly SliderSize[];
+const sizes = ['sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const valueLabels = ['output', 'thumb', 'none'] as const satisfies readonly SliderValueLabel[];
 
-function Sample({ state, size }: { state: FieldStateName; size: SliderSize }) {
+function Sample({ state, size }: { state: FieldStateName; size: ControlSize }) {
   const props = useLabFieldState<number>(state, {
     value: 40,
     edited: 60,

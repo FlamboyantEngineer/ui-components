@@ -5,9 +5,9 @@ import { Form } from '../../src/components/form/form.js';
 import {
   Choice,
   ChoiceGroup,
-  type ChoiceGroupSize,
   type ChoiceRenderState,
 } from '../../src/components/choice-group/choice-group.js';
+import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import {
@@ -17,7 +17,7 @@ import {
   type FieldStateName,
 } from './field-states.js';
 
-const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ChoiceGroupSize[];
+const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const orientations = ['vertical', 'horizontal'] as const;
 
 function Fruit() {

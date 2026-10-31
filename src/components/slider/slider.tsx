@@ -48,4 +48,4 @@ export function Slider({
 export { RangeSlider } from './range-slider.js';
 export { keepThumbsApart } from './thumb-spacing.js';
 export type { RangeSliderProps, RangeValue } from './range-slider.js';
-export type { SliderFieldProps, SliderMark, SliderSize, SliderValueLabel } from './slider-parts.js';
+export type { SliderFieldProps, SliderMark, SliderValueLabel } from './slider-parts.js';

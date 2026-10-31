@@ -12,7 +12,7 @@ import {
 } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button, ButtonSpinner } from '../button/button.js';
@@ -27,8 +27,6 @@ import {
   type FieldValidation,
   type FieldValidationBehavior,
 } from '../field/field.js';
-
-export type SearchFieldSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;
@@ -63,7 +61,7 @@ export interface SearchFieldProps
   /** Visible text for the clear button, which otherwise shows the `close` glyph. */
   clearText?: string | undefined;
   /** Box size. Defaults to `md`. */
-  size?: SearchFieldSize | undefined;
+  size?: ControlSize | undefined;
   /**
    * `control-only` (the default) names the input with the label; `label-control` draws the label
    * above the box, and the description and error message below it.
