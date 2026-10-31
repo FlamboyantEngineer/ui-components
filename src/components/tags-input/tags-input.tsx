@@ -87,6 +87,7 @@ export function TagsInput({
     text,
     type: (typed: string) =>
       hasTagDelimiter(typed, delimiters) ? enter(typed, true) : setText(typed),
+    compose: setText,
     enter: (entered: string) => enter(entered, false),
     splits: (pasted: string) => hasTagDelimiter(pasted, delimiters),
     addOnBlur,

@@ -149,7 +149,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Character types and looks"
-      description="Digits, letters and digits, or letters only; masked or with a placeholder in empty cells."
+      description="Digits, letters and digits, or letters only; masked or with a placeholder in empty cells. A letter an input method composes stays in its cell until it is committed."
     >
       <StateMatrix
         axes={{ type: types, look: looks }}

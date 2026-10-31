@@ -17,6 +17,7 @@ import {
   type NumberSteps,
 } from './number-field-parts.js';
 import { snapNumberValue } from './snap-number-value.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 interface DecimalControlProps {
   state: FieldState<number | null>;
   control: FieldControlProps;
@@ -64,7 +65,7 @@ function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOp
     },
     onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
       modifiedStep(event, Number.isNaN(input.numberValue) ? null : input.numberValue);
-      if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+      if (event.key === 'Enter' && !isComposingKey(event.nativeEvent)) {
         finishUnchanged(input.numberValue);
       }
       // The typed number becomes the value before Tab moves focus, so dirty state is current.

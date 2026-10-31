@@ -34,7 +34,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec
 
 ### UIC-PIN-INPUT-1.5 - Autocomplete
 
-`autoComplete` shall go on the first cell (`off` by default), so `one-time-code` lets the browser offer a code it received by message; the other cells never autocomplete. A code filled into one cell at once spreads across the cells from that one, as a paste does. The cell tells autofill from typing by the input event, not by the text's length: typing (`insertText`, or an input method's composition text) writes only the event's `data`, beside the cell's old character when that was not selected, while any other change to the cell's text (autofill, a replacement, an input event with no type) counts whole, even when it holds the old character, so a two-character code autofilled into a filled cell keeps both characters.
+`autoComplete` shall go on the first cell (`off` by default), so `one-time-code` lets the browser offer a code it received by message; the other cells never autocomplete. A code filled into one cell at once spreads across the cells from that one, as a paste does. The cell tells autofill from typing by the input event, not by the text's length: typing (`insertText`) writes only the event's `data`, beside the cell's old character when that was not selected, while any other change to the cell's text (autofill, a replacement, an input event with no type) counts whole, even when it holds the old character, so a two-character code autofilled into a filled cell keeps both characters.
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`
@@ -64,7 +64,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`
 
 ### UIC-PIN-INPUT-2.1 - Typing
 
-A character typed into a cell shall replace that cell's character and move focus to the next cell; the last cell keeps focus. Typing the character a cell already holds moves on without a change. A focused cell selects its character, so typing replaces it. Focus follows the value the field renders: a caller that changes the typed value (to upper case, say) still moves it on, and a change the caller refuses moves nothing, then or later.
+A character typed into a cell shall replace that cell's character and move focus to the next cell; the last cell keeps focus. Typing the character a cell already holds moves on without a change. A focused cell selects its character, so typing replaces it. Text an input method is composing stays in its cell, provisional: it changes no value and moves no focus until the composition ends, when its text is entered once, filtered by the type, as typed text is; a cancelled composition puts the cell's character back. Focus follows the value the field renders: a caller that changes the typed value (to upper case, say) still moves it on, and a change the caller refuses moves nothing, then or later.
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`, `e2e/pin-input.spec.ts`

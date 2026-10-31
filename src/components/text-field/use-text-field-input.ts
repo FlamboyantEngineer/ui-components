@@ -1,5 +1,6 @@
 'use client';
 
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import {
   useTextCompletions,
@@ -45,7 +46,7 @@ export interface TextFieldInput {
 /** Enter commits a single line; Escape puts the committed value back and stops there. */
 function createEditKeyHandler(state: FieldState<string>, multiline: boolean) {
   return (event: KeyboardEvent<HTMLElement>) => {
-    if (event.nativeEvent.isComposing) return;
+    if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Enter' && !multiline) state.commit();
     if (event.key === 'Escape' && state.isDirty) {
       event.preventDefault();

@@ -314,6 +314,44 @@ describe('PinInput', () => {
     expect(document.body).toHaveFocus();
   });
 
+  it('UIC-PIN-INPUT-2.1 keeps composed text in its cell until the composition ends', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onComplete = vi.fn();
+    render(
+      <PinInput
+        label="Code"
+        length={2}
+        type="alphabetic"
+        onChange={onChange}
+        onComplete={onComplete}
+      />,
+    );
+    const first = cells()[0] as HTMLElement;
+    await user.click(first);
+     
+    fireEvent.compositionStart(first);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
+    fireEvent.input(first, { target: { value: 'k' }, isComposing: true });
+    expect(values()).toEqual(['k', '']);
+    expect(focusedIndex()).toBe(0);
+    expect(onChange).not.toHaveBeenCalled();
+    // A cancelled composition puts the cell's character back.
+     
+    fireEvent.compositionEnd(first, { data: '' });
+    expect(values()).toEqual(['', '']);
+    expect(onChange).not.toHaveBeenCalled();
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
+    fireEvent.input(first, { target: { value: 'k' }, isComposing: true });
+     
+    fireEvent.compositionEnd(first, { data: 'k' });
+    expect(values()).toEqual(['k', '']);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('k');
+    expect(focusedIndex()).toBe(1);
+    await user.keyboard('m');
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith('km');
+  });
+
   it('UIC-PIN-INPUT-2.2 erases and moves back with Backspace, closing gaps', async () => {
     const user = userEvent.setup();
     render(<PinInput label="Code" length={4} defaultValue="12" />);

@@ -1,5 +1,6 @@
 'use client';
 
+import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
 import {
   memo,
   useCallback,
@@ -29,6 +30,8 @@ interface TagsInputEntry {
   text: string;
   /** Takes the input's new text; a delimiter in it adds the text before it as tags. */
   type(text: string): void;
+  /** Takes the input's provisional text while an input method composes: no delimiter splits it. */
+  compose(text: string): void;
   /** Adds the whole text as tags. */
   enter(text: string): void;
   /** Whether pasted text splits into tags; otherwise it pastes as typed text. */
@@ -75,7 +78,7 @@ function useEntryKeys(entry: TagsInputEntry, slots: TagsInputSlots) {
   ];
   const focusLastTag = () => readRows().at(-1)?.focus();
   const onInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.nativeEvent.isComposing) return;
+    if (isComposingKey(event.nativeEvent)) return;
     const { selectionStart, selectionEnd } = event.currentTarget;
     if (event.key === 'Enter' && entry.text.trim() !== '') {
       event.preventDefault();
@@ -192,7 +195,13 @@ export function TagsInputControl({
           ref={inputRef}
           value={entry.text}
           {...textInput}
-          onChange={(event) => entry.type(event.target.value)}
+          // Composed text stays as typed until the composition ends, then counts once.
+          onChange={(event) =>
+            isComposingInput(event.nativeEvent)
+              ? entry.compose(event.target.value)
+              : entry.type(event.target.value)
+          }
+          onCompositionEnd={(event) => entry.type(event.currentTarget.value)}
           onKeyDown={onInputKeyDown}
           onPaste={(event) => pasteTags(event, entry)}
           onBlur={onBlur}

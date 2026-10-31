@@ -78,6 +78,29 @@ test.describe('Tags Input lab', () => {
     await expect(output(page, 'Ingredients')).toHaveText('Flour | Sugar | Eggs | Milk');
   });
 
+  test('UIC-TAGS-INPUT-2.1 keeps composed text whole until the input method commits it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tags-input');
+    const entry = field(page, 'entry');
+    const input = entry.getByRole('textbox', { name: 'Ingredients' });
+    await input.click();
+    const ime = await page.context().newCDPSession(page);
+    await ime.send('Input.imeSetComposition', {
+      text: 'Salt,',
+      selectionStart: 5,
+      selectionEnd: 5,
+    });
+    await expect(input).toHaveValue('Salt,');
+    await expect(tags(entry)).toHaveText(['Flour']);
+    await ime.send('Input.insertText', { text: 'Salt,' });
+    await expect(tags(entry)).toHaveText(['Flour', 'Salt']);
+    await expect(input).toHaveValue('');
+    await page.keyboard.type('Oil,');
+    await expect(tags(entry)).toHaveText(['Flour', 'Salt', 'Oil']);
+  });
+
   test('UIC-TAGS-INPUT-2.2 splits a pasted list into tags', async ({ page, lab }) => {
     await lab.open('tags-input');
     const entry = field(page, 'entry');
