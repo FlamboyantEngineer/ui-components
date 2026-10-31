@@ -170,7 +170,7 @@ export function ConditionBuilder({
   );
 }
 
-export { matchesConditionGroup } from './condition-tree.js';
+export { createConditionMatcher, matchesConditionGroup } from './condition-tree.js';
 export type {
   ConditionCombinator,
   ConditionGroup,

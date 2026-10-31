@@ -1,7 +1,7 @@
-import { useState, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import {
   ConditionBuilder,
-  matchesConditionGroup,
+  createConditionMatcher,
   type ConditionGroup,
   type ConditionRule,
 } from '../../src/components/condition-builder/condition-builder.js';
@@ -69,9 +69,11 @@ function validatePages(rule: ConditionRule): string | null {
 
 function LiveQuery() {
   const [tree, setTree] = useState<ConditionGroup>(nested);
-  const books = sampleBooks.filter((book) =>
-    matchesConditionGroup(book, tree, { fields: bookFields, getValue: getBookValue }),
+  const matches = useMemo(
+    () => createConditionMatcher({ group: tree, fields: bookFields, getValue: getBookValue }),
+    [tree],
   );
+  const books = sampleBooks.filter(matches);
   return (
     <div data-lab-demo="live" style={{ maxWidth: 760 }}>
       <ConditionBuilder
@@ -127,7 +129,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filtering a catalogue"
-      description="The tree narrows a list of books through matchesConditionGroup. Add, duplicate, move (Alt+Arrow keys on a menu button) and delete rules and groups."
+      description="The tree narrows a list of books through a matcher made once per tree with createConditionMatcher. Add, duplicate, move (Alt+Arrow keys on a menu button) and delete rules and groups."
     >
       <LiveQuery />
     </LabSection>
