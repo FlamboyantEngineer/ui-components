@@ -17,6 +17,7 @@ import {
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
@@ -108,12 +109,12 @@ function OptionContent({
       <span {...hooks.slot('option-label')}>
         {highlightMatches ? <TextMatch>{option.label}</TextMatch> : option.label}
       </span>
-      {option.description ? (
+      {isEmptyNode(option.description) ? null : (
         <>
           {' '}
           <span {...hooks.slot('option-description')}>{option.description}</span>
         </>
-      ) : null}
+      )}
     </>
   );
 }

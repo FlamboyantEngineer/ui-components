@@ -6,6 +6,25 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Switch } from './switch.js';
 
 describe('Switch', () => {
+  it('UIC-SWITCH-1.1 names the input with any label content, zero included, and drops empty content', () => {
+    render(
+      <>
+        <Switch>{0}</Switch>
+        <Switch>
+          <>
+            <em>Dark</em> mode
+          </>
+        </Switch>
+        <Switch aria-label="Caller name">{null}</Switch>
+      </>,
+    );
+    for (const name of ['0', 'Dark mode', 'Caller name']) {
+      expect(screen.getByRole('switch', { name })).toBeInTheDocument();
+    }
+    const labels = [...document.querySelectorAll('.ui-switch__label')];
+    expect(labels.map((label) => label.textContent)).toEqual(['0', 'Dark mode']);
+  });
+
   it('UIC-SWITCH-1.1 draws a track and thumb around a native switch input and its label', () => {
     const { container } = render(<Switch defaultSelected>Wi-Fi</Switch>);
     const root = container.querySelector('label.ui-switch');

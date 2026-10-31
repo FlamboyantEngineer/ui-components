@@ -28,6 +28,22 @@ function input() {
 }
 
 describe('Combobox suggestions', () => {
+  it('UIC-COMBOBOX-2.1 draws an option description of zero and none for empty content', async () => {
+    const user = userEvent.setup();
+    const stock: ComboboxItem[] = [
+      { id: 'pears', label: 'Pears', description: 0 },
+      { id: 'figs', label: 'Figs', description: false },
+    ];
+    render(<Combobox aria-label="Fruit" defaultItems={stock} />);
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    const listbox = await screen.findByRole('listbox');
+    const pears = within(listbox).getByRole('option', { name: 'Pears 0' });
+    expect(pears.querySelector('.ui-combobox__option-description')).toHaveTextContent('0');
+    const figs = within(listbox).getByRole('option', { name: 'Figs' });
+    expect(figs.querySelector('.ui-combobox__option-description')).toBeNull();
+  });
+
   it('UIC-COMBOBOX-2.1 draws options with icon, label and description, grouped in sections', async () => {
     const user = userEvent.setup();
     render(<Combobox aria-label="Fruit" defaultItems={fruit} />);

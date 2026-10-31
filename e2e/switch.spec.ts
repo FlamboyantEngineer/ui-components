@@ -102,4 +102,11 @@ test.describe('Switch lab', () => {
     });
     expect(frames.every(({ width, height }) => width === height)).toBe(true);
   });
+
+  test('UIC-SWITCH-1.1 draws a label of zero and is named by it', async ({ page, lab }) => {
+    await lab.open('switch');
+    const field = page.locator('[data-lab-field="zero"]');
+    await expect(field.locator('.ui-switch__label')).toHaveText('0');
+    await expect(field.getByRole('switch', { name: '0', exact: true })).toHaveCount(1);
+  });
 });

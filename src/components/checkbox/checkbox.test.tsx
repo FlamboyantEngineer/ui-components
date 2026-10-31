@@ -21,6 +21,27 @@ function ThreeState() {
 }
 
 describe('Checkbox', () => {
+  it('UIC-CHECKBOX-1.1 names the input with any label content, zero included, and drops empty content', () => {
+    render(
+      <>
+        <Checkbox>{0}</Checkbox>
+        <Checkbox>Zero rows</Checkbox>
+        <Checkbox>
+          <>
+            <strong>Bold</strong> rows
+          </>
+        </Checkbox>
+        <Checkbox aria-label="Caller name">{false}</Checkbox>
+        <Checkbox aria-label="Empty name">{''}</Checkbox>
+      </>,
+    );
+    for (const name of ['0', 'Zero rows', 'Bold rows', 'Caller name', 'Empty name']) {
+      expect(screen.getByRole('checkbox', { name })).toBeInTheDocument();
+    }
+    const labels = [...document.querySelectorAll('.ui-checkbox__label')];
+    expect(labels.map((label) => label.textContent)).toEqual(['0', 'Zero rows', 'Bold rows']);
+  });
+
   it('UIC-CHECKBOX-1.1 draws a box around a hidden native input and its label', () => {
     const { container, rerender } = render(<Checkbox>Match case</Checkbox>);
     const root = container.querySelector('label.ui-checkbox');

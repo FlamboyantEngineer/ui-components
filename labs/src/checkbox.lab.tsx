@@ -71,5 +71,11 @@ mountLab(
     >
       <ThreeState />
     </LabSection>
+    <LabSection
+      title="Numeric labels"
+      description="A count of zero is label content like any other: it is drawn and names the box."
+    >
+      <Checkbox data-lab-field="zero">{0}</Checkbox>
+    </LabSection>
   </>,
 );

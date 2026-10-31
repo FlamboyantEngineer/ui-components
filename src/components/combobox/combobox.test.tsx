@@ -74,6 +74,33 @@ describe('Combobox', () => {
     },
   );
 
+  it('UIC-COMBOBOX-1.1 draws a label and description of zero and none for empty content', () => {
+    const { container, rerender } = render(
+      <Combobox label={0} description={0} defaultItems={fruit} />,
+    );
+    expect(input()).toHaveAccessibleName('0');
+    expect(input()).toHaveAccessibleDescription('0');
+    expect(container.querySelector('.ui-combobox__label')).toHaveTextContent('0');
+    expect(container.querySelector('.ui-combobox__description')).toHaveTextContent('0');
+    rerender(
+      <Combobox
+        label={
+          <>
+            <strong>Fresh</strong> fruit
+          </>
+        }
+        defaultItems={fruit}
+      />,
+    );
+    expect(input()).toHaveAccessibleName('Fresh fruit');
+    rerender(
+      <Combobox label={false} description="" aria-label="Caller name" defaultItems={fruit} />,
+    );
+    expect(input()).toHaveAccessibleName('Caller name');
+    expect(container.querySelector('.ui-combobox__label')).toBeNull();
+    expect(container.querySelector('.ui-combobox__description')).toBeNull();
+  });
+
   it('UIC-COMBOBOX-1.1 draws the label, field, input, button, description and error', () => {
     const { container, rerender } = render(
       <Combobox

@@ -5,6 +5,7 @@ import { Switch as AriaSwitch } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export interface SwitchProps extends BaseProps, AriaLabellingProps {
   /** Whether the switch is on, controlled. */
@@ -42,7 +43,7 @@ export function Switch({ children, size = 'md', className, ...rest }: SwitchProp
       <span {...hooks.slot('track')} aria-hidden="true">
         <span {...hooks.slot('thumb')} />
       </span>
-      {children ? <span {...hooks.slot('label')}>{children}</span> : null}
+      {isEmptyNode(children) ? null : <span {...hooks.slot('label')}>{children}</span>}
     </AriaSwitch>
   );
 }

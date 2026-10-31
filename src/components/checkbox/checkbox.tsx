@@ -7,6 +7,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export interface CheckboxProps extends BaseProps, AriaLabellingProps {
   /** Whether the box is ticked, controlled. */
@@ -54,7 +55,7 @@ export function Checkbox({ children, size = 'md', className, ...rest }: Checkbox
               />
             ) : null}
           </span>
-          {children ? <span {...hooks.slot('label')}>{children}</span> : null}
+          {isEmptyNode(children) ? null : <span {...hooks.slot('label')}>{children}</span>}
         </>
       )}
     </AriaCheckbox>

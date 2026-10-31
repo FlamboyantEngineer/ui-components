@@ -75,5 +75,11 @@ mountLab(
     >
       <FormValue />
     </LabSection>
+    <LabSection
+      title="Numeric labels"
+      description="A count of zero is label content like any other: it is drawn and names the switch."
+    >
+      <Switch data-lab-field="zero">{0}</Switch>
+    </LabSection>
   </>,
 );

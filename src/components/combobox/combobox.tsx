@@ -6,6 +6,7 @@ import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
 import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
@@ -140,11 +141,11 @@ function omitModelProps<P extends ComboboxModelOptions>(props: P) {
 }
 
 function ComboboxLabel({ label, labelRef }: { label: ReactNode; labelRef: Ref<HTMLLabelElement> }) {
-  return label ? (
+  return isEmptyNode(label) ? null : (
     <Label ref={labelRef} className={hooks.slotClass('label')}>
       {label}
     </Label>
-  ) : null;
+  );
 }
 
 function ComboboxMessages({
@@ -153,11 +154,11 @@ function ComboboxMessages({
 }: Pick<ComboboxProps, 'description' | 'errorMessage'>) {
   return (
     <>
-      {description ? (
+      {isEmptyNode(description) ? null : (
         <Text slot="description" className={hooks.slotClass('description')}>
           {description}
         </Text>
-      ) : null}
+      )}
       <FieldError className={hooks.slotClass('error')}>{errorMessage}</FieldError>
     </>
   );

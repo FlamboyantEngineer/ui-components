@@ -533,5 +533,20 @@ mountLab(
     >
       <RememberedChips />
     </LabSection>
+    <LabSection
+      title="Numeric labels"
+      description="A label, description or option description of zero is drawn and read like any other content."
+    >
+      <div data-lab-demo="zero">
+        <Combobox
+          label={0}
+          description={0}
+          defaultItems={[
+            { id: 'pears', label: 'Pears', description: 0 },
+            { id: 'figs', label: 'Figs' },
+          ]}
+        />
+      </div>
+    </LabSection>
   </>,
 );

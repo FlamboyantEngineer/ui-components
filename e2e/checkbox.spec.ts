@@ -87,4 +87,11 @@ test.describe('Checkbox lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-CHECKBOX-1.1 draws a label of zero and is named by it', async ({ page, lab }) => {
+    await lab.open('checkbox');
+    const field = page.locator('[data-lab-field="zero"]');
+    await expect(field.locator('.ui-checkbox__label')).toHaveText('0');
+    await expect(field.getByRole('checkbox', { name: '0', exact: true })).toHaveCount(1);
+  });
 });
