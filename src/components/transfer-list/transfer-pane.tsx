@@ -1,13 +1,13 @@
 'use client';
 
 import { useId, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { IconSource } from '../icon/icon.js';
 import { ListView, ListViewItem } from '../list-row/list-row.js';
 import { SearchField } from '../search-field/search-field.js';
 import type { TransferDrop } from './transfer-moves.js';
+import { transferListHooks as hooks } from './transfer-list-hooks.js';
 
 /** An item a transfer list moves between its sides. */
 export interface TransferListItem {
@@ -44,16 +44,6 @@ interface TransferPaneProps {
   /** Controls under the side's header, such as the reorder buttons. */
   tools?: ReactNode;
 }
-
-const hooks = createHooks('transfer-list', [
-  'pane',
-  'header',
-  'title',
-  'count',
-  'search',
-  'list',
-  'empty',
-]);
 
 /**
  * One side of a transfer list: its title and counts, its filter and its rows on a `ListView`, where

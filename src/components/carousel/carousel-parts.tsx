@@ -3,10 +3,10 @@
 import { ChevronLeftGlyph, ChevronRightGlyph, PauseGlyph, PlayGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import type { CarouselAutoplay } from './use-carousel-autoplay.js';
+import { carouselHooks as hooks } from './carousel-hooks.js';
 
 /** How a carousel lets the reader pick a slide directly. */
 export type CarouselPagination = 'dots' | 'thumbnails' | 'none';
@@ -30,16 +30,6 @@ interface CarouselPaginationProps {
   onSelect: (index: number) => void;
   renderThumbnail?: ((index: number) => ReactNode) | undefined;
 }
-
-const hooks = createHooks('carousel', [
-  'controls',
-  'rotation',
-  'previous',
-  'next',
-  'pagination',
-  'dot',
-  'thumbnail',
-]);
 
 /** The rotation button, then the previous and next buttons. */
 export function CarouselControls({

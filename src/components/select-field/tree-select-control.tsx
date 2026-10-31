@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
@@ -22,6 +21,7 @@ import {
 import { TreeSelectPopover } from './tree-select-popover.js';
 import { TreeSelectTrigger } from './tree-select-trigger.js';
 import type { SelectTreeFieldProps, SelectFieldValueDisplay } from './select-tree-field.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 type TreeSelectConfig<T extends TreeItemData> = Omit<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,
@@ -44,8 +44,6 @@ interface ChosenNode {
   /** The key matches no loaded node, so it shows as itself. */
   isMissing: boolean;
 }
-
-const hooks = createHooks('select-field', ['chips', 'chip']);
 
 function toKeys(value: Key | Key[] | null): Key[] {
   if (Array.isArray(value)) return value;

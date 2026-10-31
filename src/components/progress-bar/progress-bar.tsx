@@ -9,6 +9,7 @@ import type { ElementRender } from '../../utils/render-element.js';
 import { ProgressRing } from './progress-ring.js';
 import { ProgressRoot, ProgressText } from './progress-root.js';
 import { SegmentedProgressBar, type ProgressSegment } from './progress-segments.js';
+import { progressBarHooks as hooks } from './progress-bar-hooks.js';
 
 export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -87,7 +88,6 @@ export interface ProgressValues {
   isIndeterminate: boolean;
 }
 
-const hooks = createHooks('progress-bar', ['label', 'value', 'track', 'fill', 'ring']);
 const spinnerHooks = createHooks('spinner');
 
 /** A bar showing how much of a known amount of work is done, or that work is under way. */

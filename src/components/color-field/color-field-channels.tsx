@@ -1,10 +1,10 @@
 'use client';
 
 import { ColorField as AriaColorField, Input } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { describeFormatInputs, type ColorFieldFormat } from './color-values.js';
+import { colorFieldHooks as hooks } from './color-field-hooks.js';
 
 interface ColorFormatChoiceProps {
   format: ColorFieldFormat;
@@ -12,8 +12,6 @@ interface ColorFormatChoiceProps {
   formats: readonly ColorFieldFormat[];
   onFormatChange: (format: ColorFieldFormat) => void;
 }
-
-const hooks = createHooks('color-field', ['format', 'channels', 'hex', 'channel', 'input']);
 
 /** The format choice of the picker: one segment per offered format. */
 export function ColorFormatChoice({ format, formats, onFormatChange }: ColorFormatChoiceProps) {

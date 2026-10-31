@@ -13,10 +13,10 @@ import {
   Popover,
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
-import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 interface HeadingSelectProps {
   unit: 'month' | 'year';
@@ -25,14 +25,6 @@ interface HeadingSelectProps {
   onChange: (key: Key | null) => void;
   items: ReadonlyArray<{ id: number; formatted: string }>;
 }
-
-const hooks = createHooks('date-time-field', [
-  'calendar-select',
-  'calendar-select-button',
-  'calendar-select-popover',
-  'calendar-select-list',
-  'calendar-select-option',
-]);
 
 /** A month or year choice of the calendar heading: a React Aria select of the picker's items. */
 function HeadingSelect({ unit, items, ...select }: HeadingSelectProps) {

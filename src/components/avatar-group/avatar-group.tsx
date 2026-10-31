@@ -1,13 +1,13 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
 import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
 import { AvatarGroupPeople } from './avatar-group-people.js';
 import { AvatarGroupListTrigger } from './avatar-group-list.js';
 import { usePresenceLabels, windowPeople } from './avatar-group-window.js';
+import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
 
 export interface AvatarGroupPerson
   extends AvatarIdentity, Pick<AvatarProps, 'status' | 'statusLabel'> {
@@ -46,8 +46,6 @@ export interface AvatarGroupProps
   /** Names the group; defaults to the people it contains. */
   'aria-label'?: string | undefined;
 }
-
-const hooks = createHooks('avatar-group');
 
 /** One group of identities, including optional presence, cards, commands and overflow. */
 export function AvatarGroup({

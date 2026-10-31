@@ -2,11 +2,11 @@
 
 import type { Ref } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import type { SelectFieldSelectionMode, SelectFieldValue } from './select-field.js';
 import type { TreeItemData } from '../tree/tree.js';
 import { TreeSelectControl } from './tree-select-control.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 /** How a chosen node reads: its own label, or its path from the top level. */
 export type SelectFieldValueDisplay = 'label' | 'path';
@@ -45,8 +45,6 @@ export interface SelectTreeFieldProps<
   /** Receives the trigger button, the field's focusable control, while it is on the page. */
   triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
-
-const hooks = createHooks('select-field');
 
 /**
  * A field that chooses one node or several from a hierarchy: its trigger opens a popover with a

@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { createHooks, measuredProperty } from '../../core/hooks.js';
+import { measuredProperty } from '../../core/hooks.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { SegmentedBarShape } from './segmented-bar.js';
 import { SegmentedCircle } from './segmented-circle.js';
 import { toSegmentProperties, type SegmentedPart } from './segmented-layout.js';
 import { useSegmentedAnimation } from './use-segmented-animation.js';
-
-const hooks = createHooks('segmented-bar', ['track', 'segment']);
+import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
 
 /** The decorative geometry owns visibility and animation completion, apart from the live legend. */
 export function SegmentedTrack({

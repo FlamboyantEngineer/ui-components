@@ -1,15 +1,13 @@
 'use client';
 
 import { Fragment } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { resolveAvatarColor } from '../avatar/avatar.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { AvatarGroupProps, AvatarGroupPerson } from './avatar-group.js';
 import type { AvatarGroupWindow } from './avatar-group-window.js';
 import { AvatarGroupOverflowMenu } from './avatar-group-overflow-menu.js';
-
-const hooks = createHooks('avatar-group', ['avatar', 'dot', 'overflow']);
+import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
 
 function AvatarGroupPersonView({
   person,

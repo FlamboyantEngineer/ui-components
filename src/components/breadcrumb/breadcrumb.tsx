@@ -9,7 +9,6 @@ import {
   useLocale,
   type LinkProps as AriaLinkProps,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, Size } from '../../core/props.js';
 import { UiLink, useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
@@ -27,6 +26,7 @@ import {
   useCrumbOverflow,
   type CrumbOverflow,
 } from './crumb-overflow.js';
+import { breadcrumbHooks as hooks } from './breadcrumb-hooks.js';
 
 export type BreadcrumbSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
@@ -91,8 +91,6 @@ interface CrumbMenuProps {
   isDisabled: boolean | undefined;
   onAction: BreadcrumbProps['onAction'];
 }
-
-const hooks = createHooks('breadcrumb', ['list', 'item', 'link', 'label', 'menu', 'separator']);
 
 /** Crumbs that navigate render through the provider's link renderer; the others stay spans. */
 function renderCrumbLink(props: LinkRenderProps): ReactElement {

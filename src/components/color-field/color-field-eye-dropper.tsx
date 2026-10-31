@@ -3,9 +3,9 @@
 import { EyeDropperGlyph } from '../../core/glyphs.js';
 import { useContext, useEffect, useRef } from 'react';
 import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { colorFieldHooks as hooks } from './color-field-hooks.js';
 
 // The EyeDropper API (https://wicg.github.io/eyedropper-api/), which the DOM typings do not have yet.
 interface EyeDropperSample {
@@ -17,8 +17,6 @@ interface EyeDropperInstance {
 }
 
 type EyeDropperConstructor = new () => EyeDropperInstance;
-
-const hooks = createHooks('color-field', ['eye-dropper']);
 
 // Whether to draw the button is decided in render, before there is an element, so support is read
 // from the script's own window.

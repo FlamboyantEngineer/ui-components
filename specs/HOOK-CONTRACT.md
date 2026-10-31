@@ -13,9 +13,9 @@ Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-1.2 - Slot classes
 
-A component shall mark each named part a stylesheet may need with the class `ui-<component>__<slot>` (`ui-button__icon`, `ui-modal__footer`). A slot class is present whenever that part renders. Components declare their slots up front, so an undeclared slot name is a type error.
+A component shall mark each named part a stylesheet may need with the class `ui-<component>__<slot>` (`ui-button__icon`, `ui-modal__footer`). A slot class is present whenever that part renders. Components declare their slots up front, in one `createHooks` call per component (a `<name>-hooks.ts` module when several modules write them), so an undeclared slot name is a type error and the component's slots are listed in one place. `npm run check:structure` rejects a second `createHooks` call with the same name.
 
-Implementation: `src/core/hooks.ts`
+Implementation: `src/core/hooks.ts`, `scripts/check-structure.mjs`
 Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-1.3 - Caller class names

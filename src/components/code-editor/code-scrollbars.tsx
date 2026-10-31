@@ -7,7 +7,8 @@ import {
   useOverlayMetrics,
   useSharedViewportObserver,
 } from '../scroll-region/scroll-region.js';
-import { codeEditorHooks as hooks, type CodeDiagnostic } from './code-layers.js';
+import { type CodeDiagnostic } from './code-layers.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 
 interface CodeScrollbarsProps {
   input: RefObject<HTMLTextAreaElement | null>;

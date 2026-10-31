@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Dialog, Heading } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
+import { tourHooks as hooks } from './tour-hooks.js';
 
 interface TourPanelProps {
   /** The dialog's id. */
@@ -20,18 +20,6 @@ interface TourPanelProps {
   onNext: () => void;
   onSkip: () => void;
 }
-
-const hooks = createHooks('tour', [
-  'dialog',
-  'header',
-  'title',
-  'progress',
-  'body',
-  'footer',
-  'skip',
-  'back',
-  'next',
-]);
 
 /**
  * One step's dialog: the title, which names it, the step count, the body, then Skip, Back and Next

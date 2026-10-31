@@ -11,7 +11,7 @@ import {
   type FieldIssue,
   type FieldState,
 } from '../field/field.js';
-import { colorFieldHooks as hooks } from './color-field-panel.js';
+import { colorFieldHooks as hooks } from './color-field-hooks.js';
 import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 

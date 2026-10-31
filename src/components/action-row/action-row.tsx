@@ -3,7 +3,6 @@
 import { CloseGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -11,6 +10,7 @@ import type { ButtonSize } from '../button/button.js';
 import { Button } from '../button/button.js';
 import { ActionRowActions, createClearKey } from './action-row-actions.js';
 import { orderActions, type ActionRowAction } from './action-verbs.js';
+import { actionRowHooks as hooks } from './action-row-hooks.js';
 
 /** `visible` keeps every action in the row; `menu` collapses those that do not fit into a menu. */
 export type ActionRowOverflow = 'visible' | 'menu';
@@ -38,8 +38,6 @@ export interface ActionRowProps
   /** Clears the selection: the clear button and Escape inside the row call it. */
   onClearSelection?: (() => void) | undefined;
 }
-
-const hooks = createHooks('action-row', ['selection', 'clear', 'count', 'lead']);
 
 /** The selected count and the button that clears the selection. */
 function SelectionStatus({

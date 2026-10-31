@@ -2,12 +2,13 @@
 
 import { useId, useMemo, type ReactNode, type RefCallback } from 'react';
 import { Breadcrumb as AriaBreadcrumb } from '../../primitives/index.js';
-import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import { mergeClassNames } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
+import { breadcrumbHooks as hooks } from './breadcrumb-hooks.js';
 
 /** What the overflow logic reads of a crumb. */
 interface CrumbEntry {
@@ -38,8 +39,6 @@ interface OverflowCrumbProps {
   isDisabled: boolean | undefined;
   separator: ReactNode;
 }
-
-const hooks = createHooks('breadcrumb', ['item', 'overflow']);
 
 /** A crumb's key: its `id`, or its index. */
 export function toCrumbKey(item: CrumbEntry, index: number): Key {

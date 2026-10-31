@@ -2,7 +2,6 @@
 
 import { ColorArea, ColorSlider, ColorThumb, Dialog, SliderTrack } from '../../primitives/index.js';
 import { PopoverPanel } from '../popover/popover.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { ColorSwatchPicker, ColorSwatchPickerItem } from '../color-swatch/color-swatch.js';
@@ -11,6 +10,7 @@ import { ColorChannelInputs, ColorFormatChoice } from './color-field-channels.js
 import { ColorFieldEyeDropper } from './color-field-eye-dropper.js';
 import { hasAlpha, type ColorFieldFormat } from './color-values.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
+import { colorFieldHooks } from './color-field-hooks.js';
 
 interface ColorFieldPanelProps {
   label: string;
@@ -23,23 +23,6 @@ interface ColorFieldPanelProps {
   /** Draws the eye dropper where the browser has one. */
   allowsEyeDropper: boolean;
 }
-
-export const colorFieldHooks = createHooks('color-field', [
-  'trigger',
-  'swatch',
-  'value',
-  'group',
-  'entry',
-  'popover',
-  'dialog',
-  'area',
-  'slider',
-  'track',
-  'thumb',
-  'input',
-  'swatches',
-  'clear',
-]);
 
 const hooks = colorFieldHooks;
 

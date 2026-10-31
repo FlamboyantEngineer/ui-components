@@ -1,9 +1,9 @@
 'use client';
 
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import { BooleanControl, type BooleanFieldVariant } from './boolean-controls.js';
+import { booleanFieldHooks as hooks } from './boolean-field-hooks.js';
 
 export interface BooleanFieldProps extends FieldInputProps<boolean | null> {
   /** How the value is drawn. Defaults to `checkbox`. */
@@ -26,8 +26,6 @@ export interface BooleanFieldProps extends FieldInputProps<boolean | null> {
   /** The form name: checkbox and switch submit `true` while on; the other variants submit `true` or `false`, and nothing while unset. */
   name?: string | undefined;
 }
-
-const hooks = createHooks('boolean-field');
 
 function serialize(value: boolean | null): string {
   return value === null ? 'unset' : String(value);

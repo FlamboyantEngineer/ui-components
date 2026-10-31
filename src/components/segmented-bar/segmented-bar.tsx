@@ -3,13 +3,13 @@
 import { useId, type ReactNode, type Ref } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
 import { SegmentedTrack } from './segmented-track.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
 
 export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -49,19 +49,6 @@ export interface SegmentedBarProps extends BaseProps, AriaLabellingProps {
   /** The root element. */
   ref?: Ref<HTMLDivElement> | undefined;
 }
-
-const hooks = createHooks('segmented-bar', [
-  'label',
-  'total',
-  'track',
-  'segment',
-  'legend',
-  'item',
-  'swatch',
-  'item-label',
-  'item-value',
-  'item-share',
-]);
 
 const shareFormat: Intl.NumberFormatOptions = { style: 'percent', maximumFractionDigits: 1 };
 

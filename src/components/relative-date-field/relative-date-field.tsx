@@ -3,7 +3,6 @@
 import { useLocale } from '../../primitives/index.js';
 import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
 import type { OpenStateProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { DateFormInputs, type DateRangeValue } from '../date-time-field/date-time-field.js';
@@ -37,6 +36,7 @@ import {
   type RelativeDateValue,
 } from './relative-date.js';
 import { formatStableTime } from '../../utils/relative-time.js';
+import { relativeDateFieldHooks as hooks } from './relative-date-field-hooks.js';
 
 /** A `YYYY-MM-DD` date or local `YYYY-MM-DDTHH:mm` date and time, or a `{ start, end }` range of dates. */
 export type RelativeDateFieldValue<K extends RelativeDateFieldMode = 'date'> =
@@ -107,8 +107,6 @@ const DEFAULT_RANGE_PRESETS: readonly RelativeDatePreset[] = [
   { amount: -30, unit: 'day' },
   { amount: 7, unit: 'day' },
 ];
-
-const hooks = createHooks('relative-date-field', ['preview']);
 
 function resolvePreset(preset: AnyPreset, context: PresetContext): RelativeDateValue {
   const { now, timeZone, kind } = context;

@@ -3,7 +3,7 @@
 import { LockGlyph, WarningGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks, mergeClassNames, type HookProps } from '../../core/hooks.js';
+import { mergeClassNames, type HookProps } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -12,6 +12,7 @@ import { toIconProps } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { RecordChipParts } from './record-chip-parts.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { recordLabelHooks as hooks } from './record-label-hooks.js';
 
 export type RecordLabelSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -74,15 +75,6 @@ export type RecordLabelPresentation = Pick<
 export type RecordLabelResolver = (
   reference: RecordLabelReference,
 ) => RecordLabelPresentation | undefined;
-
-const hooks = createHooks('record-label', [
-  'label',
-  'identity',
-  'icon',
-  'identifier',
-  'name',
-  'accessible-label',
-]);
 
 const unavailableGlyphs = { restricted: LockGlyph, missing: WarningGlyph } as const;
 

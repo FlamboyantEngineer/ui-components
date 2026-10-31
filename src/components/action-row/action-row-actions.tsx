@@ -3,7 +3,7 @@
 import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks, pickDataAttributes } from '../../core/hooks.js';
+import { pickDataAttributes } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -23,6 +23,7 @@ import {
 } from '../menu/menu.js';
 import { useActionPending, type ActionPress } from './use-action-pending.js';
 import { toActionContent, toActionKey, type ActionRowAction } from './action-verbs.js';
+import { actionRowHooks as hooks } from './action-row-hooks.js';
 
 interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   actions: readonly ActionRowAction[];
@@ -32,8 +33,6 @@ interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 
   /** Collapses the actions that do not fit into a "more" menu. */
   isCollapsing: boolean;
 }
-
-const hooks = createHooks('action-row', ['actions', 'action', 'overflow']);
 
 const focusSelectors = {
   item: `.${hooks.slotClass('action')}`,

@@ -21,7 +21,6 @@ import {
 } from '../../primitives/index.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import { useMemo, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import {
   FieldPreviousValue,
@@ -44,6 +43,7 @@ import {
   type DateTimeFieldMode,
   type DateValueOptions,
 } from './date-values.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 /** How the pickers edit and offer values, beyond the value itself. */
 export interface DateControlSettings extends DateValueOptions {
@@ -79,17 +79,6 @@ interface DatePickerControlProps {
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
 }
-
-const hooks = createHooks('date-time-field', [
-  'picker',
-  'group',
-  'previous',
-  'input',
-  'segment',
-  'separator',
-  'button',
-  'calendar',
-]);
 
 /** A date or a date and time text as the value the date pickers edit, or `null`. */
 function toPickerValue(text: string | null | undefined, mode: 'date' | 'date-time', zone?: string) {

@@ -2,7 +2,7 @@
 
 import { useId, useRef, type CSSProperties } from 'react';
 import { Switch, ToggleButton, type Key } from '../../primitives/index.js';
-import { createHooks, measuredProperty } from '../../core/hooks.js';
+import { measuredProperty } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import { Checkbox } from '../checkbox/checkbox.js';
@@ -16,6 +16,7 @@ import {
 } from '../field/field.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { SelectControl, type SelectKeysValue } from '../select-field/select-field.js';
+import { booleanFieldHooks as hooks } from './boolean-field-hooks.js';
 
 /**
  * How a boolean is drawn: a tick box, a switch, a pair of named segments, a select of the named
@@ -48,16 +49,6 @@ interface BooleanControlProps {
   /** The field's size, which the checkbox and segments take. */
   size: ControlSize;
 }
-
-const hooks = createHooks('boolean-field', [
-  'switch',
-  'track',
-  'thumb',
-  'caption',
-  'form-value',
-  'toggle-button',
-  'previous',
-]);
 
 const controls = {
   checkbox: CheckControl,

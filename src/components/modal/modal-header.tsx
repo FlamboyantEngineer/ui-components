@@ -2,11 +2,11 @@
 
 import { CloseGlyph } from '../../core/glyphs.js';
 import { Heading } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import type { ModalProps } from './modal.js';
+import { modalHooks as hooks } from './modal-hooks.js';
 
 interface ModalHeaderProps extends Pick<
   ModalProps,
@@ -18,15 +18,6 @@ interface ModalHeaderProps extends Pick<
   isDismissDisabled: boolean;
   onClose: () => void;
 }
-
-const hooks = createHooks('modal', [
-  'header',
-  'heading',
-  'title',
-  'description',
-  'header-actions',
-  'close',
-]);
 
 /** The header row: the title and description, caller content, then an optional close button. */
 export function ModalHeader({

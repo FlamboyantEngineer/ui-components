@@ -8,28 +8,19 @@ import {
   SearchField,
   type KeyboardEvent as AriaKeyboardEvent,
 } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useStoreValue } from '../../utils/use-store-value.js';
 import { getEmojiLabel } from './emoji-catalog.js';
 import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { EmojiContent } from './emoji-grid.js';
+import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
 
 /** The search field part: caller attributes and class go on the field. */
 export type EmojiPickerSearchProps = BaseProps;
 
 /** The preview part: caller attributes and class go on the preview. */
 export type EmojiPickerPreviewProps = BaseProps;
-
-const hooks = createHooks('emoji-picker', [
-  'search',
-  'search-input',
-  'search-clear',
-  'preview',
-  'preview-emoji',
-  'preview-label',
-]);
 
 // Down moves from the search field to the grid's first emoji, even from a field laid out after the
 // grid, where focusing the grid itself would pick its last. The field's keys stay inside the picker,

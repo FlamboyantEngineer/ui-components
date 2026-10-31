@@ -15,12 +15,12 @@ import {
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { SelectListItems, type SelectOptionsDisplay } from './select-option.js';
 import { flattenPickerItems, pickerListLayout, usePickerPopoverStyle } from '../field/field.js';
 import { type SelectFieldItem } from './select-options.js';
 import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 /** The next page of a search's results, loaded when the end of the list scrolls into view. */
 interface SelectListMore {
@@ -46,16 +46,6 @@ export interface SelectListProps extends SelectOptionsDisplay {
   /** Ends the list with a row that loads the next page; `null` when there is none. */
   more: SelectListMore | null;
 }
-
-const hooks = createHooks('select-field', [
-  'popover',
-  'search',
-  'search-input',
-  'loading',
-  'listbox',
-  'load-more',
-  'empty',
-]);
 
 /** Starts typing after the filter text a key on the closed trigger seeded, not over it. */
 function moveCaretToEnd(event: FocusEvent<HTMLInputElement>) {

@@ -2,7 +2,8 @@
 // Enforces the structural rules of docs/CODING-GUIDELINES.md that lint cannot see:
 //   N1 kebab-case files, N2/S5 one name per component across spec, lab, test and partial (a
 //   directory may hold a family of components without a namesake, such as layout primitives),
-//   S2 component directory layout, S3 re-export-only entry points, I2 props that extend BaseProps.
+//   S2 component directory layout, S3 re-export-only entry points, I2 props that extend BaseProps,
+//   N8 one createHooks declaration per component.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, relative, sep } from 'node:path';
@@ -95,6 +96,28 @@ for (const path of walk(join(root, 'src'))) {
       `${rel(path)}: extend BaseProps instead of declaring a data-* index signature (I2)`,
     );
   }
+}
+
+// N8: one createHooks call per component name, so its hook surface is declared in one list.
+const hookDeclarations = new Map();
+for (const path of walk(join(root, 'src'))) {
+  if (!/\.tsx?$/.test(path) || /\.test\.tsx?$/.test(path)) continue;
+  const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest);
+  const visit = (node) => {
+    const name = ts.isCallExpression(node) ? node.arguments[0] : undefined;
+    const isCreateHooks =
+      name && ts.isIdentifier(node.expression) && node.expression.text === 'createHooks';
+    if (isCreateHooks && ts.isStringLiteral(name)) {
+      const first = hookDeclarations.get(name.text);
+      if (first) {
+        problems.push(
+          `${rel(path)}: createHooks('${name.text}') is declared in ${first} too; share one <name>-hooks.ts (N8)`,
+        );
+      } else hookDeclarations.set(name.text, rel(path));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
 }
 
 // I2: every exported component that renders an element takes props that include BaseProps.

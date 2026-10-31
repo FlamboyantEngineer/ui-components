@@ -12,7 +12,6 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useOverlayPosition } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
@@ -21,6 +20,7 @@ import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
 import { TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 import { isElement } from '../../utils/is-element.js';
+import { tooltipHooks as hooks } from './tooltip-hooks.js';
 
 /** A rectangle in viewport pixels, as `getBoundingClientRect` returns it. */
 export interface TooltipRect {
@@ -64,8 +64,6 @@ export interface AnchoredTooltipProps extends BaseProps {
 }
 
 type RelatedAttribute = 'aria-describedby' | 'aria-labelledby';
-
-const hooks = createHooks('tooltip', ['arrow', 'content']);
 
 function isVirtualAnchor(anchor: TooltipAnchor): anchor is TooltipVirtualAnchor {
   return !isElement(anchor) && !('current' in anchor);

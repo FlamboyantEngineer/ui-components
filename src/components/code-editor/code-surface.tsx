@@ -15,11 +15,11 @@ import { CodeHoverTooltip } from './code-hover.js';
 import {
   CodeDiagnostics,
   CodeGutter,
-  codeEditorHooks as hooks,
   severitiesByLine,
   type CodeDiagnostic,
   type CodeTokenizer,
 } from './code-layers.js';
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { CodeSearchPanel } from './code-search.js';
 import type { CodeEditorModel } from './use-code-editor.js';
 import { useCodeSurface } from './use-code-surface.js';

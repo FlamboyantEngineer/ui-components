@@ -8,7 +8,6 @@ import {
   type CalendarDate,
 } from '../../primitives/index.js';
 import { useContext, useMemo } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { CalendarBody, type DateRangeValue } from '../date-time-field/date-time-field.js';
 import {
   toValueDate,
@@ -16,6 +15,7 @@ import {
   type RelativeDateFieldMode,
   type RelativeDateValue,
 } from './relative-date.js';
+import { relativeDateFieldHooks as hooks } from './relative-date-field-hooks.js';
 
 interface PresetCalendarProps {
   kind: RelativeDateFieldMode;
@@ -29,8 +29,6 @@ interface PresetCalendarProps {
   /** Receives the picked `YYYY-MM-DD` day, or the picked range of days. */
   onPick: (picked: string | DateRangeValue) => void;
 }
-
-const hooks = createHooks('relative-date-field', ['calendar']);
 
 function useCalendarValues(value: RelativeDateValue | null, bounds: RelativeDateBounds) {
   const range = typeof value === 'object' ? value : null;

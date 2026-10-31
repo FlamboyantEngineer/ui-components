@@ -2,7 +2,6 @@
 
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { Dialog } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { PopoverPanel } from '../popover/popover.js';
@@ -12,6 +11,7 @@ import { Tree, type TreeItemData } from '../tree/tree.js';
 import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
 import type { SelectTreeFieldProps } from './select-tree-field.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
+import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,
@@ -31,8 +31,6 @@ interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
   /** Closes the popover. */
   onClose: () => void;
 }
-
-const hooks = createHooks('select-field', ['popover', 'dialog', 'search', 'tree']);
 
 /**
  * The dialog in a tree select field's popover: a search that filters the tree, keeping the matches'

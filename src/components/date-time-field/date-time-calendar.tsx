@@ -15,7 +15,6 @@ import {
   Popover,
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
@@ -24,6 +23,7 @@ import type { DateTimeFieldDateState } from './date-time-field.js';
 import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
 import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
+import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
 /** A named value offered beside the calendar, such as `Last 7 days`. */
 export interface DateTimeFieldPreset<V> {
@@ -41,24 +41,6 @@ interface CalendarPopoverProps {
   onPick: (value: DateFieldValue) => void;
   children: ReactNode;
 }
-
-const hooks = createHooks('date-time-field', [
-  'popover',
-  'dialog',
-  'calendar-header',
-  'calendar-heading',
-  'calendar-nav',
-  'calendar-months',
-  'calendar-grid',
-  'calendar-head',
-  'calendar-weekday',
-  'calendar-body',
-  'calendar-cell',
-  'presets',
-  'preset',
-  'actions',
-  'action',
-]);
 
 function DateCell({
   date,

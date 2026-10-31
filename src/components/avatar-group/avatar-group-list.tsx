@@ -2,15 +2,13 @@
 
 import type { ReactNode } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { KeyedValue } from '../../utils/stable-keys.js';
 import { splitAvatarIdentity } from '../avatar/avatar.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import type { AvatarGroupProps, AvatarGroupPerson } from './avatar-group.js';
-
-const hooks = createHooks('avatar-group', ['trigger', 'popover', 'list', 'item']);
+import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
 
 function AvatarGroupList({
   people,

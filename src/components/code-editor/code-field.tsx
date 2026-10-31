@@ -1,7 +1,6 @@
 'use client';
 
 import { useDeferredValue, useMemo } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { CodeSurface, type CodeSurfaceProps } from './code-surface.js';
@@ -16,8 +15,7 @@ import {
 import { createJsonChecker } from './json-check.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
 import { formatJson } from './json-text.js';
-
-const hooks = createHooks('code-editor', ['format']);
+import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 
 /** The field's control props the surface takes: all of them but the validation behaviour. */
 function toSurfaceControlProps(control: FieldControlProps) {
