@@ -230,6 +230,34 @@ function LazyBranches() {
   );
 }
 
+/** A chosen branch takes along a child added after it was chosen. */
+function GrowingBranch() {
+  const [children, setChildren] = useState<Place[]>([{ id: 'alpha', name: 'Alpha' }]);
+  const [value, setValue] = useState<Key[]>(['team', 'alpha']);
+  return (
+    <>
+      <SelectField
+        mode="tree"
+        selectionMode="multiple"
+        label="Team"
+        items={[{ id: 'team', name: 'Whole team', children }]}
+        getTextValue={getTextValue}
+        value={value}
+        onChange={setValue}
+        data-lab-field="growing"
+      />
+      <button
+        type="button"
+        disabled={children.length > 1}
+        onClick={() => setChildren((current) => [...current, { id: 'blue', name: 'Blue' }])}
+      >
+        Add Blue
+      </button>
+      <Output name="growing" value={value.join(', ')} />
+    </>
+  );
+}
+
 export const treeChoices = (
   <div data-lab-family="tree">
     <LabSection
@@ -274,6 +302,12 @@ export const treeChoices = (
       description="Branches load their children when expanded; the chosen key reads as itself until its node loads."
     >
       <LazyBranches />
+    </LabSection>
+    <LabSection
+      title="Tree choices: Growing branch"
+      description="A chosen branch takes along a child added later, so the branch is never claimed whole while a child is left out."
+    >
+      <GrowingBranch />
     </LabSection>
   </div>
 );
