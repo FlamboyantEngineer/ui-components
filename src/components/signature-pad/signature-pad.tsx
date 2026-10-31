@@ -34,6 +34,15 @@ interface SignatureControlsProps {
   name: string | undefined;
 }
 
+/**
+ * Whether a signature holds nothing a signer made: none, typed text that is blank, or a drawing
+ * with no stroke, however the value arrived.
+ */
+function isSignatureEmpty(value: SignatureValue | null): boolean {
+  if (!value) return true;
+  return value.kind === 'typed' ? value.text.trim() === '' : value.paths.length === 0;
+}
+
 function modeOf(value: SignatureValue): SignaturePadMode {
   return value.kind === 'typed' ? 'type' : 'draw';
 }
@@ -114,12 +123,17 @@ function SignatureControls({ control, state, mode, onModeChange, name }: Signatu
  * field base's label, validation, dirty state, restore, undo and menu.
  */
 export function SignaturePad({ allowsTyping = true, ...props }: SignaturePadProps) {
-  const { state, field, rest } = useFieldControl(props, { initialValue: null, emptyValue: null });
+  const { state, field, rest } = useFieldControl(props, {
+    initialValue: null,
+    emptyValue: null,
+    isEmpty: isSignatureEmpty,
+  });
   const valueMode = state.value ? modeOf(state.value) : null;
   const [chosenMode, setChosenMode] = useState<SignaturePadMode>(valueMode ?? 'draw');
   // An empty field keeps the mode of the value it last held, so clearing a typed name keeps its input.
   if (valueMode && valueMode !== chosenMode) setChosenMode(valueMode);
-  const mode = valueMode ?? chosenMode;
+  // Without typing, an empty field draws; a typed value already held still shows, not erased.
+  const mode = valueMode ?? (allowsTyping ? chosenMode : 'draw');
   const changeMode = (next: SignaturePadMode) => {
     setChosenMode(next);
     if (state.value && modeOf(state.value) !== next) {

@@ -260,6 +260,18 @@ describe('SignaturePad', () => {
     expect(root(plain)).toHaveAttribute('data-mode', 'draw');
   });
 
+  it('UIC-SIGNATURE-PAD-3.1 returns an empty field to drawing once typing is turned off', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<SignaturePad label="Signature" />);
+    await user.click(screen.getByRole('radio', { name: 'Type' }));
+    expect(root(container)).toHaveAttribute('data-mode', 'type');
+    rerender(<SignaturePad label="Signature" allowsTyping={false} />);
+    expect(root(container)).toHaveAttribute('data-mode', 'draw');
+    expect(surface()).toBeInTheDocument();
+    rerender(<SignaturePad label="Signature" />);
+    expect(root(container)).toHaveAttribute('data-mode', 'type');
+  });
+
   it('UIC-SIGNATURE-PAD-3.2 UIC-FIELD-1.11 types the name, with blank text as no signature, committing on Enter and on leaving the field', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -318,6 +330,25 @@ describe('SignaturePad', () => {
     act(() => surface().focus());
     await user.keyboard('{Control>}z{/Control}');
     expect(strokes(container)).toEqual(drawing.paths);
+  });
+
+  it.each<[string, SignatureValue]>([
+    ['empty typed text', { kind: 'typed', text: '' }],
+    ['blank typed text', { kind: 'typed', text: '   ' }],
+    ['a drawing with no stroke', { kind: 'drawn', width: 600, height: 200, paths: [] }],
+  ])('UIC-SIGNATURE-PAD-3.3 counts %s given from outside as empty', async (_, value) => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const { container } = render(
+      <Form aria-label="Sign" onSubmit={onSubmit}>
+        <SignaturePad label="Signature" name="signature" defaultValue={value} isRequired />
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    expect(root(container)).not.toHaveAttribute('data-filled');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(root(container)).toHaveAttribute('data-validation', 'invalid');
   });
 
   it('UIC-SIGNATURE-PAD-1.3 submits the value as JSON under its name', async () => {

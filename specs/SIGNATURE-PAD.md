@@ -52,7 +52,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signat
 
 ### UIC-SIGNATURE-PAD-2.2 - Smoothing
 
-A stroke's path data shall start at its first position, run as quadratic curves through the midpoints between the following positions and end with a line to the last one, which smooths the jitter of a hand-drawn line. Positions closer than 1.5 units to the previous kept one are dropped (the last position is always kept), coordinates are rounded to one decimal, and a stroke of one position is a zero-length line, which the round cap draws as a dot.
+A stroke's path data shall start at its first position, run as quadratic curves through the midpoints between the following positions and end with a line to the last one, which smooths the jitter of a hand-drawn line. Positions closer than 1.5 units to the previous kept one are dropped (the last position is always kept, so a short stroke whose points all stay near the first still ends at its last position), coordinates are rounded to one decimal, and a stroke of one position, or one that ends exactly where it started with every point near it, is a zero-length line, which the round cap draws as a dot.
 
 Implementation: `src/components/signature-pad/signature-path.ts`
 Verification: `src/components/signature-pad/signature-path.test.ts`
@@ -75,7 +75,7 @@ Verification: `src/components/signature-pad/signature-path.test.ts`, `e2e/signat
 
 ### UIC-SIGNATURE-PAD-3.1 - Choosing how to sign
 
-With `allowsTyping` (the default), the field shall start with a [Segmented Choice](SEGMENTED-CHOICE.md) (`ui-signature-pad__modes`) named by the provider string `signatureMethod`, between Draw and Type (`signatureDraw`, `signatureType`). The mode shown follows the value: a drawn value shows the draw mode and a typed value the type mode; an empty field shows the mode of the value it last held or the mode last chosen, Draw at first. Choosing the other mode while the field holds a value of the current one empties and commits it. Without `allowsTyping` there is no choice and an empty field shows the draw mode.
+With `allowsTyping` (the default), the field shall start with a [Segmented Choice](SEGMENTED-CHOICE.md) (`ui-signature-pad__modes`) named by the provider string `signatureMethod`, between Draw and Type (`signatureDraw`, `signatureType`). The mode shown follows the value: a drawn value shows the draw mode and a typed value the type mode; an empty field shows the mode of the value it last held or the mode last chosen, Draw at first. Choosing the other mode while the field holds a value of the current one empties and commits it. Without `allowsTyping` there is no choice and an empty field shows the draw mode, also when typing is turned off while an empty field shows the type mode; a typed value the field already holds keeps showing in the type mode until it is cleared, so turning typing off never erases a saved signature.
 
 Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
@@ -89,7 +89,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signat
 
 ### UIC-SIGNATURE-PAD-3.3 - Field behaviour
 
-`SignaturePad` shall show each validation status (a required field is invalid while empty), show dirty state with a restore button, undo and redo with the field's chords from its controls, and offer the field menu, whose Clear empties the signature.
+`SignaturePad` shall show each validation status (a required field is invalid while empty: no value, typed text that is blank or a drawing with no stroke, whether typed, drawn or given as `value`, `defaultValue` or `committedValue`; such a value stays as given, it is never replaced by `null` unasked), show dirty state with a restore button, undo and redo with the field's chords from its controls, and offer the field menu, whose Clear empties the signature.
 
 Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
