@@ -1,6 +1,8 @@
 // Copying text to the system clipboard: the asynchronous Clipboard API first, then a selection copy
 // for pages where that API is missing (insecure origins, older browsers) or refuses.
 
+import { isHTMLElement } from './is-element.js';
+
 /** The parts of `navigator.clipboard` the copy helpers use. */
 export interface ClipboardWriter {
   writeText?(text: string): Promise<void>;
@@ -95,7 +97,7 @@ function copyWithSelection(formats: Record<string, string>): boolean {
       selection.removeAllRanges();
       for (const range of ranges) selection.addRange(range);
     }
-    if (focused instanceof HTMLElement && document.activeElement !== focused) {
+    if (isHTMLElement(focused) && document.activeElement !== focused) {
       focused.focus({ preventScroll: true });
     }
   }

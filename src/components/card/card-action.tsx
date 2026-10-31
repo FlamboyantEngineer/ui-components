@@ -15,6 +15,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 /** What the whole card does when it is pressed: follow `href`, or run `onAction`. */
 export interface CardActionOptions {
@@ -86,7 +87,7 @@ function toLinkRel({ target, rel }: CardActionOptions): string | undefined {
  * `false` (empty, `true`, `plaintext-only`), including the non-editable islands an editor holds.
  */
 function isInEditor(target: Element): boolean {
-  if (target instanceof HTMLElement && target.isContentEditable) return true;
+  if (isHTMLElement(target) && target.isContentEditable) return true;
   return target.closest('[contenteditable]:not([contenteditable="false"])') !== null;
 }
 
@@ -128,7 +129,7 @@ export function useCardAction(options: CardActionOptions): CardAction {
     const element = action.current;
     if (!isActionable || !element || event.defaultPrevented) return;
     // React bubbles clicks out of portals; content portalled out of the card is not the card.
-    if (!(event.target instanceof Element) || !event.currentTarget.contains(event.target)) return;
+    if (!isElement(event.target) || !event.currentTarget.contains(event.target)) return;
     // The innermost actionable card owns a click; the cards around it leave it alone.
     if (claimedClicks.has(event.nativeEvent)) return;
     claimedClicks.add(event.nativeEvent);

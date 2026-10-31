@@ -36,6 +36,7 @@ import {
 import type { TableRow } from './table-rows.js';
 import { useCellPointer } from './use-cell-pointer.js';
 import type { TableCellEdit } from './use-cell-editing.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** A table's spreadsheet mode: cell and range selection, the clipboard and filling. */
 export interface TableSpreadsheetProps<T> {
@@ -117,7 +118,7 @@ function readEventCell<T extends TableRow>(
  */
 function focusRowCell(event: FocusEvent<HTMLElement>, columnId: string | undefined): void {
   const row = event.target;
-  const isRow = row instanceof HTMLElement && row.classList.contains('ui-table__row');
+  const isRow = isHTMLElement(row) && row.classList.contains('ui-table__row');
   if (!isRow || row.closest('.ui-table') !== event.currentTarget) return;
   const cells = [
     ...row.querySelectorAll<HTMLElement>(':scope > .ui-table__cell[data-kind="data"]'),

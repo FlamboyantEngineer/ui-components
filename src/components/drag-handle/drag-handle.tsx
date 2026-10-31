@@ -8,6 +8,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { armElementDrag } from '../../utils/pointer-drag.js';
 import { Icon } from '../icon/icon.js';
+import { isElement } from '../../utils/is-element.js';
 
 export interface DragHandleProps extends BaseProps, AriaLabellingProps {
   /** Refuses dragging, for a row that cannot move. */
@@ -50,15 +51,10 @@ function holdCellFocus(target: Element): void {
  * drag. `armHandleDrag` does this itself.
  */
 export function keepHandleCellDraggable(event: PointerEvent<Element>): void {
-  const row = event.target instanceof Element ? event.target.closest('[role="row"]') : null;
+  const row = isElement(event.target) ? event.target.closest('[role="row"]') : null;
   const handle = row ? findRowHandle(row) : undefined;
   const cell = handle?.closest('[role="gridcell"], [role="rowheader"]');
-  if (
-    event.button === 0 &&
-    cell &&
-    event.target instanceof Element &&
-    cell.contains(event.target)
-  ) {
+  if (event.button === 0 && cell && isElement(event.target) && cell.contains(event.target)) {
     holdCellFocus(cell);
   }
 }
@@ -70,7 +66,7 @@ export function keepHandleCellDraggable(event: PointerEvent<Element>): void {
  * Aria keeps the handle itself out of pointer hit testing, so the press is matched by position.
  */
 export function armHandleDrag(event: PointerEvent<Element>): void {
-  const row = event.target instanceof Element ? event.target.closest('[role="row"]') : null;
+  const row = isElement(event.target) ? event.target.closest('[role="row"]') : null;
   const handle = row ? findRowHandle(row) : undefined;
   if (event.button !== 0 || !row || !handle || !isInside(handle.getBoundingClientRect(), event)) {
     return;

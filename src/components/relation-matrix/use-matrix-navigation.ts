@@ -17,6 +17,7 @@ import {
   type MatrixFocus,
   type MatrixPosition,
 } from './matrix-navigation.js';
+import { isElement } from '../../utils/is-element.js';
 
 interface MatrixNavigationOptions {
   root: RefObject<HTMLDivElement | null>;
@@ -58,7 +59,7 @@ function measurePage(root: HTMLElement, cell: Element | null): number {
 
 /** The position of the grid cell holding `target`, read from its row and column indices. */
 function readPosition(target: EventTarget): MatrixPosition | null {
-  if (!(target instanceof Element)) return null;
+  if (!isElement(target)) return null;
   const cell = target.closest('[aria-colindex]');
   const row = cell?.parentElement?.closest('[role="row"]');
   const rowIndex = Number(row?.getAttribute('aria-rowindex'));

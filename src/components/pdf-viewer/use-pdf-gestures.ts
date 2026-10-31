@@ -12,6 +12,7 @@ import {
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isElement, isNode } from '../../utils/is-element.js';
 
 interface UsePdfGesturesOptions<V extends PdfViewport, C extends PdfTextContent> {
   /** The open document as the reader turned it. */
@@ -43,7 +44,7 @@ const interactiveSelector = [
 
 /** Whether `target` sits in an interactive element inside `page`, which keeps the click. */
 function isInteractive(target: EventTarget | null, page: Element): boolean {
-  if (!(target instanceof Element)) return false;
+  if (!isElement(target)) return false;
   const match = target.closest(interactiveSelector);
   return match !== null && page.contains(match);
 }
@@ -130,10 +131,7 @@ export function usePdfGestures<V extends PdfViewport, C extends PdfTextContent>(
       const scroller = scrollerRef.current;
       if (!onPageClick || !scroller || event.button !== 0 || event.defaultPrevented) return;
       if (readSelectedRange(scroller)) return;
-      const pageIndex = findPageIndex(
-        event.target instanceof Node ? event.target : null,
-        elements.current,
-      );
+      const pageIndex = findPageIndex(isNode(event.target) ? event.target : null, elements.current);
       const page = elements.current.get(pageIndex);
       const viewport = view?.getViewport(pageIndex, scale);
       if (!page || !viewport || isInteractive(event.target, page)) return;

@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import type { HookProps } from '../../core/hooks.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 interface ComboboxListHeaderProps {
   /** The hook attributes of the header slot. */
@@ -25,10 +26,8 @@ const entryControls =
 const pressInputTypes = new Set(['button', 'checkbox', 'image', 'radio', 'reset', 'submit']);
 
 function isEntryControl(target: EventTarget): boolean {
-  const control = target instanceof Element ? target.closest(entryControls) : null;
-  return control instanceof HTMLInputElement
-    ? !pressInputTypes.has(control.type)
-    : control !== null;
+  const control = isElement(target) ? target.closest(entryControls) : null;
+  return isHTMLElement(control, 'input') ? !pressInputTypes.has(control.type) : control !== null;
 }
 
 /**

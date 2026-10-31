@@ -24,6 +24,7 @@ import {
   type Annotation,
   type AnnotationRect,
 } from './anchor-geometry.js';
+import { isElement } from '../../utils/is-element.js';
 
 export { AnnotationMargin } from './annotation-margin.js';
 export type { AnnotationCardState, AnnotationMarginProps } from './annotation-margin.js';
@@ -56,7 +57,7 @@ export interface AnnotationLayerHandle {
 
 /** The layer's own output, which never moves a target: its marks and its margin. */
 function isOwnOutput(node: Node): boolean {
-  const element = node instanceof Element ? node : node.parentElement;
+  const element = isElement(node) ? node : node.parentElement;
   return element?.closest(`.${hooks.slotClass('marks')}, .${hooks.slotClass('margin')}`) != null;
 }
 

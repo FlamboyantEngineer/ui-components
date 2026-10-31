@@ -16,6 +16,7 @@ import {
   type ChatQuestionItem,
   type QuestionDraft,
 } from './chat-question-model.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 interface QuestionChoicesProps {
   /** A question asked with options: `single` or `multiple`. */
@@ -45,7 +46,7 @@ interface ChoiceGroupProps {
 /** The option a focused radio or checkbox input stands for, by its value. */
 function readFocusedValue(target: EventTarget): string | null {
   const isChoice =
-    target instanceof HTMLInputElement && (target.type === 'radio' || target.type === 'checkbox');
+    isHTMLElement(target, 'input') && (target.type === 'radio' || target.type === 'checkbox');
   return isChoice ? target.value : null;
 }
 

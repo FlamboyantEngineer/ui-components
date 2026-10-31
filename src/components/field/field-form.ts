@@ -9,6 +9,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 type FieldSlots = SlotRegistry<'root' | 'control'>;
 
@@ -45,7 +46,7 @@ function isValidatable(element: HTMLElement | null): element is ValidatableEleme
 /** The form the control belongs to (its `form` owner when it has one), else the enclosing form. */
 function findForm(slots: FieldSlots): HTMLFormElement | null {
   const control = slots.read('control');
-  if (control && 'form' in control && control.form instanceof HTMLFormElement) return control.form;
+  if (control && 'form' in control && isHTMLElement(control.form, 'form')) return control.form;
   return slots.read('root')?.closest('form') ?? null;
 }
 

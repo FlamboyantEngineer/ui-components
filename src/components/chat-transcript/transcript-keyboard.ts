@@ -3,6 +3,7 @@ import { listTabbables } from '../../utils/tabbable.js';
 import type { RevealAlignment } from './transcript-geometry.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
 import { findOwner, type TabbablesManager, type TranscriptOwner } from './transcript-tabbables.js';
+import { isNode } from '../../utils/is-element.js';
 
 /** What the keyboard model needs from the transcript. */
 export interface TranscriptNavigation {
@@ -133,7 +134,7 @@ export function handleTranscriptFocus(event: FocusEvent<HTMLElement>, nav: Trans
 /** Focus leaving the feed takes the entered message's controls out of the tab order again. */
 export function handleTranscriptBlur(event: FocusEvent<HTMLElement>, nav: TranscriptNavigation) {
   const next = event.relatedTarget;
-  if (next instanceof Node && event.currentTarget.contains(next)) return;
+  if (isNode(next) && event.currentTarget.contains(next)) return;
   nav.tabbables.enter(null);
   nav.onActiveChange(null);
 }

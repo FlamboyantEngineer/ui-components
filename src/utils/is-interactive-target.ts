@@ -1,3 +1,5 @@
+import { isElement } from './is-element.js';
+
 /** Controls and editable content that handle their own presses and pointer drags. */
 const interactiveSelector = [
   'a[href]',
@@ -27,7 +29,7 @@ const interactiveSelector = [
  * container itself never counts, whatever its role.
  */
 export function isInteractiveTarget(target: EventTarget | null, container: Element): boolean {
-  if (!(target instanceof Element)) return false;
+  if (!isElement(target)) return false;
   const control = target.closest(interactiveSelector);
   return control !== null && control !== container && container.contains(control);
 }

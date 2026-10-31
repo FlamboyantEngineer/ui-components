@@ -9,6 +9,7 @@ import {
   type TranscriptSettings,
 } from './transcript-runtime.js';
 import { syncWithScroll } from './transcript-sync.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** Announces a message that arrived, or that finished streaming. */
 export function announceMessage(
@@ -81,7 +82,7 @@ export function noteOlder(
 function resolveRevealTarget(runtime: TranscriptRuntime, element: HTMLElement) {
   const previous = element.previousElementSibling;
   const isPart =
-    previous instanceof HTMLElement &&
+    isHTMLElement(previous) &&
     runtime.registry.keyOf(previous) === undefined &&
     !runtime.windowModel.isSpacer(previous);
   return isPart ? previous : element;

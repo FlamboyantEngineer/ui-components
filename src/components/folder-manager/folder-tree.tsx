@@ -23,6 +23,7 @@ import {
   type FolderNode,
 } from './folder-model.js';
 import type { FolderManagerModel } from './use-folder-manager.js';
+import { isElement } from '../../utils/is-element.js';
 
 interface FolderTreeProps<T extends FolderItem> {
   model: FolderManagerModel<T>;
@@ -76,7 +77,7 @@ function useTreeSelection(rows: readonly Key[]) {
 
 /** The row node under an event target, matched against the rendered rows by key. */
 function nodeAt<T extends FolderItem>(target: EventTarget, nodes: readonly FolderNode<T>[]) {
-  const row = target instanceof Element ? target.closest('[role="row"]') : null;
+  const row = isElement(target) ? target.closest('[role="row"]') : null;
   const key = row?.getAttribute('data-key');
   if (key === null || key === undefined) return undefined;
   const original = fromCollectionKey(key);

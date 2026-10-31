@@ -18,6 +18,7 @@ import type { RichTextController } from './rich-text-controller.js';
 import { useRichTextController } from './rich-text-controller.js';
 import { useBlockTarget } from './use-block-target.js';
 import { useFocusReturn } from './use-focus-return.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 export type BlockHandleProps = BaseProps;
 
@@ -96,7 +97,7 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
     const dom = view.nodeDOM(pos);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', selection.node.textContent);
-    if (dom instanceof HTMLElement) event.dataTransfer.setDragImage(dom, 0, 0);
+    if (isHTMLElement(dom)) event.dataTransfer.setDragImage(dom, 0, 0);
     const dragging = { slice: selection.content(), move: true, node: selection };
     view.dragging = dragging;
   });

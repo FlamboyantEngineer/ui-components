@@ -16,6 +16,7 @@ import {
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isNode } from '../../utils/is-element.js';
 
 interface UsePdfContextMenuOptions<
   V extends PdfViewport = PdfViewport,
@@ -67,7 +68,7 @@ function listPageEntries<V extends PdfViewport, C extends PdfTextContent>({
   client,
 }: MenuRequest<V, C>): readonly MenuEntry[] {
   const { loaded, scale, elements, getPageMenuItems } = options;
-  const pageIndex = findPageIndex(target instanceof Node ? target : null, elements.current);
+  const pageIndex = findPageIndex(isNode(target) ? target : null, elements.current);
   const page = elements.current.get(pageIndex);
   const viewport = loaded?.getViewport(pageIndex, scale);
   if (!page || !viewport || !getPageMenuItems) return [];

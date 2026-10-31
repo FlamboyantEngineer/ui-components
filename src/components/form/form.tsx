@@ -35,6 +35,7 @@ import {
   type FormBlocker,
   type FormValidityStore,
 } from './form-validity.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** The HTTP method a native submit uses. */
 export type FormMethod = 'get' | 'post' | 'dialog';
@@ -116,7 +117,7 @@ function useInvalidFocus(fields: Set<FieldRegistration>) {
     let isFocusing = false;
     const onInvalid = (event: Event) => {
       for (const field of fields) field.revealValidation();
-      if (isFocusing || !(event.target instanceof HTMLElement)) return;
+      if (isFocusing || !isHTMLElement(event.target)) return;
       isFocusing = true;
       queueMicrotask(() => (isFocusing = false));
       event.target.focus();

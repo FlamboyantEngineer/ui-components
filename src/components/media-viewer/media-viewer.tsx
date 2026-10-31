@@ -17,6 +17,7 @@ import {
   mediaViewerHooks as hooks,
   type MediaViewerItem,
 } from './media-viewer-parts.js';
+import { isNode } from '../../utils/is-element.js';
 
 export type { MediaViewerItem } from './media-viewer-parts.js';
 
@@ -44,7 +45,7 @@ interface MediaView {
 function isPanning(viewport: HTMLElement | null, target: EventTarget): boolean {
   return (
     viewport !== null &&
-    target instanceof Node &&
+    isNode(target) &&
     viewport.contains(target) &&
     viewport.scrollWidth > viewport.clientWidth
   );

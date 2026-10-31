@@ -21,6 +21,7 @@ import { pdfZoomLevels } from './pdf-zoom.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** The document commands of the toolbar's menu. */
 export interface PdfCommands {
@@ -73,7 +74,7 @@ const fitModes: readonly PdfFitMode[] = [
  */
 function keepCaretKeys(event: KeyboardEvent<HTMLElement>) {
   const field = event.target;
-  if (!(field instanceof HTMLInputElement) || field.selectionStart === null) return;
+  if (!isHTMLElement(field, 'input') || field.selectionStart === null) return;
   const { selectionStart, selectionEnd, value } = field;
   const atStart = selectionStart === 0 && selectionEnd === 0;
   const atEnd = selectionStart === value.length && selectionEnd === value.length;

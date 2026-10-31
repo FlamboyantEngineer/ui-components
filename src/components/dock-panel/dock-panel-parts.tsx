@@ -24,6 +24,7 @@ import type {
 import { DockPanelPane, DockPanelPaneContext, type DockPanelPaneProps } from './dock-panel-pane.js';
 import type { DockPanelFocus } from './use-dock-panel-focus.js';
 import type { DockPanelState } from './use-dock-panel-state.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** A pane element with its launcher. */
 export interface PaneEntry {
@@ -169,7 +170,7 @@ function createPaneHost(): PaneHost {
     // the commit has shown it.
     const active = element.ownerDocument.activeElement;
     holder.append(element);
-    if (!(active instanceof HTMLElement) || !element.contains(active)) return;
+    if (!isHTMLElement(active) || !element.contains(active)) return;
     active.focus({ preventScroll: true });
     if (element.ownerDocument.activeElement !== active)
       queueMicrotask(() => active.focus({ preventScroll: true }));

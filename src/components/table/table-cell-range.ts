@@ -2,6 +2,7 @@ import type { Key } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 import { clamp } from '../../utils/clamp.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 /** `cell` selects one cell at a time; `range` also selects rectangles of cells; `none` neither. */
 export type TableCellSelectionMode = 'none' | 'cell' | 'range';
@@ -170,9 +171,8 @@ export function isSameCellRange(
 
 /** The data cell of the table whose root is `root` that holds `target`, if any. */
 export function findDataCell(target: EventTarget | null, root: HTMLElement): HTMLElement | null {
-  const cell =
-    target instanceof Element ? target.closest('.ui-table__cell[data-kind="data"]') : null;
-  if (!(cell instanceof HTMLElement)) return null;
+  const cell = isElement(target) ? target.closest('.ui-table__cell[data-kind="data"]') : null;
+  if (!isHTMLElement(cell)) return null;
   return cell.closest('.ui-table__body')?.closest('.ui-table') === root ? cell : null;
 }
 

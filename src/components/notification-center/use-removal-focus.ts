@@ -2,6 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, type FocusEvent, type RefObject } from 'react';
 import { notificationListHooks as hooks } from './notification-row.js';
+import { isNode } from '../../utils/is-element.js';
 
 /** The row holding focus: which of its controls, and the rows that can take focus if it leaves. */
 interface FocusedRow {
@@ -75,7 +76,7 @@ export function useRemovalFocus(rootRef: RefObject<HTMLElement | null>) {
   const onBlur = useCallback(
     (event: FocusEvent<HTMLElement>) => {
       const next = event.relatedTarget;
-      if (next instanceof Node && !rootRef.current?.contains(next)) focused.current = null;
+      if (isNode(next) && !rootRef.current?.contains(next)) focused.current = null;
     },
     [rootRef],
   );

@@ -25,6 +25,7 @@ import {
   type ConditionNode,
   type ConditionRule,
 } from './condition-tree.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 export interface ConditionBuilderProps extends BaseProps, AriaLabellingProps {
   /** The fields rules can test, as for a `FilterBar`. */
@@ -52,7 +53,7 @@ const emptyTree: ConditionGroup = { type: 'group', id: 'root', combinator: 'and'
 function findFocusTarget({ elementId, selector }: FocusRequest): HTMLElement | null {
   const element = document.getElementById(elementId);
   const target = selector ? element?.querySelector(selector) : element;
-  return target instanceof HTMLElement ? target : null;
+  return isHTMLElement(target) ? target : null;
 }
 
 /** Moves focus to the requested element after the render that drew it. */

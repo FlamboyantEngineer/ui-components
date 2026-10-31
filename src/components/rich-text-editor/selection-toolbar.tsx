@@ -20,6 +20,7 @@ import { useRichTextEditorContext } from './rich-text-context.js';
 import { useRichTextController } from './rich-text-controller.js';
 import { useFocusReturn } from './use-focus-return.js';
 import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
+import { isElement } from '../../utils/is-element.js';
 
 export interface SelectionToolbarProps extends BaseProps, AriaLabellingProps {
   /** Controls after the marks and the link button. */
@@ -35,7 +36,7 @@ const hooks = createHooks('selection-toolbar', ['row', 'link-editor']);
 
 /** Whether focus moved to the toolbar or the link editor it opened, which keep it open. */
 function isInsideToolbar(target: EventTarget | null, toolbar: HTMLElement | null): boolean {
-  if (!(target instanceof Element)) return false;
+  if (!isElement(target)) return false;
   return Boolean(toolbar?.contains(target) || target.closest(`.${hooks.slotClass('link-editor')}`));
 }
 

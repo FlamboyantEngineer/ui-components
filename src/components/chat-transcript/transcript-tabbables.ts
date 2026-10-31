@@ -1,5 +1,6 @@
 import { tabbableSelector } from '../../utils/tabbable.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 /** A message's element and key. */
 export interface TranscriptOwner {
@@ -25,7 +26,7 @@ export function findOwner(
 ): TranscriptOwner | null {
   for (let current = node; current && current !== feed; current = current.parentElement) {
     const key = registry.keyOf(current);
-    if (key !== undefined && current instanceof HTMLElement) return { key, element: current };
+    if (key !== undefined && isHTMLElement(current)) return { key, element: current };
   }
   return null;
 }
@@ -65,7 +66,7 @@ export function createTabbablesManager(registry: TranscriptRegistry): TabbablesM
   const onMutation = (feed: Element, record: MutationRecord) => {
     const nodes = record.type === 'attributes' ? [record.target] : [...record.addedNodes];
     for (const node of nodes) {
-      if (!(node instanceof Element)) continue;
+      if (!isElement(node)) continue;
       const owner = findOwner(node, feed, registry);
       if (!owner || owner.key === entered) continue;
       if (node !== owner.element && node.matches(tabbableSelector)) disableOne(node);

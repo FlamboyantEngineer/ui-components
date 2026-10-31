@@ -17,6 +17,7 @@ import {
 import { planFill, resolveFillTarget, type CellWrite } from './table-cell-writes.js';
 import type { TableRow } from './table-rows.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isElement } from '../../utils/is-element.js';
 
 interface CellPointerOptions<T> {
   mode: TableCellSelectionMode;
@@ -123,7 +124,7 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
       mode === 'none' ||
       event.button !== 0 ||
       event.isPrimary === false ||
-      !(event.target instanceof Element)
+      !isElement(event.target)
     )
       return;
     if (event.target.closest('.ui-table__fill-handle')) {

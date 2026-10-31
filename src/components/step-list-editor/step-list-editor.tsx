@@ -28,6 +28,7 @@ import {
   type StepListEditorColumn,
 } from './step-row.js';
 import { useStepDrag } from './use-step-drag.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 export interface StepListEditorProps extends BaseProps, AriaLabellingProps {
   /** The text columns of every step, in order, such as an action and its expected result. */
@@ -101,7 +102,7 @@ function useStepActions(options: {
   const step = (id: string, delta: -1 | 1) => {
     const active = document.activeElement;
     move(resolveStepMove(steps, id, delta), () =>
-      requestFocus(() => (active instanceof HTMLElement && active.isConnected ? active : null)),
+      requestFocus(() => (isHTMLElement(active) && active.isConnected ? active : null)),
     );
   };
   return { run, step, insertAt, move: (stepMove: StepMove) => move(stepMove, () => {}) };
