@@ -15,6 +15,9 @@ import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/referen
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const STYLING_DEPENDENCY =
   /^(@heroui\/|tailwind|styled-components$|@emotion\/|@stitches\/|@vanilla-extract\/|goober$|@linaria\/|styled-jsx$|jss$|react-jss$)/;
+// Import attributes (`with { type: 'json' }`) need recent toolchains, so the build emits none.
+const IMPORT_ATTRIBUTES =
+  /\b(?:from\s*['"][^'"]+['"]|import\s*\(\s*['"][^'"]+['"]\s*,)\s*with\s*\{/;
 const CSS_IMPORT = /(?:from\s*|import\s*\(?\s*)['"][^'"]+\.(?:css|scss|sass|less)['"]/;
 
 for (const built of ['dist/index.js', REFERENCE_STYLESHEET]) {
@@ -73,6 +76,7 @@ try {
     if (file.endsWith('.js') && file.startsWith('dist/')) {
       const text = readFileSync(join(root, file), 'utf8');
       if (CSS_IMPORT.test(text)) problems.push(`${file} imports a stylesheet`);
+      if (IMPORT_ATTRIBUTES.test(text)) problems.push(`${file} uses import attributes`);
     }
   }
 

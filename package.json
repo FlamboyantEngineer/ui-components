@@ -53,10 +53,11 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
+    "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json && node scripts/copy-locales.mjs",
     "build:package": "npm run build && node scripts/build-labs.mjs --reference",
     "prepare": "node scripts/prepare.mjs",
     "build:labs": "node scripts/build-labs.mjs",
+    "generate:locales": "node scripts/generate-locales.mjs",
     "labs": "node scripts/start-labs.mjs",
     "lint": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js . --max-warnings=0",
     "format": "prettier --write --cache --cache-strategy content .",

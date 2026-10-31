@@ -1,5 +1,9 @@
 import { IntlMessageFormat } from 'intl-messageformat';
 import { describe, expect, it } from 'vitest';
+import enJson from './en.json' with { type: 'json' };
+import esJson from './es.json' with { type: 'json' };
+import frJson from './fr.json' with { type: 'json' };
+import jaJson from './ja.json' with { type: 'json' };
 import * as locales from './index.js';
 
 type Element = ReturnType<IntlMessageFormat['getAst']>[number];
@@ -22,6 +26,10 @@ function readArguments(message: string, locale: string): string[] {
 
 describe('shipped language files', () => {
   const english = Object.entries(locales.en);
+
+  it('UIC-PROVIDER-3.5 ships modules that match their JSON files', () => {
+    expect({ ...locales }).toEqual({ en: enJson, es: esJson, fr: frJson, ja: jaJson });
+  });
 
   it.each(Object.entries(locales))(
     'UIC-PROVIDER-3.5 %s has every English key, with messages that read the English arguments',
