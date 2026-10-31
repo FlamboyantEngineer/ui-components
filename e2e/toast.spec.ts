@@ -118,6 +118,22 @@ test.describe('Toast lab', () => {
     await expect(timed).toHaveCount(0, { timeout: 3200 });
   });
 
+  test('UIC-TOAST-4.1 closes a toast whose action leaves the page that shows it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    const demo = page.locator('[data-lab-demo="leaving-page"]');
+    await demo.locator('[data-lab-push="leaving"]').click();
+    await demo.getByRole('button', { name: 'Open trash' }).click();
+    await expect(demo.getByText('Trash opened.')).toBeVisible();
+    await expect(demo.locator('[data-lab-output="closed"]')).toHaveText('Toasts closed: 1');
+    await demo.locator('[data-lab-push="leaving"]').click();
+    await expect(demo.getByRole('alertdialog', { name: 'Row deleted' })).toHaveCount(1);
+    await demo.getByRole('button', { name: 'Open trash' }).click();
+    await expect(demo.locator('[data-lab-output="closed"]')).toHaveText('Toasts closed: 2');
+  });
+
   test('UIC-TOAST-1.5 UIC-TOAST-3.6 updates a pending toast in place', async ({ page, lab }) => {
     await lab.open('toast');
     await page.locator('[data-lab-push="pending"]').click();

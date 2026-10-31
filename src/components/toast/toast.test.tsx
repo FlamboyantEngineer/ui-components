@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useState, type ReactNode } from 'react';
 import { HelpGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { hydrateRoot } from 'react-dom/client';
@@ -784,6 +784,106 @@ describe('Toast updates and motion', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     render(<ToastList queue={queue} />);
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('UIC-TOAST-4.1 removes a closing toast whose list unmounts in the same event, also in Strict Mode', () => {
+    for (const wrap of [
+      (list: ReactNode) => list,
+      (list: ReactNode) => <StrictMode>{list}</StrictMode>,
+    ]) {
+      const onClose = vi.fn();
+      const queue = createToastQueue({ defaultTimeout: 0 });
+      const key = queue.add({ title: 'Leaving page' }, { onClose });
+      const view = render(wrap(<ToastList queue={queue} />));
+      expect(titles()).toEqual(['Leaving page']);
+      act(() => {
+        queue.close(key);
+        view.unmount();
+      });
+      expect(onClose).toHaveBeenCalledTimes(1);
+      const { unmount } = render(<ToastList queue={queue} />);
+      expect(titles()).toEqual([]);
+      unmount();
+    }
+  });
+
+  it('UIC-TOAST-4.1 removes a toast once when its region unmounts during its exit', async () => {
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    const view = render(<ToastRegion queue={queue} />);
+    let key = '';
+    act(() => {
+      key = queue.add({ title: 'Saved' }, { onClose });
+    });
+    const exit = holdAnimations();
+    exit.start();
+    act(() => queue.close(key));
+    expect(screen.getByRole('alertdialog', { name: 'Saved' })).toHaveAttribute(
+      'data-exiting',
+      'true',
+    );
+    expect(onClose).not.toHaveBeenCalled();
+    view.unmount();
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await exit.finish();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TOAST-4.1 removes a toast whose action leaves the page that shows it', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    function Page() {
+      const [page, setPage] = useState('list');
+      useEffect(() => {
+        queue.add(
+          {
+            title: 'Row deleted',
+            action: { label: 'Open trash', onAction: () => setPage('trash') },
+          },
+          { onClose },
+        );
+      }, []);
+      return page === 'list' ? <ToastRegion queue={queue} /> : <h1>Trash</h1>;
+    }
+    render(<Page />);
+    await user.click(await screen.findByRole('button', { name: 'Open trash' }));
+    expect(screen.getByRole('heading', { name: 'Trash' })).toBeInTheDocument();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TOAST-4.1 keeps an open toast queued while no list renders it', () => {
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    queue.add({ title: 'Still here' }, { onClose });
+    render(<ToastList queue={queue} />).unmount();
+    render(<ToastList queue={queue} />);
+    expect(titles()).toEqual(['Still here']);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('UIC-TOAST-1.3 UIC-TOAST-4.1 calls no onClose for a replaced or cleared toast whose list unmounts', () => {
+    const exit = holdAnimations();
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    queue.add({ title: 'Syncing 1 of 2' }, { id: 'sync', onClose });
+    const cleared = queue.add({ title: 'Draft saved' }, { onClose });
+    const view = render(<ToastList queue={queue} />);
+    exit.start();
+    act(() => {
+      queue.add({ title: 'Syncing 2 of 2' }, { id: 'sync' });
+    });
+    act(() => {
+      queue.close(cleared);
+      queue.clear();
+    });
+    view.unmount();
+    expect(onClose).not.toHaveBeenCalled();
+    act(() => {
+      queue.add({ title: 'Next' });
+    });
+    render(<ToastList queue={queue} />);
+    expect(titles()).toEqual(['Next']);
   });
 
   it('UIC-TOAST-4.2 swipes a toast away past the threshold and returns it otherwise', async () => {

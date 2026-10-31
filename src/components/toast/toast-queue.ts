@@ -110,7 +110,10 @@ export interface ToastSnapshot {
 export interface ToastLifecycle {
   subscribe: (listener: () => void) => () => void;
   getSnapshot: () => ToastSnapshot;
-  /** Counts the toast as rendered, so closing it waits for its exit; returns the release. */
+  /**
+   * Counts the toast as rendered, so closing it waits for its exit; returns the release, which
+   * removes a closing toast once its last renderer releases it.
+   */
   mount: () => () => void;
   /** Removes the toast from the queue once its exit has ended. */
   finishExit: () => void;
@@ -182,6 +185,9 @@ function createLifecycle(record: ToastRecord, remove: () => void): ToastLifecycl
       record.mounted += 1;
       return () => {
         record.mounted -= 1;
+        // The last renderer of a closing toast is gone, so no exit can end: remove it now. An open
+        // toast stays queued for the next renderer.
+        if (record.mounted === 0 && !record.snapshot.isOpen) remove();
       };
     },
     finishExit: remove,
@@ -302,10 +308,11 @@ export function createQueueOverStore(
     });
     const record = createRecord(content, lifetime);
     records.set(key, record);
-    lifecycles.set(
-      queued,
-      createLifecycle(record, () => removeNow(key)),
-    );
+    // A toast is removed once, by its exit or by its last renderer leaving, unless already gone.
+    const remove = () => {
+      if (records.get(key) === record) removeNow(key);
+    };
+    lifecycles.set(queued, createLifecycle(record, remove));
     if (id !== undefined) keysById.set(id, key);
     return key;
   }
