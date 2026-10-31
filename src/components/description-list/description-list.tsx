@@ -1,5 +1,6 @@
 'use client';
 
+import { useUiStrings } from '../../core/provider.js';
 import type { ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -86,9 +87,10 @@ export function DescriptionRow({
   ...rest
 }: DescriptionRowProps) {
   const { locale } = useLocale();
+  const strings = useUiStrings();
   const shown =
     children === undefined && value !== undefined
-      ? formatDescriptionValue(value, { locale, formatOptions })
+      ? formatDescriptionValue(value, { locale, formatOptions, joinRange: strings.valueRange })
       : children;
   return (
     <div {...rest} {...hooks.slot('row', { span }, className)}>

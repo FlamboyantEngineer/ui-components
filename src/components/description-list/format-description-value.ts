@@ -2,6 +2,7 @@
 
 import { readTimeInstant } from '../../utils/read-time-instant.js';
 import { getDateTimeFormat, getListFormat, getNumberFormat } from '../../utils/intl-format.js';
+import { getDefaultStrings } from '../../core/strings.js';
 
 /** Both ends of a range of numbers or dates. */
 export interface DescriptionRange<T extends number | string> {
@@ -30,6 +31,11 @@ export interface DescriptionFormatInput {
   /** A BCP 47 locale, such as `fr-FR`. */
   locale: string;
   formatOptions?: DescriptionFormatOptions | undefined;
+  /**
+   * Joins the ends of a date range no localized range format reads, such as unreadable text.
+   * Defaults to the default language's `valueRange` message.
+   */
+  joinRange?: ((start: string, end: string) => string) | undefined;
 }
 
 const defaultDateOptions: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
@@ -46,7 +52,10 @@ function isRange(
  * Dates with `Intl.DateTimeFormat`. An ISO 8601 text is read in the formatter's time zone, so a
  * calendar date stays that date; a text that is not a date shows as written.
  */
-function formatDate(value: DateValue, { locale, formatOptions }: DescriptionFormatInput) {
+function formatDate(
+  value: DateValue,
+  { locale, formatOptions, joinRange }: DescriptionFormatInput,
+) {
   const format = getDateTimeFormat(
     locale,
     (formatOptions as Intl.DateTimeFormatOptions | undefined) ?? defaultDateOptions,
@@ -59,7 +68,7 @@ function formatDate(value: DateValue, { locale, formatOptions }: DescriptionForm
   }
   const [start, end] = [read(value.start), read(value.end)];
   if (Number.isNaN(start) || Number.isNaN(end)) {
-    return `${value.start} – ${value.end}`;
+    return (joinRange ?? getDefaultStrings().valueRange)(value.start, value.end);
   }
   return format.formatRange(start, end);
 }

@@ -36,7 +36,7 @@ Verification: `src/components/mapping-table/mapping-table.test.tsx`
 
 ### UIC-MAPPING-TABLE-2.1 - Summary
 
-After the table, a polite status (`ui-mapping-table__summary`) shall count the mapped columns with the provider string `mappedColumns` and, when some are not imported, the skipped ones with `skippedColumns`, joined in one line (`ui-mapping-table__counts`).
+After the table, a polite status (`ui-mapping-table__summary`) shall count the mapped columns with the provider string `mappedColumns` and, when some are not imported, the skipped ones with `skippedColumns`, joined in one line by the `countsSummary` string (`ui-mapping-table__counts`, `3 of 5 columns mapped · 1 not imported`).
 
 Implementation: `src/components/mapping-table/mapping-table.tsx`, `src/components/mapping-table/mapping.ts`
 Verification: `src/components/mapping-table/mapping-table.test.tsx`, `e2e/mapping-table.spec.ts`

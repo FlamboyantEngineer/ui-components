@@ -127,6 +127,7 @@ export function FieldLabel({
   layout: FieldLabelLayout;
   isRequired: boolean;
 }) {
+  const strings = useUiStrings();
   return (
     <label {...fieldHooks.slot('label')} id={ids.label} htmlFor={ids.control}>
       <TextMatch>{label}</TextMatch>
@@ -137,7 +138,7 @@ export function FieldLabel({
       ) : null}
       {layout === 'label-colon-control' ? (
         <span {...fieldHooks.slot('colon')} aria-hidden="true">
-          :
+          {strings.labelColon}
         </span>
       ) : null}
     </label>

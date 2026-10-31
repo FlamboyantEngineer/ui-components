@@ -54,14 +54,14 @@ describe('EmptyState', () => {
     expect(error).toEqual(empty);
   });
 
-  it('UIC-EMPTY-STATE-1.4 announces loading politely with a decorative spinner and typographic ellipsis', () => {
+  it('UIC-EMPTY-STATE-1.4 announces loading politely with a decorative spinner and the description unchanged', () => {
     const { container } = render(<EmptyState variant="loading" description="Loading records..." />);
     const root = screen.getByRole('status');
     expect(root).toBe(container.firstElementChild);
     expect(root).toHaveAttribute('aria-live', 'polite');
     expect(root).toHaveAttribute('aria-atomic', 'true');
     expect(root).not.toHaveAttribute('aria-busy');
-    expect(root).toHaveTextContent('Loading records…');
+    expect(root).toHaveTextContent('Loading records...');
     const spinner = root.querySelector('.ui-empty-state__spinner');
     expect(spinner).toHaveAttribute('aria-hidden', 'true');
     expect(spinner).toBe(root.firstElementChild);

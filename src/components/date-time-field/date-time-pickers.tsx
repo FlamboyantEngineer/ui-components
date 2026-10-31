@@ -1,5 +1,6 @@
 'use client';
 
+import { useUiStrings } from '../../core/provider.js';
 import { CalendarGlyph } from '../../core/glyphs.js';
 import {
   formatIsoDate,
@@ -234,6 +235,7 @@ export function DateControl(props: DatePickerControlProps) {
 
 /** A range of dates, or of dates and times, typed in two segment groups or picked from a calendar. */
 export function DateRangeControl(props: DatePickerControlProps) {
+  const strings = useUiStrings();
   const { state, mode, settings, onPick } = props;
   const single = mode === 'date-range' ? 'date' : 'date-time';
   const range = typeof state.value === 'object' ? state.value : null;
@@ -262,7 +264,7 @@ export function DateRangeControl(props: DatePickerControlProps) {
       <DateGroup {...props}>
         <Segments slot="start" />
         <span {...hooks.slot('separator')} aria-hidden="true">
-          –
+          {strings.rangeSeparator}
         </span>
         <Segments slot="end" />
         <CalendarButton />

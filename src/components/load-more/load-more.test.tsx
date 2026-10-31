@@ -112,7 +112,9 @@ describe('LoadMore', () => {
       expect(screen.getByRole('button', { name: text })).toBeInTheDocument();
     }
     rerender(
-      <UiProvider messages={{ loadMore: 'Charger plus', remainingCount: '{count} restants' }}>
+      <UiProvider
+        messages={{ loadMore: 'Charger plus', loadMoreWithRemaining: '{label} ({count} restants)' }}
+      >
         <LoadMore remainingCount={4} />
         <LoadMore label="Show older messages" />
       </UiProvider>,

@@ -147,11 +147,14 @@ function MappingSummaryView({
   targets: readonly MappingTableTarget[];
 }) {
   const strings = useUiStrings();
-  const counts = [strings.mappedColumns(summary.mappedCount, total)];
-  if (summary.skippedCount > 0) counts.push(strings.skippedColumns(summary.skippedCount));
+  const mapped = strings.mappedColumns(summary.mappedCount, total);
+  const counts =
+    summary.skippedCount > 0
+      ? strings.countsSummary(mapped, strings.skippedColumns(summary.skippedCount))
+      : mapped;
   return (
     <div {...hooks.slot('summary')} role="status">
-      <p {...hooks.slot('counts')}>{counts.join(' · ')}</p>
+      <p {...hooks.slot('counts')}>{counts}</p>
       {summary.isComplete ? null : (
         <p {...hooks.slot('problem')}>
           {strings.unmappedRequiredTargets(

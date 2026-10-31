@@ -1,6 +1,7 @@
 // A date-time field's value model: ISO 8601 texts by mode, the field's bounds, unavailable dates and
 // the localized text it shows for a value.
 
+import { getDefaultStrings } from '../../core/strings.js';
 import {
   formatIsoDate,
   fromDate,
@@ -210,6 +211,11 @@ interface FormatDateOptions extends DateValueOptions {
   locale: string;
   /** Writes times on a 12- or 24-hour clock instead of the locale's. */
   hourCycle?: 12 | 24 | undefined;
+  /**
+   * Joins the ends of a range no localized range format reads, such as unreadable text. Defaults
+   * to the default language's `valueRange` message.
+   */
+  joinRange?: ((start: string, end: string) => string) | undefined;
 }
 
 function formatOptions(
@@ -238,7 +244,9 @@ export function formatDateValue(
   if (typeof value !== 'string') {
     const start = toDate(value.start, single, options);
     const end = toDate(value.end, single, options);
-    if (!start || !end) return `${value.start} – ${value.end}`;
+    if (!start || !end) {
+      return (options.joinRange ?? getDefaultStrings().valueRange)(value.start, value.end);
+    }
     return normalizeIntlSpaces(formatter.formatRange(start, end));
   }
   const date = toDate(value, single, options);

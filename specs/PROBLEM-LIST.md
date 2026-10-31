@@ -13,7 +13,7 @@ Verification: `src/components/problem-list/problem-list.test.tsx`, `e2e/problem-
 
 ### UIC-PROBLEM-LIST-1.2 - One problem
 
-Each problem shall show the glyph of its severity (`ui-problem-list__icon`, `error` or `warning`, decorative), its severity in words for assistive technology (provider string `problemSeverity`), its `label` when it has one (`ui-problem-list__label`) and its `message` (`ui-problem-list__message`), separated by a space in the text so they read as words without a stylesheet. Nothing but phrasing content goes inside the jump button. A problem without a severity is an `error`.
+Each problem shall show the glyph of its severity (`ui-problem-list__icon`, `error` or `warning`, decorative), its severity in words for assistive technology with the punctuation that leads into the message (provider string `problemSeverityLead`, `Error:`), its `label` when it has one (`ui-problem-list__label`) and its `message` (`ui-problem-list__message`), separated by a space in the text so they read as words without a stylesheet. Nothing but phrasing content goes inside the jump button. A problem without a severity is an `error`.
 
 Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
 

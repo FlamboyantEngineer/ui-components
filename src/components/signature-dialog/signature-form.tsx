@@ -74,11 +74,7 @@ function MeaningChoice({
   const strings = useUiStrings();
   const [only] = meanings;
   if (only && meanings.length === 1) {
-    return (
-      <p {...hooks.slot('meaning')}>
-        {strings.signatureMeaning}: {only.label}
-      </p>
-    );
+    return <p {...hooks.slot('meaning')}>{strings.signatureMeaningIs(only.label)}</p>;
   }
   return (
     <ChoiceGroup label={strings.signatureMeaning} isRequired value={value} onChange={onChange}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
+import { useUiStrings } from '../../core/provider.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { resolveAvatarColor } from '../avatar/avatar.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -42,6 +43,7 @@ function AvatarGroupOverflow({
   presence: AvatarGroupWindow;
   label?: string | undefined;
 }) {
+  const strings = useUiStrings();
   if (count === 0) return null;
   if (label && overflow === 'menu' && hidden.length > 0) {
     return (
@@ -56,7 +58,7 @@ function AvatarGroupOverflow({
   }
   return (
     <span {...hooks.slot('overflow')} {...(label ? { role: 'img', 'aria-label': label } : {})}>
-      {`+${count}`}
+      {strings.overflowCount(count)}
     </span>
   );
 }

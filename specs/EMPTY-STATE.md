@@ -27,7 +27,7 @@ Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-stat
 
 ### UIC-EMPTY-STATE-1.4 - Loading
 
-A `loading` empty state shall draw a decorative `ui-empty-state__spinner` slot (hidden from assistive technology) before its text, and its root shall be a polite, atomic status region (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) that is never marked busy, which would defer its announcement. The reference sheet spins the spinner unless the reader prefers reduced motion, when it stands still as an open ring. Three-dot ellipses in a text description render as `…`.
+A `loading` empty state shall draw a decorative `ui-empty-state__spinner` slot (hidden from assistive technology) before its text, and its root shall be a polite, atomic status region (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) that is never marked busy, which would defer its announcement. The reference sheet spins the spinner unless the reader prefers reduced motion, when it stands still as an open ring. The description renders as given, unchanged.
 
 Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference/empty-state.css`
 Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-state.spec.ts`

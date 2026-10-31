@@ -98,6 +98,9 @@ describe('AvatarGroup', () => {
     expect(personNames(container)).toHaveLength(0);
     expect(container.querySelector('.ui-avatar-group__overflow')).toHaveTextContent('+6');
 
+    rerender(<AvatarGroup layout="strip" people={people} maxVisible={4} overflowCount={1234} />);
+    expect(container.querySelector('.ui-avatar-group__overflow')).toHaveTextContent('+1,236');
+
     rerender(<AvatarGroup layout="strip" people={[]} overflowCount={2} />);
     expect(container.querySelector('.ui-avatar-group__overflow')).toHaveTextContent('+2');
 

@@ -33,7 +33,7 @@ export function AvatarGroupOverflowMenu({
   return (
     <MenuTrigger>
       <AriaButton {...hooks.slot('overflow')} aria-label={label}>
-        {`+${count}`}
+        {strings.overflowCount(count)}
       </AriaButton>
       <MenuPopover placement="bottom start">
         <Menu

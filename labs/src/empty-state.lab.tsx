@@ -10,7 +10,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 const variants: EmptyStateVariant[] = ['empty', 'loading', 'error'];
 const copy: Record<EmptyStateVariant, { title: string; description: string }> = {
   empty: { title: 'No cities yet', description: 'Add a city to see it here.' },
-  loading: { title: 'Loading cities', description: 'Fetching the latest list...' },
+  loading: { title: 'Loading cities', description: 'Fetching the latest list…' },
   error: { title: 'Unable to load cities', description: 'Check your connection and try again.' },
 };
 
@@ -45,7 +45,7 @@ function ReloadDemo() {
           headingLevel={2}
           variant={phase === 'loading' ? 'loading' : 'empty'}
           title={phase === 'loading' ? undefined : 'No cities'}
-          description={phase === 'loading' ? 'Loading cities...' : 'Press Reload to fetch them.'}
+          description={phase === 'loading' ? 'Loading cities…' : 'Press Reload to fetch them.'}
         />
       )}
     </div>
