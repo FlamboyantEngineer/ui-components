@@ -8,6 +8,7 @@ import {
 import { useState } from 'react';
 import { Badge, type BadgeTone } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const tones: BadgeTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
@@ -171,6 +172,19 @@ mountLab(
       description="Counts pinned to the upper trailing corner of a positioned host, without resizing it."
     >
       <OverlayDemo />
+    </LabSection>
+    <LabSection
+      title="Locale digits"
+      description="Counts take the provider locale's digits and grouping."
+    >
+      <StateMatrix
+        axes={{ locale: ['en-US', 'fr-FR', 'ar-EG'] }}
+        render={({ locale }) => (
+          <UiProvider locale={locale}>
+            <Badge count={12345} /> <Badge count={120} max={99} tone="danger" />
+          </UiProvider>
+        )}
+      />
     </LabSection>
     <LabSection
       title="Hidden zero and dot markers"

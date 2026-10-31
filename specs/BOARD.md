@@ -15,14 +15,14 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-1.2 - Counts and limits
 
-Each column header shall show its card count across lanes in a `ui-board__column-count` slot: the count alone, or `count/limit` for a column with a `limit`, read by assistive technology as the provider's `cardCount` string (`3 cards`, `3 cards, limit 5`, `6 cards, over the limit of 5`). A column holding more cards than its limit publishes `data-over-limit` on its header and on each of its cells.
+Each column header shall show its card count across lanes in a `ui-board__column-count` slot: the count alone in the provider locale's digits ([COUNT.md](COUNT.md)), or the provider's `cardCountOfLimit` string (`3/5`) for a column with a `limit`, read by assistive technology as the provider's `cardCount` string (`3 cards`, `3 cards, limit 5`, `6 cards, over the limit of 5`). A column holding more cards than its limit publishes `data-over-limit` on its header and on each of its cells.
 
 Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/use-board-model.ts`, `src/core/strings/planning.ts`, `labs/reference/board.css`
 Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-1.3 - Lanes
 
-With `lanes`, the board shall render one group per lane (`ui-board__lane`), named by its header (`ui-board__lane-header`): a collapse toggle, the lane's `title` in a `ui-board__lane-title` slot and its card count across columns in a `ui-board__lane-count` slot, read as the provider's `cardCount` string. The lane's cells follow its header, one per column, each grid list named by its column's title and the lane's title. `getLane` places each card in a lane; cards whose lane is not on the board are left out.
+With `lanes`, the board shall render one group per lane (`ui-board__lane`), named by its header (`ui-board__lane-header`): a collapse toggle, the lane's `title` in a `ui-board__lane-title` slot and its card count across columns, in the provider locale's digits, in a `ui-board__lane-count` slot, read as the provider's `cardCount` string. The lane's cells follow its header, one per column, each grid list named by its column's title and the lane's title. `getLane` places each card in a lane; cards whose lane is not on the board are left out.
 
 Implementation: `src/components/board/board-lane.tsx`, `src/components/board/board-moves.ts`
 Verification: `src/components/board/board.test.tsx`, `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`

@@ -3,6 +3,8 @@
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLocale } from '../../primitives/index.js';
+import { formatCount } from '../../utils/count.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { hasIcon, Icon, toIconProps } from '../icon/icon.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -63,6 +65,7 @@ export function BoardLaneGroup<T extends { id: Key }>({
   options,
 }: BoardLaneGroupProps<T>) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   const titleId = model.laneTitleId(index);
   const isCollapsed = model.collapsedLanes.keys.has(lane.id);
   const count = model.countLane(lane.id);
@@ -82,7 +85,7 @@ export function BoardLaneGroup<T extends { id: Key }>({
           {lane.title}
         </span>
         <span {...hooks.slot('lane-count')}>
-          <span aria-hidden="true">{count}</span>
+          <span aria-hidden="true">{formatCount(count, locale)}</span>
           <VisuallyHidden elementType="span">{strings.cardCount(count)}</VisuallyHidden>
         </span>
       </div>

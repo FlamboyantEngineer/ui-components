@@ -73,7 +73,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-3.1 - Count display
 
-A badge given `count` shall show `formatCount(count, { max, more })` ([COUNT.md](COUNT.md)) in its label slot and accept no children; its type refuses children, a variant and a string count. It uses the same tones and sizes as label badges.
+A badge given `count` shall show `formatCount(count, locale, { max, more })` in the provider locale ([COUNT.md](COUNT.md)) in its label slot and accept no children; its type refuses children, a variant and a string count. It uses the same tones and sizes as label badges.
 
 Implementation: `src/components/badge/badge.tsx`, `src/utils/count.ts`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`

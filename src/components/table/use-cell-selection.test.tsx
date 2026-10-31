@@ -249,7 +249,13 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     ['spreadsheet mode ends', { cellSelection: 'none' }],
     [
       'a row is inserted',
-      { rows: [items[0], { ...items[1], id: 'x', name: 'Kiwi' }, ...items.slice(1)] },
+      {
+        rows: [
+          ...items.slice(0, 1),
+          { id: 'x', name: 'Kiwi', count: 2, note: 'tan' },
+          ...items.slice(1),
+        ],
+      },
     ],
     [
       'the source range is replaced',

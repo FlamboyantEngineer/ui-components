@@ -74,7 +74,10 @@ function DonutPlot({
         series: active?.series ?? 0,
         tone: active ? requireDefined(segments[active.series]).tone : undefined,
         value: active
-          ? `${formats.value.format(active.value)} (${formats.share.format(active.share)})`
+          ? strings.donutValue(
+              formats.value.format(active.value),
+              formats.share.format(active.share),
+            )
           : '',
       }}
     >

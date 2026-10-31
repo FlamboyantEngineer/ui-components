@@ -96,6 +96,13 @@ The editor shall keep the field's one undo history: edits (typing grouped by Pro
 Implementation: `src/components/rich-text-editor/rich-text-keys.ts`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/editor-surface.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
+### UIC-RICH-TEXT-EDITOR-3.5 - Edits at the latest caret
+
+A key, typed text, paste, cut or drop shall act at the browser's current selection, even when the caret moved while the editor was committing a render and the engine never saw the move: before handling one, the editor takes the browser's text selection into its state when they differ. Node selections and compositions are left alone. The rich composer mode (UIC-MESSAGE-COMPOSER-4.1) does the same.
+
+Implementation: `src/components/rich-text-editor/dom-selection-sync.ts`, `src/components/rich-text-editor/editor-surface.tsx`, `src/components/message-composer/rich/rich-editor.tsx`
+Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+
 ## UIC-RICH-TEXT-EDITOR-4 - Field behaviour
 
 ### UIC-RICH-TEXT-EDITOR-4.1 - Read-only, disabled, invalid and required

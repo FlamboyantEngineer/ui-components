@@ -19,6 +19,8 @@ export interface DashboardStrings {
   donutSummary: (total: string, largest: string, share: string) => string;
   /** Names a donut segment by its label, its value and its share of the total. */
   donutSegment: (label: string, value: string, share: string) => string;
+  /** A donut segment's tooltip value: its formatted value and share. */
+  donutValue: (value: string, share: string) => string;
   /** Names the handle that moves a dashboard tile, by the tile's label. */
   moveTile: (tile: string) => string;
   /** Names the handle that resizes a dashboard tile, by the tile's label. */
@@ -35,6 +37,7 @@ export const dashboardStrings = defineStrings<DashboardStrings>({
   chartValue: (series, at, value) => ({ series, at, value }),
   donutSummary: (total, largest, share) => ({ total, largest, share }),
   donutSegment: (label, value, share) => ({ label, value, share }),
+  donutValue: (value, share) => ({ value, share }),
   moveTile: (tile) => ({ tile }),
   resizeTile: (tile) => ({ tile }),
   tileMoved: (tile, column, row) => ({ tile, column, row }),

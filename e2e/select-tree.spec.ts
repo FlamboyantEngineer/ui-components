@@ -135,4 +135,14 @@ test.describe('Select Field tree choices lab', () => {
     await lab.expectAccessible('.ui-select-field__popover');
     await lab.expectAccessible();
   });
+
+  test('UIC-SELECT-FIELD-10.2 takes a child added later into a chosen branch', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    await expect(output(page, 'growing')).toHaveText('team, alpha');
+    await page.getByRole('button', { name: 'Add Blue' }).click();
+    await expect(output(page, 'growing')).toHaveText('team, alpha, blue');
+  });
 });

@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { SegmentedChoice, type SegmentedChoiceOption } from './segmented-choice.js';
 
 const filters: SegmentedChoiceOption[] = [
@@ -33,6 +34,17 @@ function deferred() {
 const radio = (name: string) => screen.getByRole('radio', { name });
 
 describe('SegmentedChoice counts', () => {
+  it('UIC-SEGMENTED-CHOICE-1.9 writes counts in the provider locale digits', () => {
+    render(
+      <UiProvider locale="ar-EG">
+        <SegmentedChoice aria-label="Show" options={filters} defaultValue="open" />
+      </UiProvider>,
+    );
+    const open = screen.getAllByRole('radio')[0];
+    expect(open?.querySelector('.ui-segmented-choice__count')).toHaveTextContent('٣');
+    expect(screen.getAllByRole('radio')[1]).toHaveTextContent('Done٩٩+');
+  });
+
   it('UIC-SEGMENTED-CHOICE-1.9 shows positive counts, capped, and reads them in the name', () => {
     const { container, rerender } = render(
       <SegmentedChoice aria-label="Show" options={filters} defaultValue="open" />,
