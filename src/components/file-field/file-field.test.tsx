@@ -38,6 +38,30 @@ function Attachments(props: Partial<FileFieldProps>) {
 }
 
 describe('FileField', () => {
+  it('UIC-FILE-FIELD-1.3 counts files handed on until the owner lists them, through the field renders', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const one = new File(['x'], 'one.txt', { type: 'text/plain' });
+    const two = new File(['x'], 'two.txt', { type: 'text/plain' });
+    const view = render(<Attachments allowsMultiple maxFiles={1} onSelect={onSelect} />);
+    await user.upload(chooser(view.container), one);
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith([one]);
+    // Hovering and focusing render the field for its own reasons; the owner has listed nothing.
+    await user.hover(screen.getByRole('button', { name: /Add files/ }));
+    await user.tab();
+    await user.upload(chooser(view.container), two);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('alert')).toHaveTextContent('1 file is over the file limit.');
+
+    const uploads: FileUploadItem[] = [{ id: 'one', name: 'one.txt', progress: 0.5 }];
+    view.rerender(
+      <Attachments allowsMultiple maxFiles={1} uploads={uploads} onSelect={onSelect} />,
+    );
+    view.rerender(<Attachments allowsMultiple maxFiles={1} onSelect={onSelect} />);
+    await user.upload(chooser(view.container), two);
+    expect(onSelect).toHaveBeenLastCalledWith([two]);
+  });
+
   it('UIC-FILE-FIELD-1.6 preserves distinct numeric and text hidden inputs when reordered', () => {
     const value = [
       { id: 1, name: 'Numeric.txt' },

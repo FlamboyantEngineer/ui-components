@@ -56,6 +56,23 @@ test.describe('List Row lab', () => {
     await expect(page.locator('[data-lab-search] [data-lab-output]')).toHaveText('Opened: Kyoto');
   });
 
+  test("UIC-LIST-ROW-1.2 keeps the tab stop on an enabled row after a disabled row's trailing control", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const search = page.getByRole('searchbox', { name: 'Filter cities' });
+    const primary = (city: string) => page.locator(`[data-city="${city}"] .ui-list-row__primary`);
+    await primary('oslo').focus();
+    await page.getByRole('button', { name: 'More about Quito' }).click();
+    await expect(page.getByRole('button', { name: 'More about Quito' })).toBeFocused();
+    await search.focus();
+    await expect(primary('oslo')).toHaveAttribute('tabindex', '0');
+    await expect(primary('lisbon')).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('ArrowDown');
+    await expect(primary('lisbon')).toBeFocused();
+  });
+
   test('UIC-LIST-ROW-1.5 moves focus to the next row when the focused row is removed', async ({
     page,
     lab,

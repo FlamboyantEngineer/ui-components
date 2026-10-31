@@ -172,7 +172,7 @@ export function Outline(props: OutlineProps) {
   const baseId = useId();
   const roots = useMemo(() => nestOutlineHeadings(headings), [headings]);
   const entries = useMemo(() => flattenOutline(roots), [roots]);
-  const parents = entries.filter((entry) => entry.children.length > 0);
+  const parents = useMemo(() => entries.filter((entry) => entry.children.length > 0), [entries]);
   const { isExpanded, setExpanded } = useOutlineExpansion(parents, props);
   const { current, currentAncestors } = useCurrentHeading(entries, props);
   const context: OutlineContext = {
