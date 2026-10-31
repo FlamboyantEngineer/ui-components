@@ -3,7 +3,7 @@
 import { useMemo, type KeyboardEvent } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   compareTrees,
@@ -32,7 +32,7 @@ import { useTreeCompareNavigation } from './use-tree-compare-navigation.js';
 export type { TreeCompareLabelRenderer, TreeCompareSide } from './tree-compare-parts.js';
 
 export interface TreeCompareProps<T extends CompareTreeNode>
-  extends BaseProps, AriaLabellingProps, ExpansionProps {
+  extends BaseProps, AriaLabellingProps, ExpansionProps, RefProps<HTMLDivElement> {
   /** The left hierarchy, such as the earlier version. Ids are unique within each tree. */
   left: readonly T[];
   /** The right hierarchy, such as the later version. */
@@ -145,6 +145,7 @@ export function TreeCompare<T extends CompareTreeNode>(props: TreeCompareProps<T
     <div
       {...hooks.root({ className, props, data: { changesOnly: model.isFiltered } })}
       id={id}
+      ref={props.ref}
       onFocus={navigation.onFocus}
     >
       <TreeCompareToolbar

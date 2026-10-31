@@ -18,7 +18,7 @@ export interface ChatListProps extends BaseProps, AriaLabellingProps {
   /** The conversations, in the order to list them. */
   conversations: readonly ChatConversation[];
   /** The open conversation's id, controlled (`null` for none). Left out, the list keeps it. */
-  selectedId?: string | null | undefined;
+  selectedKey?: string | null | undefined;
   /** Called with the id of the conversation the reader opens. */
   onSelectionChange?: ((id: string) => void) | undefined;
   /**
@@ -139,7 +139,7 @@ function ListHeader({
  */
 export function ChatList({
   conversations,
-  selectedId,
+  selectedKey,
   onSelectionChange,
   onSearchChange,
   onNew,
@@ -156,7 +156,7 @@ export function ChatList({
   const [query, setQuery] = useState('');
   const [ownSelection, setOwnSelection] = useState<string | null>(null);
   const shown = useShownConversations({ conversations, onSearchChange }, query);
-  const selected = selectedId === undefined ? ownSelection : selectedId;
+  const selected = selectedKey === undefined ? ownSelection : selectedKey;
   const select = (keys: Selection) => {
     const [key] = keys === 'all' ? [] : [...keys];
     if (key === undefined) return;

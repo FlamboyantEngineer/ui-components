@@ -7,8 +7,8 @@ import type { AnchoredAnnotation } from './anchor-geometry.js';
 /** What a margin inside a layer reads: the anchors, the active annotation and the layer element. */
 interface AnnotationContextValue {
   anchors: readonly AnchoredAnnotation[];
-  activeId: Key | null;
-  setActiveId: (id: Key | null) => void;
+  currentKey: Key | null;
+  setCurrentKey: (id: Key | null) => void;
   layer: HTMLElement | null;
 }
 

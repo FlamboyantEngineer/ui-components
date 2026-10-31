@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
@@ -454,6 +454,12 @@ describe('FolderManager', () => {
     act(() => row('Citrus').focus());
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
     expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FOLDER-MANAGER-4.1 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Manager ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-folder-manager'));
   });
 
   it('UIC-FOLDER-MANAGER-4.1 appends the caller class and forwards the id and data attributes', () => {

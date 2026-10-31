@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Orientation } from '../../core/props.js';
+import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { layoutLayeredGraph } from '../../utils/layered-layout.js';
@@ -38,13 +38,14 @@ export interface StateMachineTransitionRequest {
   to: Key;
 }
 
-export interface StateMachineViewProps extends BaseProps, AriaLabellingProps {
+export interface StateMachineViewProps
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   states: readonly StateMachineState[];
   transitions: readonly StateMachineTransition[];
   /** The state the machine starts in. Defaults to the first state. */
   initialState?: Key | undefined;
   /** The state the machine is in, highlighted. */
-  currentState?: Key | undefined;
+  currentKey?: Key | undefined;
   /** `horizontal` (the default) lays the states out left to right; `vertical` top to bottom. */
   orientation?: Orientation | undefined;
   /** Lets the reader move and remove states, add transitions and remove them. */
@@ -134,7 +135,7 @@ export function StateMachineView({
   states,
   transitions,
   initialState,
-  currentState,
+  currentKey,
   orientation = 'horizontal',
   isEditing = false,
   onStatesChange,
@@ -153,7 +154,7 @@ export function StateMachineView({
     orientation,
     isEditing,
     initial,
-    current: currentState,
+    current: currentKey,
   });
   const edges: DiagramEdge[] = transitions.map(({ id, from, to, label }) => ({
     id,
@@ -174,7 +175,7 @@ export function StateMachineView({
       renderNode={(node) => (
         <div
           {...hooks.slot('state', {
-            current: node.id === currentState,
+            current: node.id === currentKey,
             initial: node.id === initial,
             final: node.data?.isFinal ?? false,
           })}

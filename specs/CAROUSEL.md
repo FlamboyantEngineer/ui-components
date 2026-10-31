@@ -89,7 +89,7 @@ Verification: `e2e/carousel.spec.ts`
 
 ### UIC-CAROUSEL-4.2 - Hooks and caller attributes
 
-`Carousel` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`Carousel` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its root.
 
 Implementation: `src/components/carousel/carousel.tsx`
 Verification: `src/components/carousel/carousel.test.tsx`

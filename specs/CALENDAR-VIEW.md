@@ -103,7 +103,7 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/compon
 
 ### UIC-CALENDAR-VIEW-4.3 - Hooks and caller attributes
 
-`CalendarView` shall carry the hooks below, append the caller's `className` to the root, and forward `id` and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
+`CalendarView` shall carry the hooks below, append the caller's `className` to the root, and forward `id`, `ref` and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/calendar-view/calendar-view.tsx`, `src/components/calendar-view/calendar-view-hooks.ts`
 Verification: `src/components/calendar-view/calendar-view.test.tsx`

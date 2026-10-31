@@ -4,7 +4,7 @@ Unstyled, accessible React components that expose documented styling hooks for a
 
 - **Unstyled components.** Components load no CSS and require no CSS variables. Every component renders hook classes (`ui-<component>`, `ui-<component>__<slot>`) and data attributes (`data-variant`, `data-size`, `data-disabled`, …), with documented custom properties for measured values. The host page loads a stylesheet that styles those hooks. The standalone labs include their own reference stylesheets.
 - **Accessible behaviour** comes from [React Aria Components](https://react-spectrum.adobe.com/react-aria/components.html).
-- **Generic API.** Neutral names and props (`Button`, `variant`, `size`). Built-in glyphs default to [Heroicons](https://heroicons.com) and can be replaced per glyph.
+- **Generic API.** Neutral names and props (`Button`, `variant`, `size`). Built-in glyphs are [Heroicons](https://heroicons.com) outline icons carried in the library (MIT, no icon dependency) and can be replaced per glyph with any SVG component.
 - **Static labs.** Every component has a lab page under `labs/` that shows its full variant, size and state matrix with a stylesheet picker. The built labs ship as a separate release archive so a host can serve them.
 
 The library is in `0.x` development; `v0.1.0` is its first release. APIs and styling hooks are experimental until `1.0.0`; development changes are described in changesets without migration notices or deprecation periods. See [versioning](CONTRIBUTING.md#versioning).
@@ -101,7 +101,7 @@ Components work without any setup. `UiProvider` replaces the defaults when a hos
 ```tsx
 import { UiProvider, createSafeStorage } from '@flamboyantengineer/ui-components';
 import { fr } from '@flamboyantengineer/ui-components/locales';
-import { BoltIcon } from '@heroicons/react/24/outline';
+import { BoltIcon } from './icons'; // any SVG component
 
 <UiProvider
   icons={{ close: BoltIcon }} // replace one built-in glyph

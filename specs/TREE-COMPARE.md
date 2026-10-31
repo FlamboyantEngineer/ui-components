@@ -107,7 +107,7 @@ Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-com
 
 ### UIC-TREE-COMPARE-6.2 - Hooks and caller attributes
 
-`TreeCompare` shall carry the hooks below beside the tree's, append the caller's `className`, and forward `id` and caller `data-*` attributes to its root.
+`TreeCompare` shall carry the hooks below beside the tree's, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to its root.
 
 Implementation: `src/components/tree-compare/tree-compare.tsx`
 Verification: `src/components/tree-compare/tree-compare.test.tsx`

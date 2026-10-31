@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
@@ -62,6 +62,12 @@ const crumbs = () =>
   [...document.querySelectorAll('.ui-relation-columns__path li')].map((crumb) => crumb.textContent);
 
 describe('RelationColumns', () => {
+  it('UIC-RELATION-COLUMNS-1.5 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Walk ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-relation-columns'));
+  });
+
   it('UIC-RELATION-COLUMNS-1.1 UIC-RELATION-COLUMNS-1.5 UIC-RELATION-COLUMNS-3.1 shows the item between its upstream and downstream columns', () => {
     const { container } = render(<Walk id="trace" className="mine" data-test="walk" />);
     const root = screen.getByRole('group', { name: 'Trace' });

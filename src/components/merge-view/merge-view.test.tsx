@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -400,6 +401,12 @@ describe('MergeView', { timeout: 15_000 }, () => {
     expect(container.querySelector('[data-current]')).toBeNull();
     expect(screen.getByRole('button', { name: 'Next conflict' })).toBeDisabled();
     expectHooksMatchSpec(container, 'MERGE-VIEW', { slots: ['navigation', 'previous', 'next'] });
+  });
+
+  it('UIC-MERGE-VIEW-4.2 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<MergeView base={base} ours={ours} theirs={theirs} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-merge-view'));
   });
 
   it('UIC-MERGE-VIEW-4.2 forwards the class name, id and caller data attributes', () => {

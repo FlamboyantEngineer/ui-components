@@ -1,10 +1,10 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
@@ -21,7 +21,12 @@ export interface DonutChartSegment extends ChartSeries {
 }
 
 export interface DonutChartProps
-  extends BaseProps, AriaLabellingProps, ChartViewProps, ChartHiddenKeysProps {
+  extends
+    BaseProps,
+    AriaLabellingProps,
+    ChartViewProps,
+    ChartHiddenKeysProps,
+    RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
   /** The segments, clockwise from the top, in the order of their colour slots. */
@@ -38,8 +43,6 @@ export interface DonutChartProps
   showSummary?: boolean | undefined;
   /** Show the legend. Defaults to `true`. */
   showLegend?: boolean | undefined;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 const shareFormat: Intl.NumberFormatOptions = { style: 'percent', maximumFractionDigits: 1 };
@@ -156,7 +159,7 @@ export function DonutChart({
   return (
     <Chart
       {...rest}
-      data-empty={largest ? undefined : true}
+      isEmpty={!largest}
       className={mergeClassNames(donutChartHooks.className, className)}
       label={label}
       summary={summary ?? generated}

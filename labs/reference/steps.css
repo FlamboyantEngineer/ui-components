@@ -18,7 +18,7 @@
 
 /*
  * Horizontal steps share the list's width in equal columns, each label centred under its marker.
- * When a column would be narrower than 80px, or in the compact variant, the list becomes a rail:
+ * When a column would be narrower than 80px, or in the compact density, the list becomes a rail:
  * markers and connectors in one row, and only the current step's text on a full-width line below.
  * The rail reads each step's place from these properties, so it lays out lists of up to 12 steps.
  */
@@ -176,7 +176,7 @@
   --ref-steps-column: calc(100cqi / var(--ref-steps-count, 1));
   --ref-steps-offset: calc((var(--ref-steps-index, 0) + 0.5) * var(--ref-steps-column));
 }
-.ui-steps[data-orientation='horizontal'][data-variant='default']
+.ui-steps[data-orientation='horizontal'][data-density='default']
   > .ui-steps__item:not([data-current])
   .ui-steps__text {
   overflow: hidden;
@@ -194,7 +194,7 @@
     calc(var(--ref-steps-rail, 0) * (var(--ref-steps-offset) - 100cqi)); /* layout-exempt: as above */
 }
 
-.ui-steps[data-variant='compact'] > .ui-steps__item {
+.ui-steps[data-density='compact'] > .ui-steps__item {
   --ref-steps-rail: 1;
   --ref-steps-text-align: start;
 }
@@ -332,6 +332,6 @@
   --ref-steps-count: 12;
 }
 
-.ui-steps[data-variant='compact'][data-orientation='vertical'] {
+.ui-steps[data-density='compact'][data-orientation='vertical'] {
   gap: 4px;
 }

@@ -40,7 +40,7 @@ function ImportProgress() {
     <div data-lab-demo="import">
       <Steps
         items={importSteps}
-        currentId={current}
+        currentKey={current}
         isComplete={current === null}
         onAction={setCurrent}
         aria-label="Import"
@@ -59,17 +59,17 @@ function ImportProgress() {
 mountLab(
   <>
     <LabSection
-      title="Orientation and variant"
+      title="Orientation and density"
       description="The second step is current: the first is complete and the rest are upcoming. Compact lists keep only the current label in view."
     >
       <StateMatrix
-        axes={{ variant: ['default', 'compact'], orientation: ['horizontal', 'vertical'] }}
-        render={({ variant, orientation }) => (
+        axes={{ density: ['default', 'compact'], orientation: ['horizontal', 'vertical'] }}
+        render={({ density, orientation }) => (
           <div style={{ width: orientation === 'horizontal' ? 520 : undefined }}>
             <Steps
               items={importSteps}
-              currentId="map"
-              variant={variant}
+              currentKey="map"
+              density={density}
               orientation={orientation}
             />
           </div>
@@ -78,22 +78,22 @@ mountLab(
     </LabSection>
     <LabSection
       title="Narrow containers"
-      description="Horizontal steps share the width in equal columns with their labels under the markers. Below 80px a column, and always in the compact variant, only the markers stay in the row and the current step's text takes the line below; the other labels are still read."
+      description="Horizontal steps share the width in equal columns with their labels under the markers. Below 80px a column, and always in the compact density, only the markers stay in the row and the current step's text takes the line below; the other labels are still read."
     >
       <StateMatrix
         axes={{
           steps: ['4', '6', '8'],
-          variant: ['default', 'compact'],
+          density: ['default', 'compact'],
           width: Object.keys(narrowWidths) as Array<keyof typeof narrowWidths>,
         }}
-        render={({ steps, variant, width }) => (
+        render={({ steps, density, width }) => (
           <div style={{ width: narrowWidths[width] }} data-lab-width={width}>
             <Steps
               items={projectSteps.slice(0, Number(steps))}
-              currentId="review"
-              variant={variant}
+              currentKey="review"
+              density={density}
               onAction={() => {}}
-              aria-label={`Project, ${steps} steps, ${variant}, ${width}`}
+              aria-label={`Project, ${steps} steps, ${density}, ${width}`}
             />
           </div>
         )}
@@ -108,7 +108,7 @@ mountLab(
         render={({ status }) => (
           <Steps
             items={[{ id: 'step', label: 'Map columns', status }]}
-            currentId={status === 'current' ? 'step' : null}
+            currentKey={status === 'current' ? 'step' : null}
             orientation="vertical"
             aria-label={`Step ${status}`}
           />
@@ -129,7 +129,7 @@ mountLab(
               { ...requireDefined(importSteps[2]), status: 'skipped' },
               requireDefined(importSteps[3]),
             ]}
-            currentId="import"
+            currentKey="import"
             orientation="vertical"
             isDisabled={state === 'all disabled'}
             onAction={() => {}}
@@ -152,7 +152,7 @@ mountLab(
         axes={{ complete: ['default', 'compact'], orientation: ['horizontal', 'vertical'] }}
         render={({ complete, orientation }) => (
           <div style={{ width: orientation === 'horizontal' ? 520 : undefined }}>
-            <Steps items={importSteps} isComplete variant={complete} orientation={orientation} />
+            <Steps items={importSteps} isComplete density={complete} orientation={orientation} />
           </div>
         )}
       />

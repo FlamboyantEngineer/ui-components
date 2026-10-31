@@ -1,8 +1,8 @@
 'use client';
 
-import { useId, useMemo, useRef, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useSyncedScroll } from '../../utils/use-synced-scroll.js';
@@ -13,11 +13,12 @@ import { mergeViewHooks as hooks } from './merge-view-hooks.js';
 import { getConflictId, MergeResultPane, type MergeLabels } from './merge-view-result.js';
 import { MergeSidePane } from './merge-view-sides.js';
 import { useMergeState, type MergeViewResult } from './use-merge-state.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 
 export type { MergeResolution } from './merge-blocks.js';
 export type { MergeViewResult } from './use-merge-state.js';
 
-export interface MergeViewProps extends BaseProps, AriaLabellingProps {
+export interface MergeViewProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The common ancestor both sides changed. */
   base: string;
   /** Our side's text. */
@@ -120,11 +121,12 @@ export function MergeView({
   showBase = true,
   onChange,
   className,
+  ref,
   ...rest
 }: MergeViewProps) {
   const strings = useUiStrings();
   const baseId = useId();
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [rootRef, setRootRef] = useForwardedRef(ref);
   const paneRef = usePanes();
   const labels: MergeLabels = {
     ours: oursLabel ?? strings.mergeViewOurs,
@@ -146,7 +148,7 @@ export function MergeView({
     <div
       {...rest}
       {...hooks.root({ className, props: rest, data: { showBase } })}
-      ref={rootRef}
+      ref={setRootRef}
       role="group"
     >
       <MergeViewHeader

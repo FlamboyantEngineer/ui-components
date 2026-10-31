@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -368,6 +369,12 @@ describe('TextDiff', () => {
     );
     expect(within(split).getByRole('group', { name: 'Before' })).toBe(viewport(split, 'old'));
     expect(within(split).getByRole('group', { name: 'After' })).toHaveAttribute('tabindex', '0');
+  });
+
+  it('UIC-TEXT-DIFF-3.3 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<TextDiff oldText={oldText} newText={newText} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-text-diff'));
   });
 
   it('UIC-TEXT-DIFF-3.3 forwards caller attributes and matches its hooks', () => {

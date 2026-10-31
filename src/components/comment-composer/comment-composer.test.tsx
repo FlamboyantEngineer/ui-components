@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -186,6 +186,12 @@ describe('CommentComposer', () => {
     expect(screen.getByRole('button', { name: 'Comment' })).toBeDisabled();
     await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-COMMENT-COMPOSER-1.7 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<CommentComposer onSubmit={() => {}} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-comment-composer'));
   });
 
   it('UIC-COMMENT-COMPOSER-1.7 focuses on mount, and forwards caller attributes', () => {

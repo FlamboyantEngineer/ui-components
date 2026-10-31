@@ -34,11 +34,11 @@ export interface AnnotationLayerProps extends BaseProps {
   /** The annotations, each anchored by rectangles or by an element inside the layer. */
   annotations: readonly Annotation[];
   /** The active annotation, controlled; `null` for none. */
-  activeId?: Key | null | undefined;
+  currentKey?: Key | null | undefined;
   /** The annotation active at first, uncontrolled. */
-  defaultActiveId?: Key | null | undefined;
+  defaultCurrentKey?: Key | null | undefined;
   /** Called with the annotation that becomes active. */
-  onActiveChange?: ((id: Key | null) => void) | undefined;
+  onCurrentKeyChange?: ((id: Key | null) => void) | undefined;
   /** The annotated content, and usually an `AnnotationMargin` beside it. */
   children?: ReactNode;
   /** Measures the target elements again on demand, for layout changes the layer cannot see. */
@@ -96,15 +96,19 @@ const noRects: readonly AnnotationRect[] = [];
  */
 export function AnnotationLayer({
   annotations,
-  activeId,
-  defaultActiveId = null,
-  onActiveChange,
+  currentKey,
+  defaultCurrentKey = null,
+  onCurrentKeyChange,
   children,
   handleRef,
   className,
   ...rest
 }: AnnotationLayerProps) {
-  const [active, setActive] = useControllableState(activeId, defaultActiveId, onActiveChange);
+  const [active, setActive] = useControllableState(
+    currentKey,
+    defaultCurrentKey,
+    onCurrentKeyChange,
+  );
   const [layer, setLayer] = useState<HTMLDivElement | null>(null);
   const { measured, remeasure } = useMeasuredTargets(layer, annotations);
   useImperativeHandle(handleRef, () => ({ remeasure }));
@@ -131,7 +135,7 @@ export function AnnotationLayer({
       style={{ position: 'relative' }}
       onClick={onClick}
     >
-      <AnnotationContext value={{ anchors, activeId: active, setActiveId: setActive, layer }}>
+      <AnnotationContext value={{ anchors, currentKey: active, setCurrentKey: setActive, layer }}>
         {children}
       </AnnotationContext>
       <div

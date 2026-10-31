@@ -34,7 +34,7 @@ Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/re
 
 ### UIC-RELATION-MATRIX-1.5 - Hooks and caller attributes
 
-`RelationMatrix` shall carry the hooks below, append the caller's `className` to the root and forward `id`, the ARIA labelling attributes and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
+`RelationMatrix` shall carry the hooks below, append the caller's `className` to the root and forward `id`, `ref`, the ARIA labelling attributes and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-hooks.ts`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`

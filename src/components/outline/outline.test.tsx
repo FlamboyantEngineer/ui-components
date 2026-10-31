@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useRef, useState } from 'react';
+import { useRef, useState, createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -136,7 +136,7 @@ describe('Outline', () => {
 
   it('UIC-OUTLINE-2.1 marks the current heading and the entries around it', () => {
     const { container, rerender } = render(
-      <Outline headings={headings} currentId="abbreviations" />,
+      <Outline headings={headings} currentKey="abbreviations" />,
     );
     const current = screen.getByRole('link', { name: 'Abbreviations' });
     expect(current).toHaveAttribute('aria-current', 'location');
@@ -146,7 +146,7 @@ describe('Outline', () => {
     expect(item('Design')).not.toHaveAttribute('data-current-within');
     expect(container.querySelectorAll('[aria-current]')).toHaveLength(1);
     expectHooksMatchSpec(container, 'OUTLINE');
-    rerender(<Outline headings={headings} currentId={null} />);
+    rerender(<Outline headings={headings} currentKey={null} />);
     expect(container.querySelectorAll('[aria-current], [data-current]')).toHaveLength(0);
   });
 
@@ -162,14 +162,14 @@ describe('Outline', () => {
     };
     const tops: Record<string, number> = { intro: 0, scope: 300, terms: 600, design: 900 };
     let scrollTop = 0;
-    function Reader({ currentId, offset }: { currentId?: string; offset?: number }) {
+    function Reader({ currentKey, offset }: { currentKey?: string; offset?: number }) {
       const ref = useRef<HTMLDivElement>(null);
       return (
         <>
           <Outline
             headings={headings.filter((heading) => heading.id in tops)}
             viewportRef={ref}
-            currentId={currentId}
+            currentKey={currentKey}
             trackingOffset={offset}
           />
           <div ref={ref} role="region" aria-label="Viewport">
@@ -206,7 +206,7 @@ describe('Outline', () => {
     expect(currentName()).toBe('Scope');
     rerender(<Reader offset={60} />);
     expect(currentName()).toBe('Terms');
-    rerender(<Reader currentId="design" />);
+    rerender(<Reader currentKey="design" />);
     expect(currentName()).toBe('Design');
   });
 
@@ -325,6 +325,12 @@ describe('Outline', () => {
     expect(screen.getByRole('status', { name: 'Expanded' })).toHaveTextContent('intro,design');
     await userEvent.click(toggle('Terms'));
     expect(toggle('Terms')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('UIC-OUTLINE-5.2 forwards ref to its root', () => {
+    const ref = createRef<HTMLElement>();
+    const { container } = render(<Outline headings={headings} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-outline'));
   });
 
   it('UIC-OUTLINE-5.2 forwards its class, id, caller attributes and description', () => {

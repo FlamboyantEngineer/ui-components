@@ -71,7 +71,7 @@ export function ToolbarOverflow() {
 
 /** Attached and regular groups, in both orientations. */
 export function AttachedGroups() {
-  const densities: readonly ToolbarRowGroupDensity[] = ['regular', 'attached'];
+  const densities: readonly ToolbarRowGroupDensity[] = ['default', 'attached'];
   return (
     <StateMatrix
       axes={{ density: densities, orientation: ['horizontal', 'vertical'] }}

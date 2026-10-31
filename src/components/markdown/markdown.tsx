@@ -43,6 +43,7 @@ export function Markdown({
   renderNode,
   isStreaming = false,
   className,
+  id,
   ...rest
 }: MarkdownProps) {
   const stream = useRef<StreamingMarkdownParse | null>(null);
@@ -62,7 +63,7 @@ export function Markdown({
   );
   const blocks = useMarkdownBlocks(tree.children, context, isStreaming);
   return (
-    <div {...rest} {...hooks.root({ className, data: { streaming: isStreaming } })}>
+    <div {...hooks.root({ className, props: rest, data: { streaming: isStreaming } })} id={id}>
       {blocks}
     </div>
   );

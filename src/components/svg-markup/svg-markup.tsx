@@ -106,7 +106,7 @@ export function renderSvgDrawing(tree: SvgElementNode, instanceId: string): SvgD
  * drawing. The drawing is parsed and scoped again only when `markup` changes.
  * Renders nothing when the markup has no `<svg>` root.
  */
-export function SvgMarkup({ markup, label, className, ...rest }: SvgMarkupProps) {
+export function SvgMarkup({ markup, label, className, id, ...rest }: SvgMarkupProps) {
   const instanceId = useId();
   const tree = useMemo(() => parseSvgMarkup(markup), [markup]);
   const drawing = useMemo(
@@ -118,8 +118,8 @@ export function SvgMarkup({ markup, label, className, ...rest }: SvgMarkupProps)
     'svg',
     {
       ...drawing.rootProps,
-      ...rest,
-      ...hooks.root({ className }),
+      ...hooks.root({ className, props: rest }),
+      id,
       focusable: 'false',
       ...toImageProps(label),
     },

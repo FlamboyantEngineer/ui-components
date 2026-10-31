@@ -1,10 +1,10 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 import { useProgressBar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size, Tone } from '../../core/props.js';
+import type { BaseProps, Size, Tone, RefProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { ProgressRing } from './progress-ring.js';
 import { ProgressRoot, ProgressText } from './progress-root.js';
@@ -36,7 +36,8 @@ export interface ProgressRangeProps {
 export type ProgressBarShape = 'linear' | 'circular';
 export type ProgressBarMode = 'progress' | 'meter';
 
-export interface ProgressBarProps extends BaseProps, AriaLabellingProps, ProgressRangeProps {
+export interface ProgressBarProps
+  extends BaseProps, AriaLabellingProps, ProgressRangeProps, RefProps<HTMLDivElement> {
   /** Draws a linear track or a circular ring. Defaults to `linear`. */
   shape?: ProgressBarShape | undefined;
   /** Work toward completion or a measured quantity. Defaults to `progress`. */
@@ -65,8 +66,6 @@ export interface ProgressBarProps extends BaseProps, AriaLabellingProps, Progres
    * apply.
    */
   segments?: readonly ProgressSegment[] | undefined;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 export type SpinnerSize = Extract<Size, 'sm' | 'md' | 'lg'>;

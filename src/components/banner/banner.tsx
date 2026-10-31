@@ -10,7 +10,7 @@ import {
 } from '../../core/glyphs.js';
 import { useEffect, useRef, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
+import type { BaseProps, NativeProps, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -20,7 +20,8 @@ import { toIconProps } from '../icon/icon.js';
 
 export type BannerTone = Tone;
 
-export interface BannerProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden' | 'aria-label'> {
+export interface BannerProps
+  extends BaseProps, Pick<NativeProps<'div'>, 'hidden' | 'aria-label'>, RefProps<HTMLElement> {
   /** The message's tone; it also chooses the announcement. Defaults to `neutral`. */
   tone?: BannerTone | undefined;
   /** A short summary before the description. */
@@ -45,8 +46,6 @@ export interface BannerProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden
   inline?: boolean | undefined;
   /** Move focus to the banner when it first renders, so keyboard users land on a critical message. */
   autoFocus?: boolean | undefined;
-  /** The root element, for example for `useEnterExit`. */
-  ref?: Ref<HTMLElement> | undefined;
 }
 
 const hooks = createHooks('banner', [

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as core from './index.js';
+import * as glyphPaths from './glyph-paths.js';
 import type { GlyphComponent } from './glyph-types.js';
 
 const root = process.cwd();
@@ -36,5 +37,18 @@ describe('built-in glyph names', () => {
     expect(new Set(names).size).toBe(names.length);
     expect(specNames().sort()).toEqual([...names].sort());
     expect(exportedNames().sort()).toEqual([...names].sort());
+  });
+});
+
+describe('built-in glyph paths', () => {
+  it('UIC-PROVIDER-2.1 carries only drawn Heroicons paths, with the MIT notice', () => {
+    const glyphs = read('src/core/glyphs.tsx');
+    for (const [name, path] of Object.entries(glyphPaths)) {
+      expect(glyphs, name).toMatch(new RegExp(`createGlyph\\([^)]*\\b${name}\\b`));
+      expect(path, name).toMatch(/^[Mm][-\d.\s]/);
+    }
+    const notice = read('src/core/glyph-paths.ts');
+    expect(notice).toContain('MIT License');
+    expect(notice).toContain('Copyright (c) Tailwind Labs, Inc.');
   });
 });

@@ -13,7 +13,7 @@ import {
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import {
@@ -27,7 +27,7 @@ import { carouselHooks as hooks } from './carousel-hooks.js';
 
 export type { CarouselPagination } from './carousel-parts.js';
 
-export interface CarouselProps extends BaseProps, AriaLabellingProps {
+export interface CarouselProps extends BaseProps, AriaLabellingProps, RefProps<HTMLElement> {
   /** The slides, one child each. */
   children: ReactNode;
   /** The shown slide's index (controlled). */

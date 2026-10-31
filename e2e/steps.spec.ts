@@ -9,7 +9,7 @@ test.describe('Steps lab', () => {
     lab,
   }) => {
     await lab.open('steps');
-    const list = page.locator(cell('variant=default orientation=horizontal'));
+    const list = page.locator(cell('density=default orientation=horizontal'));
     await expect(list).toHaveJSProperty('tagName', 'OL');
     const items = list.locator('.ui-steps__item');
     await expect(items).toHaveCount(4);
@@ -26,13 +26,13 @@ test.describe('Steps lab', () => {
     }
   });
 
-  test('UIC-STEPS-1.5 UIC-STEPS-1.6 lays the steps out by orientation and variant', async ({
+  test('UIC-STEPS-1.5 UIC-STEPS-1.6 lays the steps out by orientation and density', async ({
     page,
     lab,
   }) => {
     await lab.open('steps');
-    const horizontal = page.locator(cell('variant=default orientation=horizontal'));
-    const vertical = page.locator(cell('variant=default orientation=vertical'));
+    const horizontal = page.locator(cell('density=default orientation=horizontal'));
+    const vertical = page.locator(cell('density=default orientation=vertical'));
     const box = async (list: typeof horizontal, index: number) =>
       requireDefined(await list.locator('.ui-steps__marker').nth(index).boundingBox());
     expect((await box(horizontal, 1)).x).toBeGreaterThan((await box(horizontal, 0)).x);
@@ -43,8 +43,8 @@ test.describe('Steps lab', () => {
       'Choose a spreadsheet',
     );
     await expect(horizontal.locator('.ui-steps__optional')).toHaveText('Optional');
-    const compact = page.locator(cell('variant=compact orientation=horizontal'));
-    await expect(compact).toHaveAttribute('data-variant', 'compact');
+    const compact = page.locator(cell('density=compact orientation=horizontal'));
+    await expect(compact).toHaveAttribute('data-density', 'compact');
     await expect(compact.locator('.ui-steps__description')).toHaveCount(0);
     await expect(compact.getByText('Map columns', { exact: true })).toBeVisible();
     const hiddenLabel = compact.locator('.ui-steps__label').first().locator('..');

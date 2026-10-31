@@ -1,10 +1,10 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Orientation } from '../../core/props.js';
+import type { BaseProps, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -32,7 +32,12 @@ export interface BarChartSeries extends ChartSeries {
 }
 
 export interface BarChartProps
-  extends BaseProps, AriaLabellingProps, ChartViewProps, ChartHiddenKeysProps {
+  extends
+    BaseProps,
+    AriaLabellingProps,
+    ChartViewProps,
+    ChartHiddenKeysProps,
+    RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
   /** The categories along the category axis, each named once. */
@@ -55,8 +60,6 @@ export interface BarChartProps
   showSummary?: boolean | undefined;
   /** Show the legend. Defaults to `true` when there is more than one series. */
   showLegend?: boolean | undefined;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 interface BarPlotProps {
@@ -230,7 +233,7 @@ export function BarChart({
       ref={frameRef}
       data-layout={layout}
       data-orientation={orientation}
-      data-empty={isEmpty || undefined}
+      isEmpty={isEmpty}
       className={mergeClassNames(barChartHooks.className, className)}
       label={label}
       summary={summary ?? generated}

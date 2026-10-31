@@ -89,7 +89,7 @@ Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.s
 
 ### UIC-MERGE-VIEW-4.2 - Hooks and caller attributes
 
-`MergeView` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and labelling props to its root.
+`MergeView` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and labelling props to its root.
 
 Implementation: `src/components/merge-view/merge-view.tsx`, `labs/reference/merge-view.css`
 Verification: `src/components/merge-view/merge-view.test.tsx`

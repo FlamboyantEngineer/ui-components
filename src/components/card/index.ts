@@ -1,7 +1,6 @@
 export { Card } from './card.js';
 export type {
   CardBreakpoint,
-  CardDensity,
   CardPresentation,
   CardPresentationSteps,
   CardProps,

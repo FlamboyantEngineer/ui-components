@@ -3,7 +3,7 @@
 import { useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
@@ -63,7 +63,8 @@ export interface DiagramCanvasProps<T = unknown>
     Pick<
       SelectionProps,
       'selectionMode' | 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
-    > {
+    >,
+    RefProps<HTMLDivElement> {
   /** The nodes, in reading and Tab order. */
   nodes: readonly DiagramNode<T>[];
   /** The edges between them. */

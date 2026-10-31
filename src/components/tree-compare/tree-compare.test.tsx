@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -73,6 +73,12 @@ const cells = (name: string) =>
 const compareRow = (name: string) => row(name).querySelector('.ui-tree-compare__row');
 
 describe('TreeCompare', () => {
+  it('UIC-TREE-COMPARE-6.2 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Compare ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-tree-compare'));
+  });
+
   it('UIC-TREE-COMPARE-2.1 UIC-TREE-COMPARE-6.2 aligns both trees in one tree of rows', () => {
     const { container } = render(<Compare className="mine" id="outline" data-test="compare" />);
     const root = container.firstElementChild;

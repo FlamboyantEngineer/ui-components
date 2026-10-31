@@ -31,7 +31,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`
 
 ### UIC-DIAGRAM-CANVAS-1.4 - Hooks and caller attributes
 
-`DiagramCanvas` shall carry the hooks below, append the caller's `className` and forward its `id` and `data-*` attributes to the root.
+`DiagramCanvas` shall carry the hooks below, append the caller's `className` and forward its `id`, `ref` and `data-*` attributes to the root.
 
 Implementation: `src/components/diagram-canvas/diagram-canvas.tsx`, `src/components/diagram-canvas/diagram-hooks.ts`, `labs/reference/diagram-canvas.css`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`

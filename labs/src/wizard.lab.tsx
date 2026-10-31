@@ -233,7 +233,7 @@ mountLab(
           <Wizard
             aria-label={`Import at step ${step}, ${orientation}`}
             steps={staticSteps}
-            defaultCurrentId={step}
+            defaultCurrentKey={step}
             orientation={orientation}
             onCancel={() => {}}
             headingLevel={3}

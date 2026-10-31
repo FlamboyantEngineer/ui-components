@@ -48,7 +48,7 @@ Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/
 
 ### UIC-COMMENT-COMPOSER-1.7 - Accessibility, hooks and caller attributes
 
-The text box shall be the composer's only labelled control besides its buttons, and focus on mount with `autoFocus`. The composer shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+The text box shall be the composer's only labelled control besides its buttons, and focus on mount with `autoFocus`. The composer shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its root.
 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`

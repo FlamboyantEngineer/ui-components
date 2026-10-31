@@ -4,7 +4,7 @@ import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { findMaximum } from '../../utils/find-maximum.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { Key, BaseProps } from '../../core/props.js';
+import type { Key, BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { InlineError } from '../inline-error/inline-error.js';
@@ -33,7 +33,7 @@ export interface FolderManagerProps<
   T extends FolderItem,
   M extends FolderSelectionMode = FolderSelectionMode,
 >
-  extends BaseProps, FolderManagerOptions<T, M> {
+  extends BaseProps, FolderManagerOptions<T, M>, RefProps<HTMLDivElement> {
   /** Names the folder tree. */
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
@@ -186,7 +186,11 @@ export function FolderManager<
   const { selectionMode = 'single', virtualized, rowHeight } = props;
   const label = props['aria-label'];
   return (
-    <div {...hooks.root({ className, props, data: { pending: model.isBusy } })} id={id}>
+    <div
+      {...hooks.root({ className, props, data: { pending: model.isBusy } })}
+      id={id}
+      ref={props.ref}
+    >
       <FolderToolbar {...toolbarOf(context, availability)} />
       {props.filterable ? (
         <SearchField

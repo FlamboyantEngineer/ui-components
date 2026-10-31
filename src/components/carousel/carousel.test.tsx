@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
@@ -415,6 +416,16 @@ describe('Carousel', () => {
     expect(root(host)).not.toHaveAttribute('data-rotating');
     act(() => hydrated?.unmount());
     host.remove();
+  });
+
+  it('UIC-CAROUSEL-4.2 forwards ref to its root', () => {
+    const ref = createRef<HTMLElement>();
+    const { container } = render(
+      <Carousel aria-label="Cities" ref={ref}>
+        {slides()}
+      </Carousel>,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-carousel'));
   });
 
   it('UIC-CAROUSEL-4.2 forwards the class name, caller attributes and id', () => {

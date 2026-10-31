@@ -1,7 +1,7 @@
 import { PlusGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -35,6 +35,12 @@ function contentOf(container: HTMLElement) {
 }
 
 describe('DiagramCanvas', () => {
+  it('UIC-DIAGRAM-CANVAS-1.4 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<DiagramCanvas nodes={pipeNodes} edges={pipeEdges} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-diagram-canvas'));
+  });
+
   it('UIC-DIAGRAM-CANVAS-1.1 UIC-DIAGRAM-CANVAS-1.4 renders a named group with a toolbar, viewport and status', () => {
     const { container } = render(
       <DiagramCanvas

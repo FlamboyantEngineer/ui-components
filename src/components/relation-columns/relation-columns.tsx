@@ -6,7 +6,7 @@
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Breadcrumb } from '../breadcrumb/breadcrumb.js';
 import { RelationColumnView, type RelationColumnContext } from './relation-column.js';
@@ -21,7 +21,8 @@ import {
 } from './relation-columns-model.js';
 import { isElement } from '../../utils/is-element.js';
 
-export interface RelationColumnsProps<T extends { id: Key }> extends BaseProps, AriaLabellingProps {
+export interface RelationColumnsProps<T extends { id: Key }>
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The item the walk starts from, shown in the middle column. */
   item: T;
   /** The items related to an item upstream or downstream of it. */

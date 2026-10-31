@@ -3,7 +3,7 @@
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { useContext, useRef, useState, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
@@ -25,7 +25,10 @@ export interface CommentEditorOptions {
 }
 
 export interface CommentThreadReplyProps
-  extends BaseProps, Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
+  extends
+    BaseProps,
+    Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>,
+    RefProps<HTMLElement> {
   /** Who wrote the comment. */
   author: AvatarIdentity;
   /** When it was posted: an ISO 8601 date and time. */

@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo, type ReactNode, type Ref } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import {
   FocusScope,
   Disclosure as AriaDisclosure,
   DisclosureGroup as AriaDisclosureGroup,
 } from '../../primitives/index.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { materializeIterator } from '../../utils/materialize-iterator.js';
 import type { ElementRender } from '../../utils/render-element.js';
@@ -35,7 +35,7 @@ export interface DisclosureGroupRenderState {
   isDisabled: boolean;
 }
 
-export interface DisclosureProps extends Omit<BaseProps, 'id'> {
+export interface DisclosureProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
   /** The disclosure's key among a `DisclosureGroup`'s expanded keys; it stays off the element. */
   id?: Key | undefined;
   /** Whether the panel shows (controlled). */
@@ -58,13 +58,11 @@ export interface DisclosureProps extends Omit<BaseProps, 'id'> {
   indicatorPosition?: DisclosureIndicatorPosition | undefined;
   /** The panel's content with `title`, else the parts. */
   children?: ReactNode;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and state. */
   render?: ElementRender<'div', DisclosureRenderState> | undefined;
 }
 
-export interface DisclosureGroupProps extends BaseProps {
+export interface DisclosureGroupProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The `id`s of the open disclosures (controlled). */
   expandedKeys?: Iterable<Key> | undefined;
   /** The `id`s of the disclosures open at first when uncontrolled. */
@@ -77,8 +75,6 @@ export interface DisclosureGroupProps extends BaseProps {
   isDisabled?: boolean | undefined;
   /** The group's disclosures, each with an `id` naming it in the expanded keys. */
   children?: ReactNode;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and state. */
   render?: ElementRender<'div', DisclosureGroupRenderState> | undefined;
 }

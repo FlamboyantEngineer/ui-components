@@ -7,7 +7,6 @@ import {
   type JSX,
   type KeyboardEvent,
   type ReactNode,
-  type Ref,
 } from 'react';
 import {
   TabList as AriaTabList,
@@ -18,7 +17,7 @@ import {
   type TabListState,
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Orientation } from '../../core/props.js';
+import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -56,9 +55,7 @@ export interface TabListRenderState {
   orientation: Orientation;
 }
 
-export interface TabListProps extends BaseProps, AriaLabellingProps {
-  /** The list element. */
-  ref?: Ref<HTMLDivElement> | undefined;
+export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The `Tab`s. */
   children?: ReactNode;
   /** Replaces the list's `<div>` with the caller's own, given its props and state. */

@@ -99,7 +99,7 @@ Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`
 
 ### UIC-COMMENT-THREAD-2.6 - Hooks and caller attributes
 
-`CommentThreadReply` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`CommentThreadReply` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to its root.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`

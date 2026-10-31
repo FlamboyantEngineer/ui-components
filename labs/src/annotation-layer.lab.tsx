@@ -101,7 +101,7 @@ function Method({ prefix, isLong = false }: { prefix: string; isLong?: boolean }
 
 /** A review the reader works through: press a mark or a card, or move between cards by keyboard. */
 function LiveReview() {
-  const [activeId, setActiveId] = useState<Key | null>(null);
+  const [currentKey, setCurrentKey] = useState<Key | null>(null);
   const [isLong, setLong] = useState(false);
   return (
     <div data-lab-demo="live">
@@ -109,12 +109,12 @@ function LiveReview() {
         <Button size="sm" onPress={() => setLong(!isLong)}>
           {isLong ? 'Remove the intro' : 'Add an intro'}
         </Button>{' '}
-        Active: <output data-lab-active>{activeId ?? 'none'}</output>
+        Active: <output data-lab-active>{currentKey ?? 'none'}</output>
       </p>
       <AnnotationLayer
         annotations={createAnnotations('live')}
-        activeId={activeId}
-        onActiveChange={setActiveId}
+        currentKey={currentKey}
+        onCurrentKeyChange={setCurrentKey}
       >
         <Method prefix="live" isLong={isLong} />
         <AnnotationMargin aria-label="Review notes" renderCard={renderCard} />
@@ -156,16 +156,16 @@ function ScrollingSteps() {
 
 /** A layer of fixed height, without a margin, whose content scrolls and changes on its own. */
 function ScrollingReview() {
-  const [activeId, setActiveId] = useState<Key | null>(null);
+  const [currentKey, setCurrentKey] = useState<Key | null>(null);
   return (
     <div data-lab-demo="scrolling">
       <p>
-        Active: <output data-lab-active>{activeId ?? 'none'}</output>
+        Active: <output data-lab-active>{currentKey ?? 'none'}</output>
       </p>
       <AnnotationLayer
         annotations={[{ id: 'fold', targetId: 'scroll-step' }]}
-        activeId={activeId}
-        onActiveChange={setActiveId}
+        currentKey={currentKey}
+        onCurrentKeyChange={setCurrentKey}
       >
         <ScrollingSteps />
       </AnnotationLayer>
@@ -186,7 +186,7 @@ mountLab(
           return (
             <AnnotationLayer
               annotations={createAnnotations(prefix)}
-              defaultActiveId={active === 'none' ? null : active}
+              defaultCurrentKey={active === 'none' ? null : active}
             >
               <Method prefix={prefix} />
               <AnnotationMargin

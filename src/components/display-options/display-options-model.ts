@@ -1,10 +1,10 @@
 // The value model of display options: the order of the properties list, showing and hiding
 // properties, and moving them.
 
-import type { Key, SortDescriptor } from '../../core/props.js';
+import type { Density, Key, SortDescriptor } from '../../core/props.js';
 
 /** Row spacing, in the words `Card` uses. */
-export type DisplayOptionsDensity = 'compact' | 'default' | 'comfortable';
+export type DisplayOptionsDensity = Extract<Density, 'compact' | 'default' | 'comfortable'>;
 
 /** One property a collection can show, group by or sort by. */
 export interface DisplayOptionsProperty {

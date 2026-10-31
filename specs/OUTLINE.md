@@ -36,14 +36,14 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-2.1 - Marking the current heading
 
-The current heading's link shall carry `aria-current="location"` and its item `data-current`; the items of the entries it nests under publish `data-current-within`, so a collapsed section still shows that it holds the reader's place. `currentId` sets the current heading; `null` marks none.
+The current heading's link shall carry `aria-current="location"` and its item `data-current`; the items of the entries it nests under publish `data-current-within`, so a collapsed section still shows that it holds the reader's place. `currentKey` sets the current heading; `null` marks none.
 
 Implementation: `src/components/outline/outline.tsx`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-2.2 - Scroll tracking
 
-When `currentId` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes. Without either prop no heading is current.
+When `currentKey` is not given, `viewportRef`, the scrolling element that holds the headings, shall make the current heading the one `useScrollSpy` reports over every heading's id: the last whose top has reached `trackingOffset` pixels (0 by default) below the viewport's top, the first before any has, and the last at the end. It updates as the viewport scrolls or resizes. Without either prop no heading is current.
 
 Implementation: `src/components/outline/outline.tsx`, `src/components/scroll-region/use-scroll-spy.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
@@ -84,7 +84,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-5.2 - Hooks and caller attributes
 
-`Outline` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and the ARIA labelling attributes to its `<nav>`.
+`Outline` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and the ARIA labelling attributes to its `<nav>`.
 
 Implementation: `src/components/outline/outline.tsx`
 Verification: `src/components/outline/outline.test.tsx`

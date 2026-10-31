@@ -36,7 +36,7 @@ describe('ButtonGroup', () => {
       </ButtonGroup>,
     );
     const group = screen.getByRole('group');
-    expect(group).toHaveAttribute('data-density', 'regular');
+    expect(group).toHaveAttribute('data-density', 'default');
     expect(group).toHaveAttribute('data-orientation', 'horizontal');
     expect(group).not.toHaveAttribute('data-justified');
     rerender(
@@ -78,7 +78,7 @@ describe('ButtonGroup', () => {
     expect(group).toHaveAttribute('data-owner', 'group');
     expect(group).toHaveAttribute('id', 'history');
     expect(group).toHaveClass('ui-button-group', 'caller');
-    expect(group).toHaveAttribute('data-density', 'regular');
+    expect(group).toHaveAttribute('data-density', 'default');
     expect(group).toHaveAttribute('data-swapped', 'yes');
     expect(group).toHaveAttribute('data-within', 'false');
     expectHooksMatchSpec(document.body, 'BUTTON-GROUP', {

@@ -89,7 +89,7 @@ Verification: `src/components/redline-compare/redline-compare.test.tsx`, `e2e/re
 
 ### UIC-REDLINE-COMPARE-4.2 - Hooks and caller attributes
 
-`RedlineCompare` shall carry the hooks below, append the caller's `className`, and forward `id` and caller `data-*` attributes to its root.
+`RedlineCompare` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to its root.
 
 Implementation: `src/components/redline-compare/redline-compare.tsx`
 Verification: `src/components/redline-compare/redline-compare.test.tsx`

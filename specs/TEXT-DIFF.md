@@ -94,7 +94,7 @@ Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec
 
 ### UIC-TEXT-DIFF-3.3 - Hooks and caller attributes
 
-`TextDiff` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and labelling props to its root.
+`TextDiff` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and labelling props to its root.
 
 Implementation: `src/components/text-diff/text-diff.tsx`
 Verification: `src/components/text-diff/text-diff.test.tsx`

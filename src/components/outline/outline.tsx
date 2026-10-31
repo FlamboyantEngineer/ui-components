@@ -3,7 +3,7 @@
 import { useId, useMemo, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
@@ -23,11 +23,12 @@ import { useOutlineExpansion } from './use-outline-expansion.js';
 
 export type { OutlineHeading } from './outline-tree.js';
 
-export interface OutlineProps extends BaseProps, AriaLabellingProps, ExpansionProps {
+export interface OutlineProps
+  extends BaseProps, AriaLabellingProps, ExpansionProps, RefProps<HTMLElement> {
   /** The document's headings in document order. */
   headings: readonly OutlineHeading[];
   /** The id of the current heading (controlled); `null` marks none. Overrides scroll tracking. */
-  currentId?: string | null | undefined;
+  currentKey?: string | null | undefined;
   /** The scrolling viewport that holds the headings; the outline marks the heading read there. */
   viewportRef?: RefObject<HTMLElement | null> | undefined;
   /** How far below the viewport's top a heading must reach to become current, in pixels. */
@@ -48,7 +49,7 @@ export interface OutlineProps extends BaseProps, AriaLabellingProps, ExpansionPr
 
 interface OutlineContext {
   baseId: string;
-  currentId: string | null | undefined;
+  currentKey: string | null | undefined;
   currentAncestors: ReadonlySet<string>;
   hasToggles: boolean;
   isNumbered: boolean;
@@ -102,7 +103,7 @@ function OutlineItem({ entry, context }: { entry: OutlineEntry; context: Outline
   const { heading, children } = entry;
   const hasChildren = children.length > 0;
   const isExpanded = hasChildren && context.isExpanded(entry);
-  const isCurrent = heading.id === context.currentId;
+  const isCurrent = heading.id === context.currentKey;
   const listId = `${context.baseId}-${entry.path.join('-')}`;
   return (
     <li
@@ -150,11 +151,11 @@ function OutlineItem({ entry, context }: { entry: OutlineEntry; context: Outline
 /** The current heading: the controlled one, else the one the viewport's scroll position reaches. */
 function useCurrentHeading(
   entries: readonly OutlineEntry[],
-  { currentId, viewportRef, trackingOffset }: OutlineProps,
+  { currentKey, viewportRef, trackingOffset }: OutlineProps,
 ) {
   const ids = useMemo(() => entries.map((entry) => entry.heading.id), [entries]);
   const tracked = useScrollSpy(viewportRef ?? noViewport, { ids, offset: trackingOffset });
-  const current = currentId === undefined ? tracked : currentId;
+  const current = currentKey === undefined ? tracked : currentKey;
   const ancestors = entries.find((entry) => entry.heading.id === current)?.ancestors ?? [];
   return { current, currentAncestors: new Set(ancestors) };
 }
@@ -176,7 +177,7 @@ export function Outline(props: OutlineProps) {
   const { current, currentAncestors } = useCurrentHeading(entries, props);
   const context: OutlineContext = {
     baseId,
-    currentId: current,
+    currentKey: current,
     currentAncestors,
     hasToggles: parents.length > 0,
     isNumbered,
@@ -195,6 +196,7 @@ export function Outline(props: OutlineProps) {
     <nav
       {...hooks.root({ className, props, data: { numbered: isNumbered, pending: isPending } })}
       id={id}
+      ref={props.ref}
       aria-label={ariaLabel ?? (labelledBy ? undefined : strings.outline)}
       aria-labelledby={labelledBy}
       aria-describedby={props['aria-describedby']}

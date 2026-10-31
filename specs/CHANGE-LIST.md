@@ -57,7 +57,7 @@ Verification: `src/components/change-list/change-list.test.tsx`
 
 ### UIC-CHANGE-LIST-1.8 - Hooks and caller attributes
 
-`ChangeList` shall carry the hooks below beside the description list's, append the caller's `className`, and forward `id`, caller `data-*` attributes, `aria-label` and `aria-labelledby` to its root; caller attributes never replace a hook attribute.
+`ChangeList` shall carry the hooks below beside the description list's, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes, `aria-label` and `aria-labelledby` to its root; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/change-list/change-list.tsx`
 Verification: `src/components/change-list/change-list.test.tsx`

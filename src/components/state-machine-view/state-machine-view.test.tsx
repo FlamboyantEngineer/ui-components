@@ -1,6 +1,6 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -57,6 +57,14 @@ function EditableMachine({
 }
 
 describe('StateMachineView', () => {
+  it('UIC-STATE-MACHINE-VIEW-1.3 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(
+      <StateMachineView states={states} transitions={transitions} ref={ref} />,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-state-machine-view'));
+  });
+
   it('UIC-STATE-MACHINE-VIEW-1.1 UIC-STATE-MACHINE-VIEW-1.3 draws states and labelled transitions on a diagram canvas', () => {
     const { container } = render(
       <StateMachineView
@@ -108,7 +116,7 @@ describe('StateMachineView', () => {
 
   it('UIC-STATE-MACHINE-VIEW-1.2 marks the initial, final and current states', () => {
     const { container, rerender } = render(
-      <StateMachineView states={states} transitions={transitions} currentState="shipped" />,
+      <StateMachineView states={states} transitions={transitions} currentKey="shipped" />,
     );
     const marker = (name: string) =>
       requireDefined(state(name).querySelector('.ui-state-machine-view__state'));

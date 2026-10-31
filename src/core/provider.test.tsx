@@ -1,5 +1,5 @@
 import { CheckGlyph, CloseGlyph, type GlyphComponentProps } from './glyphs.js';
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { checkPath, xMarkPath } from './glyph-paths.js';
 import { render, renderHook, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { userEvent } from '@testing-library/user-event';
@@ -39,14 +39,22 @@ function glyphMarkup(container: HTMLElement, slot: string) {
   return container.querySelector(`.ui-probe__${slot}`)?.outerHTML;
 }
 
-function heroicon(Component: typeof XMarkIcon, name: string, slot: string) {
+/** A default glyph: the Heroicons outline path on a 24px view box with a 1.5 stroke. */
+function outlineGlyph(path: string, name: string, slot: string) {
   return renderToStaticMarkup(
-    <Component
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      aria-hidden="true"
       className={`ui-glyph ui-probe__${slot}`}
       data-glyph={name}
-      aria-hidden="true"
       focusable="false"
-    />,
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d={path} />
+    </svg>,
   );
 }
 
@@ -55,11 +63,11 @@ function StarGlyph(props: GlyphComponentProps) {
 }
 
 describe('UiProvider defaults', () => {
-  it('UIC-PROVIDER-1.1 works without a provider using Heroicons and English strings', () => {
+  it('UIC-PROVIDER-1.1 works without a provider using the vendored Heroicons glyphs and English strings', () => {
     const { container } = render(<Probe />);
     expect(screen.getByRole('button', { name: 'Close' })).toHaveAttribute('data-count', '2 items');
-    expect(glyphMarkup(container, 'close')).toBe(heroicon(XMarkIcon, 'close', 'close'));
-    expect(glyphMarkup(container, 'check')).toBe(heroicon(CheckIcon, 'check', 'check'));
+    expect(glyphMarkup(container, 'close')).toBe(outlineGlyph(xMarkPath, 'close', 'close'));
+    expect(glyphMarkup(container, 'check')).toBe(outlineGlyph(checkPath, 'check', 'check'));
   });
 
   it('UIC-PROVIDER-2.1 draws glyphs as decoration with the glyph hooks', () => {
@@ -76,11 +84,11 @@ describe('UiProvider defaults', () => {
     expect(defaultStrings.close).toBe('Close');
     let drawn: unknown;
     function Reader() {
-      drawn = useGlyph('check', CheckIcon);
+      drawn = useGlyph('check', StarGlyph);
       return null;
     }
     render(<Reader />);
-    expect(drawn).toBe(CheckIcon);
+    expect(drawn).toBe(StarGlyph);
   });
 });
 
@@ -94,7 +102,7 @@ describe('glyph replacement', () => {
     const close = container.querySelector('.ui-probe__close');
     expect(close).toHaveAttribute('data-glyph', 'star');
     expect(close).toHaveAttribute('aria-hidden', 'true');
-    expect(glyphMarkup(container, 'check')).toBe(heroicon(CheckIcon, 'check', 'check'));
+    expect(glyphMarkup(container, 'check')).toBe(outlineGlyph(checkPath, 'check', 'check'));
   });
 });
 

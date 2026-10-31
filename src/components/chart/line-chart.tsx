@@ -1,11 +1,11 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
@@ -37,7 +37,12 @@ export interface LineChartSeries extends ChartSeries {
 }
 
 export interface LineChartProps
-  extends BaseProps, AriaLabellingProps, ChartViewProps, ChartHiddenKeysProps {
+  extends
+    BaseProps,
+    AriaLabellingProps,
+    ChartViewProps,
+    ChartHiddenKeysProps,
+    RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
   /** The series, in the order of their colour slots. Dates make a time axis; numbers a linear one. */
@@ -65,8 +70,6 @@ export interface LineChartProps
   showSummary?: boolean | undefined;
   /** Show the legend. Defaults to `true` when there is more than one series. */
   showLegend?: boolean | undefined;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 interface LinePlotProps {
@@ -223,7 +226,7 @@ export function LineChart({
       {...rest}
       ref={frameRef}
       data-variant={variant}
-      data-empty={isEmpty || undefined}
+      isEmpty={isEmpty}
       className={mergeClassNames(lineChartHooks.className, className)}
       label={label}
       summary={summary ?? generated}

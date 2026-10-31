@@ -3,7 +3,7 @@
 import { useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
-import type { BaseProps, ControlSize, Key } from '../../core/props.js';
+import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
@@ -36,7 +36,7 @@ export type ComboboxValue<M extends ComboboxSelectionMode = 'single'> = M extend
 export type ComboboxMenuTrigger = 'input' | 'focus' | 'manual';
 
 export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
-  extends BaseProps, AriaLabellingProps, OpenStateProps {
+  extends BaseProps, AriaLabellingProps, OpenStateProps, RefProps<HTMLDivElement> {
   /** `single` (the default) picks one option; `multiple` picks several, shown as chips. */
   selectionMode?: M | undefined;
   /** The picked option ids (controlled). */
@@ -110,7 +110,6 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** Focuses the input when the combobox mounts. */
   autoFocus?: boolean | undefined;
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 /** What the chips of a multiple combobox need: the text naming their group, and the options. */

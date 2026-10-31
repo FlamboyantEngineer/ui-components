@@ -6,13 +6,22 @@ import {
   PlusGlyph,
   type GlyphComponentProps,
 } from '../../core/glyphs.js';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 import { render, screen } from '@testing-library/react';
+import type { SVGProps } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Icon } from './icon.js';
 import { toIconProps, toImageProps } from './icon-props.js';
+
+/** An icon from another set: any SVG component that takes the glyph props. */
+function ThirdPartyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" {...props}>
+      <path d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  );
+}
 
 describe('Icon', () => {
   it('UIC-ICON-1.1 draws a built-in glyph in the glyph slot', () => {
@@ -60,7 +69,7 @@ describe('Icon', () => {
   });
 
   it('UIC-ICON-1.1 accepts third-party components without a built-in key', () => {
-    const { container } = render(<Icon {...toIconProps(XMarkIcon)} label="Close" />);
+    const { container } = render(<Icon {...toIconProps(ThirdPartyIcon)} label="Close" />);
     expect(screen.getByRole('img', { name: 'Close' })).not.toHaveAttribute('data-glyph');
     expect(container.querySelector('svg')).toHaveClass('ui-glyph', 'ui-icon__glyph');
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
