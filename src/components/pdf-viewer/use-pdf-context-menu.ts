@@ -54,7 +54,11 @@ function listSelectionEntries<V extends PdfViewport, C extends PdfTextContent>(
   { text, range }: { text: string; range: Range },
 ): MenuEntry[] {
   const { loaded, scale, elements, getSelectionMenuItems } = options;
-  const copy: MenuEntry = { id: 'copy', label: copyLabel, onAction: () => void copyText(text) };
+  const copy: MenuEntry = {
+    id: 'copy',
+    label: copyLabel,
+    onAction: () => void copyText(text, { owner: range.commonAncestorContainer }),
+  };
   const located = locateRange(range, elements.current, scale);
   const viewport = located ? loaded?.getViewport(located.pageIndex, scale) : undefined;
   if (!located || !viewport || !getSelectionMenuItems) return [copy];
