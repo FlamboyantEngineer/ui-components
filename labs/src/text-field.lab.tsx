@@ -184,6 +184,8 @@ const cities: Completion[] = [
   { label: 'Oslo', description: 'Norway' },
 ];
 
+const addresses = [{ label: 'alice@example.com' }, { label: 'ada@example.com' }];
+
 /** A vocabulary completes the word before the caret; Enter inserts, Escape closes. */
 function CompletedCities() {
   const [committed, setCommitted] = useState('');
@@ -205,6 +207,13 @@ function CompletedCities() {
           </>
         )}
         data-lab-field="drawn-completions"
+      />
+      <TextField
+        label="Email"
+        type="email"
+        description="An email input has no caret position, so a completion replaces the whole value."
+        completions={addresses}
+        data-lab-field="email-completions"
       />
       <LabOutput name="completions">{committed}</LabOutput>
     </>

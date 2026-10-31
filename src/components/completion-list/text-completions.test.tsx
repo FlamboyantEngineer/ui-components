@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
+import { TextField, type TextFieldType } from '../text-field/text-field.js';
 import {
   ControlCompletionList,
   matchCompletions,
@@ -320,6 +321,76 @@ describe('Completions engine', () => {
     expect(execCommand).toHaveBeenCalledWith('insertText', false, 'banana');
     expect(input()).toHaveValue('banana');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    Reflect.deleteProperty(document, 'execCommand');
+  });
+
+  it.each<TextFieldType>(['email', 'url', 'tel', 'search', 'password', 'text'])(
+    'UIC-COMPLETION-LIST-2.4 inserts a completion into the %s field',
+    async (type) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <TextField
+          label="Address"
+          type={type}
+          defaultValue="a"
+          completions={[{ label: 'alice@example.com' }]}
+          onChange={onChange}
+        />,
+      );
+      const field = screen.getByLabelText<HTMLInputElement>('Address');
+      await user.click(field);
+      await user.keyboard('{End}{Control>} {/Control}');
+      await screen.findByRole('listbox');
+      await user.keyboard('{Enter}');
+      expect(field).toHaveValue('alice@example.com');
+      expect(onChange).toHaveBeenLastCalledWith('alice@example.com');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    },
+  );
+
+  it('UIC-COMPLETION-LIST-2.4 inserts a pressed completion into an email field', async () => {
+    const user = userEvent.setup();
+    render(
+      <TextField
+        label="Email"
+        type="email"
+        defaultValue="a"
+        completions={[{ label: 'alice@example.com' }, { label: 'ada@example.com' }]}
+      />,
+    );
+    const field = screen.getByRole('textbox', { name: 'Email' });
+    await user.click(field);
+    await user.keyboard('{Control>} {/Control}');
+    await user.click(await screen.findByRole('option', { name: 'ada@example.com' }));
+    expect(field).toHaveValue('ada@example.com');
+  });
+
+  it('UIC-COMPLETION-LIST-2.4 replaces the whole value as one browser edit in a field without a caret', async () => {
+    const user = userEvent.setup();
+    const execCommand = vi.fn((command: string, _ui?: boolean, text?: string) => {
+      const control = document.activeElement as HTMLInputElement;
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setValue?.call(control, text ?? '');
+      control.dispatchEvent(new Event('input', { bubbles: true }));
+      return command === 'insertText';
+    });
+    Object.defineProperty(document, 'execCommand', { configurable: true, value: execCommand });
+    render(
+      <TextField
+        label="Email"
+        type="email"
+        defaultValue="team a"
+        completions={[{ label: 'alice@example.com' }]}
+      />,
+    );
+    const field = screen.getByRole('textbox', { name: 'Email' });
+    await user.click(field);
+    await user.keyboard('{Control>} {/Control}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{Enter}');
+    expect(execCommand).toHaveBeenCalledWith('insertText', false, 'team alice@example.com');
+    expect(field).toHaveValue('team alice@example.com');
     Reflect.deleteProperty(document, 'execCommand');
   });
 });

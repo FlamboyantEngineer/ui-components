@@ -292,6 +292,27 @@ test.describe('Text Field lab', () => {
     await expect(list.getByRole('option')).toHaveText(['Oslo Norway']);
     await lab.expectAccessible();
   });
+  test('UIC-COMPLETION-LIST-2.4 completes an email field, which has no caret, as one undoable edit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const input = field(page, 'email-completions').getByRole('textbox', { name: 'Email' });
+    await input.click();
+    await input.pressSequentially('ali');
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option')).toHaveText(['alice@example.com']);
+    await page.keyboard.press('Enter');
+    await expect(list).toBeHidden();
+    await expect(input).toHaveValue('alice@example.com');
+    await page.keyboard.press('Control+z');
+    await expect(input).toHaveValue('ali');
+    await input.fill('a');
+    await page.keyboard.press('Control+Space');
+    await list.getByRole('option', { name: 'ada@example.com' }).click();
+    await expect(input).toHaveValue('ada@example.com');
+    await expect(input).toBeFocused();
+  });
 });
 
 test.describe('Text Field driven by an editor', () => {
