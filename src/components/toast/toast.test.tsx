@@ -610,6 +610,7 @@ function holdAnimations() {
 describe('Toast updates and motion', () => {
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
     delete (Element.prototype as Partial<Element>).getAnimations;
   });
 
@@ -924,6 +925,56 @@ describe('Toast updates and motion', () => {
     ]);
     expect(onAction).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('UIC-TOAST-4.3 stays expanded while the pointer crosses the gaps of the spread stack', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(<ToastRegion queue={queue} />);
+    let older = '';
+    act(() => {
+      queue.add({ title: 'Oldest' });
+      older = queue.add({ title: 'Older', description: 'A taller toast.' }, { onClose });
+      queue.add({ title: 'Newest' });
+    });
+    const region = screen.getByRole('region');
+    // The spread stack, newest at the bottom: unequal heights with 8 pixel gaps between them.
+    const boxes = new Map<Element, DOMRect>([
+      [region, new DOMRect(16, 600, 360, 46)],
+      [screen.getByRole('alertdialog', { name: 'Newest' }), new DOMRect(16, 600, 360, 46)],
+      [screen.getByRole('alertdialog', { name: 'Older' }), new DOMRect(16, 520, 360, 72)],
+      [screen.getByRole('alertdialog', { name: 'Oldest' }), new DOMRect(16, 466, 360, 46)],
+    ]);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      return boxes.get(this) ?? new DOMRect();
+    });
+    const page = document.body;
+    const newest = screen.getByRole('alertdialog', { name: 'Newest' });
+    await user.pointer({ target: newest, coords: { clientX: 200, clientY: 620 } });
+    expect(region).toHaveAttribute('data-expanded', 'true');
+    for (const clientY of [596, 516, 470]) {
+      await user.pointer({ target: page, coords: { clientX: 200, clientY } });
+      expect(region).toHaveAttribute('data-expanded', 'true');
+    }
+    // The toast under the pointer leaves and the oldest moves down into its place.
+    await user.pointer({ target: page, coords: { clientX: 200, clientY: 550 } });
+    act(() => queue.close(older));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    boxes.set(screen.getByRole('alertdialog', { name: 'Oldest' }), new DOMRect(16, 546, 360, 46));
+    await user.pointer({ target: page, coords: { clientX: 200, clientY: 550 } });
+    expect(region).toHaveAttribute('data-expanded', 'true');
+    await user.pointer({ target: page, coords: { clientX: 200, clientY: 470 } });
+    expect(region).not.toHaveAttribute('data-expanded');
+
+    await user.hover(region);
+    await user.pointer({ target: page, coords: { clientX: 380, clientY: 620 } });
+    expect(region).not.toHaveAttribute('data-expanded');
+    await user.hover(region);
+    await user.pointer({ target: page, coords: { clientX: 200, clientY: 300 } });
+    expect(region).not.toHaveAttribute('data-expanded');
   });
 
   it('UIC-TOAST-4.3 publishes stack positions and expands the region on hover or focus', async () => {

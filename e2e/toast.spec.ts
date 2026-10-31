@@ -287,6 +287,64 @@ test.describe('Toast lab', () => {
   });
 });
 
+test.describe('Toast stack pointer', () => {
+  for (const { name, dir, width } of [
+    { name: 'left to right', dir: 'ltr', width: 1280 },
+    { name: 'right to left', dir: 'rtl', width: 1280 },
+    { name: 'narrow', dir: 'ltr', width: 360 },
+  ]) {
+    test(`UIC-TOAST-4.3 stays expanded across the gaps to the oldest toast (${name})`, async ({
+      page,
+      lab,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await lab.open('toast');
+      await page.evaluate((value) => {
+        document.documentElement.dir = value;
+      }, dir);
+      for (const push of ['follow-up', 'action', 'replace']) {
+        await page.locator(`[data-lab-push="${push}"]`).click();
+      }
+      const region = page.locator('.ui-toast-region');
+      const newest = region.getByRole('alertdialog', { name: 'Uploading 1 of 3' });
+      const oldest = region.getByRole('alertdialog', { name: 'Import finished' });
+      await expect(region.getByRole('alertdialog')).toHaveCount(3);
+      await newest.hover();
+      await expect(region).toHaveAttribute('data-expanded', 'true');
+      // Wait for the spread to settle, then record any collapse while the pointer travels up.
+      await expect
+        .poll(async () => {
+          const top = (await oldest.boundingBox())?.y ?? 0;
+          await page.waitForTimeout(100);
+          return top - ((await oldest.boundingBox())?.y ?? 0);
+        })
+        .toBe(0);
+      await region.evaluate((element) => {
+        new MutationObserver(() => {
+          if (!element.hasAttribute('data-expanded'))
+            element.setAttribute('data-collapsed-once', '');
+        }).observe(element, { attributes: true, attributeFilter: ['data-expanded'] });
+      });
+      const from = await newest.boundingBox();
+      const to = await oldest.getByRole('button', { name: 'Dismiss' }).boundingBox();
+      if (!from || !to) throw new Error('The toasts have no boxes');
+      const x = to.x + to.width / 2;
+      await page.mouse.move(x, from.y + from.height / 2);
+      await page.mouse.move(x, to.y + to.height / 2, { steps: 30 });
+      await expect(region).toHaveAttribute('data-expanded', 'true');
+      await expect(region).not.toHaveAttribute('data-collapsed-once');
+      await page.mouse.down();
+      await page.mouse.up();
+      await expect(oldest).toHaveCount(0);
+      await expect(
+        region.getByRole('alertdialog', { name: 'Review the imported rows' }),
+      ).toHaveCount(1);
+      await page.mouse.move(dir === 'rtl' ? width - 4 : 4, 4);
+      await expect(region).not.toHaveAttribute('data-expanded');
+    });
+  }
+});
+
 test.describe('Toast over overlays', () => {
   for (const theme of ['light', 'dark']) {
     test(`UIC-TOAST-2.4 stacks above an open drawer and takes presses (${theme})`, async ({
