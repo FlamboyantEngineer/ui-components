@@ -50,14 +50,14 @@ Verification: `src/components/record-label/record-label.test.tsx`
 
 ### UIC-RECORD-LABEL-11.1 - Label and parts
 
-`RecordLabel` shall render a `ui-record-label` `<span>` holding a `RecordLabel` (`ui-record-label__label`) built from `identifier`, `name`, `icon`, `size`, `href`, `isExternal` and `unavailable`, then, when given, `version` (`ui-record-label__version`), `type` (`ui-record-label__type`) and the `state` node (`ui-record-label__state`), usually a [Badge](BADGE.md) or [Status Light](STATUS-LIGHT.md). It publishes `data-size` (`sm`, `md` by default, `lg`).
+`RecordLabel` shall render a `ui-record-label` `<span>` whose first line, a `ui-record-label__header` `<span>` in every layout, holds a `RecordLabel` (`ui-record-label__label`) built from `identifier`, `name`, `icon`, `size`, `href`, `isExternal` and `unavailable`, then, when given, `version` (`ui-record-label__version`), `type` (`ui-record-label__type`) and the `state` node (`ui-record-label__state`), usually a [Badge](BADGE.md) or [Status Light](STATUS-LIGHT.md). It publishes `data-size` (`sm`, `md` by default, `lg`).
 
 Implementation: `src/components/record-label/record-chip-parts.tsx`, `src/components/record-label/record-label.tsx`
 Verification: `src/components/record-label/record-chip.test.tsx`, `e2e/record-label-chip.spec.ts`
 
 ### UIC-RECORD-LABEL-11.2 - Layouts
 
-`layout` shall publish `data-layout`. `inline` (the default) keeps every part on one line with the name cut in the label. `stacked` moves the label and parts into a `ui-record-label__header` line, without the name, and puts the name on a second line as a [Truncation Tooltip](TRUNCATION-TOOLTIP.md) (`ui-record-label__name`) that describes the label (`aria-describedby`), so the label's link is still read with the name.
+`layout` shall publish `data-layout`. `inline` (the default) keeps every part on one line with the name cut in the label. `stacked` leaves the name out of the label and puts it on a second line as a [Truncation Tooltip](TRUNCATION-TOOLTIP.md) (`ui-record-label__name`) that describes the label (`aria-describedby`), so the label's link is still read with the name.
 
 Implementation: `src/components/record-label/record-chip-parts.tsx`, `labs/reference/record-label.css`
 Verification: `src/components/record-label/record-chip.test.tsx`, `e2e/record-label-chip.spec.ts`
@@ -97,6 +97,13 @@ Verification: `src/components/record-label/record-chip.test.tsx`
 Implementation: `src/components/record-label/record-chip-parts.tsx`, `src/components/link/link.tsx`
 Verification: `src/components/record-label/record-chip-labelling.test.tsx`, `e2e/record-label-chip.spec.ts`
 
+### UIC-RECORD-LABEL-11.8 - Stable label
+
+The label, its details and the remove button shall keep their elements, state and focus while `preview` comes and goes and while `layout` changes: the preview trigger stays around the label and only enables itself when there is a preview, without `aria-haspopup` before then ([UIC-HOVER-CARD-1.4](HOVER-CARD.md#uic-hover-card-14---controlled-state)). A preview that arrives while the link has focus waits for the next hover or focus, and one that goes away while open closes. Becoming unavailable replaces the link with plain text on purpose.
+
+Implementation: `src/components/record-label/record-chip-parts.tsx`, `src/components/hover-card/hover-card.tsx`
+Verification: `src/components/record-label/record-chip-identity.test.tsx`, `e2e/record-label-chip.spec.ts`
+
 ## UIC-RECORD-LABEL-3 - Unified options
 
 ### UIC-RECORD-LABEL-3.1 - Modes
@@ -129,7 +136,7 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/componen
 
 | `ui-record-label__label` | slot | | The record's label (also `ui-record-label`). |
 | `ui-record-label__preview` | slot | | The preview card (also `ui-hover-card`). |
-| `ui-record-label__header` | slot | | The first line of a stacked chip. |
+| `ui-record-label__header` | slot | | The chip's first line: the label and its parts. |
 | `ui-record-label__version` | slot | | The version the reference points at. |
 | `ui-record-label__type` | slot | | The record's kind. |
 | `ui-record-label__state` | slot | | The caller's state node. |

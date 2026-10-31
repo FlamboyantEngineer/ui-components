@@ -41,7 +41,8 @@ describe('RecordLabel', () => {
     expect(element).toHaveClass('ui-record-label');
     expect(element).toHaveAttribute('data-layout', 'inline');
     expect(element).toHaveAttribute('data-size', 'md');
-    const children = Array.from(element.children);
+    expect(Array.from(element.children)).toEqual([slot(container, 'header')]);
+    const children = Array.from(slot(container, 'header')?.children ?? []);
     expect(children.map((child) => child.className.split(' ')[0])).toEqual([
       'ui-record-label__label',
       'ui-record-label__version',
@@ -53,7 +54,7 @@ describe('RecordLabel', () => {
     expect(slot(container, 'type')).toHaveTextContent('Requirement');
     expect(slot(container, 'state')?.querySelector('.ui-badge')).toHaveTextContent('Approved');
     expectHooksMatchSpec(container, 'RECORD-LABEL', {
-      slots: ['label', 'version', 'type', 'state'],
+      slots: ['header', 'label', 'version', 'type', 'state'],
     });
   });
 
@@ -139,7 +140,7 @@ describe('RecordLabel', () => {
     );
     const remove = screen.getByRole('button', { name: 'Remove REQ-12' });
     expect(remove).toHaveClass('ui-record-label__remove', 'ui-button');
-    expect(root(container).lastElementChild).toBe(remove);
+    expect(slot(container, 'header')?.lastElementChild).toBe(remove);
     await user.click(remove);
     expect(onRemove).toHaveBeenCalledTimes(1);
   });
@@ -163,12 +164,12 @@ describe('RecordLabel', () => {
     expect(root(container)).toHaveAttribute('data-unavailable', 'missing');
     expect(root(container)).toHaveAttribute('data-layout', 'inline');
     expect(root(container)).toHaveTextContent(/^Missing item$/);
-    for (const name of ['version', 'type', 'state', 'name', 'header', 'preview']) {
+    for (const name of ['version', 'type', 'state', 'name', 'preview']) {
       expect(slot(container, name)).toBeNull();
     }
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Remove Missing item' })).toBeInTheDocument();
-    expectHooksMatchSpec(container, 'RECORD-LABEL', { slots: ['label', 'remove'] });
+    expectHooksMatchSpec(container, 'RECORD-LABEL', { slots: ['header', 'label', 'remove'] });
   });
 
   it('UIC-RECORD-LABEL-11.6 forwards the class, id and data attributes', () => {

@@ -1,6 +1,7 @@
 import { CheckGlyph, EditGlyph, LinkGlyph, WarningGlyph } from '../../src/core/glyphs.js';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
+import { Button } from '../../src/components/button/button.js';
 import { RecordLabel } from '../../src/components/record-label/record-label.js';
 import { StatusLight } from '../../src/components/status-light/status-light.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
@@ -61,6 +62,41 @@ function ReferenceList() {
         ))}
         {references.length === 0 ? 'none' : null}
       </p>
+    </div>
+  );
+}
+
+/** A chip whose preview loads a second after each reload, and whose layout the reader switches. */
+function LatePreview() {
+  const [loads, setLoads] = useState(0);
+  const [isLoaded, setLoaded] = useState(false);
+  const [isStacked, setStacked] = useState(false);
+  useEffect(() => {
+    setLoaded(false);
+    const timer = window.setTimeout(() => setLoaded(true), 1000);
+    return () => window.clearTimeout(timer);
+  }, [loads]);
+  const record = initialReferences[0] as SampleRecord;
+  return (
+    <div data-lab-demo="late-preview" data-loaded={isLoaded}>
+      <p>
+        <Button size="sm" onPress={() => setLoads((count) => count + 1)}>
+          Reload preview
+        </Button>{' '}
+        <Button size="sm" onPress={() => setStacked((stacked) => !stacked)}>
+          Switch layout
+        </Button>
+      </p>
+      <RecordLabel
+        mode="chip"
+        identifier={record.identifier}
+        name={record.name}
+        type={record.type}
+        href="#req-12"
+        layout={isStacked ? 'stacked' : 'inline'}
+        preview={isLoaded ? <RecordPreview record={record} /> : null}
+        onRemove={() => {}}
+      />
     </div>
   );
 }
@@ -179,6 +215,12 @@ export function RecordChipCases() {
               />
             )}
           />
+        </LabSection>
+        <LabSection
+          title="Chip: Late preview"
+          description="Focus the link, then reload the preview or switch the layout: the link keeps focus."
+        >
+          <LatePreview />
         </LabSection>
         <LabSection title="Chip: In a field" description="Preview a reference, or remove it.">
           <ReferenceList />

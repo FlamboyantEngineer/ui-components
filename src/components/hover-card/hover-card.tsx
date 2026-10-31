@@ -1,7 +1,11 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { PreviewTrigger } from '../../primitives/index.js';
+import { useContext, useEffect, type ReactNode } from 'react';
+import {
+  FocusableContext,
+  OverlayTriggerStateContext,
+  PreviewTrigger,
+} from '../../primitives/index.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -33,12 +37,29 @@ export interface HoverCardProps extends BaseProps, OverlayPositionProps {
 const hooks = createHooks('hover-card', ['arrow']);
 
 /**
+ * Hands the trigger's props to the focusable only while the trigger is enabled, and closes an open
+ * card when it is disabled. It renders the same tree either way, so the focusable keeps its identity.
+ */
+function TriggerProps({ isEnabled, children }: { isEnabled: boolean; children: ReactNode }) {
+  const props = useContext(FocusableContext);
+  const state = useContext(OverlayTriggerStateContext);
+  useEffect(() => {
+    if (!isEnabled && state?.isOpen) state.close();
+  }, [isEnabled, state]);
+  return <FocusableContext value={isEnabled ? props : null}>{children}</FocusableContext>;
+}
+
+/**
  * Opens the `HoverCard` among its children `delay` milliseconds after the pointer rests on the
  * trigger (a React Aria focusable such as a `Link` or `Button`) or keyboard focus reaches it, or on a
  * long press, and closes it `closeDelay` milliseconds after both leave the trigger and the card.
  */
 export function HoverCardTrigger({ children, ...trigger }: HoverCardTriggerProps) {
-  return <PreviewTrigger {...trigger}>{children}</PreviewTrigger>;
+  return (
+    <PreviewTrigger {...trigger}>
+      <TriggerProps isEnabled={!trigger.isDisabled}>{children}</TriggerProps>
+    </PreviewTrigger>
+  );
 }
 
 /**
