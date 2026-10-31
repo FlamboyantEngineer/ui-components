@@ -1,7 +1,7 @@
 'use client';
 
-import type { JSX, KeyboardEvent, ReactElement, ReactNode } from 'react';
-import { Toolbar, Tooltip, TooltipTrigger } from '../../primitives/index.js';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -29,7 +29,7 @@ interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 
   isCollapsing: boolean;
 }
 
-const hooks = createHooks('action-row', ['actions', 'action', 'tooltip', 'overflow']);
+const hooks = createHooks('action-row', ['actions', 'action', 'overflow']);
 
 /** An action without a menu presses and states its own popup; a menu trigger leaves both to the menu. */
 function toPressProps(action: ActionRowAction, hasMenu: boolean): Partial<ButtonProps> {
@@ -62,11 +62,6 @@ function ActionRowMenu({
   );
 }
 
-/** A tooltip that only repeats the action's label names the button already, so it describes nothing. */
-function renderWithoutDescription(props: JSX.IntrinsicElements['button']): ReactElement {
-  return <button {...props} aria-describedby={undefined} />;
-}
-
 /** A custom action's ref and toggle state, which report `aria-pressed` either way once set. */
 function toCustomButtonProps(action: ActionRowAction): Partial<ButtonProps> {
   if (action.verb !== 'custom') return {};
@@ -93,19 +88,14 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       isPending={action.isPending}
       pendingLabel={pendingLabel}
       aria-controls={action['aria-controls']}
-      render={action.tooltip === undefined ? renderWithoutDescription : undefined}
+      // A tooltip that only repeats the label names the button already, so it describes nothing.
+      tooltip={action.tooltip ?? label}
     />
   );
-  const withTooltip = (
-    <TooltipTrigger>
-      {button}
-      <Tooltip className={hooks.slotClass('tooltip')}>{action.tooltip ?? label}</Tooltip>
-    </TooltipTrigger>
-  );
-  if (!hasMenu) return withTooltip;
+  if (!hasMenu) return button;
   return (
     <ActionRowMenu action={action} size={size}>
-      {withTooltip}
+      {button}
     </ActionRowMenu>
   );
 }

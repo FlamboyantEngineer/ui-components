@@ -93,12 +93,12 @@ export function TooltipPanel({
 /**
  * Names the trigger element by `label`. React Aria describes the trigger by the open panel; here
  * the panel repeats the name, so an empty `aria-describedby`, which wins over React Aria's, keeps it
- * from being read twice. A trigger's own description still wins.
+ * from being read twice. A trigger's own name and description still win.
  */
 function labelTrigger(children: ReactNode, label: string): ReactNode {
   if (!isValidElement<TriggerLabelProps>(children)) return children;
   return cloneElement(children, {
-    'aria-label': label,
+    'aria-label': children.props['aria-label'] ?? label,
     'aria-describedby': children.props['aria-describedby'] ?? '',
   });
 }
