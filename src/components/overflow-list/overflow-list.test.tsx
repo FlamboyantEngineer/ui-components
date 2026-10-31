@@ -5,23 +5,9 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { resolveOverflowCount } from '../../utils/use-overflow-items.js';
 import { OverflowList } from './overflow-list.js';
+import { stubTextLayout } from '../../../test/overflow-fixtures.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Fig'];
-
-/** Every element is ten pixels per character of text; a list's room comes from `data-room`. */
-function stubLayout() {
-  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    const width = (this.textContent ?? '').length * 10;
-    return { width, height: 20, top: 0, left: 0, right: width, bottom: 20, x: 0, y: 0 } as DOMRect;
-  });
-  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    return Number(this.dataset.room ?? 0);
-  });
-}
 
 class FakeObserver {
   static instances: FakeObserver[] = [];
@@ -43,6 +29,7 @@ function List({ room, items = fruit, collapseFrom }: { room: number } & Partial<
       aria-label="Fruit"
       role="group"
       items={items}
+      getKey={(item) => item}
       collapseFrom={collapseFrom}
       renderItem={(item, index) => <span data-index={index}>{item}</span>}
       renderOverflow={(hidden) => <button type="button">+{hidden.length}</button>}
@@ -61,7 +48,7 @@ function shownItems(): string[] {
 
 beforeEach(() => {
   FakeObserver.instances = [];
-  stubLayout();
+  stubTextLayout();
 });
 
 afterEach(() => {
@@ -177,6 +164,7 @@ describe('OverflowList', () => {
       <OverflowList
         data-room={150}
         items={fruit}
+        getKey={(item) => item}
         render={(props) => <div {...props} style={{ columnGap: '10px' }} />}
         renderItem={(item) => item}
         renderOverflow={(hidden) => `+${hidden.length}`}
@@ -196,6 +184,7 @@ describe('OverflowList', () => {
         className="caller"
         data-testid="list"
         items={fruit}
+        getKey={(item) => item}
         renderItem={(item) => item}
         renderOverflow={(hidden) => `+${hidden.length}`}
         render={(props, state) => {
@@ -222,6 +211,7 @@ describe('OverflowList', () => {
         data-room={500}
         data-collapse-from="caller"
         items={fruit}
+        getKey={(item) => item}
         renderItem={(item) => item}
         renderOverflow={() => null}
       />,
