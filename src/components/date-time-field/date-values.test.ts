@@ -91,14 +91,13 @@ describe('date values', () => {
     expect(formatIsoDate(requireDefined(parseIsoDateTime(zoned)))).toBe(toFloating(moment));
   });
 
-  it('UIC-DATE-TIME-FIELD-2.2 gives the current date and the current minute', () => {
-    const today = new Date();
-    expect(currentDateValue('date')).toBe(
-      `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`,
-    );
-    const current = currentDateValue('date-time');
-    expect(current).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-    expect(Math.abs(new Date(current).getTime() - Date.now())).toBeLessThan(61_000);
+  it('UIC-DATE-TIME-FIELD-2.2 gives the date and minute of the clock in its zone', () => {
+    const clock = { now: new Date('2026-04-20T15:30:45Z'), zone: 'Pacific/Kiritimati' };
+    expect(currentDateValue('date', clock)).toBe('2026-04-21');
+    expect(currentDateValue('date-time', clock)).toBe('2026-04-21T05:30');
+    expect(currentDateValue('date', { ...clock, zone: 'UTC' })).toBe('2026-04-20');
+    // A zoned field reads its own zone, whatever the clock's.
+    expect(currentDateValue('date', { ...clock, timeZone: 'America/New_York' })).toBe('2026-04-20');
   });
 
   it('UIC-DATE-TIME-FIELD-1.4 finds the bound a value breaks and a reversed range', () => {
@@ -182,9 +181,13 @@ describe('date values', () => {
     expect(formatIsoDate(requireDefined(parseIsoDateTime('2026-04-13T13:45:30')), 'hour')).toBe(
       '2026-04-13T13:00',
     );
-    const current = currentDateValue('date-time', { granularity: 'second' });
-    expect(current).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
-    expect(Math.abs(new Date(current).getTime() - Date.now())).toBeLessThan(2_000);
+    expect(
+      currentDateValue('date-time', {
+        granularity: 'second',
+        now: new Date('2026-04-20T15:30:45.500Z'),
+        zone: 'UTC',
+      }),
+    ).toBe('2026-04-20T15:30:45');
     expect(formatDateValue('13:45:30', 'time', { locale: 'en-US', granularity: 'second' })).toMatch(
       /1:45:30/,
     );
@@ -214,11 +217,12 @@ describe('date values', () => {
     expect(
       plain(formatDateValue(noon, 'date-time', { locale: 'en-US', timeZone: 'Asia/Tokyo' })),
     ).toBe('Apr 13, 2026, 12:00 PM');
-    expect(currentDateValue('date-time', { timeZone: 'Asia/Tokyo' })).toMatch(
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+09:00\[Asia\/Tokyo\]$/,
+    const clock = { now: new Date('2026-04-20T15:30:45Z'), zone: 'UTC' };
+    expect(currentDateValue('date-time', { ...clock, timeZone: 'Asia/Tokyo' })).toBe(
+      '2026-04-21T00:30:00+09:00[Asia/Tokyo]',
     );
-    expect(currentDateValue('date', { timeZone: 'Pacific/Kiritimati' })).toMatch(
-      /^\d{4}-\d{2}-\d{2}$/,
+    expect(currentDateValue('date', { ...clock, timeZone: 'Pacific/Kiritimati' })).toBe(
+      '2026-04-21',
     );
   });
 

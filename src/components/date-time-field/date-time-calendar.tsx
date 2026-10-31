@@ -15,6 +15,7 @@ import {
   Popover,
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
+import { useGetNow, useTimeZone } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
@@ -174,11 +175,16 @@ function DatePresets({ settings, onPick }: Pick<CalendarPopoverProps, 'settings'
 
 /**
  * The picker's quick actions: Today for a date, Now for a date and time, and Clear unless the field
- * is required. Each picks its value, read when pressed, and closes the picker.
+ * is required. Each picks its value, read when pressed from the provider's clock and in its zone
+ * (the field's `timeZone` first), and closes the picker.
  */
 function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'children'>) {
   const strings = useUiStrings();
   const pick = usePick(onPick);
+  const getNow = useGetNow();
+  const zone = useTimeZone(settings.timeZone);
+  const current = (single: 'date' | 'date-time') =>
+    currentDateValue(single, { ...settings, now: getNow(), zone });
   const action = (label: string, getValue: () => DateFieldValue, isDisabled = false) => (
     <Button
       variant="ghost"
@@ -192,10 +198,8 @@ function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'chi
   );
   return (
     <div {...hooks.slot('actions')}>
-      {mode === 'date' ? action(strings.today, () => currentDateValue('date', settings)) : null}
-      {mode === 'date-time'
-        ? action(strings.now, () => currentDateValue('date-time', settings))
-        : null}
+      {mode === 'date' ? action(strings.today, () => current('date')) : null}
+      {mode === 'date-time' ? action(strings.now, () => current('date-time')) : null}
       {settings.isRequired ? null : action(strings.clear, () => null, !settings.canClear)}
     </div>
   );

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { DateTimeField } from './date-time-field.js';
 
 function renderInLocale(element: ReactElement) {
@@ -184,5 +185,29 @@ describe('DateTimeField time settings, zones and ranges', () => {
         end: '2026-11-01T03:00:00-05:00[America/New_York]',
       });
     });
+  });
+
+  it('UIC-DATE-TIME-FIELD-2.2 reads Today and Now from the provider clock and zone', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const getNow = () => new Date('2026-04-20T15:30:45Z');
+    const { unmount } = render(
+      <UiProvider locale="en-US" getNow={getNow} timeZone="Pacific/Kiritimati">
+        <DateTimeField label="Due" onCommit={onCommit} />
+        <DateTimeField label="When" mode="date-time" onCommit={onCommit} />
+        <DateTimeField label="Call" mode="date-time" timeZone="Asia/Tokyo" onCommit={onCommit} />
+      </UiProvider>,
+    );
+    const [due, when, call] = screen.getAllByRole('button', { name: /Calendar/ });
+    await user.click(requireDefined(due));
+    await user.click(await screen.findByRole('button', { name: 'Today' }));
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-21');
+    await user.click(requireDefined(when));
+    await user.click(await screen.findByRole('button', { name: 'Now' }));
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-21T05:30');
+    await user.click(requireDefined(call));
+    await user.click(await screen.findByRole('button', { name: 'Now' }));
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-21T00:30:00+09:00[Asia/Tokyo]');
+    unmount();
   });
 });

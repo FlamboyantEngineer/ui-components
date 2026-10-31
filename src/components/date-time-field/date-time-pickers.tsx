@@ -3,11 +3,11 @@
 import { CalendarGlyph } from '../../core/glyphs.js';
 import {
   formatIsoDate,
-  now,
   parseIsoDate,
   parseIsoDateTime,
   parseIsoTime,
   toCalendarDate,
+  toZoned,
   Button as AriaButton,
   Calendar,
   DateInput,
@@ -21,6 +21,7 @@ import {
 } from '../../primitives/index.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import { useMemo, type ReactNode } from 'react';
+import { useToday } from '../../core/clock.js';
 import { Glyph } from '../../core/provider.js';
 import {
   FieldPreviousValue,
@@ -114,13 +115,17 @@ function datePickerProps(props: DatePickerControlProps) {
   };
 }
 
-/** A zoned starting point, so an empty date-time field in a time zone types zoned values. */
+/**
+ * A zoned starting point, so an empty date-time field in a time zone types zoned values: midnight
+ * of today by the provider's clock in that zone, once the clock may be read.
+ */
 function usePlaceholderValue({ mode, settings }: DatePickerControlProps) {
   const zone = toSingleMode(mode) === 'date-time' ? settings.timeZone : undefined;
-  return useMemo(
-    () => (zone ? now(zone).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }) : undefined),
-    [zone],
-  );
+  const day = useToday(zone);
+  return useMemo(() => {
+    const date = zone ? parseIsoDate(day) : null;
+    return date && zone ? toZoned(date, zone) : undefined;
+  }, [zone, day]);
 }
 
 function useBoundValues({ mode, bounds, settings }: DatePickerControlProps) {

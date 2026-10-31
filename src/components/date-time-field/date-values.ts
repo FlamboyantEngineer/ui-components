@@ -3,14 +3,13 @@
 
 import {
   formatIsoDate,
+  fromDate,
   getLocalTimeZone,
-  now,
   parseIsoDate,
   parseIsoDateTime,
   parseIsoTime,
   toCalendarDate,
   toCalendarDateTime,
-  today,
 } from '../../primitives/index.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 
@@ -66,14 +65,23 @@ function toMoment(text: string, mode: SingleDateMode, options: DateValueOptions)
   return ('timeZone' in value ? value.toDate() : value.toDate('UTC')).getTime();
 }
 
-/** The current date, or the current date and time to the granularity, as a value's text. */
+/** The clock a field reads at an event: the moment, and the zone its wall clock is read in. */
+export interface DateClock {
+  now: Date;
+  /** The zone of a floating value's wall clock; a zoned field reads its own `timeZone`. */
+  zone: string;
+}
+
+/**
+ * The current date, or the current date and time to the granularity, as a value's text: zoned in
+ * the field's `timeZone`, else the wall clock of `clock.zone` as a floating value.
+ */
 export function currentDateValue(
   mode: 'date' | 'date-time',
-  options: DateValueOptions = {},
+  options: DateValueOptions & DateClock,
 ): string {
-  const zone = options.timeZone ?? getLocalTimeZone();
-  if (mode === 'date') return today(zone).toString();
-  const moment = now(zone);
+  const moment = fromDate(options.now, options.timeZone ?? options.zone);
+  if (mode === 'date') return toCalendarDate(moment).toString();
   return formatIsoDate(options.timeZone ? moment : toCalendarDateTime(moment), options.granularity);
 }
 
