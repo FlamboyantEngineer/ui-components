@@ -105,10 +105,10 @@ Verification: `src/utils/scroll-overview.test.ts`
 
 ### UIC-SCROLL-REGION-3.3 - Marker layers
 
-`overviewLayers` shall resolve priorities within each named layer, then mix the colours of layers sharing a pixel with equal weight, in layer-name order, so the result does not depend on the order the caller lists them. One layer paints exactly as the same markers passed to `overview`.
+`overviewLayers` shall resolve priorities within each named layer, then mix the colours of layers sharing a pixel with equal weight, in layer-name order, so the result does not depend on the order the caller lists them. One layer paints exactly as the same markers passed to `overview`. The mix is CSS `color-mix(in srgb, …)`, which every browser of the package floor (`browserslist`, UIC-LABS-1.6) supports; an older engine drops the whole image, so a host that targets one passes `overview`, whose image mixes nothing.
 
-Implementation: `src/utils/scroll-overview.ts`, `src/components/scroll-region/use-scroll-overview.ts`
-Verification: `src/utils/scroll-overview.test.ts`
+Implementation: `src/utils/scroll-overview.ts`, `src/components/scroll-region/use-scroll-overview.ts`, `package.json`
+Verification: `src/utils/scroll-overview.test.ts`, `test/package.test.ts`
 
 ## UIC-SCROLL-REGION-4 - Scroll state
 

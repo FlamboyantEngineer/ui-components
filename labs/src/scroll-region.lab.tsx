@@ -360,7 +360,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overview"
-      description="Markers painted beside the native vertical scrollbar, as one set and as two mixed layers."
+      description="Markers painted beside the native vertical scrollbar, as one set and as two layers mixed with CSS color-mix where they overlap."
     >
       <StateMatrix
         axes={{ source: ['markers', 'layers'] }}

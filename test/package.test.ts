@@ -50,6 +50,21 @@ describe('shipped reference stylesheet', () => {
       Object.entries(BROWSER_FLOOR).map(([browser, version]) => `${browser} >= ${version}`),
     );
   });
+
+  it('UIC-SCROLL-REGION-3.3 supports the color-mix the layered scroll overview emits', async () => {
+    const { BROWSER_FLOOR } = await loadReference();
+    // The first release of each engine with CSS color-mix().
+    const colorMix: Record<string, number> = {
+      chrome: 111,
+      edge: 111,
+      firefox: 113,
+      safari: 16.2,
+      ios_saf: 16.2,
+    };
+    for (const [browser, version] of Object.entries(BROWSER_FLOOR)) {
+      expect(version).toBeGreaterThanOrEqual(colorMix[browser] ?? Infinity);
+    }
+  });
 });
 
 describe('package manifest', () => {
