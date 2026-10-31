@@ -20,7 +20,7 @@ Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.s
 
 ### UIC-CODE-BLOCK-1.3 - Keyboard scrolling
 
-While the code is wider than its `<pre>` (measured after each change of the code and whenever the `<pre>` resizes), the `<pre>` shall publish `data-overflowing` and join the tab order, so a keyboard reader can reach it and scroll it with the arrow keys; the block's group names its context. It takes no landmark role, so a transcript of many blocks adds no landmarks. Code that fits adds no tab stop.
+While the code is wider than its `<pre>` (measured after each render, whenever the `<pre>` resizes, whenever its content changes in the document, such as tokens highlighted asynchronously or their classes and styles, and whenever the document's fonts finish loading), the `<pre>` shall publish `data-overflowing` and join the tab order, so a keyboard reader can reach it and scroll it with the arrow keys, and drop both as soon as it fits again; the block's group names its context. It takes no landmark role, so a transcript of many blocks adds no landmarks. Code that fits adds no tab stop.
 
 Implementation: `src/components/code-block/code-block.tsx`, `src/components/code-block/use-horizontal-overflow.ts`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`

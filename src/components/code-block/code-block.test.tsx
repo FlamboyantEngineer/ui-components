@@ -191,4 +191,48 @@ describe('CodeBlock', () => {
     act(() => resize([], {} as ResizeObserver));
     expect(pre).toHaveAttribute('data-overflowing', 'true');
   });
+
+  it('UIC-CODE-BLOCK-1.3 measures again when highlighting changes the same code', () => {
+    const { container, rerender } = render(<CodeBlock code="x" />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    const scrollWidth = vi.spyOn(pre, 'scrollWidth', 'get').mockReturnValue(500);
+    vi.spyOn(pre, 'clientWidth', 'get').mockReturnValue(200);
+    rerender(<CodeBlock code="x" tokenize={tokenize} />);
+    expect(pre).toHaveAttribute('data-overflowing', 'true');
+    expect(pre).toHaveAttribute('tabindex', '0');
+    scrollWidth.mockReturnValue(200);
+    rerender(<CodeBlock code="x" />);
+    expect(pre).not.toHaveAttribute('data-overflowing');
+    expect(pre).not.toHaveAttribute('tabindex');
+  });
+
+  it('UIC-CODE-BLOCK-1.3 measures again when its content changes outside React', async () => {
+    const { container } = render(<CodeBlock code="x" />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    vi.spyOn(pre, 'scrollWidth', 'get').mockReturnValue(500);
+    vi.spyOn(pre, 'clientWidth', 'get').mockReturnValue(200);
+    const token = document.createElement('span');
+    token.className = 'wide';
+    await act(async () => {
+      pre.querySelector('code')?.append(token);
+    });
+    expect(pre).toHaveAttribute('data-overflowing', 'true');
+  });
+
+  it('UIC-CODE-BLOCK-1.3 measures again when fonts finish loading', () => {
+    const fonts = new EventTarget();
+    Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+    try {
+      const { container } = render(<CodeBlock code="x" />);
+      const pre = container.querySelector('pre') as HTMLElement;
+      vi.spyOn(pre, 'scrollWidth', 'get').mockReturnValue(500);
+      vi.spyOn(pre, 'clientWidth', 'get').mockReturnValue(200);
+      act(() => {
+        fonts.dispatchEvent(new Event('loadingdone'));
+      });
+      expect(pre).toHaveAttribute('data-overflowing', 'true');
+    } finally {
+      Reflect.deleteProperty(document, 'fonts');
+    }
+  });
 });

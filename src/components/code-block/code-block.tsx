@@ -74,7 +74,7 @@ export function CodeBlock({
   const strings = useUiStrings();
   const titleId = useId();
   const codeRef = useRef<HTMLPreElement>(null);
-  const isOverflowing = useHorizontalOverflow(codeRef, code);
+  const isOverflowing = useHorizontalOverflow(codeRef);
   const lines = useMemo(
     () => (variant === 'terminal' ? splitTerminalLines(code, prompt) : null),
     [code, prompt, variant],
