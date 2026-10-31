@@ -14,8 +14,7 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import type { ButtonGroupDensity } from '../button-group/button-group.js';
 import { Separator } from '../separator/separator.js';
-import { ScrollStripButton } from '../button/button.js';
-import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
+import { ScrollStrip, useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import {
   resolveContainment,
@@ -116,29 +115,6 @@ function ToolbarRowStrip({ role, orientation, stripRef, children, ...rest }: Too
   );
 }
 
-/** The scroll button at `edge`, and the fade that shows tools hide past it. */
-function ScrollEdge({
-  edge,
-  isHidden,
-  onPage,
-}: {
-  edge: 'start' | 'end';
-  isHidden: boolean;
-  onPage: (edge: 'start' | 'end') => void;
-}) {
-  return (
-    <>
-      <span {...hooks.slot('fade', { edge })} aria-hidden="true" hidden={isHidden} />
-      <ScrollStripButton
-        {...hooks.slot('scroll-button', { edge })}
-        edge={edge}
-        isHidden={isHidden}
-        onPress={onPage}
-      />
-    </>
-  );
-}
-
 /**
  * A row of controls, vertically centred, with a gap; or a column of them when vertical. The
  * controls always sit in the same strip, so changing the overflow or the orientation never
@@ -189,20 +165,24 @@ export function ToolbarRow({
         scroll.onFocus(event);
       }}
     >
-      {isScroll ? (
-        <ScrollEdge edge="start" isHidden={!edges.start} onPage={scroll.pageToward} />
-      ) : null}
-      <ToolbarRowStrip
-        role={role}
-        orientation={orientation}
-        stripRef={stripRef}
-        onScroll={isScroll ? scroll.syncOverflow : undefined}
-        aria-label={label}
-        aria-labelledby={labelledBy}
+      <ScrollStrip
+        hooks={hooks}
+        edges={edges}
+        onPage={scroll.pageToward}
+        hasButtons={isScroll}
+        fadeHooks={isScroll ? hooks : undefined}
       >
-        <ToolbarRowContext value={{ orientation, wrap }}>{children}</ToolbarRowContext>
-      </ToolbarRowStrip>
-      {isScroll ? <ScrollEdge edge="end" isHidden={!edges.end} onPage={scroll.pageToward} /> : null}
+        <ToolbarRowStrip
+          role={role}
+          orientation={orientation}
+          stripRef={stripRef}
+          onScroll={isScroll ? scroll.syncOverflow : undefined}
+          aria-label={label}
+          aria-labelledby={labelledBy}
+        >
+          <ToolbarRowContext value={{ orientation, wrap }}>{children}</ToolbarRowContext>
+        </ToolbarRowStrip>
+      </ScrollStrip>
     </div>
   );
 }

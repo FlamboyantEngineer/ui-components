@@ -31,3 +31,12 @@ In a right-to-left strip, edges shall be reported from the inline start and the 
 
 Implementation: `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/utils/use-scroll-strip-overflow.test.ts`
+
+## UIC-SCROLL-STRIP-2 - Edge controls
+
+### UIC-SCROLL-STRIP-2.1 - One part for every scrolling strip
+
+Toolbar Scroller, Toolbar Row and Tabs shall draw the edge controls of their scrolling strip with one internal `ScrollStrip` part, under their own hook classes. Around the strip its owner renders, the part draws at each edge a decorative fade (`aria-hidden`), when the owner asks for fades, then a scroll button ([Icon Button](BUTTON.md) named by the provider's `scrollBackward` or `scrollForward` string, out of the tab order), when it asks for buttons, in the order start fade, start button, strip, end fade, end button. Each carries `data-edge` and the native `hidden` attribute while its edge hides nothing, as `useToolbarScroll` measures it with this hook; pressing a button pages the strip toward its edge. Adding or removing the controls never remounts the strip. `isOverflowing(element, axis)` is the one test, also used by tab lists, code blocks and truncation tooltips, for content more than one pixel past an element's box.
+
+Implementation: `src/components/toolbar-scroller/scroll-strip.tsx`, `src/components/toolbar-scroller/use-toolbar-scroll.ts`, `src/utils/is-overflowing.ts`
+Verification: `src/components/toolbar-scroller/scroll-strip.test.tsx`

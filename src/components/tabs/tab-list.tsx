@@ -4,7 +4,6 @@ import {
   useContext,
   useLayoutEffect,
   useMemo,
-  useRef,
   type JSX,
   type KeyboardEvent,
   type ReactNode,
@@ -23,7 +22,7 @@ import type { BaseProps, Key, Orientation } from '../../core/props.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
+import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
@@ -242,9 +241,8 @@ export function TabList({
   const orientation = useSlottedContext(TabsContext)?.orientation ?? 'horizontal';
   const { isMenu, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });
   const [listRef, setListRef] = useForwardedRef(ref);
-  const stripRef = useRef<HTMLDivElement | null>(null);
   const menu = useTabOverflow(state, isMenu);
-  const strip = useScrollStripOverflow(stripRef);
+  const scroll = useToolbarScroll(hasButtons);
   const scrollOverflowing = useListOverflow(listRef, orientation);
   useCenterSelectedTab(listRef, { orientation, selectedKey: state?.selectedKey ?? null });
   const actions = useTabActions({
@@ -263,8 +261,8 @@ export function TabList({
     onReorderKey,
   });
   const elementRef = useMemo(
-    () => mergeRefs(setListRef, menu.itemContainerRef, hasButtons ? stripRef : undefined),
-    [setListRef, menu.itemContainerRef, hasButtons],
+    () => mergeRefs(setListRef, menu.itemContainerRef, scroll.stripRef),
+    [setListRef, menu.itemContainerRef, scroll.stripRef],
   );
   // React Aria builds the collection from a hidden render of the list, which draws no parts.
   if (!state) {
@@ -280,7 +278,7 @@ export function TabList({
     <TabActionsContext.Provider value={actions}>
       <VisibleCollection keys={menu.visibleKeys}>
         <AriaTabList
-          {...mergeProps(rest, { onScroll: hasButtons ? strip.syncOverflow : undefined })}
+          {...mergeProps(rest, { onScroll: hasButtons ? scroll.syncOverflow : undefined })}
           render={keys ? renderListKeys(rest.render, keys) : rest.render}
           ref={elementRef}
           {...hooks.slot('list', { overflowing }, className)}
@@ -292,10 +290,7 @@ export function TabList({
   );
   if (!isMenu && !hasButtons && !onAdd) return list;
   return (
-    <TabBar
-      {...{ state, orientation, isMenu, hasButtons, menu, onAdd }}
-      strip={{ ...strip, stripRef }}
-    >
+    <TabBar {...{ state, orientation, isMenu, hasButtons, menu, onAdd }} scroll={scroll}>
       {list}
     </TabBar>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from 'react';
+import { isOverflowing } from '../../utils/is-overflowing.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 
 /** Content changes that can widen the text without resizing the element: nodes, text, classes, styles. */
@@ -18,10 +19,10 @@ const contentChanges: MutationObserverInit = {
  * size.
  */
 export function useHorizontalOverflow(ref: RefObject<HTMLElement | null>): boolean {
-  const [isOverflowing, setOverflowing] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
   const measure = useCallback(() => {
     const element = ref.current;
-    if (element) setOverflowing(element.scrollWidth > element.clientWidth + 1);
+    if (element) setOverflowing(isOverflowing(element, 'horizontal'));
   }, [ref]);
   useResizeObserver([ref], measure);
   // An unchanged result sets the same state, which React skips, so measuring every render settles.
@@ -40,5 +41,5 @@ export function useHorizontalOverflow(ref: RefObject<HTMLElement | null>): boole
       fonts?.removeEventListener('loadingdone', measure);
     };
   }, [ref, measure]);
-  return isOverflowing;
+  return overflowing;
 }
