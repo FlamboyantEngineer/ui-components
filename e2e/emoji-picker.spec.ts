@@ -10,6 +10,28 @@ async function openPopover(page: Page, lab: LabFixture, theme?: string) {
 }
 
 test.describe('Emoji Picker lab', () => {
+  test('UIC-EMOJI-PICKER-1.6 renders the emoji in view of a virtualized grid and reaches the last', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const demo = page.locator('[data-lab-demo="virtualized"]');
+    const grid = demo.getByRole('grid', { name: 'Smileys & Emotion' });
+    await expect(grid).toHaveAttribute('data-virtualized', 'true');
+    const count = Number(await grid.getAttribute('aria-rowcount'));
+    const shown = await grid.getByRole('row').count();
+    expect(shown).toBeGreaterThan(8);
+    expect(shown).toBeLessThan(count || 400);
+    const box = await grid.getByRole('row').first().boundingBox();
+    expect(box && Math.round(box.width)).toBe(Math.round(box?.height ?? 0));
+    await grid.getByRole('row').first().focus();
+    await page.keyboard.press('End');
+    const focused = grid.locator('[role="row"]:focus');
+    await expect(focused).toBeVisible();
+    await expect(grid.getByRole('row').first()).not.toBeFocused();
+    await lab.expectAccessible('[data-lab-demo="virtualized"]');
+  });
+
   test('UIC-EMOJI-PICKER-1.1 UIC-EMOJI-PICKER-2.4 shows the loading, failed and loaded states', async ({
     page,
     lab,
