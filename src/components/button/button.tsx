@@ -1,7 +1,13 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { Button as AriaButton, Link as AriaLink, ProgressBar } from '../../primitives/index.js';
+import { useContext, useState, type ReactNode } from 'react';
+import {
+  Button as AriaButton,
+  Link as AriaLink,
+  PopoverContext,
+  ProgressBar,
+  TooltipTriggerStateContext,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -120,11 +126,31 @@ function ButtonParts({
   );
 }
 
-/** Wraps a button in a `Tooltip` when it has a hint or a shortcut, which follows the hint. */
-function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
+/**
+ * Whether the button sits in a caller's own hover trigger, a `Tooltip` or a `HoverCard`, which
+ * hands the button its trigger props through React Aria's focusable context. A tooltip trigger of
+ * the button's own would take that context over.
+ */
+function useInCallerTrigger(): boolean {
+  const tooltip = useContext(TooltipTriggerStateContext);
+  const popover = useContext(PopoverContext) as { trigger?: string } | null;
+  return tooltip !== null || popover?.trigger === 'PreviewTrigger';
+}
+
+/**
+ * Wraps a button in a `Tooltip` for its hint and shortcut, which follows the hint. A button without
+ * either keeps the wrapper with the tooltip disabled, so a hint that comes or goes leaves the
+ * element, its ref, its content and its focus in place. In a caller's own tooltip or hover card a
+ * button without a hint is left unwrapped, so that trigger keeps working.
+ */
+function ButtonTooltip({ children, tooltip, shortcut }: ButtonHint & { children: ReactNode }) {
+  const inCallerTrigger = useInCallerTrigger();
+  // Held here, so a hint that goes while open closes its tooltip.
+  const [isOpen, setOpen] = useState(false);
   const keys = shortcut && toKeyShortcuts(shortcut) ? <Shortcut chord={shortcut} /> : null;
   const hint = isEmptyHint(tooltip) ? null : tooltip;
-  if (hint === null && keys === null) return button;
+  const isEmpty = hint === null && keys === null;
+  if (isEmpty && inCallerTrigger) return children;
   const content = (
     <>
       {hint}
@@ -132,7 +158,16 @@ function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
       {keys}
     </>
   );
-  return <Tooltip content={content}>{button}</Tooltip>;
+  return (
+    <Tooltip
+      content={content}
+      isDisabled={isEmpty}
+      isOpen={isOpen && !isEmpty}
+      onOpenChange={setOpen}
+    >
+      {children}
+    </Tooltip>
+  );
 }
 
 function isEmptyHint(tooltip: ReactNode): boolean {
@@ -232,7 +267,11 @@ export function Button({
       {parts}
     </AriaButton>
   );
-  return withTooltip(element, { tooltip: presentation.hint, shortcut: rest.shortcut });
+  return (
+    <ButtonTooltip tooltip={presentation.hint} shortcut={rest.shortcut}>
+      {element}
+    </ButtonTooltip>
+  );
 }
 
 export type { ButtonRenderState } from './button-state.js';

@@ -41,7 +41,7 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-1.6 - Tooltip
 
-`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable.
+`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable. A tooltip or shortcut that comes or goes, or a hint that changes, keeps the same `<button>` or link element, its ref, its content and its focus; a hint that goes while open closes its tooltip. A button without a hint inside a caller's own `Tooltip` or `HoverCard` leaves that trigger to the caller.
 
 Implementation: `src/components/button/button.tsx`, `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/tooltip.spec.ts`

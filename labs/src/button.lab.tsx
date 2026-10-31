@@ -23,7 +23,11 @@ function Toggles() {
       <Button startIcon={EyeGlyph} defaultSelected>
         Show grid
       </Button>{' '}
-      <Button isSelected={pinned} onChange={setPinned}>
+      <Button
+        isSelected={pinned}
+        onChange={setPinned}
+        tooltip={pinned ? 'Press again to unpin' : undefined}
+      >
         Pin panel
       </Button>
       <p data-lab-output="pinned">Pinned: {pinned ? 'yes' : 'no'}</p>
@@ -144,7 +148,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Toggles"
-        description="A button with defaultSelected keeps its own pressed state; one with isSelected and onChange leaves it to its caller."
+        description="A button with defaultSelected keeps its own pressed state; one with isSelected and onChange leaves it to its caller. Pin panel gains a hint while pinned and loses it again, keeping keyboard focus."
       >
         <Toggles />
       </LabSection>
