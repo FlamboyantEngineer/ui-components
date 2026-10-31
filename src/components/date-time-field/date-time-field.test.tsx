@@ -129,6 +129,26 @@ describe('DateTimeField field', () => {
     expect(instant).toHaveBeenLastCalledWith('2026-04-13T13:46');
   });
 
+  it('UIC-DATE-TIME-FIELD-1.2 keeps a four-digit year through a segment edit of an early date-time', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    renderInLocale(
+      <DateTimeField
+        label="When"
+        mode="date-time"
+        defaultValue="0099-04-20T12:30"
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    act(() => segment(/^minute/).focus());
+    await user.keyboard('{ArrowUp}');
+    expect(onChange).toHaveBeenLastCalledWith('0099-04-20T12:31');
+    expect(onCommit).toHaveBeenLastCalledWith('0099-04-20T12:31');
+    expect(segment(/^minute/)).toHaveAttribute('aria-valuenow', '31');
+  });
+
   it('UIC-DATE-TIME-FIELD-1.4 keeps an out-of-bounds value on screen, invalid and uncommitted', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

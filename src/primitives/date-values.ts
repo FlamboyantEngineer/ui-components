@@ -10,6 +10,7 @@ import {
   parseDateTime,
   parseTime,
   parseZonedDateTime,
+  toCalendarDate,
   toCalendarDateTime,
   toTimeZone,
   toZoned,
@@ -98,5 +99,5 @@ export function formatIsoDate(
   const clock = granularity === 'second' ? `${time}:${pad(second)}` : time;
   if (!('day' in value)) return clock;
   if ('timeZone' in value) return value.set({ minute, second, millisecond: 0 }).toString();
-  return `${value.year}-${pad(value.month)}-${pad(value.day)}T${clock}`;
+  return `${toCalendarDate(value).toString()}T${clock}`;
 }

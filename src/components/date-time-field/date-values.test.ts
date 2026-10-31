@@ -53,6 +53,15 @@ describe('date values', () => {
     expect(formatIsoDate(requireDefined(parseIsoDateTime(zoned, 'Asia/Tokyo')))).toBe(zoned);
   });
 
+  it('UIC-DATE-TIME-FIELD-1.2 keeps four-digit years in floating date and time texts', () => {
+    for (const year of ['0001', '0099', '0999', '1000']) {
+      const text = `${year}-04-20T12:30`;
+      const value = requireDefined(parseIsoDateTime(text));
+      expect(formatIsoDate(value)).toBe(text);
+      expect(formatIsoDate(value.add({ minutes: 1 }), 'second')).toBe(`${year}-04-20T12:31:00`);
+    }
+  });
+
   it('UIC-DATE-TIME-FIELD-1.2 reads an offset or zoned text as the local wall time of its instant', () => {
     const moment = new Date(2026, 3, 13, 13, 45);
     expect(formatIsoDate(requireDefined(parseIsoDateTime(moment.toISOString())))).toBe(
