@@ -108,6 +108,8 @@ function useAnchorElement(anchor: TooltipAnchor | null | undefined, isOpen: bool
   const isElementAnchor = isOpen && anchor != null && !isVirtualAnchor(anchor);
   useLayoutEffect(() => {
     if (!isElementAnchor) return undefined;
+    // Until the tooltip has an element, the script's document stands in.
+    // eslint-disable-next-line no-restricted-properties -- no element to read a document from
     const document = read.current()?.ownerDocument ?? globalThis.document;
     const view = document.defaultView;
     if (!view) return undefined;
