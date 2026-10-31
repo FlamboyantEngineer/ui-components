@@ -74,6 +74,16 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(view.container.querySelector('.ui-emoji-picker')).not.toHaveAttribute('data-loading');
   });
 
+  it('UIC-EMOJI-PICKER-1.1 shows the failure for a loader that throws before it answers', async () => {
+    const throwing = (): Promise<readonly NativeEmoji[]> => {
+      throw new Error('offline');
+    };
+    render(<EmojiPicker loadEmoji={throwing} />);
+    expect(await screen.findByText('Emoji could not be loaded.')).toHaveClass(
+      'ui-emoji-picker__message',
+    );
+  });
+
   it('UIC-EMOJI-PICKER-1.1 loads once although the host passes a new loader on each render', async () => {
     const load = vi.fn(loadFixture);
     function Host() {

@@ -139,6 +139,33 @@ describe('Completions engine', () => {
     expect(input()).toHaveValue('See Requirement 12');
   });
 
+  it('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.7 treats a source that throws as one that rejects', async () => {
+    const user = userEvent.setup();
+    const throwing: CompletionSource = ({ query }) => {
+      if (query === 'ba') throw new Error('Offline');
+      return fruit;
+    };
+    const { rerender } = render(<Notes completions={throwing} />);
+    await user.click(input());
+    await user.keyboard('ap');
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
+    await user.keyboard(' ba');
+    expect(input()).toHaveValue('ap ba');
+    await user.keyboard('n');
+    await waitFor(() => expect(optionTexts()).toEqual(['banana']));
+    // A replaced source is asked again from an effect: its throw stays inside the lookup.
+    rerender(
+      <Notes
+        completions={() => {
+          throw new Error('Offline');
+        }}
+      />,
+    );
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+    await user.keyboard('a');
+    expect(input()).toHaveValue('ap bana');
+  });
+
   it('UIC-COMPLETION-LIST-2.2 shows only the latest answer and nothing for a locked control', async () => {
     const user = userEvent.setup();
     const answers: Array<(options: Completion[]) => void> = [];
