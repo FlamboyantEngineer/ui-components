@@ -237,6 +237,12 @@ export default tseslint.config(
           message:
             'Use isNode, isElement or isHTMLElement (src/utils/is-element.ts), which hold for nodes of any window.',
         },
+        {
+          // Each call builds a new Intl formatter.
+          selector: 'CallExpression[callee.property.name=/^toLocale(Date|Time)?String$/]',
+          message:
+            'Format through the cached useNumberFormatter or useDateFormatter (src/primitives), or getNumberFormat.',
+        },
         ENUM_SYNTAX,
       ],
       '@typescript-eslint/naming-convention': [
