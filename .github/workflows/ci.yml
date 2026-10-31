@@ -103,7 +103,7 @@ jobs:
         run: npm run check:server-components
 
   labs-build:
-    # The labs are built once; the browser jobs download the build.
+    # The labs are built once; the browser jobs restore the build from the cache.
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -116,16 +116,16 @@ jobs:
       - run: npm ci
       - name: Build labs
         run: npm run build:labs
-      - uses: actions/upload-artifact@v4
+      # Saved under this commit, so the browser jobs of this run restore exactly this build.
+      - uses: actions/cache/save@v4
         with:
-          name: labs-build
           path: labs/build/
-          retention-days: 1
+          key: labs-build-${{ github.sha }}
 
   labs:
     # The lab browser suite runs in shards beside the check job so it fits the time budget. The
     # Chromium shards and the WebKit job each install only their own browser, from a cache keyed by
-    # the Playwright version. A failing job uploads the traces of its failed tests.
+    # the Playwright version. CI records no traces; rerun a failing test locally with --trace=on.
     needs: labs-build
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -145,10 +145,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v4
+      - uses: actions/cache/restore@v4
         with:
-          name: labs-build
           path: labs/build/
+          key: labs-build-${{ github.sha }}
+          fail-on-cache-miss: true
       - name: Playwright version
         id: playwright
         run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
@@ -165,10 +166,3 @@ jobs:
         run: npx playwright install-deps ${{ matrix.browser }}
       - name: Lab browser tests (${{ matrix.name }})
         run: npx playwright test ${{ matrix.args }}
-      - name: Upload traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: traces-${{ matrix.browser }}-${{ strategy.job-index }}
-          path: test-results/
-          retention-days: 7

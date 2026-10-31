@@ -50,7 +50,7 @@ Verification: `test/package.test.ts`
 
 ### UIC-LABS-1.7 - Browser suite in hosted CI
 
-Hosted CI shall build the labs once, in one job, and hand the build to the browser jobs as an artifact. The Chromium projects run in three shards and the WebKit projects in their own job, and each job installs only its own browser, restored from a cache keyed by the Playwright version, plus that browser's system packages. A failing browser job uploads `test-results/`, which holds the trace Playwright keeps for each failed test on CI.
+Hosted CI shall build the labs once, in one job, and hand the build to the browser jobs through a cache entry keyed by the commit. The Chromium projects run in three shards and the WebKit projects in their own job, and each job installs only its own browser, restored from a cache keyed by the Playwright version, plus that browser's system packages. No run records traces, since CI keeps no files from a run; a failing test is rerun locally with `--trace=on`.
 
 Implementation: `.github/workflows/ci.yml`, `playwright.config.ts`
 Verification: `test/package.test.ts`
