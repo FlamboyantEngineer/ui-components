@@ -195,8 +195,12 @@ export function Button({
     'aria-label': rest['aria-label'],
   });
   const selection = useButtonSelection(rest);
-  const action = useButtonAction({ ...rest, ...selection, onError, pendingDelay });
-  const options = { platform: useDetectedPlatform(), isTooltipName: presentation.isTooltipName };
+  const { isBusy, ...action } = useButtonAction({ ...rest, ...selection, onError, pendingDelay });
+  const options = {
+    platform: useDetectedPlatform(),
+    isTooltipName: presentation.isTooltipName,
+    isBusy,
+  };
   const isLink = rest.href !== undefined;
   const hookProps = hooks.root({
     className,

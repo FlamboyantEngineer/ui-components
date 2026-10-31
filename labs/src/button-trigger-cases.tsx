@@ -15,16 +15,37 @@ function CommandsMenu({ isDisabled, onRun }: { isDisabled: boolean; onRun: () =>
       >
         {isDisabled ? 'Locked commands' : 'Commands'}
       </Button>
-      <MenuPopover>
-        <Menu aria-label="Commands" onAction={onRun}>
-          <MenuItem id="run">Run</MenuItem>
-        </Menu>
-      </MenuPopover>
+      <CommandsPopover onRun={onRun} />
     </MenuTrigger>
   );
 }
 
-/** Buttons that open a menu: a focusable disabled one keeps its tooltip and never opens it. */
+function CommandsPopover({ onRun }: { onRun: () => void }) {
+  return (
+    <MenuPopover>
+      <Menu aria-label="Commands" onAction={onRun}>
+        <MenuItem id="run">Run</MenuItem>
+      </Menu>
+    </MenuPopover>
+  );
+}
+
+/** A menu button that syncs for three seconds first, showing pending only after two. */
+function SyncingMenu({ onRun }: { onRun: () => void }) {
+  return (
+    <MenuTrigger>
+      <Button
+        pendingDelay={2000}
+        onPress={() => new Promise<void>((resolve) => window.setTimeout(resolve, 3000))}
+      >
+        Sync then choose
+      </Button>
+      <CommandsPopover onRun={onRun} />
+    </MenuTrigger>
+  );
+}
+
+/** Buttons that open a menu, refusing to while disabled or while their own action runs. */
 export function ButtonTriggerCases() {
   const [runs, setRuns] = useState(0);
   const run = () => setRuns((count) => count + 1);
@@ -32,9 +53,10 @@ export function ButtonTriggerCases() {
     <div data-lab-family="button-trigger-cases">
       <LabSection
         title="Menu triggers"
-        description="Both buttons open a menu. The locked one is disabled but focusable: hover or tab to it to read why, and neither a click, Enter, Space nor the arrow keys open its menu."
+        description="Each button opens a menu. The locked one is disabled but focusable: hover or tab to it to read why, and neither a click, Enter, Space nor the arrow keys open its menu. Sync then choose opens its menu as it starts a three-second sync and refuses to open it again until the sync ends, also during the two seconds before it shows pending."
       >
-        <CommandsMenu isDisabled={false} onRun={run} /> <CommandsMenu isDisabled onRun={run} />
+        <CommandsMenu isDisabled={false} onRun={run} /> <CommandsMenu isDisabled onRun={run} />{' '}
+        <SyncingMenu onRun={run} />
         <LabOutput name="Runs">{runs}</LabOutput>
       </LabSection>
     </div>

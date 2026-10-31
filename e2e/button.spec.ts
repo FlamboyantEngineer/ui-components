@@ -96,6 +96,27 @@ test.describe('Button lab', () => {
     await expect(area.locator('[data-lab-output="Runs"]')).toHaveText('1');
   });
 
+  test('UIC-BUTTON-21.7 keeps its menu shut while its action runs, before pending shows', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const area = page.locator('[data-lab-family="button-trigger-cases"]');
+    const syncing = area.getByRole('button', { name: 'Sync then choose' });
+    await syncing.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(syncing).not.toHaveAttribute('data-pending');
+    await syncing.click();
+    for (const key of ['Enter', 'Space', 'ArrowDown']) await page.keyboard.press(key);
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(syncing).toHaveAttribute('data-pending', 'true');
+    await expect(syncing).not.toHaveAttribute('data-pending', { timeout: 5000 });
+    await syncing.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+  });
+
   for (const theme of ['light', 'dark']) {
     test(`UIC-BUTTON-1.7 shows the hint and shortcut in the tooltip and publishes aria-keyshortcuts in the ${theme} theme`, async ({
       page,
