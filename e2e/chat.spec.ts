@@ -79,12 +79,13 @@ test.describe('Chat lab', () => {
     await expect(composer(assistant)).toBeFocused();
   });
 
-  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 queues on Enter, edits the newest queued message on Up and sends now on Ctrl+Enter', async ({
+  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 UIC-SHORTCUT-3.3 queues on Enter, edits the newest queued message on Up and sends now on Ctrl+Enter', async ({
     page,
   }) => {
     await openChat(page, 80);
     const demo = section(page, 'Shortcuts and queue');
     const state = demo.locator('[data-lab-output="queue-state"]');
+    await expect(demo.getByRole('group', { name: 'Composer keys' })).toBeVisible();
     await composer(demo).click();
     await page.keyboard.type('Pick a museum');
     await page.keyboard.press('Enter');

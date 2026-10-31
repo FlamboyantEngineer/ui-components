@@ -6,7 +6,7 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { MetaLine } from '../meta-line/meta-line.js';
+import { MetaLine, type MetaLineProps } from '../meta-line/meta-line.js';
 import {
   formatShortcutAccessibleText,
   formatShortcutSteps,
@@ -37,7 +37,8 @@ export interface KeyHint {
   action: ReactNode;
 }
 
-export interface KeyHintsProps extends BaseProps {
+export interface KeyHintsProps
+  extends BaseProps, Pick<MetaLineProps, 'aria-label' | 'aria-labelledby'> {
   /** The legend's entries, in order. */
   hints: readonly KeyHint[];
   /** The notation of every shortcut. Defaults to the detected platform. */

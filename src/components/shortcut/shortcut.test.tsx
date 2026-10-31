@@ -206,4 +206,10 @@ describe('KeyHints', () => {
     expect(root?.querySelectorAll('.ui-shortcut[data-platform="mac"]')).toHaveLength(3);
     expectHooksMatchSpec(container, 'SHORTCUT');
   });
+
+  it('UIC-SHORTCUT-3.3 names a legend as a group', () => {
+    render(<KeyHints hints={hints} platform="mac" aria-label="Composer keys" />);
+    const legend = screen.getByRole('group', { name: 'Composer keys' });
+    expect(legend).toHaveClass('ui-key-hints');
+  });
 });

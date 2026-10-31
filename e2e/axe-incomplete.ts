@@ -70,10 +70,4 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
   'file-field': {
     'video-caption': 'The video is a sample attachment preview; captions belong to its content.',
   },
-  chat: {
-    'aria-prohibited-attr': 'Known defect #704: the key hints name a span without a role.',
-  },
-  'message-composer': {
-    'aria-prohibited-attr': 'Known defect #704: the key hints name a span without a role.',
-  },
 };
