@@ -4,7 +4,7 @@
 // the clock keeps a single timeout for the earliest one.
 
 import { useEffect, useReducer, useRef } from 'react';
-import { requireDefined } from '../../utils/require-defined.js';
+import { requireDefined } from '../utils/require-defined.js';
 
 type Wake = () => void;
 

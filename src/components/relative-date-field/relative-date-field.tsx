@@ -2,6 +2,8 @@
 
 import { useLocale } from '../../primitives/index.js';
 import { useGetNow, useNow, useTimeZone } from '../../core/clock.js';
+import { useClockTick } from '../../core/clock-tick.js';
+import { untilMidnight } from '../../utils/relative-time.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -159,7 +161,9 @@ function describeValue(
     typeof value === 'string'
       ? formatStableTime(value, options.locale)
       : formatDayRange(value, options.locale);
-  return absolute === null ? null : { relative: absolute, absolute, relation: undefined };
+  return absolute === null
+    ? null
+    : { relative: absolute, absolute, relation: undefined, nextChange: null };
 }
 
 /** Bounds read in the field's resolved zone. */
@@ -283,6 +287,12 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
     isDisabled: now !== null && !isPickableValue(resolvePreset(preset, context(now)), kind, bounds),
   }));
   const { commit, pickDate } = usePick(state, { kind, getNow, bounds });
+  // The text, the relation and the presets' bounds move on with the clock: wake when the text may
+  // change, and at the next midnight in the field's zone.
+  useClockTick(
+    now ? Math.min(text?.nextChange ?? Infinity, untilMidnight(now, timeZone)) : null,
+    now?.getTime() ?? 0,
+  );
   const data = { mode: kind, relation: text?.relation };
   return (
     <Field

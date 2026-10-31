@@ -47,6 +47,43 @@ describe('RelativeDateField', () => {
     });
   });
 
+  it('UIC-RELATIVE-DATE-FIELD-1.2 refreshes its words and presets as time passes', async () => {
+    vi.useFakeTimers({ now: new Date('2026-04-20T23:59:00Z') });
+    try {
+      const { container, unmount } = renderInLocale(
+        <>
+          <RelativeDateField
+            label="Due"
+            timeZone="UTC"
+            defaultValue="2026-04-20"
+            maxValue="2026-04-20"
+          />
+          <RelativeDateField
+            label="Call"
+            mode="date-time"
+            timeZone="UTC"
+            defaultValue="2026-04-20T23:58:00Z"
+          />
+        </>,
+      );
+      expect(screen.getByRole('button', { name: /Due$/ })).toHaveTextContent('Today');
+      expect(screen.getByRole('button', { name: /Call$/ })).toHaveTextContent('1 minute ago');
+      await act(async () => {
+        vi.advanceTimersByTime(60_000);
+      });
+      expect(screen.getByRole('button', { name: /Due$/ })).toHaveTextContent('Yesterday');
+      expect(screen.getByRole('button', { name: /Call$/ })).toHaveTextContent('2 minutes ago');
+      expect(container.querySelector('.ui-relative-date-field')).toHaveAttribute(
+        'data-relation',
+        'past',
+      );
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('UIC-RELATIVE-DATE-FIELD-1.2 shows the placeholder for no value or one that is not a date', () => {
     const { container, rerender } = renderInLocale(
       <RelativeDateField label="Due" getNow={getNow} placeholder="No date" />,

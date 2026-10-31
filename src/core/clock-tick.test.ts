@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { subscribeClock } from './relative-time-clock.js';
+import { subscribeClock } from './clock-tick.js';
 
 describe('relative time clock', () => {
   beforeEach(() => {

@@ -52,8 +52,8 @@ Verification: `src/utils/relative-time.test.ts`, `src/components/relative-date-f
 
 A mounted `RelativeTime` shall render again when its `nextChange` comes due, so `Now` becomes `1 minute ago` (or, with second precision, `1 second ago`) and `Today` becomes `Yesterday` at midnight without the caller re-rendering. Every timestamp on the page shares one timer, set for the earliest moment any of them needs; it stops when none is mounted or none can change. Subscriptions sharing a deadline are counted together, so adding or cancelling one does not rescan the other callbacks at that deadline. A callback cancelled or rescheduled by an earlier wake callback shall not fire from the old due batch. A clock that has not moved since the previous wake, such as a fixed `getNow`, is frozen: the timestamp wakes for it at most once, finds the same time, and waits for its next render (a new `value` or `getNow`) instead of waking again, so a clock stopped at a boundary never wakes it every millisecond. A live clock keeps waking it at each change.
 
-Implementation: `src/components/relative-time/relative-time-clock.ts`, `src/components/relative-time/relative-time.tsx`
-Verification: `src/components/relative-time/relative-time-clock.test.ts`, `src/components/relative-time/relative-time.test.tsx`, `e2e/relative-time.spec.ts`
+Implementation: `src/core/clock-tick.ts`, `src/components/relative-time/relative-time.tsx`
+Verification: `src/core/clock-tick.test.ts`, `src/components/relative-time/relative-time.test.tsx`, `e2e/relative-time.spec.ts`
 
 ### UIC-RELATIVE-TIME-2.3 - Server rendering and hydration
 
