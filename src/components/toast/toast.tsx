@@ -166,7 +166,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
   const ref = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(ref, snapshot.isOpen);
   const isPaused = useIsStackPaused();
-  useToastTimer(toast.timer, snapshot, isPaused);
+  useToastTimer(toast.timer, { lifecycle, snapshot }, isPaused);
   useToastPresence(lifecycle, isMounted);
   const { index, offset, swipeDirection, swipeThreshold } = useToastStackPosition(toast.key, ref);
   const swipe = useToastSwipe({

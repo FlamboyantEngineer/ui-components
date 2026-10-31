@@ -15,9 +15,9 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.2 - Lifetime
 
-A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown. Hovering the region or moving focus into it (onto the region itself or into a toast) shall pause every visible toast's timer, also a timer that starts or restarts meanwhile (a toast added, updated with a new lifetime or settled from a promise while the reader points at the region), and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
+A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown, and its lifetime starts once, the first time it is shown: a toast that is displaced by newer ones beyond `maxVisibleToasts`, or whose region or list remounts, keeps the time that remained and runs on with it when it is shown again. Only a new toast, or an update that gives a new lifetime ([UIC-TOAST-1.5](#uic-toast-15---in-place-update)), starts a lifetime over. Hovering the region or moving focus into it (onto the region itself or into a toast) shall pause every visible toast's timer, also a timer that starts or restarts meanwhile (a toast added, updated with a new lifetime or settled from a promise while the reader points at the region), and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
 
-Implementation: `src/components/toast/toast.tsx`
+Implementation: `src/components/toast/toast.tsx`, `src/components/toast/use-toast-lifecycle.ts`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.3 - Replacement

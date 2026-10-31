@@ -20,20 +20,23 @@ export function useToastSnapshot(lifecycle: ToastLifecycle): ToastSnapshot {
 
 /**
  * Runs the toast's timer for its current lifetime while it is shown and open, and restarts it when
- * an update gives a new lifetime. While `isPaused` (its region is hovered or holds focus) the timer
- * holds, also when it starts or restarts meanwhile, and runs on with the time that remained after.
+ * an update gives a new lifetime. A lifetime starts once, the first time it is shown: a toast shown
+ * again after it was displaced or its list remounted runs on with the time that remained. While
+ * `isPaused` (its region is hovered or holds focus) the timer holds, also when it starts or restarts
+ * meanwhile, and runs on with the time that remained after.
  */
 export function useToastTimer(
   timer: ToastTimer | undefined,
-  snapshot: ToastSnapshot,
+  { lifecycle, snapshot }: { lifecycle: ToastLifecycle; snapshot: ToastSnapshot },
   isPaused: boolean,
 ) {
   const { timeout, lifetime, isOpen } = snapshot;
   useEffect(() => {
     if (!timer || !isOpen) return undefined;
-    timer.reset(timeout);
+    // Shown again, the timer was paused as it was hidden; the effect below resumes it.
+    if (lifecycle.startLifetime()) timer.reset(timeout);
     return () => timer.pause();
-  }, [timer, timeout, lifetime, isOpen]);
+  }, [timer, lifecycle, timeout, lifetime, isOpen]);
   useEffect(() => {
     if (!timer || !isOpen) return;
     // Pausing first leaves a single timeout running once resumed.

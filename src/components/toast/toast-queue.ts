@@ -114,6 +114,12 @@ export interface ToastLifecycle {
   mount: () => () => void;
   /** Removes the toast from the queue once its exit has ended. */
   finishExit: () => void;
+  /**
+   * Claims the start of the current lifetime's timer: true the first time a rendered toast shows
+   * this lifetime, false after, so a toast shown again (displaced and back, or remounted) runs on
+   * with the time that remained instead of starting over.
+   */
+  startLifetime: () => boolean;
 }
 
 /** The longest timer a browser keeps; React Aria needs a timer on every toast the queue restarts. */
@@ -151,11 +157,13 @@ interface ToastRecord {
   snapshot: ToastSnapshot;
   listeners: Set<() => void>;
   mounted: number;
+  /** The last lifetime whose timer started; -1 before the toast is first shown. */
+  startedLifetime: number;
 }
 
 function createRecord(content: ToastContent, timeout: number): ToastRecord {
   const snapshot = { content, timeout, lifetime: 0, isOpen: true };
-  return { snapshot, listeners: new Set(), mounted: 0 };
+  return { snapshot, listeners: new Set(), mounted: 0, startedLifetime: -1 };
 }
 
 function setSnapshot(record: ToastRecord, snapshot: ToastSnapshot) {
@@ -177,6 +185,11 @@ function createLifecycle(record: ToastRecord, remove: () => void): ToastLifecycl
       };
     },
     finishExit: remove,
+    startLifetime: () => {
+      if (record.startedLifetime === record.snapshot.lifetime) return false;
+      record.startedLifetime = record.snapshot.lifetime;
+      return true;
+    },
   };
 }
 
