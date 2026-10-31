@@ -25,6 +25,8 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
+import { useCarriedFocus } from '../../utils/use-carried-focus.js';
+import { useHeldSelection } from '../../utils/use-held-selection.js';
 import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
@@ -189,6 +191,8 @@ export function ListView<T extends object>({
   ...rest
 }: ListViewProps<T>) {
   const dragAndDropHooks = useListDragAndDrop(reorder);
+  const selection = useHeldSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
+  const listRef = useCarriedFocus<HTMLDivElement>(`${String(virtualized)} ${String(!!reorder)}`);
   const emptyState = useMemo(
     () => renderEmptyState && (() => renderEmptyState()),
     [renderEmptyState],
@@ -198,12 +202,8 @@ export function ListView<T extends object>({
       // React Aria keeps drag and drop hooks for the list's lifetime: remount when reorder toggles.
       key={reorder ? 'reorder' : 'static'}
       {...rest}
-      {...toCollectionSelectionProps({
-        selectedKeys,
-        defaultSelectedKeys,
-        disabledKeys,
-        onSelectionChange,
-      })}
+      {...toCollectionSelectionProps({ ...selection, disabledKeys })}
+      ref={listRef}
       onAction={onAction && ((key) => onAction(fromCollectionKey(key)))}
       dragAndDropHooks={dragAndDropHooks}
       renderEmptyState={emptyState}

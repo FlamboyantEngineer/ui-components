@@ -2,14 +2,7 @@
 
 // Card collections: React Aria's grid list in its grid layout, one item per card.
 
-import {
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactElement,
-  type ReactNode,
-} from 'react';
+import { useMemo, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
   GridLayout,
@@ -22,11 +15,12 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Selection } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { EmptyState } from '../empty-state/empty-state.js';
-import { isElement, isNode } from '../../utils/is-element.js';
+import { useCarriedFocus } from '../../utils/use-carried-focus.js';
+import { useHeldSelection } from '../../utils/use-held-selection.js';
 
 /** `grid` lines cards up in rows and columns; `waterfall` stacks cards of different heights in columns. */
 export type CardGridLayout = 'grid' | 'waterfall';
@@ -93,78 +87,6 @@ function toVirtualLayout(layout: CardGridLayout, { width, height }: CardGridItem
     : ({ layout: GridLayout, layoutOptions: { minItemSize } } as const);
 }
 
-/**
- * The selection, held here while uncontrolled: switching between the plain grid and the virtual
- * layouts mounts React Aria's grid list afresh, which would start again from `defaultSelectedKeys`.
- */
-function useCardGridSelection({
-  selectedKeys,
-  defaultSelectedKeys,
-  onSelectionChange,
-}: Pick<CardGridProps<object>, 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'>) {
-  const [own, setOwn] = useState<Iterable<Key> | 'all'>(() => defaultSelectedKeys ?? []);
-  const isControlled = selectedKeys !== undefined;
-  return {
-    selectedKeys: isControlled ? selectedKeys : own,
-    onSelectionChange(keys: Selection) {
-      if (!isControlled) setOwn(keys);
-      onSelectionChange?.(keys);
-    },
-  };
-}
-
-/**
- * Focuses the card with `key` once the grid renders it (a virtual layout renders its cards after
- * measuring), unless focus lands somewhere else first. Returns a function that stops waiting.
- */
-function refocusCard(grid: HTMLElement, key: string): () => void {
-  const owner = grid.ownerDocument;
-  const attempt = () => {
-    if (owner.activeElement !== owner.body) return true;
-    const card = grid.querySelector<HTMLElement>(`[data-key="${CSS.escape(key)}"]`);
-    card?.focus();
-    return card !== null;
-  };
-  if (attempt()) return () => undefined;
-  const observer = new MutationObserver(() => {
-    if (attempt()) observer.disconnect();
-  });
-  observer.observe(grid, { childList: true, subtree: true });
-  return () => observer.disconnect();
-}
-
-/**
- * Keeps focus on the same card when the grid list mounts afresh for another `layout` or
- * `virtualized`: the card that held focus, if focus had not moved elsewhere, takes it again.
- */
-function useCarriedFocus(mode: string) {
-  const gridRef = useRef<HTMLDivElement>(null);
-  const focusedKey = useRef<string | null>(null);
-  useLayoutEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return undefined;
-    const key = focusedKey.current;
-    const stopRefocus = key === null ? undefined : refocusCard(grid, key);
-    const onFocusIn = (event: FocusEvent) => {
-      const target = isElement(event.target) ? event.target : null;
-      focusedKey.current = target?.closest('[data-key]')?.getAttribute('data-key') ?? null;
-    };
-    // A card leaving the page takes focus to nowhere; focus moved elsewhere names where it went.
-    const onFocusOut = (event: FocusEvent) => {
-      const next = event.relatedTarget;
-      if (isNode(next) && !grid.contains(next)) focusedKey.current = null;
-    };
-    grid.addEventListener('focusin', onFocusIn);
-    grid.addEventListener('focusout', onFocusOut);
-    return () => {
-      stopRefocus?.();
-      grid.removeEventListener('focusin', onFocusIn);
-      grid.removeEventListener('focusout', onFocusOut);
-    };
-  }, [mode]);
-  return gridRef;
-}
-
 /** The cards: children, or the cards drawn from `items`, and the loading item when loading more. */
 function CardGridCards<T extends object>(
   props: Pick<CardGridProps<T>, 'items' | 'children' | 'dependencies' | 'onLoadMore' | 'isLoading'>,
@@ -214,9 +136,9 @@ export function CardGrid<T extends object>({
     () => renderEmptyState && (() => renderEmptyState()),
     [renderEmptyState],
   );
-  const selection = useCardGridSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
+  const selection = useHeldSelection({ selectedKeys, defaultSelectedKeys, onSelectionChange });
   const isVirtual = virtualized || layout !== 'grid';
-  const gridRef = useCarriedFocus(isVirtual ? layout : 'plain');
+  const gridRef = useCarriedFocus<HTMLDivElement>(isVirtual ? layout : 'plain');
   const grid = (
     <GridList
       {...rest}
