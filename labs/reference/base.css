@@ -243,6 +243,26 @@ body {
   }
 }
 
+/*
+ * Forced colours: the system draws its own palette and drops every box-shadow, so the focus halos
+ * the partials draw with --ref-focus-halo and --ref-focus-inset would vanish. A focused hook element
+ * takes an outline in the system highlight colour instead, inset so no scrolling list clips it.
+ */
+@media (forced-colors: active) {
+  :is([class^='ui-'], [class*=' ui-']):is(:focus-visible, [data-focus-visible]) {
+    outline: 2px solid Highlight !important; /* token-exempt: a system colour in forced colours */
+    outline-offset: -2px !important;
+  }
+}
+
+/* More contrast: borders take the strong border colour, so every frame and divider stands out. */
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme='dark'] {
+    --ref-border: var(--ref-border-strong);
+  }
+}
+
 @keyframes ref-spin {
   to {
     transform: rotate(360deg);

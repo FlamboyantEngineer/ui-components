@@ -151,3 +151,10 @@ Under `prefers-reduced-motion: reduce`, every hook element of the reference styl
 
 Implementation: `labs/reference/base.css`
 Verification: `e2e/reduced-motion.spec.ts`
+
+### UIC-LABS-3.10 - Forced colours and more contrast
+
+Under `forced-colors: active` the system drops every `box-shadow`, so a focus halo alone would vanish: every focused hook element (`:focus-visible` or `data-focus-visible`) of the reference stylesheet shall take a 2 pixel outline in the system `Highlight` colour, inset so a scrolling list cannot clip it, and the halos stay as decoration in other modes. Under `prefers-contrast: more`, borders take `--ref-border-strong` in both themes.
+
+Implementation: `labs/reference/base.css`
+Verification: `e2e/forced-colors.spec.ts`
