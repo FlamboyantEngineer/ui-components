@@ -18,6 +18,7 @@ import {
   type SegmentedChoiceValue,
 } from './choice-selection.js';
 import type { PendingChangeHandler } from './pending-change.js';
+import { useScopedDisabled } from '../field/field.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 
@@ -227,10 +228,12 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   });
   const [group, setGroup] = useForwardedRef(ref);
   useNativeReset(group, selection.reset);
+  const isDisabled = useScopedDisabled(rest.isDisabled);
 
   return (
     <ToggleButtonGroup
       {...rest}
+      isDisabled={isDisabled}
       ref={setGroup}
       {...hooks.root({
         className,
@@ -269,7 +272,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
         />
       ))}
       {name ? (
-        <ChoiceInputs name={name} values={selection.selectedKeys} isDisabled={rest.isDisabled} />
+        <ChoiceInputs name={name} values={selection.selectedKeys} isDisabled={isDisabled} />
       ) : null}
     </ToggleButtonGroup>
   );

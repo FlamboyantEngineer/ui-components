@@ -27,6 +27,7 @@ import {
   type FieldValidation,
   type FieldValidationBehavior,
 } from '../field/field.js';
+import { useScopedDisabled } from '../field/field.js';
 
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;
@@ -264,9 +265,11 @@ export function SearchField({
   const hasLabel = labelLayout === 'label-control';
   const hasMessage = hasLabel && validation.message !== undefined;
   const data = { size, labelLayout, pending: isPending, validation: validation.status };
+  const isDisabled = useScopedDisabled(rest.isDisabled);
   return (
     <AriaSearchField
       {...rest}
+      isDisabled={isDisabled}
       {...hooks.root({ className, props: rest, data })}
       aria-label={hasLabel ? undefined : label}
       aria-describedby={hasMessage ? messageId : undefined}

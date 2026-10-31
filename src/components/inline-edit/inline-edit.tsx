@@ -12,6 +12,7 @@ import { InlineError } from '../inline-error/inline-error.js';
 import { TextField } from '../text-field/text-field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { useInlineEdit } from './use-inline-edit.js';
+import { useScopedDisabled } from '../field/field.js';
 
 /** What `renderEditor` receives to draw the editor of an inline edit. */
 export interface InlineEditEditorProps<T> {
@@ -132,7 +133,8 @@ function InlineEditActions({
  */
 export function InlineEdit<T = string>(props: InlineEditProps<T>) {
   const { value, label, renderValue, renderEditor = renderTextEditor, placeholder } = props;
-  const { showActions = false, isDisabled = false, className, id, ...rest } = props;
+  const { showActions = false, className, id, ...rest } = props;
+  const isDisabled = useScopedDisabled(props.isDisabled);
   const strings = useUiStrings();
   const nameId = useId();
   const valueId = `${nameId}-value`;

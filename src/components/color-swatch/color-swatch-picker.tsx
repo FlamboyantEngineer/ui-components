@@ -23,6 +23,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch, isSwatchColor } from './color-swatch.js';
+import { useScopedDisabled } from '../field/field.js';
 
 /** How the swatches are laid out: a grid (the arrow keys move in two dimensions) or a stack. */
 export type ColorSwatchPickerLayout = 'grid' | 'stack';
@@ -168,6 +169,7 @@ export function ColorSwatchPickerItem({
   const { size, register } = useContext(PickerItemsContext);
   const { locale } = useLocale();
   const key = useId();
+  const isDisabled = useScopedDisabled(rest.isDisabled);
   const isShown = isSwatchColor(color);
   useLayoutEffect(
     () => (isShown ? register(key, color) : undefined),
@@ -177,6 +179,7 @@ export function ColorSwatchPickerItem({
   return (
     <ListBoxItem
       {...rest}
+      isDisabled={isDisabled}
       {...hooks.slot('item', undefined, className)}
       id={key}
       textValue={colorName ?? parseColor(color).getColorName(locale)}

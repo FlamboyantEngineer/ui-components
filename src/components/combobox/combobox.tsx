@@ -18,6 +18,7 @@ import {
 } from './combobox-state.js';
 import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-suggestions.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
+import { useScopedDisabled } from '../field/field.js';
 
 export type ComboboxSize = ControlSize;
 
@@ -172,7 +173,6 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   size = 'md',
   className,
   allowsEmptyCollection = true,
-  isDisabled,
   isReadOnly,
   completesInline,
   listHeader,
@@ -186,6 +186,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   name,
   ...rest
 }: ComboboxProps<M>) {
+  const isDisabled = useScopedDisabled(rest.isDisabled);
   const aria = omitModelProps(rest);
   const values = useComboboxValues(aria.value, aria.defaultValue);
   const model = useComboboxModel({ ...rest, isPending, isDisabled, isReadOnly });

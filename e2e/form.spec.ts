@@ -125,6 +125,8 @@ test.describe('Form lab', () => {
     await page.getByText('Pick up in store').click();
     await expect(address).toHaveAttribute('data-disabled', 'true');
     await expect(address.getByRole('textbox', { name: 'Street' })).toBeDisabled();
+    await expect(address.locator('.ui-switch')).toHaveAttribute('data-disabled', 'true');
+    await expect(address.locator('.ui-segmented-choice')).toHaveAttribute('data-disabled', 'true');
     await page.getByRole('button', { name: 'Continue' }).click();
     await expect(output(page, 'Delivery')).toHaveText('nothing');
     await lab.expectAccessible();

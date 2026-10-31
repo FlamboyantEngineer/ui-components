@@ -8,6 +8,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { getShownGridSize, moveGridSize, type GridSize } from './grid-size.js';
+import { useScopedDisabled } from '../field/field.js';
 
 export type { GridSize } from './grid-size.js';
 
@@ -158,13 +159,14 @@ export function GridSizePicker({
   maxColumns = 10,
   minRows = 5,
   minColumns = 5,
-  isDisabled = false,
+  isDisabled: ownDisabled,
   autoFocus = false,
   className,
   id,
   ...rest
 }: GridSizePickerProps) {
   const strings = useUiStrings();
+  const isDisabled = useScopedDisabled(ownDisabled);
   const max = { rows: maxRows, columns: maxColumns };
   const { preview, focused, setPreview, focusCell, move, focusRef, gridProps } = useGridPreview(
     max,

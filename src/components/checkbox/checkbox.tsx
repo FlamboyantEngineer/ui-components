@@ -9,6 +9,7 @@ import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { FieldValidationBehavior } from '../field/field.js';
+import { useScopedDisabled } from '../field/field.js';
 
 export interface CheckboxProps extends BaseProps, AriaLabellingProps {
   /** Whether the box is ticked, controlled. */
@@ -46,8 +47,13 @@ const hooks = createHooks('checkbox', ['box', 'glyph', 'label']);
 
 /** A tick box on a native checkbox input, with an optional visible label. */
 export function Checkbox({ children, size = 'md', className, ...rest }: CheckboxProps) {
+  const isDisabled = useScopedDisabled(rest.isDisabled);
   return (
-    <AriaCheckbox {...rest} {...hooks.root({ className, props: rest, data: { size } })}>
+    <AriaCheckbox
+      {...rest}
+      isDisabled={isDisabled}
+      {...hooks.root({ className, props: rest, data: { size } })}
+    >
       {({ isSelected, isIndeterminate }) => (
         <>
           <span {...hooks.slot('box')} aria-hidden="true">
