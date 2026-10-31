@@ -7,6 +7,7 @@ import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import type { TreeRename } from './use-tree-rename.js';
 import type { TreeReorder } from './use-tree-reorder.js';
+import { isElement } from '../../utils/is-element.js';
 
 interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<TreeProps<T>, 'onItemKeyDown'> {
   /** Reordering, while the tree is reorderable. */
@@ -26,7 +27,7 @@ export interface TreeKeyDown<T> {
 const editableSelector = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
 
 function findRow(target: EventTarget): Element | null {
-  if (!(target instanceof Element) || target.closest(editableSelector)) return null;
+  if (!isElement(target) || target.closest(editableSelector)) return null;
   return target.closest('[role="row"]');
 }
 

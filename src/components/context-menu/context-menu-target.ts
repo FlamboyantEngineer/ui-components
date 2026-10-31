@@ -14,6 +14,7 @@ import {
 import { mergeRefs } from '../../utils/merge-props.js';
 import type { MenuController } from './menu-controller.js';
 import { LONG_PRESS_DELAY } from '../../utils/overlay-defaults.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** The props a context menu target receives; its own values are called first. */
 export interface ContextMenuTargetProps {
@@ -58,13 +59,13 @@ const textInputTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'passwo
 
 /** Whether `target` is a text control inside `owner` (not the owner itself), which keeps its own menu. */
 function isTextInside(target: EventTarget, owner: Element): boolean {
-  if (!(target instanceof HTMLElement) || target === owner) return false;
+  if (!isHTMLElement(target) || target === owner) return false;
   // Editable content counts when it starts inside the target; a target that is itself the editor,
   // or sits inside one, keeps its menu.
   const editable = target.closest('[contenteditable]:not([contenteditable="false"])');
   if (editable) return editable !== owner && owner.contains(editable);
-  if (target instanceof HTMLTextAreaElement) return true;
-  return target instanceof HTMLInputElement && textInputTypes.has(target.type);
+  if (isHTMLElement(target, 'textarea')) return true;
+  return isHTMLElement(target, 'input') && textInputTypes.has(target.type);
 }
 
 function isKeyboardContextMenu(event: KeyboardEvent) {

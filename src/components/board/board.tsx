@@ -34,6 +34,7 @@ import {
 } from './board-moves.js';
 import { useBoardModel, type BoardModel } from './use-board-model.js';
 import { useBoardCardDrag, useBoardColumnDrag } from './use-board-drag.js';
+import { isElement } from '../../utils/is-element.js';
 
 /** A column of the board. */
 export interface BoardColumn {
@@ -114,7 +115,7 @@ function toDirection(key: string, isRightToLeft: boolean): BoardMoveDirection | 
 
 /** The card a keydown came from: the key of the card row around its target. */
 function findCardKey(target: EventTarget, identities: ReadonlyMap<string, Key>): Key | undefined {
-  if (!(target instanceof Element) || target.closest(editableSelector)) return undefined;
+  if (!isElement(target) || target.closest(editableSelector)) return undefined;
   const identity = target.closest(`.${hooks.slotClass('card')}`)?.getAttribute('data-key');
   return identity === null || identity === undefined ? undefined : identities.get(identity);
 }

@@ -14,6 +14,7 @@ import type { Key } from '../../core/props.js';
 import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isElement, isHTMLElement } from '../../utils/is-element.js';
 
 /** A finished cell edit: the row, the column and the cell's new value. */
 export interface TableCellEdit<T> {
@@ -82,9 +83,9 @@ function findEditableCell<T>(
   root: HTMLElement,
   columns: readonly TableColumn<T>[],
 ): TableEditingCell | null {
-  const element = target instanceof Element ? target.closest('.ui-table__cell') : null;
+  const element = isElement(target) ? target.closest('.ui-table__cell') : null;
   const body = element?.closest('.ui-table__body');
-  if (!(element instanceof HTMLElement) || !body || body.closest('.ui-table') !== root) return null;
+  if (!isHTMLElement(element) || !body || body.closest('.ui-table') !== root) return null;
   const columnId = element.dataset['column'];
   const rowKey = element.closest('[role="row"]')?.getAttribute('data-key');
   const column = columns.find((candidate) => candidate.id === columnId);
@@ -99,7 +100,7 @@ function findCellElement(root: HTMLElement, cell: TableEditingCell): HTMLElement
   );
   return [...(row?.children ?? [])].find(
     (candidate): candidate is HTMLElement =>
-      candidate instanceof HTMLElement && candidate.dataset['column'] === cell.columnId,
+      isHTMLElement(candidate) && candidate.dataset['column'] === cell.columnId,
   );
 }
 
@@ -110,7 +111,7 @@ function findAdjacentCell(
   move: CellMove,
 ): HTMLElement | undefined {
   const isData = (candidate: Element): candidate is HTMLElement =>
-    candidate instanceof HTMLElement && candidate.dataset['kind'] === 'data';
+    isHTMLElement(candidate) && candidate.dataset['kind'] === 'data';
   const step = move === 'down' || move === 'end' ? 1 : -1;
   if (move === 'start' || move === 'end') {
     const cells = [...(element.parentElement?.children ?? [])].filter(isData);
@@ -229,7 +230,7 @@ export function useCellEditing<T extends TableRow>({
       // Only a key pressed on the cell itself opens it; keys inside its controls are theirs.
       onKeyDownCapture: (event) => {
         const isOnCell =
-          event.target instanceof Element && event.target.classList.contains('ui-table__cell');
+          isElement(event.target) && event.target.classList.contains('ui-table__cell');
         if (!isOnCell) return;
         if (editKeys.has(event.key)) start(event);
         else if (typeToEdit && isTypedCharacter(event)) start(event, event.key);

@@ -9,6 +9,7 @@ import {
 import { useLoadingBoundary } from '../../core/loading-boundary.js';
 import { useOverlayRegistration } from '../../core/overlay-presence.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 interface PopoverPresenceProps {
   /** The popover's own open state, when it has one; otherwise its trigger's state decides. */
@@ -44,7 +45,7 @@ export function PopoverPresence({ isOpen, triggerRef, onClose }: PopoverPresence
   useLayoutEffect(() => {
     if (!isSuspended || !isShown) return;
     const anchor = anchorRef.current?.current;
-    holdFocus(anchor instanceof HTMLElement ? anchor : null);
+    holdFocus(isHTMLElement(anchor) ? anchor : null);
     close.current();
   }, [isSuspended, isShown, holdFocus, close, anchorRef]);
   return null;

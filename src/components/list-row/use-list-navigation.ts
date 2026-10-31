@@ -19,6 +19,7 @@ import {
 import { clamp } from '../../utils/clamp.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import type { ListHandle } from './list-row.js';
+import { isNode } from '../../utils/is-element.js';
 
 interface ListNavigationOptions {
   /** The class of the rows' primary controls, the elements navigation moves between. */
@@ -279,7 +280,7 @@ export function useListNavigation({
 
   const onBlurCapture = (event: FocusEvent<HTMLUListElement>) => {
     const next = event.relatedTarget;
-    if (!(next instanceof Node) || !event.currentTarget.contains(next)) focusedId.current = null;
+    if (!isNode(next) || !event.currentTarget.contains(next)) focusedId.current = null;
   };
 
   return { registry, setRef, onKeyDown, onBlurCapture };

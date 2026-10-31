@@ -8,6 +8,7 @@ import {
   type TimelineDragEdge,
   type TimelineItemChange,
 } from './timeline-geometry.js';
+import { isElement } from '../../utils/is-element.js';
 
 interface TimelineDragOptions {
   read: ReadItem;
@@ -32,7 +33,7 @@ interface Drag {
 const dragThreshold = 3;
 
 function readEdge(target: EventTarget, kind: ReadItem['kind']): TimelineDragEdge {
-  if (kind === 'milestone' || !(target instanceof Element)) return 'move';
+  if (kind === 'milestone' || !isElement(target)) return 'move';
   const edge = target.closest('[data-edge]')?.getAttribute('data-edge');
   return edge === 'start' || edge === 'end' ? edge : 'move';
 }

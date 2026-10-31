@@ -4,6 +4,7 @@
 // end. Shared by Action Row and Toolbar Scroller.
 
 import { useCallback, useLayoutEffect, useRef } from 'react';
+import { isNode } from './is-element.js';
 
 export interface OverflowFocusSelectors {
   /** Matches each item of the row that can hold focus or contain it. */
@@ -102,7 +103,7 @@ export function useOverflowFocus(selectors: OverflowFocusSelectors) {
     // Focus moving elsewhere on the page forgets the item; an item leaving the page moves it nowhere.
     const onFocusOut = (event: FocusEvent) => {
       const next = event.relatedTarget;
-      if (next instanceof Node && !element.contains(next)) focused.current = null;
+      if (isNode(next) && !element.contains(next)) focused.current = null;
     };
     element.addEventListener('focusin', onFocusIn);
     element.addEventListener('focusout', onFocusOut);

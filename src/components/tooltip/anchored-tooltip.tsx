@@ -20,6 +20,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
 import { TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
+import { isElement } from '../../utils/is-element.js';
 
 /** A rectangle in viewport pixels, as `getBoundingClientRect` returns it. */
 export interface TooltipRect {
@@ -67,13 +68,13 @@ type RelatedAttribute = 'aria-describedby' | 'aria-labelledby';
 const hooks = createHooks('tooltip', ['arrow', 'content']);
 
 function isVirtualAnchor(anchor: TooltipAnchor): anchor is TooltipVirtualAnchor {
-  return !(anchor instanceof Element) && !('current' in anchor);
+  return !isElement(anchor) && !('current' in anchor);
 }
 
 /** The anchor's element, or `null` for a rectangle, a missing anchor or a detached element. */
 function resolveElement(anchor: TooltipAnchor | null | undefined): Element | null {
   if (!anchor || isVirtualAnchor(anchor)) return null;
-  const element = anchor instanceof Element ? anchor : anchor.current;
+  const element = isElement(anchor) ? anchor : anchor.current;
   return element?.isConnected ? element : null;
 }
 

@@ -29,6 +29,7 @@ import {
   type TabListModel,
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 /** Checks a new tab name: a message says why it is refused; nothing accepts it. */
 export type TabNameValidate = (key: Key, name: string) => string | null | undefined;
@@ -103,7 +104,7 @@ function useTabBox(
     const measure = () => {
       const tab = findTabElement(list, tabKey);
       const parent = ref.current?.offsetParent;
-      if (!tab || !(parent instanceof HTMLElement)) return;
+      if (!tab || !isHTMLElement(parent)) return;
       const tabBox = tab.getBoundingClientRect();
       const parentBox = parent.getBoundingClientRect();
       const next = {

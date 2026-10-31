@@ -4,6 +4,7 @@
 // focus-managing container leaves the page. Shared by Modal and FocusScope.
 
 import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { isElement } from './is-element.js';
 
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
 export type FocusTarget = RefObject<HTMLElement | null> | (() => HTMLElement | null | undefined);
@@ -17,17 +18,9 @@ interface FocusReturnOptions {
   fallback: Element | null;
 }
 
-/**
- * Whether a value is an element that takes focus, from any window: `instanceof HTMLElement` holds
- * only for elements of the global window, not of a frame's document.
- */
+/** Whether a value is an element that takes focus (an HTML or SVG element), from any window. */
 export function isFocusableElement(value: unknown): value is HTMLElement {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    (value as Node).nodeType === 1 &&
-    typeof (value as HTMLElement).focus === 'function'
-  );
+  return isElement(value) && typeof (value as Partial<HTMLElement>).focus === 'function';
 }
 
 /**

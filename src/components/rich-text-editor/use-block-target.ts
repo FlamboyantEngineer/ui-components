@@ -9,6 +9,7 @@ import type { Node as DocNode } from 'prosemirror-model';
 import { useEffect, useState, type FocusEvent } from 'react';
 import { findTopBlocks } from './block-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
+import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 
 /** The block a handle serves and where it sits, with the handle's own focus and drag state. */
 interface BlockTarget {
@@ -66,8 +67,7 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   useEditorEventListener('focus', () => (setEditorFocus(true), false));
   useEditorEventListener('blur', (_view, event) => {
     const related = event.relatedTarget;
-    if (!(related instanceof Element && surfaceRef.current?.contains(related)))
-      setEditorFocus(false);
+    if (!(isElement(related) && surfaceRef.current?.contains(related))) setEditorFocus(false);
     return false;
   });
   useEffect(() => {
@@ -80,7 +80,7 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
     (view) => {
       const dom = pos === null ? null : view.nodeDOM(pos);
       const surface = surfaceRef.current;
-      if (!(dom instanceof HTMLElement) || !surface) return setTop(null);
+      if (!isHTMLElement(dom) || !surface) return setTop(null);
       const offset = dom.getBoundingClientRect().top - surface.getBoundingClientRect().top;
       setTop(offset + surface.scrollTop);
     },
@@ -96,7 +96,7 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
     onFocus: () => setOwnFocus(true),
     onBlur: (event) => {
       const related = event.relatedTarget;
-      if (!(related instanceof Node && event.currentTarget.contains(related))) setOwnFocus(false);
+      if (!(isNode(related) && event.currentTarget.contains(related))) setOwnFocus(false);
     },
   };
 }

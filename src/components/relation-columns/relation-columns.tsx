@@ -19,6 +19,7 @@ import {
   type RelationColumnsPath,
   type RelationDirection,
 } from './relation-columns-model.js';
+import { isElement } from '../../utils/is-element.js';
 
 export interface RelationColumnsProps<T extends { id: Key }> extends BaseProps, AriaLabellingProps {
   /** The item the walk starts from, shown in the middle column. */
@@ -64,7 +65,7 @@ function useRelationPath(options: {
  */
 function moveBetweenColumns(event: KeyboardEvent<HTMLElement>, isRightToLeft: boolean) {
   const isArrow = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
-  const row = event.target instanceof Element ? event.target : null;
+  const row = isElement(event.target) ? event.target : null;
   if (!isArrow || !row?.matches(rowSelector) || event.altKey || event.ctrlKey || event.metaKey)
     return;
   const columns = [...event.currentTarget.querySelectorAll(`.${hooks.slotClass('column')}`)];

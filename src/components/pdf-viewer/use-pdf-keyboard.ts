@@ -6,6 +6,7 @@ import { pdfZoomLevels, type PdfZoom } from './pdf-zoom.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
+import { isNode } from '../../utils/is-element.js';
 
 interface UsePdfKeyboardOptions {
   isReady: boolean;
@@ -95,7 +96,7 @@ export function usePdfKeyboard(options: UsePdfKeyboardOptions): PdfKeyboard {
   const onScrollerKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       const { isReady, pages, pageCount, zoom } = latest.current;
-      const isOwn = event.target instanceof Node && event.currentTarget.contains(event.target);
+      const isOwn = isNode(event.target) && event.currentTarget.contains(event.target);
       if (!isReady || !isOwn || event.ctrlKey || event.metaKey || event.altKey) return;
       const pageIndex = readPageKey(event.key, {
         currentPage: pages.currentPage,

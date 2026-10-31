@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from 'react';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 interface ShortcutEvent {
   key: string;
@@ -17,7 +18,7 @@ const claimedKeyEvents = new WeakSet<Event>();
 /** Whether the key press comes from a multiline editor, where Control+Enter belongs to the editor. */
 function isFromMultilineEditor(event: Event): boolean {
   return event.composedPath().some((target) => {
-    if (!(target instanceof HTMLElement)) return false;
+    if (!isHTMLElement(target)) return false;
     if (target.tagName === 'TEXTAREA' || target.isContentEditable) return true;
     const editable = target.getAttribute('contenteditable');
     return (

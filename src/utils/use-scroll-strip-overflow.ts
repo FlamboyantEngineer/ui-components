@@ -11,6 +11,7 @@ import {
 } from 'react';
 import type { Orientation } from '../core/props.js';
 import { useResizeObserver } from './use-resize-observer.js';
+import { isElement } from './is-element.js';
 
 /** Whether content is hidden past each edge of a scrolling strip, including a partly visible item. */
 export interface ScrollStripOverflow {
@@ -57,9 +58,7 @@ function isStripWheel(strip: HTMLElement, event: WheelEvent): boolean {
   const path = event.composedPath();
   const index = path.indexOf(strip);
   if (index < 0) return false;
-  return !path
-    .slice(0, index)
-    .some((node) => node instanceof Element && node.matches(popupSelector));
+  return !path.slice(0, index).some((node) => isElement(node) && node.matches(popupSelector));
 }
 
 /** The strip's next scroll position for wheel input along its dominant axis, or null for none. */

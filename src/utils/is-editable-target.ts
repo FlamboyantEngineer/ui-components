@@ -1,3 +1,5 @@
+import { isElement } from './is-element.js';
+
 /** Fields and editable content, which use the arrow and character keys themselves. */
 const editableSelector =
   'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
@@ -10,5 +12,5 @@ const editableSelector =
  */
 export function isEditableTarget(target: EventTarget | null, extraSelector?: string): boolean {
   const selector = extraSelector ? `${extraSelector}, ${editableSelector}` : editableSelector;
-  return target instanceof Element && target.closest(selector) !== null;
+  return isElement(target) && target.closest(selector) !== null;
 }

@@ -20,6 +20,7 @@ import { hasIcon, Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardColumnDrag } from './use-board-drag.js';
+import { isElement } from '../../utils/is-element.js';
 
 /** A column header's view of its column. */
 interface BoardColumnHeaderProps {
@@ -73,7 +74,7 @@ function useColumnHeaderDrag({
   const props = {
     ...dragProps,
     onPointerDownCapture: (event: PointerEvent) => {
-      const target = event.target instanceof Element ? event.target : null;
+      const target = isElement(event.target) ? event.target : null;
       pressedInActions.current = !!target?.closest(`.${hooks.slotClass('column-actions')}`);
     },
     onDragStartCapture: (event: DragEvent) => {

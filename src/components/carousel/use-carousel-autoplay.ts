@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from 'react';
 import { usePrefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
+import { isNode } from '../../utils/is-element.js';
 
 interface CarouselAutoplayOptions {
   /** Whether the carousel rotates on its own at all. */
@@ -76,7 +77,7 @@ export function useCarouselAutoplay({
       onFocus: (event) => setFocused(event.target !== rotationRef.current),
       onBlur: (event) => {
         const next = event.relatedTarget;
-        if (!(next instanceof Node && event.currentTarget.contains(next))) setFocused(false);
+        if (!(isNode(next) && event.currentTarget.contains(next))) setFocused(false);
       },
     },
   };

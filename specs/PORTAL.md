@@ -41,6 +41,13 @@ Verification: `src/components/portal/portal.test.tsx`
 Implementation: `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 
+### UIC-PORTAL-1.6 - Nodes of another window
+
+Components rendered into another window's document, a same-origin frame or a popup window a `PortalHost` sits in, shall treat that window's nodes as their own: event targets, focused elements and focus targets are recognised as nodes, elements and HTML elements by their node type and namespace, never by the script window's constructors, so fields in the frame keep their keys, forms focus their first invalid control and cell editing, drags and focus rescue follow the target. Lint rejects `instanceof Node`, `Element` or an HTML or SVG element constructor in the library's source.
+
+Implementation: `src/utils/is-element.ts`, `src/utils/focus-target.ts`, `eslint.config.js`
+Verification: `src/utils/is-element.test.ts`
+
 ## UIC-PORTAL-2 - Layers
 
 ### UIC-PORTAL-2.1 - Layer order

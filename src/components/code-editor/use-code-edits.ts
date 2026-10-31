@@ -2,6 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { CodeEdit, CodeSelection } from './code-editing.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 interface CodeEditsOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;
@@ -11,8 +12,8 @@ interface CodeEditsOptions {
 
 /** Gives focus back to `element`, with the selection its field held, once a borrow ends. */
 function holdFocus(element: Element | null): () => void {
-  if (!(element instanceof HTMLElement)) return () => {};
-  const isField = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+  if (!isHTMLElement(element)) return () => {};
+  const isField = isHTMLElement(element, 'input') || isHTMLElement(element, 'textarea');
   const start = isField ? element.selectionStart : null;
   const end = isField ? element.selectionEnd : null;
   return () => {

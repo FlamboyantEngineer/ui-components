@@ -16,6 +16,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 interface InlineEditStateOptions<T> {
   value: T;
@@ -65,8 +66,8 @@ function useEditFocus(isEditing: boolean) {
     if (isEditing && !isFirst) {
       const target = editorRef.current?.querySelector<HTMLElement>(focusableSelector);
       target?.focus();
-      if (target instanceof HTMLInputElement) target.select();
-      if (target instanceof HTMLTextAreaElement) target.setSelectionRange(-1, -1);
+      if (isHTMLElement(target, 'input')) target.select();
+      if (isHTMLElement(target, 'textarea')) target.setSelectionRange(-1, -1);
     } else if (!isEditing && focusReturn.current === 'read') {
       readRef.current?.focus();
     }

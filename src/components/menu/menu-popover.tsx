@@ -32,6 +32,7 @@ import {
   SUBMENU_CROSS_OFFSET,
   SUBMENU_OFFSET,
 } from '../../utils/overlay-defaults.js';
+import { isElement } from '../../utils/is-element.js';
 
 export interface MenuPopoverProps extends BaseProps, OverlayPositionProps {
   /**
@@ -93,7 +94,7 @@ function useMenuSurface({ ref, isNonModal, shouldCloseOnInteractOutside }: MenuO
     isDisabled: !isNonModal || inherited !== null || !state?.isOpen,
     onInteractOutside: (event) => {
       const target = event.target;
-      if (!(target instanceof Element)) return;
+      if (!isElement(target)) return;
       if ([...group].some((element) => element.contains(target))) return;
       if (shouldCloseOnInteractOutside?.(target) !== false) state?.close();
     },

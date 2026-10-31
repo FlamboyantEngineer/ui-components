@@ -214,6 +214,13 @@ export default tseslint.config(
           selector: 'ClassExpression',
           message: 'Use function components and plain functions (I1).',
         },
+        {
+          // A frame's or a popup window's nodes come from other constructors.
+          selector:
+            "BinaryExpression[operator='instanceof'][right.name=/^(Node|Element|(HTML|SVG)\\w*Element)$/]",
+          message:
+            'Use isNode, isElement or isHTMLElement (src/utils/is-element.ts), which hold for nodes of any window.',
+        },
         ENUM_SYNTAX,
       ],
       '@typescript-eslint/naming-convention': [

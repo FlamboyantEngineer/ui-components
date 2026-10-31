@@ -7,6 +7,7 @@ import {
   scrollStripTo,
   useScrollStripOverflow,
 } from '../../utils/use-scroll-strip-overflow.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 
 type Edge = 'start' | 'end';
 
@@ -16,7 +17,7 @@ function measureCoveredInsets(strip: HTMLElement, overlays: readonly Element[]) 
   let left = 0;
   let right = 0;
   for (const overlay of overlays) {
-    if (!(overlay instanceof HTMLElement) || overlay.hidden) continue;
+    if (!isHTMLElement(overlay) || overlay.hidden) continue;
     const rect = overlay.getBoundingClientRect();
     const overlap = Math.min(rect.right, box.right) - Math.max(rect.left, box.left);
     if (rect.width === 0 || overlap <= 0) continue;

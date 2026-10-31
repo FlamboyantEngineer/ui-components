@@ -3,6 +3,7 @@
 // Keeps focus in a card whose focused element a collapse or a smaller presentation took away.
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
+import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 
 /** Where focus goes instead, in order of preference. */
 const togglesFirst = ['.ui-card__toggle', '.ui-card__more', '.ui-card__action'];
@@ -27,15 +28,15 @@ export function useFocusRescue(
   useEffect(() => {
     if (!root) return undefined;
     const onFocusIn = (event: FocusEvent) => {
-      focused.current = event.target instanceof HTMLElement ? event.target : null;
+      focused.current = isHTMLElement(event.target) ? event.target : null;
     };
     const onFocusOut = (event: FocusEvent) => {
       const next = event.relatedTarget;
-      if (next instanceof Node && root.contains(next)) return;
+      if (isNode(next) && root.contains(next)) return;
       // Focus that left with its element (removed or hidden) is the focus to put back.
       const left = event.target;
       setTimeout(() => {
-        if (focused.current === left && left instanceof Element && !isGone(left)) {
+        if (focused.current === left && isElement(left) && !isGone(left)) {
           focused.current = null;
         }
       }, 0);

@@ -26,6 +26,7 @@ import type { BaseProps, Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { EmptyState } from '../empty-state/empty-state.js';
+import { isElement, isNode } from '../../utils/is-element.js';
 
 /** `grid` lines cards up in rows and columns; `waterfall` stacks cards of different heights in columns. */
 export type CardGridLayout = 'grid' | 'waterfall';
@@ -145,13 +146,13 @@ function useCarriedFocus(mode: string) {
     const key = focusedKey.current;
     const stopRefocus = key === null ? undefined : refocusCard(grid, key);
     const onFocusIn = (event: FocusEvent) => {
-      const target = event.target instanceof Element ? event.target : null;
+      const target = isElement(event.target) ? event.target : null;
       focusedKey.current = target?.closest('[data-key]')?.getAttribute('data-key') ?? null;
     };
     // A card leaving the page takes focus to nowhere; focus moved elsewhere names where it went.
     const onFocusOut = (event: FocusEvent) => {
       const next = event.relatedTarget;
-      if (next instanceof Node && !grid.contains(next)) focusedKey.current = null;
+      if (isNode(next) && !grid.contains(next)) focusedKey.current = null;
     };
     grid.addEventListener('focusin', onFocusIn);
     grid.addEventListener('focusout', onFocusOut);

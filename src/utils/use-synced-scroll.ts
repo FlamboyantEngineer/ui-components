@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import { clamp } from './clamp.js';
 import { mapScrollOffset, type ScrollAnchor } from './scroll-offset-map.js';
+import { isHTMLElement } from './is-element.js';
 
 /** A container to keep aligned: the element, or a ref whose element is stable. */
 export type SyncedScrollTarget = HTMLElement | RefObject<HTMLElement | null> | null | undefined;
@@ -80,7 +81,7 @@ function observeContainers({ containers, observers }: ScrollSync): void {
 }
 
 function isContainer({ containers }: ScrollSync, node: Node): boolean {
-  return node instanceof HTMLElement && containers.has(node);
+  return isHTMLElement(node) && containers.has(node);
 }
 
 function createObservers(sync: ScrollSync): ScrollSync['observers'] {

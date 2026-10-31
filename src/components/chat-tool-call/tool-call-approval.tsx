@@ -9,6 +9,7 @@ import { Form } from '../form/form.js';
 import { TextField } from '../text-field/text-field.js';
 import { toolCallHooks as hooks } from './tool-call-hooks.js';
 import type { ToolCallApprovalState } from './use-tool-call-approval.js';
+import { isNode } from '../../utils/is-element.js';
 
 /** The reader's decision on an approval: approved once, denied, or always allowed. */
 export type ChatToolCallDecision = 'approved' | 'denied' | 'always';
@@ -55,7 +56,7 @@ function useFocusWithin() {
     onFocus: () => setHasFocus(true),
     onBlur: (event: FocusEvent<HTMLElement>) => {
       const next = event.relatedTarget;
-      if (next instanceof Node && !event.currentTarget.contains(next)) setHasFocus(false);
+      if (isNode(next) && !event.currentTarget.contains(next)) setHasFocus(false);
     },
   };
 }
