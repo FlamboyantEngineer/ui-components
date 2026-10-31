@@ -27,14 +27,14 @@ Verification: `src/components/user-card/user-card.test.tsx`
 
 ### UIC-USER-CARD-1.4 - Actions
 
-`actions` shall draw a `ui-user-card__actions` group holding one small `Button` per action, in order, in the `ui-user-card__action` slot, labelled by the action's `label` with its optional `icon` before it. Pressing an action shall call `onAction` once with the action's `id`; inside a dialog trigger the card closes first and focus returns to the trigger. Without actions there is no group.
+`actions` shall draw a `ui-user-card__actions` group holding one small `Button` per action, in order, in the `ui-user-card__action` slot, labelled by the action's `label` with its optional `icon` before it. Pressing an action shall call `onAction` once with the action's `id`. In a card that a `UserCardTrigger` opened, on press or on hover, the card closes first (reported through `onOpenChange`) and focus returns to the trigger when the card held it. A card rendered anywhere else closes nothing, not even an overlay it sits in, such as a modal. Without actions there is no group.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
 ### UIC-USER-CARD-1.5 - Accessibility
 
-The card shall be a `role="dialog"` named by the display name, or by the caller's `aria-label`. Its avatar and status indicator are decorative, so the name, secondary line, status label, details and actions are what is read. Only a card that opens in an overlay, such as a `UserCardTrigger` popover, takes focus when it appears; a card rendered in place, or shown in a hover card ([UIC-USER-CARD-2.3](#uic-user-card-23---opening-on-hover-and-focus)), takes no focus and its actions are reached in the tab order.
+The card shall be a `role="dialog"` named by the display name, or by the caller's `aria-label`. Its avatar and status indicator are decorative, so the name, secondary line, status label, details and actions are what is read. Only a card that a `UserCardTrigger` opens on press takes focus when it appears; a card rendered in place, inside another overlay such as a modal included, or shown in a hover card ([UIC-USER-CARD-2.3](#uic-user-card-23---opening-on-hover-and-focus)), takes no focus and its actions are reached in the tab order.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`

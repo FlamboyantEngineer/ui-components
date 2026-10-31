@@ -1,12 +1,8 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
-import {
-  Button as AriaButton,
-  Dialog,
-  DialogTrigger,
-  OverlayTriggerStateContext,
-} from '../../primitives/index.js';
+import { createContext, useContext, useRef, type ReactNode } from 'react';
+import { Button as AriaButton, Dialog, DialogTrigger } from '../../primitives/index.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, PressEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -96,8 +92,19 @@ const hooks = createHooks('user-card', [
   'skeleton',
 ]);
 
-/** Set inside a hover card's popover, where the card must not take focus as a dialog would. */
-const UserCardPreviewContext = createContext(false);
+/** The `UserCardTrigger` that opened a card, which its actions dismiss. */
+interface UserCardOwner {
+  /** The card opened on hover, where it must not take focus as a dialog would. */
+  isPreview: boolean;
+  /** Closes the card from the pressed action, returning focus to the trigger if the action held it. */
+  dismiss: (action: Element) => void;
+}
+
+/**
+ * Set by a `UserCardTrigger` around its own card only; a card rendered anywhere else, an ancestor's
+ * overlay included, has no owner to close.
+ */
+const UserCardOwnerContext = createContext<UserCardOwner | null>(null);
 
 function CardStatus({ statusLabel }: Pick<UserCardProps, 'statusLabel'>) {
   const text = statusLabel?.trim();
@@ -124,7 +131,7 @@ function CardDetails({ details }: Pick<UserCardProps, 'details'>) {
 }
 
 function CardActions({ actions, onAction }: Pick<UserCardProps, 'actions' | 'onAction'>) {
-  const overlay = useContext(OverlayTriggerStateContext);
+  const owner = useContext(UserCardOwnerContext);
   if (!actions?.length) return null;
   return (
     <div {...hooks.slot('actions')}>
@@ -134,8 +141,8 @@ function CardActions({ actions, onAction }: Pick<UserCardProps, 'actions' | 'onA
           size="sm"
           startIcon={action.icon}
           className={hooks.slotClass('action')}
-          onPress={() => {
-            overlay?.close();
+          onPress={(event) => {
+            owner?.dismiss(event.target);
             onAction?.(action.id);
           }}
         >
@@ -147,18 +154,30 @@ function CardActions({ actions, onAction }: Pick<UserCardProps, 'actions' | 'onA
 }
 
 /**
- * The card's dialog. React Aria's Dialog takes focus when it mounts, which suits a card that opens in
- * an overlay; a card shown on hover or in place must not move focus, so there it is a plain dialog
- * element.
+ * Moves focus to `element` the way React Aria's focus scopes restore it: through the cancelable
+ * `react-aria-focus-scope-restore` event, which a preview trigger takes to refocus itself without
+ * reopening its card.
+ */
+function restoreFocus(element: HTMLElement) {
+  const event = new CustomEvent('react-aria-focus-scope-restore', {
+    bubbles: true,
+    cancelable: true,
+  });
+  if (element.dispatchEvent(event)) element.focus();
+}
+
+/**
+ * The card's dialog. React Aria's Dialog takes focus when it mounts, which suits a card that its
+ * trigger opens on press; a card shown on hover or in place must not move focus, so there it is a
+ * plain dialog element.
  */
 function UserCardRoot({
   isLoading,
   children,
   ...props
 }: BaseProps & { 'aria-label': string; isLoading: boolean; children: ReactNode }) {
-  const isPreview = useContext(UserCardPreviewContext);
-  const overlay = useContext(OverlayTriggerStateContext);
-  if (isPreview || !overlay) {
+  const owner = useContext(UserCardOwnerContext);
+  if (!owner || owner.isPreview) {
     return (
       <section {...props} role="dialog" aria-busy={isLoading || undefined}>
         {children}
@@ -234,39 +253,53 @@ export function UserCardTrigger({
   card,
   children,
   trigger = 'press',
-  isOpen,
-  defaultOpen,
+  isOpen: isOpenProp,
+  defaultOpen = false,
   onOpenChange,
   delay,
   closeDelay,
   className,
   ...rest
 }: UserCardTriggerProps) {
-  const openState = { isOpen, defaultOpen, onOpenChange };
+  const [isOpen, setOpen] = useControllableState(isOpenProp, defaultOpen, onOpenChange);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const isPreview = trigger === 'hover';
+  const owner: UserCardOwner = {
+    isPreview,
+    dismiss: (action) => {
+      const hadFocus = action.contains(action.ownerDocument.activeElement);
+      setOpen(false);
+      // A press card's dialog returns focus as it closes; a hover card only returns it to where it
+      // was when the card opened, which after a hover is the page.
+      if (isPreview && hadFocus && buttonRef.current) restoreFocus(buttonRef.current);
+    },
+  };
+  const ownedCard = (
+    <UserCardOwnerContext.Provider value={owner}>{card}</UserCardOwnerContext.Provider>
+  );
   const button = (
-    <AriaButton {...rest} {...hooks.slot('trigger', undefined, className)}>
+    <AriaButton {...rest} ref={buttonRef} {...hooks.slot('trigger', undefined, className)}>
       {children}
     </AriaButton>
   );
-  if (trigger === 'hover') {
+  if (isPreview) {
     return (
       <HoverCardTrigger
-        {...openState}
+        isOpen={isOpen}
+        onOpenChange={setOpen}
         delay={delay}
         closeDelay={closeDelay}
         isDisabled={rest.isDisabled}
       >
         {button}
-        <HoverCard className={hooks.slotClass('popover')}>
-          <UserCardPreviewContext.Provider value>{card}</UserCardPreviewContext.Provider>
-        </HoverCard>
+        <HoverCard className={hooks.slotClass('popover')}>{ownedCard}</HoverCard>
       </HoverCardTrigger>
     );
   }
   return (
-    <DialogTrigger {...openState}>
+    <DialogTrigger isOpen={isOpen} onOpenChange={setOpen}>
       {button}
-      <PopoverPanel className={hooks.slotClass('popover')}>{card}</PopoverPanel>
+      <PopoverPanel className={hooks.slotClass('popover')}>{ownedCard}</PopoverPanel>
     </DialogTrigger>
   );
 }

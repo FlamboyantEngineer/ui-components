@@ -106,6 +106,62 @@ test.describe('User Card lab', () => {
     await page.clock.resume();
   });
 
+  test('UIC-USER-CARD-1.4 UIC-USER-CARD-2.3 closes a hover card before reporting its action', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card');
+    const trigger = page.locator('[data-lab-trigger="hover-avatar"]');
+    const card = page.getByRole('dialog', { name: 'Priya Nair' });
+    await page.mouse.move(5, 5);
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await card.getByRole('button', { name: 'Message' }).click();
+    await expect(card).toHaveCount(0);
+    await expect(page.locator('[data-lab-output="hover-action"]')).toHaveText(
+      'message for Priya Nair',
+    );
+    await expect(trigger).toBeFocused();
+
+    // From the keyboard, focus returns without reopening the card.
+    await page.clock.install();
+    await page.mouse.move(5, 5);
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await page.clock.runFor(600);
+    await expect(card).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(card.getByRole('button', { name: 'Message' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.clock.runFor(2000);
+    await expect(card).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await expect(page.locator('[data-lab-output="hover-action"]')).toHaveText(
+      'message for Priya Nair',
+    );
+  });
+
+  test('UIC-USER-CARD-1.4 UIC-USER-CARD-1.5 leaves a containing modal open', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card');
+    await page.locator('[data-lab-trigger="editor"]').click();
+    const editor = page.getByRole('dialog', { name: 'Editor' });
+    const draft = editor.getByRole('textbox', { name: 'Draft' });
+    await expect(draft).toBeFocused();
+    await draft.fill('Notes');
+    const card = editor.getByRole('dialog', { name: 'Maria Santos' });
+    await card.getByRole('button', { name: 'Message' }).click();
+    await expect(page.locator('[data-lab-output="modal-action"]')).toHaveText(
+      'message for Maria Santos',
+    );
+    await expect(editor).toBeVisible();
+    await expect(draft).toHaveValue('Notes');
+    await expect(card.getByRole('button', { name: 'Message' })).toBeFocused();
+    await lab.expectAccessible('.ui-modal');
+  });
+
   test('UIC-USER-CARD-2.3 opens on keyboard focus, lets Tab in and returns focus on Escape', async ({
     page,
     lab,
