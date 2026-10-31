@@ -245,6 +245,58 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(document.querySelector('[data-fill-target]')).toBeNull();
   });
 
+  it.each([
+    ['spreadsheet mode ends', { cellSelection: 'none' }],
+    [
+      'a row is inserted',
+      { rows: [items[0], { ...items[1], id: 'x', name: 'Kiwi' }, ...items.slice(1)] },
+    ],
+    [
+      'the source range is replaced',
+      {
+        selectedRange: {
+          anchor: { rowKey: 'b', columnId: 'count' },
+          focus: { rowKey: 'b', columnId: 'count' },
+        },
+      },
+    ],
+  ] satisfies [string, Partial<TableProps<Item>>][])(
+    'UIC-TABLE-14.5 ends a fill without writing when %s',
+    async (_, change) => {
+      const user = userEvent.setup();
+      const onCellsChange = vi.fn();
+      const onSelectedRangeChange = vi.fn();
+      const source = {
+        anchor: { rowKey: 'a', columnId: 'count' },
+        focus: { rowKey: 'a', columnId: 'count' },
+      };
+      const sheet = (props: Partial<TableProps<Item>>) => (
+        <Table
+          aria-label="Sheet"
+          rows={items}
+          columns={uncheckedColumns}
+          cellSelection="range"
+          selectedRange={source}
+          onSelectedRangeChange={onSelectedRangeChange}
+          onCellsChange={onCellsChange}
+          {...props}
+        />
+      );
+      const { rerender } = render(sheet({}));
+      const handle = requireDefined(document.querySelector('.ui-table__fill-handle'));
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: handle },
+        { target: cell('Plum', 'count') },
+      ]);
+      expect(cell('Plum', 'count')).toHaveAttribute('data-fill-target', 'true');
+      rerender(sheet(change));
+      expect(document.querySelector('[data-fill-target]')).toBeNull();
+      await user.pointer({ keys: '[/MouseLeft]' });
+      expect(onCellsChange).not.toHaveBeenCalled();
+      expect(onSelectedRangeChange).not.toHaveBeenCalled();
+    },
+  );
+
   it('UIC-TABLE-14.5 fills down on the D key of a non-Latin layout', async () => {
     const user = userEvent.setup();
     const onBatch = vi.fn();
