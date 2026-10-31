@@ -20,7 +20,7 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 ### UIC-ANNOTATION-LAYER-1.3 - The active annotation
 
-The active annotation shall be `activeId` when set (`null` for none), else held by the layer from `defaultActiveId`, and `onActiveChange` is called with each annotation that becomes active. A press inside the layer, outside its margin, that lands within a mark's rectangle makes that annotation active; where marks overlap, the annotation listed last wins.
+The active annotation shall be `currentKey` when set (`null` for none), else held by the layer from `defaultCurrentKey`, and `onCurrentKeyChange` is called with each annotation that becomes active. A press inside the layer, outside its margin, that lands within a mark's rectangle makes that annotation active; where marks overlap, the annotation listed last wins.
 
 Implementation: `src/components/annotation-layer/annotation-layer.tsx`, `src/components/annotation-layer/anchor-geometry.ts`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`

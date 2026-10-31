@@ -19,13 +19,13 @@ export type StepsStatus = 'complete' | 'current' | 'upcoming' | 'error' | 'skipp
 export type StepsDensity = Extract<Density, 'default' | 'compact'>;
 
 export interface StepsItem {
-  /** Identifies the step for `currentId` and `onAction`. */
+  /** Identifies the step for `currentKey` and `onAction`. */
   id: Key;
   /** The step's name. */
   label: ReactNode;
   /** A line under the label. */
   description?: ReactNode;
-  /** Overrides the status read from the step's place before, at or after `currentId`. */
+  /** Overrides the status read from the step's place before, at or after `currentKey`. */
   status?: StepsStatus | undefined;
   /** Marks the step as one the reader may skip. */
   isOptional?: boolean | undefined;
@@ -39,7 +39,7 @@ export interface StepsProps extends BaseProps, AriaLabellingProps, Pick<NativePr
   /** Every step is complete, with no current step. Defaults to false. */
   isComplete?: boolean | undefined;
   /** The step being worked on. */
-  currentId?: Key | null | undefined;
+  currentKey?: Key | null | undefined;
   /** How the steps run. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;
   /** Defaults to `default`. */
@@ -170,7 +170,7 @@ function Step(props: StepProps) {
  */
 export function Steps({
   items,
-  currentId = null,
+  currentKey = null,
   isComplete = false,
   orientation = 'horizontal',
   density = 'default',
@@ -180,7 +180,7 @@ export function Steps({
   ...rest
 }: StepsProps) {
   const strings = useUiStrings();
-  const currentIndex = items.findIndex((item) => item.id === currentId);
+  const currentIndex = items.findIndex((item) => item.id === currentKey);
   const named = rest['aria-label'] !== undefined || rest['aria-labelledby'] !== undefined;
   return (
     <ol

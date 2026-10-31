@@ -49,7 +49,7 @@ function StateCell({ state, isNumbered }: { state: (typeof states)[number]; isNu
       <Outline
         aria-label={`Fruit, ${isNumbered ? 'numbered' : 'plain'}, ${state}`}
         headings={isEmpty ? [] : sample}
-        currentId="apples-tart"
+        currentKey="apples-tart"
         isNumbered={isNumbered}
         collapseBelowLevel={state === 'collapsed below 2' ? 1 : undefined}
         isPending={state === 'loading'}
@@ -115,7 +115,7 @@ function ControlledSections() {
         <Outline
           aria-label="Guide sections"
           headings={guide}
-          currentId="guide-viewpoints"
+          currentKey="guide-viewpoints"
           expandedKeys={keys}
           onExpandedChange={setKeys}
           numberOptions={{ styles: ['upper-roman', 'lower-alpha', 'decimal'] }}

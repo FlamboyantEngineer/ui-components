@@ -120,7 +120,7 @@ const cards = (container: HTMLElement) => [
 
 describe('AnnotationLayer', () => {
   it('UIC-ANNOTATION-LAYER-1.1 draws a hidden mark per anchor rectangle over the content', () => {
-    const { container } = render(<Notes withMargin={false} defaultActiveId="phrase" />);
+    const { container } = render(<Notes withMargin={false} defaultCurrentKey="phrase" />);
     const root = container.firstElementChild as HTMLElement;
     expect(root).toHaveClass('ui-annotation-layer');
     expect(root).toHaveStyle({ position: 'relative' });
@@ -158,7 +158,7 @@ describe('AnnotationLayer', () => {
 
   it('UIC-ANNOTATION-LAYER-1.4 follows a target moved by a child render and by a nested scroll', async () => {
     const user = userEvent.setup();
-    const onActiveChange = vi.fn();
+    const onCurrentKeyChange = vi.fn();
     function Article() {
       const [isLong, setLong] = useState(false);
       return (
@@ -176,7 +176,7 @@ describe('AnnotationLayer', () => {
     const { container } = render(
       <AnnotationLayer
         annotations={[{ id: 'phrase', targetId: 'phrase' }]}
-        onActiveChange={onActiveChange}
+        onCurrentKeyChange={onCurrentKeyChange}
         data-box="layer"
       >
         <Article />
@@ -199,7 +199,7 @@ describe('AnnotationLayer', () => {
       target: screen.getByText('slice them thin'),
       coords: { clientX: 100, clientY: 125 },
     });
-    expect(onActiveChange).toHaveBeenCalledWith('phrase');
+    expect(onCurrentKeyChange).toHaveBeenCalledWith('phrase');
   });
 
   it('UIC-ANNOTATION-LAYER-1.4 measures once a frame, ignores its own scroll and output, and stops on unmount', async () => {
@@ -237,14 +237,14 @@ describe('AnnotationLayer', () => {
 
   it('UIC-ANNOTATION-LAYER-1.3 activates the annotation under a press, the last listed on top', async () => {
     const user = userEvent.setup();
-    const onActiveChange = vi.fn();
+    const onCurrentKeyChange = vi.fn();
     const { container } = render(
       <Notes
         annotations={[
           ...annotations,
           { id: 'corner', rects: [{ top: 50, left: 100, width: 40, height: 40 }] },
         ]}
-        onActiveChange={onActiveChange}
+        onCurrentKeyChange={onCurrentKeyChange}
       />,
     );
     const root = container.firstElementChild as HTMLElement;
@@ -253,27 +253,27 @@ describe('AnnotationLayer', () => {
       target: root,
       coords: { clientX: 80, clientY: 120 },
     });
-    expect(onActiveChange).toHaveBeenLastCalledWith('figure');
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('figure');
     await user.pointer({
       keys: '[MouseLeft]',
       target: root,
       coords: { clientX: 160, clientY: 160 },
     });
-    expect(onActiveChange).toHaveBeenLastCalledWith('corner');
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('corner');
     await user.pointer({
       keys: '[MouseLeft]',
       target: root,
       coords: { clientX: 400, clientY: 400 },
     });
-    expect(onActiveChange).toHaveBeenCalledTimes(2);
-    onActiveChange.mockClear();
+    expect(onCurrentKeyChange).toHaveBeenCalledTimes(2);
+    onCurrentKeyChange.mockClear();
     // A card activates its own annotation, so press one whose annotation is not under the point.
     await user.pointer({
       keys: '[MouseLeft]',
       target: requireDefined(cards(container)[1]),
       coords: { clientX: 80, clientY: 120 },
     });
-    expect(onActiveChange).not.toHaveBeenCalledWith('figure');
+    expect(onCurrentKeyChange).not.toHaveBeenCalledWith('figure');
   });
 
   it('UIC-ANNOTATION-LAYER-1.3 follows a controlled active annotation', async () => {
@@ -282,7 +282,7 @@ describe('AnnotationLayer', () => {
       const [active, setActive] = useState<Key | null>('figure');
       return (
         <>
-          <Notes activeId={active} onActiveChange={setActive} />
+          <Notes currentKey={active} onCurrentKeyChange={setActive} />
           <button type="button" onClick={() => setActive(null)}>
             Clear
           </button>
@@ -334,7 +334,7 @@ describe('AnnotationMargin', () => {
   });
 
   it('UIC-ANNOTATION-LAYER-2.1 lists a card per annotation in anchor order, orphans last', () => {
-    const { container } = render(<Notes defaultActiveId="missing" />);
+    const { container } = render(<Notes defaultCurrentKey="missing" />);
     const list = screen.getByRole('list', { name: 'Annotations' });
     expect(list).toHaveClass('ui-annotation-layer__margin');
     expect(screen.getAllByRole('listitem').map((card) => card.textContent)).toEqual([
@@ -374,7 +374,7 @@ describe('AnnotationMargin', () => {
   it('UIC-ANNOTATION-LAYER-2.2 keeps the active card level with its anchor, with a gap', () => {
     cardHeight = 30;
     const { container } = render(
-      <AnnotationLayer annotations={annotations} data-box="layer" defaultActiveId="phrase">
+      <AnnotationLayer annotations={annotations} data-box="layer" defaultCurrentKey="phrase">
         <span id="phrase">slice</span>
         <AnnotationMargin data-box="margin" gap={4} renderCard={() => 'Note'} />
       </AnnotationLayer>,
@@ -392,15 +392,15 @@ describe('AnnotationMargin', () => {
 
   it('UIC-ANNOTATION-LAYER-2.4 moves between cards from one tab stop and activates the focused one', async () => {
     const user = userEvent.setup();
-    const onActiveChange = vi.fn();
-    const { container } = render(<Notes onActiveChange={onActiveChange} />);
+    const onCurrentKeyChange = vi.fn();
+    const { container } = render(<Notes onCurrentKeyChange={onCurrentKeyChange} />);
     expect(cards(container).map((card) => card.tabIndex)).toEqual([0, -1, -1]);
     await user.tab();
     expect(cards(container)[0]).toHaveFocus();
-    expect(onActiveChange).toHaveBeenLastCalledWith('figure');
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('figure');
     await user.keyboard('{ArrowDown}');
     expect(cards(container)[1]).toHaveFocus();
-    expect(onActiveChange).toHaveBeenLastCalledWith('phrase');
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('phrase');
     expect(cards(container).map((card) => card.tabIndex)).toEqual([-1, 0, -1]);
     await user.keyboard('{End}');
     expect(cards(container)[2]).toHaveFocus();
@@ -415,7 +415,7 @@ describe('AnnotationMargin', () => {
     await user.keyboard('{ArrowDown}');
     expect(screen.getByRole('button', { name: 'Note figure (active)' })).toHaveFocus();
     await user.click(screen.getByRole('button', { name: 'Note missing (orphaned)' }));
-    expect(onActiveChange).toHaveBeenLastCalledWith('missing');
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('missing');
   });
 
   it('UIC-ANNOTATION-LAYER-3.1 UIC-ANNOTATION-LAYER-3.2 keeps marks decorative and forwards caller attributes', () => {

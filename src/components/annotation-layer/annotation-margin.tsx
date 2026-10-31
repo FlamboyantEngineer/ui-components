@@ -80,7 +80,7 @@ export function AnnotationMargin({
   ...rest
 }: AnnotationMarginProps) {
   const strings = useUiStrings();
-  const { anchors, activeId, setActiveId, layer } = useAnnotationContext();
+  const { anchors, currentKey, setCurrentKey, layer } = useAnnotationContext();
   const [margin, setMargin] = useState<HTMLDivElement | null>(null);
   const { geometry, cards, register } = useMarginGeometry(margin, layer);
   const byId = new Map(anchors.map((anchor) => [anchor.annotation.id, anchor.annotation]));
@@ -93,9 +93,11 @@ export function AnnotationMargin({
           : rects.reduce((top, rect) => Math.min(top, rect.top), Infinity) - geometry.offset,
       height: geometry.heights.get(annotation.id) ?? 0,
     })),
-    { activeId, gap },
+    { currentKey, gap },
   );
-  const tabStop = placements.some((card) => card.id === activeId) ? activeId : placements[0]?.id;
+  const tabStop = placements.some((card) => card.id === currentKey)
+    ? currentKey
+    : placements[0]?.id;
   const height = placements.reduce(
     (end, card) => Math.max(end, card.top + (geometry.heights.get(card.id) ?? 0)),
     0,
@@ -118,7 +120,7 @@ export function AnnotationMargin({
       style={{ position: 'relative', minHeight: height }}
     >
       {placements.map((card, index) => {
-        const isActive = card.id === activeId;
+        const isActive = card.id === currentKey;
         return (
           <div
             key={toKeyIdentity(card.id)}
@@ -128,7 +130,7 @@ export function AnnotationMargin({
             {...hooks.slot('card', { active: isActive, orphaned: card.isOrphaned })}
             style={{ position: 'absolute', top: card.top }}
             onFocus={() => {
-              if (!isActive) setActiveId(card.id);
+              if (!isActive) setCurrentKey(card.id);
             }}
             onKeyDown={(event) => onKeyDown(event, index)}
           >

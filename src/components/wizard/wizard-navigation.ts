@@ -11,7 +11,7 @@ import type { WizardProps, WizardStep } from './wizard.js';
 
 type NavigationOptions = Pick<
   WizardProps,
-  'steps' | 'currentId' | 'defaultCurrentId' | 'onCurrentIdChange' | 'onFinish'
+  'steps' | 'currentKey' | 'defaultCurrentKey' | 'onCurrentKeyChange' | 'onFinish'
 >;
 
 /** The step a wizard shows and the moves the reader can make from it. */
@@ -95,10 +95,10 @@ function useAttempts(shownId: Key | undefined, workflowKey: string) {
 export function useWizardNavigation(options: NavigationOptions): WizardNavigation {
   const { steps } = options;
   const strings = useUiStrings();
-  const [currentId, setCurrentId] = useControllableState<Key | undefined>(
-    options.currentId,
-    options.defaultCurrentId ?? steps[0]?.id,
-    (id) => (id === undefined ? undefined : options.onCurrentIdChange?.(id)),
+  const [currentKey, setCurrentId] = useControllableState<Key | undefined>(
+    options.currentKey,
+    options.defaultCurrentKey ?? steps[0]?.id,
+    (id) => (id === undefined ? undefined : options.onCurrentKeyChange?.(id)),
   );
   const [skipped, setSkipped] = useState<ReadonlySet<Key>>(() => new Set());
   const [failure, setFailure] = useState<WizardNavigation['failure']>(null);
@@ -106,7 +106,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
   const movedRef = useRef(false);
   const index = Math.max(
     0,
-    steps.findIndex((step) => step.id === currentId),
+    steps.findIndex((step) => step.id === currentKey),
   );
   const { isPending, setPending, runningRef, attemptRef } = useAttempts(
     steps[index]?.id,
@@ -117,7 +117,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     if (!movedRef.current) return;
     movedRef.current = false;
     headingRef.current?.focus();
-  }, [currentId]);
+  }, [currentKey]);
 
   const goTo = (id: Key) => {
     setFailure(null);

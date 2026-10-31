@@ -40,7 +40,7 @@ function RowMenu({
 /** Many conversations to search, open, mark read, mute and start. */
 function InboxDemo() {
   const [conversations, setConversations] = useState(manyConversations);
-  const [selectedId, setSelectedId] = useState<string | null>('trip');
+  const [selectedKey, setSelectedId] = useState<string | null>('trip');
   const update = (id: string, change: Partial<ChatConversation>) =>
     setConversations((list) =>
       list.map((item) => (item.id === id ? { ...item, ...change } : item)),
@@ -54,13 +54,13 @@ function InboxDemo() {
     setConversations((list) => [{ id, title: 'New conversation', time: minutesAgo(0) }, ...list]);
     setSelectedId(id);
   };
-  const selected = conversations.find((item) => item.id === selectedId);
+  const selected = conversations.find((item) => item.id === selectedKey);
   return (
     <div data-lab-demo="inbox">
       <div style={{ height: 420, width: 360 }}>
         <ChatList
           conversations={conversations}
-          selectedId={selectedId}
+          selectedKey={selectedKey}
           onSelectionChange={open}
           onNew={start}
           getNow={getNow}
@@ -123,7 +123,7 @@ function StateCell({ state }: { state: (typeof listStates)[number] }) {
         aria-label={`Conversations ${state}`}
         conversations={conversations}
         isLoading={state === 'loading'}
-        selectedId={state === 'selected' ? 'trip' : null}
+        selectedKey={state === 'selected' ? 'trip' : null}
         onNew={() => {}}
         emptyState={state === 'custom-empty' ? <p>Say hello to your team.</p> : undefined}
         getNow={getNow}

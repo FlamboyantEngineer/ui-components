@@ -15,8 +15,8 @@ describe('AnnotationMargin', () => {
       <AnnotationContext
         value={{
           anchors: [{ annotation: { id: 'note' }, rects }],
-          activeId: null,
-          setActiveId: () => {},
+          currentKey: null,
+          setCurrentKey: () => {},
           layer: null,
         }}
       >

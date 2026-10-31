@@ -31,7 +31,7 @@ export interface TreeRowOptions<T extends TreeItemData> extends Pick<
   | 'hasChildItems'
   | 'isItemPending'
   | 'getHref'
-  | 'isItemCurrent'
+  | 'currentKey'
   | 'getIcon'
   | 'renderLabel'
   | 'renderMeta'
@@ -161,8 +161,7 @@ function renderLoader<T extends TreeItemData>(
 export function useTreeItemRenderer<T extends TreeItemData>(
   options: TreeRowOptions<T>,
 ): (item: T) => ReactElement {
-  const { getTextValue, getChildren, hasChildItems, isItemPending, getHref, isItemCurrent } =
-    options;
+  const { getTextValue, getChildren, hasChildItems, isItemPending, getHref, currentKey } = options;
   const { reordering, registerRow, loads } = options;
   const content = useRowContentOptions(options);
   const keyShortcuts = reordering?.keyShortcuts;
@@ -171,7 +170,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
       const children = getChildren(item) ?? [];
       const isLazy = children.length === 0 && (hasChildItems?.(item) ?? false);
       const href = getHref?.(item);
-      const isCurrent = isItemCurrent?.(item) ?? false;
+      const isCurrent = currentKey != null && item.id === currentKey;
       const isIndeterminate = content.isIndeterminate(item.id);
       const isMovable = content.isMovable(item.id);
       const rowElement = { isMovable, isCurrent, isIndeterminate, href, keyShortcuts };
@@ -211,7 +210,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
       hasChildItems,
       isItemPending,
       getHref,
-      isItemCurrent,
+      currentKey,
       getTextValue,
       content,
       keyShortcuts,

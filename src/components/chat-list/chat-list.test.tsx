@@ -158,7 +158,7 @@ describe('ChatList', () => {
     const { rerender } = render(
       <ChatList
         conversations={conversations}
-        selectedId="helper"
+        selectedKey="helper"
         onSelectionChange={onSelectionChange}
       />,
     );
@@ -166,7 +166,7 @@ describe('ChatList', () => {
     await user.click(row(/^Ana Lima/));
     expect(onSelectionChange).toHaveBeenCalledWith('ana');
     expect(row(/^Travel helper/)).toHaveAttribute('aria-selected', 'true');
-    rerender(<ChatList conversations={conversations} selectedId={null} />);
+    rerender(<ChatList conversations={conversations} selectedKey={null} />);
     expect(row(/^Travel helper/)).toHaveAttribute('aria-selected', 'false');
   });
 

@@ -122,9 +122,9 @@ function ConversationChat({ conversation }: { conversation: LabConversation }) {
 }
 
 function ChromeDemo() {
-  const [selectedId, setSelectedId] = useState('chrome-team');
+  const [selectedKey, setSelectedId] = useState('chrome-team');
   const selected =
-    conversations.find((entry) => entry.id === selectedId) ?? requireDefined(conversations[0]);
+    conversations.find((entry) => entry.id === selectedKey) ?? requireDefined(conversations[0]);
   return (
     <div
       data-lab-demo="chrome"
@@ -133,7 +133,7 @@ function ChromeDemo() {
       <div style={{ height: 480 }}>
         <ChatList
           conversations={conversations.map(toListRow)}
-          selectedId={selectedId}
+          selectedKey={selectedKey}
           onSelectionChange={setSelectedId}
           getNow={getLabNow}
         />

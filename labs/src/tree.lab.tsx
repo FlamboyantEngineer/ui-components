@@ -82,7 +82,7 @@ function StatesTree({ state }: { state: (typeof states)[number] }) {
       defaultExpandedKeys={['travel']}
       selectionMode={state === 'selected' ? 'single' : 'none'}
       defaultSelectedKeys={state === 'selected' ? ['lisbon'] : undefined}
-      isItemCurrent={state === 'current' ? (entry) => entry.id === 'lisbon' : undefined}
+      currentKey={state === 'current' ? 'lisbon' : null}
       disabledKeys={state === 'disabled' ? ['lisbon'] : undefined}
     />
   );
@@ -307,7 +307,7 @@ mountLab(
         ]}
         getTextValue={name}
         getHref={(entry) => entry.href}
-        isItemCurrent={(entry) => entry.id === 'oslo-link'}
+        currentKey="oslo-link"
       />
     </LabSection>
     <LabSection

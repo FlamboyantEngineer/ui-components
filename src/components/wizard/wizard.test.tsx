@@ -51,10 +51,10 @@ async function passCity() {
 describe('Wizard', () => {
   it('UIC-WIZARD-2.1 keeps numeric and text step IDs separate when replacing an uncontrolled field', async () => {
     const user = userEvent.setup();
-    const onCurrentIdChange = vi.fn();
+    const onCurrentKeyChange = vi.fn();
     render(
       <Wizard
-        onCurrentIdChange={onCurrentIdChange}
+        onCurrentKeyChange={onCurrentKeyChange}
         steps={[
           { id: 1, label: 'First', content: <TextField label="Draft" defaultValue="First" /> },
           { id: '1', label: 'Second', content: <TextField label="Draft" defaultValue="Second" /> },
@@ -63,10 +63,10 @@ describe('Wizard', () => {
     );
     await user.type(screen.getByRole('textbox', { name: 'Draft' }), ' edited');
     await user.click(action('Next'));
-    expect(onCurrentIdChange).toHaveBeenCalledWith('1');
+    expect(onCurrentKeyChange).toHaveBeenCalledWith('1');
     expect(screen.getByRole('textbox', { name: 'Draft' })).toHaveValue('Second');
     await user.click(action('Back'));
-    expect(onCurrentIdChange).toHaveBeenLastCalledWith(1);
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith(1);
     expect(screen.getByRole('textbox', { name: 'Draft' })).toHaveValue('First');
   });
 
@@ -179,34 +179,34 @@ describe('Wizard', () => {
   });
 
   it('UIC-WIZARD-2.1 follows a controlled step and reports every move', async () => {
-    const onCurrentIdChange = vi.fn();
-    const { rerender } = renderWizard({ currentId: 'note', onCurrentIdChange });
+    const onCurrentKeyChange = vi.fn();
+    const { rerender } = renderWizard({ currentKey: 'note', onCurrentKeyChange });
     expect(screen.getByRole('heading', { name: 'Note' })).toBeInTheDocument();
     expect(statuses()).toEqual(['complete', 'current', 'upcoming']);
     await userEvent.click(action('Next'));
-    expect(onCurrentIdChange).toHaveBeenCalledWith('summary');
+    expect(onCurrentKeyChange).toHaveBeenCalledWith('summary');
     expect(screen.getByRole('heading', { name: 'Note' })).toBeInTheDocument();
     rerender(
-      <Wizard steps={tripSteps()} currentId="summary" onCurrentIdChange={onCurrentIdChange} />,
+      <Wizard steps={tripSteps()} currentKey="summary" onCurrentKeyChange={onCurrentKeyChange} />,
     );
     expect(statuses()).toEqual(['complete', 'complete', 'current']);
   });
 
   it('UIC-WIZARD-2.1 starts at the default step, uncontrolled', () => {
-    renderWizard({ defaultCurrentId: 'summary' });
+    renderWizard({ defaultCurrentKey: 'summary' });
     expect(screen.getByRole('heading', { name: 'Summary' })).toBeInTheDocument();
   });
 
   it('UIC-WIZARD-2.2 checks the fields before moving on', async () => {
-    const onCurrentIdChange = vi.fn();
-    renderWizard({ onCurrentIdChange });
+    const onCurrentKeyChange = vi.fn();
+    renderWizard({ onCurrentKeyChange });
     await userEvent.click(action('Next'));
     const city = screen.getByRole('textbox', { name: 'City name' });
     expect(city).toHaveFocus();
     expect(city).toHaveAttribute('aria-invalid', 'true');
-    expect(onCurrentIdChange).not.toHaveBeenCalled();
+    expect(onCurrentKeyChange).not.toHaveBeenCalled();
     await userEvent.type(city, 'Lisbon{Enter}');
-    expect(onCurrentIdChange).toHaveBeenCalledWith('note');
+    expect(onCurrentKeyChange).toHaveBeenCalledWith('note');
     expect(screen.getByRole('heading', { name: 'Note' })).toBeInTheDocument();
   });
 
@@ -234,12 +234,12 @@ describe('Wizard', () => {
   it('UIC-WIZARD-2.2 keeps Next pending while an asynchronous check runs', async () => {
     let settle: (value: boolean) => void = () => {};
     const validate = () => new Promise<boolean>((resolve) => (settle = resolve));
-    const onCurrentIdChange = vi.fn();
+    const onCurrentKeyChange = vi.fn();
     const { container } = render(
       <Wizard
         steps={tripSteps({ note: { validate } })}
-        defaultCurrentId="note"
-        onCurrentIdChange={onCurrentIdChange}
+        defaultCurrentKey="note"
+        onCurrentKeyChange={onCurrentKeyChange}
       />,
     );
     await userEvent.click(action('Next'));
@@ -251,7 +251,7 @@ describe('Wizard', () => {
     expectHooksMatchSpec(container, 'WIZARD');
     await userEvent.click(action('Next'));
     await act(async () => settle(true));
-    expect(onCurrentIdChange).toHaveBeenCalledTimes(1);
+    expect(onCurrentKeyChange).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('heading', { name: 'Summary' })).toBeInTheDocument();
     expect(container.querySelector('.ui-wizard')).not.toHaveAttribute('data-pending');
   });
@@ -259,7 +259,7 @@ describe('Wizard', () => {
   it('UIC-WIZARD-2.2 finishes once the last step passes', async () => {
     let settle: () => void = () => {};
     const onFinish = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)));
-    renderWizard({ defaultCurrentId: 'summary', onFinish });
+    renderWizard({ defaultCurrentKey: 'summary', onFinish });
     await userEvent.click(action('Finish'));
     expect(onFinish).toHaveBeenCalledTimes(1);
     expect(action('Finish')).toHaveAttribute('data-pending', 'true');
@@ -272,7 +272,7 @@ describe('Wizard', () => {
     onFinish.mockRejectedValueOnce('no message');
     render(
       <UiProvider messages={{ actionFailed: 'Something went wrong.' }}>
-        <Wizard steps={tripSteps()} defaultCurrentId="summary" onFinish={onFinish} />
+        <Wizard steps={tripSteps()} defaultCurrentKey="summary" onFinish={onFinish} />
       </UiProvider>,
     );
     await userEvent.click(action('Finish'));
@@ -292,7 +292,7 @@ describe('Wizard', () => {
     const onFinish = vi.fn();
     const { unmount } = renderWizard({
       steps: tripSteps({ summary: { validate } }),
-      defaultCurrentId: 'summary',
+      defaultCurrentKey: 'summary',
       onFinish,
     });
     await userEvent.click(action('Finish'));
@@ -307,23 +307,23 @@ describe('Wizard', () => {
     const checks: { settle: (value: boolean | string) => void; signal: AbortSignal }[] = [];
     const validate = (signal: AbortSignal) =>
       new Promise<boolean | string>((resolve) => checks.push({ settle: resolve, signal }));
-    const onCurrentIdChange = vi.fn();
+    const onCurrentKeyChange = vi.fn();
     const steps = tripSteps({ note: { validate } });
     const { rerender, container } = render(
-      <Wizard steps={steps} currentId="note" onCurrentIdChange={onCurrentIdChange} />,
+      <Wizard steps={steps} currentKey="note" onCurrentKeyChange={onCurrentKeyChange} />,
     );
     await userEvent.click(action('Next'));
-    rerender(<Wizard steps={steps} currentId="city" onCurrentIdChange={onCurrentIdChange} />);
+    rerender(<Wizard steps={steps} currentKey="city" onCurrentKeyChange={onCurrentKeyChange} />);
     expect(checks[0]?.signal.aborted).toBe(true);
     expect(container.querySelector('.ui-wizard')).not.toHaveAttribute('data-pending');
     expect(action('Next')).not.toHaveAttribute('data-pending');
     await act(async () => checks[0]?.settle(true));
-    expect(onCurrentIdChange).not.toHaveBeenCalled();
-    rerender(<Wizard steps={steps} currentId="note" onCurrentIdChange={onCurrentIdChange} />);
+    expect(onCurrentKeyChange).not.toHaveBeenCalled();
+    rerender(<Wizard steps={steps} currentKey="note" onCurrentKeyChange={onCurrentKeyChange} />);
     await userEvent.click(action('Next'));
     expect(checks).toHaveLength(2);
     await act(async () => checks[1]?.settle(true));
-    expect(onCurrentIdChange).toHaveBeenCalledWith('summary');
+    expect(onCurrentKeyChange).toHaveBeenCalledWith('summary');
   });
 
   it('UIC-WIZARD-2.6 ignores a late refusal or error from a check whose workflow was replaced', async () => {
@@ -333,7 +333,7 @@ describe('Wizard', () => {
     const { rerender } = render(
       <Wizard
         steps={tripSteps({ summary: { validate } })}
-        defaultCurrentId="summary"
+        defaultCurrentKey="summary"
         onFinish={onFinish}
       />,
     );
@@ -342,7 +342,7 @@ describe('Wizard', () => {
       { id: 'review', label: 'Review', content: <p>Look it over.</p> },
       { id: 'summary', label: 'Summary', content: <p>All set.</p> },
     ];
-    rerender(<Wizard steps={replaced} defaultCurrentId="summary" onFinish={onFinish} />);
+    rerender(<Wizard steps={replaced} defaultCurrentKey="summary" onFinish={onFinish} />);
     expect(action('Finish')).not.toHaveAttribute('data-pending');
     await act(async () => refuse(new Error('Too late.')));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -354,7 +354,7 @@ describe('Wizard', () => {
   it('UIC-WIZARD-2.6 lets a started finish run while ignoring its outcome after the wizard leaves it', async () => {
     let fail: (error: Error) => void = () => {};
     const onFinish = vi.fn(() => new Promise<void>((_, reject) => (fail = reject)));
-    const { unmount } = renderWizard({ defaultCurrentId: 'summary', onFinish });
+    const { unmount } = renderWizard({ defaultCurrentKey: 'summary', onFinish });
     await userEvent.click(action('Finish'));
     expect(onFinish).toHaveBeenCalledTimes(1);
     unmount();
@@ -421,7 +421,7 @@ describe('Wizard', () => {
     const view = (round: number) => (
       <Wizard
         steps={tripSteps({ summary: { validate } })}
-        defaultCurrentId="summary"
+        defaultCurrentKey="summary"
         onFinish={() => void finishes.push(round)}
       />
     );

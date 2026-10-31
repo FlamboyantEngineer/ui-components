@@ -40,7 +40,7 @@ function ImportProgress() {
     <div data-lab-demo="import">
       <Steps
         items={importSteps}
-        currentId={current}
+        currentKey={current}
         isComplete={current === null}
         onAction={setCurrent}
         aria-label="Import"
@@ -68,7 +68,7 @@ mountLab(
           <div style={{ width: orientation === 'horizontal' ? 520 : undefined }}>
             <Steps
               items={importSteps}
-              currentId="map"
+              currentKey="map"
               density={density}
               orientation={orientation}
             />
@@ -90,7 +90,7 @@ mountLab(
           <div style={{ width: narrowWidths[width] }} data-lab-width={width}>
             <Steps
               items={projectSteps.slice(0, Number(steps))}
-              currentId="review"
+              currentKey="review"
               density={density}
               onAction={() => {}}
               aria-label={`Project, ${steps} steps, ${density}, ${width}`}
@@ -108,7 +108,7 @@ mountLab(
         render={({ status }) => (
           <Steps
             items={[{ id: 'step', label: 'Map columns', status }]}
-            currentId={status === 'current' ? 'step' : null}
+            currentKey={status === 'current' ? 'step' : null}
             orientation="vertical"
             aria-label={`Step ${status}`}
           />
@@ -129,7 +129,7 @@ mountLab(
               { ...requireDefined(importSteps[2]), status: 'skipped' },
               requireDefined(importSteps[3]),
             ]}
-            currentId="import"
+            currentKey="import"
             orientation="vertical"
             isDisabled={state === 'all disabled'}
             onAction={() => {}}
