@@ -498,4 +498,29 @@ describe('DashboardGrid', () => {
     expect(tile).toHaveAttribute('id', 'tile');
     expect(tileRef.current).toBe(tile);
   });
+
+  it('UIC-DASHBOARD-GRID-2.2 draws again only the tile a preview moves', async () => {
+    const user = userEvent.setup();
+    const draws = new Map<string, number>();
+    render(
+      <DashboardGrid aria-label="Overview" defaultLayout={layout} isEditing>
+        {(item) => {
+          const id = String(item.id);
+          draws.set(id, (draws.get(id) ?? 0) + 1);
+          return <DashboardTile label={requireDefined(titles[id])} />;
+        }}
+      </DashboardGrid>,
+    );
+    draws.clear();
+    const handle = screen.getByRole('button', { name: 'Move Notes' });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle, coords: { pageX: 0, pageY: 0 } },
+      { coords: { pageX: 0, pageY: 80 } },
+    ]);
+    expect(screen.getByRole('group', { name: 'Notes' })).toHaveAttribute('data-moving', 'true');
+    expect(draws.get('notes')).toBeGreaterThan(0);
+    expect(draws.has('visitors')).toBe(false);
+    expect(draws.has('sales')).toBe(false);
+    await user.pointer({ keys: '[/MouseLeft]' });
+  });
 });

@@ -1,7 +1,15 @@
 'use client';
 
 import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
-import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  Children,
+  isValidElement,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
@@ -173,6 +181,7 @@ export function CommentThread({
   ...rest
 }: CommentThreadProps) {
   const strings = useUiStrings();
+  const threadContext = useMemo(() => ({ isReadOnly }), [isReadOnly]);
   const [resolved, setResolved] = useControllableState(
     isResolved,
     defaultResolved,
@@ -190,7 +199,7 @@ export function CommentThread({
         rest['aria-label'] ?? (rest['aria-labelledby'] ? undefined : strings.commentThread)
       }
     >
-      <CommentThreadContext value={{ isReadOnly }}>
+      <CommentThreadContext value={threadContext}>
         <CommentThreadHeader
           quote={quote}
           isResolved={resolved}

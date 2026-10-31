@@ -20,7 +20,7 @@ Verification: `src/components/condition-builder/condition-builder.test.tsx`, `e2
 
 ### UIC-CONDITION-BUILDER-1.3 - Rules
 
-Each rule (`ui-condition-builder__rule`) shall draw a select of the fields (`ui-condition-builder__field`), then the operator select and value control of the field's type exactly as the filter bar's editor draws them ([UIC-FILTER-BAR-2.2](FILTER-BAR.md#uic-filter-bar-22---editor)), labelled for assistive technology only, then its menu. Choosing another field starts the rule over with that field's first operator and an empty value, keeping its id. A rule on a field not in `fields` draws only its field select and menu.
+Each rule (`ui-condition-builder__rule`) shall draw a select of the fields (`ui-condition-builder__field`), then the operator select and value control of the field's type exactly as the filter bar's editor draws them ([UIC-FILTER-BAR-2.2](FILTER-BAR.md#uic-filter-bar-22---editor)), labelled for assistive technology only, then its menu. Choosing another field starts the rule over with that field's first operator and an empty value, keeping its id. A rule on a field not in `fields` draws only its field select and menu. Editing a rule draws only that rule and the groups that hold it again; the other rules and groups keep their rendered content.
 
 Implementation: `src/components/condition-builder/condition-rule.tsx`, `src/components/filter-bar/filter-editor.tsx`
 Verification: `src/components/condition-builder/condition-builder.test.tsx`, `e2e/condition-builder.spec.ts`

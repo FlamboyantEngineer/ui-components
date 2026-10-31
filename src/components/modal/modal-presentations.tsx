@@ -1,6 +1,7 @@
 'use client';
 
-import { useContext, useRef, type ReactNode } from 'react';
+import { useContext, useMemo, useRef, type ReactNode } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   FocusScope,
   Modal as AriaModal,
@@ -106,13 +107,22 @@ export function useModalOpenState({
 }: ModalOpenOptions): ModalOpenState {
   const trigger = useContext(OverlayTriggerStateContext);
   const [own, setOwn] = useControllableState(isOpen, defaultOpen ?? false, onOpenChange);
-  if (trigger && isOpen === undefined && defaultOpen === undefined) {
-    return toModalOpenState(trigger.isOpen, (next) => {
-      trigger.setOpen(next);
-      onOpenChange?.(next);
-    });
-  }
-  return toModalOpenState(own, setOwn);
+  const owner = isOpen === undefined && defaultOpen === undefined ? trigger : null;
+  const latest = useLatest({ owner, onOpenChange, setOwn });
+  const shown = owner ? owner.isOpen : own;
+  const hasOwner = owner !== null;
+  // One object per open state, so the dialog subtree that reads it renders again only when it moves.
+  return useMemo(
+    () =>
+      toModalOpenState(shown, (next) => {
+        const current = latest.current;
+        if (hasOwner && current.owner) {
+          current.owner.setOpen(next);
+          current.onOpenChange?.(next);
+        } else current.setOwn(next);
+      }),
+    [shown, hasOwner, latest],
+  );
 }
 
 /**

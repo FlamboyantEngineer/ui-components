@@ -13,7 +13,9 @@ import { joinMenuGroups } from '../menu/menu.js';
 // The menu of a tab's actions, opened from the tab like a context menu.
 
 import {
+  useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
   type KeyboardEvent,
   type MouseEvent,
@@ -83,80 +85,88 @@ function useStandardEntries(options: TabMenuOptions) {
   const strings = useUiStrings();
   const latest = useLatest(options);
   const { rename, reorder, onDuplicate, onRemove } = options;
-  return (key: Key): MenuEntry[] => {
-    const act = (run: (current: TabMenuOptions) => void) => () => {
-      if (isTabAvailable(latest.current.shared, key)) run(latest.current);
-    };
-    const edits: MenuItemEntry[] = [];
-    if (rename) {
-      edits.push({
-        id: 'rename',
-        label: strings.rename,
-        icon: EditGlyph,
-        onAction: act((current) => current.rename?.start(key)),
-      });
-    }
-    if (onDuplicate) {
-      edits.push({
-        id: 'duplicate',
-        label: strings.duplicate,
-        icon: CopyGlyph,
-        onAction: act((current) => current.onDuplicate?.(key)),
-      });
-    }
-    const moves: MenuItemEntry[] = [];
-    if (reorder) {
-      findMoveDirections(reorder).forEach((direction, index) => {
-        const step = index === 0 ? -1 : 1;
-        moves.push({
-          id: index === 0 ? 'move-backward' : 'move-forward',
-          label: strings.moveItem(direction),
-          icon: {
-            left: ArrowLeftGlyph,
-            right: ArrowRightGlyph,
-            up: ArrowUpGlyph,
-            down: ArrowDownGlyph,
-          }[direction],
-          isDisabled: stepTabMove(reorder.listKeys(), key, step) === null,
-          // The move is worked out from the order when it runs, not when the menu was drawn.
-          onAction: act(({ reorder: current }) => {
-            const move = current && stepTabMove(current.listKeys(), key, step);
-            if (current && move) current.onReorder(move);
-          }),
+  return useCallback(
+    (key: Key): MenuEntry[] => {
+      const act = (run: (current: TabMenuOptions) => void) => () => {
+        if (isTabAvailable(latest.current.shared, key)) run(latest.current);
+      };
+      const edits: MenuItemEntry[] = [];
+      if (rename) {
+        edits.push({
+          id: 'rename',
+          label: strings.rename,
+          icon: EditGlyph,
+          onAction: act((current) => current.rename?.start(key)),
         });
-      });
-    }
-    const removal: MenuItemEntry[] = onRemove
-      ? [
-          {
-            id: 'delete',
-            label: strings.delete,
-            icon: DeleteGlyph,
-            tone: 'danger',
-            onAction: act((current) => current.onRemove?.(new Set([key]))),
-          },
-        ]
-      : [];
-    return joinMenuGroups([edits, moves, removal]);
-  };
+      }
+      if (onDuplicate) {
+        edits.push({
+          id: 'duplicate',
+          label: strings.duplicate,
+          icon: CopyGlyph,
+          onAction: act((current) => current.onDuplicate?.(key)),
+        });
+      }
+      const moves: MenuItemEntry[] = [];
+      if (reorder) {
+        findMoveDirections(reorder).forEach((direction, index) => {
+          const step = index === 0 ? -1 : 1;
+          moves.push({
+            id: index === 0 ? 'move-backward' : 'move-forward',
+            label: strings.moveItem(direction),
+            icon: {
+              left: ArrowLeftGlyph,
+              right: ArrowRightGlyph,
+              up: ArrowUpGlyph,
+              down: ArrowDownGlyph,
+            }[direction],
+            isDisabled: stepTabMove(reorder.listKeys(), key, step) === null,
+            // The move is worked out from the order when it runs, not when the menu was drawn.
+            onAction: act(({ reorder: current }) => {
+              const move = current && stepTabMove(current.listKeys(), key, step);
+              if (current && move) current.onReorder(move);
+            }),
+          });
+        });
+      }
+      const removal: MenuItemEntry[] = onRemove
+        ? [
+            {
+              id: 'delete',
+              label: strings.delete,
+              icon: DeleteGlyph,
+              tone: 'danger',
+              onAction: act((current) => current.onRemove?.(new Set([key]))),
+            },
+          ]
+        : [];
+      return joinMenuGroups([edits, moves, removal]);
+    },
+    [latest, strings, rename, reorder, onDuplicate, onRemove],
+  );
 }
 
-/** A list's tab menu while the owner lists its entries (`getMenuItems`). */
+/**
+ * A list's tab menu while the owner lists its entries (`getMenuItems`), the same object while its
+ * options are.
+ */
 export function useTabMenu(options: TabMenuOptions): TabMenu {
   const listStandard = useStandardEntries(options);
   const { getMenuItems, shared } = options;
-  const getEntries = (key: Key) => getMenuItems?.(key, listStandard(key)) ?? [];
-  return {
-    controller: shared.controller,
-    isEnabled: getMenuItems !== undefined,
-    getEntries,
-    showFor: (key) => {
-      shared.menuKey.current = key;
-      shared.controller.setItems(getEntries(key));
-    },
-    openKey: () => (shared.controller.isOpen() ? shared.menuKey.current : null),
-    isAvailable: (key, state) => isTabAvailable(shared, key, state),
-  };
+  return useMemo<TabMenu>(() => {
+    const getEntries = (key: Key) => getMenuItems?.(key, listStandard(key)) ?? [];
+    return {
+      controller: shared.controller,
+      isEnabled: getMenuItems !== undefined,
+      getEntries,
+      showFor: (key) => {
+        shared.menuKey.current = key;
+        shared.controller.setItems(getEntries(key));
+      },
+      openKey: () => (shared.controller.isOpen() ? shared.menuKey.current : null),
+      isAvailable: (key, state) => isTabAvailable(shared, key, state),
+    };
+  }, [getMenuItems, listStandard, shared]);
 }
 
 /**

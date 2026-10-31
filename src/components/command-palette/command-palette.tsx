@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchGlyph } from '../../core/glyphs.js';
-import type { KeyboardEvent } from 'react';
+import { useMemo, type KeyboardEvent } from 'react';
 import {
   Autocomplete,
   Dialog,
@@ -94,6 +94,7 @@ function CommandPaletteDialog({
     onInputChange,
   );
   const hint = placeholder ?? strings.searchCommands;
+  const menuContext = useMemo(() => ({ onClose: close }), [close]);
   // Seen before the field, which would otherwise keep the key press for itself.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
     if (!shortcut || !isChordPress(event.nativeEvent, shortcut)) return;
@@ -117,7 +118,7 @@ function CommandPaletteDialog({
           <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
           <Input className={hooks.slotClass('search-input')} placeholder={hint} />
         </SearchField>
-        <MenuContext value={{ onClose: close }}>
+        <MenuContext value={menuContext}>
           <Menu
             {...menu}
             highlightMatches

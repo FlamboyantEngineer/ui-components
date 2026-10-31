@@ -1,12 +1,13 @@
 'use client';
 
-import { useId, useRef, type RefObject } from 'react';
+import { useCallback, useId, useMemo, useRef, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { useIdFactory } from '../../utils/use-id-factory.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { createFilterCondition, type FilterField } from '../filter-bar/filter-bar.js';
 import {
   ConditionBuilderContext,
@@ -63,7 +64,20 @@ function findFocusTarget(
 /** Moves focus to the requested element after the render that drew it. */
 function useNodeFocusRequest(rootRef: RefObject<HTMLElement | null>) {
   const request = useFocusRequest();
-  return (target: FocusRequest) => request(() => findFocusTarget(rootRef.current, target));
+  return useCallback(
+    (target: FocusRequest) => request(() => findFocusTarget(rootRef.current, target)),
+    [request, rootRef],
+  );
+}
+
+/** The group that holds the node `id`, searched from `group` down. */
+function findParentGroup(id: string, group: ConditionGroup): ConditionGroup | undefined {
+  return group.rules.some((node) => node.id === id)
+    ? group
+    : group.rules
+        .filter((node): node is ConditionGroup => node.type === 'group')
+        .map((node) => findParentGroup(id, node))
+        .find(Boolean);
 }
 
 function useBuilderActions(options: {
@@ -73,70 +87,74 @@ function useBuilderActions(options: {
   elementId: (id: string, part?: 'add') => string;
   rootRef: RefObject<HTMLElement | null>;
 }): ConditionBuilderActions {
-  const { tree, setTree, fields, elementId } = options;
+  const { elementId } = options;
+  // The actions read the current tree and fields when they run, so they stay the same object.
+  const latest = useLatest(options);
   const createId = useIdFactory();
   const requestFocus = useNodeFocusRequest(options.rootRef);
-  const newRule = (): ConditionRule | null => {
-    const field = fields[0];
-    return field ? { type: 'rule', id: createId(), ...createFilterCondition(field) } : null;
-  };
-  /** Appends `node` to a group and focuses the first control of its first rule. */
-  const append = (groupId: string, node: ConditionNode, focusId: string) => {
-    const group = findConditionNode(tree, groupId);
-    if (group?.type !== 'group') return;
-    setTree(replaceConditionNode(tree, groupId, { ...group, rules: [...group.rules, node] }));
-    requestFocus({ elementId: elementId(focusId), selector: 'button' });
-  };
-  const parentOf = (id: string, group: ConditionGroup = tree): ConditionGroup | undefined =>
-    group.rules.some((node) => node.id === id)
-      ? group
-      : group.rules
-          .filter((node): node is ConditionGroup => node.type === 'group')
-          .map((node) => parentOf(id, node))
-          .find(Boolean);
-  return {
-    update: (node) => setTree(replaceConditionNode(tree, node.id, node)),
-    remove: (id) => {
-      const parent = parentOf(id);
-      setTree(removeConditionNode(tree, id));
-      if (parent) requestFocus({ elementId: elementId(parent.id, 'add') });
-    },
-    move: (id, delta) => {
-      setTree(moveConditionNode(tree, id, delta));
-      requestFocus({
-        elementId: elementId(id),
-        selector: `.${conditionBuilderHooks.slotClass('actions')} button`,
-      });
-    },
-    duplicate: (id) => {
-      const node = findConditionNode(tree, id);
-      const parent = parentOf(id);
-      if (!node || !parent) return;
-      const copy = copyConditionNode(node, createId);
-      const at = parent.rules.indexOf(node) + 1;
-      setTree(
-        replaceConditionNode(tree, parent.id, {
-          ...parent,
-          rules: parent.rules.toSpliced(at, 0, copy),
-        }),
+  return useMemo(() => {
+    const newRule = (): ConditionRule | null => {
+      const field = latest.current.fields[0];
+      return field ? { type: 'rule', id: createId(), ...createFilterCondition(field) } : null;
+    };
+    const edit = (change: (tree: ConditionGroup) => ConditionGroup) => {
+      const { tree, setTree } = latest.current;
+      setTree(change(tree));
+    };
+    /** Appends `node` to a group and focuses the first control of its first rule. */
+    const append = (groupId: string, node: ConditionNode, focusId: string) => {
+      const group = findConditionNode(latest.current.tree, groupId);
+      if (group?.type !== 'group') return;
+      edit((tree) =>
+        replaceConditionNode(tree, groupId, { ...group, rules: [...group.rules, node] }),
       );
-      requestFocus({ elementId: elementId(copy.id), selector: 'button' });
-    },
-    addRule: (groupId) => {
-      const rule = newRule();
-      if (rule) append(groupId, rule, rule.id);
-    },
-    addGroup: (groupId) => {
-      const rule = newRule();
-      const group: ConditionGroup = {
-        type: 'group',
-        id: createId(),
-        combinator: 'and',
-        rules: rule ? [rule] : [],
-      };
-      append(groupId, group, rule?.id ?? group.id);
-    },
-  };
+      requestFocus({ elementId: elementId(focusId), selector: 'button' });
+    };
+    return {
+      update: (node) => edit((tree) => replaceConditionNode(tree, node.id, node)),
+      remove: (id) => {
+        const parent = findParentGroup(id, latest.current.tree);
+        edit((tree) => removeConditionNode(tree, id));
+        if (parent) requestFocus({ elementId: elementId(parent.id, 'add') });
+      },
+      move: (id, delta) => {
+        edit((tree) => moveConditionNode(tree, id, delta));
+        requestFocus({
+          elementId: elementId(id),
+          selector: `.${conditionBuilderHooks.slotClass('actions')} button`,
+        });
+      },
+      duplicate: (id) => {
+        const { tree } = latest.current;
+        const node = findConditionNode(tree, id);
+        const parent = findParentGroup(id, tree);
+        if (!node || !parent) return;
+        const copy = copyConditionNode(node, createId);
+        const at = parent.rules.indexOf(node) + 1;
+        edit((current) =>
+          replaceConditionNode(current, parent.id, {
+            ...parent,
+            rules: parent.rules.toSpliced(at, 0, copy),
+          }),
+        );
+        requestFocus({ elementId: elementId(copy.id), selector: 'button' });
+      },
+      addRule: (groupId) => {
+        const rule = newRule();
+        if (rule) append(groupId, rule, rule.id);
+      },
+      addGroup: (groupId) => {
+        const rule = newRule();
+        const group: ConditionGroup = {
+          type: 'group',
+          id: createId(),
+          combinator: 'and',
+          rules: rule ? [rule] : [],
+        };
+        append(groupId, group, rule?.id ?? group.id);
+      },
+    };
+  }, [latest, createId, requestFocus, elementId]);
 }
 
 /**
@@ -161,8 +179,15 @@ export function ConditionBuilder({
   const strings = useUiStrings();
   const [tree, setTree] = useControllableState(value, defaultValue, onChange);
   const baseId = useId();
-  const elementId = (id: string, part?: 'add') => `${baseId}-${part ?? 'node'}-${id}`;
+  const elementId = useCallback(
+    (id: string, part?: 'add') => `${baseId}-${part ?? 'node'}-${id}`,
+    [baseId],
+  );
   const actions = useBuilderActions({ tree, setTree, fields, elementId, rootRef });
+  const context = useMemo(
+    () => ({ fields, maxDepth, validate, actions, elementId }),
+    [fields, maxDepth, validate, actions, elementId],
+  );
   return (
     <div
       {...rest}
@@ -171,7 +196,7 @@ export function ConditionBuilder({
       role="group"
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.conditions)}
     >
-      <ConditionBuilderContext value={{ fields, maxDepth, validate, actions, elementId }}>
+      <ConditionBuilderContext value={context}>
         <ConditionGroupView group={tree} depth={1} />
       </ConditionBuilderContext>
     </div>

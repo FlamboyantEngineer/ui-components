@@ -86,7 +86,7 @@ export function DashboardTile({
 }: DashboardTileProps) {
   const grid = useDashboardGridTile();
   const item = grid?.item;
-  const moving = grid?.moving?.id === item?.id ? grid?.moving?.kind : undefined;
+  const moving = grid?.moving;
   const handle = (kind: TileMoveKind) =>
     grid?.isEditing ? (
       <TileHandle

@@ -331,4 +331,14 @@ describe('ConditionBuilder', () => {
       callerAttributes: ['data-testid'],
     });
   });
+
+  it('UIC-CONDITION-BUILDER-1.3 draws again only the rule being edited', async () => {
+    const user = userEvent.setup();
+    const validate = vi.fn((_rule: ConditionRule): string | null => null);
+    render(<Controlled validate={validate} />);
+    validate.mockClear();
+    await user.type(within(rule('Rule 1')).getByRole('textbox', { name: 'Value' }), 's');
+    const checked = new Set(validate.mock.calls.map(([checkedRule]) => checkedRule.id));
+    expect(checked).toEqual(new Set(['title']));
+  });
 });

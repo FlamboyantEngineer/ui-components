@@ -21,6 +21,7 @@ import type { BaseProps, Key, Orientation, RefProps } from '../../core/props.js'
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
@@ -175,7 +176,11 @@ function listKeyShortcuts(options: {
   return chords.length > 0 ? chords.join(' ') : undefined;
 }
 
-/** What the list lets its tabs do: remove, rename, reorder and open a menu. */
+/**
+ * What the list lets its tabs do: remove, rename, reorder and open a menu. The actions call the
+ * owner's latest callbacks and stay the same object while the list's abilities do, so the tabs that
+ * read them do not render again each time the list does, such as on every scroll frame.
+ */
 function useTabActions(
   props: Pick<
     TabListProps,
@@ -184,40 +189,61 @@ function useTabActions(
 ): TabActions {
   const shared = useContext(TabsSharedContext);
   const isRtl = useLocale().direction === 'rtl';
-  const { onRemove, onRename, validateName, onReorder, onDuplicate, getMenuItems } = props;
-  const remove =
-    onRemove && ((keys: Set<Key>) => onRemove(new Set([...keys].map(fromCollectionKey))));
-  const rename = createTabRename({
-    shared,
-    onRename: onRename && ((key, name) => onRename(fromCollectionKey(key), name)),
-    validateName: validateName && ((key, name) => validateName(fromCollectionKey(key), name)),
-  });
-  const reorder = createTabReorder({
-    shared,
-    isRtl,
-    onReorder:
-      onReorder &&
-      ((move) =>
-        onReorder({
-          ...move,
-          key: fromCollectionKey(move.key),
-          targetKey: fromCollectionKey(move.targetKey),
-        })),
-  });
-  const menu = useTabMenu({
-    shared,
-    rename,
-    reorder,
-    onRemove: remove,
-    onDuplicate: onDuplicate && ((key) => onDuplicate(fromCollectionKey(key))),
-    getMenuItems:
-      getMenuItems && ((key, standard) => getMenuItems(fromCollectionKey(key), standard)),
-  });
-  const actions = { onRemove: remove, rename, reorder, menu };
-  return {
-    ...actions,
-    keyShortcuts: listKeyShortcuts({ orientation: shared.orientation, actions }),
-  };
+  const latest = useLatest(props);
+  const canRemove = props.onRemove !== undefined;
+  const canRename = props.onRename !== undefined;
+  const canValidate = props.validateName !== undefined;
+  const canReorder = props.onReorder !== undefined;
+  const canDuplicate = props.onDuplicate !== undefined;
+  const hasMenu = props.getMenuItems !== undefined;
+  const { remove, rename, reorder } = useMemo(() => {
+    return {
+      remove: canRemove
+        ? (keys: Set<Key>) => latest.current.onRemove?.(new Set([...keys].map(fromCollectionKey)))
+        : undefined,
+      rename: createTabRename({
+        shared,
+        onRename: canRename
+          ? (key, name) => latest.current.onRename?.(fromCollectionKey(key), name)
+          : undefined,
+        validateName: canValidate
+          ? (key, name) => latest.current.validateName?.(fromCollectionKey(key), name)
+          : undefined,
+      }),
+      reorder: createTabReorder({
+        shared,
+        isRtl,
+        onReorder: canReorder
+          ? (move) =>
+              latest.current.onReorder?.({
+                ...move,
+                key: fromCollectionKey(move.key),
+                targetKey: fromCollectionKey(move.targetKey),
+              })
+          : undefined,
+      }),
+    };
+  }, [latest, shared, isRtl, canRemove, canRename, canValidate, canReorder]);
+  const onDuplicate = useMemo(
+    () =>
+      canDuplicate ? (key: Key) => latest.current.onDuplicate?.(fromCollectionKey(key)) : undefined,
+    [latest, canDuplicate],
+  );
+  const getMenuItems = useMemo<TabMenuItems | undefined>(
+    () =>
+      hasMenu
+        ? (key, standard) => latest.current.getMenuItems?.(fromCollectionKey(key), standard) ?? []
+        : undefined,
+    [latest, hasMenu],
+  );
+  const menu = useTabMenu({ shared, rename, reorder, onRemove: remove, onDuplicate, getMenuItems });
+  return useMemo(() => {
+    const actions = { onRemove: remove, rename, reorder, menu };
+    return {
+      ...actions,
+      keyShortcuts: listKeyShortcuts({ orientation: shared.orientation, actions }),
+    };
+  }, [remove, rename, reorder, menu, shared.orientation]);
 }
 
 /**

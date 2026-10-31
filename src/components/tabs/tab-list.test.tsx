@@ -173,6 +173,55 @@ describe('TabList', () => {
     }
   });
 
+  it('UIC-TABS-2.7 does not draw its tabs again while the list scrolls', async () => {
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'tablist' ? 500 : 0;
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'tablist' ? 200 : 0;
+    });
+    const renders = vi.fn();
+    const { container } = render(
+      <Tabs>
+        <TabList
+          aria-label="Fruit"
+          scrollButtons
+          onRemove={() => {}}
+          onRename={() => {}}
+          onReorder={() => {}}
+          getMenuItems={(_key, standard) => standard}
+        >
+          {fruit.map((name) => (
+            <Tab
+              key={name}
+              id={name.toLowerCase()}
+              render={(props) => {
+                renders(name);
+                return <div {...props} />;
+              }}
+            >
+              {name}
+            </Tab>
+          ))}
+        </TabList>
+      </Tabs>,
+    );
+    const list = screen.getByRole('tablist');
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    const back = container.querySelector('.ui-tabs__scroll-button') as HTMLElement;
+    expect(back).toHaveAttribute('hidden');
+    renders.mockClear();
+    list.scrollLeft = 160;
+    fireEvent.scroll(list);
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    expect(back).not.toHaveAttribute('hidden');
+    expect(renders).not.toHaveBeenCalled();
+  });
+
   it('UIC-TABS-2.8 removes a tab by its close mark or the Delete key and adds one', async () => {
     const onRemove = vi.fn();
     const onAdd = vi.fn();
