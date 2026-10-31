@@ -5,7 +5,6 @@ export type {
   SliderFieldProps,
   SliderMark,
   SliderProps,
-  SliderSize,
   SliderValueLabel,
 } from './slider.js';
 export { keepThumbsApart } from './thumb-spacing.js';

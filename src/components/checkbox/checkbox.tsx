@@ -8,6 +8,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import type { FieldValidationBehavior } from '../field/field.js';
 
 export interface CheckboxProps extends BaseProps, AriaLabellingProps {
   /** Whether the box is ticked, controlled. */
@@ -28,7 +29,9 @@ export interface CheckboxProps extends BaseProps, AriaLabellingProps {
   isReadOnly?: boolean | undefined;
   isDisabled?: boolean | undefined;
   /** `native` (the default) makes a required box a native constraint; `aria` reports through ARIA only. */
-  validationBehavior?: 'aria' | 'native' | undefined;
+  validationBehavior?: FieldValidationBehavior | undefined;
+  /** Focuses the box when it mounts. */
+  autoFocus?: boolean | undefined;
   /** Receives the native input. */
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** `selection` binds the box to the selection of the list row, tree row or card it sits in. */

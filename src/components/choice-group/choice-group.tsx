@@ -6,7 +6,6 @@ import type { ControlSize, Orientation } from '../../core/props.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import { ChoiceBox } from './choice-box.js';
 
-export type ChoiceGroupSize = ControlSize;
 export type ChoiceGroupSelectionMode = 'single' | 'multiple';
 export type ChoiceGroupValue<M extends ChoiceGroupSelectionMode = 'single'> = M extends 'multiple'
   ? string[]
@@ -21,8 +20,6 @@ export interface ChoiceGroupProps<
   selectionMode?: M | undefined;
   /** Layout of the choices. Defaults to `vertical`. */
   orientation?: Orientation | undefined;
-  /** Shared control size. Defaults to `md`. */
-  size?: ChoiceGroupSize | undefined;
   /** Parent checkbox that selects or clears enabled choices in multiple mode. */
   selectAllLabel?: string | undefined;
 }
