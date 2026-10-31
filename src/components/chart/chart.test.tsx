@@ -132,6 +132,15 @@ describe('Chart', () => {
     expect(figure).toHaveAttribute('data-view', 'chart');
     expect(ref.current).toBe(figure);
   });
+
+  it('UIC-CHART-1.4 publishes data-empty from isEmpty over a caller attribute of that name', () => {
+    const { rerender } = render(
+      <Chart aria-label="Harvest" summary="None" table={table} isEmpty data-empty="caller" />,
+    );
+    expect(screen.getByRole('figure')).toHaveAttribute('data-empty', 'true');
+    rerender(<Chart aria-label="Harvest" summary="None" table={table} data-empty="caller" />);
+    expect(screen.getByRole('figure')).not.toHaveAttribute('data-empty');
+  });
 });
 
 describe('ChartLegend', () => {

@@ -182,47 +182,6 @@ function toRootData(
   };
 }
 
-const ownKeys = [
-  'variant',
-  'density',
-  'title',
-  'description',
-  'actions',
-  'headingLevel',
-  'header',
-  'media',
-  'children',
-  'footer',
-  'isSelected',
-  'isLoading',
-  'interactive',
-  'flush',
-  'fill',
-  'fullWidth',
-  'href',
-  'target',
-  'rel',
-  'onAction',
-  'className',
-  'leading',
-  'meta',
-  'summary',
-  'abbreviation',
-  'isCollapsible',
-  'isExpanded',
-  'defaultExpanded',
-  'onExpandedChange',
-  'isToggleDisabled',
-  'presentationSteps',
-] as const;
-
-/** The caller's attributes for the root: everything the card does not take itself. */
-function toRootProps(props: CardProps) {
-  const rest: Record<string, unknown> = { ...props };
-  for (const key of ownKeys) delete rest[key];
-  return rest as Pick<CardProps, 'hidden' | 'role' | 'aria-label' | 'aria-labelledby' | 'id'>;
-}
-
 /**
  * A framed container for a self-contained group of content: optional media, an optional header, a
  * body and a footer. With `href` or `onAction` the whole card is a link or press target whose title
@@ -251,23 +210,23 @@ export function Card(props: CardProps) {
     isExpanded: collapse.isExpanded,
   });
   useFocusRescue(root, presentation, collapse.isExpanded);
-  const rest = toRootProps(props);
-  const labelledBy = toLabelledBy(
-    { title, header, ...rest },
-    { id: titleId, hasSlottedTitle: slottedTitle !== null },
-  );
+  const labelledBy = toLabelledBy(props, { id: titleId, hasSlottedTitle: slottedTitle !== null });
   const isHidden = !collapse.isExpanded || undefined;
   // A titled card, by its own title or a slotted `CardTitle`, is a level of the outline.
   const isTitled = !isEmptyNode(title) || slottedTitle !== null;
 
   return (
     <section
-      {...rest}
       {...hooks.root({
         className: props.className,
+        props,
         data: toRootData(props, { isActionable, presentation, collapse }),
       })}
       ref={setRoot}
+      id={props.id}
+      hidden={props.hidden}
+      role={props.role}
+      aria-label={props['aria-label']}
       aria-labelledby={labelledBy}
       aria-busy={isLoading || undefined}
       onClick={isActionable ? onClick : undefined}

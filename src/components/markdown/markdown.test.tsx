@@ -230,6 +230,11 @@ describe('Markdown', () => {
     expectHooksMatchSpec(container, 'MARKDOWN', { callerAttributes: ['data-probe'] });
   });
 
+  it('UIC-MARKDOWN-2.10 keeps its own streaming state over a caller data-streaming', () => {
+    render(<Markdown source="Text" data-streaming="caller" />);
+    expect(screen.getByText('Text').closest('.ui-markdown')).not.toHaveAttribute('data-streaming');
+  });
+
   it('UIC-MARKDOWN-2.11 renders the end of a streaming source as it will once complete', () => {
     const { container, rerender } = render(
       <Markdown source={'Pack **light** and *warm layers, see [the gu'} isStreaming />,

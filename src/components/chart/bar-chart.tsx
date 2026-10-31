@@ -230,7 +230,7 @@ export function BarChart({
       ref={frameRef}
       data-layout={layout}
       data-orientation={orientation}
-      data-empty={isEmpty || undefined}
+      isEmpty={isEmpty}
       className={mergeClassNames(barChartHooks.className, className)}
       label={label}
       summary={summary ?? generated}

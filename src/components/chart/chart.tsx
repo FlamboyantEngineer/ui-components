@@ -51,6 +51,8 @@ export interface ChartProps extends BaseProps, AriaLabellingProps, ChartViewProp
   table: ChartTable;
   /** A legend shown above the drawing, such as a `ChartLegend`. */
   legend?: ReactNode;
+  /** The chart draws no value; publishes `data-empty`. Defaults to `false`. */
+  isEmpty?: boolean | undefined;
   /** The drawing. */
   children?: ReactNode;
   /** The root element. */
@@ -96,6 +98,7 @@ export function Chart({
   view,
   defaultView = 'chart',
   onViewChange,
+  isEmpty = false,
   children,
   className,
   'aria-describedby': describedBy,
@@ -115,7 +118,7 @@ export function Chart({
   return (
     <div
       {...rest}
-      {...hooks.root({ className, data: { view: shown } })}
+      {...hooks.root({ className, data: { view: shown, empty: isEmpty } })}
       role="figure"
       aria-labelledby={labelId}
       aria-describedby={describedBy ? `${summaryId} ${describedBy}` : summaryId}

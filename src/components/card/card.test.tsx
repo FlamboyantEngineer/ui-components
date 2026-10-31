@@ -253,6 +253,32 @@ describe('Card', () => {
     expectHooksMatchSpec(container, 'CARD');
   });
 
+  it('UIC-CARD-2.5 forwards no prop the card takes itself to its root', () => {
+    const { container } = render(
+      <Card
+        title="Plan"
+        summary="Short"
+        abbreviation="PL"
+        meta="Today"
+        leading="★"
+        isCollapsible
+        defaultExpanded
+        isToggleDisabled
+        onExpandedChange={() => {}}
+        presentationSteps={{ compact: { width: 200 } }}
+        headingLevel={3}
+        flush
+        fill
+        fullWidth
+      >
+        Body
+      </Card>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const names = root.getAttributeNames().filter((name) => !name.startsWith('data-'));
+    expect(names.sort()).toEqual(['aria-labelledby', 'class']);
+  });
+
   it('UIC-CARD-3.1 makes the title a link or a button that names the action', async () => {
     const onAction = vi.fn();
     const { container, rerender } = render(

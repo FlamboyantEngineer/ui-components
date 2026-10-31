@@ -99,11 +99,12 @@ export function HtmlMarkup({
   policy = defaultHtmlPolicy,
   renderElement,
   className,
+  id,
   ...rest
 }: HtmlMarkupProps) {
   const nodes = useMemo(() => sanitizeHtml(markup, policy), [markup, policy]);
   return (
-    <div {...rest} {...hooks.root({ className })}>
+    <div {...hooks.root({ className, props: rest })} id={id}>
       {renderNodes(nodes, renderElement)}
     </div>
   );

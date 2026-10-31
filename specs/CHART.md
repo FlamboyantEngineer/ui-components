@@ -27,7 +27,7 @@ Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-1.4 - Hooks and caller attributes
 
-`Chart` and every chart built on it shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the root; caller attributes never replace a hook attribute. `BarChart`, `LineChart` and `DonutChart` render `Chart` with their own root class (`ui-bar-chart`, `ui-line-chart`, `ui-donut-chart`) alongside `ui-chart`.
+`Chart` and every chart built on it shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the root; caller attributes never replace a hook attribute. `isEmpty` publishes `data-empty` on the root. `BarChart`, `LineChart` and `DonutChart` render `Chart` with their own root class (`ui-bar-chart`, `ui-line-chart`, `ui-donut-chart`) alongside `ui-chart`.
 
 Implementation: `src/components/chart/chart.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `src/components/chart/bar-chart.test.tsx`
@@ -105,7 +105,7 @@ Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/d
 
 ### UIC-CHART-4.5 - Generated summary and no data
 
-Unless the caller gives a `summary`, a bar or line chart shall be summarised by the provider's `chartSummary` string from the number of drawn series and values and the lowest and highest drawn values (`2 series, 12 values, from 3 to 48`), and a donut by `donutSummary` from its total and its largest drawn segment with its share. A chart with no drawn value publishes `data-empty`, draws no plot, and shows the provider's `noData` string in a `ui-chart__empty` slot, which is also its summary.
+Unless the caller gives a `summary`, a bar or line chart shall be summarised by the provider's `chartSummary` string from the number of drawn series and values and the lowest and highest drawn values (`2 series, 12 values, from 3 to 48`), and a donut by `donutSummary` from its total and its largest drawn segment with its share. A chart with no drawn value passes `isEmpty` to its `Chart` frame, which publishes `data-empty` on its root over any caller attribute of that name, draws no plot, and shows the provider's `noData` string in a `ui-chart__empty` slot, which is also its summary.
 
 Implementation: `src/components/chart/chart-summary.ts`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`, `src/core/strings/dashboard.ts`
 Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`

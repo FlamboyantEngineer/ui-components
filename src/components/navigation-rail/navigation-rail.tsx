@@ -1,9 +1,10 @@
 'use client';
 
 import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { booleanCodec, numberCodec } from '../../utils/json-codec.js';
@@ -177,9 +178,7 @@ export function NavigationRail({
     () => ({ isCollapsed, expand: () => setCollapsed(false) }),
     [isCollapsed, setCollapsed],
   );
-  const style = isResizable
-    ? ({ '--ui-navigation-rail-width': `${width}px` } as CSSProperties)
-    : undefined;
+  const style = isResizable ? measuredProperty('navigation-rail-width', width) : undefined;
   return (
     <nav
       {...rest}

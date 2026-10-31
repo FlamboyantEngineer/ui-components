@@ -223,7 +223,7 @@ export function LineChart({
       {...rest}
       ref={frameRef}
       data-variant={variant}
-      data-empty={isEmpty || undefined}
+      isEmpty={isEmpty}
       className={mergeClassNames(lineChartHooks.className, className)}
       label={label}
       summary={summary ?? generated}
