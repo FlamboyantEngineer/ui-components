@@ -38,6 +38,8 @@ interface RelationMatrixRowProps {
 
 interface CellProps {
   relation: RelationMatrixRelation | undefined;
+  /** How a mark without a kind label reads: the provider's `related` text, looked up per row. */
+  relatedLabel: string;
   position: MatrixPosition;
   gridColumn: number | undefined;
   context: RelationMatrixRowContext;
@@ -53,8 +55,7 @@ function RelationMark({ label }: { label: string }) {
   );
 }
 
-function RelationMatrixCell({ relation, position, gridColumn, context }: CellProps) {
-  const strings = useUiStrings();
+function RelationMatrixCell({ relation, relatedLabel, position, gridColumn, context }: CellProps) {
   const kind = relation?.kind === undefined ? undefined : context.kinds.get(relation.kind);
   const isFocused = context.focus.row === position.row && context.focus.column === position.column;
   const tone: Tone | undefined = relation ? (kind?.tone ?? 'neutral') : undefined;
@@ -67,7 +68,7 @@ function RelationMatrixCell({ relation, position, gridColumn, context }: CellPro
       style={{ gridColumn }}
       onClick={context.isActionable ? () => context.onCellPress(position) : undefined}
     >
-      {relation ? <RelationMark label={kind?.label ?? strings.related} /> : null}
+      {relation ? <RelationMark label={kind?.label ?? relatedLabel} /> : null}
     </div>
   );
 }
@@ -93,6 +94,7 @@ function rowStyle(context: RelationMatrixRowContext, rowIndex: number): CSSPrope
  */
 export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowProps) {
   const { columns, indices, tracks, index, focus, isFocusWithin } = context;
+  const strings = useUiStrings();
   const count = index.countRow(row.id);
   const isHeaderFocused = focus.row === rowIndex && focus.column === -1;
   return (
@@ -121,6 +123,7 @@ export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowP
           <RelationMatrixCell
             key={toKeyIdentity(column.id)}
             relation={index.get(row.id, column.id)}
+            relatedLabel={strings.related}
             position={{ row: rowIndex, column: columnIndex }}
             gridColumn={tracks.lines.get(columnIndex)}
             context={context}

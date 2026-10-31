@@ -1,7 +1,8 @@
 'use client';
 
-// A traceability matrix: row items × column items with a mark in each related cell, on a grid
-// that windows both axes, since React Aria's table renders every column of a row.
+// A traceability matrix: row items × column items with a mark in each related cell, on the
+// library's own grid that windows both axes, since React Aria's table renders every column of a
+// row. Its keyboard contract is in specs/RELATION-MATRIX.md (UIC-RELATION-MATRIX-4.2).
 
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMemo, useRef } from 'react';

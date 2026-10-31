@@ -20,7 +20,7 @@ Verification: `src/components/completion-list/completion-list.test.tsx`, `src/co
 
 ### UIC-COMPLETION-LIST-1.3 - Pointer
 
-Moving the pointer over an option that is not active shall call `onActiveKeyChange` with its key, and pressing an option shall call `onAction` with its key. A pointer press on an option, the documentation or the footer keeps focus where it is, in the editor.
+Hovering an option that is not active with a mouse or pen shall call `onActiveKeyChange` with its key (a touch does not hover), and pressing an option shall call `onAction` with its key. Options take React Aria's press and hover interactions, so a touch that moves off an option before it lifts or is cancelled does not act. A press on an option, the documentation or the footer keeps focus and the caret where they are, in the editor.
 
 Implementation: `src/components/completion-list/completion-list.tsx`
 Verification: `src/components/completion-list/completion-list.test.tsx`, `e2e/completion-list.spec.ts`

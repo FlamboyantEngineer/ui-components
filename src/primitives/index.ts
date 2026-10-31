@@ -38,6 +38,7 @@ export {
   type LinkProps,
   type PressEvent,
   useHover,
+  usePress,
 } from './actions.js';
 export {
   Header,
