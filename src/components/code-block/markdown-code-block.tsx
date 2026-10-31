@@ -17,6 +17,15 @@ export interface CodeBlockOverrideOptions {
   tokenizers?: Readonly<Record<string, CodeTokenizer>> | undefined;
 }
 
+/** The tokenizer registered as the map's own entry for `language`, never an inherited property. */
+function findTokenizer(
+  tokenizers: CodeBlockOverrideOptions['tokenizers'],
+  language: string | null,
+): CodeTokenizer | undefined {
+  if (!tokenizers || language === null || !Object.hasOwn(tokenizers, language)) return undefined;
+  return tokenizers[language];
+}
+
 /** Fence languages that name a terminal session rather than a script. */
 const terminalLanguages: ReadonlySet<string> = new Set(['console', 'terminal', 'shell-session']);
 
@@ -36,7 +45,7 @@ export function createCodeBlockOverride(options: CodeBlockOverrideOptions = {}) 
         code={text}
         language={language ?? undefined}
         variant={language !== null && terminalLanguages.has(language) ? 'terminal' : 'code'}
-        tokenize={language === null ? undefined : tokenizers?.[language]}
+        tokenize={findTokenizer(tokenizers, language)}
         onApply={onApply ? (code) => onApply(code, language) : undefined}
         applyLabel={applyLabel}
       />

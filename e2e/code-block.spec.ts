@@ -115,7 +115,10 @@ test.describe('Code Block lab', () => {
     await page.getByRole('searchbox', { name: 'Find in code' }).fill('reduce');
     await expect(find.locator('mark.ui-text-match')).toHaveText(['reduce']);
     const markdown = page.locator('[data-lab-demo="markdown"]');
-    await expect(markdown.locator('.ui-code-block')).toHaveCount(3);
+    await expect(markdown.locator('.ui-code-block')).toHaveCount(4);
+    const unregistered = markdown.getByRole('group', { name: 'constructor' });
+    await expect(unregistered).toContainText('new Plan()');
+    await expect(unregistered.locator('.ui-code-block__token')).toHaveCount(0);
     await expect(markdown.getByRole('group', { name: 'console' })).toHaveAttribute(
       'data-variant',
       'terminal',
