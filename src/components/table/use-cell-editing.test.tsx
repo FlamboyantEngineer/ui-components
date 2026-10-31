@@ -6,7 +6,7 @@ import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Table } from './table.js';
-import type { TableColumn } from './table-rows.js';
+import type { TableCellValue, TableColumn } from './table-rows.js';
 import type { TableCellEdit } from './use-cell-editing.js';
 
 interface Fruit {
@@ -201,6 +201,63 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     rerender(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} />);
     expect(screen.queryByRole('button', { name: 'Blue for Colour' })).not.toBeInTheDocument();
     expect(onCellEdit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-TABLE-11.2 reports the untouched value of a boolean, date or empty cell as it is', async () => {
+    interface Kept {
+      id: string;
+      name: string;
+      value: TableCellValue;
+    }
+    const picked = new Date('2026-10-01T12:00:00Z');
+    const kept: Kept[] = [
+      { id: 'yes', name: 'Yes', value: true },
+      { id: 'no', name: 'No', value: false },
+      { id: 'day', name: 'Day', value: picked },
+      { id: 'none', name: 'None', value: null },
+    ];
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    render(
+      <Table
+        aria-label="Kept"
+        rows={kept}
+        columns={[
+          { id: 'name', header: 'Name' },
+          {
+            id: 'value',
+            header: 'Value',
+            allowsEditing: true,
+            renderCell: (row) => String(row.value),
+          },
+        ]}
+        onCellEdit={onCellEdit}
+      />,
+    );
+    const valueCell = (name: string) =>
+      requireDefined(
+        screen.getByRole('row', { name }).querySelector<HTMLElement>('[data-column="value"]'),
+      );
+    await user.dblClick(valueCell('Yes'));
+    expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue('true');
+    await user.keyboard('{Enter}');
+    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: true }));
+    await user.dblClick(valueCell('No'));
+    await user.click(document.body);
+    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: false }));
+    await user.dblClick(valueCell('Day'));
+    expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue(picked.toISOString());
+    await user.keyboard('{Enter}');
+    expect(onCellEdit.mock.lastCall?.[0].value).toBe(picked);
+    await user.dblClick(valueCell('None'));
+    await user.keyboard('{Enter}');
+    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: null }));
+    await user.dblClick(valueCell('Yes'));
+    await user.keyboard('{Control>}a{/Control}maybe{Enter}');
+    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: 'maybe' }));
+    await user.dblClick(valueCell('No'));
+    await user.keyboard('x{Escape}');
+    expect(onCellEdit).toHaveBeenCalledTimes(5);
   });
 
   it('UIC-TABLE-11.5 closes an editor whose row leaves the table, focusing the grid', async () => {
