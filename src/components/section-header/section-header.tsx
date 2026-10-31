@@ -1,16 +1,17 @@
 'use client';
 
-import { useContext, useId, type ComponentPropsWithRef, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Button as AriaButton,
-  Disclosure,
-  DisclosurePanel,
-  DisclosureStateContext,
+  useDisclosure,
+  useFocusRing,
+  type DisclosureState,
 } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Stack, type LayoutContainmentProps, type LayoutSpace } from '../layout/layout.js';
 import { HeadingLevelContext, useHeadingLevel, type HeadingLevel } from './heading-level.js';
@@ -82,79 +83,10 @@ function HeaderContent({
   );
 }
 
-/** The trigger's chevron, following the enclosing disclosure's state. */
-function SectionChevron() {
-  const state = useContext(DisclosureStateContext);
-  const glyph = useExpandGlyph(state?.isExpanded ?? false);
+/** The trigger's chevron: toward the inline end while collapsed, down while expanded. */
+function SectionChevron({ isExpanded }: { isExpanded: boolean }) {
+  const glyph = useExpandGlyph(isExpanded);
   return <Glyph icon={glyph} className={headerHooks.slotClass('chevron')} />;
-}
-
-/**
- * A section whose title is a disclosure trigger: the section stays a `Stack` named by its heading,
- * and its content collapses in a disclosure panel.
- */
-function CollapsibleSection({
-  title,
-  description,
-  actions,
-  headingLevel,
-  children,
-  space = '2xl',
-  className,
-  isExpanded,
-  defaultExpanded = true,
-  onExpandedChange,
-  grow,
-  fill,
-  clip,
-  collapsible: _collapsible,
-  ...rest
-}: SectionProps) {
-  const headingId = useId();
-  const level = useHeadingLevel(headingLevel);
-  const trigger = (
-    <AriaButton slot="trigger" className={headerHooks.slotClass('trigger')}>
-      <SectionChevron />
-      {title}
-    </AriaButton>
-  );
-  return (
-    <Disclosure
-      isExpanded={isExpanded}
-      defaultExpanded={defaultExpanded}
-      onExpandedChange={onExpandedChange}
-      // React Aria keeps `id` and naming props off its element; the section takes them here.
-      render={(domProps) => (
-        <Stack
-          as="section"
-          {...(domProps as ComponentPropsWithRef<'section'>)}
-          {...rest}
-          className={mergeClassNames(sectionHooks.className, className)}
-          data-collapsible="true"
-          space={space}
-          grow={grow}
-          fill={fill}
-          clip={clip}
-          aria-labelledby={headingId}
-        />
-      )}
-    >
-      <header {...headerHooks.root()}>
-        <HeaderContent
-          title={trigger}
-          description={description}
-          actions={actions}
-          headingLevel={level}
-          headingId={headingId}
-        />
-      </header>
-      <DisclosurePanel className={sectionHooks.slotClass('panel')}>
-        <HeadingLevelContext value={level}>
-          <Stack space={space}>{children}</Stack>
-        </HeadingLevelContext>
-      </DisclosurePanel>
-    </Disclosure>
-  );
 }
 
 /**
@@ -184,8 +116,73 @@ export function SectionHeader({
   );
 }
 
-/** A section whose content always shows. */
-function PlainSection({
+type SectionDisclosureOptions = Pick<
+  SectionProps,
+  'collapsible' | 'isExpanded' | 'defaultExpanded' | 'onExpandedChange'
+>;
+
+/**
+ * The expanded state of a section and the props of its trigger and panel. A section that is not
+ * collapsible is always expanded and its panel takes no disclosure props, but it keeps the same
+ * elements, so turning `collapsible` on or off never remounts the content.
+ */
+function useSectionDisclosure({
+  collapsible = false,
+  isExpanded,
+  defaultExpanded = true,
+  onExpandedChange,
+}: SectionDisclosureOptions) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const noPanel = useRef<HTMLDivElement>(null);
+  const [ownExpanded, setOwnExpanded] = useState(defaultExpanded);
+  const expanded = !collapsible || (isExpanded ?? ownExpanded);
+  const setExpanded = (next: boolean) => {
+    if (isExpanded === undefined) setOwnExpanded(next);
+    onExpandedChange?.(next);
+  };
+  const state: DisclosureState = {
+    isExpanded: expanded,
+    setExpanded,
+    expand: () => setExpanded(true),
+    collapse: () => setExpanded(false),
+    toggle: () => setExpanded(!expanded),
+  };
+  const disclosure = useDisclosure(
+    { isExpanded: expanded },
+    state,
+    collapsible ? panelRef : noPanel,
+  );
+  const focusWithin = useFocusRing({ within: true });
+  // Content that stops showing takes keyboard focus with it: the trigger receives it.
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (expanded || !panel?.contains(panel.ownerDocument.activeElement)) return;
+    triggerRef.current?.focus();
+  }, [expanded]);
+  const panelProps = collapsible
+    ? mergeProps(disclosure.panelProps, focusWithin.focusProps, {
+        'data-focus-visible-within': focusWithin.isFocusVisible || undefined,
+      })
+    : {};
+  return {
+    collapsible,
+    expanded,
+    panelRef,
+    triggerRef,
+    buttonProps: disclosure.buttonProps,
+    panelProps,
+    isFocusVisibleWithin: collapsible && focusWithin.isFocusVisible,
+  };
+}
+
+/**
+ * A `<section>` region named by its header's title, followed by its content in a `Stack`. The
+ * description and actions stay out of the region's name. Sections nested in its content take the
+ * next heading level, and a `collapsible` section's title toggles its content. The content keeps
+ * the same elements whether the section is collapsible or not, so changing it keeps its state.
+ */
+export function Section({
   title,
   description,
   actions,
@@ -193,41 +190,61 @@ function PlainSection({
   children,
   space = '2xl',
   className,
-  isExpanded: _isExpanded,
-  defaultExpanded: _defaultExpanded,
-  onExpandedChange: _onExpandedChange,
-  collapsible: _collapsible,
+  isExpanded,
+  defaultExpanded,
+  onExpandedChange,
+  collapsible,
   ...rest
 }: SectionProps) {
   const headingId = useId();
   const level = useHeadingLevel(headingLevel);
+  const disclosure = useSectionDisclosure({
+    collapsible,
+    isExpanded,
+    defaultExpanded,
+    onExpandedChange,
+  });
+  const heading = disclosure.collapsible ? (
+    <AriaButton
+      {...disclosure.buttonProps}
+      ref={disclosure.triggerRef}
+      className={headerHooks.slotClass('trigger')}
+    >
+      <SectionChevron isExpanded={disclosure.expanded} />
+      {title}
+    </AriaButton>
+  ) : (
+    title
+  );
   return (
     <Stack
       as="section"
       {...rest}
       className={mergeClassNames(sectionHooks.className, className)}
+      data-collapsible={disclosure.collapsible || undefined}
+      data-expanded={(disclosure.collapsible && disclosure.expanded) || undefined}
+      data-focus-visible-within={disclosure.isFocusVisibleWithin || undefined}
       space={space}
       aria-labelledby={headingId}
     >
       <header {...headerHooks.root()}>
         <HeaderContent
-          title={title}
+          title={heading}
           description={description}
           actions={actions}
           headingLevel={level}
           headingId={headingId}
         />
       </header>
-      <HeadingLevelContext value={level}>{children}</HeadingLevelContext>
+      <div
+        {...disclosure.panelProps}
+        ref={disclosure.panelRef}
+        className={sectionHooks.slotClass('panel')}
+      >
+        <HeadingLevelContext value={level}>
+          <Stack space={space}>{children}</Stack>
+        </HeadingLevelContext>
+      </div>
     </Stack>
   );
-}
-
-/**
- * A `<section>` region named by its header's title, followed by its content in a `Stack`. The
- * description and actions stay out of the region's name. Sections nested in its content take the
- * next heading level, and a `collapsible` section's title toggles its content.
- */
-export function Section(props: SectionProps) {
-  return props.collapsible ? <CollapsibleSection {...props} /> : <PlainSection {...props} />;
 }

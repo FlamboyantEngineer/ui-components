@@ -64,10 +64,17 @@ Verification: `src/components/section-header/section-header.test.tsx`, `e2e/sect
 
 ### UIC-SECTION-HEADER-2.2 - Collapsible section
 
-A `collapsible` section shall be a disclosure whose title is the trigger: the heading holds a `ui-section-header__trigger` button with the title after a `ui-section-header__chevron` glyph (pointing to the inline end while collapsed, down while expanded), whose `aria-expanded` and `aria-controls` name the content's `ui-section__panel` (React Aria `DisclosurePanel`, holding the content in a `Stack` with the section's `space`). The section stays a `<section>` named by its title, publishes `data-collapsible` and, while open, `data-expanded`; the description and actions stay outside the trigger and never toggle it. `isExpanded` controls the state, `defaultExpanded` (true by default) starts it, and `onExpandedChange` receives each request. The panel keeps React Aria's `hidden="until-found"` while collapsed, so find-in-page opens it, and React Aria's `--disclosure-panel-height` and `--disclosure-panel-width` for animating it.
+A `collapsible` section shall be a disclosure whose title is the trigger: the heading holds a `ui-section-header__trigger` button with the title after a `ui-section-header__chevron` glyph (pointing to the inline end while collapsed, down while expanded), whose `aria-expanded` and `aria-controls` name the content's `ui-section__panel` (React Aria's disclosure behaviour, holding the content in a `Stack` with the section's `space`). The section stays a `<section>` named by its title, publishes `data-collapsible` and, while open, `data-expanded`; the description and actions stay outside the trigger and never toggle it. `isExpanded` controls the state, `defaultExpanded` (true by default) starts it, and `onExpandedChange` receives each request. The panel keeps React Aria's `hidden="until-found"` while collapsed, so find-in-page opens it, and React Aria's `--disclosure-panel-height` and `--disclosure-panel-width` for animating it.
 
 Implementation: `src/components/section-header/section-header.tsx`, `labs/reference/section-header.css`
 Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
+
+### UIC-SECTION-HEADER-2.3 - Changing collapsibility
+
+Every `Section` shall hold its content in the `ui-section__panel` element, a plain container while it is not collapsible, so turning `collapsible` on or off keeps the content mounted with its state, its focus and its heading levels. A section turned collapsible starts from `isExpanded`, else `defaultExpanded` as first given; when that hides content that holds focus, focus moves to the trigger.
+
+Implementation: `src/components/section-header/section-header.tsx`
+Verification: `src/components/section-header/section-collapse.test.tsx`, `e2e/section-header.spec.ts`
 
 ## Hooks
 
@@ -81,7 +88,7 @@ Verification: `src/components/section-header/section-header.test.tsx`, `e2e/sect
 | `ui-section-header__description` | slot  |        | Supporting text.                                                           |
 | `ui-section-header__actions`     | slot  |        | Trailing actions or status.                                                |
 | `ui-section`                     | root  |        | `Section`'s `<section>`, also a `Stack` (`ui-stack` and its attributes).   |
-| `ui-section__panel`              | slot  |        | A collapsible section's content region (React Aria `DisclosurePanel`).     |
+| `ui-section__panel`              | slot  |        | The section's content; a disclosure panel while collapsible.               |
 | `data-collapsible`               | state | `true` | On `ui-section`: the title toggles the content.                            |
 | `data-expanded`                  | state | `true` | On a collapsible `ui-section`: the content shows (React Aria).             |
 | `data-focus-visible-within`      | state | `true` | On a collapsible section or its panel: keyboard focus inside (React Aria). |

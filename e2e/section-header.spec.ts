@@ -127,6 +127,25 @@ test.describe('Section Header lab', () => {
     }
   });
 
+  test('UIC-SECTION-HEADER-2.3 keeps the content while collapsibility changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('section-header');
+    const demo = page.locator('[data-lab-demo="collapsible-switch"]');
+    const note = demo.getByRole('textbox', { name: 'Note' });
+    await note.fill('Leave at the door');
+    await demo.getByRole('checkbox', { name: 'Collapsible' }).check();
+    const trigger = demo.getByRole('button', { name: 'Delivery notes' });
+    await trigger.click();
+    await expect(note).toBeHidden();
+    await trigger.click();
+    await expect(note).toHaveValue('Leave at the door');
+    await demo.getByRole('checkbox', { name: 'Collapsible' }).uncheck();
+    await expect(trigger).toHaveCount(0);
+    await expect(note).toHaveValue('Leave at the door');
+  });
+
   test('UIC-SECTION-HEADER-2.2 toggles a collapsible section by pointer and keyboard', async ({
     page,
     lab,

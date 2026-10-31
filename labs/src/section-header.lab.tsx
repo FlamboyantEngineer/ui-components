@@ -7,6 +7,28 @@ import {
 } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
+/** A section that becomes collapsible on request, as after measuring space or loading preferences. */
+function CollapsibleOnDemand() {
+  const [collapsible, setCollapsible] = useState(false);
+  return (
+    <div data-lab-demo="collapsible-switch">
+      <label>
+        <input
+          type="checkbox"
+          checked={collapsible}
+          onChange={(event) => setCollapsible(event.target.checked)}
+        />{' '}
+        Collapsible
+      </label>
+      <Section title="Delivery notes" collapsible={collapsible} space="md">
+        <label>
+          Note <input name="note" />
+        </label>
+      </Section>
+    </div>
+  );
+}
+
 const column = (width: number): CSSProperties => ({ width, outline: '1px dotted currentColor' });
 
 function Actions({ disabled = false }: { disabled?: boolean }) {
@@ -180,6 +202,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Collapsible on demand"
+      description="Type a note, then turn collapsible on and off: the note stays, and the title becomes a toggle only while collapsible."
+    >
+      <CollapsibleOnDemand />
     </LabSection>
     <LabSection
       title="Mounted lifecycle"

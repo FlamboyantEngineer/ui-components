@@ -17,4 +17,5 @@ export {
   Tabs,
   TabsContext,
 } from 'react-aria-components';
-export type { TabListState } from 'react-aria-components';
+export type { DisclosureState, TabListState } from 'react-aria-components';
+export { useDisclosure } from 'react-aria';
