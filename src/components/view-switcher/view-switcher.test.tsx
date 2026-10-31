@@ -161,6 +161,26 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     expect(onSaveAs).toHaveBeenCalledTimes(2);
   });
 
+  it('UIC-VIEW-SWITCHER-1.5 settles a dismissed save without closing the dialog opened since', async () => {
+    const user = userEvent.setup();
+    const save = deferred();
+    const onSaveAs = vi.fn(() => save.promise);
+    render(<ViewSwitcher views={views} onSaveAs={onSaveAs} onRename={vi.fn()} />);
+    await chooseAction('All recipes', 'Save as new view');
+    const first = screen.getByRole('dialog', { name: 'New view' });
+    await user.type(within(first).getByRole('textbox', { name: /^View name/ }), 'Mine{Enter}');
+    expect(onSaveAs).toHaveBeenCalledWith('Mine');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await chooseAction('All recipes', 'Rename');
+    const second = await screen.findByRole('dialog', { name: 'Rename view' });
+    const field = within(second).getByRole('textbox', { name: /^View name/ });
+    await user.type(field, ' today');
+    await act(async () => save.resolve());
+    expect(screen.getByRole('dialog', { name: 'Rename view' })).toBeInTheDocument();
+    expect(field).toHaveValue('All recipes today');
+  });
+
   it('UIC-VIEW-SWITCHER-1.6 renames a view from its actions or its tab menu', async () => {
     const onRename = vi.fn();
     render(<ViewSwitcher views={views} onRename={onRename} />);

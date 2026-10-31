@@ -69,10 +69,11 @@ export function RenameVersionDialog({
   const [draft, setDraft] = useState<{ key: Key; value: string } | null>(null);
   const label = target?.label ?? '';
   const value = draft !== null && draft.key === target?.key ? draft.value : label;
-  const save = async () => {
+  // `close` closes only the opening this save began in, never a dialog opened since.
+  const save = async (close: () => void) => {
     const trimmed = value.trim();
     if (target && trimmed !== label) await onAction(target.key, trimmed);
-    onClose();
+    close();
   };
   return (
     <Modal
