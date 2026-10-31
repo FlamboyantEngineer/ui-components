@@ -1,7 +1,9 @@
 'use client';
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { usePersistentState, useUiStorage, type PersistCodec } from '../../core/provider.js';
+import { useUiStorage, type PersistCodec } from '../../core/provider.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
+import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import {
   collapseSplitPane,
@@ -53,20 +55,19 @@ export interface SplitSizes {
 /** Two percent panes store the first pane's size as a number, as they always have; others a list. */
 function createSizesCodec(panes: readonly SplitViewPane[]): PersistCodec<number[]> {
   const isPair = panes.length === 2 && panes.every((pane) => pane.unit !== 'pixel');
-  return {
-    parse(raw) {
-      const value: unknown = JSON.parse(raw);
-      if (isPair && typeof value === 'number' && Number.isFinite(value))
-        return [value, 100 - value];
-      const isList =
-        Array.isArray(value) &&
-        value.length === panes.length &&
-        value.every((size) => typeof size === 'number' && Number.isFinite(size));
-      if (!isList) throw new Error('Stored split sizes do not fit the panes');
-      return value as number[];
+  return createJsonCodec(
+    (value): number[] => {
+      if (isPair && isSize(value)) return [value, 100 - value];
+      const isList = Array.isArray(value) && value.length === panes.length && value.every(isSize);
+      if (!isList) throw new TypeError('Stored split sizes do not fit the panes');
+      return value;
     },
-    stringify: (sizes) => (isPair ? String(sizes[0]) : JSON.stringify(sizes)),
-  };
+    (sizes) => (isPair ? sizes[0] : sizes),
+  );
+}
+
+function isSize(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
 /** The panes' units and bounds, which decide what stored sizes and a drag's values mean. */
@@ -108,11 +109,13 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     shape: toPaneShape(panes),
   });
   const codec = useMemo(() => createSizesCodec(panes), [panes]);
-  const [committed, setCommitted] = usePersistentState<number[]>(
-    persistedKey,
-    () => resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize)),
-    { codec: codec },
-  );
+  const [committed, setCommitted] = usePersistedValue<number[]>({
+    value: undefined,
+    defaultValue: () =>
+      resolveInitialSplitSizes(panes, options.defaultSizes ?? toPair(options.defaultSize)),
+    persistKey: persistedKey,
+    codec,
+  });
   const [live, setLive] = useState<Owned<readonly number[]> | null>(null);
   const preview = live?.owner === owner ? live.value : null;
   const current = normalizeSplitSizes(panes, controlled ?? preview ?? committed);

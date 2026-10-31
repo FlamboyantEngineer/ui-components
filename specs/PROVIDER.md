@@ -126,6 +126,13 @@ Verification: `src/core/provider.test.tsx`, `src/utils/json-codec.test.ts`
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider-delayed-write.test.tsx`
 
+### UIC-PROVIDER-6.4 - Controlled or persisted values
+
+`usePersistedValue({ value, defaultValue, onChange, persistKey, codec })` shall be the one way a component persists a value its caller may also control. While `value` is defined it is the value, storage is neither read nor written, and setting the value only reports it through `onChange`. While `value` is undefined the component holds the value, starting from what is stored under `persistKey` through the codec, else from `defaultValue`, and setting it stores it and reports it. Without `persistKey` the held value is plain state. Navigation Rail, Tabs, Dock Panel and Split View persist through it, and their codecs are built with `createJsonCodec`, whose optional `write` turns a value into the data stored.
+
+Implementation: `src/utils/use-persisted-value.ts`, `src/utils/json-codec.ts`
+Verification: `src/utils/use-persisted-value.test.tsx`, `src/utils/json-codec.test.ts`
+
 ## UIC-PROVIDER-7 - Overlay presence
 
 ### UIC-PROVIDER-7.1 - Interactive overlays
