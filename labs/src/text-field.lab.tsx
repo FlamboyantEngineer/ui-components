@@ -252,6 +252,14 @@ mountLab(
         defaultValue="AB"
         data-lab-field="rules"
       />
+      <TextField
+        label="Line codes"
+        description="Each line is OK or a number. The whole text must match, even though the pattern uses the multiline flag."
+        multiline
+        pattern={/^(?:OK|\d+)$(?:\n^(?:OK|\d+)$)*/m}
+        defaultValue={'OK\nbad\n42'}
+        data-lab-field="multiline-rules"
+      />
     </LabSection>
     <LabSection
       title="Dirty, restore, undo and the field menu"

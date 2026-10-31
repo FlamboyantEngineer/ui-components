@@ -307,7 +307,7 @@ Verification: `src/components/field/string-rules.test.ts`
 
 ### UIC-FIELD-7.2 - Format
 
-A text that does not match `pattern` as a whole shall get an error with the provider string `patternMismatch`.
+A text that does not match `pattern` as a whole shall get an error with the provider string `patternMismatch`. The match spans the whole checked text whatever the pattern's flags: with `m`, `^` and `$` inside the pattern still match at line breaks, but one matching line does not pass the text. Checking never reads or changes the pattern's `lastIndex`, so `g` and `y` patterns give the same result each time.
 
 Implementation: `src/components/field/string-rules.ts`
 Verification: `src/components/field/string-rules.test.ts`
