@@ -83,12 +83,12 @@ function findMoveDirections(reorder: TabReorder): [MoveDirection, MoveDirection]
  */
 function useStandardEntries(options: TabMenuOptions) {
   const strings = useUiStrings();
-  const latest = useLatest(options);
+  const latestRef = useLatest(options);
   const { rename, reorder, onDuplicate, onRemove } = options;
   return useCallback(
     (key: Key): MenuEntry[] => {
       const act = (run: (current: TabMenuOptions) => void) => () => {
-        if (isTabAvailable(latest.current.shared, key)) run(latest.current);
+        if (isTabAvailable(latestRef.current.shared, key)) run(latestRef.current);
       };
       const edits: MenuItemEntry[] = [];
       if (rename) {
@@ -142,7 +142,7 @@ function useStandardEntries(options: TabMenuOptions) {
         : [];
       return joinMenuGroups([edits, moves, removal]);
     },
-    [latest, strings, rename, reorder, onDuplicate, onRemove],
+    [latestRef, strings, rename, reorder, onDuplicate, onRemove],
   );
 }
 
