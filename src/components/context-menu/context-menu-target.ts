@@ -29,6 +29,8 @@ export interface ContextMenuTargetProps {
 interface ContextMenuTargetOptions {
   controller: MenuController;
   isDisabled: boolean;
+  /** Opens from Shift+F10 or the Context Menu key in a text control inside the target too. */
+  opensFromTextKeys?: boolean | undefined;
   /** The target's own props, which keep working. */
   own: ContextMenuTargetProps;
   /** Receives the target element. */
@@ -57,7 +59,11 @@ const textInputTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'passwo
 /** Whether `target` is a text control inside `owner` (not the owner itself), which keeps its own menu. */
 function isTextInside(target: EventTarget, owner: Element): boolean {
   if (!(target instanceof HTMLElement) || target === owner) return false;
-  if (target.isContentEditable || target instanceof HTMLTextAreaElement) return true;
+  // Editable content counts when it starts inside the target; a target that is itself the editor,
+  // or sits inside one, keeps its menu.
+  const editable = target.closest('[contenteditable]:not([contenteditable="false"])');
+  if (editable) return editable !== owner && owner.contains(editable);
+  if (target instanceof HTMLTextAreaElement) return true;
   return target instanceof HTMLInputElement && textInputTypes.has(target.type);
 }
 
@@ -126,12 +132,12 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
 /**
  * The handlers and ref that make an element a context menu target: a secondary click opens the
  * menu at the pointer, the Context Menu key or Shift+F10 below the element, a long touch at the
- * touch point. A secondary click or long touch on a text control inside the target keeps the
+ * touch point. A secondary click, long touch or key on a text control inside the target keeps the
  * browser's own menu, which edits the text. A request whose default the target's own handler, or
  * one inside it, prevented opens nothing, whether a secondary click, a long touch or a key.
  */
 export function useContextMenuTarget(options: ContextMenuTargetOptions): ContextMenuTargetProps {
-  const { controller, isDisabled, own, targetRef } = options;
+  const { controller, isDisabled, opensFromTextKeys = false, own, targetRef } = options;
   const suppressUntil = useRef(0);
   const { cancel, ...pointerHandlers } = useLongPress(options, suppressUntil);
   const ownRef = own.ref;
@@ -158,6 +164,8 @@ export function useContextMenuTarget(options: ContextMenuTargetOptions): Context
     onKeyDown(event) {
       own.onKeyDown?.(event);
       if (isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
+      // A text control inside the target keeps the key for its own editing menu.
+      if (!opensFromTextKeys && isTextInside(event.target, event.currentTarget)) return;
       event.preventDefault();
       event.stopPropagation();
       // The browser may follow the key with its own contextmenu event.
