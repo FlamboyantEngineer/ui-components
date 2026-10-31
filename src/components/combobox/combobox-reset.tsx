@@ -1,7 +1,8 @@
 'use client';
 
 import { useContext, useRef, useState, type RefObject } from 'react';
-import { ComboBoxStateContext, type Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
+import { ComboBoxStateContext } from '../../primitives/index.js';
 import { useNativeReset } from '../../utils/use-native-reset.js';
 
 /** The value React Aria's combobox state holds: a key, a list of keys, or none. */
