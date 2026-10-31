@@ -1,6 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expectPopoverFits } from './date-popover-fit.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -174,4 +175,27 @@ test.describe('Relative Date Field lab', () => {
       'follow-up=2026-04-21 period-start=2026-04-13 period-end=2026-04-20',
     );
   });
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    test(`UIC-RELATIVE-DATE-FIELD-1.6 fits presets and calendar in a 320 pixel viewport (${dir})`, async ({
+      page,
+      lab,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 700 });
+      await lab.open('relative-date-field');
+      await page.evaluate((value) => document.documentElement.setAttribute('dir', value), dir);
+      const popover = page.locator('.ui-relative-date-field__popover');
+      for (const [name, label] of [
+        ['range', /Report period$/],
+        ['calendar', /Review$/],
+      ] as const) {
+        const trigger = field(page, name).getByRole('button', { name: label });
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click();
+        await expectPopoverFits(popover);
+        await page.keyboard.press('Escape');
+        await expect(popover).toHaveCount(0);
+      }
+    });
+  }
 });

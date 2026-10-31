@@ -50,9 +50,9 @@ Verification: `src/components/relative-date-field/relative-date-field.test.tsx`,
 
 ### UIC-RELATIVE-DATE-FIELD-2.1 - Calendar beside the presets
 
-With `showCalendar`, the popover shall hold, after the presets, a React Aria calendar (`ui-relative-date-field__calendar`) drawn with the [Date Time Field](DATE-TIME-FIELD.md)'s calendar parts (`ui-date-time-field__calendar-header` to `ui-date-time-field__calendar-cell`, with previous and next buttons named by the provider strings `previous` and `next`), opening on the value's day, read in the field's `timeZone`, and on today while there is no value. Tab moves from the presets into the calendar. Picking a day commits it, a `YYYY-MM-DD` date or, with `mode="date-time"`, that day at the current time of day (`YYYY-MM-DDTHH:mm`), then closes the popover; for `date-range` a range calendar commits the picked range.
+With `showCalendar`, the popover shall hold, after the presets, a React Aria calendar (`ui-relative-date-field__calendar`) drawn with the [Date Time Field](DATE-TIME-FIELD.md)'s calendar parts (`ui-date-time-field__calendar-header` to `ui-date-time-field__calendar-cell`, with previous and next buttons named by the provider strings `previous` and `next`), opening on the value's day, read in the field's `timeZone`, and on today while there is no value. Tab moves from the presets into the calendar. Picking a day commits it, a `YYYY-MM-DD` date or, with `mode="date-time"`, that day at the current time of day (`YYYY-MM-DDTHH:mm`), then closes the popover; for `date-range` a range calendar commits the picked range. The reference stylesheet keeps the popover within the viewport down to 320 CSS pixels, stacking the presets above the calendar on a narrow viewport.
 
-Implementation: `src/components/relative-date-field/relative-date-calendar.tsx`, `src/components/relative-date-field/relative-date-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`
+Implementation: `labs/reference/relative-date-field.css`, `src/components/relative-date-field/relative-date-calendar.tsx`, `src/components/relative-date-field/relative-date-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`
 Verification: `src/components/relative-date-field/relative-date-calendar.test.tsx`, `e2e/relative-date-field.spec.ts`
 
 ### UIC-RELATIVE-DATE-FIELD-2.2 - Preset labels and computed presets

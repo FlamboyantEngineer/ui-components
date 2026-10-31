@@ -1,6 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+import { expectPopoverFits } from './date-popover-fit.js';
 
 function cell(page: Page, state: string, mode: string): Locator {
   return matrixCell(page, `state=${state} mode=${mode}`);
@@ -240,4 +241,23 @@ test.describe('Date Time Field lab', () => {
     await page.getByRole('button', { name: 'Book' }).click();
     await expect(booking).toHaveText('sent');
   });
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    test(`UIC-DATE-TIME-FIELD-2.1 fits its calendars in a 320 pixel viewport (${dir})`, async ({
+      page,
+      lab,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 700 });
+      await lab.open('date-time-field');
+      await page.evaluate((value) => document.documentElement.setAttribute('dir', value), dir);
+      for (const name of ['range', 'availability', 'range-presets', 'heading']) {
+        const trigger = field(page, name).getByRole('button', { name: /Calendar/ });
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click();
+        await expectPopoverFits(page.locator('.ui-date-time-field__popover'));
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.ui-date-time-field__popover')).toHaveCount(0);
+      }
+    });
+  }
 });

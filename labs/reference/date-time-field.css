@@ -121,6 +121,8 @@
 
 .ui-date-time-field__popover {
   box-sizing: border-box;
+  /* Never wider than the viewport less the overlay gutter on each side. */
+  max-inline-size: calc(100vw - 16px);
   overflow: auto;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -258,6 +260,7 @@
 
 .ui-date-time-field__calendar-months {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
@@ -366,4 +369,28 @@
 
 .ui-date-time-field__calendar-cell[data-unavailable] {
   opacity: var(--ref-disabled-opacity);
+}
+
+/* A narrow viewport stacks presets above the calendar and a range's months one under the other. */
+@media (max-width: 30rem) {
+  .ui-date-time-field__dialog:has(> .ui-date-time-field__presets) {
+    grid-template-columns: auto;
+  }
+
+  .ui-date-time-field__dialog > :not(.ui-date-time-field__presets) {
+    grid-column: auto;
+  }
+
+  .ui-date-time-field__presets {
+    flex-flow: row wrap;
+    grid-row: auto;
+    padding-inline-end: 0;
+    padding-block-end: 8px;
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--ref-border);
+  }
+
+  .ui-date-time-field__calendar-header {
+    flex-wrap: wrap;
+  }
 }
