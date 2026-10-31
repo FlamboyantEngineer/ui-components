@@ -159,13 +159,19 @@ test.describe('Relative Date Field lab', () => {
     const submit = form.getByRole('button', { name: 'Submit' });
     const entries = page.locator('[data-lab-output="Form"]');
     await submit.click();
-    await expect(entries).toHaveText('follow-up=2026-04-21 period=2026-04-13/2026-04-20');
+    await expect(entries).toHaveText(
+      'follow-up=2026-04-21 period-start=2026-04-13 period-end=2026-04-20',
+    );
     await form.getByRole('button', { name: /Follow-up$/ }).click();
     await page.getByRole('option', { name: 'Next week' }).click();
     await submit.click();
-    await expect(entries).toHaveText('follow-up=2026-04-27 period=2026-04-13/2026-04-20');
+    await expect(entries).toHaveText(
+      'follow-up=2026-04-27 period-start=2026-04-13 period-end=2026-04-20',
+    );
     await form.getByRole('button', { name: 'Reset' }).click();
     await submit.click();
-    await expect(entries).toHaveText('follow-up=2026-04-21 period=2026-04-13/2026-04-20');
+    await expect(entries).toHaveText(
+      'follow-up=2026-04-21 period-start=2026-04-13 period-end=2026-04-20',
+    );
   });
 });

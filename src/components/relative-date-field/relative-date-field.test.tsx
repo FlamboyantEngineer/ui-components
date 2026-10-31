@@ -4,6 +4,7 @@ import { useState, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { RelativeDateField } from './relative-date-field.js';
 
 const getNow = () => new Date(2026, 4, 23, 10, 30, 0);
@@ -31,7 +32,7 @@ describe('RelativeDateField', () => {
     );
     const field = root(container);
     expect(field).toHaveClass('ui-field', 'ui-relative-date-field');
-    expect(field).toHaveAttribute('data-value-kind', 'date');
+    expect(field).toHaveAttribute('data-mode', 'date');
     expect(field).toHaveAttribute('data-relation', 'future');
     const trigger = screen.getByRole('button', { name: 'Tomorrow Due' });
     expect(trigger).toHaveClass('ui-relative-date-field__trigger');
@@ -62,17 +63,12 @@ describe('RelativeDateField', () => {
     expect(value()).toHaveTextContent('Select an option');
     rerender(
       <UiProvider locale="en-US">
-        <RelativeDateField
-          label="Due"
-          getNow={getNow}
-          valueKind="date-time"
-          value="2026-05-23T10:25"
-        />
+        <RelativeDateField label="Due" getNow={getNow} mode="date-time" value="2026-05-23T10:25" />
       </UiProvider>,
     );
     expect(value()).toHaveTextContent('5 minutes ago');
     expect(root(container)).toHaveAttribute('data-relation', 'past');
-    expect(root(container)).toHaveAttribute('data-value-kind', 'date-time');
+    expect(root(container)).toHaveAttribute('data-mode', 'date-time');
   });
 
   it('UIC-RELATIVE-DATE-FIELD-1.3 lists presets and commits the date each stands for', async () => {
@@ -138,7 +134,7 @@ describe('RelativeDateField', () => {
     renderInLocale(
       <RelativeDateField
         label="Due"
-        valueKind="date-time"
+        mode="date-time"
         presets={[
           { amount: 3, unit: 'day' },
           { amount: 2, unit: 'month' },
@@ -302,29 +298,45 @@ describe('RelativeDateField', () => {
       expect(new FormData(form()).get('due')).toBe('2026-06-01');
     });
 
-    it('submits a date and time, and a range as an ISO 8601 interval', () => {
+    it('submits a date and time, and a range under its start and end names as DateTimeField does', () => {
       renderInLocale(
-        <form aria-label="Plan">
-          <RelativeDateField
-            label="Call"
-            name="call"
-            valueKind="date-time"
-            defaultValue="2026-05-24T09:15"
-            getNow={getNow}
-          />
-          <RelativeDateField
-            label="Trip"
-            name="trip"
-            valueKind="date-range"
-            defaultValue={{ start: '2026-05-20', end: '2026-05-27' }}
-            getNow={getNow}
-          />
-        </form>,
+        <>
+          <form aria-label="Plan">
+            <RelativeDateField
+              label="Call"
+              name="call"
+              mode="date-time"
+              defaultValue="2026-05-24T09:15"
+              getNow={getNow}
+            />
+            <RelativeDateField
+              label="Trip"
+              startName="trip-start"
+              endName="trip-end"
+              mode="date-range"
+              defaultValue={{ start: '2026-05-20', end: '2026-05-27' }}
+              getNow={getNow}
+            />
+          </form>
+          <form aria-label="Typed plan">
+            <DateTimeField
+              label="Typed trip"
+              startName="trip-start"
+              endName="trip-end"
+              mode="date-range"
+              defaultValue={{ start: '2026-05-20', end: '2026-05-27' }}
+            />
+          </form>
+        </>,
       );
-      expect([...new FormData(form())]).toEqual([
+      const entries = [...new FormData(form())];
+      expect(entries).toEqual([
         ['call', '2026-05-24T09:15'],
-        ['trip', '2026-05-20/2026-05-27'],
+        ['trip-start', '2026-05-20'],
+        ['trip-end', '2026-05-27'],
       ]);
+      const typed = screen.getByRole<HTMLFormElement>('form', { name: 'Typed plan' });
+      expect([...new FormData(typed)]).toEqual(entries.slice(1));
     });
 
     it('submits a read-only field and leaves out a disabled one, or one in a disabled fieldset', () => {

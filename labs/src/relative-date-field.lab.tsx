@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
+import type { DateRangeValue } from '../../src/components/date-time-field/index.js';
 import {
   RelativeDateField,
   type RelativeDateFieldProps,
-  type RelativeDateRange,
 } from '../../src/components/relative-date-field/relative-date-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
@@ -69,7 +69,7 @@ function endOfMonth(now: Date): string {
 
 function Extras() {
   const [committed, setCommitted] = useState('none');
-  const show = (value: string | RelativeDateRange | null) =>
+  const show = (value: string | DateRangeValue | null) =>
     setCommitted(value === null ? 'none' : JSON.stringify(value));
   return (
     <>
@@ -94,7 +94,7 @@ function Extras() {
       />
       <RelativeDateField
         label="Report period"
-        valueKind="date-range"
+        mode="date-range"
         getNow={getNow}
         showCalendar
         onCommit={show}
@@ -138,8 +138,9 @@ function Form() {
       />
       <RelativeDateField
         label="Period"
-        name="period"
-        valueKind="date-range"
+        startName="period-start"
+        endName="period-end"
+        mode="date-range"
         defaultValue={{ start: '2026-04-13', end: '2026-04-20' }}
         getNow={getNow}
       />
@@ -178,7 +179,7 @@ mountLab(
       <RelativeDateField label="Four days ago" getNow={getNow} defaultValue="2026-04-16" />
       <RelativeDateField
         label="Minutes ago"
-        valueKind="date-time"
+        mode="date-time"
         getNow={getNow}
         defaultValue="2026-04-20T10:05"
       />
@@ -191,7 +192,7 @@ mountLab(
       <RelativeDateField
         label="Follow up"
         getNow={getNow}
-        valueKind="date-time"
+        mode="date-time"
         presets={[
           { amount: 3, unit: 'day' },
           { amount: 2, unit: 'week' },
@@ -209,7 +210,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Form"
-      description="Named fields submit with their form: a date as YYYY-MM-DD and a range as an ISO 8601 interval, start/end. Reset puts the first values back."
+      description="Named fields submit with their form: a date as YYYY-MM-DD under name, and a range's ends under startName and endName, as Date Time Field submits them. Reset puts the first values back."
     >
       <Form />
     </LabSection>

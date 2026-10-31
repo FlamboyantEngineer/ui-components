@@ -6,8 +6,8 @@ import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { DateFormInputs, type DateRangeValue } from '../date-time-field/date-time-field.js';
 import {
-  FieldFormValue,
   Field,
   useFieldControl,
   type FieldInputProps,
@@ -31,27 +31,31 @@ import {
   toZonedDay,
   type RelativeDateBounds,
   type RelativeDateComputedPreset,
-  type RelativeDateKind,
+  type RelativeDateFieldMode,
   type RelativeDatePreset,
-  type RelativeDateRange,
   type RelativeDateText,
   type RelativeDateValue,
 } from './relative-date.js';
 import { formatStableTime } from '../../utils/relative-time.js';
 
 /** A `YYYY-MM-DD` date or local `YYYY-MM-DDTHH:mm` date and time, or a `{ start, end }` range of dates. */
-export type RelativeDateFieldValue<K extends RelativeDateKind = 'date'> = K extends 'date-range'
-  ? RelativeDateRange | null
-  : string | null;
+export type RelativeDateFieldValue<K extends RelativeDateFieldMode = 'date'> =
+  K extends 'date-range' ? DateRangeValue | null : string | null;
 
-export interface RelativeDateFieldProps<K extends RelativeDateKind = 'date'>
+export interface RelativeDateFieldProps<K extends RelativeDateFieldMode = 'date'>
   extends
     FieldInputProps<RelativeDateFieldValue<K>>,
     OpenStateProps,
     /** `placeholder` is the trigger's text while there is no value; it defaults to the provider string. */
     Pick<FieldTextInputProps, 'placeholder'> {
-  /** What a preset commits: a `YYYY-MM-DD` date (the default), a date and time or a range of dates. */
-  valueKind?: K | undefined;
+  /**
+   * What a preset commits, named as in `DateTimeField`: a `YYYY-MM-DD` date (the default), a date
+   * and time or a range of dates.
+   */
+  mode?: K | undefined;
+  /** The form names of a range's start and end, as in `DateTimeField`; `name` is a single value's. */
+  startName?: string | undefined;
+  endName?: string | undefined;
   /**
    * The choices, in order: counts of units from now, with optional labels, or named values computed
    * from now. Defaults to today, tomorrow, yesterday, next week and last week (for a range: today,
@@ -85,7 +89,7 @@ type AnyPreset = RelativeDatePreset | RelativeDateComputedPreset<RelativeDateVal
 interface PresetContext {
   now: Date;
   timeZone: string;
-  kind: RelativeDateKind;
+  kind: RelativeDateFieldMode;
   locale: string;
 }
 
@@ -190,23 +194,16 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
   );
 }
 
-/** The value as its form submits it: the date or date and time, or a range as an ISO 8601 interval. */
-function toFormText(value: RelativeDateValue | null): string {
-  return value === null || typeof value === 'string'
-    ? (value ?? '')
-    : `${value.start}/${value.end}`;
-}
-
 /** Commits a picked value: a preset's, or a calendar day or range read in the field's zone. */
-function usePick<K extends RelativeDateKind>(
+function usePick<K extends RelativeDateFieldMode>(
   state: FieldState<RelativeDateFieldValue<K>>,
-  { kind, getNow, timeZone }: { kind: RelativeDateKind; getNow: () => Date; timeZone: string },
+  { kind, getNow, timeZone }: { kind: RelativeDateFieldMode; getNow: () => Date; timeZone: string },
 ) {
   const commit = (next: RelativeDateValue) => {
     state.setValue(next as RelativeDateFieldValue<K>);
     state.commit();
   };
-  const pickDate = (picked: string | RelativeDateRange) => {
+  const pickDate = (picked: string | DateRangeValue) => {
     if (typeof picked !== 'string') commit(picked);
     else {
       const pickedKind = kind === 'date-time' ? kind : 'date';
@@ -222,12 +219,12 @@ function usePick<K extends RelativeDateKind>(
  * relative to now, such as `Tomorrow` or `3 days ago`, and a preview after it gives the absolute
  * date. Picking a preset commits the value it stands for; presets outside the bounds are disabled.
  */
-export function RelativeDateField<K extends RelativeDateKind = 'date'>(
+export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   props: RelativeDateFieldProps<K>,
 ) {
   const strings = useUiStrings();
   const { locale } = useLocale();
-  const kind: RelativeDateKind = props.valueKind ?? 'date';
+  const kind: RelativeDateFieldMode = props.mode ?? 'date';
   const bounds = { minValue: props.minValue, maxValue: props.maxValue };
   const check = useBoundCheck(bounds);
   const { state, field } = useFieldControl<RelativeDateFieldValue<K>, RelativeDateFieldProps<K>>(
@@ -251,7 +248,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
       now !== null && findRelativeBoundIssue(resolvePreset(preset, context(now)), bounds) !== null,
   }));
   const { commit, pickDate } = usePick(state, { kind, getNow, timeZone });
-  const data = { valueKind: kind, relation: text?.relation };
+  const data = { mode: kind, relation: text?.relation };
   return (
     <Field
       {...field}
@@ -286,11 +283,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
             }
           />
           {text && value ? <Preview value={value} absolute={text.absolute} /> : null}
-          <FieldFormValue
-            name={props.name}
-            value={toFormText(value)}
-            isDisabled={state.isDisabled}
-          />
+          <DateFormInputs value={value} names={props} isDisabled={state.isDisabled} />
         </>
       )}
     </Field>
@@ -299,8 +292,7 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
 
 export type {
   RelativeDateComputedPreset,
-  RelativeDateKind,
+  RelativeDateFieldMode,
   RelativeDatePreset,
-  RelativeDateRange,
   RelativeDateUnit,
 } from './relative-date.js';

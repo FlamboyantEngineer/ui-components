@@ -53,7 +53,7 @@ describe('RelativeDateField calendar', () => {
     const { unmount } = renderInLocale(
       <RelativeDateField
         label="Due"
-        valueKind="date-time"
+        mode="date-time"
         getNow={getNow}
         showCalendar
         onCommit={onCommit}
@@ -66,7 +66,7 @@ describe('RelativeDateField calendar', () => {
     renderInLocale(
       <RelativeDateField
         label="Period"
-        valueKind="date-range"
+        mode="date-range"
         getNow={getNow}
         showCalendar
         onCommit={onCommit}

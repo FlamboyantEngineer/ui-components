@@ -21,23 +21,19 @@ import {
   getNumberFormat,
   getRelativeTimeFormat,
 } from '../../utils/intl-format.js';
+import type { DateRangeValue, DateTimeFieldMode } from '../date-time-field/date-time-field.js';
 
 /**
- * `date` values are `YYYY-MM-DD` texts, `date-time` values local `YYYY-MM-DDTHH:mm` texts and
- * `date-range` values `{ start, end }` ranges of dates.
+ * The modes a relative date field shares with `DateTimeField`: `date` values are `YYYY-MM-DD` texts,
+ * `date-time` values local `YYYY-MM-DDTHH:mm` texts and `date-range` values `{ start, end }` ranges
+ * of dates.
  */
-export type RelativeDateKind = 'date' | 'date-time' | 'date-range';
+export type RelativeDateFieldMode = Extract<DateTimeFieldMode, 'date' | 'date-time' | 'date-range'>;
 
 export type RelativeDateUnit = 'day' | 'week' | 'month' | 'year';
 
-/** A range of `YYYY-MM-DD` dates. */
-export interface RelativeDateRange {
-  start: string;
-  end: string;
-}
-
 /** A relative date field's value with its kind erased. */
-export type RelativeDateValue = string | RelativeDateRange;
+export type RelativeDateValue = string | DateRangeValue;
 
 /**
  * A value relative to now: `{ amount: 1, unit: 'day' }` is tomorrow, a negative amount is past. For a
@@ -90,7 +86,7 @@ function toDay(moment: Date, timeZone: string | undefined): CalendarDate {
 }
 
 /** A range is past once it ends before today, future while it starts after, present around it. */
-function rangeRelation(range: RelativeDateRange, today: string): RelativeDateRelation {
+function rangeRelation(range: DateRangeValue, today: string): RelativeDateRelation {
   if (range.end < today) return 'past';
   return range.start > today ? 'future' : 'present';
 }
@@ -120,7 +116,7 @@ export function describeRelativeDate(
  * dates.
  */
 export function describeRelativeRange(
-  range: RelativeDateRange,
+  range: DateRangeValue,
   options: RelativeDateOptions,
 ): RelativeDateText | null {
   const start = describeRelativeDate(range.start, options);
@@ -147,7 +143,7 @@ export function formatDay(text: string, locale: string): string | null {
  * A range of `YYYY-MM-DD` dates as a localized range, the same in every zone; `null` unless both
  * ends are dates.
  */
-export function formatDayRange(range: RelativeDateRange, locale: string): string | null {
+export function formatDayRange(range: DateRangeValue, locale: string): string | null {
   const start = parseIsoDate(range.start);
   const end = parseIsoDate(range.end);
   if (!start || !end) return null;
@@ -192,7 +188,7 @@ export function resolveRelativePreset(
 export function resolveRelativeRange(
   preset: RelativeDatePreset,
   { now, timeZone }: ZonedNow,
-): RelativeDateRange {
+): DateRangeValue {
   const today = toDay(now, timeZone);
   const other = today.add({ [`${preset.unit}s`]: preset.amount }).toString();
   return preset.amount < 0

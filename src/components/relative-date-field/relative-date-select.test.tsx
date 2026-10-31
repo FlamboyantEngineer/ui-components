@@ -46,15 +46,10 @@ describe('RelativeDateField presets', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container } = renderInLocale(
-      <RelativeDateField
-        label="Period"
-        valueKind="date-range"
-        getNow={getNow}
-        onCommit={onCommit}
-      />,
+      <RelativeDateField label="Period" mode="date-range" getNow={getNow} onCommit={onCommit} />,
     );
     const root = container.querySelector('.ui-relative-date-field');
-    expect(root).toHaveAttribute('data-value-kind', 'date-range');
+    expect(root).toHaveAttribute('data-mode', 'date-range');
     await user.click(screen.getByRole('button', { name: /Period$/ }));
     expect(optionTexts()).toEqual(['Today', 'Last 7 days', 'Last 30 days', 'Next 7 days']);
     await user.click(screen.getByRole('option', { name: 'Last 7 days' }));
@@ -78,7 +73,7 @@ describe('RelativeDateField presets', () => {
       <UiProvider locale="en-US" messages={{ lastPeriod: 'Previous {period}' }}>
         <RelativeDateField
           label="Period"
-          valueKind="date-range"
+          mode="date-range"
           getNow={getNow}
           defaultValue={{ start: '2026-05-01', end: '2026-05-10' }}
           presets={[{ amount: -2, unit: 'week' }]}
