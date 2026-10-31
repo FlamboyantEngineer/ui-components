@@ -763,6 +763,26 @@ test.describe('Table lab', () => {
     await lab.expectAccessible('[data-lab="grouping"]');
   });
 
+  test('UIC-TABLE-13.1 keeps groups of numbers, booleans and text with the same text apart', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const grid = section(page, 'grouping-typed').getByRole('treegrid', {
+      name: 'Readings, grouped by code',
+    });
+    await expect(grid.locator('.ui-table__group-label')).toHaveText([
+      'Code 1 (string)',
+      'Code 1 (number)',
+      'Code true (boolean)',
+      'Code true (string)',
+    ]);
+    await expect(
+      grid.locator('.ui-table__group-row .ui-table__aggregate-cell:last-child'),
+    ).toHaveText(['20', '10', '30', '40']);
+    await lab.expectAccessible('[data-lab="grouping-typed"]');
+  });
+
   test('UIC-TABLE-13.4 collapses and expands groups in a virtualized table', async ({
     page,
     lab,
