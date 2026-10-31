@@ -8,8 +8,9 @@ import {
   SaveGlyph,
   type GlyphComponent,
 } from '../../core/glyphs.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { IconSource } from '../icon/icon.js';
 import type { ButtonProps } from '../button/button.js';
 import type { MenuEntry, MenuProps } from '../menu/menu.js';
@@ -44,10 +45,11 @@ export const actionVerbs = {
 
 export type ActionVerb = keyof typeof actionVerbs;
 
-// An action describes its button, which carries the row's slot class, so it takes no class name.
+// An action describes its button, which carries the row's slot class, so it takes no class name;
+// its `id` identifies the action, not the button element.
 interface ActionRowActionBase
   extends
-    Omit<BaseProps, 'className'>,
+    Omit<BaseProps, 'className' | 'id'>,
     Pick<ButtonProps, 'isDisabled' | 'isPending' | 'aria-controls' | 'aria-haspopup' | 'onPress'> {
   /** Tooltip text when it says more than the label (a shortcut, why the action is disabled). */
   tooltip?: string | undefined;
@@ -66,6 +68,11 @@ interface ActionRowActionBase
 /** A standard verb with its fixed glyph, label and place. */
 export interface ActionRowVerbAction extends ActionRowActionBase {
   verb: ActionVerb;
+  /**
+   * Identifies the action among the row's, so its button keeps its focus and state as actions
+   * come, go and move. Defaults to the verb, so a row with the same verb twice gives each an `id`.
+   */
+  id?: Key | undefined;
   /** Replaces the verb's label, for example to name its subject ("Add comment"). */
   label?: string | undefined;
 }
@@ -74,6 +81,8 @@ export interface ActionRowVerbAction extends ActionRowActionBase {
 export interface ActionRowCustomAction
   extends ActionRowActionBase, Pick<ButtonProps, 'icon' | 'label' | 'isSelected' | 'ref'> {
   verb: 'custom';
+  /** Identifies the action among the row's, so its button keeps its focus and state as actions come, go and move. */
+  id: Key;
   label: string;
 }
 
@@ -96,6 +105,11 @@ export function toActionContent(action: ActionRowAction, strings: UiStrings): Ac
     label: action.label ?? strings[verb.label],
     pendingLabel: verb.pendingLabel ? strings[verb.pendingLabel] : undefined,
   };
+}
+
+/** The action's identity in its row: its `id`, else its verb. */
+export function toActionKey(action: ActionRowAction): string {
+  return toKeyIdentity(action.id ?? action.verb);
 }
 
 /** Custom actions in their given order, then the standard verbs in their fixed order. */

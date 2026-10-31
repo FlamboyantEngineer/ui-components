@@ -140,6 +140,82 @@ describe('ActionRow', () => {
     expect(screen.getByRole('button', { name: /^Wait/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('UIC-ACTION-ROW-1.7 keeps each action on its own button as actions come, go and move', async () => {
+    const user = userEvent.setup();
+    const onFirst = vi.fn();
+    const onSecond = vi.fn();
+    const first: ActionRowAction = {
+      verb: 'custom',
+      id: 'first',
+      icon: InfoGlyph,
+      label: 'First',
+      onPress: onFirst,
+    };
+    const second: ActionRowAction = {
+      verb: 'custom',
+      id: 'second',
+      icon: HelpGlyph,
+      label: 'Second',
+      onPress: onSecond,
+    };
+    const zero: ActionRowAction = { verb: 'custom', id: 0, icon: UploadGlyph, label: 'Zero' };
+    // Two actions of one verb, told apart by their ids.
+    const deletes: ActionRowAction[] = [
+      { verb: 'delete', id: 'delete-row', label: 'Delete row' },
+      { verb: 'delete', id: 'delete-column', label: 'Delete column' },
+    ];
+    const { rerender } = render(<ActionRow actions={[first, second, ...deletes]} />);
+    const secondButton = screen.getByRole('button', { name: 'Second' });
+    const columnButton = screen.getByRole('button', { name: 'Delete column' });
+
+    rerender(<ActionRow actions={[zero, second, first, ...deletes.toReversed()]} />);
+    expect(screen.getByRole('button', { name: 'Second' })).toBe(secondButton);
+    expect(screen.getByRole('button', { name: 'Delete column' })).toBe(columnButton);
+
+    await user.click(screen.getByRole('button', { name: 'First' }));
+    expect(onFirst).toHaveBeenCalledTimes(1);
+    // The focused action leaves: focus moves to the next action's own button, never onto the
+    // removed action's button reused for another command.
+    rerender(<ActionRow actions={[zero, second, ...deletes]} />);
+    expect(screen.queryByRole('button', { name: 'First' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete column' })).toHaveFocus();
+    rerender(<ActionRow actions={[zero, second]} />);
+    expect(secondButton).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onSecond).toHaveBeenCalledTimes(1);
+    expect(onFirst).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-ACTION-ROW-1.7 moves focus to the overflow menu button when the focused action collapses into it', () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-action-row__action') ? 30 : 0;
+      return new DOMRect(0, 0, width, 30);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-action-row__actions') ? 70 : 0;
+    });
+    const actions: ActionRowAction[] = [
+      { verb: 'add', onPress: noop },
+      { verb: 'delete', onPress: noop },
+    ];
+    try {
+      const { rerender } = render(<ActionRow overflow="menu" actions={actions} />);
+      screen.getByRole('button', { name: 'Delete' }).focus();
+      // A third action leaves room for one action and the menu button.
+      rerender(
+        <ActionRow overflow="menu" actions={[...actions, { verb: 'edit', onPress: noop }]} />,
+      );
+      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^\d+ more/ })).toHaveFocus();
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it('UIC-ACTION-ROW-1.3 draws custom actions in their order, then the verbs in a fixed order', () => {
     const actions: ActionRowAction[] = [
       { verb: 'cancel', id: 'cancel', onPress: noop },
@@ -172,7 +248,18 @@ describe('ActionRow', () => {
       'close',
     ];
     const { container } = render(<ActionRow actions={actions} />);
-    expect(buttons(container).map((button) => button.id)).toEqual(expected);
+    expect(buttons(container).map((button) => button.getAttribute('aria-label'))).toEqual([
+      'History',
+      'Full screen',
+      'Add',
+      'Refresh',
+      'More',
+      'Edit',
+      'Delete',
+      'Save',
+      'Cancel',
+      'Close',
+    ]);
     expect(orderActions(actions).map((action) => action.id)).toEqual(expected);
   });
 
@@ -183,6 +270,7 @@ describe('ActionRow', () => {
           { verb: 'refresh', onPress: noop },
           {
             verb: 'custom',
+            id: 'full-screen',
             icon: ExpandGlyph,
             label: 'Full screen',
             tooltip: 'Full screen (F)',
@@ -236,24 +324,25 @@ describe('ActionRow', () => {
         ]}
       />,
     );
-    const byId = (id: string) => container.querySelector<HTMLButtonElement>(`#${id}`);
-    expect(byId('add')).toBeDisabled();
-    expect(byId('add')).toHaveAttribute('aria-controls', 'list');
-    expect(byId('edit')).toBeEnabled();
-    expect(byId('edit')).toHaveAttribute('aria-disabled', 'true');
-    expect(byId('save')).toHaveAttribute('data-pending', 'true');
-    expect(byId('save')).toHaveAccessibleName(/^Save/);
-    expect(within(byId('save') as HTMLElement).getByRole('progressbar')).toHaveAccessibleName(
+    const byId = (id: string) =>
+      buttons(container).find((button) => button.getAttribute('aria-label') === id);
+    expect(byId('Add')).toBeDisabled();
+    expect(byId('Add')).toHaveAttribute('aria-controls', 'list');
+    expect(byId('Edit')).toBeEnabled();
+    expect(byId('Edit')).toHaveAttribute('aria-disabled', 'true');
+    expect(byId('Save')).toHaveAttribute('data-pending', 'true');
+    expect(byId('Save')).toHaveAccessibleName(/^Save/);
+    expect(within(byId('Save') as HTMLElement).getByRole('progressbar')).toHaveAccessibleName(
       'Saving',
     );
-    expect(byId('details')).toHaveAttribute('aria-expanded', 'false');
-    expect(byId('details')).toHaveAttribute('aria-haspopup', 'dialog');
-    expect(byId('details')).toHaveAttribute('data-section', 'details');
-    expect(byId('details')).toHaveAttribute('data-verb', 'custom');
-    await userEvent.click(byId('edit') as HTMLButtonElement);
-    await userEvent.click(byId('save') as HTMLButtonElement);
+    expect(byId('Details')).toHaveAttribute('aria-expanded', 'false');
+    expect(byId('Details')).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(byId('Details')).toHaveAttribute('data-section', 'details');
+    expect(byId('Details')).toHaveAttribute('data-verb', 'custom');
+    await userEvent.click(byId('Edit') as HTMLButtonElement);
+    await userEvent.click(byId('Save') as HTMLButtonElement);
     expect(onPress).not.toHaveBeenCalled();
-    await userEvent.click(byId('details') as HTMLButtonElement);
+    await userEvent.click(byId('Details') as HTMLButtonElement);
     expect(onPress).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(container, 'ACTION-ROW', { callerAttributes: ['data-section'] });
   });

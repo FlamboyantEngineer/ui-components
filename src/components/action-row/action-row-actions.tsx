@@ -1,11 +1,12 @@
 'use client';
 
-import type { KeyboardEvent, ReactNode } from 'react';
+import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import type { ButtonSize } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -18,7 +19,8 @@ import {
   type MenuItemEntry,
   type MenuSize,
 } from '../menu/menu.js';
-import { toActionContent, type ActionRowAction } from './action-verbs.js';
+import { useActionFocus } from './use-action-focus.js';
+import { toActionContent, toActionKey, type ActionRowAction } from './action-verbs.js';
 
 interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   actions: readonly ActionRowAction[];
@@ -78,7 +80,6 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       {...hooks.slot('action', { verb: action.verb })}
       {...toCustomButtonProps(action)}
       {...toPressProps(action, hasMenu)}
-      id={action.id}
       icon={icon}
       label={label}
       size={size}
@@ -98,10 +99,6 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       {button}
     </ActionRowMenu>
   );
-}
-
-function actionKey(action: ActionRowAction, index: number): string {
-  return action.id ?? `${action.verb}-${index}`;
 }
 
 /**
@@ -174,10 +171,8 @@ export function ActionRowActions({
   const { containerRef, visibleItems, hiddenItems } = useOverflowItems({
     items: isCollapsing ? actions : [],
   });
-  const toKeyed = (action: ActionRowAction) => ({
-    action,
-    key: actionKey(action, actions.indexOf(action)),
-  });
+  const focusRef = useActionFocus();
+  const toKeyed = (action: ActionRowAction) => ({ action, key: toActionKey(action) });
   const shown = (isCollapsing ? visibleItems : actions).map(toKeyed);
   const children = (
     <>
@@ -189,7 +184,10 @@ export function ActionRowActions({
       ) : null}
     </>
   );
-  const ref = isCollapsing ? containerRef : undefined;
+  const ref = useMemo(
+    () => (isCollapsing ? mergeRefs(containerRef, focusRef) : focusRef),
+    [isCollapsing, containerRef, focusRef],
+  );
   if (isToolbar) {
     return (
       <Toolbar {...labels} ref={ref} className={hooks.slotClass('actions')}>
