@@ -4,7 +4,7 @@ import { ButtonGroup } from '../../src/components/button-group/button-group.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const densities = ['regular', 'compact', 'attached'] as const;
+const densities = ['default', 'compact', 'attached'] as const;
 const orientations = ['horizontal', 'vertical'] as const;
 
 mountLab(

@@ -34,6 +34,12 @@ export type NativeProps<E extends keyof JSX.IntrinsicElements> = Omit<
 /** Block and box sizes. A component that offers fewer derives its own with `Extract<Size, …>`. */
 export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
+/**
+ * How tightly a component packs its content, from `tight` to `comfortable`. `default` is the
+ * baseline everywhere; a component takes the subset it draws.
+ */
+export type Density = 'tight' | 'compact' | 'default' | 'comfortable';
+
 /** The sizes of single-line controls: every control of one size shares one height. */
 export type ControlSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 

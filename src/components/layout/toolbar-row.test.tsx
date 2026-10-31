@@ -243,7 +243,7 @@ describe('ToolbarRow', () => {
     );
     expect(screen.getByRole('group', { name: 'History' })).toHaveAttribute(
       'data-density',
-      'regular',
+      'default',
     );
     await user.click(screen.getByRole('button', { name: 'Left' }));
     await user.keyboard('{ArrowRight}');

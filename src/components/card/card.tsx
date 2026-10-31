@@ -2,7 +2,7 @@
 
 import { useContext, useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, NativeProps } from '../../core/props.js';
+import type { BaseProps, Density, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   HeadingLevelContext,
@@ -31,7 +31,6 @@ export type {
 export type CardVariant = 'default' | 'panel';
 
 /** `default` keeps each part's own inset; the others give the card one interior padding. */
-export type CardDensity = 'default' | 'comfortable' | 'compact' | 'tight';
 
 export interface CardProps
   extends
@@ -41,7 +40,7 @@ export interface CardProps
   /** Surface. Defaults to `default`. */
   variant?: CardVariant | undefined;
   /** Interior padding. Defaults to `default`. */
-  density?: CardDensity | undefined;
+  density?: Density | undefined;
   /** The heading. A titled card is a region named by its title. */
   title?: ReactNode;
   /** Supporting text under the title. */

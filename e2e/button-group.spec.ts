@@ -16,7 +16,7 @@ test.describe('Button Group lab', () => {
       const second = await buttons.nth(1).boundingBox();
       return (second?.x ?? 0) - ((first?.x ?? 0) + (first?.width ?? 0));
     };
-    expect(await gapBetween('regular')).toBeCloseTo(8, 0);
+    expect(await gapBetween('default')).toBeCloseTo(8, 0);
     expect(await gapBetween('compact')).toBeCloseTo(2, 0);
     expect(await gapBetween('attached')).toBeCloseTo(-1, 0);
     const group = page.getByRole('group', { name: 'Alignment attached horizontal' });
