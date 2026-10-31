@@ -92,7 +92,7 @@ Verification: `src/components/tooltip/anchored-tooltip.test.tsx`
 
 ### UIC-TOOLTIP-2.4 - Following and cleaning up
 
-The open panel shall follow its anchor through page and container scrolling, window resizing and changes of the anchor's or the panel's size, without closing. With no anchor, a ref holding nothing, or an element no longer in the document, it shows nothing; unmounting it while open removes the panel and its relationship.
+The open panel shall follow its anchor through page and container scrolling, window resizing and changes of the anchor's or the panel's size, without closing. With no anchor, a ref holding nothing, or an element no longer in the document, it shows nothing; unmounting it while open removes the panel and its relationship. The anchor element is read again after every render and, while open, whenever nodes come or go in its document: a stable ref that now holds a replacement element moves the relationship and the position to the replacement, an anchor that leaves the document hides the panel and releases its relationship, and one put back shows it again.
 
 Implementation: `src/components/tooltip/anchored-tooltip.tsx`
 Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.spec.ts`

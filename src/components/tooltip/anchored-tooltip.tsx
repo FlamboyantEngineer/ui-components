@@ -16,6 +16,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
 import { TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
@@ -91,13 +92,30 @@ function addIdToken(element: Element, attribute: RelatedAttribute, id: string): 
 
 /**
  * The element the panel is positioned against, read once committed, since a ref is set during
- * the commit; `null` while closed, for a rectangle, and for an element that left the page.
+ * the commit; `null` while closed, for a rectangle, and for an element that left the page. It is
+ * read again after every commit, since a stable ref may point at a replacement, and, while open,
+ * whenever nodes come or go in the anchor's document, so an anchor removed or put back outside this
+ * component's renders hides or shows the hint.
  */
 function useAnchorElement(anchor: TooltipAnchor | null | undefined, isOpen: boolean) {
   const [element, setElement] = useState<Element | null>(null);
+  const read = useLatest(() => (isOpen ? resolveElement(anchor) : null));
+  // A ref's element changes in commits that change no prop, so this reads after every commit; the
+  // update stops there, since setting the same element renders nothing.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runs after every commit on purpose
   useLayoutEffect(() => {
-    setElement(isOpen ? resolveElement(anchor) : null);
-  }, [anchor, isOpen]);
+    setElement(read.current());
+  });
+  const isElementAnchor = isOpen && anchor != null && !isVirtualAnchor(anchor);
+  useLayoutEffect(() => {
+    if (!isElementAnchor) return undefined;
+    const document = read.current()?.ownerDocument ?? globalThis.document;
+    const view = document.defaultView;
+    if (!view) return undefined;
+    const observer = new view.MutationObserver(() => setElement(read.current()));
+    observer.observe(document, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [isElementAnchor, read]);
   return element;
 }
 

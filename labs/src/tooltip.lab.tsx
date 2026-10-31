@@ -117,7 +117,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Anchored tooltips"
-      description="Hints the page opens itself: on a status chip it owns, on the bars of an SVG chart, on a region of a scrolling plan with no element of its own (the hint follows it as the plan scrolls), and a visual-only hint that repeats an icon button's name."
+      description="Hints the page opens itself: on a status chip it owns, on the bars of an SVG chart, on a region of a scrolling plan with no element of its own (the hint follows it as the plan scrolls), a visual-only hint that repeats an icon button's name, and a stage button the page replaces and removes under one ref: the hint moves with it and hides while it is gone."
     >
       <AnchoredTooltipCases />
     </LabSection>

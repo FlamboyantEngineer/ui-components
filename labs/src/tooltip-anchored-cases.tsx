@@ -124,6 +124,28 @@ function VisualHint() {
   );
 }
 
+const slots = ['Draft', 'Review', 'none'] as const;
+
+/** One ref the page keeps while the element it holds is replaced or removed: the hint follows it. */
+function SwappedAnchorHint() {
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const [slot, setSlot] = useState<(typeof slots)[number]>('Draft');
+  const next = slots[(slots.indexOf(slot) + 1) % slots.length] ?? 'Draft';
+  return (
+    <div data-lab-demo="anchored-swap">
+      {slot === 'none' ? null : (
+        <button key={slot} ref={anchorRef} type="button">
+          {slot}
+        </button>
+      )}{' '}
+      <Button size="sm" onPress={() => setSlot(next)}>
+        {next === 'none' ? 'Remove the stage' : `Show ${next}`}
+      </Button>
+      <AnchoredTooltip isOpen anchor={anchorRef} content="Current stage" placement="bottom" />
+    </div>
+  );
+}
+
 export function AnchoredTooltipCases() {
   return (
     <>
@@ -131,6 +153,7 @@ export function AnchoredTooltipCases() {
       <ChartHints />
       <RegionHint />
       <VisualHint />
+      <SwappedAnchorHint />
     </>
   );
 }
