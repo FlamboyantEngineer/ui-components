@@ -6,7 +6,7 @@
 
 ### UIC-FILE-FIELD-1.1 - Field control
 
-`FileField` shall render a `Field` (root also `ui-file-field`) around a `FileUpload` (`ui-file-field__upload`) whose command is the field's control: it is named by the field's label followed by its own text (provider string `addFile`, or `addFiles` with `allowsMultiple`), described by the field's description and message as well as the upload's own description of the accepted types and limits, and it takes focus when the field is restored or a form finds the field invalid. `variant` chooses the upload's `button` or `dropzone` command.
+`FileField` shall render a `Field` (root also `ui-file-field`) around a `FileUpload` (`ui-file-field__upload`) whose command is the field's control, carrying the control id (`FileUpload`'s `commandId`) so the field's label points at it: it is named by the field's label followed by its own text (provider string `addFile`, or `addFiles` with `allowsMultiple`), described by the field's description and message as well as the upload's own description of the accepted types and limits, and it takes focus when the field is restored or a form finds the field invalid. `variant` chooses the upload's `button` or `dropzone` command.
 
 Implementation: `src/components/file-field/file-field.tsx`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-field/file-field.test.tsx`, `e2e/file-field.spec.ts`

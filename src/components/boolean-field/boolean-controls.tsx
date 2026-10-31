@@ -203,8 +203,10 @@ function ToggleButtonControl(props: BooleanControlProps) {
     width === null
       ? undefined
       : (measuredProperty('boolean-field-caption-width', width) as CSSProperties);
+  // The toggle button takes no invalid or read-only state: the field reports and refuses them.
+  const field = toAriaControlProps(control);
   // In the control-only layout the button names itself by `aria-label`, read after the caption.
-  const labelledBy = `${captionId} ${control['aria-labelledby'] ?? control.id}`;
+  const labelledBy = `${captionId} ${field['aria-labelledby'] ?? field.id}`;
   return (
     <>
       {state.isDirty ? (
@@ -215,12 +217,12 @@ function ToggleButtonControl(props: BooleanControlProps) {
       <ToggleButton
         {...hooks.slot('toggle-button', { indeterminate: state.value === null })}
         ref={control.ref}
-        id={control.id}
-        aria-label={control['aria-label']}
+        id={field.id}
+        aria-label={field['aria-label']}
         aria-labelledby={labelledBy}
-        aria-describedby={control['aria-describedby']}
+        aria-describedby={field['aria-describedby']}
         isSelected={state.value === true}
-        isDisabled={control.disabled}
+        isDisabled={field.isDisabled}
         onChange={() => pick(state, pressedValue(props))}
       >
         <span {...hooks.slot('caption')} id={captionId} ref={captionRef} style={style}>

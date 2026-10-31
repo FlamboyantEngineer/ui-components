@@ -48,7 +48,7 @@ Verification: `src/components/file-upload/file-upload-files.test.tsx`, `src/comp
 
 ### UIC-FILE-UPLOAD-1.7 - Owner naming and focus
 
-`aria-labelledby` shall name the command (the drop zone's Browse button) by those elements followed by the command's own text, and `aria-label` by that text followed by the command's own text, so the name keeps what the command shows; `aria-describedby` adds to the command's description. `commandRef` receives the command's button, so an owner such as [File Field](FILE-FIELD.md) can focus it.
+`aria-labelledby` shall name the command (the drop zone's Browse button) by those elements followed by the command's own text, and `aria-label` by that text followed by the command's own text, so the name keeps what the command shows; `aria-describedby` adds to the command's description. `commandRef` receives the command's button, so an owner such as [File Field](FILE-FIELD.md) can focus it, and `commandId` gives the button its id, so an owner's label can point at it; `id` stays on the root.
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
 Verification: `src/components/file-upload/file-upload-files.test.tsx`

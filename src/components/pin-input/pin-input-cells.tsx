@@ -9,6 +9,7 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
   FieldFormValue,
+  toAriaControlProps,
   type FieldControlProps,
   type FieldEnterKeyHint,
   type FieldState,
@@ -80,7 +81,10 @@ function handleCellKey(event: KeyboardEvent<HTMLInputElement>, cell: CellKeyCont
   else if (isRetyped) cell.focusCell(index + 1);
 }
 
-/** What the field gives every cell: its description and its states. */
+/**
+ * What the field gives every cell, as native attributes on a plain input: its description and its
+ * states. The group around the cells takes the field's name and states (`toAriaControlProps`).
+ */
 function toCellControlProps(control: FieldControlProps) {
   return {
     'aria-describedby': control['aria-describedby'],
@@ -186,16 +190,21 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
   const [focused, setFocused] = useState<number | null>(null);
   const tabbable = Math.min(focused ?? active, active);
   const cellControl = toCellControlProps(control);
+  const {
+    'aria-label': label,
+    'aria-labelledby': labelledBy,
+    ...field
+  } = toAriaControlProps(control);
   return (
     <>
       <Group
         {...hooks.slot('group')}
         ref={slots.ref('group')}
-        aria-label={control['aria-label']}
-        aria-labelledby={control['aria-labelledby']}
-        isDisabled={state.isDisabled}
-        isInvalid={control['aria-invalid']}
-        isReadOnly={state.isReadOnly}
+        aria-label={label}
+        aria-labelledby={labelledBy}
+        isDisabled={field.isDisabled}
+        isInvalid={field.isInvalid}
+        isReadOnly={field.isReadOnly}
         // The field commits once focus leaves it, so Tab reaches its restore button.
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null);

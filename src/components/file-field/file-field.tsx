@@ -3,7 +3,14 @@
 import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Field, FieldFormValue, useFieldControl, type FieldInputProps } from '../field/field.js';
+import {
+  Field,
+  FieldFormValue,
+  toAriaControlProps,
+  useFieldControl,
+  type FieldControlProps,
+  type FieldInputProps,
+} from '../field/field.js';
 import {
   FileUpload,
   type FileUploadItem,
@@ -39,6 +46,21 @@ export interface FileFieldProps extends FieldInputProps<FileFieldItem[]> {
   renderFileActions?: ((file: FileFieldItem) => ReactNode) | undefined;
   /** Replaces the thumbnail of a held file, such as with an audio or video player. */
   renderFilePreview?: ((file: FileFieldItem) => ReactNode) | undefined;
+}
+
+/**
+ * The field's control props the upload takes: its naming, description and states, with the control
+ * id on its command so the label names it. The field checks a required value itself.
+ */
+function toUploadControlProps(control: FieldControlProps) {
+  const {
+    id,
+    isRequired: _required,
+    'aria-errormessage': _message,
+    validationBehavior: _behavior,
+    ...props
+  } = toAriaControlProps(control);
+  return { ...props, commandId: id };
 }
 
 /** Whether an upload is still running, so the field waits for it. */
@@ -110,12 +132,7 @@ export function FileField({
             ]}
             onSelect={onSelect}
             onRemove={remove}
-            isDisabled={control.disabled}
-            isReadOnly={control.readOnly}
-            isInvalid={control['aria-invalid']}
-            aria-label={control['aria-label']}
-            aria-labelledby={control['aria-labelledby']}
-            aria-describedby={control['aria-describedby']}
+            {...toUploadControlProps(control)}
             commandRef={control.ref}
             renderFileActions={withHeld((item) => renderFileFieldActions(item, renderFileActions))}
             renderFilePreview={withHeld((item) => renderFilePreview?.(item))}

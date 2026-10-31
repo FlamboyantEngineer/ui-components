@@ -339,7 +339,9 @@ Verification: `src/components/field/field-control.test.tsx`
 
 `toAriaControlProps(control)` shall give a control built on a building block the field's id, `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-errormessage`, and its states in the library's prop vocabulary as `isInvalid`, `isRequired`, `isReadOnly` and `isDisabled`, with `validationBehavior="aria"` so the field alone validates and the control only reports the status.
 
-Implementation: `src/components/field/field-control.ts`
+Every control built on a building block shall take these props from `toAriaControlProps` (all of them, or the part its building block takes) and add only what the building block cannot take, rather than mapping the field's control props itself: TextField, NumberField, SelectField, ChoiceGroup, ColorField, DateTimeField, RelativeDateField, BooleanField, Slider, CodeEditor, FileField (whose command takes the control id, so the field's label names it) and PinInput (whose group takes them, while its cells, plain inputs, take the field's native attributes).
+
+Implementation: `src/components/field/field-control.ts`, `src/components/field/aria-control-props.ts`
 Verification: `src/components/field/field-control.test.tsx`
 
 ### UIC-FIELD-8.3 - Text input props

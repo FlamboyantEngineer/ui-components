@@ -18,7 +18,7 @@ import {
   type SelectKeysValue,
   type SelectModel,
 } from './select-model.js';
-import { flattenPickerItems, usePickerEmptyContent } from '../field/field.js';
+import { flattenPickerItems, toAriaControlProps, usePickerEmptyContent } from '../field/field.js';
 import { toSelectKeys, type SelectFieldOption } from './select-options.js';
 import { SelectTrigger } from './select-trigger.js';
 
@@ -116,10 +116,7 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
       <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
         className={hooks.slotClass('select')}
         style={trigger.style}
-        id={control.id}
-        aria-label={control['aria-label']}
-        aria-labelledby={control['aria-labelledby']}
-        aria-describedby={control['aria-describedby']}
+        {...toAriaControlProps(control)}
         selectionMode={isMultiple ? 'multiple' : 'single'}
         value={
           isMultiple
@@ -131,10 +128,6 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
         onChange={(value) => actions.commitKeys(toSelectKeys(value).map(fromCollectionKey))}
         isOpen={actions.isOpen}
         onOpenChange={actions.changeOpen}
-        isDisabled={state.isDisabled}
-        isRequired={state.isRequired}
-        isInvalid={state.validation.status === 'invalid'}
-        validationBehavior="aria"
         allowsEmptyCollection
       >
         <SelectTrigger

@@ -7,12 +7,23 @@ import { Button } from '../button/button.js';
 import { CodeSurface, type CodeSurfaceProps } from './code-surface.js';
 import type { CodeEditorFieldProps } from './code-editor.js';
 import { resolveCodeTokenizer } from './code-languages.js';
-import { Field, useFieldControl } from '../field/field.js';
+import {
+  Field,
+  toAriaControlProps,
+  useFieldControl,
+  type FieldControlProps,
+} from '../field/field.js';
 import { createJsonChecker } from './json-check.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
 import { formatJson } from './json-text.js';
 
 const hooks = createHooks('code-editor', ['format']);
+
+/** The field's control props the surface takes: all of them but the validation behaviour. */
+function toSurfaceControlProps(control: FieldControlProps) {
+  const { validationBehavior: _behavior, ...props } = toAriaControlProps(control);
+  return props;
+}
 
 /**
  * A code field with optional JSON parsing and schema validation. JSON follows `schema` when
@@ -152,16 +163,8 @@ export function CodeField(props: CodeEditorFieldProps) {
         <CodeSurface
           {...(options as Partial<CodeSurfaceProps>)}
           language={language}
-          id={control.id}
+          {...toSurfaceControlProps(control)}
           ref={control.ref}
-          aria-label={control['aria-label']}
-          aria-labelledby={control['aria-labelledby']}
-          aria-describedby={control['aria-describedby']}
-          aria-errormessage={control['aria-errormessage']}
-          isInvalid={control['aria-invalid']}
-          isRequired={control['aria-required']}
-          isReadOnly={control.readOnly}
-          isDisabled={control.disabled}
           value={state.value}
           onChange={state.setValue}
           tokenize={tokenize ?? resolveCodeTokenizer({ language, syntax })}
