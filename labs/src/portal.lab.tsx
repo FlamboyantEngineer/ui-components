@@ -204,6 +204,97 @@ function TabOrderDemo({ preserveTabOrder }: { preserveTabOrder: boolean }) {
   );
 }
 
+type EdgeCase =
+  | 'checked radios'
+  | 'unchecked radios'
+  | 'empty'
+  | 'two portals'
+  | 'nested'
+  | 'container before'
+  | 'document body';
+
+/** Kept order with focus guards, or the same content in place, as the reference order. */
+type EdgeMode = 'kept' | 'in place';
+
+function EdgePortal({ id, mode, children }: { id: string; mode: EdgeMode; children?: ReactNode }) {
+  return (
+    <Portal preserveTabOrder={mode === 'kept'} inPlace={mode === 'in place'} data-lab-portal={id}>
+      {children}
+    </Portal>
+  );
+}
+
+function EdgeContent({ id, mode, edge }: { id: string; mode: EdgeMode; edge: EdgeCase }) {
+  switch (edge) {
+    case 'checked radios':
+    case 'unchecked radios':
+      return (
+        <EdgePortal id={id} mode={mode}>
+          <input type="radio" name={id} aria-label="Radio A" />
+          <input
+            type="radio"
+            name={id}
+            aria-label="Radio B"
+            defaultChecked={edge === 'checked radios'}
+          />
+        </EdgePortal>
+      );
+    case 'two portals':
+      return (
+        <>
+          <EdgePortal id={`${id} one`} mode={mode}>
+            <button type="button">First tool</button>
+          </EdgePortal>
+          <EdgePortal id={`${id} two`} mode={mode}>
+            <button type="button">Second tool</button>
+          </EdgePortal>
+        </>
+      );
+    case 'nested':
+      return (
+        <EdgePortal id={id} mode={mode}>
+          <button type="button">Outer tool</button>
+          <EdgePortal id={`${id} inner`} mode={mode}>
+            <button type="button">Inner tool</button>
+          </EdgePortal>
+          <button type="button">Outer end</button>
+        </EdgePortal>
+      );
+    default:
+      return <EdgePortal id={id} mode={mode} />;
+  }
+}
+
+/**
+ * A control before and after a portal, which a browser test isolates as the whole page to compare
+ * the kept order at the document's ends with the same content in place.
+ */
+function EdgeCaseDemo({ edge, mode }: { edge: EdgeCase; mode: EdgeMode }) {
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const id = `${edge} ${mode}`;
+  const content = (
+    <>
+      <button type="button">Before</button> <EdgeContent id={id} mode={mode} edge={edge} />{' '}
+      <button type="button">After</button>
+    </>
+  );
+  const demo = (body: ReactNode) => (
+    <div data-lab-demo={id} style={{ position: 'relative', minHeight: 40 }}>
+      {body}
+    </div>
+  );
+  if (edge === 'document body') return demo(content);
+  if (edge === 'container before') {
+    return demo(
+      <>
+        <div ref={setContainer} />
+        <PortalContainerProvider container={container}>{content}</PortalContainerProvider>
+      </>,
+    );
+  }
+  return demo(<PortalHost>{content}</PortalHost>);
+}
+
 mountLab(
   <>
     <LabSection
@@ -278,6 +369,26 @@ mountLab(
     >
       <TabOrderDemo preserveTabOrder />
       <TabOrderDemo preserveTabOrder={false} />
+    </LabSection>
+    <LabSection
+      title="Tab order at the edges"
+      description="Each case with focus guards (kept) and in place. Radio groups take one stop, their checked radio; at the end of the page focus leaves the document and comes back to its first control, as it would in place. The browser test makes each case the whole page."
+    >
+      <StateMatrix
+        axes={{
+          edge: [
+            'checked radios',
+            'unchecked radios',
+            'empty',
+            'two portals',
+            'nested',
+            'container before',
+            'document body',
+          ],
+          mode: ['kept', 'in place'],
+        }}
+        render={({ edge, mode }) => <EdgeCaseDemo edge={edge} mode={mode} />}
+      />
     </LabSection>
     <LabSection
       title="Document body"

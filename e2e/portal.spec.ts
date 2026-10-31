@@ -1,5 +1,46 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, waitForLab } from './fixtures.js';
+
+/**
+ * Makes one edge case the whole page: everything else turns inert, so Tab meets the document's
+ * ends right around the case and its portals.
+ */
+async function isolate(page: Page, id: string) {
+  await page.evaluate((caseId) => {
+    const kept = [
+      ...document.querySelectorAll(`[data-lab-demo="${caseId}"]`),
+      ...[...document.querySelectorAll('[data-lab-portal]')].filter((node) =>
+        node.getAttribute('data-lab-portal')?.startsWith(caseId),
+      ),
+    ];
+    const keep = (node: Element) =>
+      kept.some((element) => element === node || element.contains(node) || node.contains(element));
+    for (const element of document.body.querySelectorAll('*')) {
+      if (!keep(element) && element.parentElement && keep(element.parentElement)) {
+        (element as HTMLElement).inert = true;
+      }
+    }
+  }, id);
+}
+
+/**
+ * The controls Tab visits from `start`, by name. Focus leaving the page is left out: headless
+ * Chromium sometimes stops on the page itself between its last and first controls, sometimes not.
+ */
+async function recordTabs(page: Page, id: string, start: string, keys: string, count: number) {
+  await page.locator(`[data-lab-demo="${id}"]`).getByRole('button', { name: start }).focus();
+  const visited: string[] = [];
+  for (let press = 0; visited.length < count && press < count * 2; press += 1) {
+    await page.keyboard.press(keys);
+    const name = await page.evaluate(() => {
+      const active = document.activeElement;
+      if (!active || active === document.body) return null;
+      return active.getAttribute('aria-label') ?? active.textContent ?? active.tagName;
+    });
+    if (name !== null) visited.push(name);
+  }
+  return visited;
+}
 
 const layers = ['backdrop', 'drawer', 'modal', 'dropdown', 'context-menu', 'tooltip', 'toast'];
 
@@ -151,4 +192,33 @@ test.describe('Portal lab', () => {
     await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: 'Document order next' })).toBeFocused();
   });
+
+  for (const edge of [
+    'checked radios',
+    'unchecked radios',
+    'empty',
+    'two portals',
+    'nested',
+    'container before',
+    'document body',
+  ]) {
+    test(`UIC-PORTAL-3.4 tabs through ${edge} at the page's ends as the same content in place`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('portal');
+      const sequences: Record<string, string[][]> = {};
+      for (const mode of ['in place', 'kept']) {
+        await page.reload();
+        await waitForLab(page);
+        const id = `${edge} ${mode}`;
+        await isolate(page, id);
+        sequences[mode] = [
+          await recordTabs(page, id, 'Before', 'Tab', 8),
+          await recordTabs(page, id, 'After', 'Shift+Tab', 8),
+        ];
+      }
+      expect(sequences.kept).toEqual(sequences['in place']);
+    });
+  }
 });
