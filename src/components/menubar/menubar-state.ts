@@ -7,6 +7,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -16,7 +17,7 @@ import {
 import type { Orientation } from '../../core/props.js';
 import type { MenuSize } from '../menu/menu.js';
 import { resolveMenubarKey, type MenubarKeyAction, type MenubarKeyPlace } from './menubar-keys.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
+import { getOwnerDocument, getOwnerWindow } from '../../utils/owner-window.js';
 
 /** Where focus goes in a menu the bar opens: its first or last item, or (`null`) the menu itself. */
 type MenuFocus = 'first' | 'last' | null;
@@ -109,10 +110,46 @@ function hasModifier(event: KeyboardEvent<HTMLElement>): boolean {
   return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 }
 
-/** Focuses a top-level item and, when asked, opens its menu through React Aria's state. */
-function focusTrigger(trigger: TriggerEntry | undefined, focus: MenuFocus | undefined) {
-  trigger?.element.focus();
-  if (focus !== undefined) trigger?.state.current?.open(focus);
+type FocusTrigger = (trigger: TriggerEntry | undefined, focus: MenuFocus | undefined) => void;
+
+/** The scroll offsets of the scrolling boxes around `element`, outermost last. */
+function readScrollOffsets(element: Element): number[] {
+  const offsets: number[] = [];
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    offsets.push(node.scrollTop, node.scrollLeft);
+  }
+  return offsets;
+}
+
+/**
+ * Focuses a top-level item and, when asked, opens its menu through React Aria's state. When
+ * focusing scrolled a box around the item into view, the menu opens on the next frame: React Aria
+ * closes a non-modal popover when an ancestor of its trigger scrolls, and the scroll event of the
+ * reveal arrives after the focus. A newer focus or unmounting cancels a menu still waiting.
+ */
+function useFocusTrigger(): FocusTrigger {
+  const frame = useRef<{ id: number; view: Window } | null>(null);
+  const cancel = useCallback(() => {
+    if (frame.current) frame.current.view.cancelAnimationFrame(frame.current.id);
+    frame.current = null;
+  }, []);
+  useEffect(() => cancel, [cancel]);
+  return useCallback(
+    (trigger, focus) => {
+      cancel();
+      if (!trigger) return;
+      const before = readScrollOffsets(trigger.element);
+      trigger.element.focus();
+      if (focus === undefined) return;
+      const open = () => trigger.state.current?.open(focus);
+      const view = getOwnerWindow(trigger.element);
+      if (readScrollOffsets(trigger.element).every((offset, index) => offset === before[index])) {
+        return open();
+      }
+      frame.current = { view, id: view.requestAnimationFrame(open) };
+    },
+    [cancel],
+  );
 }
 
 /**
@@ -155,6 +192,7 @@ function useOpenMenu(
   version: number,
   rootRef: RefObject<HTMLElement | null>,
 ) {
+  const focusTrigger = useFocusTrigger();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const pending = useRef<Move | null>(null);
   // A top-level item that leaves takes its menu with it: forget it as open or as a destination, and
@@ -169,13 +207,13 @@ function useOpenMenu(
     if (!pending.current && (!active || active === owner.body)) {
       focusTrigger(sortByDocumentOrder(items)[0]?.[1], undefined);
     }
-  }, [triggers, openKey, version, rootRef]);
+  }, [triggers, openKey, version, rootRef, focusTrigger]);
   useLayoutEffect(() => {
     const move = pending.current;
     if (openKey !== null || !move) return;
     pending.current = null;
     focusTrigger(triggers.current.get(move.key), move.focus);
-  }, [triggers, openKey]);
+  }, [triggers, openKey, focusTrigger]);
   const close = (key: string) => triggers.current.get(key)?.state.current?.close();
   const moveTo = ({ key, focus }: Move) => {
     if (openKey === null || openKey === key) return focusTrigger(triggers.current.get(key), focus);
@@ -187,7 +225,7 @@ function useOpenMenu(
     if (openKey !== null && openKey !== key) return moveTo({ key, focus: null });
     return setOpenKey(key);
   };
-  return { openKey, close, moveTo, setOpen };
+  return { openKey, close, moveTo, setOpen, focusTrigger };
 }
 
 /**
@@ -197,7 +235,7 @@ function useOpenMenu(
 export function useMenubarState({ rootRef, orientation, size, direction }: MenubarStateOptions) {
   const { triggers, register, version } = useTriggerRegistry();
   const [tabKey, setTabKey] = useTabStop(triggers, version);
-  const { openKey, close, moveTo, setOpen } = useOpenMenu(triggers, version, rootRef);
+  const { openKey, close, moveTo, setOpen, focusTrigger } = useOpenMenu(triggers, version, rootRef);
 
   const apply = (action: MenubarKeyAction, { list, from, place }: KeyTarget) => {
     const [fromKey, fromTrigger] = list[from] ?? [];

@@ -50,7 +50,7 @@ Verification: `src/components/menubar/menubar.test.tsx`, `src/components/menubar
 
 ### UIC-MENUBAR-2.2 - Moving between open menus
 
-In a row, Arrow Right (Arrow Left in right-to-left text) pressed in an open menu or one of its submenus, on an item that opens no submenu, shall close the open menus, move focus to the next top-level item and open its menu on its first item, wrapping at the end; Arrow Left pressed in a top-level menu does the same towards the previous item. On an item that opens a submenu, Arrow Right opens the submenu, and in a submenu Arrow Left closes only that submenu ([UIC-MENU-4.5](MENU.md#uic-menu-45---submenus)). In a column, the backward arrow pressed in a top-level menu closes it and returns focus to its item.
+In a row, Arrow Right (Arrow Left in right-to-left text) pressed in an open menu or one of its submenus, on an item that opens no submenu, shall close the open menus, move focus to the next top-level item and open its menu on its first item, wrapping at the end; Arrow Left pressed in a top-level menu does the same towards the previous item. When focusing that item scrolls a box around the bar to reveal it, its menu opens on the next frame, after the scroll, so the scroll does not close it. On an item that opens a submenu, Arrow Right opens the submenu, and in a submenu Arrow Left closes only that submenu ([UIC-MENU-4.5](MENU.md#uic-menu-45---submenus)). In a column, the backward arrow pressed in a top-level menu closes it and returns focus to its item.
 
 Implementation: `src/components/menubar/menubar-state.ts`, `src/components/menubar/menubar-keys.ts`
 Verification: `src/components/menubar/menubar.test.tsx`, `src/components/menubar/menubar-keys.test.ts`, `e2e/menubar.spec.ts`

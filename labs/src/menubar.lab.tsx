@@ -233,6 +233,16 @@ mountLab(
       <ChangingBar />
     </LabSection>
     <LabSection
+      title="Scrolling row"
+      description="The bar sits in a narrow box that scrolls sideways. Open File and press Arrow Right: the box scrolls to reveal the next item, and its menu opens and stays open."
+    >
+      <div style={{ width: 80, overflowX: 'auto' }} data-lab-scroller="menubar">
+        <div style={{ width: 'max-content' }}>
+          <CompactBar label="Scrolling menubar" />
+        </div>
+      </div>
+    </LabSection>
+    <LabSection
       title="Right to left"
       description="In right-to-left text Arrow Left moves to the next item and menus open from the right."
     >
