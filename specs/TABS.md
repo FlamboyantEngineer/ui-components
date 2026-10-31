@@ -164,6 +164,13 @@ An edit shall end without renaming when its tab leaves the list, turns disabled 
 Implementation: `src/components/tabs/tab-rename.tsx`
 Verification: `src/components/tabs/tab-rename-eligibility.test.tsx`, `e2e/tabs.spec.ts`
 
+### UIC-TABS-3.9 - A tab menu that stays current
+
+An open tab menu shall follow the list as it changes: it lists the entries `getMenuItems` returns for the tab now, so an action the list stops taking leaves the menu and a move's disabled state follows the current order, and it closes once its tab leaves the list, turns disabled (through `Tabs` `isDisabled`, `disabledKeys` or the tab's own `isDisabled`) or the list drops `getMenuItems`. A standard entry runs only while its tab is in the list and enabled, with the list's current callback, and a move is worked out from the order when it runs. An update that changes nothing the menu shows keeps it open with its focus.
+
+Implementation: `src/components/tabs/tab-menu.tsx`, `src/components/tabs/tab-actions.ts`, `src/components/tabs/tab-list.tsx`
+Verification: `src/components/tabs/tab-menu-changes.test.tsx`, `e2e/tabs.spec.ts`
+
 ## Hooks
 
 | Hook                     | Kind      | Values                   | Description                                                                |

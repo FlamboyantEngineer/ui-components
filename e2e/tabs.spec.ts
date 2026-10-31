@@ -422,4 +422,15 @@ test.describe('Tabs lab', () => {
     await expect(demo.locator('[data-lab-output="locking"]')).toHaveText('Last change: none');
     await expect(demo.getByRole('tab', { name: 'Soup' })).toBeVisible();
   });
+
+  test('UIC-TABS-3.9 closes an open tab menu when the tabs lock', async ({ page, lab }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="locking"]');
+    await demo.getByRole('button', { name: 'Lock in a second' }).click();
+    await demo.getByRole('tab', { name: 'Salad' }).click({ button: 'right' });
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="locking"]')).toHaveText('Last change: none');
+    await expect(demo.getByRole('tab', { name: 'Salad' })).toBeVisible();
+  });
 });

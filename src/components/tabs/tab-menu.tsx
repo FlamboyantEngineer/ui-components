@@ -12,7 +12,13 @@ import {
 import { joinMenuGroups } from '../menu/menu.js';
 // The menu of a tab's actions, opened from the tab like a context menu.
 
-import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
+import {
+  useLayoutEffect,
+  useRef,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -21,7 +27,8 @@ import {
   type MenuController,
 } from '../context-menu/context-menu.js';
 import type { MenuEntry, MenuItemEntry } from '../menu/menu.js';
-import type { TabsShared } from './tab-actions.js';
+import { isTabAvailable, type TabsShared, type TabListModel } from './tab-actions.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { TabRename } from './tab-rename.js';
 import { stepTabMove, type TabReorder } from './tab-reorder.js';
 
@@ -35,6 +42,12 @@ export interface TabMenu {
   isEnabled: boolean;
   /** The entries of the tab `key`'s menu. */
   getEntries: (key: Key) => readonly MenuEntry[];
+  /** Shows the entries of the tab `key`, whose menu is opening. */
+  showFor: (key: Key) => void;
+  /** The tab whose menu is open, or `null`. */
+  openKey: () => Key | null;
+  /** Whether the tab `key` is in the list and enabled, given the drawn list's state. */
+  isAvailable: (key: Key, state?: TabListModel) => boolean;
 }
 
 interface TabMenuOptions {
@@ -61,18 +74,26 @@ function findMoveDirections(reorder: TabReorder): [MoveDirection, MoveDirection]
   return reorder.isRtl ? ['right', 'left'] : ['left', 'right'];
 }
 
-/** The menu entries of the actions a list takes: rename and duplicate, moves, then delete. */
+/**
+ * The menu entries of the actions a list takes: rename and duplicate, moves, then delete. Each
+ * action runs with the list's current callbacks and order, and only while its tab is still in the
+ * list and enabled.
+ */
 function useStandardEntries(options: TabMenuOptions) {
   const strings = useUiStrings();
+  const latest = useLatest(options);
   const { rename, reorder, onDuplicate, onRemove } = options;
   return (key: Key): MenuEntry[] => {
+    const act = (run: (current: TabMenuOptions) => void) => () => {
+      if (isTabAvailable(latest.current.shared, key)) run(latest.current);
+    };
     const edits: MenuItemEntry[] = [];
     if (rename) {
       edits.push({
         id: 'rename',
         label: strings.rename,
         icon: EditGlyph,
-        onAction: () => rename.start(key),
+        onAction: act((current) => current.rename?.start(key)),
       });
     }
     if (onDuplicate) {
@@ -80,14 +101,13 @@ function useStandardEntries(options: TabMenuOptions) {
         id: 'duplicate',
         label: strings.duplicate,
         icon: CopyGlyph,
-        onAction: () => onDuplicate(key),
+        onAction: act((current) => current.onDuplicate?.(key)),
       });
     }
     const moves: MenuItemEntry[] = [];
     if (reorder) {
-      const keys = reorder.listKeys();
       findMoveDirections(reorder).forEach((direction, index) => {
-        const move = stepTabMove(keys, key, index === 0 ? -1 : 1);
+        const step = index === 0 ? -1 : 1;
         moves.push({
           id: index === 0 ? 'move-backward' : 'move-forward',
           label: strings.moveItem(direction),
@@ -97,8 +117,12 @@ function useStandardEntries(options: TabMenuOptions) {
             up: ArrowUpGlyph,
             down: ArrowDownGlyph,
           }[direction],
-          isDisabled: move === null,
-          onAction: () => move && reorder.onReorder(move),
+          isDisabled: stepTabMove(reorder.listKeys(), key, step) === null,
+          // The move is worked out from the order when it runs, not when the menu was drawn.
+          onAction: act(({ reorder: current }) => {
+            const move = current && stepTabMove(current.listKeys(), key, step);
+            if (current && move) current.onReorder(move);
+          }),
         });
       });
     }
@@ -109,7 +133,7 @@ function useStandardEntries(options: TabMenuOptions) {
             label: strings.delete,
             icon: DeleteGlyph,
             tone: 'danger',
-            onAction: () => onRemove(new Set([key])),
+            onAction: act((current) => current.onRemove?.(new Set([key]))),
           },
         ]
       : [];
@@ -120,16 +144,33 @@ function useStandardEntries(options: TabMenuOptions) {
 /** A list's tab menu while the owner lists its entries (`getMenuItems`). */
 export function useTabMenu(options: TabMenuOptions): TabMenu {
   const listStandard = useStandardEntries(options);
-  const { getMenuItems } = options;
+  const { getMenuItems, shared } = options;
+  const getEntries = (key: Key) => getMenuItems?.(key, listStandard(key)) ?? [];
   return {
-    controller: options.shared.controller,
+    controller: shared.controller,
     isEnabled: getMenuItems !== undefined,
-    getEntries: (key) => getMenuItems?.(key, listStandard(key)) ?? [],
+    getEntries,
+    showFor: (key) => {
+      shared.menuKey.current = key;
+      shared.controller.setItems(getEntries(key));
+    },
+    openKey: () => (shared.controller.isOpen() ? shared.menuKey.current : null),
+    isAvailable: (key, state) => isTabAvailable(shared, key, state),
   };
 }
 
-/** The menu a list's tabs open; it shows the entries of the tab that opened it. */
-export function TabMenuOverlay({ menu }: { menu: TabMenu }) {
+/**
+ * The menu a list's tabs open; it shows the entries of the tab that opened it. As the list changes
+ * under an open menu, the menu follows: it lists the tab's current entries, and closes once the
+ * tab leaves the list, turns disabled or the list stops listing entries.
+ */
+export function TabMenuOverlay({ menu, state }: { menu: TabMenu; state: TabListModel }) {
+  useLayoutEffect(() => {
+    const key = menu.openKey();
+    if (key === null) return;
+    if (!menu.isEnabled || !menu.isAvailable(key, state)) menu.controller.close();
+    else menu.controller.setItems(menu.getEntries(key));
+  });
   return menu.isEnabled ? <ContextMenu controller={menu.controller} /> : null;
 }
 
@@ -143,7 +184,7 @@ export function useTabMenuTarget(menu: TabMenu, options: TabMenuTargetOptions) {
   const targetRef = useRef<HTMLElement | null>(null);
   const isOn = menu.isEnabled && tabKey !== undefined && !isDisabled;
   const showEntries = () => {
-    if (tabKey !== undefined) menu.controller.setItems(menu.getEntries(tabKey));
+    if (tabKey !== undefined) menu.showFor(tabKey);
   };
   const target = useContextMenuTarget({
     controller: menu.controller,

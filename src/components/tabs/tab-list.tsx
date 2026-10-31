@@ -26,7 +26,12 @@ import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
-import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-actions.js';
+import {
+  TabActionsContext,
+  TabsSharedContext,
+  type TabActions,
+  type TabListModel,
+} from './tab-actions.js';
 import { TabBar, useTabOverflow } from './tab-bar.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
@@ -219,6 +224,18 @@ function useTabActions(
 }
 
 /**
+ * Publishes the drawn list's state to actions that run on an event. It renders before the list's
+ * overlays, so their layout effects read the state of the same render.
+ */
+function ListStateSync({ state }: { state: TabListModel }) {
+  const { stateRef } = useContext(TabsSharedContext);
+  useLayoutEffect(() => {
+    stateRef.current = state;
+  });
+  return null;
+}
+
+/**
  * The row (or column) of tabs. An overflowing list scrolls the selected tab toward its middle, or
  * collapses the tabs that do not fit into a "more" menu; it can draw scroll buttons, removable tabs
  * and an add button, rename and reorder its tabs, and give each tab a menu of its actions.
@@ -248,10 +265,6 @@ export function TabList({
   const actions = useTabActions({
     ...{ onRemove, onRename, validateName },
     ...{ onReorder, onDuplicate, getMenuItems },
-  });
-  const { stateRef } = useContext(TabsSharedContext);
-  useLayoutEffect(() => {
-    if (state) stateRef.current = state;
   });
   const onReorderKey = useTabReorderKeys({ state, listRef, reorder: actions.reorder });
   const keys = useListKeys({
@@ -284,8 +297,9 @@ export function TabList({
           {...hooks.slot('list', { overflowing }, className)}
         />
       </VisibleCollection>
+      <ListStateSync state={state} />
       <TabRenameOverlay rename={actions.rename} state={state} listRef={listRef} />
-      <TabMenuOverlay menu={actions.menu} />
+      <TabMenuOverlay menu={actions.menu} state={state} />
     </TabActionsContext.Provider>
   );
   if (!isMenu && !hasButtons && !onAdd) return list;
