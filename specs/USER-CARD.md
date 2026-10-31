@@ -20,10 +20,10 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 
 ### UIC-USER-CARD-1.3 - Details
 
-`details` shall draw a `DescriptionList` in the `ui-user-card__details` slot with one row per detail, in order, each showing its `label` and `value` as given ([DESCRIPTION-LIST.md](DESCRIPTION-LIST.md)). Without details there is no list.
+`details` shall draw a `DescriptionList` in the `ui-user-card__details` slot with one row per detail, in order, each showing its `label` and `value` as given ([DESCRIPTION-LIST.md](DESCRIPTION-LIST.md)). Each detail's `id`, unique among them, identifies its row, so a value keeps its state and focus when details are added, removed or reordered; labels, which may repeat or be translated, never identify a row. Without details there is no list.
 
 Implementation: `src/components/user-card/user-card.tsx`
-Verification: `src/components/user-card/user-card.test.tsx`
+Verification: `src/components/user-card/user-card.test.tsx`, `src/components/user-card/user-card-detail-identity.test.tsx`, `e2e/user-card.spec.ts`
 
 ### UIC-USER-CARD-1.4 - Actions
 

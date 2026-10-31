@@ -78,8 +78,8 @@ describe('UserCard', () => {
       <UserCard
         name="Lena Ortiz"
         details={[
-          { label: 'Team', value: 'Research' },
-          { label: 'Local time', value: <time dateTime="09:30">09:30</time> },
+          { id: 'team', label: 'Team', value: 'Research' },
+          { id: 'time', label: 'Local time', value: <time dateTime="09:30">09:30</time> },
         ]}
       />,
     );
@@ -157,7 +157,7 @@ describe('UserCard', () => {
         name="Lena Ortiz"
         description="Research"
         statusLabel="Away"
-        details={[{ label: 'Team', value: 'Research' }]}
+        details={[{ id: 'team', label: 'Team', value: 'Research' }]}
         actions={actions}
         isLoading
       />,

@@ -22,6 +22,19 @@ test.describe('User Card lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-USER-CARD-1.3 keeps a detail value when the details are reordered', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card');
+    const section = page.locator('[data-lab-reordered]');
+    const note = section.getByRole('textbox', { name: 'Note for Maria' });
+    await note.fill('Call after lunch');
+    await section.getByRole('button', { name: 'Reverse details' }).click();
+    await expect(section.locator('dt')).toHaveText(['Note', 'Team']);
+    await expect(note).toHaveValue('Call after lunch');
+  });
+
   test('UIC-USER-CARD-2.1 UIC-USER-CARD-2.2 opens a card from the keyboard and returns focus', async ({
     page,
     lab,
