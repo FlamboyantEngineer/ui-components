@@ -96,7 +96,7 @@ Verification: `src/components/color-field/color-field-channels.test.tsx`, `src/c
 
 ### UIC-COLOR-FIELD-4.1 - Preset swatches
 
-With `swatches`, the picker shall offer those colours as a [swatch picker](COLOR-SWATCH.md) (`ui-color-field__swatches`, also `ui-color-swatch-picker`) of small swatches, named by React Aria (`Color swatches`), whose swatch of the current colour is selected. Picking a swatch sets the value like any change in the picker and leaves the picker open.
+With `swatches`, the picker shall offer those colours as a [swatch picker](COLOR-SWATCH.md) (`ui-color-field__swatches`, also `ui-color-swatch-picker`) of small swatches, named by React Aria (`Color swatches`), whose swatch of the current colour is selected. Picking a swatch sets the value like any change in the picker and leaves the picker open. A colour listed twice is two separate swatches, each pickable.
 
 Implementation: `src/components/color-field/color-field-panel.tsx`, `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-field/color-field-panel.test.tsx`, `e2e/color-field.spec.ts`
