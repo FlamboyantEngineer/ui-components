@@ -16,6 +16,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { Button } from '../button/button.js';
+import { hasIcon, Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardColumnDrag } from './use-board-drag.js';
@@ -24,6 +25,8 @@ import type { BoardColumnDrag } from './use-board-drag.js';
 interface BoardColumnHeaderProps {
   columnKey: Key;
   title: string;
+  /** A decorative icon before the title. */
+  icon: IconSource;
   /** The id of the title, which names the column's cells. */
   titleId: string;
   /** The cards in the column, across lanes. */
@@ -84,11 +87,11 @@ function useColumnHeaderDrag({
 
 /**
  * A board column's header: a drag handle while the board takes column moves (Alt+Arrow keys move
- * the column too), a collapse toggle, the title, the card count against the column's limit and the
+ * the column too), a collapse toggle, an optional decorative icon, the title, the card count against the column's limit and the
  * caller's actions.
  */
 export function BoardColumnHeader(props: BoardColumnHeaderProps) {
-  const { columnKey, title, titleId, count, limit, isOverLimit, isCollapsed } = props;
+  const { columnKey, title, icon, titleId, count, limit, isOverLimit, isCollapsed } = props;
   const { onCollapsedChange, drag, onStep, actions } = props;
   const strings = useUiStrings();
   const { direction } = useLocale();
@@ -132,6 +135,9 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
         label={isCollapsed ? strings.expandPanel(title) : strings.collapsePanel(title)}
         className={hooks.slotClass('column-toggle')}
       />
+      {hasIcon(icon) ? (
+        <Icon {...toIconProps(icon)} className={hooks.slotClass('column-icon')} />
+      ) : null}
       <span id={titleId} {...hooks.slot('column-title')}>
         {title}
       </span>

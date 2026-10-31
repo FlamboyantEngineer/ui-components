@@ -69,6 +69,13 @@ With `renderColumnActions`, each column header shall end with a `ui-board__colum
 Implementation: `src/components/board/board.tsx`, `src/components/board/board-column-header.tsx`, `labs/reference/board.css`
 Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
+### UIC-BOARD-1.10 - Header icons
+
+A `BoardColumn` or `BoardLane` with an `icon` (an icon component or a rendered element, as `Button` takes) shall draw it as a decorative icon, hidden from assistive technology, in a `ui-board__column-icon` or `ui-board__lane-icon` slot between the collapse toggle and the title; without one no slot renders. The title alone still names the column's or lane's cells and the count reads as before. `renderColumnActions` receives the column entry with its `icon`. The reference sheet keeps the icon from shrinking, aligned with the title, and upright in a collapsed column, without making the header row taller ([UIC-BOARD-1.4](#uic-board-14---collapsing-columns-and-lanes)).
+
+Implementation: `src/components/board/board.tsx`, `src/components/board/board-column-header.tsx`, `src/components/board/board-lane.tsx`, `labs/reference/board.css`
+Verification: `src/components/board/board-icons.test.tsx`, `e2e/board.spec.ts`
+
 ## UIC-BOARD-2 - Card moves
 
 ### UIC-BOARD-2.1 - Cells from data
@@ -135,12 +142,14 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `ui-board__column`          | slot      |                   | A column header.                                                                     |
 | `ui-board__column-handle`   | slot      |                   | A column's drag handle (also `ui-button`).                                           |
 | `ui-board__column-toggle`   | slot      |                   | A column's collapse toggle (also `ui-expand-toggle`).                                |
+| `ui-board__column-icon`     | slot      |                   | A column's decorative icon (also `ui-icon`).                                         |
 | `ui-board__column-title`    | slot      |                   | A column's title.                                                                    |
 | `ui-board__column-count`    | slot      |                   | A column's card count, against its limit.                                            |
 | `ui-board__column-actions`  | slot      |                   | The caller's controls at the end of a column header.                                 |
 | `ui-board__lane`            | slot      |                   | A lane (`role="group"`).                                                             |
 | `ui-board__lane-header`     | slot      |                   | A lane's header.                                                                     |
 | `ui-board__lane-toggle`     | slot      |                   | A lane's collapse toggle (also `ui-expand-toggle`).                                  |
+| `ui-board__lane-icon`       | slot      |                   | A lane's decorative icon (also `ui-icon`).                                           |
 | `ui-board__lane-title`      | slot      |                   | A lane's title.                                                                      |
 | `ui-board__lane-count`      | slot      |                   | A lane's card count.                                                                 |
 | `ui-board__cells`           | slot      |                   | The row of cells of a lane, or of a board without lanes.                             |

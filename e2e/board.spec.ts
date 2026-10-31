@@ -244,6 +244,27 @@ test.describe('Board lab', () => {
     await expect(todo.getByRole('row', { name, exact: true })).toHaveCount(0);
   });
 
+  test('UIC-BOARD-1.10 draws header icons upright without a taller header row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = page.locator('[data-lab-demo="lanes"] .ui-board');
+    const row = board.locator('.ui-board__columns');
+    const height = (await row.boundingBox())?.height;
+    await expect(board.locator('.ui-board__column-icon')).toHaveCount(4);
+    await expect(board.locator('.ui-board__lane-icon')).toHaveCount(2);
+    await board.getByRole('button', { name: 'Collapse Doing' }).click();
+    const icon = board.locator('.ui-board__column[data-collapsed] .ui-board__column-icon');
+    await expect(icon).toBeVisible();
+    const box = await icon.boundingBox();
+    expect(box?.width).toBeGreaterThan(0);
+    expect(Math.abs((box?.width ?? 0) - (box?.height ?? 0))).toBeLessThan(1);
+    expect(await icon.evaluate((node) => getComputedStyle(node).transform)).toBe('none');
+    expect((await row.boundingBox())?.height).toBe(height);
+    await lab.expectAccessible('[data-lab-demo="lanes"]');
+  });
+
   test('UIC-BOARD-1.4 keeps the header row one height while columns collapse', async ({
     page,
     lab,
