@@ -6,6 +6,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import type { ButtonSize } from '../button/button.js';
@@ -220,10 +221,14 @@ export function ActionRowActions({
   );
 }
 
-/** Escape clears a selection, unless something inside the row handled it. */
+/**
+ * Escape clears a selection, unless something inside the row handled it or an input method
+ * composition owns it (the Escape that cancels a candidate).
+ */
 export function createClearKey(onClear: (() => void) | undefined) {
   return (event: KeyboardEvent<HTMLElement>) => {
     if (!onClear || event.key !== 'Escape' || event.defaultPrevented) return;
+    if (isComposingKey(event.nativeEvent)) return;
     event.preventDefault();
     onClear();
   };

@@ -225,6 +225,7 @@ function SelectionBar() {
       <ActionRow
         toolbar
         aria-label="Bulk actions"
+        lead={<input aria-label="Note for the selection" placeholder="Note" />}
         selectedCount={selected.length}
         onClearSelection={() => setSelected([])}
         actions={[
@@ -334,7 +335,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Selection bar"
-      description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection."
+      description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection, except the Escape that cancels an input method candidate in the note field."
     >
       <SelectionBar />
     </LabSection>

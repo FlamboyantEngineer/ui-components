@@ -221,6 +221,11 @@ test.describe('Action Row lab', () => {
     await expect(status).toHaveText('2 selected');
     await demo.getByLabel('Banana').check();
     await expect(status).toHaveText('3 selected');
+    // An Escape that an input method composition owns leaves the selection.
+    await demo
+      .getByRole('textbox', { name: 'Note for the selection' })
+      .dispatchEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true });
+    await expect(status).toHaveText('3 selected');
     await demo.getByRole('button', { name: 'Edit selected' }).focus();
     // The first Escape may close the focused action's tooltip; the next reaches the row.
     await page.keyboard.press('Escape');
