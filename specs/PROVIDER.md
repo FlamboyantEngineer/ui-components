@@ -52,7 +52,7 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-3.3 - Switching language on the fly
 
-Changing a provider's `messages` or `locale` shall rerender every component below it in the new language without remounting it, so a language menu can switch a running page. The provider compiles messages again only when its messages or locale change. Giving or removing any option, `locale` and `navigate` included, also keeps every component below mounted with its state and focus, in nested providers too: the provider always renders the same wrappers, and a wrapper whose option is absent passes on the outer one.
+Changing a provider's `messages` or `locale` shall rerender every component below it in the new language without remounting it, so a language menu can switch a running page. The provider compiles messages again only when its messages or locale change: `messages` and `icons` are compared by their entries, so objects written inline that hold the same entries neither recompile the text nor re-render the components below. Giving or removing any option, `locale` and `navigate` included, also keeps every component below mounted with its state and focus, in nested providers too: the provider always renders the same wrappers, and a wrapper whose option is absent passes on the outer one.
 
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`, `e2e/languages.spec.ts`, `e2e/provider.spec.ts`
