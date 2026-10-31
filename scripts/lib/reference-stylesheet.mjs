@@ -17,6 +17,10 @@ export function referenceStylesheetProblems(css) {
     if (!css.includes(rule)) problems.push(`${REFERENCE_STYLESHEET} lacks ${rule}`);
   }
   if (/@import/i.test(css)) problems.push(`${REFERENCE_STYLESHEET} imports another stylesheet`);
+  // The labs' own page rules stay in the labs (UIC-LABS-3.1).
+  for (const [selector] of css.matchAll(/#lab-[\w-]+|\[data-lab-[\w-]+/g)) {
+    problems.push(`${REFERENCE_STYLESHEET} styles the lab page (${selector})`);
+  }
   for (const [, target] of css.matchAll(/url\(\s*['"]?([^'")\s]*)/gi)) {
     if (!target.startsWith('data:') && !target.startsWith('#')) {
       problems.push(`${REFERENCE_STYLESHEET} loads ${target}`);

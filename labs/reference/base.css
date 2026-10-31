@@ -1,5 +1,6 @@
 /*
- * Reference stylesheet base: theme variables, the document and the lab matrix.
+ * Reference stylesheet base: theme variables, the opt-in document base and the constructs several
+ * partials share.
  * Theme: data-theme="dark" on the root element draws the dark theme; "light" or no attribute the
  * light one. The labs' theme picker writes it, following the reader's colour scheme by default.
  */
@@ -149,7 +150,14 @@
   /* One turn of a spinner, and one cycle of a pulse or a sliding bar. */
   --ref-duration-spin: 0.8s;
   --ref-duration-loop: 1.2s;
+}
 
+/*
+ * Document base, opt-in: a page whose root element carries data-reference-document takes the
+ * reference type, text colour, canvas and colour scheme, as the labs do. Without it the sheet styles
+ * components only, inside the host's own page.
+ */
+:root[data-reference-document] {
   color-scheme: light;
   font: var(--ref-font-size)/1.5 var(--ref-font);
   color: var(--ref-text);
@@ -201,36 +209,6 @@
 }
 [data-tone='danger'] {
   --ref-tone: var(--ref-danger);
-}
-
-body {
-  margin: 0;
-}
-
-#lab-root,
-#lab-index {
-  padding: 16px 24px 48px;
-}
-
-#lab-root table[data-lab-matrix] {
-  border-collapse: collapse;
-}
-
-#lab-root table[data-lab-matrix] > * > tr > :is(th, td) {
-  border: 1px solid var(--ref-border);
-  text-align: start;
-  vertical-align: middle;
-}
-
-#lab-root table[data-lab-matrix] > * > tr > th {
-  color: var(--ref-muted);
-  font-weight: 500;
-}
-
-/* Size samples compare control boxes without the field's reserved feedback row. */
-[data-lab-control-sample] .ui-field__message:empty {
-  min-height: 0;
-  margin-top: 0;
 }
 
 /*
