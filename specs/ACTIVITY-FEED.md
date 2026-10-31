@@ -18,7 +18,7 @@ Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activi
 Each entry shall hold a decorative `ui-activity-feed__marker` (hidden from assistive technology) drawing the item's `icon` when it has one, else a small avatar of its `person`, else nothing, and a `ui-activity-feed__body` with:
 
 - a `ui-activity-feed__summary` paragraph reading the person's trimmed name (`ui-activity-feed__actor`, the provider's `unnamed` string for a blank name, left out without a person), the `action` (`ui-activity-feed__action`) and the `target` (`ui-activity-feed__target`, left out when empty), separated by spaces;
-- the item's `time` as a [Relative Time](RELATIVE-TIME.md) (`ui-activity-feed__time`) read against `getNow` with `fallbackAfterDays`, an unreadable time reading as the provider's `unknownTime` string;
+- the item's `time` as an [Attribution](ATTRIBUTION.md) of the time alone (`ui-activity-feed__time`) read against `getNow` with `fallbackAfterDays` and `timeZone`, an unreadable time reading as the provider's `unknownTime` string;
 - the item's `detail` in `ui-activity-feed__detail`, when it has one.
 
 Implementation: `src/components/activity-feed/activity-feed.tsx`
@@ -101,7 +101,7 @@ Verification: `src/components/activity-feed/activity-feed.test.tsx`
 | `ui-activity-feed__actor`     | slot      |               | The person's name.                                         |
 | `ui-activity-feed__action`    | slot      |               | What they did.                                             |
 | `ui-activity-feed__target`    | slot      |               | What they did it to.                                       |
-| `ui-activity-feed__time`      | slot      |               | When (also `ui-relative-time`).                            |
+| `ui-activity-feed__time`      | slot      |               | When (also `ui-attribution`).                              |
 | `ui-activity-feed__detail`    | slot      |               | More about the event, such as a comment.                   |
 | `ui-activity-feed__load-more` | slot      |               | The control that loads older events (also `ui-load-more`). |
 | `data-group-by`               | attribute | `day`, `none` | Whether entries are grouped by day.                        |

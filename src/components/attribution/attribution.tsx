@@ -10,7 +10,7 @@ import { UserCardTrigger, type UserCardTriggerType } from '../user-card/user-car
 import { isTimeFirst, parseAttributionTemplate } from './attribution-template.js';
 
 export interface AttributionProps
-  extends BaseProps, Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow'> {
+  extends BaseProps, Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
   /** When it happened: an ISO 8601 date or date and time. */
   time: string | null | undefined;
   /** Who did it. */
@@ -67,6 +67,7 @@ export function Attribution({
   cardTrigger,
   fallbackAfterDays,
   getNow,
+  timeZone,
   className,
   ...rest
 }: AttributionProps) {
@@ -95,6 +96,7 @@ export function Attribution({
             value={time}
             fallbackAfterDays={fallbackAfterDays}
             getNow={getNow}
+            timeZone={timeZone}
             capitalize={capitalize}
             placeholder={strings.unknownTime}
             className={hooks.slotClass('time')}

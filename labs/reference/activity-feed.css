@@ -108,9 +108,13 @@
   color: var(--ref-text);
 }
 
-.ui-activity-feed__time {
+.ui-activity-feed .ui-activity-feed__time {
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
+}
+
+.ui-activity-feed__time .ui-attribution__time {
+  color: inherit;
 }
 
 .ui-activity-feed__detail {

@@ -11,12 +11,12 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { LoadMore, type LoadMoreProps } from '../load-more/load-more.js';
-import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
 import { groupByDay } from './day-groups.js';
 
@@ -46,7 +46,7 @@ export interface ActivityFeedProps
     BaseProps,
     AriaLabellingProps,
     Pick<NativeProps<'div'>, 'ref'>,
-    Pick<RelativeTimeProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
+    Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
   /** The events, in the order to show them (usually newest first). */
   items: readonly ActivityFeedItem[];
   /** How entries are grouped. Defaults to `day`. */
@@ -117,14 +117,7 @@ function Entry({ item, options }: { item: ActivityFeedItem; options: EntryOption
             </>
           )}
         </p>
-        <RelativeTime
-          value={item.time}
-          fallbackAfterDays={options.fallbackAfterDays}
-          getNow={options.getNow}
-          timeZone={options.timeZone}
-          placeholder={strings.unknownTime}
-          className={hooks.slotClass('time')}
-        />
+        <Attribution time={item.time} {...options} className={hooks.slotClass('time')} />
         {isEmptyNode(item.detail) ? null : <div {...hooks.slot('detail')}>{item.detail}</div>}
       </div>
     </li>

@@ -130,6 +130,14 @@ test.describe('Comment Thread lab', () => {
     await expect(caller.locator('.ui-comment-thread-reply__body strong')).toHaveText('urgent');
   });
 
+  test('UIC-COMMENT-THREAD-2.1 reads times against the caller clock', async ({ page, lab }) => {
+    await lab.open('comment-thread');
+    const week = page.locator('[data-lab-cell="fallback=7 days"] .ui-comment-thread-reply__time');
+    await expect(week).toHaveText(['12 minutes ago', '3 days ago']);
+    const day = page.locator('[data-lab-cell="fallback=1 day"] .ui-comment-thread-reply__time');
+    await expect(day.last()).toHaveText(/^Apr 17, 2026/);
+  });
+
   test('UIC-COMMENT-THREAD-1.8 passes axe in both themes', async ({ page, lab }) => {
     await lab.open('comment-thread');
     await expect(page.getByRole('group', { name: 'Comment thread' }).first()).toBeVisible();
