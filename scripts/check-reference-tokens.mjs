@@ -111,9 +111,14 @@ function isTokenFont(value) {
   );
 }
 
+// The base's token blocks define the literals; every other rule, in the base too, draws on them.
+const isTokenBlock = ({ file, selector }) =>
+  file === 'base.css' && /^:root(?:\[data-theme='dark'\])?$/.test(selector);
+
 for (const declaration of declarations) {
-  const { file, selector, property, value, isExempt, isLayoutExempt } = declaration;
-  if (file === 'base.css' || property.startsWith('--')) continue;
+  const { selector, property, isExempt, isLayoutExempt } = declaration;
+  const value = declaration.value.replace(/\s*!important$/, '');
+  if (isTokenBlock(declaration) || property.startsWith('--')) continue;
   const isStateRule = transientState.test(selector.replace(/:not\([^)]*\)/g, ''));
   if (isStateRule && layoutProperty.test(property) && !isLayoutExempt) {
     problems.push(
@@ -159,12 +164,13 @@ for (const declaration of declarations) {
       `${where(declaration)}: ${property} "${value}" pins a glyph by hand; use a --ref-icon-size-* token`,
     );
   }
-  if (property === 'clip-path' && value === 'inset(50%)') {
+  const isShared = declaration.file === 'base.css';
+  if (!isShared && property === 'clip-path' && value === 'inset(50%)') {
     problems.push(
       `${where(declaration)}: visually hidden by hand; add the selector to the shared list in base.css`,
     );
   }
-  if (property === 'scrollbar-width' && value === 'none') {
+  if (!isShared && property === 'scrollbar-width' && value === 'none') {
     problems.push(
       `${where(declaration)}: a scrollbar hidden by hand; add the selector to the shared list in base.css`,
     );
