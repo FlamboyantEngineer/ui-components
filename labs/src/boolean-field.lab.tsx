@@ -101,6 +101,7 @@ function Unset() {
 
 function Saved() {
   const [saved, setSaved] = useState({ ripe: false, fresh: false });
+  const [submitted, setSubmitted] = useState('nothing yet');
   return (
     <form
       data-lab-form
@@ -108,6 +109,9 @@ function Saved() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         setSaved({ ripe: data.get('ripe') === 'true', fresh: data.get('fresh') === 'true' });
+        setSubmitted(
+          [...data.entries()].map(([key, value]) => `${key}=${String(value)}`).join(' '),
+        );
       }}
     >
       <BooleanField
@@ -132,6 +136,7 @@ function Saved() {
       <button type="submit">Save</button>
       <LabOutput name="Saved">{String(saved.ripe)}</LabOutput>
       <LabOutput name="Saved fresh">{String(saved.fresh)}</LabOutput>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </form>
   );
 }
@@ -161,7 +166,10 @@ mountLab(
     >
       <Unset />
     </LabSection>
-    <LabSection title="Dirty, restore, undo and forms" description="A named field in a form.">
+    <LabSection
+      title="Dirty, restore, undo and forms"
+      description="Named fields in a form: the checkbox and the toggle button both submit true or false."
+    >
       <Saved />
     </LabSection>
   </>,

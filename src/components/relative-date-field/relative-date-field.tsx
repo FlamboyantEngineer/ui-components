@@ -6,6 +6,7 @@ import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
+  FieldFormValue,
   Field,
   useFieldControl,
   type FieldInputProps,
@@ -160,23 +161,11 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
   );
 }
 
-/**
- * The value in its form, under the field's `name`: a hidden input holding the date or date and
- * time, or a range as an ISO 8601 interval (`start/end`), empty while there is none.
- */
-function FormValue({
-  name,
-  value,
-  isDisabled,
-}: {
-  name: string | undefined;
-  value: RelativeDateValue | null;
-  isDisabled: boolean;
-}) {
-  if (!name) return null;
-  const text =
-    value === null || typeof value === 'string' ? (value ?? '') : `${value.start}/${value.end}`;
-  return <input type="hidden" name={name} value={text} disabled={isDisabled} />;
+/** The value as its form submits it: the date or date and time, or a range as an ISO 8601 interval. */
+function toFormText(value: RelativeDateValue | null): string {
+  return value === null || typeof value === 'string'
+    ? (value ?? '')
+    : `${value.start}/${value.end}`;
 }
 
 /**
@@ -252,7 +241,11 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
             }
           />
           {text && value ? <Preview value={value} absolute={text.absolute} /> : null}
-          <FormValue name={props.name} value={value} isDisabled={state.isDisabled} />
+          <FieldFormValue
+            name={props.name}
+            value={toFormText(value)}
+            isDisabled={state.isDisabled}
+          />
         </>
       )}
     </Field>

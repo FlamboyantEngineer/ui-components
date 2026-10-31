@@ -13,12 +13,12 @@ import {
 } from '../completion-list/completion-list.js';
 import {
   Field,
+  FieldFormValue,
   countCodePoints,
   toAriaControlProps,
   useFieldControl,
   validateString,
   type FieldInputProps,
-  type FieldState,
   type FieldTextInputProps,
   type StringRules,
 } from '../field/field.js';
@@ -88,12 +88,6 @@ function useTextFieldControl<P extends FieldInputProps<string>>(props: P, rules:
     emptyValue: '',
     check: (value) => validateString(value, rules, strings),
   });
-}
-
-/** The input shows the display value, so the value submits under the form name through a hidden input. */
-function HiddenValue({ name, state }: { name: string | undefined; state: FieldState<string> }) {
-  if (!name) return null;
-  return <input type="hidden" name={name} value={state.value} disabled={state.isDisabled} />;
 }
 
 /** The completion list under the text field element, when the field offers completions. */
@@ -191,7 +185,10 @@ export function TextField({
             </TextFieldFrame>
           </AriaTextField>
           <TextFieldCompletions edit={edit} renderCompletion={renderCompletion} />
-          {displayValue === undefined ? null : <HiddenValue name={rest.name} state={state} />}
+          {/* The input shows the display value, so the value submits through a hidden input. */}
+          {displayValue === undefined ? null : (
+            <FieldFormValue name={rest.name} value={state.value} isDisabled={state.isDisabled} />
+          )}
         </>
       )}
     </Field>

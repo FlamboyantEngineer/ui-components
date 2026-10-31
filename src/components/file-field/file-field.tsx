@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import { Field, FieldFormValue, useFieldControl, type FieldInputProps } from '../field/field.js';
 import {
   FileUpload,
   type FileUploadItem,
@@ -11,7 +11,6 @@ import {
 } from '../file-upload/file-upload.js';
 import { compareFileItems, restoreFileItem, type FileFieldItem } from './file-field-changes.js';
 import {
-  FileFieldInputs,
   RemovedFiles,
   fileFieldHooks as hooks,
   renderFileFieldActions,
@@ -127,7 +126,11 @@ export function FileField({
             onRestore={(item) => apply(restoreFileItem(value, committedValue, item))}
           />
           {rest.name ? (
-            <FileFieldInputs name={rest.name} value={value} isDisabled={control.disabled} />
+            <FieldFormValue
+              name={rest.name}
+              value={value.map((item) => String(item.id))}
+              isDisabled={control.disabled}
+            />
           ) : null}
         </>
       )}

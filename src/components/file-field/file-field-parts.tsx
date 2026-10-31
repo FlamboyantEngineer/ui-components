@@ -72,24 +72,3 @@ export function RemovedFiles({
     </FieldPreviousValue>
   ));
 }
-
-/** Hidden inputs that submit each held file's id under the form name; a disabled field submits none. */
-export function FileFieldInputs({
-  name,
-  value,
-  isDisabled,
-}: {
-  name: string;
-  value: readonly FileFieldItem[];
-  isDisabled: boolean;
-}) {
-  return value.map((item) => (
-    <input
-      key={toKeyIdentity(item.id)}
-      type="hidden"
-      name={name}
-      value={item.id}
-      disabled={isDisabled}
-    />
-  ));
-}

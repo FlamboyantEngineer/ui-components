@@ -34,7 +34,7 @@ Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolea
 
 ### UIC-BOOLEAN-FIELD-1.5 - Form value
 
-With `name`, a form shall submit the value: the checkbox and the switch submit `true` while on and nothing otherwise; the segmented choice, the dropdown and the toggle button submit `true` or `false` from a hidden input (`ui-boolean-field__form-value`), and nothing while unset or disabled.
+With `name`, a form shall submit the value the same way whatever the `variant`: `true` or `false` from a hidden input (`ui-boolean-field__form-value`, the shared field form value of UIC-FIELD-8.4), and nothing while unset or disabled. The checkbox's and the switch's own native input carries no name.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`
@@ -117,7 +117,7 @@ Verification: `src/components/boolean-field/boolean-tristate.test.tsx`, `e2e/boo
 | `ui-boolean-field__caption`        | slot      |                                                                | The switch caption, or the toggle button's name of the value.                               |
 | `ui-boolean-field__toggle-button`  | slot      |                                                                | The toggle button (`aria-pressed`).                                                         |
 | `ui-boolean-field__previous`       | slot      |                                                                | The committed value's name before a dirty toggle button (also `ui-field-previous-value`).   |
-| `ui-boolean-field__form-value`     | slot      |                                                                | The hidden input of a named segmented choice, dropdown or toggle button.                    |
+| `ui-boolean-field__form-value`     | slot      |                                                                | The hidden input of a named field, in every variant.                                        |
 | `data-variant`                     | attribute | `checkbox`, `switch`, `segmented`, `dropdown`, `toggle-button` | On the root: how the value is drawn.                                                        |
 | `data-value`                       | state     | `true`, `false`, `unset`                                       | On the root: the value.                                                                     |
 | `data-selected`                    | state     | `true`                                                         | On the switch or toggle button: on (React Aria).                                            |
