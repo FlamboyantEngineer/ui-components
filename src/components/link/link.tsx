@@ -34,7 +34,7 @@ export interface LinkProps
     HoverEventProps,
     FocusEventProps,
     AriaLabellingProps,
-    Pick<NativeProps<'a'>, 'target' | 'rel' | 'download' | 'aria-current'> {
+    Pick<NativeProps<'a'>, 'target' | 'rel' | 'download' | 'title' | 'aria-current'> {
   /** The `<a>`, or the `<span>` of a link without `href`. */
   ref?: Ref<HTMLAnchorElement> | undefined;
   /** The destination. Without it the link is a pressable `<span>`. */
@@ -120,6 +120,7 @@ export function Link({
   isExternal = false,
   target = isExternal ? '_blank' : undefined,
   rel,
+  title,
   routerOptions,
   children,
   render = renderLinkElement,
@@ -139,10 +140,14 @@ export function Link({
       })}
       target={target}
       rel={opensNewTab ? mergeSafeRel(rel) : rel}
-      // The building block draws a `<span>` without `href`; its props fit an anchor's.
+      // The building block draws a `<span>` without `href`; its props fit an anchor's. It drops
+      // `title`, so the title joins the props here.
       render={(props: LinkElementProps, state) =>
         render(
-          withOwnDescription(props, rest['aria-describedby']) as JSX.IntrinsicElements['a'],
+          withOwnDescription(
+            title === undefined ? props : { ...props, title },
+            rest['aria-describedby'],
+          ) as JSX.IntrinsicElements['a'],
           state,
         )
       }

@@ -34,7 +34,7 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-1.5 - Hooks and caller attributes
 
-`Link` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes, the ARIA labelling attributes and its link props (`target`, `rel`, `download`, `routerOptions`, and the press, hover and focus handlers with the library's event types), and keep its own hook values over caller attributes of the same name.
+`Link` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes, the ARIA labelling attributes and its link props (`target`, `rel`, `download`, `title`, `routerOptions`, and the press, hover and focus handlers with the library's event types), and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`

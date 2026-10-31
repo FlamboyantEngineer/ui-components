@@ -59,10 +59,10 @@ const samples = {
     'After the break.',
   ].join('\n'),
   links: [
-    'Read the [planting guide](/guides/planting "Planting"), the [seed catalogue][seeds] or',
+    'Read the [planting guide](/guides/planting "Planting by season"), the [seed catalogue][seeds] or',
     'the <https://example.com/orchards> page. Write to <orchard@example.com>.',
     '',
-    '[seeds]: https://example.com/seeds',
+    "[seeds]: https://example.com/seeds 'Seeds for every orchard'",
   ].join('\n'),
 } as const;
 
