@@ -268,12 +268,6 @@ export { getFieldUndo } from './field-undo.js';
 export type { FieldUndo } from './field-undo.js';
 export { countCodePoints, validateString } from './string-rules.js';
 export type { StringRuleMessages, StringRules } from './string-rules.js';
-export {
-  PickerOptionRow,
-  flattenPickerItems,
-  isPickerSection,
-  pickerListLayout,
-  usePickerEmptyContent,
-  usePickerPopoverStyle,
-} from './field-picker.js';
-export type { PickerItem, PickerOption, PickerSection } from './field-picker.js';
+export { PickerOptionRow, usePickerEmptyContent, usePickerPopoverStyle } from './field-picker.js';
+export { flattenPickerItems, isPickerSection, pickerListLayout } from './field-picker-items.js';
+export type { PickerItem, PickerOption, PickerSection } from './field-picker-items.js';

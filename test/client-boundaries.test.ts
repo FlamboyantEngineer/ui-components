@@ -1,6 +1,15 @@
 // @vitest-environment node
-import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
@@ -28,6 +37,62 @@ describe('client boundaries', () => {
     expect(isMarked('src/primitives/core.ts')).toBe(true);
     expect(isMarked('src/components/html-markup/sanitize-html.ts')).toBe(false);
     expect(isMarked('src/components/meta-line/meta-line.tsx')).toBe(false);
+    expect(isMarked('src/core/glyphs.tsx')).toBe(true);
+    for (const path of [
+      'src/primitives/date-values.ts',
+      'src/primitives/color-values.ts',
+      'src/utils/value-store.ts',
+      'src/components/pdf-viewer/page-bitmap.ts',
+      'src/components/pdf-viewer/page-geometry.ts',
+      'src/components/table/table-columns.ts',
+    ]) {
+      expect(isMarked(path), path).toBe(false);
+    }
+  });
+
+  it('UIC-SERVER-COMPONENTS-1.1 reports a server module that calls or reads a client export', () => {
+    // A scratch library beside the checker; inside node_modules so it resolves TypeScript.
+    const dir = mkdtempSync(join(root, 'node_modules', '.client-boundaries-'));
+    try {
+      mkdirSync(join(dir, 'scripts'));
+      mkdirSync(join(dir, 'src'));
+      copyFileSync(
+        join(root, 'scripts/check-client-boundaries.mjs'),
+        join(dir, 'scripts/check-client-boundaries.mjs'),
+      );
+      const files = {
+        'client.ts': [
+          "'use client';",
+          "import { useState } from 'react';",
+          'export const useCount = () => useState(0);',
+          'export const makeLabel = (text: string) => text;',
+          'export const Badge = () => null;',
+        ],
+        'server.ts': [
+          "import { Badge, makeLabel } from './client.js';",
+          "export const label = makeLabel('Draft');",
+          'export const icons = { badge: Badge };',
+        ],
+        'index.ts': ["export * from './client.js';"],
+      };
+      for (const [name, lines] of Object.entries(files)) {
+        writeFileSync(join(dir, 'src', name), `${lines.join('\n')}\n`);
+      }
+      const result = spawnSync('node', ['scripts/check-client-boundaries.mjs'], {
+        cwd: dir,
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        "src/server.ts: uses makeLabel from client src/client.ts as a value, so it starts with 'use client';",
+      );
+      expect(result.stderr).toContain(
+        'src/index.ts: re-exports client src/client.ts with `export *`',
+      );
+      expect(result.stderr).not.toContain('Badge');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('UIC-SERVER-COMPONENTS-1.4 exports server-safe helpers from server modules', () => {
@@ -89,6 +154,10 @@ describe('client boundaries', () => {
     expect(read('.github/workflows/ci.yml')).toContain('run: npm run check:server-components');
     expect(read('scripts/check-server-components.mjs')).toMatch(
       /from '\$\{manifest\.name\}\/button'/,
+    );
+    // A server page hands a glyph from /core to a client component.
+    expect(read('scripts/check-server-components.mjs')).toMatch(
+      /import \{ PlusGlyph, UiProvider \} from '\$\{manifest\.name\}\/core'/,
     );
   });
 });

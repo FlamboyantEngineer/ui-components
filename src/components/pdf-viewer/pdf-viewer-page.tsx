@@ -6,7 +6,8 @@ import type { PdfPageGeometry } from './page-geometry.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import type { PdfLinkService, PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
-import { measureCanvasPixels, usePageRender } from './use-page-render.js';
+import { measureCanvasPixels } from './page-bitmap.js';
+import { usePageRender } from './use-page-render.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 

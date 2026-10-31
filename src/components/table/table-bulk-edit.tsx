@@ -10,7 +10,7 @@ import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { SelectField } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
-import { getColumnText } from './table-column.js';
+import { getColumnText } from './table-columns.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import {
   getCellValue,
