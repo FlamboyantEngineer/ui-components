@@ -15,6 +15,7 @@ import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button, ButtonSpinner } from '../button/button.js';
 import type {
   FieldLabelLayout,
@@ -138,6 +139,15 @@ function SearchBox({
 }
 
 /**
+ * Whether the field has a description, which React Aria re-reads to find the description's id when
+ * it changes: a description that arrives with a label layout change then still describes the input.
+ * The building block takes it at runtime though its types leave it out.
+ */
+function toDescriptionSlot(description: ReactNode): object {
+  return { description: isEmptyNode(description) ? undefined : true };
+}
+
+/**
  * A search or filter box: a search glyph, the query input, a spinner while results load and a clear
  * button while it holds text. Escape clears the query and Enter submits it. In the `label-control`
  * layout it also draws its label, description and error message around the box.
@@ -170,6 +180,7 @@ export function SearchField({
       aria-label={hasLabel ? undefined : label}
       spellCheck={spellCheck?.toString()}
       onClear={onClear}
+      {...toDescriptionSlot(hasLabel ? description : undefined)}
     >
       {({ isEmpty, isDisabled, isReadOnly, state }) => {
         const clear = () => {
@@ -187,19 +198,19 @@ export function SearchField({
             clearText={clearText}
           />
         );
-        if (!hasLabel) return box;
+        // One structure in both layouts, so a layout change keeps the input, its text and its focus.
         return (
           <>
-            <Label {...hooks.slot('label')}>{label}</Label>
+            {hasLabel ? <Label {...hooks.slot('label')}>{label}</Label> : null}
             <Group {...hooks.slot('group')} role="presentation">
               {box}
             </Group>
-            {description ? (
+            {hasLabel && description ? (
               <Text {...hooks.slot('description')} slot="description">
                 {description}
               </Text>
             ) : null}
-            <FieldError {...hooks.slot('error')}>{errorMessage}</FieldError>
+            {hasLabel ? <FieldError {...hooks.slot('error')}>{errorMessage}</FieldError> : null}
           </>
         );
       }}

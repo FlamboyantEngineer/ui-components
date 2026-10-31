@@ -47,6 +47,25 @@ function LabelledSearch() {
   );
 }
 
+/** The switch moves the label in and out, as a responsive layout would: the input keeps its text and focus. */
+function ChangingLayout() {
+  const [hasLabel, setHasLabel] = useState(false);
+  return (
+    <>
+      <SearchField
+        label="Search notes"
+        labelLayout={hasLabel ? 'label-control' : 'control-only'}
+        description={hasLabel ? 'Matches titles and text.' : undefined}
+        defaultValue="draft"
+        data-lab-field="changing"
+      />
+      <Switch isSelected={hasLabel} onChange={setHasLabel}>
+        Visible label
+      </Switch>
+    </>
+  );
+}
+
 /** Results load while the switch is on. */
 function Loading() {
   const [isPending, setIsPending] = useState(true);
@@ -93,6 +112,12 @@ mountLab(
       description="The label-control layout draws the label above the box and the messages below it."
     >
       <LabelledSearch />
+    </LabSection>
+    <LabSection
+      title="Label layout change"
+      description="The switch adds or removes the visible label. The input stays the same element, so its text, selection and focus survive."
+    >
+      <ChangingLayout />
     </LabSection>
     <LabSection title="Loading" description="A spinner shows while results load.">
       <Loading />

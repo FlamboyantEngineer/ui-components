@@ -69,7 +69,7 @@ describe('PdfViewer document', () => {
     await waitFor(() => expect(root).not.toHaveAttribute('data-locked'));
     expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
     await waitFor(() =>
-      expect(container.querySelectorAll('[role="presentation"]')).toHaveLength(7),
+      expect(container.querySelectorAll('span[role="presentation"]')).toHaveLength(7),
     );
   });
 
@@ -94,7 +94,7 @@ describe('PdfViewer document', () => {
       return { ...task, promise: new Promise<never>(() => undefined) };
     });
     const { root, update, unmount, container } = renderViewer({}, engine);
-    const pageCount = () => container.querySelectorAll('[role="presentation"]').length;
+    const pageCount = () => container.querySelectorAll('span[role="presentation"]').length;
     await waitFor(() => expect(pageCount()).toBe(7));
     update({ source: '/files/Other.pdf' });
     await waitFor(() => expect(engine.destroy).toHaveBeenCalledTimes(1));

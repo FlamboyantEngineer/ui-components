@@ -74,7 +74,7 @@ test.describe('Search Field lab', () => {
 
   test('UIC-SEARCH-FIELD-1.1 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('search-field', { theme: 'dark' });
-    await expect(cell(page, 'empty', 'md').locator('.ui-search-field')).toHaveCSS(
+    await expect(cell(page, 'empty', 'md').locator('.ui-search-field__group')).toHaveCSS(
       'background-color',
       'rgb(13, 17, 23)',
     );
@@ -98,6 +98,40 @@ test.describe('Search Field lab', () => {
     await expect(input).toHaveAccessibleDescription('Type at least three letters. Too short.');
     await input.fill('Oslo');
     await expect(labelled.locator('.ui-search-field__error')).toHaveCount(0);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SEARCH-FIELD-2.1 keeps the input and its focus across a label layout change', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('search-field');
+    const field = page.locator('[data-lab-field="changing"]');
+    const input = field.getByRole('searchbox', { name: 'Search notes' });
+    await input.focus();
+    await input.evaluate((element: HTMLInputElement) => {
+      element.setSelectionRange(1, 3);
+      Object.assign(element, { labMarker: true });
+    });
+    // A click that does not move focus, as a responsive layout change would not.
+    const toggle = page.getByRole('switch', { name: 'Visible label' });
+    await toggle.dispatchEvent('click');
+    await expect(field).toHaveAttribute('data-label-layout', 'label-control');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAccessibleDescription('Matches titles and text.');
+    expect(
+      await input.evaluate((element: HTMLInputElement) => [
+        'labMarker' in element,
+        element.selectionStart,
+        element.selectionEnd,
+      ]),
+    ).toEqual([true, 1, 3]);
+    await page.keyboard.type('X');
+    await expect(input).toHaveValue('dXft');
+    await toggle.dispatchEvent('click');
+    await expect(field).toHaveAttribute('data-label-layout', 'control-only');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('dXft');
     await lab.expectAccessible();
   });
 

@@ -3,16 +3,11 @@
 .ui-search-field {
   --ref-search-field-height: var(--ref-control-height-md);
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 4px;
   box-sizing: border-box;
   width: 240px;
   max-width: 100%;
-  height: var(--ref-search-field-height);
-  padding: 0 4px 0 8px;
-  border: 1px solid var(--ref-field-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-field-fill);
   font-size: var(--ref-font-size-md);
   vertical-align: middle;
 }
@@ -32,22 +27,38 @@
   font-size: var(--ref-font-size);
 }
 
-.ui-search-field:is([data-size='xs'], [data-size='sm']),
+/* The group is the box in both layouts: glyph, input, spinner and clear button in one frame. */
+.ui-search-field__group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--ref-search-field-height);
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+}
+
 .ui-search-field:is([data-size='xs'], [data-size='sm']) .ui-search-field__group {
   border-radius: var(--ref-radius-full);
 }
 
-.ui-search-field:focus-within {
+.ui-search-field__group[data-focus-within] {
   border-color: var(--ref-focus);
   outline: var(--ref-focus-ring-thin);
 }
 
-.ui-search-field[data-readonly] {
+.ui-search-field__group[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-search-field[data-readonly] .ui-search-field__group {
   border-style: dashed;
   background: var(--ref-field-fill-inactive);
 }
 
-.ui-search-field[data-disabled] {
+.ui-search-field[data-disabled] .ui-search-field__group {
   background: var(--ref-field-fill-inactive);
   color: var(--ref-muted);
 }
@@ -94,51 +105,10 @@
   height: calc(var(--ref-search-field-height) - 6px);
 }
 
-/* The label-control layout: the label above, the group as the box, the messages below. */
-.ui-search-field[data-label-layout='label-control'] {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  height: auto;
-  padding: 0;
-  border: 0;
-  background: none;
-}
-
-.ui-search-field[data-label-layout='label-control']:focus-within {
-  box-shadow: none;
-}
-
 .ui-search-field__label {
   color: var(--ref-text);
   font-size: var(--ref-font-size-md);
   font-weight: var(--ref-font-weight-medium);
-}
-
-.ui-search-field__group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-sizing: border-box;
-  height: var(--ref-search-field-height);
-  padding: 0 4px 0 8px;
-  border: 1px solid var(--ref-field-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-field-fill);
-}
-
-.ui-search-field__group[data-focus-within] {
-  border-color: var(--ref-focus);
-  outline: var(--ref-focus-ring-thin);
-}
-
-.ui-search-field__group[data-invalid] {
-  border-color: var(--ref-danger);
-}
-
-.ui-search-field[data-readonly] .ui-search-field__group {
-  border-style: dashed;
-  background: var(--ref-field-fill-inactive);
 }
 
 .ui-search-field__description {

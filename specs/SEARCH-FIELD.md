@@ -43,7 +43,7 @@ Verification: `src/components/search-field/search-field.test.tsx`
 
 ### UIC-SEARCH-FIELD-2.1 - Label layout
 
-`labelLayout` shall publish `data-label-layout`. In the `control-only` layout (the default) the root is the box, and `label` names the input through `aria-label`. In the `label-control` layout the root holds a label (`ui-search-field__label`, a `<label>` that names the input), then a group (`ui-search-field__group`, role `presentation`) around the glyph, the input, the spinner and the clear button, which the reference sheet frames as the box, then the description and the error message.
+`labelLayout` shall publish `data-label-layout`. In both layouts the root holds a group (`ui-search-field__group`, role `presentation`) around the glyph, the input, the spinner and the clear button, which the reference sheet frames as the box. In the `control-only` layout (the default) the group is all the root holds, and `label` names the input through `aria-label`. In the `label-control` layout a label (`ui-search-field__label`, a `<label>` that names the input) comes before the group, and the description and the error message after it. A change of layout, either way, keeps the input element, so its text, selection, focus, composition and the caller's `inputRef` survive it.
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
@@ -66,9 +66,9 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 
 | Hook                           | Kind      | Values                          | Description                                                         |
 | ------------------------------ | --------- | ------------------------------- | ------------------------------------------------------------------- |
-| `ui-search-field`              | root      |                                 | The search box (`<div>`).                                           |
+| `ui-search-field`              | root      |                                 | The field (`<div>`) holding the box.                                |
 | `ui-search-field__label`       | slot      |                                 | The visible `<label>` of the `label-control` layout.                |
-| `ui-search-field__group`       | slot      |                                 | The box of the `label-control` layout.                              |
+| `ui-search-field__group`       | slot      |                                 | The box, in both layouts.                                           |
 | `ui-search-field__glyph`       | slot      |                                 | The search glyph (also `ui-glyph`).                                 |
 | `ui-search-field__input`       | slot      |                                 | The `<input type="search">`.                                        |
 | `ui-search-field__spinner`     | slot      |                                 | The busy indicator.                                                 |
