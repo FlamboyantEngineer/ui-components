@@ -1,10 +1,6 @@
 import { StrictMode, useEffect, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-  createMemoryStorage,
-  createSafeStorage,
-  type UiStorage,
-} from '../../../src/core/storage.js';
+import { createMemoryStorage, type UiStorage } from '../../../src/core/storage.js';
 import { UiProvider, type UiProviderProps } from '../../../src/core/provider.js';
 import { LabChrome, chromeStyles } from './lab-chrome.js';
 import {
@@ -28,11 +24,10 @@ const statePrefix = 'ui-labs-state:';
 function createLabUiStorage(): UiStorage {
   const storage = labStorage();
   if (!storage) return createMemoryStorage();
-  const safe = createSafeStorage(storage);
   return {
-    getItem: (key) => safe.getItem(statePrefix + key),
-    setItem: (key, value) => safe.setItem(statePrefix + key, value),
-    removeItem: (key) => safe.removeItem(statePrefix + key),
+    getItem: (key) => storage.getItem(statePrefix + key),
+    setItem: (key, value) => storage.setItem(statePrefix + key, value),
+    removeItem: (key) => storage.removeItem(statePrefix + key),
   };
 }
 

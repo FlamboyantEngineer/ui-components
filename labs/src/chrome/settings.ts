@@ -1,5 +1,7 @@
 // Lab stylesheet and theme settings: read from the query string, then localStorage, then defaults.
 
+import { createSafeStorage, type UiStorage } from '../../../src/core/storage.js';
+
 export type StylesheetChoice =
   | { kind: 'none' }
   | { kind: 'reference' }
@@ -54,49 +56,36 @@ function formatStylesheet(choice: StylesheetChoice): string {
   return choice.kind === 'custom' ? choice.url : choice.kind;
 }
 
-function getSafely(storage: Storage | null, key: string): string | null {
-  try {
-    return storage?.getItem(key) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function setSafely(storage: Storage | null, key: string, value: string): void {
-  try {
-    storage?.setItem(key, value);
-  } catch {
-    // Remembering the choice is a convenience; private windows may refuse it.
-  }
-}
-
 export function isValidThemeAttribute(name: string): boolean {
   return attributeNamePattern.test(name);
 }
 
-/** The page's localStorage, or null when the browser refuses access. */
-export function labStorage(): Storage | null {
+/**
+ * The page's localStorage, whose refused reads and writes are ignored (remembering a choice is a
+ * convenience; private windows may refuse it), or null when the browser refuses access.
+ */
+export function labStorage(): UiStorage | null {
   try {
-    return window.localStorage;
+    return createSafeStorage(window.localStorage);
   } catch {
     return null;
   }
 }
 
 /** Query string wins, then the remembered choice, then the defaults. */
-export function readSettings(search: string, storage: Storage | null): LabSettings {
+export function readSettings(search: string, storage: UiStorage | null): LabSettings {
   const query = new URLSearchParams(search);
   const stylesheet =
     parseStylesheet(query.get('stylesheet')) ??
-    parseStylesheet(getSafely(storage, storageKeys.stylesheet)) ??
+    parseStylesheet(storage?.getItem(storageKeys.stylesheet)) ??
     defaultSettings.stylesheet;
   // An empty theme is a choice, writing nothing; only a missing one falls back to the default.
   const theme = query.has('theme')
     ? (query.get('theme') ?? '')
-    : (getSafely(storage, storageKeys.theme) ?? defaultSettings.theme);
+    : (storage?.getItem(storageKeys.theme) ?? defaultSettings.theme);
   const attribute =
     query.get('themeAttribute') ??
-    getSafely(storage, storageKeys.themeAttribute) ??
+    storage?.getItem(storageKeys.themeAttribute) ??
     defaultSettings.themeAttribute;
   return {
     stylesheet,
@@ -106,16 +95,21 @@ export function readSettings(search: string, storage: Storage | null): LabSettin
 }
 
 /** Remembers a choice the reader made in the chrome. */
-export function rememberSettings(settings: LabSettings, storage: Storage | null): void {
-  setSafely(storage, storageKeys.stylesheet, formatStylesheet(settings.stylesheet));
-  setSafely(storage, storageKeys.theme, settings.theme);
-  setSafely(storage, storageKeys.themeAttribute, settings.themeAttribute);
+export function rememberSettings(settings: LabSettings, storage: UiStorage | null): void {
+  storage?.setItem(storageKeys.stylesheet, formatStylesheet(settings.stylesheet));
+  storage?.setItem(storageKeys.theme, settings.theme);
+  storage?.setItem(storageKeys.themeAttribute, settings.themeAttribute);
 }
 
-/** The query string for `settings`, keeping unrelated parameters from `search`. */
+/**
+ * The query string for `settings`, keeping unrelated parameters from `search`; a setting at its
+ * default is left out.
+ */
 export function settingsSearch(settings: LabSettings, search = ''): string {
   const query = new URLSearchParams(search);
-  query.set('stylesheet', formatStylesheet(settings.stylesheet));
+  const stylesheet = formatStylesheet(settings.stylesheet);
+  if (stylesheet === formatStylesheet(defaultSettings.stylesheet)) query.delete('stylesheet');
+  else query.set('stylesheet', stylesheet);
   if (settings.theme === defaultSettings.theme) query.delete('theme');
   else query.set('theme', settings.theme);
   if (settings.themeAttribute !== DEFAULT_THEME_ATTRIBUTE) {

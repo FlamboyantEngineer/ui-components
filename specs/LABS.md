@@ -66,7 +66,7 @@ Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
 ### UIC-LABS-2.3 - Query string and remembered choice
 
-`?stylesheet=` (`none`, `reference` or a URL), `?theme=` and `?themeAttribute=` shall preselect the settings. Otherwise the last choice made in the toolbar applies, remembered in `localStorage`; a browser that refuses storage falls back to the defaults (reference sheet, system theme). Changing a setting rewrites the query string, and the index carries the current settings into every lab link, including after repeated toolbar changes.
+`?stylesheet=` (`none`, `reference` or a URL), `?theme=` and `?themeAttribute=` shall preselect the settings. Otherwise the last choice made in the toolbar applies, remembered in `localStorage`; a browser that refuses storage falls back to the defaults (reference sheet, system theme). Changing a setting rewrites the query string, leaving out each setting at its default, and the index carries the current settings into every lab link, including after repeated toolbar changes.
 
 Implementation: `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
