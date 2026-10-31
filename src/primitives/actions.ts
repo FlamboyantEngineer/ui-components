@@ -15,5 +15,5 @@ export {
   ToggleButtonGroup,
   Toolbar,
 } from 'react-aria-components';
-export type { ButtonProps, KeyboardEvent, LinkProps, PressEvent } from 'react-aria-components';
+export type { ButtonProps, KeyboardEvent, PressEvent } from 'react-aria-components';
 export { useHover, usePress } from 'react-aria';

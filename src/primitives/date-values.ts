@@ -24,14 +24,12 @@ export {
   DateFormatter,
   fromDate,
   getLocalTimeZone,
-  now,
   resetLocalTimeZone,
   setLocalTimeZone,
   startOfWeek,
   toCalendarDate,
   toCalendarDateTime,
   toZoned,
-  today,
 } from '@internationalized/date';
 export type { CalendarDate, DateValue } from '@internationalized/date';
 
