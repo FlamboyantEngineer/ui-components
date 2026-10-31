@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Icon } from '../../src/components/icon/icon.js';
 import { SvgMarkup } from '../../src/components/svg-markup/svg-markup.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -57,6 +58,19 @@ const registry: Record<string, string> = {
   'multi-path': `<svg ${svgNamespace} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4 4 10-10"/><path d="M5 20h14"/></svg>`,
   gradient: `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="sunrise" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#db2777"/></linearGradient></defs><circle cx="12" cy="12" r="9" fill="url(#sunrise)"/></svg>`,
 };
+
+/** A drawing whose label changes on every press, while its markup, and so its parse, stays. */
+function RerenderDemo() {
+  const [count, setCount] = useState(0);
+  return (
+    <p data-lab-rerender="">
+      <button type="button" onClick={() => setCount((value) => value + 1)}>
+        Mark sunrise as seen
+      </button>{' '}
+      <SvgMarkup markup={registry.gradient ?? ''} label={`Sunrise, seen ${count} times`} />
+    </p>
+  );
+}
 
 mountLab(
   <>
@@ -133,6 +147,12 @@ mountLab(
         <SvgMarkup markup={toneMarkup('#2563eb')} label="Blue tone" />{' '}
         <SvgMarkup markup={toneMarkup('#db2777')} label="Pink tone" />
       </p>
+    </LabSection>
+    <LabSection
+      title="Re-rendering"
+      description="A drawing is parsed and its references scoped once per markup string: changing its label or class renders the same drawing elements again, its gradient reference intact."
+    >
+      <RerenderDemo />
     </LabSection>
     <LabSection
       title="Unsafe and missing markup"

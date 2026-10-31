@@ -6,6 +6,12 @@ const plusMarkup =
   '  <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>\n' +
   '</svg>';
 
+function parse(markup: string): SvgElementNode {
+  const tree = parseSvgMarkup(markup);
+  if (!tree) throw new Error('expected a drawing');
+  return tree;
+}
+
 function element(node: SvgNode | undefined): SvgElementNode {
   if (node?.type !== 'element') throw new Error('expected an element');
   return node;
@@ -13,7 +19,7 @@ function element(node: SvgNode | undefined): SvgElementNode {
 
 describe('parseSvgMarkup', () => {
   it('UIC-SVG-MARKUP-1.1 freezes a deeply nested drawing without recursive stack growth', () => {
-    const tree = parseSvgMarkup(`<svg>${'<g>'.repeat(20_000)}x${'</g>'.repeat(20_000)}</svg>`);
+    const tree = parse(`<svg>${'<g>'.repeat(20_000)}x${'</g>'.repeat(20_000)}</svg>`);
     let node = tree;
     let depth = 0;
     while (node.children[0]?.type === 'element') {
@@ -29,7 +35,7 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.1 returns the root svg as a frozen element tree', () => {
-    const tree = parseSvgMarkup(plusMarkup);
+    const tree = parse(plusMarkup);
     expect(tree.tag).toBe('svg');
     expect(tree.attributes).toEqual({
       xmlns: 'http://www.w3.org/2000/svg',
@@ -51,7 +57,7 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.1 drops declarations and comments, keeps text, CDATA and entities', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" [ <!ENTITY ns "x"> ]>',
@@ -75,15 +81,15 @@ describe('parseSvgMarkup', () => {
     expect(element(text?.children[1]).children).toEqual([{ type: 'text', text: 'B' }]);
   });
 
-  it('UIC-SVG-MARKUP-1.1 closes unmatched elements and throws without an svg root', () => {
-    const tree = parseSvgMarkup('<svg><g><path d="M1 1"></g><circle r="2"/></svg>');
+  it('UIC-SVG-MARKUP-1.1 closes unmatched elements and returns null without an svg root', () => {
+    const tree = parse('<svg><g><path d="M1 1"></g><circle r="2"/></svg>');
     expect(tree.children.map((child) => element(child).tag)).toEqual(['g', 'circle']);
-    expect(() => parseSvgMarkup('<div><span/></div>')).toThrow(/root <svg>/);
-    expect(() => parseSvgMarkup('')).toThrow(/root <svg>/);
+    expect(parseSvgMarkup('<div><span/></div>')).toBeNull();
+    expect(parseSvgMarkup('')).toBeNull();
   });
 
   it('UIC-SVG-MARKUP-1.2 drops scripts, styles, embedded HTML, event handlers and unknown elements', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<svg onload="steal()" viewBox="0 0 4 4">',
         '<script>steal()</script>',
@@ -103,7 +109,7 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.2 keeps title and description as text only', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<svg>',
         '<desc>Plan<iframe srcdoc="&lt;script&gt;steal()&lt;/script&gt;"></iframe> view</desc>',
@@ -123,7 +129,7 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.2 unwraps links and keeps only fragment links and raster data images', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<svg>',
         '<a href=" java\tscript:steal()" xlink:href="javascript:steal()"><path d="M0 0"/></a>',
@@ -147,7 +153,7 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.2 drops values and declarations that load or run anything', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<svg xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">',
         '<rect fill="url(#fade)" stroke="url(https://example.com/x.svg#p)" class="ui-root tile"',
@@ -185,14 +191,14 @@ describe('parseSvgMarkup', () => {
       'red)',
       "'unclosed",
     ];
-    const tree = parseSvgMarkup(
+    const tree = parse(
       `<svg>${dropped.map((value) => `<rect fill="${value.replace(/"/g, '&quot;')}"/>`).join('')}</svg>`,
     );
     expect(tree.children.map((node) => element(node).attributes)).toEqual(dropped.map(() => ({})));
   });
 
   it('UIC-SVG-MARKUP-1.2 checks style declarations, custom properties and animation values alike', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<svg>',
         '<rect style="fill: url(https://example.com/a.svg#p; stroke: red"/>',
@@ -212,7 +218,7 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.2 drops animations that target links, styles or dropped attributes', () => {
-    const tree = parseSvgMarkup(
+    const tree = parse(
       [
         '<svg viewBox="0 0 10 10">',
         '<a><set attributeName="href" to="javascript:steal()"/><rect width="10"/></a>',
@@ -244,13 +250,15 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.3 caches trees by markup, keeping the most recently used', () => {
-    const first = parseSvgMarkup(plusMarkup);
-    expect(parseSvgMarkup(plusMarkup)).toBe(first);
-    for (let index = 0; index < 255; index += 1) parseSvgMarkup(`<svg data-index="${index}"/>`);
-    expect(parseSvgMarkup(plusMarkup)).toBe(first);
-    const early = parseSvgMarkup('<svg data-index="0"/>');
-    for (let index = 255; index < 600; index += 1) parseSvgMarkup(`<svg data-index="${index}"/>`);
-    expect(parseSvgMarkup('<svg data-index="0"/>')).not.toBe(early);
-    expect(parseSvgMarkup('<svg data-index="0"/>')).toEqual(early);
+    const first = parse(plusMarkup);
+    expect(parse(plusMarkup)).toBe(first);
+    for (let index = 0; index < 255; index += 1) parse(`<svg data-index="${index}"/>`);
+    expect(parse(plusMarkup)).toBe(first);
+    const early = parse('<svg data-index="0"/>');
+    for (let index = 255; index < 600; index += 1) parse(`<svg data-index="${index}"/>`);
+    expect(parse('<svg data-index="0"/>')).not.toBe(early);
+    expect(parse('<svg data-index="0"/>')).toEqual(early);
+    expect(parseSvgMarkup('<p>No drawing</p>')).toBeNull();
+    expect(parseSvgMarkup('<p>No drawing</p>')).toBeNull();
   });
 });

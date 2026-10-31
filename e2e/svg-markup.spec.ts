@@ -123,6 +123,22 @@ test.describe('SVG Markup lab', () => {
     expect(await fill(1)).toBe('rgb(220, 38, 38)');
   });
 
+  test('UIC-SVG-MARKUP-2.1 keeps the drawing when only its label changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('svg-markup');
+    const demo = page.locator('[data-lab-rerender]');
+    const circle = demo.locator('circle');
+    await circle.evaluate((element) => element.setAttribute('data-lab-mark', ''));
+    await demo.getByRole('button', { name: 'Mark sunrise as seen' }).click();
+    await demo.getByRole('button', { name: 'Mark sunrise as seen' }).click();
+    await expect(demo.getByRole('img', { name: 'Sunrise, seen 2 times' })).toBeVisible();
+    await expect(circle).toHaveAttribute('data-lab-mark', '');
+    const gradient = await demo.locator('linearGradient').getAttribute('id');
+    await expect(circle).toHaveAttribute('fill', `url(#${gradient ?? ''})`);
+  });
+
   test('UIC-SVG-MARKUP-2.3 exposes only labelled drawings', async ({ page, lab }) => {
     await lab.open('svg-markup');
     const alone = page.locator('[data-lab-cell="naming=labelled placement=standalone"]');

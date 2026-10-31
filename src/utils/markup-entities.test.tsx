@@ -59,7 +59,7 @@ describe('Named character references', () => {
     const svg = parseSvgMarkup(
       '<svg><text aria-label="&alpha;&copy">&eacute;&copy &constructor;</text></svg>',
     );
-    expect(svg.children[0]).toMatchObject({
+    expect(svg?.children[0]).toMatchObject({
       attributes: { 'aria-label': 'α&copy' },
       children: [{ type: 'text', text: 'é&copy &constructor;' }],
     });

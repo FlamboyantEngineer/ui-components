@@ -30,12 +30,8 @@ const freeTextAttribute = /^(?:class|lang|role|xml:lang|xml:space|aria-.+|data-.
 /** A `url(#id)` reference, quoted or not. The policy has already refused every other `url()`. */
 const urlReference = /url\(\s*(["']?)#([^"')]*)\1\s*\)/gi;
 
-const definedIdsByTree = new WeakMap<SvgElementNode, ReadonlySet<string>>();
-
-/** The IDs a drawing defines below its root, which its caller owns. Cached per parsed tree. */
+/** The IDs a drawing defines below its root, which its caller owns. */
 function definedIds(tree: SvgElementNode): ReadonlySet<string> {
-  const cached = definedIdsByTree.get(tree);
-  if (cached) return cached;
   const ids = new Set<string>();
   for (const node of walkTree(tree.children, (node) =>
     node.type === 'element' ? node.children : undefined,
@@ -43,7 +39,6 @@ function definedIds(tree: SvgElementNode): ReadonlySet<string> {
     const id = node.type === 'element' ? node.attributes.id : undefined;
     if (id) ids.add(id);
   }
-  definedIdsByTree.set(tree, ids);
   return ids;
 }
 
