@@ -20,6 +20,7 @@ import {
   type ToolbarRowGroupDensity,
   type ToolbarRowOverflow,
 } from '../../src/components/layout/toolbar-row.js';
+import { Stack } from '../../src/components/layout/layout.js';
 import { StateMatrix } from './chrome/index.js';
 
 const frameStyle = (width: number): CSSProperties => ({
@@ -111,6 +112,54 @@ export function PendingToolbar() {
           <Button icon={SaveGlyph} label="Save" size="sm" />
         </ToolbarRow>
         <p data-lab-output="editor">{isStarted ? 'Editor ready.' : 'Editor starting…'}</p>
+      </div>
+    </div>
+  );
+}
+
+const overflowModes = ['wrap', 'scroll', 'none'] as const;
+
+/** Changing the dividers, the overflow or the orientation keeps a typed draft and its focus. */
+export function PresentationChanges() {
+  const [divided, setDivided] = useState(false);
+  const [overflow, setOverflow] = useState<ToolbarRowOverflow>('wrap');
+  const [isVertical, setVertical] = useState(false);
+  const nextOverflow = overflowModes[(overflowModes.indexOf(overflow) + 1) % overflowModes.length];
+  return (
+    <div data-lab-case="presentation">
+      <ToolbarRow role="group" justify="start" aria-label="Presentation">
+        <Button size="sm" onPress={() => setDivided(!divided)}>
+          {divided ? 'Hide dividers' : 'Show dividers'}
+        </Button>
+        <Button size="sm" onPress={() => setOverflow(nextOverflow ?? 'wrap')}>
+          Overflow: {overflow}
+        </Button>
+        <Button size="sm" onPress={() => setVertical(!isVertical)}>
+          {isVertical ? 'Horizontal' : 'Vertical'}
+        </Button>
+      </ToolbarRow>
+      <Stack divided={divided} space="sm">
+        <input aria-label="Stack note" placeholder="Stack note" />
+        <input aria-label="Second note" placeholder="Second note" />
+      </Stack>
+      <div style={frameStyle(240)}>
+        <ToolbarRow
+          aria-label="Search tools"
+          justify="start"
+          overflow={overflow}
+          orientation={isVertical ? 'vertical' : 'horizontal'}
+        >
+          <input aria-label="Search" placeholder="Search" />
+          <Button size="sm" startIcon={CopyGlyph}>
+            Duplicate
+          </Button>
+          <Button size="sm" startIcon={RefreshGlyph}>
+            Refresh
+          </Button>
+          <Button size="sm" startIcon={SaveGlyph}>
+            Save
+          </Button>
+        </ToolbarRow>
       </div>
     </div>
   );

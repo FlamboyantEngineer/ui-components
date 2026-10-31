@@ -24,7 +24,12 @@ import {
 } from '../../src/components/layout/toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/wrappers.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { AttachedGroups, PendingToolbar, ToolbarOverflow } from './toolbar-row-cases.js';
+import {
+  AttachedGroups,
+  PendingToolbar,
+  PresentationChanges,
+  ToolbarOverflow,
+} from './toolbar-row-cases.js';
 
 const spaces = ['none', '3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
 
@@ -336,9 +341,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Toolbar overflow"
-      description="In a 240px host: wrap flows the tools and their groups onto more rows, scroll keeps one row in a toolbar scroller, none keeps one row and leaves overflow to the caller."
+      description="In a 240px host: wrap flows the tools and their groups onto more rows, scroll keeps one row that scrolls between edge buttons, none keeps one row and leaves overflow to the caller."
     >
       <ToolbarOverflow />
+    </LabSection>
+    <LabSection
+      title="Presentation changes keep drafts"
+      description="Type in the notes and the search, then toggle the dividers, cycle the toolbar's overflow or turn it vertical: the drafts and the focus stay, since only the presentation changes."
+    >
+      <PresentationChanges />
     </LabSection>
     <LabSection
       title="Attached toolbar groups"

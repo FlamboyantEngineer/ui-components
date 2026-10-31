@@ -1,13 +1,22 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  type FocusEvent,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import type { ButtonGroupDensity } from '../button-group/button-group.js';
 import { Separator } from '../separator/separator.js';
-import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
+import { ScrollStripButton } from '../button/button.js';
+import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
@@ -55,7 +64,7 @@ export interface ToolbarRowGroupProps extends BaseProps, AriaLabellingProps {
 
 export type ToolbarRowSeparatorProps = BaseProps;
 
-const hooks = createHooks('toolbar-row', ['group', 'separator']);
+const hooks = createHooks('toolbar-row', ['strip', 'group', 'separator', 'fade', 'scroll-button']);
 
 interface ToolbarRowFlow {
   orientation: Orientation;
@@ -73,7 +82,69 @@ function resolveOverflow(overflow: ToolbarRowOverflow, orientation: Orientation)
   return orientation === 'vertical' && overflow === 'scroll' ? 'none' : overflow;
 }
 
-/** A row of controls, vertically centred, with a gap; or a column of them when vertical. */
+interface ToolbarRowStripProps extends AriaLabellingProps {
+  role: ToolbarRowRole;
+  orientation: Orientation;
+  stripRef: Ref<HTMLDivElement>;
+  onScroll?: (() => void) | undefined;
+  children: ReactNode;
+}
+
+/** The element holding the controls in every overflow mode: the toolbar, a group, or neither. */
+function ToolbarRowStrip({ role, orientation, stripRef, children, ...rest }: ToolbarRowStripProps) {
+  if (role === 'toolbar') {
+    return (
+      <Toolbar
+        {...rest}
+        ref={stripRef}
+        className={hooks.slotClass('strip')}
+        orientation={orientation}
+      >
+        {children}
+      </Toolbar>
+    );
+  }
+  return (
+    <div
+      {...rest}
+      ref={stripRef}
+      className={hooks.slotClass('strip')}
+      role={role === 'group' ? 'group' : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** The scroll button at `edge`, and the fade that shows tools hide past it. */
+function ScrollEdge({
+  edge,
+  isHidden,
+  onPage,
+}: {
+  edge: 'start' | 'end';
+  isHidden: boolean;
+  onPage: (edge: 'start' | 'end') => void;
+}) {
+  return (
+    <>
+      <span {...hooks.slot('fade', { edge })} aria-hidden="true" hidden={isHidden} />
+      <ScrollStripButton
+        {...hooks.slot('scroll-button', { edge })}
+        edge={edge}
+        isHidden={isHidden}
+        onPress={onPage}
+      />
+    </>
+  );
+}
+
+/**
+ * A row of controls, vertically centred, with a gap; or a column of them when vertical. The
+ * controls always sit in the same strip, so changing the overflow or the orientation never
+ * remounts them; `scroll` only adds edge controls beside the strip. `ref` reaches the strip, whose
+ * element children are the controls.
+ */
 export function ToolbarRow({
   children,
   className,
@@ -87,48 +158,51 @@ export function ToolbarRow({
   grow,
   fill,
   clip,
+  'aria-label': label,
+  'aria-labelledby': labelledBy,
+  onFocus,
+  ref,
   ...rest
 }: ToolbarRowProps) {
-  const containment = resolveContainment({ grow, fill, clip });
   const overflow = resolveOverflow(requestedOverflow, orientation);
+  const isScroll = overflow === 'scroll';
   const wrap = overflow === 'wrap' ? 'wrap' : 'nowrap';
-  const hookProps = {
-    ...hooks.root({
-      className,
-      data: {
-        variant,
-        orientation,
-        space,
-        justify,
-        wrap,
-        overflow,
-        pending: isPending,
-        ...containment,
-      },
-    }),
-    inert: isPending || undefined,
-  };
-  const content = <ToolbarRowContext value={{ orientation, wrap }}>{children}</ToolbarRowContext>;
-  if (overflow === 'scroll') {
-    const { 'aria-label': label, 'aria-labelledby': labelledBy, ...own } = rest;
-    return (
-      <div {...own} {...hookProps}>
-        <ToolbarScroller aria-label={label} aria-labelledby={labelledBy}>
-          {content}
-        </ToolbarScroller>
-      </div>
-    );
-  }
-  if (role === 'toolbar') {
-    return (
-      <Toolbar {...rest} {...hookProps} orientation={orientation}>
-        {content}
-      </Toolbar>
-    );
-  }
+  const scroll = useToolbarScroll(isScroll);
+  const stripRef = useMemo(() => mergeRefs(scroll.stripRef, ref), [scroll.stripRef, ref]);
+  const edges = isScroll ? scroll.edges : { start: false, end: false };
+  const data = { variant, orientation, space, justify, wrap, overflow, pending: isPending };
   return (
-    <div {...rest} {...hookProps} role={role === 'group' ? 'group' : undefined}>
-      {content}
+    <div
+      {...rest}
+      {...hooks.root({
+        className,
+        data: {
+          ...data,
+          overflowStart: edges.start,
+          overflowEnd: edges.end,
+          ...resolveContainment({ grow, fill, clip }),
+        },
+      })}
+      inert={isPending || undefined}
+      onFocus={(event: FocusEvent<HTMLDivElement>) => {
+        onFocus?.(event);
+        scroll.onFocus(event);
+      }}
+    >
+      {isScroll ? (
+        <ScrollEdge edge="start" isHidden={!edges.start} onPage={scroll.pageToward} />
+      ) : null}
+      <ToolbarRowStrip
+        role={role}
+        orientation={orientation}
+        stripRef={stripRef}
+        onScroll={isScroll ? scroll.syncOverflow : undefined}
+        aria-label={label}
+        aria-labelledby={labelledBy}
+      >
+        <ToolbarRowContext value={{ orientation, wrap }}>{children}</ToolbarRowContext>
+      </ToolbarRowStrip>
+      {isScroll ? <ScrollEdge edge="end" isHidden={!edges.end} onPage={scroll.pageToward} /> : null}
     </div>
   );
 }

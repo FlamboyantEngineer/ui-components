@@ -160,7 +160,7 @@ Verification: `src/components/rich-text-editor/engine-commands.test.ts`, `src/co
 
 ### UIC-RICH-TEXT-EDITOR-6.1 - Buttons
 
-`FormatToolbar` shall render a `ToolbarRow` (`role="toolbar"`, also `ui-format-toolbar`) named by `aria-label`, `aria-labelledby` or the provider string `textFormatting`, holding undo and redo, the block type select, the marks (bold, italic, underline, strike, code), the link button, and the bullet, numbered and task lists and the quote, then its `children`, with separators between the groups. Each command is a small `Button` with a tooltip and its shortcut, pressed (`aria-pressed`) while `isActive`, disabled while it cannot run, and left out when the schema lacks its types. A pointer press keeps focus, and the selection, in the document.
+`FormatToolbar` shall render a `ToolbarRow` (its root also `ui-format-toolbar`) whose toolbar strip is named by `aria-label`, `aria-labelledby` or the provider string `textFormatting`, holding undo and redo, the block type select, the marks (bold, italic, underline, strike, code), the link button, and the bullet, numbered and task lists and the quote, then its `children`, with separators between the groups. Each command is a small `Button` with a tooltip and its shortcut, pressed (`aria-pressed`) while `isActive`, disabled while it cannot run, and left out when the schema lacks its types. A pointer press keeps focus, and the selection, in the document.
 
 Implementation: `src/components/rich-text-editor/format-toolbar.tsx`, `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/format-items.ts`, `src/components/layout/layout.tsx`, `src/core/rich-text-strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -183,7 +183,7 @@ Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/ri
 
 ### UIC-RICH-TEXT-EDITOR-7.1 - Floating over selected text
 
-`SelectionToolbar` shall show a non-modal popover (`ui-selection-toolbar`) above a selected text range while the document or the toolbar has focus and the editor is editable, following the selection as it changes; a caret or a selected node shows none. It holds a `ToolbarRow` (`ui-selection-toolbar__row`, named by `aria-label`, `aria-labelledby` or `selectionFormatting`) of the mark buttons and the link button, then its `children`.
+`SelectionToolbar` shall show a non-modal popover (`ui-selection-toolbar`) above a selected text range while the document or the toolbar has focus and the editor is editable, following the selection as it changes; a caret or a selected node shows none. It holds a `ToolbarRow` (its root also `ui-selection-toolbar__row`, its toolbar strip named by `aria-label`, `aria-labelledby` or `selectionFormatting`) of the mark buttons and the link button, then its `children`.
 
 Implementation: `src/components/rich-text-editor/selection-toolbar.tsx`
 Verification: `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`

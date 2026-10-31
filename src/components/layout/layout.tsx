@@ -236,9 +236,11 @@ export function Stack<E extends LayoutElement = 'div'>({
 }: StackProps<E>) {
   const element = as ?? 'div';
   const data = { space, align, divided, ...resolveContainment({ grow, fill, clip }) };
-  const content = divided
-    ? interleaveDividers(children, { parent: element, className: stackHooks.slotClass('divider') })
-    : children;
+  const content = interleaveDividers(children, {
+    parent: element,
+    className: stackHooks.slotClass('divider'),
+    divided,
+  });
   return renderAs(element, { ...rest, ...stackHooks.root({ className, data }) }, content);
 }
 
@@ -261,12 +263,11 @@ export function Cluster<E extends LayoutElement = 'div'>({
   const element = as ?? 'div';
   const containment = resolveContainment({ grow, fill, clip });
   const data = { space, align, justify, wrap, inline, divided, ...containment };
-  const content = divided
-    ? interleaveDividers(children, {
-        parent: element,
-        className: clusterHooks.slotClass('divider'),
-      })
-    : children;
+  const content = interleaveDividers(children, {
+    parent: element,
+    className: clusterHooks.slotClass('divider'),
+    divided,
+  });
   return renderAs(element, { ...rest, ...clusterHooks.root({ className, data }) }, content);
 }
 

@@ -505,13 +505,85 @@
   flex: none;
 }
 
-.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-scroller {
+/* The strip holds the controls in every mode and lays them out as the row asks. */
+.ui-toolbar-row__strip {
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: inherit;
+  flex-wrap: inherit;
+  align-items: inherit;
+  justify-content: inherit;
+  gap: inherit;
+  min-width: 0;
 }
 
-.ui-toolbar-row[data-overflow='scroll'] .ui-toolbar-scroller__strip {
-  gap: var(--ref-layout-gap);
-  padding: 0;
+.ui-toolbar-row[data-overflow='scroll'] {
+  position: relative;
+}
+
+.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip {
+  overflow: auto hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip > * {
+  flex: none;
+}
+
+.ui-toolbar-row__fade {
+  position: absolute;
+  inset-block: 0;
+  width: 40px;
+  pointer-events: none;
+}
+
+.ui-toolbar-row__fade[data-edge='start'] {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-row__fade[data-edge='end'] {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-row__fade[data-edge='start']:dir(rtl) {
+  background: linear-gradient(to left, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-row__fade[data-edge='end']:dir(rtl) {
+  background: linear-gradient(to right, var(--ref-canvas) 40%, transparent);
+}
+
+.ui-toolbar-row > .ui-toolbar-row__scroll-button[data-edge] {
+  position: absolute;
+  inset-block-start: 50%;
+  z-index: 1;
+  translate: 0 -50%;
+  border-color: var(--ref-border);
+  background: var(--ref-raised);
+}
+
+.ui-toolbar-row > .ui-toolbar-row__scroll-button[data-edge][data-hovered] {
+  background: color-mix(in srgb, var(--ref-raised), var(--ref-text) var(--ref-tint-subtle));
+}
+
+.ui-toolbar-row__scroll-button[data-edge='start'] {
+  inset-inline-start: 0;
+}
+
+.ui-toolbar-row__scroll-button[data-edge='end'] {
+  inset-inline-end: 0;
+}
+
+.ui-toolbar-row__fade[hidden],
+.ui-toolbar-row__scroll-button[hidden] {
+  display: none;
 }
 
 /* A pending row keeps its size but is not painted, so the content below never moves. */

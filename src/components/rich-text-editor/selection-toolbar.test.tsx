@@ -39,7 +39,7 @@ describe('SelectionToolbar', () => {
     expect(floating()).toBeNull();
     selectRange(6, 11);
     const row = floating();
-    expect(row).toHaveClass('ui-selection-toolbar__row', 'ui-toolbar-row');
+    expect(row?.parentElement).toHaveClass('ui-selection-toolbar__row', 'ui-toolbar-row');
     const popover = document.querySelector('.ui-selection-toolbar');
     expect(popover).toHaveClass('caller');
     expect(popover).toHaveAttribute('data-testid', 'floating');

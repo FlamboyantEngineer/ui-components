@@ -34,8 +34,8 @@ describe('FormatToolbar', () => {
       ),
     });
     const row = toolbar();
-    expect(row).toHaveClass('ui-format-toolbar', 'ui-toolbar-row', 'caller');
-    expect(row).toHaveAttribute('data-testid', 'tools');
+    expect(row.parentElement).toHaveClass('ui-format-toolbar', 'ui-toolbar-row', 'caller');
+    expect(row.parentElement).toHaveAttribute('data-testid', 'tools');
     const names = within(row)
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label') ?? button.textContent);

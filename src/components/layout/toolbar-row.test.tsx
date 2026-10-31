@@ -5,6 +5,9 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { ToolbarRow, ToolbarRowGroup, ToolbarRowSeparator } from './toolbar-row.js';
 
+/** The row around a toolbar or group: the root that carries the row's hooks. */
+const rowOf = (element: Element) => requireDefined(element.closest('.ui-toolbar-row'));
+
 describe('ToolbarRow', () => {
   it('UIC-LAYOUT-3.3 renders a toolbar with arrow-key focus, a group or no role, and a variant', async () => {
     const user = userEvent.setup();
@@ -18,9 +21,9 @@ describe('ToolbarRow', () => {
       </>,
     );
     const toolbar = screen.getByRole('toolbar', { name: 'Fruit actions' });
-    expect(toolbar).toHaveClass('ui-toolbar-row');
-    expect(toolbar).toHaveAttribute('data-variant', 'plain');
-    expect(toolbar).toHaveAttribute('data-orientation', 'horizontal');
+    expect(toolbar).toHaveClass('ui-toolbar-row__strip');
+    expect(rowOf(toolbar)).toHaveAttribute('data-variant', 'plain');
+    expect(rowOf(toolbar)).toHaveAttribute('data-orientation', 'horizontal');
     expectHooksMatchSpec(container, 'LAYOUT');
 
     await user.click(screen.getByRole('button', { name: 'Peel' }));
@@ -37,12 +40,13 @@ describe('ToolbarRow', () => {
       </ToolbarRow>,
     );
     const group = screen.getByRole('group', { name: 'Fruit actions' });
-    expect(group).toHaveAttribute('data-variant', 'surface');
-    expect(group).toHaveAttribute('data-orientation', 'horizontal');
+    expect(rowOf(group)).toHaveAttribute('data-variant', 'surface');
+    expect(rowOf(group)).toHaveAttribute('data-orientation', 'horizontal');
     expectHooksMatchSpec(container, 'LAYOUT');
 
     rerender(<ToolbarRow role="none">Text</ToolbarRow>);
     expect(container.firstElementChild).not.toHaveAttribute('role');
+    expect(container.querySelector('.ui-toolbar-row__strip')).not.toHaveAttribute('role');
   });
 
   it('UIC-LAYOUT-3.6 stacks a vertical row and moves toolbar focus with Up and Down', async () => {
@@ -54,7 +58,7 @@ describe('ToolbarRow', () => {
       </ToolbarRow>,
     );
     const toolbar = screen.getByRole('toolbar', { name: 'Tools' });
-    expect(toolbar).toHaveAttribute('data-orientation', 'vertical');
+    expect(rowOf(toolbar)).toHaveAttribute('data-orientation', 'vertical');
     expect(toolbar).toHaveAttribute('aria-orientation', 'vertical');
     await user.click(screen.getByRole('button', { name: 'Peel' }));
     await user.keyboard('{ArrowDown}');
@@ -99,7 +103,7 @@ describe('ToolbarRow', () => {
     expect(separator).toHaveAttribute('data-owner', 'kitchen');
     expect(separator).not.toHaveAttribute('tabindex');
     expectHooksMatchSpec(container, 'LAYOUT', {
-      slots: ['group', 'separator'],
+      slots: ['strip', 'group', 'separator'],
       callerAttributes: ['data-owner'],
     });
 
@@ -124,7 +128,7 @@ describe('ToolbarRow', () => {
     expect(rule).toHaveAttribute('data-orientation', 'horizontal');
   });
 
-  it('UIC-LAYOUT-3.8 wraps the row and its groups, scrolls it in a toolbar scroller, or keeps one row', async () => {
+  it('UIC-LAYOUT-3.8 wraps the row and its groups, scrolls it, or keeps one row', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
       <ToolbarRow aria-label="Kitchen">
@@ -133,11 +137,12 @@ describe('ToolbarRow', () => {
         </ToolbarRowGroup>
       </ToolbarRow>,
     );
-    const row = screen.getByRole('toolbar', { name: 'Kitchen' });
+    const row = rowOf(screen.getByRole('toolbar', { name: 'Kitchen' }));
     expect(row).toHaveAttribute('data-overflow', 'wrap');
     expect(row).toHaveAttribute('data-wrap', 'wrap');
+    expect(row.querySelector('.ui-toolbar-row__scroll-button')).toBeNull();
     expect(screen.getByRole('group', { name: 'Knives' })).toHaveAttribute('data-wrap', 'wrap');
-    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['group'] });
+    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['strip', 'group'] });
 
     rerender(
       <ToolbarRow aria-label="Kitchen" overflow="scroll" data-owner="kitchen">
@@ -154,15 +159,15 @@ describe('ToolbarRow', () => {
     expect(root).toHaveAttribute('data-owner', 'kitchen');
     expect(root).not.toHaveAttribute('role');
     expect(root).not.toHaveAttribute('aria-label');
-    const strip = screen.getByRole('toolbar', { name: 'Kitchen' });
-    expect(strip).toHaveClass('ui-toolbar-scroller__strip');
-    expect(root.firstElementChild).toHaveClass('ui-toolbar-scroller');
+    expect(screen.getByRole('toolbar', { name: 'Kitchen' }).parentElement).toBe(root);
+    expect(root.querySelectorAll('.ui-toolbar-row__fade')).toHaveLength(2);
+    expect(root.querySelectorAll('.ui-toolbar-row__scroll-button')).toHaveLength(2);
     expect(screen.getByRole('group', { name: 'Knives' })).toHaveAttribute('data-wrap', 'nowrap');
     await user.click(screen.getByRole('button', { name: 'Slice' }));
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('button', { name: 'Juice' })).toHaveFocus();
     expectHooksMatchSpec(container, 'LAYOUT', {
-      slots: ['group'],
+      slots: ['strip', 'group', 'fade', 'scroll-button'],
       callerAttributes: ['data-owner'],
     });
 
@@ -171,21 +176,16 @@ describe('ToolbarRow', () => {
         <button type="button">Peel</button>
       </ToolbarRow>,
     );
-    expect(screen.getByRole('toolbar', { name: 'Kitchen' })).toHaveAttribute(
-      'data-overflow',
-      'none',
-    );
-    expect(screen.getByRole('toolbar', { name: 'Kitchen' })).toHaveAttribute('data-wrap', 'nowrap');
+    expect(root).toHaveAttribute('data-overflow', 'none');
+    expect(root).toHaveAttribute('data-wrap', 'nowrap');
 
     rerender(
       <ToolbarRow aria-label="Kitchen" overflow="scroll" orientation="vertical">
         <button type="button">Peel</button>
       </ToolbarRow>,
     );
-    const column = screen.getByRole('toolbar', { name: 'Kitchen' });
-    expect(column).toHaveClass('ui-toolbar-row');
-    expect(column).toHaveAttribute('data-overflow', 'none');
-    expect(container.querySelector('.ui-toolbar-scroller')).toBeNull();
+    expect(root).toHaveAttribute('data-overflow', 'none');
+    expect(root.querySelector('.ui-toolbar-row__scroll-button')).toBeNull();
   });
 
   it('UIC-LAYOUT-3.9 keeps a pending row in place with inert controls', async () => {
@@ -217,7 +217,7 @@ describe('ToolbarRow', () => {
         </button>
       </ToolbarRow>,
     );
-    const toolbar = screen.getByRole('toolbar', { name: 'Editing' });
+    const toolbar = rowOf(screen.getByRole('toolbar', { name: 'Editing' }));
     expect(toolbar).not.toHaveAttribute('data-pending');
     expect(toolbar).not.toHaveAttribute('inert');
     await user.click(screen.getByRole('button', { name: 'Bold' }));
@@ -248,6 +248,6 @@ describe('ToolbarRow', () => {
     await user.click(screen.getByRole('button', { name: 'Left' }));
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('button', { name: 'Centre' })).toHaveFocus();
-    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['group'] });
+    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['strip', 'group'] });
   });
 });
