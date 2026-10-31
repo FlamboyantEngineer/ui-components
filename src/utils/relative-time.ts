@@ -138,7 +138,7 @@ function relationOf(distance: number): RelativeTimeRelation {
 }
 
 /** Milliseconds from `now` to the next midnight in `zone`, when day counts move on. */
-function untilMidnight(now: Date, zone: string): number {
+export function untilMidnight(now: Date, zone: string): number {
   return toDay(now, zone).add({ days: 1 }).toDate(zone).getTime() - now.getTime();
 }
 

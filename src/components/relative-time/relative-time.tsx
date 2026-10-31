@@ -12,7 +12,7 @@ import {
   type RelativeTimeStyle,
   type RelativeTimeUnitStyle,
 } from '../../utils/relative-time.js';
-import { useClockTick } from './relative-time-clock.js';
+import { useClockTick } from '../../core/clock-tick.js';
 import { TimeWithTooltip } from './relative-time-tooltip.js';
 
 export type {

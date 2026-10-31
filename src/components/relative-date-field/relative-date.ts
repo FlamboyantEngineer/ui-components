@@ -14,6 +14,7 @@ import {
 import {
   capitalizeText,
   describeRelativeTime,
+  untilMidnight,
   type RelativeTimeRelation,
 } from '../../utils/relative-time.js';
 import {
@@ -62,6 +63,8 @@ export interface RelativeDateText {
   absolute: string;
   /** Where the value lies against now; unknown before the clock may be read. */
   relation: RelativeDateRelation | undefined;
+  /** Milliseconds until the text or relation may read differently, or `null` when it never will. */
+  nextChange: number | null;
 }
 
 /** Now, and the IANA time zone days are read in (the device's without one). */
@@ -110,7 +113,12 @@ export function describeRelativeDate(
   const text = describeRelativeTime(value, options);
   if (!text) return null;
   const relative = capitalizeText(text.relative, options.locale);
-  return { relative, absolute: text.absolute, relation: text.relation };
+  return {
+    relative,
+    absolute: text.absolute,
+    relation: text.relation,
+    nextChange: text.nextChange,
+  };
 }
 
 /**
@@ -130,6 +138,12 @@ export function describeRelativeRange(
     relative: `${start.relative} – ${end.relative}`,
     absolute,
     relation: rangeRelation(range, toZonedDay(options.now, options.timeZone)),
+    // The relation moves on at midnight, with the ends' day counts.
+    nextChange: Math.min(
+      start.nextChange ?? Infinity,
+      end.nextChange ?? Infinity,
+      untilMidnight(options.now, options.timeZone ?? getLocalTimeZone()),
+    ),
   };
 }
 
