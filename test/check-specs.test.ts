@@ -78,13 +78,12 @@ describe('check-specs', () => {
     const styled = (css: string) => {
       const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
       dirs.push(dir);
-      for (const sub of ['scripts', 'specs', 'src', 'labs/reference']) {
+      for (const sub of ['scripts/lib', 'specs', 'src', 'labs/reference']) {
         mkdirSync(join(dir, sub), { recursive: true });
       }
-      copyFileSync(
-        join(process.cwd(), 'scripts/check-specs.mjs'),
-        join(dir, 'scripts/check-specs.mjs'),
-      );
+      for (const script of ['check-specs.mjs', 'lib/script.mjs']) {
+        copyFileSync(join(process.cwd(), 'scripts', script), join(dir, 'scripts', script));
+      }
       const spec = [
         '# Sample',
         '',
