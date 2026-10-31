@@ -104,7 +104,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Autoplay"
-      description="Advances every three seconds, pausing while the pointer rests on it or focus is inside it. The first button stops rotation; a reader who prefers reduced motion starts stopped."
+      description="Advances every three seconds, pausing while the pointer rests on it or focus is inside it. The first button stops rotation; it stays stopped while the reader prefers reduced motion, following a change to that setting until the button is used."
     >
       <Carousel aria-label="Rotating cities" autoplay interval={3000} data-lab-carousel="autoplay">
         {citySlides()}
