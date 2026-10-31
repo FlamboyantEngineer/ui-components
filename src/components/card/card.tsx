@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type ReactNode } from 'react';
+import { useContext, useId, useState, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -235,6 +235,7 @@ export function Card(props: CardProps) {
   const { title, header, media, children, footer, isLoading = false } = props;
   const titleId = useId();
   const level = useHeadingLevel(props.headingLevel);
+  const parentLevel = useContext(HeadingLevelContext);
   const [root, setRoot] = useState<HTMLElement | null>(null);
   const [slottedTitle, setSlottedTitle] = useState<HTMLElement | null>(null);
   const options = {
@@ -257,6 +258,8 @@ export function Card(props: CardProps) {
     { id: titleId, hasSlottedTitle: slottedTitle !== null },
   );
   const isHidden = !collapse.isExpanded || undefined;
+  // A titled card, by its own title or a slotted `CardTitle`, is a level of the outline.
+  const isTitled = !isEmptyNode(title) || slottedTitle !== null;
 
   return (
     <section
@@ -296,13 +299,10 @@ export function Card(props: CardProps) {
         {props.summary}
       </CardSummary>
       <div {...hooks.slot('body')} id={collapse.ids.body} hidden={isHidden}>
-        {isLoading ? (
-          <Skeleton className={hooks.slotClass('skeleton')} />
-        ) : isEmptyNode(title) ? (
-          children
-        ) : (
-          <HeadingLevelContext value={level}>{children}</HeadingLevelContext>
-        )}
+        {/* Always the same provider, so a title that arrives or leaves never remounts the body. */}
+        <HeadingLevelContext value={isTitled ? level : parentLevel}>
+          {isLoading ? <Skeleton className={hooks.slotClass('skeleton')} /> : children}
+        </HeadingLevelContext>
       </div>
       {isEmptyNode(footer) ? null : (
         <footer {...hooks.slot('footer')} id={collapse.ids.footer} hidden={isHidden}>

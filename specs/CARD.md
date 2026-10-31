@@ -33,10 +33,10 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-1.2 - Title block
 
-The header shall hold the `title` as a heading (the level `headingLevel` chooses, 1 to 6, else the automatic level of [Section Header](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)) in the `ui-card__title` slot and the `description` in the `ui-card__description` slot, both inside a `ui-card__heading` group, followed by `actions` in the `ui-card__actions` slot. Empty values (`undefined`, `null`, `false` or `""`) render no slot. `header` replaces the title block and actions with the caller's own content.
+The header shall hold the `title` as a heading (the level `headingLevel` chooses, 1 to 6, else the automatic level of [Section Header](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)) in the `ui-card__title` slot and the `description` in the `ui-card__description` slot, both inside a `ui-card__heading` group, followed by `actions` in the `ui-card__actions` slot. Empty values (`undefined`, `null`, `false` or `""`) render no slot. `header` replaces the title block and actions with the caller's own content. Headings in the body sit one level below a titled card's title (its own `title` or a slotted `CardTitle`, clamped at 6); an untitled card leaves the level of its surroundings. The body stays mounted, with its state and focus, while a title arrives, leaves or gives way to a custom header.
 
 Implementation: `src/components/card/card.tsx`
-Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
+Verification: `src/components/card/card.test.tsx`, `src/components/card/card-heading.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-1.3 - Region name and roles
 
@@ -50,7 +50,7 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 Custom `header` content shall name the card by the `CardTitle` it holds ([COMPOSITION.md](COMPOSITION.md#uic-composition-31---slot-props)): `CardTitle` renders a heading at the card's level (`headingLevel`, else the automatic level) with the card's title `id`, the `ui-card__title` class and the caller's `className` and `data-*` attributes. Once it renders, the card is named by it as by its own title ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)); without one the card has no name of its own, and a caller's `aria-label` or `aria-labelledby` still wins. Other headings in the header are left alone, and a `CardTitle` outside a card's custom header is a plain heading at the automatic level.
 
 Implementation: `src/components/card/card.tsx`, `src/components/card/card-parts.tsx`
-Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
+Verification: `src/components/card/card.test.tsx`, `src/components/card/card-heading.test.tsx`, `e2e/card.spec.ts`
 
 ## UIC-CARD-2 - Options
 
