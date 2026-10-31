@@ -95,6 +95,48 @@ describe('DateTimeField availability and presets', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('UIC-DATE-TIME-FIELD-3.2 writes a preset as the editor writes a pick, in the zone and granularity', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { unmount } = renderInLocale(
+      <DateTimeField
+        label="When"
+        mode="date-time"
+        timeZone="Asia/Tokyo"
+        granularity="hour"
+        presets={[{ label: 'Offset', value: '2026-04-20T03:42:33Z' }]}
+        onCommit={onCommit}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    await user.click(screen.getByRole('button', { name: 'Offset' }));
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-20T12:00:00+09:00[Asia/Tokyo]');
+    // The same hour reached from the keyboard commits the same text.
+    act(() => screen.getByRole('spinbutton', { name: /^hour/ }).focus());
+    await user.keyboard('{ArrowUp}{ArrowDown}');
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-20T12:00:00+09:00[Asia/Tokyo]');
+    unmount();
+    renderInLocale(
+      <DateTimeField
+        label="Window"
+        mode="date-time-range"
+        presets={[
+          { label: 'Shift', value: { start: '2026-04-20T09:00:59', end: '2026-04-20T17:00:30' } },
+        ]}
+        maxValue="2026-04-20T17:00"
+        onCommit={onCommit}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    const shift = screen.getByRole('button', { name: 'Shift' });
+    expect(shift).toBeEnabled();
+    await user.click(shift);
+    expect(onCommit).toHaveBeenLastCalledWith({
+      start: '2026-04-20T09:00',
+      end: '2026-04-20T17:00',
+    });
+  });
+
   it('UIC-DATE-TIME-FIELD-3.2 disables a preset on an unavailable date and has none for times', async () => {
     const user = userEvent.setup();
     const { unmount } = renderInLocale(
