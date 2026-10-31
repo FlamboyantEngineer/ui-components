@@ -9,7 +9,7 @@ import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
 import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
-import { flattenOptions, type ComboboxItem } from './combobox-options.js';
+import type { ComboboxItem } from './combobox-options.js';
 import type { ComboboxLoader } from './combobox-search.js';
 import {
   useComboboxModel,
@@ -115,9 +115,6 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
 const hooks = createHooks('combobox', ['label', 'description', 'error']);
 
 /** What the chips of a multiple combobox need: the text naming their group, and the options. */
-function toChips(label: string, suggestions: Iterable<ComboboxItem>) {
-  return { label, options: flattenOptions(suggestions) };
-}
 
 /** The props React Aria's `ComboBox` takes as given: all but the suggestions and the open state. */
 function omitModelProps<P extends ComboboxModelOptions>(props: P) {
@@ -225,7 +222,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
         placeholder={placeholder}
         isPending={model.isPending}
         isEditable={!isDisabled && !isReadOnly}
-        chips={isMultiple ? toChips(naming.text, model.suggestions) : null}
+        chips={isMultiple ? { label: naming.text, options: model.flatOptions } : null}
         completion={inline.field}
         input={{ ref: input, setRef: setInput }}
       />

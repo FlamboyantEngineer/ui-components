@@ -6,12 +6,80 @@ import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Combobox, type ComboboxOption } from './combobox.js';
+import { Combobox, type ComboboxItem, type ComboboxOption } from './combobox.js';
 
 const cities: ComboboxOption[] = ['Paris', 'Lima', 'Oslo', 'Lisbon'].map((name) => ({
   id: name.toLowerCase(),
   label: name,
 }));
+
+function* fruitItems(): Generator<ComboboxItem> {
+  yield { id: 'a', label: 'Apple' };
+  yield { id: 2, label: 'Banana' };
+  yield { id: 'citrus', title: 'Citrus', options: [{ id: 'lemon', label: 'Lemon' }] };
+}
+
+/** A reusable iterable that counts how often it is read. */
+function countedItems(items: readonly ComboboxItem[]) {
+  const source = {
+    reads: 0,
+    *[Symbol.iterator]() {
+      source.reads += 1;
+      yield* items;
+    },
+  };
+  return source;
+}
+
+function chipLabels() {
+  return within(screen.getByRole('grid', { name: 'Fruit selected values' }))
+    .getAllByRole('row')
+    .map((row) => row.textContent);
+}
+
+describe('Combobox suggestion sources', () => {
+  it('UIC-COMBOBOX-2.9 reads a generator once for the chips, the list and the chosen keys', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <Combobox
+        aria-label="Fruit"
+        selectionMode="multiple"
+        defaultItems={fruitItems()}
+        defaultValue={['a', 'lemon']}
+        onChange={onChange}
+      />,
+    );
+    expect(chipLabels()).toEqual(['Apple', 'Lemon']);
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{ArrowDown}');
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).getByRole('group', { name: 'Citrus' })).toBeInTheDocument();
+    await user.click(within(listbox).getByRole('option', { name: 'Banana' }));
+    expect(onChange).toHaveBeenLastCalledWith(['a', 'lemon', 2]);
+    await user.keyboard('{Escape}');
+    expect(chipLabels()).toEqual(['Apple', 'Lemon', 'Banana']);
+  });
+
+  it('UIC-COMBOBOX-2.9 reads a source again only when it is replaced', () => {
+    const first = countedItems([{ id: 'a', label: 'Apple' }]);
+    const view = (items: Iterable<ComboboxItem>, description: string) => (
+      <Combobox
+        aria-label="Fruit"
+        description={description}
+        selectionMode="multiple"
+        items={items}
+        defaultValue={['a']}
+      />
+    );
+    const { rerender } = render(view(first, 'One'));
+    rerender(view(first, 'Two'));
+    expect(first.reads).toBe(1);
+    expect(chipLabels()).toEqual(['Apple']);
+    rerender(view(countedItems([{ id: 'a', label: 'Apricot' }]), 'Two'));
+    expect(chipLabels()).toEqual(['Apricot']);
+  });
+});
 
 describe('Combobox chips', () => {
   it.each(['xs', 'sm'] as const)(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useFilter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
@@ -38,8 +38,9 @@ export function useInlineCompletionState({
   suggestions,
 }: {
   completesInline?: boolean | undefined;
-  suggestions: Iterable<ComboboxItem>;
+  suggestions: readonly ComboboxItem[];
 }) {
+  const options = useMemo(() => flattenOptions(suggestions), [suggestions]);
   const [completion, setCompletion] = useState<ComboboxCompletion | null>(null);
   const { contains } = useFilter({ sensitivity: 'base' });
   const completionFilter = useCallback(
@@ -51,7 +52,7 @@ export function useInlineCompletionState({
   return {
     defaultFilter: completionFilter,
     completion,
-    field: { options: flattenOptions(suggestions), onComplete: setCompletion },
+    field: { options, onComplete: setCompletion },
   };
 }
 
@@ -84,7 +85,11 @@ export function useComboboxModel(options: ComboboxModelOptions) {
   const input = useInputText(options);
   const search = useComboboxSearch({ ...options, isOpen, text: input.text });
   const renderEmpty = useEmptyContent({ search, renderEmptyState: options.renderEmptyState });
-  const given = options.items ?? options.defaultItems ?? [];
+  const source = options.items ?? options.defaultItems;
+  // A generator yields only once, so each source is read once and every projection shares the copy.
+  const given = useMemo(() => Array.from(source ?? []), [source]);
+  const suggestions = search && !search.isTooShort ? search.results : given;
+  const flatOptions = useMemo(() => flattenOptions(suggestions), [suggestions]);
   const more = search?.hasMore
     ? { onLoadMore: search.loadMore, isLoading: search.isLoadingMore }
     : {};
@@ -96,7 +101,9 @@ export function useComboboxModel(options: ComboboxModelOptions) {
       if (next !== isOpen) setOpen(next);
     },
     input,
-    suggestions: search && !search.isTooShort ? search.results : given,
+    suggestions,
+    /** Every suggested option with the caller's ids, sections opened. */
+    flatOptions,
     /** The suggestions are the caller's filtered list or a search's results, never filtered here. */
     isControlled: Boolean(search ?? options.items),
     isPending: Boolean(options.isPending || search?.isLoading),
