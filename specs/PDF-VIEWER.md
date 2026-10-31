@@ -50,8 +50,8 @@ Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-vi
 
 The viewer shall open documents of at least 250 pages. It keeps at most 8 page requests (`getPage`) in flight while opening a document, and at most 8 page-text requests while extracting the text for a search, and starts no further request once the document's lifetime ends. Only the pages near the view draw (UIC-PDF-VIEWER-2.1); the others keep empty canvases. The lab's 250-page report is built in the lab and times its opening; in the browser test it shows its first page, reaches its last page and finds a word on page 248.
 
-Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/utils/map-bounded.ts`
-Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/utils/map-bounded.test.ts`, `e2e/pdf-viewer.spec.ts`
+Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/map-bounded.ts`
+Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/components/pdf-viewer/map-bounded.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ## UIC-PDF-VIEWER-2 - Pages
 

@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { isFocusableElement } from './focus-target.js';
 import { isEditableTarget } from './is-editable-target.js';
 import { isElement, isHTMLElement, isNode } from './is-element.js';
-import { isInteractiveTarget } from './is-interactive-target.js';
 
 /** A same-origin frame's document: its nodes come from the frame window's own constructors. */
 function frameDocument(): Document {
@@ -30,7 +29,6 @@ describe('node checks', () => {
     expect(isHTMLElement(input, 'textarea')).toBe(false);
     expect(isFocusableElement(input)).toBe(true);
     expect(isEditableTarget(input)).toBe(true);
-    expect(isInteractiveTarget(input, owner.body)).toBe(true);
   });
 
   it('UIC-PORTAL-1.6 tells nodes, elements and HTML elements apart', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isInteractiveTarget } from './is-interactive-target.js';
-import { requireDefined } from './require-defined.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 function render(markup: string) {
   const container = document.createElement('div');

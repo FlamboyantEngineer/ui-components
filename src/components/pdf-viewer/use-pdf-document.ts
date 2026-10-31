@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { mapBounded } from '../../utils/map-bounded.js';
+import { mapBounded } from './map-bounded.js';
 import {
   toDocumentParams,
   type PdfDocument,
