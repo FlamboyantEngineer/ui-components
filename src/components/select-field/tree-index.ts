@@ -105,3 +105,17 @@ export function removeChosenKey<T>(
     (candidate) => candidate !== key && !ancestors.has(candidate) && !isDescendant(candidate),
   );
 }
+
+/**
+ * A cascading choice made whole against the loaded tree: a chosen branch takes every loaded
+ * descendant along, such as children loaded or added after it was chosen, so a branch is never
+ * claimed whole while some of its loaded children are not chosen. The result is in reading order.
+ */
+export function settleCascadeKeys<T>(keys: readonly Key[], index: TreeIndex<T>): Key[] {
+  const chosen = new Set(keys);
+  const entries = [...index.entries()].sort(([, a], [, b]) => a.order - b.order);
+  for (const [key, entry] of entries) {
+    if (entry.parent !== null && chosen.has(entry.parent)) chosen.add(key);
+  }
+  return chosen.size === keys.length ? [...keys] : orderChosenKeys(chosen, index);
+}

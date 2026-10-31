@@ -361,6 +361,42 @@ describe('SelectTreeField', () => {
     expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
   });
 
+  it('UIC-SELECT-FIELD-10.2 settles a chosen branch against children loaded or removed later', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const tree = (children: Place[]): Place[] => [{ id: 'p', name: 'Parent', children }];
+    const props = {
+      mode: 'tree',
+      label: 'Place',
+      selectionMode: 'multiple',
+      getTextValue,
+      onChange,
+      onCommit,
+      defaultValue: ['p', 'a'],
+    } as const;
+    const { rerender } = render(
+      <SelectField {...props} items={tree([{ id: 'a', name: 'Alpha' }])} />,
+    );
+    rerender(
+      <SelectField
+        {...props}
+        items={tree([
+          { id: 'a', name: 'Alpha' },
+          { id: 'b', name: 'Blue' },
+        ])}
+      />,
+    );
+    expect(onChange).toHaveBeenLastCalledWith(['p', 'a', 'b']);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Parent/ })).toBeInTheDocument();
+    onChange.mockClear();
+    // A partial choice under an unchosen branch is left as it is.
+    rerender(
+      <SelectField {...props} value={['a', 'gone']} items={tree([{ id: 'a', name: 'Alpha' }])} />,
+    );
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-SELECT-FIELD-10.2 UIC-SELECT-FIELD-10.3 chooses several with cascading checkboxes and chips', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

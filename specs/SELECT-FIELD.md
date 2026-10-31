@@ -266,7 +266,7 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/sel
 
 ### UIC-SELECT-FIELD-10.2 - Multiple choice
 
-With `selectionMode` `multiple`, the value shall be the list of chosen keys in reading order, each row draws a checkbox, the popover stays open while the reader chooses, and every change commits at once. With `selectionPropagation` (the default), choosing a node chooses its loaded descendants and a node is chosen exactly when all its loaded children are, as in `Tree`; without it each row is chosen on its own. The trigger reads the provider's `selectedCount` string for the chips shown.
+With `selectionMode` `multiple`, the value shall be the list of chosen keys in reading order, each row draws a checkbox, the popover stays open while the reader chooses, and every change commits at once. With `selectionPropagation` (the default), choosing a node chooses its loaded descendants and a node is chosen exactly when all its loaded children are, as in `Tree`; without it each row is chosen on its own. A chosen branch whose children load or are added later takes them along, reported as a change (`onChange`), not a commit, so a branch is never claimed whole while some of its loaded children are not chosen and the rows, chips and form values agree. Keys of nodes not loaded stay as they are. The trigger reads the provider's `selectedCount` string for the chips shown.
 
 Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-index.ts`
 Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
