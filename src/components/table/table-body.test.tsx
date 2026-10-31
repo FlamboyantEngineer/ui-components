@@ -113,6 +113,20 @@ describe('Table notices', { timeout: 15_000 }, () => {
     expect(screen.getByRole('button', { name: 'Retry' })).toHaveFocus();
   });
 
+  it('UIC-TABLE-6.1 names the notice row by its message beside selection and actions columns', () => {
+    const { container } = renderCities({
+      errorMessage: 'Cities are unavailable',
+      onRetry: () => {},
+      selectionMode: 'multiple',
+      renderRowActions: () => null,
+    });
+    const row = requireDefined(stateRow(container));
+    const labelledBy = requireDefined(row.getAttribute('aria-labelledby'));
+    expect(document.getElementById(labelledBy)).toHaveClass('ui-table__state-cell');
+    expect(row).toHaveAccessibleName('Cities are unavailable Retry');
+    expect(screen.getByRole('row', { name: /^Cities are unavailable/ })).toBe(row);
+  });
+
   it('UIC-TABLE-6.1 renders a table without data columns without failing', () => {
     const { container } = renderCities({
       columns: [],

@@ -2,9 +2,7 @@
 
 import type { ReactNode } from 'react';
 import {
-  Cell,
   Collection,
-  Row,
   TableBody as AriaTableBody,
   TableLoadMoreItem,
 } from '../../primitives/index.js';
@@ -15,6 +13,7 @@ import { tableHooks as hooks } from './table-hooks.js';
 import { renderBodyNode } from './table-group-row.js';
 import type { TableBodyNode } from './table-groups.js';
 import type { TableRowModel } from './table-row.js';
+import { TableSpanningRow } from './table-spanning-row.js';
 import type { TableRow } from './table-rows.js';
 import { countTableColumns } from './table-structure.js';
 
@@ -43,26 +42,22 @@ const stateRowId = 'ui-table-state-row';
 
 function TableStateRow<T>({ status, props }: { status: TableStatus; props: TableBodyProps<T> }) {
   const { message, onRetry } = props;
+  // Focusable so a retry button stays reachable, never selectable.
   return (
-    <Row
+    <TableSpanningRow
       id={stateRowId}
       textValue={typeof message === 'string' ? message : status}
-      // Focusable so a retry button stays reachable, never selectable.
-      isDisabled
-      disabledBehavior="selection"
-      {...hooks.slot('state-row', { variant: status })}
+      isVirtualized={props.model.structure.isVirtualized}
+      colSpan={countTableColumns(props.model.structure)}
+      rowHooks={hooks.slot('state-row', { variant: status })}
+      cellClassName={hooks.slotClass('state-cell')}
     >
-      <Cell
-        colSpan={countTableColumns(props.model.structure)}
-        className={hooks.slotClass('state-cell')}
-      >
-        {status === 'error' ? (
-          <InlineError onRetry={onRetry}>{message}</InlineError>
-        ) : (
-          <EmptyState variant={status} size="sm" description={message} />
-        )}
-      </Cell>
-    </Row>
+      {status === 'error' ? (
+        <InlineError onRetry={onRetry}>{message}</InlineError>
+      ) : (
+        <EmptyState variant={status} size="sm" description={message} />
+      )}
+    </TableSpanningRow>
   );
 }
 

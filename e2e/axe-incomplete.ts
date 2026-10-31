@@ -53,8 +53,6 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
   },
   table: {
     'th-has-data-cells': 'The loading, empty and error tables have headers and no data cells.',
-    'aria-valid-attr-value':
-      "Known defect #702: the error row's aria-labelledby names a row header that is not rendered.",
   },
   'pivot-table': {
     'th-has-data-cells': 'The empty pivot has headers and no data cells.',

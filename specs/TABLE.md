@@ -232,9 +232,9 @@ Verification: `src/components/table/use-table-reorder.test.tsx`
 
 ### UIC-TABLE-6.1 - Notice row
 
-While loading, empty or failed, the table shall replace its rows with one full-width row (`ui-table__state-row` with `data-variant`) whose cell spans every column, including the selection and actions columns, while the headers and the table's name stay. An error wins over loading, and loading over empty. The notice row can take focus, so its controls stay reachable, but it is never selected, dragged or passed to `onRowAction`. A table without data columns draws no selection or actions column and no rows, rather than failing.
+While loading, empty or failed, the table shall replace its rows with one full-width row (`ui-table__state-row` with `data-variant`) whose cell spans every column, including the selection and actions columns, while the headers and the table's name stay. An error wins over loading, and loading over empty. The notice row is named by its spanning cell, so assistive technology reads the notice as the row's name and no reference points at a missing row header. It can take focus, so its controls stay reachable, but it is never selected, dragged or passed to `onRowAction`. A table without data columns draws no selection or actions column and no rows, rather than failing.
 
-Implementation: `src/components/table/table-body.tsx`, `src/components/table/use-table-grid.ts`
+Implementation: `src/components/table/table-body.tsx`, `src/components/table/table-spanning-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-6.2 - Loading
@@ -350,9 +350,9 @@ Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`, `s
 
 ### UIC-TABLE-9.2 - Detail rows
 
-`renderRowDetail(row)` shall make each row with content expandable, drawing that content in a full-width detail row (`ui-table__detail-row`, whose `ui-table__detail-cell` spans every column) under the row while it is expanded, before its child rows. A detail row can take focus, so its controls stay reachable, but it is never selected, dragged or passed to `onRowAction`.
+`renderRowDetail(row)` shall make each row with content expandable, drawing that content in a full-width detail row (`ui-table__detail-row`, whose `ui-table__detail-cell` spans every column) under the row while it is expanded, before its child rows. A detail row is named by its spanning cell, like the notice row ([UIC-TABLE-6.1](#uic-table-61---notice-row)). It can take focus, so its controls stay reachable, but it is never selected, dragged or passed to `onRowAction`.
 
-Implementation: `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`
+Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-spanning-row.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-9.3 - Sorting and filtering nested rows
