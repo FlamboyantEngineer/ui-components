@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

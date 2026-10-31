@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, SortDirection, Tone } from '../../core/props.js';

@@ -93,4 +93,23 @@ test.describe('Visually Hidden lab', () => {
     await expect(hidden).not.toHaveAttribute('data-focus-within');
     await expect.poll(async () => (await box(hidden)).width).toBeLessThanOrEqual(1);
   });
+
+  test('UIC-VISUALLY-HIDDEN-1.4 hides the text of library components through the hook', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('visually-hidden');
+    const demo = page.locator('[data-lab-demo="components"]');
+    for (const slot of [
+      '.ui-badge__accessible-label',
+      '.ui-shortcut__text',
+      '.ui-copy-button__status',
+    ]) {
+      const hidden = demo.locator(slot);
+      await expect(hidden).toHaveClass(/\bui-visually-hidden\b/);
+      const rect = await box(hidden);
+      expect(rect.width).toBeLessThanOrEqual(1);
+      expect(rect.height).toBeLessThanOrEqual(1);
+    }
+  });
 });

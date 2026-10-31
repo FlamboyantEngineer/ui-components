@@ -30,6 +30,13 @@ const ARIA_PACKAGES = {
 };
 
 // Labs show hosts the public API, so they never reach into the building blocks (specs/PRIMITIVES.md).
+// Hidden text renders through the library's VisuallyHidden, which carries its hook (UIC-VISUALLY-HIDDEN-1.4).
+const VISUALLY_HIDDEN_PRIMITIVE = {
+  group: ['**/primitives/index.js', '**/primitives/content.js'],
+  importNames: ['VisuallyHidden'],
+  message: 'Use the library VisuallyHidden (src/components/visually-hidden/visually-hidden.js).',
+};
+
 const PRIMITIVES_MODULES = {
   group: ['**/src/primitives', '**/src/primitives/**'],
   message: 'Labs use the public API, not src/primitives (UIC-PRIMITIVES-1.4).',
@@ -152,7 +159,10 @@ export default tseslint.config(
       'ui/no-css-import': 'error',
       'ui/no-static-inline-style': 'error',
       'ui/hook-class-names': 'error',
-      'no-restricted-imports': ['error', { patterns: [...STYLING_PACKAGES, ARIA_PACKAGES] }],
+      'no-restricted-imports': [
+        'error',
+        { patterns: [...STYLING_PACKAGES, ARIA_PACKAGES, VISUALLY_HIDDEN_PRIMITIVE] },
+      ],
       'no-restricted-globals': [
         'error',
         {
@@ -272,6 +282,12 @@ export default tseslint.config(
       'jest-dom/prefer-to-have-style': 'off',
       // aria-valuenow is checked as the attribute string; toHaveValue reads range roles as numbers.
       'jest-dom/prefer-to-have-value': 'off',
+    },
+  },
+  {
+    files: ['src/components/visually-hidden/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [...STYLING_PACKAGES, ARIA_PACKAGES] }],
     },
   },
   {

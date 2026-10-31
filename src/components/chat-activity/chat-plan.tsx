@@ -8,7 +8,7 @@ import {
   type GlyphComponent,
 } from '../../core/glyphs.js';
 import { useId, useState } from 'react';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';

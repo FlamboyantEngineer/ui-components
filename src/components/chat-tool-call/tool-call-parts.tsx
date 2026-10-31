@@ -20,7 +20,7 @@ import {
 // The parts of a tool call's card: the title in its trigger and the body its panel shows.
 
 import { useId, useMemo, type ReactNode } from 'react';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
