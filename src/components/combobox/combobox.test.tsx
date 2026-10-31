@@ -1,5 +1,5 @@
 import { PlusGlyph } from '../../core/glyphs.js';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -421,6 +421,10 @@ describe('Combobox', () => {
     expect(filter).toHaveFocus();
     await user.keyboard('ap');
     expect(filter).toHaveValue('ap');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(filter, { key: 'Escape', isComposing: true });
+    expect(filter).toHaveFocus();
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
     expect(fruitInput()).toHaveValue('');
     expect(screen.getByRole('listbox')).toBeInTheDocument();
     await user.tab();

@@ -5,6 +5,7 @@ import { Group, Input, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
@@ -64,6 +65,8 @@ type CellSlots = SlotRegistry<'group' | 'cell'>;
  * character a cell already holds moves on, as no change event follows it.
  */
 function handleCellKey(event: KeyboardEvent<HTMLInputElement>, cell: CellKeyContext) {
+  // An input method composing in a text cell owns its arrows and Backspace.
+  if (isComposingKey(event.nativeEvent)) return;
   const { index, value } = cell;
   const step = cell.isRtl ? -1 : 1;
   const moves: Partial<Record<string, number>> = {

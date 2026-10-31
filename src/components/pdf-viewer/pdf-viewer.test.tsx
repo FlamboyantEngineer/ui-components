@@ -297,6 +297,9 @@ describe('PdfViewer', () => {
 
       const field = screen.getByRole('searchbox');
       await userEvent.type(field, 'pear');
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+      fireEvent.keyDown(field, { key: 'ArrowRight', isComposing: true });
+      expect(field).toHaveFocus();
       await userEvent.keyboard('{ArrowLeft}');
       expect(field).toHaveFocus();
       expect((field as HTMLInputElement).selectionStart).toBe(3);

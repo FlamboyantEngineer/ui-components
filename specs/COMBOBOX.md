@@ -203,7 +203,7 @@ Verification: `src/components/combobox/combobox-search.test.tsx`, `e2e/combobox.
 
 ### UIC-COMBOBOX-5.5 - List header
 
-`listHeader` shall draw its content at the top of the popover, above the listbox, in `ui-combobox__list-header`, for controls such as filters that change `loadItems` or `items`. Focus moving into the header keeps the list open. After a press on a button, checkbox or other pressable control in the header, focus returns to the input, so the reader keeps typing and moving through the options; a text field, select, slider or other control that takes typed or arrow-key input keeps the focus a click gives it, with its own keys. Escape that such a control leaves unhandled closes the list and returns focus to the input.
+`listHeader` shall draw its content at the top of the popover, above the listbox, in `ui-combobox__list-header`, for controls such as filters that change `loadItems` or `items`. Focus moving into the header keeps the list open. After a press on a button, checkbox or other pressable control in the header, focus returns to the input, so the reader keeps typing and moving through the options; a text field, select, slider or other control that takes typed or arrow-key input keeps the focus a click gives it, with its own keys. Escape that such a control leaves unhandled closes the list and returns focus to the input, except an Escape that belongs to an input method composition (`isComposing`, or key code 229), which is the input method's.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`, `src/components/combobox/combobox-list-header.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`

@@ -38,7 +38,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 ### UIC-TOUR-2.2 - Skipping
 
-Every step but the last shall offer a Skip button (`ui-tour__skip`, provider string `skip`), and Escape inside the dialog skips too: the tour closes and `onSkip` receives the shown step's index. Presses outside the dialog never close the tour.
+Every step but the last shall offer a Skip button (`ui-tour__skip`, provider string `skip`), and Escape inside the dialog skips too, unless a control handled it or it belongs to an input method composition (`isComposing`, or key code 229) in a field of the step's content: the tour closes and `onSkip` receives the shown step's index. Presses outside the dialog never close the tour.
 
 Implementation: `src/components/tour/tour.tsx`, `src/components/tour/tour-panel.tsx`
 Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`

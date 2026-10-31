@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Dialog, Heading } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Button } from '../button/button.js';
 import { tourHooks as hooks } from './tour-hooks.js';
 
@@ -44,7 +45,8 @@ export function TourPanel({
   useEffect(() => {
     const dialog = dialogRef.current;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      // A composing Escape in a field of the step's content is the input method's.
+      if (event.key !== 'Escape' || event.defaultPrevented || isComposingKey(event)) return;
       event.preventDefault();
       skip.current();
     };
