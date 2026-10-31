@@ -3,6 +3,7 @@
 import {
   Children,
   isValidElement,
+  useMemo,
   useState,
   useSyncExternalStore,
   type ReactElement,
@@ -211,7 +212,11 @@ function usePaneHost(): PaneHost | null {
 function PaneFrame({ entry, shownKey, isOverlay, focus }: PaneFrameProps) {
   const { id, elementId } = entry.launcher;
   const isHidden = id !== shownKey;
-  const value = { elementId, isHidden, isOverlay, paneRef: focus.paneRef(id) };
+  const paneRef = focus.paneRef(id);
+  const value = useMemo(
+    () => ({ elementId, isHidden, isOverlay, paneRef }),
+    [elementId, isHidden, isOverlay, paneRef],
+  );
   return <DockPanelPaneContext value={value}>{entry.element}</DockPanelPaneContext>;
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { memo, useId } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import {
   createFilterCondition,
@@ -22,7 +22,11 @@ interface ConditionRuleRowProps {
  * One rule: the field select, the operator and value of the field's type, the rule's menu and its
  * validation message. Choosing another field starts the rule over with that field's first operator.
  */
-export function ConditionRuleRow({ rule, index, count }: ConditionRuleRowProps) {
+export const ConditionRuleRow = memo(function ConditionRuleRow({
+  rule,
+  index,
+  count,
+}: ConditionRuleRowProps) {
   const strings = useUiStrings();
   const { fields, validate, actions, elementId } = useConditionBuilder();
   const messageId = useId();
@@ -67,4 +71,4 @@ export function ConditionRuleRow({ rule, index, count }: ConditionRuleRowProps) 
       ) : null}
     </div>
   );
-}
+});

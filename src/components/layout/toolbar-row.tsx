@@ -145,6 +145,8 @@ export function ToolbarRow({
   const wrap = overflow === 'wrap' ? 'wrap' : 'nowrap';
   const scroll = useToolbarScroll(isScroll);
   const stripRef = useMemo(() => mergeRefs(scroll.stripRef, ref), [scroll.stripRef, ref]);
+  // The row renders again as it scrolls; its controls read this only when it changes.
+  const context = useMemo<ToolbarRowFlow>(() => ({ orientation, wrap }), [orientation, wrap]);
   const edges = isScroll ? scroll.edges : { start: false, end: false };
   const data = { variant, orientation, space, justify, wrap, overflow, pending: isPending };
   return (
@@ -180,7 +182,7 @@ export function ToolbarRow({
           aria-label={label}
           aria-labelledby={labelledBy}
         >
-          <ToolbarRowContext value={{ orientation, wrap }}>{children}</ToolbarRowContext>
+          <ToolbarRowContext value={context}>{children}</ToolbarRowContext>
         </ToolbarRowStrip>
       </ScrollStrip>
     </div>

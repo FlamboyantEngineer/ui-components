@@ -1,8 +1,10 @@
 'use client';
 
 import {
+  useCallback,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useState,
   type MouseEvent,
   type ReactNode,
@@ -62,28 +64,36 @@ function isOwnOutput(node: Node): boolean {
 }
 
 /**
- * The boxes of the layer's target elements, by annotation id, measured after each commit and
- * again, at most once a frame, when content inside the layer changes, resizes or scrolls.
+ * The boxes of the layer's target elements, by annotation id, measured after each commit that
+ * changes the annotations or the content, and again, at most once a frame, when content inside
+ * the layer changes, resizes or scrolls. The layer's own state, such as the active annotation,
+ * measures nothing.
  */
-function useMeasuredTargets(layer: HTMLElement | null, annotations: readonly Annotation[]) {
+function useMeasuredTargets(
+  layer: HTMLElement | null,
+  annotations: readonly Annotation[],
+  content: ReactNode,
+) {
   const [measured, setMeasured] = useState<ReadonlyMap<Key, readonly AnnotationRect[]>>(new Map());
-  const measure = () => {
+  const latest = useLatest({ layer, annotations });
+  const remeasure = useCallback(() => {
+    const { layer, annotations } = latest.current;
     if (!layer) return;
     const next = measureTargets(layer, annotations);
     setMeasured((current) => (isSameMeasurement(current, next) ? current : next));
-  };
-  const latest = useLatest({ measure, annotations });
-  useLayoutEffect(measure);
+  }, [latest]);
+  // Measures when the layer, the annotations or the content change, which `remeasure` reads.
+  useLayoutEffect(() => remeasure(), [remeasure, layer, annotations, content]);
   useLayoutEffect(() => {
     if (!layer) return;
     const observer = observeTargets(layer, {
-      measure: () => latest.current.measure(),
+      measure: remeasure,
       getTargets: () => findTargets(layer, latest.current.annotations).values(),
       isOwnOutput,
     });
     return observer.disconnect;
-  }, [layer, latest]);
-  return { measured, remeasure: () => latest.current.measure() };
+  }, [layer, latest, remeasure]);
+  return { measured, remeasure };
 }
 
 const noRects: readonly AnnotationRect[] = [];
@@ -110,13 +120,26 @@ export function AnnotationLayer({
     onCurrentKeyChange,
   );
   const [layer, setLayer] = useState<HTMLDivElement | null>(null);
-  const { measured, remeasure } = useMeasuredTargets(layer, annotations);
-  useImperativeHandle(handleRef, () => ({ remeasure }));
+  const { measured, remeasure } = useMeasuredTargets(layer, annotations, children);
+  useImperativeHandle(handleRef, () => ({ remeasure }), [remeasure]);
 
-  const anchors = annotations.map((annotation) => ({
-    annotation,
-    rects: annotation.rects ?? measured.get(annotation.id) ?? noRects,
-  }));
+  const anchors = useMemo(
+    () =>
+      annotations.map((annotation) => ({
+        annotation,
+        rects: annotation.rects ?? measured.get(annotation.id) ?? noRects,
+      })),
+    [annotations, measured],
+  );
+  const latestSetActive = useLatest(setActive);
+  const setCurrentKey = useCallback(
+    (key: Key | null) => latestSetActive.current(key),
+    [latestSetActive],
+  );
+  const context = useMemo(
+    () => ({ anchors, currentKey: active, setCurrentKey, layer }),
+    [anchors, active, setCurrentKey, layer],
+  );
   const onClick = (event: MouseEvent) => {
     if (!layer || (event.target as Element).closest(`.${hooks.slotClass('margin')}`)) return;
     const origin = getLayerOrigin(layer);
@@ -135,9 +158,7 @@ export function AnnotationLayer({
       style={{ position: 'relative' }}
       onClick={onClick}
     >
-      <AnnotationContext value={{ anchors, currentKey: active, setCurrentKey: setActive, layer }}>
-        {children}
-      </AnnotationContext>
+      <AnnotationContext value={context}>{children}</AnnotationContext>
       <div
         {...hooks.slot('marks')}
         aria-hidden="true"

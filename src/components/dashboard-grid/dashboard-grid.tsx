@@ -3,6 +3,8 @@
 import { findMaximum } from '../../utils/find-maximum.js';
 import {
   createContext,
+  memo,
+  useCallback,
   useContext,
   useMemo,
   useRef,
@@ -17,6 +19,7 @@ import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
@@ -54,13 +57,10 @@ export interface DashboardGridProps
   children: (item: DashboardGridItem) => ReactNode;
 }
 
-/** What a tile reads from its grid. */
-export interface DashboardGridTileState {
-  item: DashboardGridItem;
+/** What every tile reads from its grid: the same object while the grid's options are. */
+interface DashboardGridShared {
   columns: number;
   isEditing: boolean;
-  /** The tile being moved or resized, and how. */
-  moving: { id: Key; kind: TileMoveKind } | null;
   /** The handle to focus again after a keyboard move, once the tiles have rendered. */
   refocus: RefObject<{ id: Key; kind: TileMoveKind } | null>;
   measureStep: () => CellStep;
@@ -69,6 +69,13 @@ export interface DashboardGridTileState {
   /** Keeps the previewed layout and returns the moved tile, if a preview changed the layout. */
   commit: (isKeyboard: boolean) => DashboardGridItem | undefined;
   announce: (message: string) => void;
+}
+
+/** What a tile reads from its grid: the shared state, its layout item and how it is moving. */
+export interface DashboardGridTileState extends DashboardGridShared {
+  item: DashboardGridItem;
+  /** How the tile is being moved or resized, if it is. */
+  moving: TileMoveKind | null;
 }
 
 /** A move or resize in progress: the tile as it started, where it is asked to go, and how. */
@@ -133,11 +140,16 @@ function useDashboardLayout(
     () => [...(props.defaultLayout ?? [])],
     { codec: dashboardLayoutCodec },
   );
-  const layout = normalizeDashboardLayout(props.layout ?? own, columns);
-  const commit = (next: DashboardGridItem[]) => {
-    if (props.layout === undefined) setOwn(next);
-    props.onLayoutChange?.(next);
-  };
+  const source = props.layout ?? own;
+  const layout = useMemo(() => normalizeDashboardLayout(source, columns), [source, columns]);
+  const latest = useLatest(props);
+  const commit = useCallback(
+    (next: DashboardGridItem[]) => {
+      if (latest.current.layout === undefined) setOwn(next);
+      latest.current.onLayoutChange?.(next);
+    },
+    [latest, setOwn],
+  );
   return { layout, commit };
 }
 
@@ -163,40 +175,74 @@ function useTileMoves({
   isEditing: boolean;
 }) {
   const [gesture, setGesture] = useState<TileGesture | null>(null);
-  const latest = useRef<TileGesture | null>(null);
+  const pending = useRef<TileGesture | null>(null);
   const refocus = useRef<{ id: Key; kind: TileMoveKind } | null>(null);
   const shown = gesture && resolveGesture(gesture, committed.layout, columns);
   if (gesture && (!isEditing || !shown)) {
-    latest.current = null;
+    pending.current = null;
     setGesture(null);
   }
+  // The handlers read the grid as it is when they run, so the tiles keep the same ones.
+  const latest = useLatest({ element, committed, columns, rowHeight });
+  const handlers = useMemo(
+    () => ({
+      refocus,
+      measureStep: (): CellStep => {
+        const { element, columns, rowHeight } = latest.current;
+        if (!element) return { column: 1, row: 1 };
+        const width = element.getBoundingClientRect().width;
+        const column = (width + readGap(element, 'columnGap')) / columns;
+        const row = rowHeight + readGap(element, 'rowGap');
+        return { column: Math.max(1, column), row: Math.max(1, row) };
+      },
+      preview: (next: TileGesture) => {
+        pending.current = next;
+        setGesture(next);
+      },
+      commit: (isKeyboard: boolean) => {
+        const { committed, columns } = latest.current;
+        const last = pending.current;
+        pending.current = null;
+        setGesture(null);
+        const result = last && resolveGesture(last, committed.layout, columns);
+        if (!last || !result || isSameLayout(result.layout, committed.layout)) return undefined;
+        if (isKeyboard) refocus.current = { id: result.item.id, kind: last.kind };
+        committed.commit(result.layout);
+        return result.item;
+      },
+    }),
+    [latest],
+  );
   return {
     previewLayout: shown?.layout,
-    refocus,
     moving: gesture && shown ? { id: gesture.origin.id, kind: gesture.kind } : null,
-    measureStep: (): CellStep => {
-      if (!element) return { column: 1, row: 1 };
-      const width = element.getBoundingClientRect().width;
-      const column = (width + readGap(element, 'columnGap')) / columns;
-      const row = rowHeight + readGap(element, 'rowGap');
-      return { column: Math.max(1, column), row: Math.max(1, row) };
-    },
-    preview: (next: TileGesture) => {
-      latest.current = next;
-      setGesture(next);
-    },
-    commit: (isKeyboard: boolean) => {
-      const last = latest.current;
-      latest.current = null;
-      setGesture(null);
-      const result = last && resolveGesture(last, committed.layout, columns);
-      if (!last || !result || isSameLayout(result.layout, committed.layout)) return undefined;
-      if (isKeyboard) refocus.current = { id: result.item.id, kind: last.kind };
-      committed.commit(result.layout);
-      return result.item;
-    },
+    handlers,
   };
 }
+
+interface DashboardGridCellProps {
+  shared: DashboardGridShared;
+  item: DashboardGridItem;
+  moving: TileMoveKind | null;
+  render: (item: DashboardGridItem) => ReactNode;
+}
+
+/**
+ * One tile's place in the grid. It renders again only when its own cells, its move or the grid's
+ * shared state change, so a preview leaves the tiles it does not move alone.
+ */
+const DashboardGridCell = memo(
+  function DashboardGridCell({ shared, item, moving, render }: DashboardGridCellProps) {
+    const value = useMemo(() => ({ ...shared, item, moving }), [shared, item, moving]);
+    return <DashboardGridContext value={value}>{render(item)}</DashboardGridContext>;
+  },
+  (before, after) =>
+    before.shared === after.shared &&
+    before.moving === after.moving &&
+    before.render === after.render &&
+    before.item.id === after.item.id &&
+    isSameCells(before.item, after.item),
+);
 
 /**
  * A grid of tiles on whole columns and rows, each placed by plain `{ id, x, y, w, h }` data. In
@@ -228,7 +274,7 @@ export function DashboardGrid({
   const shownColumns = useShownColumns(element, columns, minColumnWidth);
   const isReflowed = shownColumns < columns;
   const editable = isEditing && !isReflowed;
-  const { previewLayout, ...moves } = useTileMoves({
+  const { previewLayout, moving, handlers } = useTileMoves({
     element,
     committed,
     columns,
@@ -239,10 +285,16 @@ export function DashboardGrid({
   const shown = isReflowed
     ? reflowDashboardLayout(committed.layout, { from: columns, to: shownColumns })
     : (previewLayout ?? committed.layout);
-  const order = [...committed.layout].sort((a, b) => a.y - b.y || a.x - b.x);
+  const order = useMemo(
+    () => [...committed.layout].sort((a, b) => a.y - b.y || a.x - b.x),
+    [committed.layout],
+  );
   const positions = new Map(shown.map((item) => [item.id, item]));
   const rows = findMaximum(shown, (item) => item.y + item.h, 1);
-  const state = { ...moves, columns, isEditing: editable, announce: setMessage };
+  const shared = useMemo(
+    () => ({ ...handlers, columns, isEditing: editable, announce: setMessage }),
+    [handlers, columns, editable],
+  );
   const style = {
     gridTemplateColumns: `repeat(${shownColumns}, minmax(0, 1fr))`,
     gridTemplateRows: `repeat(${rows}, ${rowHeight}px)`,
@@ -252,7 +304,7 @@ export function DashboardGrid({
       {...rest}
       {...dashboardGridHooks.root({
         className,
-        data: { editing: state.isEditing, reflowed: isReflowed },
+        data: { editing: editable, reflowed: isReflowed },
       })}
       ref={rootRef}
       role="group"
@@ -261,9 +313,13 @@ export function DashboardGrid({
       {order.map((entry) => {
         const item = positions.get(entry.id) ?? entry;
         return (
-          <DashboardGridContext key={toKeyIdentity(item.id)} value={{ ...state, item }}>
-            {children(item)}
-          </DashboardGridContext>
+          <DashboardGridCell
+            key={toKeyIdentity(item.id)}
+            shared={shared}
+            item={item}
+            moving={moving?.id === item.id ? moving.kind : null}
+            render={children}
+          />
         );
       })}
       <VisuallyHidden>

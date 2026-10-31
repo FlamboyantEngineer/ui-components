@@ -13,7 +13,7 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 ### UIC-ANNOTATION-LAYER-1.2 - Anchors by rectangles or elements
 
-An annotation's `rects` shall be its anchor, in pixels from the top left corner of the layer's content (inside its border, scrolling with it). Without `rects`, an annotation with a `targetId` naming an element inside the layer is anchored by that element's boxes (`getClientRects`, one per line of an inline element), measured in the same coordinates after each commit and again as [UIC-ANNOTATION-LAYER-1.4](#uic-annotation-layer-14---keeping-measured-anchors-current) describes. An annotation with neither, or whose element is missing or outside the layer, has no anchor.
+An annotation's `rects` shall be its anchor, in pixels from the top left corner of the layer's content (inside its border, scrolling with it). Without `rects`, an annotation with a `targetId` naming an element inside the layer is anchored by that element's boxes (`getClientRects`, one per line of an inline element), measured in the same coordinates after each commit that changes the layer's `annotations` or `children` (its own state, such as the active annotation, measures nothing) and again as [UIC-ANNOTATION-LAYER-1.4](#uic-annotation-layer-14---keeping-measured-anchors-current) describes. An annotation with neither, or whose element is missing or outside the layer, has no anchor.
 
 Implementation: `src/components/annotation-layer/annotation-layer.tsx`, `src/components/annotation-layer/anchor-geometry.ts`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`

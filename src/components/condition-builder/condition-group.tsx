@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { PlusGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -23,7 +24,12 @@ interface ConditionGroupViewProps {
  * A group: the choice between matching all and any of its rules, its menu (except at the root), its
  * rules and nested groups in order, and buttons that add a rule and, above the depth limit, a group.
  */
-export function ConditionGroupView({ group, depth, index, count }: ConditionGroupViewProps) {
+export const ConditionGroupView = memo(function ConditionGroupView({
+  group,
+  depth,
+  index,
+  count,
+}: ConditionGroupViewProps) {
   const strings = useUiStrings();
   const { maxDepth, actions, elementId } = useConditionBuilder();
   const isRoot = index === undefined;
@@ -92,4 +98,4 @@ export function ConditionGroupView({ group, depth, index, count }: ConditionGrou
       </div>
     </div>
   );
-}
+});

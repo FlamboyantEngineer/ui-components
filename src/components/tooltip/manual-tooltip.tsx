@@ -90,8 +90,12 @@ export function ManualTooltip({
   placement,
   children,
 }: ManualTooltipProps) {
+  const context = useMemo(
+    () => (tooltipProps ? { ...tooltipProps, triggerRef } : null),
+    [tooltipProps, triggerRef],
+  );
   return (
-    <TooltipContext value={tooltipProps ? { ...tooltipProps, triggerRef } : null}>
+    <TooltipContext value={context}>
       <TooltipTriggerStateContext value={state}>
         <TooltipPanel
           variant="default"
