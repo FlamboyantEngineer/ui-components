@@ -1,6 +1,7 @@
 import { StarGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Form } from '../../src/components/form/form.js';
 import {
   BlockHandle,
   FormatToolbar,
@@ -306,6 +307,35 @@ export function FormEditor() {
         Submits: <output data-lab-output="form-submits">{submits}</output>
       </p>
     </form>
+  );
+}
+
+/**
+ * A required editor in a form that validates at once: blank lines, empty lists and quotes leave it
+ * empty and the submit blocked; any text, or a divider, fills it.
+ */
+export function RequiredEditor() {
+  const [submits, setSubmits] = useState(0);
+  return (
+    <Form
+      aria-label="Required note"
+      validationMode="immediate"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmits((count) => count + 1);
+      }}
+    >
+      <RichTextEditor
+        label="Summary"
+        isRequired
+        data-lab-editor="required"
+        toolbar={<FormatToolbar />}
+      />
+      <button type="submit">Send</button>
+      <p>
+        Sent: <output data-lab-output="required-submits">{submits}</output>
+      </p>
+    </Form>
   );
 }
 

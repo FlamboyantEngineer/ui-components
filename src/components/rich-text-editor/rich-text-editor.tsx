@@ -8,7 +8,7 @@ import {
   createEditorPlugins,
   createEditorState,
   createEmptyDocument,
-  isDocumentEmpty,
+  isDocumentBlank,
   replaceDocument,
   toRichTextJson,
 } from './editor-state.js';
@@ -64,7 +64,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
     initialValue: empty,
     emptyValue: empty,
     check: (value) =>
-      props.isRequired && isDocumentEmpty(value, engine)
+      props.isRequired && isDocumentBlank(value, engine)
         ? { severity: 'error', message: strings.valueRequired, validity: 'valueMissing' }
         : null,
     isEqual: isRichTextEqual,
