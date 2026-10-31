@@ -19,7 +19,7 @@ import {
   useAbsoluteTime,
 } from './chat-message-parts.js';
 import type { ChatQuoteData } from './chat-quote.js';
-import { useTranscriptMessage } from './transcript-context.js';
+import { useTranscriptContentRef, useTranscriptMessage } from './transcript-context.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
@@ -243,6 +243,7 @@ export function ChatMessage({
   const bodyRef = useRef<HTMLDivElement>(null);
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
   const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
+  const contentRef = useTranscriptContentRef();
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time));
   const display = resolveDisplay({
     ...{ author, groupPosition, variant, time },
@@ -272,12 +273,15 @@ export function ChatMessage({
         />
         {isDeleted ? (
           <>
-            <div {...hooks.slot('content')}>{strings.chatMessageDeleted}</div>
+            <div ref={contentRef} {...hooks.slot('content')}>
+              {strings.chatMessageDeleted}
+            </div>
             <ChatMessageFooter time={display.footerTime} getNow={getNow} />
           </>
         ) : (
           <ChatMessageBody
             {...body}
+            contentRef={contentRef}
             isCancelled={status === 'cancelled'}
             delivery={delivery}
             time={display.footerTime}

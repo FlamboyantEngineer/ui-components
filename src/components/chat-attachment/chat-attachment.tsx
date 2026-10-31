@@ -1,13 +1,10 @@
 'use client';
 
-import { CloseGlyph } from '../../core/glyphs.js';
-import { useContext, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
-import { AttachmentRemovalContext } from './attachment-context.js';
 import {
   getAttachmentGlyph,
   getAttachmentImage,
@@ -21,6 +18,7 @@ import {
   AttachmentChip,
   AttachmentDownload,
   AttachmentProgress,
+  AttachmentRemove,
   AttachmentThumbnail,
   chatAttachmentHooks as hooks,
   useThumbnail,
@@ -47,7 +45,11 @@ export interface ChatAttachmentProps extends Omit<BaseProps, 'id'>, ChatAttachme
  * After a Retry press, once the error (and its Retry button) has left and the focus left with it,
  * focuses the attachment's remove button, else the attachment itself. Returns the press recorder.
  */
-function useRetryFocus(status: ChatAttachmentStatus, rootRef: RefObject<HTMLDivElement | null>) {
+function useRetryFocus(
+  status: ChatAttachmentStatus,
+  rootRef: RefObject<HTMLDivElement | null>,
+  removeRef: RefObject<HTMLElement | null>,
+) {
   const retried = useRef(false);
   useLayoutEffect(() => {
     if (!retried.current || status === 'error') return;
@@ -56,8 +58,8 @@ function useRetryFocus(status: ChatAttachmentStatus, rootRef: RefObject<HTMLDivE
     const owner = getOwnerDocument(root);
     const active = owner.activeElement;
     if (active && active !== owner.body) return;
-    (root?.querySelector<HTMLElement>(`.${hooks.slotClass('remove')}`) ?? root)?.focus();
-  }, [status, rootRef]);
+    (removeRef.current ?? root)?.focus();
+  }, [status, rootRef, removeRef]);
   return () => {
     retried.current = true;
   };
@@ -86,12 +88,12 @@ export function ChatAttachment({
 }: ChatAttachmentProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
-  const removal = useContext(AttachmentRemovalContext);
   const rootRef = useRef<HTMLDivElement>(null);
+  const removeRef = useRef<HTMLElement>(null);
   const kind = getAttachmentKind(mediaType, name);
   const status = resolveAttachmentStatus({ status: givenStatus, error });
   const thumbnail = useThumbnail(getAttachmentImage({ mediaType, name, url, thumbnailUrl }));
-  const recordRetry = useRetryFocus(status, rootRef);
+  const recordRetry = useRetryFocus(status, rootRef, removeRef);
   const download = status === 'complete' ? toAttachmentUrl(url) : undefined;
   const display = thumbnail.src ? 'thumbnail' : 'chip';
   return (
@@ -133,17 +135,7 @@ export function ChatAttachment({
       ) : null}
       {download ? <AttachmentDownload href={download} name={name} /> : null}
       {onRemove ? (
-        <Button
-          className={hooks.slotClass('remove')}
-          icon={CloseGlyph}
-          label={strings.removeItem(name)}
-          size="sm"
-          ref={(button) => removal?.register(id, button)}
-          onPress={() => {
-            removal?.willRemove(id);
-            onRemove();
-          }}
-        />
+        <AttachmentRemove id={id} name={name} buttonRef={removeRef} onRemove={onRemove} />
       ) : null}
     </div>
   );

@@ -57,7 +57,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`
 
 ### UIC-DISCLOSURE-2.1 - Title and panel parts
 
-Without `title`, a `DisclosureTitle` child shall draw the heading, trigger, indicator and title of [UIC-DISCLOSURE-1.1](#uic-disclosure-11---parts) with the disclosure's level and indicator position, and a `DisclosurePanel` child the panel, with its `role` (`group` by default, or `region`) and `render`, typed `ElementRender<'div', DisclosurePanelRenderState>` (`isFocusVisibleWithin`).
+Without `title`, a `DisclosureTitle` child shall draw the heading, trigger, indicator and title of [UIC-DISCLOSURE-1.1](#uic-disclosure-11---parts) with the disclosure's level and indicator position, handing its trigger button to `triggerRef` (for a composite that moves focus to it), and a `DisclosurePanel` child the panel, with its `role` (`group` by default, or `region`) and `render`, typed `ElementRender<'div', DisclosurePanelRenderState>` (`isFocusVisibleWithin`).
 
 Implementation: `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`

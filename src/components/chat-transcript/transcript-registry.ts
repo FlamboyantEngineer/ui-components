@@ -42,6 +42,9 @@ export interface TranscriptRegistry {
   hasRegistered(key: string): boolean;
   attach(key: string, element: HTMLElement | null): void;
   element(key: string): HTMLElement | null;
+  /** Records the element holding a message's content, whose text it announces. */
+  attachContent(key: string, element: HTMLElement | null): void;
+  content(key: string): HTMLElement | null;
   /** The key of a message's element. */
   keyOf(element: Element): string | undefined;
   /** The child key of a message id: the same, unless the message registered its own id. */
@@ -68,6 +71,7 @@ export function createTranscriptRegistry(): TranscriptRegistry {
   const entries = new Map<string, TranscriptMessageEntry>();
   const registered = new Set<string>();
   const elements = new Map<string, HTMLElement>();
+  const contents = new Map<string, HTMLElement>();
   const keys = new WeakMap<Element, string>();
   const listeners = new Set<TranscriptEntryListener>();
   const keysById = new Map<string, string>();
@@ -102,6 +106,11 @@ export function createTranscriptRegistry(): TranscriptRegistry {
       }
     },
     element: (key) => elements.get(key) ?? null,
+    attachContent(key, element) {
+      if (element) contents.set(key, element);
+      else contents.delete(key);
+    },
+    content: (key) => contents.get(key) ?? null,
     keyOf(element) {
       const key = keys.get(element);
       return key !== undefined && elements.get(key) === element ? key : undefined;

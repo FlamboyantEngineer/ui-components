@@ -243,6 +243,17 @@ describe('Disclosure', () => {
 });
 
 describe('Composed disclosures', () => {
+  it('UIC-DISCLOSURE-2.1 hands its trigger button to triggerRef', () => {
+    const triggerRef = { current: null as HTMLButtonElement | null };
+    render(
+      <Disclosure>
+        <DisclosureTitle triggerRef={triggerRef}>Harvest</DisclosureTitle>
+        <DisclosurePanel>Apples</DisclosurePanel>
+      </Disclosure>,
+    );
+    expect(triggerRef.current).toBe(screen.getByRole('button', { name: 'Harvest' }));
+  });
+
   it('UIC-DISCLOSURE-2.1 UIC-DISCLOSURE-2.2 keeps header actions outside the trigger', async () => {
     const user = userEvent.setup();
     const onEdit = vi.fn();

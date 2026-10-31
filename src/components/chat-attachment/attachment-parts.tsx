@@ -1,7 +1,7 @@
 'use client';
 
-import { DownloadGlyph, type GlyphComponent } from '../../core/glyphs.js';
-import { useState } from 'react';
+import { CloseGlyph, DownloadGlyph, type GlyphComponent } from '../../core/glyphs.js';
+import { useContext, useState, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';
@@ -10,6 +10,7 @@ import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
+import { AttachmentRemovalContext } from './attachment-context.js';
 
 export const chatAttachmentHooks = createHooks('chat-attachment', [
   'preview',
@@ -121,5 +122,40 @@ export function AttachmentDownload({ href, name }: { href: string; name: string 
     >
       <Icon icon={DownloadGlyph} />
     </Link>
+  );
+}
+
+/**
+ * The remove button of a composer's attachment. It registers with the attachment list, which moves
+ * focus when the attachment leaves, and hands itself to `buttonRef` for the attachment's own focus.
+ */
+export function AttachmentRemove({
+  id,
+  name,
+  buttonRef,
+  onRemove,
+}: {
+  id: string;
+  name: string;
+  buttonRef: RefObject<HTMLElement | null>;
+  onRemove: () => void;
+}) {
+  const strings = useUiStrings();
+  const removal = useContext(AttachmentRemovalContext);
+  return (
+    <Button
+      className={hooks.slotClass('remove')}
+      icon={CloseGlyph}
+      label={strings.removeItem(name)}
+      size="sm"
+      ref={(button) => {
+        buttonRef.current = button;
+        removal?.register(id, button);
+      }}
+      onPress={() => {
+        removal?.willRemove(id);
+        onRemove();
+      }}
+    />
   );
 }

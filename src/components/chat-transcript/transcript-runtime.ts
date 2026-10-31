@@ -165,10 +165,13 @@ export function publishView(runtime: TranscriptRuntime, settings: TranscriptSett
   });
 }
 
-/** The text a message announces without a summary: its content's text, whitespace collapsed. */
-export function readMessageText(element: HTMLElement | null): string {
-  const content = element?.querySelector('.ui-chat-message__content') ?? element;
-  return (content?.textContent ?? '').replace(/\s+/g, ' ').trim();
+/**
+ * The text a message announces without a summary: the text of the content it registered (else of
+ * the whole message), whitespace collapsed.
+ */
+export function readMessageText(runtime: TranscriptRuntime, key: string): string {
+  const element = runtime.registry.content(key) ?? runtime.registry.element(key);
+  return (element?.textContent ?? '').replace(/\s+/g, ' ').trim();
 }
 
 /** Starts over for another conversation. */
