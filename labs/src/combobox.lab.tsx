@@ -15,6 +15,7 @@ import {
   type ComboboxLoader,
   type ComboboxOption,
 } from '../../src/components/combobox/combobox.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { NarrowRows } from './combobox-narrow-cases.js';
@@ -277,6 +278,27 @@ function RemoteSearch() {
   );
 }
 
+/** A text filter in the list header narrows the suggestions by their first letter. */
+function HeaderFilter() {
+  const [prefix, setPrefix] = useState('');
+  const shown = cities.filter((city) => city.label.toLowerCase().startsWith(prefix.toLowerCase()));
+  return (
+    <Combobox
+      label="City by first letters"
+      items={shown}
+      listHeader={
+        <TextField
+          label="Starts with"
+          size="sm"
+          value={prefix}
+          onChange={setPrefix}
+          data-lab-field="header-filter"
+        />
+      }
+    />
+  );
+}
+
 /** The caller holds the open state; buttons outside open and close the list. */
 function ControlledOpen() {
   const [isOpen, setIsOpen] = useState(false);
@@ -484,6 +506,12 @@ mountLab(
       description="Recently used cities before typing; searches after a pause, with region filters in the list header. Type offline to see a failed search."
     >
       <RemoteSearch />
+    </LabSection>
+    <LabSection
+      title="Filter in the list header"
+      description="Click the text field above the list and type: it keeps focus and narrows the cities. Escape closes the list and returns to the combobox."
+    >
+      <HeaderFilter />
     </LabSection>
     <LabSection
       title="Open state"

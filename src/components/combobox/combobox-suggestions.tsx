@@ -26,6 +26,7 @@ import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
+import { ComboboxListHeader } from './combobox-list-header.js';
 import { useAutoHighlight, useCreatedSelection, useOpenState } from './combobox-effects.js';
 import {
   flattenOptions,
@@ -273,12 +274,9 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
         shouldCloseOnInteractOutside={(element) => element !== inputRef.current}
       >
         {listHeader ? (
-          // Focus moved into the popover keeps the list open; giving it back to the input keeps the
-          // keyboard on the list after a filter control is pressed. Pressable controls stop the click
-          // from bubbling, so it is caught on the way down.
-          <div {...hooks.slot('list-header')} onClickCapture={() => inputRef.current?.focus()}>
+          <ComboboxListHeader slot={hooks.slot('list-header')} inputRef={inputRef}>
             {listHeader}
-          </div>
+          </ComboboxListHeader>
         ) : null}
         <OptionList {...props} filterText={filterText} />
       </Popover>
