@@ -143,7 +143,6 @@ function MovingBoard() {
   const [items, setItems] = useState(tasks);
   const [order, setOrder] = useState(columns);
   const [output, setOutput] = useState('No move yet');
-  let added = items.length;
   return (
     <div style={frame} data-lab-demo="moves">
       <Board
@@ -174,7 +173,7 @@ function MovingBoard() {
           />
         )}
         onAddCard={({ column }) => {
-          added += 1;
+          const added = items.length + 1;
           const task = {
             id: `new-${added}`,
             title: `New chore ${added}`,

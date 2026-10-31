@@ -53,10 +53,11 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
     },
   });
   // A keyboard move can reorder the tiles, which takes focus from the handle; give it back.
+  const { refocus: refocusRef } = grid;
   useLayoutEffect(() => {
-    const target = grid.refocus.current;
+    const target = refocusRef.current;
     if (target?.id !== grid.item.id || target.kind !== kind) return;
-    grid.refocus.current = null;
+    refocusRef.current = null;
     if (ref.current && ref.current.ownerDocument.activeElement !== ref.current) ref.current.focus();
   });
   return (

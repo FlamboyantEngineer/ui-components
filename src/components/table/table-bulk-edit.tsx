@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
@@ -107,8 +107,11 @@ function createBulkEdits<T extends TableRow>(
 }
 
 /** Hands the enclosing form's validity to the dialog's Apply, drawn outside the form. */
-function ValidityProbe({ validity }: { validity: RefObject<FormValidity | null> }) {
-  validity.current = useFormValidity();
+function ValidityProbe({ validityRef }: { validityRef: RefObject<FormValidity | null> }) {
+  const validity = useFormValidity();
+  useLayoutEffect(() => {
+    validityRef.current = validity;
+  });
   return null;
 }
 
@@ -147,7 +150,7 @@ function TableBulkEditDialog<T extends TableRow>(
       }}
     >
       <Form onSubmit={(event) => event.preventDefault()}>
-        <ValidityProbe validity={validity} />
+        <ValidityProbe validityRef={validity} />
         <SelectField
           label={strings.field}
           options={columns.map((candidate) => ({

@@ -54,7 +54,7 @@ function isEditorKey(event: KeyboardEvent<HTMLElement>): boolean {
 function useEditFocus(isEditing: boolean) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const readRef = useRef<HTMLButtonElement | null>(null);
-  const focusReturn = useRef<FocusReturn>('none');
+  const focusReturnRef = useRef<FocusReturn>('none');
   const hasMounted = useRef(false);
   useLayoutEffect(() => {
     const isFirst = !hasMounted.current;
@@ -64,12 +64,12 @@ function useEditFocus(isEditing: boolean) {
       target?.focus();
       if (isHTMLElement(target, 'input')) target.select();
       if (isHTMLElement(target, 'textarea')) target.setSelectionRange(-1, -1);
-    } else if (!isEditing && focusReturn.current === 'read') {
+    } else if (!isEditing && focusReturnRef.current === 'read') {
       readRef.current?.focus();
     }
-    focusReturn.current = 'none';
+    focusReturnRef.current = 'none';
   }, [isEditing]);
-  return { editorRef, readRef, focusReturn };
+  return { editorRef, readRef, focusReturnRef };
 }
 
 /**
@@ -201,13 +201,14 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
   );
   const { draft, setDraft, error, setError, session } = useEditSession<T>(isEditing);
   const focus = useEditFocus(isEditing);
+  const { focusReturnRef } = focus;
   const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(blurTimer.current), []);
   const current = draft === null ? value : draft.value;
 
   const close = (focusReturn: FocusReturn) => {
     clearTimeout(blurTimer.current);
-    focus.focusReturn.current = focusReturn;
+    focusReturnRef.current = focusReturn;
     setDraft(null);
     setError(null);
     setEditing(false);

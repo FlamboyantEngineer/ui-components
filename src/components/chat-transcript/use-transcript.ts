@@ -132,6 +132,13 @@ function flushPendingFocus(runtime: TranscriptRuntime, settings: TranscriptSetti
   if (pending && runtime.registry.element(pending.key)) focusMessage(runtime, settings, pending);
 }
 
+/** Records what a commit rendered, for the next commit to compare with. */
+function recordCommit(runtime: TranscriptRuntime, commit: CommitInput) {
+  runtime.keys = commit.keys;
+  runtime.indexOf = commit.indexOf;
+  runtime.mountedItems = commit.mountedItems;
+}
+
 /**
  * Processes a commit that changed the keys, the window or the settings the pass reads: arrivals,
  * scroll keeping, announcements, highlight and pending focus. A commit that changed none of them,
@@ -159,9 +166,7 @@ function useCommit(
     }
     lastPass.current = { mountedItems: commit.mountedItems, settings: passSettings };
     const change = isNewKeys ? commit.change : noChange;
-    runtime.keys = commit.keys;
-    runtime.indexOf = commit.indexOf;
-    runtime.mountedItems = commit.mountedItems;
+    recordCommit(runtime, commit);
     if (change.isReset) resetConversation(runtime);
     if (settings.scrollMode !== 'anchor' && runtime.keeper.anchorKey() !== null) {
       runtime.keeper.anchor(null);

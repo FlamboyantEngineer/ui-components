@@ -159,19 +159,20 @@ function findFocusTarget(root: HTMLElement, cell: TableEditingCell): HTMLElement
 }
 
 /** After an editor closes, focuses its cell or the next one, unless focus moved elsewhere. */
-function useRefocus(root: RefObject<HTMLElement | null>, refocus: RefObject<Refocus | null>) {
+function useRefocus(rootRef: RefObject<HTMLElement | null>, refocusRef: RefObject<Refocus | null>) {
   useLayoutEffect(() => {
-    const target = refocus.current;
-    refocus.current = null;
-    const element = target && root.current ? findFocusTarget(root.current, target.cell) : undefined;
-    const owner = getOwnerDocument(root.current);
+    const target = refocusRef.current;
+    refocusRef.current = null;
+    const element =
+      target && rootRef.current ? findFocusTarget(rootRef.current, target.cell) : undefined;
+    const owner = getOwnerDocument(rootRef.current);
     const active = owner.activeElement;
     // Focus is still in the closing editor, or fell to the page with it; elsewhere it moved on.
     if (element && (active === null || active === owner.body || element.contains(active))) {
       const isCell = element.dataset['column'] === target?.cell.columnId;
       const next =
-        isCell && target?.move && root.current
-          ? findAdjacentCell(root.current, element, target.move)
+        isCell && target?.move && rootRef.current
+          ? findAdjacentCell(rootRef.current, element, target.move)
           : undefined;
       (next ?? element).focus();
     }
