@@ -239,8 +239,8 @@
 }
 
 .ui-select-field__option-check .ui-glyph {
-  width: 12px;
-  height: 12px;
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
 }
 
 .ui-select-field__option-icon {

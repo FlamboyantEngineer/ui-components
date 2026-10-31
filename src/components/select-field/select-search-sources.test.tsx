@@ -52,13 +52,13 @@ describe('SelectField searches of a replaced loader', () => {
   it('UIC-SELECT-FIELD-5.4 searches a new loader from its first page, never with the old cursor', async () => {
     const observers = stubObservers();
     const first = vi.fn<SelectFieldLoader>(async () => ({
-      options: options(['from first']),
+      items: options(['from first']),
       cursor: 'first-next',
     }));
     const second = vi.fn<SelectFieldLoader>(async (_query, _signal, cursor) =>
       cursor === undefined
-        ? { options: options(['from second']), cursor: 'second-next' }
-        : { options: options(['second more']) },
+        ? { items: options(['from second']), cursor: 'second-next' }
+        : { items: options(['second more']) },
     );
     const { replace } = renderField(first);
     await open();
@@ -83,15 +83,15 @@ describe('SelectField searches of a replaced loader', () => {
     const { replace } = renderField(first);
     await open();
     await act(async () =>
-      pending.get('first first')?.({ options: options(['first one']), cursor: 'f2' }),
+      pending.get('first first')?.({ items: options(['first one']), cursor: 'f2' }),
     );
     reachEnd(observers);
     expect(pending.has('first f2')).toBe(true);
     replace(second);
     await waitFor(() => expect(pending.has('second first')).toBe(true));
-    await act(async () => pending.get('first f2')?.({ options: options(['first two']) }));
+    await act(async () => pending.get('first f2')?.({ items: options(['first two']) }));
     expect(optionLabels()).toEqual(['first one']);
-    await act(async () => pending.get('second first')?.({ options: options(['second one']) }));
+    await act(async () => pending.get('second first')?.({ items: options(['second one']) }));
     expect(optionLabels()).toEqual(['second one']);
   });
 
@@ -105,16 +105,16 @@ describe('SelectField searches of a replaced loader', () => {
     replace(second);
     await waitFor(() => expect(pending.has('second first')).toBe(true));
     await act(async () =>
-      pending.get('first first')?.({ options: options(['first one']), cursor: 'f2' }),
+      pending.get('first first')?.({ items: options(['first one']), cursor: 'f2' }),
     );
-    await act(async () => pending.get('second first')?.({ options: options(['second one']) }));
+    await act(async () => pending.get('second first')?.({ items: options(['second one']) }));
     expect(optionLabels()).toEqual(['second one']);
   });
 
   it('UIC-SELECT-FIELD-5.4 stops paging when the loader is removed', async () => {
     const observers = stubObservers();
     const first = vi.fn<SelectFieldLoader>(async () => ({
-      options: options(['from first']),
+      items: options(['from first']),
       cursor: 'first-next',
     }));
     const { replace } = renderField(first);
@@ -129,8 +129,8 @@ describe('SelectField searches of a replaced loader', () => {
     const observers = stubObservers();
     const load = vi.fn<SelectFieldLoader>(async (_query, _signal, cursor) =>
       cursor === undefined
-        ? { options: options(['one']), cursor: 'next' }
-        : { options: options(['two']) },
+        ? { items: options(['one']), cursor: 'next' }
+        : { items: options(['two']) },
     );
     const { replace } = renderField(load);
     await open();

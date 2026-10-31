@@ -29,7 +29,7 @@ const fruit: ComboboxItem[] = [
   { id: 'cherry', label: 'Cherry' },
   {
     id: 'citrus',
-    title: 'Citrus',
+    label: 'Citrus',
     options: [
       { id: 'lemon', label: 'Lemon' },
       { id: 'lime', label: 'Lime', isDisabled: true },
@@ -260,7 +260,7 @@ function RemoteSearch() {
         minSearchLength={2}
         searchDelay={300}
         loadItems={loadItems}
-        items={[{ id: 'recent', title: 'Recently used', options: cities.slice(0, 2) }]}
+        items={[{ id: 'recent', label: 'Recently used', options: cities.slice(0, 2) }]}
         renderEmptyState={() => 'No city matches; try another region.'}
         listHeader={
           <SegmentedChoice
@@ -462,7 +462,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Typing aids"
-      description="Marked matches, the first match highlighted so Enter picks it, and inline completion of the typed text."
+      description="Marked matches, the first match highlighted so Enter picks it, and inline completion of text typed at the end; an edit inside the text keeps its caret."
     >
       <StateMatrix
         axes={{ aid: aids }}

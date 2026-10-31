@@ -107,20 +107,9 @@
 }
 
 .ui-toast__spinner {
-  box-sizing: border-box;
-  width: 16px;
-  height: 16px;
+  --ref-spinner-size: var(--ref-icon-size-lg);
   margin-block-start: 3px;
-  border: 2px solid var(--ref-info);
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-toast__spinner {
-    animation: none;
-  }
+  color: var(--ref-info);
 }
 
 .ui-toast__content {

@@ -5,6 +5,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   getViewport,
   installTranscriptLayout,
+  resizeContent,
   scrollViewport,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
@@ -71,7 +72,7 @@ describe('ChatTranscript', () => {
     rerender(<Conversation count={4} />);
     expect(viewport.scrollTop).toBe(300);
     layout.heights.set('m4', 250);
-    rerender(<Conversation count={4} />);
+    resizeContent();
     expect(viewport.scrollTop).toBe(450);
     scrollViewport(viewport, 120);
     rerender(<Conversation count={5} />);

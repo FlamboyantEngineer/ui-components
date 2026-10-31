@@ -36,8 +36,8 @@
 }
 
 .ui-chart__view-toggle .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-chart__view-toggle[data-hovered] {

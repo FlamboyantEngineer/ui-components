@@ -524,11 +524,6 @@
 .ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip {
   overflow: auto hidden;
   scroll-behavior: smooth;
-  scrollbar-width: none;
-}
-
-.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip::-webkit-scrollbar {
-  display: none;
 }
 
 .ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip > * {

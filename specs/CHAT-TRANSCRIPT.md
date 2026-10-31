@@ -15,10 +15,10 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/ch
 
 ### UIC-CHAT-TRANSCRIPT-1.2 - Following the latest message
 
-With `scrollMode="follow"` (the default) the transcript shall start at its latest message and keep the bottom in view as messages arrive or grow while the reader is there, after each render and whenever the content or the viewport resizes. Scrolling up stops the following, so the reader keeps their place while a reply streams; scrolling back to the bottom, or sending a message of their own (a `sent` message arriving), follows again. The transcript keeps the scroll position itself, so the reference stylesheet turns the browser's own scroll anchoring off in the viewport (`overflow-anchor: none`).
+With `scrollMode="follow"` (the default) the transcript shall start at its latest message and keep the bottom in view as messages arrive or grow while the reader is there: after a render that changes the children's keys, the virtualized window or the settings that drive scrolling (`scrollMode`, `highlightedMessageId`, `hasOlder`, `isLoadingOlder`, `firstUnreadId`), and whenever the content or the viewport resizes. A render that changes none of these, such as a token streaming into a reply, reads no layout and writes no scroll position: the reply's growth resizes the content, and that keeps the bottom in view once. Each such pass reads the children's keys once, publishes the messages' positions and tab stop only then, and settles the scroll position once. Scrolling up stops the following, so the reader keeps their place while a reply streams; scrolling back to the bottom, or sending a message of their own (a `sent` message arriving), follows again. The transcript keeps the scroll position itself, so the reference stylesheet turns the browser's own scroll anchoring off in the viewport (`overflow-anchor: none`).
 
 Implementation: `src/components/chat-transcript/transcript-scroll.ts`, `src/components/chat-transcript/use-transcript.ts`, `src/components/chat-transcript/transcript-commit.ts`, `labs/reference/chat-transcript.css`
-Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/components/chat-transcript/transcript-anchor.test.tsx`, `e2e/chat-transcript.spec.ts`
+Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/components/chat-transcript/transcript-anchor.test.tsx`, `src/components/chat-transcript/transcript-commit-pass.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-1.3 - Jump to latest
 

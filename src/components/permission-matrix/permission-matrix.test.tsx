@@ -212,4 +212,12 @@ describe('PermissionMatrix', () => {
       isGranted: true,
     });
   });
+
+  it('UIC-PERMISSION-MATRIX-1.7 passes virtualization to its table', () => {
+    const { container, rerender } = render(<Matrix />);
+    const table = () => container.querySelector('.ui-table');
+    expect(table()).not.toHaveAttribute('data-virtualized');
+    rerender(<Matrix virtualized rowHeight={36} />);
+    expect(table()).toHaveAttribute('data-virtualized', 'true');
+  });
 });

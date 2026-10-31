@@ -92,7 +92,8 @@ function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null
 
 /**
  * Completes typed text with the first option starting with it and selects the added part, so the
- * next keystroke replaces it. Only insertions complete; deleting text never brings it back.
+ * next keystroke replaces it. Only insertions at the end of the text complete; deleting text never
+ * brings it back.
  */
 function useInlineCompletion(
   completion: InlineCompletion | null,
@@ -110,9 +111,12 @@ function useInlineCompletion(
   if (!completion || !state) return undefined;
   return (event: ChangeEvent<HTMLInputElement>) => {
     const native = event.nativeEvent as InputEvent;
-    const typed = event.target.value;
+    const { value: typed, selectionStart, selectionEnd } = event.target;
+    // Only an insertion that leaves the caret at the end completes; an edit inside the text keeps
+    // its caret where the reader is typing.
+    const isAtEnd = selectionStart === typed.length && selectionEnd === typed.length;
     const found =
-      native.inputType?.startsWith('insert') && !native.isComposing
+      native.inputType?.startsWith('insert') && !native.isComposing && isAtEnd
         ? findCompletion(completion.options, typed)
         : null;
     completion.onComplete(found);

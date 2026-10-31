@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useRemoteSearch, type RemoteSearchLoader } from './use-remote-search.js';
+import { useRemoteSearch, type RemoteLoader } from './use-remote-search.js';
 
 const words = ['apple', 'apricot', 'banana', 'cherry'];
 
@@ -15,7 +15,7 @@ describe('useRemoteSearch', () => {
 
   it('UIC-COMBOBOX-5.1 waits for the search delay unless asked to search at once', async () => {
     vi.useFakeTimers();
-    const load = vi.fn<RemoteSearchLoader<string>>(async (query) => findWords(query));
+    const load = vi.fn<RemoteLoader<string>>(async (query) => findWords(query));
     const { result } = renderHook(() => useRemoteSearch({ load, source: load, searchDelay: 200 }));
     act(() => result.current.search('ap'));
     expect(result.current.isLoading).toBe(true);
@@ -35,7 +35,7 @@ describe('useRemoteSearch', () => {
   });
 
   it('UIC-COMBOBOX-5.1 lists nothing for a short query and nothing without a loader', async () => {
-    const load = vi.fn<RemoteSearchLoader<string>>(async (query) => findWords(query));
+    const load = vi.fn<RemoteLoader<string>>(async (query) => findWords(query));
     const { result, rerender } = renderHook(
       ({ withLoader }) =>
         useRemoteSearch({
@@ -56,7 +56,7 @@ describe('useRemoteSearch', () => {
   });
 
   it('UIC-COMBOBOX-5.3 appends the next page and reports a failed search', async () => {
-    const load = vi.fn<RemoteSearchLoader<string>>(async (query, _signal, cursor) => {
+    const load = vi.fn<RemoteLoader<string>>(async (query, _signal, cursor) => {
       if (query === 'fail') throw new Error('offline');
       return cursor === undefined ? { items: ['a1'], cursor: 'next' } : { items: ['a2'] };
     });
@@ -73,7 +73,7 @@ describe('useRemoteSearch', () => {
   });
 
   it('UIC-COMBOBOX-5.3 never passes a cursor to another query, even after that query fails', async () => {
-    const load = vi.fn<RemoteSearchLoader<string>>(async (query, _signal, cursor) => {
+    const load = vi.fn<RemoteLoader<string>>(async (query, _signal, cursor) => {
       if (query === 'blue') throw new Error('offline');
       return cursor === undefined ? { items: ['alpha 1'], cursor: 'alpha-page-2' } : { items: [] };
     });
@@ -94,7 +94,7 @@ describe('useRemoteSearch', () => {
 
   it('UIC-COMBOBOX-5.3 drops a page of a replaced search that arrives late', async () => {
     const pending = new Map<string, (page: { items: string[]; cursor?: string }) => void>();
-    const load = vi.fn<RemoteSearchLoader<string>>(
+    const load = vi.fn<RemoteLoader<string>>(
       (query, _signal, cursor) =>
         new Promise((resolve) => pending.set(`${query} ${cursor ?? 'first'}`, resolve)),
     );
@@ -116,11 +116,11 @@ describe('useRemoteSearch', () => {
   });
 
   it('UIC-COMBOBOX-5.3 asks a replaced loader for a fresh first page and keeps pages a failed next page left', async () => {
-    const first = vi.fn<RemoteSearchLoader<string>>(async () => ({
+    const first = vi.fn<RemoteLoader<string>>(async () => ({
       items: ['one'],
       cursor: 'two',
     }));
-    const second = vi.fn<RemoteSearchLoader<string>>(async (_query, _signal, cursor) => {
+    const second = vi.fn<RemoteLoader<string>>(async (_query, _signal, cursor) => {
       if (cursor !== undefined) throw new Error('offline');
       return { items: ['uno'], cursor: 'dos' };
     });

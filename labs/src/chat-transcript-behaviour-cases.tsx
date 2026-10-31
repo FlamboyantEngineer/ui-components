@@ -277,7 +277,7 @@ export function ChatTranscriptBehaviourCases() {
       </LabSection>
       <LabSection
         title="Follow and anchor"
-        description="Send a question: in follow mode the view keeps the bottom as the reply streams in; in anchor mode your message moves to the top and the reply fills in below it. Scrolling away stops either; the jump button returns. Each shows its last announcement."
+        description="Send a question: in follow mode the view keeps the bottom as the reply streams in; in anchor mode your message moves to the top and the reply fills in below it. Scrolling away stops either; the jump button returns. Each shows its last announcement. A streamed token renders the reply alone: the transcript keeps its place when the reply grows, not on every render."
       >
         <StateMatrix
           axes={{ scrollMode: modes }}

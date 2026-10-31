@@ -78,6 +78,13 @@ The pivot table shall hand its `Table` the same `columns`, `columnGroups`, `rows
 Implementation: `src/components/pivot-table/pivot-table.tsx`
 Verification: `src/components/pivot-table/pivot-table-identity.test.tsx`
 
+### UIC-PIVOT-TABLE-2.8 - Virtualized rows
+
+`virtualized` and `rowHeight` shall pass to the `Table`, which then renders only the row groups in view ([UIC-TABLE-7.3](TABLE.md#uic-table-73---virtualization)) and publishes `data-virtualized` on the `ui-pivot-table__table`; expanding, sorting and totals work as before, and as in any virtualized table no column group row is drawn. The stylesheet bounds the table's height. Without it every row group renders, so a pivot with more than a few hundred visible row groups should be virtualized.
+
+Implementation: `src/components/pivot-table/pivot-table.tsx`, `labs/reference/pivot-table.css`
+Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
+
 ## UIC-PIVOT-TABLE-3 - Field chooser
 
 ### UIC-PIVOT-TABLE-3.1 - Layout

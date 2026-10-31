@@ -95,4 +95,29 @@ test.describe('Permission Matrix lab', () => {
       'Revoked Write recipes for Reviewer',
     );
   });
+
+  test('UIC-PERMISSION-MATRIX-1.7 renders a window of 600 permissions and grants in it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('permission-matrix');
+    const root = demo(page, 'virtualized');
+    const grid = root.getByRole('treegrid', { name: 'Many permissions' });
+    await expect(root.locator('.ui-table')).toHaveAttribute('data-virtualized', 'true');
+    const first = root.getByRole('checkbox', { name: 'Recipes task 1 for Editor', exact: true });
+    await toggle(root, 'Recipes task 1 for Editor');
+    await expect(first).toBeChecked();
+    expect(await grid.getByRole('row').count()).toBeLessThan(60);
+    await root
+      .locator('.ui-table__scroll')
+      .evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await root.scrollIntoViewIfNeeded();
+    await expect(grid.getByRole('rowheader', { name: 'Settings task 600' })).toBeInViewport();
+    // The focused row stays rendered; the others leave the document.
+    await expect(grid.getByRole('rowheader', { name: 'Recipes task 4', exact: true })).toHaveCount(
+      0,
+    );
+    expect(await grid.getByRole('row').count()).toBeLessThan(60);
+    await lab.expectAccessible('[data-lab-demo="virtualized"]');
+  });
 });

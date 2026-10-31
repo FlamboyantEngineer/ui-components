@@ -2,18 +2,14 @@
 
 import { CheckGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
-import { Collection, Header, ListBoxItem, ListBoxSection } from '../../primitives/index.js';
+import { Collection, Header, ListBoxSection } from '../../primitives/index.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key, SelectableState } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
-import {
-  isSelectFieldGroup,
-  type SelectFieldItem,
-  type SelectFieldOption,
-} from './select-options.js';
+import { PickerOptionRow, isPickerSection } from '../field/field.js';
+import { type SelectFieldItem, type SelectFieldOption } from './select-options.js';
 
 /** Draws an option's content in the list instead of its icon, label and description. */
 export type SelectFieldOptionRenderer = (
@@ -39,23 +35,6 @@ const hooks = createHooks('select-field', [
   'option-description',
 ]);
 
-function OptionContent({ option }: { option: SelectFieldOption }) {
-  return (
-    <>
-      {option.icon ? (
-        <Icon {...toIconProps(option.icon)} className={hooks.slotClass('option-icon')} />
-      ) : null}
-      <span {...hooks.slot('option-label')}>{option.label}</span>
-      {option.description ? (
-        <>
-          {' '}
-          <span {...hooks.slot('option-description')}>{option.description}</span>
-        </>
-      ) : null}
-    </>
-  );
-}
-
 function OptionRow({
   id,
   option,
@@ -68,34 +47,22 @@ function OptionRow({
 }) {
   const { isMultiple, blockedKeys, renderOption } = display;
   return (
-    <ListBoxItem
+    <PickerOptionRow
       id={id}
-      textValue={option.label}
+      option={option}
+      hooks={hooks}
       isDisabled={option.isDisabled || blockedKeys.has(option.id)}
-      className={hooks.slotClass('option')}
-    >
-      {(state) => (
-        <>
-          {isMultiple ? (
-            <span {...hooks.slot('option-check')} aria-hidden="true">
-              {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
-            </span>
-          ) : null}
-          {renderOption ? (
-            renderOption(option, {
-              isSelected: state.isSelected,
-              isFocused: state.isFocused,
-              isFocusVisible: state.isFocusVisible,
-              isHovered: state.isHovered,
-              isPressed: state.isPressed,
-              isDisabled: state.isDisabled,
-            })
-          ) : (
-            <OptionContent option={option} />
-          )}
-        </>
-      )}
-    </ListBoxItem>
+      renderLead={
+        isMultiple
+          ? (state) => (
+              <span {...hooks.slot('option-check')} aria-hidden="true">
+                {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
+              </span>
+            )
+          : undefined
+      }
+      renderOption={renderOption ? (state) => renderOption(option, state) : undefined}
+    />
   );
 }
 
@@ -120,11 +87,11 @@ export function SelectListItems({
   return (
     <Collection items={items} dependencies={toDisplayDependencies(display)}>
       {(item) =>
-        isSelectFieldGroup(item) ? (
+        isPickerSection(item) ? (
           <ListBoxSection id={toCollectionKey(item.id)} className={hooks.slotClass('section')}>
-            {item.label ? (
+            {isEmptyNode(item.label) ? null : (
               <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
-            ) : null}
+            )}
             <Collection items={item.options} dependencies={toDisplayDependencies(display)}>
               {(option) => (
                 <OptionRow id={toCollectionKey(option.id)} option={option} display={display} />

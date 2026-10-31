@@ -180,14 +180,29 @@ function useQueryValidation(
   return validation;
 }
 
-/** The label, the box and the description and message below it, for the `label-control` layout. */
-function LabelledBox({
+/**
+ * Whether the field has a description, which React Aria re-reads to find the description's id when
+ * it changes: a description that arrives with a label layout change then still describes the input.
+ * The building block takes it at runtime though its types leave it out.
+ */
+function toDescriptionSlot(description: ReactNode): object {
+  return { description: isEmptyNode(description) ? undefined : true };
+}
+
+/**
+ * The box in its group, with the label above it and the description and message below it in the
+ * `label-control` layout. One structure in both layouts, so a layout change keeps the input, its
+ * text and its focus.
+ */
+function SearchParts({
+  hasLabel,
   label,
   box,
   description,
   messageId,
   validation,
 }: {
+  hasLabel: boolean;
   label: string;
   box: ReactNode;
   description: ReactNode;
@@ -196,18 +211,20 @@ function LabelledBox({
 }) {
   return (
     <>
-      <Label {...hooks.slot('label')}>{label}</Label>
+      {hasLabel ? <Label {...hooks.slot('label')}>{label}</Label> : null}
       <Group {...hooks.slot('group')} role="presentation">
         {box}
       </Group>
-      {isEmptyNode(description) ? null : (
+      {hasLabel && !isEmptyNode(description) ? (
         <Text {...hooks.slot('description')} slot="description">
           {description}
         </Text>
-      )}
-      <FieldMessage id={messageId} validation={validation} hooks={hooks}>
-        {validation.message}
-      </FieldMessage>
+      ) : null}
+      {hasLabel ? (
+        <FieldMessage id={messageId} validation={validation} hooks={hooks}>
+          {validation.message}
+        </FieldMessage>
+      ) : null}
     </>
   );
 }
@@ -260,6 +277,7 @@ export function SearchField({
       isInvalid={isInvalid}
       validationBehavior="aria"
       onClear={onClear}
+      {...toDescriptionSlot(hasLabel ? description : undefined)}
     >
       {({ isEmpty, isDisabled, isReadOnly }) => {
         const clear = () => {
@@ -277,9 +295,9 @@ export function SearchField({
             clearText={clearText}
           />
         );
-        if (!hasLabel) return box;
         return (
-          <LabelledBox
+          <SearchParts
+            hasLabel={hasLabel}
             label={label}
             box={box}
             description={description}

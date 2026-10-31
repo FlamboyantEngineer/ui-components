@@ -368,4 +368,24 @@ describe('PivotTable', { timeout: 20_000 }, () => {
     expect(root).toHaveAttribute('data-testid', 'pivot');
     expectHooksMatchSpec(container, 'PIVOT-TABLE', { callerAttributes: ['data-testid'] });
   });
+
+  it('UIC-PIVOT-TABLE-2.8 passes virtualization to its table', () => {
+    const { container, rerender } = render(
+      <PivotTable aria-label="Sales" records={sales} fields={fields} layout={byRegionAndYear} />,
+    );
+    const table = () => container.querySelector('.ui-pivot-table__table');
+    expect(table()).not.toHaveAttribute('data-virtualized');
+    rerender(
+      <PivotTable
+        aria-label="Sales"
+        records={sales}
+        fields={fields}
+        layout={byRegionAndYear}
+        virtualized
+        rowHeight={36}
+      />,
+    );
+    expect(table()).toHaveAttribute('data-virtualized', 'true');
+    expect(screen.getByRole('grid', { name: 'Sales' })).toBeInTheDocument();
+  });
 });

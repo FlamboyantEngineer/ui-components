@@ -110,7 +110,7 @@ Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts
 
 ### UIC-TIMELINE-3.1 - Items as a table
 
-With `view` `table`, the root shall hold a library [Table](TABLE.md) in the `ui-timeline__table` slot instead of the chart, named like the timeline, with one row per drawn item in row order and then by first day, and the columns Item (the row header), Row, Start, End (empty for milestones) and Progress (a percentage), headed by the provider's `timelineItemColumn`, `timelineRowColumn`, `timelineStartColumn`, `timelineEndColumn` and `timelineProgressColumn` strings, with days written for the locale. Item, Row, Start and End sort. The table shares the timeline's selection mode and selection.
+With `view` `table`, the root shall hold a library [Table](TABLE.md) in the `ui-timeline__table` slot instead of the chart, named like the timeline, with one row per drawn item in row order and then by first day, and the columns Item (the row header), Row, Start, End (empty for milestones) and Progress (a percentage), headed by the provider's `timelineItemColumn`, `timelineRowColumn`, `timelineStartColumn`, `timelineEndColumn` and `timelineProgressColumn` strings, with days written for the locale. Item, Row, Start and End sort. The table shares the timeline's selection mode and selection. The table renders every item, as the chart does: a timeline is bounded by the items its chart can draw, a few hundred, so the table view is not virtualized.
 
 Implementation: `src/components/timeline/timeline-table.tsx`, `src/components/timeline/timeline.tsx`
 Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`

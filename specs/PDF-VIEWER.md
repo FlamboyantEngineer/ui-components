@@ -371,7 +371,7 @@ Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-
 
 ### UIC-PDF-VIEWER-10.3 - Outline
 
-The outline shall be a [Tree](TREE.md) (`ui-pdf-viewer__outline`) named with the `outline` string, one row per entry of the document's outline, nested as the document nests them; an entry the document opens (a positive count) starts expanded. Choosing an entry goes to its destination (UIC-PDF-VIEWER-4.5), or opens its web address in a new tab.
+The outline shall be a [Tree](TREE.md) (`ui-pdf-viewer__outline`) named with the `outline` string, one row per entry of the document's outline, nested as the document nests them; an entry the document opens (a positive count) starts expanded. Choosing an entry goes to its destination (UIC-PDF-VIEWER-4.5), or opens its web address in a new tab. The outline is not virtualized: only top-level entries and those the document opens render at first, which keeps it to a few hundred rows for documents a reader browses this way.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/use-pdf-document.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`

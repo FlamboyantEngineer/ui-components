@@ -46,6 +46,13 @@ The matrix shall hand its `Table` the same `columns` and `rows` while only the g
 Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `src/components/permission-matrix/permission-matrix-cells.tsx`
 Verification: `src/components/permission-matrix/permission-matrix-identity.test.tsx`
 
+### UIC-PERMISSION-MATRIX-1.7 - Virtualized rows
+
+`virtualized` and `rowHeight` shall pass to the `Table`, which then renders only the permission and group rows in view ([UIC-TABLE-7.3](TABLE.md#uic-table-73---virtualization)) and publishes `data-virtualized`; grants, group toggles and collapsing groups work as before, and as in any virtualized table no column pins. The stylesheet bounds the table's height. Without it every permission renders, so a matrix of more than a few hundred permissions should be virtualized.
+
+Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `labs/reference/permission-matrix.css`
+Verification: `src/components/permission-matrix/permission-matrix.test.tsx`, `e2e/permission-matrix.spec.ts`
+
 ## UIC-PERMISSION-MATRIX-2 - Grants
 
 ### UIC-PERMISSION-MATRIX-2.1 - Changes as data

@@ -14,6 +14,11 @@ import {
   type ComboboxProps,
   type ComboboxSelectionMode,
 } from '../combobox/combobox.js';
+import {
+  loadRemotePage,
+  type RemoteLoader,
+  type RemotePage,
+} from '../../utils/use-remote-search.js';
 import { UserIdentity, type UserIdentitySize } from '../user-identity/user-identity.js';
 
 /** A person or a group the picker lists. */
@@ -28,21 +33,13 @@ export interface PeoplePickerPerson extends AvatarIdentity {
 }
 
 /** One page of a search's people; a `cursor` means another page follows. */
-export interface PeoplePickerPage {
-  items: readonly PeoplePickerPerson[];
-  /** Passed back to the loader to fetch the next page; absent on the last page. */
-  cursor?: string | undefined;
-}
+export type PeoplePickerPage = RemotePage<PeoplePickerPerson>;
 
 /**
  * Fetches the people and groups matching the typed text, or with `cursor` the page after the one
  * that returned it; it should stop when `signal` aborts.
  */
-export type PeoplePickerLoader = (
-  query: string,
-  signal: AbortSignal,
-  cursor?: string,
-) => Promise<readonly PeoplePickerPerson[] | PeoplePickerPage>;
+export type PeoplePickerLoader = RemoteLoader<PeoplePickerPerson>;
 
 export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
   extends
@@ -100,7 +97,7 @@ function toOption(person: PeoplePickerPerson): ComboboxOption {
  */
 function toIdleItems(
   people: Pick<PeoplePickerProps, 'currentUser' | 'knownPeople' | 'recent'>,
-  section: { id: string; title: string },
+  section: { id: string; label: string },
 ): ComboboxItem[] {
   const { currentUser, knownPeople = [], recent = [] } = people;
   const known = knownPeople.filter((person) => person.id !== currentUser?.id);
@@ -118,11 +115,7 @@ function usePeopleSearch(loadItems: PeoplePickerLoader) {
   const [found, setFound] = useState<ReadonlyMap<Key, PeoplePickerPerson>>(() => new Map());
   const load = useCallback<ComboboxLoader>(
     async (query, signal, cursor) => {
-      const result =
-        cursor === undefined
-          ? await loadItems(query, signal)
-          : await loadItems(query, signal, cursor);
-      const page = 'items' in result ? result : { items: result };
+      const page = await loadRemotePage(loadItems, { query, signal, cursor });
       if (!signal.aborted) {
         setFound((known) => new Map([...known, ...page.items.map((p) => [p.id, p] as const)]));
       }
@@ -191,7 +184,7 @@ export function PeoplePicker<M extends ComboboxSelectionMode = 'single'>({
       loadItems={load}
       items={toIdleItems(
         { currentUser, knownPeople, recent },
-        { id: sectionId, title: strings.recentPeople },
+        { id: sectionId, label: strings.recentPeople },
       )}
       renderOption={(option) => {
         const person = people.get(option.id);

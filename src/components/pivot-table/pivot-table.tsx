@@ -27,6 +27,10 @@ export interface PivotTableProps extends BaseProps, AriaLabellingProps, Expansio
   onLayoutChange?: ((layout: PivotLayout) => void) | undefined;
   /** Draws the field chooser above the table. */
   fieldChooser?: boolean | undefined;
+  /** Renders only the rows in view, for many row groups; the stylesheet must bound the table's height. */
+  virtualized?: boolean | undefined;
+  /** Row height in pixels for a virtualized table. Defaults to the table's. */
+  rowHeight?: number | undefined;
 }
 
 const emptyLayout: PivotLayout = { rows: [], columns: [], values: [] };
@@ -62,6 +66,8 @@ export function PivotTable({
   defaultLayout,
   onLayoutChange,
   fieldChooser = false,
+  virtualized,
+  rowHeight,
   expandedKeys,
   defaultExpandedKeys,
   onExpandedChange,
@@ -109,6 +115,8 @@ export function PivotTable({
         expandedKeys={expandedKeys}
         defaultExpandedKeys={defaultExpandedKeys}
         onExpandedChange={onExpandedChange}
+        virtualized={virtualized}
+        rowHeight={rowHeight}
       />
     </div>
   );

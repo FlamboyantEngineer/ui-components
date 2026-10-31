@@ -150,7 +150,7 @@ describe('SearchField', () => {
     const plain = hidden.querySelector('.ui-search-field');
     expect(plain).toHaveAttribute('data-label-layout', 'control-only');
     expect(hidden.querySelector('.ui-search-field__label')).toBeNull();
-    expect(hidden.querySelector('.ui-search-field__group')).toBeNull();
+    expect(hidden.querySelector('.ui-search-field__group')).toBeInTheDocument();
     unmount();
     const { container } = render(
       <SearchField label="Find a city" labelLayout="label-control" defaultValue="Os" />,
@@ -259,5 +259,43 @@ describe('SearchField', () => {
     rerender(<SearchField label="Find" defaultValue="fig" />);
     expect(root).not.toHaveAttribute('data-pending');
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
+  it('UIC-SEARCH-FIELD-2.1 keeps the input, its text, selection and focus across label layout changes', async () => {
+    const user = userEvent.setup();
+    const inputRef = createRef<HTMLInputElement>();
+    const { rerender } = render(
+      <SearchField label="Search" defaultValue="draft" inputRef={inputRef} />,
+    );
+    const input = screen.getByRole('searchbox', { name: 'Search' }) as HTMLInputElement;
+    await user.click(input);
+    input.setSelectionRange(1, 3);
+    rerender(
+      <SearchField
+        label="Search"
+        defaultValue="draft"
+        inputRef={inputRef}
+        labelLayout="label-control"
+        description="Matches names"
+      />,
+    );
+    const labelled = screen.getByRole('searchbox', { name: 'Search' }) as HTMLInputElement;
+    expect(labelled).toBe(input);
+    expect(inputRef.current).toBe(input);
+    expect(labelled).toHaveFocus();
+    expect([labelled.selectionStart, labelled.selectionEnd]).toEqual([1, 3]);
+    expect(labelled).toHaveAccessibleDescription('Matches names');
+    await user.keyboard('X');
+    expect(labelled).toHaveValue('dXft');
+
+    rerender(<SearchField label="Search" defaultValue="draft" inputRef={inputRef} />);
+    const bare = screen.getByRole('searchbox', { name: 'Search' });
+    expect(bare).toBe(input);
+    expect(bare).toHaveFocus();
+    expect(bare).toHaveValue('dXft');
+    expect(document.querySelector('.ui-search-field__label')).not.toBeInTheDocument();
+    // The usual behaviour stays: Escape clears the query.
+    await user.keyboard('{Escape}');
+    expect(bare).toHaveValue('');
   });
 });

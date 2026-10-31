@@ -81,12 +81,12 @@ test.describe('Empty State lab', () => {
     await lab.open('empty-state');
     const spinner = page.locator('.ui-empty-state__spinner').first();
     await expect(spinner).toBeVisible();
-    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
-      'none',
-    );
+    expect(
+      await spinner.evaluate((node: Element) => getComputedStyle(node).animationDuration),
+    ).toBe('0s');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
-      'ref-spin',
-    );
+    expect(
+      await spinner.evaluate((node: Element) => getComputedStyle(node).animationDuration),
+    ).not.toBe('0s');
   });
 });

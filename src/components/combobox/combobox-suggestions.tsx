@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useId, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { useContext, useId, type ReactNode, type RefObject } from 'react';
 import {
   Collection,
   ComboBoxStateContext,
@@ -10,8 +10,6 @@ import {
   ListBoxLoadMoreItem,
   ListBoxSection,
   ListLayout,
-  PopoverContext,
-  useSlottedContext,
   Virtualizer,
   Popover,
 } from '../../primitives/index.js';
@@ -23,16 +21,18 @@ import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
 import type { ControlSize, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Icon } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
-import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
-import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
+import {
+  PickerOptionRow,
+  flattenPickerItems,
+  isPickerSection,
+  pickerListLayout,
+  usePickerPopoverStyle,
+} from '../field/field.js';
+import { TextMatchProvider } from '../text-match/text-match.js';
 import { ComboboxListHeader } from './combobox-list-header.js';
 import { useAutoHighlight, useCreatedSelection, useOpenState } from './combobox-effects.js';
 import {
-  flattenOptions,
   hasOptionLabelled,
-  isSection,
   type ComboboxCompletion,
   type ComboboxItem,
   type ComboboxOption,
@@ -91,34 +91,6 @@ const hooks = createHooks('combobox', [
   'list-header',
 ]);
 
-// Estimates the virtualizer starts from; it measures each row as it renders.
-const listLayoutOptions = { estimatedRowSize: 32, estimatedHeadingSize: 26, loaderSize: 32 };
-
-function OptionContent({
-  option,
-  highlightMatches,
-}: {
-  option: ComboboxOption;
-  highlightMatches: boolean | undefined;
-}) {
-  return (
-    <>
-      {option.icon ? (
-        <Icon {...toIconProps(option.icon)} className={hooks.slotClass('option-icon')} />
-      ) : null}
-      <span {...hooks.slot('option-label')}>
-        {highlightMatches ? <TextMatch>{option.label}</TextMatch> : option.label}
-      </span>
-      {isEmptyNode(option.description) ? null : (
-        <>
-          {' '}
-          <span {...hooks.slot('option-description')}>{option.description}</span>
-        </>
-      )}
-    </>
-  );
-}
-
 function OptionRow({
   option,
   display,
@@ -126,40 +98,30 @@ function OptionRow({
   option: ComboboxOption;
   display: ComboboxOptionDisplay;
 }) {
+  const { renderOption } = display;
   return (
-    <ListBoxItem
+    <PickerOptionRow
       id={option.id}
-      textValue={option.label}
-      isDisabled={option.isDisabled}
-      className={hooks.slotClass('option')}
-    >
-      {(state) =>
-        display.renderOption ? (
-          display.renderOption(
-            { ...option, id: fromCollectionKey(option.id) },
-            {
-              isSelected: state.isSelected,
-              isFocused: state.isFocused,
-              isFocusVisible: state.isFocusVisible,
-              isHovered: state.isHovered,
-              isPressed: state.isPressed,
-              isDisabled: state.isDisabled,
-            },
-          )
-        ) : (
-          <OptionContent option={option} highlightMatches={display.highlightMatches} />
-        )
+      option={option}
+      hooks={hooks}
+      highlightMatches={display.highlightMatches}
+      renderOption={
+        renderOption
+          ? (state) => renderOption({ ...option, id: fromCollectionKey(option.id) }, state)
+          : undefined
       }
-    </ListBoxItem>
+    />
   );
 }
 
 function renderItems(display: ComboboxOptionDisplay) {
   return (item: ComboboxItem) => {
-    if (!isSection(item)) return <OptionRow option={item} display={display} />;
+    if (!isPickerSection(item)) return <OptionRow option={item} display={display} />;
     return (
       <ListBoxSection id={item.id} className={hooks.slotClass('section')}>
-        <Header className={hooks.slotClass('section-header')}>{item.title}</Header>
+        {isEmptyNode(item.label) ? null : (
+          <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
+        )}
         {item.options.map((option) => (
           <OptionRow key={toKeyIdentity(option.id)} option={option} display={display} />
         ))}
@@ -204,7 +166,7 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
   const canCreate =
     onCreateOption !== undefined &&
     created !== '' &&
-    !hasOptionLabelled(flattenOptions(items), created);
+    !hasOptionLabelled(flattenPickerItems(items), created);
   const list = (
     <ListBox<ComboboxItem>
       className={hooks.slotClass('listbox')}
@@ -228,7 +190,7 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
     </ListBox>
   );
   const content = props.virtualized ? (
-    <Virtualizer layout={ListLayout} layoutOptions={listLayoutOptions}>
+    <Virtualizer layout={ListLayout} layoutOptions={pickerListLayout}>
       {list}
     </Virtualizer>
   ) : (
@@ -249,11 +211,9 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
  * block's open state to the combobox's.
  */
 export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
-  const zIndex = useLayerZIndex('dropdown');
+  const style = usePickerPopoverStyle();
   const state = useContext(ComboBoxStateContext);
   const isShown = useFrameFlag(props.isOpen, props.inputRef);
-  const context = useSlottedContext(PopoverContext);
-  const contextStyle = typeof context?.style === 'object' ? (context.style as CSSProperties) : {};
   useAutoHighlight({ autoHighlight: Boolean(props.autoHighlight), completion: props.completion });
   useCreatedSelection(props.createdRef);
   useOpenState(props.isOpen);
@@ -270,7 +230,7 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
         }}
         offset={4}
         containerPadding={8}
-        style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
+        style={style}
         // Focus leaving the popover closes it, unless it returns to the input from the list header.
         shouldCloseOnInteractOutside={(element) => element !== inputRef.current}
       >

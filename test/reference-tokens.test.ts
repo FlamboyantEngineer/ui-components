@@ -187,6 +187,21 @@ ${common}`,
     expect(valid.status).toBe(0);
   });
 
+  it('UIC-LABS-3.5 keeps glyph sizes, hidden text and hidden scrollbars in the base', () => {
+    const result = check({
+      'card.css': `.ui-card .ui-glyph { width: 14px; height: var(--ref-icon-size-md); }
+.ui-card__label { clip-path: inset(50%); }
+.ui-card__strip { scrollbar-width: none; }
+.ui-card__note { clip-path: inset(50%); /* token-exempt: only in a query */ }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:1: width "14px" pins a glyph by hand');
+    expect(result.stderr).not.toContain('height "var');
+    expect(result.stderr).toContain('card.css:2: visually hidden by hand');
+    expect(result.stderr).toContain('card.css:3: a scrollbar hidden by hand');
+    expect(result.stderr).not.toContain('card.css:4');
+  });
+
   it('UIC-LABS-3.1 names every container and every container query', () => {
     const named = check({
       'card.css': `.ui-card { container: ui-card / inline-size; }

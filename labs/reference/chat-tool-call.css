@@ -182,8 +182,8 @@
 
 .ui-chat-tool-call__error .ui-glyph {
   flex: none;
-  width: 16px;
-  height: 16px;
+  width: var(--ref-icon-size-lg);
+  height: var(--ref-icon-size-lg);
 }
 
 .ui-chat-tool-call__approval {
@@ -297,16 +297,6 @@
 
 .ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__status-glyph {
   color: inherit;
-}
-
-.ui-chat-tool-call[data-variant='row']:is([data-status='succeeded'], [data-status='failed'])
-  :is(.ui-chat-tool-call__status, .ui-chat-tool-call__duration) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
