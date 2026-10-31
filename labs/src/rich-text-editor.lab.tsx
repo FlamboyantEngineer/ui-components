@@ -9,6 +9,7 @@ import {
   ControlledEditor,
   CustomSchemaEditor,
   FormEditor,
+  RequiredEditor,
   FullEditor,
   LockedChromeEditor,
   LongDocumentEditor,
@@ -70,6 +71,12 @@ mountLab(
       description="A named editor submits its document as JSON with the form, which JSON.parse turns back into the value. Reset puts the first note back. Applying a link with Enter or Apply stays in the link editor and submits nothing."
     >
       <FormEditor />
+    </LabSection>
+    <LabSection
+      title="Required"
+      description="A required editor in a form that validates at once. Press Enter, start an empty list or quote: the document stays empty and Send is blocked until it holds text or a divider."
+    >
+      <RequiredEditor />
     </LabSection>
     <LabSection
       title="Long document"

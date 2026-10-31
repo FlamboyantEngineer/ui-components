@@ -8,6 +8,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectImports } from '../../../test/module-imports.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { getFieldUndo } from '../field/field.js';
+import { Form } from '../form/form.js';
 import {
   ViewProbe,
   getContent,
@@ -372,6 +373,78 @@ describe('RichTextEditor', () => {
     rerender(<RichTextEditor key="required" label="Notes" isRequired />);
     expect(getContent()).toHaveAttribute('aria-required', 'true');
     expect(getContent().closest('.ui-field')).toHaveAttribute('data-validation', 'invalid');
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-4.1 counts a document of blank structure as empty, but not one with a divider or an atom', () => {
+    const blank = (content: RichTextDocument['content']): RichTextDocument => ({
+      type: 'doc',
+      content,
+    });
+    const empty = { type: 'paragraph' };
+    const spaces = { type: 'paragraph', content: [{ type: 'text', text: '  ' }] };
+    const blanks = [
+      blank([empty, empty]),
+      blank([{ type: 'blockquote', content: [empty] }, empty]),
+      blank([{ type: 'bulletList', content: [{ type: 'listItem', content: [empty] }] }]),
+      blank([{ type: 'paragraph', content: [{ type: 'hardBreak' }, { type: 'hardBreak' }] }]),
+      blank([spaces, { type: 'codeBlock', content: [{ type: 'text', text: '\n ' }] }]),
+    ];
+    const schema = createRichTextSchema({
+      nodes: { pin: { group: 'inline', inline: true, atom: true, toDOM: () => ['span', 0] } },
+    });
+    const filled: Array<[RichTextDocument, typeof schema | undefined]> = [
+      [blank([empty, { type: 'horizontalRule' }]), undefined],
+      [blank([{ type: 'paragraph', content: [{ type: 'pin' }] }]), schema],
+      [blank([empty, { type: 'paragraph', content: [{ type: 'text', text: ' a' }] }]), undefined],
+    ];
+    const validation = () => getContent().closest('.ui-field')?.getAttribute('data-validation');
+    const { rerender } = render(<RichTextEditor label="Notes" isRequired />);
+    for (const [index, document] of blanks.entries()) {
+      rerender(
+        <RichTextEditor key={`blank ${index}`} label="Notes" isRequired defaultValue={document} />,
+      );
+      expect(validation()).toBe('invalid');
+    }
+    for (const [index, [document, custom]] of filled.entries()) {
+      rerender(
+        <RichTextEditor
+          key={`filled ${index}`}
+          label="Notes"
+          isRequired
+          schema={custom}
+          defaultValue={document}
+        />,
+      );
+      expect(validation()).toBe('valid');
+    }
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-4.1 keeps a required editor empty after Enter alone, blocking the submit', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    const page = (isRequired: boolean) => (
+      <Form aria-label="Plan" validationMode="immediate" onSubmit={onSubmit}>
+        <RichTextEditor label="Notes" isRequired={isRequired} />
+        <button type="submit">Submit</button>
+      </Form>
+    );
+    const { rerender } = render(page(true));
+    const field = () => getContent().closest('.ui-field');
+    await user.click(getContent());
+    await user.keyboard('{Enter}{Enter}');
+    expect(getContent().querySelectorAll('p')).toHaveLength(3);
+    expect(field()).toHaveAttribute('data-validation', 'invalid');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.click(getContent());
+    await user.keyboard('Figs');
+    expect(field()).toHaveAttribute('data-validation', 'valid');
+    await user.keyboard('{Control>}a{/Control}{Backspace}');
+    expect(field()).toHaveAttribute('data-validation', 'invalid');
+    rerender(page(false));
+    expect(field()).not.toHaveAttribute('data-validation', 'invalid');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-RICH-TEXT-EDITOR-4.2 replaces the document when the value changes from outside, as one undo step', async () => {

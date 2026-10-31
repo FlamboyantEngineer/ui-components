@@ -22,12 +22,19 @@ export function createEmptyDocument(schema: Schema): RichTextDocument {
   return (schema.topNodeType.createAndFill() as Node).toJSON() as RichTextDocument;
 }
 
-/** Whether a document holds only one empty text block. */
-export function isDocumentEmpty(document: RichTextNode, schema: Schema): boolean {
-  const content = document.content ?? [];
-  const [first] = content;
-  if (content.length > 1 || !first) return content.length === 0;
-  return Boolean(schema.nodes[first.type]?.isTextblock) && !first.content?.length;
+/**
+ * Whether a node holds nothing a reader would count as content, whatever structure it has: text
+ * that is only whitespace, line breaks (leaves whose text is whitespace) and blocks holding only
+ * those. Any other leaf, such as a divider or a caller's atom, is content.
+ */
+export function isDocumentBlank(node: RichTextNode, schema: Schema): boolean {
+  if (node.type === 'text') return !node.text?.trim();
+  const type = schema.nodes[node.type];
+  if (type?.isLeaf) {
+    const text = type.spec.leafText?.(type.create(node.attrs));
+    return text !== undefined && text.trim() === '';
+  }
+  return (node.content ?? []).every((child) => isDocumentBlank(child, schema));
 }
 
 /** The plugins every editor runs; `reactKeys` lets the React view keep node identities. */

@@ -550,4 +550,25 @@ test.describe('Rich Text Editor lab', () => {
     await page.keyboard.press('Control+z');
     await expect(output(page, 'custom-edition')).toHaveText('1');
   });
+
+  test('UIC-RICH-TEXT-EDITOR-4.1 keeps a required editor of blank lines empty and its form blocked', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'required');
+    const send = page.getByRole('button', { name: 'Send' });
+    await content(page, 'required').click();
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('- ');
+    await expect(content(page, 'required').locator('ul')).toHaveCount(1);
+    await expect(field).toHaveAttribute('data-validation', 'invalid');
+    await send.click();
+    await expect(output(page, 'required-submits')).toHaveText('0');
+    await content(page, 'required').click();
+    await page.keyboard.type('Plums');
+    await expect(field).toHaveAttribute('data-validation', 'valid');
+    await send.click();
+    await expect(output(page, 'required-submits')).toHaveText('1');
+  });
 });
