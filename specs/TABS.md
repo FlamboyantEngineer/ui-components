@@ -171,6 +171,13 @@ An open tab menu shall follow the list as it changes: it lists the entries `getM
 Implementation: `src/components/tabs/tab-menu.tsx`, `src/components/tabs/tab-actions.ts`, `src/components/tabs/tab-list.tsx`
 Verification: `src/components/tabs/tab-menu-changes.test.tsx`, `e2e/tabs.spec.ts`
 
+### UIC-TABS-3.10 - Renaming while the presentation changes
+
+A rename shall keep its field, draft, validation message and focus when the list's presentation changes under it (`scrollButtons`, `overflow`, the presence of `onAdd`, or the `Tabs` orientation, either way), since the field keeps its place whether or not a `ui-tabs__bar` wraps the list; it follows the tab to its new place. A list with an overflow menu always keeps the tab being renamed among the tabs it shows, so a presentation change never hides it.
+
+Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-bar.tsx`, `src/components/tabs/tab-rename.tsx`
+Verification: `src/components/tabs/tab-rename-presentation.test.tsx`, `e2e/tabs.spec.ts`
+
 ## Hooks
 
 | Hook                     | Kind      | Values                   | Description                                                                |

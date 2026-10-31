@@ -44,15 +44,23 @@ function toMenuEntries(state: TabListModel, keys: readonly Key[], isDisabled: bo
   });
 }
 
-/** Which tabs a menu list keeps: the selected and focused tabs first, then from the start. */
-export function useTabOverflow(state: TabListModel | null, isMenu: boolean) {
+/**
+ * Which tabs a menu list keeps: the tab being renamed, the selected and focused tabs first, then
+ * from the start.
+ */
+export function useTabOverflow(
+  state: TabListModel | null,
+  isMenu: boolean,
+  editingKey: Key | null,
+) {
   const keys = isMenu && state ? [...state.collection].map((node) => node.key) : noKeys;
   const selectedKey = state?.selectedKey ?? null;
   const manager = state?.selectionManager;
   const focusedKey = manager?.isFocused ? manager.focusedKey : null;
   const overflow = useOverflowItems({
     items: keys,
-    getPriority: (key) => (key === selectedKey ? 2 : key === focusedKey ? 1 : 0),
+    getPriority: (key) =>
+      key === editingKey ? 3 : key === selectedKey ? 2 : key === focusedKey ? 1 : 0,
   });
   const visibleKeys = useMemo(() => new Set(overflow.visibleItems), [overflow.visibleItems]);
   return { ...overflow, visibleKeys: isMenu ? visibleKeys : null };

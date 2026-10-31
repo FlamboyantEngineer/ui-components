@@ -433,4 +433,27 @@ test.describe('Tabs lab', () => {
     await expect(demo.locator('[data-lab-output="locking"]')).toHaveText('Last change: none');
     await expect(demo.getByRole('tab', { name: 'Salad' })).toBeVisible();
   });
+
+  test('UIC-TABS-3.10 keeps a rename draft while the list gains scroll buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="switching"]');
+    await demo.getByRole('button', { name: 'Switch scroll buttons in a second' }).click();
+    await demo.getByRole('tab', { name: 'Noon' }).focus();
+    await page.keyboard.press('F2');
+    await page.keyboard.type('Midday');
+    const field = demo.getByRole('textbox', { name: 'Rename Noon' });
+    await expect(demo.locator('.ui-tabs__bar')).toHaveCount(1);
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue('Midday');
+    const tabBox = await demo.getByRole('tab', { name: 'Noon' }).boundingBox();
+    const fieldBox = await field.locator('..').boundingBox();
+    expect(Math.abs((tabBox?.x ?? 0) - (fieldBox?.x ?? -100))).toBeLessThan(2);
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="switching"]')).toHaveText(
+      'Times: Morning, Midday, Evening',
+    );
+  });
 });
