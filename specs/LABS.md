@@ -112,9 +112,9 @@ Verification: `e2e/lab-harness.spec.ts`, `e2e/accessibility.spec.ts`
 
 ### UIC-LABS-3.3 - Browser fixture
 
-The Playwright fixture `lab` shall open a lab with a given stylesheet and theme, wait until it has rendered and its stylesheet has loaded, fail the test on any page or console error, and run axe on the lab content after finite running animations settle. Infinite animations such as spinners shall not delay the scan.
+The Playwright fixture `lab` shall open a lab with a given stylesheet and theme, wait until it has rendered and its stylesheet has loaded, fail the test on any page or console error, and run axe on the lab content after finite running animations settle. Infinite animations such as spinners shall not delay the scan. The scan shall fail on any violation and on any incomplete result (a check axe could not decide) unless `e2e/axe-incomplete.ts` accepts it with a reason: a rule for one lab (a known defect names its issue), or a rule and message any lab may leave, such as a popup that mounts only while open. `color-contrast` incomplete results are not gated: axe cannot resolve the background behind text over pseudo elements, overlapping layers, images and gradients, which the reference sheet draws throughout, while every contrast it can measure is decided as a violation or a pass.
 
-Implementation: `e2e/fixtures.ts`
+Implementation: `e2e/fixtures.ts`, `e2e/axe-incomplete.ts`
 Verification: `e2e/lab-harness.spec.ts`
 
 ### UIC-LABS-3.4 - Accessible in both themes

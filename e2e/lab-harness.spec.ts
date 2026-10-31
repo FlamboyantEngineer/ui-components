@@ -243,4 +243,15 @@ test.describe('lab harness', () => {
     });
     await expect(lab.expectAccessible()).rejects.toThrow('image-alt');
   });
+
+  test('UIC-LABS-3.3 reports an incomplete result no entry accepts', async ({ page, lab }) => {
+    await lab.open('provider');
+    await page.locator('#lab-root').evaluate((root) => {
+      const span = document.createElement('span');
+      span.setAttribute('aria-label', 'Unexplained');
+      span.textContent = 'Text';
+      root.append(span);
+    });
+    await expect(lab.expectAccessible()).rejects.toThrow('aria-prohibited-attr');
+  });
 });
