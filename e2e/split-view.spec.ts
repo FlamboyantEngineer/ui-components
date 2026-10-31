@@ -236,6 +236,38 @@ test.describe('Split View lab', () => {
     await expect(inspector).toHaveAttribute('aria-valuenow', '156');
   });
 
+  test('UIC-SPLIT-VIEW-2.5 keeps every pane of an all-pixel split at its width', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    for (const width of [480, 720]) {
+      expect((await box(page.locator(`#all-pixel-${width}-tools`))).width).toBe(100);
+      expect((await box(page.locator(`#all-pixel-${width}-layers`))).width).toBe(200);
+    }
+    const separator = page.getByRole('separator', { name: 'Resize tools, 720px' });
+    await separator.scrollIntoViewIfNeeded();
+    await expect(separator).toHaveAttribute('aria-valuemax', '250');
+    const handle = await box(separator);
+    const x = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 300, y, { steps: 3 });
+    await page.mouse.up();
+    await expect(separator).toHaveAttribute('aria-valuenow', '250');
+    expect((await box(page.locator('#all-pixel-720-tools'))).width).toBe(250);
+    const layers = page.locator('#all-pixel-720-layers');
+    expect((await box(layers)).width).toBe(200);
+    await separator.focus();
+    await page.keyboard.press('Enter');
+    await expect(layers).toHaveAttribute('data-collapsed', 'true');
+    expect((await layers.boundingBox())?.width ?? 0).toBe(0);
+    await page.keyboard.press('Enter');
+    await expect(layers).not.toHaveAttribute('data-collapsed');
+    expect((await box(layers)).width).toBe(200);
+  });
+
   test('UIC-SPLIT-VIEW-2.6 UIC-SPLIT-VIEW-2.7 collapses panes by drag, Enter and the handle', async ({
     page,
     lab,
