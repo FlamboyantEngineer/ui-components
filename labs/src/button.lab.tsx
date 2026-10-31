@@ -8,6 +8,7 @@ import {
 } from '../../src/core/glyphs.js';
 import { ButtonActionCases } from './button-action-cases.js';
 import { ButtonIconCases } from './button-icon-cases.js';
+import { ButtonTriggerCases } from './button-trigger-cases.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { mergeProps } from '../../src/utils/merge-props.js';
@@ -170,5 +171,6 @@ mountLab(
     </div>
     <ButtonIconCases />
     <ButtonActionCases />
+    <ButtonTriggerCases />
   </>,
 );
