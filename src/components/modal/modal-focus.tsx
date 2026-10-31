@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useRef, type RefObject } from 'react';
-import { resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
+import {
+  containsComposed,
+  getComposedActiveElement,
+  resolveFocusTarget,
+  type FocusTarget,
+} from '../../utils/focus-target.js';
 import { listTabbables } from '../../utils/tabbable.js';
 
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
@@ -19,7 +24,7 @@ function focusFirstTabbable(root: Element | null): boolean {
   if (!root) return false;
   for (const element of listTabbables(root)) {
     element.focus();
-    if (element.ownerDocument.activeElement === element) return true;
+    if (getComposedActiveElement(element) === element) return true;
   }
   return false;
 }
@@ -38,10 +43,10 @@ export function InitialFocus({ dialogRef, bodyRef, footerRef, target }: InitialF
     const chosen = resolveFocusTarget(targetRef.current);
     if (chosen) {
       chosen.focus();
-      if (chosen.ownerDocument.activeElement === chosen) return;
+      if (getComposedActiveElement(chosen) === chosen) return;
     }
-    const active = dialog.ownerDocument.activeElement;
-    if (active !== dialog && dialog.contains(active)) return;
+    const active = getComposedActiveElement(dialog);
+    if (active !== dialog && containsComposed(dialog, active)) return;
     if (focusFirstTabbable(bodyRef.current) || focusFirstTabbable(footerRef.current)) return;
     focusFirstTabbable(dialog);
   }, [dialogRef, bodyRef, footerRef]);

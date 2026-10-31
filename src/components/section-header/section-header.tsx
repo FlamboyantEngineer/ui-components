@@ -10,6 +10,7 @@ import {
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import { containsFocus } from '../../utils/focus-target.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
@@ -156,8 +157,7 @@ function useSectionDisclosure({
   const focusWithin = useFocusRing({ within: true });
   // Content that stops showing takes keyboard focus with it: the trigger receives it.
   useLayoutEffect(() => {
-    const panel = panelRef.current;
-    if (expanded || !panel?.contains(panel.ownerDocument.activeElement)) return;
+    if (expanded || !containsFocus(panelRef.current)) return;
     triggerRef.current?.focus();
   }, [expanded]);
   const panelProps = collapsible

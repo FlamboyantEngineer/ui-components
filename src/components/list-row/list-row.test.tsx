@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef, Profiler, useState, type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { UiProvider, type UiLinkRenderer } from '../../core/provider.js';
 import { List, ListRow, ListRowContent, type ListHandle } from './list-row.js';
 
@@ -192,6 +193,24 @@ describe('List', () => {
     await flush();
     expect(primary('a')).toHaveFocus();
     expect(document.querySelectorAll('.ui-list-row__primary[tabindex="0"]')).toHaveLength(1);
+  });
+
+  it('UIC-LIST-ROW-1.5 moves focus from a removed row inside a shadow root', async () => {
+    const Rows = ({ ids }: { ids: string[] }) => (
+      <ShadowHost name="page">
+        <List aria-label="History">
+          {ids.map((id) => (
+            <ListRow key={id} title={id} onPress={() => {}} />
+          ))}
+        </List>
+      </ShadowHost>
+    );
+    const { rerender } = render(<Rows ids={['a', 'b', 'c']} />);
+    await flush();
+    act(() => inShadow('page').getByRole('button', { name: 'b' }).focus());
+    rerender(<Rows ids={['a', 'c']} />);
+    await flush();
+    expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: 'c' }));
   });
 
   it('UIC-LIST-ROW-1.5 keeps focus on a row whose primary control is replaced', async () => {

@@ -8,6 +8,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { HoverCard, type HoverCardTriggerProps } from '../hover-card/hover-card.js';
 import { PopoverPanel } from '../popover/popover.js';
+import { containsFocus } from '../../utils/focus-target.js';
 import { restoreFocus, useCardOpening, type UserCardTriggerType } from './user-card-opening.js';
 
 export type { UserCardTriggerType } from './user-card-opening.js';
@@ -95,7 +96,7 @@ export function UserCardTrigger({
   const owner: UserCardOwner = {
     isPreview,
     dismiss: (action) => {
-      const hadFocus = action.contains(action.ownerDocument.activeElement);
+      const hadFocus = containsFocus(action);
       setOpen(false);
       // A press card's dialog returns focus as it closes; a hover card only returns it to where it
       // was when the card opened, which after a hover is the page.

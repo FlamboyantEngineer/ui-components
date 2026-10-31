@@ -122,6 +122,22 @@ test.describe('Focus Scope lab', () => {
     await expect(heading).toBeFocused();
   });
 
+  test('UIC-FOCUS-SCOPE-2.8 returns focus to finalFocus inside a shadow root', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('focus-scope');
+    const demo = page.locator('[data-lab-demo="shadow-rename"]');
+    const heading = demo.locator('[data-lab-output="name"]');
+    await demo.getByRole('button', { name: 'Rename' }).click();
+    const field = demo.getByRole('textbox', { name: 'New name' });
+    await expect(field).toBeFocused();
+    await field.fill('Lemon tart with cream');
+    await demo.getByRole('button', { name: 'Save name' }).click();
+    await expect(heading).toHaveText('Lemon tart with cream');
+    await expect(heading).toBeFocused();
+  });
+
   test('UIC-FOCUS-SCOPE-3.1 moves focus with the arrow keys through the focus manager', async ({
     page,
     lab,
@@ -160,7 +176,7 @@ test.describe('Focus Scope lab', () => {
     // Focus the reader moved to the page around the frame stays there.
     await edit.click();
     await expect(note).toBeFocused();
-    const rename = page.getByRole('button', { name: 'Rename' });
+    const rename = page.locator('[data-lab-demo="rename"]').getByRole('button', { name: 'Rename' });
     await rename.focus();
     await expect(rename).toBeFocused();
     await frame

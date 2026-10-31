@@ -13,6 +13,7 @@ import { renderToString } from 'react-dom/server';
 import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -442,6 +443,18 @@ describe('DockPanel panes', () => {
     act(() => filter.focus());
     await user.keyboard('{F4}');
     expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
+  });
+
+  it('UIC-DOCK-PANEL-2.4 returns focus to the launcher from a closing pane inside a shadow root', () => {
+    const tree = (isExpanded: boolean) => (
+      <ShadowHost name="page">
+        <Panel isExpanded={isExpanded} />
+      </ShadowHost>
+    );
+    const { rerender } = render(tree(true));
+    act(() => inShadow('page').getByRole('textbox', { name: 'File filter' }).focus());
+    rerender(tree(false));
+    expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: 'Files' }));
   });
 });
 

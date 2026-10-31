@@ -5,7 +5,13 @@
 
 import { useLayoutEffect, useRef } from 'react';
 import type { Key } from '../core/props.js';
-import { isFocusableElement, resolveFocusTarget, type FocusTarget } from './focus-target.js';
+import {
+  getComposedActiveElement,
+  isFocusableElement,
+  isFocusLost,
+  resolveFocusTarget,
+  type FocusTarget,
+} from './focus-target.js';
 import { toKeyIdentity } from './to-key-identity.js';
 
 /** What the items' remove buttons report to the list that owns them. */
@@ -20,8 +26,8 @@ export interface RemovalFocus {
 interface PendingRemoval {
   id: string;
   order: string[];
-  /** The pressed button's document: a frame's, for a list mounted in one. */
-  owner: Document;
+  /** The pressed button's tree: a frame's document or a shadow root, for a list mounted in one. */
+  root: Node;
 }
 
 /** The item the focus moves to when `removed` leaves the list: the next one, else the previous one. */
@@ -32,9 +38,9 @@ function findNeighbour(order: readonly string[], removed: string, listed: Readon
 }
 
 /** Whether focus fell to the page or still sits on a remove button that is leaving with the list. */
-function isFocusLost(buttons: ReadonlyMap<string, HTMLElement>, owner: Document): boolean {
-  const active = owner.activeElement;
-  if (!active || active === owner.body) return true;
+function isFocusLeaving(buttons: ReadonlyMap<string, HTMLElement>, root: Node): boolean {
+  if (isFocusLost(root)) return true;
+  const active = getComposedActiveElement(root);
   return isFocusableElement(active) && [...buttons.values()].includes(active);
 }
 
@@ -59,8 +65,7 @@ export function useRemovalFocus(
     const listed = new Set(items.map((item) => toKeyIdentity(item.id)));
     if (!pending || listed.has(pending.id)) return;
     removal.current = null;
-    const { activeElement: active, body } = pending.owner;
-    if (active && active !== body) return;
+    if (!isFocusLost(pending.root)) return;
     const neighbour = findNeighbour(pending.order, pending.id, listed);
     const button = neighbour === undefined ? undefined : buttons.current.get(neighbour);
     (button ?? resolveFocusTarget(fallbackRef.current))?.focus();
@@ -69,7 +74,7 @@ export function useRemovalFocus(
     const registered = buttons.current;
     return () => {
       const pending = removal.current;
-      if (pending && isFocusLost(registered, pending.owner))
+      if (pending && isFocusLeaving(registered, pending.root))
         resolveFocusTarget(fallbackRef.current)?.focus();
     };
   }, []);
@@ -83,7 +88,7 @@ export function useRemovalFocus(
       removal.current = {
         id: identity,
         order: items.map((item) => toKeyIdentity(item.id)),
-        owner: buttons.current.get(identity)?.ownerDocument ?? document,
+        root: buttons.current.get(identity)?.getRootNode() ?? document,
       };
     },
   };

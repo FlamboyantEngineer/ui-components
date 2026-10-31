@@ -17,6 +17,7 @@ import {
   type RefObject,
 } from 'react';
 import { clamp } from '../../utils/clamp.js';
+import { isFocusLost } from '../../utils/focus-target.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import type { ListHandle } from './list-row.js';
 import { isNode } from '../../utils/is-element.js';
@@ -144,10 +145,6 @@ function resolveTargetIndex(key: string, index: number, last: number): number {
   return clamp(index + (key === 'ArrowDown' ? 1 : -1), 0, last);
 }
 
-function isFocusLost(document: Document): boolean {
-  return document.activeElement === null || document.activeElement === document.body;
-}
-
 /**
  * After the row `removed` unregisters: hands the tab stop to the same row's replacement primary or
  * its nearest neighbour, and moves focus there when the removed row held it and focus fell out.
@@ -161,7 +158,7 @@ function recoverFromRemoval(state: ListState, removed: RemovedRow) {
     rows.read()[0]?.[0] ??
     null;
   if (store.getActiveId() === removed.id) store.setActiveId(nextId);
-  if (focusedId.current !== removed.id || !isFocusLost(removed.node.ownerDocument)) return;
+  if (focusedId.current !== removed.id || !isFocusLost(removed.node)) return;
   if (nextId === null) focusedId.current = null;
   else rows.nodes.current.get(nextId)?.focus();
 }

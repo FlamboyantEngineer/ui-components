@@ -2,6 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, type FocusEvent, type RefObject } from 'react';
 import { notificationListHooks as hooks } from './notification-row.js';
+import { getComposedActiveElement, isFocusLost } from '../../utils/focus-target.js';
 import { isNode } from '../../utils/is-element.js';
 
 /** The row holding focus: which of its controls, and the rows that can take focus if it leaves. */
@@ -55,15 +56,13 @@ export function useRemovalFocus(rootRef: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const document = root.ownerDocument;
     const previous = focused.current;
-    const isLost = !document.activeElement || document.activeElement === document.body;
-    if (previous && !previous.row.isConnected && isLost) {
+    if (previous && !previous.row.isConnected && isFocusLost(root)) {
       const next = previous.neighbours.find((row) => row.isConnected);
       (next ? findRowControl(next, previous.controlClass) : findFilterControl(root))?.focus();
     }
     // Rows may have moved: take the neighbours again from this render.
-    focused.current = findFocusedRow(root, document.activeElement);
+    focused.current = findFocusedRow(root, getComposedActiveElement(root));
   });
   const onFocus = useCallback(
     (event: FocusEvent<HTMLElement>) => {

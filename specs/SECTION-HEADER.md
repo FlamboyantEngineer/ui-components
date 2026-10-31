@@ -71,9 +71,9 @@ Verification: `src/components/section-header/section-header.test.tsx`, `e2e/sect
 
 ### UIC-SECTION-HEADER-2.3 - Changing collapsibility
 
-Every `Section` shall hold its content in the `ui-section__panel` element, a plain container while it is not collapsible, so turning `collapsible` on or off keeps the content mounted with its state, its focus and its heading levels. A section turned collapsible starts from `isExpanded`, else `defaultExpanded` as first given; when that hides content that holds focus, focus moves to the trigger.
+Every `Section` shall hold its content in the `ui-section__panel` element, a plain container while it is not collapsible, so turning `collapsible` on or off keeps the content mounted with its state, its focus and its heading levels. A section turned collapsible starts from `isExpanded`, else `defaultExpanded` as first given; when that hides content that holds focus, focus moves to the trigger. Focus is read through open shadow roots, so this holds for a section inside one.
 
-Implementation: `src/components/section-header/section-header.tsx`
+Implementation: `src/components/section-header/section-header.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/section-header/section-collapse.test.tsx`, `e2e/section-header.spec.ts`
 
 ## Hooks

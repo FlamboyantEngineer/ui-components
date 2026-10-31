@@ -3,7 +3,11 @@
 // Keyboard focus around content that turns inert while its region loads.
 
 import { useCallback, useLayoutEffect, type RefObject } from 'react';
-import { containsComposed, getComposedActiveElement } from '../../utils/focus-target.js';
+import {
+  containsComposed,
+  getComposedActiveElement,
+  isFocusLost,
+} from '../../utils/focus-target.js';
 
 interface BlockedFocusOptions {
   /** The region's root, which holds focus while the content is blocked. */
@@ -90,9 +94,7 @@ export function useBlockedFocus({
     returnTargets.delete(root);
     if (!target?.isConnected) return;
     // Focus is lost when nothing in the whole document holds it, wherever the region lives.
-    const { activeElement: pageActive, body } = root.ownerDocument;
-    const isLost = !pageActive || pageActive === body;
-    if (active === root || isLost) returnFocus(target);
+    if (active === root || isFocusLost(root)) returnFocus(target);
     else handOver(root, target);
   }, [rootRef, contentRef, isBlocked]);
   useLayoutEffect(() => {

@@ -64,9 +64,9 @@ Verification: `src/components/pin-input/pin-input.test.tsx`
 
 ### UIC-PIN-INPUT-2.1 - Typing
 
-A character typed into a cell shall replace that cell's character and move focus to the next cell; the last cell keeps focus. Typing the character a cell already holds moves on without a change. A focused cell selects its character, so typing replaces it. Focus follows the value the field renders: a caller that changes the typed value (to upper case, say) still moves it on, and a change the caller refuses moves nothing, then or later.
+A character typed into a cell shall replace that cell's character and move focus to the next cell; the last cell keeps focus. Typing the character a cell already holds moves on without a change. A focused cell selects its character, so typing replaces it. Focus follows the value the field renders: a caller that changes the typed value (to upper case, say) still moves it on, and a change the caller refuses moves nothing, then or later. Focus is read through open shadow roots, so this holds for a field inside one.
 
-Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`
+Implementation: `src/components/pin-input/pin-input-cells.tsx`, `src/components/pin-input/pin-value.ts`, `src/utils/focus-target.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin-input/pin-value.test.ts`, `e2e/pin-input.spec.ts`
 
 ### UIC-PIN-INPUT-2.2 - Backspace

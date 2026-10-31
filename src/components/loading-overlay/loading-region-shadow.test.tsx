@@ -1,28 +1,12 @@
 import { render } from '@testing-library/react';
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
+import { deepActive, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { LoadingRegion } from './loading-overlay.js';
 
 // Focus around a blocked region reaches into shadow roots (UIC-LOADING-OVERLAY-3.3).
 
-/** Renders `children` into an open shadow root of a host element. */
-function ShadowHost({ children, name }: { children: ReactNode; name: string }) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [root, setRoot] = useState<ShadowRoot | null>(null);
-  useLayoutEffect(() => {
-    const host = hostRef.current;
-    if (host) setRoot(host.shadowRoot ?? host.attachShadow({ mode: 'open' }));
-  }, []);
-  return (
-    <div ref={hostRef} data-host={name}>
-      {root ? createPortal(children, root) : null}
-    </div>
-  );
-}
-
-const host = (name: string) =>
-  document.querySelector(`[data-host="${name}"]`)?.shadowRoot as ShadowRoot;
+const host = (name: string) => shadowRootOf(name);
 
 function region(isLoading: boolean, content: ReactNode) {
   return (
@@ -31,12 +15,6 @@ function region(isLoading: boolean, content: ReactNode) {
     </LoadingRegion>
   );
 }
-
-const deepActive = () => {
-  let active = document.activeElement;
-  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
-  return active;
-};
 
 /** Blocks and releases a tree, checking focus parks on the region and comes back to `input`. */
 function expectFocusReturns(tree: (isLoading: boolean) => ReactNode, input: () => HTMLElement) {
@@ -85,7 +63,7 @@ describe('LoadingRegion focus in shadow roots', () => {
       </ShadowHost>
     );
     const field = expectFocusReturns(tree, () => {
-      const inner = host('outer').querySelector('[data-host="inner"]')?.shadowRoot;
+      const inner = shadowRootOf('inner', host('outer'));
       return inner?.querySelector('input') as HTMLElement;
     });
     expect(deepActive()).toBe(field);

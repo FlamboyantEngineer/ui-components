@@ -4,6 +4,7 @@
 // end. Shared by Action Row and Toolbar Scroller.
 
 import { useCallback, useLayoutEffect, useRef } from 'react';
+import { getComposedActiveElement, isFocusLost } from './focus-target.js';
 import { isNode } from './is-element.js';
 
 export interface OverflowFocusSelectors {
@@ -80,14 +81,16 @@ export function useOverflowFocus(selectors: OverflowFocusSelectors) {
   useLayoutEffect(() => {
     const element = root.current;
     if (!element) return;
-    const document = element.ownerDocument;
     const previous = focused.current;
-    const isLost = !document.activeElement || document.activeElement === document.body;
-    if (previous && !previous.item.isConnected && isLost) {
+    if (previous && !previous.item.isConnected && isFocusLost(element)) {
       findSuccessor(element, previous, selectorsRef.current)?.focus();
     }
     // Items may have moved: take the neighbours again from this render.
-    focused.current = findFocusedItem(element, document.activeElement, selectorsRef.current);
+    focused.current = findFocusedItem(
+      element,
+      getComposedActiveElement(element),
+      selectorsRef.current,
+    );
   });
   // Native listeners, since a React Aria toolbar does not forward focus handlers.
   return useCallback((element: HTMLElement | null) => {
