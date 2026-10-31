@@ -17,6 +17,11 @@ export interface TextMatchProviderProps {
   ignoreAccents?: boolean | undefined;
   /** Called with each text rendered by a `TextMatch` below; returns its cleanup. */
   registerText?: TextMatchRegister | undefined;
+  /**
+   * Passes the enclosing provider's query and options through unchanged, ignoring its own, so a
+   * wrapper that highlights only sometimes can stay mounted while it does not.
+   */
+  isInherited?: boolean | undefined;
   /** The content whose `TextMatch` labels highlight the query. */
   children?: ReactNode;
 }
@@ -51,14 +56,20 @@ export function TextMatchProvider({
   matchWords = false,
   ignoreAccents = false,
   registerText,
+  isInherited = false,
   children,
 }: TextMatchProviderProps) {
+  const outer = useContext(TextMatchContext);
   const terms = useMemo(() => splitMatchTerms(query, { ignoreAccents }), [query, ignoreAccents]);
-  const value = useMemo(
+  const own = useMemo(
     () => ({ terms, matchWords, ignoreAccents, registerText }),
     [terms, matchWords, ignoreAccents, registerText],
   );
-  return <TextMatchContext.Provider value={value}>{children}</TextMatchContext.Provider>;
+  return (
+    <TextMatchContext.Provider value={isInherited ? outer : own}>
+      {children}
+    </TextMatchContext.Provider>
+  );
 }
 
 /**

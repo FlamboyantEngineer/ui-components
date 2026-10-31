@@ -480,4 +480,28 @@ test.describe('Menu lab', () => {
     await expect(area.locator('[data-lab-output="Loaded"]')).toHaveText('400');
     await expect(item(page, /^Lima 200$/)).toHaveAttribute('aria-setsize', '400');
   });
+
+  test('UIC-MENU-3.3 keeps the checked items while the presentation options switch', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const demo = page.locator('[data-lab-demo="switched-presentation"]');
+    const apple = demo.getByRole('menuitemcheckbox', { name: 'Apple' });
+    await apple.click();
+    await expect(apple).toHaveAttribute('aria-checked', 'true');
+    for (const name of ['filterable', 'highlightMatches', 'virtualized']) {
+      const option = demo.getByRole('checkbox', { name });
+      await demo.getByText(name, { exact: true }).click();
+      await expect(option).toBeChecked();
+      await expect(apple).toHaveAttribute('aria-checked', 'true');
+      await demo.getByText(name, { exact: true }).click();
+      await expect(option).not.toBeChecked();
+      await expect(apple).toHaveAttribute('aria-checked', 'true');
+    }
+    await expect(demo.getByRole('menuitemcheckbox', { name: 'Banana' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+  });
 });

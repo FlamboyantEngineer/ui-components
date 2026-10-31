@@ -50,7 +50,7 @@ Verification: `src/components/text-match/text-match.test.tsx`
 
 ### UIC-TEXT-MATCH-2.3 - Registration
 
-When the provider has `registerText`, each `TextMatch` shall register its text with it on mount, re-register when its text changes and unregister on unmount, through the cleanup function `registerText` returns, so the host can tell which groups hold a match. The provider renders no element.
+When the provider has `registerText`, each `TextMatch` shall register its text with it on mount, re-register when its text changes and unregister on unmount, through the cleanup function `registerText` returns, so the host can tell which groups hold a match. The provider renders no element. A provider with `isInherited` passes the enclosing provider's query and options through unchanged, ignoring its own, so a wrapper that highlights only sometimes can stay mounted while it does not.
 
 Implementation: `src/components/text-match/text-match.tsx`
 Verification: `src/components/text-match/text-match.test.tsx`

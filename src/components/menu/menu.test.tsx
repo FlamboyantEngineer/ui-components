@@ -16,6 +16,7 @@ import {
   SubmenuTrigger,
   type MenuEntry,
   type MenuItemProps,
+  type MenuProps,
   type MenuSectionProps,
 } from './menu.js';
 
@@ -601,5 +602,64 @@ describe('Menu', () => {
     await user.keyboard('{End}');
     expect(screen.getByRole('menuitem', { name: 'City 999' })).toHaveFocus();
     vi.restoreAllMocks();
+  });
+
+  describe('presentation changes', () => {
+    const presentations = [
+      { filterable: true },
+      { highlightMatches: true },
+      { virtualized: true },
+      { 'aria-label': 'Fruit to buy' },
+    ] as const;
+
+    function Fruit(props: Partial<MenuProps>) {
+      return (
+        <Menu aria-label="Fruit" selectionMode="multiple" {...props}>
+          <MenuItem id="apple">Apple</MenuItem>
+          <MenuItem id="banana">Banana</MenuItem>
+        </Menu>
+      );
+    }
+
+    it.each(presentations)(
+      'UIC-MENU-3.3 keeps an uncontrolled selection when %o turns on and off',
+      async (presentation) => {
+        const user = userEvent.setup();
+        const onSelectionChange = vi.fn();
+        const { rerender } = render(<Fruit onSelectionChange={onSelectionChange} />);
+        await user.click(screen.getByRole('menuitemcheckbox', { name: 'Apple' }));
+        rerender(<Fruit onSelectionChange={onSelectionChange} {...presentation} />);
+        expect(screen.getByRole('menuitemcheckbox', { name: 'Apple' })).toBeChecked();
+        rerender(<Fruit onSelectionChange={onSelectionChange} />);
+        expect(screen.getByRole('menuitemcheckbox', { name: 'Apple' })).toBeChecked();
+        expect(screen.getByRole('menuitemcheckbox', { name: 'Banana' })).not.toBeChecked();
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it.each(presentations)(
+      'UIC-MENU-3.3 keeps a default and a controlled selection when %o turns on',
+      (presentation) => {
+        const { rerender } = render(<Fruit defaultSelectedKeys={['banana']} />);
+        rerender(<Fruit defaultSelectedKeys={['banana']} {...presentation} />);
+        expect(screen.getByRole('menuitemcheckbox', { name: 'Banana' })).toBeChecked();
+        rerender(<Fruit selectedKeys={['apple']} {...presentation} />);
+        rerender(<Fruit selectedKeys={['apple']} />);
+        expect(screen.getByRole('menuitemcheckbox', { name: 'Apple' })).toBeChecked();
+      },
+    );
+
+    it('UIC-MENU-5.4 keeps the menu and its focus mounted when highlighting or the label changes', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<Fruit />);
+      const menu = screen.getByRole('menu', { name: 'Fruit' });
+      await user.click(screen.getByRole('menuitemcheckbox', { name: 'Banana' }));
+      const banana = screen.getByRole('menuitemcheckbox', { name: 'Banana' });
+      expect(banana).toHaveFocus();
+      rerender(<Fruit highlightMatches />);
+      rerender(<Fruit highlightMatches aria-label="Fruit to buy" />);
+      expect(screen.getByRole('menu', { name: 'Fruit to buy' })).toBe(menu);
+      expect(banana).toHaveFocus();
+    });
   });
 });

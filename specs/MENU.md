@@ -40,8 +40,8 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 `MenuItem` shall draw, in order: the selection check (`ui-menu-item__check`, only in a menu or section that allows selection, or on a check item, [UIC-MENU-2.7](#uic-menu-27---check-items)), its `icon` (an imported icon component or rendered element) as a decorative `Icon` in `ui-menu-item__icon`, its label in `ui-menu-item__label`, which names the item, its `description` in `ui-menu-item__description`, its `shortcut` as a `Shortcut` in `ui-menu-item__shortcut` ([SHORTCUT.md](SHORTCUT.md)), and for a submenu trigger a chevron pointing in the reading direction in `ui-menu-item__submenu-indicator`. The item is named by its text: the label, then the description and the shortcut's readable words, each read once, so its accessible name holds all the text it shows.
 
-Implementation: `src/components/menu/menu-item.tsx`, `labs/reference/menu.css`
-Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
+Implementation: `src/components/menu/menu-item.tsx`, `src/components/menu/menu.tsx`, `labs/reference/menu.css`
+Verification: `src/components/menu/menu-item.test.tsx`, `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-2.2 - Custom content
 
@@ -103,7 +103,7 @@ Verification: `src/components/menu/menu-item.test.tsx`
 
 ### UIC-MENU-3.3 - Selection
 
-`selectionMode` (`single` or `multiple`) on a `Menu` or a `MenuSection` shall make its items `menuitemradio` or `menuitemcheckbox` with `aria-checked`, publish `data-selection-mode` and, on selected items, `data-selected`, and draw the check glyph in the check slot of selected items. `selectedKeys` with `onSelectionChange` control the selection and `defaultSelectedKeys` sets it uncontrolled. A multiple-selection menu stays open when an item is chosen by pointer or Space and closes on Enter; `shouldCloseOnSelect` overrides both.
+`selectionMode` (`single` or `multiple`) on a `Menu` or a `MenuSection` shall make its items `menuitemradio` or `menuitemcheckbox` with `aria-checked`, publish `data-selection-mode` and, on selected items, `data-selected`, and draw the check glyph in the check slot of selected items. `selectedKeys` with `onSelectionChange` control the selection and `defaultSelectedKeys` sets it uncontrolled. An uncontrolled selection is held by `Menu` itself, so it survives turning `filterable`, `highlightMatches` or `virtualized` on or off, and changing the menu's label; turning `highlightMatches` on or off or changing the label also keeps the list, its focus and an open submenu mounted. A multiple-selection menu stays open when an item is chosen by pointer or Space and closes on Enter; `shouldCloseOnSelect` overrides both.
 
 Implementation: `src/components/menu/menu-item.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
