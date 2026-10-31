@@ -1,11 +1,11 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const inbox = (page: Page) => page.locator('[data-lab-demo="inbox"]');
 const grid = (page: Page) => inbox(page).getByRole('grid', { name: 'Conversations' });
 const row = (page: Page, title: string) =>
   grid(page).getByRole('row', { name: new RegExp(`^${title}`) });
-const cell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"] .ui-chat-list`);
+const cell = (page: Page, id: string) => matrixCell(page, id).locator(`.ui-chat-list`);
 
 test.describe('Chat List lab', () => {
   test('UIC-CHAT-LIST-1.1 UIC-CHAT-LIST-1.2 UIC-CHAT-LIST-1.3 draws named rows with unread counts, muted marks and presence', async ({

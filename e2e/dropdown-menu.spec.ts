@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 function popovers(page: Page): Locator {
   return page.locator('.ui-menu-popover');
@@ -30,9 +30,9 @@ test.describe('Dropdown Menu lab', () => {
       await expect(trigger).toHaveClass(/ui-button/);
       await expect(trigger.locator('.ui-button__end-icon .ui-dropdown-menu__caret')).toBeVisible();
     }
-    const noCaret = page.locator('[data-lab-cell="state=no caret size=md"] .ui-dropdown-menu');
+    const noCaret = matrixCell(page, 'state=no caret size=md').locator('.ui-dropdown-menu');
     await expect(noCaret.locator('.ui-dropdown-menu__caret')).toHaveCount(0);
-    const disabled = page.locator('[data-lab-cell="state=disabled size=md"] .ui-dropdown-menu');
+    const disabled = matrixCell(page, 'state=disabled size=md').locator('.ui-dropdown-menu');
     await expect(disabled).toBeDisabled();
     await lab.expectAccessible();
   });
@@ -42,12 +42,13 @@ test.describe('Dropdown Menu lab', () => {
     lab,
   }) => {
     await lab.open('dropdown-menu');
-    const trigger = page.locator('[data-lab-cell="state=icon only size=md"] .ui-dropdown-menu');
+    const trigger = matrixCell(page, 'state=icon only size=md').locator('.ui-dropdown-menu');
     await expect(trigger).toHaveClass(/ui-button/);
     await expect(trigger).toHaveAccessibleName('More options');
     const box = await trigger.boundingBox();
-    expect(box?.width).toBe(28);
-    expect(box?.height).toBe(28);
+    const height = await controlHeight(page, 'md');
+    expect(box?.width).toBe(height);
+    expect(box?.height).toBe(height);
     await expect(trigger.locator('.ui-dropdown-menu__caret')).toHaveCount(0);
   });
 
@@ -136,7 +137,7 @@ test.describe('Dropdown Menu lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const root = page.locator(`[data-lab-cell="action=primary size=${size}"] .ui-dropdown-menu`);
+      const root = matrixCell(page, `action=primary size=${size}`).locator(`.ui-dropdown-menu`);
       await expect(root).toHaveAttribute('data-split', 'true');
       await expect(root).toHaveAttribute('role', 'group');
       const action = await root.locator('.ui-dropdown-menu__action').boundingBox();

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function bar(page: Page, name = 'Editor'): Locator {
   return page.getByRole('menubar', { name });
@@ -197,11 +197,11 @@ test.describe('Menubar lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const cell = page.locator(`[data-lab-cell="orientation=horizontal size=${size}"]`);
+      const cell = matrixCell(page, `orientation=horizontal size=${size}`);
       const box = await cell.getByRole('menuitem', { name: 'File' }).boundingBox();
       expect(box?.height).toBe(height);
     }
-    const row = page.locator('[data-lab-cell="orientation=horizontal size=md"]');
+    const row = matrixCell(page, 'orientation=horizontal size=md');
     const file = await row.getByRole('menuitem', { name: 'File' }).boundingBox();
     const edit = await row.getByRole('menuitem', { name: 'Edit' }).boundingBox();
     expect(Math.abs((file?.y ?? 0) - (edit?.y ?? 1))).toBeLessThan(1);
@@ -210,7 +210,7 @@ test.describe('Menubar lab', () => {
     expect(below?.y ?? 0).toBeGreaterThan((file?.y ?? 0) + (file?.height ?? 0));
     await expect(popovers(page)).toHaveAttribute('data-placement', 'bottom');
     await page.keyboard.press('Escape');
-    const column = page.locator('[data-lab-cell="orientation=vertical size=lg"]');
+    const column = matrixCell(page, 'orientation=vertical size=lg');
     const first = await column.getByRole('menuitem', { name: 'File' }).boundingBox();
     const second = await column.getByRole('menuitem', { name: 'Edit' }).boundingBox();
     expect(second?.y ?? 0).toBeGreaterThan((first?.y ?? 0) + (first?.height ?? 0) - 1);

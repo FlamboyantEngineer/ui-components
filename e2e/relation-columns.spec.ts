@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const column = (scope: Locator, name: string) => scope.getByRole('grid', { name, exact: true });
@@ -10,7 +10,7 @@ test.describe('Relation Columns lab', () => {
     lab,
   }) => {
     await lab.open('relation-columns');
-    const cell = (path: string) => page.locator(`[data-lab-cell="path=${path} locale=en-US"]`);
+    const cell = (path: string) => matrixCell(page, `path=${path} locale=en-US`);
     const titles = (scope: Locator) =>
       scope.locator('.ui-relation-columns__column-title').allTextContents();
     expect(await titles(cell('start'))).toEqual([

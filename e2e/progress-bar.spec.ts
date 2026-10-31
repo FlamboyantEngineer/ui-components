@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Progress Bar lab', () => {
   test('UIC-PROGRESS-BAR-1.1 UIC-PROGRESS-BAR-1.6 draws named bars with 4, 6 and 8 pixel tracks', async ({
@@ -15,9 +15,7 @@ test.describe('Progress Bar lab', () => {
       ['md', 6],
       ['lg', 8],
     ] as const) {
-      const cell = page
-        .locator('[data-lab-family="progress-bar-main"]')
-        .locator(`[data-lab-cell="state=partial size=${size}"]`);
+      const cell = matrixCell(page, `state=partial size=${size}`, { family: 'progress-bar-main' });
       await expect(cell.getByRole('progressbar', { name: 'Uploading' })).toBeVisible();
       const track = await cell.locator('.ui-progress-bar__track').boundingBox();
       expect(track?.height).toBe(height);
@@ -29,18 +27,15 @@ test.describe('Progress Bar lab', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const partial = page
-      .locator('[data-lab-family="progress-bar-main"]')
-      .locator('[data-lab-cell="state=partial size=md"]');
+    const partial = matrixCell(page, 'state=partial size=md', { family: 'progress-bar-main' });
     const track = await partial.locator('.ui-progress-bar__track').boundingBox();
     const fill = await partial.locator('.ui-progress-bar__fill').boundingBox();
     expect(Math.round(((fill?.width ?? 0) / (track?.width ?? 1)) * 100)).toBe(40);
     await expect(partial.locator('.ui-progress-bar__value')).toHaveText('40%');
 
-    const indeterminate = page
-      .locator('[data-lab-family="progress-bar-main"]')
-      .locator('[data-lab-cell="state=indeterminate size=md"]')
-      .getByRole('progressbar');
+    const indeterminate = matrixCell(page, 'state=indeterminate size=md', {
+      family: 'progress-bar-main',
+    }).getByRole('progressbar');
     await expect(indeterminate).toHaveAttribute('data-indeterminate', 'true');
     await expect(indeterminate).not.toHaveAttribute('aria-valuenow');
     await expect(indeterminate.locator('.ui-progress-bar__value')).toHaveCount(0);
@@ -64,7 +59,7 @@ test.describe('Progress Bar lab', () => {
 
   test('UIC-PROGRESS-BAR-1.4 reads the value label as the text it shows', async ({ page, lab }) => {
     await lab.open('progress-bar');
-    const cell = page.locator('[data-lab-cell="option=value label"]').first();
+    const cell = matrixCell(page, 'option=value label').first();
     await expect(cell.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '2 of 3 files');
     await expect(cell.locator('.ui-progress-bar__value')).toHaveText('2 of 3 files');
   });
@@ -76,9 +71,9 @@ test.describe('Progress Bar lab', () => {
       ['md', 16],
       ['lg', 20],
     ] as const) {
-      const spinner = page
-        .locator('[data-lab-family="progress-bar-main"]')
-        .locator(`[data-lab-cell="size=${size}"] .ui-spinner`);
+      const spinner = matrixCell(page, `size=${size}`, { family: 'progress-bar-main' }).locator(
+        `.ui-spinner`,
+      );
       await expect(spinner).toHaveAttribute('aria-hidden', 'true');
       // The box spins, so measure its layout size rather than its rotated bounds.
       const box = await spinner.evaluate((node: HTMLElement) => [
@@ -96,9 +91,9 @@ test.describe('Progress Bar lab', () => {
   }) => {
     await lab.open('progress-bar');
     const bar = (tone: string, progress: string) =>
-      page
-        .locator('[data-lab-family="progress-bar-main"]')
-        .locator(`[data-lab-cell="tone=${tone} progress=${progress}"] .ui-progress-bar`);
+      matrixCell(page, `tone=${tone} progress=${progress}`, {
+        family: 'progress-bar-main',
+      }).locator(`.ui-progress-bar`);
     const fillColour = (tone: string, progress: string) =>
       bar(tone, progress)
         .locator('.ui-progress-bar__fill')
@@ -117,9 +112,9 @@ test.describe('Progress Bar lab', () => {
 
   test('UIC-PROGRESS-BAR-2.2 names a standalone spinner', async ({ page, lab }) => {
     await lab.open('progress-bar');
-    const spinner = page
-      .locator('[data-lab-family="progress-bar-main"]')
-      .locator('[data-lab-cell="standalone=md"] .ui-spinner');
+    const spinner = matrixCell(page, 'standalone=md', { family: 'progress-bar-main' }).locator(
+      '.ui-spinner',
+    );
     await expect(spinner).toHaveRole('progressbar');
     await expect(spinner).toHaveAccessibleName('Loading recipes');
     await expect(spinner).not.toHaveAttribute('aria-hidden');

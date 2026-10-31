@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 /** Whether the element sits in content a modal has made inert or hidden from assistive technology. */
 const isBlocked = (locator: Locator) =>
@@ -13,7 +13,7 @@ test.describe('Modal Controller lab', () => {
     await lab.open('modal-controller');
     for (const tone of ['neutral', 'danger']) {
       for (const size of ['sm', 'md', 'lg', 'xl', 'full']) {
-        const button = page.locator(`[data-lab-cell="tone=${tone} size=${size}"] button`);
+        const button = matrixCell(page, `tone=${tone} size=${size}`).locator(`button`);
         await button.click();
         const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-${size}"]`);
         await expect(overlay).toHaveAttribute('data-size', size);

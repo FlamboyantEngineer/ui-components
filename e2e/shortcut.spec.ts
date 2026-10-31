@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Shortcut lab', () => {
@@ -29,20 +29,20 @@ test.describe('Shortcut lab', () => {
       }
     }
     await expect(
-      page.locator('[data-lab-cell="chord=Control+Alt+Shift+Meta+K platform=mac"] .ui-shortcut'),
+      matrixCell(page, 'chord=Control+Alt+Shift+Meta+K platform=mac').locator('.ui-shortcut'),
     ).toHaveText(/^⌃⌥⇧⌘K/);
   });
 
   test('UIC-SHORTCUT-2.2 reads words instead of symbols', async ({ page, lab }) => {
     await lab.open('shortcut');
-    const readable = page.locator('[data-lab-cell="text=readable platform=mac"]');
+    const readable = matrixCell(page, 'text=readable platform=mac');
     const snapshot = await readable.ariaSnapshot();
     expect(snapshot).toContain('Shift Command K');
     expect(snapshot).not.toContain('⌘');
     const hidden = await readable.locator('.ui-shortcut__text').boundingBox();
     expect(hidden?.width ?? 0).toBeLessThanOrEqual(1);
     await expect(
-      page.locator('[data-lab-cell="text=decorative platform=mac"] .ui-shortcut__text'),
+      matrixCell(page, 'text=decorative platform=mac').locator('.ui-shortcut__text'),
     ).toHaveCount(0);
 
     await lab.expectAccessible();
@@ -50,7 +50,7 @@ test.describe('Shortcut lab', () => {
 
   test('UIC-SHORTCUT-3.1 lays a key legend out on one metadata line', async ({ page, lab }) => {
     await lab.open('shortcut');
-    const legend = page.locator('[data-lab-cell="platform=windows"] .ui-key-hints');
+    const legend = matrixCell(page, 'platform=windows').locator('.ui-key-hints');
     await expect(legend).toHaveClass(/ui-meta-line/);
     await expect(legend.locator('.ui-key-hints__hint')).toHaveCount(3);
     await expect(legend.locator('.ui-meta-line__separator')).toHaveCount(2);
@@ -68,7 +68,7 @@ test.describe('Shortcut lab', () => {
       ['mac', '⌘K ⌘C'],
       ['windows', 'Ctrl+K Ctrl+C'],
     ] as const) {
-      const cell = page.locator(`[data-lab-cell="sequence=Ctrl+K Ctrl+C platform=${platform}"]`);
+      const cell = matrixCell(page, `sequence=Ctrl+K Ctrl+C platform=${platform}`);
       await expect(cell.locator('.ui-shortcut__keys')).toHaveText(text);
       const chords = cell.locator('.ui-shortcut__chord');
       await expect(chords).toHaveCount(2);
@@ -78,9 +78,7 @@ test.describe('Shortcut lab', () => {
       expect(Math.round(requireDefined(first).top)).toBe(Math.round(requireDefined(second).top));
       expect(requireDefined(second).left - requireDefined(first).right).toBeGreaterThanOrEqual(4);
     }
-    const snapshot = await page
-      .locator('[data-lab-cell="sequence=G I platform=linux"]')
-      .ariaSnapshot();
+    const snapshot = await matrixCell(page, 'sequence=G I platform=linux').ariaSnapshot();
     expect(snapshot).toContain('G, then I');
     const hints = page.locator('[data-lab-sequence-hints] .ui-key-hints__hint');
     await expect(hints.locator('.ui-shortcut__keys')).toHaveText(['G I', 'G S']);

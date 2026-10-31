@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -23,7 +23,7 @@ test.describe('Grid Size Picker lab', () => {
     lab,
   }) => {
     await lab.open('grid-size-picker');
-    const cell = (id: string) => page.locator(`[data-lab-cell="${id}"]`);
+    const cell = (id: string) => matrixCell(page, id);
     await expect(cell('state=enabled bounds=default').getByRole('gridcell')).toHaveCount(25);
     await expect(cell('state=enabled bounds=small').getByRole('gridcell')).toHaveCount(9);
     await expect(cell('state=enabled bounds=fixed').getByRole('gridcell')).toHaveCount(16);

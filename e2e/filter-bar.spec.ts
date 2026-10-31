@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Filter Bar lab', () => {
   test('UIC-FILTER-BAR-2.1 UIC-FILTER-BAR-4.1 reads every field type as a chip', async ({
@@ -9,7 +9,7 @@ test.describe('Filter Bar lab', () => {
     const cells = page.locator('table[data-lab-matrix="type state"] td[data-lab-cell]');
     expect(await cells.count()).toBe(6 * 2);
     const chip = (type: string, state: string) =>
-      page.locator(`[data-lab-cell="type=${type} state=${state}"] .ui-filter-bar__chip`);
+      matrixCell(page, `type=${type} state=${state}`).locator(`.ui-filter-bar__chip`);
     const readings = {
       text: 'Title contains sea',
       number: 'Pages is between 150 and 300',
@@ -69,7 +69,7 @@ test.describe('Filter Bar lab', () => {
     await expect(demo.getByRole('button', { name: 'Add filter' })).toBeFocused();
     await expect(demo.locator('[data-lab-count]')).toHaveText('8 of 8 books');
     await expect(demo.locator('[data-lab-value]')).toHaveText('[]');
-    const several = page.locator('[data-lab-cell="filters=several"]');
+    const several = matrixCell(page, 'filters=several');
     await several.getByRole('button', { name: 'Clear all' }).click();
     await expect(several.locator('.ui-filter-bar')).toHaveAttribute('data-empty', 'true');
     await expect(several.getByRole('button', { name: 'Add filter' })).toBeFocused();

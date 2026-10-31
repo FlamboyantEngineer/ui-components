@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const regionsCell = (navigation: string, panels: string) =>
   `[data-lab-cell="navigation=${navigation} panels=${panels}"] .ui-app-frame`;
@@ -83,7 +83,7 @@ test.describe('App Frame lab', () => {
     lab,
   }) => {
     await lab.open('app-frame');
-    const narrow = page.locator('[data-lab-cell="width=narrow"] .ui-app-frame-band');
+    const narrow = matrixCell(page, 'width=narrow').locator('.ui-app-frame-band');
     const toolbar = narrow.getByRole('toolbar', { name: 'Tools' });
     const rows = await toolbar
       .getByRole('button')
@@ -95,7 +95,7 @@ test.describe('App Frame lab', () => {
     await expect(scroller).toHaveAttribute('data-overflow-end', 'true');
     await narrow.getByRole('button', { name: 'Scroll forward' }).click();
     await expect(scroller).toHaveAttribute('data-overflow-start', 'true');
-    const wide = page.locator('[data-lab-cell="width=wide"] .ui-app-frame-band__tools');
+    const wide = matrixCell(page, 'width=wide').locator('.ui-app-frame-band__tools');
     await expect(wide).not.toHaveAttribute('data-overflow-end');
     await toolbar.getByRole('button', { name: 'Undo' }).focus();
     await page.keyboard.press('ArrowRight');

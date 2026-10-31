@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -16,7 +16,7 @@ test.describe('Merge View lab', () => {
   }) => {
     await lab.open('merge-view');
     const cell = (content: string, base: string) =>
-      page.locator(`[data-lab-cell="content=${content} base=${base}"]`);
+      matrixCell(page, `content=${content} base=${base}`);
     const conflicts = cell('conflicts', 'shown');
     await expect(conflicts.getByRole('status')).toHaveText('3 of 3 conflicts unresolved');
     await expect(conflicts.locator('.ui-merge-view__side')).toHaveCount(4);

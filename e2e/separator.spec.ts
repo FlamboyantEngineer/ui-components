@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -14,7 +14,7 @@ test.describe('Separator lab', () => {
   }) => {
     await lab.open('separator');
     const cell = (orientation: string, variant: string) =>
-      page.locator(`[data-lab-cell="orientation=${orientation} variant=${variant}"]`);
+      matrixCell(page, `orientation=${orientation} variant=${variant}`);
     for (const variant of ['solid', 'dashed', 'dotted']) {
       const horizontal = cell('horizontal', variant).getByRole('separator');
       await expect(horizontal).toHaveAttribute('data-variant', variant);
@@ -81,9 +81,9 @@ test.describe('Separator lab', () => {
     expect(end.end.width).toBe(12);
     expect(end.start.width).toBeGreaterThan(end.end.width * 4);
 
-    const vertical = page
-      .locator('[data-lab-cell="labelPosition=center"]')
-      .getByRole('separator', { name: 'or' });
+    const vertical = matrixCell(page, 'labelPosition=center').getByRole('separator', {
+      name: 'or',
+    });
     await expect(vertical).toHaveAttribute('aria-orientation', 'vertical');
     const top = await box(vertical.locator('.ui-separator__start-line'));
     const label = await box(vertical.locator('.ui-separator__label'));
@@ -110,7 +110,7 @@ test.describe('Separator lab', () => {
   }) => {
     await lab.open('separator');
     const cell = (kind: string, content: string) =>
-      page.locator(`[data-lab-cell="kind=${kind} content=${content}"]`);
+      matrixCell(page, `kind=${kind} content=${content}`);
     await expect(cell('separator', 'plain').getByRole('separator')).toHaveCount(1);
     await expect(cell('decorative', 'plain').getByRole('separator')).toHaveCount(0);
     const decorative = cell('decorative', 'labelled').locator('.ui-separator');

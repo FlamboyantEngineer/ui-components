@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Empty State lab', () => {
   test('UIC-EMPTY-STATE-1.2 UIC-EMPTY-STATE-1.3 draws each variant centred or start-aligned', async ({
@@ -8,16 +8,14 @@ test.describe('Empty State lab', () => {
     await lab.open('empty-state');
     const cells = page.locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(3 * 2 * 3);
-    const medium = page.locator('[data-lab-cell="variant=error size=md"] .ui-empty-state').first();
-    const small = page.locator('[data-lab-cell="variant=error size=sm"] .ui-empty-state').first();
+    const medium = matrixCell(page, 'variant=error size=md').locator('.ui-empty-state').first();
+    const small = matrixCell(page, 'variant=error size=sm').locator('.ui-empty-state').first();
     expect(await medium.evaluate((node) => getComputedStyle(node).textAlign)).toBe('center');
     expect(await small.evaluate((node) => getComputedStyle(node).textAlign)).toBe('start');
     expect(await small.evaluate((node) => getComputedStyle(node).paddingTop)).toBe('4px');
     await expect(medium.getByRole('heading', { level: 3 })).toHaveText('Unable to load cities');
     await expect(
-      page
-        .locator('[data-lab-cell="variant=loading size=md"] .ui-empty-state__description')
-        .first(),
+      matrixCell(page, 'variant=loading size=md').locator('.ui-empty-state__description').first(),
     ).toHaveText('Fetching the latest list…');
   });
 
@@ -49,7 +47,7 @@ test.describe('Empty State lab', () => {
   }) => {
     await lab.open('empty-state');
     const table = page.locator('table[data-lab-matrix="variant size"]').nth(2);
-    const notice = table.locator('[data-lab-cell="variant=empty size=md"] .ui-empty-state');
+    const notice = matrixCell(table, 'variant=empty size=md').locator('.ui-empty-state');
     const icon = await notice.locator('.ui-empty-state__icon').boundingBox();
     const title = await notice.locator('.ui-empty-state__title').boundingBox();
     const actions = await notice.locator('.ui-empty-state__actions').boundingBox();
@@ -65,9 +63,9 @@ test.describe('Empty State lab', () => {
     expect(addBox?.x ?? 0).toBeGreaterThan(noticeBox?.x ?? 0);
     await add.focus();
     await expect(add).toBeFocused();
-    const small = table.locator('[data-lab-cell="variant=error size=sm"] .ui-empty-state');
+    const small = matrixCell(table, 'variant=error size=sm').locator('.ui-empty-state');
     expect((await small.locator('.ui-empty-state__icon').boundingBox())?.width).toBe(20);
-    const loading = table.locator('[data-lab-cell="variant=loading size=md"] .ui-empty-state');
+    const loading = matrixCell(table, 'variant=loading size=md').locator('.ui-empty-state');
     await expect(loading.locator('.ui-empty-state__icon')).toHaveCount(0);
     await expect(loading.locator('.ui-empty-state__spinner')).toHaveCount(1);
     await lab.expectAccessible();

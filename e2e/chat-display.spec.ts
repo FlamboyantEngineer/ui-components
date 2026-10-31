@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const display = (page: Page) => page.locator('[data-lab-demo="display"]');
 const background = (message: Locator) =>
@@ -119,7 +119,7 @@ test.describe('Chat message display', () => {
     lab,
   }) => {
     await lab.open('chat-transcript');
-    const cell = (id: string) => page.locator(`[data-lab-cell="${id}"]`).getByRole('article');
+    const cell = (id: string) => matrixCell(page, id).getByRole('article');
     const plain = cell('variant=plain author=neither time=none from=received');
     const bubble = cell('variant=bubble author=neither time=header from=received');
     await expect(plain).toHaveAttribute('data-variant', 'plain');
@@ -164,7 +164,7 @@ test.describe('Plain reply width', () => {
       for (const width of ['narrow', 'wide']) {
         for (const avatar of ['shown', 'hidden']) {
           const cell = (steps: string) =>
-            section.locator(`[data-lab-cell="width=${width} avatar=${avatar} steps=${steps}"]`);
+            matrixCell(section, `width=${width} avatar=${avatar} steps=${steps}`);
           for (const steps of ['collapsed', 'expanded', 'long output']) {
             const feed = await box(cell(steps).locator('.ui-chat-transcript__feed'));
             const reply = cell(steps).locator('article[id="reply"]');

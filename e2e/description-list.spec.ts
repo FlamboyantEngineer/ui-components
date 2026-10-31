@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 async function rects(locator: Locator) {
@@ -12,7 +12,7 @@ test.describe('Description List lab', () => {
     lab,
   }) => {
     await lab.open('description-list');
-    const inline = page.locator('[data-lab-cell="layout=inline columns=1"] .ui-description-list');
+    const inline = matrixCell(page, 'layout=inline columns=1').locator('.ui-description-list');
     await expect(inline).toHaveAttribute('data-layout', 'inline');
     const values = (await rects(inline.locator('.ui-description-list__value'))) as DOMRect[];
     expect(new Set(values.map((box) => Math.round(box.left))).size).toBe(1);
@@ -25,7 +25,7 @@ test.describe('Description List lab', () => {
     }
     expect((await inline.boundingBox())?.width ?? 0).toBeLessThanOrEqual(420);
 
-    const stacked = page.locator('[data-lab-cell="layout=stacked columns=1"]');
+    const stacked = matrixCell(page, 'layout=stacked columns=1');
     const label = await stacked.locator('.ui-description-list__label').first().boundingBox();
     const value = await stacked.locator('.ui-description-list__value').first().boundingBox();
     expect(value?.y ?? 0).toBeGreaterThan(label?.y ?? 0);
@@ -92,7 +92,7 @@ test.describe('Description List lab', () => {
       expect(Math.round(full.width)).toBe(Math.round(listBox.width));
       expect(full.top).toBeGreaterThan(pair.top);
     }
-    const three = page.locator('[data-lab-cell="layout=inline columns=3"] .ui-description-list');
+    const three = matrixCell(page, 'layout=inline columns=3').locator('.ui-description-list');
     const rows = (await rects(three.locator('.ui-description-list__row'))) as DOMRect[];
     expect(requireDefined(rows[3]).top).toBeGreaterThan(requireDefined(rows[0]).top);
   });

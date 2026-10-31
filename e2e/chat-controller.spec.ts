@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const demo = (page: Page) => page.locator('[data-lab-demo="controller"]');
 const transcript = (page: Page) => page.getByRole('feed', { name: 'Conversation with the helper' });
@@ -29,10 +29,10 @@ test.describe('Chat Controller lab', () => {
     await expect(page.getByRole('list', { name: 'Sent prompts' })).toContainText(
       'What can you cook with beans?',
     );
-    await expect(page.locator('[data-lab-cell="ending=error events=end"]')).toContainText(
+    await expect(matrixCell(page, 'ending=error events=end')).toContainText(
       'The recipe service is busy.',
     );
-    await expect(page.locator('[data-lab-cell="ending=finish events=end"]')).toContainText(
+    await expect(matrixCell(page, 'ending=finish events=end')).toContainText(
       'Black bean chili takes an hour.',
     );
     await lab.expectAccessible();

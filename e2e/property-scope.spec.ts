@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function cell(page: Page, query: string, clear = 'without'): Locator {
-  return page.locator(`[data-lab-cell="query=${query} clear=${clear}"]`);
+  return matrixCell(page, `query=${query} clear=${clear}`);
 }
 
 function row(scope: Locator, label: string): Locator {

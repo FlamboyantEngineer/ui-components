@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-notification-center`;
 
@@ -107,14 +107,12 @@ test.describe('Notification Center lab', () => {
 
   test('UIC-NOTIFICATION-CENTER-1.7 shows the empty and loading states', async ({ page, lab }) => {
     await lab.open('notification-center');
-    await expect(page.locator('[data-lab-cell="state=loading"] .ui-empty-state')).toHaveAttribute(
+    await expect(matrixCell(page, 'state=loading').locator('.ui-empty-state')).toHaveAttribute(
       'data-variant',
       'loading',
     );
-    await expect(page.locator('[data-lab-cell="state=empty"]')).toContainText('No notifications');
-    await expect(page.locator('[data-lab-cell="state=nothing unread"]')).toContainText(
-      'Nothing unread',
-    );
+    await expect(matrixCell(page, 'state=empty')).toContainText('No notifications');
+    await expect(matrixCell(page, 'state=nothing unread')).toContainText('Nothing unread');
   });
 
   test('UIC-NOTIFICATION-CENTER-3.1 announces arrivals while closed and open', async ({

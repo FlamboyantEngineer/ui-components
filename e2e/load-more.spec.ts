@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 test.describe('Load More lab', () => {
   test('UIC-LOAD-MORE-1.1 UIC-LOAD-MORE-1.2 UIC-LOAD-MORE-1.3 draws small buttons with counts and names', async ({
@@ -6,19 +6,19 @@ test.describe('Load More lab', () => {
     lab,
   }) => {
     await lab.open('load-more');
-    const counted = page.locator('[data-lab-cell="state=idle count=12 remaining"] .ui-load-more');
+    const counted = matrixCell(page, 'state=idle count=12 remaining').locator('.ui-load-more');
     await expect(counted).toHaveText('Load more (12 remaining)');
     await expect(counted).toHaveAccessibleName('Load more (12 remaining) messages');
     await expect(counted).toHaveClass(/ui-button/);
     const box = await counted.boundingBox();
-    expect(box?.height).toBe(24);
-    await expect(page.locator('[data-lab-cell="state=idle count=zero"] .ui-load-more')).toHaveText(
+    expect(box?.height).toBe(await controlHeight(page, 'sm'));
+    await expect(matrixCell(page, 'state=idle count=zero').locator('.ui-load-more')).toHaveText(
       'Load more (0 remaining)',
     );
     await expect(
-      page.locator('[data-lab-cell="state=disabled count=no count"] .ui-load-more'),
+      matrixCell(page, 'state=disabled count=no count').locator('.ui-load-more'),
     ).toBeDisabled();
-    const pending = page.locator('[data-lab-cell="state=pending count=no count"] .ui-load-more');
+    const pending = matrixCell(page, 'state=pending count=no count').locator('.ui-load-more');
     await expect(pending).toHaveAttribute('aria-disabled', 'true');
     await expect(pending.locator('.ui-button__spinner')).toBeVisible();
     await lab.expectAccessible();

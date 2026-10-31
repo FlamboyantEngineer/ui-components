@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function section(page: Page, title: string): Locator {
   return page.locator(`[data-lab-section="${title}"]`);
@@ -61,16 +61,16 @@ test.describe('Menu lab', () => {
       ['md', 28, 16],
       ['lg', 32, 20],
     ] as const) {
-      const plain = await page
-        .locator(`[data-lab-cell="item=plain size=${size}"] .ui-menu-item`)
+      const plain = await matrixCell(page, `item=plain size=${size}`)
+        .locator(`.ui-menu-item`)
         .boundingBox();
       expect(plain?.height).toBe(row);
-      const glyph = await page
-        .locator(`[data-lab-cell="item=icon size=${size}"] .ui-menu-item__icon`)
+      const glyph = await matrixCell(page, `item=icon size=${size}`)
+        .locator(`.ui-menu-item__icon`)
         .boundingBox();
       expect(glyph?.width).toBe(icon);
     }
-    const shortcut = page.locator('[data-lab-cell="item=shortcut size=md"] .ui-menu-item');
+    const shortcut = matrixCell(page, 'item=shortcut size=md').locator('.ui-menu-item');
     await expect(shortcut.locator('.ui-menu-item__shortcut')).toBeVisible();
     await expect(shortcut).toHaveAccessibleName(/^Undo\s*Control Z$/);
     await lab.expectAccessible();
@@ -82,7 +82,7 @@ test.describe('Menu lab', () => {
   }) => {
     await lab.open('menu');
     const cell = (state: string) =>
-      page.locator(`[data-lab-cell="state=${state} size=md"] .ui-menu-item`);
+      matrixCell(page, `state=${state} size=md`).locator(`.ui-menu-item`);
     await expect(cell('danger')).toHaveAttribute('data-tone', 'danger');
     await expect(cell('disabled')).toHaveAttribute('aria-disabled', 'true');
     await expect(cell('pending')).toHaveAttribute('data-pending', 'true');
@@ -101,12 +101,12 @@ test.describe('Menu lab', () => {
     lab,
   }) => {
     await lab.open('menu');
-    const menu = page.locator('[data-lab-cell="state=focusable disabled size=md"] [role="menu"]');
+    const menu = matrixCell(page, 'state=focusable disabled size=md').locator('[role="menu"]');
     const item = menu.getByRole('menuitem', { name: 'Archive Nothing to archive' });
     await expect(item).toHaveAttribute('aria-disabled', 'true');
     await expect(item).toHaveAttribute('data-disabled', 'true');
     // Focusing a menu moves focus to its first reachable item: none for a plain disabled item.
-    const disabled = page.locator('[data-lab-cell="state=disabled size=md"] [role="menu"]');
+    const disabled = matrixCell(page, 'state=disabled size=md').locator('[role="menu"]');
     await disabled.focus();
     await expect(disabled.getByRole('menuitem')).not.toBeFocused();
     await menu.focus();
@@ -234,7 +234,7 @@ test.describe('Menu lab', () => {
   }) => {
     await lab.open('menu');
     await expect(
-      page.locator('[data-lab-cell="state=check item size=md"] .ui-menu-item'),
+      matrixCell(page, 'state=check item size=md').locator('.ui-menu-item'),
     ).toHaveAttribute('aria-checked', 'true');
     const area = section(page, 'Check items');
     const trigger = area.getByRole('button', { name: 'Editor' });
@@ -403,7 +403,7 @@ test.describe('Menu lab', () => {
     await page.keyboard.press('Enter');
     await expect(popovers(page)).toHaveCount(0);
     await expect(area.locator('[data-lab-output="Move action"]')).toHaveText('city-11');
-    const cellSearch = page.locator('[data-lab-cell="state=no match size=md"] .ui-menu__empty');
+    const cellSearch = matrixCell(page, 'state=no match size=md').locator('.ui-menu__empty');
     await expect(cellSearch).toHaveText('No results');
   });
 
@@ -441,7 +441,7 @@ test.describe('Menu lab', () => {
     await expect(item(page, /^Quito 23$/)).toBeAttached();
     await page.clock.resume();
     await expect(
-      page.locator('[data-lab-cell="state=loading size=md"] .ui-menu__load-more'),
+      matrixCell(page, 'state=loading size=md').locator('.ui-menu__load-more'),
     ).toHaveText('Loading');
   });
 

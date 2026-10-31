@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('User Identity lab', () => {
   test('UIC-USER-IDENTITY-1.3 sizes the avatar with the row', async ({ page, lab }) => {
@@ -21,7 +21,7 @@ test.describe('User Identity lab', () => {
     lab,
   }) => {
     await lab.open('user-identity');
-    const long = page.locator('[data-lab-cell="text=long size=md"]');
+    const long = matrixCell(page, 'text=long size=md');
     const name = long.locator('.ui-user-identity__name');
     const description = long.locator('.ui-user-identity__description');
     await expect(name).toHaveText('Maria Fernanda Santos de Oliveira');
@@ -33,7 +33,7 @@ test.describe('User Identity lab', () => {
     const descriptionBox = await description.boundingBox();
     expect(descriptionBox?.y).toBeGreaterThan(nameBox?.y ?? 0);
     expect((await long.locator('.ui-user-identity').boundingBox())?.width).toBeLessThanOrEqual(160);
-    const short = page.locator('[data-lab-cell="text=short size=md"] .ui-user-identity__name');
+    const short = matrixCell(page, 'text=short size=md').locator('.ui-user-identity__name');
     expect(await short.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(false);
   });
 
@@ -59,7 +59,7 @@ test.describe('User Identity lab', () => {
   }) => {
     await lab.open('user-identity');
     for (const size of ['xs', 'sm', 'md', 'lg']) {
-      const cell = page.locator(`[data-lab-cell="status=away size=${size}"]`);
+      const cell = matrixCell(page, `status=away size=${size}`);
       const avatar = await cell.locator('.ui-user-identity__avatar').boundingBox();
       const badge = await cell.locator('.ui-user-identity__indicator').boundingBox();
       expect(avatar && badge).toBeTruthy();
@@ -70,7 +70,7 @@ test.describe('User Identity lab', () => {
         expect(badge.y + badge.height).toBeLessThanOrEqual(avatar.y + avatar.height + 2);
       }
     }
-    const row = page.locator('[data-lab-cell="status=busy size=md"] .ui-user-identity');
+    const row = matrixCell(page, 'status=busy size=md').locator('.ui-user-identity');
     await expect(row).toHaveAttribute('data-status', 'busy');
     await expect(row.getByRole('img')).toHaveAccessibleName('Busy');
     expect(await row.evaluate((node) => node.lastElementChild?.className)).toBe(

@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Query Field lab', () => {
   test('UIC-QUERY-FIELD-1.1 UIC-QUERY-FIELD-1.3 UIC-QUERY-FIELD-1.5 UIC-CODE-EDITOR-1.7 draws one-line queries in every state', async ({
@@ -12,7 +12,7 @@ test.describe('Query Field lab', () => {
     await expect(valid).toHaveAttribute('aria-multiline', 'false');
     const box = await valid.boundingBox();
     expect(box?.height).toBeLessThan(40);
-    const invalid = page.locator('[data-lab-cell="state=invalid"] .ui-query-field');
+    const invalid = matrixCell(page, 'state=invalid').locator('.ui-query-field');
     await expect(invalid).toHaveAttribute('data-invalid', 'true');
     await expect(invalid.locator('.ui-code-editor__diagnostic')).toHaveCount(2);
     await expect(invalid.getByRole('button', { name: 'Run query' })).toBeDisabled();

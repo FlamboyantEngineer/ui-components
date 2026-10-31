@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const style = (locator: Locator, property: string) =>
@@ -67,7 +67,7 @@ test.describe('Link lab', () => {
     lab,
   }) => {
     await lab.open('link');
-    const cell = page.locator('[data-lab-cell="state=new tab variant=primary"]');
+    const cell = matrixCell(page, 'state=new tab variant=primary');
     const link = cell.getByRole('link', { name: 'Seasonal fruit (opens in a new tab)' });
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
@@ -120,7 +120,7 @@ test.describe('Link lab', () => {
     lab,
   }) => {
     await lab.open('link');
-    const current = page.locator('[data-lab-cell="state=current variant=primary"] .ui-link');
+    const current = matrixCell(page, 'state=current variant=primary').locator('.ui-link');
     await expect(current).toHaveAttribute('aria-current', 'page');
     await expect(current).toHaveAttribute('data-current', 'true');
     await expect(
@@ -129,9 +129,7 @@ test.describe('Link lab', () => {
       }),
     ).toHaveAttribute('data-current', 'true');
 
-    const disabled = page
-      .locator('[data-lab-cell="state=disabled variant=primary"]')
-      .getByRole('link');
+    const disabled = matrixCell(page, 'state=disabled variant=primary').getByRole('link');
     expect(await disabled.evaluate((node) => node.tagName)).toBe('SPAN');
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     await expect(disabled).toHaveAttribute('data-disabled', 'true');
@@ -141,15 +139,10 @@ test.describe('Link lab', () => {
     await disabled.click({ force: true });
     expect(page.url()).toBe(url);
 
-    const rest = page.locator('[data-lab-cell="state=rest variant=primary"]').getByRole('link');
-    await page
-      .locator('[data-lab-cell="state=current variant=secondary"]')
-      .getByRole('link')
-      .focus();
+    const rest = matrixCell(page, 'state=rest variant=primary').getByRole('link');
+    await matrixCell(page, 'state=current variant=secondary').getByRole('link').focus();
     await page.keyboard.press('Tab');
-    await expect(
-      page.locator('[data-lab-cell="state=no href variant=primary"]').getByRole('link'),
-    ).toBeFocused();
+    await expect(matrixCell(page, 'state=no href variant=primary').getByRole('link')).toBeFocused();
     await rest.hover();
     await expect(rest).toHaveAttribute('data-hovered', 'true');
     await lab.expectAccessible();

@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, waitForLab } from './fixtures.js';
+import { expect, test, waitForLab, matrixCell } from './fixtures.js';
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
-const cell = (page: Page, state: string) => page.locator(`[data-lab-cell="state=${state}"]`);
+const cell = (page: Page, state: string) => matrixCell(page, `state=${state}`);
 const picker = (scope: Locator) => scope.getByRole('button', { name: /^Model:/ });
 
 test.describe('Chat Model Picker lab', () => {

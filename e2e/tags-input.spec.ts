@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell, controlHeight } from './fixtures.js';
 
 function cell(page: Page, state: string, layout = 'label-control'): Locator {
-  return page.locator(`[data-lab-cell="state=${state} layout=${layout}"]`);
+  return matrixCell(page, `state=${state} layout=${layout}`);
 }
 
 function field(page: Page, name: string): Locator {
@@ -38,7 +38,7 @@ test.describe('Tags Input lab', () => {
     const group = await resting.locator('.ui-tags-input__group').boundingBox();
     const apple = await resting.getByRole('row', { name: 'Apple' }).boundingBox();
     const input = await resting.getByRole('textbox', { name: 'Fruit' }).boundingBox();
-    expect(group?.height).toBe(28);
+    expect(group?.height).toBe(await controlHeight(page, 'md'));
     expect(apple?.x ?? 0).toBeGreaterThan(group?.x ?? 0);
     expect(input?.x ?? 0).toBeGreaterThan((apple?.x ?? 0) + (apple?.width ?? 0));
     expect(

@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('HTML Markup lab', () => {
   test('UIC-HTML-MARKUP-2.1 UIC-HTML-MARKUP-3.1 renders content with its semantics', async ({
@@ -6,20 +6,20 @@ test.describe('HTML Markup lab', () => {
     lab,
   }) => {
     await lab.open('html-markup');
-    const rich = page.locator('[data-lab-cell="content=rich text text=body"] .ui-html-markup');
+    const rich = matrixCell(page, 'content=rich text text=body').locator('.ui-html-markup');
     await expect(rich.getByRole('heading', { level: 3 })).toHaveText('Harvest update');
     await expect(rich.locator('strong')).toHaveText('north');
     await expect(rich).toContainText('store at 4\u00a0°C — see');
-    const table = page
-      .locator('[data-lab-cell="content=table text=body"]')
-      .getByRole('table', { name: 'Crates this week' });
+    const table = matrixCell(page, 'content=table text=body').getByRole('table', {
+      name: 'Crates this week',
+    });
     await expect(table.getByRole('columnheader')).toHaveText(['Fruit', 'Crates']);
-    const lists = page.locator('[data-lab-cell="content=lists text=body"] .ui-html-markup');
+    const lists = matrixCell(page, 'content=lists text=body').locator('.ui-html-markup');
     await expect(lists.locator('ol')).toHaveAttribute('start', '3');
     await expect(lists.locator('ul ul li')).toHaveText(['Bramley', 'Cox']);
     await lists.getByText('Storage notes').click();
     await expect(lists.getByText('Keep pears apart from apples.')).toBeVisible();
-    await expect(page.locator('[data-lab-cell="content=code text=body"] pre')).toHaveCSS(
+    await expect(matrixCell(page, 'content=code text=body').locator('pre')).toHaveCSS(
       'font-family',
       /monospace/,
     );
@@ -50,11 +50,11 @@ test.describe('HTML Markup lab', () => {
 
   test('UIC-HTML-MARKUP-2.5 follows its policy', async ({ page, lab }) => {
     await lab.open('html-markup');
-    const textOnly = page.locator('[data-lab-cell="policy=text only"] .ui-html-markup');
+    const textOnly = matrixCell(page, 'policy=text only').locator('.ui-html-markup');
     await expect(textOnly.locator('h3, strong, a, blockquote')).toHaveCount(0);
     await expect(textOnly).toContainText('Harvest update');
     await expect(
-      page.locator('[data-lab-cell="policy=default"] .ui-html-markup').getByRole('link'),
+      matrixCell(page, 'policy=default').locator('.ui-html-markup').getByRole('link'),
     ).toHaveText('the storage guide');
   });
 
@@ -114,9 +114,9 @@ test.describe('HTML Markup lab', () => {
     lab,
   }) => {
     await lab.open('html-markup');
-    const table = page
-      .locator('[data-lab-cell="content=table shorthand text=body"]')
-      .getByRole('table', { name: 'Crates by hand' });
+    const table = matrixCell(page, 'content=table shorthand text=body').getByRole('table', {
+      name: 'Crates by hand',
+    });
     await expect(table.locator(':scope > colgroup > col')).toHaveCount(2);
     await expect(table.locator(':scope > tbody > tr')).toHaveCount(2);
     await expect(table.getByRole('cell', { name: 'Quince' })).toBeVisible();

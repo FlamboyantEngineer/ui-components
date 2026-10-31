@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Languages lab', () => {
   test('UIC-PROVIDER-3.3 UIC-PROVIDER-3.5 switches every component to the chosen language without a reload', async ({
@@ -40,7 +40,7 @@ test.describe('Languages lab', () => {
   test('UIC-PROVIDER-3.4 counts and lists follow each language', async ({ page, lab }) => {
     await lab.open('languages');
     const cell = (count: string, language: string) =>
-      page.locator(`[data-lab-cell="count=${count} language=${language}"]`);
+      matrixCell(page, `count=${count} language=${language}`);
     await expect(cell('1', 'en')).toHaveText('1 item · You chose Ana');
     await expect(cell('2', 'es')).toHaveText('2 elementos · Elegiste Ana y Ben');
     await expect(cell('1200', 'fr')).toHaveText(

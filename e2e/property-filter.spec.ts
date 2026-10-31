@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function panel(page: Page): Locator {
-  return page.locator('[data-lab-cell="layout=responsive width=wide"]');
+  return matrixCell(page, 'layout=responsive width=wide');
 }
 
 function row(scope: Locator, label: string): Locator {

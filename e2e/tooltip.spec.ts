@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 /**
  * Scrolling closes an open hint, so bring a trigger into view and let the scroll events settle
@@ -24,7 +24,7 @@ test.describe('Tooltip lab', () => {
     lab,
   }) => {
     await lab.open('tooltip');
-    const trigger = page.locator('[data-lab-cell="placement=bottom"]').getByRole('button');
+    const trigger = matrixCell(page, 'placement=bottom').getByRole('button');
     const hint = page.getByRole('tooltip', { name: 'Placed bottom' });
     await bringIntoView(page, trigger);
     await usePointer(page);
@@ -43,8 +43,8 @@ test.describe('Tooltip lab', () => {
     await page.mouse.move(0, 0);
     await expect(hint).toHaveCount(0);
 
-    const focusOnly = page.locator('[data-lab-cell="option=focus only"]').getByRole('button');
-    await page.locator('[data-lab-cell="option=long delay"]').getByRole('button').focus();
+    const focusOnly = matrixCell(page, 'option=focus only').getByRole('button');
+    await matrixCell(page, 'option=long delay').getByRole('button').focus();
     await page.keyboard.press('Tab');
     await expect(focusOnly).toBeFocused();
     await expect(page.getByRole('tooltip', { name: 'Hint with focus only' })).toBeVisible();
@@ -52,9 +52,9 @@ test.describe('Tooltip lab', () => {
 
   test('UIC-TOOLTIP-1.3 closes on Escape and keeps focus on the trigger', async ({ page, lab }) => {
     await lab.open('tooltip');
-    const trigger = page.locator('[data-lab-cell="placement=top"]').getByRole('button');
+    const trigger = matrixCell(page, 'placement=top').getByRole('button');
     await bringIntoView(page, trigger);
-    await page.locator('[data-lab-cell="variant=info state=open"]').getByRole('button').focus();
+    await matrixCell(page, 'variant=info state=open').getByRole('button').focus();
     await page.keyboard.press('Tab');
     await expect(trigger).toBeFocused();
     const hint = page.getByRole('tooltip', { name: 'Placed top' });
@@ -67,7 +67,7 @@ test.describe('Tooltip lab', () => {
   test('UIC-TOOLTIP-1.5 places the hint on the requested side', async ({ page, lab }) => {
     await lab.open('tooltip');
     for (const placement of ['top', 'bottom', 'end'] as const) {
-      const trigger = page.locator(`[data-lab-cell="placement=${placement}"]`).getByRole('button');
+      const trigger = matrixCell(page, `placement=${placement}`).getByRole('button');
       await bringIntoView(page, trigger);
       await trigger.focus();
       const hint = page.getByRole('tooltip', { name: `Placed ${placement}` });
@@ -116,18 +116,16 @@ test.describe('Tooltip lab', () => {
     lab,
   }) => {
     await lab.open('tooltip');
-    const disabled = page
-      .locator('[data-lab-cell="control=button state=focusable disabled"]')
-      .getByRole('button');
+    const disabled = matrixCell(page, 'control=button state=focusable disabled').getByRole(
+      'button',
+    );
     await bringIntoView(page, disabled);
     await disabled.focus();
     await expect(page.getByRole('tooltip', { name: 'Only owners can publish' })).toBeVisible();
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     await disabled.blur();
 
-    const pending = page
-      .locator('[data-lab-cell="control=icon button state=pending"]')
-      .getByRole('button');
+    const pending = matrixCell(page, 'control=icon button state=pending').getByRole('button');
     await usePointer(page);
     await pending.hover();
     await expect(page.getByRole('tooltip', { name: 'Undo the last edit' })).toBeVisible();
@@ -136,7 +134,7 @@ test.describe('Tooltip lab', () => {
 
   test('UIC-TOOLTIP-1.9 names icon-only triggers by their hint', async ({ page, lab }) => {
     await lab.open('tooltip');
-    const undo = page.locator('[data-lab-cell="label=Undo"]').getByRole('button');
+    const undo = matrixCell(page, 'label=Undo').getByRole('button');
     const hint = page.getByRole('tooltip').filter({ hasText: /^Undo$/ });
     await expect(undo).toHaveAccessibleName('Undo');
     await expect(hint).toHaveCount(0);

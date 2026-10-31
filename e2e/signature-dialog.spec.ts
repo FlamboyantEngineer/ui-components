@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function settled(page: Page) {
   const overlay = page.locator('.ui-modal.ui-signature-dialog');
@@ -103,7 +103,7 @@ test.describe('Signature Dialog lab', () => {
 
   test('UIC-SIGNATURE-DIALOG-1.3 asks for a required reason and drawing', async ({ page, lab }) => {
     await lab.open('signature-dialog');
-    const cell = page.locator('[data-lab-cell="reason=required drawing=required"]');
+    const cell = matrixCell(page, 'reason=required drawing=required');
     await cell.getByRole('button', { name: 'Sign', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Sign the inspection report' });
     await settled(page);

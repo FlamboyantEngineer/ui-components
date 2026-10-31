@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Inline Text Diff lab', () => {
   test('UIC-INLINE-TEXT-DIFF-2.1 shows a struck removed run and an added run in the sentence', async ({
@@ -6,7 +6,7 @@ test.describe('Inline Text Diff lab', () => {
     lab,
   }) => {
     await lab.open('inline-text-diff');
-    const cell = page.locator('[data-lab-cell="change=replace container=inline"]');
+    const cell = matrixCell(page, 'change=replace container=inline');
     await expect(cell).toHaveText('Description changed: The redgreen apple is ripe.');
     const removed = cell.getByRole('deletion');
     const added = cell.getByRole('insertion');
@@ -31,15 +31,15 @@ test.describe('Inline Text Diff lab', () => {
         '[data-lab-cell="change=first value container=inline"] .ui-inline-text-diff > *',
       ),
     ).toHaveCount(1);
-    await expect(page.locator('[data-lab-cell="change=cleared container=inline"] del')).toHaveText(
+    await expect(matrixCell(page, 'change=cleared container=inline').locator('del')).toHaveText(
       'An old description',
     );
-    const long = page.locator('[data-lab-cell="change=long change container=narrow"]');
+    const long = matrixCell(page, 'change=long change container=narrow');
     await expect(long.locator('ins')).toHaveText(/…$/);
     const diff = long.locator('.ui-inline-text-diff');
     expect((await diff.boundingBox())?.width ?? 0).toBeLessThanOrEqual(161);
     expect(await diff.evaluate((node) => node.scrollWidth <= 161)).toBe(true);
-    await expect(page.locator('[data-lab-cell="change=markup container=inline"] ins')).toHaveText(
+    await expect(matrixCell(page, 'change=markup container=inline').locator('ins')).toHaveText(
       'i>italic</i',
     );
 

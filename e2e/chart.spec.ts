@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test('UIC-CHART-2.1 UIC-CHART-3.1 UIC-CHART-3.2 keeps numeric and text identities distinct after reordering', async ({
@@ -21,8 +21,6 @@ test('UIC-CHART-2.1 UIC-CHART-3.1 UIC-CHART-3.2 keeps numeric and text identitie
   await text.click();
   await expect(hidden).toHaveText('string 1');
 });
-
-const cell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"]`);
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const tooltip = (page: Page) => page.locator('.ui-chart__tooltip');
 
@@ -47,7 +45,7 @@ test.describe('Chart lab', () => {
     await expect(
       page.locator('table[data-lab-matrix="layout orientation"] td[data-lab-cell]'),
     ).toHaveCount(4);
-    const grouped = cell(page, 'layout=grouped orientation=vertical');
+    const grouped = matrixCell(page, 'layout=grouped orientation=vertical');
     const figure = grouped.getByRole('figure', { name: 'Crates by quarter' });
     await expect(figure).toHaveAttribute('data-layout', 'grouped');
     await expect(figure.locator('.ui-bar-chart__bar')).toHaveCount(12);
@@ -57,7 +55,7 @@ test.describe('Chart lab', () => {
       .locator('.ui-bar-chart__bar')
       .evaluateAll((bars) => bars.slice(0, 3).map((bar) => getComputedStyle(bar).fill));
     expect(new Set(fills).size).toBe(3);
-    const stacked = cell(page, 'layout=stacked orientation=horizontal').getByRole('figure');
+    const stacked = matrixCell(page, 'layout=stacked orientation=horizontal').getByRole('figure');
     await expect(stacked).toHaveAttribute('data-orientation', 'horizontal');
     const [first, second] = await stacked
       .locator('.ui-bar-chart__bar')
@@ -71,7 +69,7 @@ test.describe('Chart lab', () => {
     lab,
   }) => {
     await lab.open('chart');
-    const figure = cell(page, 'layout=grouped orientation=vertical').getByRole('figure');
+    const figure = matrixCell(page, 'layout=grouped orientation=vertical').getByRole('figure');
     const apples = figure.getByRole('img', { name: 'Apples, Q1: 42' });
     await apples.focus();
     await expect(apples).toHaveAttribute('data-active', 'true');
@@ -120,13 +118,13 @@ test.describe('Chart lab', () => {
     lab,
   }) => {
     await lab.open('chart');
-    const area = cell(page, 'variant=area').getByRole('figure', { name: 'Sprint burndown' });
+    const area = matrixCell(page, 'variant=area').getByRole('figure', { name: 'Sprint burndown' });
     await expect(area).toHaveAttribute('data-variant', 'area');
     await expect(area.locator('.ui-line-chart__area')).toHaveCount(2);
     await expect(area.locator('.ui-line-chart__line').first()).toHaveAttribute('d', /M.*M/);
     await expect(area.getByRole('img', { name: 'Remaining, Mar 2, 2026: 40' })).toBeAttached();
     await expect(area.locator('.ui-chart-axis[data-position="bottom"]')).toContainText('Mar 8');
-    const line = cell(page, 'variant=line').locator('.ui-line-chart__line').first();
+    const line = matrixCell(page, 'variant=line').locator('.ui-line-chart__line').first();
     expect(await line.evaluate((node) => getComputedStyle(node).fill)).toBe('none');
     await expect(
       demo(page, 'numeric').getByRole('img', { name: 'Build minutes, 1,201: 6.2' }),
@@ -136,7 +134,7 @@ test.describe('Chart lab', () => {
 
   test('UIC-CHART-7.1 UIC-CHART-4.4 draws donut slices around the total', async ({ page, lab }) => {
     await lab.open('chart');
-    const donut = cell(page, 'data=results').getByRole('figure', { name: 'Run results' });
+    const donut = matrixCell(page, 'data=results').getByRole('figure', { name: 'Run results' });
     await expect(donut.locator('.ui-donut-chart__slice')).toHaveCount(4);
     await expect(donut.locator('.ui-donut-chart__total')).toHaveText('231 total');
     const passed = donut.getByRole('img', { name: 'Passed: 214, 92.6%' });
@@ -144,7 +142,7 @@ test.describe('Chart lab', () => {
     await expect(tooltip(page).locator('.ui-chart__tooltip-value')).toHaveText('214 (92.6%)');
     const box = await donut.locator('.ui-chart__plot').boundingBox();
     expect([box?.width, box?.height]).toEqual([160, 160]);
-    await expect(cell(page, 'data=small').locator('.ui-chart__plot')).toHaveAttribute(
+    await expect(matrixCell(page, 'data=small').locator('.ui-chart__plot')).toHaveAttribute(
       'width',
       '96',
     );
@@ -161,12 +159,12 @@ test.describe('Chart lab', () => {
     lab,
   }) => {
     await lab.open('chart');
-    await expect(cell(page, 'state=summary').locator('.ui-chart__summary')).toBeVisible();
-    await expect(cell(page, 'state=summary').locator('.ui-chart__summary')).toHaveText(
+    await expect(matrixCell(page, 'state=summary').locator('.ui-chart__summary')).toBeVisible();
+    await expect(matrixCell(page, 'state=summary').locator('.ui-chart__summary')).toHaveText(
       '2 series, 8 values, from 24 to 61',
     );
-    await expect(cell(page, 'state=table').getByRole('table')).toBeVisible();
-    const empty = cell(page, 'state=empty').getByRole('figure');
+    await expect(matrixCell(page, 'state=table').getByRole('table')).toBeVisible();
+    const empty = matrixCell(page, 'state=empty').getByRole('figure');
     await expect(empty).toHaveAttribute('data-empty', 'true');
     await expect(empty.locator('.ui-chart__empty')).toHaveText('No data');
     await expect(demo(page, 'custom').locator('.ui-chart__summary')).toBeVisible();

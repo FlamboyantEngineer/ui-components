@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Condition Builder lab', () => {
   test('UIC-CONDITION-BUILDER-1.2 UIC-CONDITION-BUILDER-1.6 UIC-CONDITION-BUILDER-3.1 draws groups, rules and messages', async ({
@@ -9,7 +9,7 @@ test.describe('Condition Builder lab', () => {
     const cells = page.locator('table[data-lab-matrix="state"] td[data-lab-cell]');
     expect(await cells.count()).toBe(4);
     await expect(
-      page.locator('[data-lab-cell="state=empty"] .ui-condition-builder__empty'),
+      matrixCell(page, 'state=empty').locator('.ui-condition-builder__empty'),
     ).toHaveText('No rules yet.');
     const nested = page.getByRole('group', { name: 'Conditions, nested' });
     await expect(nested.getByRole('group', { name: 'Group' })).toHaveAttribute('data-depth', '2');

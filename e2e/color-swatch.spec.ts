@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Color Swatch lab', () => {
   test('UIC-COLOR-SWATCH-1.1 UIC-COLOR-SWATCH-1.3 fills five sizes with the colour', async ({
@@ -13,7 +13,7 @@ test.describe('Color Swatch lab', () => {
       ['lg', 24],
       ['xl', 32],
     ] as const) {
-      const swatch = page.locator(`[data-lab-cell="colour=#336699 size=${size}"] .ui-color-swatch`);
+      const swatch = matrixCell(page, `colour=#336699 size=${size}`).locator(`.ui-color-swatch`);
       const box = await swatch.boundingBox();
       expect(box?.width).toBe(pixels);
       expect(box?.height).toBe(pixels);
@@ -31,7 +31,7 @@ test.describe('Color Swatch lab', () => {
     lab,
   }) => {
     await lab.open('color-swatch');
-    const empty = page.locator('[data-lab-cell="colour=empty size=lg"] .ui-color-swatch');
+    const empty = matrixCell(page, 'colour=empty size=lg').locator('.ui-color-swatch');
     await expect(empty).toHaveAttribute('data-empty', 'true');
     await expect(empty).toHaveAccessibleName('No color');
     await expect(empty).toHaveCSS('background-image', /conic-gradient/);
@@ -65,7 +65,7 @@ test.describe('Color Swatch lab', () => {
     await expect(page.locator('[data-lab-output="picked"]')).toHaveText('#cc3300');
     await options.nth(6).click({ force: true });
     await expect(page.locator('[data-lab-output="picked"]')).toHaveText('#cc3300');
-    const stacked = page.locator('[data-lab-cell="layout=stack size=md"] .ui-color-swatch-picker');
+    const stacked = matrixCell(page, 'layout=stack size=md').locator('.ui-color-swatch-picker');
     const items = stacked.getByRole('option');
     expect((await items.nth(1).boundingBox())?.y).toBeGreaterThan(
       (await items.nth(0).boundingBox())?.y ?? 0,

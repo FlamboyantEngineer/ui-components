@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Zoom Control lab', () => {
@@ -13,9 +13,9 @@ test.describe('Zoom Control lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const group = page
-        .locator(`[data-lab-cell="state=default size=${size}"]`)
-        .getByRole('group', { name: `Zoom default ${size}` });
+      const group = matrixCell(page, `state=default size=${size}`).getByRole('group', {
+        name: `Zoom default ${size}`,
+      });
       const zoomOut = await group.getByRole('button', { name: 'Zoom out' }).boundingBox();
       const slider = await group.getByRole('slider', { name: 'Zoom level' }).boundingBox();
       const zoomIn = await group.getByRole('button', { name: 'Zoom in' }).boundingBox();
@@ -26,7 +26,7 @@ test.describe('Zoom Control lab', () => {
       expect(requireDefined(slider).x).toBeLessThan(requireDefined(zoomIn).x);
       expect(requireDefined(zoomIn).x).toBeLessThan(requireDefined(value).x);
     }
-    await expect(page.locator('[data-lab-cell="state=between levels size=sm"] output')).toHaveText(
+    await expect(matrixCell(page, 'state=between levels size=sm').locator('output')).toHaveText(
       '137.5%',
     );
   });
@@ -97,11 +97,11 @@ test.describe('Zoom Control lab', () => {
     lab,
   }) => {
     await lab.open('zoom-control');
-    const disabled = page.locator('[data-lab-cell="state=disabled size=md"]');
+    const disabled = matrixCell(page, 'state=disabled size=md');
     await expect(disabled.getByRole('slider')).toBeDisabled();
     await expect(disabled.getByRole('button', { name: 'Zoom in' })).toBeDisabled();
     await expect(
-      page.locator('[data-lab-cell="state=last level size=md"]').getByRole('button', {
+      matrixCell(page, 'state=last level size=md').getByRole('button', {
         name: 'Zoom in',
       }),
     ).toHaveAttribute('aria-disabled', 'true');
@@ -145,7 +145,7 @@ test.describe('Zoom Control lab', () => {
       await expect(menu).toHaveCount(0);
       await expect(trigger).toBeFocused();
       await expect(
-        page.locator('[data-lab-cell="state=disabled size=md"] .ui-zoom-control__presets'),
+        matrixCell(page, 'state=disabled size=md').locator('.ui-zoom-control__presets'),
       ).toBeDisabled();
       await lab.expectAccessible();
     });

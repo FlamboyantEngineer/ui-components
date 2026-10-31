@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('User Card lab', () => {
   test('UIC-USER-CARD-1.1 UIC-USER-CARD-1.2 UIC-USER-CARD-1.5 draws every part within the card width', async ({
@@ -7,7 +7,7 @@ test.describe('User Card lab', () => {
   }) => {
     await lab.open('user-card');
     await expect(page.locator('.ui-user-card:focus, .ui-user-card :focus')).toHaveCount(0);
-    const full = page.locator('[data-lab-cell="content=details and actions avatar=picture"]');
+    const full = matrixCell(page, 'content=details and actions avatar=picture');
     const card = full.getByRole('dialog', { name: 'Maria Santos' });
     await expect(card.locator('.ui-user-identity__description')).toHaveText('maria@example.com');
     await expect(card.locator('.ui-user-card__status-label')).toHaveText('Away until 14:00');
@@ -16,7 +16,7 @@ test.describe('User Card lab', () => {
     const box = await card.boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(200);
     expect(box?.width).toBeLessThanOrEqual(280);
-    const minimal = page.locator('[data-lab-cell="content=name only avatar=group"]');
+    const minimal = matrixCell(page, 'content=name only avatar=group');
     await expect(minimal.locator('.ui-avatar__glyph')).toBeVisible();
     await expect(minimal.locator('.ui-user-card__status')).toHaveCount(0);
     await lab.expectAccessible();

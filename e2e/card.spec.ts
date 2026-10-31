@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Card lab', () => {
   test('UIC-CARD-2.1 UIC-CARD-2.2 draws every variant, density and state', async ({
@@ -182,7 +182,7 @@ test.describe('Card lab', () => {
     lab,
   }) => {
     await lab.open('card');
-    const card = page.locator('[data-lab-cell="media=cover content=loading"] .ui-card');
+    const card = matrixCell(page, 'media=cover content=loading').locator('.ui-card');
     await expect(card).toHaveAttribute('aria-busy', 'true');
     const cardBox = await card.boundingBox();
     const mediaBox = await card.locator('.ui-card__media').boundingBox();
@@ -194,7 +194,7 @@ test.describe('Card lab', () => {
     expect((await skeleton.boundingBox())?.height).toBe(52);
     await expect(card.locator('.ui-card__body')).not.toContainText('Open on weekends');
     await expect(
-      page.locator('[data-lab-cell="media=none content=loaded"] .ui-card__body'),
+      matrixCell(page, 'media=none content=loaded').locator('.ui-card__body'),
     ).toHaveText('Open on weekends from April to October.');
     await lab.expectAccessible();
   });

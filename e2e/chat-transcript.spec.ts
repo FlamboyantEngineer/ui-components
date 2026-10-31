@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Chat Transcript lab: transcript behaviour', () => {
   const transcript = (page: Page, name: string) => page.locator(`[data-lab-transcript="${name}"]`);
@@ -269,7 +269,6 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
 
 test.describe('Chat Transcript lab: messages and conversation parts', () => {
   const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
-  const matrixCell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"]`);
   const teamMessage = (page: Page, id: string) => page.locator(`[data-lab-message="${id}"]`);
   const opacityOf = (locator: Locator) =>
     locator.evaluate((node) => Number(getComputedStyle(node).opacity));

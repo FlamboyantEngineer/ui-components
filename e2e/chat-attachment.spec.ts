@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function cell(page: Page, status: string, removable: string, kind: string) {
-  return page.locator(`[data-lab-cell="status=${status} removable=${removable} kind=${kind}"]`);
+  return matrixCell(page, `status=${status} removable=${removable} kind=${kind}`);
 }
 
 async function settledViewer(page: Page) {

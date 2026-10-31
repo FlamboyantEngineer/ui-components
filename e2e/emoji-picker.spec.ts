@@ -1,4 +1,4 @@
-import { expect, test, type LabFixture } from './fixtures.js';
+import { expect, test, type LabFixture, matrixCell } from './fixtures.js';
 import type { Page } from '@playwright/test';
 
 async function openPopover(page: Page, lab: LabFixture, theme?: string) {
@@ -38,15 +38,15 @@ test.describe('Emoji Picker lab', () => {
   }) => {
     test.slow(); // axe walks several hundred emoji cells
     await lab.open('emoji-picker');
-    const loading = page.locator('[data-lab-cell="state=loading skin tones=shown"]');
+    const loading = matrixCell(page, 'state=loading skin tones=shown');
     await expect(loading.locator('.ui-emoji-picker')).toHaveAttribute('data-loading', 'true');
     await expect(loading.getByRole('status')).toHaveText('Loading');
-    const failed = page.locator('[data-lab-cell="state=failed skin tones=shown"]');
+    const failed = matrixCell(page, 'state=failed skin tones=shown');
     await expect(failed.getByRole('status')).toHaveText('Emoji could not be loaded.');
-    const loaded = page.locator('[data-lab-cell="state=loaded skin tones=shown"]');
+    const loaded = matrixCell(page, 'state=loaded skin tones=shown');
     await expect(loaded.getByRole('grid', { name: 'Smileys & Emotion' })).toBeVisible();
     await expect(loaded.getByRole('radio', { name: 'Medium', exact: true })).toBeChecked();
-    const hidden = page.locator('[data-lab-cell="state=loaded skin tones=hidden"]');
+    const hidden = matrixCell(page, 'state=loaded skin tones=hidden');
     await expect(hidden.getByRole('radiogroup')).toHaveCount(0);
     const box = await loaded.locator('.ui-emoji-picker').boundingBox();
     expect(box?.width).toBe(320);

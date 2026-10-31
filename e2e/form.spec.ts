@@ -1,12 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function output(page: Page, name: string): Locator {
   return page.locator(`[data-lab-output="${name}"]`);
 }
 
 function mode(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-cell="mode=${name}"]`);
+  return matrixCell(page, `mode=${name}`);
 }
 
 test.describe('Form lab', () => {

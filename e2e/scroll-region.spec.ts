@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -19,7 +19,7 @@ function metrics(viewport: Locator) {
 }
 
 const axisCell = (page: Page, axis: string, scrollbar: string) =>
-  page.locator(`[data-lab-cell="axis=${axis} scrollbar=${scrollbar}"]`);
+  matrixCell(page, `axis=${axis} scrollbar=${scrollbar}`);
 
 test.describe('Scroll Region lab', () => {
   test('UIC-SCROLL-REGION-1.1 UIC-SCROLL-REGION-1.2 scrolls the viewport along its axes', async ({

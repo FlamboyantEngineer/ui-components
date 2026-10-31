@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Segmented Bar lab', () => {
   test('UIC-SEGMENTED-BAR-1.1 UIC-SEGMENTED-BAR-1.6 UIC-SEGMENTED-BAR-2.1 draws named groups with 4, 8 and 12 pixel tracks', async ({
@@ -13,7 +13,7 @@ test.describe('Segmented Bar lab', () => {
       ['md', 8],
       ['lg', 12],
     ] as const) {
-      const cell = page.locator(`[data-lab-cell="legend=hidden size=${size}"]`);
+      const cell = matrixCell(page, `legend=hidden size=${size}`);
       const bar = cell.getByRole('group', { name: 'Checks' });
       await expect(bar).toHaveAttribute('data-size', size);
       const track = await cell.locator('.ui-segmented-bar__track').boundingBox();
@@ -35,7 +35,7 @@ test.describe('Segmented Bar lab', () => {
     await lab.open('segmented-bar');
     // Shares of the track, or of the segments together when they fill it around the gaps.
     const shares = async (cell: string, of: 'track' | 'segments') => {
-      const scope = page.locator(`[data-lab-cell="${cell}"]`);
+      const scope = matrixCell(page, cell);
       const track = await scope.locator('.ui-segmented-bar__track').boundingBox();
       const widths = await scope
         .locator('.ui-segmented-bar__segment')
@@ -46,16 +46,13 @@ test.describe('Segmented Bar lab', () => {
     expect(await shares('legend=hidden size=lg', 'segments')).toEqual([70, 10, 7, 13]);
     expect(await shares('option=larger total', 'track')).toEqual([35, 5, 3, 7]);
     expect(await shares('option=empty', 'track')).toEqual([]);
-    const legend = (cell: string) =>
-      page.locator(`[data-lab-cell="${cell}"] .ui-segmented-bar__legend`);
+    const legend = (cell: string) => matrixCell(page, cell).locator(`.ui-segmented-bar__legend`);
     const hidden = legend('legend=hidden size=md').locator('xpath=..');
     const shown = legend('legend=shown size=md');
     await expect(hidden).toHaveClass(/ui-visually-hidden/);
     expect((await hidden.boundingBox())?.height ?? 0).toBeLessThanOrEqual(1);
     await expect(shown).toBeVisible();
-    await expect(page.locator('[data-lab-cell="option=empty"]').getByRole('listitem')).toHaveCount(
-      4,
-    );
+    await expect(matrixCell(page, 'option=empty').getByRole('listitem')).toHaveCount(4);
   });
 
   test('UIC-SEGMENTED-BAR-1.3 colours each tone on the segment and its swatch', async ({
@@ -65,7 +62,7 @@ test.describe('Segmented Bar lab', () => {
     await lab.open('segmented-bar');
     const colours: string[] = [];
     for (const tone of ['neutral', 'info', 'success', 'warning', 'danger']) {
-      const cell = page.locator(`[data-lab-cell="tone=${tone}"]`);
+      const cell = matrixCell(page, `tone=${tone}`);
       const segment = cell.locator(`.ui-segmented-bar__segment[data-tone="${tone}"]`).first();
       const swatch = cell
         .locator(`.ui-segmented-bar__item[data-tone="${tone}"] .ui-segmented-bar__swatch`)
@@ -86,12 +83,10 @@ test.describe('Segmented Bar lab', () => {
     await expect(storage.locator('.ui-segmented-bar__total')).toHaveText('128 GB total');
     await expect(storage.getByRole('listitem').first()).toHaveText(/Photos\s*38\.5 GB\s*30\.1%/);
     await expect(
-      page.locator('[data-lab-cell="option=total hidden"] .ui-segmented-bar__total'),
+      matrixCell(page, 'option=total hidden').locator('.ui-segmented-bar__total'),
     ).toHaveCount(0);
     await expect(
-      page
-        .locator('[data-lab-cell="option=aria-label only"]')
-        .getByRole('group', { name: 'Checks' }),
+      matrixCell(page, 'option=aria-label only').getByRole('group', { name: 'Checks' }),
     ).toBeVisible();
     const running = page.locator('[data-lab-demo="running"]');
     const next = running.getByRole('button', { name: 'Run next check' });
@@ -117,19 +112,21 @@ test.describe('Segmented Bar lab', () => {
   }) => {
     await lab.open('segmented-bar');
     const geometry = (cell: string) =>
-      page.locator(`[data-lab-cell="${cell}"] .ui-segmented-bar__track`).evaluate((track) => {
-        const box = track.getBoundingClientRect();
-        const majority = track.lastElementChild?.getBoundingClientRect();
-        return {
-          width: box.width,
-          overflow: track.scrollWidth - track.clientWidth,
-          majority: majority?.width ?? 0,
-          inside: majority
-            ? majority.left >= box.left - 0.5 && majority.right <= box.right + 0.5
-            : false,
-          left: (majority?.left ?? 0) - box.left,
-        };
-      });
+      matrixCell(page, cell)
+        .locator(`.ui-segmented-bar__track`)
+        .evaluate((track) => {
+          const box = track.getBoundingClientRect();
+          const majority = track.lastElementChild?.getBoundingClientRect();
+          return {
+            width: box.width,
+            overflow: track.scrollWidth - track.clientWidth,
+            majority: majority?.width ?? 0,
+            inside: majority
+              ? majority.left >= box.left - 0.5 && majority.right <= box.right + 0.5
+              : false,
+            left: (majority?.left ?? 0) - box.left,
+          };
+        });
     for (const width of [250, 150]) {
       await page
         .locator('[data-lab-resizable="many"]')
@@ -151,10 +148,7 @@ test.describe('Segmented Bar lab', () => {
         expect(Math.abs(half.majority - half.width * 0.45)).toBeLessThan(1);
       }
     }
-    const legend = page
-      .locator('[data-lab-cell="direction=ltr remainder=none"]')
-      .getByRole('listitem')
-      .last();
+    const legend = matrixCell(page, 'direction=ltr remainder=none').getByRole('listitem').last();
     await expect(legend).toContainText('Majority');
     await expect(legend).toContainText('90%');
   });

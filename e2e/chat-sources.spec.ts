@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Chat Sources lab', () => {
   test('UIC-CHAT-SOURCES-1.1 UIC-CHAT-SOURCES-1.2 lists sources with their details', async ({
@@ -6,7 +6,7 @@ test.describe('Chat Sources lab', () => {
     lab,
   }) => {
     await lab.open('chat-sources');
-    const full = page.locator('[data-lab-cell="count=several details=full"]');
+    const full = matrixCell(page, 'count=several details=full');
     const list = full.getByRole('list', { name: '3 sources' });
     await expect(list.getByRole('listitem')).toHaveCount(3);
     const first = list.getByRole('listitem').first();
@@ -16,7 +16,7 @@ test.describe('Chat Sources lab', () => {
     );
     await expect(first.locator('.ui-chat-sources__site')).toHaveText('example.com');
     await expect(first.locator('.ui-chat-sources__snippet')).toBeVisible();
-    const minimal = page.locator('[data-lab-cell="count=one details=minimal"]');
+    const minimal = matrixCell(page, 'count=one details=minimal');
     await expect(minimal.getByRole('list', { name: '1 source' })).toBeVisible();
     await expect(minimal.getByRole('link')).toHaveCount(0);
     await lab.expectAccessible();

@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Button icon-only content', () => {
   test('UIC-BUTTON-11.1 UIC-BUTTON-11.2 draws named square buttons at four sizes', async ({
@@ -23,12 +23,11 @@ test.describe('Button icon-only content', () => {
         'link',
         'bare',
       ]) {
-        const button = page
-          .locator('[data-lab-family="button-icon-cases"]')
-          .locator(`[data-lab-cell="variant=${variant} size=${size}"]`)
-          .getByRole('button', {
-            name: 'More actions',
-          });
+        const button = matrixCell(page, `variant=${variant} size=${size}`, {
+          family: 'button-icon-cases',
+        }).getByRole('button', {
+          name: 'More actions',
+        });
         const box = await button.boundingBox();
         expect(box?.width).toBe(edge);
         expect(box?.height).toBe(edge);
@@ -39,14 +38,14 @@ test.describe('Button icon-only content', () => {
   test('UIC-BUTTON-11.3 shows pending and selected states accessibly', async ({ page, lab }) => {
     await lab.open('button');
     await expect(
-      page
-        .locator('[data-lab-family="button-icon-cases"]')
-        .locator('[data-lab-cell="variant=ghost state=pending"] .ui-button__spinner'),
+      matrixCell(page, 'variant=ghost state=pending', { family: 'button-icon-cases' }).locator(
+        '.ui-button__spinner',
+      ),
     ).toBeVisible();
     await expect(
-      page
-        .locator('[data-lab-family="button-icon-cases"]')
-        .locator('[data-lab-cell="variant=ghost state=selected"] .ui-button[data-content="icon"]'),
+      matrixCell(page, 'variant=ghost state=selected', { family: 'button-icon-cases' }).locator(
+        '.ui-button[data-content="icon"]',
+      ),
     ).toHaveAttribute('aria-pressed', 'true');
     await lab.expectAccessible();
   });
@@ -57,14 +56,13 @@ test.describe('Button icon-only content', () => {
       lab,
     }) => {
       await lab.open('button', { theme });
-      const undo = page
-        .locator('[data-lab-family="button-icon-cases"]')
-        .locator('[data-lab-cell="hint=shortcut size=md"] .ui-button[data-content="icon"]');
+      const undo = matrixCell(page, 'hint=shortcut size=md', {
+        family: 'button-icon-cases',
+      }).locator('.ui-button[data-content="icon"]');
       await expect(undo).toHaveAttribute('aria-keyshortcuts', 'Control+Z');
       // React Aria opens a tooltip on keyboard focus, so arrive with Tab.
-      await page
-        .locator('[data-lab-family="button-icon-cases"]')
-        .locator('[data-lab-cell="hint=shortcut size=sm"] .ui-button[data-content="icon"]')
+      await matrixCell(page, 'hint=shortcut size=sm', { family: 'button-icon-cases' })
+        .locator('.ui-button[data-content="icon"]')
         .focus();
       await page.keyboard.press('Tab');
       await expect(undo).toBeFocused();

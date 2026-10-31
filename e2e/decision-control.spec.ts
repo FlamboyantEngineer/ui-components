@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Decision Control lab', () => {
   test('UIC-DECISION-CONTROL-1.1 UIC-DECISION-CONTROL-1.2 UIC-DECISION-CONTROL-1.3 UIC-DECISION-CONTROL-2.1 offers the decisions and the comment', async ({
@@ -13,7 +13,7 @@ test.describe('Decision Control lab', () => {
       'true',
     );
     await expect(
-      page.locator('[data-lab-cell="picked=reject comment=none"] .ui-decision-control'),
+      matrixCell(page, 'picked=reject comment=none').locator('.ui-decision-control'),
     ).toHaveAttribute('data-decision', 'reject');
     const required = page.getByRole('form', { name: 'Decision, approve, required' });
     await expect(required.getByRole('textbox', { name: /^Comment/ })).toHaveAttribute(

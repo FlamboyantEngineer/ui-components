@@ -1,9 +1,8 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
-const cell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"]`);
 
 test.describe('Chat Parts lab', () => {
   test('UIC-CHAT-PARTS-2.1 UIC-CHAT-PARTS-2.3 UIC-CHAT-PARTS-2.4 draws text in both formats with token pills', async ({
@@ -11,7 +10,7 @@ test.describe('Chat Parts lab', () => {
     lab,
   }) => {
     await lab.open('chat-parts');
-    const markdown = cell(page, 'content=tokens format=markdown');
+    const markdown = matrixCell(page, 'content=tokens format=markdown');
     await expect(markdown.locator('.ui-chat-parts__text')).toHaveAttribute(
       'data-format',
       'markdown',
@@ -22,10 +21,10 @@ test.describe('Chat Parts lab', () => {
     await expect(markdown.locator('strong .ui-chat-parts__token')).toHaveText('@Ana Lopez');
     await expect(markdown.locator('code', { hasText: '@Ana' })).toHaveText('@Ana');
     await expect(markdown.locator('.ui-chat-parts__token')).toHaveCount(2);
-    const plain = cell(page, 'content=tokens format=plain');
+    const plain = matrixCell(page, 'content=tokens format=plain');
     await expect(plain.locator('.ui-chat-parts__token')).toHaveCount(3);
     await expect(plain.locator('.ui-chat-parts__text')).toContainText('**');
-    await expect(cell(page, 'content=lines format=plain').locator('br')).toHaveCount(3);
+    await expect(matrixCell(page, 'content=lines format=plain').locator('br')).toHaveCount(3);
     await lab.expectAccessible('[data-lab-section="Text and tokens"]');
   });
 
@@ -35,7 +34,7 @@ test.describe('Chat Parts lab', () => {
   }) => {
     await lab.open('chat-parts');
     for (const format of ['markdown', 'plain']) {
-      const references = cell(page, `content=references format=${format}`);
+      const references = matrixCell(page, `content=references format=${format}`);
       const chips = references.locator('.ui-chat-parts__token[data-kind="reference"]');
       await expect(chips).toHaveCount(4);
       await expect(chips.first().getByRole('link')).toHaveText('TRIP-4 Lisbon weekend');
@@ -90,9 +89,9 @@ test.describe('Chat Parts lab', () => {
   }) => {
     await lab.open('chat-parts');
     await expect(
-      cell(page, 'state=failed parts=rendered').locator('.ui-chat-steps'),
+      matrixCell(page, 'state=failed parts=rendered').locator('.ui-chat-steps'),
     ).not.toHaveAttribute('data-expanded', 'true');
-    const opened = cell(page, 'state=failed-opened parts=rendered');
+    const opened = matrixCell(page, 'state=failed-opened parts=rendered');
     const failedRow = opened.locator('.ui-chat-tool-call[data-status="failed"]');
     const quietRow = opened.locator('.ui-chat-tool-call[data-status="succeeded"]').first();
     await expect(failedRow).toHaveCSS('border-top-width', '0px');
@@ -240,11 +239,11 @@ test.describe('Chat Parts lab', () => {
     lab,
   }) => {
     await lab.open('chat-parts');
-    const grouped = cell(page, 'state=failed-opened parts=rendered')
+    const grouped = matrixCell(page, 'state=failed-opened parts=rendered')
       .locator('.ui-chat-tool-call[data-status="succeeded"]')
       .first();
     for (const state of ['single', 'single-done']) {
-      const alone = cell(page, `state=${state} parts=rendered`).locator('.ui-chat-tool-call');
+      const alone = matrixCell(page, `state=${state} parts=rendered`).locator('.ui-chat-tool-call');
       await expect(alone).toHaveAttribute('data-variant', 'row');
       await expect(alone).toHaveCSS('border-top-width', '0px');
       await expect(alone).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
@@ -257,7 +256,7 @@ test.describe('Chat Parts lab', () => {
       }
     }
     await expect(
-      cell(page, 'state=single-done parts=rendered').locator('.ui-chat-tool-call__status'),
+      matrixCell(page, 'state=single-done parts=rendered').locator('.ui-chat-tool-call__status'),
     ).toHaveCSS('position', 'absolute');
   });
 
@@ -267,9 +266,9 @@ test.describe('Chat Parts lab', () => {
   }) => {
     await lab.open('chat-parts');
     await expect(section(page, 'Part types').locator('.ui-chat-parts')).toHaveCount(12);
-    await expect(cell(page, 'state=single parts=rendered').locator('.ui-chat-steps')).toHaveCount(
-      0,
-    );
+    await expect(
+      matrixCell(page, 'state=single parts=rendered').locator('.ui-chat-steps'),
+    ).toHaveCount(0);
     await lab.expectAccessible('[data-lab-section="Part types"]');
     await lab.expectAccessible('[data-lab-section="Steps"]');
     await lab.expectAccessible('[data-lab-section="Kept expansion"]');

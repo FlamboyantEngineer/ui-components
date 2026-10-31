@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -14,7 +14,7 @@ test.describe('Visually Hidden lab', () => {
   }) => {
     await lab.open('visually-hidden');
     for (const elementType of ['div', 'span']) {
-      const cell = page.locator(`[data-lab-cell="elementType=${elementType} isFocusable=false"]`);
+      const cell = matrixCell(page, `elementType=${elementType} isFocusable=false`);
       const hidden = cell.locator('.ui-visually-hidden');
       expect(await hidden.evaluate((node) => node.tagName.toLowerCase())).toBe(elementType);
       await expect(hidden).toHaveText('per kilogram');
@@ -23,12 +23,8 @@ test.describe('Visually Hidden lab', () => {
       expect(rect.height).toBeLessThanOrEqual(1);
       expect(await cell.ariaSnapshot()).toContain('Apples, 4 € per kilogram');
     }
-    const plainCell = await box(
-      page.locator('[data-lab-cell="elementType=span isFocusable=false"]'),
-    );
-    const focusCell = await box(
-      page.locator('[data-lab-cell="elementType=span isFocusable=true"]'),
-    );
+    const plainCell = await box(matrixCell(page, 'elementType=span isFocusable=false'));
+    const focusCell = await box(matrixCell(page, 'elementType=span isFocusable=true'));
     expect(Math.abs(plainCell.height - focusCell.height)).toBeLessThanOrEqual(1);
   });
 
@@ -84,7 +80,7 @@ test.describe('Visually Hidden lab', () => {
     lab,
   }) => {
     await lab.open('visually-hidden');
-    const cell = page.locator('[data-lab-cell="elementType=div isFocusable=true"]');
+    const cell = matrixCell(page, 'elementType=div isFocusable=true');
     const hidden = cell.locator('.ui-visually-hidden');
     await cell.getByRole('link', { name: 'Price notes' }).focus();
     await expect(hidden).toHaveAttribute('data-focus-within', 'true');

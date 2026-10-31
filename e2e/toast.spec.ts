@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Toast lab', () => {
   test('UIC-TOAST-2.3 UIC-TOAST-3.1 draws every tone and content in place', async ({
@@ -10,7 +10,7 @@ test.describe('Toast lab', () => {
     expect(await cells.count()).toBe(4 * 4);
     const glyphs = { info: 'info', success: 'success', warning: 'warning', danger: 'error' };
     for (const [tone, glyph] of Object.entries(glyphs)) {
-      const toast = page.locator(`[data-lab-cell="tone=${tone} content=description"] .ui-toast`);
+      const toast = matrixCell(page, `tone=${tone} content=description`).locator(`.ui-toast`);
       await expect(toast).toHaveAttribute('data-tone', tone);
       await expect(toast.locator('.ui-toast__icon')).toHaveAttribute('data-glyph', glyph);
     }

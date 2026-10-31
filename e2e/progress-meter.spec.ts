@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('ProgressBar meter mode', () => {
   test('UIC-PROGRESS-BAR-21.1 UIC-PROGRESS-BAR-21.5 UIC-PROGRESS-BAR-22.1 draws named meters with 4, 6 and 8 pixel tracks', async ({
@@ -15,9 +15,7 @@ test.describe('ProgressBar meter mode', () => {
       ['md', 6],
       ['lg', 8],
     ] as const) {
-      const cell = page
-        .locator('[data-lab-family="progress-meter-cases"]')
-        .locator(`[data-lab-cell="value=40 size=${size}"]`);
+      const cell = matrixCell(page, `value=40 size=${size}`, { family: 'progress-meter-cases' });
       const meter = cell.getByRole('meter', { name: 'Storage' });
       await expect(meter).toHaveAttribute('aria-valuenow', '40');
       await expect(meter).toHaveAttribute('aria-valuetext', '40%');
@@ -32,17 +30,13 @@ test.describe('ProgressBar meter mode', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const partial = page
-      .locator('[data-lab-family="progress-meter-cases"]')
-      .locator('[data-lab-cell="value=40 size=md"]');
+    const partial = matrixCell(page, 'value=40 size=md', { family: 'progress-meter-cases' });
     const track = await partial.locator('.ui-progress-bar__track').boundingBox();
     const fill = await partial.locator('.ui-progress-bar__fill').boundingBox();
     expect(Math.round(((fill?.width ?? 0) / (track?.width ?? 1)) * 100)).toBe(40);
     await expect(partial.locator('.ui-progress-bar__value')).toHaveText('40%');
     const option = (name: string) =>
-      page
-        .locator('[data-lab-family="progress-meter-cases"]')
-        .locator(`[data-lab-cell="option=${name}"]`);
+      matrixCell(page, `option=${name}`, { family: 'progress-meter-cases' });
     await expect(option('unit').locator('.ui-progress-bar__value')).toHaveText('40 GB');
     await expect(option('value label').getByRole('meter')).toHaveAttribute(
       'aria-valuetext',
@@ -59,9 +53,8 @@ test.describe('ProgressBar meter mode', () => {
   }) => {
     await lab.open('progress-bar');
     const fillColour = (cell: string) =>
-      page
-        .locator('[data-lab-family="progress-meter-cases"]')
-        .locator(`[data-lab-cell="${cell}"] .ui-progress-bar__fill`)
+      matrixCell(page, cell, { family: 'progress-meter-cases' })
+        .locator(`.ui-progress-bar__fill`)
         .evaluate((node) => getComputedStyle(node).backgroundColor);
     const tones = ['neutral', 'success', 'warning', 'danger'];
     const colours = await Promise.all(tones.map((tone) => fillColour(`tone=${tone}`)));
@@ -76,9 +69,7 @@ test.describe('ProgressBar meter mode', () => {
     };
     for (const [cell, tone] of Object.entries(judged)) {
       await expect(
-        page
-          .locator('[data-lab-family="progress-meter-cases"]')
-          .locator(`[data-lab-cell="${cell}"] .ui-progress-bar`),
+        matrixCell(page, cell, { family: 'progress-meter-cases' }).locator(`.ui-progress-bar`),
       ).toHaveAttribute('data-tone', tone);
       expect(await fillColour(cell)).toBe(colours[tones.indexOf(tone)]);
     }

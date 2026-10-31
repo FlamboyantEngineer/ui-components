@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 type Box = { x: number; y: number; width: number; height: number };
 
@@ -37,7 +37,7 @@ test.describe('Popover lab', () => {
   }) => {
     await lab.open('popover');
     for (const [placement, side] of sides) {
-      const trigger = page.locator(`[data-lab-cell="placement=${placement} arrow=arrow"] button`);
+      const trigger = matrixCell(page, `placement=${placement} arrow=arrow`).locator(`button`);
       await trigger.click();
       const panel = page.locator(`.ui-popover[data-lab-popover="${placement}-arrow"]`);
       const dialog = panel.getByRole('dialog', { name: 'Filters' });
@@ -60,7 +60,7 @@ test.describe('Popover lab', () => {
       await expect(panel).toHaveCount(0);
       await expect(trigger).toBeFocused();
     }
-    const plain = page.locator('[data-lab-cell="placement=bottom arrow=no arrow"] button');
+    const plain = matrixCell(page, 'placement=bottom arrow=no arrow').locator('button');
     await plain.click();
     await expect(page.locator('.ui-popover')).toBeVisible();
     await expect(page.locator('.ui-popover__arrow')).toHaveCount(0);
@@ -72,7 +72,7 @@ test.describe('Popover lab', () => {
     lab,
   }) => {
     await lab.open('popover');
-    const trigger = page.locator('[data-lab-cell="placement=bottom arrow=arrow"] button');
+    const trigger = matrixCell(page, 'placement=bottom arrow=arrow').locator('button');
     await trigger.click();
     const dialog = page.getByRole('dialog', { name: 'Filters' });
     await expect(dialog).toBeFocused();
@@ -95,7 +95,7 @@ test.describe('Popover lab', () => {
     await page.mouse.click(1000, 600);
     await expect(dialog).toHaveCount(0);
 
-    const refusedEscape = page.locator('[data-lab-cell="dismissal=Escape refused"] button');
+    const refusedEscape = matrixCell(page, 'dismissal=Escape refused').locator('button');
     await refusedEscape.click();
     const draft = page.getByRole('dialog', { name: 'Draft' });
     await expect(draft).toBeFocused();
@@ -104,7 +104,7 @@ test.describe('Popover lab', () => {
     await page.mouse.click(1000, 600);
     await expect(draft).toHaveCount(0);
 
-    await page.locator('[data-lab-cell="dismissal=outside presses refused"] button').click();
+    await matrixCell(page, 'dismissal=outside presses refused').locator('button').click();
     await expect(draft).toBeVisible();
     await page.mouse.click(1000, 600);
     await expect(draft).toBeVisible();
@@ -117,13 +117,13 @@ test.describe('Popover lab', () => {
     lab,
   }) => {
     await lab.open('popover');
-    await page.locator('[data-lab-cell="parts=body only"] button').click();
+    await matrixCell(page, 'parts=body only').locator('button').click();
     const hours = page.getByRole('dialog', { name: 'Opening hours' });
     await expect(hours).toBeVisible();
     await expect(page.locator('.ui-popover__header')).toHaveCount(0);
     await page.keyboard.press('Escape');
 
-    const offsetTrigger = page.locator('[data-lab-cell="option=offset 16"] button');
+    const offsetTrigger = matrixCell(page, 'option=offset 16').locator('button');
     await offsetTrigger.click();
     const panel = page.locator('.ui-popover[data-lab-popover="offset 16"]');
     await expect(panel).toBeVisible();
@@ -132,7 +132,7 @@ test.describe('Popover lab', () => {
     expect(Math.abs(panelBox.y - (triggerBox.y + triggerBox.height) - 16)).toBeLessThan(1);
     await page.keyboard.press('Escape');
 
-    const noFlip = page.locator('[data-lab-cell="option=no flip"] button');
+    const noFlip = matrixCell(page, 'option=no flip').locator('button');
     await noFlip.click();
     await expect(page.locator('.ui-popover[data-lab-popover="no flip"]')).toHaveAttribute(
       'data-placement',
@@ -186,7 +186,7 @@ test.describe('Popover lab', () => {
     const pageContent = page.locator('[data-lab-page]');
     const hidden = () =>
       pageContent.evaluate((node) => node.closest('[aria-hidden="true"], [inert]') !== null);
-    await page.locator('[data-lab-cell="placement=bottom arrow=arrow"] button').click();
+    await matrixCell(page, 'placement=bottom arrow=arrow').locator('button').click();
     await expect(page.getByRole('dialog', { name: 'Filters' })).toBeVisible();
     expect(await hidden()).toBe(true);
     await page.keyboard.press('Escape');
@@ -213,7 +213,7 @@ test.describe('Popover lab', () => {
     lab,
   }) => {
     await lab.open('popover', { theme: 'dark' });
-    await page.locator('[data-lab-cell="placement=end arrow=arrow"] button').click();
+    await matrixCell(page, 'placement=end arrow=arrow').locator('button').click();
     await expect(page.getByRole('dialog', { name: 'Filters' })).toBeVisible();
     await lab.expectAccessible('.ui-popover');
     await page.keyboard.press('Escape');
@@ -229,7 +229,7 @@ for (const mode of ['no arrow', 'arrow']) {
     await lab.open('popover');
     await page.addStyleTag({ content: 'html { scrollbar-gutter: stable; }' });
     for (const [placement, side] of sides) {
-      const trigger = page.locator(`[data-lab-cell="placement=${placement} arrow=${mode}"] button`);
+      const trigger = matrixCell(page, `placement=${placement} arrow=${mode}`).locator(`button`);
       await trigger.click();
       const panel = page.locator(`.ui-popover[data-lab-popover="${placement}-${mode}"]`);
       await expect(panel).toHaveAttribute('data-placement', side);

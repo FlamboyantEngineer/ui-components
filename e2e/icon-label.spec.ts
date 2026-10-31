@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Icon Label lab', () => {
   test('UIC-ICON-LABEL-1.2 sizes the icon and gap', async ({ page, lab }) => {
@@ -8,7 +8,7 @@ test.describe('Icon Label lab', () => {
       ['md', 16, 8],
       ['lg', 20, 12],
     ] as const) {
-      const cell = page.locator(`[data-lab-cell="icon=glyph size=${size}"]`);
+      const cell = matrixCell(page, `icon=glyph size=${size}`);
       const iconBox = await cell.locator('.ui-icon-label__icon').boundingBox();
       const labelBox = await cell.locator('.ui-icon-label__label').boundingBox();
       expect(iconBox?.width).toBe(icon);
@@ -26,7 +26,7 @@ test.describe('Icon Label lab', () => {
     const truncated = page.locator(
       '[data-lab-cell="option=truncate size=md"] .ui-icon-label__label',
     );
-    const wrapped = page.locator('[data-lab-cell="option=default size=md"] .ui-icon-label__label');
+    const wrapped = matrixCell(page, 'option=default size=md').locator('.ui-icon-label__label');
     const truncatedBox = await truncated.boundingBox();
     const wrappedBox = await wrapped.boundingBox();
     expect(truncatedBox?.height).toBeLessThan(wrappedBox?.height ?? 0);
@@ -46,7 +46,7 @@ test.describe('Icon Label lab', () => {
     await page.mouse.move(0, 0);
     await expect(page.getByRole('tooltip')).toHaveCount(0);
     await expect(
-      page.locator('[data-lab-cell="option=default size=md"] .ui-icon-label__label'),
+      matrixCell(page, 'option=default size=md').locator('.ui-icon-label__label'),
     ).not.toHaveClass(/ui-truncation-tooltip/);
   });
   test('UIC-ICON-LABEL-1.3 hides a collapsible label when its own room is narrow', async ({
@@ -60,7 +60,7 @@ test.describe('Icon Label lab', () => {
         ['160px', true],
         ['320px', true],
       ] as const) {
-        const cell = page.locator(`[data-lab-cell="placement=${placement} room=${room}"]`);
+        const cell = matrixCell(page, `placement=${placement} room=${room}`);
         const label = cell.locator('.ui-icon-label__label');
         await expect(label).toHaveText('Collapsible settings');
         const width = (await label.boundingBox())?.width ?? 0;

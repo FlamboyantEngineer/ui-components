@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Inline Error lab', () => {
   test('UIC-INLINE-ERROR-1.3 moves recovery below a narrow message without overflowing', async ({
@@ -22,7 +22,7 @@ test.describe('Inline Error lab', () => {
       else expect(retry?.y ?? 0).toBeLessThan(messageBottom);
       expect(await error.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     }
-    const disabled = page.locator('[data-lab-cell="recovery=disabled width=480"]');
+    const disabled = matrixCell(page, 'recovery=disabled width=480');
     await expect(disabled.getByRole('button', { name: 'Retry' })).toBeDisabled();
     const small = page.locator(
       '[data-lab-cell="message=small host text"] .ui-inline-error__message',
@@ -56,7 +56,7 @@ test.describe('Inline Error lab', () => {
   }) => {
     await lab.open('inline-error');
     const cell = (tone: string, state: string) =>
-      page.locator(`[data-lab-cell="tone=${tone} state=${state}"] .ui-inline-error`);
+      matrixCell(page, `tone=${tone} state=${state}`).locator(`.ui-inline-error`);
     await expect(cell('danger', 'settled')).toHaveAttribute('role', 'alert');
     for (const [tone, glyph] of [
       ['warning', 'warning'],

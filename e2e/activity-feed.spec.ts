@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-activity-feed`;
@@ -29,7 +29,7 @@ test.describe('Activity Feed lab', () => {
     const flat = page.locator(cell('state=entries groupBy=none'));
     await expect(flat.locator('.ui-activity-feed__day')).toHaveCount(0);
     await expect(flat.locator('.ui-activity-feed__entry')).toHaveCount(5);
-    const dates = page.locator('[data-lab-cell="fallback=1 day"] .ui-activity-feed__time');
+    const dates = matrixCell(page, 'fallback=1 day').locator('.ui-activity-feed__time');
     await expect(dates.last()).toHaveText(/^Apr 14, 2026/);
     const markers = feed.locator('.ui-activity-feed__marker');
     const first = requireDefined(await markers.nth(0).boundingBox());

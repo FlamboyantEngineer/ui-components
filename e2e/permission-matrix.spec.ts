@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 /** Presses a checkbox through its label, which the drawn box covers. */
@@ -14,7 +14,7 @@ test.describe('Permission Matrix lab', () => {
     lab,
   }) => {
     await lab.open('permission-matrix');
-    const cell = (state: string) => page.locator(`[data-lab-cell="${state}"]`);
+    const cell = (state: string) => matrixCell(page, state);
     await expect(cell('grants=saved layout=flat').locator('.ui-table__group-row')).toHaveCount(0);
     const grouped = cell('grants=saved layout=grouped');
     await expect(grouped.locator('.ui-table__group-label')).toHaveText(['Recipes', 'Photos']);

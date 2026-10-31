@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const FULL_TEXT = 'Quarterly report for the northern region, final edition.pdf';
 
@@ -8,8 +8,8 @@ test.describe('Truncation Tooltip lab', () => {
     lab,
   }) => {
     await lab.open('truncation-tooltip');
-    const cut = page.locator('[data-lab-cell="text=cut holder=plain"] .ui-truncation-tooltip');
-    const whole = page.locator('[data-lab-cell="text=whole holder=plain"] .ui-truncation-tooltip');
+    const cut = matrixCell(page, 'text=cut holder=plain').locator('.ui-truncation-tooltip');
+    const whole = matrixCell(page, 'text=whole holder=plain').locator('.ui-truncation-tooltip');
     expect(await cut.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
     await expect(cut).toHaveText(FULL_TEXT);
 
@@ -33,8 +33,8 @@ test.describe('Truncation Tooltip lab', () => {
     lab,
   }) => {
     await lab.open('truncation-tooltip');
-    const link = page.locator('[data-lab-cell="text=cut holder=link"] a');
-    await page.locator('[data-lab-cell="text=cut holder=plain"]').click();
+    const link = matrixCell(page, 'text=cut holder=link').locator('a');
+    await matrixCell(page, 'text=cut holder=plain').click();
     await page.keyboard.press('Tab');
     await expect(link).toBeFocused();
     await expect(page.getByRole('tooltip')).toHaveText(FULL_TEXT);
@@ -47,8 +47,8 @@ test.describe('Truncation Tooltip lab', () => {
     lab,
   }) => {
     await lab.open('truncation-tooltip');
-    const link = page.locator('[data-lab-cell="text=cut holder=link"] a');
-    await page.locator('[data-lab-cell="text=cut holder=plain"]').click();
+    const link = matrixCell(page, 'text=cut holder=link').locator('a');
+    await matrixCell(page, 'text=cut holder=plain').click();
     await link.evaluate((element: HTMLElement) => element.focus());
     await expect(link).toBeFocused();
     // The panel would open at once; give it a frame or two to show if it were going to.
@@ -60,7 +60,7 @@ test.describe('Truncation Tooltip lab', () => {
 
   test('UIC-TRUNCATION-TOOLTIP-1.4 closes on press and on Escape', async ({ page, lab }) => {
     await lab.open('truncation-tooltip');
-    const cut = page.locator('[data-lab-cell="text=cut holder=plain"] .ui-truncation-tooltip');
+    const cut = matrixCell(page, 'text=cut holder=plain').locator('.ui-truncation-tooltip');
     await cut.hover();
     await expect(page.getByRole('tooltip')).toBeVisible();
     await page.mouse.down();
@@ -94,12 +94,10 @@ test.describe('Truncation Tooltip lab', () => {
     lab,
   }) => {
     await lab.open('truncation-tooltip');
-    const cell = page.locator('[data-lab-cell="expandable=cut"]');
+    const cell = matrixCell(page, 'expandable=cut');
     const text = cell.locator('.ui-truncation-tooltip');
     const more = cell.getByRole('button', { name: 'Show more' });
-    await expect(
-      page.locator('[data-lab-cell="expandable=whole"]').getByRole('button'),
-    ).toHaveCount(0);
+    await expect(matrixCell(page, 'expandable=whole').getByRole('button')).toHaveCount(0);
     const cutHeight = (await text.boundingBox())?.height ?? 0;
     expect(await text.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
     await more.focus();

@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Prose Table lab', () => {
   test('UIC-PROSE-TABLE-1.1 fills its text column and takes the surrounding typography', async ({
@@ -6,7 +6,7 @@ test.describe('Prose Table lab', () => {
     lab,
   }) => {
     await lab.open('prose-table');
-    const body = page.locator('[data-lab-cell="content=text text=body"]');
+    const body = matrixCell(page, 'content=text text=body');
     const table = body.locator('.ui-prose-table');
     const host = await body.locator('p').boundingBox();
     const box = await table.boundingBox();
@@ -14,10 +14,10 @@ test.describe('Prose Table lab', () => {
     await expect(table.locator('thead th')).toHaveText(['Fruit', 'Colour', 'Season']);
     await expect(table.locator('tbody td').first()).toHaveCSS('border-top-style', 'solid');
     await expect(
-      page.locator('[data-lab-cell="content=text text=small"] .ui-prose-table td').first(),
+      matrixCell(page, 'content=text text=small').locator('.ui-prose-table td').first(),
     ).toHaveCSS('font-size', '12px');
     await expect(
-      page.locator('[data-lab-cell="content=short rows text=body"] tbody tr').last().locator('td'),
+      matrixCell(page, 'content=short rows text=body').locator('tbody tr').last().locator('td'),
     ).toHaveCount(3);
   });
 
@@ -26,7 +26,7 @@ test.describe('Prose Table lab', () => {
     lab,
   }) => {
     await lab.open('prose-table');
-    const cell = page.locator('[data-lab-cell="content=inline markup text=body"]');
+    const cell = matrixCell(page, 'content=inline markup text=body');
     const table = cell.getByRole('table');
     await expect(table.getByRole('columnheader')).toHaveText(['Fruit', 'Colour', 'Season']);
     await expect(table.getByRole('row')).toHaveCount(3);
@@ -42,7 +42,7 @@ test.describe('Prose Table lab', () => {
     lab,
   }) => {
     await lab.open('prose-table');
-    const cell = page.locator('[data-lab-cell="caption=with caption footer=with footer"]');
+    const cell = matrixCell(page, 'caption=with caption footer=with footer');
     const table = cell.getByRole('table', { name: 'Crates picked this week' });
     await expect(table.getByRole('rowheader')).toHaveText(['Apple', 'Pear', 'Plum', 'Total']);
     await expect(table.locator('tfoot tr')).toHaveCount(1);
@@ -63,7 +63,7 @@ test.describe('Prose Table lab', () => {
   }) => {
     await lab.open('prose-table');
     for (const mode of ['sticky', 'static'] as const) {
-      const region = page.locator(`[data-lab-cell="header=${mode}"] .ui-scroll-region__viewport`);
+      const region = matrixCell(page, `header=${mode}`).locator(`.ui-scroll-region__viewport`);
       const heading = region.locator('thead th').first();
       const top = (await region.boundingBox())?.y ?? 0;
       await region.evaluate((node) => {

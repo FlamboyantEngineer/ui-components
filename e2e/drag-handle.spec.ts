@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Drag Handle lab', () => {
   test('UIC-DRAG-HANDLE-1.1 UIC-DRAG-HANDLE-1.2 reaches the handle from its row and drags by keyboard', async ({
@@ -29,9 +29,9 @@ test.describe('Drag Handle lab', () => {
     await expect(
       page.locator('[data-lab-list="row"]').getByRole('button', { name: 'Drag Fig' }),
     ).toBeDisabled();
-    const disabled = page.locator('[data-lab-cell="state=disabled"] .ui-drag-handle');
+    const disabled = matrixCell(page, 'state=disabled').locator('.ui-drag-handle');
     await expect(disabled).toHaveAttribute('data-disabled', 'true');
-    await expect(page.locator('[data-lab-cell="state=enabled"] .ui-drag-handle')).toBeEnabled();
+    await expect(matrixCell(page, 'state=enabled').locator('.ui-drag-handle')).toBeEnabled();
   });
 
   test('UIC-DRAG-HANDLE-2.1 starts a pointer drag only from the handle', async ({ page, lab }) => {

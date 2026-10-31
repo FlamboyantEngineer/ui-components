@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Avatar Group lab', () => {
   test('UIC-AVATAR-GROUP-1.1 UIC-AVATAR-GROUP-1.2 overlaps the avatars and counts the rest', async ({
@@ -12,9 +12,7 @@ test.describe('Avatar Group lab', () => {
       ['md', 32],
       ['lg', 40],
     ] as const) {
-      const cell = page
-        .locator('[data-lab-family="avatar-group-main"]')
-        .locator(`[data-lab-cell="variant=filled size=${size}"]`);
+      const cell = matrixCell(page, `variant=filled size=${size}`, { family: 'avatar-group-main' });
       const avatars = cell.locator('.ui-avatar-group__avatar');
       await expect(avatars).toHaveCount(4);
       await expect(cell.locator('.ui-avatar-group__overflow')).toHaveText('+2');
@@ -24,14 +22,10 @@ test.describe('Avatar Group lab', () => {
       // Each avatar starts before the previous one ends.
       expect((second?.x ?? 0) - (first?.x ?? 0)).toBeLessThan(pixels);
     }
-    const none = page
-      .locator('[data-lab-family="avatar-group-main"]')
-      .locator('[data-lab-cell="setup=max 0 action=none"]');
+    const none = matrixCell(page, 'setup=max 0 action=none', { family: 'avatar-group-main' });
     await expect(none.locator('.ui-avatar-group__avatar')).toHaveCount(0);
     await expect(none.locator('.ui-avatar-group__overflow')).toHaveText('+6');
-    const one = page
-      .locator('[data-lab-family="avatar-group-main"]')
-      .locator('[data-lab-cell="setup=one person action=none"]');
+    const one = matrixCell(page, 'setup=one person action=none', { family: 'avatar-group-main' });
     await expect(one.locator('.ui-avatar-group__overflow')).toHaveCount(0);
   });
 
@@ -40,9 +34,7 @@ test.describe('Avatar Group lab', () => {
     lab,
   }) => {
     await lab.open('avatar-group');
-    const cell = page
-      .locator('[data-lab-family="avatar-group-main"]')
-      .locator('[data-lab-cell="setup=max 3 action=none"]');
+    const cell = matrixCell(page, 'setup=max 3 action=none', { family: 'avatar-group-main' });
     const group = cell.getByRole('group');
     await expect(group).toHaveAccessibleName(
       'Maria Santos, Jon Berg, Lena Ortiz, Sam Okafor, Priya Nair, Tom Li',

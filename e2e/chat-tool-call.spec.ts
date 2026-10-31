@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const statuses = [
   ['pending', 'Pending'],
@@ -11,8 +11,7 @@ const statuses = [
   ['cancelled', 'Cancelled'],
 ] as const;
 
-const card = (page: Page, cell: string) =>
-  page.locator(`[data-lab-cell="${cell}"] .ui-chat-tool-call`);
+const card = (page: Page, cell: string) => matrixCell(page, cell).locator(`.ui-chat-tool-call`);
 
 const demo = (page: Page) => page.locator('[data-lab-demo="approval"]');
 

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const pageWidthAt100 = 420 * (96 / 72);
 
@@ -73,12 +73,12 @@ test.describe('PDF Viewer lab', () => {
     lab,
   }) => {
     await lab.open('pdf-viewer');
-    const loading = page.locator('[data-lab-cell="state=loading"] .ui-pdf-viewer');
+    const loading = matrixCell(page, 'state=loading').locator('.ui-pdf-viewer');
     await expect(loading).toHaveAttribute('aria-busy', 'true');
     await expect(loading.locator('.ui-loading-overlay')).toBeVisible();
     await expect(loading.getByRole('slider', { name: 'Zoom level' })).toBeDisabled();
 
-    const failed = page.locator('[data-lab-cell="state=error"]');
+    const failed = matrixCell(page, 'state=error');
     await expect(failed.getByRole('alert')).toContainText('The document could not be opened.');
     await expect(failed.locator('.ui-pdf-viewer')).toHaveAttribute('data-error', 'true');
     await expect(failed.locator('[data-lab-output="errors"]')).toHaveText('1');
@@ -398,7 +398,7 @@ test.describe('PDF Viewer lab', () => {
     // A dozen documents open at once, each with its own engine worker, before axe runs.
     test.slow();
     await lab.open('pdf-viewer');
-    const cell = page.locator('[data-lab-cell="state=locked"]');
+    const cell = matrixCell(page, 'state=locked');
     const field = cell.getByLabel('Password');
     await expect(field).toBeVisible({ timeout: 30_000 });
     await expect(cell.locator('.ui-pdf-viewer')).toHaveAttribute('data-locked', 'true');

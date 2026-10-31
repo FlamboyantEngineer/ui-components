@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-relative-time`;
@@ -166,7 +166,7 @@ test.describe('Relative Time server text in Tokyo', () => {
       ['2026-10-31T12:00', /Oct 31, 2026, 12:00\sPM$/],
       ['2026-10-31', /^Oct 31, 2026$/],
     ] as const) {
-      await expect(page.locator(`[data-lab-cell="value=${value}"] output`)).toHaveText(text);
+      await expect(matrixCell(page, `value=${value}`).locator(`output`)).toHaveText(text);
     }
   });
 });

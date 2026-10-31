@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 const longPath =
   '/Garden/Vegetable beds/North side/Raised bed four/Tomatoes/Seed saving/Final notes';
@@ -10,7 +10,7 @@ test.describe('Path lab', () => {
   }) => {
     for (const theme of ['light', 'dark']) {
       await lab.open('path', { theme });
-      const path = page.locator('[data-lab-cell="content=long width=200px"] .ui-path');
+      const path = matrixCell(page, 'content=long width=200px').locator('.ui-path');
       await expect(path).toHaveText(longPath);
       const geometry = await path.evaluate((element) => {
         const text = element.querySelector('bdi')?.firstChild as Text;
@@ -70,7 +70,7 @@ test.describe('Path lab', () => {
     const short = page.locator('[data-lab-row="short"] .ui-path');
     await expect(short).toHaveText('/Garden');
     expect(await short.evaluate((node) => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
-    const labels = page.locator('[data-lab-cell="content=labels width=auto"] .ui-path');
+    const labels = matrixCell(page, 'content=labels width=auto').locator('.ui-path');
     await expect(labels).toHaveText('Recipes/https://example.test/lemon-tart/Step 3');
     await lab.expectAccessible();
   });

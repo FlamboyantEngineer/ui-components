@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 function cell(page: Page, state: string, layout = 'label-control'): Locator {
-  return page.locator(`[data-lab-cell="state=${state} layout=${layout}"]`);
+  return matrixCell(page, `state=${state} layout=${layout}`);
 }
 
 function field(page: Page, name: string): Locator {
@@ -178,17 +178,17 @@ test.describe('Pin Input lab', () => {
     lab,
   }) => {
     await lab.open('pin-input');
-    const numeric = page.locator('[data-lab-cell="type=numeric look=placeholder"]');
+    const numeric = matrixCell(page, 'type=numeric look=placeholder');
     await expect(cells(numeric).first()).toHaveAttribute('placeholder', '○');
     await expect(cells(numeric).first()).toHaveAttribute('inputmode', 'numeric');
     await cells(numeric).first().click();
     await page.keyboard.type('a1b2');
     expect(await readValues(numeric)).toEqual(['1', '2', '', '']);
-    const letters = page.locator('[data-lab-cell="type=alphabetic look=placeholder"]');
+    const letters = matrixCell(page, 'type=alphabetic look=placeholder');
     await cells(letters).first().click();
     await page.keyboard.type('a1b2');
     expect(await readValues(letters)).toEqual(['a', 'b', '', '']);
-    const masked = page.locator('[data-lab-cell="type=numeric look=masked"]');
+    const masked = matrixCell(page, 'type=numeric look=masked');
     await expect(cells(masked).first()).toHaveAttribute('type', 'password');
   });
 

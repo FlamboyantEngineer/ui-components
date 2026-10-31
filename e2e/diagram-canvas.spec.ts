@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function plant(page: Page): Locator {
@@ -59,7 +59,7 @@ test.describe('Diagram Canvas lab', () => {
   }) => {
     await lab.open('diagram-canvas');
     const cell = (state: string, routing: string) =>
-      page.locator(`[data-lab-cell="state=${state} routing=${routing}"]`);
+      matrixCell(page, `state=${state} routing=${routing}`);
     const resting = cell('resting', 'bezier');
     await expect(resting.getByRole('group', { name: 'Filter' })).toHaveAccessibleDescription(
       'Comes from Inlet (feed).',

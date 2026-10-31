@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, test, matrixCell } from './fixtures.js';
 
 test.describe('Meta Line lab', () => {
   test('UIC-META-LINE-1.1 UIC-META-LINE-1.2 separates only real entries with a hidden middot', async ({
@@ -6,14 +6,14 @@ test.describe('Meta Line lab', () => {
     lab,
   }) => {
     await lab.open('meta-line');
-    await expect(page.locator('[data-lab-cell="entries=none container=wide"] *')).toHaveCount(0);
+    await expect(matrixCell(page, 'entries=none container=wide').locator('*')).toHaveCount(0);
     const line = page.locator(
       '[data-lab-cell="entries=empty entries container=wide"] .ui-meta-line',
     );
     await expect(line).toHaveText('Lisbon · Portugal');
     await expect(line.locator('.ui-meta-line__separator')).toHaveCount(1);
     await expect(
-      page.locator('[data-lab-cell="entries=zero container=wide"] .ui-meta-line'),
+      matrixCell(page, 'entries=zero container=wide').locator('.ui-meta-line'),
     ).toHaveText('Orchard · 0 · crates left');
     const snapshot = await line.ariaSnapshot();
     expect(snapshot).toContain('Lisbon');
