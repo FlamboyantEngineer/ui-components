@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, type JSX } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -318,5 +318,69 @@ describe('ChoiceGroup', () => {
     expect(radio('Small').validationMessage).toBe('');
     await user.click(screen.getByText('Small'));
     expect(radio('Large').validationMessage).toBe('');
+  });
+
+  it('UIC-CHOICE-GROUP-3.3 counts an empty-string choice and submits nothing for a removed one', async () => {
+    const user = userEvent.setup();
+    const submitted: Array<FormDataEntryValue | null> = [];
+    const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      submitted.push(new FormData(event.currentTarget).get('size'));
+    };
+    const order = (choices: JSX.Element) => (
+      <Form aria-label="Order" onSubmit={onSubmit}>
+        <ChoiceGroup label="Size" name="size" defaultValue="" isRequired>
+          {choices}
+        </ChoiceGroup>
+        <button type="submit">Order</button>
+      </Form>
+    );
+    const { container, rerender } = render(
+      order(
+        <>
+          <Choice value="">None</Choice>
+          <Choice value="small">Small</Choice>
+        </>,
+      ),
+    );
+    expect(radio('None')).toBeChecked();
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    expect(root(container)).toHaveAttribute('data-filled', 'true');
+    await user.click(screen.getByRole('button', { name: 'Order' }));
+    expect(submitted).toEqual(['']);
+    rerender(order(<Choice value="small">Small</Choice>));
+    await waitFor(() => expect(root(container)).toHaveAttribute('data-validation', 'invalid'));
+    expect(root(container)).not.toHaveAttribute('data-filled');
+    await user.click(screen.getByRole('button', { name: 'Order' }));
+    expect(submitted).toEqual(['']);
+  });
+
+  it('UIC-CHOICE-GROUP-3.3 submits a selected disabled choice through a hidden input', async () => {
+    const user = userEvent.setup();
+    const submitted: Array<FormDataEntryValue | null> = [];
+    const { container } = render(
+      <Form
+        aria-label="Order"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submitted.push(new FormData(event.currentTarget).get('size'));
+        }}
+      >
+        <ChoiceGroup label="Size" name="size" defaultValue="large" isRequired>
+          <Choice value="small">Small</Choice>
+          <Choice value="large" isDisabled>
+            Large
+          </Choice>
+        </ChoiceGroup>
+        <button type="submit">Order</button>
+      </Form>,
+    );
+    expect(radio('Large')).toBeChecked();
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    await user.click(screen.getByRole('button', { name: 'Order' }));
+    expect(submitted).toEqual(['large']);
+    await user.click(screen.getByText('Small'));
+    await user.click(screen.getByRole('button', { name: 'Order' }));
+    expect(submitted).toEqual(['large', 'small']);
   });
 });

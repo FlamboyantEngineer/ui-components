@@ -24,6 +24,15 @@ export function toSelectKeys(value: Key | readonly Key[] | null | undefined): Ke
   return [...new Set(keys)];
 }
 
+/**
+ * Whether a value chooses nothing: `null`, an empty list, or `''` when no option has that id (as a
+ * native select's empty value).
+ */
+export function isNoSelection(value: Key | readonly Key[] | null, hasEmptyId: boolean): boolean {
+  if (value === '') return !hasEmptyId;
+  return toSelectKeys(value).length === 0;
+}
+
 /** Options without repeated keys, the first of each key winning, in the order given. */
 export function mergeSelectOptions(
   ...lists: ReadonlyArray<readonly SelectFieldOption[]>

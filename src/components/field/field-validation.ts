@@ -64,10 +64,15 @@ export function toIssueList(issues: FieldIssues): FieldIssue[] {
  */
 export function checkFieldValue<T>(
   value: T,
-  rules: { isRequired?: boolean | undefined; validate?: ((value: T) => FieldIssues) | undefined },
+  rules: {
+    isRequired?: boolean | undefined;
+    validate?: ((value: T) => FieldIssues) | undefined;
+    /** Defaults to `isEmptyValue`. */
+    isEmpty?: ((value: T) => boolean) | undefined;
+  },
   strings: UiStrings,
 ): FieldIssue[] {
-  if (rules.isRequired && isEmptyValue(value)) {
+  if (rules.isRequired && (rules.isEmpty ?? isEmptyValue)(value)) {
     return [{ severity: 'error', message: strings.valueRequired, validity: 'valueMissing' }];
   }
   return toIssueList(rules.validate?.(value));

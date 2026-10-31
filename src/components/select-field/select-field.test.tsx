@@ -353,6 +353,39 @@ describe('SelectField trigger', () => {
     expect(trigger('Select an option Fruit')).toBeInTheDocument();
   });
 
+  it('UIC-SELECT-FIELD-1.2 UIC-SELECT-FIELD-1.3 lets a chosen empty-text id satisfy a required field', () => {
+    const options = [
+      { id: '', label: 'None' },
+      { id: 'apple', label: 'Apple' },
+    ];
+    const { container, unmount } = render(
+      <SelectField label="Fruit" options={options} value="" isRequired />,
+    );
+    expect(trigger('None Fruit')).toBeInTheDocument();
+    expect(container.querySelector('.ui-field')).toHaveAttribute('data-validation', 'valid');
+    expect(container.querySelector('.ui-field')).toHaveAttribute('data-filled', 'true');
+    unmount();
+    for (const value of ['', null] as const) {
+      const view = render(<SelectField label="Fruit" options={fruit} value={value} isRequired />);
+      expect(view.container.querySelector('.ui-field')).toHaveAttribute(
+        'data-validation',
+        'invalid',
+      );
+      expect(view.container.querySelector('.ui-field')).not.toHaveAttribute('data-filled');
+      view.unmount();
+    }
+    const view = render(
+      <SelectField
+        label="Fruit"
+        options={options}
+        selectionMode="multiple"
+        defaultValue={['']}
+        isRequired
+      />,
+    );
+    expect(view.container.querySelector('.ui-field')).toHaveAttribute('data-validation', 'valid');
+  });
+
   it('UIC-SELECT-FIELD-2.2 publishes the widest label width measured in the trigger font', async () => {
     const measureText = vi.fn((text: string) => ({ width: text.length * 7 }));
     const canvas = vi.fn(function () {

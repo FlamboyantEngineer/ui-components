@@ -145,9 +145,9 @@ Verification: `src/components/field/field-state.test.tsx`, `src/components/field
 
 ### UIC-FIELD-3.1 - Status and message
 
-A field's `validation` shall have a status and, unless valid, a message, decided in this order: a required field with an empty value (nothing, blank text or an empty list) is `invalid` with the provider string `valueRequired`; an issue of severity `error` from `validate` is `invalid` with its message; while `isPending` the field is `pending` with the provider string `validating`; an issue of severity `warning` is `warning` with its message; otherwise the field is `valid`.
+A field's `validation` shall have a status and, unless valid, a message, decided in this order: a required field with an empty value (nothing, blank text or an empty list, unless the control says what empty is for it, as a choice whose options may have the id `''` does) is `invalid` with the provider string `valueRequired`; an issue of severity `error` from `validate` is `invalid` with its message; while `isPending` the field is `pending` with the provider string `validating`; an issue of severity `warning` is `warning` with its message; otherwise the field is `valid`.
 
-Implementation: `src/components/field/field-state.ts`, `src/components/field/field-value.ts`, `src/core/strings.ts`
+Implementation: `src/components/field/field-state.ts`, `src/components/field/field-validation.ts`, `src/components/field/field-value.ts`, `src/core/strings.ts`
 Verification: `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-3.2 - Validation hooks
@@ -365,7 +365,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `src/components/s
 
 ### UIC-FIELD-8.4 - Form value
 
-A field control whose own input does not submit its value shall submit it through one shared part, `FieldFormValue`: hidden inputs under the field's `name`, holding one value (`null` or `undefined` submit an empty string) or one input per value of a list (an empty list submits nothing). Without a `name` it renders nothing, and a disabled field submits nothing. TextField (with `displayValue`), NumberField's radix input, PinInput, TagsInput, FileField, DateTimeField, RelativeDateField, ColorField, SelectField (list and tree), Combobox, SegmentedChoice, SignaturePad, RichTextEditor and every BooleanField variant submit through it.
+A field control whose own input does not submit its value shall submit it through one shared part, `FieldFormValue`: hidden inputs under the field's `name`, holding one value (`null` or `undefined` submit an empty string) or one input per value of a list (an empty list submits nothing). Without a `name` it renders nothing, and a disabled field submits nothing. TextField (with `displayValue`), NumberField's radix input, PinInput, TagsInput, FileField, DateTimeField, RelativeDateField, ColorField, SelectField (list and tree), Combobox, SegmentedChoice, SignaturePad, RichTextEditor and every BooleanField variant submit through it, and ChoiceGroup submits its selected disabled choices through it.
 
 Implementation: `src/components/field/field-form-value.tsx`
 Verification: `src/components/field/field-form-value.test.tsx`, `src/components/boolean-field/boolean-field.test.tsx`

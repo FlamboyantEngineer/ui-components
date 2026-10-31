@@ -6,6 +6,7 @@ import { Field, useFieldControl, type FieldInputProps } from '../field/field.js'
 import type { SelectFieldSelectionMode, SelectFieldValue } from './select-field.js';
 import type { TreeItemData } from '../tree/tree.js';
 import { TreeSelectControl } from './tree-select-control.js';
+import { isNoSelection } from './select-options.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
 /** How a chosen node reads: its own label, or its path from the top level. */
@@ -60,7 +61,7 @@ export function SelectTreeField<
   const empty = (isMultiple ? [] : null) as SelectFieldValue<M>;
   const { state, field, rest } = useFieldControl<SelectFieldValue<M>, SelectTreeFieldProps<T, M>>(
     props,
-    { initialValue: empty, emptyValue: empty },
+    { initialValue: empty, emptyValue: empty, isEmpty: (value) => isNoSelection(value, true) },
   );
   const { mode, selectionMode = 'single', valueDisplay = 'label', ...config } = rest;
   return (

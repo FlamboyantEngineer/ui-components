@@ -69,4 +69,20 @@ test.describe('Choice Group multiple lab', () => {
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(output(page, 'Submitted')).toHaveText('plum');
   });
+
+  test('UIC-CHOICE-GROUP-3.3 submits a ticked disabled choice and drops a removed one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('choice-group');
+    const changing = field(page, 'changing');
+    const send = page.getByRole('button', { name: 'Send picked fruit' });
+    await send.click();
+    await expect(output(page, 'Picked fruit sent')).toHaveText('plum, pear');
+    await page.getByRole('button', { name: 'Remove Plum' }).click();
+    await send.click();
+    await expect(output(page, 'Picked fruit sent')).toHaveText('pear');
+    await page.getByRole('button', { name: 'Restore Plum' }).click();
+    await expect(changing.getByRole('checkbox', { name: 'Plum' })).toBeChecked();
+  });
 });

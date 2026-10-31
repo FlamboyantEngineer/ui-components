@@ -9,7 +9,7 @@ import { Field, useFieldControl, type FieldInputProps } from '../field/field.js'
 import { SelectControl } from './select-control.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { flattenPickerItems } from '../field/field.js';
-import { type SelectFieldItem } from './select-options.js';
+import { isNoSelection, type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
 
@@ -72,6 +72,11 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
     {
       initialValue: empty,
       emptyValue: empty,
+      isEmpty: (value) =>
+        isNoSelection(
+          value,
+          flattenPickerItems(props.options).some((option) => option.id === ''),
+        ),
     },
   );
   const { mode = 'list', selectionMode = 'single', ...config } = rest;
