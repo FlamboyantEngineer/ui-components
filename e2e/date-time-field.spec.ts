@@ -275,3 +275,12 @@ test.describe('Date Time Field lab in another time zone', () => {
     await expect(launch.getByRole('spinbutton', { name: /^day/ })).toHaveText('13');
   });
 });
+
+test('UIC-DATE-TIME-FIELD-1.1 keeps the space before the day period', async ({ page, lab }) => {
+  await lab.open('date-time-field');
+  const period = cell(page, 'resting', 'date-time').locator('[data-type="dayPeriod"]').first();
+  const space = period.locator('xpath=preceding-sibling::*[1]');
+  await expect(space).toHaveAttribute('data-type', 'literal');
+  expect(await space.evaluate((element) => element.textContent)).toBe(' ');
+  expect((await space.boundingBox())?.width).toBeGreaterThan(1);
+});

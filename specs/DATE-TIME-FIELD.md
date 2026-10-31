@@ -6,9 +6,9 @@
 
 ### UIC-DATE-TIME-FIELD-1.1 - Structure
 
-`DateTimeField` shall render a `Field` whose root also carries `ui-date-time-field` and publishes `data-mode` (`date` by default, `time`, `date-time`, `date-range` or `date-time-range`). Its control is React Aria's picker (`ui-date-time-field__picker`) holding a group (`ui-date-time-field__group`) with the segments of the value in an input (`ui-date-time-field__input`) of segments (`ui-date-time-field__segment`, React Aria's `spinbutton` segments publishing `data-type`), each named by its part and the field's label and described by the field's description, decoration and message. The date modes end the group with a calendar button (`ui-date-time-field__button`, the `calendar` glyph, named by React Aria). A range has a start and an end input with a separator between them (`ui-date-time-field__separator`, hidden from assistive technology). The time mode has no button.
+`DateTimeField` shall render a `Field` whose root also carries `ui-date-time-field` and publishes `data-mode` (`date` by default, `time`, `date-time`, `date-range` or `date-time-range`). Its control is React Aria's picker (`ui-date-time-field__picker`) holding a group (`ui-date-time-field__group`) with the segments of the value in an input (`ui-date-time-field__input`) of segments (`ui-date-time-field__segment`, React Aria's `spinbutton` segments publishing `data-type`), each named by its part and the field's label and described by the field's description, decoration and message. The date modes end the group with a calendar button (`ui-date-time-field__button`, the `calendar` glyph, named by React Aria). A range has a start and an end input with a separator between them (`ui-date-time-field__separator`, hidden from assistive technology). The time mode has no button. Each space in a segment's text, which runtimes write differently (a narrow no-break space or a plain space before AM and PM), is a no-break space, so the server's segments and the browser's agree and a space that stands alone in a literal segment never collapses.
 
-Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`, `src/core/glyphs.tsx`
+Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`, `src/core/glyphs.tsx`, `src/utils/intl-format.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/date-time-field.spec.ts`
 
 ### UIC-DATE-TIME-FIELD-1.2 - Values
@@ -52,7 +52,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`
 
 ### UIC-DATE-TIME-FIELD-1.6 - Previous value
 
-While the field is dirty and its committed value is not empty, the group shall start with that value, localized at the editor's precision (seconds at the `second` granularity) and hour cycle, as a `FieldPreviousValue` (`ui-date-time-field__previous`), so a difference the segments show is visible in it too.
+While the field is dirty and its committed value is not empty, the group shall start with that value, localized at the editor's precision (seconds at the `second` granularity) and hour cycle, as a `FieldPreviousValue` (`ui-date-time-field__previous`), so a difference the segments show is visible in it too. Its spaces are plain spaces whatever the runtime writes, so it hydrates as rendered on the server.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`

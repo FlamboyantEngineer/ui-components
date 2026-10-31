@@ -66,3 +66,15 @@ export const getCollator = createFormatCache<
   Intl.CollatorOptions,
   Intl.Collator
 >((locale, options) => new Intl.Collator(locale, options));
+
+const intlSpaces = /[ \u00a0\u2009\u202f]/g;
+
+/**
+ * A formatted date or time with each space written as `space`. Runtimes write the spaces in dates and
+ * times differently (Node and some browsers a narrow no-break space before AM and PM, others a plain
+ * space), so a server's text and a browser's agree only once normalized. A no-break space keeps a
+ * space that stands alone in an element from collapsing.
+ */
+export function normalizeIntlSpaces(text: string, space: ' ' | ' ' = ' '): string {
+  return text.replace(intlSpaces, space);
+}

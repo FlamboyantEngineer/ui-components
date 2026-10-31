@@ -11,7 +11,7 @@ import {
   toCalendarDate,
   toCalendarDateTime,
 } from '../../primitives/index.js';
-import { getDateFormatter } from '../../utils/intl-format.js';
+import { getDateFormatter, normalizeIntlSpaces } from '../../utils/intl-format.js';
 import { findOrderedBoundIssue, type BoundIssue } from '../../utils/date-bounds.js';
 
 /**
@@ -238,8 +238,9 @@ export function formatDateValue(
   if (typeof value !== 'string') {
     const start = toDate(value.start, single, options);
     const end = toDate(value.end, single, options);
-    return start && end ? formatter.formatRange(start, end) : `${value.start} – ${value.end}`;
+    if (!start || !end) return `${value.start} – ${value.end}`;
+    return normalizeIntlSpaces(formatter.formatRange(start, end));
   }
   const date = toDate(value, single, options);
-  return date ? formatter.format(date) : value;
+  return date ? normalizeIntlSpaces(formatter.format(date)) : value;
 }

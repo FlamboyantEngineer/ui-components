@@ -17,3 +17,10 @@ Each formatter kind shall retain at most 128 locale and option configurations, e
 
 Implementation: `src/utils/intl-format.ts`, `src/utils/lru-cache.ts`
 Verification: `src/utils/intl-format.test.ts`, `src/utils/lru-cache.test.ts`
+
+### UIC-INTL-FORMAT-1.3 - Runtime-independent spaces
+
+`normalizeIntlSpaces` shall write each plain, no-break, thin or narrow no-break space in a formatted text as a plain space, or as a no-break space when asked, so a text formatted on a server and in a browser whose runtimes write those spaces differently is the same text.
+
+Implementation: `src/utils/intl-format.ts`
+Verification: `src/utils/intl-format.test.ts`
