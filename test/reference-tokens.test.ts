@@ -187,6 +187,21 @@ ${common}`,
     expect(valid.status).toBe(0);
   });
 
+  it('UIC-LABS-3.1 names every container and every container query', () => {
+    const named = check({
+      'card.css': `.ui-card { container: ui-card / inline-size; }
+@container ui-card (width < 20rem) { .ui-card__body { display: block; } }`,
+    });
+    expect(named.stderr).not.toContain('container');
+    const unnamed = check({
+      'card.css': `.ui-card { container-type: inline-size; }
+@container (max-width: 20rem) { .ui-card__body { display: block; } }`,
+    });
+    expect(unnamed.status).toBe(1);
+    expect(unnamed.stderr).toContain('card.css:1: an unnamed container');
+    expect(unnamed.stderr).toContain('card.css:2: a container query without a name');
+  });
+
   it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
     const result = check(
       {

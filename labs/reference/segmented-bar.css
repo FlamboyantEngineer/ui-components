@@ -54,7 +54,7 @@
 }
 
 .ui-segmented-bar__track:not(svg) {
-  container-type: inline-size;
+  container: ui-segmented-bar / inline-size;
 }
 
 .ui-segmented-bar__segment + .ui-segmented-bar__segment {

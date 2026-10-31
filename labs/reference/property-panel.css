@@ -1,7 +1,7 @@
 /* Property Panel: hairline sections, rows with the label on a column beside the control. */
 
 .ui-property-panel {
-  container-type: inline-size;
+  container: ui-property-panel / inline-size;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -230,13 +230,13 @@
   grid-column: 1 / 3;
 }
 
-@container (min-width: 520px) {
+@container ui-property-panel (width >= 520px) {
   .ui-property-row {
     grid-template-columns: 128px minmax(0, 1fr) auto;
   }
 }
 
-@container (max-width: 359.98px) {
+@container ui-property-panel (width < 360px) {
   .ui-property-panel[data-label-layout='responsive'] .ui-property-row {
     grid-template-columns: minmax(0, 1fr) auto;
     padding-block: 4px;
