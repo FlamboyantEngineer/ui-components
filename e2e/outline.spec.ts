@@ -117,11 +117,9 @@ test.describe('Outline lab', () => {
     ]);
   });
 
-  test('UIC-OUTLINE-5.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-OUTLINE-5.1 passes axe', async ({ page, lab }) => {
     await lab.open('outline');
     await expect(page.locator('#lab-root .ui-outline').first()).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('outline', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

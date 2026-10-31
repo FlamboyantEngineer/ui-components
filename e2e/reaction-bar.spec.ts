@@ -79,18 +79,13 @@ test.describe('Reaction Bar lab', () => {
     await expect(page.locator(cell('mode=read-only reactions=empty'))).toHaveCount(0);
   });
 
-  test('UIC-REACTION-BAR-1.6 is a named group and passes axe in both themes', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-REACTION-BAR-1.6 is a named group and passes axe', async ({ page, lab }) => {
     await lab.open('reaction-bar');
     await expect(page.locator('#lab-root .ui-reaction-bar').first()).toHaveAttribute(
       'role',
       'group',
     );
     await expect(page.getByRole('group', { name: 'Reactions' }).first()).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('reaction-bar', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

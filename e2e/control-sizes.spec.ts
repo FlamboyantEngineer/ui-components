@@ -95,6 +95,23 @@ test("UIC-LABS-3.7 the type and control scales follow the reader's font size", a
   await expect(button).toHaveCSS('font-size', '16.25px');
 });
 
+test("UIC-LABS-3.5 UIC-LABS-3.7 line boxes and search inputs follow the reader's font size", async ({
+  page,
+  lab,
+}) => {
+  await lab.open('breadcrumb');
+  const trail = page.getByRole('navigation', { name: 'Trail, four crumbs, md' });
+  await expect(trail).toHaveCSS('line-height', '24px');
+  await page.addStyleTag({ content: ':root { font-size: 20px; }' });
+  await expect(trail).toHaveCSS('line-height', '30px');
+
+  await lab.open('emoji-picker');
+  const search = page.locator('[data-lab-demo="virtualized"]').getByRole('searchbox');
+  await expect(search).toHaveCSS('height', '28px');
+  await page.addStyleTag({ content: ':root { font-size: 20px; }' });
+  await expect(search).toHaveCSS('height', '35px');
+});
+
 test('UIC-LABS-3.7 checkbox and radio groups show independent and exclusive choices', async ({
   page,
   lab,

@@ -202,7 +202,7 @@ Verification: `src/components/table/use-table-reorder.test.tsx`
 
 ### UIC-TABLE-5.3 - Keyboard moves
 
-Alt+ArrowUp and Alt+ArrowDown with focus on a movable row, or inside it, shall report a move of that row before the previous row or after the next one. At either end the keys are claimed and nothing moves.
+Alt+ArrowUp and Alt+ArrowDown with focus on a movable row, or inside it except in a text control (a field, editable content such as the cell editor), shall report a move of that row before the previous row or after the next one. At either end the keys are claimed and nothing moves.
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
@@ -313,7 +313,7 @@ Verification: `src/components/table/use-column-reorder.test.tsx`, `e2e/table.spe
 
 ### UIC-TABLE-8.5 - Moving columns by keyboard
 
-Alt+ArrowLeft and Alt+ArrowRight with focus on the header of a column with `allowsReordering` shall move it one column towards the start or the end of the line, mirrored in a right-to-left locale, and keep focus on its header. At the edge of its pinned group the keys are claimed and nothing moves. Reorderable headers publish `data-allows-reordering`.
+Alt+ArrowLeft and Alt+ArrowRight with focus on the header of a column with `allowsReordering`, outside a text control in the header, shall move it one column towards the start or the end of the line, mirrored in a right-to-left locale, and keep focus on its header. At the edge of its pinned group the keys are claimed and nothing moves. Reorderable headers publish `data-allows-reordering`.
 
 Implementation: `src/components/table/use-column-reorder.ts`, `src/components/table/table-columns.ts`
 Verification: `src/components/table/use-column-reorder.test.tsx`, `e2e/table.spec.ts`

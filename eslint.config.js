@@ -143,6 +143,25 @@ export default tseslint.config(
     },
   },
   {
+    // The accessibility sweep scans every lab in both themes in one load (UIC-LABS-3.4), so a component
+    // spec does not reload its lab dark only to end on the same scan.
+    files: ['e2e/**/*.ts'],
+    ignores: ['e2e/accessibility.spec.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ENUM_SYNTAX,
+        CONTEXT_PROVIDER_SYNTAX,
+        {
+          selector:
+            "ExpressionStatement:has(CallExpression[callee.property.name='open'] Property[key.name='theme'][value.value='dark']) + ExpressionStatement:last-child:has(CallExpression[callee.property.name='expectAccessible'][arguments.length=0])",
+          message:
+            'The accessibility sweep already scans this lab in the dark theme; drop the reload (UIC-LABS-3.4).',
+        },
+      ],
+    },
+  },
+  {
     name: 'ui-components/typescript/default-exports',
     files: TYPED_FILES,
     ignores: DEFAULT_EXPORT_LOADERS,

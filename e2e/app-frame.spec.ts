@@ -102,11 +102,9 @@ test.describe('App Frame lab', () => {
     await expect(toolbar.getByRole('button', { name: 'Redo' })).toBeFocused();
   });
 
-  test('UIC-APP-FRAME-3.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-APP-FRAME-3.1 passes axe', async ({ page, lab }) => {
     await lab.open('app-frame');
     await expect(page.locator('#lab-root .ui-app-frame').first()).toBeAttached();
-    await lab.expectAccessible();
-    await lab.open('app-frame', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

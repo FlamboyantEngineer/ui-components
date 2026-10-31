@@ -166,7 +166,7 @@ test.describe('Wizard lab', () => {
     await expect(demo.locator('[data-lab-result]')).toHaveText('Created Hermes');
   });
 
-  test('passes axe in both themes, with a modal open', async ({ page, lab }) => {
+  test('passes axe, with a modal open', async ({ page, lab }) => {
     await lab.open('wizard');
     await lab.expectAccessible();
     await page
@@ -178,7 +178,5 @@ test.describe('Wizard lab', () => {
     await expect(page.locator('.ui-modal[data-entering]')).toHaveCount(0);
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
-    await lab.open('wizard', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 });

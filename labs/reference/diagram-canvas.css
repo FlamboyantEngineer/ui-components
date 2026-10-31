@@ -119,7 +119,7 @@
   background: var(--ref-canvas);
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
-  line-height: 18px;
+  line-height: 1.125rem;
   white-space: nowrap;
   cursor: pointer;
 }

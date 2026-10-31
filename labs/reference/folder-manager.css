@@ -32,7 +32,7 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 120px;
-  height: 22px;
+  height: 1.375rem;
   padding: 0 4px;
   border: 1px solid var(--ref-focus);
   border-radius: var(--ref-radius-sm);

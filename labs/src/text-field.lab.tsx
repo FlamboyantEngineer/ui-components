@@ -117,6 +117,15 @@ function Adornments() {
         startAdornment={<Glyph icon={InfoGlyph} />}
         endAdornment="kg"
       />
+      <TextField
+        label="Log"
+        multiline
+        minRows={1}
+        maxRows={6}
+        defaultValue={'First line\nSecond line\nThird line\nFourth line\nFifth line'}
+        endAdornment="lines"
+        data-lab-field="adorned-log"
+      />
       <LabOutput name="Copied">{copied}</LabOutput>
     </>
   );
@@ -259,6 +268,14 @@ mountLab(
         pattern={/^(?:OK|\d+)$(?:\n^(?:OK|\d+)$)*/m}
         defaultValue={'OK\nbad\n42'}
         data-lab-field="multiline-rules"
+      />
+      <TextField
+        label="Homepage"
+        type="url"
+        description="A URL field takes an absolute address."
+        defaultValue="example.com"
+        validationMode="immediate"
+        data-lab-field="url-check"
       />
     </LabSection>
     <LabSection

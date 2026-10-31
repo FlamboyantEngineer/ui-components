@@ -27,6 +27,7 @@ import {
 } from './board-moves.js';
 import { useBoardModel, type BoardModel } from './use-board-model.js';
 import { useBoardCardDrag, useBoardColumnDrag } from './use-board-drag.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 
@@ -98,7 +99,8 @@ export interface BoardProps<T extends { id: Key }>
 type FocusRequest = (kind: 'card' | 'column', key: Key) => void;
 
 const cardShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
-const editableSelector = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
+/** Text widgets a host draws in a card, which keep the arrow keys for their caret. */
+const textWidgets = '[role="textbox"], [role="combobox"]';
 
 function toDirection(key: string, isRightToLeft: boolean): BoardMoveDirection | null {
   if (key === 'ArrowUp') return 'up';
@@ -110,7 +112,7 @@ function toDirection(key: string, isRightToLeft: boolean): BoardMoveDirection | 
 
 /** The card a keydown came from: the key of the card row around its target. */
 function findCardKey(target: EventTarget, identities: ReadonlyMap<string, Key>): Key | undefined {
-  if (!isElement(target) || target.closest(editableSelector)) return undefined;
+  if (!isElement(target) || isEditableTarget(target, textWidgets)) return undefined;
   const identity = target.closest(`.${hooks.slotClass('card')}`)?.getAttribute('data-key');
   return identity === null || identity === undefined ? undefined : identities.get(identity);
 }

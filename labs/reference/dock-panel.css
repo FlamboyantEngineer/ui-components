@@ -151,10 +151,11 @@
   min-height: 0;
 }
 
-/* The panes' own element, which moves between the body and the drawer. */
+/* The panes' own element, which moves between the body and the drawer. Its auto basis gives a
+   host with no height the open pane's height; min-height: 0 still lets it shrink in a frame. */
 .ui-dock-panel__panes {
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
   min-height: 0;

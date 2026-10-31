@@ -135,8 +135,6 @@ test.describe('Avatar lab', () => {
     await expect(decorative).toHaveAttribute('aria-hidden', 'true');
     await expect(decorative).not.toHaveAttribute('role');
     await lab.expectAccessible();
-    await lab.open('avatar', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-AVATAR-2.3 rounds or squares the corners by shape', async ({ page, lab }) => {

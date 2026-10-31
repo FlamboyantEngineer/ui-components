@@ -252,6 +252,56 @@ describe('CodeEditor', () => {
     expectHooksMatchSpec(container, 'CODE-EDITOR');
   });
 
+  it('UIC-CODE-EDITOR-2.3 UIC-CODE-EDITOR-9.3 numbers its own problems from the first line number', async () => {
+    const user = userEvent.setup();
+    const parse = (firstLineNumber: number) => (
+      <CodeEditor
+        language="json"
+        label="Settings"
+        firstLineNumber={firstLineNumber}
+        defaultValue={'{\n  "a": ,\n}'}
+        diagnostics={[{ message: 'Caller note.', line: 102, severity: 'warning' }]}
+      />
+    );
+    const { container, rerender } = render(parse(100));
+    const severities = () =>
+      [...container.querySelectorAll('.ui-code-editor__line')].map((line) =>
+        line.getAttribute('data-severity'),
+      );
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Enter valid JSON: check line 101, column 8.',
+    );
+    expect(
+      container.querySelector('.ui-code-editor__mark[data-severity="error"]'),
+    ).toHaveTextContent(',');
+    expect(severities()).toEqual([null, 'error', 'warning']);
+    await user.click(editor());
+    await user.keyboard('{F8}');
+    expect(editor().value.slice(editor().selectionStart, editor().selectionEnd)).toBe(',');
+    rerender(parse(1));
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Enter valid JSON: check line 2, column 8.',
+    );
+    expect(severities()).toEqual([null, 'error', null]);
+  });
+
+  it('UIC-CODE-EDITOR-2.3 UIC-CODE-EDITOR-13.1 numbers schema problems from the first line number', () => {
+    const schema = { type: 'object' as const, properties: { name: { type: 'string' as const } } };
+    const { container } = render(
+      <CodeEditor
+        language="json"
+        label="Settings"
+        schema={schema}
+        firstLineNumber={40}
+        defaultValue={'{\n  "name": 3\n}'}
+      />,
+    );
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Line 41, column 11: Expected string.',
+    );
+    expect(container.querySelector('.ui-code-editor__mark')).toHaveTextContent('3');
+  });
+
   it('UIC-CODE-EDITOR-13.1 checks parsed text against the schema and reports the first problem with its place', async () => {
     const user = userEvent.setup();
     const schema = {

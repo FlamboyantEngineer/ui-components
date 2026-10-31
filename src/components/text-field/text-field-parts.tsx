@@ -121,8 +121,10 @@ interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {
 }
 
 /**
- * The input alone, or with adornments or a reveal button a group around them all, which the host
- * frames as one box.
+ * The group around the input, with any adornments and the reveal button. It is always there, so
+ * adding or removing an adornment never replaces the input (its selection, its composition, the
+ * caller's ref); `data-framed` marks it while it holds anything beside the input, when the host
+ * frames it as one box. Without it the host lets the input be its own frame.
  */
 export function TextFieldFrame({
   startAdornment,
@@ -130,12 +132,13 @@ export function TextFieldFrame({
   reveal,
   children,
 }: TextFieldFrameProps) {
-  if (isEmptyNode(startAdornment) && isEmptyNode(endAdornment) && !reveal) return children;
+  const hasStart = !isEmptyNode(startAdornment);
+  const hasEnd = !isEmptyNode(endAdornment);
   return (
-    <Group {...hooks.slot('group')}>
-      {isEmptyNode(startAdornment) ? null : <span {...hooks.slot('start')}>{startAdornment}</span>}
+    <Group {...hooks.slot('group', { framed: hasStart || hasEnd || reveal !== null })}>
+      {hasStart ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
       {children}
-      {isEmptyNode(endAdornment) ? null : <span {...hooks.slot('end')}>{endAdornment}</span>}
+      {hasEnd ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
       {reveal ? <RevealButton {...reveal} /> : null}
     </Group>
   );

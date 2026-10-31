@@ -421,6 +421,8 @@
   "tooShort": "{minLength} 文字以上で入力してください。",
   "tooLong": "{maxLength} 文字以内で入力してください。",
   "patternMismatch": "正しい形式で値を入力してください。",
+  "emailMismatch": "メールアドレスを入力してください。",
+  "urlMismatch": "https://example.com のような完全な URL を入力してください。",
   "restoreValue": "{label}を元に戻す",
   "fieldHelp": "{label}のヘルプ",
   "fieldActions": "{label}の操作",

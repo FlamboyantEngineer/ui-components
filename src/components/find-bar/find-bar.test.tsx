@@ -245,6 +245,20 @@ describe('FindBar', () => {
     expectHooksMatchSpec(container, 'FIND-BAR', { slots: ['close'] });
   });
 
+  it('UIC-FIND-BAR-1.6 leaves a composing Escape to the input method', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<FindBar defaultQuery="pear" onClose={onClose} />);
+    const search = screen.getByRole('searchbox');
+    await user.click(search);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(search, { key: 'Escape', isComposing: true, keyCode: 229 });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(search).toHaveValue('pear');
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-FIND-BAR-2.1 names every control and keeps them in reading order', async () => {
     const user = userEvent.setup();
     render(

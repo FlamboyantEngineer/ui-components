@@ -18,8 +18,16 @@ interface JsonCheck {
 
 const noProblems: JsonCheck = { diagnostics: [], issue: null };
 
-/** The line and column, counted from 1, of an offset. */
-function placeOf(starts: readonly number[], offset: number) {
+/** What JSON text is checked against, and how its lines are numbered. */
+interface JsonCheckOptions {
+  schema: JsonSchema | undefined;
+  strings: UiStrings;
+  /** The number of the text's first line, as the editor's gutter numbers it. Defaults to 1. */
+  firstLine?: number | undefined;
+}
+
+/** The line, counted from `firstLine`, and the column, counted from 1, of an offset. */
+function placeOf(starts: readonly number[], offset: number, firstLine: number) {
   let low = 0;
   let high = starts.length;
   while (low + 1 < high) {
@@ -27,13 +35,16 @@ function placeOf(starts: readonly number[], offset: number) {
     if (requireDefined(starts[middle]) <= offset) low = middle;
     else high = middle;
   }
-  return { line: low + 1, column: offset - requireDefined(starts[low]) + 1 };
+  return { line: low + firstLine, column: offset - requireDefined(starts[low]) + 1 };
 }
 
-function checkParse(source: string, strings: UiStrings): JsonCheck | null {
+function checkParse(source: string, strings: UiStrings, firstLine: number): JsonCheck | null {
   const error = findJsonError(source);
   if (!error) return null;
-  const { location } = error;
+  const location = error.location && {
+    line: error.location.line + firstLine - 1,
+    column: error.location.column,
+  };
   const message = location
     ? strings.invalidJsonAt(location.line, location.column)
     : strings.invalidJson;
@@ -46,21 +57,21 @@ function checkParse(source: string, strings: UiStrings): JsonCheck | null {
 /**
  * Checks JSON text: text that does not parse has one problem where parsing stops; text that
  * parses is checked against `schema`, each problem marked where it is and the first one reported
- * with its line and column. Blank text has no problems.
+ * with its line and column. Blank text has no problems. Lines count from `firstLine`, as the
+ * editor's gutter numbers them (UIC-CODE-EDITOR-2.3), so the problems read like caller diagnostics.
  */
 export function checkJsonText(
   source: string,
-  schema: JsonSchema | undefined,
-  strings: UiStrings,
+  { schema, strings, firstLine = 1 }: JsonCheckOptions,
 ): JsonCheck {
   const tree = schema ? parseJsonTree(source) : null;
-  const parse = tree ? null : checkParse(source, strings);
+  const parse = tree ? null : checkParse(source, strings, firstLine);
   if (parse) return parse;
   if (!tree || !schema) return noProblems;
   const starts = findLineStarts(source);
   const diagnostics = validateJsonSchema(tree, schema, strings).map(({ message, start, end }) => {
-    const from = placeOf(starts, start);
-    const to = placeOf(starts, end);
+    const from = placeOf(starts, start, firstLine);
+    const to = placeOf(starts, end, firstLine);
     return { message, ...from, endLine: to.line, endColumn: to.column };
   });
   const [first] = diagnostics;
@@ -70,12 +81,12 @@ export function checkJsonText(
 }
 
 /** Reuses the current result for the field check and the editor's diagnostic layer. */
-export function createJsonChecker(schema: JsonSchema | undefined, strings: UiStrings) {
+export function createJsonChecker(options: JsonCheckOptions) {
   let previous: string | undefined;
   let result = noProblems;
   return (source: string): JsonCheck => {
     if (source !== previous) {
-      result = checkJsonText(source, schema, strings);
+      result = checkJsonText(source, options);
       previous = source;
     }
     return result;

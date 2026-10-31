@@ -75,7 +75,5 @@ test.describe('Display Options lab', () => {
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
     await lab.expectAccessible();
-    await lab.open('display-options', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 });

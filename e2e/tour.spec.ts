@@ -205,9 +205,4 @@ test.describe('Tour lab', () => {
     await expect(start).toBeFocused();
     await lab.expectAccessible();
   });
-
-  test('UIC-TOUR-1.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('tour', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
 });

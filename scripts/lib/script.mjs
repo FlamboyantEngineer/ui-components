@@ -2,7 +2,7 @@
 // options and the problem report a check ends with.
 
 import { readdirSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import path, { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** The repository root, the directory that holds `scripts/`. */
@@ -23,6 +23,18 @@ export function walk(dir, { directories = false } = {}) {
       if (!statSync(full).isDirectory()) return [full];
       return directories ? [full, ...walk(full, { directories })] : walk(full);
     });
+}
+
+/**
+ * `to` relative to `from` with `/` separators on every platform, as the repository's path lists are
+ * written. `paths` is the `node:path` flavour, so a test can pass `path.win32`.
+ * @param {string} from
+ * @param {string} to
+ * @param {typeof path} [paths]
+ * @returns {string}
+ */
+export function relativePosix(from, to, paths = path) {
+  return paths.relative(from, to).split(paths.sep).join('/');
 }
 
 /**

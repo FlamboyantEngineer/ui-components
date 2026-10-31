@@ -146,7 +146,7 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
 ): FieldControl<T, FieldControlRest<T, P>> {
   const buckets = splitFieldProps(props);
   const own = buckets.state as FieldStateOptions<T>;
-  const { check, isEqual, hasOwnHistory } = options;
+  const { check, isEqual, hasOwnHistory, isEmpty } = options;
   const state = useFieldState<T>(
     {
       ...own,
@@ -155,7 +155,7 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
       validate: (value) => check?.(value) ?? own.validate?.(value) ?? null,
       errorSources: options.errorSources,
     },
-    { isEqual, hasOwnHistory },
+    { isEqual, hasOwnHistory, isEmpty },
   );
   return {
     state,

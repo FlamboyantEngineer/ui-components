@@ -19,7 +19,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 type Position = 'start' | 'end' | 'bottom';
 
 // Lab-only frames so the panel and the main content are visible with or without a stylesheet.
-const frame = (width: number, height: number, position: Position): CSSProperties => ({
+const frame = (width: number, height: number | undefined, position: Position): CSSProperties => ({
   width,
   height,
   display: 'flex',
@@ -47,7 +47,7 @@ function Frame({
 }: {
   position: Position;
   width: number;
-  height: number;
+  height?: number | undefined;
   panel: ReactNode;
   children: ReactNode;
   'data-lab-frame'?: string;
@@ -297,6 +297,33 @@ function Narrow() {
   );
 }
 
+const tasks = ['Import records', 'Check totals', 'Send summary', 'Archive month', 'Plan review'];
+
+/** A frame with no height of its own: the open pane decides how tall the panel is. */
+function ContentSized() {
+  return (
+    <Frame
+      position="end"
+      width={640}
+      data-lab-frame="content-sized"
+      panel={
+        <DockPanel label="Tasks">
+          <DockPanelPane id="tasks" label="Task list" icon={CalendarGlyph} title="Tasks">
+            <ul>
+              {tasks.map((task) => (
+                <li key={task}>{task}</li>
+              ))}
+            </ul>
+            <button type="button">New task</button>
+          </DockPanelPane>
+        </DockPanel>
+      }
+    >
+      <p>The frame sets no height, so it grows to the open pane.</p>
+    </Frame>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -337,6 +364,12 @@ mountLab(
       description="Below overlayBelow the open pane shows in a drawer; Escape closes it and focus returns to the launcher. The panes move between the drawer and the docked panel without mounting again, so a draft typed in either survives the frame changing width."
     >
       <Narrow />
+    </LabSection>
+    <LabSection
+      title="Content-sized host"
+      description="A host that sets no height: the docked panel is as tall as its open pane, so the whole list and its button show."
+    >
+      <ContentSized />
     </LabSection>
   </>,
 );

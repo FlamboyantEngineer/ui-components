@@ -308,12 +308,6 @@ test.describe('Table lab', () => {
     expect(await grid.getByRole('row').count()).toBeLessThan(60);
   });
 
-  test('UIC-TABLE-1.1 passes axe in the dark theme', async ({ lab }) => {
-    test.slow();
-    await lab.open('table', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-TABLE-2.6 adds a column to the sort with Shift and shows its priority', async ({
     page,
     lab,

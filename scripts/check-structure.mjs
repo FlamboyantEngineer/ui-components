@@ -6,9 +6,9 @@
 //   N8 one createHooks declaration per component, S8 no import cycles between components.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { basename, join, relative, sep } from 'node:path';
+import { basename, join, sep } from 'node:path';
 import ts from 'typescript';
-import { reportProblems, root, walk } from './lib/script.mjs';
+import { relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 
 const componentsDir = join(root, 'src', 'components');
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+)*$/;
@@ -16,7 +16,7 @@ const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+)*$/;
 const NO_ELEMENT = /(?:Provider|Host|Outlet|Content|Trigger)$/;
 
 const problems = [];
-const rel = (path) => relative(root, path).split(sep).join('/');
+const rel = (path) => relativePosix(root, path);
 
 for (const path of walk(join(root, 'src'), { directories: true })) {
   const name = basename(path);

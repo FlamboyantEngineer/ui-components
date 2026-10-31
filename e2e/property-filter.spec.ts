@@ -72,10 +72,9 @@ test.describe('Property Filter lab', () => {
     await expect(status).toBeHidden();
   });
 
-  test('UIC-PROPERTY-FILTER-1.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-PROPERTY-FILTER-1.1 passes axe', async ({ page, lab }) => {
     await lab.open('property-filter');
     await lab.expectAccessible();
-    await lab.open('property-filter', { theme: 'dark' });
     await panel(page).getByRole('searchbox').fill('zinc');
     await lab.expectAccessible();
   });

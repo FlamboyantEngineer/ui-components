@@ -441,6 +441,19 @@ mountLab(
           lineNumbers
         />
       </LabSection>
+      <LabSection
+        title="Blank first line"
+        description="The text starts with a line break. With the caret at the very start, Tab indents the blank first line to the next stop."
+      >
+        <Editor
+          aria-label="Blank first line"
+          data-lab-editor="blank-first"
+          initialValue={'\nreturn basket'}
+          size="sm"
+          indentWithTab
+          lineNumbers
+        />
+      </LabSection>
     </div>
   </>,
 );

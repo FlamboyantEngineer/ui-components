@@ -62,7 +62,12 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
       // Escape ends snippet stepping first, so Escape then Tab leaves even past an open list.
       if (event.key === 'Escape') snippet.end();
       if (completion.handleKeyDown(event) || snippet.handleKeyDown(event)) return;
-      if (event.key === 'Escape' && hover.tip) hover.close();
+      if (event.key === 'Escape' && hover.tip) {
+        // Handled, so an overlay around the editor stays open for the next Escape.
+        event.preventDefault();
+        hover.close();
+        return;
+      }
       if (!model.handleKeyDown(event)) props.onKeyDown?.(event);
     },
     onKeyUp: (event) => {

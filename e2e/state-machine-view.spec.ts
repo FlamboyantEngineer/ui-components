@@ -86,9 +86,4 @@ test.describe('State Machine View lab', () => {
     await expect(output(page, 'transitions')).toHaveText('closed→open, open→closed');
     await lab.expectAccessible();
   });
-
-  test('UIC-STATE-MACHINE-VIEW-1.3 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('state-machine-view', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
 });

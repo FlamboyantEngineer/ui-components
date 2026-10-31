@@ -34,7 +34,7 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/na
 
 ### UIC-NAVIGATION-RAIL-1.5 - Keyboard
 
-Tab shall move through the rail's links and group buttons in order. Inside the body, Down and Up arrows also move focus to the next and previous link or group button, and Home and End to the first and last, skipping the items of closed groups.
+Tab shall move through the rail's links and group buttons in order. Inside the body, Down and Up arrows also move focus to the next and previous link or group button, and Home and End to the first and last, skipping the items of closed groups. A text control a host places in the body (a field or editable content) keeps those keys for its caret.
 
 Implementation: `src/components/navigation-rail/navigation-rail.tsx`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`

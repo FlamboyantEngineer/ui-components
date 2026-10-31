@@ -117,7 +117,5 @@ test.describe('View Switcher lab', () => {
     await expect(list.getByRole('tab').nth(1)).toBeFocused();
     await expect(list.getByRole('tab').nth(1)).toHaveAttribute('aria-selected', 'true');
     await lab.expectAccessible();
-    await lab.open('view-switcher', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 });

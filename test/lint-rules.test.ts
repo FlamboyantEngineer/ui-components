@@ -88,6 +88,20 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     expect(await ruleIds(imports('table/table.js'), lab)).not.toContain('ui/component-imports');
   });
 
+  it('UIC-LABS-3.4 keeps component specs from reloading a lab dark for the scan the sweep runs', async () => {
+    const spec = (body: string) =>
+      `import { test } from './fixtures.js';\ntest('probe', async ({ lab }) => {\n${body}\n});\n`;
+    const reload =
+      "  await lab.open('probe');\n  await lab.expectAccessible();\n  await lab.open('probe', { theme: 'dark' });\n  await lab.expectAccessible();";
+    expect(await ruleIds(spec(reload), 'e2e/probe.spec.ts')).toContain('no-restricted-syntax');
+    const scoped =
+      "  await lab.open('probe', { theme: 'dark' });\n  await lab.expectAccessible('.ui-probe');";
+    expect(await ruleIds(spec(scoped), 'e2e/probe.spec.ts')).not.toContain('no-restricted-syntax');
+    expect(await ruleIds(spec(reload), 'e2e/accessibility.spec.ts')).not.toContain(
+      'no-restricted-syntax',
+    );
+  });
+
   it('does not apply library rules outside src', async () => {
     expect(
       await ruleIds("import './chrome.css';\nexport {};\n", 'labs/src/probe.ts'),

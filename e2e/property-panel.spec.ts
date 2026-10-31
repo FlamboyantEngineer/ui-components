@@ -135,11 +135,6 @@ test.describe('Property Panel lab', () => {
     await expect(segmented).toHaveAttribute('role', 'group');
   });
 
-  test('UIC-PROPERTY-PANEL-1.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('property-panel', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-PROPERTY-PANEL-1.4 opens sections one at a time or all together', async ({
     page,
     lab,

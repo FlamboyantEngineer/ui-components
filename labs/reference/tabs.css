@@ -117,7 +117,7 @@
   color: var(--ref-on-fill);
   font-size: var(--ref-font-size-xs);
   font-weight: var(--ref-font-weight-strong);
-  line-height: 18px;
+  line-height: 1.125rem;
   text-align: center;
 }
 

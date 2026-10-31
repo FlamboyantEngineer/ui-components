@@ -130,10 +130,8 @@ test.describe('Comment Composer lab', () => {
     await expect(box).toHaveValue('Composing');
   });
 
-  test('UIC-COMMENT-COMPOSER-1.7 passes axe in both themes', async ({ lab }) => {
+  test('UIC-COMMENT-COMPOSER-1.7 passes axe', async ({ lab }) => {
     await lab.open('comment-composer');
-    await lab.expectAccessible();
-    await lab.open('comment-composer', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

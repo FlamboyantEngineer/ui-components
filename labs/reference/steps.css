@@ -9,7 +9,7 @@
   list-style: none;
   color: var(--ref-text);
   font-size: var(--ref-font-size-md);
-  line-height: 20px;
+  line-height: 1.25rem;
 }
 .ui-steps[data-orientation='vertical'] {
   flex-direction: column;
@@ -147,7 +147,7 @@
 .ui-steps__description {
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
-  line-height: 16px;
+  line-height: 1rem;
 }
 
 .ui-steps__connector {

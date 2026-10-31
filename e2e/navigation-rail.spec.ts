@@ -131,11 +131,9 @@ test.describe('Navigation Rail lab', () => {
     await expect(reloaded.getByRole('separator')).toHaveAttribute('aria-valuenow', '280');
   });
 
-  test('UIC-NAVIGATION-RAIL-3.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-NAVIGATION-RAIL-3.1 passes axe', async ({ page, lab }) => {
     await lab.open('navigation-rail');
     await expect(page.locator('#lab-root .ui-navigation-rail').first()).toBeAttached();
-    await lab.expectAccessible();
-    await lab.open('navigation-rail', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

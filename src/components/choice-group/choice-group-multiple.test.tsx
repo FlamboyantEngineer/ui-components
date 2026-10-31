@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -303,4 +303,49 @@ it('UIC-CHOICE-GROUP-4.1 UIC-CHOICE-GROUP-4.4 preserves rich descriptions and up
   await user.click(screen.getByRole('checkbox', { name: 'All fruit' }));
   expect(screen.getByRole('checkbox', { name: 'Pear' })).toBeChecked();
   expect(screen.getByRole('checkbox', { name: 'Plum' })).not.toBeChecked();
+});
+
+it('UIC-CHOICE-GROUP-3.3 UIC-CHOICE-GROUP-4.3 keeps removed choices in the value without counting or submitting them', async () => {
+  const user = userEvent.setup();
+  const onChange = vi.fn();
+  const submitted: FormDataEntryValue[][] = [];
+  const order = (fruit: readonly string[]) => (
+    <Form
+      aria-label="Order"
+      onSubmit={(event) => {
+        event.preventDefault();
+        submitted.push(new FormData(event.currentTarget).getAll('fruit'));
+      }}
+    >
+      <ChoiceGroup
+        selectionMode="multiple"
+        label="Fruit"
+        name="fruit"
+        defaultValue={['pear', 'plum']}
+        selectAllLabel="All fruit"
+        onChange={onChange}
+        isRequired
+      >
+        {fruit.map((value) => (
+          <Choice key={value} value={value} isDisabled={value === 'plum'}>
+            {value}
+          </Choice>
+        ))}
+      </ChoiceGroup>
+      <button type="submit">Order</button>
+    </Form>
+  );
+  const { container, rerender } = render(order(['pear', 'plum', 'fig']));
+  await user.click(screen.getByRole('button', { name: 'Order' }));
+  expect(submitted).toEqual([['pear', 'plum']]);
+  rerender(order(['fig']));
+  await waitFor(() => expect(root(container)).toHaveAttribute('data-validation', 'invalid'));
+  await user.click(screen.getByRole('button', { name: 'Order' }));
+  expect(submitted).toHaveLength(1);
+  await user.click(screen.getByRole('checkbox', { name: 'All fruit' }));
+  expect(onChange).toHaveBeenLastCalledWith(['pear', 'plum', 'fig']);
+  await user.click(screen.getByRole('button', { name: 'Order' }));
+  expect(submitted).toEqual([['pear', 'plum'], ['fig']]);
+  rerender(order(['pear', 'plum', 'fig']));
+  expect(screen.getByRole('checkbox', { name: 'pear' })).toBeChecked();
 });

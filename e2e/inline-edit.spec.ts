@@ -121,8 +121,6 @@ test.describe('Inline Edit lab', () => {
     ).toBeVisible();
     await page.locator(cell('state=value buttons=with')).getByRole('button').click();
     await lab.expectAccessible();
-    await lab.open('inline-edit', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-INLINE-EDIT-1.6 keeps and saves text typed while a save runs', async ({

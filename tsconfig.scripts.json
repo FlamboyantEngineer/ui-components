@@ -1,5 +1,5 @@
 {
-  // The Node scripts and the local lint rules, checked as JavaScript. Their parameters carry no
+  // The Node scripts, the local lint rules and the ESLint config, checked as JavaScript. Their parameters carry no
   // annotations, so an unannotated parameter is `any`; everything else is checked strictly.
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["scripts/**/*.mjs", "eslint-rules/*.js"]
+  "include": ["scripts/**/*.mjs", "eslint-rules/*.js", "eslint.config.js"]
 }

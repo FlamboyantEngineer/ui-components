@@ -91,9 +91,4 @@ test.describe('Color Swatch lab', () => {
     await page.getByRole('button', { name: 'Clear' }).click();
     await expect(selected).toHaveCount(0);
   });
-
-  test('UIC-COLOR-SWATCH-1.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('color-swatch', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
 });

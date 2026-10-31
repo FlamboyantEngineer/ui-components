@@ -98,7 +98,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-3.6 - Owner keys
 
-`onItemKeyDown` shall receive each keydown in a row, with the row's item, before the tree's own keyboard handling. When it returns `true` the tree prevents the key's default and does nothing more with it. Keys typed in an editable element inside a row, such as a rename field, reach neither the owner hook nor reordering.
+`onItemKeyDown` shall receive each keydown in a row, with the row's item, before the tree's own keyboard handling. When it returns `true` the tree prevents the key's default and does nothing more with it. Keys typed in an editable element inside a row (a field such as a rename field, editable content of any `contenteditable` value but `false`, or an element with role `textbox` or `combobox`) reach neither the owner hook nor reordering.
 
 Implementation: `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree.test.tsx`
@@ -139,6 +139,13 @@ Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-ari
 
 Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
+
+### UIC-TREE-4.6 - Presentation changes
+
+Turning `virtualized` on or off, or `filterText` going between `undefined` and a string, shall keep an uncontrolled selection without calling `onSelectionChange`, and keep focus on the row that held it, unless focus had moved elsewhere. The tree holds the selection above React Aria and always draws its text-match provider, which passes the outer one through without a filter.
+
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-selection.ts`, `src/utils/use-carried-focus.ts`
+Verification: `src/components/tree/tree.test.tsx`
 
 ## UIC-TREE-5 - Checkbox selection
 

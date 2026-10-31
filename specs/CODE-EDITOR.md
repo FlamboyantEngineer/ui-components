@@ -71,10 +71,10 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-2.3 - First line number
 
-`firstLineNumber` (1 by default) shall be the number of the gutter's first row, for an excerpt of a longer text; the rows count up from it. Diagnostics count lines the same way: their `line` and `endLine` name lines as the gutter numbers them, so the gutter rows (UIC-CODE-EDITOR-3.3), the marked ranges (UIC-CODE-EDITOR-3.4), the hover tips and F8 follow the line a diagnostic names, the list reads it as given, and a diagnostic naming a line outside the excerpt marks nothing.
+`firstLineNumber` (1 by default) shall be the number of the gutter's first row, for an excerpt of a longer text; the rows count up from it. Diagnostics count lines the same way: their `line` and `endLine` name lines as the gutter numbers them, so the gutter rows (UIC-CODE-EDITOR-3.3), the marked ranges (UIC-CODE-EDITOR-3.4), the hover tips and F8 follow the line a diagnostic names, the list reads it as given, and a diagnostic naming a line outside the excerpt marks nothing. A JSON field's own parse and schema problems (UIC-CODE-EDITOR-9.3, UIC-CODE-EDITOR-13.1) number their lines the same way, in their marks and in the field's message, so they sit with the caller's diagnostics on the same rows.
 
-Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-ranges.ts`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-ranges.test.ts`, `e2e/code-editor.spec.ts`
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-ranges.ts`, `src/components/code-editor/json-check.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-ranges.test.ts`, `src/components/code-editor/code-json.test.tsx`, `e2e/code-editor.spec.ts`, `e2e/code-json.spec.ts`
 
 ## UIC-CODE-EDITOR-3 - Diagnostics
 
@@ -115,7 +115,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-3.6 - Hover tip
 
-When the pointer rests on a marked range, or on an offset for which `renderHover` returns content, a non-modal React Aria popover (`ui-code-editor__tooltip`) on the `tooltip` overlay layer shall point at that character with, inside a `role="tooltip"` element, the message of each problem marked there (a `ui-code-editor__diagnostic` with `data-severity`) followed by the caller's content. The tip stays while the pointer moves into it, hides shortly after the pointer leaves both, and closes on Escape, on an edit and when the text area loses focus. Finding the character under the pointer reads the copy's text once per render of the copy and bisects it, so pointer moves stay cheap on a long source. The copy is cut into segments and rendered again only when its tokens or decorations (problems, search matches, the matched bracket, the completion caret) change, so a tip that follows the pointer neither renders the copy again nor reads it again.
+When the pointer rests on a marked range, or on an offset for which `renderHover` returns content, a non-modal React Aria popover (`ui-code-editor__tooltip`) on the `tooltip` overlay layer shall point at that character with, inside a `role="tooltip"` element, the message of each problem marked there (a `ui-code-editor__diagnostic` with `data-severity`) followed by the caller's content. The tip stays while the pointer moves into it, hides shortly after the pointer leaves both, and closes on Escape, on an edit and when the text area loses focus. The Escape that closes a tip is marked handled and goes no further, so an overlay around the editor stays open until the next Escape. Finding the character under the pointer reads the copy's text once per render of the copy and bisects it, so pointer moves stay cheap on a long source. The copy is cut into segments and rendered again only when its tokens or decorations (problems, search matches, the matched bracket, the completion caret) change, so a tip that follows the pointer neither renders the copy again nor reads it again.
 
 Implementation: `src/components/code-editor/code-hover.tsx`, `src/components/code-editor/code-geometry.ts`, `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/use-code-editor.ts`, `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-hover.test.tsx`, `e2e/code-editor.spec.ts`
@@ -205,10 +205,10 @@ Verification: `src/components/code-editor/code-editing.test.ts`, `src/components
 
 ### UIC-CODE-EDITOR-6.3 - Tab indentation
 
-With `indentWithTab`, Tab shall insert spaces up to the next indentation stop at a caret or over a selection within one line, and indent every non-empty line of a selection across lines by one level; Shift+Tab removes one level (a tab, or up to `indent` spaces) from each line the selection touches. Tab then stays in the editor, except right after Escape, when Tab and Shift+Tab move focus as usual; a modifier key pressed on its own after Escape, such as the Shift of Shift+Tab, keeps that.
+With `indentWithTab`, Tab shall insert spaces up to the next indentation stop at a caret or over a selection within one line, and indent every non-empty line of a selection across lines by one level; Shift+Tab removes one level (a tab, or up to `indent` spaces) from each line the selection touches. Tab then stays in the editor, except right after Escape, when Tab and Shift+Tab move focus as usual; a modifier key pressed on its own after Escape, such as the Shift of Shift+Tab, keeps that. The very start of the text is on the first line, even when the text starts with a line break, for Tab, Shift+Tab, Enter and the indentation of inserted completions.
 
-Implementation: `src/components/code-editor/code-editing.ts`, `src/components/code-editor/use-code-keys.ts`
-Verification: `src/components/code-editor/code-editing.test.ts`, `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/use-code-keys.test.tsx`, `e2e/code-editor.spec.ts`
+Implementation: `src/components/code-editor/code-editing.ts`, `src/components/code-editor/use-code-keys.ts`, `src/utils/find-line-start.ts`
+Verification: `src/components/code-editor/code-editing.test.ts`, `src/utils/find-line-start.test.ts`, `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/use-code-keys.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-6.4 - Bracket and quote pairs
 

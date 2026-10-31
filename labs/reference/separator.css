@@ -63,7 +63,7 @@
   border: 0;
   background: none;
   font-size: var(--ref-font-size-sm);
-  line-height: 16px;
+  line-height: 1rem;
 }
 
 .ui-separator[data-label-position][data-orientation='vertical'] {

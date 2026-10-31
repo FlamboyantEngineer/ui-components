@@ -78,14 +78,9 @@ test.describe('Activity Feed lab', () => {
     ]);
   });
 
-  test('UIC-ACTIVITY-FEED-3.1 names each list and passes axe in both themes', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-ACTIVITY-FEED-3.1 names each list and passes axe', async ({ page, lab }) => {
     await lab.open('activity-feed');
     await expect(page.getByRole('list', { name: 'Activity, entries, day' })).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('activity-feed', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

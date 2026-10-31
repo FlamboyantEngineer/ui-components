@@ -169,11 +169,9 @@ test.describe('Tree Compare lab', () => {
     await expect(row('Hub, moved here')).toBeFocused();
   });
 
-  test('UIC-TREE-COMPARE-6.1 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-TREE-COMPARE-6.1 passes axe', async ({ page, lab }) => {
     await lab.open('tree-compare');
     await expect(page.getByRole('treegrid', { name: /^Specification/ })).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('tree-compare', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

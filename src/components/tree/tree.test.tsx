@@ -1,5 +1,5 @@
 import { MinusGlyph, MoreGlyph, PlusGlyph } from '../../core/glyphs.js';
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -414,6 +414,44 @@ describe('Tree', () => {
     expect(seen).toHaveLength(2);
   });
 
+  it('UIC-TREE-3.6 keeps keys in a plaintext-only editable or a text box widget away from the owner', () => {
+    const seen: string[] = [];
+    render(
+      <FoodTree
+        defaultExpandedKeys={['fruit']}
+        renderLabel={(item) =>
+          item.id === 'pear' ? (
+            <span contentEditable="plaintext-only" aria-label="Pear notes" />
+          ) : item.id === 'apple' ? (
+            <span role="textbox" aria-label="Apple notes" />
+          ) : (
+            item.name
+          )
+        }
+        onItemKeyDown={(item, event) => {
+          seen.push(`${item.id}:${event.key}`);
+          return true;
+        }}
+      />,
+    );
+    for (const target of [
+      screen.getByLabelText('Pear notes'),
+      screen.getByRole('textbox', { name: 'Apple notes' }),
+    ]) {
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowUp',
+        altKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      act(() => {
+        target.dispatchEvent(event);
+      });
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(seen).toEqual([]);
+  });
+
   it('UIC-TREE-4.1 shows a loading row while an empty tree is pending', () => {
     const { container, rerender } = render(<FoodTree items={[]} isPending />);
     const tree = screen.getByRole('treegrid');
@@ -512,6 +550,37 @@ describe('Tree', () => {
       expect(rows.length).toBeLessThan(40);
       expect(rows[0]?.parentElement?.style.height).toBe('32px');
       expectHooksMatchSpec(container, 'TREE', { slots: ['item', 'label'] });
+    } finally {
+      for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
+    }
+  });
+
+  it('UIC-TREE-4.6 keeps the selection and focused row as filtering and virtualizing toggle', async () => {
+    const sizes = { clientWidth: 300, clientHeight: 400 };
+    for (const [name, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
+    }
+    try {
+      const user = userEvent.setup();
+      const onSelectionChange = vi.fn();
+      const props = { selectionMode: 'single', onSelectionChange } as const;
+      const { rerender } = render(<FoodTree {...props} />);
+      await user.click(row('Nuts'));
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      // A virtual layout draws its rows after measuring, so focus returns once they are drawn.
+      const expectKept = async () => {
+        await waitFor(() => expect(row('Nuts')).toHaveFocus());
+        expect(row('Nuts')).toHaveAttribute('aria-selected', 'true');
+      };
+      rerender(<FoodTree {...props} filterText="" />);
+      await expectKept();
+      rerender(<FoodTree {...props} />);
+      await expectKept();
+      rerender(<FoodTree {...props} virtualized />);
+      await expectKept();
+      rerender(<FoodTree {...props} />);
+      await expectKept();
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
     } finally {
       for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
     }

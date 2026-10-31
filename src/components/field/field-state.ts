@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react';
-import { useUiStrings } from '../../core/provider.js';
+import { useFieldValidation } from './field-state-validation.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { useAsyncCheck, type FieldAsyncValidate } from './field-async.js';
+import type { FieldAsyncValidate } from './field-async.js';
 import {
   canStepFieldHistory,
   createFieldHistory,
@@ -13,16 +13,10 @@ import {
 } from './field-history.js';
 import {
   useFieldScope,
-  type FieldScope,
   type FieldValidationBehavior,
   type FieldValidationMode,
 } from './field-scope.js';
 import {
-  checkFieldValue,
-  resolveFieldValidation,
-  selectShownValidation,
-  useExternalIssues,
-  useFieldReveal,
   type FieldErrorSource,
   type FieldIssue,
   type FieldIssues,
@@ -111,6 +105,12 @@ export interface FieldValueContract<T> {
    * puts its own in their place.
    */
   hasOwnHistory?: boolean | undefined;
+  /**
+   * Whether a value holds nothing, for the required check and the field's `filled` state. Defaults
+   * to `isEmptyValue`: `null`, `undefined`, blank text and an empty list. A choice whose options
+   * may have the id `""` says what absence is for it instead.
+   */
+  isEmpty?: ((value: T) => boolean) | undefined;
 }
 
 /** A field's value, committed value, validation and history, with the actions that change them. */
@@ -123,6 +123,8 @@ export interface FieldState<T> {
   realtimeValidation: FieldValidation;
   /** Every issue the field shows, errors first. */
   issues: readonly FieldIssue[];
+  /** The value holds nothing, by the control's own `isEmpty`. */
+  isEmpty: boolean;
   /** The value differs from the committed value (never while read-only or disabled). */
   isDirty: boolean;
   /** Focus has left the field at least once. */
@@ -272,58 +274,6 @@ function useCommit<T>(
 }
 
 /**
- * The validation of the value: external errors for the field's name, the required check, `validate`
- * and the debounced `validateAsync`, shown as the validation mode allows.
- */
-function useFieldValidation<T>(
-  value: T,
-  options: FieldStateOptions<T>,
-  {
-    scope,
-    draftIssue,
-    isEqual,
-  }: { scope: FieldScope; draftIssue: FieldIssue | null; isEqual: ValueEquality<T> },
-) {
-  const strings = useUiStrings();
-  const reveal = useFieldReveal(options.validationMode ?? scope.validationMode ?? 'immediate');
-  const external = useExternalIssues(value, {
-    errors: scope.validationErrors,
-    name: options.name,
-    sources: options.errorSources,
-    isEqual,
-  });
-  const draft = draftIssue ? [draftIssue] : [];
-  const own = [...draft, ...external, ...checkFieldValue(value, options, strings)];
-  const check = useAsyncCheck(value, {
-    validateAsync: options.validateAsync,
-    debounce: options.validationDebounce ?? 0,
-    isSkipped: own.some((issue) => issue.severity === 'error'),
-    isEqual,
-  });
-  const isPending = Boolean(options.isPending) || check.isRunning;
-  const realtime = resolveFieldValidation([...own, ...check.issues], isPending, strings);
-  const shown = selectShownValidation(
-    realtime,
-    { external, isRevealed: reveal.isRevealed },
-    strings,
-  );
-  return { reveal, realtime, shown };
-}
-
-/** The control's report on its draft, kept while it reports the same issue again. */
-function useDraftIssue() {
-  const [issue, setIssue] = useState<FieldIssue | null>(null);
-  const report = useCallback((next: FieldIssue | null) => {
-    setIssue((previous) =>
-      previous?.severity === next?.severity && previous?.message === next?.message
-        ? previous
-        : next,
-    );
-  }, []);
-  return [issue, report] as const;
-}
-
-/**
  * The controller every field is built on: it holds or relays the value, knows the committed value,
  * validates, tracks dirty state and keeps a per-field undo history of every value the field shows.
  * A read-only or disabled field refuses every change.
@@ -343,11 +293,9 @@ export function useFieldState<T>(
   const isLocked = isReadOnly || isDisabled;
   const snapshot = { value, committedValue, options, isLocked, isEqual };
   const latest = useLatest<LatestSnapshot<T>>(snapshot);
-  const [draftIssue, setDraftIssue] = useDraftIssue();
-  const validationContext = { scope, draftIssue, isEqual };
-  const { reveal, realtime, shown } = useFieldValidation(value, options, validationContext);
+  const checked = useFieldValidation(value, options, { scope, isEqual, isEmpty: contract.isEmpty });
+  const { reveal, realtime, shown, isEmpty, setDraftIssue } = checked;
   const { markChanged } = reveal;
-
   const hasOwnHistory = Boolean(contract.hasOwnHistory);
   const [history, setHistory] = useShownHistory(value, options, { isEqual, hasOwnHistory });
 
@@ -390,6 +338,7 @@ export function useFieldState<T>(
     validation: shown.validation,
     realtimeValidation: realtime.validation,
     issues: shown.issues,
+    isEmpty,
     isDirty: canApply(value, committedValue, lock),
     isTouched: reveal.isTouched,
     isRequired: Boolean(options.isRequired),

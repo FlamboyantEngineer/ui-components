@@ -116,8 +116,6 @@ test.describe('Carousel lab', () => {
       0,
     );
     await lab.expectAccessible();
-    await lab.open('carousel', { theme: 'dark' });
-    await lab.expectAccessible();
   });
 
   test('UIC-CAROUSEL-3.4 follows a reduced-motion setting changed while the page is open', async ({

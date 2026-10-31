@@ -50,10 +50,10 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-2.3 - Length and format
 
-`minLength`, `maxLength`, `pattern` and `trim` shall check the value with `validateString` ([FIELD.md](FIELD.md#uic-field-7---string-rules)) and the provider's messages, before the caller's `validate`. They are not native constraints: a text longer than `maxLength` can be typed or pasted, and the field reports it.
+`minLength`, `maxLength`, `pattern` and `trim` shall check the value with `validateString` ([FIELD.md](FIELD.md#uic-field-7---string-rules)) and the provider's messages, before the caller's `validate`. They are not native constraints: a text longer than `maxLength` can be typed or pasted, and the field reports it. After them, an `email` field checks that its trimmed value is one email address (the HTML standard's valid email address) and a `url` field that it is an absolute URL, with the validity `typeMismatch` and the provider's `emailMismatch` or `urlMismatch` message; an empty value is not checked. The field, its form's verdict and a native submit therefore agree, in both validation behaviors.
 
 Implementation: `src/components/text-field/text-field.tsx`
-Verification: `src/components/text-field/text-field.test.tsx`
+Verification: `src/components/text-field/text-field.test.tsx`, `src/components/text-field/text-field-type.test.tsx`
 
 ### UIC-TEXT-FIELD-2.4 - Field behaviour
 
@@ -66,7 +66,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.1 - Adornments
 
-`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content.
+`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which publishes `data-framed` and which the reference sheet then frames as one box. Adornments are not part of the value or the control's name. The group is always there, so adding or removing an adornment or the reveal button keeps the same input element, with its focus, selection, composition and the caller's ref; without adornments or a reveal button it has no `data-framed` and the reference sheet lets the input be its own frame (`display: contents`). Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.3 - Growing text area
 
-A multiline field with `minRows` or `maxRows` shall publish `data-autosize` on its root and set its text area's height (a measured size) to its text's, between `minRows` (one by default) and `maxRows` (no limit by default) rows of its line height, as the text changes and again when its width changes or fonts finish loading; past `maxRows` the text area scrolls. `minRows` is also the text area's `rows`. Without either the text area keeps the stylesheet's height.
+A multiline field with `minRows` or `maxRows` shall publish `data-autosize` on its root and set its text area's height (a measured size) to its text's, between `minRows` (one by default) and `maxRows` (no limit by default) rows of its line height, as the text changes and again when its width changes or fonts finish loading; past `maxRows` the text area scrolls. `minRows` is also the text area's `rows`. Without either the text area keeps the stylesheet's height: removing both limits gives back the inline height it had before it grew, so the stylesheet (or the caller's own height) sizes it again. With adornments, the frame around the text area grows with it (`labs/reference/text-field.css`), so the text area never overflows onto the label or neighbouring content.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/utils/use-auto-grow.ts`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -99,11 +99,11 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 `transformInput(text)` shall rewrite the control's text after each typed, pasted or dropped edit before it becomes the value, so a field can refuse characters (an identifier, hexadecimal digits) or rewrite them (upper case). The caret stays after the same accepted characters: it lands at the length of the transformed text before the caret. An edit the transform reduces to the current value changes nothing, not even `onChange`. An input method composition goes through untouched and is transformed once it ends. Values set outside an edit (`value`, `defaultValue`, restore, undo, the field menu) are not transformed.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`, `src/components/text-field/use-input-transform.ts`
-Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/text-field.spec.ts`
+Verification: `src/components/text-field/use-input-transform.test.tsx`, `src/components/text-field/text-field-type.test.tsx`, `e2e/text-field.spec.ts`
 
 ### UIC-TEXT-FIELD-4.2 - Display value
 
-While the control does not have focus, `displayValue` shall be the text it shows, such as a computed result or a formatted quantity, and the root publishes `data-display-value`; focusing the control shows the value for editing. The display value never changes the value, the committed value, dirty state, undo or `onCommit`, and a form submits the value: with `displayValue` and `name`, the value submits through a hidden input under the name and the visible input has none.
+While the control does not have focus, `displayValue` shall be the text it shows, such as a computed result or a formatted quantity, and the root publishes `data-display-value`; focusing the control shows the value for editing. The display value never changes the value, the committed value, dirty state, undo or `onCommit`, and a form submits the value: with `displayValue` and `name`, the value submits through a hidden input under the name and the visible input has none. While an `email` or `url` field shows its display value the input's type is `text`, so the browser checks the value (through the field) and never the display text.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/text-field.spec.ts`
@@ -160,6 +160,7 @@ Verification: `src/components/text-field/text-field-parts.test.tsx`, `e2e/text-f
 | `ui-text-field__reveal`      | slot  |        | The reveal button (also `ui-button`).                                 |
 | `ui-text-field__count`       | slot  |        | The character count, inside the field's description.                  |
 | `ui-text-field__completions` | slot  |        | The completion list's popover (also `ui-completion-list`).            |
+| `data-framed`                | state | `true` | On the group: it holds adornments or a reveal button.                 |
 | `data-multiline`             | state | `true` | On the root: the field edits several lines.                           |
 | `data-autosize`              | state | `true` | On the root: the text area grows with its text.                       |
 | `data-display-value`         | state | `true` | On the root: the control shows the display value, not the value.      |

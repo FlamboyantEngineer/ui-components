@@ -170,6 +170,44 @@ test.describe('Text Field lab', () => {
     await expect(reveal).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('UIC-TEXT-FIELD-2.3 checks a URL field value as the browser would', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const homepage = field(page, 'url-check');
+    const input = homepage.getByRole('textbox', { name: 'Homepage' });
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(homepage).toContainText('Enter a full URL, such as https://example.com.');
+    expect(await input.evaluate((node: HTMLInputElement) => node.validity.typeMismatch)).toBe(true);
+    await input.fill('https://example.com');
+    await input.press('Enter');
+    await expect(input).not.toHaveAttribute('aria-invalid');
+    expect(await input.evaluate((node: HTMLInputElement) => node.validity.valid)).toBe(true);
+  });
+
+  test('UIC-TEXT-FIELD-3.3 grows an adorned text area inside its frame', async ({ page, lab }) => {
+    await lab.open('text-field');
+    const log = field(page, 'adorned-log');
+    const area = log.getByRole('textbox', { name: 'Log' });
+    const inside = async () => {
+      const frame = await log.locator('.ui-text-field__group').boundingBox();
+      const box = await area.boundingBox();
+      const label = await log.locator('.ui-field__label').boundingBox();
+      expect(box && frame).toBeTruthy();
+      if (!box || !frame || !label) return;
+      expect(box.y).toBeGreaterThanOrEqual(frame.y);
+      expect(box.y + box.height).toBeLessThanOrEqual(frame.y + frame.height);
+      expect(frame.y).toBeGreaterThanOrEqual(label.y + label.height - 1);
+      return frame.height;
+    };
+    const five = await inside();
+    await area.fill('One');
+    const one = await inside();
+    expect(one).toBe(await controlHeight(page, 'md'));
+    expect(five).toBeGreaterThan(one ?? 0);
+  });
+
   test('UIC-TEXT-FIELD-3.3 grows the notes from two to five rows, then scrolls', async ({
     page,
     lab,

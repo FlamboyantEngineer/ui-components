@@ -145,7 +145,7 @@
   padding: 0 8px;
   background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
   color: var(--ref-muted);
-  font: var(--ref-font-size-sm)/20px var(--ref-font);
+  font: var(--ref-font-size-sm)/1.25rem var(--ref-font);
 }
 
 .ui-text-diff .ui-text-diff__expand {

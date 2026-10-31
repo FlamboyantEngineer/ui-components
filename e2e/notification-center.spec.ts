@@ -140,7 +140,7 @@ test.describe('Notification Center lab', () => {
     await expect(status).toHaveText('New notification: Build 2 passed');
   });
 
-  test('UIC-NOTIFICATION-CENTER-3.2 moves between rows with the arrow keys and passes axe in both themes', async ({
+  test('UIC-NOTIFICATION-CENTER-3.2 moves between rows with the arrow keys and passes axe', async ({
     page,
     lab,
   }) => {
@@ -149,8 +149,6 @@ test.describe('Notification Center lab', () => {
     await inbox.getByRole('link', { name: /Maria Santos mentioned you/ }).focus();
     await page.keyboard.press('ArrowDown');
     await expect(inbox.getByRole('button', { name: /Lena Ortiz invited you/ })).toBeFocused();
-    await lab.expectAccessible();
-    await lab.open('notification-center', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

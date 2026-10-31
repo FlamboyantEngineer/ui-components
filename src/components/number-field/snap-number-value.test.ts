@@ -14,7 +14,31 @@ describe('snapNumberValue', () => {
     { value: 1.6e-7, bounds: { step: 1e-7 }, expected: 2e-7 },
     { value: 1e-101, bounds: { step: 1e-101 }, expected: 1e-101 },
     { value: Number.MAX_VALUE, bounds: { step: 1e-100 }, expected: Number.MAX_VALUE },
+    { value: 4503599627370496, bounds: { step: 1 }, expected: 4503599627370496 },
+    { value: -4503599627370496, bounds: { step: 1 }, expected: -4503599627370496 },
+    {
+      value: Number.MAX_SAFE_INTEGER,
+      bounds: { step: 1 },
+      expected: Number.MAX_SAFE_INTEGER,
+    },
+    {
+      value: Number.MIN_SAFE_INTEGER,
+      bounds: { step: 1, minValue: Number.MIN_SAFE_INTEGER },
+      expected: Number.MIN_SAFE_INTEGER,
+    },
+    { value: 9e15, bounds: { step: 1, minValue: 3 }, expected: 9e15 },
+    { value: 4.5e15, bounds: { step: 2, maxValue: 4.5e15 + 1 }, expected: 4.5e15 },
+    { value: 0.30000000000000004, bounds: { step: 0.1 }, expected: 0.3 },
+    { value: 0.15, bounds: { step: 0.1 }, expected: 0.2 },
   ])('UIC-NUMBER-FIELD-2.2 snaps $value to $expected', ({ value, bounds, expected }) => {
     expect(snapNumberValue(value, bounds)).toBe(expected);
+  });
+
+  it('UIC-NUMBER-FIELD-2.2 leaves a value on the grid as it is, however large', () => {
+    for (const value of [2 ** 52, -(2 ** 52), 2 ** 53 - 1, 1e15 + 1]) {
+      const once = snapNumberValue(value, { step: 1 });
+      expect(once).toBe(value);
+      expect(snapNumberValue(once, { step: 1 })).toBe(once);
+    }
   });
 });

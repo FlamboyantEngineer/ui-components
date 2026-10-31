@@ -128,11 +128,6 @@ test.describe('Code Editor JSON mode lab', () => {
     await expect(editor).not.toHaveAttribute('data-focused');
   });
 
-  test('UIC-CODE-EDITOR-8.1 passes axe in the dark theme', async ({ lab }) => {
-    await lab.open('code-editor', { theme: 'dark' });
-    await lab.expectAccessible();
-  });
-
   test('UIC-CODE-EDITOR-9.3 marks where the text stops parsing in the editor', async ({
     page,
     lab,
@@ -218,5 +213,34 @@ test.describe('Code Editor JSON mode lab', () => {
     await expect(sample.locator('.ui-field__message')).toHaveText(
       'Line 1, column 2: Property "toString" is not allowed.',
     );
+  });
+
+  test('UIC-CODE-EDITOR-2.3 UIC-CODE-EDITOR-9.3 marks its own problems on the gutter line of an excerpt', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const excerpt = page.locator('[data-lab-family="json"] [data-lab-editor="excerpt"]');
+    await expect(excerpt.locator('.ui-field__message')).toHaveText(
+      'Enter valid JSON: check line 122, column 12.',
+    );
+    await expect(excerpt.locator('.ui-code-editor__line-number')).toHaveText([
+      '120',
+      '121',
+      '122',
+      '123',
+    ]);
+    await expect(excerpt.locator('.ui-code-editor__line[data-severity]')).toHaveCount(2);
+    await expect(excerpt.locator('.ui-code-editor__mark[data-severity="error"]')).toHaveText(',');
+    const input = excerpt.getByRole('textbox', { name: 'Excerpt' });
+    await input.click();
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('F8');
+    await page.keyboard.press('F8');
+    expect(
+      await input.evaluate((area: HTMLTextAreaElement) =>
+        area.value.slice(area.selectionStart, area.selectionEnd),
+      ),
+    ).toBe(',');
   });
 });

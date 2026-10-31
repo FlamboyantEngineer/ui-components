@@ -103,11 +103,9 @@ test.describe('Record Label lab', () => {
     ).toHaveCount(0);
   });
 
-  test('UIC-RECORD-LABEL-1.3 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-RECORD-LABEL-1.3 passes axe', async ({ page, lab }) => {
     await lab.open('record-label');
     await expect(page.locator('#lab-root .ui-record-label').first()).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('record-label', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

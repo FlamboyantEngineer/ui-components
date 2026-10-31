@@ -257,7 +257,7 @@ describe('TextField', () => {
     expect(container.querySelector('.ui-text-field__start')).toHaveTextContent('0');
     expect(container.querySelector('.ui-text-field__end')).toHaveTextContent('0');
     rerender(<TextField label="Count" startAdornment={false} endAdornment={null} />);
-    expect(container.querySelector('.ui-text-field__group')).toBeNull();
+    expect(container.querySelector('.ui-text-field__group')).not.toHaveAttribute('data-framed');
   });
 
   it('UIC-TEXT-FIELD-3.1 frames adornments with the input', () => {
@@ -270,6 +270,7 @@ describe('TextField', () => {
     );
     const group = container.querySelector('.ui-text-field__group');
     expect(group).toHaveAttribute('role', 'presentation');
+    expect(group).toHaveAttribute('data-framed', 'true');
     expect([...(group?.children ?? [])].map((node) => node.className.split(' ')[0])).toEqual([
       'ui-text-field__start',
       'ui-text-field__input',
@@ -280,7 +281,29 @@ describe('TextField', () => {
     expect(screen.getByRole('textbox', { name: 'Price' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'TEXT-FIELD', { slots: ['box', 'group', 'start', 'end'] });
     rerender(<TextField label="Price" />);
-    expect(container.querySelector('.ui-text-field__group')).toBeNull();
+    expect(container.querySelector('.ui-text-field__group')).not.toHaveAttribute('data-framed');
+  });
+
+  it('UIC-TEXT-FIELD-3.1 keeps the input, its selection and its ref as adornments come and go', async () => {
+    const user = userEvent.setup();
+    const ref = vi.fn();
+    const { rerender } = render(<TextField label="Code" defaultValue="abcdef" inputRef={ref} />);
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Code' });
+    await user.click(input);
+    input.setSelectionRange(2, 4);
+    const steps = [
+      { endAdornment: 'kg' },
+      { startAdornment: '#', endAdornment: 'kg' },
+      { startAdornment: '#' },
+      {},
+    ];
+    for (const adornments of steps) {
+      rerender(<TextField label="Code" defaultValue="abcdef" inputRef={ref} {...adornments} />);
+      expect(screen.getByRole('textbox', { name: 'Code' })).toBe(input);
+      expect(input).toHaveFocus();
+      expect([input.selectionStart, input.selectionEnd]).toEqual([2, 4]);
+    }
+    expect(ref).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-TEXT-FIELD-3.2 reveals a masked value from a toggle button', async () => {
@@ -336,6 +359,13 @@ describe('TextField', () => {
     expectHooksMatchSpec(container, 'TEXT-FIELD');
     rerender(<TextField label="Notes" multiline />);
     expect(root(container)).not.toHaveAttribute('data-autosize');
+    expect(area.style.height).toBe('');
+    await user.type(area, '{Enter}Seven');
+    expect(area.style.height).toBe('');
+    rerender(<TextField label="Notes" multiline maxRows={2} />);
+    expect(area.style.height).toBe('40px');
+    rerender(<TextField label="Notes" multiline />);
+    expect(area.style.height).toBe('');
   });
 
   it('UIC-TEXT-FIELD-3.3 measures a growing text area again when fonts finish loading', () => {

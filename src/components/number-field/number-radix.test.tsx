@@ -76,3 +76,76 @@ it('UIC-NUMBER-FIELD-4.2 names radix step buttons with provider strings', () => 
   expect(screen.getByRole('button', { name: 'Add Capacity' })).toBeEnabled();
   expect(screen.getByRole('button', { name: 'Subtract Capacity' })).toBeEnabled();
 });
+
+describe('NumberField base stepping', () => {
+  it.each([16, 8, 2] as const)(
+    'UIC-NUMBER-FIELD-4.2 steps base %i on the step grid within reachable bounds',
+    async (radix) => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      const { rerender } = render(
+        <NumberField
+          key="bounded"
+          label="Slot"
+          radix={radix}
+          defaultValue={9}
+          minValue={0}
+          maxValue={10}
+          step={3}
+          onCommit={onCommit}
+        />,
+      );
+      const input = screen.getByRole('spinbutton', { name: 'Slot' });
+      await user.click(input);
+      await user.keyboard('{ArrowUp}');
+      expect(input).toHaveAttribute('aria-valuenow', '9');
+      rerender(
+        <NumberField
+          key="off-grid"
+          label="Slot"
+          radix={radix}
+          defaultValue={2}
+          minValue={0}
+          step={3}
+          onCommit={onCommit}
+        />,
+      );
+      await user.click(screen.getByRole('spinbutton', { name: 'Slot' }));
+      await user.keyboard('{ArrowUp}');
+      expect(onCommit).toHaveBeenLastCalledWith(6);
+      await user.keyboard('{Shift>}{ArrowUp}{/Shift}{Alt>}{ArrowDown}{/Alt}');
+      expect(onCommit).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('UIC-NUMBER-FIELD-4.2 steps a negative origin and uses configured modifier steps', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <NumberField
+        label="Offset"
+        radix={16}
+        defaultValue={-7}
+        minValue={-8}
+        step={4}
+        largeStep={16}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByRole('spinbutton', { name: 'Offset' });
+    await user.click(input);
+    await user.keyboard('{ArrowUp}');
+    expect(onCommit).toHaveBeenLastCalledWith(-4);
+    await user.keyboard('{Shift>}{ArrowUp}{/Shift}');
+    expect(onCommit).toHaveBeenLastCalledWith(12);
+  });
+
+  it('UIC-NUMBER-FIELD-4.2 publishes focus on its group as the decimal field does', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<NumberField label="Mask" radix={16} defaultValue={15} />);
+    const group = container.querySelector('.ui-number-field__group');
+    expect(group).not.toHaveAttribute('data-focus-within');
+    await user.tab();
+    expect(group).toHaveAttribute('data-focus-within', 'true');
+  });
+});

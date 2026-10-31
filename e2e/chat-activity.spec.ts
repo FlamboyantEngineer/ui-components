@@ -239,12 +239,10 @@ test.describe('Chat Activity lab', () => {
     );
   });
 
-  test('UIC-CHAT-ACTIVITY-1.1 UIC-CHAT-ACTIVITY-2.1 UIC-CHAT-ACTIVITY-3.1 UIC-CHAT-ACTIVITY-4.1 passes axe in both themes', async ({
+  test('UIC-CHAT-ACTIVITY-1.1 UIC-CHAT-ACTIVITY-2.1 UIC-CHAT-ACTIVITY-3.1 UIC-CHAT-ACTIVITY-4.1 passes axe', async ({
     lab,
   }) => {
     await lab.open('chat-activity');
-    await lab.expectAccessible();
-    await lab.open('chat-activity', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

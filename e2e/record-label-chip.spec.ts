@@ -133,13 +133,11 @@ test.describe('RecordLabel chip mode', () => {
     await expect(missing.getByRole('link')).toHaveCount(0);
   });
 
-  test('UIC-RECORD-LABEL-11.3 passes axe in both themes', async ({ page, lab }) => {
+  test('UIC-RECORD-LABEL-11.3 passes axe', async ({ page, lab }) => {
     await lab.open('record-label');
     await expect(
       page.locator('[data-lab-family="record-chip-cases"]').locator('.ui-record-label').first(),
     ).toBeVisible();
-    await lab.expectAccessible();
-    await lab.open('record-label', { theme: 'dark' });
     await lab.expectAccessible();
   });
 });

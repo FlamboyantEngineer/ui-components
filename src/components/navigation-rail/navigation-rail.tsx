@@ -13,6 +13,7 @@ import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { Button } from '../button/button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import { NavigationRailContext, navigationRailHooks as hooks } from './navigation-rail-state.js';
@@ -72,6 +73,8 @@ function RailBody({ id, children }: RailBodyProps) {
       onKeyDown={(event) => {
         const move = bodyKeys[event.key];
         if (!move || !focusManager || event.defaultPrevented) return;
+        // A field a host places in a section keeps its caret keys.
+        if (isEditableTarget(event.target)) return;
         event.preventDefault();
         focusManager[move]({ accept: (node) => node.matches(linkSelector) });
       }}

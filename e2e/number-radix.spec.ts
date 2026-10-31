@@ -29,3 +29,23 @@ test('UIC-NUMBER-FIELD-4.1 UIC-NUMBER-FIELD-4.2 edits the same numeric value in 
   await expect(page.locator('[data-lab-output="Radix value"]')).toHaveText('empty');
   await lab.expectAccessible('[data-lab-radix="16-bytes"]');
 });
+
+test('UIC-NUMBER-FIELD-4.2 shows keyboard focus on the frame in every base', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('number-field');
+  for (const radix of ['10', '2', '8', '16'] as const) {
+    const field = page.locator(`[data-lab-radix="${radix}-bytes"]`);
+    const group = field.locator('.ui-number-field__group');
+    const input = field.getByRole(radix === '10' ? 'textbox' : 'spinbutton');
+    const resting = await group.evaluate((node) => getComputedStyle(node).borderTopColor);
+    await input.focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(group).toHaveAttribute('data-focus-within', 'true');
+    await expect(group).not.toHaveCSS('border-top-color', resting);
+    await expect(group).not.toHaveCSS('outline-style', 'none');
+    await input.blur();
+    await expect(group).not.toHaveAttribute('data-focus-within');
+  }
+});
