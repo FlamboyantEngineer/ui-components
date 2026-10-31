@@ -263,7 +263,7 @@ export function renderViewer(props: Partial<PdfViewerProps> = {}, engine = creat
 export async function renderReady(props: Partial<PdfViewerProps> = {}, engine = createEngine()) {
   const view = renderViewer(props, engine);
   await waitFor(() =>
-    expect(view.container.querySelectorAll('[role="presentation"]')).toHaveLength(7),
+    expect(view.container.querySelectorAll('span[role="presentation"]')).toHaveLength(7),
   );
   return view;
 }

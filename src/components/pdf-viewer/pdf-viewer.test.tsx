@@ -110,7 +110,7 @@ describe('PdfViewer', () => {
     expect(engine.render).not.toHaveBeenCalledWith(expect.objectContaining({ annotationMode: 1 }));
     expect(engine.AnnotationLayer).not.toHaveBeenCalled();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(container.querySelectorAll('[role="presentation"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('span[role="presentation"]').length).toBeGreaterThan(0);
 
     update({ showAnnotations: true });
     expect(await screen.findByRole('link', { name: 'https://example.com/' })).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('PdfViewer', () => {
     expect(canvases[1]).not.toHaveAttribute('width', '0');
     act(() => observer.report([1], false));
     expect(canvases[1]).toHaveAttribute('width', '0');
-    expect(container.querySelectorAll('[role="presentation"]')).toHaveLength(0);
+    expect(container.querySelectorAll('span[role="presentation"]')).toHaveLength(0);
   });
 
   it('UIC-PDF-VIEWER-2.2 builds the text layer from the page text and publishes the scale', async () => {

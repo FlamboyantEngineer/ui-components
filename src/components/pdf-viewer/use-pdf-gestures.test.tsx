@@ -18,7 +18,7 @@ function selectText(node: Node, start: number, end: number) {
 }
 
 function runOf(container: HTMLElement, text: string): HTMLElement {
-  const run = [...container.querySelectorAll<HTMLElement>('[role="presentation"]')].find(
+  const run = [...container.querySelectorAll<HTMLElement>('span[role="presentation"]')].find(
     (element) => element.textContent === text,
   );
   return requireDefined(run);
