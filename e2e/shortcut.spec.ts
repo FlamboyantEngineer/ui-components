@@ -90,4 +90,25 @@ test.describe('Shortcut lab', () => {
     ]);
     await lab.expectAccessible();
   });
+
+  test('UIC-SHORTCUT-1.8 matches non-Latin letters and leaves AltGr text alone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('shortcut');
+    const field = page.getByRole('textbox', { name: 'Chord field' });
+    const output = page.locator('[data-lab-output="chord"]');
+    const press = (init: Record<string, string | boolean>) =>
+      field.evaluate((node, options: Record<string, string | boolean>) => {
+        node.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, ...options }));
+      }, init);
+    await press({ key: 'я', code: 'KeyZ', ctrlKey: true });
+    await expect(output).toHaveText('Control+Я, Control+Z');
+    await press({ key: '@', code: 'KeyQ', ctrlKey: true, altKey: true, modifierAltGraph: true });
+    await expect(output).toHaveText('No chord');
+    await press({ key: 'q', code: 'KeyQ', ctrlKey: true, altKey: true });
+    await expect(output).toHaveText('Control+Alt+Q');
+    await press({ key: '!', code: 'Digit1', ctrlKey: true, shiftKey: true });
+    await expect(output).toHaveText('Ctrl+Shift+1');
+  });
 });
