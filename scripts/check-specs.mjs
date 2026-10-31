@@ -7,7 +7,8 @@
 //   - Hooks tables use the hook contract's names;
 //   - every component directory, and every util the package exports (src/utils/index.ts), is
 //     implemented by some spec;
-//   - the reference stylesheet partials (labs/reference/) style every root and slot hook.
+//   - the reference stylesheet partials (labs/reference/) style every root and slot hook and read
+//     every measured property hook.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -32,6 +33,8 @@ const ids = new Map();
 const implemented = new Set();
 const implementationPaths = new Set();
 const classHooks = new Map();
+/** Measured property hooks (`--ui-*`) by the spec that declares them. */
+const propertyHooks = new Map();
 
 function backticked(text) {
   return [...text.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
@@ -107,6 +110,7 @@ function checkHooks(file, lines) {
         problems.push(`${file}: hook ${hook} is also declared in ${classHooks.get(hook)}`);
       classHooks.set(hook, file);
     }
+    if (kind === 'property') propertyHooks.set(hook, file);
     if (kind === 'slot') {
       const match = hook.match(SLOT_HOOK);
       if (!match) problems.push(`${file}: slot hook ${hook} must match ui-<component>__<slot>`);
@@ -239,6 +243,12 @@ if (existsSync(referenceDir)) {
   for (const [hook, file] of classHooks) {
     if (!new RegExp(`\\.${hook}(?![a-z0-9_-])`).test(reference)) {
       problems.push(`labs/reference/ does not style ${hook} (declared in ${file})`);
+    }
+  }
+  // A measured property is published for the stylesheet, so the reference shows how to use it.
+  for (const [hook, file] of propertyHooks) {
+    if (!reference.includes(`var(${hook}`)) {
+      problems.push(`labs/reference/ never reads ${hook} (declared in ${file})`);
     }
   }
 }

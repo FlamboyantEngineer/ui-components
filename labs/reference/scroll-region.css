@@ -159,6 +159,45 @@
   opacity: 0.5;
 }
 
+/*
+ * Edge shades: an edge the content reaches past takes a short shade, as deep as the published
+ * distance up to 8px, so a reader sees there is more. One pseudo-element over the viewport carries
+ * all four, beneath the overlay tracks; it never masks the content or its focus rings. The inline
+ * start is the left edge, or the right one right to left.
+ */
+.ui-scroll-region {
+  --ref-scroll-region-shade: color-mix(in srgb, var(--ref-text) var(--ref-tint), transparent);
+  --ref-scroll-region-shade-left: var(--ui-scroll-region-overflow-x-start);
+  --ref-scroll-region-shade-right: var(--ui-scroll-region-overflow-x-end);
+}
+
+[dir='rtl'] .ui-scroll-region {
+  --ref-scroll-region-shade-left: var(--ui-scroll-region-overflow-x-end);
+  --ref-scroll-region-shade-right: var(--ui-scroll-region-overflow-x-start);
+}
+
+.ui-scroll-region:is(
+    [data-overflow-y-start],
+    [data-overflow-y-end],
+    [data-overflow-x-start],
+    [data-overflow-x-end]
+  )::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(to bottom, var(--ref-scroll-region-shade), transparent) top / 100%
+      min(var(--ui-scroll-region-overflow-y-start), 8px) no-repeat,
+    linear-gradient(to top, var(--ref-scroll-region-shade), transparent) bottom / 100%
+      min(var(--ui-scroll-region-overflow-y-end), 8px) no-repeat,
+    linear-gradient(to right, var(--ref-scroll-region-shade), transparent) left /
+      min(var(--ref-scroll-region-shade-left), 8px) 100% no-repeat,
+    linear-gradient(to left, var(--ref-scroll-region-shade), transparent) right /
+      min(var(--ref-scroll-region-shade-right), 8px) 100% no-repeat;
+  content: '';
+  pointer-events: none;
+}
+
 /* Tracks shown by scrolling or hovering fade in and out. */
 
 .ui-scroll-region__track[data-entering] {

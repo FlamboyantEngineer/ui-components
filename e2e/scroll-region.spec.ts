@@ -370,6 +370,31 @@ test.describe('Scroll Region lab', () => {
     }
   });
 
+  test('UIC-SCROLL-REGION-4.1 shades each edge the content reaches past, up to 8px', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const root = page.locator('[data-lab-edges="native"]');
+    const viewport = root.locator('.ui-scroll-region__viewport');
+    // The four shades' sizes, top, bottom, left and right: block axis heights, inline axis widths.
+    const shades = () =>
+      root.evaluate((node) =>
+        getComputedStyle(node, '::before')
+          .backgroundSize.split(', ')
+          .map((size, index) => size.split(' ')[index < 2 ? 1 : 0]),
+      );
+    await expect.poll(shades).toEqual(['0px', '8px', '0px', '0px']);
+    await viewport.evaluate((node) => {
+      node.scrollTop = 5;
+    });
+    await expect.poll(shades).toEqual(['5px', '8px', '0px', '0px']);
+    await viewport.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect.poll(shades).toEqual(['8px', '0px', '0px', '0px']);
+  });
+
   test('UIC-SCROLL-REGION-4.3 UIC-SCROLL-REGION-4.4 follows new lines at the bottom and counts the edges', async ({
     page,
     lab,

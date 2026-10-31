@@ -75,6 +75,43 @@ describe('check-specs', () => {
     expect(result.stderr).toContain('group UIC-SAMPLE-1 comes after group 2');
   });
 
+  it('requires the reference stylesheet to read each measured property hook', () => {
+    const styled = (css: string) => {
+      const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
+      dirs.push(dir);
+      for (const sub of ['scripts', 'specs', 'src', 'labs/reference']) {
+        mkdirSync(join(dir, sub), { recursive: true });
+      }
+      copyFileSync(
+        join(process.cwd(), 'scripts/check-specs.mjs'),
+        join(dir, 'scripts/check-specs.mjs'),
+      );
+      const spec = [
+        '# Sample',
+        '',
+        '## UIC-SAMPLE-1 - First',
+        '',
+        ...requirement('UIC-SAMPLE-1.1'),
+        '## Hooks',
+        '',
+        '| Hook | Kind | Values | Description |',
+        '| --- | --- | --- | --- |',
+        '| `ui-sample` | root | | The root. |',
+        '| `--ui-sample-width` | property | | Its width. |',
+        '',
+      ];
+      writeFileSync(join(dir, 'specs/SAMPLE.md'), spec.join('\n'));
+      writeFileSync(join(dir, 'src/sample.ts'), '');
+      writeFileSync(join(dir, 'src/sample.test.ts'), '// UIC-SAMPLE-1.1\n');
+      writeFileSync(join(dir, 'labs/reference/sample.css'), css);
+      return spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+    };
+    expect(styled('.ui-sample { width: var(--ui-sample-width); }').stderr).toBe('');
+    expect(styled('.ui-sample { width: 10px; }').stderr).toContain(
+      'labs/reference/ never reads --ui-sample-width (declared in specs/SAMPLE.md)',
+    );
+  });
+
   it('requires a requirement naming each util the package exports, not internal helpers', () => {
     const exported = (index: string) => {
       const result = check(['## UIC-SAMPLE-1 - First', 'UIC-SAMPLE-1.1']);

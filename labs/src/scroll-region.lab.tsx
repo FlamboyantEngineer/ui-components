@@ -121,18 +121,6 @@ function StickyTable() {
   );
 }
 
-// Lab-only fade: the edges the content reaches past fade out, by the published distances.
-const fadeStyle = `
-[data-lab-fade] > .ui-scroll-region__viewport {
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 min(var(--ui-scroll-region-overflow-y-start), 24px),
-    #000 calc(100% - min(var(--ui-scroll-region-overflow-y-end), 24px)),
-    transparent 100%
-  );
-}`;
-
 const chapters = ['Orchards', 'Vineyards', 'Meadows', 'Forests'];
 
 function Log() {
@@ -424,9 +412,8 @@ mountLab(
     </LabSection>
     <LabSection
       title="Edge distances"
-      description="The edges the content reaches past fade out, from the distances the region publishes, with native and overlay scrollbars."
+      description="The reference stylesheet shades each edge the content reaches past, as deep as the distance the region publishes up to 8px, with native and overlay scrollbars."
     >
-      <style>{fadeStyle}</style>
       <StateMatrix
         axes={{ scrollbar: ['native', 'overlay'] as const }}
         render={({ scrollbar }) => (
@@ -436,7 +423,6 @@ mountLab(
               role="region"
               aria-label={`Faded cities, ${scrollbar}`}
               tabIndex={0}
-              data-lab-fade=""
               data-lab-edges={scrollbar}
             >
               <ol style={{ margin: 0 }}>
