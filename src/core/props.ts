@@ -2,8 +2,12 @@
 
 import type { ComponentPropsWithRef, JSX } from 'react';
 
-/** A value a caller `data-*` attribute can carry, rendered as text as React does (`false` too). */
-export type DataAttributeValue = string | number | boolean | undefined;
+/**
+ * A value a caller `data-*` attribute can carry. Strings, numbers and booleans render as text, as
+ * React renders them (`false` as `"false"`); `null` and `undefined` omit the attribute. A
+ * component's own hook values (`DataValue`) differ only for `false`, which omits theirs.
+ */
+export type DataAttributeValue = string | number | boolean | null | undefined;
 
 /**
  * Props every component that renders an element accepts. Component props interfaces extend it

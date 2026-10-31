@@ -50,7 +50,7 @@ Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-2.3 - Caller data attributes
 
-Every component shall forward the caller's `data-*` props to its root element, for tests, analytics and host behaviour, rendered as React renders a `data-*` prop: strings, numbers and booleans as text (`false` as `"false"`), while `null` and `undefined` omit the attribute. When a caller attribute has the same name as a hook attribute the component writes, the component's value wins, including clearing the attribute when that hook value is `false`, `null` or `undefined`.
+Every component shall forward the caller's `data-*` props to its root element, for tests, analytics and host behaviour, rendered as React renders a `data-*` prop: strings, numbers and booleans as text (`false` as `"false"`), while `null` and `undefined` omit the attribute. `BaseProps` types these values as `DataAttributeValue`, which includes `null`. When a caller attribute has the same name as a hook attribute the component writes, the component's value wins, including clearing the attribute when that hook value is `false`, `null` or `undefined`.
 
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`

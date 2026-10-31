@@ -1,6 +1,9 @@
 // Styling hooks (specs/HOOK-CONTRACT.md): root and slot classes plus data attributes.
 
-/** A value a data attribute can carry. `true` renders `"true"`; `false`, `null` and `undefined` omit it. */
+/**
+ * A value a component's own hook attribute can carry. `true` renders `"true"`; `false`, `null` and
+ * `undefined` omit it. Caller attributes (`DataAttributeValue`) render `false` as `"false"`.
+ */
 export type DataValue = string | number | boolean | null | undefined;
 
 /** Data attributes keyed by their full attribute name. */
