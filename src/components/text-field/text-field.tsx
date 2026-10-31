@@ -4,6 +4,7 @@ import { useState, type ReactNode, type Ref } from 'react';
 import { TextField as AriaTextField } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { isAutoGrowing } from '../../utils/use-auto-grow.js';
 import {
   ControlCompletionList,
@@ -82,12 +83,44 @@ function countCharacters(value: string, { trim, getLength }: StringRules): numbe
 }
 
 /** The field state, starting and clearing to an empty string, checked against the string rules. */
-function useTextFieldControl<P extends FieldInputProps<string>>(props: P, rules: StringRules) {
+// The HTML standard's valid email address, one address.
+const emailPattern =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+/**
+ * The browser's type check of an email or URL field, made on the value itself, so the field, its
+ * form and a native submit agree: an email field takes one email address, a URL field an absolute
+ * URL. Other types, and an empty value, have no type check.
+ */
+function checkTextType(value: string, type: TextFieldType | undefined, strings: UiStrings) {
+  const text = value.trim();
+  if (text === '') return null;
+  if (type === 'email' && !emailPattern.test(text)) {
+    return {
+      severity: 'error' as const,
+      message: strings.emailMismatch,
+      validity: 'typeMismatch' as const,
+    };
+  }
+  if (type === 'url' && !URL.canParse(text)) {
+    return {
+      severity: 'error' as const,
+      message: strings.urlMismatch,
+      validity: 'typeMismatch' as const,
+    };
+  }
+  return null;
+}
+
+function useTextFieldControl<
+  P extends FieldInputProps<string> & { type?: TextFieldType | undefined },
+>(props: P, rules: StringRules) {
   const strings = useUiStrings();
   return useFieldControl(props, {
     initialValue: '',
     emptyValue: '',
-    check: (value) => validateString(value, rules, strings),
+    check: (value) =>
+      validateString(value, rules, strings) ?? checkTextType(value, props.type, strings),
   });
 }
 
@@ -109,6 +142,19 @@ function TextFieldCompletions({
       className={hooks.slotClass('completions')}
     />
   );
+}
+
+/**
+ * The input's `type`: `text` while a password is revealed, and while a display value shows in an
+ * email or URL field, so the browser checks the value (through the field) and not that display.
+ */
+function toInputType(
+  type: TextFieldType | undefined,
+  { isRevealed, edit }: { isRevealed: boolean; edit: TextFieldInput },
+): TextFieldType | undefined {
+  if (isRevealed) return 'text';
+  if (edit.showsDisplayValue && (type === 'email' || type === 'url')) return 'text';
+  return type;
 }
 
 /**
@@ -170,7 +216,7 @@ export function TextField({
             ref={edit.boxRef}
             name={displayValue === undefined ? rest.name : undefined}
             spellCheck={toSpellCheckAttribute(spellCheck)}
-            type={isMasked && isRevealed ? 'text' : rest.type}
+            type={toInputType(rest.type, { isRevealed: isMasked && isRevealed, edit })}
             value={edit.text}
             onChange={edit.onChange}
           >

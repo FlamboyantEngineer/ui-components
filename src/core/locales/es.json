@@ -421,6 +421,8 @@
   "tooShort": "{minLength, plural, one {Usa al menos # carácter.} other {Usa al menos # caracteres.}}",
   "tooLong": "{maxLength, plural, one {Usa # carácter como máximo.} other {Usa # caracteres como máximo.}}",
   "patternMismatch": "Introduce un valor con el formato esperado.",
+  "emailMismatch": "Introduce una dirección de correo electrónico.",
+  "urlMismatch": "Introduce una URL completa, como https://example.com.",
   "restoreValue": "Restaurar {label}",
   "fieldHelp": "Ayuda de {label}",
   "fieldActions": "Acciones de {label}",
