@@ -244,4 +244,24 @@ test.describe('Breadcrumb lab', () => {
     await expect(button).toBeFocused();
     await lab.expectAccessible();
   });
+  test('UIC-BREADCRUMB-1.7 UIC-OVERFLOW-LIST-1.7 keeps a focused crumb as the trail starts and stops collapsing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('breadcrumb');
+    const demo = page.locator('[data-lab-trail="growing"]');
+    const home = demo.getByRole('link', { name: 'Home' });
+    await home.focus();
+    const element = await home.elementHandle();
+    const deeper = demo.getByRole('checkbox', { name: 'One level deeper' });
+    // Click without moving focus, as a route change would.
+    for (const checked of [true, false]) {
+      await deeper.evaluate((node) => (node as HTMLInputElement).click());
+      await expect(deeper).toBeChecked({ checked });
+      await expect(demo.getByRole('listitem')).toHaveCount(checked ? 3 : 2);
+      expect(
+        await element?.evaluate((node) => node.isConnected && node === document.activeElement),
+      ).toBe(true);
+    }
+  });
 });

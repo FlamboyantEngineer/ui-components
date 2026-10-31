@@ -103,6 +103,29 @@ function SiblingTrail() {
   );
 }
 
+/** A menu trail that grows past two crumbs and back: its crumbs keep their elements and focus. */
+function GrowingTrail() {
+  const [isDeeper, setDeeper] = useState(false);
+  const items: BreadcrumbItem[] = [
+    { id: 'home', label: 'Home', href: '#home' },
+    { id: 'recipes', label: 'Recipes', href: '#recipes' },
+    ...(isDeeper ? [{ id: 'tart', label: 'Lemon tart' }] : []),
+  ];
+  return (
+    <div data-lab-trail="growing" style={{ width: 320 }}>
+      <Breadcrumb aria-label="Growing trail" items={items} overflow="menu" />
+      <label>
+        <input
+          type="checkbox"
+          checked={isDeeper}
+          onChange={(event) => setDeeper(event.target.checked)}
+        />{' '}
+        One level deeper
+      </label>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Trails and sizes">
@@ -155,6 +178,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Growing trail"
+      description="Tick One level deeper to add a third crumb, untick it to go back up. Home keeps its element and focus while the trail starts and stops collapsing."
+    >
+      <GrowingTrail />
     </LabSection>
     <LabSection
       title="Narrower than the endpoints"
