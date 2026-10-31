@@ -6,6 +6,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { PortalContainerProvider, PortalHost } from '../portal/portal.js';
 import { ToastList, ToastRegion, createToastQueue } from './toast.js';
 
@@ -854,4 +855,96 @@ describe('Toast updates and motion', () => {
     expect(region).not.toHaveAttribute('data-expanded');
     expectHooksMatchSpec(document.body, 'TOAST');
   });
+});
+
+describe('Toast close callbacks', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** A queue, drawn by a `ToastList` when `isMounted`, else holding its entries unrendered. */
+  function setUp(isMounted: boolean) {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    let isDrawn = isMounted;
+    if (isMounted) render(<ToastList queue={queue} />);
+    const show = () => {
+      if (!isDrawn) render(<ToastList queue={queue} />);
+      isDrawn = true;
+      return titles();
+    };
+    return { queue, show };
+  }
+
+  it.each([
+    { state: 'hidden', isMounted: false },
+    { state: 'mounted', isMounted: true },
+  ])(
+    'UIC-TOAST-1.4 lets onClose add, close and replace toasts on a coherent $state queue',
+    ({ isMounted }) => {
+      const { queue, show } = setUp(isMounted);
+      const seen: string[][] = [];
+      let other = '';
+      let first = '';
+      act(() => {
+        other = queue.add({ title: 'Other' });
+        queue.add({ title: 'Upload 1' }, { id: 'upload' });
+        first = queue.add(
+          { title: 'First' },
+          {
+            onClose: () => {
+              seen.push(titles());
+              queue.add({ title: 'Next' });
+              queue.add({ title: 'Upload 2' }, { id: 'upload' });
+              queue.close(other);
+              queue.close(first);
+            },
+          },
+        );
+      });
+      act(() => queue.close(first));
+      expect(show()).toEqual(['Upload 2', 'Next']);
+      expect(seen).toHaveLength(1);
+    },
+  );
+
+  it.each([
+    { state: 'hidden', isMounted: false },
+    { state: 'mounted', isMounted: true },
+  ])(
+    'UIC-TOAST-1.4 runs every callback once when onClose clears the $state queue or throws',
+    ({ isMounted }) => {
+      const reportError = vi.fn();
+      vi.stubGlobal('reportError', reportError);
+      const { queue, show } = setUp(isMounted);
+      const later = vi.fn();
+      let keys: string[] = [];
+      act(() => {
+        keys = [
+          queue.add({ title: 'Kept' }, { onClose: later }),
+          queue.add(
+            { title: 'Clearing' },
+            {
+              onClose: () => {
+                queue.clear();
+                queue.add({ title: 'After clear' });
+              },
+            },
+          ),
+          queue.add(
+            { title: 'Failing' },
+            {
+              onClose: () => {
+                throw new Error('callback failed');
+              },
+            },
+          ),
+        ];
+      });
+      act(() => queue.close(requireDefined(keys[2])));
+      expect(reportError).toHaveBeenCalledExactlyOnceWith(new Error('callback failed'));
+      expect(show()).toEqual(['Clearing', 'Kept']);
+      act(() => queue.close(requireDefined(keys[1])));
+      expect(show()).toEqual(['After clear']);
+      // A cleared toast never calls its onClose.
+      expect(later).not.toHaveBeenCalled();
+    },
+  );
 });

@@ -203,6 +203,32 @@ function startPromiseToast<T>({
 }
 
 /**
+ * Reports an error a host callback threw, as an uncaught error would be, without unwinding the
+ * queue or the React effect that closed the toast.
+ */
+function reportCallbackError(error: unknown) {
+  if (typeof globalThis.reportError === 'function') globalThis.reportError(error);
+  else
+    setTimeout(() => {
+      throw error;
+    });
+}
+
+/**
+ * Runs and empties `callbacks` in order, including any a callback adds. Each runs once; an error one
+ * throws is reported and the others still run.
+ */
+function runCallbacks(callbacks: Array<() => void>) {
+  for (let callback = callbacks.shift(); callback; callback = callbacks.shift()) {
+    try {
+      callback();
+    } catch (error) {
+      reportCallbackError(error);
+    }
+  }
+}
+
+/**
  * A toast queue over a building-block queue, adding a default timeout, replacement by `id`,
  * in-place updates, promise toasts and closing exits. Every close (its timer, its dismiss button,
  * its action or `close`) first lets a rendered toast play its exit, then removes it.
@@ -211,7 +237,20 @@ export function createQueueOverStore(
   ariaQueue: ToastStore,
   { defaultTimeout = defaultToastTimeout }: ToastQueueOptions = {},
 ): ToastQueue {
-  const removeNow = ariaQueue.close.bind(ariaQueue);
+  const storeClose = ariaQueue.close.bind(ariaQueue);
+  // The building block calls a toast's `onClose` before it removes the toast, by an index a callback
+  // that changes the queue would invalidate, so host callbacks wait until its close has finished.
+  const closed: Array<() => void> = [];
+  let closing = 0;
+  const removeNow = (key: string) => {
+    closing += 1;
+    try {
+      storeClose(key);
+    } finally {
+      closing -= 1;
+    }
+    if (closing === 0) runCallbacks(closed);
+  };
   const records = new Map<string, ToastRecord>();
   const keysById = new Map<string, string>();
   const replacedKeys = new Set<string>();
@@ -245,7 +284,7 @@ export function createQueueOverStore(
       onClose: () => {
         records.delete(key);
         if (id !== undefined && keysById.get(id) === key) keysById.delete(id);
-        if (!replacedKeys.delete(key)) onClose?.();
+        if (!replacedKeys.delete(key) && onClose) closed.push(onClose);
       },
     });
     const record = createRecord(content, lifetime);

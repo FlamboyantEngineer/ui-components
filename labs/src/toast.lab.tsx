@@ -231,6 +231,21 @@ function LiveDemo() {
         >
           Push replacing
         </Button>{' '}
+        <Button
+          size="sm"
+          data-lab-push="follow-up"
+          onPress={() =>
+            liveQueue.add(
+              { title: 'Import finished' },
+              {
+                timeout: 0,
+                onClose: () => liveQueue.add({ title: 'Review the imported rows' }, { timeout: 0 }),
+              },
+            )
+          }
+        >
+          Push with follow-up
+        </Button>{' '}
         <Button size="sm" variant="ghost" onPress={() => liveQueue.clear()}>
           Clear all
         </Button>
@@ -258,7 +273,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live region"
-      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
+      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Closing the follow-up toast adds the next one from its onClose. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
     >
       <LiveDemo />
     </LabSection>

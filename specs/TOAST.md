@@ -29,7 +29,7 @@ Verification: `src/components/toast/toast.test.tsx`
 
 ### UIC-TOAST-1.4 - Closing early
 
-`close(key)` shall close one toast, which plays its exit ([UIC-TOAST-4.1](#uic-toast-41---entering-and-exiting)) and is then removed, calling its `onClose`; a toast that is not shown is removed at once. `clear()` removes every toast at once without calling `onClose`.
+`close(key)` shall close one toast, which plays its exit ([UIC-TOAST-4.1](#uic-toast-41---entering-and-exiting)) and is then removed, calling its `onClose`; a toast that is not shown is removed at once. `clear()` removes every toast at once without calling `onClose`. The queue removes a toast and settles its records before it calls `onClose`, so a callback sees a coherent queue and may add, replace, close or clear toasts, its own included, without removing an unrelated toast or bringing its own back. Each `onClose` runs once; one that throws has its error reported as an uncaught error, and the queue and the other callbacks carry on.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`
