@@ -15,7 +15,7 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/na
 
 The header shall end with a small [Icon Button](BUTTON.md) in the `ui-navigation-rail__toggle` slot, labelled and hinted by the provider's `toggleNavigation` string (`Collapse navigation`, `Expand navigation` while collapsed), with `aria-expanded` and `aria-controls` naming the body. Its glyph points to the inline start while the rail is expanded (`chevron-double-left` left to right) and to the inline end while collapsed. Pressing it collapses or expands the rail, published as `data-collapsed`; `isCollapsed`, `defaultCollapsed` (false) and `onCollapsedChange` make the state controllable. The button keeps focus across the change.
 
-Implementation: `src/components/navigation-rail/navigation-rail.tsx`, `src/components/navigation-rail/navigation-rail-state.ts`, `src/core/common-strings.ts`
+Implementation: `src/components/navigation-rail/navigation-rail.tsx`, `src/components/navigation-rail/navigation-rail-state.ts`, `src/core/strings/common.ts`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`
 
 ### UIC-NAVIGATION-RAIL-1.3 - Resizing

@@ -1,6 +1,6 @@
 // The filter model shared by the filter bar and the condition builder: fields, operators, values.
 
-import type { FilterOperator } from '../../core/query-strings.js';
+import type { FilterOperator } from '../../core/strings/query.js';
 import type { DateRangeValue } from '../date-time-field/date-time-field.js';
 
 /** The kind of value a field holds, which sets its operators and its value control. */

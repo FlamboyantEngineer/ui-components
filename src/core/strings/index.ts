@@ -1,0 +1,39 @@
+// Every module of built-in text, one per area. `UiStrings` and the compiled text gather them from this
+// list, so a new module is one line here.
+
+export { analysisStrings } from './analysis.js';
+export { chatStrings } from './chat.js';
+export { chatActionsStrings } from './chat-actions.js';
+export { chatActivityStrings } from './chat-activity.js';
+export { chatAttachmentStrings } from './chat-attachment.js';
+export { chatControllerStrings } from './chat-controller.js';
+export { chatListStrings } from './chat-list.js';
+export { chatMessageStrings } from './chat-message.js';
+export { chatModelPickerStrings } from './chat-model-picker.js';
+export { chatQuestionStrings } from './chat-question.js';
+export { chatSourcesStrings } from './chat-sources.js';
+export { chatToolStrings } from './chat-tool.js';
+export { chatWidgetStrings } from './chat-widget.js';
+export { codeStrings } from './code.js';
+export { commonStrings } from './common.js';
+export { composerStrings } from './composer.js';
+export { contentStrings } from './content.js';
+export { dashboardStrings } from './dashboard.js';
+export { diagramStrings } from './diagram.js';
+export { diffStrings } from './diff.js';
+export { editingStrings } from './editing.js';
+export { fieldStrings } from './field.js';
+export { historyStrings } from './history.js';
+export { mediaStrings } from './media.js';
+export { pickerStrings } from './picker.js';
+export { planningStrings } from './planning.js';
+export { presentationStrings } from './presentation.js';
+export { queryStrings } from './query.js';
+export { redlineStrings } from './redline.js';
+export { relationStrings } from './relation.js';
+export { reviewStrings } from './review.js';
+export { richTextStrings } from './rich-text.js';
+export { structureStrings } from './structure.js';
+export { tableStrings } from './table.js';
+export { timelineStrings } from './timeline.js';
+export { viewStrings } from './view.js';

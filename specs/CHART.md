@@ -107,7 +107,7 @@ Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/d
 
 Unless the caller gives a `summary`, a bar or line chart shall be summarised by the provider's `chartSummary` string from the number of drawn series and values and the lowest and highest drawn values (`2 series, 12 values, from 3 to 48`), and a donut by `donutSummary` from its total and its largest drawn segment with its share. A chart with no drawn value publishes `data-empty`, draws no plot, and shows the provider's `noData` string in a `ui-chart__empty` slot, which is also its summary.
 
-Implementation: `src/components/chart/chart-summary.ts`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`, `src/core/dashboard-strings.ts`
+Implementation: `src/components/chart/chart-summary.ts`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`, `src/core/strings/dashboard.ts`
 Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-4.6 - Size

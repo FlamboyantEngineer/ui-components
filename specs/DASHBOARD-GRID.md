@@ -59,7 +59,7 @@ Verification: `src/components/dashboard-grid/dashboard-layout.test.ts`, `src/com
 
 After a move or resize that changes the layout, a polite live region (`role="status"`, the visually hidden `ui-dashboard-grid__status`) shall announce the tile's new place through the provider's `tileMoved` string (`Visitors moved to column 2, row 1`) or its new span through `tileResized` (`Visitors resized to 6 columns by 3 rows`).
 
-Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-tile.tsx`, `src/core/dashboard-strings.ts`
+Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-tile.tsx`, `src/core/strings/dashboard.ts`
 Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`
 
 ### UIC-DASHBOARD-GRID-2.6 - Focus stays on the handle

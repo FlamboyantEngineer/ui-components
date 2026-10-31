@@ -22,7 +22,7 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/compon
 
 A toolbar (`ui-calendar-view__toolbar`) shall precede the grid with a [Button](BUTTON.md) reading the provider's `today` string that moves the focused day to today (`ui-calendar-view__today`), previous and next [icon-only buttons](BUTTON.md) named by the provider's `previousRange` and `nextRange` strings for the view's unit that move it by a month or a week (`ui-calendar-view__previous`, `ui-calendar-view__next`, their chevrons mirrored right to left), the period on show (`ui-calendar-view__title`: the month and year, or the week's date range), which names the grid and is a polite live region, and a [SegmentedChoice](SEGMENTED-CHOICE.md) between the `views` (`ui-calendar-view__views`, named by the provider's `calendarViews` string, its options the `month` and `week` strings). With one view in `views` the choice is not shown. The view is controlled with `view` and `onViewChange` or uncontrolled from `defaultView`; the focused day (`YYYY-MM-DD`) with `date` and `onDateChange` or uncontrolled from `defaultDate`, today by default. The root publishes the view as `data-view`.
 
-Implementation: `src/components/calendar-view/calendar-view.tsx`, `src/core/planning-strings.ts`
+Implementation: `src/components/calendar-view/calendar-view.tsx`, `src/core/strings/planning.ts`
 Verification: `src/components/calendar-view/calendar-view.test.tsx`, `e2e/calendar-view.spec.ts`
 
 ### UIC-CALENDAR-VIEW-1.4 - Today

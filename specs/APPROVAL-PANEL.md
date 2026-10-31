@@ -8,7 +8,7 @@
 
 `ApprovalPanel` shall render a `ui-approval-panel` `<section>` named by its heading (`ui-approval-panel__title`), which reads `title`, else the provider's `approvals` string, at one level below the enclosing section's, else 3. The heading sits in `ui-approval-panel__header` with a `status` `Badge` of the outcome (`ui-approval-panel__outcome`), its tone following the outcome and its label the provider's `approvalDecision` string for it.
 
-Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`
 
 ### UIC-APPROVAL-PANEL-1.2 - Outcome
@@ -22,7 +22,7 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 
 Under the header, a small `SegmentedBar` (`ui-approval-panel__progress`) shall be labelled by the provider's `approvalProgress` string (`2 of 3 approvals`), approvals past the count needed reading as the count needed, and draw one segment per decision with its count: approved (`success`), rejected (`danger`), abstained (`info`) and pending (`neutral`), named by the provider's `approvalDecision` strings, without a total.
 
-Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`
 
 ### UIC-APPROVAL-PANEL-1.4 - Approvers
@@ -45,7 +45,7 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 
 With `onRemind`, each pending approver's row shall end with a `bell` `Button` (`ui-approval-panel__remind`) named and hinted by the provider's `remindApprover` string for their name, which calls `onRemind(id)`. With `onRequestAgain`, each approver who decided gets a `refresh` `Button` (`ui-approval-panel__request-again`) named by `requestApprovalAgain`, which calls `onRequestAgain(id)`.
 
-Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`
 
 ### UIC-APPROVAL-PANEL-1.7 - Action area

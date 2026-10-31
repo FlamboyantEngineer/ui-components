@@ -63,7 +63,7 @@ Verification: `src/components/rich-text-editor/rich-text-schema.test.ts`, `e2e/r
 
 The editor shall draw each task item as `ui-rich-text-editor__task-item` (with `data-checked` while ticked), holding a `Checkbox` named by the provider string `taskDone` in `ui-rich-text-editor__task-checkbox` and the item's content in `ui-rich-text-editor__task-content`. Toggling the checkbox sets the item's `checked` attribute as an edit; a read-only or disabled editor's checkboxes are read-only.
 
-Implementation: `src/components/rich-text-editor/task-item-view.tsx`, `src/core/rich-text-strings.ts`
+Implementation: `src/components/rich-text-editor/task-item-view.tsx`, `src/core/strings/rich-text.ts`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-3 - Editing
@@ -162,7 +162,7 @@ Verification: `src/components/rich-text-editor/engine-commands.test.ts`, `src/co
 
 `FormatToolbar` shall render a `ToolbarRow` (its root also `ui-format-toolbar`) whose toolbar strip is named by `aria-label`, `aria-labelledby` or the provider string `textFormatting`, holding undo and redo, the block type select, the marks (bold, italic, underline, strike, code), the link button, and the bullet, numbered and task lists and the quote, then its `children`, with separators between the groups. Each command is a small `Button` with a tooltip and its shortcut, pressed (`aria-pressed`) while `isActive`, disabled while it cannot run, and left out when the schema lacks its types. A pointer press keeps focus, and the selection, in the document.
 
-Implementation: `src/components/rich-text-editor/format-toolbar.tsx`, `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/format-items.ts`, `src/components/layout/layout.tsx`, `src/core/rich-text-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/rich-text-editor/format-toolbar.tsx`, `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/format-items.ts`, `src/components/layout/layout.tsx`, `src/core/strings/rich-text.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-6.2 - Block type

@@ -15,7 +15,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 After the find box, a polite status (`ui-find-bar__status`, `role="status"`) shall read the provider's `searching` string while `isPending`; otherwise nothing while `matchCount` is `undefined` (nothing is searched), its `noResults` string for no match, its `stepOfTotal` string for the current match of the total (`currentIndex`, zero-based) and its `matchTotal` string when no match is current. While `isPending` the root publishes `data-pending` and the find box shows its spinner.
 
-Implementation: `src/components/find-bar/find-bar.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/find-bar/find-bar.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
 
 ### UIC-FIND-BAR-1.3 - Stepping through matches

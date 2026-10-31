@@ -15,7 +15,7 @@ Verification: `src/components/relation-columns/relation-columns.test.tsx`, `e2e/
 
 The columns shall follow the path of chosen items on each side, nearest first: each chosen key that is among the related items of the column it is chosen in opens the next column of that side, listing the chosen item's related items in the same direction, titled by `upstreamOf` or `downstreamOf` with the chosen item's text; a key that is not among them ends its side there. Each column header counts its items in a `ui-relation-columns__column-count` slot, and each item of a side column counts the items further along its side in a `ui-relation-columns__item-count` slot, both as digits hidden from assistive technology, which reads the provider's `itemCount` and `relatedCount` strings instead.
 
-Implementation: `src/components/relation-columns/relation-columns-model.ts`, `src/components/relation-columns/relation-column.tsx`, `src/core/relation-strings.ts`
+Implementation: `src/components/relation-columns/relation-columns-model.ts`, `src/components/relation-columns/relation-column.tsx`, `src/core/strings/relation.ts`
 Verification: `src/components/relation-columns/relation-columns-model.test.ts`, `src/components/relation-columns/relation-columns.test.tsx`, `e2e/relation-columns.spec.ts`
 
 ### UIC-RELATION-COLUMNS-1.3 - Choosing an item

@@ -8,7 +8,7 @@
 
 `ChatList` shall render a `ui-chat-list` root holding a header (`ui-chat-list__header`) with a [Search Field](SEARCH-FIELD.md) (`ui-chat-list__search`) and, given `onNew`, a New chat button (`ui-chat-list__new`); then a React Aria grid list (`ui-chat-list__list`, `role="grid"`) named by `aria-label`, `aria-labelledby` or else the provider string `conversations`, with one row (`ui-chat-list__conversation`, `role="row"`) per conversation in the order of `conversations`.
 
-Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-row.tsx`, `src/core/chat-list-strings.ts`
+Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-row.tsx`, `src/core/strings/chat-list.ts`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
 
 ### UIC-CHAT-LIST-1.2 - Rows
@@ -22,7 +22,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 A row shall be named by the provider string `conversationLabel` from its title, the presence label of its one participant (unless it has its own `avatar`), its unread count, whether it is muted and its time as the row shows it, followed by its last message. Typing the first letters of a title moves to that row.
 
-Implementation: `src/components/chat-list/chat-list-row.tsx`, `src/core/chat-list-strings.ts`
+Implementation: `src/components/chat-list/chat-list-row.tsx`, `src/core/strings/chat-list.ts`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
 
 ### UIC-CHAT-LIST-1.4 - Selection

@@ -15,7 +15,7 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comm
 
 With `onReply`, the thread shall end with a `CommentComposer` in the `ui-comment-thread__composer` slot whose submitted text goes to `onReply`, with the composer's pending and failure behaviour ([UIC-COMMENT-COMPOSER-1.3](COMMENT-COMPOSER.md#uic-comment-composer-13---pending-submits)). It is named and submits with the provider's `reply` string, or, in a thread without comments, is named by `addComment` and submits with `comment`. Without `onReply` or `composer` there is no composer slot.
 
-Implementation: `src/components/comment-thread/comment-thread.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/comment-thread/comment-thread.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-1.3 - Caller composer

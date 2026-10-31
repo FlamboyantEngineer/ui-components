@@ -17,7 +17,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signat
 
 In the draw mode, the field's control shall be the drawing area (`ui-signature-pad__surface`, role `img`), named by the field label (`aria-labelledby`, or `aria-label` in the `control-only` layout) and described first by its stroke count (the provider string `signatureStrokes`: "Drawing area, empty", "Drawing area, 2 strokes"), then by the field's description, decoration and message, with `aria-invalid` while invalid. It is focusable from script but not in the tab order (`tabIndex="-1"`), so a restore or a blocked form submit moves focus to it without adding a tab stop that the keyboard cannot use. It holds the canvas (`ui-signature-pad__canvas`), an `<svg>` whose `viewBox` is the drawing space and which fills the area, and one path per stroke (`ui-signature-pad__stroke`), unfilled in `currentColor` with round caps and joins and a stroke width that does not scale with the area.
 
-Implementation: `src/components/signature-pad/signature-surface.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/signature-pad/signature-surface.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
 
 ### UIC-SIGNATURE-PAD-1.3 - Form value
@@ -61,7 +61,7 @@ Verification: `src/components/signature-pad/signature-path.test.ts`
 
 The draw mode shall end with Undo stroke and Clear buttons (in `ui-signature-pad__actions`, named by the provider strings `undoStroke` and `clear`). Undo stroke removes the last stroke and Clear removes them all, each committing the result; a drawing left with no stroke is `null`. Both are disabled while the drawing is empty.
 
-Implementation: `src/components/signature-pad/signature-surface.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/signature-pad/signature-surface.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
 
 ### UIC-SIGNATURE-PAD-2.4 - Standalone output
@@ -77,14 +77,14 @@ Verification: `src/components/signature-pad/signature-path.test.ts`, `e2e/signat
 
 With `allowsTyping` (the default), the field shall start with a [Segmented Choice](SEGMENTED-CHOICE.md) (`ui-signature-pad__modes`) named by the provider string `signatureMethod`, between Draw and Type (`signatureDraw`, `signatureType`). The mode shown follows the value: a drawn value shows the draw mode and a typed value the type mode; an empty field shows the mode of the value it last held or the mode last chosen, Draw at first. Choosing the other mode while the field holds a value of the current one empties and commits it. Without `allowsTyping` there is no choice and an empty field shows the draw mode.
 
-Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
 
 ### UIC-SIGNATURE-PAD-3.2 - Typed name
 
 In the type mode, the field's control shall be a text input (`ui-signature-pad__input`) named by the field label, described by its description and message, with `aria-required` and `aria-invalid` as the field sets them, the `name` autofill hint and the provider string `signatureTypePlaceholder` as its hint. Typing sets a typed signature with the text as typed; blank text sets `null`. Enter, or focus leaving the field (UIC-FIELD-1.11), commits the value, so Tab from the edited input reaches the restore button without committing. An Enter an input method composition owns (pressed during it, or the Enter that confirms a candidate, reported with key code 229) is left to the input method and commits nothing.
 
-Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
 
 ### UIC-SIGNATURE-PAD-3.3 - Field behaviour

@@ -50,7 +50,7 @@ Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`
 
 With `onPress`, `DropdownMenu` shall draw a `role="group"` element (the root, publishing `data-split` and, while the menu is open, `data-open`) holding the action, a `Button` (`ui-dropdown-menu__action`) labelled by `label` with `icon` as its start icon that runs `onPress` and opens nothing, and the toggle, an `Button` (`ui-dropdown-menu__toggle`) showing the `chevron-down` glyph, named by the provider's `moreOptions` string, which is the menu's trigger ([UIC-DROPDOWN-MENU-1.3](#uic-dropdown-menu-13---popup-wiring)) and labels the menu unless `aria-label` or `aria-labelledby` names it. Both take `variant` (`secondary` by default), `size` and `isDisabled`. The caller's `className` and `data-*` attributes go on the group, its `id` and `ref` on the action; `iconOnly` and `showCaret` do not apply. Focus returns to the toggle when the menu closes.
 
-Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`, `src/core/common-strings.ts`, `labs/reference/dropdown-menu.css`
+Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`, `src/core/strings/common.ts`, `labs/reference/dropdown-menu.css`
 Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`
 
 ## Hooks

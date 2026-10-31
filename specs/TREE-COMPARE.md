@@ -45,7 +45,7 @@ Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-com
 
 Each row shall publish its change as `data-change` (`unchanged`, `added`, `removed`, `changed` or `moved`) on `ui-tree-compare__row` and on its `ui-tree-compare__marker`, which draws the `plus`, `minus`, `edit` or `move` glyph for a difference and nothing for an unchanged row. The row's accessible name and typeahead text say the difference: the label alone when unchanged, else the provider's `treeAddedRow`, `treeRemovedRow`, `treeChangedRow` (with the old label when it differs), `treeMovedAwayRow` or `treeMovedHereRow` string.
 
-Implementation: `src/components/tree-compare/tree-compare-parts.tsx`, `src/components/tree-compare/tree-compare-rows.ts`, `src/core/structure-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/tree-compare/tree-compare-parts.tsx`, `src/components/tree-compare/tree-compare-rows.ts`, `src/core/strings/structure.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
 
 ### UIC-TREE-COMPARE-2.3 - Indentation on both sides
@@ -93,7 +93,7 @@ Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-com
 
 The toolbar (`ui-tree-compare__toolbar`) shall start with a summary: a list (`ui-tree-compare__summary`) with one item (`ui-tree-compare__count`, `data-change`) per kind of difference that occurs, in the order added, removed, changed, moved, reading the provider's `treeAddedCount`, `treeRemovedCount`, `treeChangedCount` and `treeMovedCount` strings, or, when the trees do not differ, a paragraph of the same slot reading `treeNoDifferences`.
 
-Implementation: `src/components/tree-compare/tree-compare-parts.tsx`, `src/core/structure-strings.ts`
+Implementation: `src/components/tree-compare/tree-compare-parts.tsx`, `src/core/strings/structure.ts`
 Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
 
 ## UIC-TREE-COMPARE-6 - Accessibility and hooks

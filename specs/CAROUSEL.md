@@ -8,7 +8,7 @@
 
 `Carousel` shall render a `<section>` with `aria-roledescription` set to the provider's `carousel` string, named by the caller's `aria-label` or `aria-labelledby`, holding a viewport (`ui-carousel__viewport`) with one slide (`ui-carousel__slide`) per child, in order. Each slide is a `role="group"` with `aria-roledescription` set to the provider's `slide` string and named by its position (`stepOfTotal`, `2 of 5`). Only the shown slide is visible, carrying `data-current`; the others are `hidden` and `inert`, so they stay mounted but cannot be reached. A slide keeps its element across renders by its child's key.
 
-Implementation: `src/components/carousel/carousel.tsx`, `src/core/presentation-strings.ts`
+Implementation: `src/components/carousel/carousel.tsx`, `src/core/strings/presentation.ts`
 Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts`
 
 ### UIC-CAROUSEL-1.2 - Previous and next
@@ -22,7 +22,7 @@ Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts
 
 `pagination` shall publish `data-pagination` and add, after the viewport, a group (`ui-carousel__pagination`) named by the provider's `chooseSlide` string with one React Aria button per slide, named by `goToSlide` (`Slide 3`) and controlling the viewport: an empty dot (`ui-carousel__dot`) with `dots` (the default), or the content `renderThumbnail(index)` returns (`ui-carousel__thumbnail`) with `thumbnails`, whose images should be decorative since the button is named. The shown slide's button carries `aria-current` and `data-current`; pressing a button shows its slide. `none` draws no pagination.
 
-Implementation: `src/components/carousel/carousel-parts.tsx`, `src/core/presentation-strings.ts`, `labs/reference/carousel.css`
+Implementation: `src/components/carousel/carousel-parts.tsx`, `src/core/strings/presentation.ts`, `labs/reference/carousel.css`
 Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts`
 
 ### UIC-CAROUSEL-1.4 - A single slide

@@ -117,7 +117,7 @@ Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.s
 
 `onCreateOption` shall end the options, while the trimmed typed text is not empty and no option has it as its label (ignoring case), with an action row (`ui-combobox__create`, `role="option"`) reading the provider's `createOption` string with the text ("Add “Kiwi”"). Enter on the highlighted row or a press on it shall call `onCreateOption` with the text and close the list without selecting anything; the caller adds the option, and may select it.
 
-Implementation: `src/components/combobox/combobox-suggestions.tsx`, `src/components/combobox/combobox.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/combobox/combobox-suggestions.tsx`, `src/components/combobox/combobox.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
 
 ### UIC-COMBOBOX-3.3 - Highlighting the first match
@@ -184,7 +184,7 @@ Verification: `src/components/combobox/combobox-search.test.tsx`, `src/utils/use
 
 While a search runs, the combobox shall be pending as with `isPending` (UIC-COMBOBOX-1.3): `data-pending`, `aria-busy="true"` on the input and the busy indicator, keeping the previous results listed. A list with no option says, in `ui-combobox__empty` and in order of precedence, the provider string `loading` while a search runs, `searchFailed` after the latest search rejected, `typeToSearch` while the text is shorter than `minSearchLength`, and otherwise the empty state (UIC-COMBOBOX-5.4).
 
-Implementation: `src/components/combobox/combobox-search.ts`, `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-suggestions.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/combobox/combobox-search.ts`, `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-suggestions.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/combobox/combobox-search.test.tsx`, `e2e/combobox.spec.ts`
 
 ### UIC-COMBOBOX-5.3 - Paged results

@@ -15,14 +15,14 @@ Verification: `src/components/app-frame/app-frame.test.tsx`, `e2e/app-frame.spec
 
 A frame that is the page shall draw its regions as landmarks: the top bar is a `<header>` (`banner`), the main region a `<main>` (`main`) named by `labels.main` when given, each panel an `<aside>` (`complementary`) named by its entry in `labels` (`start-panel`, `end-panel`, `bottom-panel`) or the provider's `appFramePanel` string (`Start panel`, `End panel`, `Bottom panel`), and the status bar a `<footer>` (`contentinfo`). The navigation region is a `<div>`: its content, such as a [Navigation Rail](NAVIGATION-RAIL.md), is the `navigation` landmark.
 
-Implementation: `src/components/app-frame/app-frame.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/app-frame/app-frame.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/app-frame/app-frame.test.tsx`
 
 ### UIC-APP-FRAME-1.3 - Skip link
 
 The frame's first element shall be a link in the `ui-app-frame__skip-link` slot, labelled by the provider's `skipToMainContent` string (`Skip to main content`), inside a focusable [Visually Hidden](VISUALLY-HIDDEN.md) that shows it while it has focus. Its `href` points at the main region's generated `id`; activating it moves focus to the main region (`tabIndex="-1"`) without changing the page address, which a hash router may own.
 
-Implementation: `src/components/app-frame/app-frame.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/app-frame/app-frame.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/app-frame/app-frame.test.tsx`, `e2e/app-frame.spec.ts`
 
 ### UIC-APP-FRAME-1.4 - Embedded frames
@@ -52,7 +52,7 @@ Verification: `src/components/app-frame/app-frame.test.tsx`
 
 `AppFrameBand` shall render a `ui-app-frame-band` `<div>` with `role="group"`, named by `aria-label` or `aria-labelledby`, holding in order `leading` in the `ui-app-frame-band__leading` slot, `status` in `ui-app-frame-band__status`, the children (the tools, usually `ToolbarRowGroup`s) in `ui-app-frame-band__tools`, and `actions` in `ui-app-frame-band__actions`, a `group` named by `actionsLabel` or the provider's `actions` string (`Actions`). A part with no content renders no element. A [Save Status](SAVE-STATUS.md) in `status` announces itself.
 
-Implementation: `src/components/app-frame/app-frame-band.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/app-frame/app-frame-band.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/app-frame/app-frame-band.test.tsx`, `e2e/app-frame.spec.ts`
 
 ### UIC-APP-FRAME-2.2 - Scrolling tools

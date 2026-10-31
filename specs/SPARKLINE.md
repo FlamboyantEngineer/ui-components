@@ -54,7 +54,7 @@ Verification: `src/components/sparkline/sparkline.test.tsx`, `e2e/sparkline.spec
 
 The image shall be described by a `<desc>` that reads its lowest, highest and last values through the provider's `seriesSummary` string (`Low 4, high 18, last 15`), formatted for the locale with `formatOptions`, or the `noData` string for a series with no finite value. A caller's `aria-describedby` is kept after it.
 
-Implementation: `src/components/sparkline/sparkline.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/sparkline/sparkline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/sparkline/sparkline.test.tsx`, `e2e/sparkline.spec.ts`
 
 ## Hooks

@@ -40,7 +40,7 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 Numeric and text IDs, such as `1` and `'1'`, identify distinct entries, for the cards and for the layer's marks; removing one preserves the other entry's rendered card and marks.
 
-Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-context.ts`, `src/components/annotation-layer/annotation-layer.tsx`, `src/core/diff-strings.ts`
+Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-context.ts`, `src/components/annotation-layer/annotation-layer.tsx`, `src/core/strings/diff.ts`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
 ### UIC-ANNOTATION-LAYER-2.2 - Stacking without overlap

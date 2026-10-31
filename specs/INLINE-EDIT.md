@@ -43,7 +43,7 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edi
 
 While a promise returned by `onSave` is pending, the root shall publish `data-pending`, the editor receives `isPending` and stays editable, and cancels are ignored. A save asked for meanwhile (Enter, focus leaving, `commit`) waits for the pending one and then saves what it asked for if that changed: the value `commit` was given, else the value being edited when the queued save starts. A save, pending or queued, never changes the value being edited, so an edit made after a save was asked for stays in the editor. When the last save resolves the editor closes only if the value being edited is the one saved: otherwise it stays open with the newer value until it is saved, so text accepted while saving is never dropped. Each opening and closing of the editor, controlled or not, is a new session: a save that settles after its session ended, or after the inline edit unmounted, closes, clears and reports nothing; when it rejects the editor stays open with the value being edited, the root publishes `data-invalid` and an [Inline Error](INLINE-ERROR.md) (`ui-inline-edit__error`) after the editor shows the rejection's message, or the provider's `saveFailed` string when it has none, until the next save or the editor closes.
 
-Implementation: `src/components/inline-edit/inline-edit.tsx`, `src/components/inline-edit/use-inline-edit.ts`, `src/core/view-strings.ts`
+Implementation: `src/components/inline-edit/inline-edit.tsx`, `src/components/inline-edit/use-inline-edit.ts`, `src/core/strings/view.ts`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`
 
 ### UIC-INLINE-EDIT-1.7 - Save and cancel buttons
@@ -73,7 +73,7 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`
 
 The read view shall be named by the provider's `editValue` string for `label`, held for assistive technology only, followed by the value or placeholder it shows, so its name holds its visible text; the default editor's control is named by `label`, and a failed save's message is an assertive alert.
 
-Implementation: `src/components/inline-edit/inline-edit.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/inline-edit/inline-edit.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`
 
 ## Hooks

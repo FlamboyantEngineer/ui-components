@@ -52,7 +52,7 @@ Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`
 
 With `expandable`, while the text is cut the component shall draw a link-styled [Button](BUTTON.md) after the text in the `ui-truncation-tooltip__toggle` slot, labelled by the provider's `showMore` string, with `aria-expanded="false"` and `aria-controls` naming the text (the caller's `id`, or a generated one). Pressing it shows the text whole: the text publishes `data-expanded`, which the stylesheet uses to stop cutting it, and the control reads `showLess` with `aria-expanded="true"` until pressed again. Text that fits draws no control, whole text never opens the tooltip, and `isExpanded`, `defaultExpanded` and `onExpandedChange` control the state.
 
-Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`, `src/core/content-strings.ts`, `labs/reference/truncation-tooltip.css`
+Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`, `src/core/strings/content.ts`, `labs/reference/truncation-tooltip.css`
 Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `e2e/truncation-tooltip.spec.ts`
 
 ## Hooks

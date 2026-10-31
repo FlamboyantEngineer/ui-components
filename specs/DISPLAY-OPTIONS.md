@@ -8,7 +8,7 @@
 
 `DisplayOptions` shall render a `<span>` root (`ui-display-options`) holding a [Button](BUTTON.md) (`ui-display-options__trigger`) led by the `adjustments` glyph and reading `label`, else the provider's `display` string, which opens a [Popover](POPOVER.md) (`ui-display-options__popover`) below its end titled by the provider's `displayOptions` string. The popover holds, in order, the grouping, sorting, properties and density sections below.
 
-Implementation: `src/components/display-options/display-options.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/display-options/display-options.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/display-options/display-options.test.tsx`, `e2e/display-options.spec.ts`
 
 ### UIC-DISPLAY-OPTIONS-1.2 - Value
@@ -22,28 +22,28 @@ Verification: `src/components/display-options/display-options.test.tsx`
 
 When some property has `allowsGrouping`, the popover shall start with a [Select Field](SELECT-FIELD.md) (`ui-display-options__group-by`) labelled by the provider's `groupBy` string offering the provider's `noGrouping` choice, which sets `groupBy` to `null`, then those properties; it shows no dirty state of its own, since each choice applies at once.
 
-Implementation: `src/components/display-options/display-options-sections.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/display-options/display-options-sections.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/display-options/display-options.test.tsx`, `e2e/display-options.spec.ts`
 
 ### UIC-DISPLAY-OPTIONS-1.4 - Sorting
 
 When some property has `allowsSorting`, a sort group (`ui-display-options__sort`) shall follow with a Select Field (`ui-display-options__sort-by`) labelled by the provider's `sortBy` string offering `noSorting`, which sets `sort` to `null`, then those properties; choosing one sorts by it, keeping the direction, ascending at first. A small [Segmented Choice](SEGMENTED-CHOICE.md) (`ui-display-options__direction`) named by `sortDirection` offers the two directions with their `sort-ascending` and `sort-descending` glyphs and `sortDirectionName` labels; it is disabled while unsorted.
 
-Implementation: `src/components/display-options/display-options-sections.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/display-options/display-options-sections.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/display-options/display-options.test.tsx`, `e2e/display-options.spec.ts`
 
 ### UIC-DISPLAY-OPTIONS-1.5 - Shown properties
 
 The properties section (`ui-display-options__properties`) shall hold a label (`ui-display-options__properties-label`) reading the provider's `shownProperties` string, which names a [List View](LIST-ROW.md) of every property (`ui-display-options__property`, publishing `data-shown` while shown): the shown ones in their order, then the hidden ones in declared order. Each row ends with a [Checkbox](CHECKBOX.md) (`ui-display-options__visibility`) named by the provider's `showProperty` string for the label and ticked while the property is shown; ticking it, or activating the row (a press or Enter), shows or hides the property, and a property shown again joins the shown ones where its row stands. The rows reorder one at a time by drag and drop, by pointer or from a row's drag handle by keyboard, and a move changes the order of the shown properties (hidden ones keep their declared order). A shown `id` no property names is dropped from the list.
 
-Implementation: `src/components/display-options/display-options-sections.tsx`, `src/components/display-options/display-options-model.ts`, `src/core/view-strings.ts`
+Implementation: `src/components/display-options/display-options-sections.tsx`, `src/components/display-options/display-options-model.ts`, `src/core/strings/view.ts`
 Verification: `src/components/display-options/display-options.test.tsx`, `e2e/display-options.spec.ts`
 
 ### UIC-DISPLAY-OPTIONS-1.6 - Density
 
 With `densities` (from `compact`, `default` and `comfortable`), the popover shall end with a density group (`ui-display-options__density`) whose label (`ui-display-options__density-label`) reads the provider's `density` string and names a small [Segmented Choice](SEGMENTED-CHOICE.md) of those densities, labelled by `densityName`. Without them it offers no density.
 
-Implementation: `src/components/display-options/display-options-sections.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/display-options/display-options-sections.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/display-options/display-options.test.tsx`, `e2e/display-options.spec.ts`
 
 ### UIC-DISPLAY-OPTIONS-1.7 - Disabled

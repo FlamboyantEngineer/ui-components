@@ -15,7 +15,7 @@ Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction
 
 Each chip shall be named by the provider's `reactionLabel` string from the emoji (a custom emoji's `label` when it has one), the count and the first `maxNames` names of `people` (3 by default), such as `👍 5, reacted by Ana Lima, Ben Ode and 3 others`, where the others are the count less the names listed. The same text shows in a `Tooltip` on hover and keyboard focus, which names the chip rather than describing it again.
 
-Implementation: `src/components/reaction-bar/reaction-bar.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/reaction-bar/reaction-bar.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`
 
 ### UIC-REACTION-BAR-1.3 - Toggling

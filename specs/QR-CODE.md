@@ -45,7 +45,7 @@ Verification: `src/components/qr-code/qr-code.test.tsx`, `e2e/qr-code.spec.ts`
 
 When `value` does not fit in version 40 at the level, `QrCode` shall draw no modules, carry `data-invalid`, and be named by the provider's `qrCodeTooLong` string unless the caller names it.
 
-Implementation: `src/components/qr-code/qr-code.tsx`, `src/core/presentation-strings.ts`
+Implementation: `src/components/qr-code/qr-code.tsx`, `src/core/strings/presentation.ts`
 Verification: `src/components/qr-code/qr-code.test.tsx`
 
 ## UIC-QR-CODE-3 - Accessibility and hooks
@@ -54,7 +54,7 @@ Verification: `src/components/qr-code/qr-code.test.tsx`
 
 `QrCode` shall render `role="img"` named by `aria-label`, by the element `aria-labelledby` points to, or else by the provider's `qrCodeOf` string with the encoded text (`QR code: https://example.com`), so a reader who cannot scan it still learns what it holds. It is not focusable.
 
-Implementation: `src/components/qr-code/qr-code.tsx`, `src/core/presentation-strings.ts`
+Implementation: `src/components/qr-code/qr-code.tsx`, `src/core/strings/presentation.ts`
 Verification: `src/components/qr-code/qr-code.test.tsx`, `e2e/qr-code.spec.ts`
 
 ### UIC-QR-CODE-3.2 - Hooks and caller attributes

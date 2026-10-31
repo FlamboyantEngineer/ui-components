@@ -10,7 +10,7 @@ Around the messages sit the conversation parts: `ChatQuote` (a quoted reply), `C
 
 `ChatTranscript` shall render a `ui-chat-transcript` root holding a [Scroll Region](SCROLL-REGION.md) (`ui-chat-transcript__log`) whose viewport holds a `feed` (`ui-chat-transcript__feed`) named by `aria-label`, `aria-labelledby` or else the provider string `conversation` (its other labelling props pass to it too), holding the children: `ChatMessage` articles and the parts between them, such as separators, which carry no role of their own (a status, such as a typing indicator, sits outside the transcript). The feed is not a live region; new messages are announced separately (UIC-CHAT-TRANSCRIPT-3.6). While there are no children the root publishes `data-empty` and there is no feed: `emptyState` shows in the viewport in `ui-chat-transcript__empty`, such as suggested first questions.
 
-Implementation: `src/components/chat-transcript/chat-transcript.tsx`, `src/components/chat-transcript/transcript-parts.tsx`, `src/core/content-strings.ts`
+Implementation: `src/components/chat-transcript/chat-transcript.tsx`, `src/components/chat-transcript/transcript-parts.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-1.2 - Following the latest message
@@ -24,7 +24,7 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/co
 
 While the reader is scrolled away from the bottom, a button (`ui-chat-transcript__jump`, a `Button` with the `arrow-down` glyph) shall show after the log, reading the provider string `jumpToLatest`, or the count of new messages (UIC-CHAT-TRANSCRIPT-4.4). Pressing it scrolls to the latest message, which follows again, moves focus to the latest message and hides the button. Scrolling back to the bottom hides it too.
 
-Implementation: `src/components/chat-transcript/chat-transcript.tsx`, `src/components/chat-transcript/use-transcript.ts`, `src/core/content-strings.ts`
+Implementation: `src/components/chat-transcript/chat-transcript.tsx`, `src/components/chat-transcript/use-transcript.ts`, `src/core/strings/content.ts`
 Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-1.4 - Hooks and caller attributes
@@ -68,7 +68,7 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/ch
 
 `ChatMessage` shall publish `origin` as `data-origin`: `sent` by the reader, `received` from someone else (the default), or a `system` notice, and `status` as `data-status`: `complete` (the default), `streaming`, `error`, or `cancelled` when the reader stopped it. A streaming message is busy (`aria-busy="true"`), so assistive technology reads it once it completes. A cancelled message keeps its partial content and shows the provider string `chatStopped` (`Stopped`) in `ui-chat-message__stopped`, inside `ui-chat-message__footer` after the content.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.3 - Hooks and caller attributes
@@ -82,7 +82,7 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`
 
 `ChatMessage` shall be named, through `aria-labelledby`, by a `hidden` element holding the provider string `chatMessageLabel` of the author's display name and the time's absolute date and time (the absolute text the time's tooltip shows, [UIC-RELATIVE-TIME-1.3](RELATIVE-TIME.md#uic-relative-time-13---absolute-date)), so the name keeps the author and the time while the header hides them; with neither the article has no name. The `id` is the article's DOM id, by which a transcript finds the message.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.5 - Author presence
@@ -110,7 +110,7 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 A message with `delivery` shall publish it as `data-delivery` (`sending`, `sent`, `delivered`, `read` or `failed`) and show, in its footer, `ui-chat-message__delivery` holding a decorative glyph (`ui-chat-message__delivery-icon`: `clock`, `check`, `success`, `eye` or `error`) and the provider string `chatDelivery` (`Sending`, `Sent`, `Delivered`, `Read`, `Not sent`) in `ui-chat-message__delivery-label`, so the status never depends on colour or shape alone. A `failed` message with `onRetry` and no `error` adds a Retry `Button` (`ui-chat-message__retry`, named by the provider string `retry`) to the footer, which calls `onRetry`.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.9 - Error
@@ -124,7 +124,7 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 `isEdited` shall show the provider string `edited` in `ui-chat-message__edited` in the footer. `isDeleted` shall publish `data-deleted` and replace the content with the provider string `chatMessageDeleted` (`Message deleted`) in `ui-chat-message__content`, leaving out the quote, the footer's markers, the error, the reactions and the actions; the avatar, the header, a time placed in the footer and the readers stay.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.11 - Quote
@@ -189,7 +189,7 @@ Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `e2
 
 New messages shall be announced through a visually hidden polite live region (`ui-chat-transcript__announcer`, `role="status"`, after the log), never by making the feed live. A message that arrives (added after the messages already there, not the history present when the transcript mounts, older history added above, or another conversation's messages replacing every child) is announced as the provider's `newMessageAnnouncement`, from its author's name (`null` for a system notice) and its summary, or its content's text; the reader's own (`sent`) messages are not announced, a streaming message is announced once, when it completes, and a failed one is left to its error. Announcements are at most one a second: the first is read at once, and what arrives in the next second is grouped into one announcement (several messages read as the provider's `newMessageCount`), together with any status, such as older messages loading. A repeated announcement still changes the region so it is read again.
 
-Implementation: `src/components/chat-transcript/transcript-announcer.tsx`, `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-items.ts`, `src/core/chat-strings.ts`
+Implementation: `src/components/chat-transcript/transcript-announcer.tsx`, `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-items.ts`, `src/core/strings/chat.ts`
 Verification: `src/components/chat-transcript/transcript-announcer.test.tsx`, `src/components/chat-transcript/transcript-items.test.ts`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-3.7 - Messages register with the transcript
@@ -205,7 +205,7 @@ Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `sr
 
 While `hasOlder` is set and `isLoadingOlder` is not, the transcript shall call `onLoadOlder` once when the reader comes within one view's height of the top, by scrolling, moving focus or from the start when the messages do not fill that much, and again only after older messages arrived, loading ended, or the reader left that zone and came back. While `hasOlder` (or `isLoadingOlder`), `ui-chat-transcript__history` sits above the feed, so the reader at the top sees it; while `isLoadingOlder` it holds a [Spinner](PROGRESS-BAR.md) named by the provider's `loadingOlderMessages` string, the feed is busy (`aria-busy="true"`) and the announcer reads that string once; when older messages arrive it announces the provider's `olderMessagesLoaded` with their count. The transcript loads from its own scroll position rather than through a [Load More](LOAD-MORE.md) control: a button above the messages would be a second tab stop before the feed's, and focusing it would scroll to the top.
 
-Implementation: `src/components/chat-transcript/transcript-sync.ts`, `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-parts.tsx`, `src/core/chat-strings.ts`
+Implementation: `src/components/chat-transcript/transcript-sync.ts`, `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-parts.tsx`, `src/core/strings/chat.ts`
 Verification: `src/components/chat-transcript/transcript-history.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-4.2 - Keeping the reader's place
@@ -226,14 +226,14 @@ Verification: `src/components/chat-transcript/transcript-history.test.tsx`, `e2e
 
 Messages from others that arrive below the view while the reader is scrolled away shall be counted, and the jump button (UIC-CHAT-TRANSCRIPT-1.3) reads the provider's `newMessageCount` for them ("3 new messages") instead of `jumpToLatest`. Reaching the bottom, jumping or sending a message clears the count.
 
-Implementation: `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-sync.ts`, `src/core/chat-strings.ts`
+Implementation: `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-sync.ts`, `src/core/strings/chat.ts`
 Verification: `src/components/chat-transcript/transcript-unread.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-4.5 - Unread bar
 
 While `firstUnreadId` names a message wholly above the view, a bar (`ui-chat-transcript__unread`, before the log) shall read the provider's `unreadMessageCount` for the messages from that one to the end ("12 unread") and hold a `Button` with the `arrow-up` glyph reading the provider's `jumpToUnread`, described by the count. Pressing it brings the first unread message to the top of the view, with the part right before it (such as an unread divider), and focuses it. The transcript places nothing among the children itself.
 
-Implementation: `src/components/chat-transcript/transcript-parts.tsx`, `src/components/chat-transcript/transcript-sync.ts`, `src/components/chat-transcript/use-transcript.ts`, `src/core/chat-strings.ts`
+Implementation: `src/components/chat-transcript/transcript-parts.tsx`, `src/components/chat-transcript/transcript-sync.ts`, `src/components/chat-transcript/use-transcript.ts`, `src/core/strings/chat.ts`
 Verification: `src/components/chat-transcript/transcript-unread.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-4.6 - Read position
@@ -249,7 +249,7 @@ Verification: `src/components/chat-transcript/transcript-unread.test.tsx`
 
 `ChatQuote` shall render the quoted message's `authorName` (`ui-chat-quote__author`, the provider's `unnamed` string for a blank name) and `excerpt` (`ui-chat-quote__excerpt`) in a `ui-chat-quote` `<blockquote>`. With `onPress` it is instead a React Aria button named by the provider string `chatQuoteLabel` (`Quote from Ana Lopez: …`, which holds the visible text), calling `onPress` on click, Enter or Space. The composer's reply banner reuses it.
 
-Implementation: `src/components/chat-transcript/chat-quote.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-quote.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-quote.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-5.2 - Date separator
@@ -263,21 +263,21 @@ Verification: `src/components/chat-transcript/chat-date-separator.test.tsx`, `e2
 
 `ChatUnreadDivider` shall render a `ui-chat-unread-divider` holding the provider string `chatNewMessages` (`New messages`) in `ui-chat-unread-divider__label`. It has no role, so it may sit between the articles of a feed.
 
-Implementation: `src/components/chat-transcript/chat-unread-divider.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-unread-divider.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-unread-divider.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-5.4 - Typing indicator
 
 `ChatTypingIndicator` shall render a `ui-chat-typing-indicator` with `role="status"`, so changes are announced politely. It says who is typing through the provider string `chatTyping` of their display names (`Ana is typing…`, `Ana and Ben are typing…`, `Ana and 2 others are typing…`). An assistant thinking shows inside its reply instead ([Chat Activity](CHAT-ACTIVITY.md) `ChatStatusLine`). The text sits in `ui-chat-typing-indicator__text` after `ui-chat-typing-indicator__dots`, a decorative element holding three `ui-chat-typing-indicator__dot` elements for a stylesheet to animate. With nobody typing it stays mounted, empty, and publishes `data-empty`, so the next change is announced.
 
-Implementation: `src/components/chat-transcript/chat-typing-indicator.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-typing-indicator.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-typing-indicator.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-5.5 - Read receipts
 
 `ChatReadReceipts` shall render an [Avatar Group](AVATAR-GROUP.md) (also carrying `ui-chat-read-receipts`) of the `readers` (each an `id` and avatar identity fields) at size `xs`, showing at most `maxVisible` avatars (3 by default) with a `+N` count, named by the provider string `chatSeenBy` of their display names (`Seen by Ana, Ben and 3 others`). Its avatars form one button that opens a popover listing every reader.
 
-Implementation: `src/components/chat-transcript/chat-read-receipts.tsx`, `src/core/chat-message-strings.ts`
+Implementation: `src/components/chat-transcript/chat-read-receipts.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-read-receipts.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-5.6 - Hooks and caller attributes

@@ -10,7 +10,7 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 `DiagramCanvas` shall render a `<div role="group">` root (`ui-diagram-canvas`) named by `aria-label`, `aria-labelledby` or the provider's `diagram` string, publishing the view (`canvas` or `outline`) in `data-view` and the edge routing in `data-routing`. It holds a toolbar (`ui-diagram-canvas__toolbar`), the palette when given (UIC-DIAGRAM-CANVAS-5.3), then the viewport (`ui-diagram-canvas__viewport`) in the canvas view or the outline (UIC-DIAGRAM-CANVAS-6.4), and a visually hidden live region (`ui-diagram-canvas__status`, `role="status"`). The viewport clips nothing itself (the host stylesheet sizes it and hides its overflow) and holds the content layer (`ui-diagram-canvas__content`), which the viewport's pan and zoom place with an inline `transform`. A diagram without nodes shows the provider's `diagramEmpty` string in `ui-diagram-canvas__empty`.
 
-Implementation: `src/components/diagram-canvas/diagram-canvas.tsx`, `src/core/diagram-strings.ts`
+Implementation: `src/components/diagram-canvas/diagram-canvas.tsx`, `src/core/strings/diagram.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-1.2 - Nodes

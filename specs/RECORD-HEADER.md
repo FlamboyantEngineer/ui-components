@@ -8,7 +8,7 @@
 
 `RecordHeader` shall render a `<div>` root (`ui-record-header`) that starts with an identity group (`ui-record-header__identity`) holding a small [Record Label](RECORD-LABEL.md) (`ui-record-header__label`) of `icon` and `identifier`, followed by a small [Copy Button](COPY-BUTTON.md) (`ui-record-header__copy`) that copies the identifier, named by the provider's `copyIdentifier` string for it.
 
-Implementation: `src/components/record-header/record-header.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/record-header/record-header.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/record-header/record-header.test.tsx`, `e2e/record-header.spec.ts`
 
 ### UIC-RECORD-HEADER-1.2 - Title
@@ -22,7 +22,7 @@ Verification: `src/components/record-header/record-header.test.tsx`, `e2e/record
 
 With `onTitleChange`, the title shall be an element with role `heading` and `aria-level`, named by a non-empty `title` alone, holding an [Inline Edit](INLINE-EDIT.md) of `title` named by the provider's `recordTitle` string, with `titlePlaceholder` shown while the title is empty; saving a changed title calls `onTitleChange` with it, pending and failing as Inline Edit does, and the root publishes `data-editable`.
 
-Implementation: `src/components/record-header/record-header.tsx`, `src/core/view-strings.ts`
+Implementation: `src/components/record-header/record-header.tsx`, `src/core/strings/view.ts`
 Verification: `src/components/record-header/record-header.test.tsx`, `e2e/record-header.spec.ts`
 
 ### UIC-RECORD-HEADER-1.4 - Status, metadata and actions

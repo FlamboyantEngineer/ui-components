@@ -22,7 +22,7 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.s
 
 The input shall be the field's control: named by the field label, described by the field's description, decoration and message, carrying `aria-required` while required and `aria-invalid` with `aria-errormessage` while invalid, natively read-only or disabled while the field is. It is the element a restore, a form's submit validation and the native behavior's custom validity (UIC-FIELD-3.10) use. The tag group is named by the provider string `selectedValues` from the label ("Fruit selected values"). While invalid, disabled or read-only, the frame publishes React Aria's `data-invalid`, `data-disabled` or `data-readonly`.
 
-Implementation: `src/components/tags-input/tags-input-parts.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/tags-input/tags-input-parts.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `e2e/tags-input.spec.ts`
 
 ### UIC-TAGS-INPUT-1.4 - Hooks and caller attributes
@@ -75,14 +75,14 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/t
 
 With `maxValues`, a tag that would take the field past that many tags shall be refused with the provider string `tooManyValues` ("Add up to 3 values.", validity `rangeOverflow`). A value the caller sets is not cut.
 
-Implementation: `src/components/tags-input/tag-entry.ts`, `src/core/field-strings.ts`
+Implementation: `src/components/tags-input/tag-entry.ts`, `src/core/strings/field.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`, `e2e/tags-input.spec.ts`
 
 ### UIC-TAGS-INPUT-3.3 - Duplicates
 
 A tag equal to one the field holds (compared exactly, after trimming) shall be refused with the provider string `duplicateValue` (“Apple” is already added., validity `customError`), unless `allowsDuplicates` is set. Equal tags then show as separate tags, each removable on its own.
 
-Implementation: `src/components/tags-input/tag-entry.ts`, `src/components/tags-input/tags-input-parts.tsx`, `src/core/field-strings.ts`
+Implementation: `src/components/tags-input/tag-entry.ts`, `src/components/tags-input/tags-input-parts.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`
 
 ### UIC-TAGS-INPUT-3.4 - Tag validation

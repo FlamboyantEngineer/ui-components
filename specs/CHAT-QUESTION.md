@@ -43,7 +43,7 @@ Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-q
 
 An option's `label` shall name its radio or checkbox, and its `description` render after it in `ui-chat-question__description`, which describes the input (`aria-describedby`). An option with `isRecommended` adds a small info [Badge](BADGE.md) (`ui-chat-question__recommended`) with the provider's `questionRecommended` string after the label, inside the input's name, and its wrapper publishes `data-recommended`. A recommended option is not chosen for the reader.
 
-Implementation: `src/components/chat-question/chat-question-fields.tsx`, `src/core/chat-question-strings.ts`
+Implementation: `src/components/chat-question/chat-question-fields.tsx`, `src/core/strings/chat-question.ts`
 Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-1.7 - Other
@@ -73,7 +73,7 @@ Verification: `src/components/chat-question/chat-question-model.test.ts`, `src/c
 
 A pending card with `onSubmit` shall draw a primary Submit [Button](BUTTON.md) (`ui-chat-question__submit`, the provider's `questionSubmit` string) in `ui-chat-question__actions`, after the last question in a stepped card. Until every question is answered it is unavailable but focusable (`aria-disabled="true"`) and hints why in a tooltip (`questionAnswerAllToSubmit`). Pressing it calls `onSubmit` with one answer per question, in order. The card stays pending until its `status` changes.
 
-Implementation: `src/components/chat-question/chat-question-pending.tsx`, `src/core/chat-question-strings.ts`
+Implementation: `src/components/chat-question/chat-question-pending.tsx`, `src/core/strings/chat-question.ts`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-2.3 - Dismiss
@@ -115,7 +115,7 @@ Verification: `src/components/chat-question/chat-question-request.test.tsx`, `e2
 
 When `onSubmit` or `onDismiss` throws or its promise rejects, the card shall keep every option chosen, every word typed (Other's included) and the question shown, and show why in an [Inline Error](INLINE-ERROR.md) (`ui-chat-question__error`, an assertive alert) before the actions: the error's message, else the provider's `questionSubmitFailed` string for answers or the common `actionFailed` string for a dismissal. The actions are available again, so the reader can retry; the message stays until the next request.
 
-Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question-pending.tsx`, `src/core/chat-question-strings.ts`, `labs/reference/chat-question.css`
+Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question-pending.tsx`, `src/core/strings/chat-question.ts`, `labs/reference/chat-question.css`
 Verification: `src/components/chat-question/chat-question-request.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-2.9 - Read-only card
@@ -145,7 +145,7 @@ Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/c
 
 The counter shall follow the tab list on its row and show the shown question's position and the number of questions through the provider's `questionCounter` string ("2/3"), hidden from assistive technology, which reads `questionProgress` ("Question 2 of 3") instead.
 
-Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/core/chat-question-strings.ts`
+Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/core/strings/chat-question.ts`
 Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-3.3 - Choosing a question
@@ -182,7 +182,7 @@ Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2
 
 An `answered` card shall collapse to a description list (`ui-chat-question__summary`) of `ui-chat-question__summary-item` groups, one per question, each holding the question's text (`ui-chat-question__summary-question`, a term) and what the reader answered from `answers` (`ui-chat-question__summary-answer`, its definition): `questionChose` with the chosen options' labels in offered order and then the words given for Other ("You chose PostgreSQL and Redis"), `questionAnsweredText` with the words of a `none` question, or `questionNoAnswer` for a question without an answer.
 
-Implementation: `src/components/chat-question/chat-question-summary.tsx`, `src/components/chat-question/chat-question-model.ts`, `src/core/chat-question-strings.ts`
+Implementation: `src/components/chat-question/chat-question-summary.tsx`, `src/components/chat-question/chat-question-model.ts`, `src/core/strings/chat-question.ts`
 Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-4.2 - Dismissed
@@ -196,16 +196,16 @@ Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-q
 
 A pending card shall hold a visually hidden polite status (`ui-chat-question__announcement`, `role="status"`) that receives the card's name (`questionAsked` with its first question and its question count) once, right after the card mounts, so the card is announced once without making it a live region.
 
-Implementation: `src/components/chat-question/chat-question.tsx`, `src/core/chat-question-strings.ts`
+Implementation: `src/components/chat-question/chat-question.tsx`, `src/core/strings/chat-question.ts`
 Verification: `src/components/chat-question/chat-question.test.tsx`
 
 ## UIC-CHAT-QUESTION-5 - Strings and hooks
 
 ### UIC-CHAT-QUESTION-5.1 - Strings
 
-Every string the card renders shall come from the provider: its own in `src/core/chat-question-strings.ts`, with counts and lists formed by functions, and `back`, `next`, `dismiss` and `actionFailed` from the common strings.
+Every string the card renders shall come from the provider: its own in `src/core/strings/chat-question.ts`, with counts and lists formed by functions, and `back`, `next`, `dismiss` and `actionFailed` from the common strings.
 
-Implementation: `src/core/chat-question-strings.ts`, `src/core/strings.ts`
+Implementation: `src/core/strings/chat-question.ts`, `src/core/strings.ts`
 Verification: `src/components/chat-question/chat-question.test.tsx`
 
 ### UIC-CHAT-QUESTION-5.2 - Hooks and caller attributes

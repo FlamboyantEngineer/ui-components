@@ -31,7 +31,7 @@ Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-g
 
 With `action="list"`, the stack shall be one React Aria button (`ui-avatar-group__trigger`) inside the group, named by its content (each visible avatar's name, then the overflow's, separated by commas in `VisuallyHidden` text), so its name holds what it shows ([VISUALLY-HIDDEN.md](VISUALLY-HIDDEN.md)). Pressing it, by click, Enter or Space, opens a `Popover` ([POPOVER.md](POPOVER.md)) in the `ui-avatar-group__popover` slot, titled by the provider's `peopleCount` string (`6 people`), holding a list (`ui-avatar-group__list`, a `<ul>`) of everyone in order, hidden ones included, each item (`ui-avatar-group__item`) a small `UserIdentity` with the person's identity fields and their `description` ([USER-IDENTITY.md](USER-IDENTITY.md)). Escape or an outside press closes it and focus returns to the button.
 
-Implementation: `src/components/avatar-group/avatar-group.tsx`, `src/components/visually-hidden/visually-hidden.tsx`, `src/core/presentation-strings.ts`, `labs/reference/avatar-group.css`
+Implementation: `src/components/avatar-group/avatar-group.tsx`, `src/components/visually-hidden/visually-hidden.tsx`, `src/core/strings/presentation.ts`, `labs/reference/avatar-group.css`
 Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-group.spec.ts`
 
 ### UIC-AVATAR-GROUP-2.3 - Hooks and caller attributes

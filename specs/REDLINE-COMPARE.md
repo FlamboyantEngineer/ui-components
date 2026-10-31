@@ -59,7 +59,7 @@ Verification: `src/components/redline-compare/redline-text.test.ts`, `src/compon
 
 Each row shall start with a `ui-redline-compare__marker` (`data-change`) drawing the `edit`, `plus`, `minus` or `move` glyph for a difference and a visually hidden description from the provider's `redlineRow` string: how the block changed (`moved-from` and `moved-to` for a moved block's positions) and its kind from `redlineBlockType`. Under the cells, `ui-redline-compare__notes` holds a `ui-redline-compare__note` with `data-note="type"` reading `redlineTypeChange` with the old and new kinds when the kind or level changed, one with `data-note="format"` reading `redlineFormatChange` when only the formatting changed, and on a moved block's rows a `ui-redline-compare__jump` link button (`redlineGoToNewPosition` at the old position, `redlineGoToOldPosition` at the new one) that moves focus to the row at the other position.
 
-Implementation: `src/components/redline-compare/redline-row.tsx`, `src/components/redline-compare/redline-compare-parts.tsx`, `src/core/redline-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/redline-compare/redline-row.tsx`, `src/components/redline-compare/redline-compare-parts.tsx`, `src/core/strings/redline.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/redline-compare/redline-compare.test.tsx`, `e2e/redline-compare.spec.ts`
 
 ## UIC-REDLINE-COMPARE-3 - Navigation and decisions

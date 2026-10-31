@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { FilterOperator } from '../../core/query-strings.js';
+import type { FilterOperator } from '../../core/strings/query.js';
 import { useUiStrings } from '../../core/provider.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';

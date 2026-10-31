@@ -38,9 +38,9 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-3.1 - Language files
 
-Every piece of text a component renders itself (button labels such as Close, live announcements, empty-state text, counted and listed text) shall come from a language file: a flat JSON object of ICU MessageFormat messages, one per text key, that defaults to English. Components read the compiled text through `useUiStrings()`. A message names its values (`{count}`, `{name}`), counts them with `plural`, picks words with `select`, and keeps apostrophes and angle brackets as written. A malformed message throws when it is formatted. The built-in English text compiles on first use, when a component reads it outside every provider, so importing the library does no string work.
+Every piece of text a component renders itself (button labels such as Close, live announcements, empty-state text, counted and listed text) shall come from a language file: a flat JSON object of ICU MessageFormat messages, one per text key, that defaults to English. Components read the compiled text through `useUiStrings()`. A message names its values (`{count}`, `{name}`), counts them with `plural`, picks words with `select`, and keeps apostrophes and angle brackets as written. A malformed message throws when it is formatted. The built-in English text compiles on first use, when a component reads it outside every provider, so importing the library does no string work. The text keys are declared in one module per area under `src/core/strings/`, each with the message values its text functions read (`defineStrings`); `UiStrings` and the compiled text gather every module the directory's index lists, so a new module is one line there and the keys do not change with the grouping.
 
-Implementation: `src/core/message-format.ts`, `src/core/strings.ts`, `src/core/locales/`, `src/core/provider.tsx`
+Implementation: `src/core/message-format.ts`, `src/core/strings.ts`, `src/core/strings/`, `src/core/locales/`, `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`, `src/core/message-format.test.ts`, `src/core/strings.test.ts`
 
 ### UIC-PROVIDER-3.2 - Replacing text

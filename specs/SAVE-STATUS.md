@@ -8,7 +8,7 @@
 
 `SaveStatus` shall render a `ui-save-status` `<span>` publishing `phase` (`idle`, `dirty`, `saving`, `saved`, `error`, `offline`) in `data-phase`. Every phase but `idle` shows its label in the `ui-save-status__label` slot: the provider's `saveStatus` string for the phase (`Unsaved changes`, `Saving…`, `Saved`, `Not saved`, `Offline`), or the phase's entry in `labels`, such as the reason a save failed. `saved`, `error` and `offline` draw a decorative glyph before it in the `ui-save-status__icon` slot (`check`, `error`, `offline`). `idle` shows nothing.
 
-Implementation: `src/components/save-status/save-status.tsx`, `src/core/content-strings.ts`, `src/core/glyphs.tsx`
+Implementation: `src/components/save-status/save-status.tsx`, `src/core/strings/content.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/save-status/save-status.test.tsx`, `e2e/save-status.spec.ts`
 
 ### UIC-SAVE-STATUS-1.2 - Polite announcements

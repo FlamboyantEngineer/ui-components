@@ -8,7 +8,7 @@
 
 `MergeView` shall render a root `role="group"` (`ui-merge-view`) taking the caller's labelling props, holding the header, a `ui-merge-view__sides` element with the input panes, and the result pane. Each pane is a `ui-merge-view__side` with `data-side` (`ours`, `base`, `theirs` or `result`), holding a `ui-merge-view__title` and a [Scroll Region](SCROLL-REGION.md) (`ui-merge-view__pane`, scrolling both ways) whose viewport is a focusable (`tabIndex` 0) `role="group"` named by the title. The titles read `oursLabel`, `baseLabel` and `theirsLabel`, or the provider's `mergeViewOurs`, `mergeViewBase` and `mergeViewTheirs` strings, and `mergeViewResult` for the result. The base pane draws between the two sides while `showBase` is true (the default), published as `data-show-base`.
 
-Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-view-sides.tsx`, `src/core/analysis-strings.ts`
+Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-view-sides.tsx`, `src/core/strings/analysis.ts`
 Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ### UIC-MERGE-VIEW-1.2 - Chunks and lines
@@ -38,7 +38,7 @@ Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/
 
 A conflict's block shall be a `role="group"` named by its `ui-merge-view__conflict-title`, which reads the provider's `mergeViewConflict` string with its position (`Conflict 2 of 3`), and publish `data-resolution`: `unresolved`, `ours`, `theirs`, `both`, `base` or `edited`. Its `ui-merge-view__conflict-header` also holds a `ui-merge-view__resolution` reading `mergeViewUnresolved` or `mergeViewResolved`, and a `ui-merge-view__actions` element of four `ui-merge-view__take` Buttons (`data-take` `ours`, `theirs`, `both`, `base`) named by `mergeViewTake` with each side's title and by `mergeViewTakeBoth`. Under the header, a multiline Text Field (`ui-merge-view__editor`) named by `mergeViewConflictResult` holds the conflict's result: while unresolved, our lines and their lines between conflict markers (`<<<<<<<` with our title, `=======`, `>>>>>>>` with their title).
 
-Implementation: `src/components/merge-view/merge-view-result.tsx`, `src/components/merge-view/merge-blocks.ts`, `src/core/analysis-strings.ts`
+Implementation: `src/components/merge-view/merge-view-result.tsx`, `src/components/merge-view/merge-blocks.ts`, `src/core/strings/analysis.ts`
 Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ### UIC-MERGE-VIEW-2.3 - Take actions
@@ -68,7 +68,7 @@ Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/
 
 A `ui-merge-view__header` shall lead the view with a `role="status"` `ui-merge-view__status` reading the provider's `mergeViewConflictCount` string with the unresolved and total conflicts (`2 of 3 conflicts unresolved`, `All 3 conflicts resolved`, `No conflicts`), so each resolution is announced.
 
-Implementation: `src/components/merge-view/merge-view.tsx`, `src/core/analysis-strings.ts`
+Implementation: `src/components/merge-view/merge-view.tsx`, `src/core/strings/analysis.ts`
 Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ### UIC-MERGE-VIEW-3.2 - Moving between conflicts
@@ -84,7 +84,7 @@ Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.s
 
 Each line's marker cell shall show `•` for a changed line or `!` for a conflict line, hidden from assistive technology, beside the provider's `mergeViewLine` string, visually hidden, naming the change and the line's number (`Conflict, line 4`; `Line 2`). The number cells' digits and the filler rows are hidden from assistive technology.
 
-Implementation: `src/components/merge-view/merge-view-sides.tsx`, `src/core/analysis-strings.ts`
+Implementation: `src/components/merge-view/merge-view-sides.tsx`, `src/core/strings/analysis.ts`
 Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ### UIC-MERGE-VIEW-4.2 - Hooks and caller attributes

@@ -15,7 +15,7 @@ Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/co
 
 An `image` attachment with a `thumbnailUrl` or a `url` shall show that image (`ui-chat-attachment__thumbnail`, the thumbnail preferred) and publish `data-display="thumbnail"`; no name shows beside it, so the image is named by the file name. With `onPreview`, the image sits in a ghost `Button` (`ui-chat-attachment__preview`) named by the provider string `viewAttachment` with the file name, which calls `onPreview`, and the image itself is decorative. An image that fails to load gives way to the file chip. The thumbnail's address comes from the message, so it sends no referrer (`referrerpolicy="no-referrer"`), loads lazily (`loading="lazy"`) and decodes asynchronously (`decoding="async"`): opening a long conversation does not tell a remote server the page's URL or that a thumbnail far above was reached.
 
-Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/components/chat-attachment/attachment-parts.tsx`, `src/core/chat-attachment-strings.ts`, `src/utils/safe-url.ts`
+Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/components/chat-attachment/attachment-parts.tsx`, `src/core/strings/chat-attachment.ts`, `src/utils/safe-url.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/components/chat-attachment/chat-attachment-images.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-1.3 - File chip
@@ -29,28 +29,28 @@ Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `src/co
 
 An `uploading` attachment shall show a small `ProgressBar` (`ui-chat-attachment__progress`) named by the provider string `attachmentUploading` with the file name, at `progress` (a share from 0 to 1) as a percentage with its value text, so assistive technology reads the value; without `progress` the bar is indeterminate.
 
-Implementation: `src/components/chat-attachment/attachment-parts.tsx`, `src/core/chat-attachment-strings.ts`
+Implementation: `src/components/chat-attachment/attachment-parts.tsx`, `src/core/strings/chat-attachment.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-1.5 - Upload error and Retry
 
 An `error` attachment shall show its `error`, else the provider string `attachmentFailed` with the file name, in an `InlineError` alert (`ui-chat-attachment__error`). With `onRetry`, the alert's Retry button (provider string `retry`) calls it. When the error then leaves and the focus left with its Retry button, focus moves to the attachment's remove button, else to the attachment itself, which script can focus (`tabindex="-1"`), so the reader keeps their place.
 
-Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/core/chat-attachment-strings.ts`
+Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/core/strings/chat-attachment.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-1.6 - Download
 
 A `complete` attachment with a `url` shall offer a standalone `Link` (`ui-chat-attachment__download`) showing the `download` glyph, named by the provider string `downloadFile` with the file name, that downloads the `url` under the file name.
 
-Implementation: `src/components/chat-attachment/attachment-parts.tsx`, `src/core/media-strings.ts`
+Implementation: `src/components/chat-attachment/attachment-parts.tsx`, `src/core/strings/media.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-1.7 - Remove
 
 With `onRemove`, the attachment shall end with an icon-only [Button](BUTTON.md) (`ui-chat-attachment__remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove`.
 
-Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/core/common-strings.ts`
+Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-1.8 - Safe URLs
@@ -73,7 +73,7 @@ Verification: `src/components/chat-attachment/chat-attachment.test.tsx`
 
 `ChatAttachmentList` shall render its `attachments` in order as a list (`<ul>`, `ui-chat-attachment-list`) named by `aria-label`, `aria-labelledby` or else the provider string `attachmentList`, with one item (`<li>`, `ui-chat-attachment-list__item`) per attachment holding its `ChatAttachment`. Every attachment's controls (preview, Retry, download and remove) stay in the Tab order in reading order. An empty list renders nothing.
 
-Implementation: `src/components/chat-attachment/chat-attachment-list.tsx`, `src/core/chat-attachment-strings.ts`
+Implementation: `src/components/chat-attachment/chat-attachment-list.tsx`, `src/core/strings/chat-attachment.ts`
 Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-2.2 - Gallery
