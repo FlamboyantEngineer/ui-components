@@ -71,19 +71,19 @@ Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 Implementation: `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
-### UIC-LABS-2.5 - Styled from the first paint
-
-Every lab page and the index shall apply the stylesheet and theme from a classic script in the head (`labs/build/boot.js`), before the body is parsed: the stylesheet link holds the first paint (`blocking="render"`) and the lab content stays hidden while the stylesheet loads, so a page never paints unstyled first. The toolbar stays visible, so a slow stylesheet can still be changed.
-
-Implementation: `labs/src/chrome/boot.ts`, `labs/src/chrome/settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
-Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
-
 ### UIC-LABS-2.4 - Isolated chrome
 
 The toolbar shall render in a shadow root with its own styles, so neither the chosen stylesheet nor the lab content changes how it looks.
 
 Implementation: `labs/src/chrome/mount.tsx`, `labs/src/chrome/lab-chrome.tsx`
 Verification: `e2e/lab-harness.spec.ts`
+
+### UIC-LABS-2.5 - Styled from the first paint
+
+Every lab page and the index shall apply the stylesheet and theme from a classic script in the head (`labs/build/boot.js`), before the body is parsed: the stylesheet link holds the first paint (`blocking="render"`) and the lab content stays hidden while the stylesheet loads, so a page never paints unstyled first. The toolbar stays visible, so a slow stylesheet can still be changed.
+
+Implementation: `labs/src/chrome/boot.ts`, `labs/src/chrome/settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
+Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
 ## UIC-LABS-3 - Content
 

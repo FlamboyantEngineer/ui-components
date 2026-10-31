@@ -32,13 +32,6 @@ While the panel is open, the trigger shall be described by it through `aria-desc
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`
 
-### UIC-TOOLTIP-1.9 - Label relationship
-
-With `relationship="label"` and string `content`, the hint shall be the trigger's accessible name whether the panel is open or not: the trigger element receives the content as its `aria-label` (it must forward `aria-label` to its focusable element, as `Button` and `Link` do). The open panel then describes nothing, so the name is read once; a trigger's own `aria-describedby` still wins. A trigger's own `aria-label` also wins, for a name that says more than the hint (a count, say); the hint still adds no description. Use it for a control whose only label is its hint, such as an icon-only segment or a collapsed navigation entry that is not a `Button`; an icon-only `Button` takes its hint through its own `tooltip` prop instead ([UIC-BUTTON-11.7](BUTTON.md)). Content that is not a string cannot be a name, so it describes the trigger as usual.
-
-Implementation: `src/components/tooltip/tooltip.tsx`
-Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
-
 ### UIC-TOOLTIP-1.5 - Placement
 
 `placement` (`top` by default, or any `Placement` such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`. The panel of `Tooltip` and of `AnchoredTooltip` sits on the `tooltip` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="tooltip"` and takes its inline z-index from `useLayerZIndex('tooltip')` instead of React Aria's 100000, so it stacks above menus and below toasts and a provider's `layerZIndex` applies.
@@ -66,6 +59,13 @@ The panel shall carry the hooks below, append the caller's `className` and forwa
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`
+
+### UIC-TOOLTIP-1.9 - Label relationship
+
+With `relationship="label"` and string `content`, the hint shall be the trigger's accessible name whether the panel is open or not: the trigger element receives the content as its `aria-label` (it must forward `aria-label` to its focusable element, as `Button` and `Link` do). The open panel then describes nothing, so the name is read once; a trigger's own `aria-describedby` still wins. A trigger's own `aria-label` also wins, for a name that says more than the hint (a count, say); the hint still adds no description. Use it for a control whose only label is its hint, such as an icon-only segment or a collapsed navigation entry that is not a `Button`; an icon-only `Button` takes its hint through its own `tooltip` prop instead ([UIC-BUTTON-11.7](BUTTON.md)). Content that is not a string cannot be a name, so it describes the trigger as usual.
+
+Implementation: `src/components/tooltip/tooltip.tsx`
+Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ## UIC-TOOLTIP-2 - Anchored tooltip
 
