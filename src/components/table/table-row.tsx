@@ -1,12 +1,11 @@
 'use client';
 
-import { useContext, type CSSProperties, type FocusEvent, type JSX, type ReactNode } from 'react';
+import type { CSSProperties, JSX, ReactNode } from 'react';
 import {
   Button as AriaButton,
   Cell,
   Collection,
   Row,
-  TableStateContext,
   type CellRenderProps,
 } from '../../primitives/index.js';
 import { measuredProperty, pickDataAttributes } from '../../core/hooks.js';
@@ -17,6 +16,7 @@ import type { TableRowAttributes } from './table.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Icon } from '../icon/icon.js';
 import { TableCellEditorView } from './table-cell-editor.js';
+import { renderCellElement, TableSpanningRow } from './table-spanning-row.js';
 import { TableCheckbox } from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import { getCellValue, getRowText, type TableColumn, type TableRow } from './table-rows.js';
@@ -68,52 +68,6 @@ export interface TableCellsView<T> extends Pick<
 > {
   /** The selected cells include an editable one, so the corner cell holds a fill handle. */
   canFill: boolean;
-}
-
-type CellElementProps = JSX.IntrinsicElements['td' | 'div'];
-
-/**
- * A cell's element. A control inside the cell that takes focus makes the cell the grid's focused
- * cell, so the grid keeps focus on the control. React Aria skips that while focus is visible, and
- * then moves focus back to the row or cell it focused last, or to the first row.
- */
-function TableCellElement({
-  props,
-  cellKey,
-  isVirtualized,
-  isInRange,
-}: {
-  props: CellElementProps;
-  cellKey: CellRenderProps['id'];
-  isVirtualized: boolean;
-  isInRange: boolean;
-}) {
-  const state = useContext(TableStateContext);
-  const onFocus = (event: FocusEvent<HTMLTableCellElement & HTMLDivElement>) => {
-    const cell = event.currentTarget;
-    if (cellKey !== undefined && event.target !== cell && cell.contains(event.target)) {
-      state?.selectionManager.setFocusedKey(cellKey);
-    }
-    props.onFocus?.(event);
-  };
-  // Cells inside a range of selected cells are marked selected for assistive technology.
-  const selected = isInRange ? { 'aria-selected': 'true' as const } : {};
-  return isVirtualized ? (
-    <div {...(props as JSX.IntrinsicElements['div'])} {...selected} onFocus={onFocus} />
-  ) : (
-    <td {...(props as JSX.IntrinsicElements['td'])} {...selected} onFocus={onFocus} />
-  );
-}
-
-function renderCellElement(isVirtualized: boolean, isInRange = false) {
-  return (props: CellElementProps, { id }: CellRenderProps) => (
-    <TableCellElement
-      props={props}
-      cellKey={id}
-      isVirtualized={isVirtualized}
-      isInRange={isInRange}
-    />
-  );
 }
 
 /** The key prefix of detail rows, kept out of row actions, selection and moves. */
@@ -243,23 +197,18 @@ function TableDetailRow<T extends TableRow>(props: {
   children: ReactNode;
 }) {
   const { row, model } = props;
+  // Focusable so controls in the detail stay reachable, never selectable.
   return (
-    <Row
+    <TableSpanningRow
       id={`${detailRowPrefix}${toCollectionKey(row.id)}`}
       textValue={getRowText(row, getRowHeaderColumns(model.structure.columns))}
-      // Focusable so controls in the detail stay reachable, never selectable.
-      isDisabled
-      disabledBehavior="selection"
-      className={hooks.slotClass('detail-row')}
+      isVirtualized={model.structure.isVirtualized}
+      colSpan={countTableColumns(model.structure)}
+      rowHooks={{ className: hooks.slotClass('detail-row') }}
+      cellClassName={hooks.slotClass('detail-cell')}
     >
-      <Cell
-        colSpan={countTableColumns(model.structure)}
-        className={hooks.slotClass('detail-cell')}
-        render={renderCellElement(model.structure.isVirtualized)}
-      >
-        {props.children}
-      </Cell>
-    </Row>
+      {props.children}
+    </TableSpanningRow>
   );
 }
 

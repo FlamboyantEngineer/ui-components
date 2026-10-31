@@ -120,6 +120,8 @@ describe('Table nested and detail rows', { timeout: 15_000 }, () => {
     const cell = detail.querySelector('.ui-table__detail-cell');
     expect(cell).toHaveAttribute('colspan', '3');
     expect(within(detail).getByRole('button', { name: 'Portugal cities' })).toBeInTheDocument();
+    expect(document.getElementById(detail.getAttribute('aria-labelledby') ?? '')).toBe(cell);
+    expect(detail).toHaveAccessibleName('Portugal cities');
     expect(within(detail).queryByRole('checkbox')).not.toBeInTheDocument();
     await user.click(detail);
     await user.keyboard('{Enter}');
