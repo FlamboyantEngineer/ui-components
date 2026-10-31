@@ -71,9 +71,13 @@ function currentElement(state: ParserState): MutableElement {
   return currentOpen(state.stack);
 }
 
-/** Adds text to the open element; whitespace-only text and text outside any element are dropped. */
+/**
+ * Adds text to the open element. Text outside any element is dropped, and so is whitespace-only
+ * text outside a `<text>` element, where it only indents the markup; inside one it separates words.
+ */
 function addText(state: ParserState, text: string): void {
-  if (text.trim() === '' || state.stack.elements.length === 1) return;
+  if (state.stack.elements.length === 1) return;
+  if (text.trim() === '' && findOpen(state.stack, ['text']) <= 0) return;
   currentElement(state).children.push({ type: 'text', text });
 }
 
