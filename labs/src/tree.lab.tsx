@@ -463,7 +463,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filtering"
-      description="Matching places show with their ancestors opened and the match marked; a matching country keeps its cities to open."
+      description="Matching places show with their ancestors opened and the match marked; a matching country keeps its cities to open. Places added while filtering open to their matches, and branches you collapsed stay collapsed."
     >
       <FilterTree />
     </LabSection>

@@ -169,7 +169,7 @@ Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.
 
 ### UIC-TREE-6.1 - Filtered rows
 
-While `filterText` is not blank, the tree shall show only the loaded rows whose text value matches it, their ancestors and their descendants. Ancestors of a match open to show it; expanding and collapsing then changes an expansion of the filter's own, and the reader's expansion returns once the filter clears. A row matches while its text value holds every term of `filterText`, split as [Text Match](TEXT-MATCH.md) does, or while `filter(textValue, filterText)` returns true when the caller sets one. Default labels mark the terms through `TextMatch`.
+While `filterText` is not blank, the tree shall show only the loaded rows whose text value matches it, their ancestors and their descendants. Ancestors of a match open to show it; expanding and collapsing then changes an expansion of the filter's own, and the reader's expansion returns once the filter clears. The filter's expansion keeps each row the reader expanded or collapsed under the current query and opens the ancestors of matches that arrive later, from new items or loaded children; another query, or the same query entered after the filter clears, starts again from its matches. A row matches while its text value holds every term of `filterText`, split as [Text Match](TEXT-MATCH.md) does, or while `filter(textValue, filterText)` returns true when the caller sets one. Default labels mark the terms through `TextMatch`.
 
 Filtering shall walk loaded hierarchies without recursive JavaScript calls and evaluate the match callback once per item in preorder, including deeply nested branches.
 
