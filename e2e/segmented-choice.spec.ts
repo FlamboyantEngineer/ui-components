@@ -150,6 +150,27 @@ test.describe('Segmented Choice lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-SEGMENTED-CHOICE-1.7 keeps focus on a segment as icons-only switches', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-choice');
+    const demo = page.locator('[data-lab-case="compact-toggle"]');
+    const width = demo.getByRole('radio', { name: 'Fit width' });
+    await width.focus();
+    const toggle = demo.getByRole('checkbox', { name: 'Icons only' });
+    // A click that does not take focus, as a responsive layout change would not.
+    await toggle.dispatchEvent('click');
+    await expect(demo.locator('.ui-segmented-choice')).toHaveAttribute('data-icon-only', 'true');
+    await expect(width).toBeFocused();
+    await expect(width).not.toContainText('Fit width');
+    await expect(demo.getByRole('radio', { name: 'Actual size' })).toContainText('Actual size');
+    await toggle.dispatchEvent('click');
+    await expect(width).toBeFocused();
+    await expect(width).toContainText('Fit width');
+    await lab.expectAccessible();
+  });
+
   test('UIC-SEGMENTED-CHOICE-2.4 UIC-SEGMENTED-CHOICE-2.5 presses toggles independently and submits them', async ({
     page,
     lab,
