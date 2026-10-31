@@ -16,6 +16,24 @@ import { Slider } from '../../src/components/slider/slider.js';
 import { TextField } from '../../src/components/text-field/index.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 
+/** A search box whose first Escape clears it and stays with it; the next one reaches the card. */
+function FindField({ label }: { label: string }) {
+  const [text, setText] = useState('');
+  return (
+    <input
+      type="text"
+      aria-label={label}
+      value={text}
+      onChange={(event) => setText(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape' || text === '') return;
+        event.preventDefault();
+        setText('');
+      }}
+    />
+  );
+}
+
 /** A record card: status, title, metadata, a progress preview, actions and a form in its body. */
 function RowCard({
   row,
@@ -43,6 +61,7 @@ function RowCard({
           <Button size="sm">Water</Button>
           <Link href="#rows">Open log</Link>
           <TextField label="Crates" defaultValue="" />
+          <FindField label={`Find a tree in ${row.name}`} />
         </>
       }
       footer="Last picked on Friday"

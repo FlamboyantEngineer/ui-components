@@ -5,6 +5,7 @@
 
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { MoreGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -85,16 +86,22 @@ export function useRegions(props: CardHeaderProps) {
   return { ids, moved, place };
 }
 
-/** Escape in a region More revealed closes it and returns focus to More. */
-export function useMoreEscape(more: CardMore, moreId: string) {
+/**
+ * Escape in a region this header's More revealed closes it and returns focus to More. An Escape
+ * that belongs to a text composition, or that a control inside already handled, stays with that
+ * control, and a region of a nested card belongs to that card.
+ */
+export function useMoreEscape(more: CardMore, ids: Record<MovableRegion | 'more', string>) {
   return (event: KeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Escape' || !more.isOpen) return;
+    if (event.defaultPrevented || isComposingKey(event.nativeEvent)) return;
     const target = event.target as HTMLElement;
-    if (!target.closest('[data-moved]')) return;
+    const region = target.closest<HTMLElement>('[data-moved]');
+    if (!region || !Object.values(ids).includes(region.id)) return;
     event.preventDefault();
     event.stopPropagation();
     more.setOpen(false);
-    target.ownerDocument.getElementById(moreId)?.focus();
+    target.ownerDocument.getElementById(ids.more)?.focus();
   };
 }
 
