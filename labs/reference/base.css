@@ -11,18 +11,18 @@
  * (`--ref-<component>-*`) are only for sizes one component varies by its own data attributes.
  */
 :root {
-  /* Type */
+  /* Type, in rem so the reader's browser font size enlarges it (14 pixels at the default 16). */
   --ref-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ref-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --ref-script: Georgia, 'Times New Roman', serif;
-  --ref-font-size-2xs: 10px;
-  --ref-font-size-xs: 11px;
-  --ref-font-size-sm: 12px;
-  --ref-font-size-md: 13px;
-  --ref-font-size: 14px;
-  --ref-font-size-lg: 16px;
-  --ref-font-size-xl: 20px;
-  --ref-font-size-2xl: 28px;
+  --ref-font-size-2xs: 0.625rem;
+  --ref-font-size-xs: 0.6875rem;
+  --ref-font-size-sm: 0.75rem;
+  --ref-font-size-md: 0.8125rem;
+  --ref-font-size: 0.875rem;
+  --ref-font-size-lg: 1rem;
+  --ref-font-size-xl: 1.25rem;
+  --ref-font-size-2xl: 1.75rem;
   --ref-font-weight-medium: 500;
   --ref-font-weight-strong: 600;
 
@@ -112,12 +112,13 @@
 
   /*
    * Control heights: every single-line control of one size (button, field box, menu row, segment,
-   * search box) takes the height of its `data-size`, whatever its content.
+   * search box) takes the height of its `data-size`, whatever its content. In rem, like the type
+   * scale, so controls grow with the reader's font size: 20 to 32 pixels at the default 16.
    */
-  --ref-control-height-xs: 20px;
-  --ref-control-height-sm: 24px;
-  --ref-control-height-md: 28px;
-  --ref-control-height-lg: 32px;
+  --ref-control-height-xs: 1.25rem;
+  --ref-control-height-sm: 1.5rem;
+  --ref-control-height-md: 1.75rem;
+  --ref-control-height-lg: 2rem;
 
   /*
    * Field frames: the box a value is typed or picked in, in every field, search box, editor and
@@ -159,9 +160,15 @@
  */
 :root[data-reference-document] {
   color-scheme: light;
-  font: var(--ref-font-size)/1.5 var(--ref-font);
   color: var(--ref-text);
   background: var(--ref-canvas);
+  font-family: var(--ref-font);
+  line-height: 1.5;
+}
+
+/* The root keeps the reader's font size, which the rem scales follow; the body takes the base step. */
+:root[data-reference-document] body {
+  font-size: var(--ref-font-size);
 }
 
 :root[data-theme='dark'] {

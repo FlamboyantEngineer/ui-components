@@ -41,7 +41,10 @@ test('UIC-LABS-3.7 every control takes the height of its size, not of its conten
           control,
           size,
           height: box ? Math.round(box.getBoundingClientRect().height) : null,
-          expected: Number.parseFloat(scale.getPropertyValue(`--ref-control-height-${size}`)),
+          // The scale is in rem, so it follows the reader's font size.
+          expected:
+            Number.parseFloat(scale.getPropertyValue(`--ref-control-height-${size}`)) *
+            Number.parseFloat(scale.fontSize),
         };
       }),
     boxes,
@@ -76,6 +79,20 @@ test('UIC-LABS-3.7 distinguishes surrounding type and keeps field samples compac
     }),
   );
   expect(gaps, 'empty feedback rows below controls').toEqual([]);
+});
+
+test("UIC-LABS-3.7 the type and control scales follow the reader's font size", async ({
+  page,
+  lab,
+}) => {
+  await lab.open('control-sizes');
+  const button = page.locator('[data-lab-cell="control=button content=short size=md"] .ui-button');
+  await expect(button).toHaveCSS('height', '28px');
+  await expect(button).toHaveCSS('font-size', '13px');
+  // A browser font-size preference of 20 pixels sets the root's font size.
+  await page.addStyleTag({ content: ':root { font-size: 20px; }' });
+  await expect(button).toHaveCSS('height', '35px');
+  await expect(button).toHaveCSS('font-size', '16.25px');
 });
 
 test('UIC-LABS-3.7 checkbox and radio groups show independent and exclusive choices', async ({
