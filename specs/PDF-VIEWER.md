@@ -20,7 +20,7 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`
 
 ### UIC-PDF-VIEWER-1.3 - Loading
 
-From the moment it has a source until the document has opened, the viewer shall publish `data-loading` and `aria-busy="true"` on its root, cover its stage with a [Loading Overlay](LOADING-OVERLAY.md) and disable its zoom and page controls. A `null` source shall keep the viewer loading without opening anything, for a host still fetching the bytes. A query typed meanwhile runs once the document has opened (UIC-PDF-VIEWER-5.2).
+From the moment it has a source until the document has opened, the viewer shall publish `data-loading` on its root and `aria-busy="true"` on its document (`ui-pdf-viewer__scroller`), never on an ancestor of the overlay's status, cover its stage with a [Loading Overlay](LOADING-OVERLAY.md) and disable its zoom and page controls. A `null` source shall keep the viewer loading without opening anything, for a host still fetching the bytes. A query typed meanwhile runs once the document has opened (UIC-PDF-VIEWER-5.2).
 
 Implementation: `src/components/pdf-viewer/pdf-viewer.tsx`, `src/components/pdf-viewer/pdf-viewer-stage.tsx`, `src/components/pdf-viewer/pdf-viewer-toolbar.tsx`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`
@@ -41,7 +41,7 @@ Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-1.6 - Password
 
-When the engine asks for the document's password (its loading task's `onPassword`), the viewer shall publish `data-locked` on its root instead of `data-loading` and `aria-busy`, and show a `ui-pdf-viewer__password` form over its stage: a password [Text Field](TEXT-FIELD.md) labelled with the provider's `password` string and described by its `passwordRequired` string, and a submit button with its `openDocument` string. Submitting gives the engine the password and marks the button pending until the engine answers; a password the engine turns down stays in the field, marked with the provider's `passwordIncorrect` string until it changes. The document opens once the engine accepts a password.
+When the engine asks for the document's password (its loading task's `onPassword`), the viewer shall publish `data-locked` on its root instead of `data-loading`, leave its document not busy, and show a `ui-pdf-viewer__password` form over its stage: a password [Text Field](TEXT-FIELD.md) labelled with the provider's `password` string and described by its `passwordRequired` string, and a submit button with its `openDocument` string. Submitting gives the engine the password and marks the button pending until the engine answers; a password the engine turns down stays in the field, marked with the provider's `passwordIncorrect` string until it changes. The document opens once the engine accepts a password.
 
 Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/pdf-viewer-password.tsx`, `src/components/pdf-viewer/pdf-viewer-stage.tsx`
 Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-viewer.spec.ts`

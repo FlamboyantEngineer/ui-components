@@ -52,7 +52,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 ### UIC-NOTIFICATION-CENTER-1.7 - Empty and loading
 
-While no notification shows, the list shall show a small `EmptyState` (`ui-notification-list__empty`): the loading state reading the provider's `loading` string while `isLoading`, else the `bell` glyph with `noUnreadNotifications` and `unreadNotificationsEmpty` under the unread filter, or `noNotifications` and `notificationsEmpty`. The root carries `aria-busy="true"` while `isLoading`.
+While no notification shows, the list shall show a small `EmptyState` (`ui-notification-list__empty`): the loading state reading the provider's `loading` string while `isLoading`, else the `bell` glyph with `noUnreadNotifications` and `unreadNotificationsEmpty` under the unread filter, or `noNotifications` and `notificationsEmpty`. While `isLoading`, each day group (`ui-notification-list__group`) carries `aria-busy="true"`; the root does not, so the loading state and the arrival announcement have no busy ancestor.
 
 Implementation: `src/components/notification-center/notification-list.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`

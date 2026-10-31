@@ -58,19 +58,27 @@ export interface NotificationListProps extends BaseProps, NotificationRowActions
   isLoading?: boolean | undefined;
 }
 
-type ListGroupProps = { group: DayGroup<NotificationItem>; actions: NotificationRowActions };
+type ListGroupProps = {
+  group: DayGroup<NotificationItem>;
+  actions: NotificationRowActions;
+  isBusy: boolean;
+};
 
 function countUnread(items: readonly NotificationItem[]): number {
   return items.filter((item) => !item.isRead).length;
 }
 
 /** One day: its heading, then a list of its notifications named by the heading. */
-function ListGroup({ group, actions }: ListGroupProps) {
+function ListGroup({ group, actions, isBusy }: ListGroupProps) {
   const headingId = useId();
   const Heading = `h${useHeadingLevel(undefined)}` as const;
   return (
     // The section stays unnamed, so a page with several lists does not repeat day landmarks.
-    <section {...hooks.slot('group', { day: group.day || undefined })}>
+    // Only the groups are busy: a busy root would hold back the loading and arrival statuses.
+    <section
+      {...hooks.slot('group', { day: group.day || undefined })}
+      aria-busy={isBusy || undefined}
+    >
       <Heading {...hooks.slot('group-title')} id={headingId}>
         {group.label}
       </Heading>
@@ -198,7 +206,6 @@ export function NotificationList({
       {...focusHandlers}
       ref={rootRef}
       {...hooks.root({ className, props: rest, data: { filter } })}
-      aria-busy={isLoading || undefined}
     >
       <ListToolbar
         filter={filter}
@@ -208,7 +215,7 @@ export function NotificationList({
         actions={actions}
       />
       {groups.map((group) => (
-        <ListGroup key={group.day} group={group} actions={rowActions} />
+        <ListGroup key={group.day} group={group} actions={rowActions} isBusy={isLoading} />
       ))}
       {groups.length === 0 ? <ListEmptyState filter={filter} isLoading={isLoading} /> : null}
       {hasMore && groups.length > 0 ? (

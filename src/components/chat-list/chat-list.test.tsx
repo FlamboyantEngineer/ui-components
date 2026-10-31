@@ -254,9 +254,9 @@ describe('ChatList', () => {
   it('UIC-CHAT-LIST-1.8 stands placeholder rows in for loading conversations', () => {
     const { container } = render(<ChatList conversations={conversations} isLoading />);
     expect(container.firstElementChild).toHaveAttribute('data-loading', 'true');
-    expect(container.firstElementChild).toHaveAttribute('aria-busy', 'true');
     expect(container.querySelectorAll('.ui-chat-list__skeleton')).toHaveLength(4);
     expect(screen.getByRole('status')).toHaveTextContent('Loading conversations');
+    expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     expect(screen.queryByRole('row', { name: /Ana Lima/ })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT-LIST', { slots: ['skeleton'] });
   });

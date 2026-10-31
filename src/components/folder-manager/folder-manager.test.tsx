@@ -142,8 +142,8 @@ describe('FolderManager', () => {
     const { container } = render(
       <FolderManager aria-label="Folders" folders={[]} isPending onCreate={() => {}} />,
     );
-    expect(screen.getByRole('treegrid')).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByText('Loading')).toBeInTheDocument();
+    expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     expect(container.querySelector('.ui-folder-manager')).toHaveAttribute('data-pending', 'true');
     expect(screen.getByRole('button', { name: 'New folder' })).toBeDisabled();
     expectHooksMatchSpec(container, 'FOLDER-MANAGER');

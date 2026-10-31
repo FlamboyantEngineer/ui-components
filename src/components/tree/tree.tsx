@@ -65,7 +65,10 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
       render={(domProps) => (
         <div
           {...domProps}
-          aria-busy={isPending || undefined}
+          // An empty pending tree holds the loading status, which a busy ancestor would hold back.
+          aria-busy={
+            (isPending && !(domProps as { 'data-empty'?: boolean })['data-empty']) || undefined
+          }
           onKeyDownCapture={(event) => {
             keys.onKeyDownCapture(event);
             if (!event.isPropagationStopped()) domProps.onKeyDownCapture?.(event);
