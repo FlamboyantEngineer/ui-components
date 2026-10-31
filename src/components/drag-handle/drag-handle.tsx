@@ -9,6 +9,7 @@ import type { BaseProps } from '../../core/props.js';
 import { armElementDrag } from '../../utils/pointer-drag.js';
 import { Icon } from '../icon/icon.js';
 import { isElement } from '../../utils/is-element.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 export interface DragHandleProps extends BaseProps, AriaLabellingProps {
   /** Refuses dragging, for a row that cannot move. */
@@ -41,7 +42,7 @@ function holdCellFocus(target: Element): void {
   const tabIndex = cell?.getAttribute('tabindex');
   if (!cell || tabIndex === null || tabIndex === undefined) return;
   cell.removeAttribute('tabindex');
-  requestAnimationFrame(() => cell.setAttribute('tabindex', tabIndex));
+  getOwnerWindow(cell).requestAnimationFrame(() => cell.setAttribute('tabindex', tabIndex));
 }
 
 /**

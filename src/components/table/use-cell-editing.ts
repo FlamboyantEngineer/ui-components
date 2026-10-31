@@ -15,6 +15,7 @@ import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** A finished cell edit: the row, the column and the cell's new value. */
 export interface TableCellEdit<T> {
@@ -139,9 +140,10 @@ function useRefocus(root: RefObject<HTMLElement | null>, refocus: RefObject<Refo
     const target = refocus.current;
     refocus.current = null;
     const element = target && root.current ? findCellElement(root.current, target.cell) : undefined;
-    const active = document.activeElement;
+    const owner = getOwnerDocument(root.current);
+    const active = owner.activeElement;
     // Focus is still in the closing editor, or fell to the page with it; elsewhere it moved on.
-    if (element && (active === null || active === document.body || element.contains(active))) {
+    if (element && (active === null || active === owner.body || element.contains(active))) {
       const next =
         target?.move && root.current
           ? findAdjacentCell(root.current, element, target.move)

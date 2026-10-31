@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useSyncExternalStore } from 'react';
+import { useId, useRef, useSyncExternalStore, type RefObject } from 'react';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { FieldSeverity } from '../field/field.js';
@@ -12,6 +12,7 @@ import {
   type ProblemListItem,
   type ShownProblem,
 } from './problem-list-items.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 export type { ProblemListItem } from './problem-list-items.js';
 
@@ -27,13 +28,13 @@ export interface ProblemListProps extends BaseProps {
 const noProblems: readonly FormProblem[] = [];
 const noSource: FormProblemSource = { subscribe: () => () => {}, getProblems: () => noProblems };
 
-/** A problem the caller gives, reaching the element its `targetId` names. */
-function fromItem(item: ProblemListItem): ShownProblem {
+/** A problem the caller gives, reaching the element its `targetId` names in the list's tree. */
+function fromItem(item: ProblemListItem, rootRef: RefObject<HTMLElement | null>): ShownProblem {
   const { targetId } = item;
   return {
     ...item,
     severity: item.severity ?? 'error',
-    focus: targetId ? () => document.getElementById(targetId)?.focus() : undefined,
+    focus: targetId ? () => getElementByIdFrom(rootRef.current, targetId)?.focus() : undefined,
   };
 }
 
@@ -70,11 +71,20 @@ export function ProblemList({
   const formSource = useFormProblems();
   const source = (problems === undefined ? formSource : null) ?? noSource;
   const collected = useSyncExternalStore(source.subscribe, source.getProblems, source.getProblems);
-  const shown = problems === undefined ? collected.map(fromForm) : problems.map(fromItem);
+  const rootRef = useRef<HTMLElement>(null);
+  const shown =
+    problems === undefined
+      ? collected.map(fromForm)
+      : problems.map((item) => fromItem(item, rootRef));
   const errors = shown.filter(({ severity }) => severity === 'error').length;
   const data = { severity: worstSeverity(shown), empty: shown.length === 0 };
   return (
-    <section {...hooks.root({ className, props: rest, data })} id={id} aria-labelledby={titleId}>
+    <section
+      {...hooks.root({ className, props: rest, data })}
+      ref={rootRef}
+      id={id}
+      aria-labelledby={titleId}
+    >
       <Heading {...hooks.slot('title')} id={titleId}>
         {title ?? strings.problems}
       </Heading>

@@ -95,7 +95,9 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   const size = loaded.sizes[pageIndex] ?? { width: 0, height: 0 };
   const width = size.width * scale;
   const height = size.height * scale;
-  const pixels = isNear ? measureCanvasPixels(width, height) : { width: 0, height: 0 };
+  const pixels = isNear
+    ? measureCanvasPixels(width, height, canvasRef.current)
+    : { width: 0, height: 0 };
   const viewport = isNear ? loaded.getViewport(pageIndex, scale) : undefined;
   return (
     <div {...hooks.slot('page')} ref={pageRef} style={{ position: 'relative', width, height }}>

@@ -29,6 +29,7 @@ import {
 } from './step-row.js';
 import { useStepDrag } from './use-step-drag.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 export interface StepListEditorProps extends BaseProps, AriaLabellingProps {
   /** The text columns of every step, in order, such as an action and its expected result. */
@@ -100,7 +101,7 @@ function useStepActions(options: {
   };
   /** Alt+Arrow keys: focus stays on the element that had it, which the move may drop. */
   const step = (id: string, delta: -1 | 1) => {
-    const active = document.activeElement;
+    const active = getOwnerDocument(root.current).activeElement;
     move(resolveStepMove(steps, id, delta), () =>
       requestFocus(() => (isHTMLElement(active) && active.isConnected ? active : null)),
     );

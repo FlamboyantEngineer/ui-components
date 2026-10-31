@@ -49,7 +49,7 @@ function PdfThumbnailCanvas<V extends PdfViewport, C extends PdfTextContent>({
   const width = useElementSize(item)?.width ?? 0;
   const page = view.sizes[pageIndex] ?? noSize;
   const height = page.width > 0 ? (width * page.height) / page.width : 0;
-  const pixels = isInView ? measureCanvasPixels(width, height) : noSize;
+  const pixels = isInView ? measureCanvasPixels(width, height, canvas) : noSize;
 
   useEffect(() => {
     const pdfPage = view.pages[pageIndex];

@@ -10,6 +10,7 @@ import {
 } from './transcript-runtime.js';
 import { syncWithScroll } from './transcript-sync.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** Announces a message that arrived, or that finished streaming. */
 export function announceMessage(
@@ -112,8 +113,9 @@ export function focusMessage(
 
 /** Whether focus may move to a message: not while the reader types in a field outside. */
 function isFocusFree(runtime: TranscriptRuntime) {
-  const active = document.activeElement;
-  if (runtime.viewport.current?.contains(active)) return true;
+  const viewport = runtime.viewport.current;
+  const active = getOwnerDocument(viewport).activeElement;
+  if (viewport?.contains(active)) return true;
   return !isEditableTarget(active);
 }
 

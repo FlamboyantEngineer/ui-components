@@ -49,8 +49,8 @@ function useThrottledAnnouncement({ message, onAnnounce }: ActivityAnnouncerProp
       announce();
       return undefined;
     }
-    const timer = window.setTimeout(announce, wait);
-    return () => window.clearTimeout(timer);
+    const timer = setTimeout(announce, wait);
+    return () => clearTimeout(timer);
   }, [message, latestOnAnnounce]);
   return announcement;
 }

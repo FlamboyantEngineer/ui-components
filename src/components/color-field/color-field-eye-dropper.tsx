@@ -20,10 +20,14 @@ type EyeDropperConstructor = new () => EyeDropperInstance;
 
 const hooks = createHooks('color-field', ['eye-dropper']);
 
+// Whether to draw the button is decided in render, before there is an element, so support is read
+// from the script's own window.
+/* eslint-disable no-restricted-globals */
 function findEyeDropper(): EyeDropperConstructor | null {
   if (typeof window === 'undefined' || !('EyeDropper' in window)) return null;
   return (window as unknown as { EyeDropper: EyeDropperConstructor }).EyeDropper;
 }
+/* eslint-enable no-restricted-globals */
 
 /**
  * The running sample's abort controller. A new sample aborts the one before, and unmounting (the

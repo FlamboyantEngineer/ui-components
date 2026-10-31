@@ -21,6 +21,7 @@ import {
 import { useDiagramSelection, type DiagramSelection } from './use-diagram-selection.js';
 import { useDiagramViewport, type DiagramViewportState } from './use-diagram-viewport.js';
 import { useNodeMoves, type NodeMoves } from './use-node-moves.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** A node, or one of its ports, under the pointer. */
 export interface DiagramTarget {
@@ -102,7 +103,12 @@ function createTargetRegistry() {
       }
     },
     findTarget: (clientX: number, clientY: number) => {
-      const hit = document.elementFromPoint(clientX, clientY);
+      // Hit-test in the canvas's own tree: a shadow root or a frame's document answers with its
+      // own element, where the script's document would answer with the host or the frame.
+      const [first] = targets.keys();
+      const root = first?.getRootNode();
+      const scope = root?.nodeType === 11 ? (root as ShadowRoot) : getOwnerDocument(first);
+      const hit = scope.elementFromPoint(clientX, clientY);
       const element = hit?.closest(`.${hooks.slotClass('port')}, .${hooks.slotClass('node')}`);
       return (element && targets.get(element)) ?? null;
     },

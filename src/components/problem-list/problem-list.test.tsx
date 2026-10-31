@@ -166,4 +166,24 @@ describe('ProblemList', () => {
     expect(container.querySelector('.ui-problem-list')).toHaveAttribute('data-test', 'problems');
     expectHooksMatchSpec(container, 'PROBLEM-LIST', { callerAttributes: ['data-test'] });
   });
+
+  it('UIC-PROBLEM-LIST-1.3 UIC-PORTAL-1.7 jumps to the target in the frame the list renders in', async () => {
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    const owner = frame.contentDocument;
+    if (!owner) throw new Error('The frame has no document');
+    const host = owner.createElement('div');
+    owner.body.append(host);
+    render(
+      <>
+        <ProblemList problems={problems} />
+        <input id="title-input" aria-label="Title" />
+      </>,
+      { container: host },
+    );
+    const user = userEvent.setup({ document: owner });
+    await user.click(within(host).getByRole('button', { name: 'Error: Title Add a title.' }));
+    expect(within(host).getByRole('textbox', { name: 'Title' })).toHaveFocus();
+    frame.remove();
+  });
 });

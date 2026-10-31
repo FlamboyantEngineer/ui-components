@@ -8,6 +8,7 @@ import { FindBar } from '../find-bar/find-bar.js';
 import { Button } from '../button/button.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import { findMessageMatches } from './chat-model.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 /** The search within a conversation: its query, the matching messages and the current one. */
 interface ChatSearchModel {
@@ -30,7 +31,7 @@ interface ChatSearchModel {
 
 /** Moves focus to the current match's message, else back to the toggle, once the bar closes. */
 function focusAfterClose(highlightedId: string | undefined, toggle: HTMLButtonElement | null) {
-  const message = highlightedId ? document.getElementById(highlightedId) : null;
+  const message = highlightedId ? getElementByIdFrom(toggle, highlightedId) : null;
   (message ?? toggle)?.focus();
 }
 

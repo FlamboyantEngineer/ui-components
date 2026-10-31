@@ -12,6 +12,7 @@ import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import type { ComboboxOption } from './combobox-options.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 export interface ComboboxChipsProps {
   /** The combobox's label text, which names the group of chips. */
@@ -74,7 +75,7 @@ export function useChipsLabel({ label, aria, isEnabled }: ChipsLabelOptions) {
   useLayoutEffect(() => {
     if (!isEnabled || given !== undefined) return;
     const element = labelRef.current;
-    const owner = element?.ownerDocument ?? document;
+    const owner = getOwnerDocument(element);
     const sources = labelledBy
       ? labelledBy.split(/\s+/).map((id) => owner.getElementById(id))
       : [element];

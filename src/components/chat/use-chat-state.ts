@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState, type RefCallback, type RefObject } from 'react';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** What the composer edits instead of a new message: one of the reader's messages, or a queued one. */
 interface ChatEditing {
@@ -63,7 +64,10 @@ export function useChatState(conversationId: string | undefined): ChatState {
   // has handed focus back to where it opened.
   const focusComposer = useCallback(() => {
     composerRef.current?.focus();
-    requestAnimationFrame(() => requestAnimationFrame(() => composerRef.current?.focus()));
+    const view = getOwnerWindow(composerRef.current);
+    view.requestAnimationFrame(() =>
+      view.requestAnimationFrame(() => composerRef.current?.focus()),
+    );
   }, []);
   const commands = useMemo(() => {
     const update = (patch: Partial<ChatOwnState>) => setOwn((state) => ({ ...state, ...patch }));

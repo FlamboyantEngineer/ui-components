@@ -2,6 +2,7 @@
 
 import type { PdfPage, PdfRenderTask, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface CanvasPixels {
   width: number;
@@ -49,10 +50,17 @@ export function drawPage<V extends PdfViewport, C extends PdfTextContent>(
   return () => task.cancel();
 }
 
-/** A page bitmap's size in device pixels, capped so a deep zoom stays within memory. */
-export function measureCanvasPixels(width: number, height: number): CanvasPixels {
+/**
+ * A page bitmap's size in device pixels, at the pixel ratio of the window `node` is in (1 before
+ * there is a node), capped so a deep zoom stays within memory.
+ */
+export function measureCanvasPixels(
+  width: number,
+  height: number,
+  node: Node | null,
+): CanvasPixels {
   const area = width * height;
-  const deviceRatio = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
+  const deviceRatio = node ? getOwnerWindow(node).devicePixelRatio || 1 : 1;
   const ratio = area > 0 ? Math.min(deviceRatio, Math.sqrt(maxCanvasPixels / area)) : 0;
   return { width: Math.floor(width * ratio), height: Math.floor(height * ratio) };
 }

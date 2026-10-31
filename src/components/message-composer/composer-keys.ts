@@ -50,6 +50,9 @@ const touchSend: readonly ShortcutChord[] = ['Ctrl+Enter'];
 
 const coarsePointer = '(pointer: coarse)';
 
+// The pointer is the device's, the same in every window, and it is read in render before there is
+// an element, so it is asked of the script's own window.
+/* eslint-disable no-restricted-globals */
 function readCoarsePointer(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia(coarsePointer).matches;
 }
@@ -60,6 +63,7 @@ function subscribeToPointer(onChange: () => void): () => void {
   query.addEventListener('change', onChange);
   return () => query.removeEventListener('change', onChange);
 }
+/* eslint-enable no-restricted-globals */
 
 function isChordList(chords: MessageComposerChords): chords is readonly ShortcutChord[] {
   return Array.isArray(chords);

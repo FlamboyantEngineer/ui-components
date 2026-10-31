@@ -16,6 +16,7 @@ import { TooltipTriggerStateContext, type TooltipTriggerState } from '../../prim
 import type { Tone } from '../../core/props.js';
 import { TooltipPanel } from '../tooltip/tooltip.js';
 import { chartHooks as hooks } from './chart-hooks.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 /** A drawn value a reader can focus: its series' position and its position along the series. */
 export interface ChartPoint {
@@ -129,17 +130,22 @@ function findNextPoint(
  * Closes an open tooltip on Escape wherever focus is, as React Aria's tooltips do, so a tooltip
  * opened by hover can be dismissed without moving the pointer. The press goes no further.
  */
-function useEscapeToClose(isOpen: boolean, close: () => void) {
+function useEscapeToClose(
+  isOpen: boolean,
+  close: () => void,
+  anchor: RefObject<SVGElement | null>,
+) {
   useEffect(() => {
     if (!isOpen) return undefined;
+    const owner = getOwnerDocument(anchor.current);
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.stopPropagation();
       close();
     };
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [isOpen, close]);
+    owner.addEventListener('keydown', onKeyDown, true);
+    return () => owner.removeEventListener('keydown', onKeyDown, true);
+  }, [isOpen, close, anchor]);
 }
 
 /**
@@ -154,7 +160,7 @@ export function useChartPoints(points: readonly ChartPoint[], isVertical = false
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const close = useCallback(() => setActiveKey(null), []);
-  useEscapeToClose(activeKey !== null, close);
+  useEscapeToClose(activeKey !== null, close, anchor);
   const tabKey = points.some((point) => point.key === focusKey) ? focusKey : points[0]?.key;
   const keys = isVertical ? verticalKeys : horizontalKeys;
   const activate = (key: string, element: SVGElement) => {

@@ -124,7 +124,7 @@ export function useTabReorderKeys({ state, listRef, reorder }: TabReorderKeyOpti
     const key = refocusKey.current;
     refocusKey.current = null;
     const tab = key === null ? undefined : findTabElement(listRef.current, key);
-    if (tab && tab !== document.activeElement) tab.focus();
+    if (tab && tab !== tab.ownerDocument.activeElement) tab.focus();
   });
 
   if (!reorder || !state) return undefined;

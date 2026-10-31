@@ -122,7 +122,7 @@ export function ContextMenu({
   const fallbackRef = useRef<HTMLSpanElement>(null);
   const state = useRootMenuState(isOpen, controller.close);
   const anchorProps = useMenuAnchor({ anchor, placement, owner: triggerRef ?? fallbackRef });
-  useCloseOnSecondaryPress(isOpen, state.close);
+  useCloseOnSecondaryPress(isOpen, state.close, triggerRef ?? fallbackRef);
   const menuDefaults = useMemo(
     () => ({ onClose: state.close, autoFocus: 'first' as const, 'aria-label': label }),
     [state.close, label],

@@ -71,7 +71,8 @@ function useFocusRescue(getFallbackFocus: () => HTMLElement | null) {
   useLayoutEffect(() => {
     const container = containerRef.current;
     return () => {
-      if (container?.contains(document.activeElement)) fallbackRef.current()?.focus();
+      if (container?.contains(container.ownerDocument.activeElement))
+        fallbackRef.current()?.focus();
     };
   }, []);
   return containerRef;

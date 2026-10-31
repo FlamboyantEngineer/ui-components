@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { downloadPdf, printPdf, toPdfFileName } from './pdf-commands.js';
 import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
@@ -21,12 +21,15 @@ import { usePdfVisiblePosition } from './use-pdf-visible-position.js';
 import { usePdfZoom } from './use-pdf-zoom.js';
 import { usePinchZoom } from './use-pinch-zoom.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 
 interface UsePdfCommandsOptions<V extends PdfViewport, C extends PdfTextContent> {
   view: LoadedPdf<V, C> | null;
   rotate: PdfCommands['rotate'];
   source: PdfSource | null;
   label: string;
+  /** An element of the viewer, whose document prints. */
+  scrollerRef: RefObject<HTMLElement | null>;
 }
 
 const noSizes: readonly PdfSize[] = [];
@@ -54,8 +57,8 @@ function usePdfCommands<V extends PdfViewport, C extends PdfTextContent>(
     () => ({
       rotate,
       print() {
-        const { view } = latest.current;
-        if (view) printPdf(view).catch(ignore);
+        const { view, scrollerRef } = latest.current;
+        if (view) printPdf(view, getOwnerDocument(scrollerRef.current)).catch(ignore);
       },
       download() {
         const { view, source, label } = latest.current;
@@ -128,7 +131,7 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     pageCount,
     findFieldRef,
   });
-  const commands = usePdfCommands({ view, rotate, source: props.source, label });
+  const commands = usePdfCommands({ view, rotate, source: props.source, label, scrollerRef });
   const sidebar = { isOpen: isSidebarOpen, setOpen: setSidebarOpen };
   const refs = { scrollerRef, pagesRef, findFieldRef };
   return {

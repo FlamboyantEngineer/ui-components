@@ -205,12 +205,12 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
   );
   const { draft, setDraft, error, setError, session } = useEditSession<T>(isEditing);
   const focus = useEditFocus(isEditing);
-  const blurTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(blurTimer.current), []);
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(blurTimer.current), []);
   const current = draft === null ? value : draft.value;
 
   const close = (focusReturn: FocusReturn) => {
-    window.clearTimeout(blurTimer.current);
+    clearTimeout(blurTimer.current);
     focus.focusReturn.current = focusReturn;
     setDraft(null);
     setError(null);
@@ -249,11 +249,11 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
       }
     },
     // Focus moving into an overlay the editor opened (a list, a calendar) comes back through React.
-    onFocus: () => window.clearTimeout(blurTimer.current),
+    onFocus: () => clearTimeout(blurTimer.current),
     onBlur: (event: FocusEvent<HTMLDivElement>) => {
       if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-      window.clearTimeout(blurTimer.current);
-      blurTimer.current = window.setTimeout(() => commit(null, 'none'), 0);
+      clearTimeout(blurTimer.current);
+      blurTimer.current = setTimeout(() => commit(null, 'none'), 0);
     },
   };
 

@@ -29,6 +29,7 @@ import {
   type DashboardGridItem,
 } from './dashboard-layout.js';
 import type { CellStep, TileMoveKind } from './use-tile-move.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 export type { DashboardGridItem } from './dashboard-layout.js';
 
@@ -95,7 +96,7 @@ export function useDashboardGridTile(): DashboardGridTileState | null {
 }
 
 function readGap(element: Element, property: 'columnGap' | 'rowGap'): number {
-  const value = Number.parseFloat(getComputedStyle(element)[property]);
+  const value = Number.parseFloat(getOwnerWindow(element).getComputedStyle(element)[property]);
   return Number.isFinite(value) ? value : 0;
 }
 

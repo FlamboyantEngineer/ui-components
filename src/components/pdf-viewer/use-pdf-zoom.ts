@@ -13,6 +13,7 @@ import {
 } from './pdf-zoom.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface UsePdfZoomOptions {
   defaultZoom: PdfZoom;
@@ -37,7 +38,7 @@ export interface PdfZoomState {
 
 function measurePadding(element: HTMLElement | null): PdfSize {
   if (!element) return { width: 0, height: 0 };
-  const style = getComputedStyle(element);
+  const style = getOwnerWindow(element).getComputedStyle(element);
   const sum = (...values: string[]) =>
     values.reduce((total, value) => total + (Number.parseFloat(value) || 0), 0);
   return {

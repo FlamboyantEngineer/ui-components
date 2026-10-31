@@ -6,6 +6,7 @@ import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { clamp } from '../../utils/clamp.js';
 import { isOverflowing } from '../../utils/is-overflowing.js';
 import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 
 interface ListScrollOptions {
   orientation: Orientation;
@@ -28,7 +29,7 @@ function centerTab(list: HTMLElement, tab: HTMLElement, orientation: Orientation
   const delta = vertical
     ? tabBox.top + tabBox.height / 2 - (listBox.top + list.clientTop + list.clientHeight / 2)
     : tabBox.left + tabBox.width / 2 - (listBox.left + list.clientLeft + list.clientWidth / 2);
-  const rtl = !vertical && getComputedStyle(list).direction === 'rtl';
+  const rtl = !vertical && getOwnerWindow(list).getComputedStyle(list).direction === 'rtl';
   const [min, max] = rtl ? [-range, 0] : [0, range];
   const target = clamp(position + delta, min, max);
   const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
@@ -67,7 +68,8 @@ export function useCenterSelectedTab(
 ): void {
   const latestKey = useRef(selectedKey);
   const centeredKey = useRef<Key | null>(null);
-  const frame = useRef<number | null>(null);
+  // Cancels the centering frame, in the window that runs it.
+  const frame = useRef<(() => void) | null>(null);
 
   // Tabs mount after the collection is built, so this checks every commit. Centering waits a frame:
   // the first press into the list moves focus there, and React Aria then restores the list's
@@ -76,7 +78,8 @@ export function useCenterSelectedTab(
     latestKey.current = selectedKey;
     if (selectedKey === null || centeredKey.current === selectedKey || frame.current !== null)
       return;
-    frame.current = requestAnimationFrame(() => {
+    const view = getOwnerWindow(listRef.current);
+    const id = view.requestAnimationFrame(() => {
       frame.current = null;
       const list = listRef.current;
       const tab = list?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
@@ -84,11 +87,12 @@ export function useCenterSelectedTab(
       centeredKey.current = latestKey.current;
       centerTab(list, tab, orientation);
     });
+    frame.current = () => view.cancelAnimationFrame(id);
   });
 
   useEffect(
     () => () => {
-      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      frame.current?.();
     },
     [],
   );

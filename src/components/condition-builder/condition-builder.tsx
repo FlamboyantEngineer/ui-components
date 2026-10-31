@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useRef, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
@@ -26,6 +26,7 @@ import {
   type ConditionRule,
 } from './condition-tree.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 export interface ConditionBuilderProps extends BaseProps, AriaLabellingProps {
   /** The fields rules can test, as for a `FilterBar`. */
@@ -50,16 +51,19 @@ interface FocusRequest {
 
 const emptyTree: ConditionGroup = { type: 'group', id: 'root', combinator: 'and', rules: [] };
 
-function findFocusTarget({ elementId, selector }: FocusRequest): HTMLElement | null {
-  const element = document.getElementById(elementId);
+function findFocusTarget(
+  root: HTMLElement | null,
+  { elementId, selector }: FocusRequest,
+): HTMLElement | null {
+  const element = getElementByIdFrom(root, elementId);
   const target = selector ? element?.querySelector(selector) : element;
   return isHTMLElement(target) ? target : null;
 }
 
 /** Moves focus to the requested element after the render that drew it. */
-function useNodeFocusRequest() {
+function useNodeFocusRequest(rootRef: RefObject<HTMLElement | null>) {
   const request = useFocusRequest();
-  return (target: FocusRequest) => request(() => findFocusTarget(target));
+  return (target: FocusRequest) => request(() => findFocusTarget(rootRef.current, target));
 }
 
 function useBuilderActions(options: {
@@ -67,10 +71,11 @@ function useBuilderActions(options: {
   setTree: (tree: ConditionGroup) => void;
   fields: readonly FilterField[];
   elementId: (id: string, part?: 'add') => string;
+  rootRef: RefObject<HTMLElement | null>;
 }): ConditionBuilderActions {
   const { tree, setTree, fields, elementId } = options;
   const createId = useIdFactory();
-  const requestFocus = useNodeFocusRequest();
+  const requestFocus = useNodeFocusRequest(options.rootRef);
   const newRule = (): ConditionRule | null => {
     const field = fields[0];
     return field ? { type: 'rule', id: createId(), ...createFilterCondition(field) } : null;
@@ -152,14 +157,16 @@ export function ConditionBuilder({
   'aria-label': ariaLabel,
   ...rest
 }: ConditionBuilderProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const strings = useUiStrings();
   const [tree, setTree] = useControllableState(value, defaultValue, onChange);
   const baseId = useId();
   const elementId = (id: string, part?: 'add') => `${baseId}-${part ?? 'node'}-${id}`;
-  const actions = useBuilderActions({ tree, setTree, fields, elementId });
+  const actions = useBuilderActions({ tree, setTree, fields, elementId, rootRef });
   return (
     <div
       {...rest}
+      ref={rootRef}
       {...conditionBuilderHooks.root({ className, props: rest })}
       role="group"
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.conditions)}
