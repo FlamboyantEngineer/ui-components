@@ -15,6 +15,7 @@ import {
   LockedChromeEditor,
   LongDocumentEditor,
   shortNote,
+  taskNote,
 } from './rich-text-editor-cases.js';
 
 const states = ['resting', 'empty', 'required', 'invalid', 'read-only', 'disabled'] as const;
@@ -30,8 +31,8 @@ const stateProps: Record<(typeof states)[number], Partial<RichTextEditorProps>> 
   empty: { placeholder: 'Write a note…' },
   required: { isRequired: true, placeholder: 'Required' },
   invalid: { defaultValue: shortNote, validate: checkFruit },
-  'read-only': { defaultValue: shortNote, isReadOnly: true },
-  disabled: { defaultValue: shortNote, isDisabled: true },
+  'read-only': { defaultValue: taskNote, isReadOnly: true },
+  disabled: { defaultValue: taskNote, isDisabled: true },
 };
 
 mountLab(

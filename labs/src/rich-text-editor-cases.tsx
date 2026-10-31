@@ -67,6 +67,21 @@ export const shortNote: RichTextDocument = {
   content: [paragraph(text('Pick the '), text('pears', [{ type: 'bold' }]), text(' on Friday.'))],
 };
 
+/** The short note with a task list, so the read-only and disabled states show their checkboxes. */
+export const taskNote: RichTextDocument = {
+  type: 'doc',
+  content: [
+    ...(shortNote.content ?? []),
+    {
+      type: 'taskList',
+      content: [
+        { type: 'taskItem', attrs: { checked: true }, content: [paragraph(text('Wash'))] },
+        { type: 'taskItem', attrs: { checked: false }, content: [paragraph(text('Peel'))] },
+      ],
+    },
+  ],
+};
+
 const templates: InsertMenuItem[] = [
   {
     id: 'signature',

@@ -439,13 +439,24 @@ test.describe('Rich Text Editor lab', () => {
     await expect(box).toHaveAttribute('aria-readonly', 'true');
     await box.focus();
     await page.keyboard.type('x');
-    await expect(box).toHaveText('Pick the pears on Friday.');
+    await expect(box).toHaveText('Pick the pears on Friday.WashPeel');
     await expect(readOnly.getByRole('button', { name: 'Bold' })).toBeDisabled();
+    await expect(readOnly.getByRole('checkbox', { name: 'Done' }).first()).toHaveAttribute(
+      'aria-readonly',
+      'true',
+    );
     const disabled = matrixCell(page, 'state=disabled chrome=plain');
     await expect(disabled.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
+    // Nothing in a disabled editor is a tab stop, its task checkboxes included.
+    for (const checkbox of await disabled.getByRole('checkbox', { name: 'Done' }).all()) {
+      await expect(checkbox).toBeDisabled();
+    }
+    await disabled.getByText('Note', { exact: true }).click();
+    await page.keyboard.press('Tab');
+    await expect(disabled.locator(':focus')).toHaveCount(0);
     const invalid = matrixCell(page, 'state=invalid chrome=plain');
     await expect(invalid.getByRole('textbox', { name: 'Note' })).toHaveAttribute(
       'aria-invalid',
