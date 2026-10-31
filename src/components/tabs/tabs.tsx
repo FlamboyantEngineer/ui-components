@@ -4,14 +4,13 @@ import { useMemo, type ReactNode, type Ref } from 'react';
 import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, Orientation, Size } from '../../core/props.js';
-import { usePersistentState } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionItemKey, toCollectionKey } from '../../utils/to-collection-key.js';
 import { TabsSharedContext, useTabsShared } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import { createJsonCodec } from '../../utils/json-codec.js';
-import { isKey } from '../../utils/is-key.js';
+import { keyCodec } from '../../utils/json-codec.js';
+import { usePersistedValue } from '../../utils/use-persisted-value.js';
 
 export type TabsSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -78,11 +77,6 @@ type SelectionOptions = Pick<
   'persistKey' | 'selectedKey' | 'defaultSelectedKey' | 'onSelectionChange'
 >;
 
-const keyCodec = createJsonCodec((value): Key | null => {
-  if (!isKey(value)) throw new Error('Not a tab key');
-  return value;
-});
-
 /**
  * The selection props for the building block: the caller's, or, with `persistKey` and no
  * `selectedKey`, an uncontrolled selection that starts from the provider's storage and is written
@@ -93,20 +87,20 @@ function usePersistedSelection({
   persistKey,
   ...selection
 }: SelectionOptions): Omit<SelectionOptions, 'persistKey'> {
-  const isPersisted = persistKey !== undefined && selection.selectedKey === undefined;
-  const [storedKey, setStoredKey] = usePersistentState<Key | null>(
-    isPersisted ? persistKey : undefined,
-    selection.defaultSelectedKey ?? null,
-    { codec: keyCodec },
-  );
-  if (!isPersisted) return selection;
-  return {
-    defaultSelectedKey: storedKey ?? undefined,
-    onSelectionChange: (key: Key) => {
-      setStoredKey(key);
-      selection.onSelectionChange?.(key);
-    },
-  };
+  const { selectedKey, onSelectionChange } = selection;
+  const [storedKey, setStoredKey] = usePersistedValue<Key | null>({
+    value: selectedKey,
+    defaultValue: selection.defaultSelectedKey ?? null,
+    onChange:
+      onSelectionChange &&
+      ((key) => {
+        if (key !== null) onSelectionChange(key);
+      }),
+    persistKey,
+    codec: keyCodec,
+  });
+  if (persistKey === undefined || selectedKey !== undefined) return selection;
+  return { defaultSelectedKey: storedKey ?? undefined, onSelectionChange: setStoredKey };
 }
 
 /**

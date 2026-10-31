@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { booleanCodec, createJsonCodec, keyListCodec } from './json-codec.js';
+import {
+  booleanCodec,
+  createJsonCodec,
+  keyCodec,
+  keyListCodec,
+  numberCodec,
+} from './json-codec.js';
 import { isKey } from './is-key.js';
 
 describe('createJsonCodec', () => {
@@ -18,6 +24,15 @@ describe('createJsonCodec', () => {
     expect(() => codec.parse('true')).toThrow('Not a key');
     expect(() => codec.parse('{')).toThrow(SyntaxError);
   });
+
+  it('UIC-PROVIDER-6.4 stores what write returns in place of the value', () => {
+    const pair = createJsonCodec(
+      (value) => [Number(value), 100 - Number(value)],
+      (sizes: number[]) => sizes[0],
+    );
+    expect(pair.stringify([30, 70])).toBe('30');
+    expect(pair.parse('30')).toEqual([30, 70]);
+  });
 });
 
 describe('stored list and boolean codecs', () => {
@@ -32,6 +47,17 @@ describe('stored list and boolean codecs', () => {
       expect(() => keyListCodec.parse(raw)).toThrow(TypeError);
     },
   );
+
+  it('UIC-PROVIDER-6.2 reads only keys as keys and finite numbers as numbers', () => {
+    expect(keyCodec.parse('1')).toBe(1);
+    expect(keyCodec.parse('"1"')).toBe('1');
+    expect(numberCodec.parse('2.5')).toBe(2.5);
+    for (const raw of ['{}', 'null', 'true']) {
+      expect(() => keyCodec.parse(raw)).toThrow(TypeError);
+      expect(() => numberCodec.parse(raw)).toThrow(TypeError);
+    }
+    expect(() => numberCodec.parse('"2"')).toThrow(TypeError);
+  });
 
   it('UIC-PROVIDER-6.2 reads only booleans as booleans', () => {
     expect(booleanCodec.parse('false')).toBe(false);
