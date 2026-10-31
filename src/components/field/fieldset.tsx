@@ -4,6 +4,7 @@ import { useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { FieldScopeContext, useFieldScope } from './field-scope.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export interface FieldsetProps extends Omit<NativeProps<'fieldset'>, 'disabled'>, BaseProps {
   /** The group's caption, drawn in a `<legend>`, which names the group. */
@@ -38,7 +39,7 @@ export function Fieldset({
       {...hooks.root({ className, props: rest, data: { disabled: isGroupDisabled } })}
       disabled={isDisabled || undefined}
     >
-      {legend ? <legend {...hooks.slot('legend')}>{legend}</legend> : null}
+      {isEmptyNode(legend) ? null : <legend {...hooks.slot('legend')}>{legend}</legend>}
       <FieldScopeContext value={scope}>{children}</FieldScopeContext>
     </fieldset>
   );

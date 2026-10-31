@@ -5,6 +5,21 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Fieldset } from './fieldset.js';
 
 describe('Fieldset', () => {
+  it('UIC-FIELD-10.1 draws a zero legend and skips an empty one', () => {
+    const { container, rerender } = render(
+      <Fieldset legend={0}>
+        <TextField label="Street" />
+      </Fieldset>,
+    );
+    expect(screen.getByRole('group', { name: '0' })).toBeInTheDocument();
+    rerender(
+      <Fieldset legend="">
+        <TextField label="Street" />
+      </Fieldset>,
+    );
+    expect(container.querySelector('legend')).toBeNull();
+  });
+
   it('UIC-FIELD-10.1 groups fields under a legend that names the group', () => {
     const { container } = render(
       <Fieldset legend="Delivery" id="delivery" className="wide" data-test="group">

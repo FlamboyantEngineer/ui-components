@@ -189,6 +189,17 @@ mountLab(
       >
         <Swapped />
       </LabSection>
+      <LabSection
+        title="Zero content"
+        description="A zero label, description and decoration draw like any other content."
+      >
+        <ChoiceGroup label="Spare seats" description={0} decoration={0}>
+          <Choice value="0" description={0}>
+            {0}
+          </Choice>
+          <Choice value="1">{1}</Choice>
+        </ChoiceGroup>
+      </LabSection>
     </div>
   </>,
 );

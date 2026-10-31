@@ -28,6 +28,7 @@ import { focusControl, useFieldFormBinding } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { useFieldUndo } from './field-undo.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export interface FieldProps<T> extends BaseProps {
   /** The field's controller, from `useFieldState`. */
@@ -200,8 +201,8 @@ export function Field<T>({
   const control = toFieldControlProps(state, ids, {
     ref: slots.ref('control'),
     label: hasLabel ? undefined : label,
-    hasDescription: Boolean(description),
-    hasDecoration: Boolean(decoration),
+    hasDescription: !isEmptyNode(description),
+    hasDecoration: !isEmptyNode(decoration),
   });
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
@@ -223,20 +224,20 @@ export function Field<T>({
         <FieldButtons
           label={label}
           size={toInnerControlSize(size)}
-          help={help ? { id: ids.help, content: help } : null}
+          help={isEmptyNode(help) ? null : { id: ids.help, content: help }}
           menu={menu.length > 0 ? menuModel : null}
           onRestore={state.isDirty ? () => restoreField(state, slots) : null}
         />
-        {decoration ? (
+        {isEmptyNode(decoration) ? null : (
           <div {...hooks.slot('decoration')} id={ids.decoration}>
             {decoration}
           </div>
-        ) : null}
-        {description ? (
+        )}
+        {isEmptyNode(description) ? null : (
           <div {...hooks.slot('description')} id={ids.description}>
             {description}
           </div>
-        ) : null}
+        )}
         <FieldMessage id={ids.message} validation={state.validation}>
           {renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message}
         </FieldMessage>
