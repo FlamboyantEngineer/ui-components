@@ -247,7 +247,7 @@ Verification: `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich
 
 ### UIC-RICH-TEXT-EDITOR-10.1 - HTML
 
-`serializeRichTextHtml(document, { schema })` shall return the document as HTML, rendered as each node and mark type renders itself, with runs of shared marks kept in one element, text and attribute values escaped, and no browser document needed.
+`serializeRichTextHtml(document, { schema })` shall return the document as HTML, rendered as each node and mark type renders itself, with runs of shared marks kept in one element, text and attribute values escaped, and no browser document needed. The default `link` mark renders an `<a>` with its safe `href` and `title` only: it opens in the same tab, so it takes no `rel`, and the HTML it writes is what [HTML Markup](HTML-MARKUP.md) keeps.
 
 Implementation: `src/components/rich-text-editor/rich-text-export.ts`
 Verification: `src/components/rich-text-editor/rich-text-export.test.ts`, `e2e/rich-text-editor.spec.ts`

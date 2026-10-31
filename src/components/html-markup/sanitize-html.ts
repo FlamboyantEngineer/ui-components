@@ -4,6 +4,7 @@
 import { requireDefined } from '../../utils/require-defined.js';
 import { defaultUrlSchemes, isSafeUrl } from '../../utils/safe-url.js';
 import { buildHtmlTree, type RawElement, type RawNode } from './html-tree.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 export interface HtmlElementNode {
   readonly type: 'element';
@@ -74,8 +75,6 @@ const urlAttributes = new Set([
   'xlink:href',
 ]);
 
-const safeRel = ['noopener', 'noreferrer'];
-
 function isAllowedName(name: string, allowed: readonly string[]): boolean {
   return allowed.some((entry) =>
     entry.endsWith('*') ? name.startsWith(entry.slice(0, -1)) : entry === name,
@@ -100,10 +99,8 @@ function filterClassName(value: string): string {
 }
 
 function withSafeRel(attributes: Record<string, string>): Record<string, string> {
-  if (attributes.target !== '_blank') return attributes;
-  const tokens = (attributes.rel ?? '').split(/\s+/).filter(Boolean);
-  const rel = [...tokens, ...safeRel.filter((token) => !tokens.includes(token))].join(' ');
-  return { ...attributes, rel };
+  const rel = mergeSafeRel(attributes.target, attributes.rel);
+  return rel === undefined ? attributes : { ...attributes, rel };
 }
 
 function filterAttributes(element: RawElement, policy: HtmlPolicy): Record<string, string> {

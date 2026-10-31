@@ -16,7 +16,7 @@ describe('PDF link service', () => {
     expect(link.href).toBe('https://example.com/');
     expect(link.title).toBe('https://example.com/');
     expect(link.target).toBe('_blank');
-    expect(link.rel).toBe('noopener noreferrer nofollow');
+    expect(link.rel).toBe('nofollow noopener noreferrer');
   });
 
   it('UIC-PDF-VIEWER-2.4 sends destinations to the viewer instead of the browser', () => {

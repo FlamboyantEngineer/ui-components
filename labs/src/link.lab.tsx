@@ -102,12 +102,12 @@ mountLab(
     </LabSection>
     <LabSection
       title="Running text"
-      description="Inline links stay underlined so colour is not the only cue; the external link says it opens a new tab."
+      description="Inline links stay underlined so colour is not the only cue; the external link says it opens a new tab, and its caller rel (nofollow) keeps noopener and noreferrer."
     >
       <p data-lab-demo="prose" style={{ maxInlineSize: 520 }}>
         Autumn brings <Link href="#lab-apples">apples</Link>, <Link href="#lab-pears">pears</Link>{' '}
         and quinces. For what is in season near you, read the{' '}
-        <Link href="https://example.com/seasons" isExternal>
+        <Link href="https://example.com/seasons" isExternal rel="nofollow">
           seasonal produce guide
         </Link>
         .

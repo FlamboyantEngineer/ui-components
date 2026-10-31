@@ -405,7 +405,7 @@ describe('ListRow', () => {
             onPress={() => pressed.push('press')}
             onAuxPress={() => pressed.push('middle')}
           />
-          <ListRow href="/other/" target="_blank" rel="external" title="Other" />
+          <ListRow href="/other/" target="_blank" rel="nofollow" title="Other" />
         </List>
       </UiProvider>,
     );
@@ -413,7 +413,10 @@ describe('ListRow', () => {
     expect(link).toHaveAttribute('data-routed', 'true');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.getByRole('link', { name: 'Other' })).toHaveAttribute('rel', 'external');
+    expect(screen.getByRole('link', { name: 'Other' })).toHaveAttribute(
+      'rel',
+      'nofollow noopener noreferrer',
+    );
     const click = new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
     act(() => {
       link.dispatchEvent(click);

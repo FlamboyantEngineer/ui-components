@@ -84,11 +84,11 @@ test.describe('Link lab', () => {
     expect(requireDefined(glyph).x + requireDefined(glyph).width).toBeLessThanOrEqual(
       requireDefined(box).x + requireDefined(box).width + 1,
     );
-    await expect(
-      page.locator('[data-lab-demo="prose"]').getByRole('link', {
-        name: 'seasonal produce guide (opens in a new tab)',
-      }),
-    ).toHaveAttribute('target', '_blank');
+    const prose = page.locator('[data-lab-demo="prose"]').getByRole('link', {
+      name: 'seasonal produce guide (opens in a new tab)',
+    });
+    await expect(prose).toHaveAttribute('target', '_blank');
+    await expect(prose).toHaveAttribute('rel', 'nofollow noopener noreferrer');
   });
 
   test('UIC-LINK-2.3 UIC-LINK-3.2 runs a pressable link with Enter but not Space', async ({

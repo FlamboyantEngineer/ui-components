@@ -93,7 +93,7 @@ Verification: `src/components/card/card.test.tsx`
 
 ### UIC-CARD-3.1 - Title action
 
-With `href`, the card's title shall render inside its heading as a link in the `ui-card__action` slot, drawn through the provider's link renderer with `target` and `rel` (`target="_blank"` adds `rel="noopener noreferrer"` unless `rel` is given). With `onAction` and no `href`, the title shall render as a React Aria `Button` in the same slot that calls `onAction` on pointer, Enter and Space activation; with both, following the link also calls `onAction`. The action is named by the title, the card stays a region named by its title, and the card publishes `data-interactive`.
+With `href`, the card's title shall render inside its heading as a link in the `ui-card__action` slot, drawn through the provider's link renderer with `target` and `rel` (`target="_blank"` adds `noopener` and `noreferrer` to the caller's `rel`, as a [Link](LINK.md#uic-link-22---new-tabs) does). With `onAction` and no `href`, the title shall render as a React Aria `Button` in the same slot that calls `onAction` on pointer, Enter and Space activation; with both, following the link also calls `onAction`. The action is named by the title, the card stays a region named by its title, and the card publishes `data-interactive`.
 
 Implementation: `src/components/card/card.tsx`, `src/components/card/card-action.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`

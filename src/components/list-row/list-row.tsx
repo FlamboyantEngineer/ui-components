@@ -14,6 +14,7 @@ import {
   useRowTabStop,
   type RowTabStop,
 } from './use-list-navigation.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 export { ListView, ListViewItem } from './list-view.js';
 
@@ -55,7 +56,7 @@ export interface ListRowProps
     Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
   /** Makes the row's primary control a link, rendered through the provider's link renderer. */
   href?: string | undefined;
-  /** Link target. `_blank` adds `rel="noopener noreferrer"` unless `rel` is given. */
+  /** Link target. `_blank` adds `noopener` and `noreferrer` to `rel`. */
   target?: string | undefined;
   /** The link's relationship to the current page. */
   rel?: string | undefined;
@@ -107,7 +108,7 @@ function ListRowPrimary(props: {
         ref={tabStop.setPrimary}
         href={href}
         target={target}
-        rel={rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)}
+        rel={mergeSafeRel(target, rel)}
         className={className}
         tabIndex={tabIndex}
         aria-current={isCurrent ? 'page' : undefined}

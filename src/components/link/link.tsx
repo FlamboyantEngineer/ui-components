@@ -14,6 +14,7 @@ import type { BaseProps, InteractionState, NativeProps, RefProps } from '../../c
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 /** Emphasis: `primary` takes the accent colour, `secondary` the surrounding text colour. */
 export type LinkVariant = 'primary' | 'secondary';
@@ -62,14 +63,6 @@ export interface LinkProps
 type LinkElementProps = JSX.IntrinsicElements['a'] | JSX.IntrinsicElements['span'];
 
 const hooks = createHooks('link', ['external-icon', 'new-tab-label']);
-
-const safeRel = ['noopener', 'noreferrer'];
-
-/** The caller's `rel` with the tokens that keep a new tab from reaching back to this page. */
-function mergeSafeRel(rel: string | undefined): string {
-  const tokens = (rel ?? '').split(/\s+/).filter(Boolean);
-  return [...tokens, ...safeRel.filter((token) => !tokens.includes(token))].join(' ');
-}
 
 /**
  * The element's props with the caller's description kept first. A trigger around the link, such as
@@ -138,7 +131,7 @@ export function Link({
         data: { variant, standalone: isStandalone, underline },
       })}
       target={target}
-      rel={opensNewTab ? mergeSafeRel(rel) : rel}
+      rel={opensNewTab ? mergeSafeRel(target, rel) : rel}
       // The building block draws a `<span>` without `href`; its props fit an anchor's. It drops
       // `title`, so the title joins the props here.
       render={(props: LinkElementProps, state) =>

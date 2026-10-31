@@ -424,7 +424,7 @@ test.describe('PDF Viewer lab', () => {
     const web = first.getByRole('link', { name: 'https://example.com/' });
     await expect(web).toHaveAttribute('href', 'https://example.com/');
     await expect(web).toHaveAttribute('target', '_blank');
-    await expect(web).toHaveAttribute('rel', 'noopener noreferrer nofollow');
+    await expect(web).toHaveAttribute('rel', 'nofollow noopener noreferrer');
 
     const markets = first.getByRole('link', { name: 'See the markets on page 3.' });
     const line = first.locator('[role="presentation"]', { hasText: 'See the markets' });

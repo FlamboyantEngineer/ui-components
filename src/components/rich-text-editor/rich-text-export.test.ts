@@ -41,7 +41,7 @@ describe('rich-text export', () => {
     expect(serializeRichTextHtml(document)).toBe(
       '<h2>Pears &amp; &lt;figs&gt;</h2>' +
         '<p>Ripe <strong>and<em> sweet</em></strong><br>' +
-        '<a href="/m?a=1&amp;b=&quot;2&quot;" rel="noopener nofollow">market</a></p>' +
+        '<a href="/m?a=1&amp;b=&quot;2&quot;">market</a></p>' +
         '<hr><ul><li><p>Plums</p></li></ul>',
     );
   });
