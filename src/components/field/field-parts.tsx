@@ -2,7 +2,7 @@
 
 import { HelpGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
+import { createHooks, type ComponentHooks } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
@@ -152,19 +152,24 @@ function severityOf({ status }: FieldValidation): FieldSeverity | null {
   return status === 'warning' ? 'warning' : null;
 }
 
-/** The message region. It stays in the document so assistive technology announces new messages. */
+/**
+ * The message region. It stays in the document so assistive technology announces new messages.
+ * A control that draws its own parts passes its `hooks`, whose `message` slot it gets.
+ */
 export function FieldMessage({
   id,
   validation,
+  hooks = fieldHooks,
   children,
 }: {
   id: string;
   validation: FieldValidation;
+  hooks?: ComponentHooks<'message'> | undefined;
   children: ReactNode;
 }) {
   return (
     <div
-      {...fieldHooks.slot('message', { severity: severityOf(validation) })}
+      {...hooks.slot('message', { severity: severityOf(validation) })}
       id={id}
       aria-live="polite"
       aria-atomic="true"
