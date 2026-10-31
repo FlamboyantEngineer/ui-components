@@ -13,6 +13,23 @@ const parts = ['title and close button', 'title only', 'body only'] as const;
 const options = ['offset 16', 'cross offset 24', 'no flip'] as const;
 const dismissals = ['Escape refused', 'outside presses refused'] as const;
 
+/** A field whose Escape clears its draft first, handling the key, and lets the next one pass. */
+function DraftField({ label }: { label: string }) {
+  return (
+    <label>
+      {label}{' '}
+      <input
+        data-lab-draft=""
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape' || event.currentTarget.value === '') return;
+          event.currentTarget.value = '';
+          event.preventDefault();
+        }}
+      />
+    </label>
+  );
+}
+
 /** A trigger button and the popover it opens. */
 function Opener({ label, ...props }: PopoverProps & { label: string }) {
   return (
@@ -239,6 +256,14 @@ mountLab(
       description="The page opens the popover against the trip summary; the close button and Shift by a day close it through the page's state."
     >
       <Controlled />
+    </LabSection>
+    <LabSection
+      title="Escape handled inside"
+      description="Type in Label, then press Escape: the field clears its draft and the popover stays open; the next Escape closes it."
+    >
+      <Opener label="Add label" title="Add label" data-lab-popover="handled">
+        <DraftField label="Label" />
+      </Opener>
     </LabSection>
   </>,
 );

@@ -387,6 +387,29 @@ test.describe('Modal lab', () => {
     await expect(popover).toHaveCount(0);
     await expect(opener).toBeFocused();
   });
+
+  test('UIC-MODAL-2.1 keeps each presentation open on an Escape its content handled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('modal');
+    const cases = [
+      { open: page.getByRole('button', { name: 'Blocking' }), name: 'Comment' },
+      { open: page.getByRole('button', { name: 'Anchored' }), name: 'Comment' },
+      { open: page.locator('[data-lab-open="floating"]'), name: 'Notes' },
+    ];
+    for (const { open, name } of cases) {
+      await open.click();
+      const dialog = page.getByRole('dialog', { name });
+      const draft = dialog.locator('[data-lab-draft]');
+      await draft.fill('Draft');
+      await page.keyboard.press('Escape');
+      await expect(draft).toHaveValue('');
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
+    }
+  });
 });
 
 for (const [device, viewport] of [

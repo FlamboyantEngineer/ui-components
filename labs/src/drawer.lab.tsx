@@ -18,6 +18,23 @@ function Opener({ label, ...props }: DrawerProps & { label: string }) {
   );
 }
 
+/** A field whose Escape clears its draft first, handling the key, and lets the next one pass. */
+function DraftField({ label }: { label: string }) {
+  return (
+    <label>
+      {label}{' '}
+      <input
+        data-lab-draft=""
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape' || event.currentTarget.value === '') return;
+          event.currentTarget.value = '';
+          event.preventDefault();
+        }}
+      />
+    </label>
+  );
+}
+
 /** Footer actions; Apply closes the drawer through React Aria's close slot. */
 const footer = (
   <>
@@ -188,6 +205,14 @@ mountLab(
       description="A drawer opened from a drawer stacks above it; Escape closes only the top one and focus returns inside the one beneath."
     >
       <Nested />
+    </LabSection>
+    <LabSection
+      title="Escape handled inside"
+      description="Type in Search, then press Escape: the field clears its draft and the drawer stays open; the next Escape closes it."
+    >
+      <Opener label="Search drawer" title="Search" data-lab-drawer="handled">
+        <DraftField label="Search" />
+      </Opener>
     </LabSection>
     <LabSection
       title="Controlled drawer"

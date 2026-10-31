@@ -241,11 +241,43 @@ function FloatingNotes() {
         data-lab-modal="floating"
         cancelAction={null}
       >
-        <label>
-          Note <input />
-        </label>
+        <DraftField label="Note" />
       </Modal>
     </div>
+  );
+}
+
+/** A field whose Escape clears its draft first, handling the key, and lets the next one pass. */
+function DraftField({ label }: { label: string }) {
+  return (
+    <label>
+      {label}{' '}
+      <input
+        data-lab-draft=""
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape' || event.currentTarget.value === '') return;
+          event.currentTarget.value = '';
+          event.preventDefault();
+        }}
+      />
+    </label>
+  );
+}
+
+/** A draft field in each presentation: Escape clears the draft first, then closes the dialog. */
+function HandledEscape() {
+  return (
+    <p>
+      <Opener label="Blocking" title="Comment" data-lab-modal="handled">
+        <DraftField label="Comment" />
+      </Opener>{' '}
+      <ModalTrigger>
+        <Button size="sm">Anchored</Button>
+        <Modal placement="bottom start" title="Comment" data-lab-modal="handled-anchored">
+          <DraftField label="Comment" />
+        </Modal>
+      </ModalTrigger>
+    </p>
   );
 }
 
@@ -409,6 +441,12 @@ mountLab(
         description="Notes float at the corner without a backdrop; the page field stays usable while they are open, and Escape inside them closes them."
       >
         <FloatingNotes />
+      </LabSection>
+      <LabSection
+        title="Escape handled inside"
+        description="Type in Comment, then press Escape: the field clears its draft and the dialog stays open; the next Escape closes it. The floating notes behave the same."
+      >
+        <HandledEscape />
       </LabSection>
       <LabSection
         title="Unavailable focus targets"

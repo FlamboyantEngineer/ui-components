@@ -59,7 +59,7 @@ Verification: `e2e/modal.spec.ts`, `e2e/modal-tall-form.spec.ts`
 
 ### UIC-MODAL-2.1 - Escape
 
-Escape pressed inside the modal shall close it, unless `isKeyboardDismissDisabled` is set. A component inside the modal that handles Escape itself (an open list, an editor) shall keep it, leaving the modal open. With modals stacked, Escape shall close only the topmost.
+Escape pressed inside the modal shall close it, unless `isKeyboardDismissDisabled` is set. A component inside the modal that handles Escape itself (an open list, an editor), by stopping it or by calling `preventDefault`, shall keep it, leaving the modal open in every presentation (blocking, floating or anchored) without asking `shouldCloseOnEscape`; the next Escape it leaves alone closes the modal. With modals stacked, Escape shall close only the topmost. An Escape pressed while composing text belongs to the input method and closes nothing.
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`

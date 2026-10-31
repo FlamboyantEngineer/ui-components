@@ -191,6 +191,31 @@ describe('Popover', () => {
     expect(panel()).not.toBeNull();
   });
 
+  it('UIC-POPOVER-2.1 stays open on an Escape its content handled and closes on the next', async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Page triggerProps={{ onOpenChange }}>
+        <input
+          aria-label="City"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && event.currentTarget.value !== '') {
+              event.currentTarget.value = '';
+              event.preventDefault();
+            }
+          }}
+        />
+      </Page>,
+    );
+    await open();
+    await userEvent.type(screen.getByRole('textbox', { name: 'City' }), 'Oslo');
+    await userEvent.keyboard('{Escape}');
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(panel()).not.toBeNull();
+    await userEvent.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    await waitFor(() => expect(panel()).toBeNull());
+  });
+
   it('UIC-POPOVER-2.2 moves focus in, keeps it inside and returns it to the trigger', async () => {
     const { unmount } = render(<Page showCloseButton />);
     const dialog = await open();

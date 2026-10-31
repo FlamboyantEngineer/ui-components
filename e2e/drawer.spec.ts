@@ -216,4 +216,18 @@ test.describe('Drawer lab', () => {
     await expect(output).toHaveText('closed');
     await expect(page.locator('[data-lab-output="choice"]')).toHaveText('Kyoto');
   });
+
+  test('UIC-DRAWER-2.1 stays open on an Escape its content handled', async ({ page, lab }) => {
+    await lab.open('drawer');
+    await page.getByRole('button', { name: 'Search drawer' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    await expect(dialog).toBeFocused();
+    const draft = dialog.locator('[data-lab-draft]');
+    await draft.fill('Oslo');
+    await page.keyboard.press('Escape');
+    await expect(draft).toHaveValue('');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
 });

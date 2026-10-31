@@ -14,6 +14,7 @@ import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
@@ -127,8 +128,10 @@ export function Drawer({
   ...rest
 }: DrawerProps) {
   const zIndex = useLayerZIndex('drawer');
-  // React Aria's sheet offers no keyboard-only refusal, so a refused Escape stops at the dialog.
+  // React Aria's sheet offers no keyboard-only refusal, so a refused Escape stops at the dialog, as
+  // does one the content already handled.
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (stopConsumedEscape(event)) return;
     if (event.key !== 'Escape' || !isKeyboardDismissDisabled) return;
     event.stopPropagation();
     event.preventDefault();
