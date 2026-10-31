@@ -40,6 +40,32 @@ function FruitSection(props: ListViewSectionProps<(typeof fruit)[number]>) {
 }
 
 describe('ListView', () => {
+  it('UIC-LIST-ROW-3.3 keeps an uncontrolled selection and the focused row when reorder toggles', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const list = (reorder: boolean) => (
+      <ListView
+        aria-label="Fruit"
+        items={fruit}
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple']}
+        onSelectionChange={onSelectionChange}
+        reorder={reorder ? { onMove: vi.fn() } : undefined}
+      >
+        {(item) => <ListViewItem title={item.name} />}
+      </ListView>
+    );
+    const { rerender } = render(list(false));
+    await user.click(screen.getByRole('row', { name: 'Banana' }));
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    rerender(list(true));
+    rerender(list(false));
+    const selected = screen.getAllByRole('row').filter((row) => row.ariaSelected === 'true');
+    expect(selected.map((row) => row.textContent)).toEqual(['Apple', 'Banana']);
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.getByRole('row', { name: 'Banana' })).toHaveFocus());
+  });
+
   it('UIC-LIST-ROW-3.3 retains one-shot selected and disabled key iterables across rerenders', () => {
     const selectedKeys = (function* () {
       yield 'apple';

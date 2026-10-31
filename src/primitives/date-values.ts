@@ -10,6 +10,7 @@ import {
   parseDateTime,
   parseTime,
   parseZonedDateTime,
+  toCalendarDate,
   toCalendarDateTime,
   toTimeZone,
   toZoned,
@@ -83,6 +84,19 @@ export function parseIsoDateTime(
 }
 
 /**
+ * A zoned date and time with its finer parts reset, in the same occurrence of a repeated hour: at
+ * the end of daylight saving time, 01:30 in the second 01:00 hour truncates to 01:00 of that second
+ * hour, not the first. A wall time the zone skips resolves forward, as `set` does by default.
+ */
+function truncateZoned(
+  value: ZonedDateTime,
+  parts: { minute: number; second: number; millisecond: number },
+): ZonedDateTime {
+  const occurrences = [value.set(parts, 'earlier'), value.set(parts, 'later')];
+  return occurrences.find((candidate) => candidate.offset === value.offset) ?? value.set(parts);
+}
+
+/**
  * A date object as its ISO 8601 text: `YYYY-MM-DD` for a date, `HH:mm` (`HH:mm:ss` at the `second`
  * granularity) for a time, `YYYY-MM-DDTHH:mm` (or with seconds) for a floating date and time, and
  * `YYYY-MM-DDTHH:mm:ss±HH:MM[Zone]` for a zoned one. Finer parts than the granularity are dropped.
@@ -97,6 +111,7 @@ export function formatIsoDate(
   const time = `${pad(value.hour)}:${pad(minute)}`;
   const clock = granularity === 'second' ? `${time}:${pad(second)}` : time;
   if (!('day' in value)) return clock;
-  if ('timeZone' in value) return value.set({ minute, second, millisecond: 0 }).toString();
-  return `${value.year}-${pad(value.month)}-${pad(value.day)}T${clock}`;
+  if ('timeZone' in value)
+    return truncateZoned(value, { minute, second, millisecond: 0 }).toString();
+  return `${toCalendarDate(value).toString()}T${clock}`;
 }

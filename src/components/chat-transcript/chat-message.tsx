@@ -20,6 +20,7 @@ import {
 } from './chat-message-parts.js';
 import type { ChatQuoteData } from './chat-quote.js';
 import { useTranscriptContentRef, useTranscriptMessage } from './transcript-context.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
@@ -288,7 +289,7 @@ export function ChatMessage({
             getNow={getNow}
           />
         )}
-        {readers ? <div {...hooks.slot('readers')}>{readers}</div> : null}
+        {isEmptyNode(readers) ? null : <div {...hooks.slot('readers')}>{readers}</div>}
       </div>
       <MessageTimeTooltip
         time={display.tooltipTime}

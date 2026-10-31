@@ -126,14 +126,22 @@ function applyMove<T extends { id: Key }>(rows: readonly T[], move: ListViewMove
 /** Rows reordered by drag and drop, by pointer or from the drag handle by keyboard. */
 export function ReorderCase() {
   const [rows, setRows] = useState(FRUIT);
+  const [arranging, setArranging] = useState(true);
   return (
     <div data-lab-reorder>
+      <Button size="sm" isSelected={arranging} onPress={() => setArranging(!arranging)}>
+        Arrange
+      </Button>
       <ListView
         aria-label="Reorderable fruit"
         selectionMode="multiple"
         selectionBehavior="toggle"
         items={rows}
-        reorder={{ onMove: (move) => setRows((current) => applyMove(current, move)) }}
+        reorder={
+          arranging
+            ? { onMove: (move) => setRows((current) => applyMove(current, move)) }
+            : undefined
+        }
         divided
       >
         {(item) => <ListViewItem title={item.name} meta={item.meta} />}

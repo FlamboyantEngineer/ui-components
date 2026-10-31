@@ -10,6 +10,7 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { chartHooks as hooks } from './chart-hooks.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** `chart` shows the drawing; `table` shows the values as a table instead. */
 export type ChartView = 'chart' | 'table';
@@ -107,7 +108,8 @@ export function Chart({
   const titleId = useId();
   const summaryId = useId();
   const [shown, setShown] = useControllableState(view, defaultView, onViewChange);
-  const hasTitle = label != null && rest['aria-labelledby'] === undefined && !rest['aria-label'];
+  const hasTitle =
+    !isEmptyNode(label) && rest['aria-labelledby'] === undefined && !rest['aria-label'];
   const labelId = hasTitle ? titleId : rest['aria-labelledby'];
   const summaryText = (
     <p {...hooks.slot('summary')} id={summaryId}>
@@ -123,7 +125,7 @@ export function Chart({
       aria-describedby={describedBy ? `${summaryId} ${describedBy}` : summaryId}
     >
       <div {...hooks.slot('header')}>
-        {label != null ? (
+        {!isEmptyNode(label) ? (
           <span {...hooks.slot('title')} id={titleId}>
             {label}
           </span>

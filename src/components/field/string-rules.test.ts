@@ -44,6 +44,31 @@ describe('validateString', () => {
     expect(validateString('abc-1', { pattern: /[a-z]+-\d/gi }, defaultStrings)).toBeNull();
   });
 
+  it('UIC-FIELD-7.2 matches the whole text whatever the flags', () => {
+    const mismatch = (text: string, pattern: RegExp) =>
+      validateString(text, { pattern }, defaultStrings)?.validity;
+    expect(mismatch('bad\nok\nbad', /ok/m)).toBe('patternMismatch');
+    expect(mismatch('\nok', /ok/m)).toBe('patternMismatch');
+    expect(mismatch('ok\n', /ok/m)).toBe('patternMismatch');
+    expect(mismatch('ok\nok', /^ok$\n^ok$/m)).toBeUndefined();
+    expect(mismatch('ok\nok', /(?:ok\n?)+/m)).toBeUndefined();
+    expect(mismatch('ab', /a|ab/)).toBeUndefined();
+    expect(mismatch('😀😀', /\p{Emoji}+/u)).toBeUndefined();
+    expect(mismatch('ab', new RegExp('[\\q{ab}]', 'v'))).toBeUndefined();
+    const sticky = /ok/y;
+    sticky.lastIndex = 2;
+    const global = /ok/g;
+    global.lastIndex = 5;
+    for (let check = 0; check < 3; check += 1) {
+      expect(mismatch('ok', sticky)).toBeUndefined();
+      expect(mismatch('ok', global)).toBeUndefined();
+      expect(mismatch('no', global)).toBe('patternMismatch');
+    }
+    expect(sticky.lastIndex).toBe(2);
+    expect(global.lastIndex).toBe(5);
+    expect(validateString('  ok  ', { pattern: /ok/m, trim: true }, defaultStrings)).toBeNull();
+  });
+
   it('UIC-FIELD-7.3 trims when asked and lets an empty text pass', () => {
     expect(validateString('  ab ', { minLength: 3, trim: true }, defaultStrings)?.message).toBe(
       'Use at least 3 characters.',

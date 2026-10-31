@@ -14,6 +14,7 @@ import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
 import { TextMatch } from '../text-match/text-match.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** One person in a conversation. */
 export interface ChatListParticipant extends AvatarIdentity {
@@ -155,7 +156,7 @@ export function ChatListRow({ conversation, renderActions, getNow }: ChatListRow
           className={listHooks.slotClass('unread')}
         />
       ) : null}
-      {actions ? <div {...listHooks.slot('actions')}>{actions}</div> : null}
+      {isEmptyNode(actions) ? null : <div {...listHooks.slot('actions')}>{actions}</div>}
     </GridListItem>
   );
 }

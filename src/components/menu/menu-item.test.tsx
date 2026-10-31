@@ -57,6 +57,24 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     });
   });
 
+  it('UIC-MENU-2.1 draws a zero description and skips an empty one', async () => {
+    const user = userEvent.setup();
+    render(
+      <MenuButton aria-label="Edit">
+        <MenuItem id="zero" description={0}>
+          Unread
+        </MenuItem>
+        <MenuItem id="none" description={false}>
+          Archive
+        </MenuItem>
+      </MenuButton>,
+    );
+    await openMenu(user);
+    expect(screen.getByRole('menuitem', { name: 'Unread 0' })).toBeInTheDocument();
+    const archive = screen.getByRole('menuitem', { name: 'Archive' });
+    expect(archive.querySelector('.ui-menu-item__description')).toBeNull();
+  });
+
   it('UIC-MENU-2.1 points the submenu arrow in the reading direction', async () => {
     const user = userEvent.setup();
     render(

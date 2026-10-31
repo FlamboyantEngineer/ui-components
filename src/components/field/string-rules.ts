@@ -19,6 +19,16 @@ export interface StringRules {
 /** The provider strings the rules report with. */
 export type StringRuleMessages = Pick<UiStrings, 'tooShort' | 'tooLong' | 'patternMismatch'>;
 
+/**
+ * Whether `pattern` matches the whole of `text`. The outer bounds are lookarounds rather than `^`
+ * and `$`, so a caller's `m` flag keeps its meaning inside the pattern without letting the bounds
+ * stop at a line break. `g` and `y` are dropped, so no `lastIndex` carries over between checks.
+ */
+function matchesWhole(pattern: RegExp, text: string): boolean {
+  const flags = pattern.flags.replace(/[gy]/g, '');
+  return new RegExp(`(?<![\\s\\S])(?:${pattern.source})(?![\\s\\S])`, flags).test(text);
+}
+
 function error(message: string, validity: FieldValidity): FieldIssue {
   return { severity: 'error', message, validity };
 }
@@ -47,10 +57,7 @@ export function validateString(
   if (rules.maxLength !== undefined && length > rules.maxLength) {
     return error(messages.tooLong(rules.maxLength), 'tooLong');
   }
-  if (
-    rules.pattern &&
-    !new RegExp(`^(?:${rules.pattern.source})$`, rules.pattern.flags).test(text)
-  ) {
+  if (rules.pattern && !matchesWhole(rules.pattern, text)) {
     return error(messages.patternMismatch, 'patternMismatch');
   }
   return null;

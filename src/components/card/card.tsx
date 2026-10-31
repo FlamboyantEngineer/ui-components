@@ -26,6 +26,7 @@ export type {
   CardPresentation,
   CardPresentationSteps,
 } from './card-presentation.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 /** `default`: content on the page. `panel`: a chrome region on a muted surface. */
 export type CardVariant = 'default' | 'panel';
@@ -156,7 +157,7 @@ function useCardCollapse(
     toggle: {
       isExpanded: expanded,
       isDisabled: Boolean(props.isToggleDisabled),
-      controls: controls.filter(Boolean).join(' '),
+      controls: joinIds(...controls),
       toggle: () => setExpanded(!expanded),
     },
   };

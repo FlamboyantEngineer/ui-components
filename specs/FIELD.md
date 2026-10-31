@@ -20,7 +20,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-1.3 - Description
 
-`description` shall render in `ui-field__description` below the control and be the first reference of the control's `aria-describedby`.
+`description` shall render in `ui-field__description` below the control and be the first reference of the control's `aria-describedby`. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no description; any other content, `0` included, draws it.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`
 Verification: `src/components/field/field.test.tsx`
@@ -41,7 +41,7 @@ Verification: `src/components/field/field.test.tsx`
 
 ### UIC-FIELD-1.6 - Decoration
 
-`decoration` shall render the host's marks for the field (badges, state labels) in `ui-field__decoration` after the field's buttons. The decoration describes the control: its id follows the description in the control's `aria-describedby`.
+`decoration` shall render the host's marks for the field (badges, state labels) in `ui-field__decoration` after the field's buttons. The decoration describes the control: its id follows the description in the control's `aria-describedby`. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no decoration and no `aria-describedby` reference (the same holds for `description` and `help`); any other content, `0` included, draws it.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -307,7 +307,7 @@ Verification: `src/components/field/string-rules.test.ts`
 
 ### UIC-FIELD-7.2 - Format
 
-A text that does not match `pattern` as a whole shall get an error with the provider string `patternMismatch`.
+A text that does not match `pattern` as a whole shall get an error with the provider string `patternMismatch`. The match spans the whole checked text whatever the pattern's flags: with `m`, `^` and `$` inside the pattern still match at line breaks, but one matching line does not pass the text. Checking never reads or changes the pattern's `lastIndex`, so `g` and `y` patterns give the same result each time.
 
 Implementation: `src/components/field/string-rules.ts`
 Verification: `src/components/field/string-rules.test.ts`
@@ -390,7 +390,7 @@ Verification: `src/components/field/field-previous-value.test.tsx`
 
 ### UIC-FIELD-10.1 - Legend and group
 
-`Fieldset` shall render a native `<fieldset>` (`ui-fieldset`) around its children, with `legend` in a `<legend>` (`ui-fieldset__legend`) that names the group. It appends the caller's `className` and forwards caller `data-*` attributes, `id` and the native fieldset props (`name`, `form`, `aria-*`).
+`Fieldset` shall render a native `<fieldset>` (`ui-fieldset`) around its children, with `legend` in a `<legend>` (`ui-fieldset__legend`) that names the group. It appends the caller's `className` and forwards caller `data-*` attributes, `id` and the native fieldset props (`name`, `form`, `aria-*`). A `legend` that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no `<legend>`; `0` draws one.
 
 Implementation: `src/components/field/fieldset.tsx`, `labs/reference/field.css`
 Verification: `src/components/field/fieldset.test.tsx`, `e2e/form.spec.ts`

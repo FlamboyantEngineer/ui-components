@@ -1,13 +1,7 @@
 'use client';
 
-import {
-  CloseGlyph,
-  ErrorGlyph,
-  InfoGlyph,
-  SuccessGlyph,
-  WarningGlyph,
-  type GlyphComponent,
-} from '../../core/glyphs.js';
+import { CloseGlyph } from '../../core/glyphs.js';
+import { getToneGlyph } from '../../core/tone-glyphs.js';
 import { useEffect, useRef, type ReactNode, type Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone, RefProps } from '../../core/props.js';
@@ -58,14 +52,6 @@ const hooks = createHooks('banner', [
   'dismiss',
 ]);
 
-const toneGlyphs: Readonly<Record<Tone, GlyphComponent | null>> = {
-  neutral: null,
-  info: InfoGlyph,
-  success: SuccessGlyph,
-  warning: WarningGlyph,
-  danger: ErrorGlyph,
-};
-
 type BannerSlot = Parameters<typeof hooks.slot>[0];
 
 /** A slot that renders only when its content renders something. */
@@ -113,11 +99,6 @@ function useFocusOnMount(ref: { current: HTMLElement | null }, autoFocus: boolea
   useEffect(() => {
     if (shouldFocus.current) ref.current?.focus();
   }, [ref]);
-}
-
-/** The built-in glyph that introduces a message of `tone`; none for `neutral`. */
-export function getToneGlyph(tone: Tone): GlyphComponent | null {
-  return toneGlyphs[tone];
 }
 
 /**

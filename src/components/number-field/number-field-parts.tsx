@@ -1,11 +1,12 @@
 'use client';
 
 import { MinusGlyph, PlusGlyph, ScrubGlyph } from '../../core/glyphs.js';
-import { useId, type KeyboardEvent } from 'react';
+import { useId, type KeyboardEvent, type ReactNode } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { FieldState } from '../field/field.js';
@@ -75,6 +76,17 @@ export function createModifierStepHandler(state: FieldState<number | null>, step
     state.setValue(addStep(state.value, direction * size, steps));
     state.commit();
   };
+}
+
+/** Host content before or after the input; content that renders nothing draws no slot. */
+export function NumberAdornment({
+  side,
+  children,
+}: {
+  side: 'start' | 'end';
+  children: ReactNode;
+}) {
+  return isEmptyNode(children) ? null : <span {...hooks.slot(side)}>{children}</span>;
 }
 
 /** A step button, named by its action and the field label (`Decrease Weight`). */

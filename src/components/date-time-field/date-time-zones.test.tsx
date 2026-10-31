@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { DateTimeField } from './date-time-field.js';
 
@@ -122,5 +122,67 @@ describe('DateTimeField time settings, zones and ranges', () => {
     expect(screen.getAllByRole('grid')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Now' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument();
+  });
+
+  describe('in the repeated hour at the end of daylight saving time', () => {
+    afterEach(() => vi.useRealTimers());
+    const zone = 'America/New_York';
+    const secondOccurrence = '2026-11-01T01:30:45.123-05:00[America/New_York]';
+
+    it('UIC-DATE-TIME-FIELD-4.2 keeps the second occurrence through a segment edit', async () => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      renderInLocale(
+        <DateTimeField
+          label="When"
+          mode="date-time"
+          timeZone={zone}
+          defaultValue={secondOccurrence}
+          onCommit={onCommit}
+        />,
+      );
+      act(() => segment(/^minute/).focus());
+      await user.keyboard('{ArrowUp}');
+      expect(onCommit).toHaveBeenLastCalledWith('2026-11-01T01:31:00-05:00[America/New_York]');
+    });
+
+    it('UIC-DATE-TIME-FIELD-4.2 keeps the second occurrence for Now and range ends', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-11-01T06:30:45.123Z'));
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      const { unmount } = renderInLocale(
+        <DateTimeField
+          label="When"
+          mode="date-time"
+          timeZone={zone}
+          granularity="hour"
+          onCommit={onCommit}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: /Calendar/ }));
+      await user.click(await screen.findByRole('button', { name: 'Now' }));
+      expect(onCommit).toHaveBeenLastCalledWith('2026-11-01T01:00:00-05:00[America/New_York]');
+      unmount();
+      const onRange = vi.fn();
+      renderInLocale(
+        <DateTimeField
+          label="Window"
+          mode="date-time-range"
+          timeZone={zone}
+          defaultValue={{
+            start: secondOccurrence,
+            end: '2026-11-01T03:00:00-05:00[America/New_York]',
+          }}
+          onCommit={onRange}
+        />,
+      );
+      act(() => segment(/^minute/).focus());
+      await user.keyboard('{ArrowUp}');
+      expect(onRange).toHaveBeenLastCalledWith({
+        start: '2026-11-01T01:31:00-05:00[America/New_York]',
+        end: '2026-11-01T03:00:00-05:00[America/New_York]',
+      });
+    });
   });
 });

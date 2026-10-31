@@ -24,7 +24,7 @@ The value shall be `null` or an ISO 8601 text by mode, and the field shall write
 | `date-range`      | `{ start, end }` of `date` values                                           |                                                         |
 | `date-time-range` | `{ start, end }` of `date-time` values, floating or zoned                   | as `date-time` (UIC-DATE-TIME-FIELD-4.3)                |
 
-A floating date and time has no zone: its segments edit it as written. A text with an offset or a zone given to a floating field reads as the local wall time of its instant. A text the mode cannot read (`2026-02-30`, `25:00`, a date in a date-time mode) shows as empty segments and is never rewritten until the reader sets a value.
+`YYYY` is always four digits, so a year before 1000 keeps its leading zeros (`0099-04-20T12:30`). A floating date and time has no zone: its segments edit it as written. A text with an offset or a zone given to a floating field reads as the local wall time of its instant. A text the mode cannot read (`2026-02-30`, `25:00`, a date in a date-time mode) shows as empty segments and is never rewritten until the reader sets a value.
 
 Implementation: `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/primitives/date-values.ts`
 Verification: `src/components/date-time-field/date-values.test.ts`, `src/components/date-time-field/date-time-field.test.tsx`
@@ -52,7 +52,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`
 
 ### UIC-DATE-TIME-FIELD-1.6 - Previous value
 
-While the field is dirty and its committed value is not empty, the group shall start with that value, localized, as a `FieldPreviousValue` (`ui-date-time-field__previous`).
+While the field is dirty and its committed value is not empty, the group shall start with that value, localized at the editor's precision (seconds at the `second` granularity) and hour cycle, as a `FieldPreviousValue` (`ui-date-time-field__previous`), so a difference the segments show is visible in it too.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`
@@ -98,7 +98,7 @@ Verification: `src/components/date-time-field/date-time-presets.test.tsx`, `src/
 
 ### UIC-DATE-TIME-FIELD-3.2 - Presets
 
-`presets`, a list of `{ label, value }` with values in the mode's format, shall be offered in the popover before the calendar (`ui-date-time-field__presets`), each a ghost `Button` also carrying `ui-date-time-field__preset`. Pressing one sets its value, commits it and closes the popover. A preset whose value the field would refuse, outside the bounds or on an unavailable date, is disabled. The time mode, which has no popover, offers none.
+`presets`, a list of `{ label, value }` with values in the mode's format, shall be offered in the popover before the calendar (`ui-date-time-field__presets`), each a ghost `Button` also carrying `ui-date-time-field__preset`. Pressing one sets its value, written as the editor writes a pick (zoned in `timeZone`, without parts finer than the granularity, for a single value and each end of a range), commits it and closes the popover. A preset whose written value the field would refuse, outside the bounds or on an unavailable date, is disabled. Rendering never rewrites a value the caller passes. The time mode, which has no popover, offers none.
 
 Implementation: `src/components/date-time-field/date-time-calendar.tsx`, `src/components/date-time-field/date-time-field.tsx`
 Verification: `src/components/date-time-field/date-time-presets.test.tsx`, `e2e/date-time-field.spec.ts`
@@ -128,7 +128,7 @@ Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/co
 
 ### UIC-DATE-TIME-FIELD-4.2 - Time zones
 
-With `timeZone`, an IANA zone such as `Asia/Tokyo`, the date-time modes shall edit zoned values as wall time in that zone, ending their segments with the zone (`data-type="timeZoneName"`) unless `hideTimeZone`. Values are written zoned, with seconds, offset and zone (`2026-04-13T12:00:00+09:00[Asia/Tokyo]`). A zoned text in another zone or a text with an offset (`2026-04-13T03:00:00Z`) converts to the same instant in the field's zone; a floating text reads as wall time in it, and a wall time the zone's clocks skip reads as the time after the gap. The previous value, bound messages and Now read in the zone.
+With `timeZone`, an IANA zone such as `Asia/Tokyo`, the date-time modes shall edit zoned values as wall time in that zone, ending their segments with the zone (`data-type="timeZoneName"`) unless `hideTimeZone`. Values are written zoned, with seconds, offset and zone (`2026-04-13T12:00:00+09:00[Asia/Tokyo]`). A zoned text in another zone or a text with an offset (`2026-04-13T03:00:00Z`) converts to the same instant in the field's zone; a floating text reads as wall time in it, and a wall time the zone's clocks skip reads as the time after the gap. Dropping parts finer than the granularity, for an edit, Now or either range end, keeps a value in a repeated hour (the hour the clocks fall back through) in the occurrence it was in, including half-hour transitions. The previous value, bound messages and Now read in the zone.
 
 Implementation: `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-field.tsx`, `src/primitives/date-values.ts`
 Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`

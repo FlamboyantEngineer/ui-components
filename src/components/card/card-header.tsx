@@ -30,7 +30,7 @@ export interface CardToggle {
   isExpanded: boolean;
   isDisabled: boolean;
   /** The ids of the regions it shows and hides. */
-  controls: string;
+  controls: string | undefined;
   toggle: () => void;
 }
 

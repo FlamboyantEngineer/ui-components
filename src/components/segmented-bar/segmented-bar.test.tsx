@@ -22,6 +22,16 @@ const entries = (bar: HTMLElement) =>
     .map((item) => item.textContent);
 
 describe('SegmentedBar', () => {
+  it('UIC-SEGMENTED-BAR-1.1 falls back to aria-label for an empty label and draws a zero one', () => {
+    const { container, rerender } = render(
+      <SegmentedBar label={false} aria-label="Checks" segments={results} />,
+    );
+    expect(screen.getByRole('group', { name: 'Checks' })).toBeInTheDocument();
+    expect(container.querySelector('.ui-segmented-bar__label')).toBeNull();
+    rerender(<SegmentedBar label={0} segments={results} />);
+    expect(screen.getByRole('group', { name: '0' })).toBeInTheDocument();
+  });
+
   it('UIC-SEGMENTED-BAR-1.1 keeps numeric and text IDs distinct when a segment is removed', () => {
     const entries = [
       { id: 1, label: 'Numeric segment', value: 1 },

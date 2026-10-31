@@ -10,6 +10,7 @@ import type { BoardLane } from './board.js';
 import { BoardCell, type BoardCellOptions } from './board-cell.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardModel } from './use-board-model.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 interface BoardCellsProps<T> {
   model: BoardModel<T>;
@@ -43,7 +44,7 @@ export function BoardCells<T extends { id: Key }>({
           items={model.getCellItems(column.id, lane)}
           isCollapsed={model.collapsedColumns.keys.has(column.id)}
           isOverLimit={model.isOverLimit(column)}
-          labelledBy={[model.columnTitleId(index), laneTitleId].filter(Boolean).join(' ')}
+          labelledBy={joinIds(model.columnTitleId(index), laneTitleId)}
           options={options}
         />
       ))}

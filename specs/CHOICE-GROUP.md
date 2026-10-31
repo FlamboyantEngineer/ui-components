@@ -13,14 +13,14 @@ Verification: `src/components/choice-group/choice-group.test.tsx`, `e2e/choice-g
 
 ### UIC-CHOICE-GROUP-1.2 - Choice
 
-`Choice` shall render a `<div>` (`ui-choice`) holding a `<label>` (`ui-choice__button`) around a visually hidden native radio input, a drawn indicator (`ui-choice__indicator`, hidden from assistive technology) and its children in `ui-choice__label`, which may be rich content (an icon, a badge, a price). Pressing the indicator or the label selects the radio. It takes `value` (the group's value while it is selected), `isDisabled`, `inputRef` (the native input), the labelling props (`aria-label` for a radio without text) and `render`, which replaces the root `<div>` with the caller's element (`ElementRender<'div', ChoiceRenderState>`, [COMPOSITION.md](COMPOSITION.md)) and receives its states: `isSelected`, `isDisabled`, `isReadOnly`, `isInvalid` and `isRequired`. A caller `id` goes on the input. A `Choice` renders inside a `ChoiceGroup`.
+`Choice` shall render a `<div>` (`ui-choice`) holding a `<label>` (`ui-choice__button`) around a visually hidden native radio input, a drawn indicator (`ui-choice__indicator`, hidden from assistive technology) and its children in `ui-choice__label`, which may be rich content (an icon, a badge, a price). Pressing the indicator or the label selects the radio. It takes `value` (the group's value while it is selected), `isDisabled`, `inputRef` (the native input), the labelling props (`aria-label` for a radio without text) and `render`, which replaces the root `<div>` with the caller's element (`ElementRender<'div', ChoiceRenderState>`, [COMPOSITION.md](COMPOSITION.md)) and receives its states: `isSelected`, `isDisabled`, `isReadOnly`, `isInvalid` and `isRequired`. A caller `id` goes on the input. A `Choice` renders inside a `ChoiceGroup`. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no label slot; any other content, `0` included, draws it.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`, `labs/reference/choice-group.css`
 Verification: `src/components/choice-group/choice-group.test.tsx`, `e2e/choice-group.spec.ts`
 
 ### UIC-CHOICE-GROUP-1.3 - Description
 
-A radio's `description` shall render in `ui-choice__description` after its `<label>` and describe its input (`aria-describedby`).
+A radio's `description` shall render in `ui-choice__description` after its `<label>` and describe its input (`aria-describedby`). Content that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no description; any other content, `0` included, draws it.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`
 Verification: `src/components/choice-group/choice-group.test.tsx`, `e2e/choice-group.spec.ts`

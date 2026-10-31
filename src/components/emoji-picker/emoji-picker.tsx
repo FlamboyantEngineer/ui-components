@@ -1,13 +1,13 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
-import { Dialog, DialogTrigger } from '../../primitives/index.js';
+import { useContext, useRef, type ReactNode } from 'react';
+import { Dialog, DialogTrigger, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { PopoverPanel } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
-import { EmojiPickerContext } from './emoji-picker-context.js';
+import { EmojiPickerContext, EmojiPickerDismissContext } from './emoji-picker-context.js';
 import { EmojiPickerPreview, EmojiPickerSearch } from './emoji-picker-parts.js';
 import {
   useEmojiPickerState,
@@ -120,13 +120,23 @@ export function EmojiPicker({
   );
 }
 
+/** The trigger's picker, which closes the trigger's own popover when the reader chooses. */
+function TriggeredEmojiPicker(props: EmojiPickerProps) {
+  const overlay = useContext(OverlayTriggerStateContext);
+  return (
+    <EmojiPickerDismissContext value={overlay ? () => overlay.close() : null}>
+      <EmojiPicker autoFocus {...props} />
+    </EmojiPickerDismissContext>
+  );
+}
+
 /** Opens an `EmojiPicker` in a popover from the button it wraps; choosing an emoji closes it. */
 export function EmojiPickerTrigger({ children, ...props }: EmojiPickerTriggerProps) {
   return (
     <DialogTrigger>
       {children}
       <PopoverPanel {...hooks.slot('popover', { layer: 'dropdown' })}>
-        <EmojiPicker autoFocus {...props} />
+        <TriggeredEmojiPicker {...props} />
       </PopoverPanel>
     </DialogTrigger>
   );

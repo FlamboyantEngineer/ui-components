@@ -24,6 +24,7 @@ import {
   findBoundIssue,
   formatDateValue,
   isUnavailableValue,
+  normalizeDateValue,
   type DateFieldValue,
   type DateRangeValue,
   type DateTimeFieldGranularity,
@@ -158,10 +159,18 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   const committed = state.committedValue;
   const previous =
     state.isDirty && committed
-      ? formatDateValue(committed, mode, { locale, timeZone: props.timeZone })
+      ? formatDateValue(committed, mode, {
+          locale,
+          timeZone: props.timeZone,
+          granularity: all.granularity,
+          hourCycle: all.hourCycle,
+        })
       : null;
   const Control = controls[mode];
-  const pick = (value: DateFieldValue) => {
+  const normalize = (value: DateFieldValue) =>
+    normalizeDateValue(value, mode, { timeZone: all.timeZone, granularity: all.granularity });
+  const pick = (picked: DateFieldValue) => {
+    const value = normalize(picked);
     state.setValue(value as DateTimeFieldValue<M>);
     if (!check(value)) state.commit();
   };
@@ -181,7 +190,7 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
             state={state}
             mode={mode}
             bounds={props}
-            settings={toSettings(all, (value) => !check(value), state)}
+            settings={toSettings(all, (value) => !check(normalize(value)), state)}
             previous={previous}
             onPick={pick}
           />

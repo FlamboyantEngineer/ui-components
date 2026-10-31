@@ -21,6 +21,7 @@ import { toIconProps } from '../icon/icon.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
 import { MenuSizeContext } from './menu-context.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** Emphasis of a menu item: `danger` marks a destructive action. */
 export type MenuItemTone = Extract<Tone, 'neutral' | 'danger'>;
@@ -220,12 +221,12 @@ function MenuItemContent({
       )}
       {isPending ? <span {...itemHooks.slot('spinner')} aria-hidden="true" /> : iconBox}
       <span {...itemHooks.slot('label')}>{children}</span>
-      {description ? (
+      {isEmptyNode(description) ? null : (
         <>
           {' '}
           <span {...itemHooks.slot('description')}>{description}</span>
         </>
-      ) : null}
+      )}
       {shortcut ? (
         // The chord is part of the row's text, so it must not also become its description.
         <KeyboardContext value={null}>

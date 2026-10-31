@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { Modal } from '../modal/modal.js';
 import { parseEmojiData, type CustomEmoji, type NativeEmoji } from './emoji-catalog.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
 import { useActiveEmoji } from './emoji-picker-context.js';
@@ -228,6 +229,21 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
       expect.objectContaining({ unicode: '🍌', skinTone: 'default' }),
     );
     expect(onSelect).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-EMOJI-PICKER-1.4 leaves an overlay around a standalone picker open on a choice', async () => {
+    const onSelect = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <Modal isOpen onOpenChange={onOpenChange} title="Reactions">
+        <EmojiPicker loadEmoji={loadFixture} onSelect={onSelect} />
+      </Modal>,
+    );
+    await screen.findByRole('grid');
+    await userEvent.click(screen.getByRole('row', { name: 'grinning face' }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Reactions' })).toBeInTheDocument();
   });
 
   it('UIC-EMOJI-PICKER-1.4 reports one recent key per emoji, whatever tone the list held', async () => {

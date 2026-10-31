@@ -87,6 +87,22 @@ describe('Field', () => {
     expectHooksMatchSpec(container, 'FIELD', { slots: ['description', 'decoration'] });
   });
 
+  it('UIC-FIELD-1.3 UIC-FIELD-1.4 UIC-FIELD-1.6 draws zero description, help and decoration', () => {
+    const { container, rerender } = render(
+      <TextField id="fruit" description={0} help={0} decoration={0} />,
+    );
+    expect(container.querySelector('.ui-field__decoration')).toHaveTextContent('0');
+    expect(container.querySelector('.ui-field__description')).toHaveTextContent('0');
+    expect(screen.getByRole('button', { name: 'Help for Fruit' })).toHaveAccessibleDescription('0');
+    expect(screen.getByRole('textbox')).toHaveAttribute(
+      'aria-describedby',
+      'fruit-description fruit-decoration',
+    );
+    rerender(<TextField id="fruit" description="" help={false} decoration={null} />);
+    expect(parts(container)).toEqual(['label', 'control', 'message']);
+    expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-describedby');
+  });
+
   it('UIC-FIELD-1.4 draws a help button whose tooltip and description carry the help', async () => {
     const user = userEvent.setup();
     const { container } = render(<TextField help="Ripe fruit only." />);

@@ -48,7 +48,7 @@ interface BoardCellProps<T> {
   isCollapsed: boolean;
   isOverLimit: boolean;
   /** The ids of the column title and, with lanes, the lane title, which name the cell. */
-  labelledBy: string;
+  labelledBy: string | undefined;
   options: BoardCellOptions<T>;
 }
 

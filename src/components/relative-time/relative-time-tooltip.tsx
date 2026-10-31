@@ -1,14 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
-import {
-  TooltipContext,
-  TooltipTriggerStateContext,
-  useTooltipTrigger,
-  type TooltipTriggerState,
-} from '../../primitives/index.js';
-import { TooltipPanel } from '../tooltip/tooltip.js';
-import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
+import { useRef, type JSX } from 'react';
+import { useTooltipTrigger } from '../../primitives/index.js';
+import { ManualTooltip, useManualTooltipState } from '../tooltip/tooltip.js';
 
 type TimeWithTooltipProps = JSX.IntrinsicElements['time'] & {
   /** The tooltip's text. */
@@ -17,29 +11,6 @@ type TimeWithTooltipProps = JSX.IntrinsicElements['time'] & {
   tooltipClassName: string;
 };
 
-/** Tooltip state that opens `TOOLTIP_DELAY` milliseconds after a hover, or at once on focus. */
-function useTooltipState(): TooltipTriggerState {
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [isOpen, setOpen] = useState(false);
-  useEffect(() => () => clearTimeout(timer.current), []);
-  return useMemo(
-    () => ({
-      isOpen,
-      shouldSkipAnimation: false,
-      open: (immediate?: boolean) => {
-        clearTimeout(timer.current);
-        if (immediate) setOpen(true);
-        else timer.current = setTimeout(() => setOpen(true), TOOLTIP_DELAY);
-      },
-      close: () => {
-        clearTimeout(timer.current);
-        setOpen(false);
-      },
-    }),
-    [isOpen],
-  );
-}
-
 /**
  * A `<time>` element that takes focus and shows `tooltip` on hover and keyboard focus. React Aria's
  * tooltip trigger drives it directly: its `Focusable` expects an interactive role, which a
@@ -47,18 +18,19 @@ function useTooltipState(): TooltipTriggerState {
  */
 export function TimeWithTooltip({ tooltip, tooltipClassName, ...rest }: TimeWithTooltipProps) {
   const ref = useRef<HTMLTimeElement>(null);
-  const state = useTooltipState();
+  const state = useManualTooltipState();
   const { triggerProps, tooltipProps } = useTooltipTrigger({}, state, ref);
   return (
     <>
       <time {...rest} {...triggerProps} tabIndex={0} ref={ref} />
-      <TooltipContext value={{ ...tooltipProps, triggerRef: ref }}>
-        <TooltipTriggerStateContext value={state}>
-          <TooltipPanel variant="default" className={tooltipClassName}>
-            {tooltip}
-          </TooltipPanel>
-        </TooltipTriggerStateContext>
-      </TooltipContext>
+      <ManualTooltip
+        state={state}
+        triggerRef={ref}
+        tooltipProps={tooltipProps}
+        className={tooltipClassName}
+      >
+        {tooltip}
+      </ManualTooltip>
     </>
   );
 }

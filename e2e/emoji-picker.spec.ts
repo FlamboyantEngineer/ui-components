@@ -80,6 +80,19 @@ test.describe('Emoji Picker lab', () => {
     await expect(page.locator('[data-lab-trigger]')).toBeFocused();
   });
 
+  test('UIC-EMOJI-PICKER-1.4 keeps a modal around the picker open on a choice', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    await page.getByRole('button', { name: 'Choose a status emoji' }).click();
+    const modal = page.getByRole('dialog', { name: 'Status emoji' });
+    const picker = modal.locator('[data-lab-picker="modal"]');
+    await picker.getByRole('row', { name: 'grinning face' }).first().click();
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText('Chosen: 😀');
+  });
+
   test('UIC-EMOJI-PICKER-1.3 UIC-EMOJI-PICKER-1.2 moves through the grid in two dimensions', async ({
     page,
     lab,

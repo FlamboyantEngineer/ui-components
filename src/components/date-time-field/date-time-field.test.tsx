@@ -129,6 +129,26 @@ describe('DateTimeField field', () => {
     expect(instant).toHaveBeenLastCalledWith('2026-04-13T13:46');
   });
 
+  it('UIC-DATE-TIME-FIELD-1.2 keeps a four-digit year through a segment edit of an early date-time', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    renderInLocale(
+      <DateTimeField
+        label="When"
+        mode="date-time"
+        defaultValue="0099-04-20T12:30"
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    act(() => segment(/^minute/).focus());
+    await user.keyboard('{ArrowUp}');
+    expect(onChange).toHaveBeenLastCalledWith('0099-04-20T12:31');
+    expect(onCommit).toHaveBeenLastCalledWith('0099-04-20T12:31');
+    expect(segment(/^minute/)).toHaveAttribute('aria-valuenow', '31');
+  });
+
   it('UIC-DATE-TIME-FIELD-1.4 keeps an out-of-bounds value on screen, invalid and uncommitted', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
@@ -203,6 +223,51 @@ describe('DateTimeField field', () => {
     expect(previous?.querySelector('del')).toHaveTextContent('Apr 13, 2026');
     expect(previous?.nextElementSibling).toHaveClass('ui-date-time-field__input');
     expectHooksMatchSpec(container, 'DATE-TIME-FIELD', { slots: ['previous'] });
+  });
+
+  it('UIC-DATE-TIME-FIELD-1.6 writes the previous value at the editor precision and hour cycle', () => {
+    /** The previous value a field shows, read once and then unmounted. */
+    function previousOf(element: ReactElement) {
+      const { container, unmount } = renderInLocale(element);
+      const text = plain(container.querySelector('.ui-date-time-field__previous del')?.textContent);
+      unmount();
+      return text;
+    }
+    expect(
+      previousOf(
+        <DateTimeField
+          label="At"
+          mode="time"
+          granularity="second"
+          value="12:30:31"
+          committedValue="12:30:30"
+        />,
+      ),
+    ).toBe('12:30:30 PM');
+    expect(
+      previousOf(
+        <DateTimeField
+          label="When"
+          mode="date-time"
+          granularity="second"
+          hourCycle={24}
+          timeZone="Asia/Tokyo"
+          value="2026-04-20T13:30:31+09:00[Asia/Tokyo]"
+          committedValue="2026-04-20T13:30:30+09:00[Asia/Tokyo]"
+        />,
+      ),
+    ).toBe('Apr 20, 2026, 13:30:30');
+    expect(
+      previousOf(
+        <DateTimeField
+          label="Window"
+          mode="date-time-range"
+          granularity="second"
+          value={{ start: '2026-04-20T09:00:01', end: '2026-04-20T10:00:00' }}
+          committedValue={{ start: '2026-04-20T09:00:00', end: '2026-04-20T10:00:00' }}
+        />,
+      ),
+    ).toContain('9:00:00 AM');
   });
 
   it('UIC-DATE-TIME-FIELD-1.7 restores, undoes and clears from the menu', async () => {

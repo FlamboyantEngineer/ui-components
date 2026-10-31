@@ -364,3 +364,17 @@ test.describe('Text Field with a dialog of suggestions', () => {
     await lab.expectAccessible('[data-lab-demo="dialog-suggestions"]');
   });
 });
+
+test('UIC-FIELD-7.2 checks a multiline text as a whole with a multiline pattern', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('text-field');
+  const field = page.getByRole('textbox', { name: 'Line codes' });
+  await field.focus();
+  await field.blur();
+  await expect(field).toHaveAttribute('aria-invalid', 'true');
+  await field.fill('OK\n7\n42');
+  await field.blur();
+  await expect(field).not.toHaveAttribute('aria-invalid', 'true');
+});

@@ -18,6 +18,7 @@ import {
   type FieldInputProps,
   type FieldState,
 } from '../field/field.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** Where the value shows: in an output beside the track, in a label on each thumb, or nowhere. */
 export type SliderValueLabel = 'output' | 'thumb' | 'none';
@@ -136,7 +137,7 @@ function Mark({ mark, bounds }: { mark: SliderMark; bounds: TrackBounds }) {
           : { position: 'absolute', insetInlineStart: percent }
       }
     >
-      {mark.label != null ? <span {...hooks.slot('mark-label')}>{mark.label}</span> : null}
+      {!isEmptyNode(mark.label) ? <span {...hooks.slot('mark-label')}>{mark.label}</span> : null}
     </span>
   );
 }

@@ -82,7 +82,7 @@ export function FilterBar({
       role="group"
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.filters)}
     >
-      {search ? <div {...hooks.slot('search')}>{search}</div> : null}
+      {isEmptyNode(search) ? null : <div {...hooks.slot('search')}>{search}</div>}
       {chips.length > 0 ? (
         <ul {...hooks.slot('list')}>
           {chips.map(({ key, condition, field, index }) => (
@@ -131,4 +131,5 @@ export type {
   FilterValue,
 } from './filter-model.js';
 import { isFilterableLength } from '../../utils/filterable-list.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 export type { FilterOperator } from '../../core/strings/query.js';

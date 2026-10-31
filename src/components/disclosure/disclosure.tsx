@@ -19,6 +19,7 @@ import {
   type DisclosureIndicatorPosition,
 } from './disclosure-hooks.js';
 import { DisclosurePanel, DisclosureTitle } from './disclosure-parts.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export type { DisclosureIndicatorPosition } from './disclosure-hooks.js';
 
@@ -110,7 +111,7 @@ export function Disclosure({
       {...hooks.root({ className, data: { indicatorPosition } })}
     >
       <DisclosurePartsContext value={parts}>
-        {title == null ? (
+        {isEmptyNode(title) ? (
           children
         ) : (
           <>

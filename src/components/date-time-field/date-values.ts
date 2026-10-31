@@ -77,6 +77,39 @@ export function currentDateValue(
   return formatIsoDate(options.timeZone ? moment : toCalendarDateTime(moment), options.granularity);
 }
 
+/**
+ * A single value's text as the field writes it: zoned in `timeZone`, without parts finer than the
+ * granularity. A text the mode cannot read is kept as it is, for the field's check to refuse.
+ */
+function normalizeText(text: string, mode: SingleDateMode, options: DateValueOptions): string {
+  const value =
+    mode === 'date'
+      ? parseIsoDate(text)
+      : mode === 'time'
+        ? parseIsoTime(text)
+        : parseIsoDateTime(text, options.timeZone);
+  return value ? formatIsoDate(value, options.granularity) : text;
+}
+
+/**
+ * A value as the field writes it, each end of a range included, so a preset commits what a pick in
+ * the editor would: `2026-04-20T03:42:33Z` in a Tokyo field at the hour granularity becomes
+ * `2026-04-20T12:00:00+09:00[Asia/Tokyo]`.
+ */
+export function normalizeDateValue(
+  value: DateFieldValue,
+  mode: DateTimeFieldMode,
+  options: DateValueOptions,
+): DateFieldValue {
+  if (!value) return value;
+  const single = toSingleMode(mode);
+  if (typeof value === 'string') return normalizeText(value, single, options);
+  return {
+    start: normalizeText(value.start, single, options),
+    end: normalizeText(value.end, single, options),
+  };
+}
+
 /** Which bound a value breaks, with that bound's value; a range's end may not precede its start. */
 export function findBoundIssue(
   value: DateFieldValue,
@@ -140,21 +173,32 @@ function toDate(text: string, mode: SingleDateMode, options: DateValueOptions): 
   return time ? new Date(2000, 0, 1, time.hour, time.minute, time.second) : null;
 }
 
-function formatOptions(
-  mode: SingleDateMode,
-  options: DateValueOptions,
-): Intl.DateTimeFormatOptions {
-  const timeStyle = options.granularity === 'second' ? 'medium' : 'short';
-  if (mode === 'date') return { dateStyle: 'medium' };
-  if (mode === 'time') return { timeStyle };
-  return { dateStyle: 'medium', timeStyle, timeZone: options.timeZone };
+/** How `formatDateValue` writes a value: the editor's locale, precision and hour cycle. */
+interface FormatDateOptions extends DateValueOptions {
+  locale: string;
+  /** Writes times on a 12- or 24-hour clock instead of the locale's. */
+  hourCycle?: 12 | 24 | undefined;
 }
 
-/** A value as localized text: a date, a time, both, or a range. Unreadable text is kept. */
+function formatOptions(
+  mode: SingleDateMode,
+  options: FormatDateOptions,
+): Intl.DateTimeFormatOptions {
+  if (mode === 'date') return { dateStyle: 'medium' };
+  const timeStyle = options.granularity === 'second' ? 'medium' : 'short';
+  const clock = options.hourCycle === undefined ? {} : { hour12: options.hourCycle === 12 };
+  if (mode === 'time') return { timeStyle, ...clock };
+  return { dateStyle: 'medium', timeStyle, timeZone: options.timeZone, ...clock };
+}
+
+/**
+ * A value as localized text: a date, a time, both, or a range, at the editor's granularity and
+ * hour cycle. Unreadable text is kept.
+ */
 export function formatDateValue(
   value: Exclude<DateFieldValue, null>,
   mode: DateTimeFieldMode,
-  options: DateValueOptions & { locale: string },
+  options: FormatDateOptions,
 ): string {
   const single = toSingleMode(mode);
   const formatter = getDateFormatter(options.locale, formatOptions(single, options));

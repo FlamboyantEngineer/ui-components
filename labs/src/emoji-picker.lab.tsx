@@ -11,6 +11,7 @@ import {
   type NativeEmoji,
   type SkinTone,
 } from '../../src/components/emoji-picker/index.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -48,6 +49,27 @@ function describe(selection: EmojiSelection | null): string {
 }
 
 const fastFood = new Set(['🍔', '🍟', '🌭', '🍕']);
+
+/** A picker in a modal's body: choosing records the emoji and leaves the modal open. */
+function PickerInModal() {
+  const [chosen, setChosen] = useState('');
+  return (
+    <ModalTrigger>
+      <Button>Choose a status emoji</Button>
+      <Modal
+        title="Status emoji"
+        description={chosen ? `Chosen: ${chosen}` : 'Nothing chosen yet.'}
+      >
+        <EmojiPicker
+          data-lab-picker="modal"
+          onSelect={(selection) =>
+            setChosen(selection.kind === 'native' ? selection.unicode : selection.emoji.shortcode)
+          }
+        />
+      </Modal>
+    </ModalTrigger>
+  );
+}
 
 function ActiveCaption() {
   const active = useActiveEmoji();
@@ -178,6 +200,12 @@ mountLab(
         </p>
         <EmojiPickerSearch />
       </EmojiPicker>
+    </LabSection>
+    <LabSection
+      title="Inside a modal"
+      description="A picker in a modal's body: choosing an emoji keeps the modal open."
+    >
+      <PickerInModal />
     </LabSection>
   </>,
 );

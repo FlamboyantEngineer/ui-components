@@ -8,6 +8,12 @@ import type { EmojiPickerState } from './emoji-picker-state.js';
 /** The state an `EmojiPicker` shares with its parts. */
 export const EmojiPickerContext = createContext<EmojiPickerState | null>(null);
 
+/**
+ * How an `EmojiPickerTrigger` closes its popover once its picker reports a choice. A picker outside
+ * one closes nothing, not even an overlay around it.
+ */
+export const EmojiPickerDismissContext = createContext<(() => void) | null>(null);
+
 /** The state of the enclosing `EmojiPicker`, for one of its parts. */
 export function useEmojiPickerContext(): EmojiPickerState {
   const state = useContext(EmojiPickerContext);
