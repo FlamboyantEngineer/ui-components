@@ -452,6 +452,7 @@
   "dateTooLate": "Choose a value on or before {maxValue}.",
   "dateUnavailable": "Choose an available date.",
   "dateIncomplete": "Finish entering the date.",
+  "dateUnreadable": "Enter a valid date.",
   "lastPeriod": "Last {period}",
   "nextPeriod": "Next {period}",
   "rangeMinimum": "Minimum",

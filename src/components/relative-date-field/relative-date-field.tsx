@@ -24,6 +24,7 @@ import {
   describeRelativeDate,
   describeRelativeRange,
   findRelativeBoundIssue,
+  isReadableRelativeValue,
   formatDay,
   formatDayRange,
   formatRelativePeriod,
@@ -164,11 +165,26 @@ function describeValue(
 /** Bounds read in the field's resolved zone. */
 type ZonedBounds = RelativeDateBounds & { timeZone: string };
 
-/** The field's own check: a value outside the bounds is invalid, with the bound in the message. */
-function useBoundCheck(bounds: RelativeDateBounds) {
+/** Whether the field takes a value: one its mode can read, inside the bounds. */
+function isPickableValue(
+  value: RelativeDateValue,
+  kind: RelativeDateFieldMode,
+  bounds: ZonedBounds,
+) {
+  return isReadableRelativeValue(value, kind) && !findRelativeBoundIssue(value, bounds);
+}
+
+/**
+ * The field's own check: a value the mode cannot read, or outside the bounds, is invalid, with the
+ * reason or the bound in the message.
+ */
+function useValueCheck(kind: RelativeDateFieldMode, bounds: ZonedBounds) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   return (value: RelativeDateValue | null): FieldIssue | null => {
+    if (value !== null && !isReadableRelativeValue(value, kind)) {
+      return { severity: 'error', message: strings.dateUnreadable };
+    }
     const issue = findRelativeBoundIssue(value, bounds);
     if (!issue) return null;
     const limit = formatDay(issue.limit, locale) ?? issue.limit;
@@ -201,8 +217,8 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
 
 /**
  * Commits a picked value: a preset's, or a calendar day or range read in the field's zone. The value
- * is resolved once, when picked, and a value the bounds refuse then is not committed, even when its
- * preset was enabled while the list was open.
+ * is resolved once, when picked, and a value the mode cannot read or the bounds refuse then is not
+ * committed, even when its preset was enabled while the list was open.
  */
 function usePick<K extends RelativeDateFieldMode>(
   state: FieldState<RelativeDateFieldValue<K>>,
@@ -214,7 +230,7 @@ function usePick<K extends RelativeDateFieldMode>(
 ) {
   const { timeZone } = bounds;
   const commit = (next: RelativeDateValue) => {
-    if (findRelativeBoundIssue(next, bounds)) return;
+    if (!isPickableValue(next, kind, bounds)) return;
     state.setValue(next as RelativeDateFieldValue<K>);
     state.commit();
   };
@@ -242,7 +258,7 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   const kind: RelativeDateFieldMode = props.mode ?? 'date';
   const timeZone = useTimeZone(props.timeZone);
   const bounds = { minValue: props.minValue, maxValue: props.maxValue, timeZone };
-  const check = useBoundCheck(bounds);
+  const check = useValueCheck(kind, bounds);
   const { state, field } = useFieldControl<RelativeDateFieldValue<K>, RelativeDateFieldProps<K>>(
     props,
     {
@@ -264,8 +280,7 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   const items = presets.map((preset, index) => ({
     id: String(index),
     label: labelPreset(preset, { kind, locale }, strings),
-    isDisabled:
-      now !== null && findRelativeBoundIssue(resolvePreset(preset, context(now)), bounds) !== null,
+    isDisabled: now !== null && !isPickableValue(resolvePreset(preset, context(now)), kind, bounds),
   }));
   const { commit, pickDate } = usePick(state, { kind, getNow, bounds });
   const data = { mode: kind, relation: text?.relation };

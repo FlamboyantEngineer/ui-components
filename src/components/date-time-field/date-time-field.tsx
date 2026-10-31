@@ -23,6 +23,7 @@ import {
 } from './date-time-pickers.js';
 import {
   findBoundIssue,
+  isReadableValue,
   formatDateValue,
   isUnavailableValue,
   normalizeDateValue,
@@ -98,8 +99,8 @@ const controls = {
 };
 
 /**
- * The field's own check: a value outside the bounds, or on a date `isDateUnavailable` refuses, is
- * invalid with a message naming the reason.
+ * The field's own check: a value the mode cannot read, outside the bounds, or on a date
+ * `isDateUnavailable` refuses, is invalid with a message naming the reason.
  */
 function useDateCheck(
   props: AnyDateTimeFieldProps,
@@ -109,6 +110,9 @@ function useDateCheck(
   const strings = useUiStrings();
   const { locale } = useLocale();
   return (value: DateFieldValue): FieldIssue | null => {
+    if (!isReadableValue(value, mode, options)) {
+      return { severity: 'error', message: strings.dateUnreadable };
+    }
     const issue = findBoundIssue(value, mode, { ...props, ...options });
     if (issue) {
       const limit = formatDateValue(issue.limit, mode, { ...options, locale });

@@ -452,6 +452,7 @@
   "dateTooLate": "Elige un valor hasta el {maxValue}.",
   "dateUnavailable": "Elige una fecha disponible.",
   "dateIncomplete": "Termina de introducir la fecha.",
+  "dateUnreadable": "Introduce una fecha válida.",
   "lastPeriod": "{period} anteriores",
   "nextPeriod": "{period} siguientes",
   "rangeMinimum": "Mínimo",
