@@ -111,7 +111,7 @@ function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
 
 /** Puts the committed value back; the button leaves with it, so keyboard focus moves to the control first. */
 function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
-  slots.read('control')?.focus();
+  focusControl(slots.read('control'));
   state.restore();
 }
 

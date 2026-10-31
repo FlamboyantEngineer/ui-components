@@ -30,12 +30,23 @@ const focusableSelector = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
-/** Focuses the control, or its first focusable element when it is a group, such as date segments. */
+/** The chosen option of a group of choices, where focus enters the group. */
+const chosenSelector = [
+  'input[type="radio"]:checked:not([disabled])',
+  '[role="radio"][aria-checked="true"]:not([disabled])',
+].join(',');
+
+/**
+ * Focuses the control, or when it is a group the element focus enters it by: its chosen option,
+ * such as a segment or radio, else its first focusable element, such as the first date segment.
+ */
 export function focusControl(control: HTMLElement | null) {
   if (!control) return;
   const target = control.matches(focusableSelector)
     ? control
-    : (control.querySelector<HTMLElement>(focusableSelector) ?? control);
+    : (control.querySelector<HTMLElement>(chosenSelector) ??
+      control.querySelector<HTMLElement>(focusableSelector) ??
+      control);
   target.focus();
 }
 

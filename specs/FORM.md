@@ -71,7 +71,7 @@ Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
 
 ### UIC-FORM-2.3 - Deliberate check
 
-`validate()` shall do what a submit does before it goes through: show every field's validation and focus the first blocking field (its control, or the control's first focusable element when the control is a group, such as date segments). It returns whether the form passes and submits nothing.
+`validate()` shall do what a submit does before it goes through: show every field's validation and focus the first blocking field (its control, or when the control is a group its chosen option, else its first focusable element, such as date segments). It returns whether the form passes and submits nothing.
 
 Implementation: `src/components/form/form-validity.ts`
 Verification: `src/components/form/form-validity.test.tsx`
