@@ -16,7 +16,7 @@ const conversations: ChatConversation[] = [
     lastMessage: 'The museum opens at nine.',
     time: '2026-04-20T10:12:00',
     unreadCount: 2,
-    participants: [{ id: 'ana', name: 'Ana Lima', presence: 'online', presenceLabel: 'Online' }],
+    participants: [{ id: 'ana', name: 'Ana Lima', presence: 'active' }],
   },
   {
     id: 'trip',
@@ -73,7 +73,7 @@ describe('ChatList', () => {
       'The museum opens at nine.',
     );
     expect(ana.querySelector('.ui-chat-list__avatar')).toHaveAttribute('aria-hidden', 'true');
-    expect(ana.querySelector('.ui-avatar')).toHaveAttribute('data-status', 'online');
+    expect(ana.querySelector('.ui-avatar')).toHaveAttribute('data-status', 'active');
     expect(ana).toHaveAttribute('data-unread', 'true');
     expect(ana).not.toHaveAttribute('data-muted');
     expect(trip).toHaveAttribute('data-muted', 'true');
@@ -111,7 +111,7 @@ describe('ChatList', () => {
     render(<ChatList conversations={conversations} getNow={getNow} />);
     const ana = row(/^Ana Lima/);
     expect(ana).toHaveAccessibleName(
-      'Ana Lima, Online, 2 unread messages, 18 minutes ago The museum opens at nine.',
+      'Ana Lima, Active, 2 unread messages, 18 minutes ago The museum opens at nine.',
     );
     expect(row(/^Lisbon trip/)).toHaveAccessibleName(
       'Lisbon trip, 140 unread messages, muted, 16 hours ago Ben: I booked the café table.',

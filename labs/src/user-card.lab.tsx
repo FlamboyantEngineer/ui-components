@@ -33,7 +33,7 @@ function contentProps(content: (typeof contents)[number]) {
 }
 
 function statusProps() {
-  return { status: 'away', statusLabel: 'Away until 14:00' };
+  return { status: 'away' as const, statusLabel: 'Away until 14:00' };
 }
 
 /** Details whose order the reader changes; the note keeps its draft because each row has an id. */

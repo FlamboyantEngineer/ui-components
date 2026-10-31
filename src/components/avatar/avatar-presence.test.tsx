@@ -14,7 +14,7 @@ function root(container: HTMLElement): HTMLElement {
 describe('Avatar', () => {
   it('UIC-AVATAR-11.1 draws the avatar and publishes the status with a decorative indicator', () => {
     const { container, rerender } = render(
-      <Avatar name="Maria Santos" status=" away " colorKey="user-1" />,
+      <Avatar name="Maria Santos" status="away" colorKey="user-1" />,
     );
     const element = root(container);
     expect(element).toHaveAttribute('data-status', 'away');
@@ -24,11 +24,11 @@ describe('Avatar', () => {
     expect(element.querySelector('.ui-avatar__indicator')).toHaveAttribute('aria-hidden', 'true');
     expectHooksMatchSpec(container, 'AVATAR', { slots: ['surface', 'initials', 'indicator'] });
 
-    for (const status of ['active', 'busy', 'idle', 'reading-along']) {
+    for (const status of ['active', 'busy', 'idle'] as const) {
       rerender(<Avatar name="Maria Santos" status={status} />);
       expect(root(container)).toHaveAttribute('data-status', status);
     }
-    rerender(<Avatar name="Maria Santos" status="  " />);
+    rerender(<Avatar name="Maria Santos" />);
     expect(root(container)).not.toHaveAttribute('data-status');
     expect(container.querySelector('.ui-avatar__indicator')).toBeNull();
   });
@@ -58,6 +58,10 @@ describe('Avatar', () => {
     expect(root(container)).toHaveAccessibleName('Maria Santos, Away');
 
     rerender(<Avatar name="Maria Santos" status="away" />);
+    expect(screen.getByRole('img', { name: 'Maria Santos, Away' })).toBeInTheDocument();
+    rerender(<Avatar name="Maria Santos" status="busy" statusLabel="In a meeting" />);
+    expect(screen.getByRole('img', { name: 'Maria Santos, In a meeting' })).toBeInTheDocument();
+    rerender(<Avatar name="Maria Santos" />);
     expect(screen.getByRole('img', { name: 'Maria Santos' })).toBeInTheDocument();
     rerender(<Avatar name="" statusLabel="Idle" />);
     expect(screen.getByRole('img', { name: 'Unnamed, Idle' })).toBeInTheDocument();

@@ -98,14 +98,14 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/unified-options.spec
 
 ### UIC-AVATAR-11.1 - Avatar and status
 
-`Avatar` shall draw an `Avatar` in the `ui-avatar__surface` slot, passing it `name`, `src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape` ([AVATAR.md](AVATAR.md)). A non-blank `status` shall be published, trimmed, in `data-status` on the root, together with a decorative `ui-avatar__indicator` element the stylesheet can draw as a badge. Without a status neither renders.
+`Avatar` shall draw an `Avatar` in the `ui-avatar__surface` slot, passing it `name`, `src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape` ([AVATAR.md](AVATAR.md)). A `status`, a `PresenceStatus` (`active`, `away`, `busy` or `idle`, the vocabulary [Status Light](STATUS-LIGHT.md), [User Identity](USER-IDENTITY.md) and [User Card](USER-CARD.md) share), shall be published in `data-status` on the root, together with a decorative `ui-avatar__indicator` element the stylesheet can draw as a badge. Without a status neither renders.
 
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
 
 ### UIC-AVATAR-11.2 - Accessible name
 
-The avatar shall be the `role="img"` that names the person: by the trimmed `name` (or the provider's `unnamed` string when it is blank), joined with the trimmed `statusLabel` through the provider's `nameWithStatus` string when a status label is given (`Maria Santos, Away`). The root adds no role or label of its own, so a pressable root takes its name from that image and its visible initials never conflict with a separate label. The one exception is a static avatar with a name tooltip ([UIC-AVATAR-11.7](#uic-avatar-27---name-tooltip)).
+The avatar shall be the `role="img"` that names the person: by the trimmed `name` (or the provider's `unnamed` string when it is blank), joined through the provider's `nameWithStatus` string with the status in words (`Maria Santos, Away`): the trimmed `statusLabel` when it is not blank, else the provider's `presenceStatus` string for `status`. User Identity and User Card name a status the same way. The root adds no role or label of its own, so a pressable root takes its name from that image and its visible initials never conflict with a separate label. The one exception is a static avatar with a name tooltip ([UIC-AVATAR-11.7](#uic-avatar-27---name-tooltip)).
 
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar.tsx`, `src/core/strings.ts`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
@@ -176,7 +176,7 @@ Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-pres
 
 | `ui-avatar__surface` | slot | | The clipped picture or initials; the status dot sits outside it. |
 | `ui-avatar__indicator` | slot | | The decorative status badge, when there is a status. |
-| `data-status` | attribute | | The caller's status word (`active`, `away`, `idle`, …). |
+| `data-status` | attribute | | The `status`: `active`, `away`, `busy` or `idle`. |
 | `data-hovered` | state | `true` | While the pointer is over a pressable avatar (React Aria). |
 | `data-pressed` | state | `true` | While a pressable avatar is pressed (React Aria). |
 | `data-focused` | state | `true` | While a pressable avatar has focus (React Aria). |
