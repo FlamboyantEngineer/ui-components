@@ -26,6 +26,8 @@ interface ChoiceSelection {
   isPending: boolean;
   selectedKeys: string[];
   onSelectionChange: (keys: Set<Key>) => void;
+  /** Puts back the value in effect at mount, for a native form reset. */
+  reset: () => void;
 }
 
 /** What picking the selected segment of a single choice again commits, if anything. */
@@ -58,12 +60,14 @@ export function useChoiceSelection<M extends SegmentedChoiceSelectionMode>({
     value: current,
     isPending,
     change: commit,
+    reset,
   } = usePendingChange(value, defaultValue ?? empty, onChange);
 
   if (isMultiple) {
     return {
       selectionMode: 'multiple',
       isPending,
+      reset,
       selectedKeys: [...(current as string[])],
       onSelectionChange: (keys) => {
         if (isReadOnly) return;
@@ -76,6 +80,7 @@ export function useChoiceSelection<M extends SegmentedChoiceSelectionMode>({
   return {
     selectionMode: 'single',
     isPending,
+    reset,
     selectedKeys: single === null ? [] : [single],
     // React Aria reports an empty selection when the selected segment is picked again.
     onSelectionChange: (keys) => {

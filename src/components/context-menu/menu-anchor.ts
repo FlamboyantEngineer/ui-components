@@ -1,7 +1,4 @@
-'use client';
-
-import { useMemo, useState, type RefObject } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useMemo, type RefObject } from 'react';
 import type { Placement } from '../../core/props.js';
 import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuOverlayProps } from '../menu/menu.js';
@@ -30,17 +27,12 @@ function toPointRect(x: number, y: number): DOMRect {
 
 /**
  * The popover props that place a menu at its anchor: against an element with `placement`, or below
- * and after a viewport point. React Aria repositions an open popover when its placement changes, so
- * a moved point alternates between the logical and physical spelling of the same placement, which
- * moves the menu without reopening it.
+ * and after a viewport point. A moved point is a new `getTargetRect`, which `MenuOverlay` follows
+ * without reopening the menu.
  */
 export function useMenuAnchor({ anchor, placement, owner }: MenuAnchorOptions): MenuAnchorProps {
-  const { direction } = useLocale();
   const element = anchor && isElementAnchor(anchor) ? anchor : null;
   const point = anchor && !isElementAnchor(anchor) ? anchor : null;
-  const pointKey = point ? `${point.x},${point.y}` : '';
-  const [spelling, setSpelling] = useState({ key: pointKey, physical: false });
-  if (spelling.key !== pointKey) setSpelling({ key: pointKey, physical: !spelling.physical });
 
   const triggerRef = useMemo<RefObject<Element | null>>(
     () => ({
@@ -59,11 +51,5 @@ export function useMenuAnchor({ anchor, placement, owner }: MenuAnchorOptions): 
   );
 
   if (!getTargetRect) return { triggerRef, placement };
-  const physical: Placement = direction === 'rtl' ? 'bottom right' : 'bottom left';
-  return {
-    triggerRef,
-    getTargetRect,
-    placement: spelling.physical ? physical : 'bottom start',
-    offset: pointGap,
-  };
+  return { triggerRef, getTargetRect, placement: 'bottom start', offset: pointGap };
 }

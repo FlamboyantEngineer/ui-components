@@ -1,10 +1,11 @@
 'use client';
 
-import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { useLocale, type Placement, Popover } from '../../primitives/index.js';
+import { useId, type ReactNode, type RefObject } from 'react';
+import { Popover } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -72,30 +73,6 @@ const hooks = createHooks('completion-list', [
   'footer',
 ]);
 
-/**
- * Alternates between the logical and physical spelling of the same placement whenever the anchor
- * moved, measured each time the editor passes new items (as it does when the caret moves), because
- * React Aria repositions an open popover only when its placement changes.
- */
-function useFollowedPlacement(
-  anchorRef: RefObject<Element | null>,
-  isOpen: boolean,
-  items: readonly CompletionListItem[],
-): Placement {
-  const { direction } = useLocale();
-  const [turn, setTurn] = useState(0);
-  const lastRect = useRef('');
-  useLayoutEffect(() => {
-    const rect = isOpen ? anchorRef.current?.getBoundingClientRect() : undefined;
-    const next = rect ? `${rect.x} ${rect.y} ${rect.width} ${rect.height}` : '';
-    if (next === lastRect.current) return;
-    lastRect.current = next;
-    if (next) setTurn((current) => current + 1);
-  }, [anchorRef, isOpen, items]);
-  if (turn % 2 === 0) return 'bottom start';
-  return direction === 'rtl' ? 'bottom right' : 'bottom left';
-}
-
 function CompletionOption({
   item,
   listId,
@@ -152,7 +129,8 @@ export function CompletionList(props: CompletionListProps) {
     isOpen && (items.length > 0 || Boolean(renderEmptyState)),
     anchorRef,
   );
-  const placement = useFollowedPlacement(anchorRef, isShown, items);
+  // The editor passes new items as the caret moves, which moves the anchor.
+  const shouldUpdatePosition = useFollowAnchor({ anchorRef, isOpen: isShown, target: items });
   useActiveCompletion(listId, activeKey, { isOpen: isShown, anchorRef });
   const documentation = items.find((item) => item.id === activeKey)?.documentation;
   const documentationId = documentation ? `${listId}-documentation` : undefined;
@@ -167,7 +145,8 @@ export function CompletionList(props: CompletionListProps) {
         onOpenChange={(open) => onOpenChange?.(open)}
         isNonModal
         triggerRef={anchorRef}
-        placement={placement}
+        placement="bottom start"
+        shouldUpdatePosition={shouldUpdatePosition}
         offset={2}
         style={{ ...triggerWidthProperty, zIndex }}
       >
