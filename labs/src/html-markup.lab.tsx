@@ -111,6 +111,15 @@ mountLab(
       <FindDemo />
     </LabSection>
     <LabSection
+      title="Character references"
+      description="Every HTML name decodes with its case, legacy names without a semicolon included; an unknown name stays as written."
+    >
+      <HtmlMarkup
+        data-lab-references
+        markup="<p>Caf&eacute; &ouml; &alpha; &le; &NotNestedGreaterGreater; &copy 2026 &EACUTE; &constructor;</p>"
+      />
+    </LabSection>
+    <LabSection
       title="Unknown names"
       description="Elements outside the policy are unwrapped whatever their name, including names an ordinary object inherits."
     >

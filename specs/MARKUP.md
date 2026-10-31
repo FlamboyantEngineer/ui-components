@@ -20,10 +20,10 @@ Verification: `src/utils/markup.test.ts`
 
 ### UIC-MARKUP-1.3 - Character references
 
-`decodeEntities(text)` shall decode decimal and hexadecimal character references, a reference to no character (zero, a surrogate, beyond U+10FFFF) becoming U+FFFD, and the common named entities (`amp`, `lt`, `gt`, `quot`, `apos`, `nbsp`, spaces, dashes, quotes, `hellip`, `copy`, `reg`, `trade`, currency, arithmetic and arrow signs); an unknown name stays as written.
+`decodeEntities(text)` shall decode decimal and hexadecimal character references, a reference to no character (zero, a surrogate, beyond U+10FFFF) becoming U+FFFD, and every named character reference of HTML (accented letters, Greek and mathematical signs, those that stand for two code points), each ended by its `;` and matched with its case. An unknown name stays as written, and a name an ordinary object inherits (`constructor`) is unknown. [Markdown](MARKDOWN.md) and [SVG Markup](SVG-MARKUP.md) decode this way. `tokenizeMarkup(markup, { references: 'html' })`, which [HTML Markup](HTML-MARKUP.md) uses, decodes as an HTML parser does instead: also the legacy names written without a `;` (`&copy`) and numeric references without one, numeric references to C1 controls as their Windows-1252 characters, and in attribute values a legacy name without a `;` before `=` or an alphanumeric stays as written. Text is decoded exactly once, before URL checks.
 
 Implementation: `src/utils/markup.ts`
-Verification: `src/utils/markup.test.ts`
+Verification: `src/utils/markup.test.ts`, `src/utils/markup-entities.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-MARKUP-1.4 - Dropped elements
 

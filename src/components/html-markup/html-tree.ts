@@ -161,10 +161,13 @@ function addText(stack: Stack, text: string): void {
 export function buildHtmlTree(markup: string): RawNode[] {
   const root: RawElement = { tag: '#fragment', attributes: {}, children: [] };
   const stack = createOpenElements(root);
-  const tokens = skipDroppedElements(tokenizeMarkup(markup, { rawTextElements }), {
-    isDropped: (token) => blockedElements.has(token.tag.toLowerCase()),
-    isEmpty: (token) => token.isSelfClosing || voidElements.has(token.tag.toLowerCase()),
-  });
+  const tokens = skipDroppedElements(
+    tokenizeMarkup(markup, { rawTextElements, references: 'html' }),
+    {
+      isDropped: (token) => blockedElements.has(token.tag.toLowerCase()),
+      isEmpty: (token) => token.isSelfClosing || voidElements.has(token.tag.toLowerCase()),
+    },
+  );
   for (const token of tokens) {
     if (token.type === 'text') addText(stack, token.text);
     else if (token.type === 'close') closeElement(stack, token.tag.toLowerCase());
