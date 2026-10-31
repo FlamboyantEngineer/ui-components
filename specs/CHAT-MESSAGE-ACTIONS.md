@@ -20,7 +20,7 @@ Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx
 
 ### UIC-CHAT-MESSAGE-ACTIONS-1.3 - Copy
 
-Copy shall put `copyText` on the clipboard, exactly as given, through the library's copy support (the asynchronous Clipboard API, then a selection copy). Once the text reached the clipboard it calls `onCopy`. For two seconds the button shows the `check` glyph (the `error` glyph when the copy failed) and the toolbar carries `data-copied` after a copy, and a polite status (`ui-chat-message-actions__status`) reads the provider string `copied` or `copyFailed`; a repeated outcome is read again.
+Copy shall put `copyText` on the clipboard, exactly as given, through the library's copy support (the asynchronous Clipboard API, then a selection copy). Once the text reached the clipboard it calls `onCopy`. For two seconds the button shows the `check` glyph (the `error` glyph when the copy failed) and the toolbar carries `data-copied` after a copy, and a polite status (`ui-chat-message-actions__status`) reads the provider string `copied` or `copyFailed`; a repeated outcome is read again. Of quick presses only the latest copy is announced: an earlier copy that settles after it changes nothing in the status.
 
 Implementation: `src/components/chat-message-actions/message-actions-bar.tsx`, `src/components/chat-message-actions/message-commands.ts`
 Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx`, `e2e/chat-message-actions.spec.ts`
