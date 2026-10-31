@@ -250,7 +250,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Virtualized"
-      description="3,000 stores, each a row group; only the rows in view are rendered, plus the totals row, which stays in the document while out of view."
+      description="3,000 stores, each a row group, with a column per fruit and value grouped under the fruit; only the rows in view are rendered, plus the group header row above the column headers and the totals row, which stays in the document while out of view."
     >
       <div data-lab-demo="virtualized" style={{ height: 320 }}>
         <PivotTable
@@ -261,7 +261,14 @@ mountLab(
             { id: 'fruit', label: 'Fruit' },
             { id: 'boxes', label: 'Boxes' },
           ]}
-          defaultLayout={{ rows: ['store'], columns: [], values: [{ field: 'boxes' }] }}
+          defaultLayout={{
+            rows: ['store'],
+            columns: ['fruit'],
+            values: [
+              { field: 'boxes' },
+              { field: 'boxes', aggregate: 'count', label: 'Deliveries' },
+            ],
+          }}
           virtualized
           rowHeight={36}
         />
