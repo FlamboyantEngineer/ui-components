@@ -158,7 +158,12 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   const committed = state.committedValue;
   const previous =
     state.isDirty && committed
-      ? formatDateValue(committed, mode, { locale, timeZone: props.timeZone })
+      ? formatDateValue(committed, mode, {
+          locale,
+          timeZone: props.timeZone,
+          granularity: all.granularity,
+          hourCycle: all.hourCycle,
+        })
       : null;
   const Control = controls[mode];
   const pick = (value: DateFieldValue) => {

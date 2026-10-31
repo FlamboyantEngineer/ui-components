@@ -52,7 +52,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`
 
 ### UIC-DATE-TIME-FIELD-1.6 - Previous value
 
-While the field is dirty and its committed value is not empty, the group shall start with that value, localized, as a `FieldPreviousValue` (`ui-date-time-field__previous`).
+While the field is dirty and its committed value is not empty, the group shall start with that value, localized at the editor's precision (seconds at the `second` granularity) and hour cycle, as a `FieldPreviousValue` (`ui-date-time-field__previous`), so a difference the segments show is visible in it too.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`
