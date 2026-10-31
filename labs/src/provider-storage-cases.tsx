@@ -4,11 +4,12 @@ import { Link } from '../../src/components/link/link.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
+import { numberCodec } from '../../src/core/index.js';
 import { UiProvider, usePersistentState } from '../../src/core/provider.js';
 import { createMemoryStorage } from '../../src/core/storage.js';
 
 function StoredCounter({ storageKey }: { storageKey: string }) {
-  const [count, setCount] = usePersistentState(storageKey, 0);
+  const [count, setCount] = usePersistentState(storageKey, 0, { codec: numberCodec });
   return <Button onPress={() => setCount((value) => value + 1)}>Stored count {count}</Button>;
 }
 

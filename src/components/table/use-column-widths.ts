@@ -9,6 +9,7 @@ import {
   type TableColumnSizing,
   type TableColumnWidths,
 } from './column-sizing.js';
+import { storedColumnsCodec } from './table-columns.js';
 
 interface ColumnWidthsOptions {
   columns: readonly TableColumnSizing[];
@@ -34,7 +35,13 @@ function restoreColumnKeys(widths: Map<Key, unknown>): Map<Key, unknown> {
  */
 export function useColumnWidths(options: ColumnWidthsOptions): ColumnWidths {
   const { columns, persistKey, onColumnWidthsChange } = options;
-  const [stored, setStored] = usePersistentState<unknown>(persistKey, {});
+  const [stored, setStored] = usePersistentState<unknown>(
+    persistKey,
+    {},
+    {
+      codec: storedColumnsCodec,
+    },
+  );
   const [live, setLive] = useState<TableColumnWidths | null>(null);
 
   const onResizeEnd = (widths: Map<Key, unknown>) => {

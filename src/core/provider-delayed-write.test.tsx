@@ -1,8 +1,14 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createJsonCodec } from '../utils/json-codec.js';
 import { UiProvider, usePersistentState } from './provider.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
+
+const textCodec = createJsonCodec((value): string => {
+  if (typeof value !== 'string') throw new TypeError('Not stored text');
+  return value;
+});
 
 /** A memory adapter that counts its writes. */
 function countingStorage(): UiStorage & { writes: number } {
@@ -23,10 +29,13 @@ function renderDelayed(storage: UiStorage, initialKey = 'note') {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <UiProvider storage={storage}>{children}</UiProvider>
   );
-  return renderHook(({ key }) => usePersistentState(key, '', { writeDelay: 300 }), {
-    initialProps: { key: initialKey },
-    wrapper,
-  });
+  return renderHook(
+    ({ key }) => usePersistentState(key, '', { codec: textCodec, writeDelay: 300 }),
+    {
+      initialProps: { key: initialKey },
+      wrapper,
+    },
+  );
 }
 
 afterEach(() => {

@@ -65,4 +65,11 @@ describe('stored list and boolean codecs', () => {
       expect(() => booleanCodec.parse(raw)).toThrow(TypeError);
     }
   });
+
+  it('UIC-PROVIDER-6.2 ships the codecs from the core entry point', async () => {
+    const core = await import('../core/index.js');
+    expect(core.createJsonCodec).toBe(createJsonCodec);
+    expect(core.numberCodec.parse('3')).toBe(3);
+    expect(() => core.booleanCodec.parse('"yes"')).toThrow();
+  });
 });

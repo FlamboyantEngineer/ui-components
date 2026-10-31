@@ -2,6 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { startTransition, Suspense, use, useState, type ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
+import { numberCodec } from '../utils/json-codec.js';
 import { UiProvider, usePersistentState } from './provider.js';
 import { createMemoryStorage } from './storage.js';
 
@@ -13,7 +14,10 @@ describe('persistent state ownership', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <UiProvider storage={storage}>{children}</UiProvider>
     );
-    const { result, rerender } = renderHook(() => usePersistentState('count', 0), { wrapper });
+    const { result, rerender } = renderHook(
+      () => usePersistentState('count', 0, { codec: numberCodec }),
+      { wrapper },
+    );
     expect(result.current[0]).toBe(2);
     storage = second;
     rerender();
@@ -28,10 +32,13 @@ describe('persistent state ownership', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <UiProvider storage={storage}>{children}</UiProvider>
     );
-    const { result, rerender } = renderHook(({ key }) => usePersistentState(key, 0), {
-      initialProps: { key: 'first' },
-      wrapper,
-    });
+    const { result, rerender } = renderHook(
+      ({ key }) => usePersistentState(key, 0, { codec: numberCodec }),
+      {
+        initialProps: { key: 'first' },
+        wrapper,
+      },
+    );
     rerender({ key: 'second' });
     act(() => {
       result.current[1]((value) => value + 1);
@@ -48,7 +55,10 @@ describe('persistent state ownership', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <UiProvider storage={storage}>{children}</UiProvider>
     );
-    const { result, rerender } = renderHook(() => usePersistentState(undefined, 0), { wrapper });
+    const { result, rerender } = renderHook(
+      () => usePersistentState(undefined, 0, { codec: numberCodec }),
+      { wrapper },
+    );
     act(() => result.current[1](3));
     storage = createMemoryStorage();
     rerender();
@@ -60,7 +70,7 @@ describe('persistent state ownership', () => {
     const storage = createMemoryStorage({ first: '2', second: '10' });
     const pending = new Promise<never>(() => {});
     function Counter({ storageKey }: { storageKey: string }) {
-      const [count, setCount] = usePersistentState(storageKey, 0);
+      const [count, setCount] = usePersistentState(storageKey, 0, { codec: numberCodec });
       if (storageKey === 'second') use(pending);
       return <button onClick={() => setCount((value) => value + 1)}>Count {count}</button>;
     }
@@ -84,5 +94,13 @@ describe('persistent state ownership', () => {
     await user.click(screen.getByRole('button', { name: 'Count 2' }));
     expect(storage.getItem('first')).toBe('3');
     expect(storage.getItem('second')).toBe('10');
+  });
+
+  it('UIC-PROVIDER-6.2 requires a codec', () => {
+    function useUncheckedCount() {
+      // @ts-expect-error A persisted value is read back only through a codec that checks it.
+      return usePersistentState('count', 0);
+    }
+    expect(useUncheckedCount).toBeTypeOf('function');
   });
 });

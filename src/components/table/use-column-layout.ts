@@ -6,6 +6,7 @@ import {
   applyColumnMove,
   arrangeColumns,
   readColumnLayout,
+  storedColumnsCodec,
   type TableColumnLayout,
   type TableColumnMove,
 } from './table-columns.js';
@@ -39,7 +40,9 @@ export interface ColumnLayout<T> {
 export function useColumnLayout<T>(options: ColumnLayoutOptions<T>): ColumnLayout<T> {
   const { columns, columnLayout, onColumnLayoutChange, persistKey } = options;
   const key = persistKey === undefined ? undefined : `${persistKey}:layout`;
-  const [stored, setStored] = usePersistentState<unknown>(key, options.defaultColumnLayout ?? {});
+  const [stored, setStored] = usePersistentState<unknown>(key, options.defaultColumnLayout ?? {}, {
+    codec: storedColumnsCodec,
+  });
   const layout = useMemo(
     () => columnLayout ?? readColumnLayout(stored, columns),
     [columnLayout, stored, columns],

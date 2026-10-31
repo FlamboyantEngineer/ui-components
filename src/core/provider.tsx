@@ -91,6 +91,11 @@ export interface GlyphProps {
   className?: string | undefined;
 }
 
+/**
+ * How a persisted value is stored as text and read back. `parse` checks the shape it expects and
+ * throws on anything else, so stale or corrupted data falls back to the initial value; build one
+ * with `createJsonCodec`, or use `booleanCodec`, `numberCodec`, `keyCodec` or `keyListCodec`.
+ */
 export interface PersistCodec<T> {
   parse(raw: string): T;
   stringify(value: T): string;
@@ -98,8 +103,8 @@ export interface PersistCodec<T> {
 
 /** How `usePersistentState` stores its value. */
 export interface PersistentStateOptions<T> {
-  /** How the value is written to and read from the adapter. Defaults to JSON. */
-  codec?: PersistCodec<T> | undefined;
+  /** How the value is written to and read from the adapter, checking its shape as it is read. */
+  codec: PersistCodec<T>;
   /**
    * Milliseconds the adapter write waits after the last change, so a burst of changes, such as
    * typing, writes once. The state itself changes at once. Defaults to 0, writing each change.
@@ -194,11 +199,6 @@ const defaultContext: UiContextValue = {
 };
 
 const UiContext = createContext<UiContextValue>(defaultContext);
-
-const jsonCodec: PersistCodec<never> = {
-  parse: (raw) => JSON.parse(raw) as never,
-  stringify: (value) => JSON.stringify(value),
-};
 
 const noOption = {};
 
@@ -344,9 +344,9 @@ export function Glyph({ icon: Component, className }: GlyphProps) {
 export function usePersistentState<T>(
   key: string | undefined,
   initialValue: T | (() => T),
-  options: PersistentStateOptions<T> = {},
+  options: PersistentStateOptions<T>,
 ): PersistentState<T> {
-  const { codec = jsonCodec as PersistCodec<T>, writeDelay = 0 } = options;
+  const { codec, writeDelay = 0 } = options;
   const adapter = useUiStorage();
   const storage = key === undefined ? undefined : adapter;
   // Plain state does not belong to an adapter; persisted state belongs to both adapter and key.
