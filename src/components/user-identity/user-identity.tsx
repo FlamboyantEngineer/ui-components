@@ -39,10 +39,6 @@ const hooks = createHooks('user-identity', [
   'indicator',
 ]);
 
-function isBlankNode(node: ReactNode): boolean {
-  return isEmptyNode(node) || (typeof node === 'string' && node.trim() === '');
-}
-
 /**
  * A decorative avatar, a display name, an optional secondary line and an optional status badge, for
  * rows that name a person.
@@ -69,7 +65,7 @@ export function UserIdentity(props: UserIdentityProps) {
           {nameSuffix}
         </span>
         {/* A space keeps the two lines apart in a name computed from content, even unstyled. */}
-        {isBlankNode(description) ? null : (
+        {isEmptyNode(description, { isBlankEmpty: true }) ? null : (
           <>
             {' '}
             <span {...hooks.slot('description')}>{description}</span>

@@ -15,6 +15,7 @@ import {
   type DrawnSignature,
   type SignaturePoint,
 } from './signature-path.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 interface SignatureSurfaceProps {
   control: FieldControlProps;
@@ -103,7 +104,7 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
         tabIndex={-1}
         aria-label={control['aria-label']}
         aria-labelledby={control['aria-labelledby']}
-        aria-describedby={[strokesId, control['aria-describedby']].filter(Boolean).join(' ')}
+        aria-describedby={joinIds(strokesId, control['aria-describedby'])}
         aria-invalid={control['aria-invalid']}
       >
         <svg

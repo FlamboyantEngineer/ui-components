@@ -135,3 +135,5 @@ export type {
   TooltipRect,
   TooltipVirtualAnchor,
 } from './anchored-tooltip.js';
+export { ManualTooltip, useManualTooltipState } from './manual-tooltip.js';
+export type { ManualTooltipState } from './manual-tooltip.js';

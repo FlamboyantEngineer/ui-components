@@ -12,6 +12,7 @@ import { Button } from '../button/button.js';
 import { cardHooks as hooks } from './card-hooks.js';
 import type { CardHeaderProps } from './card-header.js';
 import type { CardPresentation } from './card-presentation.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 /** The More disclosure: whether the regions a smaller presentation moved show. */
 export interface CardMore {
@@ -28,7 +29,7 @@ function MoreButton({
 }: {
   more: CardMore;
   titleId: string;
-  controls: string;
+  controls: string | undefined;
   id: string;
 }) {
   const strings = useUiStrings();
@@ -121,7 +122,7 @@ export function MoreControl(props: {
     <MoreButton
       more={header.more}
       titleId={header.titleId}
-      controls={controls.join(' ')}
+      controls={joinIds(...controls)}
       id={regions.ids.more}
     />
   );

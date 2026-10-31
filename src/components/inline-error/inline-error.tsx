@@ -1,12 +1,12 @@
 'use client';
 
 import { ErrorGlyph } from '../../core/glyphs.js';
+import { getToneGlyph } from '../../core/tone-glyphs.js';
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { getToneGlyph } from '../banner/banner.js';
 import { Icon } from '../icon/icon.js';
 
 /** `danger` for a failure, `warning` for a problem that does not block, `success` for a passed check. */

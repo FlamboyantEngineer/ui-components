@@ -16,6 +16,7 @@ import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import type { DraggedItem } from './file-rules.js';
 import { fileUploadHooks as hooks } from './file-upload-files.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 /** How the owner names a command: the names it gives come before the command's own text. */
 type CommandNaming = Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;
@@ -142,7 +143,7 @@ export function DropZoneCommand(props: CommandProps) {
           className={hooks.slotClass('browse')}
           size="sm"
           isDisabled={isDisabled}
-          aria-describedby={[labelId, props.describedBy].filter(Boolean).join(' ')}
+          aria-describedby={joinIds(labelId, props.describedBy)}
         >
           <span id={browseTextId}>{strings.browse}</span>
         </Button>,

@@ -14,6 +14,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { ChoiceContext } from './choice-group.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 export interface ChoiceRenderState {
   isSelected: boolean;
@@ -62,10 +63,10 @@ export function Choice({ children, description, className, ...rest }: ChoiceProp
     isSelected: group?.value.includes(rest.value) ?? false,
     isDisabled: settings.isDisabled || Boolean(rest.isDisabled),
   };
-  const describedBy =
-    [rest['aria-describedby'], isEmptyNode(description) ? undefined : descriptionId]
-      .filter(Boolean)
-      .join(' ') || undefined;
+  const describedBy = joinIds(
+    rest['aria-describedby'],
+    isEmptyNode(description) ? undefined : descriptionId,
+  );
   return renderElement(
     'div',
     {

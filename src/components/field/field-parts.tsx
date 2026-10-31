@@ -9,6 +9,7 @@ import type { SlotRef } from '../../utils/slot-registry.js';
 import { Button } from '../button/button.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type { FieldSeverity, FieldState, FieldValidation } from './field-state.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 /**
  * How much room a field keeps for what its states add: `default` keeps a line for the message and a
@@ -79,10 +80,6 @@ export function useFieldIds(id: string | undefined): FieldIds {
     message: `${base}-message`,
     help: `${base}-help`,
   };
-}
-
-function joinIds(...ids: Array<string | false>): string | undefined {
-  return ids.filter(Boolean).join(' ') || undefined;
 }
 
 /**

@@ -7,13 +7,13 @@ import {
   Breadcrumbs as AriaBreadcrumbs,
   Link as AriaLink,
   useLocale,
-  type LinkProps as AriaLinkProps,
 } from '../../primitives/index.js';
 import type { BaseProps, Key, NativeProps, Size, RefProps } from '../../core/props.js';
-import { UiLink, useUiStrings } from '../../core/provider.js';
+import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import { renderLinkElement } from '../link/link.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import type { MenuEntry } from '../menu/menu.js';
@@ -69,8 +69,6 @@ export interface BreadcrumbProps
   overflow?: BreadcrumbOverflow | undefined;
 }
 
-type LinkRenderProps = Parameters<NonNullable<AriaLinkProps['render']>>[0];
-
 interface FocusPosition {
   index: number;
   count: number;
@@ -91,15 +89,6 @@ interface CrumbMenuProps {
   index: number;
   isDisabled: boolean | undefined;
   onAction: BreadcrumbProps['onAction'];
-}
-
-/** Crumbs that navigate render through the provider's link renderer; the others stay spans. */
-function renderCrumbLink(props: LinkRenderProps): ReactElement {
-  if ('href' in props && typeof props.href === 'string' && props['aria-disabled'] === undefined) {
-    return <UiLink {...props} href={props.href} />;
-  }
-  const { href: _href, ...spanProps } = props as LinkRenderProps & { href?: unknown };
-  return <span {...(spanProps as Omit<LinkRenderProps, 'href'>)} />;
 }
 
 /** The index of the crumb a navigation key moves focus to, or `undefined` for other keys. */
@@ -154,7 +143,7 @@ function Crumb({ item, index, isLast, separator, isDisabled, onAction }: CrumbPr
       <AriaLink
         className={hooks.slotClass('link')}
         href={isLast ? undefined : item.href}
-        render={renderCrumbLink}
+        render={renderLinkElement}
       >
         <TruncationTooltip className={hooks.slotClass('label')}>{item.label}</TruncationTooltip>
       </AriaLink>
