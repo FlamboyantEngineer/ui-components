@@ -10,6 +10,7 @@ import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
 import { SegmentedTrack } from './segmented-track.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { segmentedBarHooks as hooks } from './segmented-bar-hooks.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -101,7 +102,8 @@ export function SegmentedBar({
   const strings = useUiStrings();
   const format = useNumberFormatter(formatOptions);
   const resolved = resolveSegmentedBar(segments, total);
-  const hasLabel = label != null && rest['aria-labelledby'] === undefined && !rest['aria-label'];
+  const hasLabel =
+    !isEmptyNode(label) && rest['aria-labelledby'] === undefined && !rest['aria-label'];
   return (
     <div
       {...rest}
@@ -109,7 +111,7 @@ export function SegmentedBar({
       role="group"
       aria-labelledby={hasLabel ? labelId : rest['aria-labelledby']}
     >
-      {label != null ? (
+      {!isEmptyNode(label) ? (
         <span {...hooks.slot('label')} id={labelId}>
           {label}
         </span>

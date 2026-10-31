@@ -13,6 +13,7 @@ import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import { CommentThreadContext } from './comment-thread-context.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** What a comment hands the editor that replaces its body while the reader edits it. */
 export interface CommentEditorOptions {
@@ -253,7 +254,9 @@ export function CommentThreadReply({
       ) : (
         <div {...hooks.slot('body')}>{children ?? text}</div>
       )}
-      {reactions && !editing ? <div {...hooks.slot('reactions')}>{reactions}</div> : null}
+      {!isEmptyNode(reactions) && !editing ? (
+        <div {...hooks.slot('reactions')}>{reactions}</div>
+      ) : null}
     </article>
   );
 }

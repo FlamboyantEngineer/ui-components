@@ -20,6 +20,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import { useAutoGrow, type AutoGrowOptions } from '../../utils/use-auto-grow.js';
 import { Button } from '../button/button.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** The element a text field edits in: an input on one line, a text area on several. */
 export type TextFieldElement = HTMLInputElement | HTMLTextAreaElement;
@@ -129,12 +130,12 @@ export function TextFieldFrame({
   reveal,
   children,
 }: TextFieldFrameProps) {
-  if (!startAdornment && !endAdornment && !reveal) return children;
+  if (isEmptyNode(startAdornment) && isEmptyNode(endAdornment) && !reveal) return children;
   return (
     <Group {...hooks.slot('group')}>
-      {startAdornment ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
+      {isEmptyNode(startAdornment) ? null : <span {...hooks.slot('start')}>{startAdornment}</span>}
       {children}
-      {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
+      {isEmptyNode(endAdornment) ? null : <span {...hooks.slot('end')}>{endAdornment}</span>}
       {reveal ? <RevealButton {...reveal} /> : null}
     </Group>
   );
@@ -175,7 +176,7 @@ export function withCharacterCount(
   // The space keeps the description and the count apart when they are read as one text.
   return (
     <>
-      {description ? <>{description} </> : null}
+      {isEmptyNode(description) ? null : <>{description} </>}
       <CharacterCount count={count} maxLength={maxLength} />
     </>
   );

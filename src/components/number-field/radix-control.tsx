@@ -14,6 +14,7 @@ import {
 import type { NumberControlConfig } from './number-field.js';
 import {
   addStep,
+  NumberAdornment,
   NumberScrubber,
   numberFieldHooks as hooks,
   type NumberSteps,
@@ -130,7 +131,7 @@ export function RadixControl(props: RadixControlProps) {
       <div {...hooks.slot('group')}>
         {hideStepper ? null : stepper(-1)}
         {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
-        {startAdornment ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
+        <NumberAdornment side="start">{startAdornment}</NumberAdornment>
         <Input
           {...hooks.slot('input')}
           role="spinbutton"
@@ -148,7 +149,7 @@ export function RadixControl(props: RadixControlProps) {
           onBlur={() => entry.finish(false)}
           onKeyDown={entry.onKeyDown}
         />
-        {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
+        <NumberAdornment side="end">{endAdornment}</NumberAdornment>
         {hideStepper ? null : stepper(1)}
       </div>
       <FieldFormValue

@@ -23,6 +23,7 @@ import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { CodeSearchPanel } from './code-search.js';
 import type { CodeEditorModel } from './use-code-editor.js';
 import { useCodeSurface } from './use-code-surface.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export type CodeEditorSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -196,7 +197,7 @@ export function CodeSurface(props: CodeSurfaceProps) {
   const { model, toolbar, diagnostics, diagnosticsId, listId, caretRef, problems } = view;
   return (
     <div {...hooks.root({ className: view.className, props: view.dataProps, data: view.data })}>
-      {toolbar ? <div {...hooks.slot('toolbar')}>{toolbar}</div> : null}
+      {isEmptyNode(toolbar) ? null : <div {...hooks.slot('toolbar')}>{toolbar}</div>}
       {model.search.isOpen ? (
         <CodeSearchPanel
           model={model.search}

@@ -13,6 +13,7 @@ import { ComposerSendControl } from './composer-tools.js';
 import type { ComposerKeys } from './composer-keys.js';
 import type { MessageComposerSharedProps } from './message-composer.js';
 import { useFileDrop } from './use-file-drop.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** What the frame needs from the composer's input, plain or rich. */
 export interface ComposerFrameModel {
@@ -69,8 +70,8 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
   };
   return (
     <div {...hooks.root({ className, props, data })} id={id} ref={rootRef} {...drop.dropProps}>
-      {banner ? <div {...hooks.slot('banner')}>{banner}</div> : null}
-      {attachments ? <div {...hooks.slot('attachments')}>{attachments}</div> : null}
+      {isEmptyNode(banner) ? null : <div {...hooks.slot('banner')}>{banner}</div>}
+      {isEmptyNode(attachments) ? null : <div {...hooks.slot('attachments')}>{attachments}</div>}
       {children}
       <ComposerControlsContext value={controls}>
         <div {...hooks.slot('footer')} ref={footerRef}>

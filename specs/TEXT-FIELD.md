@@ -66,7 +66,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.1 - Adornments
 
-`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame.
+`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`

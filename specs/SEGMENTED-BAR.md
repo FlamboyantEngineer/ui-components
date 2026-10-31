@@ -6,7 +6,7 @@
 
 ### UIC-SEGMENTED-BAR-1.1 - Parts
 
-`SegmentedBar` shall render a `ui-segmented-bar` element holding its visible `label` in a `ui-segmented-bar__label` slot when one is given, the total in a `ui-segmented-bar__total` slot, a `ui-segmented-bar__track` holding one `ui-segmented-bar__segment` per segment with a share, and a `ui-segmented-bar__legend` list.
+`SegmentedBar` shall render a `ui-segmented-bar` element holding its visible `label` in a `ui-segmented-bar__label` slot when one is given, the total in a `ui-segmented-bar__total` slot, a `ui-segmented-bar__track` holding one `ui-segmented-bar__segment` per segment with a share, and a `ui-segmented-bar__legend` list. A `label` that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no label slot, and the group is named by `aria-label` or `aria-labelledby` instead; `0` draws one.
 
 Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
 

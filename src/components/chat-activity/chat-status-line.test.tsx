@@ -31,6 +31,18 @@ describe('ChatStatusLine', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('UIC-CHAT-ACTIVITY-4.1 keeps the busy indicator for an empty icon and draws a zero one', () => {
+    for (const icon of [null, false, '']) {
+      const { container, unmount } = render(<ChatStatusLine icon={icon} />);
+      expect(container.querySelector('.ui-chat-status-line__spinner')).not.toBeNull();
+      expect(container.querySelector('.ui-chat-status-line__icon')).toBeNull();
+      unmount();
+    }
+    const { container } = render(<ChatStatusLine icon={0} />);
+    expect(container.querySelector('.ui-chat-status-line__icon')).toHaveTextContent('0');
+    expect(container.querySelector('.ui-chat-status-line__spinner')).toBeNull();
+  });
+
   it('UIC-CHAT-ACTIVITY-4.1 reads "Thinking…" without text and shows an icon in place of the busy indicator', () => {
     const { container } = render(<ChatStatusLine icon={<svg />} />);
     expect(container.querySelector('.ui-chat-status-line__text')).toHaveTextContent('Thinking…');

@@ -21,6 +21,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatFeedbackRating, MessageCommands } from './message-commands.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 interface MessageActionsBarProps extends BaseProps, AriaLabellingProps {
   state: MessageCommands;
@@ -174,7 +175,7 @@ export function MessageActionsBar({ state, children, className, ...rest }: Messa
       {commands.onDelete ? (
         <OverlayButton state={state} overlay="delete" icon={DeleteGlyph} label={strings.delete} />
       ) : null}
-      {children ? (
+      {!isEmptyNode(children) ? (
         <span
           hidden
           onKeyDown={stopPortalledEvent}
