@@ -228,8 +228,13 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
 function ToastPortalContainer({ children }: { children: ReactNode }) {
   const container = usePortalContainer();
   if (container === undefined) return children;
-  const target = container instanceof HTMLElement ? container : null;
-  return <AriaPortalProvider getContainer={() => target}>{children}</AriaPortalProvider>;
+  // Any element, an iframe's body too, or `null` while not ready. No realm's `HTMLElement` is
+  // assumed or even read, so the server, where it does not exist, renders this too.
+  return (
+    <AriaPortalProvider getContainer={() => container as HTMLElement | null}>
+      {children}
+    </AriaPortalProvider>
+  );
 }
 
 /**

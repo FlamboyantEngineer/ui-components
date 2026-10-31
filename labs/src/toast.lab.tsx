@@ -1,8 +1,9 @@
 import { HelpGlyph } from '../../src/core/glyphs.js';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { PortalContainerProvider } from '../../src/components/portal/portal.js';
 import {
   ToastList,
   ToastRegion,
@@ -155,6 +156,29 @@ function OverlayDemo() {
   );
 }
 
+const frameQueue = createToastQueue({ defaultTimeout: 0 });
+
+/** A region whose container is the body of a same-origin frame, another window's element. */
+function FrameDemo() {
+  const [body, setBody] = useState<HTMLElement | null>(null);
+  return (
+    <div data-lab-demo="frame">
+      <Button size="sm" onPress={() => frameQueue.add({ title: 'Saved in the frame' })}>
+        Push into the frame
+      </Button>
+      <iframe
+        title="Toast frame"
+        srcDoc='<!doctype html><html lang="en"><title>Frame</title><main aria-label="Frame page"><h1>Frame page</h1></main></html>'
+        style={{ display: 'block', width: 420, height: 160, marginTop: 8 }}
+        onLoad={(event) => setBody(event.currentTarget.contentDocument?.body ?? null)}
+      />
+      <PortalContainerProvider container={body}>
+        <ToastRegion queue={frameQueue} />
+      </PortalContainerProvider>
+    </div>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -237,6 +261,12 @@ mountLab(
       description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
     >
       <LiveDemo />
+    </LabSection>
+    <LabSection
+      title="Inside a frame"
+      description="The container is the body of a same-origin frame: the region renders there, on its toast layer, and nothing renders while the frame loads."
+    >
+      <FrameDemo />
     </LabSection>
     <LabSection
       title="Over drawers and dialogs"
