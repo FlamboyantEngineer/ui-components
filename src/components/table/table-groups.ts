@@ -1,3 +1,4 @@
+import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { ReactNode } from 'react';
@@ -135,6 +136,68 @@ function encodeGroupPart(value: string): string {
   return value.replace(/[%/=:]/g, encodeURIComponent);
 }
 
+/** The kinds of group value that never share a group, in the order equal-looking groups follow. */
+const groupValueKinds = ['string', 'number', 'boolean', 'date', 'empty'] as const;
+type GroupValueKind = (typeof groupValueKinds)[number];
+
+/** A value's kind: every empty value is one kind, and dates group by their day. */
+function getGroupValueKind(value: TableCellValue): GroupValueKind {
+  if (isEmptyCellValue(value)) return 'empty';
+  if (value instanceof Date) return 'date';
+  return typeof value as 'string' | 'number' | 'boolean';
+}
+
+interface GroupBucket<T> {
+  value: TableCellValue;
+  kind: GroupValueKind;
+  /** The value as key text: values of different kinds can share it. */
+  text: string;
+  nodes: TableNode<T>[];
+}
+
+/** Buckets the nodes by value and kind, so `1`, `"1"`, `true` and `"true"` stay apart. */
+function bucketNodes<T>(
+  nodes: readonly TableNode<T>[],
+  grouping: ResolvedGrouping<T>,
+): GroupBucket<T>[] {
+  const buckets = new Map<string, GroupBucket<T>>();
+  for (const node of nodes) {
+    const value = grouping.getValue(node.row);
+    const kind = getGroupValueKind(value);
+    const text = formatGroupValue(value);
+    const identity = `${kind}:${text}`;
+    const bucket = buckets.get(identity) ?? { value, kind, text, nodes: [] };
+    bucket.nodes.push(node);
+    buckets.set(identity, bucket);
+  }
+  return [...buckets.values()];
+}
+
+const compareKinds = (left: GroupValueKind, right: GroupValueKind) =>
+  groupValueKinds.indexOf(left) - groupValueKinds.indexOf(right);
+
+/**
+ * Each bucket's key, given in kind order so that of two values with the same text the string keeps
+ * the plain key and the other takes a suffix, whatever order the rows come in.
+ */
+function assignGroupKeys<T>(
+  buckets: readonly GroupBucket<T>[],
+  groupingId: string,
+  at: GroupLevel,
+): Map<GroupBucket<T>, { key: string; base: string }> {
+  const keys = new Map<GroupBucket<T>, { key: string; base: string }>();
+  const byKind = [...buckets].sort((left, right) => compareKinds(left.kind, right.kind));
+  for (const bucket of byKind) {
+    const base = `${at.prefix}${encodeGroupPart(groupingId)}=${encodeGroupPart(bucket.text)}`;
+    let key = base;
+    let suffix = 0;
+    while (at.reserved.has(key)) key = `${base}:${++suffix}`;
+    at.reserved.add(key);
+    keys.set(bucket, { key, base });
+  }
+  return keys;
+}
+
 function groupLevel<T>(
   nodes: readonly TableNode<T>[],
   groupings: readonly ResolvedGrouping<T>[],
@@ -142,26 +205,14 @@ function groupLevel<T>(
 ): readonly TableBodyNode<T>[] {
   const [grouping, ...rest] = groupings;
   if (!grouping) return nodes;
-  const buckets = new Map<string, { value: TableCellValue; nodes: TableNode<T>[] }>();
-  for (const node of nodes) {
-    const value = grouping.getValue(node.row);
-    const valueKey = formatGroupValue(value);
-    const bucket = buckets.get(valueKey) ?? { value, nodes: [] };
-    bucket.nodes.push(node);
-    buckets.set(valueKey, bucket);
-  }
-  const ordered = [...buckets].sort(([, left], [, right]) =>
-    compareGroupValues(left.value, right.value, {
-      direction: grouping.direction,
-      collator: at.collator,
-    }),
+  const order = { direction: grouping.direction, collator: at.collator };
+  const ordered = bucketNodes(nodes, grouping).sort(
+    (left, right) =>
+      compareGroupValues(left.value, right.value, order) || compareKinds(left.kind, right.kind),
   );
-  return ordered.map(([valueKey, bucket]) => {
-    const base = `${at.prefix}${encodeGroupPart(grouping.id)}=${encodeGroupPart(valueKey)}`;
-    let key = base;
-    let suffix = 0;
-    while (at.reserved.has(key)) key = `${base}:${++suffix}`;
-    at.reserved.add(key);
+  const keys = assignGroupKeys(ordered, grouping.id, at);
+  return ordered.map((bucket) => {
+    const { key, base } = requireDefined(keys.get(bucket));
     return {
       id: key,
       group: {

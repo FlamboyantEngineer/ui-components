@@ -241,3 +241,70 @@ describe('table grouping helpers', () => {
     expect(aggregateCellValues(['a', null], 'sum')).toBeNull();
   });
 });
+
+describe('table grouping by typed values', () => {
+  interface Entry {
+    id: string;
+    code: string | number | boolean | Date | null;
+    amount: number;
+  }
+  const entries: Entry[] = [
+    { id: 'n1', code: 1, amount: 10 },
+    { id: 's1', code: '1', amount: 20 },
+    { id: 'bt', code: true, amount: 30 },
+    { id: 'st', code: 'true', amount: 40 },
+    { id: 'n1b', code: 1, amount: 5 },
+  ];
+  const grouping = resolveGroupings<Entry>(
+    [{ id: 'code', label: 'Code', getValue: (row) => row.code }],
+    [],
+    [],
+  );
+  const groupsOf = (rows: readonly Entry[]) =>
+    groupTableNodes(buildTableNodes(rows, undefined), grouping, { locale: 'en-US' }).filter(
+      isGroupNode,
+    );
+  const summary = (rows: readonly Entry[]) =>
+    groupsOf(rows).map(({ group }) => ({
+      key: group.key,
+      value: group.value,
+      rows: group.rows.map((row) => row.id),
+      sum: aggregateCellValues(
+        group.rows.map((row) => row.amount),
+        'sum',
+      ),
+    }));
+
+  it('UIC-TABLE-13.1 UIC-TABLE-13.5 keeps numbers, booleans and strings with the same text apart', () => {
+    expect(summary(entries)).toEqual([
+      { key: 'ui-table-group:code=1', value: '1', rows: ['s1'], sum: 20 },
+      { key: 'ui-table-group:code=1:1', value: 1, rows: ['n1', 'n1b'], sum: 15 },
+      { key: 'ui-table-group:code=true:1', value: true, rows: ['bt'], sum: 30 },
+      { key: 'ui-table-group:code=true', value: 'true', rows: ['st'], sum: 40 },
+    ]);
+  });
+
+  it('UIC-TABLE-13.1 UIC-TABLE-13.5 keeps typed group keys and order through row reordering', () => {
+    const forward = summary(entries).map(({ key, rows }) => ({ key, rows }));
+    const reversed = summary([...entries].reverse()).map(({ key, rows }) => ({
+      key,
+      rows: [...rows].reverse(),
+    }));
+    expect(reversed).toEqual(forward);
+  });
+
+  it('UIC-TABLE-13.5 still groups empty values together and dates by their day', () => {
+    const mixed: Entry[] = [
+      { id: 'null', code: null, amount: 1 },
+      { id: 'blank', code: '', amount: 2 },
+      { id: 'morning', code: new Date('2026-10-02T08:00:00Z'), amount: 3 },
+      { id: 'evening', code: new Date('2026-10-02T20:00:00Z'), amount: 4 },
+      { id: 'text', code: '2026-10-02', amount: 5 },
+    ];
+    expect(summary(mixed).map(({ key, rows }) => ({ key, rows }))).toEqual([
+      { key: 'ui-table-group:code=2026-10-02', rows: ['text'] },
+      { key: 'ui-table-group:code=2026-10-02:1', rows: ['morning', 'evening'] },
+      { key: 'ui-table-group:code=', rows: ['null', 'blank'] },
+    ]);
+  });
+});

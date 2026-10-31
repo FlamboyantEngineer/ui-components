@@ -174,6 +174,21 @@ const manyItems = Array.from({ length: 2000 }, (_, index) => ({
   amount: (index * 37) % 1000,
 }));
 
+interface CodedReading {
+  id: string;
+  name: string;
+  code: string | number | boolean;
+  amount: number;
+}
+
+// Imported data can mix a number with the text of the same number: each keeps its own group.
+const codedReadings: CodedReading[] = [
+  { id: 'r1', name: 'First reading', code: 1, amount: 10 },
+  { id: 'r2', name: 'Second reading', code: '1', amount: 20 },
+  { id: 'r3', name: 'Third reading', code: true, amount: 30 },
+  { id: 'r4', name: 'Fourth reading', code: 'true', amount: 40 },
+];
+
 export function Grouping() {
   const [choice, setChoice] = useState('Kind');
   const [collapsed, setCollapsed] = useState<Set<Key>>(new Set());
@@ -202,6 +217,21 @@ export function Grouping() {
       <output
         data-lab-output
       >{`Collapsed: ${[...collapsed].map(String).join(', ') || 'none'}`}</output>
+      <h3>Mixed value types</h3>
+      <div data-lab="grouping-typed">
+        <Table
+          aria-label="Readings, grouped by code"
+          rows={codedReadings}
+          columns={[
+            { id: 'name', header: 'Name' },
+            { id: 'code', header: 'Code' },
+            { id: 'amount', header: 'Amount', align: 'end', aggregate: 'sum' },
+          ]}
+          groupBy={['code']}
+          renderGroupLabel={(group) => `Code ${String(group.value)} (${typeof group.value})`}
+          size="sm"
+        />
+      </div>
       <h3>Virtualized groups</h3>
       <div data-lab="grouping-virtualized" style={{ height: 280 }}>
         <Table
