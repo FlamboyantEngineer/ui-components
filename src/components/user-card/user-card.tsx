@@ -21,6 +21,11 @@ export type { UserCardTriggerType } from './user-card-opening.js';
 
 /** One labelled fact about the person, such as a team or a local time. */
 export interface UserCardDetail {
+  /**
+   * Identifies the row across updates, so a value keeps its state and focus when details are
+   * added, removed or reordered. Unique among the card's details.
+   */
+  id: string;
   /** What the fact is, such as `Team`. */
   label: ReactNode;
   /** The fact itself. */
@@ -120,8 +125,8 @@ function CardDetails({ details }: Pick<UserCardProps, 'details'>) {
   if (!details?.length) return null;
   return (
     <DescriptionList className={hooks.slotClass('details')}>
-      {details.map((detail, index) => (
-        <DescriptionRow key={index} label={detail.label}>
+      {details.map((detail) => (
+        <DescriptionRow key={detail.id} label={detail.label}>
           {detail.value}
         </DescriptionRow>
       ))}

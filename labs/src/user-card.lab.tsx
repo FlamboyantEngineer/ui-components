@@ -21,8 +21,8 @@ const actions = [
   { id: 'profile', label: 'View profile' },
 ];
 const details = [
-  { label: 'Team', value: 'Research' },
-  { label: 'Local time', value: '09:30' },
+  { id: 'team', label: 'Team', value: 'Research' },
+  { id: 'time', label: 'Local time', value: '09:30' },
 ];
 
 function contentProps(content: (typeof contents)[number]) {
@@ -34,6 +34,23 @@ function contentProps(content: (typeof contents)[number]) {
 
 function statusProps() {
   return { status: 'away', statusLabel: 'Away until 14:00' };
+}
+
+/** Details whose order the reader changes; the note keeps its draft because each row has an id. */
+function ReorderedDetails() {
+  const [isReversed, setReversed] = useState(false);
+  const rows = [
+    { id: 'team', label: 'Team', value: 'Research' },
+    { id: 'note', label: 'Note', value: <input aria-label="Note for Maria" /> },
+  ];
+  return (
+    <div data-lab-reordered="">
+      <Button size="sm" onPress={() => setReversed((value) => !value)}>
+        Reverse details
+      </Button>
+      <UserCard name="Maria Santos" details={isReversed ? rows.toReversed() : rows} />
+    </div>
+  );
 }
 
 function Triggers() {
@@ -189,6 +206,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Reordered details"
+      description="Each detail carries an id, so a value keeps its state when the details change order."
+    >
+      <ReorderedDetails />
     </LabSection>
     <LabSection
       title="Opening a card"
