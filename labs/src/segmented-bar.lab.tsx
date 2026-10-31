@@ -22,6 +22,17 @@ const storage: SegmentedBarSegment[] = [
   { id: 'documents', label: 'Documents', value: 6.2, tone: 'success' },
 ];
 
+/** A hundred equal small parts and one majority of 900, with or without a remainder. */
+function manyParts(remainder: number): { segments: SegmentedBarSegment[]; total: number } {
+  const small = Array.from({ length: 100 }, (_, index) => ({
+    id: `small-${index}`,
+    label: `Part ${index + 1}`,
+    value: 1,
+  }));
+  const majority = { id: 'majority', label: 'Majority', value: 900, tone: 'success' as const };
+  return { segments: [...small, majority], total: 1000 + remainder };
+}
+
 const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 
 function RunningChecks() {
@@ -163,6 +174,22 @@ mountLab(
           showLegend
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Many small parts"
+      description="A hundred small parts and a majority share a narrow track; the whole distribution stays inside it, left to right or right to left."
+    >
+      <StateMatrix
+        axes={{ direction: ['ltr', 'rtl'], remainder: ['none', 'explicit'] }}
+        render={({ direction, remainder }) => {
+          const { segments, total } = manyParts(remainder === 'none' ? 0 : 1000);
+          return (
+            <div style={column(250)} dir={direction} data-lab-resizable="many">
+              <SegmentedBar label="Results" segments={segments} total={total} animated={false} />
+            </div>
+          );
+        }}
+      />
     </LabSection>
     <LabSection
       title="Space used"
