@@ -289,5 +289,13 @@ test.describe('File Upload lab', () => {
     await expect(page.locator('[data-lab-upload="slow"] [role="alert"]')).toHaveText(
       '1 file could not be checked.',
     );
+
+    await chooser.setInputFiles([sample('broken.txt'), sample('offline.txt'), sample('notes.txt')]);
+    await page.clock.runFor(3100);
+    await expect(listed).toHaveText('2');
+    await expect(refused).toHaveText('broken.txt (unchecked), offline.txt (unchecked)');
+    await expect(page.locator('[data-lab-upload="slow"] [role="alert"]')).toHaveText(
+      '2 files could not be checked.',
+    );
   });
 });

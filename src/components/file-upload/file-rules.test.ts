@@ -90,6 +90,33 @@ describe('partitionFiles', () => {
       rejections: [{ file: b, reason: 'invalid', message: 'Too narrow.' }],
     });
   });
+
+  it('UIC-FILE-UPLOAD-2.7 refuses as unchecked a file whose caller check throws, and sorts the rest', () => {
+    const [broken, fine] = ['broken.txt', 'fine.txt'].map((name) => file(name, 'text/plain'));
+    const validate = (candidate: File) => {
+      if (candidate.name === 'broken.txt') throw new Error('Check failed');
+      return null;
+    };
+    expect(sort([broken, fine] as File[], { validate })).toEqual({
+      accepted: [fine],
+      rejections: [{ file: broken, reason: 'unchecked' }],
+    });
+  });
+
+  it('UIC-FILE-UPLOAD-2.7 resolves when a caller check throws after one that answered later', async () => {
+    const [a, b, c] = ['a.txt', 'b.txt', 'c.txt'].map((name) => file(name, 'text/plain'));
+    const validate = (candidate: File) => {
+      if (candidate.name === 'a.txt') return Promise.resolve(null);
+      if (candidate.name === 'b.txt') throw new Error('Check failed');
+      return null;
+    };
+    const result = partitionFiles([a, b, c] as File[], { validate, maxFiles: 2 });
+    expect(result).toBeInstanceOf(Promise);
+    await expect(result).resolves.toEqual({
+      accepted: [a, c],
+      rejections: [{ file: b, reason: 'unchecked' }],
+    });
+  });
 });
 
 describe('canAcceptDrag', () => {

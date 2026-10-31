@@ -526,6 +526,63 @@ describe('FileUpload', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('1 file is over the file limit.');
   });
 
+  it('UIC-FILE-UPLOAD-2.7 refuses as unchecked a file whose check throws, behind an offer still waiting', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    let answer: (message: string | null) => void = () => undefined;
+    const validate = (candidate: File) => {
+      if (candidate.name === 'slow.txt')
+        return new Promise<string | null>((resolve) => (answer = resolve));
+      if (candidate.name === 'broken.txt') throw new Error('Check failed');
+      return null;
+    };
+    const { container } = render(
+      <FileUpload
+        label="Attach"
+        allowsMultiple
+        validate={validate}
+        onSelect={onSelect}
+        onReject={onReject}
+      />,
+    );
+    const broken = file('broken.txt', 'text/plain');
+    const fine = file('fine.txt', 'text/plain');
+    await user.upload(chooser(container), [broken, fine]);
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith([fine]);
+    expect(onReject).toHaveBeenCalledExactlyOnceWith([{ file: broken, reason: 'unchecked' }]);
+    expect(screen.getByRole('alert')).toHaveTextContent('1 file could not be checked.');
+
+    const slow = file('slow.txt', 'text/plain');
+    await user.upload(chooser(container), slow);
+    await user.upload(chooser(container), broken);
+    expect(onReject).toHaveBeenCalledTimes(1);
+    await act(async () => answer(null));
+    await waitFor(() => expect(onReject).toHaveBeenCalledTimes(2));
+    expect(onSelect.mock.calls).toEqual([[[fine]], [[slow]]]);
+    expect(onReject).toHaveBeenLastCalledWith([{ file: broken, reason: 'unchecked' }]);
+  });
+
+  it('UIC-FILE-UPLOAD-2.7 abandons an offer whose check throws behind one pending at unmount', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    let answer: (message: string | null) => void = () => undefined;
+    const validate = (candidate: File) => {
+      if (candidate.name === 'broken.txt') throw new Error('Check failed');
+      return new Promise<string | null>((resolve) => (answer = resolve));
+    };
+    const { container, unmount } = render(
+      <FileUpload label="Attach" validate={validate} onSelect={onSelect} onReject={onReject} />,
+    );
+    await user.upload(chooser(container), file('slow.txt', 'text/plain'));
+    await user.upload(chooser(container), file('broken.txt', 'text/plain'));
+    unmount();
+    await act(async () => answer(null));
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onReject).not.toHaveBeenCalled();
+  });
+
   it('UIC-FILE-UPLOAD-2.7 abandons a pending check when the upload unmounts', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
