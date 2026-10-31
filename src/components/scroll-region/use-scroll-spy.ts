@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type RefObject } from 'react';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import { useTargetElement } from '../../utils/use-target-element.js';
 
 export interface ScrollSpyOptions {
@@ -42,13 +43,12 @@ export function useScrollSpy(
   { ids, offset = 0 }: ScrollSpyOptions,
 ): string | undefined {
   const [active, setActive] = useState<string | undefined>(undefined);
-  const key = ids.join('\n');
+  const sectionIds = useStableArray(ids);
   const element = useTargetElement(viewport);
 
   useEffect(() => {
     const view = element?.ownerDocument.defaultView;
     if (!element || !view) return undefined;
-    const sectionIds = key ? key.split('\n') : [];
     let frame: number | null = null;
     const read = () => {
       frame = null;
@@ -68,7 +68,7 @@ export function useScrollSpy(
       element.removeEventListener('scroll', update);
       if (frame !== null) view.cancelAnimationFrame(frame);
     };
-  }, [element, key, offset]);
+  }, [element, sectionIds, offset]);
 
   return active;
 }

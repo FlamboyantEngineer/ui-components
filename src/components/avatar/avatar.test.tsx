@@ -171,6 +171,27 @@ describe('Avatar', () => {
     expect(root(container)).not.toHaveAttribute('data-loading');
   });
 
+  it('UIC-AVATAR-1.5 keeps a loaded picture for an equal request and reloads a changed one', () => {
+    const statuses: string[] = [];
+    const avatar = (srcSet: string) => (
+      <Avatar
+        name="Maria Santos"
+        src="/maria.png"
+        imageProps={{ srcSet, sizes: '48px' }}
+        onLoadingStatusChange={(status) => statuses.push(status)}
+      />
+    );
+    const view = render(avatar('/maria-2x.png 2x'));
+    const first = view.container.querySelector('img') as HTMLImageElement;
+    fireEvent.load(first);
+    view.rerender(avatar('/maria-2x.png 2x'));
+    expect(view.container.querySelector('img')).toBe(first);
+    expect(statuses).toEqual(['loading', 'loaded']);
+    view.rerender(avatar('/maria-3x.png 3x'));
+    expect(view.container.querySelector('img')).not.toBe(first);
+    expect(statuses).toEqual(['loading', 'loaded', 'loading']);
+  });
+
   it('UIC-AVATAR-1.5 counts a picture the browser already holds as loaded', () => {
     const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
     const width = vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(32);

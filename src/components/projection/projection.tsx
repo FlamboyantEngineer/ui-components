@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 
 export interface ProjectionProviderProps {
   /** The content that publishes to and renders the slots. */
@@ -55,13 +56,16 @@ interface ProjectionActions {
 const ProjectionActionsContext = createContext<ProjectionActions | null>(null);
 const ProjectionStateContext = createContext<ProjectionState | null>(null);
 
+const noSlots: readonly string[] = [];
+
 /** The slots a provider shares with its parent: every slot but its own, while it has a parent. */
 function useSlotOwnership(slots: readonly string[] | undefined, parent: ProjectionActions | null) {
-  const slotList = slots?.join('\n');
-  return useMemo(() => {
-    if (slotList === undefined || !parent) return null;
-    return new Set(slotList.split('\n'));
-  }, [slotList, parent]);
+  const hasSlots = slots !== undefined;
+  const slotList = useStableArray(slots ?? noSlots);
+  return useMemo(
+    () => (hasSlots && parent ? new Set(slotList) : null),
+    [hasSlots, slotList, parent],
+  );
 }
 
 /** Owns the named slots that `ProjectionContent` publishes to and `ProjectionOutlet` renders. */

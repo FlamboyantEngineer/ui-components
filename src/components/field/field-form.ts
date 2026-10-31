@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import type { SlotRegistry } from '../../utils/slot-registry.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
@@ -119,16 +120,11 @@ export function useFieldFormBinding(
 ): void {
   const { register, onIssuesChange, onValidityChange } = useFieldScope();
   const latest = useLatest({ state, label });
-  const issuesKey = JSON.stringify([
-    label,
-    state.issues.map(({ severity, message }) => [severity, message]),
-  ]);
-  const validityKey = JSON.stringify([
-    label,
-    isFieldBlocking(state),
-    state.realtimeValidation.status,
-    state.realtimeValidation.message,
-  ]);
+  const issues = useStableArray(
+    state.issues.map(({ severity, message }) => ({ severity, message })),
+  );
+  const isBlocking = isFieldBlocking(state);
+  const { status, message } = state.realtimeValidation;
   const isInForm = Boolean(register);
   const validity =
     state.validationBehavior === 'native' && isFieldBlocking(state)
@@ -152,11 +148,11 @@ export function useFieldFormBinding(
 
   useEffect(() => {
     onIssuesChange?.();
-  }, [issuesKey, onIssuesChange]);
+  }, [label, issues, onIssuesChange]);
 
   useEffect(() => {
     onValidityChange?.();
-  }, [validityKey, onValidityChange]);
+  }, [label, isBlocking, status, message, onValidityChange]);
 
   // Runs after every commit: the control element can change while the message stays the same.
   useEffect(() => {
