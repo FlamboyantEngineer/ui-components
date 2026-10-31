@@ -83,6 +83,8 @@ export interface AvatarProps extends AvatarIdentity, BaseProps {
 
 /** The picture's loading state and the handlers that settle it. */
 interface AvatarPicture {
+  /** The image request the status is about. */
+  request: string;
   status: AvatarLoadingStatus;
   settle: (status: 'loaded' | 'error') => void;
   imageRef: (image: HTMLImageElement | null) => void;
@@ -95,28 +97,54 @@ function pictureOf({ src, kind }: Pick<AvatarIdentity, 'src' | 'kind'>): string 
   return kind === 'group' ? '' : (src?.trim() ?? '');
 }
 
-/** Tracks whether `picture` has loaded or failed; a different address starts loading afresh. */
+/**
+ * What decides the image the browser requests: the picture and the attributes that choose or fetch
+ * a candidate. Empty without a picture.
+ */
+function requestOf(identity: Pick<AvatarIdentity, 'src' | 'kind' | 'imageProps'>): string {
+  const picture = pictureOf(identity);
+  if (picture === '') return '';
+  const { srcSet, sizes, crossOrigin, referrerPolicy } = identity.imageProps ?? {};
+  return JSON.stringify([picture, srcSet, sizes, crossOrigin, referrerPolicy]);
+}
+
+/**
+ * Tracks whether the image `request` has loaded or failed; a different request starts loading
+ * afresh.
+ */
 function useAvatarPicture(
-  picture: string,
+  request: string,
   onLoadingStatusChange: AvatarProps['onLoadingStatusChange'],
 ): AvatarPicture {
-  const [settled, setSettled] = useState<{ src: string; status: 'loaded' | 'error' } | null>(null);
+  const [settled, setSettled] = useState<{ request: string; status: 'loaded' | 'error' } | null>(
+    null,
+  );
   const status: AvatarLoadingStatus =
-    picture === '' ? 'idle' : settled?.src === picture ? settled.status : 'loading';
+    request === '' ? 'idle' : settled?.request === request ? settled.status : 'loading';
   const settle = useCallback(
     (next: 'loaded' | 'error') =>
       setSettled((previous) =>
-        previous?.src === picture && previous.status === next
+        previous?.request === request && previous.status === next
           ? previous
-          : { src: picture, status: next },
+          : { request, status: next },
       ),
-    [picture],
+    [request],
   );
-  // A picture the browser already holds, such as one loaded before hydration, may fire no load
-  // event to the handler.
+  // An image the browser settled before the handlers were attached, such as before hydration,
+  // fires no event to them. A lazy image that has not started is not complete, so it stays loading.
   const imageRef = useCallback(
     (image: HTMLImageElement | null) => {
-      if (image?.complete && image.naturalWidth > 0) settle('loaded');
+      if (!image?.complete) return;
+      if (image.naturalWidth > 0) settle('loaded');
+      // An image without intrinsic size, such as some SVG, has no width once loaded either.
+      else if (typeof image.decode === 'function') {
+        // Each request has its own image element, so one that has left answers nothing.
+        const answer = (next: 'loaded' | 'error') => image.isConnected && settle(next);
+        image.decode().then(
+          () => answer('loaded'),
+          () => answer('error'),
+        );
+      } else settle('error');
     },
     [settle],
   );
@@ -126,7 +154,7 @@ function useAvatarPicture(
     reported.current = status;
     onLoadingStatusChange?.(status);
   });
-  return { status, settle, imageRef };
+  return { request, status, settle, imageRef };
 }
 
 /** The group glyph, the picture, or the initials without a picture or once it has failed. */
@@ -143,6 +171,8 @@ function AvatarContent({
     return (
       <img
         {...imageProps}
+        // A new element per request, so events of a departed request never reach the handlers.
+        key={picture.request}
         {...hooks.slot('image')}
         ref={picture.imageRef}
         src={src?.trim()}
@@ -214,7 +244,7 @@ export function Avatar(props: AvatarProps) {
       ...rest
     },
   ] = splitAvatarIdentity(props);
-  const picture = useAvatarPicture(pictureOf(identity), onLoadingStatusChange);
+  const picture = useAvatarPicture(requestOf(identity), onLoadingStatusChange);
   const color = resolveAvatarColor(identity, colorCount);
   const { accessibleName, hasTooltip, surfaceProps } = useAvatarPresentation({
     name: identity.name,

@@ -27,14 +27,14 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-1.4 - Picture fallback
 
-When the picture fails to load, `Avatar` shall show the initials instead of a broken image. A different `src` shall be tried afresh.
+When the picture fails to load, `Avatar` shall show the initials instead of a broken image. A different request shall be tried afresh: a new `src`, or new `imageProps` that choose or fetch the image (`srcSet`, `sizes`, `crossOrigin`, `referrerPolicy`), so a working responsive candidate offered after a failure is loaded.
 
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-1.5 - Loading status
 
-`Avatar` shall track its picture's loading status: `idle` when there is no picture to load (a blank `src` or a group), `loading` from a new `src` until it loads or fails, then `loaded` or `error`. `onLoadingStatusChange` shall be called with the status once on mount and once each time it changes. While the picture loads, the root shall carry `data-loading`, so the stylesheet can draw a placeholder. A picture the browser already holds counts as loaded.
+`Avatar` shall track its picture's loading status: `idle` when there is no picture to load (a blank `src` or a group), `loading` from a new request (UIC-AVATAR-1.4) until it loads or fails, then `loaded` or `error`; each request gets its own `<img>`, so a load or error of a request that has since changed is ignored. `onLoadingStatusChange` shall be called with the status once on mount and once each time it changes. While the picture loads, the root shall carry `data-loading`, so the stylesheet can draw a placeholder. A picture the browser settled before the avatar could listen, such as one that loaded or failed before hydration, counts as loaded or failed. A lazy picture the browser has not fetched yet stays loading until it settles.
 
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
