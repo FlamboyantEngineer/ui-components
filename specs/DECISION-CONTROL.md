@@ -29,7 +29,7 @@ Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/
 
 A primary submit `Button` (`ui-decision-control__submit`) reading `submitLabel`, else the provider's `submitDecision` string, shall be disabled until a decision is picked. Submitting validates the form, showing a missing required comment on the field, then calls `onSubmit({ decision, comment, signature: null })`. While a returned promise is unsettled the button is pending and the root publishes `data-pending`; repeated submissions are refused immediately, including before that state renders. A synchronous throw or rejected promise shows its error's message, else the provider's `decisionFailed` string, in an `InlineError` (`ui-decision-control__error`) and keeps the comment; success clears the error, and clears the comment only while the decision and the comment are still the ones submitted, so a comment typed or a decision picked while the submission was pending stays. A submission that settles after the control unmounts changes nothing.
 
-Implementation: `src/components/decision-control/decision-control.tsx`, `src/components/decision-control/decision-parts.tsx`, `src/core/content-strings.ts`, `src/utils/use-is-mounted.ts`
+Implementation: `src/components/decision-control/decision-control.tsx`, `src/components/decision-control/decision-parts.tsx`, `src/core/content-strings.ts`, `src/utils/use-lifetime-signal.ts`
 Verification: `src/components/decision-control/decision-control.test.tsx`, `src/components/decision-control/decision-control-submission.test.tsx`, `e2e/decision-control.spec.ts`
 
 ### UIC-DECISION-CONTROL-1.5 - Signed decisions

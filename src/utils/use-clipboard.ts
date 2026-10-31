@@ -33,7 +33,6 @@ export function useClipboard({
 }: ClipboardOptions = {}): ClipboardState {
   const [status, setStatus] = useState<CopyStatus>('idle');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMounted = useRef(true);
   // The latest requested copy; a newer copy, a reset or unmounting withdraws it.
   const request = useRef<AbortController | null>(null);
 
@@ -43,9 +42,7 @@ export function useClipboard({
   }, []);
 
   useEffect(() => {
-    isMounted.current = true;
     return () => {
-      isMounted.current = false;
       request.current?.abort();
       clearTimer();
     };
@@ -63,7 +60,7 @@ export function useClipboard({
       const current = new AbortController();
       request.current = current;
       const copied = await copyText(text, { clipboard, fallback, signal: current.signal });
-      if (!isMounted.current || current.signal.aborted) return copied;
+      if (current.signal.aborted) return copied;
       clearTimer();
       setStatus(copied ? 'copied' : 'failed');
       timer.current = setTimeout(() => {

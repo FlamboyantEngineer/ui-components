@@ -8,7 +8,7 @@ import { useUiStorage, type PersistCodec } from '../core/provider.js';
 import type { UiStorage } from '../core/storage.js';
 import { isThenable } from './is-thenable.js';
 import { useLatest } from './use-latest.js';
-import { useIsMounted } from './use-is-mounted.js';
+import { useLifetimeSignal } from './use-lifetime-signal.js';
 
 /** Hands a value to the host, which may accept it later through a promise. */
 export type Submitter<T> = (value: T) => void | Promise<unknown>;
@@ -65,16 +65,16 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
   const latestOwner = useLatest(owner);
   const [waiting, setWaiting] = useState<readonly DraftOwner[]>([]);
   const inFlight = useRef<DraftOwner[]>([]);
-  const isMounted = useIsMounted();
+  const beginSubmission = useLifetimeSignal();
 
   const fail = (error: unknown) => {
     const onSubmitError = latest.current.onSubmitError;
     if (!onSubmitError) throw error;
     onSubmitError(error);
   };
-  const clear = (from: DraftOwner, sent: string) => {
+  const clear = (from: DraftOwner, sent: string, signal: AbortSignal) => {
     const { empty, codec, draft, setDraft } = latest.current;
-    if (isMounted.current && isSameOwner(latestOwner.current, from)) {
+    if (!signal.aborted && isSameOwner(latestOwner.current, from)) {
       if (codec.stringify(draft) === sent) setDraft(empty);
     } else if (from.key !== undefined && from.storage?.getItem(from.key) === sent) {
       from.storage.setItem(from.key, codec.stringify(empty));
@@ -101,11 +101,12 @@ export function useDraftSubmission<T>(options: SubmissionOptions<T>): Submission
       return;
     }
     const sent = options.codec.stringify(value);
+    const signal = beginSubmission();
     track(owner, true);
     void Promise.resolve(result).then(
       () => {
         track(owner, false);
-        if (clearsDraft) clear(owner, sent);
+        if (clearsDraft) clear(owner, sent, signal);
       },
       (error: unknown) => {
         track(owner, false);
