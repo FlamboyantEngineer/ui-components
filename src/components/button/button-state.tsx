@@ -160,6 +160,8 @@ type SpanDomProps = JSX.IntrinsicElements['span'];
 interface PassThrough {
   attributes: PassThroughAttributes;
   focusableDisabled: boolean;
+  /** Refuses every activation, the ones a trigger's context adds included. */
+  isBlocked: boolean;
   /** Replaces the tooltip's description, `undefined` removing it, when set. */
   describedBy?: { value: string | undefined } | undefined;
   render: ButtonStateProps['render'];
@@ -177,14 +179,29 @@ function hasEntries(value: object): boolean {
   return Object.keys(value).length > 0;
 }
 
+/** Handlers a refusing button keeps, so focus, hover and their tooltips still work. */
+const keptHandler = /Focus|Blur|Hover|Pointer(Enter|Leave|Over|Out)|Mouse(Enter|Leave|Over|Out)/;
+
+/**
+ * A `<button>`'s props without the handlers that activate it: presses, clicks and keys, whether
+ * the button's own or merged in from a trigger's context such as a menu's.
+ */
+function withoutActivation(props: ButtonDomProps): ButtonDomProps {
+  return Object.fromEntries(
+    Object.entries(props).filter(([key]) => !key.startsWith('on') || keptHandler.test(key)),
+  );
+}
+
 /**
  * Applies what the building block's button does not forward (a `role` and its states), the
- * `data-disabled` of a focusable disabled button and a removed tooltip description through its
- * `render` hook, handing the result to the caller's `render` when there is one.
+ * disabled state of a focusable disabled button, the removal of every activation handler while the
+ * button refuses activation, and a removed tooltip description through its `render` hook, handing
+ * the result to the caller's `render` when there is one.
  */
 function renderPassThrough({
   attributes,
   focusableDisabled,
+  isBlocked,
   describedBy,
   render,
 }: PassThrough): Pick<ButtonElementProps, 'render'> {
@@ -193,11 +210,13 @@ function renderPassThrough({
   );
   if (focusableDisabled) extra['data-disabled'] = 'true';
   if (describedBy) extra['aria-describedby'] = describedBy.value;
-  if (!hasEntries(extra)) return render ? { render } : {};
+  if (!hasEntries(extra) && !isBlocked) return render ? { render } : {};
   return {
     render: (props, state) => {
-      const merged = { ...props, ...extra } as ButtonDomProps;
-      return render ? render(merged, state) : <button {...merged} />;
+      const allowed = isBlocked ? withoutActivation(props) : props;
+      const merged = { ...allowed, ...extra } as ButtonDomProps;
+      const shown = focusableDisabled ? { ...state, isDisabled: true } : state;
+      return render ? render(merged, shown) : <button {...merged} />;
     },
   };
 }
@@ -227,8 +246,8 @@ function statesToggle(
 }
 
 /**
- * Building-block button props for Button states: a focusable disabled
- * button stays in the focus order but refuses activation and never submits, and `isSelected` adds
+ * Building-block button props for Button states: a focusable disabled button stays in the focus
+ * order but refuses every activation, its trigger's included, and never submits; `isSelected` adds
  * `aria-pressed` unless the caller states toggle semantics with `aria-pressed`, `aria-checked` or a
  * `role`. A `shortcut` becomes `aria-keyshortcuts`.
  */
@@ -267,6 +286,7 @@ export function toAriaButtonProps(
         'aria-keyshortcuts': toKeyShortcuts(shortcut, platform),
       },
       focusableDisabled,
+      isBlocked: focusableDisabled,
       describedBy: isTooltipName ? { value: rest['aria-describedby'] } : undefined,
       render,
     }),

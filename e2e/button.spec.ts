@@ -73,6 +73,29 @@ test.describe('Button lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-BUTTON-2.1 keeps a focusable disabled menu button shut while its tooltip explains it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const area = page.locator('[data-lab-family="button-trigger-cases"]');
+    const locked = area.getByRole('button', { name: 'Locked commands' });
+    const commands = area.getByRole('button', { name: 'Commands', exact: true });
+    await commands.focus();
+    await page.keyboard.press('Tab');
+    await expect(locked).toBeFocused();
+    await expect(page.getByRole('tooltip')).toHaveText('Unavailable while saving');
+    for (const key of ['Enter', 'Space', 'ArrowDown']) {
+      await locked.focus();
+      await page.keyboard.press(key);
+    }
+    await locked.click({ force: true });
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await commands.click();
+    await page.getByRole('menuitem', { name: 'Run' }).click();
+    await expect(area.locator('[data-lab-output="Runs"]')).toHaveText('1');
+  });
+
   for (const theme of ['light', 'dark']) {
     test(`UIC-BUTTON-1.7 shows the hint and shortcut in the tooltip and publishes aria-keyshortcuts in the ${theme} theme`, async ({
       page,

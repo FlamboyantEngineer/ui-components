@@ -78,10 +78,10 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-2.1 - Disabled
 
-`isDisabled` shall set the native `disabled` attribute and `data-disabled`. With `focusableWhenDisabled` the button stays in the focus order with `aria-disabled="true"` and `data-disabled`, refuses activation by pointer, Enter and Space, and never submits a form.
+`isDisabled` shall set the native `disabled` attribute and `data-disabled`. With `focusableWhenDisabled` the button stays in the focus order with `aria-disabled="true"` and `data-disabled`, keeps its focus, hover and tooltip, and never submits a form. It refuses every activation by pointer, keyboard (Enter, Space and the arrow keys a menu trigger opens with) or programmatic and virtual click: its own `onPress` and press lifecycle callbacks (`onPressStart`, `onPressEnd`, `onPressUp`, `onPressChange`) and the handlers a trigger it sits in adds, such as a `MenuTrigger`'s or `PopoverTrigger`'s, never run. A `render` callback receives `isDisabled: true`.
 
-Implementation: `src/components/button/button.tsx`
-Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
+Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
+Verification: `src/components/button/button.test.tsx`, `src/components/button/button-inherited-press.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-2.2 - Pending
 
