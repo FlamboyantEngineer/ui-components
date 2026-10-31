@@ -458,4 +458,23 @@ test.describe('Code Editor lab', () => {
     await lab.expectAccessible();
     await lab.expectAccessible('.ui-code-editor__popover');
   });
+  test('UIC-CODE-EDITOR-10.1 keeps the host toolbar as locking and the language drop Format', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const demo = page.locator('[data-lab-editor="lockable"]');
+    const count = demo.getByRole('button', { name: /^Count/ });
+    await count.click();
+    await expect(count).toHaveText('Count 1');
+    const element = await count.elementHandle();
+    await demo.getByRole('checkbox', { name: 'Lock' }).check();
+    await expect(demo.getByRole('button', { name: 'Format' })).toHaveCount(0);
+    await demo.getByRole('checkbox', { name: 'Lock' }).uncheck();
+    await expect(demo.getByRole('button', { name: 'Format' })).toBeVisible();
+    await demo.getByRole('checkbox', { name: 'JSON' }).uncheck();
+    await expect(demo.getByRole('button', { name: 'Format' })).toHaveCount(0);
+    expect(await element?.evaluate((node) => node.isConnected)).toBe(true);
+    await expect(count).toHaveText('Count 1');
+  });
 });

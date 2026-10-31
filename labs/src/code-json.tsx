@@ -158,6 +158,48 @@ function LongText() {
   );
 }
 
+/** A host toolbar that keeps its count as the editor locks and switches language. */
+function LockableEditor() {
+  const [isReadOnly, setReadOnly] = useState(false);
+  const [isJson, setJson] = useState(true);
+  const [count, setCount] = useState(0);
+  return (
+    <div data-lab-editor="lockable">
+      <CodeEditor
+        language={isJson ? 'json' : 'text'}
+        label="Notes"
+        size="sm"
+        isReadOnly={isReadOnly}
+        defaultValue={'{"fruit":"Apple"}'}
+        toolbar={
+          <>
+            <strong>Notes</strong>
+            <Button size="xs" variant="ghost" onPress={() => setCount(count + 1)}>
+              {`Count ${count}`}
+            </Button>
+          </>
+        }
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={isReadOnly}
+          onChange={(event) => setReadOnly(event.target.checked)}
+        />{' '}
+        Lock
+      </label>{' '}
+      <label>
+        <input
+          type="checkbox"
+          checked={isJson}
+          onChange={(event) => setJson(event.target.checked)}
+        />{' '}
+        JSON
+      </label>
+    </div>
+  );
+}
+
 export const jsonExamples = (
   <div data-lab-family="json">
     <LabSection
@@ -195,6 +237,12 @@ export const jsonExamples = (
       description="Format rewrites the text with four spaces per level and commits it; the field menu clears or sets the default."
     >
       <SavedEditor />
+    </LabSection>
+    <LabSection
+      title="JSON: Locking and switching language"
+      description="Lock makes the editor read-only and JSON switches its language; Format comes and goes while the host's Count button keeps its element and focus."
+    >
+      <LockableEditor />
     </LabSection>
     <LabSection
       title="JSON: Schema"
