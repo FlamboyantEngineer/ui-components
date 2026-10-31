@@ -339,7 +339,7 @@ Verification: `src/components/field/field-control.test.tsx`
 
 `toAriaControlProps(control)` shall give a control built on a building block the field's id, `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-errormessage`, and its states in the library's prop vocabulary as `isInvalid`, `isRequired`, `isReadOnly` and `isDisabled`, with `validationBehavior="aria"` so the field alone validates and the control only reports the status.
 
-Every control built on a building block shall take these props from `toAriaControlProps` (all of them, or the part its building block takes) and add only what the building block cannot take, rather than mapping the field's control props itself: TextField, NumberField, SelectField, ChoiceGroup, ColorField, DateTimeField, RelativeDateField, BooleanField, Slider, CodeEditor, FileField (whose command takes the control id, so the field's label names it) and PinInput (whose group takes them, while its cells, plain inputs, take the field's native attributes).
+Every control built on a building block shall take these props from `toAriaControlProps` (all of them, or the part its building block takes) and add only what the building block cannot take, rather than mapping the field's control props itself: TextField, NumberField, SelectField (its list trigger and its tree trigger, which add only the composite `aria-labelledby` naming the label and the value), ChoiceGroup, ColorField (its trigger likewise), DateTimeField, RelativeDateField, BooleanField, Slider, CodeEditor, FileField (whose command takes the control id, so the field's label names it) and PinInput (whose group takes them, while its cells, plain inputs, take the field's native attributes).
 
 Implementation: `src/components/field/field-control.ts`, `src/components/field/aria-control-props.ts`
 Verification: `src/components/field/field-control.test.tsx`
@@ -356,11 +356,12 @@ The text controls take them as follows; a control that takes a part names it wit
 | `NumberField`                           | `placeholder`, `autoComplete`, `enterKeyHint` (its keyboard follows its format)       |
 | `PinInput`                              | `placeholder`, `autoComplete` (on the first cell only), `enterKeyHint`                |
 | `CodeEditor`                            | `placeholder`, `enterKeyHint` (autofill, spelling and the keyboard stay off for code) |
-| `RelativeDateField`                     | `placeholder` (the trigger's text while there is no value)                            |
+| `RelativeDateField`, `SelectField`      | `placeholder` (the trigger's text while there is no value)                            |
+| `ColorField`                            | all but `autoFocus`, on the typed input; `placeholder` is also the trigger's text     |
 
 `autoFocus` belongs to `Field`, so every field control takes it: the field focuses its control once when it mounts, or, when the control is a group, its chosen option (a checked radio or segment) else its first focusable element, such as date segments or pin cells. The restore button returns focus the same way. The field reads the element focused before it mounts from the document of its portal container (UIC-PORTAL-1.7), the script's own without one, so a field rendered into a frame or popup window compares focus within that window.
 
-Implementation: `src/components/field/field-control.ts`, `src/components/field/field.tsx`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`, `src/components/number-field/number-field.tsx`, `src/components/pin-input/pin-input.tsx`, `src/components/tags-input/tags-input.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/relative-date-field/relative-date-field.tsx`
+Implementation: `src/components/field/field-control.ts`, `src/components/field/field.tsx`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`, `src/components/number-field/number-field.tsx`, `src/components/pin-input/pin-input.tsx`, `src/components/tags-input/tags-input.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/relative-date-field/relative-date-field.tsx`, `src/components/select-field/select-field.tsx`, `src/components/select-field/select-tree-field.tsx`, `src/components/color-field/color-field.tsx`, `src/components/color-field/color-field-entry.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `src/components/search-field/search-field.test.tsx`, `src/components/field/field-text-input.test.tsx`
 
 ### UIC-FIELD-8.4 - Form value

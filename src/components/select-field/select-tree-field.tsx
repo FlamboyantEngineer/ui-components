@@ -2,7 +2,12 @@
 
 import type { Ref } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import {
+  Field,
+  useFieldControl,
+  type FieldInputProps,
+  type FieldTextInputProps,
+} from '../field/field.js';
 import type { SelectFieldSelectionMode, SelectFieldValue } from './select-field.js';
 import type { TreeItemData } from '../tree/tree.js';
 import { TreeSelectControl } from './tree-select-control.js';
@@ -16,7 +21,11 @@ export interface SelectTreeFieldProps<
   T extends TreeItemData,
   M extends SelectFieldSelectionMode = 'single',
 >
-  extends FieldInputProps<SelectFieldValue<M>>, OpenStateProps {
+  extends
+    FieldInputProps<SelectFieldValue<M>>,
+    OpenStateProps,
+    /** `placeholder` is the trigger's text while nothing is chosen; it defaults to `selectPlaceholder`. */
+    Pick<FieldTextInputProps, 'placeholder'> {
   mode: 'tree';
   /** The top-level nodes. Each node's `id` must be unique in the whole hierarchy. */
   items: readonly T[];
@@ -37,8 +46,6 @@ export interface SelectTreeFieldProps<
   selectionPropagation?: boolean | undefined;
   /** How chosen nodes read in the trigger and the chips. Defaults to `label`. */
   valueDisplay?: SelectFieldValueDisplay | undefined;
-  /** The trigger's text while nothing is chosen. Defaults to the provider's `selectPlaceholder`. */
-  placeholder?: string | undefined;
   /** Draws a button after the trigger that clears the value in one press. */
   isClearable?: boolean | undefined;
   /** The form name the chosen ids are submitted under, one entry each. */

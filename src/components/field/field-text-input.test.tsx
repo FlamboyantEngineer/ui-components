@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { CodeEditor } from '../code-editor/code-editor.js';
+import { ColorField } from '../color-field/color-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { NumberField } from '../number-field/number-field.js';
 import { PortalContainerProvider } from '../portal/portal.js';
@@ -36,6 +37,11 @@ describe('Field text input props', () => {
       'textbox',
     ],
     [
+      'ColorField',
+      <ColorField key="color" label="Fruit" allowsTyping autoComplete="nickname" {...text} />,
+      'textbox',
+    ],
+    [
       'PinInput',
       <PinInput key="pin" label="Fruit" length={4} autoComplete="nickname" {...text} />,
       'textbox',
@@ -50,6 +56,13 @@ describe('Field text input props', () => {
       expect(input).toHaveAttribute('enterkeyhint', 'next');
     },
   );
+
+  it('UIC-FIELD-8.3 hands ColorField spelling and the keyboard to its typed input', () => {
+    render(<ColorField label="Accent" allowsTyping spellCheck={false} inputMode="text" />);
+    const input = screen.getByRole('textbox', { name: 'Accent' });
+    expect(input).toHaveAttribute('spellcheck', 'false');
+    expect(input).toHaveAttribute('inputmode', 'text');
+  });
 
   it('UIC-FIELD-8.3 keeps code free of autofill and spelling while taking the hint and Enter label', () => {
     render(<CodeEditor label="Query" {...text} />);

@@ -121,6 +121,8 @@ function Typing() {
         label="Text colour"
         defaultValue="#2e8b57"
         allowsTyping
+        spellCheck={false}
+        autoComplete="off"
         swatches={swatches}
         description="Type hex, rgb() or hsl(): a colour is the value as it is typed; Enter, or leaving the field, commits. Enter and Escape that an input method composition owns stay with it."
         onChange={(value) => setTyped(value ?? 'empty')}
