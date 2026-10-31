@@ -43,7 +43,7 @@ Verification: `src/components/filter-bar/filter-bar.test.tsx`, `src/components/f
 
 ### UIC-FILTER-BAR-2.3 - Adding
 
-The add button (`ui-filter-bar__add`, a [Dropdown Menu](DROPDOWN-MENU.md) named by the provider string `addFilter`) shall list the fields in order, behind a search field from eight fields on. Choosing a field appends a new condition on it and opens that condition's editor; closing the editor keeps the condition, complete or not.
+The add button (`ui-filter-bar__add`, a [Dropdown Menu](DROPDOWN-MENU.md) named by the provider string `addFilter`) shall list the fields in order, behind a search field once there are more than ten fields (`FILTERABLE_LIST_LENGTH`, shared with [Select Field](SELECT-FIELD.md) and [Facet List](FACET-LIST.md)). Choosing a field appends a new condition on it and opens that condition's editor; closing the editor keeps the condition, complete or not.
 
 Implementation: `src/components/filter-bar/filter-bar.tsx`
 Verification: `src/components/filter-bar/filter-bar.test.tsx`, `e2e/filter-bar.spec.ts`

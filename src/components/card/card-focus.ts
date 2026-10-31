@@ -4,11 +4,13 @@
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
+import { cardHooks as hooks } from './card-hooks.js';
 
+const slotSelector = (slot: 'toggle' | 'more' | 'action') => `.${hooks.slotClass(slot)}`;
 /** Where focus goes instead, in order of preference. */
-const togglesFirst = ['.ui-card__toggle', '.ui-card__more', '.ui-card__action'];
+const togglesFirst = [slotSelector('toggle'), slotSelector('more'), slotSelector('action')];
 /** After a smaller presentation, the More button holds what was focused. */
-const moreFirst = ['.ui-card__more', '.ui-card__toggle', '.ui-card__action'];
+const moreFirst = [slotSelector('more'), slotSelector('toggle'), slotSelector('action')];
 
 function isGone(element: Element): boolean {
   return !element.isConnected || element.closest('[hidden]') !== null;
@@ -60,7 +62,7 @@ export function useFocusRescue(
     const own = (candidate: HTMLElement) =>
       !isGone(candidate) &&
       !candidate.matches(':disabled') &&
-      candidate.closest('.ui-card') === root;
+      candidate.closest(`.${hooks.className}`) === root;
     const fallback = (hasPresentationChanged ? moreFirst : togglesFirst)
       .map((selector) => [...root.querySelectorAll<HTMLElement>(selector)].find(own))
       .find(Boolean);

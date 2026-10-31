@@ -71,14 +71,14 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/na
 
 ### UIC-NAVIGATION-RAIL-2.5 - Groups
 
-`NavigationRailGroup` shall render a `ui-navigation-rail__item` `<li>` holding a React Aria disclosure in the `ui-navigation-rail__group` slot (`data-expanded` while open): a button in `ui-navigation-rail__group-trigger` with the `icon`, the `label` and an indicator glyph in `ui-navigation-rail__indicator` (pointing to the inline end, down while open), and a panel in `ui-navigation-rail__group-panel` (a `group` named by the button) holding its children in a `ui-navigation-rail__list`. `isExpanded`, `defaultExpanded` (false) and `onExpandedChange` make it controllable. While a current item is anywhere inside it, nested groups included, its item publishes `data-current`, and an uncontrolled group opens when the current item moves inside.
+`NavigationRailGroup` shall render a `ui-navigation-rail__item` `<li>` holding a React Aria disclosure in the `ui-navigation-rail__group` slot (`data-expanded` while open): a button in `ui-navigation-rail__group-trigger` with the `icon`, the `label` and an indicator glyph in `ui-navigation-rail__indicator` (pointing to the inline end, down while open), and a panel in `ui-navigation-rail__group-panel` (a `group` named by the button) holding its children in a `ui-navigation-rail__list`. `isExpanded`, `defaultExpanded` (false) and `onExpandedChange` make it controllable. While a current item is anywhere inside it, nested groups included, its item publishes `data-current`, and an uncontrolled group opens when the current item moves inside, reporting the change through `onExpandedChange`. Like every controllable value ([UIC-COMPOSITION-5.1](COMPOSITION.md#uic-composition-51---controllable-values)), a group reports only changes: setting the state it already has reports nothing.
 
 Implementation: `src/components/navigation-rail/navigation-rail-items.tsx`, `src/components/navigation-rail/navigation-rail-state.ts`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`
 
 ### UIC-NAVIGATION-RAIL-2.6 - Groups in a collapsed rail
 
-While the rail is collapsed, a group shall stay closed and show its button as an icon tile with the label in a tooltip, as an item does. Pressing it expands the rail and opens the group, reporting both changes.
+While the rail is collapsed, a group shall stay closed and show its button as an icon tile with the label in a tooltip, as an item does. Pressing it expands the rail and opens the group, reporting each that changes.
 
 Implementation: `src/components/navigation-rail/navigation-rail-items.tsx`, `src/components/navigation-rail/navigation-rail.tsx`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`

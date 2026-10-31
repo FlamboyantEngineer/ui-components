@@ -1,4 +1,4 @@
-const SLOT_CLASS = /^ui-[a-z0-9]+(?:-[a-z0-9]+)*__([a-z0-9]+(?:-[a-z0-9]+)*)$/;
+const slotClassPattern = /^ui-[a-z0-9]+(?:-[a-z0-9]+)*__([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 
 /** The control that carries the field's description references: `field` itself or its first descendant. */
 function findDescribedControl(field: Element): Element | null {
@@ -14,7 +14,9 @@ function describedBy(field: Element): HTMLElement[] {
 }
 
 function hasSlot(element: Element, slots: readonly string[]): boolean {
-  return [...element.classList].some((token) => slots.includes(SLOT_CLASS.exec(token)?.[1] ?? ''));
+  return [...element.classList].some((token) =>
+    slots.includes(slotClassPattern.exec(token)?.[1] ?? ''),
+  );
 }
 
 function readText(element: Element | undefined): string | null {

@@ -28,7 +28,7 @@ function useChoiceControl(publish: SlotRef, value: string | null | string[]) {
         ...(box.current?.querySelectorAll<HTMLInputElement>(
           'input[type=radio],input[type=checkbox]',
         ) ?? []),
-      ].filter((input) => !input.disabled && !input.closest('.ui-choice-group__select-all'));
+      ].filter((input) => !input.disabled && !input.closest(`.${hooks.slotClass('select-all')}`));
       publish(
         (Array.isArray(value) ? inputs[0] : inputs.find((input) => input.checked)) ??
           inputs[0] ??

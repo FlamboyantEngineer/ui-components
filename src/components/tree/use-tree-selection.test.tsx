@@ -4,7 +4,8 @@ import type { Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Tree, type TreeProps } from './tree.js';
+import { Tree } from './tree.js';
+import type { TreeProps } from './tree-props.js';
 import { useTreeSelection } from './use-tree-selection.js';
 
 interface Food {

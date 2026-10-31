@@ -12,7 +12,7 @@ import { InlineError } from '../inline-error/inline-error.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import { renderBodyNode } from './table-group-row.js';
 import type { TableBodyNode } from './table-groups.js';
-import type { TableRowModel } from './table-row.js';
+import type { TableRowModel } from './table-row-model.js';
 import { TableSpanningRow } from './table-spanning-row.js';
 import type { TableRow } from './table-rows.js';
 import { countTableColumns } from './table-structure.js';

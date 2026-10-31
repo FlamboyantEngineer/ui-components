@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
-import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 import { keyListCodec } from '../../utils/json-codec.js';
 
 type TreeExpansionOptions = Pick<

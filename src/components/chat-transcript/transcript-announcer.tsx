@@ -22,7 +22,7 @@ export interface TranscriptAnnouncer {
 }
 
 /** Announcements are spaced at least this far apart, in milliseconds. */
-const ANNOUNCE_INTERVAL = 1000;
+const announceInterval = 1000;
 
 /** One announcement for everything queued: the statuses, then the message or the count of them. */
 function composeAnnouncement(
@@ -58,7 +58,7 @@ export function useTranscriptAnnouncer(strings: UiStrings): TranscriptAnnouncer 
     timer.current = setTimeout(() => {
       timer.current = null;
       pump();
-    }, ANNOUNCE_INTERVAL);
+    }, announceInterval);
   }, [stringsRef]);
 
   useEffect(

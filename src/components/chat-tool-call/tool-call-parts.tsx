@@ -19,7 +19,7 @@ import {
 
 // The parts of a tool call's card: the title in its trigger and the body its panel shows.
 
-import { useId, useMemo, type ReactNode } from 'react';
+import { useId, useMemo, type ReactNode, type Ref } from 'react';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -53,6 +53,8 @@ interface ToolCallTitleProps {
   status: ChatToolCallStatus;
   durationMs: number | undefined;
   isAutoApproved: boolean;
+  /** The trigger, where focus goes when the approval leaves while holding it. */
+  triggerRef: Ref<HTMLButtonElement>;
 }
 
 interface ToolCallBodyProps {
@@ -107,11 +109,12 @@ export function ToolCallTitle({
   status,
   durationMs,
   isAutoApproved,
+  triggerRef,
 }: ToolCallTitleProps) {
   const strings = useUiStrings();
   const glyph = status === 'succeeded' ? toolCallKindGlyphs[kind] : statusGlyphs[status];
   return (
-    <DisclosureTitle className={hooks.slotClass('heading')}>
+    <DisclosureTitle className={hooks.slotClass('heading')} triggerRef={triggerRef}>
       <Glyph icon={glyph} className={hooks.slotClass('status-glyph')} />
       <span {...hooks.slot('summary')}>
         <span {...hooks.slot('label')}>{label}</span>{' '}

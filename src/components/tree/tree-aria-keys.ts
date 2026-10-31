@@ -2,7 +2,7 @@ import type { Key } from '../../core/props.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
-import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
 import type { TreeSelection } from './use-tree-selection.js';
 

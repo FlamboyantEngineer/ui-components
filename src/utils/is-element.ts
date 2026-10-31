@@ -2,7 +2,7 @@
 // elements of the script's own window, so it fails for an element in a same-origin frame or a popup
 // window that a portal host renders into.
 
-const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+const htmlNamespace = 'http://www.w3.org/1999/xhtml';
 
 /** Whether a value is a DOM node, from any window. */
 export function isNode(value: unknown): value is Node {
@@ -28,7 +28,7 @@ export function isHTMLElement(value: unknown): value is HTMLElement;
 export function isHTMLElement(value: unknown, tag?: string): boolean {
   return (
     isElement(value) &&
-    value.namespaceURI === HTML_NAMESPACE &&
+    value.namespaceURI === htmlNamespace &&
     (tag === undefined || value.localName === tag)
   );
 }

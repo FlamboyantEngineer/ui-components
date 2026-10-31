@@ -5,7 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { applyTreeMove, type TreeMove } from '../../utils/tree-reorder.js';
-import { Tree, type TreeProps } from './tree.js';
+import { Tree } from './tree.js';
+import type { TreeProps } from './tree-props.js';
 
 interface Shelf {
   id: string;

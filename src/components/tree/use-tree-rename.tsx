@@ -18,7 +18,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 
 type TreeRenameOptions<T extends TreeItemData> = Pick<TreeProps<T>, 'onRename' | 'canRename'> & {

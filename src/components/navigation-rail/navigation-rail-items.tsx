@@ -2,12 +2,13 @@
 
 // The sections, links and groups a navigation rail lists.
 
-import { useContext, useId, useState, type ReactNode } from 'react';
+import { useContext, useId, useLayoutEffect, type ReactNode } from 'react';
 import {
   Button as AriaButton,
   Disclosure as AriaDisclosure,
   DisclosurePanel as AriaDisclosurePanel,
 } from '../../primitives/index.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { PressEvent } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -222,22 +223,20 @@ export function NavigationRailGroup({
   ...rest
 }: NavigationRailGroupProps) {
   const rail = useContext(NavigationRailContext);
-  const [ownExpanded, setOwnExpanded] = useState(defaultExpanded);
+  const [isOpen, setOpen] = useControllableState(expandedProp, defaultExpanded, onExpandedChange);
   const [holdsCurrent, register] = useCurrentItems();
   useReportCurrent(holdsCurrent);
-  // The current page moving inside opens the group; leaving it changes nothing.
-  const [heldCurrent, setHeldCurrent] = useState(holdsCurrent);
-  if (holdsCurrent !== heldCurrent) {
-    setHeldCurrent(holdsCurrent);
-    if (holdsCurrent) setOwnExpanded(true);
-  }
-  const isOpen = expandedProp ?? ownExpanded;
+  // The current page moving inside opens an uncontrolled group; leaving it changes nothing.
+  const isControlled = expandedProp !== undefined;
+  useLayoutEffect(() => {
+    if (holdsCurrent && !isControlled) setOpen(true);
+    // Only the current page arriving opens the group, not each render while it stays.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [holdsCurrent, isControlled]);
   const glyph = useExpandGlyph(isOpen && !rail.isCollapsed);
   const changeExpanded = (next: boolean) => {
     if (rail.isCollapsed) rail.expand();
-    const value = rail.isCollapsed || next;
-    setOwnExpanded(value);
-    onExpandedChange?.(value);
+    setOpen(rail.isCollapsed || next);
   };
   return (
     <li {...rest} {...hooks.slot('item', { current: holdsCurrent }, className)}>

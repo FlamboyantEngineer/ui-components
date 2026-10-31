@@ -9,8 +9,8 @@ export interface ComboboxPick {
   option?: NameMatch | undefined;
 }
 
-const LISTBOX_TRIGGER = '[aria-haspopup="listbox"]:is(button, [role="button"])';
-const ISO_DATE = /^(\d{4,})-(\d{2})-(\d{2})$/;
+const listboxTrigger = '[aria-haspopup="listbox"]:is(button, [role="button"])';
+const isoDatePattern = /^(\d{4,})-(\d{2})-(\d{2})$/;
 
 async function pressOption(user: TestUser, trigger: Element, option: NameMatch) {
   const listbox = await findPopup(trigger, 'listbox');
@@ -23,7 +23,7 @@ async function pressOption(user: TestUser, trigger: Element, option: NameMatch) 
  * selection stays open, so the next call picks another option from the same list.
  */
 export async function selectOption(user: TestUser, field: Element, option: NameMatch) {
-  const trigger = field.matches(LISTBOX_TRIGGER) ? field : field.querySelector(LISTBOX_TRIGGER);
+  const trigger = field.matches(listboxTrigger) ? field : field.querySelector(listboxTrigger);
   if (!trigger) throw new Error('No button that opens a list box is rendered in the field.');
   const control = field.querySelector('[role="combobox"]') ?? trigger;
   if (control.getAttribute('aria-expanded') !== 'true') await user.click(trigger);
@@ -43,7 +43,7 @@ export async function pickComboboxOption(user: TestUser, input: Element, pick: C
  * (`ui-date-time-field__input`) of a range.
  */
 export async function pickDate(user: TestUser, field: Element, isoDate: string) {
-  const match = ISO_DATE.exec(isoDate);
+  const match = isoDatePattern.exec(isoDate);
   if (!match) throw new Error(`${isoDate} is not an ISO 8601 date (YYYY-MM-DD).`);
   const [, year = '', month = '', day = ''] = match;
   const parts: Record<string, string> = { year, month: String(+month), day: String(+day) };

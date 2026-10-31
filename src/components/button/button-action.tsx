@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState, type MouseEvent } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import type { ElementRender } from '../../utils/render-element.js';
+import { isThenable } from '../../utils/is-thenable.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import type { ButtonProps, ButtonRenderState } from './button.js';
 import { runPendingAction, type PendingAction } from './pending-action.js';
@@ -40,13 +41,7 @@ export function usePendingAction({
         onError(error);
         return;
       }
-      if (
-        !result ||
-        typeof result !== 'object' ||
-        !('then' in result) ||
-        typeof result.then !== 'function'
-      )
-        return;
+      if (!isThenable(result)) return;
       void runPendingAction({
         blocked: false,
         setPending: (next) => {

@@ -1,11 +1,11 @@
 import { within } from '@testing-library/dom';
 import type { NameMatch, TestUser } from './test-user.js';
 
-const CELL =
+const cellSelector =
   ':scope > :is([role="cell"], [role="gridcell"], [role="rowheader"], [role="columnheader"])';
 
 function cellsOf(row: Element): Element[] {
-  return [...row.querySelectorAll(CELL)];
+  return [...row.querySelectorAll(cellSelector)];
 }
 
 /** Presses the expand button of the tree row named `name`, expanding or collapsing it. */

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { assignOccurrenceKeys } from './stable-keys.js';
+import { assignOccurrenceKeys, toOccurrenceKey } from './stable-keys.js';
 
 describe('assignOccurrenceKeys', () => {
   it('UIC-STABLE-KEYS-1.1 keys values by identity and occurrence without changing the input', () => {
@@ -20,6 +20,14 @@ describe('assignOccurrenceKeys', () => {
     expect(keyed.map((entry) => entry.key)).toEqual(['Ada:0', 'Grace:0']);
     expect(keyed[0]?.value).toBe(people[0]);
     expect(assignOccurrenceKeys([], String)).toEqual([]);
+  });
+
+  it('UIC-STABLE-KEYS-1.1 names the key of a given occurrence as assignOccurrenceKeys does', () => {
+    const keyed = assignOccurrenceKeys(['apple', 'apple'], (value) => value);
+    expect(keyed.map((entry) => entry.key)).toEqual([
+      toOccurrenceKey('apple', 0),
+      toOccurrenceKey('apple', 1),
+    ]);
   });
 
   it('UIC-STABLE-KEYS-1.2 keeps entry state when other entries are inserted or removed', async () => {

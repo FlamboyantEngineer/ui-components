@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { mapTree } from '../../utils/map-tree.js';
 import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
-import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
 
 interface TreeFilterOptions<T extends TreeItemData> extends Pick<

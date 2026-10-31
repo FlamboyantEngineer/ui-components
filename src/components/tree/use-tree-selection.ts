@@ -7,7 +7,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { mapTree } from '../../utils/map-tree.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 
 interface TreeSelectionOptions<T extends TreeItemData> extends Pick<
   TreeProps<T>,

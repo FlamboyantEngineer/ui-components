@@ -22,7 +22,7 @@ export interface VersionHistoryFilter {
 }
 
 /** The most versions selected at once: one to view, two to compare. */
-const MAX_SELECTED_VERSIONS = 2;
+const maxSelectedVersions = 2;
 
 /** Whether a version has a name, as opposed to an automatic version titled by its time. */
 export function isNamedVersion(version: VersionFacts): boolean {
@@ -52,13 +52,13 @@ export function listVersionPeople(versions: readonly VersionFacts[]): string[] {
 }
 
 /**
- * The selection after a change, at most `MAX_SELECTED_VERSIONS` keys: the keys kept from before, in
+ * The selection after a change, at most `maxSelectedVersions` keys: the keys kept from before, in
  * their order, then the new ones; the earliest picks give way when there are too many.
  */
 export function limitSelection(previous: ReadonlySet<Key>, next: ReadonlySet<Key>): Set<Key> {
   const kept = [...previous].filter((key) => next.has(key));
   const added = [...next].filter((key) => !previous.has(key));
-  return new Set([...kept, ...added].slice(-MAX_SELECTED_VERSIONS));
+  return new Set([...kept, ...added].slice(-maxSelectedVersions));
 }
 
 /** Two selected versions ordered for a comparison, the older first; `null` unless exactly two. */
@@ -66,7 +66,7 @@ export function orderForComparison(
   versions: readonly VersionFacts[],
   selected: ReadonlySet<Key>,
 ): [Key, Key] | null {
-  if (selected.size !== MAX_SELECTED_VERSIONS) return null;
+  if (selected.size !== maxSelectedVersions) return null;
   const [first, second] = [...selected] as [Key, Key];
   const position = (key: Key) => versions.findIndex((version) => version.id === key);
   // Versions are listed newest first, so the older one comes later in the list.

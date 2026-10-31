@@ -93,7 +93,7 @@ interface PresetContext {
   locale: string;
 }
 
-const DEFAULT_PRESETS: readonly RelativeDatePreset[] = [
+const defaultPresets: readonly RelativeDatePreset[] = [
   { amount: 0, unit: 'day' },
   { amount: 1, unit: 'day' },
   { amount: -1, unit: 'day' },
@@ -101,7 +101,7 @@ const DEFAULT_PRESETS: readonly RelativeDatePreset[] = [
   { amount: -1, unit: 'week' },
 ];
 
-const DEFAULT_RANGE_PRESETS: readonly RelativeDatePreset[] = [
+const defaultRangePresets: readonly RelativeDatePreset[] = [
   { amount: 0, unit: 'day' },
   { amount: -7, unit: 'day' },
   { amount: -30, unit: 'day' },
@@ -233,7 +233,7 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   const now = useNow(props.getNow);
   const timeZone = useTimeZone(props.timeZone);
   const presets = (props.presets ??
-    (kind === 'date-range' ? DEFAULT_RANGE_PRESETS : DEFAULT_PRESETS)) as readonly AnyPreset[];
+    (kind === 'date-range' ? defaultRangePresets : defaultPresets)) as readonly AnyPreset[];
   // Presets resolve against the clock read when one is picked; before then they are all enabled.
   const context = (at: Date): PresetContext => ({ now: at, timeZone, kind, locale });
   const value = (state.value ?? null) as RelativeDateValue | null;

@@ -2,11 +2,11 @@
 
 import { useSyncExternalStore } from 'react';
 
-const QUERY = '(prefers-reduced-motion: reduce)';
+const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 
 function query(): MediaQueryList | null {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-    ? window.matchMedia(QUERY)
+    ? window.matchMedia(reducedMotionQuery)
     : null;
 }
 

@@ -6,7 +6,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
+import { assignOccurrenceKeys, toOccurrenceKey } from '../../utils/stable-keys.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { filterBarHooks as hooks } from './filter-bar-hooks.js';
@@ -29,7 +29,6 @@ export interface FilterBarProps extends BaseProps, AriaLabellingProps {
 const emptyValue: readonly FilterCondition[] = [];
 
 /** The add menu lists its fields behind a search field from this many on. */
-const FILTERABLE_FIELD_COUNT = 8;
 
 /**
  * A row of active filters as chips, each reading `Field operator value` and opening its editor in a
@@ -61,7 +60,7 @@ export function FilterBar({
     if (!field) return;
     const occurrence = value.filter((condition) => condition.field === field.id).length;
     setValue([...value, createFilterCondition(field)]);
-    setOpenKey(`${field.id}:${occurrence}`);
+    setOpenKey(toOccurrenceKey(field.id, occurrence));
   };
   const remove = (index: number) => {
     setValue(value.filter((_, at) => at !== index));
@@ -106,7 +105,7 @@ export function FilterBar({
         variant="ghost"
         size="sm"
         className={hooks.slotClass('add')}
-        filterable={fields.length >= FILTERABLE_FIELD_COUNT}
+        filterable={isFilterableLength(fields.length)}
         items={fields.map((field) => ({ id: field.id, label: field.label }))}
         onAction={add}
       />
@@ -131,4 +130,5 @@ export type {
   FilterOption,
   FilterValue,
 } from './filter-model.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
 export type { FilterOperator } from '../../core/strings/query.js';

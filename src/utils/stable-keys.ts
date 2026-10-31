@@ -4,6 +4,11 @@ export interface KeyedValue<T> {
   value: T;
 }
 
+/** The key `assignOccurrenceKeys` gives the `occurrence`th value (from 0) of an identity. */
+export function toOccurrenceKey(identity: string, occurrence: number): string {
+  return `${identity}:${occurrence}`;
+}
+
 /**
  * Pairs each value with a React key built from its identity and how many equal identities came
  * before it (`apple:0`, `apple:1`). Keys follow content rather than position, so inserting or
@@ -19,6 +24,6 @@ export function assignOccurrenceKeys<T>(
     const base = identity(value);
     const occurrence = occurrences.get(base) ?? 0;
     occurrences.set(base, occurrence + 1);
-    return { key: `${base}:${occurrence}`, value };
+    return { key: toOccurrenceKey(base, occurrence), value };
   });
 }

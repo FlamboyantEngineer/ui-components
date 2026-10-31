@@ -57,6 +57,21 @@ function useViewValue<T>(
 }
 
 /**
+ * The ref for the element holding a message's content, so the transcript announces its text
+ * whatever else the message draws. Outside a transcript it records nothing.
+ */
+export function useTranscriptContentRef(): RefCallback<HTMLElement> {
+  const registry = useContext(TranscriptContext);
+  const key = useContext(TranscriptItemContext);
+  return useCallback(
+    (element: HTMLElement | null) => {
+      if (registry && key !== null) registry.attachContent(key, element);
+    },
+    [registry, key],
+  );
+}
+
+/**
  * Registers a message with the transcript it renders in and returns the props for its
  * `<article>`: its place in the transcript's single tab stop, its position in the feed and the
  * highlight. Outside a transcript it returns no props.

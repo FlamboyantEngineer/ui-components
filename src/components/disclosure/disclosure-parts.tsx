@@ -3,7 +3,7 @@
 import { ChevronDownGlyph, ChevronUpGlyph, type GlyphComponent } from '../../core/glyphs.js';
 // The parts a disclosure is composed of: a header, the title that toggles it, and its panel.
 
-import { useContext, type ReactNode } from 'react';
+import { useContext, type ReactNode, type Ref } from 'react';
 import {
   useFocusManager,
   Button as AriaButton,
@@ -34,6 +34,8 @@ export interface DisclosureHeaderProps extends BaseProps {
 export interface DisclosureTitleProps extends BaseProps {
   /** The title, inside the trigger. */
   children?: ReactNode;
+  /** The trigger button, such as to move focus to it. */
+  triggerRef?: Ref<HTMLButtonElement> | undefined;
 }
 
 /** The panel's role: `group` (the default), or `region` for a landmark-worthy section. */
@@ -112,7 +114,12 @@ export function DisclosureHeader({ className, children, ...rest }: DisclosureHea
  * The disclosure's heading, at its level, holding the trigger: a button that toggles the panel and
  * shows the indicator glyph before or after the title.
  */
-export function DisclosureTitle({ className, children, ...rest }: DisclosureTitleProps) {
+export function DisclosureTitle({
+  className,
+  children,
+  triggerRef,
+  ...rest
+}: DisclosureTitleProps) {
   const { level, indicatorPosition } = useContext(DisclosurePartsContext);
   const isExpanded = useContext(DisclosureStateContext)?.isExpanded ?? false;
   const glyph = useIndicatorGlyph(indicatorPosition, isExpanded);
@@ -127,6 +134,7 @@ export function DisclosureTitle({ className, children, ...rest }: DisclosureTitl
       <AriaButton
         {...hooks.slot('trigger', { indicatorPosition })}
         slot="trigger"
+        ref={triggerRef}
         onKeyDown={onKeyDown}
       >
         {indicatorPosition === 'start' ? indicator : null}
