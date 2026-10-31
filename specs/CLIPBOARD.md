@@ -38,7 +38,7 @@ Verification: `src/utils/clipboard.test.ts`
 
 `useClipboard({ timeout })` shall return `copy(text)`, which copies with `copyText` (taking its `clipboard` and `fallback` options) and resolves whether the text reached the clipboard, and `status`: `copied` after a successful copy, until `timeout` milliseconds (2000 by default) after the latest requested copy settles, then `idle`. When copies overlap, only the latest requested copy changes feedback; every copy still resolves its own result. A new copy restarts the timeout when it settles, and `reset()` returns to `idle` at once, preventing any pending copy from restoring feedback.
 
-Implementation: `src/utils/use-clipboard.ts`
+Implementation: `src/utils/use-clipboard.ts`, `src/utils/copy-timeout.ts`
 Verification: `src/utils/use-clipboard.test.ts`, `src/components/copy-button/copy-button.test.tsx`
 
 ### UIC-CLIPBOARD-2.2 - Refused copies and unmounting

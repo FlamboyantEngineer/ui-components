@@ -5,7 +5,8 @@
 //     ascend;
 //   - every referenced path exists, and a referenced test names the requirement ID;
 //   - Hooks tables use the hook contract's names;
-//   - every component directory is implemented by some spec;
+//   - every component directory, and every util the package exports (src/utils/index.ts), is
+//     implemented by some spec;
 //   - the reference stylesheet partials (labs/reference/) style every root and slot hook.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -29,6 +30,7 @@ const PROPERTY_HOOK = /^--ui-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const problems = [];
 const ids = new Map();
 const implemented = new Set();
+const implementationPaths = new Set();
 const classHooks = new Map();
 
 function backticked(text) {
@@ -46,6 +48,7 @@ function checkRequirement(file, requirement) {
   for (const path of backticked(implementation)) {
     if (!existsSync(join(root, path)))
       problems.push(`${file}: ${id} implementation path ${path} does not exist`);
+    implementationPaths.add(path);
     const component = path.match(/^src\/components\/([^/]+)/);
     if (component) implemented.add(component[1]);
   }
@@ -203,6 +206,23 @@ if (existsSync(componentsDir)) {
     if (entry.isDirectory() && !implemented.has(entry.name)) {
       problems.push(
         `src/components/${entry.name} is not the Implementation: of any spec requirement`,
+      );
+    }
+  }
+}
+
+// Utils the package exports are shared contracts, so a requirement names each; internal helpers are
+// covered through the requirements of the components that use them.
+const utilsIndex = join(root, 'src', 'utils', 'index.ts');
+if (existsSync(utilsIndex)) {
+  const modules = readFileSync(utilsIndex, 'utf8').matchAll(/from '\.\/([a-z0-9-]+)\.js'/g);
+  for (const name of new Set([...modules].map((match) => match[1]))) {
+    const path = [`src/utils/${name}.ts`, `src/utils/${name}.tsx`].find((candidate) =>
+      existsSync(join(root, candidate)),
+    );
+    if (path && !implementationPaths.has(path)) {
+      problems.push(
+        `${path} is exported by src/utils/index.ts but is not the Implementation: of any spec requirement`,
       );
     }
   }

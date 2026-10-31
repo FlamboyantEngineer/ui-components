@@ -6,7 +6,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **N1. Files and directories are kebab-case.** A component lives in `src/components/<name>/` and its main module is `<name>.tsx` (or `<name>.ts` for a component family's pure model). Helpers beside it are named for what they do (`parse-svg-markup.ts`, `layers.ts`). **(enforced)**
 
-**N2. One name per component, everywhere.** The directory name in PascalCase is the component (`button/` → `Button`); the spec is `specs/BUTTON.md`; the lab is `labs/button.html`; the browser test is `e2e/button.spec.ts`; the reference partial is `labs/reference/button.css`; the root hook class is `ui-button`. **(enforced)**
+**N2. One name per component, everywhere.** The directory name in PascalCase is the component (`button/` → `Button`); the spec is `specs/BUTTON.md`; the lab is `labs/button.html`; the browser test is `e2e/button.spec.ts`; the reference partial is `labs/reference/button.css`; the root hook class is `ui-button`. A family shares its owner's names: its other components (`Spinner` beside `ProgressBar`, the parts of a menu) live in the owner's directory, are specified in the owner's spec and styled in the owner's partial, and only their root hook classes carry their own names (`ui-spinner`). Utils in `src/utils/` that the package exports (`src/utils/index.ts`) are shared contracts, each named in the `Implementation:` line of a requirement; internal helpers are covered through the requirements of the components that use them. **(enforced)**
 
 **N3. Components are PascalCase nouns without prefixes** (`Button`, not `UiButton` or `BaseButton`). Parts of a family start with the family's name or its noun (`Tabs` → `TabList`, `Tab`, `TabPanel`). **(enforced: naming convention)**
 
