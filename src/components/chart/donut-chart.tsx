@@ -156,7 +156,7 @@ export function DonutChart({
   return (
     <Chart
       {...rest}
-      data-empty={largest ? undefined : true}
+      isEmpty={!largest}
       className={mergeClassNames(donutChartHooks.className, className)}
       label={label}
       summary={summary ?? generated}

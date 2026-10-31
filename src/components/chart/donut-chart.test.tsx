@@ -80,6 +80,11 @@ describe('DonutChart', () => {
     expect(figure.querySelector('.ui-chart__empty')).toHaveTextContent('No data');
   });
 
+  it('UIC-CHART-4.5 UIC-CHART-1.4 keeps its own empty state over a caller data-empty', () => {
+    render(<DonutChart aria-label="Fruit sold" segments={sold} data-empty="caller" />);
+    expect(screen.getByRole('figure')).not.toHaveAttribute('data-empty');
+  });
+
   it('UIC-CHART-7.2 lists every segment with its value and share in its table', async () => {
     const user = userEvent.setup();
     render(
