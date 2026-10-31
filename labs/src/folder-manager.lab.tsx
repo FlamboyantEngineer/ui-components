@@ -246,6 +246,35 @@ function PickFolder() {
   );
 }
 
+/** A host that drops the folder being renamed: the name field closes and the manager frees up. */
+function VanishingFolder() {
+  const [isRemoved, setRemoved] = useState(false);
+  const { folders, callbacks } = useFolders(0);
+  const shown = isRemoved
+    ? mapFolders(folders, (folder) => (folder.id === 'citrus' ? null : folder))
+    : folders;
+  return (
+    <div data-lab-demo="vanishing">
+      <Button
+        onPress={() => {
+          // The delay leaves time to rename Citrus, or start a folder inside it, first.
+          if (isRemoved) setRemoved(false);
+          else window.setTimeout(() => setRemoved(true), 1500);
+        }}
+      >
+        {isRemoved ? 'Restore Citrus' : 'Remove Citrus in a moment'}
+      </Button>
+      <FolderManager
+        aria-label="Changing folders"
+        folders={shown}
+        rootLabel="All folders"
+        defaultSelectedKey="citrus"
+        {...callbacks}
+      />
+    </div>
+  );
+}
+
 /** A panel closed while its manager waits: the slow answer selects nothing once it is gone. */
 function ClosingPanel() {
   const [isOpen, setOpen] = useState(true);
@@ -288,6 +317,12 @@ mountLab(
       description='New folder, Rename (F2) and Delete; right-click a row for its menu; Alt+Arrow keys or drag to move. Answers take 300 ms, the name "Taken" is refused, a folder with subfolders cannot be deleted, and folders nest at most three deep, even when a folder has many loaded children.'
     >
       <ManagedFolders />
+    </LabSection>
+    <LabSection
+      title="Folder removed while named"
+      description="Press the button, then rename Citrus or start a folder inside it: when Citrus goes, the name field closes without calling back, focus moves to the root row and the actions come back."
+    >
+      <VanishingFolder />
     </LabSection>
     <LabSection
       title="Several folders"

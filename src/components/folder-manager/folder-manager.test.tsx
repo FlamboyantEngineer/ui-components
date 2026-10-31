@@ -247,6 +247,63 @@ describe('FolderManager', () => {
     expect(onRename).toHaveBeenCalledWith({ key: 'citrus', name: 'Lemons' });
   });
 
+  it('UIC-FOLDER-MANAGER-2.9 ends a rename whose folder leaves, without calling back', async () => {
+    const user = userEvent.setup();
+    const onRename = vi.fn();
+    const withoutCitrus = mapFolders(sample, (folder) => (folder.id === 'citrus' ? null : folder));
+    const manager = (folders: readonly Folder[]) => (
+      <FolderManager
+        aria-label="Folders"
+        rootLabel="All folders"
+        folders={folders}
+        defaultSelectedKey="citrus"
+        onRename={onRename}
+      />
+    );
+    const { rerender } = render(manager(sample));
+    await user.click(screen.getByRole('button', { name: 'Rename' }));
+    await user.keyboard('Lemons');
+    rerender(manager(withoutCitrus));
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await waitFor(() => expect(row('All folders')).toHaveFocus());
+    rerender(manager(sample));
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.click(row('Vegetables'));
+    expect(screen.getByRole('button', { name: 'Rename' })).toBeEnabled();
+    expect(onRename).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FOLDER-MANAGER-2.9 ends a new folder whose parent or callback leaves', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    const withoutFruit = mapFolders(sample, (folder) => (folder.id === 'fruit' ? null : folder));
+    const { rerender } = render(
+      <FolderManager
+        aria-label="Folders"
+        folders={sample}
+        defaultSelectedKey="citrus"
+        onCreate={onCreate}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    await user.keyboard('Limes');
+    rerender(
+      <FolderManager
+        aria-label="Folders"
+        folders={withoutFruit}
+        defaultSelectedKey="citrus"
+        onCreate={onCreate}
+      />,
+    );
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.click(row('Vegetables'));
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    expect(screen.getByRole('textbox')).toHaveFocus();
+    rerender(<FolderManager aria-label="Folders" folders={withoutFruit} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+
   it('UIC-FOLDER-MANAGER-2.4 keeps every key typed in the name field out of the tree', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();

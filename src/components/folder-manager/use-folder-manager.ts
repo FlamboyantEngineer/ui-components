@@ -2,6 +2,7 @@
 
 import { useCallback, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { splitMatchTerms } from '../text-match/text-match.js';
 import { useTreeLoads, type TreeLoads } from '../tree/tree.js';
@@ -128,6 +129,14 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     ...options,
     select: (key) => select(key === null ? [] : [key]),
     onSettle: (key) => setFocusRequest({ key: key ?? folderRootKey }),
+    onRevoke: () => {
+      // The name field left with its row, so focus fell to the page or the tree; elsewhere it moved on.
+      const active = getOwnerDocument(regionRef.current).activeElement;
+      const isInManager = active === null || regionRef.current?.contains(active) === true;
+      if (!isInManager && active !== active.ownerDocument.body) return;
+      const kept = selected.find((key) => findFolderPath(folders, key).length > 0);
+      setFocusRequest({ key: kept ?? folderRootKey });
+    },
   });
   const clearFocusRequest = useCallback(() => setFocusRequest(null), []);
   useRowFocus(regionRef, focusRequest, clearFocusRequest);
