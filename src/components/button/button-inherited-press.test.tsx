@@ -126,4 +126,131 @@ describe('Button refusing a trigger it sits in', () => {
     expect(screen.queryByRole('menuitem', { name: 'Run' })).not.toBeInTheDocument();
     expect(onAction).not.toHaveBeenCalled();
   });
+
+  it('UIC-BUTTON-21.7 keeps a pending button from opening its menu while pendingDelay holds the indicator back', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const lifecycle = vi.fn<Press>();
+    render(
+      <InMenu
+        onOpenChange={onOpenChange}
+        button={
+          <Button isPending pendingDelay={5000} onPressStart={lifecycle} onPressEnd={lifecycle}>
+            Actions
+          </Button>
+        }
+      />,
+    );
+    expect(trigger()).not.toHaveAttribute('data-pending');
+    await tryEveryActivation(user);
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(lifecycle).not.toHaveBeenCalled();
+  });
+
+  it('UIC-BUTTON-21.7 refuses its menu while its own action runs, and opens it once the action settles', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    let settle: () => void = () => undefined;
+    const onPress = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)));
+    render(
+      <InMenu
+        onOpenChange={onOpenChange}
+        button={
+          <Button pendingDelay={5000} onPress={onPress}>
+            Actions
+          </Button>
+        }
+      />,
+    );
+    await user.click(trigger());
+    expect(onPress).toHaveBeenCalledTimes(1);
+    await user.keyboard('{Escape}');
+    onOpenChange.mockClear();
+    await tryEveryActivation(user);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await act(async () => settle());
+    await user.click(trigger());
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('UIC-BUTTON-21.7 opens its menu again once a delayed action rejects', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const onError = vi.fn();
+    let fail: (reason: Error) => void = () => undefined;
+    const onPress = () => new Promise<void>((_resolve, reject) => (fail = reject));
+    render(
+      <InMenu
+        onOpenChange={onOpenChange}
+        button={
+          <Button pendingDelay={5000} onPress={onPress} onError={onError}>
+            Actions
+          </Button>
+        }
+      />,
+    );
+    await user.click(trigger());
+    await user.keyboard('{Escape}');
+    onOpenChange.mockClear();
+    await tryEveryActivation(user);
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await act(async () => fail(new Error('offline')));
+    expect(onError).toHaveBeenCalledTimes(1);
+    await user.click(trigger());
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('UIC-BUTTON-21.7 opens its menu once the caller ends pending before the delay, and keeps its tooltip while pending', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const menu = (isPending: boolean) => (
+      <InMenu
+        onOpenChange={onOpenChange}
+        button={
+          <Button isPending={isPending} pendingDelay={5000} tooltip="Loads the commands">
+            Actions
+          </Button>
+        }
+      />
+    );
+    const { rerender } = render(menu(true));
+    await user.tab();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Loads the commands');
+    await tryEveryActivation(user);
+    expect(onOpenChange).not.toHaveBeenCalled();
+    rerender(menu(false));
+    await user.click(trigger());
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('UIC-BUTTON-21.7 stays shut when a running action is followed by the button being disabled', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    let settle: () => void = () => undefined;
+    const onPress = () => new Promise<void>((resolve) => (settle = resolve));
+    const menu = (isDisabled: boolean) => (
+      <InMenu
+        onOpenChange={onOpenChange}
+        button={
+          <Button
+            pendingDelay={5000}
+            onPress={onPress}
+            isDisabled={isDisabled}
+            focusableWhenDisabled
+          >
+            Actions
+          </Button>
+        }
+      />
+    );
+    const { rerender } = render(menu(false));
+    await user.click(trigger());
+    await user.keyboard('{Escape}');
+    onOpenChange.mockClear();
+    rerender(menu(true));
+    await act(async () => settle());
+    await tryEveryActivation(user);
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
 });

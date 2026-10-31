@@ -106,6 +106,8 @@ interface ButtonStateOptions {
   isTooltipName?: boolean | undefined;
   /** The notation of `aria-keyshortcuts`; `useDetectedPlatform()` so hydration matches the server. */
   platform?: ShortcutPlatform | undefined;
+  /** An action runs or the caller's `isPending` holds, before or after the indicator shows. */
+  isBusy?: boolean | undefined;
 }
 
 /** What a button hands its building block for a `<button>`. */
@@ -160,8 +162,8 @@ type SpanDomProps = JSX.IntrinsicElements['span'];
 interface PassThrough {
   attributes: PassThroughAttributes;
   focusableDisabled: boolean;
-  /** Refuses every activation, the ones a trigger's context adds included. */
-  isBlocked: boolean;
+  /** An action runs or pending holds: every activation is refused, as when focusable disabled. */
+  isBusy: boolean | undefined;
   /** Replaces the tooltip's description, `undefined` removing it, when set. */
   describedBy?: { value: string | undefined } | undefined;
   render: ButtonStateProps['render'];
@@ -201,10 +203,11 @@ function withoutActivation(props: ButtonDomProps): ButtonDomProps {
 function renderPassThrough({
   attributes,
   focusableDisabled,
-  isBlocked,
+  isBusy,
   describedBy,
   render,
 }: PassThrough): Pick<ButtonElementProps, 'render'> {
+  const isBlocked = focusableDisabled || Boolean(isBusy);
   const extra: Record<string, unknown> = Object.fromEntries(
     Object.entries(attributes).filter(([, value]) => value !== undefined),
   );
@@ -247,13 +250,14 @@ function statesToggle(
 
 /**
  * Building-block button props for Button states: a focusable disabled button stays in the focus
- * order but refuses every activation, its trigger's included, and never submits; `isSelected` adds
+ * order but refuses every activation, its trigger's included, and never submits; a busy button
+ * refuses activation from the moment it is busy, ahead of the pending indicator; `isSelected` adds
  * `aria-pressed` unless the caller states toggle semantics with `aria-pressed`, `aria-checked` or a
  * `role`. A `shortcut` becomes `aria-keyshortcuts`.
  */
 export function toAriaButtonProps(
   props: ButtonStateProps,
-  { isTooltipName = false, platform }: ButtonStateOptions = {},
+  { isTooltipName = false, platform, isBusy }: ButtonStateOptions = {},
 ): ButtonElementProps {
   const {
     isSelected = false,
@@ -286,7 +290,7 @@ export function toAriaButtonProps(
         'aria-keyshortcuts': toKeyShortcuts(shortcut, platform),
       },
       focusableDisabled,
-      isBlocked: focusableDisabled,
+      isBusy,
       describedBy: isTooltipName ? { value: rest['aria-describedby'] } : undefined,
       render,
     }),

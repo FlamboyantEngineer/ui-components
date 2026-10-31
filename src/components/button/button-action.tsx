@@ -122,5 +122,7 @@ export function useButtonAction({
     render: submits
       ? guardActivation(type, { isBusy, isAdmitted: () => admitted.current }, render)
       : render,
+    /** Activation is refused from the start of the pending state, ahead of its indicator. */
+    isBusy: href === undefined && pending,
   };
 }
