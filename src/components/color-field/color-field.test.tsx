@@ -78,7 +78,9 @@ describe('ColorField', () => {
     await user.click(trigger());
     const dialog = await screen.findByRole('dialog', { name: 'Accent' });
     expect(dialog).toHaveClass('ui-color-field__dialog');
-    expect(dialog.closest('.ui-color-field__popover')).not.toBeNull();
+    const popover = dialog.closest<HTMLElement>('.ui-color-field__popover');
+    expect(popover).toHaveAttribute('data-layer', 'dropdown');
+    expect(popover?.style.zIndex).toBe('130');
     expect(within(dialog).getByRole('slider', { name: 'Hue' })).toBeInTheDocument();
     expect(within(dialog).getAllByRole('slider').length).toBeGreaterThanOrEqual(2);
     expect(within(dialog).getByRole('textbox', { name: 'Hex color' })).toHaveValue('#336699');

@@ -41,7 +41,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.5 - Placement
 
-`placement` (`top` by default, or any `Placement` such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`.
+`placement` (`top` by default, or any `Placement` such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`. The panel of `Tooltip` and of `AnchoredTooltip` sits on the `tooltip` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)): it publishes `data-layer="tooltip"` and takes its inline z-index from `useLayerZIndex('tooltip')` instead of React Aria's 100000, so it stacks above menus and below toasts and a provider's `layerZIndex` applies.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
@@ -105,6 +105,7 @@ Verification: `src/components/tooltip/anchored-tooltip.test.tsx`, `e2e/tooltip.s
 | `ui-tooltip__arrow`   | slot      |                                            | The arrow, positioned against the trigger.              |
 | `ui-tooltip__content` | slot      |                                            | The hint content.                                       |
 | `data-variant`        | attribute | `default`, `info`                          | Hint for a control or explanatory note.                 |
+| `data-layer`          | attribute | `tooltip`                                  | The overlay layer; its z-index is set inline from it.   |
 | `data-placement`      | state     | `top`, `bottom`, `left`, `right`, `center` | Resolved side, on the panel and the arrow (React Aria). |
 | `data-entering`       | state     | `true`                                     | While opening (React Aria).                             |
 | `data-exiting`        | state     | `true`                                     | While closing (React Aria).                             |

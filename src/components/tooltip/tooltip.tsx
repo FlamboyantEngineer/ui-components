@@ -5,6 +5,7 @@ import { OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from '../../prim
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
+import { useLayerZIndex } from '../portal/portal.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -77,12 +78,14 @@ export function TooltipPanel({
   placement = 'top',
   ...rest
 }: TooltipPanelProps) {
+  const zIndex = useLayerZIndex('tooltip');
   return (
     <AriaTooltip
       {...rest}
       placement={placement}
       offset={tooltipOffset}
-      {...hooks.root({ className, data: { variant } })}
+      {...hooks.root({ className, data: { variant, layer: 'tooltip' } })}
+      style={{ zIndex }}
     >
       <OverlayArrow className={hooks.slotClass('arrow')} />
       <span {...hooks.slot('content')}>{children}</span>
