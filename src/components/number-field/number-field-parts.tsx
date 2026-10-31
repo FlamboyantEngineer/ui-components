@@ -54,7 +54,7 @@ export function addStep(value: number | null, delta: number, steps: NumberSteps)
 }
 
 /** The step a modifier chooses: `largeStep` with Shift, `smallStep` with Alt, else none. */
-function modifierStep(event: { shiftKey: boolean; altKey: boolean }, steps: NumberSteps) {
+export function modifierStep(event: { shiftKey: boolean; altKey: boolean }, steps: NumberSteps) {
   if (event.shiftKey) return steps.largeStep;
   return event.altKey ? steps.smallStep : undefined;
 }
@@ -64,16 +64,17 @@ function isLocked(state: FieldState<number | null>): boolean {
 }
 
 /**
- * Shift and Alt with Arrow Up or Arrow Down step the value by `largeStep` or `smallStep` and commit
- * it; React Aria steps by `step` only for the plain keys.
+ * Shift and Alt with Arrow Up or Arrow Down step the number the input shows (`draft`, the typed
+ * text parsed as the plain arrows read it; `null` while it is empty or not yet a number) by
+ * `largeStep` or `smallStep` and commit it; React Aria steps by `step` only for the plain keys.
  */
 export function createModifierStepHandler(state: FieldState<number | null>, steps: NumberSteps) {
-  return (event: KeyboardEvent<HTMLInputElement>) => {
+  return (event: KeyboardEvent<HTMLInputElement>, draft: number | null) => {
     const direction = arrowDirections[event.key];
     const size = modifierStep(event, steps);
     if (!direction || size === undefined || isLocked(state)) return;
     event.preventDefault();
-    state.setValue(addStep(state.value, direction * size, steps));
+    state.setValue(addStep(draft, direction * size, steps));
     state.commit();
   };
 }

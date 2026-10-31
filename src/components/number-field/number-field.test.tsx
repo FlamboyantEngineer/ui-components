@@ -372,6 +372,77 @@ describe('NumberField', () => {
     expect(input).toHaveValue('4');
   });
 
+  it.each([
+    { keys: '{Shift>}{ArrowUp}{/Shift}', expected: 30 },
+    { keys: '{Alt>}{ArrowUp}{/Alt}', expected: 20.1 },
+    { keys: '{Shift>}{ArrowDown}{/Shift}', expected: 10 },
+    { keys: '{Alt>}{ArrowDown}{/Alt}', expected: 19.9 },
+  ])('UIC-NUMBER-FIELD-3.2 steps the typed number with $keys', async ({ keys, expected }) => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <NumberField
+        label="Weight"
+        defaultValue={5}
+        smallStep={0.1}
+        largeStep={10}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, '20');
+    await user.keyboard(keys);
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenLastCalledWith(expected);
+    expect(input).toHaveValue(String(expected));
+  });
+
+  it('UIC-NUMBER-FIELD-3.2 steps from the start when the typed text is empty or partial', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <UiProvider locale="de-DE">
+        <NumberField
+          label="Weight"
+          defaultValue={10}
+          minValue={2}
+          largeStep={10}
+          onCommit={onCommit}
+        />
+      </UiProvider>,
+    );
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.keyboard('{Shift>}{ArrowUp}{/Shift}');
+    expect(onCommit).toHaveBeenLastCalledWith(2);
+    await user.clear(input);
+    await user.type(input, '2,5');
+    await user.keyboard('{Shift>}{ArrowUp}{/Shift}');
+    expect(onCommit).toHaveBeenLastCalledWith(12.5);
+  });
+
+  it('UIC-NUMBER-FIELD-2.2 keeps a large whole number on Enter and blur', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const onChange = vi.fn();
+    render(
+      <NumberField
+        label="Count"
+        defaultValue={4503599627370496}
+        step={1}
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByRole('textbox');
+    await user.click(input);
+    await user.keyboard('{Enter}');
+    await user.tab();
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
   it('UIC-NUMBER-FIELD-3.2 commits a tiny modified step without rounding it to zero', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

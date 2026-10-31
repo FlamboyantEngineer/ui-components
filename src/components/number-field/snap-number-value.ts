@@ -7,7 +7,10 @@ interface NumberBounds {
   step?: number | undefined;
 }
 
-/** Snaps an edited value while external values remain visible for validation. */
+/**
+ * Snaps an edited value to the step grid from `minValue` (or 0) within the bounds, while external
+ * values remain visible for validation. A value already on the grid, however large, stays itself.
+ */
 export function snapNumberValue(value: number, bounds: NumberBounds): number {
   const { minValue, maxValue, step } = bounds;
   const minimum = minValue ?? -Infinity;
@@ -17,8 +20,12 @@ export function snapNumberValue(value: number, bounds: NumberBounds): number {
   const origin = minValue ?? 0;
   const ratio = (bounded - origin) / step;
   if (!Number.isFinite(ratio)) return bounded;
-  const tolerance = Number.EPSILON * Math.max(1, Math.abs(ratio)) * 2;
-  let count = Math.sign(ratio) * Math.round(Math.abs(ratio) + tolerance);
+  // Rounding noise of a decimal step (0.1 * 3) may leave a ratio just under a half; the tolerance
+  // covers that noise and never reaches a quarter step, so a value on the grid stays itself.
+  const tolerance = Math.min(Number.EPSILON * Math.max(1, Math.abs(ratio)) * 2, 0.25);
+  let count = Number.isInteger(ratio)
+    ? ratio
+    : Math.sign(ratio) * Math.round(Math.abs(ratio) + tolerance);
   if (maxValue !== undefined) {
     const limit = (maxValue - origin) / step;
     const near = Math.round(limit);
