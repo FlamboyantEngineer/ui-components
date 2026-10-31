@@ -22,6 +22,7 @@ import {
   getRelativeTimeFormat,
 } from '../../utils/intl-format.js';
 import type { DateRangeValue, DateTimeFieldMode } from '../date-time-field/date-time-field.js';
+import { findOrderedBoundIssue, type BoundIssue } from '../../utils/date-bounds.js';
 
 /**
  * The modes a relative date field shares with `DateTimeField`: `date` values are `YYYY-MM-DD` texts,
@@ -216,16 +217,20 @@ export function toValueDate(value: string): string | null {
   return dateTime ? toCalendarDate(dateTime).toString() : null;
 }
 
-/** Which bound a value, or either end of a range, breaks, with that bound's date. */
+/**
+ * Which bound a value, or either end of a range, breaks, with that bound's date; a range whose end
+ * precedes its start breaks a minimum of its start, as in `DateTimeField`.
+ */
 export function findRelativeBoundIssue(
   value: RelativeDateValue | null,
-  { minValue, maxValue }: RelativeDateBounds,
-): { bound: 'min' | 'max'; limit: string } | null {
+  bounds: RelativeDateBounds,
+): BoundIssue | null {
   if (!value) return null;
-  const [first, last] = typeof value === 'string' ? [value, value] : [value.start, value.end];
-  const firstDate = toValueDate(first);
-  const lastDate = toValueDate(last);
-  if (minValue && firstDate && firstDate < minValue) return { bound: 'min', limit: minValue };
-  if (maxValue && lastDate && lastDate > maxValue) return { bound: 'max', limit: maxValue };
-  return null;
+  // Texts that are no date compare as equal, so they break no bound.
+  const compare = (left: string, right: string) => {
+    const before = toValueDate(left);
+    const after = toValueDate(right);
+    return before === null || after === null ? 0 : before.localeCompare(after);
+  };
+  return findOrderedBoundIssue(value, compare, bounds);
 }

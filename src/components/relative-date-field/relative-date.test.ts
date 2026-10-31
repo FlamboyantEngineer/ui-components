@@ -136,4 +136,21 @@ describe('relative date', () => {
     );
     expect(findRelativeBoundIssue(null, bounds)).toBeNull();
   });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.4 refuses a reversed range and checks both of its ends', () => {
+    const bounds = { minValue: '2026-05-01', maxValue: '2026-05-31' };
+    expect(findRelativeBoundIssue({ start: '2026-05-22', end: '2026-05-20' }, {})).toEqual({
+      bound: 'min',
+      limit: '2026-05-22',
+    });
+    expect(findRelativeBoundIssue({ start: '2026-06-02', end: '2026-05-20' }, bounds)).toEqual({
+      bound: 'max',
+      limit: '2026-05-31',
+    });
+    expect(findRelativeBoundIssue({ start: '2026-05-20', end: '2026-04-20' }, bounds)).toEqual({
+      bound: 'min',
+      limit: '2026-05-01',
+    });
+    expect(findRelativeBoundIssue({ start: '2026-05-20', end: '2026-05-20' }, bounds)).toBeNull();
+  });
 });

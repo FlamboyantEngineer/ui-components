@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { ReactElement } from 'react';
+import type { FormEvent, ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
+import { Form } from '../form/form.js';
 import { RelativeDateField } from './relative-date-field.js';
 
 const getNow = () => new Date(2026, 4, 23, 10, 30, 0);
@@ -86,6 +87,45 @@ describe('RelativeDateField presets', () => {
     );
     await user.click(screen.getByRole('button', { name: /Period$/ }));
     expect(optionTexts()).toEqual(['Previous 2 weeks']);
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.4 flags a reversed range and disables a reversed preset', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+    const { container } = renderInLocale(
+      <Form aria-label="Plan" validationBehavior="aria" onSubmit={onSubmit}>
+        <RelativeDateField
+          label="Period"
+          name="period"
+          mode="date-range"
+          getNow={getNow}
+          defaultValue={{ start: '2026-05-25', end: '2026-05-23' }}
+          presets={[
+            { label: 'Backwards', getValue: () => ({ start: '2026-05-25', end: '2026-05-23' }) },
+            { amount: 7, unit: 'day' },
+          ]}
+          onCommit={onCommit}
+        />
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(container.querySelector('.ui-relative-date-field')).toHaveAttribute(
+      'data-validation',
+      'invalid',
+    );
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Choose a value on or after May 25, 2026.',
+    );
+    await user.click(screen.getByRole('button', { name: /Period$/ }));
+    expect(screen.getByRole('option', { name: 'Backwards' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await user.click(screen.getByRole('option', { name: 'Backwards' }));
+    expect(onCommit).not.toHaveBeenCalled();
   });
 
   it('UIC-RELATIVE-DATE-FIELD-2.4 disables presets outside the bounds and flags values outside', async () => {
