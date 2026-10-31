@@ -34,7 +34,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-1.5 - Hooks and caller attributes
 
-`SelectField` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to the field root, and use `name` for its form inputs, and pass `autoFocus`, `isOpen`, `defaultOpen` and `onOpenChange` to React Aria's `Select`.
+`SelectField` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to the field root, and use `name` for its form inputs, focus its trigger on mount with `autoFocus`, which the field handles (UIC-FIELD-8.3), and pass `isOpen`, `defaultOpen` and `onOpenChange` to React Aria's `Select`.
 
 Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`

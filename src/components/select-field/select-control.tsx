@@ -136,7 +136,6 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
         isInvalid={state.validation.status === 'invalid'}
         validationBehavior="aria"
         allowsEmptyCollection
-        autoFocus={props.autoFocus}
       >
         <SelectTrigger
           ref={trigger.ref}

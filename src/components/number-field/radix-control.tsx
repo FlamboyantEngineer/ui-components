@@ -87,6 +87,8 @@ export function RadixControl(props: RadixControlProps) {
     startAdornment,
     endAdornment,
     placeholder,
+    autoComplete,
+    enterKeyHint,
     minValue,
     maxValue,
     name,
@@ -141,6 +143,8 @@ export function RadixControl(props: RadixControlProps) {
           inputMode={props.radix === 16 ? 'text' : 'numeric'}
           ref={mergeRefs(input, control.ref)}
           placeholder={placeholder}
+          autoComplete={autoComplete}
+          enterKeyHint={enterKeyHint}
           onBlur={() => entry.finish(false)}
           onKeyDown={entry.onKeyDown}
         />

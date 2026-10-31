@@ -89,6 +89,7 @@ function Formats() {
       <NumberField
         label="Tip"
         placeholder="No tip"
+        enterKeyHint="next"
         formatOptions={{ style: 'percent' }}
         data-lab-field="placeholder"
       />

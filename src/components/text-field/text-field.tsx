@@ -16,6 +16,7 @@ import {
   FieldFormValue,
   countCodePoints,
   toAriaControlProps,
+  toSpellCheckAttribute,
   useFieldControl,
   validateString,
   type FieldInputProps,
@@ -168,7 +169,7 @@ export function TextField({
             {...hooks.slot('box')}
             ref={edit.boxRef}
             name={displayValue === undefined ? rest.name : undefined}
-            spellCheck={spellCheck?.toString()}
+            spellCheck={toSpellCheckAttribute(spellCheck)}
             type={isMasked && isRevealed ? 'text' : rest.type}
             value={edit.text}
             onChange={edit.onChange}

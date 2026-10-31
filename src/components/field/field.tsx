@@ -1,7 +1,7 @@
 'use client';
 
 import { isEmptyValue } from '../../utils/is-empty-value.js';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
@@ -24,7 +24,7 @@ import {
   type FieldLabelLayout,
 } from './field-parts.js';
 import { useFieldFocus } from './field-focus.js';
-import { useFieldFormBinding } from './field-form.js';
+import { focusControl, useFieldFormBinding } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { useFieldUndo } from './field-undo.js';
@@ -64,6 +64,8 @@ export interface FieldProps<T> extends BaseProps {
   renderMessage?:
     | ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode)
     | undefined;
+  /** Focuses the control when the field mounts (its first focusable element for a group). */
+  autoFocus?: boolean | undefined;
   /**
    * Commits the value once focus leaves the field (its control, its buttons and the popovers they
    * open), for a control that commits on blur: moving to the field's own buttons does not commit.
@@ -85,6 +87,25 @@ function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBl
       state.touch();
     },
   });
+}
+
+/**
+ * Focuses the control once, when the field mounts with `autoFocus`, unless focus moved to another
+ * element while it mounted, such as into a list that opens with the field.
+ */
+function useAutoFocus(autoFocus: boolean | undefined, slots: FieldSlots) {
+  // The element focused when the field first renders, read before any part can take focus.
+  const [focusedBefore] = useState(() =>
+    autoFocus === true ? (globalThis.document?.activeElement ?? null) : undefined,
+  );
+  useEffect(() => {
+    const control = slots.read('control');
+    if (focusedBefore === undefined || !control) return;
+    const active = control.ownerDocument.activeElement;
+    if (active === focusedBefore || !active || active === control.ownerDocument.body) {
+      focusControl(control);
+    }
+  }, [focusedBefore, slots]);
 }
 
 /** Puts the committed value back; the button leaves with it, so keyboard focus moves to the control first. */
@@ -160,6 +181,7 @@ export function Field<T>({
   menu = [],
   onMenuAction,
   renderMessage,
+  autoFocus,
   commitOnBlur = false,
   children,
   className,
@@ -172,6 +194,7 @@ export function Field<T>({
   const onKeyDown = useFieldUndo(getRoot, state);
   const focus = useFieldLeave(state as FieldState<unknown>, slots, commitOnBlur);
   useFieldFormBinding(state as FieldState<unknown>, slots, label);
+  useAutoFocus(autoFocus, slots);
   const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
   const hasLabel = labelLayout !== 'control-only';
   const control = toFieldControlProps(state, ids, {
@@ -230,11 +253,12 @@ export type { FieldControlProps, FieldDensity, FieldLabelLayout } from './field-
 export { FieldMessage } from './field-parts.js';
 export { FieldFormValue } from './field-form-value.js';
 export { resolveFieldValidation, toIssueList } from './field-validation.js';
-export { useFieldControl } from './field-control.js';
+export { toSpellCheckAttribute, useFieldControl } from './field-control.js';
 export { toAriaControlProps } from './aria-control-props.js';
 export type {
   FieldControl,
   FieldControlOptions,
+  FieldEnterKeyHint,
   FieldInputMode,
   FieldInputProps,
   FieldLayoutProps,

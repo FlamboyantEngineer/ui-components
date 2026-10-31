@@ -30,7 +30,7 @@ const focusableSelector = [
 ].join(',');
 
 /** Focuses the control, or its first focusable element when it is a group, such as date segments. */
-function focusControl(control: HTMLElement | null) {
+export function focusControl(control: HTMLElement | null) {
   if (!control) return;
   const target = control.matches(focusableSelector)
     ? control

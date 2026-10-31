@@ -15,7 +15,12 @@ import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import { assignOccurrenceKeys, type KeyedValue } from '../../utils/stable-keys.js';
-import { FieldFormValue, type FieldControlProps, type FieldState } from '../field/field.js';
+import {
+  FieldFormValue,
+  type FieldControlProps,
+  type FieldState,
+  type FieldTextInputProps,
+} from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
 
 /** What the input does with text: type it, enter it as tags, or split a paste. */
@@ -38,7 +43,8 @@ interface TagsInputControlProps {
   /** The field's label, which names the tags. */
   label: string;
   entry: TagsInputEntry;
-  placeholder: string | undefined;
+  /** The text-entry attributes the input takes; the field focuses it on mount (`autoFocus`). */
+  textInput: Omit<FieldTextInputProps, 'autoFocus'>;
   /** The form name each tag submits under. */
   name: string | undefined;
 }
@@ -142,7 +148,7 @@ export function TagsInputControl({
   state,
   label,
   entry,
-  placeholder,
+  textInput,
   name,
 }: TagsInputControlProps) {
   const strings = useUiStrings();
@@ -185,7 +191,7 @@ export function TagsInputControl({
           {...hooks.slot('input')}
           ref={inputRef}
           value={entry.text}
-          placeholder={placeholder}
+          {...textInput}
           onChange={(event) => entry.type(event.target.value)}
           onKeyDown={onInputKeyDown}
           onPaste={(event) => pasteTags(event, entry)}

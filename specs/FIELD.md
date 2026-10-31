@@ -337,10 +337,22 @@ Verification: `src/components/field/field-control.test.tsx`
 
 ### UIC-FIELD-8.3 - Text input props
 
-Every text control shall take the native text-entry attributes of its input through one type, `FieldTextInputProps`: `placeholder` (shown while the control is empty), `autoComplete` (the browser's autofill hint), `inputMode` (`FieldInputMode`: the virtual keyboard to show), `spellCheck` (a boolean; the browser's choice when left out) and `autoFocus` (focus the control when it mounts). The control hands them to its input as native attributes. Length and format rules stay the field's string rules (UIC-FIELD-7).
+Every text control shall take the native text-entry attributes of its input through one type, `FieldTextInputProps`: `placeholder` (shown while the control is empty), `autoComplete` (the browser's autofill hint), `inputMode` (`FieldInputMode`: the virtual keyboard to show), `spellCheck` (a boolean; the browser's choice when left out), `enterKeyHint` (`FieldEnterKeyHint`: the label of the virtual keyboard's Enter key) and `autoFocus` (focus the control when it mounts). The control hands them to its input as native attributes, and `spellCheck` becomes the `spellcheck` attribute only when given. Length and format rules stay the field's string rules (UIC-FIELD-7).
 
-Implementation: `src/components/field/field-control.ts`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`
-Verification: `src/components/text-field/text-field.test.tsx`, `src/components/search-field/search-field.test.tsx`
+The text controls take them as follows; a control that takes a part names it with a documented `Pick<FieldTextInputProps, ...>` and declares none of them itself:
+
+| Control                                 | Takes                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------- |
+| `TextField`, `SearchField`, `TagsInput` | all of them                                                                           |
+| `NumberField`                           | `placeholder`, `autoComplete`, `enterKeyHint` (its keyboard follows its format)       |
+| `PinInput`                              | `placeholder`, `autoComplete` (on the first cell only), `enterKeyHint`                |
+| `CodeEditor`                            | `placeholder`, `enterKeyHint` (autofill, spelling and the keyboard stay off for code) |
+| `RelativeDateField`                     | `placeholder` (the trigger's text while there is no value)                            |
+
+`autoFocus` belongs to `Field`, so every field control takes it: the field focuses its control once when it mounts, or the control's first focusable element when it is a group, such as date segments or pin cells.
+
+Implementation: `src/components/field/field-control.ts`, `src/components/field/field.tsx`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`, `src/components/number-field/number-field.tsx`, `src/components/pin-input/pin-input.tsx`, `src/components/tags-input/tags-input.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/relative-date-field/relative-date-field.tsx`
+Verification: `src/components/text-field/text-field.test.tsx`, `src/components/search-field/search-field.test.tsx`, `src/components/field/field-text-input.test.tsx`
 
 ### UIC-FIELD-8.4 - Form value
 

@@ -12,6 +12,7 @@ import {
   type FieldInputProps,
   type FieldIssue,
   type FieldState,
+  type FieldTextInputProps,
 } from '../field/field.js';
 import { PresetCalendar } from './relative-date-calendar.js';
 import { PresetSelect } from './relative-date-select.js';
@@ -40,7 +41,11 @@ export type RelativeDateFieldValue<K extends RelativeDateKind = 'date'> = K exte
   : string | null;
 
 export interface RelativeDateFieldProps<K extends RelativeDateKind = 'date'>
-  extends FieldInputProps<RelativeDateFieldValue<K>>, OpenStateProps {
+  extends
+    FieldInputProps<RelativeDateFieldValue<K>>,
+    OpenStateProps,
+    /** `placeholder` is the trigger's text while there is no value; it defaults to the provider string. */
+    Pick<FieldTextInputProps, 'placeholder'> {
   /** What a preset commits: a `YYYY-MM-DD` date (the default), a date and time or a range of dates. */
   valueKind?: K | undefined;
   /**
@@ -56,8 +61,6 @@ export interface RelativeDateFieldProps<K extends RelativeDateKind = 'date'>
     | undefined;
   /** The clock presets and relative text count from. Defaults to the current time. */
   getNow?: (() => Date) | undefined;
-  /** The trigger's text while there is no value. Defaults to the provider string. */
-  placeholder?: string | undefined;
   /** Values this many days away or more read as absolute dates. Defaults to 7. */
   fallbackAfterDays?: number | undefined;
   /** The earliest `YYYY-MM-DD` date a value may fall on; presets before it are disabled. */

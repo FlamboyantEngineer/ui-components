@@ -1,24 +1,34 @@
 'use client';
 
-import type { InputHTMLAttributes } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
+import {
+  Field,
+  useFieldControl,
+  type FieldInputProps,
+  type FieldTextInputProps,
+} from '../field/field.js';
 import { PinInputCells, pinInputHooks as hooks } from './pin-input-cells.js';
 import type { PinInputType } from './pin-value.js';
 
 export type { PinInputType } from './pin-value.js';
 
-export interface PinInputProps extends FieldInputProps<string> {
+/**
+ * The text-entry attributes a code field hands its cells: the hint in each empty cell, the first
+ * cell's autofill hint (such as `one-time-code`, `off` by default) and the Enter key's label. The
+ * keyboard follows `type`, and a code is never spell checked.
+ */
+export type PinInputTextInputProps = Pick<
+  FieldTextInputProps,
+  'placeholder' | 'autoComplete' | 'enterKeyHint'
+>;
+
+export interface PinInputProps extends FieldInputProps<string>, PinInputTextInputProps {
   /** How many characters the code has: one cell each. */
   length: number;
   /** The characters a cell takes. Defaults to `numeric`. */
   type?: PinInputType | undefined;
   /** Hides the characters, as a password input does. */
   mask?: boolean | undefined;
-  /** Shown in each empty cell. */
-  placeholder?: string | undefined;
-  /** The first cell's autocomplete hint, such as `one-time-code` for a code sent by message. Defaults to `off`. */
-  autoComplete?: InputHTMLAttributes<HTMLInputElement>['autoComplete'];
   /** Called with the code each time a change fills every cell. */
   onComplete?: ((value: string) => void) | undefined;
 }
@@ -35,6 +45,7 @@ export function PinInput({
   mask = false,
   placeholder,
   autoComplete = 'off',
+  enterKeyHint,
   onComplete,
   ...props
 }: PinInputProps) {
@@ -61,7 +72,7 @@ export function PinInput({
         <PinInputCells
           control={control}
           state={state}
-          cells={{ length, type, mask, placeholder, autoComplete }}
+          cells={{ length, type, mask, placeholder, autoComplete, enterKeyHint }}
           name={rest.name}
           onComplete={onComplete}
         />

@@ -15,6 +15,7 @@ export type {
   FieldControl,
   FieldControlOptions,
   FieldControlProps,
+  FieldEnterKeyHint,
   FieldInputMode,
   FieldInputProps,
   FieldIssue,
