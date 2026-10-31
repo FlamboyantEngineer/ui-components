@@ -17,15 +17,15 @@ export interface PlacedJsonToken {
   offset: number;
 }
 
-const WHITESPACE = /^\s+/;
+const whitespacePattern = /^\s+/;
 
-const NUMBER = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/;
+const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/;
 
-const LITERAL = /^(?:true|false|null)\b/;
+const literalPattern = /^(?:true|false|null)\b/;
 
-const PUNCTUATION = new Set(['{', '}', '[', ']', ':', ',']);
+const punctuationCharacters = new Set(['{', '}', '[', ']', ':', ',']);
 
-const SCALARS = new Set(['key', 'string', 'number', 'literal']);
+const scalarKinds = new Set(['key', 'string', 'number', 'literal']);
 
 /** The end of the string token starting at `start` (a double quote), past its closing quote. */
 function endOfString(source: string, start: number): number {
@@ -45,18 +45,21 @@ function isKey(source: string, end: number): boolean {
 
 function readToken(source: string, index: number): CodeToken {
   const rest = source.slice(index);
-  const space = WHITESPACE.exec(rest)?.[0];
+  const space = whitespacePattern.exec(rest)?.[0];
   if (space) return { text: space };
   if (rest.startsWith('"')) {
     const end = endOfString(source, index);
     return { text: source.slice(index, end), type: isKey(source, end) ? 'key' : 'string' };
   }
-  const number = NUMBER.exec(rest)?.[0];
+  const number = numberPattern.exec(rest)?.[0];
   if (number) return { text: number, type: 'number' };
-  const literal = LITERAL.exec(rest)?.[0];
+  const literal = literalPattern.exec(rest)?.[0];
   if (literal) return { text: literal, type: 'literal' };
   const character = rest.charAt(0);
-  return { text: character, type: PUNCTUATION.has(character) ? 'punctuation' : 'invalid' };
+  return {
+    text: character,
+    type: punctuationCharacters.has(character) ? 'punctuation' : 'invalid',
+  };
 }
 
 function locationAt(source: string, offset: number): JsonErrorLocation {
@@ -87,7 +90,7 @@ function readGrammarValue(stack: GrammarFrame[], token: PlacedJsonToken): boolea
     stack.push({ kind: token.text === '{' ? 'object' : 'array', expects: 'first' });
     return true;
   }
-  return SCALARS.has(token.type);
+  return scalarKinds.has(token.type);
 }
 
 function readGrammarToken(stack: GrammarFrame[], token: PlacedJsonToken): boolean {

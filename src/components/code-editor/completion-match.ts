@@ -9,13 +9,13 @@ interface ParsedSnippet {
   fields: CodeRange[];
 }
 
-const WORD_BEFORE_CARET = /[A-Za-z_$][\w$.]*$/;
+const wordBeforeCaret = /[A-Za-z_$][\w$.]*$/;
 
 const quotedCharacters = new Set(['\\', '$', '}']);
 
 /** The identifier-like word that ends at `caret`, or `''`. */
 export function findCompletionQuery(value: string, caret: number): string {
-  return WORD_BEFORE_CARET.exec(value.slice(0, caret))?.[0] ?? '';
+  return wordBeforeCaret.exec(value.slice(0, caret))?.[0] ?? '';
 }
 
 /** Reads `${…}` fields; backslashes quote a dollar, closing brace or backslash. */

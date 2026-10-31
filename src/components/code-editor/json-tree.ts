@@ -41,7 +41,7 @@ interface Frame {
   expects: 'key' | 'colon' | 'value' | 'comma';
 }
 
-const SCALARS = new Set(['string', 'number', 'literal']);
+const scalarKinds = new Set(['string', 'number', 'literal']);
 
 type JsonContainer = Extract<JsonNode, { kind: 'object' | 'array' }>;
 
@@ -130,9 +130,9 @@ function open(stack: Frame[], token: PlacedJsonToken): false {
   return false;
 }
 
-const OPENERS = new Set(['{', '[']);
+const openers = new Set(['{', '[']);
 
-const CLOSERS = new Set(['}', ']']);
+const closers = new Set(['}', ']']);
 
 /** Moves a container past a token inside it: a key, a colon, a comma or a value. */
 function step(frame: Frame, { text, type }: PlacedJsonToken) {
@@ -143,16 +143,16 @@ function step(frame: Frame, { text, type }: PlacedJsonToken) {
   else if (text === ',') {
     frame.expects = frame.kind === 'object' ? 'key' : 'value';
     if (frame.kind === 'array') frame.step = Number(frame.step) + 1;
-  } else if (SCALARS.has(type) || CLOSERS.has(text)) frame.expects = 'comma';
+  } else if (scalarKinds.has(type) || closers.has(text)) frame.expects = 'comma';
 }
 
 /** Moves the reader past one token; returns whether a whole root value has been read. */
 function advance(stack: Frame[], token: PlacedJsonToken): boolean {
   const { text, type } = token;
-  if (OPENERS.has(text)) return open(stack, token);
-  if (CLOSERS.has(text)) stack.pop();
+  if (openers.has(text)) return open(stack, token);
+  if (closers.has(text)) stack.pop();
   const frame = stack.at(-1);
-  if (!frame) return CLOSERS.has(text) || SCALARS.has(type);
+  if (!frame) return closers.has(text) || scalarKinds.has(type);
   step(frame, token);
   return false;
 }
@@ -163,8 +163,8 @@ function collectKeys(tokens: readonly PlacedJsonToken[], start: number): string[
   let depth = 0;
   for (const token of tokens) {
     if (token.offset <= start) continue;
-    if (OPENERS.has(token.text)) depth += 1;
-    else if (CLOSERS.has(token.text)) depth -= 1;
+    if (openers.has(token.text)) depth += 1;
+    else if (closers.has(token.text)) depth -= 1;
     else if (depth === 0 && token.type === 'key') keys.push(unquote(token.text));
     if (depth < 0) break;
   }
@@ -175,7 +175,7 @@ function collectKeys(tokens: readonly PlacedJsonToken[], start: number): string[
 function findTokenAt(tokens: readonly PlacedJsonToken[], offset: number) {
   return tokens.find(
     ({ offset: start, text, type }) =>
-      (SCALARS.has(type) || type === 'key') && start < offset && offset <= start + text.length,
+      (scalarKinds.has(type) || type === 'key') && start < offset && offset <= start + text.length,
   );
 }
 

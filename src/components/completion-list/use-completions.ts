@@ -110,7 +110,7 @@ interface CompletionSession {
   latest: RefObject<{ state: CompletionState; options: CompletionsOptions }>;
 }
 
-const NAVIGATION_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
+const navigationKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
 
 const closed: CompletionState = {
   start: 0,
@@ -352,7 +352,7 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
     handleKeyUp(event) {
       const used = usedKey.current === event.key;
       usedKey.current = null;
-      if (!used && NAVIGATION_KEYS.has(event.key)) track('move');
+      if (!used && navigationKeys.has(event.key)) track('move');
     },
   };
 }

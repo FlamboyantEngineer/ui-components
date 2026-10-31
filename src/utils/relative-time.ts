@@ -69,9 +69,9 @@ interface ParsedValue {
   instant: Date | null;
 }
 
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
+const secondMs = 1000;
+const minuteMs = 60 * secondMs;
+const hourMs = 60 * minuteMs;
 
 /**
  * A date, or a date and time with its instant and the local calendar date of that instant. A value
@@ -100,19 +100,19 @@ type TimeUnit = [step: number, unit: Intl.RelativeTimeFormatUnit, ceiling: numbe
 
 /** Rounded counts that never read 60 seconds, 60 minutes or 24 hours. */
 const secondUnits: readonly TimeUnit[] = [
-  [SECOND, 'second', 59.5 * SECOND, false],
-  [MINUTE, 'minute', 59.5 * MINUTE, false],
-  [HOUR, 'hour', 23.5 * HOUR, false],
+  [secondMs, 'second', 59.5 * secondMs, false],
+  [minuteMs, 'minute', 59.5 * minuteMs, false],
+  [hourMs, 'hour', 23.5 * hourMs, false],
 ];
 
 /** Whole elapsed minutes, where a count of 0 reads `Now`, then rounded hours. */
 const minuteUnits: readonly TimeUnit[] = [
-  [MINUTE, 'minute', HOUR, true],
-  [HOUR, 'hour', 23.5 * HOUR, false],
+  [minuteMs, 'minute', hourMs, true],
+  [hourMs, 'hour', 23.5 * hourMs, false],
 ];
 
 /** Distance from now at which an instant's rounded hours reach a day, so it reads in days. */
-const dayDistance = (24 - 0.5) * HOUR;
+const dayDistance = (24 - 0.5) * hourMs;
 
 interface TimeStep {
   step: number;

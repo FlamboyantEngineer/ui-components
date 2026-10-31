@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react';
 import { useLatest } from './use-latest.js';
 
 /** How long after a request focus may still come back to the overlay's trigger, in milliseconds. */
-const HANDBACK_WINDOW = 1000;
+const handbackWindow = 1000;
 
 export interface FocusHandback {
   /** Asks for the hand-back the next time the trigger gets focus back, shortly after. */
@@ -25,7 +25,7 @@ export function useFocusHandback(focus: () => void): FocusHandback {
     (element: HTMLElement | null) => {
       if (!element) return undefined;
       const onFocus = () => {
-        if (Date.now() - requestedAt.current > HANDBACK_WINDOW) return;
+        if (Date.now() - requestedAt.current > handbackWindow) return;
         requestedAt.current = 0;
         latestFocus.current();
       };

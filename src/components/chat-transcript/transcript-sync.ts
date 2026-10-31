@@ -8,9 +8,9 @@ import {
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 
 /** How long the newest message in view must stay the newest before `onRead` hears of it. */
-const READ_DELAY = 500;
+const readDelay = 500;
 /** How long scrolling must pause after Page Up or Page Down before focus follows. */
-const PAGE_SETTLE_DELAY = 150;
+const pageSettleDelay = 150;
 
 /** Whether at least half of an element, or of the view when the element is taller, is in view. */
 function isMostlyVisible(element: Element, viewport: HTMLElement): boolean {
@@ -85,7 +85,7 @@ export function noteSeen(runtime: TranscriptRuntime, settings: TranscriptSetting
       if (runtime.readKey === null || runtime.readKey === runtime.reportedKey) return;
       runtime.reportedKey = runtime.readKey;
       onRead(runtime.registry.idFor(runtime.readKey));
-    }, READ_DELAY),
+    }, readDelay),
   );
 }
 
@@ -128,6 +128,6 @@ export function focusAfterPaging(runtime: TranscriptRuntime) {
       const cutOff =
         snapshot.offset < -1 && next && readOffset(next, viewport) < viewport.clientHeight;
       elements[cutOff ? index + 1 : index]?.focus({ preventScroll: true });
-    }, PAGE_SETTLE_DELAY),
+    }, pageSettleDelay),
   );
 }

@@ -22,6 +22,7 @@ import { flattenPickerItems, toAriaControlProps, usePickerEmptyContent } from '.
 import { toSelectKeys, type SelectFieldOption } from './select-options.js';
 import { SelectTrigger } from './select-trigger.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
 
 export type { SelectConfig, SelectKeysValue } from './select-model.js';
 
@@ -33,9 +34,6 @@ interface SelectControlProps extends SelectConfig {
   isMultiple: boolean;
 }
 
-/** Lists with more options than this filter by default. */
-const FILTER_THRESHOLD = 10;
-
 /** The open list's props: its items, how they are drawn, the filter and the search's state. */
 function useListProps(
   props: Omit<SelectControlProps, 'control' | 'label'>,
@@ -45,7 +43,7 @@ function useListProps(
   const renderEmpty = usePickerEmptyContent(search);
   const isFilterable =
     props.filterable ??
-    (Boolean(search) || flattenPickerItems(props.options).length > FILTER_THRESHOLD);
+    (Boolean(search) || isFilterableLength(flattenPickerItems(props.options).length));
   return {
     items: model.listed,
     isMultiple: props.isMultiple,

@@ -34,9 +34,9 @@ export {
 } from '@internationalized/date';
 export type { CalendarDate, DateValue } from '@internationalized/date';
 
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const ZONE = /\[[^\]]+\]$/;
-const OFFSET = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i;
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const zonePattern = /\[[^\]]+\]$/;
+const offsetPattern = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i;
 
 function attempt<T>(parse: () => T): T | null {
   try {
@@ -50,7 +50,7 @@ const pad = (part: number) => String(part).padStart(2, '0');
 
 /** A `YYYY-MM-DD` text as a calendar date, or `null` when it is not a real date. */
 export function parseIsoDate(text: string | null | undefined): CalendarDate | null {
-  return text && DATE.test(text) ? attempt(() => parseDate(text)) : null;
+  return text && isoDatePattern.test(text) ? attempt(() => parseDate(text)) : null;
 }
 
 /** An `HH:mm` or `HH:mm:ss` text (fractions of a second ignored) as a time of day, or `null`. */
@@ -69,11 +69,11 @@ export function parseIsoDateTime(
   text: string | null | undefined,
   timeZone?: string,
 ): CalendarDateTime | ZonedDateTime | null {
-  if (!text || DATE.test(text)) return null;
+  if (!text || isoDatePattern.test(text)) return null;
   const zone = timeZone ?? getLocalTimeZone();
   const zoned = attempt(() => {
-    if (ZONE.test(text)) return toTimeZone(parseZonedDateTime(text), zone);
-    if (OFFSET.test(text)) return parseAbsolute(text, zone);
+    if (zonePattern.test(text)) return toTimeZone(parseZonedDateTime(text), zone);
+    if (offsetPattern.test(text)) return parseAbsolute(text, zone);
     return null;
   });
   if (zoned) return timeZone ? zoned : toCalendarDateTime(zoned);

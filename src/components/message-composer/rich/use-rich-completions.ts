@@ -38,7 +38,7 @@ interface RichCompletionsOptions {
   isEditable: boolean;
 }
 
-const TRIGGER_BEFORE_CARET = /(?:^|\s)([@/])([^\s@/￼]*)$/;
+const triggerBeforeCaret = /(?:^|\s)([@/])([^\s@/￼]*)$/;
 
 function toItems(
   mentions: RichCompletionsOptions['mentions'] = [],
@@ -67,7 +67,7 @@ function findTrigger(state: EditorState): TriggerRange | null {
   const { $from } = selection;
   if (!selection.empty || $from.parent.type.spec.code) return null;
   const before = $from.parent.textBetween(0, $from.parentOffset, undefined, '￼');
-  const match = TRIGGER_BEFORE_CARET.exec(before);
+  const match = triggerBeforeCaret.exec(before);
   if (!match) return null;
   const query = match[2] ?? '';
   const kind = match[1] === tokenTriggers.mention ? 'mention' : 'command';

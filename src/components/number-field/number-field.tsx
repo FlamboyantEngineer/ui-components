@@ -86,11 +86,11 @@ interface NumberRules {
 }
 
 // Tolerates the binary rounding of decimal steps (0.1 + 0.2).
-const STEP_TOLERANCE = 1e-9;
+const stepTolerance = 1e-9;
 
 function isOnStep(value: number, step: number, origin: number): boolean {
   const steps = (value - origin) / step;
-  return Math.abs(steps - Math.round(steps)) < STEP_TOLERANCE;
+  return Math.abs(steps - Math.round(steps)) < stepTolerance;
 }
 
 /** The range and step error of a value, if any. An empty value passes; requiring one is the field's. */

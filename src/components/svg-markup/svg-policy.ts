@@ -1,8 +1,8 @@
 // The allowlist that decides which SVG elements, attributes and values survive parsing
 // (specs/SVG-MARKUP.md, UIC-SVG-MARKUP-1.2). Markup is untrusted: anything not listed is dropped.
 
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+const svgNamespace = 'http://www.w3.org/2000/svg';
+const xlinkNamespace = 'http://www.w3.org/1999/xlink';
 
 function byLowerCase(names: string): ReadonlyMap<string, string> {
   return new Map(
@@ -190,8 +190,8 @@ function filterClassName(value: string): string {
 }
 
 function isSafeNamespace(name: string, value: string): boolean {
-  if (name === 'xmlns') return value === SVG_NAMESPACE;
-  return name !== 'xmlns:xlink' || value === XLINK_NAMESPACE;
+  if (name === 'xmlns') return value === svgNamespace;
+  return name !== 'xmlns:xlink' || value === xlinkNamespace;
 }
 
 /** The kept spelling of an attribute, or null when the policy drops it. */
