@@ -29,6 +29,10 @@
   box-shadow: inset 3px 0 0 var(--ref-warning);
 }
 
+[dir='rtl'] .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column {
+  box-shadow: inset -3px 0 0 var(--ref-warning);
+}
+
 .ui-mapping-table__column {
   font-weight: var(--ref-font-weight-strong);
   white-space: nowrap;

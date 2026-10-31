@@ -192,6 +192,20 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page the uncovered marks run down the start edge of Requirement 4 and Test 4, on the right."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <RelationMatrix
+          aria-label="Coverage, right to left"
+          rows={small.rows}
+          columns={small.columns}
+          relations={small.relations}
+          kinds={kinds}
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Traceability"
       description="Press a cell, or move to it with the arrow keys and press Enter or Space, to add a relation of the chosen kind or remove one. Home, End, PageUp and PageDown move further; Control+Home and Control+End reach the corners. Tab leaves the grid from the focused cell; typing does not jump to a row, and nothing is selected."
     >

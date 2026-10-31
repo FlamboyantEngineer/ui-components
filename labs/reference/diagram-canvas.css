@@ -277,6 +277,10 @@ button.ui-diagram-canvas__port:hover {
   box-shadow: inset 3px 0 0 var(--ref-accent);
 }
 
+[dir='rtl'] .ui-diagram-canvas__outline-item[data-selected] {
+  box-shadow: inset -3px 0 0 var(--ref-accent);
+}
+
 .ui-diagram-canvas__outline-label {
   min-width: 8em;
   font-weight: var(--ref-font-weight-strong);

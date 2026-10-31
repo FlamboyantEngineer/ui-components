@@ -78,6 +78,15 @@
   box-shadow: inset -3px 0 0 0 var(--ref-accent);
 }
 
+/* Columns run right to left there, so the bar marks the same side of the move. */
+[dir='rtl'] .ui-board__column[data-drop-target][data-position='before'] {
+  box-shadow: inset -3px 0 0 0 var(--ref-accent);
+}
+
+[dir='rtl'] .ui-board__column[data-drop-target][data-position='after'] {
+  box-shadow: inset 3px 0 0 0 var(--ref-accent);
+}
+
 .ui-board__column-title,
 .ui-board__lane-title {
   flex: 1;

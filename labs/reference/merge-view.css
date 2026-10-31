@@ -81,6 +81,11 @@
   box-shadow: inset 3px 0 0 var(--ref-accent);
 }
 
+[dir='rtl'] .ui-merge-view__chunk[data-current] .ui-merge-view__line > td:first-child,
+[dir='rtl'] .ui-merge-view__chunk[data-current] .ui-merge-view__filler > td:first-child {
+  box-shadow: inset -3px 0 0 var(--ref-accent);
+}
+
 .ui-merge-view__line > td,
 .ui-merge-view__filler > td {
   height: 20px;

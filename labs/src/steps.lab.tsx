@@ -116,6 +116,23 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page vertical steps hang from markers on the right, and each connector runs down under its marker."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <Steps
+          items={[
+            { id: 'map', label: 'Map columns' },
+            { id: 'check', label: 'Check rows' },
+            { id: 'import', label: 'Import' },
+          ]}
+          currentKey="check"
+          orientation="vertical"
+          aria-label="Import steps, right to left"
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Returning to a step"
       description="Settled steps are buttons with onAction; the failed one too. Disabled steps and lists refuse presses."
     >

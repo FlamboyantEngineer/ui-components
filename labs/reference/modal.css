@@ -156,7 +156,8 @@
 
 .ui-modal__close {
   flex: none;
-  margin: -4px -6px 0 0;
+  margin-block-start: -4px;
+  margin-inline-end: -6px;
 }
 
 /* The body is the containing block of what it positions, such as the visually hidden inputs of

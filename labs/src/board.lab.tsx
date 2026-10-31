@@ -266,6 +266,22 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page the columns run from the right, and a column move marks the side of the target column it lands on."
+    >
+      <div dir="rtl" style={frame} data-lab-demo="rtl">
+        <Board
+          aria-label="Chores, right to left"
+          columns={columns}
+          items={tasks}
+          getColumn={getColumn}
+          getTextValue={getTextValue}
+          renderCard={renderCard}
+          onMove={() => {}}
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Moving cards and columns"
       description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards, and each column header ends with a menu that sorts or clears the column."
     >

@@ -254,6 +254,14 @@
   ); /* token-exempt: an alpha mask, not a colour */
 }
 
+[dir='rtl'] .ui-card__skeleton {
+  mask-image: linear-gradient(
+    to left,
+    #000 85%,
+    transparent
+  ); /* token-exempt: an alpha mask, not a colour */
+}
+
 .ui-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

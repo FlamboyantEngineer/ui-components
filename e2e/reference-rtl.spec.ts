@@ -45,4 +45,33 @@ test.describe('reference stylesheet right to left', () => {
     await expect(link).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
     await lab.expectAccessible('[data-lab-demo="rtl"]');
   });
+
+  test('UIC-LABS-3.1 marks board column moves, uncovered headers and step connectors on the start side', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const column = page.locator('[data-lab-demo="rtl"] .ui-board__column').first();
+    // The indicator is the drag's transient state; set it as a drop over the column would.
+    await column.evaluate((node) => {
+      node.setAttribute('data-drop-target', '');
+      node.setAttribute('data-position', 'before');
+    });
+    await expect(column).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
+    await column.evaluate((node) => node.setAttribute('data-position', 'after'));
+    await expect(column).toHaveCSS('box-shadow', / 3px 0px 0px 0px inset$/);
+
+    await lab.open('relation-matrix');
+    const uncovered = page
+      .locator('[data-lab-demo="rtl"] .ui-relation-matrix__row-header[data-uncovered]')
+      .first();
+    await expect(uncovered).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
+    await lab.expectAccessible('[data-lab-demo="rtl"]');
+
+    await lab.open('steps');
+    const connector = page.locator('[data-lab-demo="rtl"] .ui-steps__connector').first();
+    await expect(connector).toHaveCSS('margin-right', '12px');
+    await expect(connector).toHaveCSS('margin-left', '0px');
+    await lab.expectAccessible('[data-lab-demo="rtl"]');
+  });
 });

@@ -96,6 +96,10 @@
   box-shadow: inset 3px 0 0 var(--ref-accent);
 }
 
+[dir='rtl'] .ui-redline-compare__row[data-current] {
+  box-shadow: inset -3px 0 0 var(--ref-accent);
+}
+
 .ui-redline-compare__row:focus-visible {
   outline: var(--ref-focus-ring);
   outline-offset: -2px;

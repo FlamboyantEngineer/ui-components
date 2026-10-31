@@ -165,7 +165,8 @@
   align-self: flex-start;
   width: 1px;
   height: 16px;
-  margin: 0 0 4px 12px;
+  margin: 0 0 4px;
+  margin-inline-start: 12px;
 }
 .ui-steps__item[data-status='complete'] > .ui-steps__connector {
   background: var(--ref-accent);

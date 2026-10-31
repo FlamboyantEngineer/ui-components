@@ -72,6 +72,14 @@
   ); /* token-exempt: an alpha mask, not a colour */
 }
 
+[dir='rtl'] .ui-user-card__skeleton {
+  mask-image: linear-gradient(
+    to left,
+    #000 75%,
+    transparent
+  ); /* token-exempt: an alpha mask, not a colour */
+}
+
 .ui-user-card__actions {
   display: flex;
   flex-wrap: wrap;

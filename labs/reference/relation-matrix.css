@@ -104,6 +104,11 @@
   color: var(--ref-danger);
 }
 
+[dir='rtl'] .ui-relation-matrix__row-header[data-uncovered],
+[dir='rtl'] .ui-relation-matrix__column[data-uncovered] {
+  box-shadow: inset -3px 0 0 var(--ref-danger);
+}
+
 .ui-relation-matrix__column[data-uncovered] {
   box-shadow: inset 0 -3px 0 var(--ref-danger);
 }

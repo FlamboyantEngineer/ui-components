@@ -57,12 +57,26 @@
   animation: ref-progress-slide var(--ref-duration-loop) ease-in-out infinite;
 }
 
+[dir='rtl'] .ui-progress-bar[data-shape='linear'][data-indeterminate] .ui-progress-bar__fill {
+  animation-name: ref-progress-slide-rtl;
+}
+
 @keyframes ref-progress-slide {
   from {
     transform: translateX(-100%);
   }
   to {
     transform: translateX(250%);
+  }
+}
+
+/* Right to left the fill starts at the right edge and travels left, with the reading. */
+@keyframes ref-progress-slide-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-250%);
   }
 }
 
