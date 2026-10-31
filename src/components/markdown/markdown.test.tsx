@@ -108,6 +108,7 @@ describe('Markdown', () => {
     expect(typed).toHaveClass('ui-markdown__code-block');
     expect(typed).toHaveAttribute('data-language', 'ts');
     expect(typed?.querySelector('code')?.innerHTML).toBe('const a = 1;');
+    expect(typed?.querySelector('code')).not.toHaveAttribute('class');
     expect(plain).not.toHaveAttribute('data-language');
     expect(container.querySelector('p code')).toHaveClass('ui-markdown__code');
     expectHooksMatchSpec(container, 'MARKDOWN', { slots: ['code-block', 'code'] });

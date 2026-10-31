@@ -120,7 +120,7 @@ Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markd
 
 ### UIC-MARKDOWN-2.4 - Code
 
-A code block shall render as `<pre>` in the `ui-markdown__code-block` slot, publishing its language in `data-language`, around a `<code>` holding its text unhighlighted; inline code renders as `<code>` in the `ui-markdown__code` slot.
+A code block shall render as `<pre>` in the `ui-markdown__code-block` slot, publishing its language in `data-language`, around a `<code>` holding its text unhighlighted; inline code renders as `<code>` in the `ui-markdown__code` slot. The `<code>` of a block carries no class: the [hook contract](HOOK-CONTRACT.md) allows hook classes only, so the CommonMark `language-<x>` class that highlighters such as Prism and highlight.js look for is not emitted. A host that highlights code draws code blocks through `createCodeBlockOverride` ([UIC-CODE-BLOCK-4.1](CODE-BLOCK.md#uic-code-block-41---code-block-override)) or its own `renderNode` ([UIC-MARKDOWN-2.8](#uic-markdown-28---node-overrides)), which receives the fence language as the node's `language`.
 
 Implementation: `src/components/markdown/markdown-render.tsx`, `labs/reference/markdown.css`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
