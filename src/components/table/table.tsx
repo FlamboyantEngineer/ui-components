@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import {
   ResizableTableContainer,
   Table as AriaTable,
-  TableLayout,
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
@@ -28,6 +27,7 @@ import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './
 import { TableSearch } from './table-search.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
+import { useTableFooterLayout } from './table-layout.js';
 import {
   hasGroupRow,
   renderTableWithTracks,
@@ -233,6 +233,7 @@ export function Table<T extends TableRow>({
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
+  const footerLayout = useTableFooterLayout();
   const element = <TableGridElement grid={grid} options={rest} />;
   const label = rest['aria-label'];
   return (
@@ -267,7 +268,7 @@ export function Table<T extends TableRow>({
       >
         {virtualized ? (
           <Virtualizer
-            layout={TableLayout}
+            layout={footerLayout}
             layoutOptions={{ rowHeight: height, headingHeight: height }}
           >
             {element}
