@@ -20,7 +20,7 @@ import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { TextMatch } from '../text-match/text-match.js';
-import type { TreeExpandGlyph, TreeItemData, TreeItemState } from './tree.js';
+import type { TreeExpandGlyph, TreeItemData, TreeItemState } from './tree-props.js';
 import type { TreeRowOptions } from './tree-item.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeLoads } from './use-tree-loads.js';

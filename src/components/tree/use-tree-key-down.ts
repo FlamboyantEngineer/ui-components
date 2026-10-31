@@ -4,7 +4,7 @@ import { useCallback, useRef, type KeyboardEvent } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { TreeMoveDirection } from '../../utils/tree-reorder.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
-import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeItemData, TreeProps } from './tree-props.js';
 import type { TreeRename } from './use-tree-rename.js';
 import type { TreeReorder } from './use-tree-reorder.js';
 import { isElement } from '../../utils/is-element.js';

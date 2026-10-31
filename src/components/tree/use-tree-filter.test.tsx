@@ -3,7 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Tree, type TreeProps } from './tree.js';
+import { Tree } from './tree.js';
+import type { TreeProps } from './tree-props.js';
 import { useTreeFilter } from './use-tree-filter.js';
 
 interface Food {

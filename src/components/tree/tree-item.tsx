@@ -16,7 +16,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { EmptyState } from '../empty-state/empty-state.js';
-import type { TreeExpandGlyph, TreeItemData, TreeItemState, TreeProps } from './tree.js';
+import type { TreeExpandGlyph, TreeItemData, TreeItemState, TreeProps } from './tree-props.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import { TreeRowContent, type RowContentOptions } from './tree-row.js';
 import type { TreeKeyDown } from './use-tree-key-down.js';
