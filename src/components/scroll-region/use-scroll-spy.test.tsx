@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import { ScrollRegion } from './scroll-region.js';
 import { resolveScrollSpy, useScrollSpy } from './use-scroll-spy.js';
@@ -38,6 +38,32 @@ function Contents({ ids, offset }: { ids: readonly string[]; offset?: number }) 
   );
 }
 
+let frames = new Map<number, FrameRequestCallback>();
+
+function flushFrames() {
+  act(() => {
+    const pending = [...frames.values()];
+    frames.clear();
+    pending.forEach((callback) => callback(0));
+  });
+}
+
+/** Scrolls the viewport and runs the frame the scroll spy reads in. */
+function scroll(viewport: HTMLElement) {
+  fireEvent.scroll(viewport);
+  flushFrames();
+}
+
+beforeEach(() => {
+  frames = new Map();
+  let frameId = 0;
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    frames.set(++frameId, callback);
+    return frameId;
+  });
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id));
+});
+
 function toc() {
   return screen.getByRole('navigation', { name: 'Contents' });
 }
@@ -53,18 +79,18 @@ describe('useScrollSpy', () => {
     const { rerender } = render(<Contents ids={['apples', 'pears', 'plums']} />);
     const viewport = requireDefined(document.getElementById('chapters'));
     stubLayout(viewport);
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(toc()).toHaveTextContent('apples');
     viewportBox.scrollTop = 300;
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(toc()).toHaveTextContent('pears');
     viewportBox.scrollTop = 250;
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(toc()).toHaveTextContent('apples');
     rerender(<Contents ids={['apples', 'pears', 'plums']} offset={60} />);
     expect(toc()).toHaveTextContent('pears');
     viewportBox.scrollTop = 800;
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(toc()).toHaveTextContent('plums');
   });
 
@@ -73,7 +99,7 @@ describe('useScrollSpy', () => {
     render(<Contents ids={['missing', 'apples', 'pears']} />);
     const viewport = requireDefined(document.getElementById('chapters'));
     stubLayout(viewport);
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(toc()).toHaveTextContent('apples');
     expect(resolveScrollSpy(viewport, { ids: ['missing'] })).toBeUndefined();
     viewportBox.scrollHeight = 200;
@@ -98,6 +124,24 @@ describe('useScrollSpy', () => {
     stubLayout(viewport);
     viewportBox.top = 400;
     act(() => callbacks.forEach((callback) => callback()));
+    flushFrames();
+    expect(toc()).toHaveTextContent('pears');
+  });
+
+  it('UIC-SCROLL-REGION-4.5 reads the sections once per animation frame', () => {
+    Object.assign(sectionTops, { apples: 100, pears: 400, plums: 700 });
+    render(<Contents ids={['apples', 'pears', 'plums']} />);
+    const viewport = requireDefined(document.getElementById('chapters'));
+    stubLayout(viewport);
+    scroll(viewport);
+    const pears = requireDefined(document.getElementById('pears'));
+    const read = vi.spyOn(pears, 'getBoundingClientRect');
+    viewportBox.scrollTop = 300;
+    for (let index = 0; index < 20; index += 1) fireEvent.scroll(viewport);
+    expect(read).not.toHaveBeenCalled();
+    expect(toc()).toHaveTextContent('apples');
+    flushFrames();
+    expect(read).toHaveBeenCalledTimes(1);
     expect(toc()).toHaveTextContent('pears');
   });
 });

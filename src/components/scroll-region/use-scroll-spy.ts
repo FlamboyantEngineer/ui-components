@@ -32,8 +32,8 @@ export function resolveScrollSpy(
 
 /**
  * Follows which of the sections `ids` is current in a scrolling viewport, such as a `ScrollRegion`'s
- * (its `ref`), for a table of contents to mark. It updates as the viewport scrolls or resizes, and
- * when the ids change.
+ * (its `ref`), for a table of contents to mark. It updates once per animation frame as the viewport
+ * scrolls or resizes, and at once when the ids change.
  */
 export function useScrollSpy(
   viewport: RefObject<HTMLElement | null>,
@@ -47,15 +47,24 @@ export function useScrollSpy(
     const view = element?.ownerDocument.defaultView;
     if (!element || !view) return undefined;
     const sectionIds = key ? key.split('\n') : [];
-    const update = () => setActive(resolveScrollSpy(element, { ids: sectionIds, offset }));
+    let frame: number | null = null;
+    const read = () => {
+      frame = null;
+      setActive(resolveScrollSpy(element, { ids: sectionIds, offset }));
+    };
+    // Scrolls and resizes read the sections' positions once per animation frame.
+    const update = () => {
+      frame ??= view.requestAnimationFrame(read);
+    };
     const resize =
       typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(update) : null;
     resize?.observe(element);
     element.addEventListener('scroll', update, { passive: true });
-    update();
+    read();
     return () => {
       resize?.disconnect();
       element.removeEventListener('scroll', update);
+      if (frame !== null) view.cancelAnimationFrame(frame);
     };
   }, [key, offset, viewport]);
 

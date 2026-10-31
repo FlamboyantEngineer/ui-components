@@ -7,7 +7,7 @@ import {
   type ScrollOverviewLayer,
   type ScrollOverviewMarker,
 } from '../../utils/scroll-overview.js';
-import { observeViewport } from './observe-viewport.js';
+import type { SharedViewportObserver } from './use-shared-viewport-observer.js';
 
 interface ScrollOverviewOptions {
   markers: readonly ScrollOverviewMarker[] | undefined;
@@ -32,6 +32,7 @@ export interface ScrollOverviewPaint {
  */
 export function useScrollOverview(
   viewport: RefObject<HTMLDivElement | null>,
+  observer: SharedViewportObserver,
   { markers, layers, enabled }: ScrollOverviewOptions,
 ): ScrollOverviewPaint {
   const activeLayers = useMemo<readonly ScrollOverviewLayer[]>(() => {
@@ -43,8 +44,7 @@ export function useScrollOverview(
 
   useEffect(() => {
     const element = viewport.current;
-    const view = element?.ownerDocument.defaultView;
-    if (!element || !view || !hasMarkers) return undefined;
+    if (!element || !hasMarkers) return undefined;
     const measure = () => {
       const next = { height: element.clientHeight, scrollHeight: element.scrollHeight };
       setMetrics((previous) =>
@@ -53,8 +53,8 @@ export function useScrollOverview(
           : next,
       );
     };
-    return observeViewport(element, view, { measure }).disconnect;
-  }, [activeLayers, hasMarkers, viewport]);
+    return observer.subscribe(measure);
+  }, [activeLayers, hasMarkers, observer, viewport]);
 
   const image = useMemo(
     () =>

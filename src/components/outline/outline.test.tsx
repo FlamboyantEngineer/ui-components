@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,6 +30,7 @@ beforeEach(() => {
 
 afterEach(() => {
   Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  vi.unstubAllGlobals();
 });
 
 describe('Outline', () => {
@@ -150,6 +151,15 @@ describe('Outline', () => {
   });
 
   it('UIC-OUTLINE-2.2 follows the heading the viewport is scrolled to', () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) =>
+      frames.push(callback),
+    );
+    // The heading tracking reads positions once per animation frame.
+    const scroll = (element: HTMLElement) => {
+      fireEvent.scroll(element);
+      act(() => frames.splice(0).forEach((callback) => callback(0)));
+    };
     const tops: Record<string, number> = { intro: 0, scope: 300, terms: 600, design: 900 };
     let scrollTop = 0;
     function Reader({ currentId, offset }: { currentId?: string; offset?: number }) {
@@ -186,13 +196,13 @@ describe('Outline', () => {
     }
     const currentName = () =>
       document.querySelector('.ui-outline [aria-current="location"]')?.textContent;
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(currentName()).toBe('Introduction');
     scrollTop = 620;
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(currentName()).toBe('Terms');
     scrollTop = 560;
-    fireEvent.scroll(viewport);
+    scroll(viewport);
     expect(currentName()).toBe('Scope');
     rerender(<Reader offset={60} />);
     expect(currentName()).toBe('Terms');

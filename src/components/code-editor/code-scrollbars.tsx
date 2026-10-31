@@ -2,7 +2,11 @@
 
 import { useEffect, useState, type RefObject } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
-import { OverlayScrollbars, useOverlayMetrics } from '../scroll-region/scroll-region.js';
+import {
+  OverlayScrollbars,
+  useOverlayMetrics,
+  useSharedViewportObserver,
+} from '../scroll-region/scroll-region.js';
 import { codeEditorHooks as hooks, type CodeDiagnostic } from './code-layers.js';
 
 interface CodeScrollbarsProps {
@@ -51,7 +55,13 @@ function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): Code
 /** The editor's custom scrollbars share the native viewport, with diagnostics painted inside the vertical track. */
 export function CodeScrollbars(props: CodeScrollbarsProps) {
   const { input, inputId, gutter, value, wrap } = props;
-  const measurement = useOverlayMetrics({ viewport: input, enabled: true, headerInset: false });
+  const observer = useSharedViewportObserver(input);
+  const measurement = useOverlayMetrics({
+    viewport: input,
+    observer,
+    enabled: true,
+    headerInset: false,
+  });
   const [marks, setMarks] = useState<CodeScrollMark[]>([]);
   const { schedule } = measurement;
   useEffect(() => {

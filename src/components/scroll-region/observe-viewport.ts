@@ -1,5 +1,5 @@
-// Layout observation shared by the overlay scrollbars and the overview: one measurement per
-// animation frame whenever the viewport, its children or other watched elements resize, or its
+// Layout observation shared by a region's overlay scrollbars, edges and overview: one measurement
+// per animation frame whenever the viewport, its children or other watched elements resize, or its
 // content changes.
 
 /**
@@ -28,9 +28,14 @@ interface ViewportObserverOptions {
    * not only its children.
    */
   subtree?: boolean | undefined;
+  /**
+   * Measure at once, without waiting for a frame, when a watched element resizes or a child of the
+   * viewport comes or goes; deeper content changes still wait for a frame.
+   */
+  immediate?: boolean | undefined;
 }
 
-interface ViewportObserver {
+export interface ViewportObserver {
   /** Schedules a measurement for the next animation frame. */
   schedule: () => void;
   /** Watches the current set of elements again and schedules a measurement. */
@@ -45,7 +50,7 @@ interface ViewportObserver {
 export function observeViewport(
   element: HTMLElement,
   view: Window & typeof globalThis,
-  { measure, getExtraTargets, subtree = false }: ViewportObserverOptions,
+  { measure, getExtraTargets, subtree = false, immediate = false }: ViewportObserverOptions,
 ): ViewportObserver {
   let active = true;
   let frame: number | null = null;
@@ -57,32 +62,48 @@ export function observeViewport(
       if (active) measure();
     });
   };
-  const resize =
-    typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(schedule) : null;
-  const observe = () => {
+  const measureNow = () => {
     if (!active) return;
-    if (resize) {
-      const wanted = new Set([element, ...element.children, ...(getExtraTargets?.() ?? [])]);
-      for (const target of observed) {
-        if (wanted.has(target)) continue;
-        resize.unobserve(target);
-        observed.delete(target);
-      }
-      for (const target of wanted) {
-        if (!target || observed.has(target)) continue;
-        resize.observe(target);
-        observed.add(target);
-      }
+    if (frame !== null) view.cancelAnimationFrame(frame);
+    frame = null;
+    measure();
+  };
+  const resize =
+    typeof view.ResizeObserver === 'function'
+      ? new view.ResizeObserver(immediate ? measureNow : schedule)
+      : null;
+  const watch = () => {
+    if (!active || !resize) return;
+    const wanted = new Set([element, ...element.children, ...(getExtraTargets?.() ?? [])]);
+    for (const target of observed) {
+      if (wanted.has(target)) continue;
+      resize.unobserve(target);
+      observed.delete(target);
     }
+    for (const target of wanted) {
+      if (!target || observed.has(target)) continue;
+      resize.observe(target);
+      observed.add(target);
+    }
+  };
+  const observe = () => {
+    watch();
     schedule();
   };
   // Only added or removed nodes can change the watched children; other changes just remeasure.
-  const mutations = new view.MutationObserver((records) =>
-    hasNodeChanges(records) ? observe() : schedule(),
-  );
+  const mutations = new view.MutationObserver((records) => {
+    if (!hasNodeChanges(records)) return schedule();
+    watch();
+    const isChildChange = records.some(
+      (record) => record.type === 'childList' && record.target === element,
+    );
+    return immediate && isChildChange ? measureNow() : schedule();
+  });
   mutations.observe(element, subtree ? contentChanges : { childList: true });
   if (subtree) element.addEventListener('load', schedule, true);
-  observe();
+  // An immediate observer's owner measures as it starts, so only a deferred one schedules here.
+  if (immediate) watch();
+  else observe();
   return {
     schedule,
     observe,
