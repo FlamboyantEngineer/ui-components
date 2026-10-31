@@ -66,7 +66,7 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-3.1 - Tools as data
 
-`items` (each with an `id` and a `label`) and `renderItem(item)` shall draw the tools in place of `children`, as direct children of the strip in their order. `overflow` publishes `data-overflow` on the root: `scroll` (the default), or `menu`.
+`items` (each with an `id` and a `label`) and `renderItem(item)` shall draw the tools in place of `children`, each in a `ui-toolbar-scroller__item` element that is a direct child of the strip, in their order and keyed by `id`. `overflow` publishes `data-overflow` on the root: `scroll` (the default), or `menu`.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`
@@ -78,13 +78,20 @@ With `overflow="menu"` and `items`, the strip shall render only the tools that f
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/toolbar-scroller.css`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
 
+### UIC-TOOLBAR-SCROLLER-3.3 - Changing the overflow mode
+
+Both overflow modes shall draw the tools in the same strip element, so a change of `overflow` either way, or of `scrollButtons`, keeps every tool that stays visible mounted, with its state, uncontrolled values and focus; only the scroll buttons, fades and overflow menu come and go around them. When the tool holding focus collapses into the overflow menu, or leaves `items`, focus moves to the next tool, else the overflow menu's button, else the previous tool, so it never falls to the page.
+
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-overflow-focus.ts`
+Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values           | Description                                             |
 | ------------------------------------ | --------- | ---------------- | ------------------------------------------------------- |
 | `ui-toolbar-scroller`                | root      |                  | The `<div>` around the strip, fades and scroll buttons. |
 | `ui-toolbar-scroller__strip`         | slot      |                  | The scrolling `role="toolbar"` holding the tools.       |
-| `ui-toolbar-scroller__item`          | slot      |                  | One kept tool, with `overflow="menu"`.                  |
+| `ui-toolbar-scroller__item`          | slot      |                  | One tool drawn from `items`.                            |
 | `ui-toolbar-scroller__overflow`      | slot      |                  | The element holding the menu of hidden tools.           |
 | `ui-toolbar-scroller__fade`          | slot      |                  | A decorative fade over one edge.                        |
 | `ui-toolbar-scroller__scroll-button` | slot      |                  | A scroll button (also `ui-button`).                     |

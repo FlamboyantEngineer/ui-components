@@ -556,4 +556,64 @@ describe('ToolbarScroller', () => {
       vi.restoreAllMocks();
     }
   });
+
+  it('UIC-TOOLBAR-SCROLLER-3.3 keeps visible tools mounted with their drafts and focus across overflow modes', async () => {
+    const user = userEvent.setup();
+    let width = 400;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return new DOMRect(0, 0, this.classList.contains('ui-toolbar-scroller__item') ? 50 : 0, 24);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'toolbar' ? width : 0;
+    });
+    const items = [
+      { id: 'search', label: 'Search' },
+      { id: 'tag', label: 'Tag' },
+      { id: 2, label: 'Two' },
+    ];
+    const draw = (item: { label: string }) => <input aria-label={item.label} />;
+    const scroller = (props: { overflow: 'scroll' | 'menu'; scrollButtons?: boolean }) => (
+      <ToolbarScroller aria-label="Tools" items={items} renderItem={draw} {...props} />
+    );
+    try {
+      const { rerender } = render(scroller({ overflow: 'scroll' }));
+      const search = screen.getByRole('textbox', { name: 'Search' });
+      const two = screen.getByRole('textbox', { name: 'Two' });
+      await user.type(search, 'draft');
+      for (const props of [
+        { overflow: 'menu' as const },
+        { overflow: 'scroll' as const, scrollButtons: false },
+        { overflow: 'scroll' as const },
+        { overflow: 'menu' as const },
+      ]) {
+        rerender(scroller(props));
+        expect(screen.getByRole('textbox', { name: 'Search' })).toBe(search);
+        expect(search).toHaveValue('draft');
+        expect(search).toHaveFocus();
+        expect(screen.getByRole('textbox', { name: 'Two' })).toBe(two);
+      }
+
+      // A stable keyed reorder keeps each tool.
+      items.reverse();
+      rerender(scroller({ overflow: 'menu' }));
+      expect(screen.getByRole('textbox', { name: 'Search' })).toBe(search);
+      items.reverse();
+
+      // Narrowed so that two tools no longer fit: the focused last tool collapses into the menu,
+      // and focus moves to the menu button instead of falling to the page.
+      two.focus();
+      width = 120;
+      rerender(scroller({ overflow: 'scroll' }));
+      rerender(scroller({ overflow: 'menu' }));
+      expect(screen.queryByRole('textbox', { name: 'Two' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^\d+ more/ })).toHaveFocus();
+      expect(screen.getByRole('textbox', { name: 'Search' })).toBe(search);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
 });

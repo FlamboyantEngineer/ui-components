@@ -151,4 +151,28 @@ test.describe('Toolbar Scroller lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-TOOLBAR-SCROLLER-3.3 keeps tool drafts and focus across overflow modes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toolbar-scroller');
+    const demo = page.locator('[data-lab-demo="switching-mode"]');
+    const find = demo.getByRole('textbox', { name: 'Find' });
+    await find.fill('draft');
+    await find.evaluate((element) => Object.assign(element, { labMarker: true }));
+    const toggle = demo.getByRole('button', { name: /^Switch to/ });
+    for (const mode of ['menu', 'scroll', 'menu']) {
+      await toggle.click();
+      await expect(demo.locator('.ui-toolbar-scroller')).toHaveAttribute('data-overflow', mode);
+      await expect(find).toHaveValue('draft');
+      expect(await find.evaluate((element) => 'labMarker' in element)).toBe(true);
+    }
+    // A switch that does not take focus away keeps it in the tool.
+    await find.focus();
+    await toggle.dispatchEvent('click');
+    await expect(demo.locator('.ui-toolbar-scroller')).toHaveAttribute('data-overflow', 'scroll');
+    await expect(find).toBeFocused();
+    await lab.expectAccessible();
+  });
 });

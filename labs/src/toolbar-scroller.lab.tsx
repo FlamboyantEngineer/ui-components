@@ -67,6 +67,28 @@ function Scrolled({ to, children }: { to: 'start' | 'middle' | 'end'; children: 
   );
 }
 
+/** Switching the overflow mode keeps the tools that stay visible, with their drafts and focus. */
+function SwitchingMode() {
+  const [overflow, setOverflow] = useState<'scroll' | 'menu'>('scroll');
+  const tools = [
+    { id: 'find', label: 'Find' },
+    { id: 'replace', label: 'Replace' },
+  ];
+  return (
+    <div style={{ width: 360 }} data-lab-demo="switching-mode">
+      <Button onPress={() => setOverflow(overflow === 'scroll' ? 'menu' : 'scroll')}>
+        Switch to {overflow === 'scroll' ? 'menu' : 'scroll'}
+      </Button>
+      <ToolbarScroller
+        aria-label="Find and replace"
+        overflow={overflow}
+        items={tools}
+        renderItem={(tool) => <input aria-label={tool.label} placeholder={tool.label} />}
+      />
+    </div>
+  );
+}
+
 const positions = ['fits', 'start', 'middle', 'end'] as const;
 const menuWidths = { wide: 640, medium: 360, narrow: 200 } as const;
 
@@ -135,6 +157,12 @@ mountLab(
         axes={{ width: ['wide', 'medium', 'narrow'] }}
         render={({ width }) => <MenuTools width={width} />}
       />
+    </LabSection>
+    <LabSection
+      title="Switching the overflow mode"
+      description="Type a draft in Find, then switch between scroll and menu: the tools fit both ways, so they keep their drafts."
+    >
+      <SwitchingMode />
     </LabSection>
     <LabSection
       title="Numeric and text tool IDs"
