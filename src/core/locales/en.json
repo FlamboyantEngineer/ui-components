@@ -428,6 +428,7 @@
   "valueFalse": "False",
   "valueUnset": "Unset",
   "noColor": "No color",
+  "colorSwatches": "Color swatches",
   "colorUnreadable": "Enter a color, such as #3366ff.",
   "hexColor": "Hex color",
   "colorFormat": "Color format",

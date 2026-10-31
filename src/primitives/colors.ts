@@ -9,8 +9,8 @@ export {
   ColorPickerStateContext,
   ColorSlider,
   ColorSwatch,
-  ColorSwatchPicker,
-  ColorSwatchPickerItem,
+  ColorSwatchPickerContext,
   ColorThumb,
   parseColor,
 } from 'react-aria-components';
+export type { Color } from 'react-aria-components';
