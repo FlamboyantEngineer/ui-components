@@ -1,11 +1,13 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {
   capitalizeText,
   describeRelativeTime,
+  formatStableTime,
   type RelativeTimePrecision,
   type RelativeTimeStyle,
   type RelativeTimeUnitStyle,
@@ -49,12 +51,38 @@ const hooks = createHooks('relative-time', ['tooltip']);
 
 const currentTime = () => new Date();
 
+const subscribeToNothing = () => () => {};
+
 /**
- * A timestamp read relative to now (`Now`, `5 minutes ago`, `Yesterday`) in a `<time>` element, which
- * updates on one clock shared by every timestamp on the page and shows the absolute date in a
- * tooltip. Past `fallbackAfterDays` it reads as the absolute date.
+ * Whether the clock may be read: false on the server and while hydrating, so both render the same
+ * text whenever and wherever they run, then true.
  */
-export function RelativeTime({
+function useIsClockReadable(): boolean {
+  return useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
+}
+
+/** The placeholder of a missing or unreadable value, or nothing without one. */
+function EmptyTime({
+  placeholder,
+  capitalize,
+  className,
+  ...rest
+}: Pick<RelativeTimeProps, 'placeholder' | 'className'> & { capitalize: boolean }) {
+  const { locale } = useLocale();
+  if (!placeholder) return null;
+  return (
+    <span {...rest} {...hooks.root({ className, data: { empty: true } })}>
+      {capitalize ? capitalizeText(placeholder, locale) : placeholder}
+    </span>
+  );
+}
+
+/** The live timestamp: the words against `getNow()`, kept current on the shared clock. */
+function LiveTime({
   value,
   fallbackAfterDays = 7,
   precision,
@@ -70,29 +98,17 @@ export function RelativeTime({
 }: RelativeTimeProps) {
   const { locale } = useLocale();
   const now = getNow();
-  const options = {
-    now,
-    locale,
-    fallbackAfterDays,
-    precision,
-    unitStyle,
-    dateStyle,
-    timeStyle,
-  };
+  const options = { now, locale, fallbackAfterDays, precision, unitStyle, dateStyle, timeStyle };
   const text = value ? describeRelativeTime(value, options) : null;
   useClockTick(text?.nextChange ?? null, now.getTime());
-  const finish = (words: string) => (capitalize ? capitalizeText(words, locale) : words);
   if (!text || !value) {
-    if (!placeholder) return null;
-    return (
-      <span {...rest} {...hooks.root({ className, data: { empty: true } })}>
-        {finish(placeholder)}
-      </span>
-    );
+    const empty = { ...rest, placeholder, capitalize, className };
+    return <EmptyTime {...empty} />;
   }
   const data = { relation: text.relation, format: text.isRelative ? 'relative' : 'absolute' };
   const timeProps = { ...rest, ...hooks.root({ className, data }), dateTime: value };
-  const words = text.isRelative ? finish(text.relative) : text.relative;
+  const words =
+    text.isRelative && capitalize ? capitalizeText(text.relative, locale) : text.relative;
   // A timestamp already read as the absolute date has nothing to add in a tooltip.
   if (!showTooltip || !text.isRelative) return <time {...timeProps}>{words}</time>;
   return (
@@ -104,4 +120,39 @@ export function RelativeTime({
       {words}
     </TimeWithTooltip>
   );
+}
+
+/** The timestamp before the clock may be read: the stable absolute text, without a tooltip. */
+function StableTime({
+  value,
+  dateStyle,
+  timeStyle,
+  capitalize = true,
+  placeholder,
+  className,
+  ...props
+}: RelativeTimeProps) {
+  const { locale } = useLocale();
+  const { fallbackAfterDays, precision, unitStyle, getNow, showTooltip, ...rest } = props;
+  const text = value ? formatStableTime(value, locale, { dateStyle, timeStyle }) : null;
+  if (!text || !value) {
+    const empty = { ...rest, placeholder, capitalize, className };
+    return <EmptyTime {...empty} />;
+  }
+  const data = { format: 'absolute' };
+  return (
+    <time {...rest} {...hooks.root({ className, data })} dateTime={value}>
+      {text}
+    </time>
+  );
+}
+
+/**
+ * A timestamp read relative to now (`Now`, `5 minutes ago`, `Yesterday`) in a `<time>` element, which
+ * updates on one clock shared by every timestamp on the page and shows the absolute date in a
+ * tooltip. Past `fallbackAfterDays` it reads as the absolute date. The server and hydration render
+ * the stable absolute text instead, then the live words.
+ */
+export function RelativeTime(props: RelativeTimeProps) {
+  return useIsClockReadable() ? <LiveTime {...props} /> : <StableTime {...props} />;
 }

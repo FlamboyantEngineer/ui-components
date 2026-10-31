@@ -153,6 +153,24 @@ test.describe('Relative Time lab', () => {
   });
 });
 
+test.describe('Relative Time server text in Tokyo', () => {
+  test.use({ timezoneId: 'Asia/Tokyo' });
+
+  test('UIC-RELATIVE-TIME-2.3 formats the server text without the local time zone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-time');
+    for (const [value, text] of [
+      ['2026-10-31T12:00:00Z', /Oct 31, 2026, 12:00:00\sPM\sUTC/],
+      ['2026-10-31T12:00', /Oct 31, 2026, 12:00\sPM$/],
+      ['2026-10-31', /^Oct 31, 2026$/],
+    ] as const) {
+      await expect(page.locator(`[data-lab-cell="value=${value}"] output`)).toHaveText(text);
+    }
+  });
+});
+
 test.describe('Relative Time frozen clock', () => {
   test('UIC-RELATIVE-TIME-2.2 stops waking a timestamp whose clock does not move', async ({
     page,

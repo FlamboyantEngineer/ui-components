@@ -55,6 +55,13 @@ A mounted `RelativeTime` shall render again when its `nextChange` comes due, so 
 Implementation: `src/components/relative-time/relative-time-clock.ts`, `src/components/relative-time/relative-time.tsx`
 Verification: `src/components/relative-time/relative-time-clock.test.ts`, `src/components/relative-time/relative-time.test.tsx`, `e2e/relative-time.spec.ts`
 
+### UIC-RELATIVE-TIME-2.3 - Server rendering and hydration
+
+On the server and while a client hydrates server markup, `RelativeTime` shall not read the clock: it renders the same `<time>` on both, whenever and in whichever time zone each runs, with `data-format="absolute"`, no `data-relation`, no tooltip and no tab stop, and the stable absolute text of `formatStableTime(value, locale, { dateStyle, timeStyle })`. That text is a date as itself, a date and time without an offset as its wall time, and an instant in UTC with the zone named (a `long` time at least, as `Oct 31, 2026, 12:00:00 PM UTC`). Once hydrated it reads `getNow()` (the default clock or the caller's) and renders the live words, relation, format and tooltip, then follows the shared clock. A client render that hydrates nothing reads the clock at once.
+
+Implementation: `src/components/relative-time/relative-time.tsx`, `src/utils/relative-time.ts`
+Verification: `src/components/relative-time/relative-time.test.tsx`, `src/utils/relative-time.test.ts`, `e2e/relative-time.spec.ts`
+
 ## UIC-RELATIVE-TIME-3 - Accessibility
 
 ### UIC-RELATIVE-TIME-3.1 - Absolute date tooltip

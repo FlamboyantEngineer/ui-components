@@ -1,4 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -208,6 +210,88 @@ describe('RelativeTime', () => {
     expect(vi.getTimerCount()).toBe(1);
     await advance(60_000);
     expect(root(container)).toHaveTextContent('In 1 minute');
+  });
+
+  it.each([
+    {
+      name: 'minute wording',
+      props: { value: '2026-10-31T12:00:00Z' },
+      server: '2026-10-31T12:00:59Z',
+      client: '2026-10-31T12:01:01Z',
+      stable: 'Oct 31, 2026, 12:00:00 PM UTC',
+      live: { words: '1 minute ago', relation: 'past', format: 'relative' },
+    },
+    {
+      name: 'second wording',
+      props: { value: '2026-10-31T12:00:00Z', precision: 'second' as const },
+      server: '2026-10-31T12:00:00Z',
+      client: '2026-10-31T12:00:03Z',
+      stable: 'Oct 31, 2026, 12:00:00 PM UTC',
+      live: { words: '3 seconds ago', relation: 'past', format: 'relative' },
+    },
+    {
+      name: 'a relative-to-absolute switch',
+      props: { value: '2026-10-24', fallbackAfterDays: 7 },
+      server: '2026-10-30T23:59:59',
+      client: '2026-10-31T00:00:01',
+      stable: 'Oct 24, 2026',
+      live: { words: 'Oct 24, 2026', relation: 'past', format: 'absolute' },
+    },
+  ])(
+    'UIC-RELATIVE-TIME-2.3 hydrates the server text across $name, then reads the live clock',
+    async ({ props, server, client, stable, live }) => {
+      vi.useFakeTimers({ now: new Date(server) });
+      const element = <RelativeTime {...props} showTooltip={false} />;
+      const host = document.body.appendChild(document.createElement('div'));
+      host.innerHTML = renderToString(element);
+      const time = host.querySelector('time');
+      expect(time).toHaveTextContent(stable);
+      expect(time).toHaveAttribute('data-format', 'absolute');
+      expect(time).not.toHaveAttribute('data-relation');
+      vi.setSystemTime(new Date(client));
+      const errors = vi.spyOn(console, 'error');
+      const recoverable: unknown[] = [];
+      let app: ReturnType<typeof hydrateRoot> | undefined;
+      await act(async () => {
+        app = hydrateRoot(host, element, {
+          onRecoverableError: (error) => recoverable.push(error),
+        });
+      });
+      expect(recoverable).toEqual([]);
+      expect(errors).not.toHaveBeenCalled();
+      const { words, relation, format } = live;
+      expect(host.querySelector('time')).toHaveTextContent(words);
+      expect(host.querySelector('time')).toHaveAttribute('data-relation', relation);
+      expect(host.querySelector('time')).toHaveAttribute('data-format', format);
+      act(() => app?.unmount());
+      host.remove();
+    },
+  );
+
+  it('UIC-RELATIVE-TIME-2.3 hydrates with an injected clock, then reads it and adds the tooltip', async () => {
+    vi.useFakeTimers({ now: new Date('2026-10-31T12:00:00Z') });
+    const getFixedNow = () => new Date('2026-10-31T12:05:00Z');
+    const element = <RelativeTime value="2026-10-31T12:00:00Z" getNow={getFixedNow} />;
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(element);
+    expect(host.querySelector('time')).not.toHaveAttribute('tabindex');
+    const recoverable: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, element, { onRecoverableError: (error) => recoverable.push(error) });
+    });
+    expect(recoverable).toEqual([]);
+    const time = host.querySelector('time');
+    expect(time).toHaveTextContent('5 minutes ago');
+    expect(time).toHaveAttribute('tabindex', '0');
+    act(() => app?.unmount());
+    host.remove();
+  });
+
+  it('UIC-RELATIVE-TIME-2.3 renders live text at once without hydration', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-31T12:01:01Z') });
+    render(<RelativeTime value="2026-10-31T12:00:00Z" showTooltip={false} />);
+    expect(screen.getByText('1 minute ago')).toHaveAttribute('data-relation', 'past');
   });
 
   it('UIC-RELATIVE-TIME-1.2 spells units in the unit style', () => {
