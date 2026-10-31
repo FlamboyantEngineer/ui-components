@@ -83,6 +83,10 @@ export interface ChatRun {
   readonly starts: Map<string, number>;
   /** A response the stream did not await was given, so the reply continues once it ends. */
   needsContinuation: boolean;
+  /** The reply with the events streamed since the last write to the conversation, if any. */
+  pending: ChatMessageData | undefined;
+  /** Cancels the scheduled write of `pending`. */
+  cancelFlush: (() => void) | undefined;
 }
 
 /** A reply that stopped streaming, for now or for good. */

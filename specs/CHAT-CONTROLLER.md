@@ -90,10 +90,10 @@ Verification: `src/components/chat-controller/chat-stream.test.ts`
 
 ### UIC-CHAT-CONTROLLER-2.1 - Sending
 
-`send(text, tokens?)` shall add the reader's message (a files part with the uploaded attachments, then a text part with the mentions and commands as `tokens`) and an empty assistant reply with `status: 'streaming'`, set `isPending`, and call the host's `send` with the conversation ending with the reader's message, an `AbortSignal` and `waitFor`. Each event shall fold into the reply as it arrives; `finish`, or the iterable ending, completes the reply and clears `isPending`. Blank text without uploaded files sends nothing. An empty streaming reply means the assistant has not answered yet.
+`send(text, tokens?)` shall add the reader's message (a files part with the uploaded attachments, then a text part with the mentions and commands as `tokens`) and an empty assistant reply with `status: 'streaming'`, set `isPending`, and call the host's `send` with the conversation ending with the reader's message, an `AbortSignal` and `waitFor`. Each event shall fold into the reply as it arrives; `finish`, or the iterable ending, completes the reply and clears `isPending`. The folded reply shall reach the conversation once per animation frame (after the current task where there are no frames, as on the server), so a burst of deltas in one frame notifies the controller's readers, and renders `Chat`, once. An approval request or a question, `finish`, an error, a response from the reader and a host's `updateMessages` write what streamed so far at once; a reply that is stopped or replaced drops what it had not written. Blank text without uploaded files sends nothing. An empty streaming reply means the assistant has not answered yet.
 
 Implementation: `src/components/chat-controller/chat-controller.ts`, `src/components/chat-controller/chat-engine.ts`, `src/components/chat-controller/chat-run.ts`, `src/components/chat-controller/chat-reply.ts`
-Verification: `src/components/chat-controller/chat-controller.test.tsx`
+Verification: `src/components/chat-controller/chat-controller.test.tsx`, `src/components/chat-controller/chat-stream-coalescing.test.ts`
 
 ### UIC-CHAT-CONTROLLER-2.2 - Status line
 

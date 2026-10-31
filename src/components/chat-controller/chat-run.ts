@@ -58,6 +58,41 @@ function noteRequest(
   }
 }
 
+/**
+ * Runs `flush` on the next animation frame or, where there are no frames (the server, a hidden
+ * test environment), after the current task. Returns its cancel.
+ */
+function scheduleFlush(flush: () => void): () => void {
+  if (typeof requestAnimationFrame === 'function') {
+    const frame = requestAnimationFrame(flush);
+    return () => cancelAnimationFrame(frame);
+  }
+  const timer = setTimeout(flush, 0);
+  return () => clearTimeout(timer);
+}
+
+/** Writes the events the run streamed since its last write to the conversation, in one update. */
+export function flushRun(engine: ChatEngineContext, run: ChatRun) {
+  run.cancelFlush?.();
+  run.cancelFlush = undefined;
+  const { pending } = run;
+  if (!pending) return;
+  run.pending = undefined;
+  updateMessage(engine, run.replyId, () => pending);
+}
+
+/** Drops what the run streamed but has not written, as when it is abandoned. */
+function dropPending(run: ChatRun) {
+  run.cancelFlush?.();
+  run.cancelFlush = undefined;
+  run.pending = undefined;
+}
+
+/**
+ * Reduces an event into the run's pending reply. Text, reasoning and tool events wait for the
+ * next frame, so a burst of deltas notifies the conversation's readers once; an approval request
+ * or a question is written at once, since the reply then waits for the reader.
+ */
 function applyEvent(engine: ChatEngineContext, run: ChatRun, event: ChatStreamEvent) {
   const now = Date.now();
   if (
@@ -66,10 +101,18 @@ function applyEvent(engine: ChatEngineContext, run: ChatRun, event: ChatStreamEv
   ) {
     run.starts.set(event.id, now);
   }
-  const context = readContext(engine, run, now);
-  updateMessage(engine, run.replyId, (message) => reduceChatStream(message, event, context));
+  const reply =
+    run.pending ?? engine.store.get().messages.find((message) => message.id === run.replyId);
+  if (!reply) return;
+  run.pending = reduceChatStream(reply, event, readContext(engine, run, now));
   if (event.type === 'approval-request' || event.type === 'question') {
+    flushRun(engine, run);
     noteRequest(engine, run, event);
+  } else {
+    run.cancelFlush ??= scheduleFlush(() => {
+      run.cancelFlush = undefined;
+      flushRun(engine, run);
+    });
   }
 }
 
@@ -80,6 +123,7 @@ function applyEvent(engine: ChatEngineContext, run: ChatRun, event: ChatStreamEv
  */
 export function endRun(engine: ChatEngineContext, run: ChatRun, outcome: ChatReplyOutcome) {
   if (engine.run !== run) return;
+  flushRun(engine, run);
   engine.run = undefined;
   const isComplete = outcome.status === 'complete';
   if (!isComplete) run.controller.abort();
@@ -98,6 +142,7 @@ export function endRun(engine: ChatEngineContext, run: ChatRun, outcome: ChatRep
 export function abandonRun(engine: ChatEngineContext, run: ChatRun) {
   if (engine.run !== run) return;
   engine.run = undefined;
+  dropPending(run);
   run.controller.abort();
   for (const waiter of run.waiters.values()) waiter.reject(run.controller.signal.reason);
 }
@@ -140,6 +185,8 @@ export function startRun(
     awaited: new Set(),
     starts: new Map(),
     needsContinuation: false,
+    pending: undefined,
+    cancelFlush: undefined,
   };
   engine.run = run;
   patchState(engine, { isPending: true });
@@ -156,6 +203,7 @@ export function respond(
   answer: { id: string; response: ChatReaderResponse; continues: boolean },
 ) {
   const { id, response, continues } = answer;
+  if (engine.run) flushRun(engine, engine.run);
   const { messages } = engine.store.get();
   const index = findAwaitingMessage(messages, id);
   const message = messages[index];

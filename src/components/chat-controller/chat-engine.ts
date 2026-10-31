@@ -18,7 +18,7 @@ import {
   toDismissal,
   type ChatReaderResponse,
 } from './chat-reply.js';
-import { abandonRun, endRun, respond, startRun } from './chat-run.js';
+import { abandonRun, endRun, flushRun, respond, startRun } from './chat-run.js';
 import {
   abortUploads,
   attachFiles,
@@ -217,6 +217,8 @@ export function createChatEngine(
     },
     retry: () => retry(engine),
     updateMessages: (update: ChatMessagesUpdate) => {
+      // The host's update sees, and keeps, what the running reply streamed so far.
+      if (engine.run) flushRun(engine, engine.run);
       patchState(engine, { messages: update(engine.store.get().messages) });
     },
     resetConversation: (messages: readonly ChatMessageData[] = []) =>
