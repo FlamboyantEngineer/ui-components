@@ -109,6 +109,27 @@ describe('ChoiceGroup', () => {
     expectHooksMatchSpec(container, 'CHOICE-GROUP', { slots: ['description'] });
   });
 
+  it('UIC-CHOICE-GROUP-1.2 UIC-CHOICE-GROUP-1.3 draws a zero label and description and skips empty ones', () => {
+    for (const selectionMode of ['single', 'multiple'] as const) {
+      const { container, unmount } = render(
+        <ChoiceGroup label="Count" selectionMode={selectionMode}>
+          <Choice value="0" description={0}>
+            {0}
+          </Choice>
+          <Choice value="none" aria-label="None" description={false}>
+            {null}
+          </Choice>
+        </ChoiceGroup>,
+      );
+      const role = selectionMode === 'single' ? 'radio' : 'checkbox';
+      expect(screen.getByRole(role, { name: '0' })).toHaveAccessibleDescription('0');
+      expect(screen.getByRole(role, { name: 'None' })).not.toHaveAccessibleDescription();
+      expect(container.querySelectorAll('.ui-choice__label')).toHaveLength(1);
+      expect(container.querySelectorAll('.ui-choice__description')).toHaveLength(1);
+      unmount();
+    }
+  });
+
   it('UIC-CHOICE-GROUP-1.4 lays radios out in a row or a column and publishes its size', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(<Sizes />);

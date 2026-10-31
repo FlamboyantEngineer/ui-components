@@ -10,6 +10,7 @@ import {
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { renderElement, type ElementRender } from '../../utils/render-element.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { ChoiceContext } from './choice-group.js';
@@ -46,13 +47,13 @@ export function Choice({ children, description, className, ...rest }: ChoiceProp
       <RadioField {...rest} {...hooks.root({ className, props: rest })}>
         <RadioButton {...hooks.slot('button')}>
           <span {...hooks.slot('indicator')} aria-hidden="true" />
-          {children ? <span {...hooks.slot('label')}>{children}</span> : null}
+          {isEmptyNode(children) ? null : <span {...hooks.slot('label')}>{children}</span>}
         </RadioButton>
-        {description ? (
+        {isEmptyNode(description) ? null : (
           <Text slot="description" {...hooks.slot('description')}>
             {description}
           </Text>
-        ) : null}
+        )}
       </RadioField>
     );
   const { render, ...props } = rest;
@@ -62,8 +63,9 @@ export function Choice({ children, description, className, ...rest }: ChoiceProp
     isDisabled: settings.isDisabled || Boolean(rest.isDisabled),
   };
   const describedBy =
-    [rest['aria-describedby'], description ? descriptionId : undefined].filter(Boolean).join(' ') ||
-    undefined;
+    [rest['aria-describedby'], isEmptyNode(description) ? undefined : descriptionId]
+      .filter(Boolean)
+      .join(' ') || undefined;
   return renderElement(
     'div',
     {
@@ -85,13 +87,13 @@ export function Choice({ children, description, className, ...rest }: ChoiceProp
             size={settings.size}
             aria-describedby={describedBy}
           >
-            {children ? <span {...hooks.slot('label')}>{children}</span> : null}
+            {isEmptyNode(children) ? null : <span {...hooks.slot('label')}>{children}</span>}
           </Checkbox>
-          {description ? (
+          {isEmptyNode(description) ? null : (
             <span id={descriptionId} {...hooks.slot('description')}>
               {description}
             </span>
-          ) : null}
+          )}
         </>
       ),
     },
