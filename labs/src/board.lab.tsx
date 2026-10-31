@@ -81,6 +81,13 @@ const states = {
     columns: columns.slice(1, 2),
   },
   collapsed: { items: tasks, columns: columns.slice(0, 2) },
+  'collapsed long title': {
+    items: tasks,
+    columns: [
+      columns[0] as BoardColumn,
+      { id: 'doing', title: 'Waiting for parts from the hardware store', limit: 2 },
+    ],
+  },
 } as const;
 
 const columnMenu = [
@@ -231,7 +238,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Columns with cards and drag handles, empty cells, a column over its limit and a collapsed column."
+      description="Columns with cards and drag handles, empty cells, a column over its limit, and a collapsed column, whose long title is cut rather than making the header row taller."
     >
       <StateMatrix
         axes={{ state: Object.keys(states) as Array<keyof typeof states> }}
@@ -244,7 +251,7 @@ mountLab(
               getColumn={getColumn}
               getTextValue={getTextValue}
               renderCard={renderCard}
-              defaultCollapsedColumns={state === 'collapsed' ? ['doing'] : []}
+              defaultCollapsedColumns={state.startsWith('collapsed') ? ['doing'] : []}
               onMove={() => {}}
             />
           </div>
