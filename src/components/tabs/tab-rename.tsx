@@ -4,6 +4,7 @@
 // tab when the name is valid, and Escape keeps the old name.
 
 import {
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
@@ -22,6 +23,7 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import {
   findTabElement,
   isTabDisabled,
+  TabsSharedContext,
   type TabsShared,
   type TabListModel,
 } from './tab-actions.js';
@@ -36,6 +38,8 @@ export interface TabRename {
   editingKey: Key | null;
   /** Starts renaming an enabled tab. */
   start: (key: Key) => void;
+  /** Whether the tab `key` is in the list and enabled now, so it can be renamed. */
+  canRename: (key: Key) => boolean;
   /** Closes the field of the tab `key`. */
   end: (key: Key) => void;
   onRename: (key: Key, name: string) => void;
@@ -62,14 +66,26 @@ interface TabRenameOverlayProps {
   listRef: RefObject<HTMLElement | null>;
 }
 
+/**
+ * Whether the tab `key` is in the drawn list and enabled, through the `Tabs`, the list's
+ * `disabledKeys` or its own `isDisabled`.
+ */
+function isRenameable(shared: TabsShared, state: TabListModel | null, key: Key): boolean {
+  if (isTabDisabled(shared, key)) return false;
+  return (
+    !state || (state.collection.getItem(key) !== null && !state.selectionManager.isDisabled(key))
+  );
+}
+
 /** A list's renaming while the owner takes renames. */
 export function createTabRename({ shared, onRename, validateName }: TabRenameOptions) {
   if (!onRename) return null;
   const rename: TabRename = {
     editingKey: shared.editingKey,
+    canRename: (key) => isRenameable(shared, shared.stateRef.current, key),
     start(key) {
       const manager = shared.stateRef.current?.selectionManager;
-      if (isTabDisabled(shared, key) || manager?.isDisabled(key)) return;
+      if (!rename.canRename(key)) return;
       // Focus returns to the renamed tab, so the list must treat it as its focused tab.
       manager?.setFocusedKey(key);
       shared.setEditingKey(() => key);
@@ -113,6 +129,32 @@ function useTabBox(
 }
 
 /**
+ * A field closed by the list, for a tab that left or turned disabled, gives up focus it held to the
+ * list's tab as it is torn down; a field the reader closed has already placed focus.
+ */
+function useFocusReleaseOnClose({
+  inputRef,
+  isDone,
+  listRef,
+  tabKey,
+}: {
+  inputRef: RefObject<HTMLInputElement | null>;
+  isDone: RefObject<boolean>;
+  listRef: RefObject<HTMLElement | null>;
+  tabKey: Key;
+}) {
+  useLayoutEffect(() => {
+    const input = inputRef.current;
+    const list = listRef.current;
+    return () => {
+      if (isDone.current) return;
+      isDone.current = true;
+      if (input && input.ownerDocument.activeElement === input) focusListTab(list, tabKey);
+    };
+  }, [inputRef, isDone, listRef, tabKey]);
+}
+
+/**
  * The name field of a tab being renamed, laid over the tab outside the list, since a tab holds no
  * control of its own. It holds the tab's name selected. Typing checks the trimmed name with the
  * owner's `validate` and shows its message. Enter renames the tab with a valid, changed, non-blank
@@ -149,11 +191,14 @@ function TabRenameField({ tabKey, name, rename, listRef }: TabRenameFieldProps) 
     if (trimmed === '' || trimmed === name) return null;
     return rename.validate?.(tabKey, trimmed) || null;
   };
+  useFocusReleaseOnClose({ inputRef, isDone, listRef, tabKey });
   const finish = (isCommit: boolean, returnFocus: boolean) => {
     const value = inputRef.current?.value.trim() ?? '';
     isDone.current = true;
     rename.end(tabKey);
-    if (isCommit && value !== '' && value !== name && !check(value)) rename.onRename(tabKey, value);
+    // The tab may have left or turned disabled since the edit started.
+    const isRenamed = isCommit && rename.canRename(tabKey) && value !== '' && value !== name;
+    if (isRenamed && !check(value)) rename.onRename(tabKey, value);
     if (returnFocus) findTabElement(listRef.current, tabKey)?.focus();
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -194,11 +239,33 @@ function TabRenameField({ tabKey, name, rename, listRef }: TabRenameFieldProps) 
   );
 }
 
-/** The name field of the list's tab being renamed, if any. */
+/** Focuses the tab `key` when it can take focus, else the list's selected or first enabled tab. */
+function focusListTab(list: HTMLElement | null, key: Key) {
+  const tabs = list ? [...list.querySelectorAll<HTMLElement>('[role="tab"]')] : [];
+  const usable = tabs.filter((tab) => tab.getAttribute('aria-disabled') !== 'true');
+  const own = findTabElement(list, key);
+  const target =
+    usable.find((tab) => tab === own) ??
+    usable.find((tab) => tab.getAttribute('aria-selected') === 'true') ??
+    usable[0];
+  target?.focus({ preventScroll: true });
+}
+
+/**
+ * The name field of the list's tab being renamed, if any. An edit whose tab left the list or turned
+ * disabled, or whose list stopped taking renames, ends without renaming, so the tab coming back
+ * does not reopen it.
+ */
 export function TabRenameOverlay({ rename, state, listRef }: TabRenameOverlayProps) {
-  const key = rename?.editingKey ?? null;
+  const shared = useContext(TabsSharedContext);
+  const key = shared.editingKey;
+  const isOpen = key !== null && rename !== null && isRenameable(shared, state, key);
+  const { setEditingKey } = shared;
+  useLayoutEffect(() => {
+    if (key !== null && !isOpen) setEditingKey((current) => (current === key ? null : current));
+  }, [key, isOpen, setEditingKey]);
   const node = key === null ? null : state.collection.getItem(key);
-  if (!rename || key === null || !node) return null;
+  if (!isOpen || !rename || !node) return null;
   return (
     <TabRenameField
       key={toKeyIdentity(key)}
