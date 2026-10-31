@@ -1,7 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { useGetNow, useIsClockReadable, useTimeZone } from '../../core/clock.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {
@@ -37,8 +37,10 @@ export interface RelativeTimeProps extends BaseProps {
   dateStyle?: RelativeTimeStyle | undefined;
   /** The absolute time's style, for a date and time. Defaults to `short`. */
   timeStyle?: RelativeTimeStyle | undefined;
-  /** The clock the value is read against. Defaults to the current time. */
+  /** The clock the value is read against. Defaults to the provider's, else the current time. */
   getNow?: (() => Date) | undefined;
+  /** The IANA time zone days and times are read in. Defaults to the provider's, else the device's. */
+  timeZone?: string | undefined;
   /** Shows the absolute date in a tooltip on hover and keyboard focus. Defaults to true. */
   showTooltip?: boolean | undefined;
   /** Upper-cases the first letter, as at the start of a label. Defaults to true. */
@@ -48,22 +50,6 @@ export interface RelativeTimeProps extends BaseProps {
 }
 
 const hooks = createHooks('relative-time', ['tooltip']);
-
-const currentTime = () => new Date();
-
-const subscribeToNothing = () => () => {};
-
-/**
- * Whether the clock may be read: false on the server and while hydrating, so both render the same
- * text whenever and wherever they run, then true.
- */
-function useIsClockReadable(): boolean {
-  return useSyncExternalStore(
-    subscribeToNothing,
-    () => true,
-    () => false,
-  );
-}
 
 /** The placeholder of a missing or unreadable value, or nothing without one. */
 function EmptyTime({
@@ -89,7 +75,8 @@ function LiveTime({
   unitStyle,
   dateStyle,
   timeStyle,
-  getNow = currentTime,
+  getNow,
+  timeZone,
   showTooltip = true,
   capitalize = true,
   placeholder,
@@ -97,8 +84,10 @@ function LiveTime({
   ...rest
 }: RelativeTimeProps) {
   const { locale } = useLocale();
-  const now = getNow();
-  const options = { now, locale, fallbackAfterDays, precision, unitStyle, dateStyle, timeStyle };
+  const now = useGetNow(getNow)();
+  const zone = useTimeZone(timeZone);
+  const time = { precision, unitStyle, dateStyle, timeStyle, timeZone: zone };
+  const options = { ...time, now, locale, fallbackAfterDays };
   const text = value ? describeRelativeTime(value, options) : null;
   useClockTick(text?.nextChange ?? null, now.getTime());
   if (!text || !value) {
@@ -133,7 +122,7 @@ function StableTime({
   ...props
 }: RelativeTimeProps) {
   const { locale } = useLocale();
-  const { fallbackAfterDays, precision, unitStyle, getNow, showTooltip, ...rest } = props;
+  const { fallbackAfterDays, precision, unitStyle, getNow, timeZone, showTooltip, ...rest } = props;
   const text = value ? formatStableTime(value, locale, { dateStyle, timeStyle }) : null;
   if (!text || !value) {
     const empty = { ...rest, placeholder, capitalize, className };

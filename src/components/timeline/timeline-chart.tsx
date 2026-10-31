@@ -38,7 +38,8 @@ interface TimelineChartProps {
   rows: readonly VisibleRow[];
   layout: TimelineLayout;
   rowHeight: number;
-  today: string;
+  /** The day the today marker marks, or `null` for no marker. */
+  today: string | null;
   actions: TimelineChartActions;
 }
 
@@ -88,7 +89,7 @@ function TimelineGuides({
   const isRtl = useLocale().direction === 'rtl';
   const plan = timelineScales[scale];
   const majorStarts = new Set(resolveScaleCells(axis, plan.major).map((cell) => cell.start));
-  const isTodayShown = today >= axis.range.start && today <= axis.range.end;
+  const isTodayShown = today !== null && today >= axis.range.start && today <= axis.range.end;
   return (
     <>
       {resolveScaleCells(axis, plan.minor).map((cell) => (

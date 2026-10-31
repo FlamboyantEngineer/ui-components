@@ -4,6 +4,7 @@ import {
   createCalendarDayReader,
   formatRelativeDay,
   type CalendarDay,
+  type CalendarDayClock,
 } from '../../utils/calendar-day.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 
@@ -16,18 +17,20 @@ interface DayGroup<T> {
   items: T[];
 }
 
-interface DayGroupOptions {
-  /** The moment `Today` is read against. */
-  now: Date;
+interface DayGroupOptions extends CalendarDayClock {
   locale: string;
   /** The heading of entries whose time cannot be read. */
   unknownLabel: string;
 }
 
-/** `Today`, `Yesterday` and `Tomorrow` as Intl words them; the full date further away. */
+/**
+ * `Today`, `Yesterday` and `Tomorrow` as Intl words them; the full date further away, and for every
+ * day while today is unknown.
+ */
 function formatDayLabel(day: CalendarDay, locale: string): string {
-  if (Math.abs(day.offset) <= 1) return formatRelativeDay(day.offset, locale);
-  return getDateFormatter(locale, { dateStyle: 'full' }).format(day.start);
+  if (day.offset !== null && Math.abs(day.offset) <= 1)
+    return formatRelativeDay(day.offset, locale);
+  return getDateFormatter(locale, { dateStyle: 'full', timeZone: 'UTC' }).format(day.start);
 }
 
 /**
@@ -39,7 +42,7 @@ export function groupByDay<T extends { time: string }>(
   options: DayGroupOptions,
 ): DayGroup<T>[] {
   const groups: DayGroup<T>[] = [];
-  const readDay = createCalendarDayReader(options.now);
+  const readDay = createCalendarDayReader(options);
   for (const item of items) {
     const day = readDay(item.time);
     const key = day ? day.key : '';

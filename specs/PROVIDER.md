@@ -1,6 +1,6 @@
 # Provider
 
-`UiProvider` supplies the services components need from their host: glyphs, text, locale, link rendering and storage, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
+`UiProvider` supplies the services components need from their host: glyphs, text, locale, link rendering, storage and the clock, and tells the host which interactive overlays are open. The library never reaches host services any other way. Every component works without a provider.
 
 ## UIC-PROVIDER-1 - Defaults
 
@@ -141,6 +141,22 @@ The outermost `UiProvider` shall hold one overlay presence for every component b
 
 Implementation: `src/core/overlay-presence.tsx`, `src/core/provider.tsx`
 Verification: `src/core/overlay-presence.test.tsx`
+
+## UIC-PROVIDER-8 - Clock
+
+### UIC-PROVIDER-8.1 - One clock and time zone
+
+`UiProvider`'s `getNow` and `timeZone` props shall be the clock and the IANA time zone that every component reading now or today uses when it is not given its own: `RelativeTime`, `Attribution`, `RelativeDateField`, `ActivityFeed`, `NotificationList`, `CalendarView`, `Timeline` and `LineChart`. A nested provider without them uses its parent's. Without a provider the clock is the current time and the zone the browser's. `useNow(getNow?)`, `useToday(timeZone?, getNow?)` and `useTimeZone(timeZone?)` read the same sources for host components.
+
+Implementation: `src/core/clock.ts`, `src/core/provider.tsx`
+Verification: `src/core/clock.test.tsx`
+
+### UIC-PROVIDER-8.2 - Hydration-stable reads
+
+A server render and the hydration of its markup shall never read the clock or the device's time zone, so their output matches wherever and whenever each runs: `useNow` and `useToday` return `null` and `useTimeZone` returns the given or provided zone, else UTC. The first client render after hydration reads them, and a render on the client alone reads them from the start. Components show what does not depend on now until then: absolute dates instead of relative words, date headings instead of `Today`, no today marker, and an empty, busy calendar or timeline when nothing else places it.
+
+Implementation: `src/core/clock.ts`
+Verification: `src/core/clock.test.tsx`, `src/core/clock-hydration.test.tsx`
 
 ## Hooks
 

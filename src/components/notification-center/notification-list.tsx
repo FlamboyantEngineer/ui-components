@@ -5,6 +5,7 @@ import { useId, useRef, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps } from '../../core/props.js';
+import { useNow, useTimeZone } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -54,8 +55,6 @@ export interface NotificationListProps extends BaseProps, NotificationRowActions
 }
 
 type ListGroupProps = { group: DayGroup<NotificationItem>; actions: NotificationRowActions };
-
-const currentTime = () => new Date();
 
 function countUnread(items: readonly NotificationItem[]): number {
   return items.filter((item) => !item.isRead).length;
@@ -169,7 +168,7 @@ export function NotificationList({
   onReadChange,
   onDismiss,
   renderActions,
-  getNow = currentTime,
+  getNow,
   className,
   ...rest
 }: NotificationListProps) {
@@ -181,7 +180,8 @@ export function NotificationList({
   const shown = filter === 'unread' ? items.filter((item) => !item.isRead) : items;
   const groups = groupByDay(shown, {
     getDate: (item) => item.time,
-    now: getNow(),
+    now: useNow(getNow),
+    timeZone: useTimeZone(),
     locale,
     unknownLabel: strings.earlier,
   });

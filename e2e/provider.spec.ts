@@ -90,4 +90,24 @@ test.describe('Provider lab', () => {
     await expect(notes).toHaveText('2');
     await lab.expectAccessible();
   });
+
+  test('UIC-PROVIDER-8.1 reads today from the provider clock in its time zone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('provider');
+    const today = page.locator('[data-lab-output="today"]');
+    const harvest = page.locator('[data-lab-field="harvest"]');
+    const log = page.getByRole('list', { name: 'Garden log' });
+    await expect(today).toHaveText('2026-10-31');
+    await expect(harvest).toHaveAttribute('data-relation', 'future');
+    await expect(harvest.getByRole('button', { name: /Tomorrow/ })).toBeVisible();
+    await expect(log.getByRole('heading', { name: 'Today' })).toBeVisible();
+    await page.getByRole('radio', { name: 'Asia/Tokyo' }).click();
+    await expect(today).toHaveText('2026-11-01');
+    await expect(harvest).toHaveAttribute('data-relation', 'present');
+    await expect(harvest.getByRole('button', { name: /Today/ })).toBeVisible();
+    await expect(log.getByRole('heading', { name: 'Yesterday' })).toBeVisible();
+    await lab.expectAccessible();
+  });
 });

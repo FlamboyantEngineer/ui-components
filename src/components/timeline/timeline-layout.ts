@@ -128,22 +128,21 @@ function applyDraft(items: readonly TimelineItem[], draft: TimelineItemChange | 
 /**
  * The axis over the timeline's range (resolved from the items as given, so a drag never shifts it)
  * and the layout of its visible rows, with a drag in progress shown in place of the item's days.
+ * `null` while the range cannot be resolved (`resolveTimelineRange`).
  */
 export function layoutTimeline(
   options: Omit<TimelineLayoutOptions, 'axis'> & {
     draft: TimelineItemChange | null;
     range: TimelineRange | undefined;
     scale: TimelineScale;
-    today: string;
+    today: string | null;
     locale: string;
   },
-): { axis: TimelineAxis; layout: TimelineLayout } {
+): { axis: TimelineAxis; layout: TimelineLayout } | null {
   const { items, draft, range, scale, today, locale } = options;
-  const axis = createTimelineAxis(
-    resolveTimelineRange({ range, items, scale, today, locale }),
-    scale,
-    locale,
-  );
+  const resolved = resolveTimelineRange({ range, items, scale, today, locale });
+  if (!resolved) return null;
+  const axis = createTimelineAxis(resolved, scale, locale);
   return {
     axis,
     layout: resolveTimelineLayout({ ...options, axis, items: applyDraft(items, draft) }),
