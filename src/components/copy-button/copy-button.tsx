@@ -68,10 +68,11 @@ export function CopyButton({
         variant={variant}
         size={size}
         isDisabled={isDisabled}
-        onPress={() => {
-          // Each press starts a write; the clipboard hook owns which result stays visible.
+        onPress={(event) => {
+          // Each press starts a write, in the button's own window; the clipboard hook owns which
+          // result stays visible.
           const settle = startCopy();
-          void copy(value).then((copied) => {
+          void copy(value, event.target).then((copied) => {
             settle();
             onCopy?.(copied);
           });

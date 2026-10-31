@@ -73,7 +73,7 @@ function CopyCommand({ state }: { state: MessageCommands }) {
         label={strings.copy}
         size="sm"
         className={actionHooks.slotClass('copy')}
-        onPress={state.copy}
+        onPress={(event) => state.copy(event.target)}
       />
       <VisuallyHidden elementType="span" role="status" className={actionHooks.slotClass('status')}>
         {announcements[state.copyStatus]}

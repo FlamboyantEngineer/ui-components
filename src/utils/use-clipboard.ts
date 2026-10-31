@@ -7,14 +7,17 @@ import { DEFAULT_COPY_TIMEOUT } from './copy-timeout.js';
 /** The outcome of the last copy, until `timeout` returns it to `idle`. */
 export type CopyStatus = 'idle' | 'copied' | 'failed';
 
-export interface ClipboardOptions extends Omit<CopyOptions, 'signal'> {
+export interface ClipboardOptions extends Omit<CopyOptions, 'signal' | 'owner'> {
   /** How long `copied` or `failed` lasts, in milliseconds. Defaults to 2000. */
   timeout?: number | undefined;
 }
 
 export interface ClipboardState {
-  /** Copies `text` with `copyText` and resolves whether it reached the clipboard. */
-  copy: (text: string) => Promise<boolean>;
+  /**
+   * Copies `text` with `copyText` and resolves whether it reached the clipboard. `owner`, such as the
+   * pressed element, picks the window and document that take the copy.
+   */
+  copy: (text: string, owner?: Node | null) => Promise<boolean>;
   status: CopyStatus;
   /** Returns to `idle` at once. */
   reset: () => void;
@@ -55,11 +58,16 @@ export function useClipboard({
   }, [clearTimer]);
 
   const copy = useCallback(
-    async (text: string) => {
+    async (text: string, owner?: Node | null) => {
       request.current?.abort();
       const current = new AbortController();
       request.current = current;
-      const copied = await copyText(text, { clipboard, fallback, signal: current.signal });
+      const copied = await copyText(text, {
+        owner,
+        clipboard,
+        fallback,
+        signal: current.signal,
+      });
       if (current.signal.aborted) return copied;
       clearTimer();
       setStatus(copied ? 'copied' : 'failed');

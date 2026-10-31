@@ -76,7 +76,8 @@ export interface MessageCommands {
   copyStatus: CopyStatus;
   /** Counts finished copies, so a repeated outcome is announced again. */
   copies: number;
-  copy: () => void;
+  /** Copies the message in the window `owner`, the pressed control, belongs to. */
+  copy: (owner?: Node | null) => void;
   /** Chooses a rating from a control, or clears it when it is the rating shown. */
   rate: (rating: ChatFeedbackRating, anchor: RefObject<Element | null>) => void;
   /** Reports the detailed rating with the reader's details, or none when they skipped. */
@@ -139,9 +140,9 @@ export function splitCommands<T extends ChatMessageCommandProps>(props: T) {
 function useCopyCommand({ copyText, onCopy }: ChatMessageCommandProps) {
   const clipboard = useClipboard();
   const [copies, startCopy] = useLatestSettledCount();
-  const copy = () => {
+  const copy = (owner?: Node | null) => {
     const settle = startCopy();
-    void clipboard.copy(copyText ?? '').then((isCopied) => {
+    void clipboard.copy(copyText ?? '', owner).then((isCopied) => {
       settle();
       if (isCopied) onCopy?.();
     });
