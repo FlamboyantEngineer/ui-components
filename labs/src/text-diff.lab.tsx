@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/comment-thread-reply.js';
+import { Button } from '../../src/components/button/button.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
@@ -8,6 +9,7 @@ import {
   type TextDiffLayout,
   type TextDiffLine,
 } from '../../src/components/text-diff/text-diff.js';
+import type { ScrollAnchor } from '../../src/utils/scroll-offset-map.js';
 import { useSyncedScroll } from '../../src/utils/use-synced-scroll.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -184,6 +186,57 @@ function SyncedLists() {
   );
 }
 
+/** Each list item's distance from the top of its list, keyed by its town. */
+function readTownAnchors(container: HTMLElement): ScrollAnchor[] {
+  const origin = container.getBoundingClientRect().top - container.scrollTop;
+  return Array.from(container.querySelectorAll('li[data-town]'), (item) => ({
+    key: item.getAttribute('data-town') ?? '',
+    offset: item.getBoundingClientRect().top - origin,
+  }));
+}
+
+/**
+ * Two lists of the same towns that scroll together through their matched items; notes added under
+ * some towns of one list change its anchors, which the hook reads again.
+ */
+function AnchoredLists() {
+  const [first, setFirst] = useState<HTMLDivElement | null>(null);
+  const [second, setSecond] = useState<HTMLDivElement | null>(null);
+  const [hasNotes, setHasNotes] = useState(false);
+  useSyncedScroll([first, second], { getAnchors: readTownAnchors });
+  return (
+    <div data-lab-demo="anchored">
+      <Button size="sm" onPress={() => setHasNotes((current) => !current)}>
+        {hasNotes ? 'Remove notes' : 'Add notes'}
+      </Button>
+      <div style={{ display: 'flex', gap: 16 }}>
+        {[
+          { name: 'Towns', ref: setFirst, notes: false },
+          { name: 'Towns with notes', ref: setSecond, notes: hasNotes },
+        ].map(({ name, ref, notes }) => (
+          <div
+            key={name}
+            style={{ display: 'flex', flexDirection: 'column', width: 180, height: 160 }}
+          >
+            <ScrollRegion ref={ref} role="group" aria-label={name} tabIndex={0}>
+              <ul>
+                {shortList.map((town, index) => (
+                  <li key={town} data-town={town}>
+                    {town}
+                    {notes && index % 3 === 0 ? (
+                      <p>A note about {town}, long enough to wrap over lines.</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </ScrollRegion>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -227,9 +280,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Synced scroll"
-      description="useSyncedScroll on its own: two lists of different lengths keep the same fraction of their scroll range. Scroll listeners and pending echo suppression survive re-renders; matched anchors are read once per pane."
+      description="useSyncedScroll on its own: two lists of different lengths keep the same fraction of their scroll range. Scroll listeners and pending echo suppression survive re-renders."
     >
       <SyncedLists />
+    </LabSection>
+    <LabSection
+      title="Synced scroll through anchors"
+      description="useSyncedScroll with getAnchors: two lists of the same towns stay level at the town they share. Anchors are read once and again only after a list changes, so adding notes realigns the lists."
+    >
+      <AnchoredLists />
     </LabSection>
   </>,
 );
