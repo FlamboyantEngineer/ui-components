@@ -117,6 +117,15 @@ function Adornments() {
         startAdornment={<Glyph icon={InfoGlyph} />}
         endAdornment="kg"
       />
+      <TextField
+        label="Log"
+        multiline
+        minRows={1}
+        maxRows={6}
+        defaultValue={'First line\nSecond line\nThird line\nFourth line\nFifth line'}
+        endAdornment="lines"
+        data-lab-field="adorned-log"
+      />
       <LabOutput name="Copied">{copied}</LabOutput>
     </>
   );

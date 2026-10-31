@@ -137,6 +137,19 @@
   height: calc(var(--ref-field-height) - 4px);
 }
 
+/* A multiline control's frame grows with its text area; adornments stay at the top. */
+.ui-text-field[data-multiline] .ui-text-field__group {
+  align-items: flex-start;
+  height: auto;
+  min-height: var(--ref-field-height);
+  padding-block: 3px;
+}
+
+.ui-text-field[data-multiline] .ui-text-field__group .ui-text-field__input {
+  align-self: stretch;
+  height: auto;
+}
+
 /* A growing text area takes its height from its text. */
 .ui-text-field[data-autosize] .ui-text-field__input {
   min-height: 0;
