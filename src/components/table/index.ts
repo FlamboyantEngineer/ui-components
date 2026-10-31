@@ -25,6 +25,7 @@ export type {
   TableColumnPin,
   TableMove,
   TableRow,
+  TableValueColumn,
 } from './table-rows.js';
 export { sortTableRows } from './table-sort.js';
 export type { TableRowsSort, TableSort } from './table-sort.js';

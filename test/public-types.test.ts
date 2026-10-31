@@ -63,6 +63,52 @@ describe('public declarations', () => {
     expect(check(files, 'leaky', 'clean').status).toBe(1);
   });
 
+  it('UIC-PRIMITIVES-2.3 fails on a public prop whose type no entry point exports', () => {
+    const result = check({
+      'components/probe/index.d.ts': "export type { ProbeProps } from './probe.js';\n",
+      'components/probe/probe.d.ts': [
+        "type ProbeOverflow = 'wrap' | 'menu';",
+        'export interface ProbeProps { overflow?: ProbeOverflow; onPick?: (mode: ProbeOverflow) => void }',
+        '',
+      ].join('\n'),
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('ProbeProps names unexported ProbeOverflow');
+  });
+
+  it('UIC-PRIMITIVES-2.3 passes exported prop types, unexported bases with exported members and generic instantiations', () => {
+    const result = check({
+      'index.d.ts': "export * from './components/probe/index.js';\n",
+      'components/probe/index.d.ts':
+        "export type { ProbeLoader, ProbeOverflow, ProbeProps } from './probe.js';\n",
+      'components/probe/probe.d.ts': [
+        "export type ProbeOverflow = 'wrap' | 'menu';",
+        'interface ProbeBase { overflow?: ProbeOverflow }',
+        'export interface ProbeProps extends ProbeBase { label: string }',
+        'interface Page<T> { items: T[] }',
+        'type Loader<T> = (query: string) => Promise<Page<T>>;',
+        'export type ProbeLoader = Loader<string>;',
+        '',
+      ].join('\n'),
+    });
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+  });
+
+  it('UIC-PRIMITIVES-2.3 checks the members a public type inherits from an unexported base', () => {
+    const result = check({
+      'components/probe/index.d.ts': "export type { ProbeProps } from './probe.js';\n",
+      'components/probe/probe.d.ts': [
+        'interface ProbeHandlers { onSave?: (draft: ProbeDraft) => void }',
+        'interface ProbeDraft { text: string }',
+        'export interface ProbeProps extends ProbeHandlers { label: string }',
+        '',
+      ].join('\n'),
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('ProbeProps names unexported ProbeDraft');
+  });
+
   it('UIC-PRIMITIVES-2.2 shapes the shared vocabulary so the building blocks accept it unchanged', () => {
     expectTypeOf<Key>().toEqualTypeOf<PrimitiveKey>();
     expectTypeOf<Selection>().toEqualTypeOf<PrimitiveSelection>();

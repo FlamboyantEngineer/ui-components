@@ -4,17 +4,15 @@ import {
   getCellValue,
   getTextCollator,
   type TableCellValue,
-  type TableColumn,
   type TableRow,
+  type TableValueColumn,
 } from './table-rows.js';
 
 /** One sort, a list of sorts applied in priority order, or none. */
 export type TableSort = SortDescriptor | readonly SortDescriptor[] | null | undefined;
 
-type ValueColumn<T> = Pick<TableColumn<T>, 'id' | 'getValue'>;
-
 interface SortKey<T> {
-  column: ValueColumn<T>;
+  column: TableValueColumn<T>;
   sign: 1 | -1;
 }
 
@@ -24,7 +22,10 @@ function nextDirection(existing: SortDescriptor | undefined): SortDirection | nu
   return existing.direction === 'ascending' ? 'descending' : null;
 }
 
-function toSortKeys<T>(columns: readonly ValueColumn<T>[], sort: TableSort): readonly SortKey<T>[] {
+function toSortKeys<T>(
+  columns: readonly TableValueColumn<T>[],
+  sort: TableSort,
+): readonly SortKey<T>[] {
   return toSortDescriptors(sort).flatMap((descriptor) => {
     const column = columns.find((candidate) => candidate.id === String(descriptor.column));
     return column ? [{ column, sign: descriptor.direction === 'descending' ? -1 : 1 }] : [];
@@ -43,7 +44,7 @@ export function toSortDescriptors(sort: TableSort): readonly SortDescriptor[] {
  * Each value is read once per row.
  */
 export function createRowComparator<T extends TableRow>(
-  columns: readonly ValueColumn<T>[],
+  columns: readonly TableValueColumn<T>[],
   sort: TableSort,
   locale: string,
 ): ((left: T, right: T) => number) | null {
@@ -73,7 +74,7 @@ export function createRowComparator<T extends TableRow>(
 /** How `sortTableRows` orders rows. */
 export interface TableRowsSort<T> {
   /** The columns the sort may name, read with their values. */
-  columns: readonly ValueColumn<T>[];
+  columns: readonly TableValueColumn<T>[];
   /** One descriptor, several in priority order, or none. */
   sort: TableSort;
   /** The BCP 47 locale whose collation orders text, such as the provider's. */

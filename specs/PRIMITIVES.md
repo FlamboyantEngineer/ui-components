@@ -47,3 +47,10 @@ The library shall declare the vocabulary its components share in `src/core/`: co
 
 Implementation: `src/core/props.ts`, `src/core/events.ts`, `src/utils/render-element.ts`
 Verification: `test/public-types.test.ts`
+
+### UIC-PRIMITIVES-2.3 - Every type a public prop uses is exported
+
+Every library type that an exported type names for a member, a parameter or a return type (an option union, a handler, a render state, a page of results) shall itself be exported from an entry point, so a host can name the type of any value it passes or receives. `npm run check:public-types` loads the built entry points (the root, `core`, `testing` and every component `index.d.ts`) and fails on each exported type that names an unexported library type there, including through the members it inherits from an unexported base. A type that only shapes another, such as an unexported base interface or the generic an exported alias instantiates (`ComboboxLoader = RemoteLoader<ComboboxItem>`), need not be exported itself.
+
+Implementation: `scripts/check-public-types.mjs`, `scripts/lib/unexported-types.mjs`
+Verification: `test/public-types.test.ts`
