@@ -4,7 +4,6 @@ import type { JSX, KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { Toolbar, Tooltip, TooltipTrigger } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
-import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
@@ -17,7 +16,6 @@ import {
   MenuTrigger,
   type MenuEntry,
   type MenuItemEntry,
-  type MenuProps,
   type MenuSize,
 } from '../menu/menu.js';
 import { toActionContent, type ActionRowAction } from './action-verbs.js';
@@ -116,12 +114,23 @@ function actionKey(action: ActionRowAction, index: number): string {
   return action.id ?? `${action.verb}-${index}`;
 }
 
-/** Whether a menu's entries hold an item with `key`, in sections and submenus too. */
-function hasMenuKey(entries: readonly MenuEntry[], key: Key): boolean {
-  return entries.some((entry) => {
-    if (entry.type === 'separator') return false;
-    if (entry.id === key && entry.type !== 'section') return true;
-    return entry.items ? hasMenuKey(entry.items, key) : false;
+/**
+ * An action's menu entries with each item bound to that action: choosing one calls the item's own
+ * `onAction` and the action's `onAction` with the item's `id`, in sections and submenus too. Ids
+ * are unique only within one action's menu, so the overflow menu cannot find the owner by id.
+ */
+function bindMenuEntries(entries: readonly MenuEntry[], action: ActionRowAction): MenuEntry[] {
+  return entries.map((entry) => {
+    if (entry.type === 'separator') return entry;
+    if (entry.type === 'section') return { ...entry, items: bindMenuEntries(entry.items, action) };
+    if (entry.items?.length) return { ...entry, items: bindMenuEntries(entry.items, action) };
+    return {
+      ...entry,
+      onAction: () => {
+        entry.onAction?.();
+        action.onAction?.(entry.id);
+      },
+    };
   });
 }
 
@@ -136,7 +145,7 @@ function toMenuEntry(action: ActionRowAction, key: string, strings: UiStrings): 
     isPending: action.isPending,
   };
   return action.items?.length
-    ? { ...entry, items: action.items }
+    ? { ...entry, items: bindMenuEntries(action.items, action) }
     : { ...entry, onPress: action.onPress as MenuItemEntry['onPress'] };
 }
 
@@ -148,10 +157,6 @@ interface KeyedAction {
 /** The menu of the actions that do not fit, at the end of the row. */
 function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: ButtonSize }) {
   const strings = useUiStrings();
-  const onAction: NonNullable<MenuProps['onAction']> = (key) => {
-    const owner = keyed.find(({ action }) => action.items && hasMenuKey(action.items, key));
-    owner?.action.onAction?.(key);
-  };
   return (
     <div {...hooks.slot('overflow')}>
       <DropdownMenu
@@ -160,7 +165,6 @@ function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: Bu
         placement="bottom end"
         label={strings.moreItems(keyed.length)}
         items={keyed.map(({ action, key }) => toMenuEntry(action, key, strings))}
-        onAction={onAction}
       />
     </div>
   );
