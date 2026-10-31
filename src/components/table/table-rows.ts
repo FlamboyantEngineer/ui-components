@@ -95,7 +95,8 @@ export interface TableMove {
   position: 'before' | 'after';
 }
 
-type ValueColumn<T> = Pick<TableColumn<T>, 'id' | 'getValue'>;
+/** The parts of a column that sorting and text search read: its id and its value. */
+export type TableValueColumn<T> = Pick<TableColumn<T>, 'id' | 'getValue'>;
 
 const textOrder: Intl.CollatorOptions = { numeric: true, sensitivity: 'base' };
 
@@ -120,7 +121,10 @@ function toSortKey(value: TableCellValue): string | number {
 }
 
 /** The value `column` reads from `row`. */
-export function getCellValue<T extends TableRow>(row: T, column: ValueColumn<T>): TableCellValue {
+export function getCellValue<T extends TableRow>(
+  row: T,
+  column: TableValueColumn<T>,
+): TableCellValue {
   if (column.getValue) return column.getValue(row);
   const value = (row as unknown as Record<string, unknown>)[column.id];
   return isCellValue(value) ? value : undefined;
@@ -147,7 +151,10 @@ export function compareCellValues(
 }
 
 /** The text of a row's string and number cells in `columns`, or its id when there is none. */
-export function getRowText<T extends TableRow>(row: T, columns: readonly ValueColumn<T>[]): string {
+export function getRowText<T extends TableRow>(
+  row: T,
+  columns: readonly TableValueColumn<T>[],
+): string {
   const parts = columns.map((column) => getCellValue(row, column)).filter(isTextValue);
   return parts.length > 0 ? parts.join(' ') : String(row.id);
 }

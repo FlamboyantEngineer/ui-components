@@ -14,11 +14,26 @@ export type {
   PdfVisiblePosition,
 } from './pdf-viewer.js';
 export type {
+  PdfAnnotationLayer,
+  PdfAnnotationLayerOptions,
+  PdfAnnotationLayerParams,
+  PdfDocument,
   PdfDocumentOptions,
   PdfDocumentParams,
   PdfEngine,
+  PdfLinkService,
+  PdfLoadingTask,
+  PdfOutlineNode,
+  PdfPage,
+  PdfRef,
+  PdfRenderParams,
+  PdfRenderTask,
   PdfSource,
   PdfTextContent,
+  PdfTextItem,
+  PdfTextLayer,
+  PdfTextLayerOptions,
+  PdfTouchManagerOptions,
   PdfViewport,
 } from './pdf-engine.js';
 export type { PdfZoom } from './pdf-zoom.js';

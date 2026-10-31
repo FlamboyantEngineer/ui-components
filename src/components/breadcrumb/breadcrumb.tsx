@@ -31,7 +31,7 @@ import {
 export type BreadcrumbSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** `truncate` lets labels ellipsize; `menu` collapses middle crumbs into a menu after the first. */
-type BreadcrumbOverflow = 'truncate' | 'menu';
+export type BreadcrumbOverflow = 'truncate' | 'menu';
 
 export interface BreadcrumbItem {
   /** Passed to `onAction`. Defaults to the item's index. */

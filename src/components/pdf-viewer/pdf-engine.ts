@@ -30,7 +30,7 @@ export interface PdfViewport {
   scale: number;
 }
 
-interface PdfTextItem {
+export interface PdfTextItem {
   str: string;
   hasEOL: boolean;
 }
@@ -144,7 +144,7 @@ export interface PdfLinkService {
   executeSetOCGState(action: unknown): void;
 }
 
-interface PdfAnnotationLayerOptions<
+export interface PdfAnnotationLayerOptions<
   Viewport extends PdfViewport = PdfViewport,
   Content extends PdfTextContent = PdfTextContent,
 > {

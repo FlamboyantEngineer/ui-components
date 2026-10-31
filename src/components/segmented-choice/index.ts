@@ -1,4 +1,5 @@
 export { SegmentedChoice } from './segmented-choice.js';
+export type { PendingChangeHandler } from './pending-change.js';
 export type {
   SegmentedChoiceOption,
   SegmentedChoiceProps,
