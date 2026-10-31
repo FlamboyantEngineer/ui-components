@@ -145,7 +145,7 @@ const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 
 /** What the header row shows, from the grid and the table's own props. */
 function createHeaderModel<T extends TableRow>(
   grid: TableGrid<T>,
-  options: Pick<TableProps<T>, 'rows' | 'columnGroups'>,
+  options: Pick<TableProps<T>, 'rows' | 'getChildRows' | 'columnGroups'>,
 ): TableHeaderModel<T> {
   const { view } = grid;
   const values = view.filter.columns ?? {};
@@ -165,6 +165,7 @@ function createHeaderModel<T extends TableRow>(
           label={getColumnText(column)}
           value={values[column.id]}
           rows={options.rows}
+          getChildRows={options.getChildRows}
           onChange={(value) => view.onFilterChange(setColumnFilter(view.filter, column.id, value))}
         />
       ) : null,
@@ -176,7 +177,7 @@ function TableGridElement<T extends TableRow>({
   options,
 }: {
   grid: TableGrid<T>;
-  options: Pick<TableProps<T>, 'rows' | 'columnGroups'>;
+  options: Pick<TableProps<T>, 'rows' | 'getChildRows' | 'columnGroups'>;
 }) {
   const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
   const header = createHeaderModel(grid, options);
