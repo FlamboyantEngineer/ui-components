@@ -72,4 +72,21 @@ test.describe('Empty State lab', () => {
     await expect(loading.locator('.ui-empty-state__spinner')).toHaveCount(1);
     await lab.expectAccessible();
   });
+
+  test('UIC-EMPTY-STATE-1.4 stills the loading spinner under reduced motion, live', async ({
+    page,
+    lab,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await lab.open('empty-state');
+    const spinner = page.locator('.ui-empty-state__spinner').first();
+    await expect(spinner).toBeVisible();
+    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
+      'none',
+    );
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
+      'ref-spin',
+    );
+  });
 });

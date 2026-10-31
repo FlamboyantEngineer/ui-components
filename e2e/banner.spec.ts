@@ -125,4 +125,25 @@ test.describe('Banner lab', () => {
     await page.keyboard.press('Enter');
     await expect(banner).toHaveCount(0);
   });
+
+  test('UIC-BANNER-3.1 stills the pending spinner under reduced motion, live', async ({
+    page,
+    lab,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await lab.open('banner');
+    const spinner = page.locator('.ui-banner__spinner').first();
+    await expect(spinner).toBeVisible();
+    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
+      'none',
+    );
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
+      'ref-spin',
+    );
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect(await spinner.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
+      'none',
+    );
+  });
 });
