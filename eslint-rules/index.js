@@ -235,6 +235,7 @@ function readPublicNames(indexFile) {
   if (names) return names;
   names = new Map();
   for (const [, , list, source] of readFileSync(indexFile, 'utf8').matchAll(INDEX_REEXPORT)) {
+    if (list === undefined) continue;
     const own = names.get(source) ?? new Set();
     const exported =
       list === '*'
