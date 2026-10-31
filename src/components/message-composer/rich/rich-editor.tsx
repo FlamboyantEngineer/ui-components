@@ -7,6 +7,7 @@ import { useCallback, useMemo, type RefObject } from 'react';
 import { useLatest } from '../../../utils/use-latest.js';
 import {
   decoratePlaceholder,
+  domSelectionEvents,
   useEditable,
   useSyncedEditorState,
 } from '../../rich-text-editor/rich-text-editor.js';
@@ -110,6 +111,7 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
         decorations={decorations}
         handlePaste={paste.handlePaste}
         handleDrop={paste.handleDrop}
+        handleDOMEvents={domSelectionEvents}
       >
         <RichComposerContent {...editor} />
       </ProseMirror>

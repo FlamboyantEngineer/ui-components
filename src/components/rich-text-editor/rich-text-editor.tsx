@@ -20,6 +20,7 @@ import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schem
 
 // The engine glue the rich composer shares (`message-composer/rich`), kept out of the entry point.
 export { decoratePlaceholder } from './editor-state.js';
+export { domSelectionEvents } from './dom-selection-sync.js';
 export { useEditable, useSyncedEditorState } from './editor-surface.js';
 
 export interface RichTextEditorProps extends FieldInputProps<RichTextDocument> {

@@ -8,6 +8,7 @@ import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
 import { decoratePlaceholder } from './editor-state.js';
+import { domSelectionEvents } from './dom-selection-sync.js';
 import type { RichTextDocument } from './rich-text-document.js';
 import {
   RichTextEditorContext,
@@ -131,6 +132,7 @@ export function EditorSurface(props: EditorSurfaceProps) {
       editable={editable}
       decorations={decorations}
       nodeViewComponents={nodeViewComponents}
+      handleDOMEvents={domSelectionEvents}
     >
       <RichTextEditorContext value={context}>
         <div {...hooks.slot('frame')}>
