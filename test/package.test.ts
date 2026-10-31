@@ -167,6 +167,42 @@ describe('hosted CI', () => {
   });
 });
 
+describe('hosted lab browser suite', () => {
+  const workflow = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf8');
+  const job = (name: string) => {
+    const start = workflow.indexOf(`\n  ${name}:\n`);
+    const end = workflow.slice(start + 1).search(/\n {2}[a-z-]+:\n/);
+    return end === -1 ? workflow.slice(start) : workflow.slice(start, start + 1 + end);
+  };
+
+  it('UIC-LABS-1.7 builds the labs once and hands the build to the browser jobs', () => {
+    expect(job('labs-build')).toContain('run: npm run build:labs');
+    expect(job('labs-build')).toContain('actions/upload-artifact');
+    expect(job('labs')).toContain('needs: labs-build');
+    expect(job('labs')).toContain('actions/download-artifact');
+    expect(job('labs')).not.toContain('build:labs');
+  });
+
+  it("UIC-LABS-1.7 installs only each job's browser, from a cache keyed by the Playwright version", () => {
+    const labs = job('labs');
+    expect(labs).toContain('path: ~/.cache/ms-playwright');
+    expect(labs).toContain('${{ steps.playwright.outputs.version }}-${{ matrix.browser }}');
+    expect(labs).toContain('npx playwright install --with-deps ${{ matrix.browser }}');
+    expect(labs).toContain('--project=chromium --shard=1/3');
+    expect(labs).toContain('--project=webkit --project=mobile-webkit');
+  });
+
+  it('UIC-LABS-1.7 uploads the traces of a failing browser job', () => {
+    const labs = job('labs');
+    expect(labs).toMatch(
+      /if: failure\(\)\n\s+uses: actions\/upload-artifact@v\d+\n(?:.*\n)*?\s+path: test-results\//,
+    );
+    expect(readFileSync(join(process.cwd(), 'playwright.config.ts'), 'utf8')).toContain(
+      "trace: process.env.CI ? 'retain-on-failure' : 'off'",
+    );
+  });
+});
+
 describe('optional rich-text peers', () => {
   const RICH_TEXT_PEER = /^(prosemirror-|@handlewithcare\/react-prosemirror|react-reconciler)/;
   const componentsDir = join(process.cwd(), 'src/components');
