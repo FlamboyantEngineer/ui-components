@@ -20,7 +20,9 @@ export function TaskItemView({
   ...props
 }: NodeViewComponentProps) {
   const strings = useUiStrings();
-  const isEditable = useContext(RichTextEditorContext)?.isEditable ?? false;
+  const editor = useContext(RichTextEditorContext);
+  const isEditable = editor?.isEditable ?? false;
+  const isDisabled = editor?.isDisabled ?? false;
   const box = useRef<HTMLSpanElement>(null);
   const isChecked = nodeProps.node.attrs.checked === true;
   const setChecked = useEditorEventCallback((view, checked: boolean) => {
@@ -41,7 +43,8 @@ export function TaskItemView({
           size="sm"
           aria-label={strings.taskDone}
           isSelected={isChecked}
-          isReadOnly={!isEditable}
+          isDisabled={isDisabled}
+          isReadOnly={!isEditable && !isDisabled}
           onChange={setChecked}
         />
       </span>

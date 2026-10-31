@@ -114,10 +114,11 @@ export function EditorSurface(props: EditorSurfaceProps) {
   const { state, dispatchTransaction } = props.editor;
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [contentAttributes, setContentAttributes] = useState<ContentAttributes>({});
-  const isEditable = !control.readOnly && !control.disabled;
+  const isDisabled = Boolean(control.disabled);
+  const isEditable = !control.readOnly && !isDisabled;
   const context = useMemo<RichTextEditorContextValue>(
-    () => ({ isEditable, surfaceRef, setContentAttributes }),
-    [isEditable],
+    () => ({ isEditable, isDisabled, surfaceRef, setContentAttributes }),
+    [isEditable, isDisabled],
   );
   const editable = useEditable(isEditable);
   const placeholderClass = hooks.slotClass('placeholder');
