@@ -91,11 +91,11 @@ test.describe('App Frame lab', () => {
         (buttons) => new Set(buttons.map((button) => button.getBoundingClientRect().y)).size,
       );
     expect(rows).toBe(1);
-    const scroller = narrow.locator('.ui-toolbar-scroller');
+    const scroller = narrow.locator('.ui-app-frame-band__tools');
     await expect(scroller).toHaveAttribute('data-overflow-end', 'true');
     await narrow.getByRole('button', { name: 'Scroll forward' }).click();
     await expect(scroller).toHaveAttribute('data-overflow-start', 'true');
-    const wide = page.locator('[data-lab-cell="width=wide"] .ui-toolbar-scroller');
+    const wide = page.locator('[data-lab-cell="width=wide"] .ui-app-frame-band__tools');
     await expect(wide).not.toHaveAttribute('data-overflow-end');
     await toolbar.getByRole('button', { name: 'Undo' }).focus();
     await page.keyboard.press('ArrowRight');

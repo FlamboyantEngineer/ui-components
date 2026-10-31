@@ -88,7 +88,8 @@ describe('AppFrameBand', () => {
     expect(tools).toHaveAttribute('data-justify', 'start');
     expect(tools).toHaveAttribute('data-wrap', 'nowrap');
     const toolbar = screen.getByRole('toolbar', { name: 'Tools' });
-    expect(toolbar).toHaveClass('ui-toolbar-scroller__strip');
+    expect(toolbar).toHaveClass('ui-toolbar-row__strip');
+    expect(toolbar.parentElement).toBe(tools);
     await user.click(screen.getByRole('button', { name: 'Bold' }));
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('button', { name: 'Italic' })).toHaveFocus();

@@ -100,8 +100,11 @@ test.describe('Overflow List lab', () => {
     await lab.open('overflow-list');
     const demo = page.locator('[data-lab-demo="toolbar"]');
     const toolbar = demo.getByRole('toolbar', { name: 'Text tools' });
-    await expect(toolbar).toHaveClass(/ui-overflow-list/);
-    await expect(toolbar).toHaveAttribute('data-overflowing', 'true');
+    const list = demo.locator('.ui-overflow-list');
+    await expect(list).toHaveAttribute('data-overflowing', 'true');
+    await expect(list.getByRole('toolbar', { name: 'Text tools' })).toHaveClass(
+      /ui-toolbar-row__strip/,
+    );
     const visible = await toolbar.locator('.ui-overflow-list__item').allTextContents();
     expect(visible.length).toBeGreaterThan(1);
 

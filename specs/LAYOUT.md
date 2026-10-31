@@ -71,10 +71,10 @@ Verification: `src/components/layout/grid-item.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-2.7 - Dividers
 
-`divided` on `Stack` and `Cluster` shall publish `data-divided` and render a decorative divider between each pair of rendered children, hidden from assistive technology, in the `ui-stack__divider` or `ui-cluster__divider` slot. The divider is a valid child of the element: an `<li>` in `ul` and `ol`, a `<span>` in `a`, `label`, `p` and `span`, a `<div>` elsewhere. Children that are `null`, `undefined`, booleans or empty strings get no divider; a component child gets one even when it renders nothing, since components are not rendered to find out. Keyed children keep their identity.
+`divided` on `Stack` and `Cluster` shall publish `data-divided` and render a decorative divider between each pair of rendered children, hidden from assistive technology, in the `ui-stack__divider` or `ui-cluster__divider` slot. The divider is a valid child of the element: an `<li>` in `ul` and `ol`, a `<span>` in `a`, `label`, `p` and `span`, a `<div>` elsewhere. Children that are `null`, `undefined`, booleans or empty strings get no divider; a component child gets one even when it renders nothing, since components are not rendered to find out. Keyed children keep their identity, also when reordered, and turning `divided` on or off keeps every child mounted with its state and focus.
 
 Implementation: `src/components/layout/layout.tsx`, `src/components/layout/dividers.tsx`, `labs/reference/layout.css`
-Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
+Verification: `src/components/layout/layout.test.tsx`, `src/components/layout/layout-identity.test.tsx`, `e2e/layout.spec.ts`
 
 ## UIC-LAYOUT-3 - Wrappers and rows
 
@@ -94,7 +94,7 @@ Verification: `src/components/layout/wrappers.test.tsx`
 
 ### UIC-LAYOUT-3.3 - Toolbar row
 
-`ToolbarRow` shall line up controls in a centred row. With `role="toolbar"` (the default) it is a toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
+`ToolbarRow` shall line up controls in a centred row. Its root `<div>` carries the row's hooks and holds one strip (`ui-toolbar-row__strip`) that holds the controls in every mode and carries the row's role and name; the stylesheet lays the controls out in the strip. With `role="toolbar"` (the default) the strip is a toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
 
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
@@ -129,10 +129,10 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.8 - Toolbar overflow
 
-`ToolbarRow`'s `overflow` shall choose what happens to controls that do not fit on one horizontal row, published in `data-overflow`. `wrap` (the default) flows them onto more rows, and every `ToolbarRowGroup` with them: the row and its groups publish `data-wrap="wrap"`. `scroll` keeps them on one row in a [Toolbar Scroller](TOOLBAR-SCROLLER.md) inside the row: the scroller's strip is the toolbar, named by the row's `aria-label` or `aria-labelledby`, and the row adds no role of its own. `none` keeps one row and leaves overflow to the caller (for example an [Overflow List](OVERFLOW-LIST.md)). Rows that do not wrap and their groups publish `data-wrap="nowrap"`. A vertical row is one column: it treats `scroll` as `none`.
+`ToolbarRow`'s `overflow` shall choose what happens to controls that do not fit on one horizontal row, published in `data-overflow`. `wrap` (the default) flows them onto more rows, and every `ToolbarRowGroup` with them: the row and its groups publish `data-wrap="wrap"`. `scroll` keeps them on one row: the strip scrolls, and the root adds a decorative fade (`ui-toolbar-row__fade`, hidden from assistive technology) and a scroll button (`ui-toolbar-row__scroll-button`, out of the tab order) at each edge, both with `data-edge`, shown with `data-overflow-start` or `data-overflow-end` on the root only while that edge hides controls, as in a [Toolbar Scroller](TOOLBAR-SCROLLER.md); a focused control scrolls clear of them. `none` keeps one row and leaves overflow to the caller (for example an [Overflow List](OVERFLOW-LIST.md)). Rows that do not wrap and their groups publish `data-wrap="nowrap"`. A vertical row is one column: it treats `scroll` as `none`. The controls stay mounted, with their state and focus, whichever mode or orientation the row moves to.
 
-Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
-Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
+Implementation: `src/components/layout/toolbar-row.tsx`, `src/components/toolbar-scroller/use-toolbar-scroll.ts`, `labs/reference/layout.css`
+Verification: `src/components/layout/toolbar-row.test.tsx`, `src/components/layout/layout-identity.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.9 - Pending toolbar
 
@@ -150,47 +150,53 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ## Hooks
 
-| Hook                        | Kind      | Values                                                                | Description                                                 |
-| --------------------------- | --------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `ui-view`                   | root      |                                                                       | `View`'s `<section>`.                                       |
-| `ui-page`                   | root      |                                                                       | `Page`'s `<section>`.                                       |
-| `ui-stack`                  | root      |                                                                       | `Stack`'s element.                                          |
-| `ui-cluster`                | root      |                                                                       | `Cluster`'s element.                                        |
-| `ui-grid`                   | root      |                                                                       | `Grid`'s element.                                           |
-| `ui-grid-item`              | root      |                                                                       | `GridItem`'s element.                                       |
-| `ui-aspect-ratio`           | root      |                                                                       | `AspectRatio`'s `<div>`.                                    |
-| `ui-stack__divider`         | slot      |                                                                       | A divider between a divided stack's children.               |
-| `ui-cluster__divider`       | slot      |                                                                       | A divider between a divided cluster's children.             |
-| `ui-toolbar-row__group`     | slot      |                                                                       | `ToolbarRowGroup`'s `role="group"` element.                 |
-| `ui-toolbar-row__separator` | slot      |                                                                       | `ToolbarRowSeparator`'s separator.                          |
-| `ui-flex-row`               | root      |                                                                       | `FlexRow`'s `<div>`.                                        |
-| `ui-inline-field`           | root      |                                                                       | `InlineField`'s `<label>`.                                  |
-| `ui-toolbar-row`            | root      |                                                                       | `ToolbarRow`'s `<div>`.                                     |
-| `ui-status-bar`             | root      |                                                                       | `StatusBar`'s `<footer>`.                                   |
-| `ui-contents`               | root      |                                                                       | `Contents`' `<div>`.                                        |
-| `ui-inline-contents`        | root      |                                                                       | `InlineContents`' `<span>`.                                 |
-| `ui-embedded-frame`         | root      |                                                                       | `EmbeddedFrame`'s `<iframe>`.                               |
-| `data-space`                | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`      | Gap between children.                                       |
-| `data-gutter`               | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`      | Padding of `Page` and `Grid`.                               |
-| `data-align`                | attribute | `start`, `center`, `end`, `stretch`, `baseline`                       | Cross-axis alignment.                                       |
-| `data-justify`              | attribute | `normal`, `start`, `center`, `end`, `between`                         | Main-axis distribution.                                     |
-| `data-wrap`                 | attribute | `wrap`, `nowrap`                                                      | Whether children wrap; also on toolbar groups.              |
-| `data-columns`              | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                          | `Grid` column template.                                     |
-| `data-min-column-width`     | attribute | `sm`, `md`, `lg`, `xl`                                                | Smallest column of `columns="fit"`.                         |
-| `data-width`                | attribute | `full`, `wide`, `reading`, `narrow`                                   | `Page` maximum width.                                       |
-| `data-span`                 | attribute | `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`, `12`, `full` | `GridItem` columns covered.                                 |
-| `data-offset`               | attribute | `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`          | `GridItem` empty columns before it.                         |
-| `data-ratio`                | attribute | `1-1`, `4-3`, `3-2`, `16-9`, `21-9`, `3-4`, `2-3`, `9-16`             | `AspectRatio` width to height.                              |
-| `data-variant`              | attribute | `plain`, `surface`                                                    | `ToolbarRow` surface.                                       |
-| `data-overflow`             | attribute | `wrap`, `scroll`, `none`                                              | What a toolbar row does with controls that do not fit.      |
-| `data-density`              | attribute | `regular`, `attached`                                                 | Whether a toolbar group's controls are joined.              |
-| `data-pending`              | state     | `true`                                                                | A toolbar row whose controls are inert while it starts.     |
-| `data-grow`                 | state     | `true`, `auto`, `none`                                                | Growth inside a flex parent; absent for the default sizing. |
-| `data-fill`                 | state     | `true`                                                                | Takes the containing block's full block size.               |
-| `data-clip`                 | state     | `true`                                                                | Clips overflowing content.                                  |
-| `data-inline`               | state     | `true`                                                                | Flows inline with surrounding text.                         |
-| `data-divided`              | state     | `true`                                                                | A stack or cluster draws dividers between its children.     |
-| `data-orientation`          | attribute | `horizontal`, `vertical`                                              | A toolbar row's direction, its groups' and its separators'. |
-| `data-focus-within`         | state     | `true`                                                                | A toolbar group holds focus (React Aria).                   |
-| `data-focus-visible`        | state     | `true`                                                                | A toolbar group holds keyboard focus (React Aria).          |
-| `data-hovered`              | state     | `true`                                                                | The pointer is over a toolbar group (React Aria).           |
+| Hook                            | Kind      | Values                                                                | Description                                                 |
+| ------------------------------- | --------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `ui-view`                       | root      |                                                                       | `View`'s `<section>`.                                       |
+| `ui-page`                       | root      |                                                                       | `Page`'s `<section>`.                                       |
+| `ui-stack`                      | root      |                                                                       | `Stack`'s element.                                          |
+| `ui-cluster`                    | root      |                                                                       | `Cluster`'s element.                                        |
+| `ui-grid`                       | root      |                                                                       | `Grid`'s element.                                           |
+| `ui-grid-item`                  | root      |                                                                       | `GridItem`'s element.                                       |
+| `ui-aspect-ratio`               | root      |                                                                       | `AspectRatio`'s `<div>`.                                    |
+| `ui-stack__divider`             | slot      |                                                                       | A divider between a divided stack's children.               |
+| `ui-cluster__divider`           | slot      |                                                                       | A divider between a divided cluster's children.             |
+| `ui-toolbar-row__strip`         | slot      |                                                                       | The element holding a toolbar row's controls in every mode. |
+| `ui-toolbar-row__fade`          | slot      |                                                                       | A decorative fade at an edge of a scrolling row.            |
+| `ui-toolbar-row__scroll-button` | slot      |                                                                       | A scroll button at an edge of a scrolling row.              |
+| `ui-toolbar-row__group`         | slot      |                                                                       | `ToolbarRowGroup`'s `role="group"` element.                 |
+| `ui-toolbar-row__separator`     | slot      |                                                                       | `ToolbarRowSeparator`'s separator.                          |
+| `ui-flex-row`                   | root      |                                                                       | `FlexRow`'s `<div>`.                                        |
+| `ui-inline-field`               | root      |                                                                       | `InlineField`'s `<label>`.                                  |
+| `ui-toolbar-row`                | root      |                                                                       | `ToolbarRow`'s `<div>`.                                     |
+| `ui-status-bar`                 | root      |                                                                       | `StatusBar`'s `<footer>`.                                   |
+| `ui-contents`                   | root      |                                                                       | `Contents`' `<div>`.                                        |
+| `ui-inline-contents`            | root      |                                                                       | `InlineContents`' `<span>`.                                 |
+| `ui-embedded-frame`             | root      |                                                                       | `EmbeddedFrame`'s `<iframe>`.                               |
+| `data-space`                    | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`      | Gap between children.                                       |
+| `data-gutter`                   | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`      | Padding of `Page` and `Grid`.                               |
+| `data-align`                    | attribute | `start`, `center`, `end`, `stretch`, `baseline`                       | Cross-axis alignment.                                       |
+| `data-justify`                  | attribute | `normal`, `start`, `center`, `end`, `between`                         | Main-axis distribution.                                     |
+| `data-wrap`                     | attribute | `wrap`, `nowrap`                                                      | Whether children wrap; also on toolbar groups.              |
+| `data-columns`                  | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                          | `Grid` column template.                                     |
+| `data-min-column-width`         | attribute | `sm`, `md`, `lg`, `xl`                                                | Smallest column of `columns="fit"`.                         |
+| `data-width`                    | attribute | `full`, `wide`, `reading`, `narrow`                                   | `Page` maximum width.                                       |
+| `data-span`                     | attribute | `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`, `12`, `full` | `GridItem` columns covered.                                 |
+| `data-offset`                   | attribute | `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`          | `GridItem` empty columns before it.                         |
+| `data-ratio`                    | attribute | `1-1`, `4-3`, `3-2`, `16-9`, `21-9`, `3-4`, `2-3`, `9-16`             | `AspectRatio` width to height.                              |
+| `data-variant`                  | attribute | `plain`, `surface`                                                    | `ToolbarRow` surface.                                       |
+| `data-overflow`                 | attribute | `wrap`, `scroll`, `none`                                              | What a toolbar row does with controls that do not fit.      |
+| `data-edge`                     | attribute | `start`, `end`                                                        | The edge a scrolling row's fade or scroll button sits at.   |
+| `data-overflow-start`           | state     | `true`                                                                | A scrolling row hides controls past its start.              |
+| `data-overflow-end`             | state     | `true`                                                                | A scrolling row hides controls past its end.                |
+| `data-density`                  | attribute | `regular`, `attached`                                                 | Whether a toolbar group's controls are joined.              |
+| `data-pending`                  | state     | `true`                                                                | A toolbar row whose controls are inert while it starts.     |
+| `data-grow`                     | state     | `true`, `auto`, `none`                                                | Growth inside a flex parent; absent for the default sizing. |
+| `data-fill`                     | state     | `true`                                                                | Takes the containing block's full block size.               |
+| `data-clip`                     | state     | `true`                                                                | Clips overflowing content.                                  |
+| `data-inline`                   | state     | `true`                                                                | Flows inline with surrounding text.                         |
+| `data-divided`                  | state     | `true`                                                                | A stack or cluster draws dividers between its children.     |
+| `data-orientation`              | attribute | `horizontal`, `vertical`                                              | A toolbar row's direction, its groups' and its separators'. |
+| `data-focus-within`             | state     | `true`                                                                | A toolbar group holds focus (React Aria).                   |
+| `data-focus-visible`            | state     | `true`                                                                | A toolbar group holds keyboard focus (React Aria).          |
+| `data-hovered`                  | state     | `true`                                                                | The pointer is over a toolbar group (React Aria).           |

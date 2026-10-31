@@ -182,7 +182,7 @@ test.describe('Layout lab', () => {
     await expect(group.getByRole('button', { name: 'Slice' })).toBeFocused();
     const surface = await page
       .getByRole('group', { name: 'Fruit actions group surface' })
-      .evaluate((node) => getComputedStyle(node).borderTopStyle);
+      .evaluate((node) => getComputedStyle(node.parentElement ?? node).borderTopStyle);
     expect(surface).toBe('solid');
   });
 
@@ -314,15 +314,13 @@ test.describe('Layout lab', () => {
 
     const scroll = page.locator(cell(section, 'overflow=scroll'));
     const strip = scroll.getByRole('toolbar', { name: 'Recipe tools, scroll' });
-    await expect(strip).toHaveClass(/ui-toolbar-scroller__strip/);
+    await expect(strip).toHaveClass(/ui-toolbar-row__strip/);
     const first = await box(scroll.getByRole('button', { name: 'Undo' }));
     const last = await box(scroll.getByRole('button', { name: 'Scale servings' }));
     expect(Math.round(last.y)).toBe(Math.round(first.y));
     expect(await strip.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
-    await expect(scroll.locator('.ui-toolbar-scroller')).toHaveAttribute(
-      'data-overflow-end',
-      'true',
-    );
+    await expect(scroll.locator('.ui-toolbar-row')).toHaveAttribute('data-overflow-end', 'true');
+    await expect(scroll.locator('.ui-toolbar-row__scroll-button[data-edge="end"]')).toBeVisible();
     await scroll.getByRole('button', { name: 'Undo' }).focus();
     for (let step = 0; step < 6; step += 1) await page.keyboard.press('ArrowRight');
     await expect(scroll.getByRole('button', { name: 'Scale servings' })).toBeFocused();
@@ -334,6 +332,38 @@ test.describe('Layout lab', () => {
     const end = await box(none.getByRole('button', { name: 'Add step' }));
     expect(Math.round(end.y)).toBe(Math.round(one.y));
     await lab.expectAccessible('[data-lab-section="Toolbar overflow"]');
+  });
+
+  test('UIC-LAYOUT-2.7 UIC-LAYOUT-3.8 keeps drafts and focus while the presentation changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('layout');
+    const demo = page.locator('[data-lab-case="presentation"]');
+    const note = demo.getByRole('textbox', { name: 'Second note' });
+    await note.fill('stack draft');
+    await demo.getByRole('button', { name: 'Show dividers' }).click();
+    await expect(demo.locator('.ui-stack__divider')).toHaveCount(1);
+    await expect(note).toHaveValue('stack draft');
+    const search = demo.getByRole('textbox', { name: 'Search' });
+    await search.fill('toolbar draft');
+    const tools = demo.getByRole('toolbar', { name: 'Search tools' });
+    const cycle = demo.getByRole('button', { name: /^Overflow:/ });
+    await cycle.click();
+    await expect(cycle).toHaveText('Overflow: scroll');
+    await expect(tools).toHaveCSS('overflow-x', 'auto');
+    await expect(demo.locator('.ui-toolbar-row[data-overflow-end]')).toHaveCount(1);
+    await search.focus();
+    await demo.getByRole('button', { name: 'Vertical' }).click();
+    await cycle.click();
+    await demo.getByRole('button', { name: 'Horizontal' }).click();
+    await expect(search).toHaveValue('toolbar draft');
+    await search.focus();
+    await page.keyboard.press('End');
+    await page.keyboard.type('!');
+    await expect(search).toHaveValue('toolbar draft!');
+    await demo.getByRole('button', { name: 'Hide dividers' }).click();
+    await expect(note).toHaveValue('stack draft');
   });
 
   test('UIC-LAYOUT-3.10 joins an attached group into one run', async ({ page, lab }) => {

@@ -14,20 +14,22 @@ function resolveDividerElement(parent: LayoutElement): 'li' | 'span' | 'div' {
 }
 
 /**
- * The rendered children of a layout primitive with a decorative divider, hidden from assistive
- * technology, between each pair. Children that are `null`, `undefined`, booleans or empty strings
- * get no divider; components are not rendered to find out whether they draw anything.
+ * The rendered children of a layout primitive, with a decorative divider, hidden from assistive
+ * technology, between each pair while `divided`. Children that are `null`, `undefined`, booleans
+ * or empty strings get no divider; components are not rendered to find out whether they draw
+ * anything. Each child keeps the same keyed place divided or not, so toggling the dividers never
+ * remounts it.
  */
 export function interleaveDividers(
   children: ReactNode,
-  { parent, className }: { parent: LayoutElement; className: string },
+  { parent, className, divided }: { parent: LayoutElement; className: string; divided: boolean },
 ): ReactNode[] {
   const element = resolveDividerElement(parent);
   // `Children.toArray` keys every element, so keyed children keep their identity when reordered.
   const shown = Children.toArray(children).filter((child) => !isEmptyNode(child));
   return shown.map((child, index) => (
     <Fragment key={isValidElement(child) ? child.key : index}>
-      {index > 0 ? createElement(element, { className, 'aria-hidden': true }) : null}
+      {divided && index > 0 ? createElement(element, { className, 'aria-hidden': true }) : null}
       {child}
     </Fragment>
   ));
