@@ -146,7 +146,7 @@ function UploadForm() {
         onSelect={upload.add}
         onRemove={upload.remove}
       />
-      <button type="submit">Send</button>
+      <button type="submit">Send</button> <button type="reset">Reset</button>
       <p>
         Sent: <output data-lab-output="form-sent">{sent}</output>
       </p>
@@ -273,7 +273,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="In a form"
-      description="The upload is required: Send refuses an empty upload and moves focus to it; the form data carries the chosen files."
+      description="The upload is required: Send refuses an empty upload and moves focus to it; the form data carries the chosen files. Reset leaves the listed files, which the page holds, and the next Send still carries them."
     >
       <UploadForm />
     </LabSection>

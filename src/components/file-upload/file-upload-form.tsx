@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -11,6 +12,7 @@ import {
 } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { fileUploadHooks as hooks, type FileUploadItem } from './file-upload-files.js';
 
@@ -54,24 +56,84 @@ function isSameFiles(held: readonly File[], files: readonly File[]): boolean {
   return held.length === files.length && held.every((file, index) => file === files[index]);
 }
 
+/** Puts the files into the input, unless it holds them already; `held` keeps what it was given. */
+function fillInput(
+  input: HTMLInputElement,
+  files: readonly File[],
+  held: { current: readonly File[] },
+) {
+  if (typeof DataTransfer !== 'function') return;
+  if (input.files?.length === files.length && isSameFiles(held.current, files)) return;
+  const transfer = new DataTransfer();
+  for (const file of files) transfer.items.add(file);
+  input.files = transfer.files;
+  held.current = files;
+}
+
+/**
+ * Keeps the input in step with the listed files through a native reset of its form, which empties
+ * it while the list, which the owner holds, stays. Form data built in between (a submit right after
+ * `form.reset()`) carries the listed files rather than the emptied input, and once every listener has
+ * seen the reset the input is filled again; a reset a listener cancels changes nothing.
+ */
+function useResetFiles(
+  ref: RefObject<HTMLInputElement | null>,
+  {
+    name,
+    isDisabled,
+    files,
+    held,
+  }: {
+    name: string | undefined;
+    isDisabled: boolean;
+    files: readonly File[];
+    held: { current: readonly File[] };
+  },
+) {
+  const latest = useLatest({ name, isDisabled, files });
+  useEffect(() => {
+    const form = ref.current?.form;
+    const view = form?.ownerDocument.defaultView;
+    if (!form || !view) return undefined;
+    let timer: number | undefined;
+    const onReset = (event: Event) => {
+      view.clearTimeout(timer);
+      timer = view.setTimeout(() => {
+        const input = ref.current;
+        if (!event.defaultPrevented && input) fillInput(input, latest.current.files, held);
+      }, 0);
+    };
+    const onFormData = (event: FormDataEvent) => {
+      const { name: key, isDisabled: isLeftOut, files: listed } = latest.current;
+      const input = ref.current;
+      if (key === undefined || isLeftOut || !input || (input.files?.length ?? 0) === listed.length)
+        return;
+      event.formData.delete(key);
+      for (const file of listed) event.formData.append(key, file);
+    };
+    form.addEventListener('reset', onReset);
+    form.addEventListener('formdata', onFormData);
+    return () => {
+      view.clearTimeout(timer);
+      form.removeEventListener('reset', onReset);
+      form.removeEventListener('formdata', onFormData);
+    };
+  }, [ref, held, latest]);
+}
+
 /**
  * The hidden file input that takes part in a form: it holds the listed files, so a native submit
  * or `FormData` carries them under `name`, and it is required when the upload is. A browser that
- * cannot set an input's files (no `DataTransfer`) submits none. The files are set again only when
- * they change, or when a form reset emptied the input, not on every render.
+ * cannot set an input's files (no `DataTransfer`) still has form data carry them. The files are set
+ * again only when they change, or when a form reset emptied the input, not on every render.
  */
 function FileFormInput({ name, isRequired, isDisabled, files, onInvalid }: FileFormInputProps) {
   const ref = useRef<HTMLInputElement>(null);
   const held = useRef<readonly File[]>([]);
   useLayoutEffect(() => {
-    const input = ref.current;
-    if (!input || typeof DataTransfer !== 'function') return;
-    if (input.files?.length === files.length && isSameFiles(held.current, files)) return;
-    const transfer = new DataTransfer();
-    for (const file of files) transfer.items.add(file);
-    input.files = transfer.files;
-    held.current = files;
+    if (ref.current) fillInput(ref.current, files, held);
   }, [files]);
+  useResetFiles(ref, { name, isDisabled, files, held });
   return (
     <input
       ref={ref}
