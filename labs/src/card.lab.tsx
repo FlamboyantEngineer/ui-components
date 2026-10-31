@@ -4,6 +4,7 @@ import { Badge } from '../../src/components/badge/badge.js';
 import { Card, type CardDensity, type CardVariant } from '../../src/components/card/card.js';
 import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
+import { Section } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   CollapsibleGrid,
@@ -53,6 +54,29 @@ function Cover({ label }: { label: string }) {
       <circle cx="190" cy="30" r="14" fill="#f7d774" />
       <path d="M0 70 Q60 40 120 70 T240 70 V90 H0 Z" fill="#4f7cac" />
     </svg>
+  );
+}
+
+/** A card whose title loads after its body: the draft and the nested section's level hold. */
+function LateTitleDemo() {
+  const [title, setTitle] = useState<'none' | 'title' | 'custom'>('none');
+  const next = { none: 'title', title: 'custom', custom: 'none' } as const;
+  return (
+    <div data-lab-demo="late-title" style={{ width: 320 }}>
+      <Button size="sm" onPress={() => setTitle(next[title])}>
+        Title: {title}
+      </Button>
+      <Card
+        headingLevel={3}
+        title={title === 'title' ? 'Loaded record' : undefined}
+        header={title === 'custom' ? <CardTitle>Custom record</CardTitle> : undefined}
+      >
+        <label>
+          Draft <input name="draft" />
+        </label>
+        <Section title="Notes">Nested below the card title.</Section>
+      </Card>
+    </div>
   );
 }
 
@@ -293,6 +317,12 @@ mountLab(
       description="Each card is a link or a press target whose title is the action: click anywhere on it. The Share button inside keeps its own behaviour."
     >
       <ActionDemo />
+    </LabSection>
+    <LabSection
+      title="Title that arrives late"
+      description="Type a draft, then cycle the title from none to a title to a custom header: the draft stays, and the Notes heading sits one level below whichever title the card has."
+    >
+      <LateTitleDemo />
     </LabSection>
     <LabSection
       title="Nested cards and editors"

@@ -140,6 +140,25 @@ test.describe('Card lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CARD-1.2 UIC-CARD-1.4 keeps the draft and the outline while the title arrives', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="late-title"]');
+    const draft = demo.getByRole('textbox', { name: 'Draft' });
+    await draft.fill('unsaved');
+    const cycle = demo.getByRole('button', { name: /^Title:/ });
+    await cycle.click();
+    await expect(demo.getByRole('heading', { name: 'Loaded record', level: 3 })).toBeVisible();
+    await expect(demo.getByRole('heading', { name: 'Notes', level: 4 })).toBeVisible();
+    await cycle.click();
+    await expect(demo.getByRole('heading', { name: 'Custom record', level: 3 })).toBeVisible();
+    await expect(demo.getByRole('heading', { name: 'Notes', level: 4 })).toBeVisible();
+    await cycle.click();
+    await expect(draft).toHaveValue('unsaved');
+  });
+
   test('UIC-CARD-3.2 leaves nested cards and editors their own clicks', async ({ page, lab }) => {
     await lab.open('card');
     const demo = page.locator('[data-lab-demo="nested-action"]');
