@@ -19,6 +19,7 @@ import {
   type ShortcutChord,
   type ShortcutPlatform,
 } from '../shortcut/shortcut.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 /** The states a button passes to `render` with the `<button>`'s props. */
 export interface ButtonRenderState extends InteractionState {
@@ -93,7 +94,7 @@ export interface ButtonStateProps
    * `type`, the pending and selected states and `focusableWhenDisabled` apply to a `<button>` only.
    */
   href?: string | undefined;
-  /** A link button's target. `_blank` adds `rel="noopener noreferrer"` unless `rel` is given. */
+  /** A link button's target. `_blank` adds `noopener` and `noreferrer` to `rel`. */
   target?: NativeProps<'a'>['target'];
   /** A link button's relationship to its destination. */
   rel?: string | undefined;
@@ -392,7 +393,7 @@ export function toAriaLinkProps(
   return {
     ...rest,
     target,
-    rel: rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined),
+    rel: mergeSafeRel(target, rel),
     ref: ref as Ref<HTMLAnchorElement> | undefined,
     // The building block draws a `<span>` without `href`; its props fit an anchor's.
     render: (element) => renderLinkElement({ ...(element as AnchorDomProps), ...extra }),

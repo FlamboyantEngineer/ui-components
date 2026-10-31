@@ -1,4 +1,5 @@
 import type { PdfLinkService } from './pdf-engine.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 interface LinkServiceActions {
   /** Sends the reader to a destination of the document. */
@@ -39,7 +40,8 @@ export function createLinkService(actions: LinkServiceActions): PdfLinkService {
       link.href = url;
       link.title = url;
       link.target = '_blank';
-      link.rel = 'noopener noreferrer nofollow';
+      // Links in a document are the author's, not this site's: search engines do not follow them.
+      link.rel = mergeSafeRel(link.target, 'nofollow') ?? '';
     },
     getDestinationHash: (destination) =>
       typeof destination === 'string' && destination ? `#${encodeURIComponent(destination)}` : '#',

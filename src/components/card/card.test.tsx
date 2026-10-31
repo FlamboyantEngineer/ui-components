@@ -279,6 +279,18 @@ describe('Card', () => {
     expect(names.sort()).toEqual(['aria-labelledby', 'class']);
   });
 
+  it('UIC-CARD-3.1 adds noopener and noreferrer to the caller rel of a new-tab link', () => {
+    render(
+      <Card title="Porto" href="#porto" target="_blank" rel="nofollow">
+        Body
+      </Card>,
+    );
+    expect(screen.getByRole('link', { name: 'Porto' })).toHaveAttribute(
+      'rel',
+      'nofollow noopener noreferrer',
+    );
+  });
+
   it('UIC-CARD-3.1 makes the title a link or a button that names the action', async () => {
     const onAction = vi.fn();
     const { container, rerender } = render(

@@ -16,12 +16,13 @@ import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 
 /** What the whole card does when it is pressed: follow `href`, or run `onAction`. */
 export interface CardActionOptions {
   /** Makes the card a link to this address; its title is the link. */
   href?: string | undefined;
-  /** The link's target. `_blank` adds `rel="noopener noreferrer"` unless `rel` is given. */
+  /** The link's target. `_blank` adds `noopener` and `noreferrer` to `rel`. */
   target?: string | undefined;
   /** The link's relationship to the current page. */
   rel?: string | undefined;
@@ -76,10 +77,6 @@ const claimedClicks = new WeakSet<Event>();
 
 function hasCardAction({ href, onAction }: CardActionOptions): boolean {
   return href !== undefined || onAction !== undefined;
-}
-
-function toLinkRel({ target, rel }: CardActionOptions): string | undefined {
-  return rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined);
 }
 
 /**
@@ -166,7 +163,7 @@ export function CardActionTitle({
         ref={actionRef}
         href={href}
         target={target}
-        rel={toLinkRel(options)}
+        rel={mergeSafeRel(options.target, options.rel)}
         className={className}
         onClick={() => onAction?.()}
       >

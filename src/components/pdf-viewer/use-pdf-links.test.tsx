@@ -60,7 +60,7 @@ describe('PdfViewer links', () => {
     await renderReady({ defaultZoom: 100 }, engine);
     const web = await screen.findByRole('link', { name: 'https://example.com/' });
     expect(web).toHaveAttribute('target', '_blank');
-    expect(web).toHaveAttribute('rel', 'noopener noreferrer nofollow');
+    expect(web).toHaveAttribute('rel', 'nofollow noopener noreferrer');
 
     // The host stylesheet gives links the pointer the layer passes through.
     const press = userEvent.setup({ pointerEventsCheck: 0 });

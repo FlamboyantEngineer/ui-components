@@ -133,7 +133,7 @@ export const defaultMarks: Record<string, MarkSpec> = {
     toDOM: (mark) => {
       const href = String(mark.attrs.href);
       const title = mark.attrs.title === null ? {} : { title: String(mark.attrs.title) };
-      return ['a', { ...(isSafeUrl(href) ? { href } : {}), ...title, rel: 'noopener nofollow' }, 0];
+      return ['a', { ...(isSafeUrl(href) ? { href } : {}), ...title }, 0];
     },
   },
   bold: {

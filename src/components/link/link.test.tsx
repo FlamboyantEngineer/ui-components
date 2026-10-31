@@ -129,13 +129,13 @@ describe('Link', () => {
 
   it('UIC-LINK-2.2 UIC-LINK-3.1 opens an external link in a new tab, safely, and says so', () => {
     const { container } = render(
-      <Link href="https://example.com/guide" isExternal rel="author">
+      <Link href="https://example.com/guide" isExternal rel="nofollow">
         Seasonal guide
       </Link>,
     );
     const link = screen.getByRole('link', { name: 'Seasonal guide (opens in a new tab)' });
     expect(link).toHaveAttribute('target', '_blank');
-    expect(link).toHaveAttribute('rel', 'author noopener noreferrer');
+    expect(link).toHaveAttribute('rel', 'nofollow noopener noreferrer');
     const icon = link.querySelector('.ui-link__external-icon');
     expect(icon).toHaveAttribute('data-glyph', 'external-link');
     expect(icon).toHaveAttribute('aria-hidden', 'true');

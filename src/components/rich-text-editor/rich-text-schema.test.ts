@@ -103,7 +103,7 @@ describe('createRichTextSchema', () => {
         },
       ],
     };
-    expect(render(unsafe)).toBe('<p><a rel="noopener nofollow">c</a></p>');
+    expect(render(unsafe)).toBe('<p><a>c</a></p>');
   });
 
   it('UIC-RICH-TEXT-EDITOR-2.2 adds, replaces and removes node and mark types', () => {

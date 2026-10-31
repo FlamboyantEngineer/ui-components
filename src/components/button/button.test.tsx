@@ -449,6 +449,9 @@ describe('Button', () => {
         <Button href="https://example.com/help" target="_blank">
           Help
         </Button>
+        <Button href="https://example.com/forum" target="_blank" rel="nofollow">
+          Forum
+        </Button>
       </UiProvider>,
     );
     const link = screen.getByRole('link', { name: 'New report' });
@@ -464,6 +467,10 @@ describe('Button', () => {
     expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute(
       'rel',
       'noopener noreferrer',
+    );
+    expect(screen.getByRole('link', { name: 'Forum' })).toHaveAttribute(
+      'rel',
+      'nofollow noopener noreferrer',
     );
     link.addEventListener('click', (event) => event.preventDefault());
     await user.click(link);
