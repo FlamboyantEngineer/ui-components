@@ -46,6 +46,11 @@ export interface FolderManagerOptions<
   onLoadChildren?: ((key: Key) => unknown) | undefined;
   /** The deepest a folder may sit, the top level being 1. No limit without. */
   maxDepth?: number | undefined;
+  /**
+   * Draws a search box that keeps the folders whose name holds every term, with their ancestors.
+   * Without it a query typed before is set aside until it comes back.
+   */
+  filterable?: boolean | undefined;
   /** The folders are loading: the tree shows a loading row and the actions wait. */
   isPending?: boolean | undefined;
 }
@@ -71,6 +76,8 @@ export interface FolderManagerModel<T extends FolderItem> {
   isBusy: boolean;
   /** The filter query, as typed. */
   query: string;
+  /** The query that filters and marks the folders: the typed one while the search box is drawn. */
+  appliedQuery: string;
   setQuery(query: string): void;
   regionRef: RefObject<HTMLDivElement | null>;
   nameRef: RefObject<HTMLInputElement | null>;
@@ -89,16 +96,19 @@ export interface FolderManagerModel<T extends FolderItem> {
 function useFolderQuery<T extends FolderItem>(
   folders: readonly T[],
   rootLabel: string | undefined,
+  isShown: boolean,
 ) {
   const [query, setQuery] = useState('');
-  const terms = useMemo(() => splitMatchTerms(query), [query]);
+  // A query outlives its search box when `filterable` turns off; it must not narrow the tree unseen.
+  const applied = isShown ? query : '';
+  const terms = useMemo(() => splitMatchTerms(applied), [applied]);
   const update = (next: string, expansion: FolderExpansion) => {
     setQuery(next);
     const nextTerms = splitMatchTerms(next);
     if (nextTerms.length === 0) return;
     expansion.reveal(collectBranchKeys(buildFolderNodes(folders, { rootLabel, terms: nextTerms })));
   };
-  return { query, terms, update };
+  return { query, applied, terms, update };
 }
 
 /** The selected rows the tree shows: the draft while creating, else the folders or the root row. */
@@ -143,7 +153,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
   const loads = useTreeLoads(options.onLoadChildren);
   const { edit } = actions;
   const draftParentKey = edit?.kind === 'create' ? edit.key : undefined;
-  const filter = useFolderQuery(folders, rootLabel);
+  const filter = useFolderQuery(folders, rootLabel, options.filterable === true);
   const { terms } = filter;
   const nodes = useMemo(
     () => buildFolderNodes(folders, { rootLabel, draftParentKey, terms }),
@@ -172,6 +182,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     editKey,
     isBusy: isPending || actions.isDeleting || edit !== null,
     query: filter.query,
+    appliedQuery: filter.applied,
     setQuery,
     regionRef,
     nameRef,

@@ -43,6 +43,8 @@ interface TableRowsOptions<T extends TableRow> extends TableSortOptions {
   /** Initial filter while the table owns the filter and filters `rows` itself. */
   defaultFilter?: TableFilter | undefined;
   onFilterChange?: ((filter: TableFilter) => void) | undefined;
+  /** The search box is drawn; without it an owned filter's query is set aside. */
+  filterable?: boolean | undefined;
   pagination?: TablePagination | undefined;
 }
 
@@ -96,6 +98,8 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
     options.onFilterChange,
   );
   const isFilterOwned = options.filter === undefined;
+  // A query outlives its search box when `filterable` turns off; it must not narrow the rows unseen.
+  const hasQuery = options.filterable === true;
   const [requestedPage, setPage] = useControllableState(
     pagination?.page,
     pagination?.defaultPage ?? 1,
@@ -109,7 +113,8 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
 
   const presented = useMemo(() => {
     const nodes = buildTableNodes(rows, getChildRows);
-    const matches = isFilterOwned ? createRowMatcher(columns, filter) : null;
+    const applied = hasQuery ? filter : { ...filter, query: undefined };
+    const matches = isFilterOwned ? createRowMatcher(columns, applied) : null;
     const filtered = matches ? filterTableNodes(nodes, matches) : nodes;
     const compare = sort.isControlled
       ? null
@@ -120,6 +125,7 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
     getChildRows,
     columns,
     filter,
+    hasQuery,
     isFilterOwned,
     sort.isControlled,
     sort.descriptors,

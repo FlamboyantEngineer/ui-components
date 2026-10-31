@@ -30,6 +30,15 @@ const emptyValue: readonly FilterCondition[] = [];
 
 /** The add menu lists its fields behind a search field from this many on. */
 
+/** The chips to draw: each condition whose field is known, keyed by its field and occurrence. */
+function listChips(value: readonly FilterCondition[], fields: readonly FilterField[]) {
+  const keyed = assignOccurrenceKeys(value, (condition) => condition.field);
+  return keyed.flatMap(({ key, value: condition }, index) => {
+    const field = fields.find((candidate) => candidate.id === condition.field);
+    return field ? [{ key, condition, field, index }] : [];
+  });
+}
+
 /**
  * A row of active filters as chips, each reading `Field operator value` and opening its editor in a
  * popover: the operators and the value control follow the field's type. An add menu lists the
@@ -54,7 +63,6 @@ export function FilterBar({
   );
   const [openKey, setOpenKey] = useState<string | null>(null);
   const addRef = useRef<HTMLButtonElement>(null);
-  const keyed = assignOccurrenceKeys(value, (condition) => condition.field);
   const add = (id: Key) => {
     const field = fields.find((candidate) => candidate.id === id);
     if (!field) return;
@@ -70,10 +78,9 @@ export function FilterBar({
     setValue([]);
     addRef.current?.focus();
   };
-  const chips = keyed.flatMap(({ key, value: condition }, index) => {
-    const field = fields.find((candidate) => candidate.id === condition.field);
-    return field ? [{ key, condition, field, index }] : [];
-  });
+  const chips = listChips(value, fields);
+  // The open chip's condition left: a chip that takes its key later opens only when asked.
+  if (openKey !== null && !chips.some((chip) => chip.key === openKey)) setOpenKey(null);
 
   return (
     <div

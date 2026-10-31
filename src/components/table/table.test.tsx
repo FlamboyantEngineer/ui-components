@@ -321,6 +321,21 @@ describe('Table', { timeout: 15_000 }, () => {
     });
   });
 
+  it('UIC-TABLE-2.5 sets the query aside while the search box is gone', async () => {
+    const user = userEvent.setup();
+    const table = (filterable: boolean) => (
+      <Table aria-label="Fruit" rows={fruit} columns={columns} filterable={filterable} />
+    );
+    const { rerender } = render(table(true));
+    await user.type(screen.getByRole('searchbox', { name: 'Filter rows' }), 'cherry');
+    expect(names()).toEqual(['Cherry']);
+    rerender(table(false));
+    expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
+    rerender(table(true));
+    expect(screen.getByRole('searchbox', { name: 'Filter rows' })).toHaveValue('cherry');
+    expect(names()).toEqual(['Cherry']);
+  });
+
   it('UIC-TABLE-2.5 names the search box with filterLabel', () => {
     render(
       <Table

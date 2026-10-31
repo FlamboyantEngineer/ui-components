@@ -84,7 +84,7 @@ Verification: `src/components/table/table.test.tsx`
 
 ### UIC-TABLE-2.5 - Filtering
 
-`filterable` shall draw a React Aria search field in the toolbar above the grid (`ui-table__toolbar`), named and labelled by `filterLabel` (the provider's `filterRows` string by default), that keeps the rows whose text (their string and number values in every column) contains every whitespace-separated term of the query, ignoring case. Escape or the clear button empties the query. When nothing matches, the empty notice replaces the rows.
+`filterable` shall draw a React Aria search field in the toolbar above the grid (`ui-table__toolbar`), named and labelled by `filterLabel` (the provider's `filterRows` string by default), that keeps the rows whose text (their string and number values in every column) contains every whitespace-separated term of the query, ignoring case. Escape or the clear button empties the query. When nothing matches, the empty notice replaces the rows. Without `filterable` a query the table owns (typed before `filterable` turned off, or from `defaultFilter`) is set aside, so it never narrows the rows unseen; it applies again when the search box comes back.
 
 Implementation: `src/components/table/table-search.tsx`, `src/components/table/table-toolbar.tsx`, `src/components/table/table-filters.ts`, `src/components/table/use-table-rows.ts`
 Verification: `src/components/table/table.test.tsx`, `src/components/table/table-rows.test.ts`, `e2e/table.spec.ts`

@@ -27,7 +27,7 @@ import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './t
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<
   TableProps<T>,
-  'size' | 'stickyHeader' | 'rowHeight' | 'filterable' | 'filterLabel' | 'className' | 'id'
+  'size' | 'stickyHeader' | 'rowHeight' | 'filterLabel' | 'className' | 'id'
 >;
 
 /** What the table renders from. */

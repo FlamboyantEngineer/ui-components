@@ -196,7 +196,7 @@ export function FolderTree<T extends FolderItem>({
             model.select(node.folder ? [node.folder.id] : []);
         }}
       >
-        <TextMatchProvider query={model.query}>
+        <TextMatchProvider query={model.appliedQuery}>
           <Tree<FolderNode<T>>
             items={model.nodes}
             aria-label={tree['aria-label']}

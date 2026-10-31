@@ -118,6 +118,19 @@ describe('FilterBar', () => {
     });
   });
 
+  it('UIC-FILTER-BAR-2.2 keeps the editor closed when the host replaces the open condition', async () => {
+    const user = userEvent.setup();
+    const bar = (value: FilterCondition[]) => <FilterBar fields={fields} value={value} />;
+    const { rerender } = render(bar([genre, pages]));
+    await user.click(screen.getByRole('button', { name: 'Pages is at least' }));
+    await screen.findByRole('dialog', { name: 'Pages' });
+    rerender(bar([genre]));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    rerender(bar([genre, { ...pages, value: 10 }]));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(chipsInDocument()[1]).not.toHaveAttribute('data-open');
+  });
+
   it('UIC-FILTER-BAR-2.3 adds a filter from the menu and opens its editor', async () => {
     const user = userEvent.setup();
     const onValue = vi.fn();

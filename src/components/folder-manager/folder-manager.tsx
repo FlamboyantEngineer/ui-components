@@ -37,8 +37,6 @@ export interface FolderManagerProps<
   /** Names the folder tree. */
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
-  /** Draws a search box that keeps the folders whose name holds every term, with their ancestors. */
-  filterable?: boolean | undefined;
   /** Renders only the rows in view; the stylesheet must bound the tree's height. */
   virtualized?: boolean | undefined;
   /** Row height in pixels for a virtualized tree. */
