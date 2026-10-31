@@ -274,3 +274,49 @@ export function LockingTabs() {
     </div>
   );
 }
+
+/** Renameable tabs whose list gains or drops its scroll buttons a second after Switch is pressed. */
+export function SwitchingTabs() {
+  const [names, setNames] = useState(['Morning', 'Noon', 'Evening']);
+  const [hasButtons, setButtons] = useState(false);
+  const [isSwitching, setSwitching] = useState(false);
+  useEffect(() => {
+    if (!isSwitching) return undefined;
+    // Lab-only stand-in for the host changing the list's presentation during an edit.
+    const timer = setTimeout(() => {
+      setSwitching(false);
+      setButtons((current) => !current);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isSwitching]);
+  return (
+    <div data-lab-demo="switching" style={{ width: 420 }}>
+      <p>
+        <Button onPress={() => setSwitching(true)} isDisabled={isSwitching}>
+          Switch scroll buttons in a second
+        </Button>
+      </p>
+      <Tabs>
+        <TabList
+          aria-label="Times"
+          scrollButtons={hasButtons}
+          onRename={(key, name) =>
+            setNames((current) => current.map((item) => (item === key ? name : item)))
+          }
+        >
+          {names.map((name) => (
+            <Tab key={name} id={name}>
+              {name}
+            </Tab>
+          ))}
+        </TabList>
+        {names.map((name) => (
+          <TabPanel key={name} id={name}>
+            The {name.toLowerCase()} plan.
+          </TabPanel>
+        ))}
+      </Tabs>
+      <p data-lab-output="switching">Times: {names.join(', ')}</p>
+    </div>
+  );
+}

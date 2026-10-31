@@ -18,6 +18,7 @@ import {
 import { Input } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import {
@@ -95,6 +96,8 @@ function useTabBox(
   { tabKey, ref }: { tabKey: Key; ref: RefObject<HTMLElement | null> },
 ) {
   const [box, setBox] = useState<CSSProperties | null>(null);
+  // The list element changes when a presentation change wraps it in a bar, so measuring follows the
+  // current list on every render.
   useLayoutEffect(() => {
     const list = listRef.current;
     const measure = () => {
@@ -103,17 +106,18 @@ function useTabBox(
       if (!tab || !(parent instanceof HTMLElement)) return;
       const tabBox = tab.getBoundingClientRect();
       const parentBox = parent.getBoundingClientRect();
-      setBox({
+      const next = {
         left: tabBox.left - parentBox.left - parent.clientLeft + parent.scrollLeft,
         top: tabBox.top - parentBox.top - parent.clientTop + parent.scrollTop,
         width: tabBox.width,
         height: tabBox.height,
-      });
+      };
+      setBox((current) => (current && isShallowEqual(current, next) ? current : next));
     };
     measure();
     list?.addEventListener('scroll', measure);
     return () => list?.removeEventListener('scroll', measure);
-  }, [listRef, tabKey, ref]);
+  });
   return box;
 }
 

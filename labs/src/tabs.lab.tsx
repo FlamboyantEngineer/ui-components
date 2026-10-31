@@ -7,6 +7,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   DisabledRemovalTabs,
   LockingTabs,
+  SwitchingTabs,
   MealTabs,
   RememberedTabs,
   TypedKeyTabs,
@@ -261,6 +262,12 @@ mountLab(
       description="Press Lock in a second, then rename a tab with F2 and type, or open a tab's menu: when the tabs lock, the edit ends without renaming and the menu closes, so Delete cannot run."
     >
       <LockingTabs />
+    </LabSection>
+    <LabSection
+      title="Renaming while the layout changes"
+      description="Press Switch scroll buttons in a second, then rename a tab with F2 and type: the list gains or drops its scroll buttons under the field, which keeps the draft and focus."
+    >
+      <SwitchingTabs />
     </LabSection>
     <LabSection
       title="Vertical reorder"

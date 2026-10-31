@@ -258,7 +258,8 @@ export function TabList({
   const orientation = useSlottedContext(TabsContext)?.orientation ?? 'horizontal';
   const { isMenu, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });
   const [listRef, setListRef] = useForwardedRef(ref);
-  const menu = useTabOverflow(state, isMenu);
+  const { editingKey } = useContext(TabsSharedContext);
+  const menu = useTabOverflow(state, isMenu, editingKey);
   const scroll = useToolbarScroll(hasButtons);
   const scrollOverflowing = useListOverflow(listRef, orientation);
   useCenterSelectedTab(listRef, { orientation, selectedKey: state?.selectedKey ?? null });
@@ -288,24 +289,30 @@ export function TabList({
 
   const overflowing = isMenu ? menu.hiddenItems.length > 0 : scrollOverflowing;
   const list = (
+    <VisibleCollection keys={menu.visibleKeys}>
+      <AriaTabList
+        {...mergeProps(rest, { onScroll: hasButtons ? scroll.syncOverflow : undefined })}
+        render={keys ? renderListKeys(rest.render, keys) : rest.render}
+        ref={elementRef}
+        {...hooks.slot('list', { overflowing }, className)}
+      />
+    </VisibleCollection>
+  );
+  const hasBar = isMenu || hasButtons || Boolean(onAdd);
+  // The overlays keep their place whether or not a bar wraps the list, so a presentation change
+  // that adds or drops the bar keeps a rename's draft, message and focus.
+  return (
     <TabActionsContext.Provider value={actions}>
-      <VisibleCollection keys={menu.visibleKeys}>
-        <AriaTabList
-          {...mergeProps(rest, { onScroll: hasButtons ? scroll.syncOverflow : undefined })}
-          render={keys ? renderListKeys(rest.render, keys) : rest.render}
-          ref={elementRef}
-          {...hooks.slot('list', { overflowing }, className)}
-        />
-      </VisibleCollection>
+      {hasBar ? (
+        <TabBar {...{ state, orientation, isMenu, hasButtons, menu, onAdd }} scroll={scroll}>
+          {list}
+        </TabBar>
+      ) : (
+        list
+      )}
       <ListStateSync state={state} />
       <TabRenameOverlay rename={actions.rename} state={state} listRef={listRef} />
       <TabMenuOverlay menu={actions.menu} state={state} />
     </TabActionsContext.Provider>
-  );
-  if (!isMenu && !hasButtons && !onAdd) return list;
-  return (
-    <TabBar {...{ state, orientation, isMenu, hasButtons, menu, onAdd }} scroll={scroll}>
-      {list}
-    </TabBar>
   );
 }
