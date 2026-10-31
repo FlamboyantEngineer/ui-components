@@ -129,6 +129,20 @@ function ControlledSections() {
   );
 }
 
+/** An outline whose Pears section the page removes and brings back. */
+function ReturningSection() {
+  const [hasPears, setPears] = useState(true);
+  const shown = hasPears ? sample : sample.filter((heading) => !heading.id.startsWith('pears'));
+  return (
+    <div data-lab-returning="">
+      <Button size="sm" onPress={() => setPears((current) => !current)}>
+        {hasPears ? 'Remove Pears' : 'Bring Pears back'}
+      </Button>
+      <Outline aria-label="Fruit" headings={shown} collapseBelowLevel={1} />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -153,6 +167,12 @@ mountLab(
       description="The caller holds the expanded sections, numbered in Roman numerals, then letters, then digits."
     >
       <ControlledSections />
+    </LabSection>
+    <LabSection
+      title="A section that comes back"
+      description="Sections start collapsed. Expand Pears, remove it, then bring it back: it starts collapsed again, since the reader's toggle left with its heading."
+    >
+      <ReturningSection />
     </LabSection>
   </>,
 );

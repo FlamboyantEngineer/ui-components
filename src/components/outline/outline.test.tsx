@@ -340,6 +340,18 @@ describe('Outline', () => {
     expect(toggle('Design')).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('UIC-OUTLINE-4.2 forgets a toggle once its heading leaves the outline', async () => {
+    const { rerender } = render(<Outline headings={headings} collapseBelowLevel={2} />);
+    await userEvent.click(toggle('Terms'));
+    expect(toggle('Terms')).toHaveAttribute('aria-expanded', 'true');
+    const others = headings.filter(
+      (heading) => heading.id !== 'terms' && heading.id !== 'abbreviations',
+    );
+    rerender(<Outline headings={others} collapseBelowLevel={2} />);
+    rerender(<Outline headings={headings} collapseBelowLevel={2} />);
+    expect(toggle('Terms')).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('UIC-OUTLINE-4.2 lets the caller control the expanded entries', async () => {
     function Controlled(props: Partial<OutlineProps>) {
       const [keys, setKeys] = useState<Set<Key>>(new Set(['intro']));

@@ -179,6 +179,7 @@ export function resetConversation(runtime: TranscriptRuntime) {
   runtime.registry.forgetUnmounted();
   runtime.seen.clear();
   runtime.keeper.reset();
+  runtime.windowModel.reset();
   runtime.activeKey = null;
   runtime.unseen.clear();
   runtime.streaming.clear();

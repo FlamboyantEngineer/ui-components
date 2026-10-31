@@ -68,7 +68,7 @@ Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`
 
 ### UIC-OUTLINE-4.2 - Expanded entries
 
-Every entry with children shall start expanded, unless `collapseBelowLevel` collapses those whose heading level is that level or deeper, or `defaultExpandedKeys` lists the ids to expand at first. A level rule also applies to headings that arrive later, until the reader toggles them. `expandedKeys` controls the expanded entries, and `onExpandedChange` receives the ids of every expanded entry after each toggle.
+Every entry with children shall start expanded, unless `collapseBelowLevel` collapses those whose heading level is that level or deeper, or `defaultExpandedKeys` lists the ids to expand at first. A level rule also applies to headings that arrive later, until the reader toggles them. The reader's toggle of an entry is forgotten once its heading leaves the outline, so a heading that later arrives with the same id starts from these rules again. `expandedKeys` controls the expanded entries, and `onExpandedChange` receives the ids of every expanded entry after each toggle.
 
 Implementation: `src/components/outline/use-outline-expansion.ts`
 Verification: `src/components/outline/outline.test.tsx`, `e2e/outline.spec.ts`

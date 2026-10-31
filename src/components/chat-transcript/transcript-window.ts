@@ -18,6 +18,8 @@ export interface WindowModel {
   range(viewport: HTMLElement, feed: HTMLElement, keys: readonly string[]): WindowRange | null;
   /** The height that stands in for the unmounted children from `start` up to `end`. */
   gapHeight(keys: readonly string[], start: number, end: number): number;
+  /** Forgets every measurement, for another conversation. */
+  reset(): void;
 }
 
 /** What an unmeasured child is taken to be before anything is measured, in pixels. */
@@ -47,6 +49,11 @@ export function createWindowModel(): WindowModel {
       if (element) spacers.add(element);
     },
     isSpacer: (element) => spacers.has(element),
+    reset() {
+      heights.clear();
+      total = 0;
+      gap = 0;
+    },
     measure(feed, mounted) {
       const elements = [...feed.children].filter((child) => !spacers.has(child));
       // A child that drew no element, or several, would pair heights with the wrong keys.

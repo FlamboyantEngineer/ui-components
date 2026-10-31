@@ -123,3 +123,19 @@ test.describe('Outline lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-OUTLINE-4.2 forgets a toggle once its heading leaves the outline', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('outline');
+  const demo = page.locator('[data-lab-returning]');
+  const pears = demo.getByRole('button', { name: 'Sections in Pears' });
+  await expect(pears).toHaveAttribute('aria-expanded', 'false');
+  await pears.click();
+  await expect(pears).toHaveAttribute('aria-expanded', 'true');
+  await demo.getByRole('button', { name: 'Remove Pears' }).click();
+  await expect(pears).toHaveCount(0);
+  await demo.getByRole('button', { name: 'Bring Pears back' }).click();
+  await expect(pears).toHaveAttribute('aria-expanded', 'false');
+});

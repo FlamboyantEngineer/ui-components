@@ -1,7 +1,7 @@
 'use client';
 
 import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -20,13 +20,32 @@ export interface TreeLoads {
   errorOf: (key: Key) => string | null;
 }
 
+/** The settled loads of the branches still listed, or `loads` itself when every one is. */
+function pruneLoads(
+  loads: ReadonlyMap<Key, BranchLoad>,
+  isListed: (key: Key) => boolean,
+): ReadonlyMap<Key, BranchLoad> {
+  const gone = [...loads].filter(([key, load]) => load !== 'loading' && !isListed(key));
+  if (gone.length === 0) return loads;
+  const kept = new Map(loads);
+  for (const [key] of gone) kept.delete(key);
+  return kept;
+}
+
 /**
  * Loading children on demand, branch by branch: `onLoad` may return a promise; while it is pending
- * the branch is loading, and a rejection keeps its message until the next attempt.
+ * the branch is loading, and a rejection keeps its message until the next attempt. A branch that
+ * `isListed` no longer finds is forgotten, so it asks again if it comes back.
  */
-export function useTreeLoads(onLoad: ((key: Key) => unknown) | undefined): TreeLoads {
+export function useTreeLoads(
+  onLoad: ((key: Key) => unknown) | undefined,
+  isListed: (key: Key) => boolean,
+): TreeLoads {
   const strings = useUiStrings();
   const [loads, setLoads] = useState<ReadonlyMap<Key, BranchLoad>>(() => new Map());
+  useEffect(() => {
+    setLoads((current) => pruneLoads(current, isListed));
+  }, [isListed]);
   // Requests can repeat before the loading state renders: the running ones are tracked here too.
   const running = useRef(new Set<Key>());
   const latest = useLatest(onLoad);
