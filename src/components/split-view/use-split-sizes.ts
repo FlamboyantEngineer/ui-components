@@ -5,6 +5,7 @@ import { useUiStorage, type PersistCodec } from '../../core/provider.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
 import {
   alignSplitSizes,
   collapseSplitPane,
@@ -71,16 +72,19 @@ function isSize(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-/** The panes' units and bounds, which decide what stored sizes and a drag's values mean. */
-function toPaneShape(panes: readonly SplitViewPane[]): string {
-  return JSON.stringify(
-    panes.map((pane) => [
-      pane.unit ?? 'percent',
-      pane.minSize,
-      pane.maxSize,
-      pane.collapsible ?? false,
-      pane.collapsedSize,
-    ]),
+/**
+ * The panes' units and bounds, which decide what stored sizes and a drag's values mean; the same
+ * list while they hold the same values.
+ */
+function usePaneShape(panes: readonly SplitViewPane[]) {
+  return useStableArray(
+    panes.map((pane) => ({
+      unit: pane.unit ?? 'percent',
+      minSize: pane.minSize,
+      maxSize: pane.maxSize,
+      collapsible: pane.collapsible ?? false,
+      collapsedSize: pane.collapsedSize,
+    })),
   );
 }
 
@@ -107,7 +111,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
   const owner = useShallowStable({
     key: persistedKey,
     storage: persistedKey === undefined ? undefined : adapter,
-    shape: toPaneShape(panes),
+    shape: usePaneShape(panes),
   });
   const codec = useMemo(() => createSizesCodec(panes), [panes]);
   const getInitial = () =>

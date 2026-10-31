@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type RefObject } from 'react';
+import { useStableArray } from './use-stable-array.js';
 
 function widestText(element: Element, texts: readonly string[]): number | null {
   const canvas =
@@ -24,11 +25,10 @@ export function useWidestTextWidth(
   texts: readonly string[],
 ): number | null {
   const [width, setWidth] = useState<number | null>(null);
-  const key = JSON.stringify(texts);
+  const lines = useStableArray(texts);
   useEffect(() => {
     const element = ref.current;
     if (!element) return undefined;
-    const lines: string[] = JSON.parse(key);
     let active = true;
     const measure = () => {
       if (active) setWidth(widestText(element, lines));
@@ -38,6 +38,6 @@ export function useWidestTextWidth(
     return () => {
       active = false;
     };
-  }, [ref, key]);
+  }, [ref, lines]);
   return width;
 }
