@@ -49,6 +49,10 @@ describe('Markdown lazy continuation', () => {
     expect(parse('> - a\nb')).toBe('blockquote[list[item[paragraph(a\nb)]]]');
     expect(parse('> > a\nb')).toBe('blockquote[blockquote[paragraph(a\nb)]]');
     expect(parse('- > a\nb')).toBe('list[item[blockquote[paragraph(a\nb)]]]');
+    // A line indented to a nested item's content column continues that item's paragraph.
+    expect(parse('> - a\n>   - b\n>\n>     c\nd')).toBe(
+      'blockquote[list[item[paragraph(a) list[item[paragraph(b) paragraph(c\nd)]]]]]',
+    );
   });
 
   it('UIC-MARKDOWN-1.5 UIC-MARKDOWN-1.6 ends nested containers whose innermost block is no paragraph', () => {

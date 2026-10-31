@@ -15,7 +15,7 @@ import {
 import { readBlockquote, readList } from './markdown-containers.js';
 import { createHeadingIdAllocator, toPlainText } from './markdown-headings.js';
 import { parseMarkdownInlines } from './markdown-inlines.js';
-import { expandLeadingTabs, isBlank } from './markdown-lines.js';
+import { isBlank, toBlockLine } from './markdown-lines.js';
 import type { MarkdownBlock, MarkdownDocument } from './markdown-nodes.js';
 
 interface BlockFrame {
@@ -96,10 +96,7 @@ export function parseMarkdownBlocks(
   source: string,
   takenIds: readonly string[] = [],
 ): ParsedBlocks {
-  const lines = source
-    .replaceAll('\u0000', '\ufffd')
-    .split(/\r\n?|\n/)
-    .map(expandLeadingTabs);
+  const lines = source.split(/\r\n?|\n/).map(toBlockLine);
   const frames: BlockFrame[] = [];
   const context: BlockContext = {
     definitions: new Map(),

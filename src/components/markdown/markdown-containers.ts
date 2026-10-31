@@ -9,6 +9,8 @@ import {
   readFence,
   readListMarker,
   stripBlockquoteMarker,
+  stripColumns,
+  stripIndent,
   type Fence,
   type ListMarker,
 } from './markdown-lines.js';
@@ -21,7 +23,7 @@ interface CollectedItem {
   next: number;
 }
 
-const taskMarker = /^\[([ xX])\][ \t]+(?=\S)/;
+const taskMarker = /^\[([ xX])\][ \t\0]+(?=[^\s\0])/;
 
 /**
  * A paragraph continuation line without the container's marker or indentation: the container's
@@ -56,7 +58,7 @@ function nextNonBlank(lines: readonly string[], from: number): number {
 
 /** Reads one list item's lines, without its marker and content indentation. */
 function collectItem(lines: readonly string[], at: number, marker: ListMarker): CollectedItem {
-  const head = (lines[at] ?? '').slice(marker.contentIndent);
+  const head = marker.content;
   const task = taskMarker.exec(head);
   const itemLines = [task ? head.slice(task[0].length) : head];
   const state = createParagraphState();
@@ -73,10 +75,10 @@ function collectItem(lines: readonly string[], at: number, marker: ListMarker): 
       if (resume >= lines.length || indentOf(lines[resume] ?? '') < marker.contentIndent) break;
       for (; index < resume; index += 1) add('');
     } else if (indentOf(line) >= marker.contentIndent) {
-      add(line.slice(marker.contentIndent));
+      add(stripColumns(line, marker.contentIndent));
       index += 1;
     } else if (isLazyLine(state, line, lines[index + 1])) {
-      add(line.trimStart());
+      add(stripIndent(line));
       index += 1;
     } else {
       break;

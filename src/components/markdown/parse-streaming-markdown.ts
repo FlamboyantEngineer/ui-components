@@ -2,7 +2,13 @@
 // (specs/MARKDOWN.md, UIC-MARKDOWN-2.12): the blocks before the last place where a new top-level
 // block must start stay as they were parsed, and only the source after it is parsed again.
 
-import { isFenceClose, readFence, readListMarker, type Fence } from './markdown-lines.js';
+import {
+  isFenceClose,
+  readFence,
+  readListMarker,
+  toBlockLine,
+  type Fence,
+} from './markdown-lines.js';
 import type { MarkdownBlock, MarkdownDocument } from './markdown-nodes.js';
 import { parseMarkdownBlocks } from './parse-markdown.js';
 
@@ -37,7 +43,7 @@ function findSettledEnd(source: string, from: number): number {
   while (start < source.length) {
     const lineEnd = source.indexOf('\n', start);
     if (lineEnd === -1) break;
-    const line = source.slice(start, lineEnd);
+    const line = toBlockLine(source.slice(start, lineEnd));
     if (fence) {
       if (isFenceClose(line, fence)) fence = null;
     } else {
