@@ -112,6 +112,30 @@ describe('ChatAttachment', () => {
     expect(screen.getByText('Harbour.png')).toBeInTheDocument();
   });
 
+  it('UIC-CHAT-ATTACHMENT-1.2 keeps a new thumbnail when the departed one fails', () => {
+    const { container, rerender } = render(
+      <ChatAttachment {...photo} thumbnailUrl="/files/harbour-uploading.png" />,
+    );
+    const departed = container.querySelector('.ui-chat-attachment__thumbnail');
+    if (!departed) throw new Error('No thumbnail');
+    rerender(<ChatAttachment {...photo} thumbnailUrl="/files/harbour-small.png" />);
+    fireEvent.error(departed);
+    expect(root(container)).toHaveAttribute('data-display', 'thumbnail');
+    expect(container.querySelector('.ui-chat-attachment__thumbnail')).toHaveAttribute(
+      'src',
+      '/files/harbour-small.png',
+    );
+  });
+
+  it('UIC-CHAT-ATTACHMENT-1.2 falls back for an image that failed before its handler was attached', () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    const width = vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+    const { container } = render(<ChatAttachment {...photo} />);
+    expect(root(container)).toHaveAttribute('data-display', 'chip');
+    complete.mockRestore();
+    width.mockRestore();
+  });
+
   it('UIC-CHAT-ATTACHMENT-1.4 shows the upload progress with its value', () => {
     const { container } = render(<ChatAttachment {...report} status="uploading" progress={0.45} />);
     const bar = screen.getByRole('progressbar', { name: 'Uploading Trip plan.pdf' });
