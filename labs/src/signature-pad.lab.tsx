@@ -73,6 +73,9 @@ function LiveSignature() {
       <Button onPress={() => setReadOnly((current) => !current)}>
         {isReadOnly ? 'Unlock drawing' : 'Lock drawing'}
       </Button>
+      <Button onPress={() => window.setTimeout(() => setValue(signature), 2000)}>
+        Replace in 2 seconds
+      </Button>
       <LabOutput name="Kind">{value?.kind ?? 'empty'}</LabOutput>
       <LabOutput name="Strokes">{drawing ? drawing.paths.length : 0}</LabOutput>
       <LabOutput name="Typed">{value?.kind === 'typed' ? value.text : 'none'}</LabOutput>
@@ -176,7 +179,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Drawing and output"
-      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup. Cancelling or locking the drawing discards its unfinished stroke."
+      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup. Cancelling or locking the drawing, or a replacement arriving mid-stroke (start drawing after Replace in 2 seconds), discards its unfinished stroke."
     >
       <LiveSignature />
     </LabSection>
