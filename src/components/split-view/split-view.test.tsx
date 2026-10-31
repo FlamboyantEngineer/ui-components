@@ -481,6 +481,48 @@ describe('SplitView panes', () => {
     expect(trailing).toHaveAttribute('aria-valuenow', '195');
   });
 
+  it('UIC-SPLIT-VIEW-2.5 UIC-SPLIT-VIEW-2.7 keeps every pane of an all-pixel split at its size', async () => {
+    const user = userEvent.setup();
+    const handle = createRef<SplitViewHandle>();
+    const tools: SplitViewPane[] = [
+      { id: 'left', unit: 'pixel', minSize: 50, maxSize: 250 },
+      { id: 'right', unit: 'pixel', minSize: 50, maxSize: 250, collapsible: true },
+    ];
+    const { rerender } = render(
+      <SplitView panes={tools} sizes={[100, 400]} handleRef={handle}>
+        {[<p key="a">Tools</p>, <p key="b">Layers</p>]}
+      </SplitView>,
+    );
+    const left = requireDefined(document.getElementById('left'));
+    const right = requireDefined(document.getElementById('right'));
+    expect(left.style.flexBasis).toBe('100px');
+    expect(right.style.flexBasis).toBe('250px');
+    expect(left).not.toHaveAttribute('data-flexible');
+    expect(right).not.toHaveAttribute('data-flexible');
+
+    const onSizesChangeEnd = vi.fn();
+    rerender(
+      <SplitView
+        panes={tools}
+        defaultSizes={[100, 200]}
+        handleRef={handle}
+        onSizesChangeEnd={onSizesChangeEnd}
+        key="uncontrolled"
+      >
+        {[<p key="a">Tools</p>, <p key="b">Layers</p>]}
+      </SplitView>,
+    );
+    const pane = () => requireDefined(document.getElementById('right'));
+    expect(pane().style.flexBasis).toBe('200px');
+    screen.getByRole('separator').focus();
+    await user.keyboard('{Enter}');
+    expect(pane().style.flexBasis).toBe('0px');
+    expect(pane()).toHaveAttribute('data-collapsed', 'true');
+    act(() => handle.current?.expand(1));
+    expect(pane().style.flexBasis).toBe('200px');
+    expect(onSizesChangeEnd.mock.calls).toEqual([[[100, 0]], [[100, 200]]]);
+  });
+
   it('UIC-SPLIT-VIEW-2.6 collapses a pane by drag, Enter and Home and reports it', async () => {
     const user = userEvent.setup();
     const onCollapse = vi.fn();

@@ -26,7 +26,7 @@ describe('split layout', () => {
     expect(normalizeSplitSizes(three, [60, 39, 1])).toEqual([60, 30, 10]);
     expect(resolveFlexiblePane(three)).toBe(2);
     expect(resolveFlexiblePane([{}, { unit: 'pixel' }])).toBe(0);
-    expect(resolveFlexiblePane([{ unit: 'pixel' }, { unit: 'pixel' }])).toBe(1);
+    expect(resolveFlexiblePane([{ unit: 'pixel' }, { unit: 'pixel' }])).toBe(-1);
   });
 
   it('UIC-SPLIT-VIEW-2.2 bounds a separator between percent panes by both panes', () => {
@@ -74,6 +74,28 @@ describe('split layout', () => {
       value: 200,
       max: 250,
     });
+  });
+
+  it('UIC-SPLIT-VIEW-2.5 keeps every pixel pane at its own size when no pane is in percent', () => {
+    const tools: SplitViewPane[] = [
+      { unit: 'pixel', minSize: 50, maxSize: 250 },
+      { unit: 'pixel', minSize: 50, maxSize: 250, collapsible: true },
+    ];
+    const sizes = resolveInitialSplitSizes(tools, [100, 200]);
+    expect(sizes).toEqual([100, 200]);
+    expect(normalizeSplitSizes(tools, [100, 400])).toEqual([100, 250]);
+    expect(resolveSplitPaneBasis(tools, sizes, 0)).toBe('100px');
+    expect(resolveSplitPaneBasis(tools, sizes, 1)).toBe('200px');
+    expect(resolveSplitSeparator(tools, sizes, { index: 0, available: 300 })).toMatchObject({
+      sized: 0,
+      pixel: true,
+      value: 100,
+      max: 250,
+    });
+    expect(resolveSplitSeparator(tools, sizes, { index: 0, available: 60 }).max).toBe(160);
+    const collapsed = collapseSplitPane(tools, sizes, 1);
+    expect(collapsed).toEqual([100, 0]);
+    expect(expandSplitPane(tools, collapsed, { index: 1, size: 200 })).toEqual([100, 200]);
   });
 
   it('UIC-SPLIT-VIEW-2.6 snaps a collapsible pane shut below half its smallest size', () => {

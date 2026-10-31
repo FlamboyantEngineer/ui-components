@@ -1,5 +1,6 @@
 // Sizes of a resizable split's panes: percent panes share the space pixel panes leave, the last
 // percent pane (the flexible one) takes what the others leave, and collapsible panes snap shut.
+// Pixel panes alone each keep their size; the space they leave stays empty.
 
 import { clamp } from '../../utils/clamp.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -90,10 +91,12 @@ export function isSplitPaneCollapsed(pane: SplitViewPane | undefined, size: numb
   return isShut(resolvePaneBounds(pane), size);
 }
 
-/** The pane that takes the space the others leave: the last percent pane, else the last pane. */
+/**
+ * The pane that takes the space the others leave: the last percent pane, or -1 when every pane is
+ * in pixels, so each keeps its own size and what they leave stays empty.
+ */
 export function resolveFlexiblePane(panes: readonly SplitViewPane[]): number {
-  const last = panes.findLastIndex((pane) => pane.unit !== 'pixel');
-  return last === -1 ? panes.length - 1 : last;
+  return panes.findLastIndex((pane) => pane.unit !== 'pixel');
 }
 
 /** The sum of the percent panes' sizes other than pane `skip`. */
@@ -320,7 +323,8 @@ export function expandSplitPane(
 
 /**
  * A pane's inline flex basis: a pixel pane's size, a percent pane's share of the space the pixel
- * panes leave, and none for the flexible pane, which takes what remains.
+ * panes leave, and none for the flexible pane, which takes what remains. A pixel pane is never the
+ * flexible one.
  */
 export function resolveSplitPaneBasis(
   panes: readonly SplitViewPane[],

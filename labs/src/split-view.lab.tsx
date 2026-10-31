@@ -266,6 +266,34 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Pixel panes only"
+      description="Two pixel panes of 100 and 200 pixels (between 50 and 250) keep their widths in a wider split; the space they leave stays empty. Enter on the separator collapses the layers pane."
+    >
+      <StateMatrix
+        axes={{ width: ['480', '720'] }}
+        render={({ width }) => (
+          <div style={frame(Number(width), 140)} data-lab-split={`all-pixel ${width}`}>
+            <SplitView
+              panes={[
+                { id: `all-pixel-${width}-tools`, unit: 'pixel', minSize: 50, maxSize: 250 },
+                {
+                  id: `all-pixel-${width}-layers`,
+                  unit: 'pixel',
+                  minSize: 50,
+                  maxSize: 250,
+                  collapsible: true,
+                },
+              ]}
+              defaultSizes={[100, 200]}
+              separatorLabel={`Resize tools, ${width}px`}
+            >
+              {[<Pane key="a">Tools</Pane>, <Pane key="b">Layers</Pane>]}
+            </SplitView>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Collapsible panes"
       description="Drag a pane below half its smallest size to collapse it, or press Enter on its separator; Enter again restores it. The navigation collapses to a 4% rail. The buttons use the imperative handle."
     >
