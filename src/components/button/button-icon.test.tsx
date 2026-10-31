@@ -37,6 +37,49 @@ describe('Button', () => {
     expect(() => render(<Button icon={CloseGlyph} label="  " />)).toThrow(/label/);
   });
 
+  it.each([
+    ['false', false],
+    ['null', null],
+    ['undefined', undefined],
+  ] as const)(
+    'UIC-BUTTON-11.1 treats an icon of %s as no icon, in button and link modes',
+    (_, empty) => {
+      const showsIcon = false as boolean;
+      const { rerender } = render(
+        <>
+          <Button icon={empty}>Save</Button>
+          <Button icon={showsIcon && CopyGlyph} label="Copy" href="/copy">
+            Copy link
+          </Button>
+        </>,
+      );
+      const save = screen.getByRole('button', { name: 'Save' });
+      const link = screen.getByRole('link', { name: 'Copy link' });
+      for (const element of [save, link]) {
+        expect(element).toHaveAttribute('data-content', 'label');
+        expect(element).toHaveAttribute('data-variant', 'secondary');
+        expect(element.querySelector('.ui-button__icon')).toBeNull();
+        expect(element).not.toHaveAttribute('aria-label');
+      }
+      rerender(
+        <>
+          <Button icon={CopyGlyph} label="Save">
+            Save
+          </Button>
+          <Button icon={CopyGlyph} label="Copy" href="/copy">
+            Copy link
+          </Button>
+        </>,
+      );
+      expect(save).toHaveAttribute('data-content', 'icon');
+      expect(save).toHaveAttribute('data-variant', 'ghost');
+      expect(screen.getByRole('link', { name: 'Copy' })).toHaveAttribute('data-content', 'icon');
+      rerender(<Button icon={empty}>Save</Button>);
+      expect(save).toHaveAttribute('data-content', 'label');
+      expect(save.querySelector('.ui-button__icon')).toBeNull();
+    },
+  );
+
   it('UIC-BUTTON-11.2 publishes variant and size, ghost and medium by default', () => {
     const { rerender } = render(<Button icon={MoreGlyph} label="More" />);
     const button = screen.getByRole('button');

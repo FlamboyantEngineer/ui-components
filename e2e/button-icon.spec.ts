@@ -120,4 +120,19 @@ test.describe('Button icon-only content', () => {
     await expect(link).toHaveAttribute('href', '#help');
     await expect(link).toHaveClass(/ui-button/);
   });
+
+  test('UIC-BUTTON-11.1 shows the text of a button whose conditional icon is false', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const demo = page.locator('[data-lab-demo="conditional-icon"]');
+    const edit = demo.getByRole('button', { name: 'Edit' });
+    await expect(edit).toHaveAttribute('data-content', 'icon');
+    await edit.click();
+    const done = demo.getByRole('button', { name: 'Done' });
+    await expect(done).toHaveAttribute('data-content', 'label');
+    await expect(done).toHaveText('Done');
+    await expect(demo.getByRole('link', { name: 'Help' })).toHaveText('Help');
+  });
 });

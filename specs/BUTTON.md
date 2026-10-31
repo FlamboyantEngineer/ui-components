@@ -122,7 +122,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-11.1 - Icon and name
 
-`Button` shall draw its `icon` (an imported icon component or rendered element) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error.
+`Button` shall draw its `icon` (an imported icon component or rendered element) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error. An `icon` of `undefined`, `null` or `false` is no icon (as for `startIcon` and `endIcon`): the button stays a labelled button, in both button and link modes, with its children as its label, its `secondary` default and `data-content="label"`, so a conditional icon such as `icon={isDone && CheckGlyph}` never selects icon-only mode.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`

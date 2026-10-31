@@ -39,4 +39,4 @@ export function Icon({ icon, children, size = 'md', label, className, ...rest }:
   );
 }
 
-export { toImageProps, toIconProps } from './icon-props.js';
+export { hasIcon, toImageProps, toIconProps } from './icon-props.js';

@@ -6,7 +6,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, type IconSource } from '../icon/icon.js';
-import { toIconProps } from '../icon/icon.js';
+import { hasIcon, toIconProps } from '../icon/icon.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { useButtonAction, type ButtonActionProps } from './button-action.js';
@@ -47,7 +47,7 @@ export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BasePr
   content?: ButtonContent | undefined;
   /** Where content sits on the button's width. Defaults to `center`. */
   align?: ButtonAlign | undefined;
-  /** Shows an icon-only button. Name it with `label` or `aria-label`. */
+  /** Shows an icon-only button. Name it with `label` or `aria-label`. `null` and `false` show none. */
   icon?: IconSource;
   /** The accessible name of an icon-only button. */
   label?: string | undefined;
@@ -105,17 +105,19 @@ function ButtonParts({
       {isPending ? (
         <ButtonSpinner className={hooks.slotClass('spinner')} label={pendingLabel} />
       ) : null}
-      {startIcon ? (
+      {hasIcon(startIcon) ? (
         <Icon {...toIconProps(startIcon)} className={hooks.slotClass('start-icon')} />
       ) : null}
-      {icon ? (
+      {hasIcon(icon) ? (
         <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />
       ) : content === 'parts' ? (
         children
       ) : (
         <span {...hooks.slot('label')}>{children}</span>
       )}
-      {endIcon ? <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} /> : null}
+      {hasIcon(endIcon) ? (
+        <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} />
+      ) : null}
     </>
   );
 }
@@ -146,7 +148,7 @@ function resolveButtonPresentation(
     'icon' | 'label' | 'aria-label' | 'tooltip' | 'shortcut' | 'variant' | 'content'
   >,
 ) {
-  const isIcon = props.icon !== undefined;
+  const isIcon = hasIcon(props.icon);
   const name = props.label ?? props['aria-label'];
   if (isIcon && !name?.trim()) throw new Error('An icon-only Button requires a non-empty label.');
   const hint = props.tooltip ?? (isIcon && props.shortcut ? name : undefined);
