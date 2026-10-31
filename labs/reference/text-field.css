@@ -40,7 +40,7 @@
   border-color: var(--ref-dirty);
 }
 
-.ui-text-field[data-dirty] .ui-text-field__group {
+.ui-text-field[data-dirty] .ui-text-field__group[data-framed] {
   border-color: var(--ref-dirty);
 }
 
@@ -57,7 +57,7 @@
   background: var(--ref-field-fill-inactive);
 }
 
-.ui-text-field[data-disabled] :is(.ui-text-field__input, .ui-text-field__group) {
+.ui-text-field[data-disabled] :is(.ui-text-field__input, .ui-text-field__group[data-framed]) {
   background: var(--ref-field-fill-inactive);
   color: var(--ref-muted);
 }
@@ -66,8 +66,13 @@
   cursor: not-allowed;
 }
 
+/* Without adornments or a reveal button, the group draws nothing and the input is the frame. */
+.ui-text-field__group:not([data-framed]) {
+  display: contents;
+}
+
 /* With adornments or a reveal button, the group is the frame and the input sits inside it. */
-.ui-text-field__group {
+.ui-text-field__group[data-framed] {
   display: flex;
   flex: 1 1 auto;
   align-items: center;
@@ -81,7 +86,7 @@
   background: var(--ref-field-fill);
 }
 
-.ui-text-field .ui-text-field__group .ui-text-field__input {
+.ui-text-field .ui-text-field__group[data-framed] .ui-text-field__input {
   height: 100%;
   padding: 0;
   border: 0;
@@ -89,20 +94,20 @@
   outline: none;
 }
 
-.ui-text-field__group[data-focus-within] {
+.ui-text-field__group[data-framed][data-focus-within] {
   border-color: var(--ref-focus);
   outline: var(--ref-focus-ring-thin);
 }
 
-.ui-text-field[data-validation='invalid'] .ui-text-field__group {
+.ui-text-field[data-validation='invalid'] .ui-text-field__group[data-framed] {
   border-color: var(--ref-danger);
 }
 
-.ui-text-field[data-validation='warning'] .ui-text-field__group {
+.ui-text-field[data-validation='warning'] .ui-text-field__group[data-framed] {
   border-color: var(--ref-warning);
 }
 
-.ui-text-field[data-readonly] .ui-text-field__group {
+.ui-text-field[data-readonly] .ui-text-field__group[data-framed] {
   border-style: dashed;
   background: var(--ref-field-fill-inactive);
 }
@@ -138,14 +143,14 @@
 }
 
 /* A multiline control's frame grows with its text area; adornments stay at the top. */
-.ui-text-field[data-multiline] .ui-text-field__group {
+.ui-text-field[data-multiline] .ui-text-field__group[data-framed] {
   align-items: flex-start;
   height: auto;
   min-height: var(--ref-field-height);
   padding-block: 3px;
 }
 
-.ui-text-field[data-multiline] .ui-text-field__group .ui-text-field__input {
+.ui-text-field[data-multiline] .ui-text-field__group[data-framed] .ui-text-field__input {
   align-self: stretch;
   height: auto;
 }
