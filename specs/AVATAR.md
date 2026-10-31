@@ -133,7 +133,7 @@ Verification: `src/components/avatar/avatar-presence.test.tsx`
 
 ### UIC-AVATAR-11.6 - Person card
 
-With `card`, the root shall be a `UserCardTrigger` ([USER-CARD.md](USER-CARD.md)), also carrying the `ui-user-card__trigger` class: a button that opens the card in a popover for a click, Enter or Space, still calls `onPress`, keeps the hooks and the accessible name above, and returns focus to the avatar when the card closes. `cardTrigger` is the trigger's `trigger` ([UIC-AVATAR-11.8](#uic-avatar-28---card-on-hover)).
+With `card`, the root shall be a `UserCardTrigger` ([USER-CARD-TRIGGER.md](USER-CARD-TRIGGER.md)), also carrying the `ui-user-card-trigger` class: a button that opens the card in a popover for a click, Enter or Space, still calls `onPress`, keeps the hooks and the accessible name above, and returns focus to the avatar when the card closes. `cardTrigger` is the trigger's `trigger` ([UIC-AVATAR-11.8](#uic-avatar-28---card-on-hover)).
 
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/user-card/user-card.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
@@ -147,14 +147,14 @@ Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-pres
 
 ### UIC-AVATAR-11.8 - Card on hover
 
-With `card` and `cardTrigger="hover"`, the card shall open on hover and keyboard focus after the preview delays, or on a long press, without moving focus, as a `UserCardTrigger` with `trigger="hover"` does ([UIC-USER-CARD-2.3](USER-CARD.md#uic-user-card-23---opening-on-hover-and-focus)). Pressing the avatar still calls `onPress`.
+With `card` and `cardTrigger="hover"`, the card shall open on hover and keyboard focus after the preview delays, or on a long press, without moving focus, as a `UserCardTrigger` with `trigger="hover"` does ([UIC-USER-CARD-TRIGGER-1.3](USER-CARD-TRIGGER.md#uic-user-card-trigger-13---opening-on-hover-and-focus)). Pressing the avatar still calls `onPress`.
 
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/user-card/user-card.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
 
 ### UIC-AVATAR-11.9 - Stable button
 
-A pressable avatar (with `onPress` or `card`) shall keep the same button element, and its focus, while `card`, `cardTrigger` or `nameTooltip` change, so a card or tooltip that becomes available later does not interrupt keyboard navigation. The button carries the `ui-user-card__trigger` class and the card's ARIA state only while it has a card.
+A pressable avatar (with `onPress` or `card`) shall keep the same button element, and its focus, while `card`, `cardTrigger` or `nameTooltip` change, so a card or tooltip that becomes available later does not interrupt keyboard navigation. The button carries the `ui-user-card-trigger` class and the card's ARIA state only while it has a card.
 
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar-root.tsx`, `src/components/user-card/user-card.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`

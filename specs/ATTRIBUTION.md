@@ -27,7 +27,7 @@ Verification: `src/components/attribution/attribution.test.tsx`, `e2e/attributio
 
 ### UIC-ATTRIBUTION-1.4 - Person card
 
-With `card`, the person slot shall be a `UserCardTrigger` ([USER-CARD.md](USER-CARD.md)), also carrying `ui-user-card__trigger`: a button named by the person's name that opens the card on press, or with `cardTrigger="hover"` on hover and keyboard focus. The reference card trigger shall align its name on the surrounding sentence baseline, without extra button padding.
+With `card`, the person slot shall be a `UserCardTrigger` ([USER-CARD-TRIGGER.md](USER-CARD-TRIGGER.md)), also carrying `ui-user-card-trigger`: a button named by the person's name that opens the card on press, or with `cardTrigger="hover"` on hover and keyboard focus. The reference card trigger shall align its name on the surrounding sentence baseline, without extra button padding.
 
 Implementation: `src/components/attribution/attribution.tsx`, `src/components/user-card/user-card.tsx`
 Verification: `src/components/attribution/attribution.test.tsx`, `e2e/attribution.spec.ts`, `e2e/lab-layout-regressions.spec.ts`

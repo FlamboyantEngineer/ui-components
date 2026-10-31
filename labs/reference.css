@@ -178,6 +178,7 @@
 @import url('reference/truncation-tooltip.css') layer(ui-reference);
 @import url('reference/unsaved-changes-guard.css') layer(ui-reference);
 @import url('reference/user-card.css') layer(ui-reference);
+@import url('reference/user-card-trigger.css') layer(ui-reference);
 @import url('reference/user-identity.css') layer(ui-reference);
 @import url('reference/version-history.css') layer(ui-reference);
 @import url('reference/view-switcher.css') layer(ui-reference);

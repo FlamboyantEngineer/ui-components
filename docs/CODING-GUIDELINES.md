@@ -36,6 +36,8 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **S7. React Aria loads only in `src/primitives/`.** Import React Aria building blocks (`Button`, `Popover`, `useLocale`, `Key`, …) from `src/primitives/index.js`, never from `react-aria-components`, `react-aria`, `@internationalized/*` or other React Aria packages. A building block the library has not used yet is added, by name, to its area module first. **(enforced: lint)**
 
+**S8. No import cycles between components.** Runtime imports (type-only imports aside) never form a cycle that spans two component directories: a leaf such as `Avatar` must not reach back, through a component it opens or wraps, to a module that imports it. Break such a cycle by moving the shared part into its own component, as `UserCardTrigger` is split from `UserCard`. Cycles between the modules of one component are allowed but best avoided. **(enforced)**
+
 ## Inheritance and composition
 
 **I1. Function components only.** No classes in library source, including subclasses of third-party classes: wrap or compose them instead. **(enforced in library source)**

@@ -3,7 +3,7 @@
 //   N1 kebab-case files, N2/S5 one name per component across spec, lab, test and partial (a
 //   directory may hold a family of components without a namesake, such as layout primitives),
 //   S2 component directory layout, S3 re-export-only entry points, I2 props that extend BaseProps,
-//   N8 one createHooks declaration per component.
+//   N8 one createHooks declaration per component, S8 no import cycles between components.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, relative, sep } from 'node:path';
@@ -118,6 +118,85 @@ for (const path of walk(join(root, 'src'))) {
     ts.forEachChild(node, visit);
   };
   visit(source);
+}
+
+// S8: no runtime import cycle spans two component directories. Type-only imports are erased, so
+// they are left out of the graph.
+/** Whether an import or export statement brings in types only, which compile away. */
+function isTypeOnly(statement) {
+  if (ts.isExportDeclaration(statement)) {
+    const clause = statement.exportClause;
+    const named = clause && ts.isNamedExports(clause) ? clause.elements : [];
+    return statement.isTypeOnly || (named.length > 0 && named.every((item) => item.isTypeOnly));
+  }
+  const clause = statement.importClause;
+  if (!clause) return false;
+  const bindings = clause.namedBindings;
+  const named = bindings && ts.isNamedImports(bindings) ? bindings.elements : [];
+  return (
+    clause.isTypeOnly ||
+    (!clause.name && named.length > 0 && named.every((item) => item.isTypeOnly))
+  );
+}
+
+function runtimeImports(path) {
+  const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest);
+  const targets = [];
+  for (const statement of source.statements) {
+    if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) continue;
+    const specifier = statement.moduleSpecifier;
+    if (!specifier || !ts.isStringLiteral(specifier) || !specifier.text.startsWith('.')) continue;
+    if (isTypeOnly(statement)) continue;
+    const base = join(path, '..', specifier.text.replace(/\.js$/, ''));
+    const found = [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find(existsSync);
+    if (found) targets.push(found);
+  }
+  return targets;
+}
+
+function findCycles(graph) {
+  const order = new Map();
+  const low = new Map();
+  const stack = [];
+  const onStack = new Set();
+  const cycles = [];
+  const visit = (node) => {
+    order.set(node, order.size);
+    low.set(node, order.get(node));
+    stack.push(node);
+    onStack.add(node);
+    for (const next of graph.get(node) ?? []) {
+      if (!order.has(next)) {
+        visit(next);
+        low.set(node, Math.min(low.get(node), low.get(next)));
+      } else if (onStack.has(next)) low.set(node, Math.min(low.get(node), order.get(next)));
+    }
+    if (low.get(node) !== order.get(node)) return;
+    const cycle = [];
+    let member;
+    do {
+      member = stack.pop();
+      onStack.delete(member);
+      cycle.push(member);
+    } while (member !== node);
+    if (cycle.length > 1) cycles.push(cycle);
+  };
+  for (const node of graph.keys()) if (!order.has(node)) visit(node);
+  return cycles;
+}
+
+const importGraph = new Map();
+for (const path of walk(join(root, 'src'))) {
+  if (/\.tsx?$/.test(path) && !/\.test\.tsx?$/.test(path))
+    importGraph.set(path, runtimeImports(path));
+}
+const componentOf = (path) =>
+  path.startsWith(componentsDir + sep) ? path.slice(componentsDir.length + 1).split(sep)[0] : null;
+for (const cycle of findCycles(importGraph)) {
+  const owners = new Set(cycle.map(componentOf));
+  if (owners.size < 2) continue;
+  const members = cycle.map(rel).sort().join(', ');
+  problems.push(`import cycle between components: ${members} (S8)`);
 }
 
 // I2: every exported component that renders an element takes props that include BaseProps.

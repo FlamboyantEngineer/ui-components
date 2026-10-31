@@ -111,7 +111,7 @@ describe('Attribution', () => {
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Maria Santos' });
-    expect(trigger).toHaveClass('ui-attribution__person', 'ui-user-card__trigger');
+    expect(trigger).toHaveClass('ui-attribution__person', 'ui-user-card-trigger');
     await user.click(trigger);
     expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toHaveTextContent('Research');
   });

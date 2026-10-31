@@ -12,7 +12,7 @@ import { toImageProps } from '../icon/icon.js';
 import { AvatarRoot } from './avatar-root.js';
 import { resolveAvatarColor } from './avatar-color.js';
 import { Tooltip } from '../tooltip/tooltip.js';
-import type { UserCardTriggerType } from '../user-card/user-card.js';
+import type { UserCardTriggerType } from '../user-card-trigger/user-card-trigger.js';
 
 /** Circle size. `fill` takes the whole box its container gives it. */
 export type AvatarSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'> | 'fill';

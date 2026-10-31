@@ -128,6 +128,7 @@ export * from './components/avatar/index.js';
 export * from './components/user-identity/index.js';
 export * from './components/avatar-group/index.js';
 export * from './components/user-card/index.js';
+export * from './components/user-card-trigger/index.js';
 export * from './components/attribution/index.js';
 export * from './components/emoji-picker/index.js';
 export * from './components/grid-size-picker/index.js';

@@ -1,6 +1,6 @@
 # Hover Card
 
-`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card](USER-CARD.md#uic-user-card-23---opening-on-hover-and-focus) opens its hover cards through it.
+`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card Trigger](USER-CARD-TRIGGER.md#uic-user-card-trigger-13---opening-on-hover-and-focus) opens its hover cards through it.
 
 ## UIC-HOVER-CARD-1 - Opening and closing
 
