@@ -154,10 +154,10 @@ export function filterTableRows<T extends TableRow>(
 
 /**
  * The values a `set` filter offers: its `options`, else the distinct values in the rows, sorted
- * naturally in `locale`.
+ * naturally in `locale`. A table passes every row it holds, nested rows included.
  */
 export function listFilterOptions<T extends TableRow>(
-  rows: readonly T[],
+  rows: Iterable<T>,
   column: FilterColumn<T>,
   locale: string,
 ): readonly string[] {

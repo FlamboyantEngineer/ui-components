@@ -15,6 +15,7 @@ import { DateTimeField, type DateRangeValue } from '../date-time-field/date-time
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { TextField } from '../text-field/text-field.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import {
   listFilterOptions,
   type TableColumnFilterValue,
@@ -22,6 +23,7 @@ import {
 } from './table-filters.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn, TableRow } from './table-rows.js';
+import type { TableChildRows } from './table-tree.js';
 
 /** One column's filter: its value, where to report a new one, and the rows that list options. */
 interface TableColumnFilterProps<T extends TableRow> {
@@ -33,6 +35,8 @@ interface TableColumnFilterProps<T extends TableRow> {
   onChange: (value: TableColumnFilterValue | null) => void;
   /** Every row given to the table, from which a `set` filter lists its values. */
   rows: readonly T[];
+  /** The nested rows under a row, whose values a `set` filter lists too. */
+  getChildRows?: TableChildRows<T>;
 }
 
 function isRange(
@@ -95,7 +99,11 @@ function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) 
     }
     case 'set': {
       const ticked = Array.isArray(value) ? [...value] : [];
-      const options = listFilterOptions(props.rows, column, locale).map((option) => ({
+      const options = listFilterOptions(
+        walkTree(props.rows, (row) => props.getChildRows?.(row) ?? undefined),
+        column,
+        locale,
+      ).map((option) => ({
         value: option,
         label: option,
       }));

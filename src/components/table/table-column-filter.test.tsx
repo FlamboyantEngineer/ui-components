@@ -123,3 +123,84 @@ describe('Table column filters', { timeout: 20_000 }, () => {
     expect(names()).toEqual(['Banana']);
   });
 });
+
+interface Task {
+  id: string;
+  name: string;
+  status: string;
+  tasks?: Task[];
+}
+
+const taskColumns: TableColumn<Task>[] = [
+  { id: 'name', header: 'Name', isRowHeader: true },
+  { id: 'status', header: 'Status', filter: { type: 'set' } },
+];
+
+function taskTree(grandchildStatus: string): Task[] {
+  return [
+    {
+      id: 'plan',
+      name: 'Plan',
+      status: 'Open',
+      tasks: [
+        {
+          id: 'draft',
+          name: 'Draft',
+          status: 'Child only',
+          tasks: [{ id: 'review', name: 'Review', status: grandchildStatus }],
+        },
+      ],
+    },
+    { id: 'ship', name: 'Ship', status: 'Open' },
+  ];
+}
+
+function renderTasks(rows: Task[], props: Partial<TableProps<Task>> = {}) {
+  return (
+    <Table
+      aria-label="Tasks"
+      rows={rows}
+      columns={taskColumns}
+      getChildRows={(task) => task.tasks}
+      {...props}
+    />
+  );
+}
+
+const statusOptions = (dialog: HTMLElement) =>
+  within(within(dialog).getByRole('group', { name: 'Status' }))
+    .getAllByRole('checkbox')
+    .map((box) => box.getAttribute('value'));
+
+describe('Table set filters over nested rows', { timeout: 20_000 }, () => {
+  it('UIC-TABLE-2.8 lists the values of collapsed child and grandchild rows', async () => {
+    render(renderTasks(taskTree('Grandchild only')));
+    expect(names()).toEqual(['Plan', 'Ship']);
+    const { dialog } = await openFilter('Status');
+    expect(statusOptions(dialog)).toEqual(['Child only', 'Grandchild only', 'Open']);
+  });
+
+  it('UIC-TABLE-2.8 follows a change to the nested rows', async () => {
+    const { rerender } = render(renderTasks(taskTree('Grandchild only')));
+    rerender(renderTasks(taskTree('Held')));
+    const { dialog } = await openFilter('Status');
+    expect(statusOptions(dialog)).toEqual(['Child only', 'Held', 'Open']);
+  });
+
+  it('UIC-TABLE-2.8 keeps a ticked child value and its ancestors', async () => {
+    render(renderTasks(taskTree('Grandchild only'), { defaultExpandedKeys: ['plan', 'draft'] }));
+    const { user, dialog } = await openFilter('Status');
+    await user.click(within(dialog).getByRole('checkbox', { name: 'Grandchild only' }));
+    expect(names()).toEqual(['Plan', 'Draft', 'Review']);
+  });
+
+  it('UIC-TABLE-2.8 keeps explicit options as given', async () => {
+    const columns: TableColumn<Task>[] = [
+      { id: 'name', header: 'Name', isRowHeader: true },
+      { id: 'status', header: 'Status', filter: { type: 'set', options: ['Open', 'Closed'] } },
+    ];
+    render(renderTasks(taskTree('Grandchild only'), { columns }));
+    const { dialog } = await openFilter('Status');
+    expect(statusOptions(dialog)).toEqual(['Open', 'Closed']);
+  });
+});

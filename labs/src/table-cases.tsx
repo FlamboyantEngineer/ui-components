@@ -322,13 +322,18 @@ export function ColumnLayout() {
   );
 }
 
+// The place filter lists every nested place, expanded or not.
+const nestedColumns: TableColumn<Place>[] = placeColumns.map((column) =>
+  column.id === 'name' ? { ...column, filter: { type: 'set' } } : column,
+);
+
 export function NestedRows() {
   return (
     <div data-lab="nested">
       <Table
         aria-label="Places, nested"
         rows={places}
-        columns={placeColumns}
+        columns={nestedColumns}
         getChildRows={(place) => place.places}
         defaultExpandedKeys={['pt']}
         filterable
