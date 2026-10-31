@@ -153,4 +153,4 @@ function NamedSpinner({ id, label, ...rest }: SpinnerProps & { label: string }) 
 }
 
 export { resolveMeterTone } from './progress-meter.js';
-export { resolveProgressRange } from './progress-root.js';
+export { resolveProgressRange, toProgressRatio } from './progress-root.js';

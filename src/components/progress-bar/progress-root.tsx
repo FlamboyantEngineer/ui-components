@@ -7,6 +7,7 @@ import {
   Meter as AriaMeter,
 } from '../../primitives/index.js';
 import type { ComponentHooks } from '../../core/hooks.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import type { ProgressBarProps, ProgressValues } from './progress-bar.js';
 import { resolveMeterTone } from './progress-meter.js';
@@ -52,6 +53,36 @@ export function resolveProgressRange(
   return { value: clamp(toFinite(range.value, minValue), minValue, maxValue), minValue, maxValue };
 }
 
+/**
+ * The bounded share of a resolved range that is done, from 0 to 1. Ranges wider than the largest
+ * number, such as `-Number.MAX_VALUE` to `Number.MAX_VALUE`, are halved first so no step overflows.
+ */
+export function toProgressRatio(range: ReturnType<typeof resolveProgressRange>): number {
+  const { value, minValue, maxValue } = range;
+  if (!(maxValue > minValue)) return 0;
+  const span = maxValue - minValue;
+  const ratio = Number.isFinite(span)
+    ? (value - minValue) / span
+    : (value / 2 - minValue / 2) / (maxValue / 2 - minValue / 2);
+  return clamp(ratio, 0, 1);
+}
+
+/**
+ * The value text React Aria cannot work out for a range wider than the largest number, whose width
+ * overflows: the share formatted as a percentage, or the value in the caller's format.
+ */
+function useWideRangeText(
+  range: ReturnType<typeof resolveProgressRange>,
+  { valueLabel, formatOptions }: Pick<ProgressBarProps, 'valueLabel' | 'formatOptions'>,
+): string | undefined {
+  const options = formatOptions ?? { style: 'percent' };
+  const format = useNumberFormatter(options);
+  if (valueLabel !== undefined || Number.isFinite(range.maxValue - range.minValue)) {
+    return valueLabel;
+  }
+  return format.format(options.style === 'percent' ? toProgressRatio(range) : range.value);
+}
+
 /** Whether measured progress reached the end of a range that has one. */
 function isComplete(range: ReturnType<typeof resolveProgressRange>): boolean {
   return range.maxValue > range.minValue && range.value === range.maxValue;
@@ -74,11 +105,20 @@ export function ProgressRoot({
   className,
   render,
   isSegmented = false,
+  valueLabel,
+  formatOptions,
   children,
   ...rest
 }: ProgressRootProps) {
   const range = resolveProgressRange({ value, minValue, maxValue });
   const indeterminate = mode === 'progress' && isIndeterminate;
+  const valueText = useWideRangeText(range, { valueLabel, formatOptions });
+  // React Aria divides by the range's width, which overflows for the widest ranges.
+  const toValues = (state: { valueText: string | undefined }): ProgressValues => ({
+    percentage: indeterminate ? undefined : toProgressRatio(range) * 100,
+    valueText: state.valueText,
+    isIndeterminate: indeterminate,
+  });
   const complete = mode === 'progress' && !indeterminate && isComplete(range);
   const judged =
     tone ??
@@ -91,25 +131,12 @@ export function ProgressRoot({
       {...rest}
       {...rootHooks.root({ className, data })}
       {...range}
+      valueLabel={valueText}
+      formatOptions={formatOptions}
       {...(mode === 'progress' ? { isIndeterminate: indeterminate } : {})}
-      render={
-        render
-          ? (props, state) =>
-              render(props, {
-                percentage: state.percentage,
-                valueText: state.valueText,
-                isIndeterminate: indeterminate,
-              })
-          : undefined
-      }
+      render={render ? (props, state) => render(props, toValues(state)) : undefined}
     >
-      {(state: Pick<ProgressValues, 'percentage' | 'valueText'>) =>
-        children({
-          percentage: state.percentage,
-          valueText: state.valueText,
-          isIndeterminate: indeterminate,
-        })
-      }
+      {(state: Pick<ProgressValues, 'valueText'>) => children(toValues(state))}
     </Root>
   );
 }
