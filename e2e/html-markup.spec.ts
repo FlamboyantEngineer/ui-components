@@ -91,4 +91,17 @@ test.describe('HTML Markup lab', () => {
     await lab.open('html-markup');
     await expect(page.locator('[data-lab-unknown]')).toHaveText('Kept in place');
   });
+
+  test('UIC-HTML-MARKUP-1.2 completes table shorthand with the groups a parser implies', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('html-markup');
+    const table = page
+      .locator('[data-lab-cell="content=table shorthand text=body"]')
+      .getByRole('table', { name: 'Crates by hand' });
+    await expect(table.locator(':scope > colgroup > col')).toHaveCount(2);
+    await expect(table.locator(':scope > tbody > tr')).toHaveCount(2);
+    await expect(table.getByRole('cell', { name: 'Quince' })).toBeVisible();
+  });
 });

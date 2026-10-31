@@ -15,10 +15,10 @@ Verification: `src/components/html-markup/sanitize-html.test.ts`
 
 ### UIC-HTML-MARKUP-1.2 - HTML structure
 
-The tree shall follow the structure an HTML parser gives the fragment: void elements (`br`, `img`, `hr`, …) take no children; an element closes the open elements it implies (a block closes an open paragraph, a list item, term, row, cell or table section closes its open sibling, a link closes an open link, a heading an open heading); a row directly in a table gets a `tbody`; text directly in table structure is dropped; a closing tag closes the nearest open element of its name and a stray one is ignored.
+The tree shall follow the structure an HTML parser gives the fragment: void elements (`br`, `img`, `hr`, …) take no children; an element closes the open elements it implies (a block closes an open paragraph, a list item, term, row, cell or table section closes its open sibling, a link closes an open link, a heading an open heading); table parts go where an HTML parser puts them, so server HTML parses back into the same tree: a `col` outside a column group gets a `colgroup`, a row outside a table section a `tbody` and a cell outside a row a `tr`; a caption, column group or section closes what is open inside its table, a row what is open inside its section and a cell what is open inside its row; another element directly in table structure is placed before the table, and a `table` there closes the open table and follows it; a table part outside any table is ignored, its content kept; text directly in table structure is dropped; a closing tag closes the nearest open element of its name and a stray one is ignored.
 
-Implementation: `src/components/html-markup/html-tree.ts`
-Verification: `src/components/html-markup/sanitize-html.test.ts`
+Implementation: `src/components/html-markup/html-tree.ts`, `src/components/html-markup/html-table.ts`
+Verification: `src/components/html-markup/sanitize-html.test.ts`, `src/components/html-markup/html-table-hydration.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-1.3 - Elements
 
