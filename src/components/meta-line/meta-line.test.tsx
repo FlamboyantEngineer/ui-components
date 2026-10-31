@@ -138,4 +138,18 @@ describe('MetaLine', () => {
     expect(root).toHaveTextContent('Safe <text> · Pear');
     expectHooksMatchSpec(container, 'META-LINE');
   });
+
+  it('UIC-META-LINE-1.6 makes a named line a group and leaves an unnamed one without a role', () => {
+    const { container } = render(<MetaLine items={['Draft', 'Pear']} />);
+    expect(container.firstElementChild).not.toHaveAttribute('role');
+    render(<MetaLine items={['Draft', 'Pear']} aria-label="Status" />);
+    expect(screen.getByRole('group', { name: 'Status' })).toHaveTextContent('Draft · Pear');
+    render(
+      <>
+        <span id="meta-name">Details</span>
+        <MetaLine items={['Plum']} aria-labelledby="meta-name" />
+      </>,
+    );
+    expect(screen.getByRole('group', { name: 'Details' })).toHaveTextContent('Plum');
+  });
 });

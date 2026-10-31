@@ -5,7 +5,6 @@ import {
   ResizableTableContainer,
   Table as AriaTable,
   useDragAndDrop,
-  Virtualizer,
 } from '../../primitives/index.js';
 import type {
   AriaLabellingProps,
@@ -27,7 +26,7 @@ import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './
 import { TableSearch } from './table-search.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
-import { useTableFooterLayout } from './table-layout.js';
+import { TableVirtualizer } from './table-virtualizer.js';
 import {
   hasGroupRow,
   renderTableWithTracks,
@@ -233,7 +232,6 @@ export function Table<T extends TableRow>({
   const { view, layout } = grid;
   const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
-  const footerLayout = useTableFooterLayout();
   const element = <TableGridElement grid={grid} options={rest} />;
   const label = rest['aria-label'];
   return (
@@ -266,16 +264,7 @@ export function Table<T extends TableRow>({
         onResize={grid.widths.onResize}
         onResizeEnd={grid.widths.onResizeEnd}
       >
-        {virtualized ? (
-          <Virtualizer
-            layout={footerLayout}
-            layoutOptions={{ rowHeight: height, headingHeight: height }}
-          >
-            {element}
-          </Virtualizer>
-        ) : (
-          element
-        )}
+        {virtualized ? <TableVirtualizer rowHeight={height}>{element}</TableVirtualizer> : element}
       </ResizableTableContainer>
       {view.pages ? (
         <Pagination

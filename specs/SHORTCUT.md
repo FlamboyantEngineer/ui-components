@@ -106,6 +106,13 @@ Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts
 Implementation: `src/components/shortcut/shortcut.tsx`
 Verification: `src/components/shortcut/shortcut.test.tsx`
 
+### UIC-SHORTCUT-3.3 - Named legend
+
+`aria-label` or `aria-labelledby` shall name the legend as a group ([UIC-META-LINE-1.6](META-LINE.md#uic-meta-line-16---naming)), so a legend beside a composer can be announced as, for example, "Composer keys".
+
+Implementation: `src/components/shortcut/shortcut.tsx`, `src/components/meta-line/meta-line.tsx`
+Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/chat.spec.ts`
+
 ## Hooks
 
 | Hook                   | Kind      | Values                    | Description                                                   |

@@ -39,6 +39,13 @@ Verification: `src/components/meta-line/meta-line.test.tsx`
 Implementation: `src/components/meta-line/meta-line.tsx`
 Verification: `src/components/meta-line/meta-line.test.tsx`
 
+### UIC-META-LINE-1.6 - Naming
+
+`aria-label` or `aria-labelledby` shall name the line and give its root `role="group"`, since a name on an element without a role is ignored; an unnamed line has no role.
+
+Implementation: `src/components/meta-line/meta-line.tsx`
+Verification: `src/components/meta-line/meta-line.test.tsx`
+
 ## Hooks
 
 | Hook                      | Kind | Values | Description                                                   |

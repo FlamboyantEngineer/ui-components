@@ -1,11 +1,13 @@
 import { Fragment, isValidElement, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 
 /** A value the text form of a metadata line accepts. Blank strings, booleans and nullish values are skipped. */
 export type MetaLineTextItem = string | number | boolean | null | undefined;
 
-export interface MetaLineProps extends BaseProps {
+export interface MetaLineProps
+  extends BaseProps, Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   /** The entries, in order. Empty entries are skipped without leaving a separator. */
   items: readonly ReactNode[];
 }
@@ -48,7 +50,12 @@ export function MetaLine({ items, className, ...rest }: MetaLineProps) {
   );
   if (entries.length === 0) return null;
   return (
-    <span {...rest} {...hooks.root({ className })}>
+    // A named line is a group, since a name on a span without a role is ignored.
+    <span
+      {...rest}
+      role={rest['aria-label'] || rest['aria-labelledby'] ? 'group' : undefined}
+      {...hooks.root({ className })}
+    >
       {entries.map(({ item, key }, index) => (
         <Fragment key={key}>
           {index > 0 ? (
