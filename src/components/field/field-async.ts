@@ -40,7 +40,8 @@ interface Attempt<T> {
  * Runs `validateAsync` once the value has stayed unchanged for `debounce` milliseconds. Each value,
  * validator and enabling starts a new attempt, pending until its own check settles: a result counts
  * only for the attempt that asked for it, so returning to a value checked before, or replacing the
- * validator, waits for a fresh check. A newer attempt aborts the older check. A check that rejects,
+ * validator, waits for a fresh check. A newer attempt aborts the older check; a new `debounce` restarts
+ * a pending check's wait and leaves a settled one as it is. A check that rejects,
  * or throws before returning its promise, reports no issue.
  */
 export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): AsyncCheck {
@@ -65,9 +66,12 @@ export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): Async
     setAttempt(current);
   }
   const { id } = current;
+  const isSettled = current.issues !== null;
 
   useEffect(() => {
-    if (!isEnabled || !validateAsync) return;
+    // A settled check stays valid for its value and validator: a change of timing alone does not
+    // run it again. A pending one restarts on the new timing, still pending.
+    if (!isEnabled || !validateAsync || isSettled) return;
     const controller = new AbortController();
     const settle = (issues: FieldIssues) => {
       if (controller.signal.aborted) return;
@@ -85,7 +89,7 @@ export function useAsyncCheck<T>(value: T, options: AsyncCheckOptions<T>): Async
       clearTimeout(timer);
       controller.abort();
     };
-  }, [id, isEnabled, validateAsync, debounce, latest]);
+  }, [id, isEnabled, isSettled, validateAsync, debounce, latest]);
 
   return {
     issues: isEnabled ? (current.issues ?? []) : [],

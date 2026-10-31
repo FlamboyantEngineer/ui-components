@@ -146,4 +146,48 @@ describe('asynchronous validation', () => {
     expect(result.current.realtimeValidation.status).toBe('valid');
     expect(validateAsync).toHaveBeenCalledTimes(2);
   });
+
+  it('UIC-FIELD-3.8 keeps a settled result when only the debounce changes', async () => {
+    const validateAsync = createCheck();
+    const { result, rerender } = renderField({
+      defaultValue: 'taken',
+      validateAsync,
+      validationDebounce: 0,
+    });
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.realtimeValidation.message).toBe('Taken.');
+    rerender({ defaultValue: 'taken', validateAsync, validationDebounce: 50 });
+    await act(() => vi.advanceTimersByTimeAsync(500));
+    expect(validateAsync).toHaveBeenCalledTimes(1);
+    expect(result.current.realtimeValidation.message).toBe('Taken.');
+  });
+
+  it('UIC-FIELD-3.8 stays pending when the debounce changes before or during a check', async () => {
+    const validateAsync = createCheck();
+    const { result, rerender } = renderField({
+      defaultValue: 'taken',
+      validateAsync,
+      validationDebounce: 200,
+    });
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    rerender({ defaultValue: 'taken', validateAsync, validationDebounce: 50 });
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(50));
+    expect(validateAsync).toHaveBeenCalledTimes(1);
+    const [, first] = requireCall(validateAsync, 0);
+    rerender({ defaultValue: 'taken', validateAsync, validationDebounce: 10 });
+    expect(first.aborted).toBe(true);
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(10));
+    expect(validateAsync).toHaveBeenCalledTimes(2);
+    expect(result.current.realtimeValidation.status).toBe('pending');
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.realtimeValidation.message).toBe('Taken.');
+  });
 });
+
+function requireCall<A extends unknown[]>(mock: { mock: { calls: A[] } }, index: number): A {
+  const call = mock.mock.calls[index];
+  if (!call) throw new Error(`no call ${index}`);
+  return call;
+}

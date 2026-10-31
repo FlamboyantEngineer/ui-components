@@ -42,30 +42,37 @@ export interface FormValidityStore extends FormValidity {
   notify(): void;
 }
 
+/** The field each blocker reads, so a field replaced by an equal-looking one is a new blocker. */
+const owners = new WeakMap<FormBlocker, FieldRegistration>();
+
 function readBlockers(fields: ReadonlySet<FieldRegistration>): FormBlocker[] {
   return inDocumentOrder(fields).flatMap((field) => {
     if (!field.isBlocking()) return [];
     const { status, message } = field.getRealtimeValidation();
-    return [
-      {
-        label: field.getLabel(),
-        status: status === 'pending' ? 'pending' : 'invalid',
-        message: status === 'invalid' ? message : undefined,
-        focus: () => field.focus(),
-      },
-    ];
+    const blocker: FormBlocker = {
+      label: field.getLabel(),
+      status: status === 'pending' ? 'pending' : 'invalid',
+      message: status === 'invalid' ? message : undefined,
+      focus: () => field.focus(),
+    };
+    owners.set(blocker, field);
+    return [blocker];
   });
 }
 
 function isSameBlockers(left: readonly FormBlocker[], right: readonly FormBlocker[]): boolean {
   return (
     left.length === right.length &&
-    left.every(
-      (blocker, index) =>
-        blocker.label === right[index]?.label &&
-        blocker.status === right[index].status &&
-        blocker.message === right[index].message,
-    )
+    left.every((blocker, index) => {
+      const other = right[index];
+      return (
+        other !== undefined &&
+        owners.get(blocker) === owners.get(other) &&
+        blocker.label === other.label &&
+        blocker.status === other.status &&
+        blocker.message === other.message
+      );
+    })
   );
 }
 

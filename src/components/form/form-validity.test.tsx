@@ -201,4 +201,22 @@ describe('Form validity', () => {
     await waitFor(() => expect(onValidityChange).toHaveBeenLastCalledWith([]));
     expect(screen.getByRole('textbox', { name: 'Name' })).not.toHaveAttribute('aria-invalid');
   });
+
+  it('UIC-FORM-2.2 hands out a new blocker when an equal-looking field replaces another', async () => {
+    const onValidityChange = vi.fn<(blockers: readonly FormBlocker[]) => void>();
+    const view = (key: string) => (
+      <Form aria-label="Record" onValidityChange={onValidityChange}>
+        <TextField key={key} label="Name" isRequired />
+      </Form>
+    );
+    const { rerender } = render(view('first'));
+    await waitFor(() => expect(onValidityChange).toHaveBeenCalledTimes(1));
+    const [first] = requireDefined(onValidityChange.mock.lastCall)[0];
+    rerender(view('second'));
+    await waitFor(() => expect(onValidityChange).toHaveBeenCalledTimes(2));
+    const [second] = requireDefined(onValidityChange.mock.lastCall)[0];
+    expect(second).not.toBe(first);
+    act(() => requireDefined(second).focus());
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus();
+  });
 });
