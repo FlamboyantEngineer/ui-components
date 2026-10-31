@@ -35,6 +35,22 @@ function isEscaped(text: string, at: number): boolean {
   return count % 2 === 1;
 }
 
+/** The first run from `from` that is `length` backticks long, or -1. */
+function findRunOfLength(runs: readonly Span[], from: number, length: number): number {
+  for (let at = from; at < runs.length; at += 1) {
+    const run = requireDefined(runs[at]);
+    if (run.end - run.start === length) return at;
+  }
+  return -1;
+}
+
+/** Index just past the last character of `text` before `end` that is not whitespace. */
+function contentEnd(text: string, end = text.length): number {
+  let at = end;
+  while (at > 0 && isWhitespace(text.charAt(at - 1))) at -= 1;
+  return at;
+}
+
 /** The code spans of the text, and the first backtick run that no run of its length closes. */
 function findCodeSpans(text: string): { spans: Span[]; open: Span | null } {
   const runs = [...text.matchAll(/`+/g)]
@@ -44,7 +60,7 @@ function findCodeSpans(text: string): { spans: Span[]; open: Span | null } {
   for (let index = 0; index < runs.length; index += 1) {
     const opener = requireDefined(runs[index]);
     const length = opener.end - opener.start;
-    const closer = runs.findIndex((run, at) => at > index && run.end - run.start === length);
+    const closer = findRunOfLength(runs, index + 1, length);
     if (closer === -1) return { spans, open: opener };
     spans.push({ start: opener.start, end: requireDefined(runs[closer]).end });
     index = closer;
@@ -95,9 +111,13 @@ function keepsBrackets(label: string): boolean {
  * ends the text and may become a link; drops an image until it is complete. Returns null when the
  * closed bracket needs nothing.
  */
-function repairClosedBracket(text: string, bracket: Bracket, close: number): string | null {
-  const isLast = text.slice(close + 1).trim() === '';
-  const destination = text[close + 1] === '(' ? findDestinationEnd(text, close + 2) : null;
+function repairClosedBracket(
+  { text, masked, end }: LinkText,
+  bracket: Bracket,
+  close: number,
+): string | null {
+  const isLast = close + 1 >= end;
+  const destination = masked[close + 1] === '(' ? findDestinationEnd(masked, close + 2) : null;
   const label = text.slice(bracket.label, close);
   if (destination === -1 || (isLast && !keepsBrackets(label))) {
     return bracket.isImage
@@ -107,32 +127,55 @@ function repairClosedBracket(text: string, bracket: Bracket, close: number): str
   return null;
 }
 
+/** The text a link repair reads: as written, with code masked, and where its content ends. */
+interface LinkText {
+  text: string;
+  masked: string;
+  end: number;
+}
+
 /** Drops the brackets left open: a citation or image still being typed goes, other text stays. */
 function dropOpenBrackets(text: string, open: readonly Bracket[]): string {
-  let result = text;
+  let limit = text.length;
+  let dropped: Bracket[] = [];
+  // Whether the text kept after the bracket last looked at is only digits, and where it starts.
+  let isRestDigits = true;
+  let restStart = limit;
   for (const bracket of [...open].reverse()) {
-    const rest = result.slice(bracket.label);
-    result =
-      bracket.isImage || /^\d*$/.test(rest)
-        ? result.slice(0, bracket.start)
-        : result.slice(0, bracket.start) + rest;
+    const isDigits = isRestDigits && /^\d*$/.test(text.slice(bracket.label, restStart));
+    if (bracket.isImage || isDigits) {
+      [limit, dropped, isRestDigits, restStart] = [bracket.start, [], true, bracket.start];
+    } else {
+      dropped.push(bracket);
+      [isRestDigits, restStart] = [false, bracket.start];
+    }
   }
-  return result;
+  let result = '';
+  let from = 0;
+  for (const bracket of dropped.reverse()) {
+    result += text.slice(from, bracket.start);
+    from = bracket.label;
+  }
+  return result + text.slice(from, limit);
 }
 
 /** Repairs the link or image the text ends inside, and brackets that are still open. */
 function repairLinks(source: string): string {
   const text = source.replace(partialAutolink, '');
   const masked = maskCode(text);
+  const linkText: LinkText = { text, masked, end: contentEnd(text) };
   const open: Bracket[] = [];
+  let isEscapedHere = false;
   for (let at = 0; at < masked.length; at += 1) {
-    if (isEscaped(masked, at)) continue;
+    const isEscapedChar: boolean = isEscapedHere;
+    isEscapedHere = !isEscapedChar && masked[at] === '\\';
+    if (isEscapedChar) continue;
     if (masked[at] === '[') {
       const isImage = masked[at - 1] === '!' && !isEscaped(masked, at - 1);
       open.push({ start: isImage ? at - 1 : at, label: at + 1, isImage });
     } else if (masked[at] === ']' && open.length > 0) {
       const bracket = requireDefined(open.pop());
-      const repaired = repairClosedBracket(text, bracket, at);
+      const repaired = repairClosedBracket(linkText, bracket, at);
       if (repaired !== null) return dropOpenBrackets(repaired, open);
       if (masked[at + 1] === '(') at = findDestinationEnd(masked, at + 2);
     }
@@ -154,7 +197,7 @@ function readDelimiters(masked: string): Delimiter[] {
  * CommonMark's flanking rules, except that emphasis never opens inside a word or a URL, and a run
  * at the end that would open emphasis is kept as an opener.
  */
-function readFlanking(text: string, run: Delimiter) {
+function readFlanking(text: string, run: Delimiter, end: number) {
   const previous = text.charAt(run.start - 1);
   const next = text.charAt(run.end);
   if (previous === '\\') return { canOpen: false, canClose: false };
@@ -165,42 +208,54 @@ function readFlanking(text: string, run: Delimiter) {
     !isWhitespace(previous) &&
     (!isPunctuation(previous) || isWhitespace(next) || isPunctuation(next));
   // A run that ends the text may still open emphasis once its content arrives.
-  const isLast = text.slice(run.end).trim() === '';
+  const isLast = run.end >= end;
   return {
     canOpen: (left || isLast) && (isWhitespace(previous) || openingChars.has(previous)),
     canClose: right && (run.char !== '_' || !left || isPunctuation(next)),
   };
 }
 
+/** Closes the openers left on the stack, innermost first, dropping those nothing follows. */
+function closeOpeners(text: string, openers: readonly Delimiter[]): string {
+  let limit = text.length;
+  let closers = '';
+  for (const opener of [...openers].reverse()) {
+    if (closers === '' && opener.end >= contentEnd(text, limit)) limit = opener.start;
+    else closers += opener.char.repeat(opener.end - opener.start);
+  }
+  const end = contentEnd(text, limit);
+  return text.slice(0, end) + closers + text.slice(end, limit);
+}
+
 /** Closes the emphasis, strong and strikethrough runs left open, dropping those nothing follows. */
 function closeEmphasis(text: string): string {
   const masked = maskCode(text);
+  const end = contentEnd(masked);
   const stack: Delimiter[] = [];
+  // Stack positions of each character's openers, so a closer finds its own without a scan.
+  const positions = new Map<string, number[]>();
   let result = text;
   for (const run of readDelimiters(masked)) {
-    const { canOpen, canClose } = readFlanking(masked, run);
-    const at = canClose ? stack.findLastIndex((opener) => opener.char === run.char) : -1;
+    const { canOpen, canClose } = readFlanking(masked, run, end);
+    const at = canClose ? (positions.get(run.char)?.at(-1) ?? -1) : -1;
     if (at === -1) {
-      if (canOpen) stack.push(run);
+      if (!canOpen) continue;
+      const list = positions.get(run.char) ?? [];
+      list.push(stack.length);
+      positions.set(run.char, list);
+      stack.push(run);
       continue;
     }
-    const missing =
-      requireDefined(stack[at]).end - requireDefined(stack[at]).start - (run.end - run.start);
+    const opener = requireDefined(stack[at]);
+    const missing = opener.end - opener.start - (run.end - run.start);
     stack.length = at;
+    for (const list of positions.values()) while ((list.at(-1) ?? -1) >= at) list.pop();
     // A closing run still arriving at the end gets the rest of its length.
-    if (missing > 0 && masked.slice(run.end).trim() === '') {
+    if (missing > 0 && run.end >= end) {
       result = result.slice(0, run.end) + run.char.repeat(missing) + result.slice(run.end);
     }
   }
-  for (const opener of stack.reverse()) {
-    if (result.slice(opener.end).trim() === '') {
-      result = result.slice(0, opener.start);
-      continue;
-    }
-    const body = result.trimEnd();
-    result = body + opener.char.repeat(opener.end - opener.start) + result.slice(body.length);
-  }
-  return result;
+  return closeOpeners(result, stack);
 }
 
 /**

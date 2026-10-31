@@ -8,6 +8,7 @@ import {
 import { Outline } from '../../src/components/outline/outline.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { LargeInputDemo } from './large-input-demo.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { StreamingDemo } from './markdown-streaming-demo.js';
 
@@ -226,6 +227,17 @@ mountLab(
     >
       <Markdown source={unsafe} data-lab-unsafe />
       <Markdown source={`[${'`code` '.repeat(8)}](javascript:noop)`} data-lab-unsafe-spans />
+    </LabSection>
+    <LabSection
+      title="Large unbalanced input"
+      description="Markers that never pair, nested brackets and unclosed link destinations parse in time proportional to their length."
+    >
+      <LargeInputDemo
+        label="96 KB of unbalanced markers"
+        build={() => 'a* _b '.repeat(8_000) + '['.repeat(16_000) + '[a]('.repeat(8_000)}
+      >
+        {(source) => <Markdown source={source} />}
+      </LargeInputDemo>
     </LabSection>
   </>,
 );

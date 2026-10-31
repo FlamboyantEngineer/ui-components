@@ -3,6 +3,7 @@ import { Badge } from '../../src/components/badge/badge.js';
 import { HtmlMarkup, type HtmlPolicy } from '../../src/components/html-markup/index.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import { LargeInputDemo } from './large-input-demo.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const samples = {
@@ -106,6 +107,17 @@ mountLab(
       description="Text renders through TextMatch, so a TextMatchProvider marks the query."
     >
       <FindDemo />
+    </LabSection>
+    <LabSection
+      title="Large unbalanced input"
+      description="A tag that never ends, nesting and stray closing tags read in time proportional to their length."
+    >
+      <LargeInputDemo
+        label="96 KB of unbalanced tags"
+        build={() => '<div>'.repeat(300) + '</span>'.repeat(7_000) + '<' + 'a'.repeat(45_000)}
+      >
+        {(markup) => <HtmlMarkup markup={markup} />}
+      </LargeInputDemo>
     </LabSection>
   </>,
 );

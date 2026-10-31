@@ -88,6 +88,13 @@ Raw HTML shall stay text. A link whose destination is not relative or `http`, `h
 Implementation: `src/components/markdown/markdown-inlines.ts`, `src/utils/safe-url.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
 
+### UIC-MARKDOWN-1.13 - Linear parsing
+
+`parseMarkdown`, `parseStreamingMarkdown` and the streaming preparation shall take time about proportional to the source's length, whatever it holds, so authored content cannot stall a page or a server. Emphasis pairing follows CommonMark's delimiter algorithm, each closer searching back only as far as an earlier closer of the same kind found no opener; a link closing deactivates the brackets before it at once; a line's text is gathered without rereading earlier lines. Two CommonMark limits apply: a bare link destination nests parentheses at most 32 deep, and a link label (the text of a shortcut or collapsed reference) is at most 999 characters, beyond which the brackets are text. Within them no input is refused or cut short for its size.
+
+Implementation: `src/components/markdown/markdown-inlines.ts`, `src/components/markdown/markdown-emphasis.ts`, `src/components/markdown/markdown-inline-syntax.ts`, `src/components/markdown/markdown-streaming-inlines.ts`
+Verification: `src/components/markdown/markdown-scaling.test.tsx`, `e2e/markdown.spec.ts`
+
 ## UIC-MARKDOWN-2 - Rendering
 
 ### UIC-MARKDOWN-2.1 - Elements

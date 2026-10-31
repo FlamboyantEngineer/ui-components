@@ -11,6 +11,14 @@ import {
   isUnwrappedSvgTag,
   toSvgTag,
 } from './svg-policy.js';
+import {
+  closeOpen,
+  createOpenElements,
+  currentOpen,
+  findOpen,
+  pushOpen,
+  type OpenElements,
+} from '../../utils/open-elements.js';
 
 export interface SvgElementNode {
   readonly type: 'element';
@@ -38,7 +46,7 @@ interface MutableElement {
 /** The parse so far: a document node holding the top-level elements, and the open elements. */
 interface ParserState {
   root: MutableElement;
-  stack: MutableElement[];
+  stack: OpenElements<MutableElement>;
 }
 
 /** Elements whose content is raw text, so markup inside them is never read as elements. */
@@ -60,22 +68,19 @@ function freezeNode(root: MutableElement | SvgTextNode): SvgNode {
 }
 
 function currentElement(state: ParserState): MutableElement {
-  return state.stack[state.stack.length - 1] ?? state.root;
+  return currentOpen(state.stack);
 }
 
 /** Adds text to the open element; whitespace-only text and text outside any element are dropped. */
 function addText(state: ParserState, text: string): void {
-  if (text.trim() === '' || state.stack.length === 1) return;
+  if (text.trim() === '' || state.stack.elements.length === 1) return;
   currentElement(state).children.push({ type: 'text', text });
 }
 
 /** Closes the nearest open element named `tag`, and any left open inside it. */
 function closeElement(state: ParserState, tag: string): void {
-  const name = tag.toLowerCase();
-  const at = state.stack.findLastIndex(
-    (element, position) => position > 0 && element.tag.toLowerCase() === name,
-  );
-  if (at > 0) state.stack.length = at;
+  const at = findOpen(state.stack, [tag.toLowerCase()]);
+  if (at > 0) closeOpen(state.stack, at);
 }
 
 function openElement(state: ParserState, token: MarkupOpenToken): void {
@@ -89,7 +94,7 @@ function openElement(state: ParserState, token: MarkupOpenToken): void {
     children: [],
   };
   currentElement(state).children.push(element);
-  if (!token.isSelfClosing) state.stack.push(element);
+  if (!token.isSelfClosing) pushOpen(state.stack, element, tag.toLowerCase());
 }
 
 /**
@@ -97,7 +102,7 @@ function openElement(state: ParserState, token: MarkupOpenToken): void {
  * refused animation, or any element inside a text-only element.
  */
 function isDroppedElement(state: ParserState, token: MarkupOpenToken): boolean {
-  if (state.stack.length > 1 && isTextOnlySvgTag(currentElement(state).tag)) return true;
+  if (state.stack.elements.length > 1 && isTextOnlySvgTag(currentElement(state).tag)) return true;
   if (isUnwrappedSvgTag(token.tag)) return false;
   const tag = toSvgTag(token.tag);
   return tag === null || isRefusedAnimation(tag, token.attributes);
@@ -105,7 +110,7 @@ function isDroppedElement(state: ParserState, token: MarkupOpenToken): boolean {
 
 function parseTree(markup: string): SvgElementNode {
   const root: MutableElement = { type: 'element', tag: '#document', attributes: {}, children: [] };
-  const state: ParserState = { root, stack: [root] };
+  const state: ParserState = { root, stack: createOpenElements(root) };
   const tokens = tokenizeMarkup(markup, { rawTextElements });
   const isDropped = (token: MarkupOpenToken) => isDroppedElement(state, token);
   for (const token of skipDroppedElements(tokens, { isDropped })) {

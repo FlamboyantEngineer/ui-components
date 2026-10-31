@@ -32,6 +32,13 @@ Verification: `src/utils/markup.test.ts`
 Implementation: `src/utils/markup.ts`
 Verification: `src/utils/markup.test.ts`
 
+### UIC-MARKUP-1.5 - Linear reading
+
+Reading untrusted markup shall take time about proportional to its length, whatever it holds, so authored content cannot stall a page or a server. `tokenizeMarkup` reads each tag in one pass, an opening tag that never ends (no `>` before the next `<` outside quotes, or an unclosed quote) costing its length once before its `<` is read as text. The HTML and SVG readers find the nearest open element of a name without walking their open elements, so deep nesting, stray closing tags and implied ends cost the same per tag at any depth. No input is refused or cut short for its size.
+
+Implementation: `src/utils/markup.ts`, `src/utils/open-elements.ts`, `src/components/html-markup/html-tree.ts`, `src/components/svg-markup/parse-svg-markup.ts`
+Verification: `src/utils/markup-scaling.test.tsx`, `e2e/html-markup.spec.ts`
+
 ## UIC-MARKUP-2 - URLs
 
 ### UIC-MARKUP-2.1 - Safe URLs

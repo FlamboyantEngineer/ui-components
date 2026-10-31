@@ -197,4 +197,19 @@ test.describe('Markdown lab', () => {
     await page.clock.resume();
     await lab.expectAccessible('[data-lab-demo="streaming"]');
   });
+
+  test('UIC-MARKDOWN-1.13 draws a large unbalanced input in time proportional to its length', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('markdown');
+    const demo = page.locator('[data-lab-demo="large-input"]');
+    await demo.getByRole('button', { name: /^Load 96 KB/ }).click();
+    const output = demo.locator('[data-lab-output="elapsed"]');
+    await expect(output).toHaveText(/^\d+ characters in \d+ ms$/);
+    const elapsed = Number(/in (\d+) ms/.exec((await output.textContent()) ?? '')?.[1]);
+    expect(elapsed).toBeLessThan(2500);
+    await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
+    await lab.expectAccessible();
+  });
 });

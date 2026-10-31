@@ -95,6 +95,12 @@ function findUnescaped(
   return -1;
 }
 
+/**
+ * How deeply a bare destination's parentheses may nest, as CommonMark allows: an unclosed run of
+ * openers stops here instead of reading to the end of the paragraph from every bracket.
+ */
+const maxParenDepth = 32;
+
 /** A bare destination: no spaces or control characters, balanced parentheses. */
 function readBareDestination(text: string, at: number): number {
   let depth = 0;
@@ -103,6 +109,7 @@ function readBareDestination(text: string, at: number): number {
     const char = text[index] as string;
     if (char === '\\' && isEscapable(text[index + 1])) index += 1;
     else if (char <= ' ' || char === '\u007f') break;
+    else if (char === '(' && depth === maxParenDepth) return -1;
     else if (char === '(') depth += 1;
     else if (char === ')' && depth === 0) break;
     else if (char === ')') depth -= 1;
