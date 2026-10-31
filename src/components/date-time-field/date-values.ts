@@ -77,6 +77,39 @@ export function currentDateValue(
   return formatIsoDate(options.timeZone ? moment : toCalendarDateTime(moment), options.granularity);
 }
 
+/**
+ * A single value's text as the field writes it: zoned in `timeZone`, without parts finer than the
+ * granularity. A text the mode cannot read is kept as it is, for the field's check to refuse.
+ */
+function normalizeText(text: string, mode: SingleDateMode, options: DateValueOptions): string {
+  const value =
+    mode === 'date'
+      ? parseIsoDate(text)
+      : mode === 'time'
+        ? parseIsoTime(text)
+        : parseIsoDateTime(text, options.timeZone);
+  return value ? formatIsoDate(value, options.granularity) : text;
+}
+
+/**
+ * A value as the field writes it, each end of a range included, so a preset commits what a pick in
+ * the editor would: `2026-04-20T03:42:33Z` in a Tokyo field at the hour granularity becomes
+ * `2026-04-20T12:00:00+09:00[Asia/Tokyo]`.
+ */
+export function normalizeDateValue(
+  value: DateFieldValue,
+  mode: DateTimeFieldMode,
+  options: DateValueOptions,
+): DateFieldValue {
+  if (!value) return value;
+  const single = toSingleMode(mode);
+  if (typeof value === 'string') return normalizeText(value, single, options);
+  return {
+    start: normalizeText(value.start, single, options),
+    end: normalizeText(value.end, single, options),
+  };
+}
+
 /** Which bound a value breaks, with that bound's value; a range's end may not precede its start. */
 export function findBoundIssue(
   value: DateFieldValue,
