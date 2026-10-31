@@ -18,15 +18,21 @@ import {
 import {
   filterPinCharacters,
   findActivePinCell,
+  isPinCodeComplete,
   readEnteredText,
   writePinCharacters,
+  type PinInputEdit,
   type PinInputType,
 } from './pin-value.js';
 
-/** How the cells look and what they take. */
-interface PinCellOptions {
+/** A code's length and the characters its cells take. */
+interface PinCodeShape {
   length: number;
   type: PinInputType;
+}
+
+/** How the cells look and what they take. */
+interface PinCellOptions extends PinCodeShape {
   mask: boolean;
   placeholder: string | undefined;
   /** The first cell's autocomplete hint; the others never autocomplete. */
@@ -102,15 +108,16 @@ function toCellControlProps(control: FieldControlProps) {
 /**
  * Changes the value and moves focus once the new value has rendered, when the tab order and the
  * cell that takes the next character follow it. Focus moves only while it is still in the group
- * and the value did change, so a change the caller ignores moves nothing later. A value that fills
- * every cell commits, and `onComplete` receives the value the caller renders once it is complete,
- * once per new complete value.
+ * and the value did change, so a change the caller ignores moves nothing later. Completion follows
+ * the rendered value too: once an edit renders a full code (the caller may cut, filter or change
+ * what was typed), the field commits it and `onComplete` receives it, once per edit. An edit the
+ * caller turns into a partial code commits nothing until focus leaves the field.
  */
 function useCellWriter(
   state: FieldState<string>,
-  options: { slots: CellSlots; length: number; onComplete: PinInputCellsProps['onComplete'] },
+  options: { slots: CellSlots; cells: PinCodeShape; onComplete: PinInputCellsProps['onComplete'] },
 ) {
-  const { slots, length, onComplete } = options;
+  const { slots, cells, onComplete } = options;
   const pendingFocus = useRef<{ index: number; from: string } | null>(null);
   useLayoutEffect(() => {
     const pending = pendingFocus.current;
@@ -119,7 +126,9 @@ function useCellWriter(
     const isInside = group?.contains(group.ownerDocument.activeElement) ?? false;
     if (!pending || pending.from === state.value) return;
     if (isInside) slots.readAll('cell')[pending.index]?.focus();
-    if (state.value.length >= length) onComplete?.(state.value);
+    if (!isPinCodeComplete(state.value, cells)) return;
+    state.commit();
+    onComplete?.(state.value);
   });
   return (next: string, focusIndex: number) => {
     if (next === state.value) {
@@ -128,7 +137,6 @@ function useCellWriter(
     }
     pendingFocus.current = { index: focusIndex, from: state.value };
     state.setValue(next);
-    if (next.length >= length) state.commit();
   };
 }
 
@@ -140,14 +148,9 @@ function useCellWriter(
  */
 function useCellEdits(
   state: FieldState<string>,
-  options: {
-    slots: CellSlots;
-    length: number;
-    type: PinInputType;
-    onComplete: PinInputCellsProps['onComplete'];
-  },
+  options: { slots: CellSlots; cells: PinCodeShape; onComplete: PinInputCellsProps['onComplete'] },
 ) {
-  const { length, type } = options;
+  const { length, type } = options.cells;
   const write = useCellWriter(state, options);
   const { value } = state;
   const isEditable = !state.isReadOnly && !state.isDisabled;
@@ -187,7 +190,11 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
   const active = findActivePinCell(value, length);
   const isEditable = !state.isReadOnly && !state.isDisabled;
   const focusCell = (index: number) => slots.readAll('cell')[clamp(index, 0, active)]?.focus();
-  const { fill, erase, remove } = useCellEdits(state, { slots, length, type, onComplete });
+  const { fill, erase, remove } = useCellEdits(state, {
+    slots,
+    cells: { length, type },
+    onComplete,
+  });
   const keys = { value, active, isRtl: direction === 'rtl', isEditable, focusCell, erase };
   // One cell is in the tab order: the focused one, else the active one, never past the active one.
   const [focused, setFocused] = useState<number | null>(null);
@@ -231,7 +238,7 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
             onChange={(event) => {
               const text = event.target.value;
               if (text === '') remove(index);
-              else fill(index, readEnteredText(text, value[index] ?? ''));
+              else fill(index, readEnteredText(text, event.nativeEvent as PinInputEdit));
             }}
             onPaste={(event) => {
               event.preventDefault();
