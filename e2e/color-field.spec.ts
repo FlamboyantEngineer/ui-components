@@ -314,6 +314,22 @@ test.describe('Color Field lab', () => {
     await expect(typing).not.toHaveAttribute('data-focused');
   });
 
+  test('UIC-COLOR-FIELD-4.3 leaves Enter and Escape during a composition to the input method', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const input = field(page, 'typing').getByRole('textbox', { name: 'Text colour' });
+    await input.fill('rgb(12');
+    await input.dispatchEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true });
+    await expect(input).toHaveValue('rgb(12');
+    await input.fill('rgb(12, 0, 0)');
+    await input.dispatchEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true });
+    await expect(output(page, 'Typed committed')).toHaveText('none');
+    await input.press('Enter');
+    await expect(output(page, 'Typed committed')).toHaveText('#0c0000');
+  });
+
   test('UIC-COLOR-FIELD-2.4 submits each named colour once in its stored format', async ({
     page,
     lab,

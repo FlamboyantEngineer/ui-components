@@ -82,7 +82,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signat
 
 ### UIC-SIGNATURE-PAD-3.2 - Typed name
 
-In the type mode, the field's control shall be a text input (`ui-signature-pad__input`) named by the field label, described by its description and message, with `aria-required` and `aria-invalid` as the field sets them, the `name` autofill hint and the provider string `signatureTypePlaceholder` as its hint. Typing sets a typed signature with the text as typed; blank text sets `null`. Enter, or focus leaving the field (UIC-FIELD-1.11), commits the value, so Tab from the edited input reaches the restore button without committing.
+In the type mode, the field's control shall be a text input (`ui-signature-pad__input`) named by the field label, described by its description and message, with `aria-required` and `aria-invalid` as the field sets them, the `name` autofill hint and the provider string `signatureTypePlaceholder` as its hint. Typing sets a typed signature with the text as typed; blank text sets `null`. Enter, or focus leaving the field (UIC-FIELD-1.11), commits the value, so Tab from the edited input reaches the restore button without committing. An Enter an input method composition owns (pressed during it, or the Enter that confirms a candidate, reported with key code 229) is left to the input method and commits nothing.
 
 Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/core/field-strings.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`

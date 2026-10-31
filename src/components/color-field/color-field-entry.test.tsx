@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -159,5 +159,30 @@ describe('ColorField typing', () => {
     expect(screen.getByRole('button', { name: 'Accent picker' })).toBeDisabled();
     rerender(<ColorField label="Accent" allowsTyping value="#336699" isDisabled />);
     expect(input()).toBeDisabled();
+  });
+
+  it.each([
+    { name: 'during a composition', init: { isComposing: true } },
+    { name: 'that confirms a candidate', init: { keyCode: 229 } },
+  ])('UIC-COLOR-FIELD-4.3 leaves Enter and Escape $name to the input method', async ({ init }) => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<ColorField label="Accent" allowsTyping defaultValue="#ff0000" onCommit={onCommit} />);
+    await user.clear(input());
+    await user.type(input(), 'rgb(12');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(input(), { key: 'Escape', ...init });
+    expect(input()).toHaveValue('rgb(12');
+    await user.type(input(), ', 0, 0)');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(input(), { key: 'Enter', ...init });
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input()).toHaveValue('rgb(12, 0, 0)');
+    await user.keyboard('{Enter}');
+    expect(onCommit).toHaveBeenCalledOnce();
+    expect(onCommit).toHaveBeenLastCalledWith('#0c0000');
+    await user.type(input(), '0');
+    await user.keyboard('{Escape}');
+    expect(input()).toHaveValue('#0C0000');
   });
 });

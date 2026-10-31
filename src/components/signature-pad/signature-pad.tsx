@@ -12,6 +12,7 @@ import {
 } from '../field/field.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import type { SignatureValue } from './signature-path.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { SignatureSurface, signaturePadHooks as hooks } from './signature-surface.js';
 
 export type { DrawnSignature, SignatureValue, TypedSignature } from './signature-path.js';
@@ -52,7 +53,8 @@ function SignatureInput({ control, state }: Pick<SignatureControlsProps, 'contro
         state.setValue(text.trim() === '' ? null : { kind: 'typed', text });
       }}
       onKeyDown={(event) => {
-        if (event.key === 'Enter') state.commit();
+        // The Enter that confirms an input method candidate is the input method's.
+        if (event.key === 'Enter' && !isComposingKey(event.nativeEvent)) state.commit();
       }}
     />
   );
