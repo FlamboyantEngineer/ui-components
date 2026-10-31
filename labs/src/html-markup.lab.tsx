@@ -109,6 +109,15 @@ mountLab(
       <FindDemo />
     </LabSection>
     <LabSection
+      title="Unknown names"
+      description="Elements outside the policy are unwrapped whatever their name, including names an ordinary object inherits."
+    >
+      <HtmlMarkup
+        data-lab-unknown
+        markup="<div><constructor>Kept</constructor> <__proto__>in</__proto__> <toString>place</toString></div>"
+      />
+    </LabSection>
+    <LabSection
       title="Large unbalanced input"
       description="A tag that never ends, nesting and stray closing tags read in time proportional to their length."
     >
