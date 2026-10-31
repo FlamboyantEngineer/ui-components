@@ -25,6 +25,13 @@ Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/vi
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`
 
+### UIC-VISUALLY-HIDDEN-1.4 - The library's hidden text
+
+Every library component that renders text only assistive technology perceives, such as a badge's or record label's spoken name, a shortcut's spoken keys or a copy button's status, shall render it through `VisuallyHidden`, so all hidden text carries the `ui-visually-hidden` hook beside the component's own slot. Only `src/components/visually-hidden/` imports the React Aria primitive, which a lint restriction enforces.
+
+Implementation: `src/components/visually-hidden/visually-hidden.tsx`, `eslint.config.js`
+Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
+
 ## UIC-VISUALLY-HIDDEN-2 - Accessibility
 
 ### UIC-VISUALLY-HIDDEN-2.1 - Names and descriptions

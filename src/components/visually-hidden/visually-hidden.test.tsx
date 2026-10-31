@@ -2,6 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Badge } from '../badge/badge.js';
+import { CopyButton } from '../copy-button/copy-button.js';
+import { Shortcut } from '../shortcut/shortcut.js';
 import { VisuallyHidden } from './visually-hidden.js';
 
 function isHidden(element: Element): boolean {
@@ -93,5 +96,24 @@ describe('VisuallyHidden', () => {
     const hidden = container.querySelector('.ui-visually-hidden') as HTMLElement;
     expect(isHidden(hidden)).toBe(true);
     expect(hidden).not.toHaveAttribute('data-focus-within');
+  });
+
+  it('UIC-VISUALLY-HIDDEN-1.4 renders the hidden text of library components with its hook', () => {
+    render(
+      <>
+        <Badge variant="dot" tone="success" aria-label="Recipe published" />
+        <Shortcut chord="Ctrl+Shift+K" platform="windows" />
+        <CopyButton value="Lemon tart" />
+      </>,
+    );
+    const hidden = [
+      screen.getByText('Recipe published'),
+      document.querySelector('.ui-shortcut__text'),
+      document.querySelector('.ui-copy-button__status'),
+    ];
+    for (const element of hidden) {
+      expect(element).toHaveClass('ui-visually-hidden');
+      expect(isHidden(element as Element)).toBe(true);
+    }
   });
 });

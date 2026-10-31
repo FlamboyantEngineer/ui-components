@@ -4,7 +4,7 @@ import { CheckGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
 import {
   chatQuestionHooks as hooks,
