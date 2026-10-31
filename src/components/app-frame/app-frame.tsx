@@ -235,9 +235,9 @@ export function AppFrame({
   };
   return (
     <ProjectionProvider slots={appFrameSlots}>
-      <InsideAppFrameContext.Provider value>
+      <InsideAppFrameContext value>
         <AppFrameLayout {...rest} own={own} />
-      </InsideAppFrameContext.Provider>
+      </InsideAppFrameContext>
     </ProjectionProvider>
   );
 }

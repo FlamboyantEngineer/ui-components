@@ -101,7 +101,7 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
     [props.getReference, isEditable],
   );
   return (
-    <ComposerPillContext.Provider value={pills}>
+    <ComposerPillContext value={pills}>
       <ProseMirror
         nodeViewComponents={composerNodeViews}
         state={synced.state}
@@ -113,6 +113,6 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
       >
         <RichComposerContent {...editor} />
       </ProseMirror>
-    </ComposerPillContext.Provider>
+    </ComposerPillContext>
   );
 }

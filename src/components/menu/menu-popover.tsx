@@ -192,11 +192,11 @@ export function MenuOverlay({
         containerPadding={containerPadding}
         style={{ zIndex }}
       >
-        <MenuSurfaceContext.Provider value={surface.group}>
-          <MenuNonModalContext.Provider value={nonModal}>
-            <MenuLayerContext.Provider value={resolved}>{children}</MenuLayerContext.Provider>
-          </MenuNonModalContext.Provider>
-        </MenuSurfaceContext.Provider>
+        <MenuSurfaceContext value={surface.group}>
+          <MenuNonModalContext value={nonModal}>
+            <MenuLayerContext value={resolved}>{children}</MenuLayerContext>
+          </MenuNonModalContext>
+        </MenuSurfaceContext>
       </AriaPopover>
     </>
   );

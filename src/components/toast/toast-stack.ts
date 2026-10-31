@@ -60,7 +60,7 @@ const ToastStackContext = createContext<ToastStackValue>({
   isPaused: false,
 });
 
-export const ToastStackProvider = ToastStackContext.Provider;
+export const ToastStackProvider = ToastStackContext;
 
 /**
  * The stack a region or list provides: its swipe settings, its toasts' measured heights and whether

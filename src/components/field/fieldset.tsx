@@ -39,7 +39,7 @@ export function Fieldset({
       disabled={isDisabled || undefined}
     >
       {legend ? <legend {...hooks.slot('legend')}>{legend}</legend> : null}
-      <FieldScopeContext.Provider value={scope}>{children}</FieldScopeContext.Provider>
+      <FieldScopeContext value={scope}>{children}</FieldScopeContext>
     </fieldset>
   );
 }

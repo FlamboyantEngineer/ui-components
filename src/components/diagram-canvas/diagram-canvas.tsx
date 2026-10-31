@@ -301,7 +301,7 @@ export function DiagramCanvas<T = unknown>({
       role="group"
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.diagram)}
     >
-      <DiagramPaletteContext.Provider value={palette}>
+      <DiagramPaletteContext value={palette}>
         <DiagramToolbar controller={controller} view={view} onViewChange={setView} />
         {paletteContent ? (
           <div {...hooks.slot('palette')} role="group" aria-label={strings.diagramPalette}>
@@ -313,7 +313,7 @@ export function DiagramCanvas<T = unknown>({
         ) : (
           <DiagramOutline controller={controller} />
         )}
-      </DiagramPaletteContext.Provider>
+      </DiagramPaletteContext>
       <DiagramStatus message={controller.message} />
     </div>
   );

@@ -282,7 +282,7 @@ export function UserCardTrigger({
     },
   };
   const popover = hasCard ? (
-    <UserCardOwnerContext.Provider value={owner}>{card}</UserCardOwnerContext.Provider>
+    <UserCardOwnerContext value={owner}>{card}</UserCardOwnerContext>
   ) : null;
   return (
     // The same providers and button render with or without a card, so the button keeps its focus.

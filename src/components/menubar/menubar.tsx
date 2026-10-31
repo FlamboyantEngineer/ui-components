@@ -62,7 +62,7 @@ export function Menubar({
       role="menubar"
       aria-orientation={orientation}
     >
-      <MenubarContext.Provider value={context}>{children}</MenubarContext.Provider>
+      <MenubarContext value={context}>{children}</MenubarContext>
     </div>
   );
 }

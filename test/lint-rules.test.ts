@@ -53,6 +53,25 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     expect(ids).toContain('no-restricted-globals');
   });
 
+  it('rejects <Context.Provider> in source, tests and labs (I5)', async () => {
+    const code = `import { createContext } from 'react';\nconst Probe = createContext(0);\nexport function Host() {\n  return <Probe.Provider value={1} />;\n}\nexport const Raw = Probe.Provider;\n`;
+    for (const path of [
+      'src/components/probe/probe.tsx',
+      'src/components/probe/probe.test.tsx',
+      'labs/src/probe.lab.tsx',
+    ]) {
+      const ids = await ruleIds(code, path);
+      expect(
+        ids.filter((id) => id === 'no-restricted-syntax'),
+        path,
+      ).toHaveLength(2);
+    }
+    const allowed = code
+      .replace('<Probe.Provider value={1} />', '<Probe value={1} />')
+      .replace('export const Raw = Probe.Provider;\n', '');
+    expect(await ruleIds(allowed)).not.toContain('no-restricted-syntax');
+  });
+
   it('does not apply library markup rules to tests', async () => {
     const code = `export function Probe() {\n  return <div className="caller" style={{ color: 'red' }} />;\n}\n`;
     const ids = await ruleIds(code, 'src/components/probe/probe.test.tsx');

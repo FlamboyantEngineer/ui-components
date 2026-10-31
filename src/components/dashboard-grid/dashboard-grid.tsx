@@ -263,9 +263,9 @@ export function DashboardGrid({
       {order.map((entry) => {
         const item = positions.get(entry.id) ?? entry;
         return (
-          <DashboardGridContext.Provider key={toKeyIdentity(item.id)} value={{ ...state, item }}>
+          <DashboardGridContext key={toKeyIdentity(item.id)} value={{ ...state, item }}>
             {children(item)}
-          </DashboardGridContext.Provider>
+          </DashboardGridContext>
         );
       })}
       <VisuallyHidden>

@@ -228,10 +228,10 @@ function MenuItemContent({
       ) : null}
       {shortcut ? (
         // The chord is part of the row's text, so it must not also become its description.
-        <KeyboardContext.Provider value={null}>
+        <KeyboardContext value={null}>
           {' '}
           <Shortcut chord={shortcut} className={itemHooks.slotClass('shortcut')} />
-        </KeyboardContext.Provider>
+        </KeyboardContext>
       ) : null}
       {state.hasSubmenu ? (
         <Glyph

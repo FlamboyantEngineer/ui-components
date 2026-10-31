@@ -91,5 +91,5 @@ export function DateDraftScope({
   useLayoutEffect(() => {
     setDraftIssue(incomplete ? { severity: 'error', message: strings.dateIncomplete } : null);
   }, [incomplete, setDraftIssue, strings.dateIncomplete]);
-  return <DraftContext.Provider value={report}>{children}</DraftContext.Provider>;
+  return <DraftContext value={report}>{children}</DraftContext>;
 }

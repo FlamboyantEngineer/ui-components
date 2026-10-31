@@ -68,11 +68,11 @@ export function ChoiceGroup<M extends ChoiceGroupSelectionMode = 'single'>({
       state={state}
     >
       {(control) => (
-        <ChoiceContext.Provider value={settings}>
+        <ChoiceContext value={settings}>
           <ChoiceBox control={control} state={state} config={rest}>
             {children}
           </ChoiceBox>
-        </ChoiceContext.Provider>
+        </ChoiceContext>
       )}
     </Field>
   );

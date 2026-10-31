@@ -65,11 +65,7 @@ export function TextMatchProvider({
     () => ({ terms, matchWords, ignoreAccents, registerText }),
     [terms, matchWords, ignoreAccents, registerText],
   );
-  return (
-    <TextMatchContext.Provider value={isInherited ? outer : own}>
-      {children}
-    </TextMatchContext.Provider>
-  );
+  return <TextMatchContext value={isInherited ? outer : own}>{children}</TextMatchContext>;
 }
 
 /**

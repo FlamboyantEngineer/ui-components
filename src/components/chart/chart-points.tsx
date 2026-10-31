@@ -226,7 +226,7 @@ function ChartTooltip({ activeKey, anchor, title, label, series, tone, value }: 
     [isOpen],
   );
   return (
-    <TooltipTriggerStateContext.Provider value={state}>
+    <TooltipTriggerStateContext value={state}>
       {isOpen ? (
         <TooltipPanel
           key={activeKey}
@@ -244,7 +244,7 @@ function ChartTooltip({ activeKey, anchor, title, label, series, tone, value }: 
           <span {...hooks.slot('tooltip-value')}>{value}</span>
         </TooltipPanel>
       ) : null}
-    </TooltipTriggerStateContext.Provider>
+    </TooltipTriggerStateContext>
   );
 }
 

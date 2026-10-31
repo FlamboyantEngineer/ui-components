@@ -52,13 +52,13 @@ export function TimeWithTooltip({ tooltip, tooltipClassName, ...rest }: TimeWith
   return (
     <>
       <time {...rest} {...triggerProps} tabIndex={0} ref={ref} />
-      <TooltipContext.Provider value={{ ...tooltipProps, triggerRef: ref }}>
-        <TooltipTriggerStateContext.Provider value={state}>
+      <TooltipContext value={{ ...tooltipProps, triggerRef: ref }}>
+        <TooltipTriggerStateContext value={state}>
           <TooltipPanel variant="default" className={tooltipClassName}>
             {tooltip}
           </TooltipPanel>
-        </TooltipTriggerStateContext.Provider>
-      </TooltipContext.Provider>
+        </TooltipTriggerStateContext>
+      </TooltipContext>
     </>
   );
 }

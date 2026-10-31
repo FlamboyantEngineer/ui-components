@@ -85,7 +85,7 @@ function SelectAll({
     state.commit();
   };
   return (
-    <CheckboxGroupStateContext.Provider value={null}>
+    <CheckboxGroupStateContext value={null}>
       <Checkbox
         {...hooks.slot('select-all')}
         size={settings.size}
@@ -97,7 +97,7 @@ function SelectAll({
       >
         {label}
       </Checkbox>
-    </CheckboxGroupStateContext.Provider>
+    </CheckboxGroupStateContext>
   );
 }
 

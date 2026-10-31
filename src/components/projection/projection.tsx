@@ -119,9 +119,9 @@ export function ProjectionProvider({ slots, children }: ProjectionProviderProps)
   }, [owned, parentState, ownState]);
 
   return (
-    <ProjectionActionsContext.Provider value={actions}>
-      <ProjectionStateContext.Provider value={state}>{children}</ProjectionStateContext.Provider>
-    </ProjectionActionsContext.Provider>
+    <ProjectionActionsContext value={actions}>
+      <ProjectionStateContext value={state}>{children}</ProjectionStateContext>
+    </ProjectionActionsContext>
   );
 }
 

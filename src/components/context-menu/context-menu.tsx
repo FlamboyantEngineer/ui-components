@@ -130,7 +130,7 @@ export function ContextMenu({
   return (
     <>
       {triggerRef ? null : <span ref={fallbackRef} hidden />}
-      <RootMenuTriggerStateContext.Provider value={state}>
+      <RootMenuTriggerStateContext value={state}>
         <MenuOverlay
           {...rest}
           {...anchorProps}
@@ -142,11 +142,9 @@ export function ContextMenu({
           onOpenChange={state.setOpen}
           onContextMenu={(event) => event.preventDefault()}
         >
-          <MenuContext.Provider value={menuDefaults}>
-            {children ?? <Menu items={items ?? []} />}
-          </MenuContext.Provider>
+          <MenuContext value={menuDefaults}>{children ?? <Menu items={items ?? []} />}</MenuContext>
         </MenuOverlay>
-      </RootMenuTriggerStateContext.Provider>
+      </RootMenuTriggerStateContext>
     </>
   );
 }

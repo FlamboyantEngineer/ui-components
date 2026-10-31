@@ -115,9 +115,9 @@ export function EmojiPicker({
       {...hooks.root({ className, data: { loading: !state.data.emoji && !state.data.failed } })}
       aria-label={rest['aria-label'] ?? strings.emojiPicker}
     >
-      <EmojiPickerContext.Provider value={state}>
+      <EmojiPickerContext value={state}>
         {children ?? <EmojiPickerLayout hideSkinTones={hideSkinTones} />}
-      </EmojiPickerContext.Provider>
+      </EmojiPickerContext>
     </Dialog>
   );
 }

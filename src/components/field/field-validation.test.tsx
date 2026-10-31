@@ -8,7 +8,7 @@ function renderField<T>(options: FieldStateOptions<T>, scope: FieldScope = {}) {
   return renderHook((props: FieldStateOptions<T>) => useFieldState(props), {
     initialProps: options,
     wrapper: ({ children }: { children: ReactNode }) => (
-      <FieldScopeContext.Provider value={scope}>{children}</FieldScopeContext.Provider>
+      <FieldScopeContext value={scope}>{children}</FieldScopeContext>
     ),
   });
 }
@@ -121,7 +121,7 @@ describe('field validation', () => {
     let scope: FieldScope = { validationErrors: { email: 'Taken.' } };
     const { result, rerender } = renderHook(() => useFieldState<string>({ name: 'email' }), {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <FieldScopeContext.Provider value={scope}>{children}</FieldScopeContext.Provider>
+        <FieldScopeContext value={scope}>{children}</FieldScopeContext>
       ),
     });
     act(() => result.current.setValue('b'));

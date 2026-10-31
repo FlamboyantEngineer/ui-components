@@ -188,11 +188,11 @@ export function Form({
       validationErrors={errorLists}
       onSubmit={submit}
     >
-      <FieldScopeContext.Provider value={scope}>
-        <FormProblemContext.Provider value={problems}>
-          <FormValidityContext.Provider value={validity}>{children}</FormValidityContext.Provider>
-        </FormProblemContext.Provider>
-      </FieldScopeContext.Provider>
+      <FieldScopeContext value={scope}>
+        <FormProblemContext value={problems}>
+          <FormValidityContext value={validity}>{children}</FormValidityContext>
+        </FormProblemContext>
+      </FieldScopeContext>
     </AriaForm>
   );
 }

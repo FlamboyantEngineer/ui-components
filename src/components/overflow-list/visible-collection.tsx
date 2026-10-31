@@ -33,13 +33,13 @@ function VisibleCollectionRoot({ collection }: CollectionRootProps) {
   const visible = useContext(VisibleItemsContext);
   if (!visible) return null;
   return (
-    <CollectionRendererContext.Provider value={visible.outer}>
+    <CollectionRendererContext value={visible.outer}>
       {[...collection]
         .filter((node) => visible.keys.has(node.key))
         .map((node) => (
           <Fragment key={String(node.key)}>{node.render?.(node)}</Fragment>
         ))}
-    </CollectionRendererContext.Provider>
+    </CollectionRendererContext>
   );
 }
 
@@ -58,8 +58,8 @@ export function VisibleCollection({ keys, children }: VisibleCollectionProps) {
   const visible = useMemo(() => (keys ? { keys, outer } : null), [keys, outer]);
   if (visible === null) return children;
   return (
-    <CollectionRendererContext.Provider value={renderer}>
-      <VisibleItemsContext.Provider value={visible}>{children}</VisibleItemsContext.Provider>
-    </CollectionRendererContext.Provider>
+    <CollectionRendererContext value={renderer}>
+      <VisibleItemsContext value={visible}>{children}</VisibleItemsContext>
+    </CollectionRendererContext>
   );
 }
