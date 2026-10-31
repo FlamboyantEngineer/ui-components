@@ -16,7 +16,7 @@ import {
   NavigationRailGroup,
   NavigationRailItem,
   NavigationRailSection,
-} from '../../src/components/navigation-rail/navigation-rail-items.js';
+} from '../../src/components/navigation-rail/index.js';
 
 /** The pages of the sample kitchen workspace, by key. */
 export const kitchenPages = {

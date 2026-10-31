@@ -4,10 +4,10 @@ import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Table } from '../../src/components/table/table.js';
-import type { TableCellRange } from '../../src/components/table/table-cell-range.js';
-import type { TableGroupBy } from '../../src/components/table/table-groups.js';
-import type { TableColumn } from '../../src/components/table/table-rows.js';
-import type { TableCellEdit } from '../../src/components/table/use-cell-editing.js';
+import type { TableCellRange } from '../../src/components/table/index.js';
+import type { TableGroupBy } from '../../src/components/table/index.js';
+import type { TableColumn } from '../../src/components/table/index.js';
+import type { TableCellEdit } from '../../src/components/table/index.js';
 
 interface Stock {
   id: string;

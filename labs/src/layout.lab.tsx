@@ -11,18 +11,18 @@ import {
   type GridColumns,
   type LayoutGrow,
 } from '../../src/components/layout/layout.js';
-import { AspectRatio } from '../../src/components/layout/aspect-ratio.js';
+import { AspectRatio } from '../../src/components/layout/index.js';
 import {
   GridItem,
   type GridItemOffset,
   type GridItemSpan,
-} from '../../src/components/layout/grid-item.js';
+} from '../../src/components/layout/index.js';
 import {
   ToolbarRow,
   ToolbarRowGroup,
   ToolbarRowSeparator,
-} from '../../src/components/layout/toolbar-row.js';
-import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/wrappers.js';
+} from '../../src/components/layout/index.js';
+import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   AttachedGroups,

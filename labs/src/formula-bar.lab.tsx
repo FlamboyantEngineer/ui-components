@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
 import { Table } from '../../src/components/table/table.js';
-import type { TableCellRange } from '../../src/components/table/table-cell-range.js';
-import type { TableColumn } from '../../src/components/table/table-rows.js';
+import type { TableCellRange } from '../../src/components/table/index.js';
+import type { TableColumn } from '../../src/components/table/index.js';
 import { formatCellReference, type CellCoordinates } from '../../src/utils/cell-reference.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';

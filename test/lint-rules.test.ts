@@ -58,6 +58,15 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     expect(ids).not.toContain('ui/no-static-inline-style');
   });
 
+  it('UIC-PRIMITIVES-1.4 makes labs import a component through its entry point or main module', async () => {
+    const lab = 'labs/src/probe.lab.tsx';
+    const imports = (path: string) =>
+      `import { Probe } from '../../src/components/${path}';\nexport { Probe };\n`;
+    expect(await ruleIds(imports('table/table-rows.js'), lab)).toContain('ui/component-imports');
+    expect(await ruleIds(imports('table/index.js'), lab)).not.toContain('ui/component-imports');
+    expect(await ruleIds(imports('table/table.js'), lab)).not.toContain('ui/component-imports');
+  });
+
   it('does not apply library rules outside src', async () => {
     expect(
       await ruleIds("import './chrome.css';\nexport {};\n", 'labs/src/probe.ts'),

@@ -139,9 +139,12 @@ export default tseslint.config(
     },
   },
   {
+    // Labs use the public API: a component's entry point or main module, never its helpers.
     files: ['labs/src/**/*.{ts,tsx}'],
+    plugins: { ui: local },
     rules: {
       'no-restricted-imports': ['error', { patterns: [ARIA_PACKAGES, PRIMITIVES_MODULES] }],
+      'ui/component-imports': 'error',
     },
   },
   {

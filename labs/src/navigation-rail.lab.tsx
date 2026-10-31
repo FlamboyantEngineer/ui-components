@@ -5,7 +5,7 @@ import { NavigationRail } from '../../src/components/navigation-rail/navigation-
 import {
   NavigationRailItem,
   NavigationRailSection,
-} from '../../src/components/navigation-rail/navigation-rail-items.js';
+} from '../../src/components/navigation-rail/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   KitchenRail,

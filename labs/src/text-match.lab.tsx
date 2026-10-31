@@ -1,5 +1,5 @@
 import { useCallback, useId, useMemo, useState } from 'react';
-import { splitMatchTerms, textMatchesTerms } from '../../src/components/text-match/match-ranges.js';
+import { splitMatchTerms, textMatchesTerms } from '../../src/components/text-match/index.js';
 import { TextMatch, TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 

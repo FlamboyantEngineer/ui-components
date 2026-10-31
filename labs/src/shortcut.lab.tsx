@@ -4,7 +4,7 @@ import {
   formatShortcutDescription,
   formatShortcutTooltip,
   getShortcutPlatform,
-} from '../../src/components/shortcut/shortcut-format.js';
+} from '../../src/components/shortcut/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const platforms = ['mac', 'windows', 'linux'] as const;

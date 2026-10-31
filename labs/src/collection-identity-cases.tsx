@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Board, type BoardColumn } from '../../src/components/board/board.js';
-import { applyBoardMove, applyColumnMove } from '../../src/components/board/board-moves.js';
+import { applyBoardMove, applyColumnMove } from '../../src/components/board/index.js';
 import { Table } from '../../src/components/table/table.js';
-import type { TableCellRange } from '../../src/components/table/table-cell-range.js';
-import type { TableCellValue } from '../../src/components/table/table-rows.js';
+import type { TableCellRange } from '../../src/components/table/index.js';
+import type { TableCellValue } from '../../src/components/table/index.js';
 
 interface TypedRow {
   id: Key;

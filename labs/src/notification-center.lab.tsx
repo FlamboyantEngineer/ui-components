@@ -6,7 +6,7 @@ import { NotificationCenter } from '../../src/components/notification-center/not
 import {
   NotificationList,
   type NotificationItem,
-} from '../../src/components/notification-center/notification-list.js';
+} from '../../src/components/notification-center/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 

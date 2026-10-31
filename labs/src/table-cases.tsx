@@ -7,12 +7,9 @@ import type { Key, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Table } from '../../src/components/table/table.js';
-import type {
-  TableColumnGroup,
-  TableColumnLayout,
-} from '../../src/components/table/table-columns.js';
-import type { TableFilter } from '../../src/components/table/table-filters.js';
-import type { TableColumn } from '../../src/components/table/table-rows.js';
+import type { TableColumnGroup, TableColumnLayout } from '../../src/components/table/index.js';
+import type { TableFilter } from '../../src/components/table/index.js';
+import type { TableColumn } from '../../src/components/table/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 

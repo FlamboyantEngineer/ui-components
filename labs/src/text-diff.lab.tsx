@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
-import { CommentThreadReply } from '../../src/components/comment-thread/comment-thread-reply.js';
+import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
