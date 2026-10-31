@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode, type Ref } from 'react';
+import { Fragment, memo, type ReactNode, type Ref } from 'react';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { FieldSeverity } from '../field/field.js';
 import type { CodeSegment } from './code-segments.js';
@@ -95,16 +95,21 @@ function formatLocation({ line, column }: CodeDiagnostic): string {
 
 /**
  * The highlighted copy of the source behind the input. A final line break keeps its last line as
- * tall as the input's, so the two scroll to the same extent.
+ * tall as the input's, so the two scroll to the same extent. It renders again only when its
+ * segments change, not for every render of the editor, such as a hover tip moving.
  */
-export function CodeHighlight({ segments, caretRef, highlightRef }: CodeHighlightProps) {
+export const CodeHighlight = memo(function CodeHighlight({
+  segments,
+  caretRef,
+  highlightRef,
+}: CodeHighlightProps) {
   return (
     <pre {...hooks.slot('highlight')} ref={highlightRef} aria-hidden="true">
       {segments.map((segment, index) => renderSegment(segment, index, caretRef))}
       {'\n'}
     </pre>
   );
-}
+});
 
 /**
  * Line numbers beside the input. Each row holds a hidden copy of its line, so a wrapped line keeps

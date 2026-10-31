@@ -31,6 +31,26 @@ function layOutCopy(this: Range): DOMRect {
   return new DOMRect(left, top, CHARACTER.width, CHARACTER.height);
 }
 
+/**
+ * Lays the copy out from offsets read once, before the pointer moves, so only the editor walks it.
+ * Text nodes added later lay out at the start of the copy.
+ */
+function layOutFixed(highlight: HTMLElement) {
+  const starts = new Map<Node, number>();
+  const walker = document.createTreeWalker(highlight, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(), at = 0; node; node = walker.nextNode()) {
+    starts.set(node, at);
+    at += (node as Text).data.length;
+  }
+  const text = highlight.textContent ?? '';
+  Range.prototype.getBoundingClientRect = function (this: Range) {
+    const before = text.slice(0, (starts.get(this.startContainer) ?? 0) + this.startOffset);
+    const lines = before.split('\n');
+    const left = (lines.at(-1)?.length ?? 0) * CHARACTER.width;
+    return new DOMRect(left, (lines.length - 1) * CHARACTER.height, CHARACTER.width, 20);
+  };
+}
+
 function Editor({
   initialValue = 'let total = basket\nreturn totl',
   ...props
@@ -158,25 +178,50 @@ describe('CodeEditor problems and hover tips', () => {
       text.split(/(\s+)/).map((part) => ({ text: part, type: /\w/.test(part) ? 'name' : null }));
     const { container } = render(<Editor initialValue={source} tokenize={tokenize} />);
     const highlight = container.querySelector('.ui-code-editor__highlight') as HTMLElement;
-    // Lay the copy out from offsets read before the pointer moves, so only the editor walks it.
-    const starts = new Map<Node, number>();
-    const walker = document.createTreeWalker(highlight, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(), at = 0; node; node = walker.nextNode()) {
-      starts.set(node, at);
-      at += (node as Text).data.length;
-    }
-    const text = highlight.textContent ?? '';
-    Range.prototype.getBoundingClientRect = function (this: Range) {
-      const before = text.slice(0, (starts.get(this.startContainer) ?? 0) + this.startOffset);
-      const lines = before.split('\n');
-      const left = (lines.at(-1)?.length ?? 0) * CHARACTER.width;
-      return new DOMRect(left, (lines.length - 1) * CHARACTER.height, CHARACTER.width, 20);
-    };
+    layOutFixed(highlight);
     const walks = vi.spyOn(document, 'createTreeWalker');
     for (let step = 0; step < 8; step += 1) {
       await user.pointer({ target: input(), coords: { clientX: 5 + step * 10, clientY: 205 } });
     }
     expect(walks.mock.calls.filter(([root]) => root === highlight)).toHaveLength(1);
+  });
+
+  it('UIC-CODE-EDITOR-3.6 reads the copy once per decoration change while the tip follows the pointer', async () => {
+    const user = userEvent.setup();
+    const source = Array.from({ length: 40 }, (_, line) => `let row${line} = ${line}`).join('\n');
+    const tokenize = (text: string) =>
+      text.split(/(\s+)/).map((part) => ({ text: part, type: /\w/.test(part) ? 'name' : null }));
+    const renderHover = (offset: number) => `Offset ${offset}`;
+    const { container, rerender } = render(
+      <Editor initialValue={source} tokenize={tokenize} renderHover={renderHover} />,
+    );
+    const highlight = container.querySelector('.ui-code-editor__highlight') as HTMLElement;
+    const firstToken = highlight.querySelector('.ui-code-editor__token');
+    layOutFixed(highlight);
+    const walks = vi.spyOn(document, 'createTreeWalker');
+    const copyWalks = () => walks.mock.calls.filter(([root]) => root === highlight).length;
+    const tips = new Set<string>();
+    for (let step = 0; step < 8; step += 1) {
+      await user.pointer({ target: input(), coords: { clientX: 5 + step * 10, clientY: 205 } });
+      tips.add(screen.getByRole('tooltip').textContent ?? '');
+    }
+    // Every move showed a new tip, yet the copy was neither rendered again nor walked again.
+    expect(tips.size).toBe(8);
+    expect(copyWalks()).toBe(1);
+    expect(highlight.querySelector('.ui-code-editor__token')).toBe(firstToken);
+    walks.mockClear();
+    rerender(
+      <Editor
+        initialValue={source}
+        tokenize={tokenize}
+        renderHover={renderHover}
+        diagnostics={[{ message: 'Unused row.', line: 2, column: 5, endColumn: 9 }]}
+      />,
+    );
+    for (let step = 0; step < 4; step += 1) {
+      await user.pointer({ target: input(), coords: { clientX: 5 + step * 10, clientY: 225 } });
+    }
+    expect(copyWalks()).toBe(1);
   });
 
   it('UIC-CODE-EDITOR-3.6 closes the tip on an edit', async () => {

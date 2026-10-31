@@ -40,7 +40,7 @@ interface CodeEditorOptions {
 /** Everything the editor's parts draw from: layers, decorated text and the interaction models. */
 export interface CodeEditorModel {
   layers: CodeLayers;
-  segments: Array<CodeSegment | null>;
+  segments: ReadonlyArray<CodeSegment | null>;
   completion: CompletionsModel;
   search: CodeSearchModel;
   hover: CodeHoverModel;
@@ -63,14 +63,16 @@ function findProblem(marked: readonly MarkedDiagnostic[], caret: number, delta: 
 /** What the highlighted copy marks: problems, search matches, the caret's brackets and the list's caret. */
 function toDecorations({
   marked,
-  search,
+  matches,
+  current,
   bracket,
-  completion,
+  caret,
 }: {
   marked: readonly MarkedDiagnostic[];
-  search: CodeSearchModel;
+  matches: CodeSearchModel['matches'];
+  current: number;
   bracket: BracketMatch | null;
-  completion: CompletionsModel;
+  caret: number | null;
 }): CodeDecorations {
   const brackets = bracket ? [bracket.at, bracket.partner] : [];
   return {
@@ -78,15 +80,39 @@ function toDecorations({
       ...range,
       severity: diagnostic.severity ?? 'error',
     })),
-    matches: search.matches.map((range, index) => ({
-      ...range,
-      isCurrent: index === search.current,
-    })),
+    matches: matches.map((range, index) => ({ ...range, isCurrent: index === current })),
     brackets: brackets.flatMap((at) =>
       at === null ? [] : [{ start: at, end: at + 1, isUnmatched: bracket?.partner === null }],
     ),
-    caret: completion.isOpen ? completion.caret : null,
+    caret,
   };
+}
+
+/**
+ * The tokens cut at the decorations, split again only when a token or decoration changes, so a
+ * render for anything else (the hover tip, a caret move without a bracket) keeps the same segments
+ * and the highlighted copy is not rendered again.
+ */
+function useSegments(
+  tokens: readonly CodeToken[],
+  {
+    marked,
+    search,
+    bracket,
+    completion,
+  }: {
+    marked: readonly MarkedDiagnostic[];
+    search: CodeSearchModel;
+    bracket: BracketMatch | null;
+    completion: CompletionsModel;
+  },
+): ReadonlyArray<CodeSegment | null> {
+  const { matches, current } = search;
+  const caret = completion.isOpen ? completion.caret : null;
+  return useMemo(
+    () => splitSegments(tokens, toDecorations({ marked, matches, current, bracket, caret })),
+    [tokens, marked, matches, current, bracket, caret],
+  );
 }
 
 /** Moves the highlighted layer and the gutter to the input's scroll offset. */
@@ -107,6 +133,9 @@ function useLayers(): CodeLayers {
   return useMemo(() => ({ input, highlight, gutter }), []);
 }
 
+/** The marks of an editor without diagnostics, the same each render. */
+const noMarks: readonly MarkedDiagnostic[] = [];
+
 function useDecoratedText(options: CodeEditorOptions, caret: number | null) {
   const { value, tokenize, diagnostics } = options;
   const tokens = useMemo<readonly CodeToken[]>(
@@ -114,7 +143,7 @@ function useDecoratedText(options: CodeEditorOptions, caret: number | null) {
     [tokenize, value],
   );
   const marked = useMemo(() => {
-    if (diagnostics.length === 0) return [];
+    if (diagnostics.length === 0) return noMarks;
     const starts = findLineStarts(value);
     return diagnostics.flatMap((diagnostic) => {
       const range = findDiagnosticRange(value, diagnostic, starts);
@@ -148,7 +177,7 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
   const [caret, setCaret] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const { tokens, marked, bracket } = useDecoratedText(options, caret);
-  const segments = splitSegments(tokens, toDecorations({ marked, search, bracket, completion }));
+  const segments = useSegments(tokens, { marked, search, bracket, completion });
   const hover = useCodeHover({
     inputRef: layers.input,
     highlightRef: layers.highlight,
