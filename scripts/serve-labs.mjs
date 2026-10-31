@@ -74,5 +74,7 @@ const server = createServer((request, response) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`Serving ${dir} at http://${host}:${server.address().port}/`);
+  console.log(
+    `Serving ${dir} at http://${host}:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/`,
+  );
 });

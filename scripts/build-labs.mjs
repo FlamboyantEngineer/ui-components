@@ -42,6 +42,7 @@ if (!referenceOnly) {
   }
 }
 
+/** @type {import('esbuild').BuildOptions} */
 const options = {
   entryPoints,
   outdir,
@@ -64,6 +65,7 @@ const options = {
 
 // The settings every page applies from its head before the body is parsed: a classic script, since
 // the head cannot wait for a module, so the first paint already has the stylesheet and theme.
+/** @type {import('esbuild').BuildOptions} */
 const bootOptions = {
   ...options,
   entryPoints: { boot: join(labSourceDir, 'chrome', 'boot.ts') },

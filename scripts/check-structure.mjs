@@ -117,7 +117,7 @@ const config = ts.getParsedCommandLineOfConfigFile(
 const indexFiles = components
   .map((name) => join(componentsDir, name, 'index.ts'))
   .filter(existsSync);
-const program = ts.createProgram(indexFiles, config.options);
+const program = ts.createProgram(indexFiles, config?.options ?? {});
 const checker = program.getTypeChecker();
 
 function includesBaseProps(type) {
@@ -132,7 +132,8 @@ function includesBaseProps(type) {
 }
 
 for (const file of indexFiles) {
-  const moduleSymbol = checker.getSymbolAtLocation(program.getSourceFile(file));
+  const source = program.getSourceFile(file);
+  const moduleSymbol = source && checker.getSymbolAtLocation(source);
   if (!moduleSymbol) continue;
   for (const exported of checker.getExportsOfModule(moduleSymbol)) {
     const name = exported.getName();

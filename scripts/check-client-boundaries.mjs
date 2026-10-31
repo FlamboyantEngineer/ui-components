@@ -80,6 +80,10 @@ function walk(dir) {
   });
 }
 
+/** The module a declaration imports or re-exports from; the caller has checked it names one. */
+const specifierOf = (statement) =>
+  /** @type {import('typescript').StringLiteral} */ (statement.moduleSpecifier).text;
+
 const isFunction = (node) =>
   node !== undefined && (ts.isArrowFunction(node) || ts.isFunctionExpression(node));
 
@@ -123,7 +127,7 @@ function clientReason(source) {
       ts.isImportDeclaration(statement) ||
       (ts.isExportDeclaration(statement) && statement.moduleSpecifier);
     if (!isModuleStatement) continue;
-    const from = statement.moduleSpecifier.text;
+    const from = specifierOf(statement);
     const names = valueNames(statement);
     if (names.length === 0) continue;
     if (CLIENT_PACKAGE.test(from)) return `imports ${from}`;
@@ -179,7 +183,7 @@ function declares(source, name) {
   return source.statements.some((statement) => {
     if (ts.isExportDeclaration(statement)) {
       const clause = statement.exportClause;
-      const isLocal = !statement.moduleSpecifier || !statement.moduleSpecifier.text.startsWith('.');
+      const isLocal = !statement.moduleSpecifier || !specifierOf(statement).startsWith('.');
       return (
         isLocal &&
         clause !== undefined &&
@@ -208,7 +212,7 @@ function definingModule(path, name, seen = new Set()) {
   if (declares(module.source, name)) return path;
   for (const statement of module.source.statements) {
     if (!ts.isExportDeclaration(statement) || !statement.moduleSpecifier) continue;
-    const target = resolveModule(path, statement.moduleSpecifier.text);
+    const target = resolveModule(path, specifierOf(statement));
     const clause = statement.exportClause;
     if (!target) continue;
     if (!clause) {
@@ -227,7 +231,7 @@ function importedValues(module) {
   const imports = new Map();
   for (const statement of module.source.statements) {
     if (!ts.isImportDeclaration(statement) || statement.importClause?.isTypeOnly) continue;
-    const target = resolveModule(module.path, statement.moduleSpecifier.text);
+    const target = resolveModule(module.path, specifierOf(statement));
     const bindings = statement.importClause?.namedBindings;
     if (!target || !bindings || !ts.isNamedImports(bindings)) continue;
     for (const element of bindings.elements) {
@@ -309,7 +313,7 @@ for (const { path, text, source, reason } of modules.values()) {
   const name = relative(root, path);
   const starred = source.statements
     .filter((s) => ts.isExportDeclaration(s) && !s.exportClause && s.moduleSpecifier)
-    .map((s) => resolveModule(path, s.moduleSpecifier.text));
+    .map((s) => resolveModule(path, specifierOf(s)));
   if (reason && starred.length > 0) {
     problems.push(`${name}: a client module re-exports with \`export *\``);
   }
@@ -339,7 +343,7 @@ for (const { path, source } of modules.values()) {
     if (!ts.isExportDeclaration(statement) || statement.isTypeOnly || !statement.moduleSpecifier) {
       continue;
     }
-    const target = resolveModule(path, statement.moduleSpecifier.text);
+    const target = resolveModule(path, specifierOf(statement));
     const clause = statement.exportClause;
     if (!target || !modules.get(target)?.reason || !clause || !ts.isNamedExports(clause)) continue;
     for (const element of clause.elements) {

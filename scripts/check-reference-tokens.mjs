@@ -11,7 +11,9 @@ import { join } from 'node:path';
 
 const dirFlag = process.argv.indexOf('--dir');
 const referenceDir =
-  dirFlag === -1 ? join(import.meta.dirname, '..', 'labs', 'reference') : process.argv[dirFlag + 1];
+  dirFlag === -1
+    ? join(import.meta.dirname, '..', 'labs', 'reference')
+    : (process.argv[dirFlag + 1] ?? '');
 const exemptMarker = 'token-exempt:';
 const layoutExemptMarker = 'layout-exempt:';
 const problems = [];

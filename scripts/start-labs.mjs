@@ -65,7 +65,7 @@ function run(reason, args) {
   try {
     runNpm(args, { cwd: root, stdio: 'inherit' });
   } catch (error) {
-    process.exit(error.status ?? 1);
+    process.exit(/** @type {{ status?: number }} */ (error).status ?? 1);
   }
 }
 

@@ -62,7 +62,7 @@ export function MenuTriggerPress({ children }: { children: ReactNode }) {
   const triggerRef = useSlottedContext(PopoverContext)?.triggerRef;
   useEffect(() => {
     const trigger = triggerRef?.current;
-    if (trigger) return captureOpeningPress(trigger);
+    return trigger ? captureOpeningPress(trigger) : undefined;
   }, [triggerRef]);
   return children;
 }

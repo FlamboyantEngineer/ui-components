@@ -15,6 +15,6 @@ if (!isPreparingPackage || ignoresScripts) {
   try {
     runNpm(['run', 'build:package'], { stdio: 'inherit' });
   } catch (error) {
-    process.exitCode = error.status ?? 1;
+    process.exitCode = /** @type {{ status?: number }} */ (error).status ?? 1;
   }
 }
