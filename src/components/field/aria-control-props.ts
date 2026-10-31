@@ -5,7 +5,7 @@ import type { FieldControlProps } from './field-parts.js';
  * id, name, description and states. Controls validate through the field, so the building block only
  * reports the field's status (`validationBehavior="aria"`).
  */
-export function toAriaControlProps(control: FieldControlProps) {
+export function toAriaControlProps(control: Omit<FieldControlProps, 'ref'>) {
   return {
     id: control.id,
     'aria-label': control['aria-label'],

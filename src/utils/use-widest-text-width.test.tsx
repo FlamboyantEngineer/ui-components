@@ -6,7 +6,11 @@ import { useWidestTextWidth } from './use-widest-text-width.js';
 function Probe({ texts }: { texts: readonly string[] }) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const width = useWidestTextWidth(ref, texts);
-  return createElement('span', { ref, role: 'status', 'aria-label': 'Widest text' }, String(width));
+  return (
+    <span ref={ref} role="status" aria-label="Widest text">
+      {String(width)}
+    </span>
+  );
 }
 
 function stubCanvas() {

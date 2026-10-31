@@ -1,7 +1,8 @@
 'use client';
 
-import { isValidElement, useMemo, useRef, type ReactNode } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
+import { isValidElement, useMemo, useRef, type ReactNode } from 'react';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import type { ChatFeedback } from '../chat-message-actions/chat-message-actions.js';
 import type { ChatToolRenderer } from '../chat-parts/chat-parts.js';
@@ -81,9 +82,7 @@ function isSameNode(left: unknown, right: unknown): boolean {
 
 /** `node`, or the one an earlier render passed while it draws the same, such as `<Spinner />`. */
 function useSameNode(node: ReactNode): ReactNode {
-  const ref = useRef(node);
-  if (!isSameNode(ref.current, node)) ref.current = node;
-  return ref.current;
+  return useEqualValue(node, isSameNode);
 }
 
 /**

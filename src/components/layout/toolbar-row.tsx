@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   createContext,
   useContext,
@@ -15,7 +16,6 @@ import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js
 import type { ButtonGroupDensity } from '../button-group/button-group.js';
 import { Separator } from '../separator/separator.js';
 import { ScrollStrip, useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
@@ -144,7 +144,7 @@ export function ToolbarRow({
   const isScroll = overflow === 'scroll';
   const wrap = overflow === 'wrap' ? 'wrap' : 'nowrap';
   const scroll = useToolbarScroll(isScroll);
-  const stripRef = useMemo(() => mergeRefs(scroll.stripRef, ref), [scroll.stripRef, ref]);
+  const stripRef = useMergedRefs(scroll.stripRef, ref);
   // The row renders again as it scrolls; its controls read this only when it changes.
   const context = useMemo<ToolbarRowFlow>(() => ({ orientation, wrap }), [orientation, wrap]);
   const edges = isScroll ? scroll.edges : { start: false, end: false };

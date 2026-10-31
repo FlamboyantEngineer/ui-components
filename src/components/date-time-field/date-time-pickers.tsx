@@ -1,5 +1,6 @@
 'use client';
 
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { CalendarGlyph } from '../../core/glyphs.js';
 import {
@@ -22,7 +23,6 @@ import {
 } from '../../primitives/index.js';
 import type { DateTimeFieldDateState } from './date-time-field.js';
 import { useMemo, useRef, type ReactNode } from 'react';
-import { mergeRefs } from '../../utils/merge-props.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -166,7 +166,7 @@ function PreviousValue({ previous }: { previous: string | null }) {
 /** The segments' group element, for the field (`control.ref`) and for the draft's form reset. */
 function useGroupRef(controlRef: SlotRef) {
   const root = useRef<HTMLElement>(null);
-  const ref = useMemo(() => mergeRefs<HTMLElement>(controlRef, root), [controlRef]);
+  const ref = useMergedRefs<HTMLElement>(controlRef, root);
   return { root, ref };
 }
 
@@ -298,7 +298,7 @@ export function DateRangeControl(props: DatePickerControlProps) {
 export function TimeControl(props: DatePickerControlProps) {
   const { state, bounds, settings, onPick } = props;
   const granularity = settings.granularity ?? 'minute';
-  const group = useGroupRef(props.control.ref);
+  const { root: groupRoot, ref: groupRef } = useGroupRef(props.control.ref);
   const text = typeof state.value === 'string' ? state.value : null;
   const value = useMemo(() => parseIsoTime(text), [text]);
   const minValue = useMemo(() => parseIsoTime(bounds.minValue), [bounds.minValue]);
@@ -312,9 +312,9 @@ export function TimeControl(props: DatePickerControlProps) {
       maxValue={maxValue}
       onChange={(next) => onPick(next ? formatIsoDate(next, granularity) : null)}
     >
-      <div {...hooks.slot('group')} ref={group.ref}>
+      <div {...hooks.slot('group')} ref={groupRef}>
         <PreviousValue previous={props.previous} />
-        <DateDraftScope state={state} root={group.root}>
+        <DateDraftScope state={state} root={groupRoot}>
           <Segments />
         </DateDraftScope>
       </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLatest } from '../../utils/use-latest.js';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Dialog, Heading } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -39,8 +40,7 @@ export function TourPanel({
   const strings = useUiStrings();
   const isLast = step === count - 1;
   const dialogRef = useRef<HTMLElement>(null);
-  const skip = useRef(onSkip);
-  skip.current = onSkip;
+  const skip = useLatest(onSkip);
   // The dialog takes no key handler, so Escape is heard on its element.
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -52,7 +52,7 @@ export function TourPanel({
     };
     dialog?.addEventListener('keydown', onKeyDown);
     return () => dialog?.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [skip]);
   return (
     <Dialog ref={dialogRef} id={id} className={hooks.slotClass('dialog')}>
       <div {...hooks.slot('header')}>

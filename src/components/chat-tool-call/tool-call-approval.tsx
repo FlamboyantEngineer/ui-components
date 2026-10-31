@@ -92,6 +92,7 @@ function ApprovalActions({
   onAlwaysAllow,
 }: ActionsProps) {
   const strings = useUiStrings();
+  const { denyRef, openDenyForm } = state;
   const common = {
     size: 'sm',
     className: hooks.slotClass('action'),
@@ -114,10 +115,10 @@ function ApprovalActions({
       {onDeny ? (
         <Button
           {...common}
-          ref={state.denyRef}
+          ref={denyRef}
           data-action="deny"
           shortcut="Escape"
-          onPress={state.openDenyForm}
+          onPress={openDenyForm}
         >
           {strings.toolCallDeny}
         </Button>

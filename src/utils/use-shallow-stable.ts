@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
 import { isShallowEqual } from './is-shallow-equal.js';
+import { useEqualValue } from './use-equal-value.js';
 
 /**
  * `value`, or the object an earlier render returned while every field of `value` is the same
@@ -9,7 +9,5 @@ import { isShallowEqual } from './is-shallow-equal.js';
  * effects without listing its fields as dependencies.
  */
 export function useShallowStable<T extends object>(value: T): T {
-  const ref = useRef(value);
-  if (!isShallowEqual(ref.current, value)) ref.current = value;
-  return ref.current;
+  return useEqualValue(value, isShallowEqual);
 }

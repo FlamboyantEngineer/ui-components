@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
 import { isShallowEqual } from './is-shallow-equal.js';
+import { useEqualValue } from './use-equal-value.js';
 
 /** Whether two items are the same value, or objects whose fields are (`isShallowEqual`). */
 function isSameItem(left: unknown, right: unknown): boolean {
@@ -24,7 +24,5 @@ export function isSameArray(left: readonly unknown[], right: readonly unknown[])
  * identity for `useMemo` and `memo` without serialising it.
  */
 export function useStableArray<T>(items: readonly T[]): readonly T[] {
-  const ref = useRef(items);
-  if (!isSameArray(ref.current, items)) ref.current = items;
-  return ref.current;
+  return useEqualValue(items, isSameArray);
 }

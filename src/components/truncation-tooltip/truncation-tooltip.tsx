@@ -1,11 +1,11 @@
 'use client';
 
+import { useLatest } from '../../utils/use-latest.js';
 import {
   useCallback,
   useEffect,
   useId,
   useLayoutEffect,
-  useRef,
   useState,
   type PointerEvent,
   type ReactNode,
@@ -66,8 +66,7 @@ function isTruncated(element: Element): boolean {
  */
 function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: ManualTooltipState) {
   const { isFocusVisible } = useFocusVisible();
-  const isVisible = useRef(isFocusVisible);
-  isVisible.current = isFocusVisible;
+  const isVisible = useLatest(isFocusVisible);
   useEffect(() => {
     const target = ref.current?.closest<HTMLElement>(tabbableSelector);
     if (!target) return;
@@ -81,7 +80,7 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Man
       target.removeEventListener('focus', onFocus);
       target.removeEventListener('blur', onBlur);
     };
-  }, [ref, open, close]);
+  }, [ref, open, close, isVisible]);
 }
 
 /**

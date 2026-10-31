@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useCallback,
   useLayoutEffect,
   useMemo,
   useReducer,
@@ -181,22 +182,20 @@ interface OverflowElements {
 
 /** The elements the row measures, and the stable callback refs that record them. */
 function useOverflowElements() {
-  const elements = useRef<OverflowElements>({
-    container: { current: null },
-    itemContainer: { current: null },
-    indicator: { current: null },
-  }).current;
-  const refs = useMemo(() => {
-    const record = (key: keyof OverflowElements) => (node: HTMLElement | null) => {
-      elements[key].current = node;
-    };
-    return {
-      containerRef: record('container'),
-      itemContainerRef: record('itemContainer'),
-      indicatorRef: record('indicator'),
-    };
-  }, [elements]);
-  return { elements, refs };
+  const container = useRef<HTMLElement | null>(null);
+  const itemContainer = useRef<HTMLElement | null>(null);
+  const indicator = useRef<HTMLElement | null>(null);
+  const containerRef = useCallback((node: HTMLElement | null) => {
+    container.current = node;
+  }, []);
+  const itemContainerRef = useCallback((node: HTMLElement | null) => {
+    itemContainer.current = node;
+  }, []);
+  const indicatorRef = useCallback((node: HTMLElement | null) => {
+    indicator.current = node;
+  }, []);
+  const elements = useMemo<OverflowElements>(() => ({ container, itemContainer, indicator }), []);
+  return { elements, refs: { containerRef, itemContainerRef, indicatorRef } };
 }
 
 function createMeasureCache(): MeasureCache {

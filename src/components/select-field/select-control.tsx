@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useRef, type CSSProperties } from 'react';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useRef, type CSSProperties } from 'react';
 import { Select as AriaSelect } from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
@@ -75,10 +75,7 @@ function useTrigger(
 ) {
   const strings = useUiStrings();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const ref = useMemo(
-    () => mergeRefs(triggerRef, control.ref, props.triggerRef),
-    [control.ref, props.triggerRef],
-  );
+  const ref = useMergedRefs(triggerRef, control.ref, props.triggerRef);
   const placeholder = props.placeholder ?? strings.selectPlaceholder;
   const options = flattenPickerItems(props.options);
   const count = model.keys.length;
@@ -111,13 +108,13 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
   const model = useSelectModel(props);
   const list = useListProps(props, model);
   const actions = useSelectActions(props, model, list.isFilterable);
-  const trigger = useTrigger(control, props, model);
+  const { ref: triggerRef, style, placeholder, summary, focus } = useTrigger(control, props, model);
   const submitted = isMultiple ? model.keys : [model.keys[0] ?? ''];
   return (
     <>
       <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
         className={hooks.slotClass('select')}
-        style={trigger.style}
+        style={style}
         {...toAriaControlProps(control)}
         selectionMode={isMultiple ? 'multiple' : 'single'}
         value={
@@ -133,15 +130,15 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
         allowsEmptyCollection
       >
         <SelectTrigger
-          ref={trigger.ref}
+          ref={triggerRef}
           chosen={model.single}
           previous={model.previous}
-          placeholder={trigger.placeholder}
-          summary={trigger.summary}
+          placeholder={placeholder}
+          summary={summary}
           clearLabel={props.isClearable && state.canClear ? strings.clearValue(label) : null}
           onClear={() => {
             state.clear();
-            trigger.focus();
+            focus();
           }}
           onKeyDownCapture={actions.seedFilter}
         />
