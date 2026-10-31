@@ -1,12 +1,14 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 function cell(page: Page, state: string, layout: string): Locator {
-  return page.locator(`[data-lab-family="json"] [data-lab-cell="state=${state} layout=${layout}"]`);
+  return page.locator(
+    `${familySelector('json')} ${cellSelector(`state=${state} layout=${layout}`)}`,
+  );
 }
 
 function saved(page: Page): Locator {
-  return page.locator('[data-lab-family="json"] [data-lab-editor="saved"]');
+  return page.locator(`${familySelector('json')} [data-lab-editor="saved"]`);
 }
 
 async function box(locator: Locator) {
@@ -70,9 +72,9 @@ test.describe('Code Editor JSON mode lab', () => {
     const formatted =
       '{\n    "fruit": "Pear",\n    "id": 9007199254740993,\n    "sizes": [\n        1,\n        2,\n        3\n    ]\n}';
     await expect(editor.getByRole('textbox', { name: 'Order' })).toHaveValue(formatted);
-    await expect(page.locator('[data-lab-family="json"] [data-lab-output="Committed"]')).toHaveText(
-      formatted,
-    );
+    await expect(
+      page.locator(`${familySelector('json')} [data-lab-output="Committed"]`),
+    ).toHaveText(formatted);
     await expect(format).toBeDisabled();
     await expect(editor.locator('.ui-code-editor__line-number')).toHaveCount(9);
   });
@@ -94,9 +96,9 @@ test.describe('Code Editor JSON mode lab', () => {
     await page.keyboard.press('Control+End');
     await page.keyboard.type('\n');
     await page.keyboard.press('Tab');
-    await expect(page.locator('[data-lab-family="json"] [data-lab-output="Committed"]')).toHaveText(
-      '{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}',
-    );
+    await expect(
+      page.locator(`${familySelector('json')} [data-lab-output="Committed"]`),
+    ).toHaveText('{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}');
   });
 
   test('UIC-FIELD-1.11 UIC-CODE-EDITOR-11.1 reaches the restore button by Tab and commits on leaving the field', async ({
@@ -105,7 +107,7 @@ test.describe('Code Editor JSON mode lab', () => {
   }) => {
     await lab.open('code-editor');
     const editor = saved(page);
-    const committed = page.locator('[data-lab-family="json"] [data-lab-output="Committed"]');
+    const committed = page.locator(`${familySelector('json')} [data-lab-output="Committed"]`);
     const input = editor.getByRole('textbox', { name: 'Order' });
     await input.click();
     await page.keyboard.press('Control+End');
@@ -151,7 +153,7 @@ test.describe('Code Editor JSON mode lab', () => {
     lab,
   }) => {
     await lab.open('code-editor');
-    const recipe = page.locator('[data-lab-family="json"] [data-lab-editor="recipe"]');
+    const recipe = page.locator(`${familySelector('json')} [data-lab-editor="recipe"]`);
     await recipe.scrollIntoViewIfNeeded();
     await expect(recipe.locator('.ui-field__message')).toHaveText(
       'Line 3, column 15: Enter 8 or less.',
@@ -174,7 +176,7 @@ test.describe('Code Editor JSON mode lab', () => {
     lab,
   }) => {
     await lab.open('code-editor');
-    const recipe = page.locator('[data-lab-family="json"] [data-lab-editor="recipe"]');
+    const recipe = page.locator(`${familySelector('json')} [data-lab-editor="recipe"]`);
     const input = recipe.getByRole('textbox', { name: 'Recipe' });
     await input.click();
     await page.keyboard.press('Control+End');
@@ -198,7 +200,7 @@ test.describe('Code Editor JSON mode lab', () => {
     lab,
   }) => {
     await lab.open('code-editor');
-    const sample = page.locator('[data-lab-family="json"] [data-lab-editor="literal-schema"]');
+    const sample = page.locator(`${familySelector('json')} [data-lab-editor="literal-schema"]`);
     const input = sample.getByRole('textbox', { name: 'Schema values' });
     await expect(sample).toHaveAttribute('data-validation', 'valid');
     await input.fill('{"constant');
@@ -220,7 +222,7 @@ test.describe('Code Editor JSON mode lab', () => {
     lab,
   }) => {
     await lab.open('code-editor');
-    const excerpt = page.locator('[data-lab-family="json"] [data-lab-editor="excerpt"]');
+    const excerpt = page.locator(`${familySelector('json')} [data-lab-editor="excerpt"]`);
     await expect(excerpt.locator('.ui-field__message')).toHaveText(
       'Enter valid JSON: check line 122, column 12.',
     );

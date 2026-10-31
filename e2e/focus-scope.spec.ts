@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
 const cellOf = (autoFocus: string, restoreFocus: string, contain: string) =>
-  `[data-lab-cell="autoFocus=${autoFocus} restoreFocus=${restoreFocus} contain=${contain}"]`;
+  cellSelector(`autoFocus=${autoFocus} restoreFocus=${restoreFocus} contain=${contain}`);
 
 test.describe('Focus Scope lab', () => {
   test('UIC-FOCUS-SCOPE-1.1 UIC-FOCUS-SCOPE-2.1 UIC-FOCUS-SCOPE-2.4 wraps the region in one element and leaves focus alone without autoFocus', async ({

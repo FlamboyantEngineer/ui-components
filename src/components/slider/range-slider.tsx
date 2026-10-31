@@ -2,8 +2,14 @@
 
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Field, useFieldControl } from '../field/field.js';
-import { SliderControl, sliderHooks, type SliderFieldProps } from './slider-parts.js';
+import { Field } from '../field/field.js';
+import {
+  SliderControl,
+  sliderHooks,
+  useSliderField,
+  type SliderFieldProps,
+} from './slider-parts.js';
+import { normalizeSliderValue } from './slider-values.js';
 import { keepThumbsApart } from './thumb-spacing.js';
 
 /** The start and the end of a range. */
@@ -29,11 +35,9 @@ export function RangeSlider({
   ...props
 }: RangeSliderProps) {
   const strings = useUiStrings();
-  const { minValue = 0, maxValue = 100, step = 1 } = props;
-  const { state, field, rest } = useFieldControl(props, {
-    initialValue: [minValue, maxValue] as RangeValue,
-  });
-  const bounds = { distance: minStepsBetweenThumbs * step, minValue, maxValue };
+  const { minValue = 0, maxValue = 100 } = props;
+  const { state, field, rest, grid } = useSliderField(props, [minValue, maxValue] as RangeValue);
+  const bounds = { ...grid, distance: minStepsBetweenThumbs * grid.step };
   return (
     <Field
       {...field}
@@ -53,7 +57,10 @@ export function RangeSlider({
           marks={marks}
           valueLabel={valueLabel}
           thumbLabels={[strings.rangeMinimum, strings.rangeMaximum]}
-          normalize={(next, previous) => keepThumbsApart(next, previous, bounds)}
+          // Spacing can leave the grid by binary noise (`0.3 - 0.1`), so its result is snapped.
+          normalize={(next, previous) =>
+            normalizeSliderValue(keepThumbsApart(next, previous, bounds), grid)
+          }
         />
       )}
     </Field>

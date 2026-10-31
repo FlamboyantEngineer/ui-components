@@ -22,6 +22,7 @@ import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatFeedbackRating, MessageCommands } from './message-commands.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 interface MessageActionsBarProps extends BaseProps, AriaLabellingProps {
   state: MessageCommands;
@@ -73,11 +74,11 @@ function CopyCommand({ state }: { state: MessageCommands }) {
         label={strings.copy}
         size="sm"
         className={actionHooks.slotClass('copy')}
-        onPress={state.copy}
+        onPress={(event) => state.copy(event.target)}
       />
       <VisuallyHidden elementType="span" role="status" className={actionHooks.slotClass('status')}>
         {announcements[state.copyStatus]}
-        {state.copyStatus !== 'idle' && state.copies % 2 === 0 ? '​' : null}
+        {state.copyStatus !== 'idle' && state.copies % 2 === 0 ? REANNOUNCE_MARK : null}
       </VisuallyHidden>
     </>
   );

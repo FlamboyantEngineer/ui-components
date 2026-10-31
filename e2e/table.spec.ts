@@ -754,20 +754,17 @@ test.describe('Table lab', () => {
     const root = section(page, 'grouping-virtualized');
     const grid = root.getByRole('treegrid', { name: 'Items, grouped by city' });
     await grid
-      .getByRole('row', { name: /^Collapse Cairo/ })
+      .getByRole('row', { name: /^Cairo/ })
       .getByRole('button')
       .click();
     await grid
-      .getByRole('row', { name: /^Collapse Lisbon/ })
+      .getByRole('row', { name: /^Lisbon/ })
       .getByRole('button')
       .click();
-    const oslo = grid.getByRole('row', { name: /^Expand Oslo/ });
+    const oslo = grid.getByRole('row', { name: /^Oslo/ });
     await expect(oslo).toHaveAttribute('aria-expanded', 'false');
     await oslo.getByRole('button').click();
-    await expect(grid.getByRole('row', { name: /^Collapse Oslo/ })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    await expect(oslo).toHaveAttribute('aria-expanded', 'true');
     await expect(grid.getByRole('row', { name: 'Item 2', exact: true })).toBeVisible();
     await root
       .locator('.ui-table__scroll')

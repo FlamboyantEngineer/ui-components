@@ -1,8 +1,4 @@
 'use client';
-
-// Keeps the elements of a streaming document's finished blocks, so each chunk renders only the
-// blocks it changed (specs/MARKDOWN.md, UIC-MARKDOWN-2.12).
-
 import { useRef, type ReactNode } from 'react';
 import type { MarkdownBlock } from './markdown-nodes.js';
 import { renderMarkdownBlock, type RenderContext } from './markdown-render.js';

@@ -112,9 +112,25 @@ export type LabScope = Page | Locator;
 /** A `StateMatrix` cell's address: its `axis=value` pairs in axis order, as text or as an object. */
 export type CellAddress = string | Readonly<Record<string, string>>;
 
+/** The selector of the lab section wrapped in `data-lab-family="<family>"`, for a string selector. */
+export function familySelector(family: string): string {
+  return `[data-lab-family="${family}"]`;
+}
+
+/** The selector of the `StateMatrix` cell at `address`, for a string selector. */
+export function cellSelector(address: CellAddress): string {
+  const text =
+    typeof address === 'string'
+      ? address
+      : Object.entries(address)
+          .map(([axis, value]) => `${axis}=${value}`)
+          .join(' ');
+  return `[data-lab-cell="${text}"]`;
+}
+
 /** The lab section wrapped in `data-lab-family="<family>"`, which holds one or more matrices. */
 export function matrix(scope: LabScope, family: string): Locator {
-  return scope.locator(`[data-lab-family="${family}"]`);
+  return scope.locator(familySelector(family));
 }
 
 /**
@@ -126,14 +142,8 @@ export function matrixCell(
   address: CellAddress,
   { family }: { family?: string } = {},
 ): Locator {
-  const text =
-    typeof address === 'string'
-      ? address
-      : Object.entries(address)
-          .map(([axis, value]) => `${axis}=${value}`)
-          .join(' ');
   const within = family === undefined ? scope : matrix(scope, family);
-  return within.locator(`[data-lab-cell="${text}"]`);
+  return within.locator(cellSelector(address));
 }
 
 /**

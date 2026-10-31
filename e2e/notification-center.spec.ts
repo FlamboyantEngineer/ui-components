@@ -1,6 +1,6 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-notification-center`;
+const cell = (id: string) => `${cellSelector(id)} .ui-notification-center`;
 
 test.describe('Notification Center lab', () => {
   test('UIC-NOTIFICATION-CENTER-2.1 UIC-NOTIFICATION-CENTER-2.2 opens the inbox from the bell and closes back to it', async ({

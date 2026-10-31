@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { expect, familySelector, test } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="icons"] [data-lab-field="${name}"]`);
+  return page.locator(`${familySelector('icons')} [data-lab-field="${name}"]`);
 }
 
 test.describe('Select Field icon choices lab', () => {
@@ -12,7 +12,7 @@ test.describe('Select Field icon choices lab', () => {
   }) => {
     await lab.open('select-field');
     const cells = page.locator(
-      '[data-lab-family="icons"] table[data-lab-matrix="state layout"] td[data-lab-cell]',
+      `${familySelector('icons')} table[data-lab-matrix="state layout"] td[data-lab-cell]`,
     );
     expect(await cells.count()).toBe(8 * 4);
     const symbol = field(page, 'symbol');
@@ -29,7 +29,7 @@ test.describe('Select Field icon choices lab', () => {
     await expect(page.getByRole('searchbox')).toHaveCount(0);
     await options.first().click();
     await expect(
-      page.locator('[data-lab-family="icons"] [data-lab-output="Committed"]'),
+      page.locator(`${familySelector('icons')} [data-lab-output="Committed"]`),
     ).toHaveText('none');
     await expect(symbol.getByRole('button', { name: 'No icon Symbol' })).toBeFocused();
     await lab.expectAccessible();

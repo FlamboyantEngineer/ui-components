@@ -1,6 +1,7 @@
 'use client';
 
 import { readCommandKey } from '../shortcut/shortcut.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useEffect, type KeyboardEvent } from 'react';
 
 /** The undo and redo of one field, as its root element registers them. */
@@ -41,6 +42,8 @@ export function getFieldUndo(element: Element | null | undefined): FieldUndo | n
 /** The direction of an undo or redo chord: Ctrl or Cmd with Z, Shift+Z or Y. */
 function undoDirection(event: KeyboardEvent): FieldUndoDirection | null {
   if (event.defaultPrevented || event.altKey || !(event.ctrlKey || event.metaKey)) return null;
+  // An input method composing in the control owns its keys.
+  if (isComposingKey(event.nativeEvent)) return null;
   const key = readCommandKey(event);
   if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
   return key === 'y' && !event.shiftKey ? 'redo' : null;

@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-state-timeline`;
+const cell = (id: string) => `${cellSelector(id)} .ui-state-timeline`;
 
 test.describe('State Timeline lab', () => {
   test('UIC-STATE-TIMELINE-1.1 UIC-STATE-TIMELINE-1.2 UIC-STATE-TIMELINE-1.3 reads each change', async ({

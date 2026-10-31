@@ -76,7 +76,8 @@ export interface MessageCommands {
   copyStatus: CopyStatus;
   /** Counts finished copies, so a repeated outcome is announced again. */
   copies: number;
-  copy: () => void;
+  /** Copies the message in the window `owner`, the pressed control, belongs to. */
+  copy: (owner?: Node | null) => void;
   /** Chooses a rating from a control, or clears it when it is the rating shown. */
   rate: (rating: ChatFeedbackRating, anchor: RefObject<Element | null>) => void;
   /** Reports the detailed rating with the reader's details, or none when they skipped. */
@@ -139,14 +140,22 @@ export function splitCommands<T extends ChatMessageCommandProps>(props: T) {
 function useCopyCommand({ copyText, onCopy }: ChatMessageCommandProps) {
   const clipboard = useClipboard();
   const [copies, startCopy] = useLatestSettledCount();
-  const copy = () => {
+  const copy = (owner?: Node | null) => {
     const settle = startCopy();
-    void clipboard.copy(copyText ?? '').then((isCopied) => {
+    void clipboard.copy(copyText ?? '', owner).then((isCopied) => {
       settle();
       if (isCopied) onCopy?.();
     });
   };
   return { copy, copies, copyStatus: clipboard.status };
+}
+
+/** Whether the command behind an overlay is still offered. */
+function isOverlayOffered(overlay: MessageOverlay, commands: ChatMessageCommandProps): boolean {
+  if (overlay === 'feedback') {
+    return commands.onFeedback !== undefined && commands.feedbackReasons !== undefined;
+  }
+  return overlay === 'react' ? commands.onReact !== undefined : commands.onDelete !== undefined;
 }
 
 /**
@@ -156,6 +165,8 @@ function useCopyCommand({ copyText, onCopy }: ChatMessageCommandProps) {
 export function useMessageCommands(commands: ChatMessageCommandProps): MessageCommands {
   const [current, setCurrent] = useControllableState(commands.feedback, null);
   const [open, setOpen] = useState<OpenMessageOverlay | null>(null);
+  // An overlay whose command goes closes for good: the command coming back does not reopen it.
+  if (open && !isOverlayOffered(open.overlay, commands)) setOpen(null);
   const rating = open?.overlay === 'feedback' ? (open.rating ?? null) : current;
   const report = (feedback: ChatFeedback) => {
     setCurrent(feedback.rating);

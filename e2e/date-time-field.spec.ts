@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 import { expectPopoverFits } from './date-popover-fit.js';
 
@@ -19,7 +19,10 @@ test.describe('Date Time Field lab', () => {
     const cells = page.locator('table[data-lab-matrix="state mode"] td[data-lab-cell]');
     expect(await cells.count()).toBe(8 * 5);
     const date = cell(page, 'resting', 'date');
-    await expect(date.getByRole('group', { name: 'Due' })).toHaveCSS('height', '28px');
+    await expect(date.getByRole('group', { name: 'Due' })).toHaveCSS(
+      'height',
+      `${await controlHeight(page, 'md')}px`,
+    );
     await expect(date.getByRole('spinbutton', { name: /^month/ })).toHaveText('4');
     await expect(date.getByRole('button', { name: /Calendar/ })).toBeVisible();
     await expect(

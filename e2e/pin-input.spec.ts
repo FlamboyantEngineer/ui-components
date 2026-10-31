@@ -117,6 +117,46 @@ test.describe('Pin Input lab', () => {
     await expect(otp).toHaveAttribute('data-touched', 'true');
   });
 
+  test('UIC-PIN-INPUT-1.5 UIC-PIN-INPUT-2.5 UIC-PIN-INPUT-2.6 reads autofill whole, completes from the rendered code and checks a supplied one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pin-input');
+    const otp = field(page, 'otp');
+    await cells(otp).first().click();
+    await page.keyboard.type('111111');
+    // Autofill replaces a filled cell's text in one input event.
+    await cells(otp)
+      .first()
+      .evaluate((node) => {
+        const input = node as HTMLInputElement;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+        setter?.call(input, '135790');
+        input.dispatchEvent(
+          new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText' }),
+        );
+      });
+    expect(await readValues(otp)).toEqual(['1', '3', '5', '7', '9', '0']);
+    await expect(output(page, 'Completed')).toHaveText('111111, 135790');
+
+    const capped = field(page, 'capped');
+    await cells(capped).first().click();
+    await paste(cells(capped).first(), '1234');
+    expect(await readValues(capped)).toEqual(['1', '2', '3', '']);
+    await expect(cells(capped).nth(3)).toBeFocused();
+    await expect(output(page, 'Commits')).toHaveText('none');
+    await page.keyboard.press('Shift+Tab');
+    await expect(output(page, 'Commits')).toHaveText('123');
+
+    const imported = field(page, 'imported');
+    expect(await readValues(imported)).toEqual(['1', '2', 'x', '4']);
+    await expect(imported.locator('.ui-field__message')).toHaveText(
+      'Enter a value in the expected format.',
+    );
+    await expect(imported).not.toHaveAttribute('data-complete');
+    await lab.expectAccessible('[data-lab-field="imported"]');
+  });
+
   test('UIC-PIN-INPUT-2.4 fills the cells from the focused one with a paste', async ({
     page,
     lab,
@@ -190,6 +230,25 @@ test.describe('Pin Input lab', () => {
     expect(await readValues(letters)).toEqual(['a', 'b', '', '']);
     const masked = matrixCell(page, 'type=numeric look=masked');
     await expect(cells(masked).first()).toHaveAttribute('type', 'password');
+  });
+
+  test('UIC-PIN-INPUT-2.1 keeps composed text in its cell until the input method commits it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pin-input');
+    const letters = matrixCell(page, 'type=alphabetic look=placeholder');
+    await cells(letters).first().click();
+    const ime = await page.context().newCDPSession(page);
+    await ime.send('Input.imeSetComposition', { text: 'k', selectionStart: 1, selectionEnd: 1 });
+    expect(await readValues(letters)).toEqual(['k', '', '', '']);
+    await expect(cells(letters).first()).toBeFocused();
+    await expect(cells(letters).first()).not.toHaveAttribute('data-filled');
+    await ime.send('Input.insertText', { text: 'k' });
+    await expect(cells(letters).nth(1)).toBeFocused();
+    expect(await readValues(letters)).toEqual(['k', '', '', '']);
+    await page.keyboard.type('m');
+    expect(await readValues(letters)).toEqual(['k', 'm', '', '']);
   });
 
   test('UIC-PIN-INPUT-2.7 UIC-PIN-INPUT-1.6 restores, undoes, clears, submits and resets', async ({

@@ -5,6 +5,7 @@ import type { UiStrings } from '../../core/strings.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { transcriptHooks as hooks } from './transcript-hooks.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 /** A message to announce: its author's name (`null` for a notice) and its text. */
 interface MessageAnnouncement {
@@ -54,7 +55,7 @@ export function useTranscriptAnnouncer(strings: UiStrings): TranscriptAnnouncer 
     const next = composeAnnouncement(messages, notices, stringsRef.current);
     queue.current = { messages: [], notices: [] };
     // A repeated announcement still changes the region, so it is read again.
-    setText((current) => (current === next ? `${next}\u200b` : next));
+    setText((current) => (current === next ? `${next}${REANNOUNCE_MARK}` : next));
     timer.current = setTimeout(() => {
       timer.current = null;
       pump();

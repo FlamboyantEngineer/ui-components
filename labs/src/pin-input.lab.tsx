@@ -92,6 +92,34 @@ function DirtyAndRestore() {
   );
 }
 
+/** The caller keeps three digits at most, so a pasted four-digit code never completes or commits. */
+function CallerShaped() {
+  const [value, setValue] = useState('');
+  const [commits, setCommits] = useState<string[]>([]);
+  return (
+    <>
+      <PinInput
+        label="Short code"
+        description="The caller keeps the first three digits; Tab away to commit them."
+        length={4}
+        value={value}
+        onChange={(next) => setValue(next.slice(0, 3))}
+        onCommit={(next) => setCommits((current) => [...current, next])}
+        data-lab-field="capped"
+      />
+      <LabOutput name="Commits">{commits.length > 0 ? commits.join(', ') : 'none'}</LabOutput>
+      <PinInput
+        label="Imported code"
+        description="A supplied code with a letter and extra digits stays invalid until edited."
+        length={4}
+        defaultValue="12x456"
+        validationMode="immediate"
+        data-lab-field="imported"
+      />
+    </>
+  );
+}
+
 /** The form submits the joined code; a partly filled code blocks the submit. */
 function InForm() {
   const [submitted, setSubmitted] = useState('none');
@@ -121,7 +149,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Character types and looks"
-      description="Digits, letters and digits, or letters only; masked or with a placeholder in empty cells."
+      description="Digits, letters and digits, or letters only; masked or with a placeholder in empty cells. A letter an input method composes stays in its cell until it is committed."
     >
       <StateMatrix
         axes={{ type: types, look: looks }}
@@ -142,6 +170,12 @@ mountLab(
       description="Type, paste or autofill a code; onComplete runs once per complete code."
     >
       <OneTimeCode />
+    </LabSection>
+    <LabSection
+      title="Codes the caller shapes"
+      description="Completion follows the code the field renders, and a supplied code is checked as it is."
+    >
+      <CallerShaped />
     </LabSection>
     <LabSection
       title="Dirty, restore, undo and the field menu"

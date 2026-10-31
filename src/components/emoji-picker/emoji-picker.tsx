@@ -43,7 +43,7 @@ export interface EmojiPickerProps
 }
 
 export interface EmojiPickerTriggerProps extends Omit<EmojiPickerProps, 'children'> {
-  /** The button that opens the picker, such as a `Button` or `Button`. */
+  /** The button that opens the picker, such as a `Button`. */
   children: ReactNode;
 }
 

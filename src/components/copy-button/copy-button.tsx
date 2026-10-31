@@ -8,6 +8,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
 import { useLatestSettledCount } from '../../utils/use-latest-settled-count.js';
 import { Button, type ButtonProps } from '../button/button.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 
 export interface CopyButtonProps
   extends Pick<ButtonProps, 'variant' | 'size' | 'isDisabled'>, BaseProps {
@@ -68,10 +69,11 @@ export function CopyButton({
         variant={variant}
         size={size}
         isDisabled={isDisabled}
-        onPress={() => {
-          // Each press starts a write; the clipboard hook owns which result stays visible.
+        onPress={(event) => {
+          // Each press starts a write, in the button's own window; the clipboard hook owns which
+          // result stays visible.
           const settle = startCopy();
-          void copy(value).then((copied) => {
+          void copy(value, event.target).then((copied) => {
             settle();
             onCopy?.(copied);
           });
@@ -79,7 +81,7 @@ export function CopyButton({
       />
       <VisuallyHidden elementType="span" className={hooks.slotClass('status')} role="status">
         {announcements[status]}
-        {status !== 'idle' && settled % 2 === 0 ? '\u200b' : null}
+        {status !== 'idle' && settled % 2 === 0 ? REANNOUNCE_MARK : null}
       </VisuallyHidden>
     </span>
   );

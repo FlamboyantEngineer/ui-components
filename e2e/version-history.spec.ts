@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-version-history`;
+const cell = (id: string) => `${cellSelector(id)} .ui-version-history`;
 
 test.describe('Version History lab', () => {
   test('UIC-VERSION-HISTORY-1.1 UIC-VERSION-HISTORY-1.2 lists named and automatic versions', async ({

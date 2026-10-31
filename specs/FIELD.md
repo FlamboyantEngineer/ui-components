@@ -27,7 +27,7 @@ Verification: `src/components/field/field.test.tsx`
 
 ### UIC-FIELD-1.4 - Help
 
-`help` shall draw a help button (`ui-field__help`, an `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
+`help` shall draw a help button (`ui-field__help`, a `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
 
 Implementation: `src/components/field/field-parts.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -231,7 +231,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-4.2 - Restore button
 
-`FieldRestoreButton` shall be an `Button` with the `restore` glyph named by the provider string `restoreValue` from its `label`, whose pointer press does not move focus. It takes the `Button` props (`onPress`, `isDisabled`, `size`, `className`, `data-*`) and works from the keyboard like any button.
+`FieldRestoreButton` shall be a `Button` with the `restore` glyph named by the provider string `restoreValue` from its `label`, whose pointer press does not move focus. It takes the `Button` props (`onPress`, `isDisabled`, `size`, `className`, `data-*`) and works from the keyboard like any button.
 
 Implementation: `src/components/field/field-restore-button.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-restore-button.test.tsx`
@@ -247,7 +247,7 @@ Verification: `src/components/field/field-history.test.ts`, `src/components/fiel
 
 ### UIC-FIELD-5.2 - Shortcuts
 
-Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes. A chord with nothing to undo or redo, one already handled, or one pressed in a menu the field opened is left alone.
+Ctrl+Z or Cmd+Z pressed inside a field shall undo that field, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, preventing the browser's default. On a layout whose letters are not Latin, the key in the letter's place on a US layout counts (`readCommandKey`, [UIC-SHORTCUT-1.8](SHORTCUT.md)), so Control with `я` on the Z key undoes. Only the field holding focus changes. A chord with nothing to undo or redo, one already handled, one pressed in a menu the field opened, or one that belongs to an input method composition (`isComposing`, or key code 229) is left alone.
 
 Implementation: `src/components/field/field-undo.ts`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-undo.test.tsx`, `e2e/field.spec.ts`

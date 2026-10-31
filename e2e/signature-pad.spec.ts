@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 /** Draws one stroke across the area through points given as fractions of its box. */
@@ -141,14 +141,14 @@ test.describe('Signature Pad lab', () => {
     await expect(page.locator('[data-lab-output="Submitted"]')).toHaveText('drawn');
 
     const dirty = page.locator(
-      '[data-lab-cell="state=dirty layout=label-control"] .ui-signature-pad',
+      `${cellSelector('state=dirty layout=label-control')} .ui-signature-pad`,
     );
     await expect(dirty).toHaveAttribute('data-dirty', 'true');
     await expect(dirty.locator('.ui-signature-pad__stroke')).toHaveCount(3);
     await dirty.getByRole('button', { name: /^Restore/ }).click();
     await expect(dirty.locator('.ui-signature-pad__stroke')).toHaveCount(2);
     const warning = page.locator(
-      '[data-lab-cell="state=warning layout=label-control"] .ui-signature-pad',
+      `${cellSelector('state=warning layout=label-control')} .ui-signature-pad`,
     );
     await expect(warning).toHaveAttribute('data-mode', 'type');
     await expect(warning.getByRole('textbox')).toHaveValue('A. L.');

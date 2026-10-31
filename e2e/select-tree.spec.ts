@@ -1,12 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
 function field(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="tree"] [data-lab-field="${name}"]`);
+  return page.locator(`${familySelector('tree')} [data-lab-field="${name}"]`);
 }
 
 function output(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="tree"] [data-lab-output="${name}"]`);
+  return page.locator(`${familySelector('tree')} [data-lab-output="${name}"]`);
 }
 
 async function openPopover(page: Page, trigger: Locator, label: string) {
@@ -22,7 +22,7 @@ test.describe('Select Field tree choices lab', () => {
     lab,
   }) => {
     await lab.open('select-field');
-    const cell = (id: string) => page.locator(`[data-lab-family="tree"] [data-lab-cell="${id}"]`);
+    const cell = (id: string) => page.locator(`${familySelector('tree')} ${cellSelector(id)}`);
     await expect(
       cell('state=resting layout=label-control').locator('.ui-select-field__value'),
     ).toHaveText('Oslo');

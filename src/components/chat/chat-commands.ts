@@ -1,5 +1,3 @@
-// The commands each message offers, from the callbacks the chat was given.
-
 import type {
   ChatFeedback,
   ChatMessageCommandProps,

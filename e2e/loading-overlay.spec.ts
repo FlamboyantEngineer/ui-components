@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Loading Overlay lab', () => {
   test('UIC-LOADING-OVERLAY-1.1 UIC-LOADING-OVERLAY-1.2 UIC-LOADING-OVERLAY-1.4 draws status cards with one bar each', async ({
@@ -23,7 +23,7 @@ test.describe('Loading Overlay lab', () => {
   test('UIC-LOADING-OVERLAY-1.5 keeps a cut hint whole in a tooltip', async ({ page, lab }) => {
     await lab.open('loading-overlay');
     const hint = page.locator(
-      '[data-lab-cell="extras=hint and step progress=determinate"] .ui-loading-card__hint',
+      `${cellSelector('extras=hint and step progress=determinate')} .ui-loading-card__hint`,
     );
     expect(await hint.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
     await hint.hover();
@@ -39,7 +39,7 @@ test.describe('Loading Overlay lab', () => {
     await lab.open('loading-overlay');
     for (const presentation of ['card', 'scrim']) {
       const cell = page.locator(
-        `[data-lab-cell="presentation=${presentation} progress=indeterminate"]`,
+        cellSelector(`presentation=${presentation} progress=indeterminate`),
       );
       const surface = await cell.locator('[data-lab-surface]').boundingBox();
       const overlay = await cell.locator('.ui-loading-overlay').boundingBox();

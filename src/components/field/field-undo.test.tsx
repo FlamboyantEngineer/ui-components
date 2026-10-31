@@ -83,6 +83,19 @@ describe('Field undo and redo', () => {
     expect(fruit).toHaveValue('Figsz');
     expect(await pressUnhandled(user, '{Control>}z{/Control}')).toBe(false);
     expect(fruit).toHaveValue('Fig');
+    // An input method composing in the control owns its keys.
+    await user.keyboard('s');
+    for (const composing of [{ isComposing: true }, { keyCode: 229 }]) {
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or a key code on a keydown
+      const isUnhandled = fireEvent.keyDown(fruit, {
+        key: 'z',
+        code: 'KeyZ',
+        ctrlKey: true,
+        ...composing,
+      });
+      expect(isUnhandled).toBe(true);
+    }
+    expect(fruit).toHaveValue('Figs');
   });
 
   it('UIC-FIELD-5.2 ignores chords pressed in the menu the field opened', async () => {

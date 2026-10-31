@@ -33,6 +33,15 @@ function renderFruit(props: Partial<TableProps<Fruit>> = {}) {
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table summary row', { timeout: 15_000 }, () => {
+  it('UIC-TABLE-12.1 names the summary row whichever column has a footer', () => {
+    renderFruit({
+      columns: columns.map((column) =>
+        column.id === 'name' ? { id: column.id, header: column.header } : column,
+      ),
+    });
+    expect(screen.getByRole('row', { name: 'Summary' })).toHaveClass('ui-table__footer-row');
+  });
+
   it('UIC-TABLE-12.1 sums every presented row in a footer row under the rows', async () => {
     const user = userEvent.setup();
     const onRowAction = vi.fn();
@@ -41,6 +50,7 @@ describe('Table summary row', { timeout: 15_000 }, () => {
       onRowAction,
       renderRowActions: () => null,
       pagination: { pageSize: 1 },
+      filterable: true,
       defaultFilter: { query: 'p' },
     });
     const footer = container.querySelector('tfoot.ui-table__footer') as HTMLElement;

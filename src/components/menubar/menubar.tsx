@@ -91,8 +91,6 @@ function MenubarTrigger({ itemKey, isOpen, label, className, ...rest }: MenubarT
     <AriaButton
       {...rest}
       {...hooks.slot('trigger', { open: isOpen }, className)}
-      // A caller's `data-open` never shows on a closed item.
-      data-open={isOpen ? 'true' : undefined}
       ref={ref}
       excludeFromTabOrder={bar.tabKey !== itemKey}
       onFocus={() => bar.setTabKey(itemKey)}

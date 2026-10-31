@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-steps`;
+const cell = (id: string) => `${cellSelector(id)} .ui-steps`;
 
 test.describe('Steps lab', () => {
   test('UIC-STEPS-1.1 UIC-STEPS-1.2 UIC-STEPS-1.3 lists the steps with their statuses', async ({

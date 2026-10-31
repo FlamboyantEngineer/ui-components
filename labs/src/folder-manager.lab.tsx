@@ -246,6 +246,24 @@ function PickFolder() {
   );
 }
 
+/** A filter whose search box the host can hide: the query is set aside until it comes back. */
+function FindingFolders() {
+  const [isFilterable, setFilterable] = useState(true);
+  return (
+    <>
+      <Button size="sm" onPress={() => setFilterable((on) => !on)}>
+        {isFilterable ? 'Hide the search box' : 'Show the search box'}
+      </Button>
+      <FolderManager
+        aria-label="Orchard folders"
+        folders={orchard}
+        filterable={isFilterable}
+        data-lab-manager="filter"
+      />
+    </>
+  );
+}
+
 /** A host that drops the folder being renamed: the name field closes and the manager frees up. */
 function VanishingFolder() {
   const [isRemoved, setRemoved] = useState(false);
@@ -338,14 +356,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Finding a folder"
-      description="Type in the search box: matching folders stay, with their parents expanded, and the matched text is marked."
+      description="Type in the search box: matching folders stay, with their parents expanded, and the matched text is marked. Hiding the search box sets the query aside until it comes back."
     >
-      <FolderManager
-        aria-label="Orchard folders"
-        folders={orchard}
-        filterable
-        data-lab-manager="filter"
-      />
+      <FindingFolders />
     </LabSection>
     <LabSection
       title="Large tree"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import {
   useObjectRef,
   Slider as AriaSlider,
@@ -13,11 +13,14 @@ import { createHooks } from '../../core/hooks.js';
 import type { Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import {
+  isFieldValueEqual,
   toAriaControlProps,
+  useFieldControl,
   type FieldControlProps,
   type FieldInputProps,
   type FieldState,
 } from '../field/field.js';
+import { normalizeSliderValue, type SliderGrid } from './slider-values.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** Where the value shows: in an output beside the track, in a label on each thumb, or nowhere. */
@@ -56,6 +59,41 @@ export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequire
 }
 
 type SliderValue = number | [number, number];
+
+/**
+ * The field of a slider whose value is always on its grid (UIC-SLIDER-1.2): a given value, default
+ * or committed value is held snapped into the bounds and steps, a range in order, and a given or
+ * held value off the grid (as the bounds or step change) moves onto it, reporting the change.
+ */
+export function useSliderField<T extends SliderValue, P extends SliderFieldProps<T>>(
+  props: P,
+  initialValue: T,
+) {
+  const grid: SliderGrid = {
+    minValue: props.minValue ?? 0,
+    maxValue: props.maxValue ?? 100,
+    step: props.step ?? 1,
+  };
+  const normalize = (value: T | undefined) =>
+    value === undefined ? undefined : normalizeSliderValue(value, grid);
+  const own = {
+    ...props,
+    value: normalize(props.value),
+    defaultValue: normalize(props.defaultValue),
+    committedValue: normalize(props.committedValue),
+  };
+  const control = useFieldControl<T, P>(own, {
+    initialValue: normalizeSliderValue(initialValue, grid),
+  });
+  // The value the owner or the field holds, before it is snapped.
+  const held = props.value ?? control.state.value;
+  const settled = normalizeSliderValue(held, grid);
+  const { setValue } = control.state;
+  useLayoutEffect(() => {
+    if (!isFieldValueEqual(settled, held)) setValue(settled);
+  });
+  return { ...control, grid };
+}
 
 /** The props `SliderControl` passes on to the slider and its thumbs. */
 type SliderOwnProps<T> = Pick<

@@ -69,12 +69,14 @@ export function toColorText(value: string | null | undefined): string | null {
 }
 
 /**
- * A colour text written in a format, with alpha to two decimals, so a hex alpha (`80`) reads `0.5`
- * rather than `0.5019607843137255`. Text that is no colour is kept.
+ * A colour text written in a format, with a decimal alpha to two decimals, so a hex alpha (`80`)
+ * reads `0.5` rather than `0.5019607843137255`. Hex keeps its exact alpha byte, as its digits are
+ * edited as they are. Text that is no colour is kept.
  */
 export function formatColor(text: string, format: ColorFieldFormat): string {
   const color = attemptParse(text);
   if (!color) return text;
+  if (format === 'hex' || format === 'hexa') return color.toString(format);
   const alpha = color.getChannelValue('alpha');
   return color.withChannelValue('alpha', Math.round(alpha * 100) / 100).toString(format);
 }

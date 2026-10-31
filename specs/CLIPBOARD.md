@@ -32,6 +32,13 @@ With `signal`, `copyText` and `copyRichText` shall skip the selection fallback o
 Implementation: `src/utils/clipboard.ts`
 Verification: `src/utils/clipboard.test.ts`
 
+### UIC-CLIPBOARD-1.5 - The owner's window
+
+With `owner`, such as the pressed element, `copyText` and `copyRichText` shall copy in the window and document that node belongs to: its window's `navigator.clipboard` and `ClipboardItem` are the defaults, and the selection fallback places its buffer in, selects in and runs the copy command on its document. A copy pressed in a popup window or frame, rendered there through a portal host, so writes from the document holding focus and user activation. Without `owner` they use the script's own window and document. `useClipboard`'s `copy(text, owner)` passes `owner` on, and `CopyButton`, the chat message Copy action and the PDF viewer's Copy pass the pressed element or the selection.
+
+Implementation: `src/utils/clipboard.ts`, `src/utils/use-clipboard.ts`, `src/components/copy-button/copy-button.tsx`, `src/components/chat-message-actions/message-commands.ts`, `src/components/pdf-viewer/use-pdf-context-menu.ts`
+Verification: `src/utils/clipboard.test.ts`
+
 ## UIC-CLIPBOARD-2 - Copy feedback
 
 ### UIC-CLIPBOARD-2.1 - Copied state with a timeout

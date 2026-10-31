@@ -75,6 +75,44 @@ describe('Slider', () => {
     expect(thumb).toHaveAttribute('aria-valuetext', '100%');
   });
 
+  it('UIC-SLIDER-1.2 validates and submits the value it shows, snapped, clamped and in order', () => {
+    const seen: unknown[] = [];
+    const validate = (value: unknown) => {
+      seen.push(value);
+      return null;
+    };
+    const { rerender } = render(<Slider label="Level" value={200} validate={validate} />);
+    expect(seen.at(-1)).toBe(100);
+    expect(thumbs()[0]).toHaveValue('100');
+    rerender(<Slider label="Level" value={33} step={10} validate={validate} />);
+    expect(seen.at(-1)).toBe(30);
+    expect(thumbs()[0]).toHaveValue('30');
+    rerender(<RangeSlider label="Level" value={[80, 20]} validate={validate} />);
+    expect(seen.at(-1)).toEqual([20, 80]);
+    expect(thumbs().map((thumb) => thumb.value)).toEqual(['20', '80']);
+  });
+
+  it('UIC-SLIDER-1.2 moves a held value onto a narrowed range as a change', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const { container, rerender } = render(
+      <Slider label="Level" defaultValue={80} onChange={onChange} onCommit={onCommit} />,
+    );
+    rerender(
+      <Slider
+        label="Level"
+        defaultValue={80}
+        maxValue={50}
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    expect(onChange).toHaveBeenLastCalledWith(50);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(thumbs()[0]).toHaveValue('50');
+    expect(root(container)).toHaveAttribute('data-dirty', 'true');
+  });
+
   it('UIC-SLIDER-1.3 sizes the fill from the minimum or the fill offset and positions the thumb', () => {
     const { container, rerender } = render(<Slider label="Volume" defaultValue={30} />);
     const fill = container.querySelector<HTMLElement>('.ui-slider__fill');
@@ -409,6 +447,30 @@ describe('RangeSlider', () => {
     expect(end).toHaveValue('60');
     await user.keyboard('{End}{Home}');
     expect(end).toHaveValue('60');
+  });
+
+  it('UIC-SLIDER-4.3 keeps a spaced fractional range on the step grid', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onChangeEnd = vi.fn();
+    render(
+      <RangeSlider
+        label="Share"
+        name="share"
+        minValue={0}
+        maxValue={1}
+        step={0.1}
+        minStepsBetweenThumbs={1}
+        defaultValue={[0.1, 0.3]}
+        onChange={onChange}
+        onChangeEnd={onChangeEnd}
+      />,
+    );
+    await user.tab();
+    await user.keyboard('{End}');
+    expect(onChange).toHaveBeenLastCalledWith([0.2, 0.3]);
+    expect(onChangeEnd).toHaveBeenLastCalledWith([0.2, 0.3]);
+    expect(thumbs().map((thumb) => thumb.value)).toEqual(['0.2', '0.3']);
   });
 
   it('UIC-SLIDER-4.3 holds back the thumb that moved', () => {

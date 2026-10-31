@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 async function rects(locator: Locator) {
@@ -39,7 +39,7 @@ test.describe('Description List lab', () => {
   }) => {
     await lab.open('description-list');
     const rows = page.locator(
-      '[data-lab-cell="layout=inline columns=2"] .ui-description-list__row',
+      `${cellSelector('layout=inline columns=2')} .ui-description-list__row`,
     );
     let boxes = (await rects(rows)) as DOMRect[];
     expect(Math.round(boxes[0]?.top ?? 0)).toBe(Math.round(boxes[1]?.top ?? 1));
@@ -78,7 +78,7 @@ test.describe('Description List lab', () => {
     await lab.open('description-list');
     for (const layout of ['inline', 'stacked'] as const) {
       const list = page.locator(
-        `[data-lab-cell="layout=${layout} columns=4"] .ui-description-list`,
+        `${cellSelector(`layout=${layout} columns=4`)} .ui-description-list`,
       );
       const rows = (await rects(list.locator('.ui-description-list__row'))) as DOMRect[];
       const listBox = requireDefined(await list.boundingBox());
@@ -105,7 +105,7 @@ test.describe('Description List lab', () => {
     for (const outer of ['inline', 'stacked'] as const) {
       for (const inner of ['inline', 'stacked'] as const) {
         const list = page.locator(
-          `[data-lab-cell="outer=${outer} inner=${inner}"] [data-lab-inner]`,
+          `${cellSelector(`outer=${outer} inner=${inner}`)} [data-lab-inner]`,
         );
         const rows = list.locator(':scope > .ui-description-list__row');
         const boxes = (await rects(rows)) as DOMRect[];
@@ -142,7 +142,7 @@ test.describe('Description List lab', () => {
     // Narrow viewports put every list, nested ones included, in one column.
     await page.setViewportSize({ width: 600, height: 900 });
     const rows = page.locator(
-      '[data-lab-cell="outer=stacked inner=inline"] [data-lab-inner] > .ui-description-list__row',
+      `${cellSelector('outer=stacked inner=inline')} [data-lab-inner] > .ui-description-list__row`,
     );
     const boxes = (await rects(rows)) as DOMRect[];
     expect(requireDefined(boxes[1]).top).toBeGreaterThan(requireDefined(boxes[0]).top);

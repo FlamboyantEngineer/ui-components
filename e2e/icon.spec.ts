@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Icon lab', () => {
   test('UIC-ICON-1.1 UIC-ICON-1.2 draws every glyph in three box sizes', async ({ page, lab }) => {
@@ -32,7 +32,7 @@ test.describe('Icon lab', () => {
     const labelled = matrixCell(page, 'source=glyph naming=labelled size=md');
     await expect(labelled.getByRole('img', { name: 'Information' })).toBeVisible();
     const decorative = page.locator(
-      '[data-lab-cell="source=glyph naming=decorative size=md"] .ui-icon',
+      `${cellSelector('source=glyph naming=decorative size=md')} .ui-icon`,
     );
     await expect(decorative).toHaveAttribute('aria-hidden', 'true');
     await lab.expectAccessible();

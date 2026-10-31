@@ -174,3 +174,45 @@ describe('copyRichText', () => {
     await expect(copyRichText({ text: '', html: '' }, { clipboard: null })).resolves.toBe('failed');
   });
 });
+
+describe('the owner window', () => {
+  /** A same-origin frame: a second window and document, as a popup rendered through a portal. */
+  function openFrame() {
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const view = frame.contentWindow as Window & typeof globalThis;
+    const button = view.document.body.appendChild(view.document.createElement('button'));
+    return { view, button };
+  }
+
+  it('UIC-CLIPBOARD-1.5 writes through the owner window clipboard', async () => {
+    const own: string[] = [];
+    const theirs: string[] = [];
+    vi.stubGlobal('navigator', { clipboard: writer(own) });
+    const { view, button } = openFrame();
+    Object.defineProperty(view.navigator, 'clipboard', {
+      configurable: true,
+      value: writer(theirs),
+    });
+    try {
+      await expect(copyText('Crate 12', { owner: button })).resolves.toBe(true);
+      expect(theirs).toEqual(['Crate 12']);
+      expect(own).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('UIC-CLIPBOARD-1.5 runs the selection fallback in the owner document', async () => {
+    const { view, button } = openFrame();
+    const commands: Document[] = [];
+    const execCommand = vi.fn(function (this: Document) {
+      commands.push(this);
+      return true;
+    });
+    Object.defineProperty(view.document, 'execCommand', { configurable: true, value: execCommand });
+    installCopyCommand(false);
+    await expect(copyText('Crate 12', { owner: button, clipboard: null })).resolves.toBe(true);
+    expect(commands).toEqual([view.document]);
+    expect(view.document.body.querySelector('pre')).toBeNull();
+  });
+});

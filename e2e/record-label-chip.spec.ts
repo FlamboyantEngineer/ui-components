@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, matrix, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-record-label`;
+const cell = (id: string) => `${cellSelector(id)} .ui-record-label`;
 
 test.describe('RecordLabel chip mode', () => {
   test('UIC-RECORD-LABEL-11.1 UIC-RECORD-LABEL-11.2 lays out the parts inline or stacked', async ({
@@ -8,9 +8,7 @@ test.describe('RecordLabel chip mode', () => {
     lab,
   }) => {
     await lab.open('record-label');
-    const inline = page
-      .locator('[data-lab-family="record-chip-cases"]')
-      .locator(cell('parts=details layout=inline'));
+    const inline = matrix(page, 'record-chip-cases').locator(cell('parts=details layout=inline'));
     await expect(inline).toHaveText('REQ-12 Brake pressure limits v3 Requirement Approved');
     const label = await inline.locator('.ui-record-label__label').boundingBox();
     const state = await inline.locator('.ui-record-label__state').boundingBox();
@@ -18,9 +16,7 @@ test.describe('RecordLabel chip mode', () => {
       label && state && Math.abs(label.y + label.height / 2 - (state.y + state.height / 2)),
     ).toBeLessThan(4);
 
-    const stacked = page
-      .locator('[data-lab-family="record-chip-cases"]')
-      .locator(cell('parts=details layout=stacked'));
+    const stacked = matrix(page, 'record-chip-cases').locator(cell('parts=details layout=stacked'));
     await expect(stacked).toHaveAttribute('data-layout', 'stacked');
     const header = await stacked.locator('.ui-record-label__header').boundingBox();
     const name = await stacked.locator('.ui-record-label__name').boundingBox();
@@ -37,8 +33,7 @@ test.describe('RecordLabel chip mode', () => {
     await lab.open('record-label');
     const card = page.locator('.ui-record-label__preview');
     await page.mouse.move(5, 5);
-    await page
-      .locator('[data-lab-family="record-chip-cases"]')
+    await matrix(page, 'record-chip-cases')
       .locator(cell('link=same tab'))
       .getByRole('link')
       .hover();
@@ -46,13 +41,11 @@ test.describe('RecordLabel chip mode', () => {
     await page.mouse.move(5, 5);
     await expect(card).toHaveCount(0);
 
-    const external = page
-      .locator('[data-lab-family="record-chip-cases"]')
+    const external = matrix(page, 'record-chip-cases')
       .locator(cell('link=new tab'))
       .getByRole('link');
     await expect(external).toHaveAccessibleName(/RISK-7 Sensor drift over long trips/);
-    await page
-      .locator('[data-lab-family="record-chip-cases"]')
+    await matrix(page, 'record-chip-cases')
       .locator(cell('link=same tab'))
       .getByRole('link')
       .focus();
@@ -68,7 +61,7 @@ test.describe('RecordLabel chip mode', () => {
     lab,
   }) => {
     await lab.open('record-label');
-    const cases = page.locator('[data-lab-family="record-chip-cases"]');
+    const cases = matrix(page, 'record-chip-cases');
     const stacked = cases
       .locator(cell('link=linked layout=stacked'))
       .getByRole('link', { name: 'TEST-48 Cold start at minus twenty, a test' });
@@ -113,9 +106,7 @@ test.describe('RecordLabel chip mode', () => {
 
   test('UIC-RECORD-LABEL-11.4 removes references from a field', async ({ page, lab }) => {
     await lab.open('record-label');
-    const field = page
-      .locator('[data-lab-family="record-chip-cases"]')
-      .locator('[data-lab-demo="references"]');
+    const field = matrix(page, 'record-chip-cases').locator('[data-lab-demo="references"]');
     await expect(field.locator('.ui-record-label')).toHaveCount(3);
     await field.getByRole('button', { name: 'Remove TEST-48' }).click();
     await expect(field.locator('.ui-record-label')).toHaveCount(2);
@@ -124,9 +115,9 @@ test.describe('RecordLabel chip mode', () => {
 
   test('UIC-RECORD-LABEL-11.5 shows only that a record is unavailable', async ({ page, lab }) => {
     await lab.open('record-label');
-    const missing = page
-      .locator('[data-lab-family="record-chip-cases"]')
-      .locator(cell('unavailable=missing layout=stacked'));
+    const missing = matrix(page, 'record-chip-cases').locator(
+      cell('unavailable=missing layout=stacked'),
+    );
     await expect(missing).toHaveAttribute('data-layout', 'inline');
     await expect(missing).toHaveText('Missing item');
     await expect(missing.getByRole('button', { name: 'Remove Missing item' })).toBeVisible();
@@ -136,7 +127,7 @@ test.describe('RecordLabel chip mode', () => {
   test('UIC-RECORD-LABEL-11.3 passes axe', async ({ page, lab }) => {
     await lab.open('record-label');
     await expect(
-      page.locator('[data-lab-family="record-chip-cases"]').locator('.ui-record-label').first(),
+      matrix(page, 'record-chip-cases').locator('.ui-record-label').first(),
     ).toBeVisible();
     await lab.expectAccessible();
   });

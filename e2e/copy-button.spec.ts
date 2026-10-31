@@ -1,11 +1,11 @@
-import { expect, test, controlHeight } from './fixtures.js';
+import { cellSelector, controlHeight, expect, test } from './fixtures.js';
 
 test.describe('Copy Button lab', () => {
   test('UIC-COPY-BUTTON-1.4 draws every variant, size and state', async ({ page, lab }) => {
     await lab.open('copy-button');
     const button = (state: string, variant: string, size: string) =>
       page.locator(
-        `[data-lab-cell="state=${state} variant=${variant} size=${size}"] .ui-copy-button__button`,
+        `${cellSelector(`state=${state} variant=${variant} size=${size}`)} .ui-copy-button__button`,
       );
     await expect(button('rest', 'ghost', 'md')).toHaveClass(/ui-button/);
     await expect(button('rest', 'secondary', 'sm')).toHaveAttribute('data-variant', 'secondary');

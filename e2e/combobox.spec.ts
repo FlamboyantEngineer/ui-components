@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { controlHeight, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function section(page: Page, title: string): Locator {
@@ -18,14 +18,9 @@ test.describe('Combobox lab', () => {
     await lab.open('combobox');
     const cells = page.locator('table[data-lab-matrix="variant state size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(2 * 6 * 4);
-    for (const [size, height] of [
-      ['xs', 20],
-      ['sm', 24],
-      ['md', 28],
-      ['lg', 32],
-    ] as const) {
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
       const field = cell(page, 'default', 'resting', size).locator('.ui-combobox__field');
-      expect((await field.boundingBox())?.height).toBe(height);
+      expect((await field.boundingBox())?.height).toBe(await controlHeight(page, size));
     }
     await expect(
       cell(page, 'search', 'resting', 'md').locator('.ui-combobox__search-icon'),

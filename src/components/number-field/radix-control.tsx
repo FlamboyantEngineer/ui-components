@@ -1,5 +1,6 @@
 'use client';
 
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { useState, type KeyboardEvent } from 'react';
 import {
@@ -79,7 +80,7 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
     state.commit();
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.nativeEvent.isComposing || state.isReadOnly) return;
+    if (isComposingKey(event.nativeEvent) || state.isReadOnly) return;
     if (event.key === 'Enter') {
       event.preventDefault();
       finish(true);

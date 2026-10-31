@@ -9,6 +9,7 @@ import { EditorState, type Plugin } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import {
   isRichTextEqual,
+  isSameData,
   type RichTextAttributes,
   type RichTextDocument,
   type RichTextMark,
@@ -21,12 +22,19 @@ export function createEmptyDocument(schema: Schema): RichTextDocument {
   return (schema.topNodeType.createAndFill() as Node).toJSON() as RichTextDocument;
 }
 
-/** Whether a document holds only one empty text block. */
-export function isDocumentEmpty(document: RichTextNode, schema: Schema): boolean {
-  const content = document.content ?? [];
-  const [first] = content;
-  if (content.length > 1 || !first) return content.length === 0;
-  return Boolean(schema.nodes[first.type]?.isTextblock) && !first.content?.length;
+/**
+ * Whether a node holds nothing a reader would count as content, whatever structure it has: text
+ * that is only whitespace, line breaks (leaves whose text is whitespace) and blocks holding only
+ * those. Any other leaf, such as a divider or a caller's atom, is content.
+ */
+export function isDocumentBlank(node: RichTextNode, schema: Schema): boolean {
+  if (node.type === 'text') return !node.text?.trim();
+  const type = schema.nodes[node.type];
+  if (type?.isLeaf) {
+    const text = type.spec.leafText?.(type.create(node.attrs));
+    return text !== undefined && text.trim() === '';
+  }
+  return (node.content ?? []).every((child) => isDocumentBlank(child, schema));
 }
 
 /** The plugins every editor runs; `reactKeys` lets the React view keep node identities. */
@@ -89,13 +97,18 @@ export function createEditorState(
 }
 
 /**
- * The state with its document replaced by `document`, as one step of the undo history of its own,
- * or the same state when the documents are equal.
+ * The state with its document replaced by `document`, its content and its root attributes, as one
+ * step of the undo history of its own, or the same state when the documents are equal.
  */
 export function replaceDocument(state: EditorState, document: RichTextNode): EditorState {
   const next = readDocument(state.schema, document);
   if (next.eq(state.doc)) return state;
-  return state.apply(closeHistory(state.tr.replaceWith(0, state.doc.content.size, next.content)));
+  const { tr } = state;
+  if (!next.content.eq(state.doc.content)) tr.replaceWith(0, state.doc.content.size, next.content);
+  for (const [name, value] of Object.entries(next.attrs)) {
+    if (!isSameData(state.doc.attrs[name], value)) tr.setDocAttribute(name, value);
+  }
+  return state.apply(closeHistory(tr));
 }
 
 /** Marks the empty document's only block with the placeholder text. */

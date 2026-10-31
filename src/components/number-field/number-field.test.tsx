@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -364,6 +364,15 @@ describe('NumberField', () => {
     expect(input).toHaveValue('20');
     await user.keyboard('{ArrowDown}');
     expect(input).toHaveValue('19');
+    // An input method composing in the input owns its arrows.
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(input, { key: 'ArrowDown', shiftKey: true, isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set a key code on a keydown
+    fireEvent.keyDown(input, { key: 'ArrowDown', shiftKey: true, keyCode: 229 });
+    expect(input).toHaveValue('19');
+    expect(onCommit).toHaveBeenLastCalledWith(19);
+    await user.keyboard('{Shift>}{ArrowDown}{/Shift}');
+    expect(input).toHaveValue('9');
     rerender(<NumberField label="Weight" value={4} largeStep={10} isReadOnly />);
     await user.keyboard('{Shift>}{ArrowUp}{/Shift}');
     expect(input).toHaveValue('4');

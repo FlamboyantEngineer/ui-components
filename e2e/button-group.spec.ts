@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
 test.describe('Button Group lab', () => {
   test('UIC-BUTTON-GROUP-1.1 UIC-BUTTON-GROUP-1.2 joins attached buttons and spaces the others', async ({
@@ -8,7 +8,7 @@ test.describe('Button Group lab', () => {
     await lab.open('button-group');
     const cell = (density: string, orientation: string) =>
       page.locator(
-        `[data-lab-cell="density=${density} orientation=${orientation}"] .ui-button-group`,
+        `${cellSelector(`density=${density} orientation=${orientation}`)} .ui-button-group`,
       );
     const gapBetween = async (density: string) => {
       const buttons = cell(density, 'horizontal').first().locator('.ui-button');

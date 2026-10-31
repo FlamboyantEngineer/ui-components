@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Modal confirmation helpers', () => {
   test('UIC-MODAL-21.1 UIC-MODAL-21.3 UIC-MODAL-21.4 opens every cell with focus on the safe action', async ({
@@ -53,12 +53,8 @@ test.describe('Modal confirmation helpers', () => {
 
   test('UIC-MODAL-22.1 resolves the awaited confirmation', async ({ page, lab }) => {
     await lab.open('modal');
-    const opener = page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-open="await"]');
-    const output = page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-output="awaited"]');
+    const opener = matrix(page, 'modal-confirmation-cases').locator('[data-lab-open="await"]');
+    const output = matrix(page, 'modal-confirmation-cases').locator('[data-lab-output="awaited"]');
     await opener.click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Cancel' }).click();
     await expect(output).toHaveText('false');
@@ -127,10 +123,7 @@ test.describe('Modal confirmation helpers', () => {
 
   test('UIC-MODAL-21.6 takes the third action without cancelling', async ({ page, lab }) => {
     await lab.open('modal');
-    await page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-open="third"]')
-      .click();
+    await matrix(page, 'modal-confirmation-cases').locator('[data-lab-open="third"]').click();
     const dialog = page.getByRole('alertdialog', { name: 'Save changes to Report.pdf?' });
     await expect(dialog.locator('.ui-modal__actions button')).toHaveText([
       'Cancel',
@@ -141,17 +134,13 @@ test.describe('Modal confirmation helpers', () => {
     await dialog.getByRole('button', { name: "Don't save" }).click();
     await expect(dialog).toHaveCount(0);
     await expect(
-      page
-        .locator('[data-lab-family="modal-confirmation-cases"]')
-        .locator('[data-lab-output="third"]'),
+      matrix(page, 'modal-confirmation-cases').locator('[data-lab-output="third"]'),
     ).toHaveText('discarded');
   });
 
   test('UIC-MODAL-21.9 confirms in a popover against its button', async ({ page, lab }) => {
     await lab.open('modal');
-    const opener = page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-open="anchored"]');
+    const opener = matrix(page, 'modal-confirmation-cases').locator('[data-lab-open="anchored"]');
     await opener.click();
     const popover = page.locator('.ui-modal[data-lab-modal="anchored"]');
     await expect(popover).toHaveAttribute('data-layer', 'dropdown');
@@ -167,22 +156,15 @@ test.describe('Modal confirmation helpers', () => {
     await dialog.getByRole('button', { name: 'Remove' }).click();
     await expect(popover).toHaveCount(0);
     await expect(
-      page
-        .locator('[data-lab-family="modal-confirmation-cases"]')
-        .locator('[data-lab-output="anchored"]'),
+      matrix(page, 'modal-confirmation-cases').locator('[data-lab-output="anchored"]'),
     ).toHaveText('removed');
     await expect(opener).toBeFocused();
   });
 
   test('UIC-MODAL-22.2 UIC-MODAL-22.3 awaits an alert and a prompt', async ({ page, lab }) => {
     await lab.open('modal');
-    const result = page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-output="helpers"]');
-    await page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-open="alert"]')
-      .click();
+    const result = matrix(page, 'modal-confirmation-cases').locator('[data-lab-output="helpers"]');
+    await matrix(page, 'modal-confirmation-cases').locator('[data-lab-open="alert"]').click();
     const alertDialog = page.getByRole('alertdialog', { name: 'Export finished' });
     await expect(alertDialog.getByRole('button', { name: 'OK' })).toBeFocused();
     await expect(page.locator('.ui-modal[data-lab-modal="alert"]')).toHaveAttribute(
@@ -192,10 +174,7 @@ test.describe('Modal confirmation helpers', () => {
     await page.keyboard.press('Enter');
     await expect(result).toHaveText('acknowledged');
 
-    await page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-open="prompt"]')
-      .click();
+    await matrix(page, 'modal-confirmation-cases').locator('[data-lab-open="prompt"]').click();
     const promptDialog = page.getByRole('dialog', { name: 'Add a city' });
     const field = promptDialog.getByRole('textbox', { name: 'City' });
     await expect(field).toBeFocused();
@@ -206,10 +185,7 @@ test.describe('Modal confirmation helpers', () => {
     await expect(promptDialog).toHaveCount(0);
     await expect(result).toHaveText('added Oslo');
 
-    await page
-      .locator('[data-lab-family="modal-confirmation-cases"]')
-      .locator('[data-lab-open="prompt"]')
-      .click();
+    await matrix(page, 'modal-confirmation-cases').locator('[data-lab-open="prompt"]').click();
     await page
       .getByRole('dialog', { name: 'Add a city' })
       .getByRole('button', { name: 'Cancel' })

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 function section(page: Page, title: string): Locator {
   return page.locator(`[data-lab-section="${title}"]`);
@@ -117,7 +117,7 @@ test.describe('Menu lab', () => {
     await expect(item).not.toHaveAttribute('data-pressed');
     const opacity = await item.evaluate((node) => getComputedStyle(node).opacity);
     expect(Number(opacity)).toBeLessThan(1);
-    await lab.expectAccessible('[data-lab-cell="state=focusable disabled size=md"]');
+    await lab.expectAccessible(cellSelector('state=focusable disabled size=md'));
   });
 
   test('UIC-MENU-4.1 UIC-MENU-1.3 UIC-MENU-4.5 UIC-MENU-4.2 navigates menus and submenus by keyboard', async ({

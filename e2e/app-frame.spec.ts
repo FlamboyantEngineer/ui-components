@@ -1,7 +1,7 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 const regionsCell = (navigation: string, panels: string) =>
-  `[data-lab-cell="navigation=${navigation} panels=${panels}"] .ui-app-frame`;
+  `${cellSelector(`navigation=${navigation} panels=${panels}`)} .ui-app-frame`;
 
 test.describe('App Frame lab', () => {
   test('UIC-APP-FRAME-1.1 UIC-APP-FRAME-1.4 renders the present regions as plain containers when embedded', async ({

@@ -100,14 +100,14 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-4.1 - Read-only, disabled, invalid and required
 
-A read-only editor shall keep its document readable, focusable and selectable but refuse every edit (`contenteditable="false"`, `aria-readonly`, `data-readonly` on the content); a disabled one is also out of the tab sequence (`aria-disabled`, `data-disabled`). Neither offers commands: the controller's `can` and `run` refuse and the chrome disables or hides itself. Locking an editor dismisses its slash menu, insert button menu, block menu and link editor; unlocking does not reopen the button menus or link editor. An invalid field marks the content `aria-invalid`; a required one reports `aria-required` and is invalid (`valueMissing`) while its document is empty.
+A read-only editor shall keep its document readable, focusable and selectable but refuse every edit (`contenteditable="false"`, `aria-readonly`, `data-readonly` on the content); a disabled one is also out of the tab sequence (`aria-disabled`, `data-disabled`). Neither offers commands: the controller's `can` and `run` refuse and the chrome disables or hides itself. Locking an editor dismisses its slash menu, insert button menu, block menu and link editor; unlocking does not reopen the button menus or link editor. An invalid field marks the content `aria-invalid`; a required one reports `aria-required` and is invalid (`valueMissing`) while its document is empty. A document is empty when it holds nothing but structure: text that is only whitespace, line breaks, and empty paragraphs, lists, quotes or code blocks, however many; any other leaf, such as a divider or an atom of a caller schema, counts as content.
 
 Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/rich-text-controller.ts`, `src/components/rich-text-editor/block-handle.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-4.2 - Value changes from outside, commit and restore
 
-When the value changes to a document other than the one shown (a controlled change, the field's restore, clear or set to default), the editor shall replace its document in one step of its own in the undo history (UIC-RICH-TEXT-EDITOR-3.4); an unchanged document is left alone. The field commits when focus leaves it (UIC-FIELD-1.11), so Tab from the edited content reaches the restore button without committing, and focus in the editor's own chrome or popovers commits nothing; while the value differs from the committed value the field is dirty and its restore button puts the committed document back.
+When the value changes to a document other than the one shown (a controlled change, the field's restore, clear or set to default), the editor shall replace its document, the content and the root attributes of a caller schema's `doc`, in one step of its own in the undo history (UIC-RICH-TEXT-EDITOR-3.4), so later edits keep the replaced attributes; an unchanged document is left alone. The field commits when focus leaves it (UIC-FIELD-1.11), so Tab from the edited content reaches the restore button without committing, and focus in the editor's own chrome or popovers commits nothing; while the value differs from the committed value the field is dirty and its restore button puts the committed document back.
 
 Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/editor-state.ts`, `src/components/rich-text-editor/rich-text-editor.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -174,10 +174,10 @@ Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/ri
 
 ### UIC-RICH-TEXT-EDITOR-6.3 - Link editor
 
-The link button (pressed on a link) shall open a `Popover` (`ui-format-toolbar__link-editor`, or `ui-selection-toolbar__link-editor` in the selection toolbar) with a `linkAddress` text field holding the current link's address, an Apply button (disabled for an empty or unsafe address) that submits on Enter, and a `removeLink` button while the selection has a link. Applying or removing runs `set-link`, closes the popover and returns focus to the document.
+The link button (pressed on a link) shall open a `Popover` (`ui-format-toolbar__link-editor`, or `ui-selection-toolbar__link-editor` in the selection toolbar) with a `linkAddress` text field holding the current link's address, an Apply button (disabled for an empty or unsafe address) that submits on Enter, and a `removeLink` button while the selection has a link. Applying or removing runs `set-link`, closes the popover and returns focus to the document. The link editor is a form of its own: applying, removing or cancelling never submits a form around the editor (a plain form or `Form`), and its address field is not one of that form's fields.
 
 Implementation: `src/components/rich-text-editor/format-controls.tsx`, `src/components/rich-text-editor/use-focus-return.ts`
-Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
+Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-7 - Selection Toolbar
 

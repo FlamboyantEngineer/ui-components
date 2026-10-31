@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-inline-edit`;
+const cell = (id: string) => `${cellSelector(id)} .ui-inline-edit`;
 const field = (name: string) => `[data-lab-demo="recipe"] [data-lab-field="${name}"]`;
 
 test.describe('Inline Edit lab', () => {

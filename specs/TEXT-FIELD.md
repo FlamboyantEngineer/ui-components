@@ -36,7 +36,7 @@ Verification: `src/components/text-field/text-field.test.tsx`
 
 ### UIC-TEXT-FIELD-2.1 - Commit
 
-`TextField` shall commit its value when focus leaves the field (UIC-FIELD-1.11) and when Enter is pressed on a single line; Enter in a multiline field inserts a line break, and leaving still commits. Tab from an edited control reaches the restore button without committing. An Enter that confirms an input method composition does not commit. `onCommit` runs only for a value that differs from the committed value, so a repeated Enter or the blur after an Enter commits nothing again.
+`TextField` shall commit its value when focus leaves the field (UIC-FIELD-1.11) and when Enter is pressed on a single line; Enter in a multiline field inserts a line break, and leaving still commits. Tab from an edited control reaches the restore button without committing. An Enter or Escape that belongs to an input method composition (`isComposing`, or key code 229, which some browsers report for the Enter that confirms a candidate) is the input method's: Enter does not commit and Escape does not revert. `onCommit` runs only for a value that differs from the committed value, so a repeated Enter or the blur after an Enter commits nothing again.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -73,7 +73,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.2 - Revealing masked text
 
-With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, an `Button` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it.
+With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, a `Button` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`

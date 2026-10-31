@@ -1,7 +1,7 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-relative-time`;
+const cell = (id: string) => `${cellSelector(id)} .ui-relative-time`;
 
 test.describe('Relative Time lab', () => {
   test('UIC-RELATIVE-TIME-1.1 UIC-RELATIVE-TIME-1.2 words each value against the clock', async ({

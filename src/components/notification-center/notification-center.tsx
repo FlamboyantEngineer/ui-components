@@ -72,9 +72,7 @@ export function NotificationCenter({
   return (
     <span
       {...dataAttributes}
-      {...hooks.root({ className, data: { presentation } })}
-      // An absent state stays absent: a caller attribute of the same name never shows through.
-      data-open={isOpen ? 'true' : undefined}
+      {...hooks.root({ className, data: { presentation, open: isOpen } })}
       id={id}
     >
       {presentation === 'drawer' ? (

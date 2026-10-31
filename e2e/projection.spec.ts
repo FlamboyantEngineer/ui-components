@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
 test.describe('Projection lab', () => {
   test('UIC-PROJECTION-1.1 UIC-PROJECTION-1.3 UIC-PROJECTION-1.4 renders the latest declaration or the fallback', async ({
@@ -8,11 +8,11 @@ test.describe('Projection lab', () => {
     await lab.open('projection');
     const outlet = (declarations: string, fallback: string) =>
       page.locator(
-        `[data-lab-cell="declarations=${declarations} fallback=${fallback}"] [data-lab-outlet]`,
+        `${cellSelector(`declarations=${declarations} fallback=${fallback}`)} [data-lab-outlet]`,
       );
     const origin = (declarations: string, fallback: string) =>
       page.locator(
-        `[data-lab-cell="declarations=${declarations} fallback=${fallback}"] [data-lab-origin]`,
+        `${cellSelector(`declarations=${declarations} fallback=${fallback}`)} [data-lab-origin]`,
       );
     await expect(outlet('none', 'without fallback')).toHaveText('Toolbar:');
     await expect(outlet('none', 'with fallback')).toHaveText('Toolbar: No tools');

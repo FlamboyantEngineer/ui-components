@@ -166,9 +166,8 @@ export function CardSummary(props: {
   if (isEmptyNode(props.children)) return null;
   return (
     <div
-      {...hooks.slot('summary')}
+      {...hooks.slot('summary', { moved: props.isMoved })}
       id={props.id}
-      data-moved={props.isMoved || undefined}
       hidden={props.isHidden || undefined}
     >
       {props.children}

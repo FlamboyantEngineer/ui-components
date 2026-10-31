@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('User Identity lab', () => {
   test('UIC-USER-IDENTITY-1.3 sizes the avatar with the row', async ({ page, lab }) => {
@@ -10,7 +10,7 @@ test.describe('User Identity lab', () => {
       ['lg', 40],
     ] as const) {
       const avatar = page.locator(
-        `[data-lab-cell="kind=initials content=name only size=${size}"] .ui-user-identity__avatar`,
+        `${cellSelector(`kind=initials content=name only size=${size}`)} .ui-user-identity__avatar`,
       );
       expect((await avatar.boundingBox())?.width).toBe(pixels);
     }

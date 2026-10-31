@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -61,14 +61,14 @@ test.describe('Separator lab', () => {
         end: await box(rule.locator('.ui-separator__end-line')),
       };
     };
-    const center = await parts('[data-lab-cell="variant=solid labelPosition=center"]');
+    const center = await parts(cellSelector('variant=solid labelPosition=center'));
     await expect(center.rule).toHaveAttribute('data-label-position', 'center');
     expect(center.start.x + center.start.width).toBeLessThanOrEqual(center.label.x);
     expect(center.label.x + center.label.width).toBeLessThanOrEqual(center.end.x);
     expect(Math.abs(center.start.width - center.end.width)).toBeLessThanOrEqual(1);
     expect(center.start.height).toBe(1);
 
-    const start = await parts('[data-lab-cell="variant=dashed labelPosition=start"]');
+    const start = await parts(cellSelector('variant=dashed labelPosition=start'));
     expect(start.start.width).toBe(12);
     expect(start.end.width).toBeGreaterThan(start.start.width * 4);
     expect(
@@ -77,7 +77,7 @@ test.describe('Separator lab', () => {
         .evaluate((node) => getComputedStyle(node).borderTopStyle),
     ).toBe('dashed');
 
-    const end = await parts('[data-lab-cell="variant=dotted labelPosition=end"]');
+    const end = await parts(cellSelector('variant=dotted labelPosition=end'));
     expect(end.end.width).toBe(12);
     expect(end.start.width).toBeGreaterThan(end.end.width * 4);
 

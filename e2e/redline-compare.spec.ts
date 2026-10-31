@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-redline-compare`;
+const cell = (id: string) => `${cellSelector(id)} .ui-redline-compare`;
 
 test.describe('Redline Compare lab', () => {
   test('UIC-REDLINE-COMPARE-2.1 draws deleted and inserted words inline', async ({ page, lab }) => {

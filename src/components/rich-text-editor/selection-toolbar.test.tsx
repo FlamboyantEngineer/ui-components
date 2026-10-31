@@ -1,5 +1,6 @@
-import { act, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   ViewProbe,
@@ -8,7 +9,7 @@ import {
   renderEditor,
   selectRange,
 } from '../../../test/rich-text-fixtures.js';
-import type { RichTextDocument } from './rich-text-editor.js';
+import { RichTextEditor, type RichTextDocument } from './rich-text-editor.js';
 import { SelectionToolbar } from './selection-toolbar.js';
 
 installEditorDom();
@@ -101,5 +102,26 @@ describe('SelectionToolbar', () => {
     expect(screen.queryByRole('toolbar', { name: 'Quick marks' })).not.toBeInTheDocument();
     selectRange(1, 4);
     expect(screen.getByRole('toolbar', { name: 'Quick marks' })).toBeInTheDocument();
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-6.3 UIC-RICH-TEXT-EDITOR-7.1 links from the floating toolbar without submitting a form around the editor', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    render(
+      <form aria-label="Page" onSubmit={onSubmit}>
+        <RichTextEditor label="Notes" defaultValue={note}>
+          <ViewProbe />
+          <SelectionToolbar />
+        </RichTextEditor>
+      </form>,
+    );
+    selectRange(6, 11);
+    await user.click(within(floating() as HTMLElement).getByRole('button', { name: 'Link' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'Link address' }),
+      'https://example.com/pears{Enter}',
+    );
+    expect(screen.queryByRole('textbox', { name: 'Link address' })).not.toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

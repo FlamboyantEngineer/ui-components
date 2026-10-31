@@ -1,6 +1,3 @@
-// Folds the consecutive reasoning and tool calls of a message into groups of steps, and reads
-// how a group stands (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5).
-
 import type { ChatStepsAction } from '../chat-activity/chat-activity.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.js';

@@ -47,7 +47,7 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 
 ### UIC-TRANSFER-LIST-2.2 - Move buttons
 
-The actions shall hold, for each side, an `Button` that moves the side's selection to the other side (`ui-transfer-list__move` with `data-scope="selected"`, named by the `moveSelectedTo` string with the other side's title, disabled without a selection) and one that moves every row the side shows and can move (`data-scope="all"`, named by `moveAllTo`, disabled without such a row); `data-target` names the side the items move to. Items moved to the chosen side follow the chosen ones in the order of `items`; items moved back leave the value. The moved items become the selection of the side they land on.
+The actions shall hold, for each side, a `Button` that moves the side's selection to the other side (`ui-transfer-list__move` with `data-scope="selected"`, named by the `moveSelectedTo` string with the other side's title, disabled without a selection) and one that moves every row the side shows and can move (`data-scope="all"`, named by `moveAllTo`, disabled without such a row); `data-target` names the side the items move to. Items moved to the chosen side follow the chosen ones in the order of `items`; items moved back leave the value. The moved items become the selection of the side they land on.
 
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/use-transfer-list.ts`, `src/components/transfer-list/transfer-moves.ts`
 Verification: `src/components/transfer-list/transfer-moves.test.ts`, `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`

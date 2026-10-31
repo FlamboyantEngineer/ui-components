@@ -130,7 +130,11 @@ describe('TextField', () => {
     await user.type(input, 'Kiwi');
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
     fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set a key code on a keydown
+    fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 });
     expect(onCommit).toHaveBeenCalledTimes(2);
+    await user.keyboard('{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('Kiwi');
   });
 
   it('UIC-TEXT-FIELD-2.1 keeps Enter as a line break in a multiline field and commits on blur', async () => {

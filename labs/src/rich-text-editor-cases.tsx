@@ -1,6 +1,7 @@
 import { StarGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Form } from '../../src/components/form/form.js';
 import {
   BlockHandle,
   FormatToolbar,
@@ -153,6 +154,7 @@ export function LockedChromeEditor() {
 
 const noteSchema = createRichTextSchema({
   nodes: {
+    doc: { content: 'block+', attrs: { edition: { default: 1 } } },
     codeBlock: null,
     callout: {
       group: 'block',
@@ -197,15 +199,21 @@ function HighlightButton() {
 
 const calloutDocument: RichTextDocument = {
   type: 'doc',
+  attrs: { edition: 1 },
   content: [
     paragraph(text('Bring a '), text('basket', [{ type: 'highlight' }]), text(' to the market.')),
     { type: 'callout', content: [paragraph(text('The stalls open at nine.'))] },
   ],
 };
 
-/** A schema with a callout block and a highlight mark, and without code blocks. */
+/**
+ * A schema with a callout block, a highlight mark and an `edition` on the document, and without
+ * code blocks. Next edition replaces the document with the next edition number, which later edits
+ * keep.
+ */
 export function CustomSchemaEditor() {
   const [value, setValue] = useState(calloutDocument);
+  const edition = Number(value.attrs?.edition ?? 1);
   return (
     <>
       <RichTextEditor
@@ -223,6 +231,12 @@ export function CustomSchemaEditor() {
       >
         <InsertMenu items={[calloutItem]} />
       </RichTextEditor>
+      <Button size="sm" onPress={() => setValue({ ...value, attrs: { edition: edition + 1 } })}>
+        Next edition
+      </Button>
+      <p>
+        Edition: <output data-lab-output="custom-edition">{edition}</output>
+      </p>
       <p>
         HTML:{' '}
         <output data-lab-output="custom-html">
@@ -263,22 +277,65 @@ export function ControlledEditor() {
   );
 }
 
-/** A named editor in a form: Submit shows the JSON the form sends, Reset puts the note back. */
+/**
+ * A named editor in a form: Submit shows the JSON the form sends and counts the submits, Reset
+ * puts the note back. Applying a link from the toolbar submits nothing.
+ */
 export function FormEditor() {
   const [submitted, setSubmitted] = useState('none');
+  const [submits, setSubmits] = useState(0);
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault();
         setSubmitted(String(new FormData(event.currentTarget).get('notes')));
+        setSubmits((count) => count + 1);
       }}
     >
-      <RichTextEditor label="Notes" name="notes" defaultValue={shortNote} data-lab-editor="form" />
+      <RichTextEditor
+        label="Notes"
+        name="notes"
+        defaultValue={shortNote}
+        data-lab-editor="form"
+        toolbar={<FormatToolbar />}
+      />
       <button type="submit">Submit</button> <button type="reset">Reset</button>
       <p>
         Submitted: <output data-lab-output="form">{submitted}</output>
       </p>
+      <p>
+        Submits: <output data-lab-output="form-submits">{submits}</output>
+      </p>
     </form>
+  );
+}
+
+/**
+ * A required editor in a form that validates at once: blank lines, empty lists and quotes leave it
+ * empty and the submit blocked; any text, or a divider, fills it.
+ */
+export function RequiredEditor() {
+  const [submits, setSubmits] = useState(0);
+  return (
+    <Form
+      aria-label="Required note"
+      validationMode="immediate"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmits((count) => count + 1);
+      }}
+    >
+      <RichTextEditor
+        label="Summary"
+        isRequired
+        data-lab-editor="required"
+        toolbar={<FormatToolbar />}
+      />
+      <button type="submit">Send</button>
+      <p>
+        Sent: <output data-lab-output="required-submits">{submits}</output>
+      </p>
+    </Form>
   );
 }
 

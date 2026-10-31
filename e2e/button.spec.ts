@@ -1,4 +1,4 @@
-import { expect, test, matrixCell, controlHeight } from './fixtures.js';
+import { controlHeight, expect, familySelector, matrix, matrixCell, test } from './fixtures.js';
 
 test.describe('Button lab', () => {
   test('UIC-HOOKS-2.3 clears an inactive hook despite a conflicting caller attribute', async ({
@@ -16,9 +16,9 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const cells = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
+    const cells = matrix(page, 'button-main').locator(
+      'table[data-lab-matrix="variant size"] td[data-lab-cell]',
+    );
     expect(await cells.count()).toBe(9 * 4);
     for (const [size, height] of [
       ['xs', 20],
@@ -101,7 +101,7 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const area = page.locator('[data-lab-family="button-trigger-cases"]');
+    const area = matrix(page, 'button-trigger-cases');
     const locked = area.getByRole('button', { name: 'Locked commands' });
     const commands = area.getByRole('button', { name: 'Commands', exact: true });
     await commands.focus();
@@ -124,7 +124,7 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const area = page.locator('[data-lab-family="button-trigger-cases"]');
+    const area = matrix(page, 'button-trigger-cases');
     const syncing = area.getByRole('button', { name: 'Sync then choose' });
     await syncing.click();
     await expect(page.getByRole('menu')).toBeVisible();
@@ -201,9 +201,7 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const demo = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-demo="toggles"]');
+    const demo = matrix(page, 'button-main').locator('[data-lab-demo="toggles"]');
     const grid = demo.getByRole('button', { name: 'Show grid' });
     await expect(grid).toHaveAttribute('aria-pressed', 'true');
     await grid.focus();
@@ -215,9 +213,9 @@ test.describe('Button lab', () => {
     await pin.click();
     await expect(pin).toHaveAttribute('aria-pressed', 'true');
     await expect(demo.locator('[data-lab-output="pinned"]')).toHaveText('Pinned: yes');
-    await expect(
-      page.locator('[data-lab-family="button-main"]').locator('[data-lab-swapped]'),
-    ).toHaveClass(/ui-button/);
+    await expect(matrix(page, 'button-main').locator('[data-lab-swapped]')).toHaveClass(
+      /ui-button/,
+    );
   });
 
   test('UIC-BUTTON-1.6 keeps the focused button as its hint comes and goes', async ({
@@ -225,9 +223,7 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const demo = page
-      .locator('[data-lab-family="button-main"]')
-      .locator('[data-lab-demo="toggles"]');
+    const demo = matrix(page, 'button-main').locator('[data-lab-demo="toggles"]');
     const pin = demo.getByRole('button', { name: 'Pin panel' });
     await pin.evaluate((node) => node.setAttribute('data-lab-probe', 'kept'));
     await pin.focus();
@@ -250,7 +246,7 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const demo = page.locator('[data-lab-family="button-main"] [data-lab-demo="hidden"]');
+    const demo = page.locator(`${familySelector('button-main')} [data-lab-demo="hidden"]`);
     const buttons = demo.locator('.ui-button');
     await expect(buttons).toHaveCount(3);
     for (const button of await buttons.all()) {

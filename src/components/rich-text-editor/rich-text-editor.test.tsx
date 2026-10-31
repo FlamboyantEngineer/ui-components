@@ -8,6 +8,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectImports } from '../../../test/module-imports.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { getFieldUndo } from '../field/field.js';
+import { Form } from '../form/form.js';
 import {
   ViewProbe,
   getContent,
@@ -374,6 +375,78 @@ describe('RichTextEditor', () => {
     expect(getContent().closest('.ui-field')).toHaveAttribute('data-validation', 'invalid');
   });
 
+  it('UIC-RICH-TEXT-EDITOR-4.1 counts a document of blank structure as empty, but not one with a divider or an atom', () => {
+    const blank = (content: RichTextDocument['content']): RichTextDocument => ({
+      type: 'doc',
+      content,
+    });
+    const empty = { type: 'paragraph' };
+    const spaces = { type: 'paragraph', content: [{ type: 'text', text: '  ' }] };
+    const blanks = [
+      blank([empty, empty]),
+      blank([{ type: 'blockquote', content: [empty] }, empty]),
+      blank([{ type: 'bulletList', content: [{ type: 'listItem', content: [empty] }] }]),
+      blank([{ type: 'paragraph', content: [{ type: 'hardBreak' }, { type: 'hardBreak' }] }]),
+      blank([spaces, { type: 'codeBlock', content: [{ type: 'text', text: '\n ' }] }]),
+    ];
+    const schema = createRichTextSchema({
+      nodes: { pin: { group: 'inline', inline: true, atom: true, toDOM: () => ['span', 0] } },
+    });
+    const filled: Array<[RichTextDocument, typeof schema | undefined]> = [
+      [blank([empty, { type: 'horizontalRule' }]), undefined],
+      [blank([{ type: 'paragraph', content: [{ type: 'pin' }] }]), schema],
+      [blank([empty, { type: 'paragraph', content: [{ type: 'text', text: ' a' }] }]), undefined],
+    ];
+    const validation = () => getContent().closest('.ui-field')?.getAttribute('data-validation');
+    const { rerender } = render(<RichTextEditor label="Notes" isRequired />);
+    for (const [index, document] of blanks.entries()) {
+      rerender(
+        <RichTextEditor key={`blank ${index}`} label="Notes" isRequired defaultValue={document} />,
+      );
+      expect(validation()).toBe('invalid');
+    }
+    for (const [index, [document, custom]] of filled.entries()) {
+      rerender(
+        <RichTextEditor
+          key={`filled ${index}`}
+          label="Notes"
+          isRequired
+          schema={custom}
+          defaultValue={document}
+        />,
+      );
+      expect(validation()).toBe('valid');
+    }
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-4.1 keeps a required editor empty after Enter alone, blocking the submit', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    const page = (isRequired: boolean) => (
+      <Form aria-label="Plan" validationMode="immediate" onSubmit={onSubmit}>
+        <RichTextEditor label="Notes" isRequired={isRequired} />
+        <button type="submit">Submit</button>
+      </Form>
+    );
+    const { rerender } = render(page(true));
+    const field = () => getContent().closest('.ui-field');
+    await user.click(getContent());
+    await user.keyboard('{Enter}{Enter}');
+    expect(getContent().querySelectorAll('p')).toHaveLength(3);
+    expect(field()).toHaveAttribute('data-validation', 'invalid');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.click(getContent());
+    await user.keyboard('Figs');
+    expect(field()).toHaveAttribute('data-validation', 'valid');
+    await user.keyboard('{Control>}a{/Control}{Backspace}');
+    expect(field()).toHaveAttribute('data-validation', 'invalid');
+    rerender(page(false));
+    expect(field()).not.toHaveAttribute('data-validation', 'invalid');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-RICH-TEXT-EDITOR-4.2 replaces the document when the value changes from outside, as one undo step', async () => {
     const user = userEvent.setup();
     const { seen, Probe } = controllerProbe();
@@ -487,6 +560,65 @@ describe('RichTextEditor', () => {
     expect(seen.current?.isEditable).toBe(false);
     expect(seen.current?.can(bold)).toBe(false);
     expect(seen.current?.run(bold)).toBe(false);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-4.2 replaces the root attributes with the document, as one undo step', async () => {
+    const user = userEvent.setup();
+    const schema = createRichTextSchema({
+      nodes: { doc: { content: 'block+', attrs: { revision: { default: 1 } } } },
+    });
+    const revision = (number: number, text: string): RichTextDocument => ({
+      type: 'doc',
+      attrs: { revision: number },
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    });
+    const committed = revision(1, 'abc');
+    const changes: RichTextDocument[] = [];
+    function Controlled() {
+      const [value, setValue] = useState(committed);
+      return (
+        <form aria-label="Plan">
+          <RichTextEditor
+            label="Notes"
+            name="notes"
+            schema={schema}
+            committedValue={committed}
+            value={value}
+            onChange={(next) => {
+              changes.push(next);
+              setValue(next);
+            }}
+          >
+            <ViewProbe />
+          </RichTextEditor>
+          <button type="button" onClick={() => setValue(revision(2, 'abc'))}>
+            Load
+          </button>
+        </form>
+      );
+    }
+    const submitted = () =>
+      JSON.parse(
+        String(new FormData(screen.getByRole('form', { name: 'Plan' })).get('notes')),
+      ) as RichTextDocument;
+    render(<Controlled />);
+    await user.click(screen.getByRole('button', { name: 'Load' }));
+    expect(submitted()).toEqual(revision(2, 'abc'));
+    selectRange(4);
+    await user.keyboard('!');
+    expect(changes.at(-1)).toEqual(revision(2, 'abc!'));
+    expect(submitted()).toEqual(revision(2, 'abc!'));
+    await user.keyboard('{Control>}z{/Control}');
+    expect(changes.at(-1)).toEqual(revision(2, 'abc'));
+    await user.keyboard('{Control>}z{/Control}');
+    expect(changes.at(-1)).toEqual(revision(1, 'abc'));
+    await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(changes.at(-1)).toEqual(revision(2, 'abc'));
+    await user.click(screen.getByRole('button', { name: 'Restore Notes' }));
+    expect(submitted()).toEqual(revision(1, 'abc'));
+    selectRange(4);
+    await user.keyboard('?');
+    expect(changes.at(-1)).toEqual(revision(1, 'abc?'));
   });
 
   it('UIC-RICH-TEXT-EDITOR-2.2 edits documents of a caller schema', async () => {

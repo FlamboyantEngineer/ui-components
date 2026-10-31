@@ -28,7 +28,7 @@ export interface DropdownMenuProps
   label: ReactNode;
   /** Drawn before the label, or alone when `iconOnly`. */
   icon?: IconSource;
-  /** Draws the trigger as an `Button` showing only `icon` (`more` by default). */
+  /** Draws the trigger as a `Button` showing only `icon` (`more` by default). */
   iconOnly?: boolean | undefined;
   /** Draws a caret after the label of a button trigger. Defaults to true. */
   showCaret?: boolean | undefined;
@@ -76,7 +76,7 @@ interface DropdownMenuPartsProps {
 
 const hooks = createHooks('dropdown-menu', ['caret', 'action', 'toggle']);
 
-/** The menu button: a `Button` with a caret, or an `Button`, publishing the open state. */
+/** The menu button: a `Button` with a caret, or showing only an icon, publishing the open state. */
 function DropdownMenuTrigger({
   label,
   icon,

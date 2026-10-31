@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Icon Label lab', () => {
   test('UIC-ICON-LABEL-1.2 sizes the icon and gap', async ({ page, lab }) => {
@@ -24,7 +24,7 @@ test.describe('Icon Label lab', () => {
   }) => {
     await lab.open('icon-label');
     const truncated = page.locator(
-      '[data-lab-cell="option=truncate size=md"] .ui-icon-label__label',
+      `${cellSelector('option=truncate size=md')} .ui-icon-label__label`,
     );
     const wrapped = matrixCell(page, 'option=default size=md').locator('.ui-icon-label__label');
     const truncatedBox = await truncated.boundingBox();
@@ -38,7 +38,7 @@ test.describe('Icon Label lab', () => {
   test('UIC-ICON-LABEL-1.6 shows a cut label whole in a tooltip', async ({ page, lab }) => {
     await lab.open('icon-label');
     const truncated = page.locator(
-      '[data-lab-cell="option=truncate size=md"] .ui-icon-label__label',
+      `${cellSelector('option=truncate size=md')} .ui-icon-label__label`,
     );
     await expect(truncated).toHaveClass(/ui-truncation-tooltip/);
     await truncated.hover();

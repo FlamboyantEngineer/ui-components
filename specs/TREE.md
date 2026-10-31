@@ -187,7 +187,7 @@ Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-7.2 - Renaming the row as it is now
 
-The rename shall act on the row the owner draws now, found by its key among the shown rows. F2 opens no field on a row in `disabledKeys`. Enter, and focus leaving the field, check the row again before renaming: it must still be shown, outside `disabledKeys` and accepted by `canRename`, and `onRename` receives the current item rather than the one F2 opened. When a render leaves the open field's row disabled, outside the shown rows or refused by `canRename`, the field closes without renaming; when the field held focus, focus returns to the row, or to the tree when the row takes no focus.
+The rename shall act on the row the owner draws now, found by its key among the shown rows. F2 opens no field on a row in `disabledKeys`. Enter, and focus leaving the field, check the row again before renaming: it must still be shown, outside `disabledKeys` and accepted by `canRename`, and `onRename` receives the current item rather than the one F2 opened. When a render leaves the open field's row disabled, outside the shown rows or refused by `canRename`, or drops `onRename`, the field closes without renaming and stays closed when `onRename` comes back; when the field held focus, focus returns to the row, or to the tree when the row takes no focus.
 
 Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.spec.ts`

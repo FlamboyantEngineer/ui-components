@@ -1,5 +1,3 @@
-// Pure helpers of the chat widget: who wrote what, what a message says, and who read it.
-
 import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
 import type { ChatStatusLineActivity } from '../chat-activity/chat-activity.js';
 import { isAwaitingReader } from '../chat-controller/chat-controller.js';

@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-comment-thread`;
+const cell = (id: string) => `${cellSelector(id)} .ui-comment-thread`;
 
 test.describe('Comment Thread lab', () => {
   test('UIC-COMMENT-THREAD-1.1 UIC-COMMENT-THREAD-1.4 UIC-COMMENT-THREAD-1.6 draws each state', async ({
@@ -132,9 +132,9 @@ test.describe('Comment Thread lab', () => {
 
   test('UIC-COMMENT-THREAD-2.1 reads times against the caller clock', async ({ page, lab }) => {
     await lab.open('comment-thread');
-    const week = page.locator('[data-lab-cell="fallback=7 days"] .ui-comment-thread-reply__time');
+    const week = page.locator(`${cellSelector('fallback=7 days')} .ui-comment-thread-reply__time`);
     await expect(week).toHaveText(['12 minutes ago', '3 days ago']);
-    const day = page.locator('[data-lab-cell="fallback=1 day"] .ui-comment-thread-reply__time');
+    const day = page.locator(`${cellSelector('fallback=1 day')} .ui-comment-thread-reply__time`);
     await expect(day.last()).toHaveText(/^Apr 17, 2026/);
   });
 

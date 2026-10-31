@@ -1,21 +1,23 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, controlHeight, expect, familySelector, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 function cell(page: Page, state: string, layout: string): Locator {
-  return page.locator(`[data-lab-family="list"] [data-lab-cell="state=${state} layout=${layout}"]`);
+  return page.locator(
+    `${familySelector('list')} ${cellSelector(`state=${state} layout=${layout}`)}`,
+  );
 }
 
 function modeCell(page: Page, state: string, mode: string): Locator {
-  return page.locator(`[data-lab-family="list"] [data-lab-cell="state=${state} mode=${mode}"]`);
+  return page.locator(`${familySelector('list')} ${cellSelector(`state=${state} mode=${mode}`)}`);
 }
 
 function field(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="list"] [data-lab-field="${name}"]`);
+  return page.locator(`${familySelector('list')} [data-lab-field="${name}"]`);
 }
 
 function output(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-family="list"] [data-lab-output="${name}"]`);
+  return page.locator(`${familySelector('list')} [data-lab-output="${name}"]`);
 }
 
 async function width(locator: Locator): Promise<number> {
@@ -31,7 +33,7 @@ test.describe('Select Field lab', () => {
   }) => {
     await lab.open('select-field');
     const cells = page.locator(
-      '[data-lab-family="list"] table[data-lab-matrix="state layout"] td[data-lab-cell]',
+      `${familySelector('list')} table[data-lab-matrix="state layout"] td[data-lab-cell]`,
     );
     expect(await cells.count()).toBe(8 * 4);
     const resting = cell(page, 'resting', 'label-control');
@@ -39,7 +41,10 @@ test.describe('Select Field lab', () => {
       'aria-haspopup',
       'listbox',
     );
-    await expect(resting.locator('.ui-select-field__trigger')).toHaveCSS('height', '28px');
+    await expect(resting.locator('.ui-select-field__trigger')).toHaveCSS(
+      'height',
+      `${await controlHeight(page, 'md')}px`,
+    );
     await expect(
       cell(page, 'required', 'label-control').locator('.ui-select-field__value'),
     ).toHaveAttribute('data-placeholder', 'true');

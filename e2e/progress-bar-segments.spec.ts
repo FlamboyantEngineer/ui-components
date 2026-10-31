@@ -1,7 +1,7 @@
 import type { Locator } from '@playwright/test';
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, test } from './fixtures.js';
 
-const family = '[data-lab-family="progress-segment-cases"]';
+const family = familySelector('progress-segment-cases');
 
 /** Each segment's left edge and width, rounded to whole pixels. */
 async function segmentBoxes(bar: Locator) {
@@ -22,7 +22,7 @@ test.describe('Progress Bar segments', () => {
       await lab.open('progress-bar', { theme });
       const bar = page
         .locator(family)
-        .locator('[data-lab-cell="progress=partial size=md"]')
+        .locator(cellSelector('progress=partial size=md'))
         .getByRole('progressbar', { name: 'Stages' });
       await expect(bar).toHaveAttribute('aria-valuenow', '1');
       await expect(bar).toHaveAttribute('aria-valuetext', '1 of 7 done, 14%, Draft in progress');
@@ -55,7 +55,7 @@ test.describe('Progress Bar segments', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
-    const cell = (name: string) => page.locator(family).locator(`[data-lab-cell="${name}"]`);
+    const cell = (name: string) => page.locator(family).locator(cellSelector(name));
     const aggregate = cell('progress=no current size=md').getByRole('progressbar');
     await expect(aggregate).toHaveAttribute('aria-valuetext', '3 of 7 done, 43%');
     await expect(aggregate.locator('[data-state="current"]')).toHaveCount(0);

@@ -1,7 +1,7 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-record-header`;
+const cell = (id: string) => `${cellSelector(id)} .ui-record-header`;
 
 test.describe('Record Header lab', () => {
   test('UIC-RECORD-HEADER-1.1 UIC-RECORD-HEADER-1.2 UIC-RECORD-HEADER-1.4 UIC-RECORD-HEADER-2.1 lays out the parts', async ({

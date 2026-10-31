@@ -36,7 +36,7 @@ Verification: `src/components/tags-input/tags-input.test.tsx`
 
 ### UIC-TAGS-INPUT-2.1 - Enter and delimiters
 
-Enter in the input shall add its text as tags and prevent the key's default, so an enclosing form does not submit; with nothing but spaces typed Enter does nothing and goes on to the form. Typing one of `delimiters` (a comma by default) shall add the text before it as tags and leave the text after the last delimiter in the input. Each tag is the text between delimiters without its surrounding spaces; empty pieces add nothing. An Enter that confirms an input method composition adds nothing.
+Enter in the input shall add its text as tags and prevent the key's default, so an enclosing form does not submit; with nothing but spaces typed Enter does nothing and goes on to the form. Typing one of `delimiters` (a comma by default) shall add the text before it as tags and leave the text after the last delimiter in the input. Each tag is the text between delimiters without its surrounding spaces; empty pieces add nothing. An Enter that belongs to an input method composition (`isComposing`, or key code 229) adds nothing. Text an input method is composing stays in the input as typed, delimiters and all; once the composition ends, its text counts once, as if typed then, so a delimiter in it adds tags. A cancelled composition leaves its text as typed.
 
 Implementation: `src/components/tags-input/tags-input.tsx`, `src/components/tags-input/tags-input-parts.tsx`, `src/components/tags-input/tag-entry.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`, `e2e/tags-input.spec.ts`

@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Segmented Choice lab', () => {
   test('UIC-SEGMENTED-CHOICE-1.3 draws three heights and shares or hugs the width', async ({
@@ -12,7 +12,7 @@ test.describe('Segmented Choice lab', () => {
       ['lg', 32],
     ] as const) {
       const frame = page.locator(
-        `[data-lab-cell="sizing=equal size=${size}"] .ui-segmented-choice`,
+        `${cellSelector(`sizing=equal size=${size}`)} .ui-segmented-choice`,
       );
       expect((await frame.boundingBox())?.height).toBe(height);
     }

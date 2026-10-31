@@ -27,7 +27,7 @@ Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction
 
 ### UIC-REACTION-BAR-1.4 - Adding a reaction
 
-With `onToggle`, the bar shall end with an `Button` in the `ui-reaction-bar__add` slot, drawing the `emoji` glyph and named by the provider's `addReaction` string, that opens an `EmojiPickerTrigger` popover with the bar's `customEmoji`, `recentEmoji`, `onRecentEmojiChange` and `loadEmoji`. Choosing an emoji closes the picker and calls `onToggle` with its key and `true`: a standard emoji's glyph in the chosen skin tone, or `:shortcode:` for a custom emoji. Choosing an emoji the reader already reacted with changes nothing.
+With `onToggle`, the bar shall end with a `Button` in the `ui-reaction-bar__add` slot, drawing the `emoji` glyph and named by the provider's `addReaction` string, that opens an `EmojiPickerTrigger` popover with the bar's `customEmoji`, `recentEmoji`, `onRecentEmojiChange` and `loadEmoji`. Choosing an emoji closes the picker and calls `onToggle` with its key and `true`: a standard emoji's glyph in the chosen skin tone, or `:shortcode:` for a custom emoji. Choosing an emoji the reader already reacted with changes nothing.
 
 Implementation: `src/components/reaction-bar/reaction-bar.tsx`, `src/core/glyphs.tsx`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`

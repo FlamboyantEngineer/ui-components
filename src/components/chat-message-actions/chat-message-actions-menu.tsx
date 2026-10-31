@@ -62,7 +62,7 @@ function CommandMenu({
   const strings = useUiStrings();
   const { commands, rating } = state;
   const run = (key: Key) => {
-    if (key === 'copy') state.copy();
+    if (key === 'copy') state.copy(anchor.current);
     else if (key === 'reply') commands.onReply?.();
     else if (key === 'edit') commands.onEdit?.();
     else if (key === 'react' || key === 'delete') state.openOverlay(key, anchor);

@@ -1,4 +1,4 @@
-import { expect, test, matrixCell } from './fixtures.js';
+import { expect, familySelector, matrixCell, test } from './fixtures.js';
 
 test('UIC-AVATAR-4.1 keeps a card avatar circular with its own typography', async ({
   page,
@@ -79,7 +79,7 @@ test('UIC-AVATAR-GROUP-3.1 keeps outlined group avatars opaque in both themes', 
   for (const theme of ['light', 'dark']) {
     await lab.open('avatar-group', { theme });
     const avatar = page
-      .locator('[data-lab-family="avatar-group-main"] .ui-avatar[data-variant="outlined"]')
+      .locator(`${familySelector('avatar-group-main')} .ui-avatar[data-variant="outlined"]`)
       .first();
     const background = await avatar.evaluate((node) => getComputedStyle(node).backgroundColor);
     expect(background).not.toBe('rgba(0, 0, 0, 0)');

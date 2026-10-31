@@ -124,7 +124,7 @@ Verification: `src/components/select-field/select-chips.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-4.2 - Removing a chip
 
-On an editable select each chip shall end with a remove button (`ui-select-field__chip-remove`, an `Button` with the `close` glyph named by the provider string `remove` read with the chip's label); pressing it, or Delete or Backspace on a focused chip, removes that value and commits without opening the list. A read-only or disabled select's chips stay focusable and offer no removal.
+On an editable select each chip shall end with a remove button (`ui-select-field__chip-remove`, a `Button` with the `close` glyph named by the provider string `remove` read with the chip's label); pressing it, or Delete or Backspace on a focused chip, removes that value and commits without opening the list. A read-only or disabled select's chips stay focusable and offer no removal.
 
 Implementation: `src/components/select-field/select-chips.tsx`, `src/core/strings.ts`
 Verification: `src/components/select-field/select-chips.test.tsx`, `e2e/select-field.spec.ts`
@@ -202,7 +202,7 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 ### UIC-SELECT-FIELD-8.1 - Clear button
 
-With `isClearable`, while the field can be cleared (editable, not required and holding a value, UIC-FIELD-2.5) the frame shall end with a clear button (`ui-select-field__clear`, an `Button` with the `close` glyph named by the provider string `clearValue` from the label, `Clear Fruit`) outside the trigger. Pressing it sets the empty value (`null`, or an empty list for a multiple select) and commits it without opening the list, then moves focus to the trigger.
+With `isClearable`, while the field can be cleared (editable, not required and holding a value, UIC-FIELD-2.5) the frame shall end with a clear button (`ui-select-field__clear`, a `Button` with the `close` glyph named by the provider string `clearValue` from the label, `Clear Fruit`) outside the trigger. Pressing it sets the empty value (`null`, or an empty list for a multiple select) and commits it without opening the list, then moves focus to the trigger.
 
 Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`, `src/core/strings.ts`
 Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select-field.spec.ts`

@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.js';
+import { cellSelector, expect, test } from './fixtures.js';
 
-const cell = (id: string) => `[data-lab-cell="${id}"] .ui-transition-menu`;
+const cell = (id: string) => `${cellSelector(id)} .ui-transition-menu`;
 
 test.describe('Transition Menu lab', () => {
   test('UIC-TRANSITION-MENU-1.1 UIC-TRANSITION-MENU-1.2 UIC-TRANSITION-MENU-1.3 lists the allowed transitions', async ({
