@@ -219,4 +219,20 @@ test.describe('Context Menu lab', () => {
     await row.click({ button: 'right', position: { x: 10, y: 10 } });
     await expect(page.getByRole('menu', { name: 'Row' })).toBeVisible();
   });
+
+  test('UIC-CONTEXT-MENU-1.2 leaves Shift+F10 in a text field inside the target to the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('context-menu');
+    const row = page.getByRole('group', { name: 'Report row' });
+    const note = row.getByRole('textbox', { name: 'Report note' });
+    await note.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(page.getByRole('menu', { name: 'Row' })).toHaveCount(0);
+    await expect(note).toBeFocused();
+    await row.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(page.getByRole('menu', { name: 'Row' })).toBeVisible();
+  });
 });

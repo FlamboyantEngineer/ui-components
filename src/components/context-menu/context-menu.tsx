@@ -59,6 +59,12 @@ export interface ContextMenuTriggerProps extends Omit<
   children: ReactNode;
   /** Leaves the target's own context menu alone. */
   isDisabled?: boolean | undefined;
+  /**
+   * Opens the menu from Shift+F10 or the Context Menu key pressed in a text control inside the
+   * target too, for a menu about that control, such as a field's. By default those keys stay with
+   * the control.
+   */
+  opensFromTextKeys?: boolean | undefined;
 }
 
 /**
@@ -152,6 +158,7 @@ export function ContextMenu({
 export function ContextMenuTrigger({
   children,
   isDisabled = false,
+  opensFromTextKeys = false,
   ...rest
 }: ContextMenuTriggerProps) {
   const controller = useMenuController();
@@ -160,7 +167,13 @@ export function ContextMenuTrigger({
   const own: ContextMenuTargetProps = isValidElement<ContextMenuTargetProps>(target)
     ? target.props
     : {};
-  const targetProps = useContextMenuTarget({ controller, isDisabled, own, targetRef });
+  const targetProps = useContextMenuTarget({
+    controller,
+    isDisabled,
+    opensFromTextKeys,
+    own,
+    targetRef,
+  });
   useEffect(() => {
     if (isDisabled) controller.close();
   }, [isDisabled, controller]);

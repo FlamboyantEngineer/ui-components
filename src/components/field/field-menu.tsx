@@ -99,7 +99,7 @@ export function FieldContextMenu({
   children: ReactElement;
 }) {
   return (
-    <ContextMenuTrigger isDisabled={model.isDisabled} aria-label={model.label}>
+    <ContextMenuTrigger isDisabled={model.isDisabled} opensFromTextKeys aria-label={model.label}>
       {children}
       <Menu items={model.entries} onAction={model.onAction} />
     </ContextMenuTrigger>

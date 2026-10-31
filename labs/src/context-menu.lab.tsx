@@ -126,7 +126,7 @@ function Handled() {
     <>
       <ContextMenuTrigger>
         <div tabIndex={0} role="group" aria-label="Report row" style={{ ...area, width: 320 }}>
-          Report.pdf{' '}
+          Report.pdf <input aria-label="Report note" defaultValue="Draft" />{' '}
           <span
             data-lab-badge=""
             onContextMenu={(event) => {
@@ -228,7 +228,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Requests handled inside the target"
-      description="The Locked badge handles its own secondary click and long touch and cancels them, so the row's menu stays closed there; anywhere else on the row opens it."
+      description="The Locked badge handles its own secondary click and long touch and cancels them, so the row's menu stays closed there; anywhere else on the row opens it. In the note, Shift+F10 and the Context Menu key stay with the text."
     >
       <Handled />
     </LabSection>
