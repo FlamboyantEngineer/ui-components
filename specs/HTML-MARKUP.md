@@ -61,10 +61,12 @@ Verification: `src/components/html-markup/sanitize-html.test.ts`
 
 `HtmlMarkup` shall render `markup`, sanitized, inside a `<div>` root as React elements, converting attribute names to React props (`class` to `className`, `colspan` to `colSpan`, `datetime` to `dateTime`, boolean attributes such as `open` and `reversed` to `true`), so it renders on the server as in the browser. It never sets `innerHTML` and parses again only when `markup` or `policy` changes.
 
+An `<img>` comes from the content, so by default it sends no referrer (`referrerpolicy="no-referrer"`), loads lazily (`loading="lazy"`) and decodes asynchronously (`decoding="async"`): showing the markup does not tell a remote image's server the page's URL or that an unread image was reached. `defaultHtmlPolicy` drops the content's own `referrerpolicy` and `loading`; a policy that keeps them lets the content's values replace the defaults, and a `renderElement` override that draws the image sets its own attributes.
+
 Building the React element tree shall use an iterative traversal, preserving each node's sibling key and calling element overrides after their rendered children.
 
-Implementation: `src/components/html-markup/html-markup.tsx`, `src/utils/map-tree.ts`
-Verification: `src/components/html-markup/html-markup.test.tsx`, `e2e/html-markup.spec.ts`
+Implementation: `src/components/html-markup/html-markup.tsx`, `src/utils/map-tree.ts`, `src/utils/safe-url.ts`
+Verification: `src/components/html-markup/html-markup.test.tsx`, `src/components/html-markup/html-markup-images.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-2.2 - Links
 

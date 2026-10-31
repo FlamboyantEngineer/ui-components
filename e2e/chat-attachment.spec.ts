@@ -19,7 +19,10 @@ test.describe('Chat Attachment lab', () => {
     await lab.open('chat-attachment');
     const image = cell(page, 'complete', 'no', 'image').locator('.ui-chat-attachment');
     await expect(image).toHaveAttribute('data-display', 'thumbnail');
-    await expect(image.getByRole('img', { name: 'Harbour.svg' })).toBeVisible();
+    const thumbnail = image.getByRole('img', { name: 'Harbour.svg' });
+    await expect(thumbnail).toBeVisible();
+    await expect(thumbnail).toHaveAttribute('referrerpolicy', 'no-referrer');
+    await expect(thumbnail).toHaveAttribute('loading', 'lazy');
     for (const kind of ['pdf', 'archive', 'text', 'file']) {
       const chip = cell(page, 'complete', 'no', kind).locator('.ui-chat-attachment');
       await expect(chip).toHaveAttribute('data-kind', kind);

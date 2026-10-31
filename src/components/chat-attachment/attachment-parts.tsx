@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';
+import { untrustedImageProps } from '../../utils/safe-url.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
@@ -47,7 +48,15 @@ interface AttachmentThumbnailProps {
 export function AttachmentThumbnail({ src, name, onPreview, onError }: AttachmentThumbnailProps) {
   const strings = useUiStrings();
   if (!onPreview) {
-    return <img {...hooks.slot('thumbnail')} src={src} alt={name} onError={onError} />;
+    return (
+      <img
+        {...hooks.slot('thumbnail')}
+        {...untrustedImageProps}
+        src={src}
+        alt={name}
+        onError={onError}
+      />
+    );
   }
   return (
     <Button
@@ -56,7 +65,13 @@ export function AttachmentThumbnail({ src, name, onPreview, onError }: Attachmen
       aria-label={strings.viewAttachment(name)}
       onPress={onPreview}
     >
-      <img {...hooks.slot('thumbnail')} src={src} alt="" onError={onError} />
+      <img
+        {...hooks.slot('thumbnail')}
+        {...untrustedImageProps}
+        src={src}
+        alt=""
+        onError={onError}
+      />
     </Button>
   );
 }
