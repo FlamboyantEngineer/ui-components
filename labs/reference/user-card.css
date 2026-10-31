@@ -16,7 +16,7 @@
   outline: none;
 }
 
-.ui-user-card__popover .ui-user-card {
+.ui-user-card-trigger__popover .ui-user-card {
   box-shadow: var(--ref-shadow);
 }
 
@@ -80,52 +80,4 @@
 
 .ui-user-card__action {
   flex: 1 1 auto;
-}
-
-.ui-user-card__trigger:where(:not(.ui-avatar)) {
-  display: inline-flex;
-  align-items: center;
-  max-width: 100%;
-  padding: 0;
-  border: 0;
-  border-radius: var(--ref-radius-sm);
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  vertical-align: middle;
-  cursor: pointer;
-  outline: none;
-}
-
-.ui-user-card__trigger[data-hovered]:not(.ui-avatar) {
-  text-decoration: underline;
-}
-
-.ui-user-card__trigger[data-focus-visible] {
-  box-shadow: var(--ref-focus-halo);
-}
-
-.ui-user-card__trigger[data-disabled] {
-  cursor: default;
-  text-decoration: none;
-  opacity: var(--ref-disabled-opacity);
-}
-
-.ui-user-card__popover[data-entering] {
-  animation: ref-fade var(--ref-duration-fast) ease-out;
-}
-
-.ui-user-card__popover[data-exiting] {
-  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
-}
-
-/* On hover the popover is also a hover card; the card inside draws the surface. */
-
-.ui-hover-card.ui-user-card__popover {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
 }

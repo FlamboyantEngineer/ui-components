@@ -88,13 +88,13 @@ test.describe('Avatar presence', () => {
     const avatar = page
       .locator('[data-lab-family="avatar-presence-cases"]')
       .locator('[data-lab-avatar="card"]');
-    await expect(avatar).toHaveClass(/ui-user-card__trigger/);
+    await expect(avatar).toHaveClass(/ui-user-card-trigger/);
     await avatar.focus();
     await page.keyboard.press('Enter');
     const card = page.getByRole('dialog', { name: 'Jon Berg' });
     await expect(card).toBeVisible();
     await expect(card).toContainText('Away');
-    await lab.expectAccessible('.ui-user-card__popover');
+    await lab.expectAccessible('.ui-user-card-trigger__popover');
     await page.keyboard.press('Escape');
     await expect(card).toHaveCount(0);
     await expect(avatar).toBeFocused();
@@ -164,7 +164,7 @@ test.describe('Avatar presence', () => {
       .locator('[data-lab-avatar="late"]');
     await page.getByRole('button', { name: 'Load the profile in a second' }).click();
     await avatar.focus();
-    await expect(avatar).toHaveClass(/ui-user-card__trigger/);
+    await expect(avatar).toHaveClass(/ui-user-card-trigger/);
     await expect(avatar).toBeFocused();
     await page.keyboard.press('Enter');
     const card = page.getByRole('dialog', { name: 'Ines Duarte' });

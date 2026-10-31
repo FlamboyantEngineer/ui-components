@@ -169,7 +169,7 @@ describe('Avatar', () => {
     );
     const trigger = screen.getByRole('button', { name: 'Maria Santos, Away' });
     expect(trigger).toBe(root(container));
-    expect(trigger).toHaveClass('ui-avatar', 'ui-user-card__trigger');
+    expect(trigger).toHaveClass('ui-avatar', 'ui-user-card-trigger');
     expect(trigger).toHaveAttribute('data-size', 'sm');
     expect(trigger).toHaveAttribute('data-status', 'away');
     await user.click(trigger);
@@ -277,12 +277,12 @@ describe('Avatar tooltips and hover cards', () => {
     );
     const trigger = screen.getByRole('button', { name: 'Maria Santos, Away' });
     expect(trigger).toBe(root(container));
-    expect(trigger).toHaveClass('ui-avatar', 'ui-user-card__trigger');
+    expect(trigger).toHaveClass('ui-avatar', 'ui-user-card-trigger');
     expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
     await hover(user, trigger);
     await advance(600);
     const card = screen.getByRole('dialog', { name: 'Maria Santos' });
-    expect(card.closest('.ui-user-card__popover')).toHaveAttribute(
+    expect(card.closest('.ui-user-card-trigger__popover')).toHaveAttribute(
       'data-trigger',
       'PreviewTrigger',
     );
@@ -304,7 +304,7 @@ describe('Avatar tooltips and hover cards', () => {
     const button = screen.getByRole('button', { name: 'Alice' });
     await user.tab();
     expect(button).toHaveFocus();
-    expect(button).not.toHaveClass('ui-user-card__trigger');
+    expect(button).not.toHaveClass('ui-user-card-trigger');
     expect(button).not.toHaveAttribute('aria-expanded');
 
     const steps = [
@@ -318,8 +318,8 @@ describe('Avatar tooltips and hover cards', () => {
       rerender(<Avatar name="Alice" onPress={onPress} {...step} />);
       expect(screen.getByRole('button', { name: 'Alice' })).toBe(button);
       expect(button).toHaveFocus();
-      if (step.card) expect(button).toHaveClass('ui-user-card__trigger');
-      else expect(button).not.toHaveClass('ui-user-card__trigger');
+      if (step.card) expect(button).toHaveClass('ui-user-card-trigger');
+      else expect(button).not.toHaveClass('ui-user-card-trigger');
     }
 
     rerender(<Avatar name="Alice" onPress={onPress} card={card} />);

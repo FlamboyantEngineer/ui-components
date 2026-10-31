@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Focusable } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { toImageProps } from '../icon/icon.js';
-import { UserCardTrigger } from '../user-card/user-card.js';
+import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
 import type { AvatarProps } from './avatar.js';
 
 interface AvatarRootProps extends BaseProps, Pick<AvatarProps, 'onPress' | 'card' | 'cardTrigger'> {

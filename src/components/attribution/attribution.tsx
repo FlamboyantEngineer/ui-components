@@ -6,7 +6,10 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
-import { UserCardTrigger, type UserCardTriggerType } from '../user-card/user-card.js';
+import {
+  UserCardTrigger,
+  type UserCardTriggerType,
+} from '../user-card-trigger/user-card-trigger.js';
 import { isTimeFirst, parseAttributionTemplate } from './attribution-template.js';
 
 export interface AttributionProps

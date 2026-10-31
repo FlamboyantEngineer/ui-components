@@ -188,8 +188,8 @@ describe('AvatarGroup', () => {
       />,
     );
     const persons = container.querySelectorAll('.ui-avatar-group__avatar');
-    expect(persons[0]).toHaveClass('ui-user-card__trigger');
-    expect(persons[2]).not.toHaveClass('ui-user-card__trigger');
+    expect(persons[0]).toHaveClass('ui-user-card-trigger');
+    expect(persons[2]).not.toHaveClass('ui-user-card-trigger');
     await user.click(screen.getByRole('button', { name: 'Jon Berg' }));
     expect(onAction).toHaveBeenCalledWith('p1');
     const card = await screen.findByRole('dialog', { name: 'Jon Berg' });
