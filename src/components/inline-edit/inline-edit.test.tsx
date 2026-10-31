@@ -7,7 +7,6 @@ import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { NumberField } from '../number-field/number-field.js';
 import { InlineEdit, type InlineEditProps } from './inline-edit.js';
-import { isSameValue } from './use-inline-edit.js';
 
 function deferred() {
   let resolve!: () => void;
@@ -72,8 +71,6 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
   it('UIC-INLINE-EDIT-1.1 treats nullish, blank and empty lists as empty', () => {
     expect([null, undefined, '', ' ', []].every(isEmptyValue)).toBe(true);
     expect([0, 'a', ['a'], false].some(isEmptyValue)).toBe(false);
-    expect(isSameValue(['a', 'b'], ['a', 'b'])).toBe(true);
-    expect(isSameValue({ a: 1 }, { a: 2 })).toBe(false);
   });
 
   it('UIC-INLINE-EDIT-1.2 UIC-INLINE-EDIT-1.3 opens the editor on a press, Enter, Space or F2', async () => {
@@ -191,6 +188,35 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     await user.tab();
     await waitFor(() => expect(onSave).toHaveBeenCalledWith('Seeded rye'));
     expect(screen.getByRole('button', { name: 'Elsewhere' })).toHaveFocus();
+  });
+
+  it('UIC-INLINE-EDIT-1.4 compares by structure, so a reordered equal value only closes', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(
+      <InlineEdit<{ from: number; to: number }>
+        label="Hours"
+        value={{ from: 9, to: 17 }}
+        renderValue={(hours) => `${hours.from} to ${hours.to}`}
+        onSave={onSave}
+        renderEditor={({ commit }) => (
+          <>
+            <button type="button" onClick={() => commit({ to: 17, from: 9 })}>
+              Same
+            </button>
+            <button type="button" onClick={() => commit({ from: 8, to: 17 })}>
+              Earlier
+            </button>
+          </>
+        )}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /^Edit Hours/ }));
+    await user.click(screen.getByRole('button', { name: 'Same' }));
+    expect(onSave).not.toHaveBeenCalled();
+    await user.click(await screen.findByRole('button', { name: /^Edit Hours/ }));
+    await user.click(screen.getByRole('button', { name: 'Earlier' }));
+    expect(onSave).toHaveBeenCalledExactlyOnceWith({ from: 8, to: 17 });
   });
 
   it('UIC-INLINE-EDIT-1.4 lets an editor save a value it chooses and keeps Enter in a text area', async () => {

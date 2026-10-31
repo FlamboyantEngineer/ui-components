@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
+import { listAnimations } from './list-animations.js';
 
 /** Where an element is in its life: entering and exiting last while its animations run. */
 type EnterExitPhase = 'closed' | 'entering' | 'open' | 'exiting';
@@ -22,8 +23,7 @@ function resolvePhase(phase: EnterExitPhase, isOpen: boolean): EnterExitPhase {
 
 /** Calls `onEnd` once the element's running animations finish, or at once when it has none. */
 function waitForAnimations(element: Element | null, onEnd: () => void): () => void {
-  const animations =
-    element && typeof element.getAnimations === 'function' ? element.getAnimations() : [];
+  const animations = listAnimations(element);
   if (animations.length === 0) {
     onEnd();
     return () => {};

@@ -20,10 +20,10 @@ Verification: `src/utils/use-enter-exit.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-ENTER-EXIT-1.3 - Exiting
 
-When `isOpen` turns false, `isExiting` shall be true and the element stay mounted until every animation and transition running on it once it publishes the exiting state has finished or been cancelled; it then unmounts in the same frame, so it never paints again in its resting style.
+When `isOpen` turns false, `isExiting` shall be true and the element stay mounted until every animation and transition running on it once it publishes the exiting state has finished or been cancelled; it then unmounts in the same frame, so it never paints again in its resting style. Where the Web Animations API is missing, an element counts as having no animations and unmounts at once; components read running animations only through `listAnimations`, which checks for it.
 
-Implementation: `src/utils/use-enter-exit.ts`
-Verification: `src/utils/use-enter-exit.test.tsx`, `e2e/banner.spec.ts`
+Implementation: `src/utils/use-enter-exit.ts`, `src/utils/list-animations.ts`
+Verification: `src/utils/use-enter-exit.test.tsx`, `src/utils/list-animations.test.ts`, `e2e/banner.spec.ts`
 
 ### UIC-ENTER-EXIT-1.4 - Reopening while exiting
 

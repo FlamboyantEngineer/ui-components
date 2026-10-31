@@ -5,6 +5,7 @@ import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 import { Portal } from '../portal/portal.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import { tourHooks as hooks } from './tour-hooks.js';
+import { listAnimations } from '../../utils/list-animations.js';
 
 interface TourSpotlightProps {
   /** The element the step points at; without one the spotlight is an empty point at the centre. */
@@ -53,7 +54,7 @@ function useSpotlightBox(target: Element | null, element: HTMLDivElement | null)
     if (!box.hasTarget || !previous.current?.hasTarget || previous.current.element !== element) {
       // Read transitions after applying the box, then settle geometry before the first paint.
       // Opacity and other host animations remain independent of the highlight's position.
-      for (const animation of element.getAnimations()) {
+      for (const animation of listAnimations(element)) {
         if (
           'transitionProperty' in animation &&
           ['top', 'left', 'width', 'height'].includes(String(animation.transitionProperty))

@@ -17,6 +17,7 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { isFieldValueEqual } from '../field/field.js';
 
 interface InlineEditStateOptions<T> {
   value: T;
@@ -34,11 +35,6 @@ type FocusReturn = 'read' | 'none';
 const focusableSelector = ['input', 'textarea', 'select', 'button', '[tabindex]']
   .map((element) => `${element}:not([disabled]):not([tabindex="-1"])`)
   .join(', ');
-
-/** Whether two plain-data values are the same, so saving would change nothing. */
-export function isSameValue(a: unknown, b: unknown): boolean {
-  return Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
-}
 
 /** Whether Enter on this element belongs to the element: a button, an open list or a text area. */
 function isOwnEnter(event: KeyboardEvent<HTMLElement>): boolean {
@@ -168,12 +164,12 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     const queuedSave = takeQueued();
     if (queuedSave) {
       const newer = queuedSave.request ? queuedSave.request.value : latest.current.current;
-      if (!isSameValue(newer, next)) {
+      if (!isFieldValueEqual(newer, next)) {
         void save(newer, queuedSave.focusReturn);
         return;
       }
     }
-    if (isSameValue(latest.current.current, next)) {
+    if (isFieldValueEqual(latest.current.current, next)) {
       latest.current.close(queuedSave?.focusReturn ?? focusReturn);
     }
   };
@@ -184,7 +180,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
       return;
     }
     const target = request ? request.value : options.current;
-    if (isSameValue(target, options.value)) options.close(focusReturn);
+    if (isFieldValueEqual(target, options.value)) options.close(focusReturn);
     else void save(target, focusReturn);
   };
   return { isPending: pending?.session === session, commit };
