@@ -12,7 +12,12 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { Orientation, Size } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
-import type { FieldControlProps, FieldInputProps, FieldState } from '../field/field.js';
+import {
+  toAriaControlProps,
+  type FieldControlProps,
+  type FieldInputProps,
+  type FieldState,
+} from '../field/field.js';
 
 export type SliderSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
@@ -170,15 +175,17 @@ export function SliderControl<T extends SliderValue>({
     isVertical: aria.orientation === 'vertical',
     ...resolveFill(values, { minValue, maxValue, offset: fillOffset }),
   };
+  // The slider takes the id, description and lock; each thumb reports the field's error.
+  const field = toAriaControlProps(control);
   return (
     <AriaSlider<T>
       {...aria}
       {...hooks.slot('box')}
-      id={control.id}
+      id={field.id}
       // The group carries the label text: React Aria names each thumb after the group's own name.
       aria-label={label}
-      aria-describedby={control['aria-describedby']}
-      isDisabled={control.disabled}
+      aria-describedby={field['aria-describedby']}
+      isDisabled={field.isDisabled}
       value={state.value}
       onChange={(next) => {
         if (isLocked) return;
@@ -206,8 +213,8 @@ export function SliderControl<T extends SliderValue>({
             aria-label={thumbLabels[index]}
             inputRef={index === 0 ? inputRef : undefined}
             // React Aria reports a thumb invalid only through this deprecated prop.
-            isInvalid={control['aria-invalid']}
-            aria-errormessage={control['aria-errormessage']}
+            isInvalid={field.isInvalid}
+            aria-errormessage={field['aria-errormessage']}
           >
             {valueLabel === 'thumb'
               ? ({ state: slider }) => (

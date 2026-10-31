@@ -73,6 +73,7 @@ describe('FileField', () => {
     expect(upload).toHaveClass('ui-file-upload');
     const command = screen.getByRole('button', { name: 'Attachments Add files' });
     expect(command).toHaveAccessibleDescription('Up to 1.0 MB Signed copies only');
+    expect(container.querySelector('label.ui-field__label')).toHaveAttribute('for', command.id);
     const click = vi.spyOn(chooser(container), 'click');
     await user.click(command);
     expect(click).toHaveBeenCalledTimes(1);

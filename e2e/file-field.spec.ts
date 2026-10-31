@@ -16,7 +16,10 @@ test.describe('File Field lab', () => {
   }) => {
     await lab.open('file-field');
     const resting = cell(page, 'resting', 'label-control');
-    await expect(resting.getByRole('button', { name: 'Attachments Add files' })).toBeVisible();
+    const command = resting.getByRole('button', { name: 'Attachments Add files' });
+    await expect(command).toBeVisible();
+    const commandId = await command.getAttribute('id');
+    await expect(resting.locator('label.ui-field__label')).toHaveAttribute('for', commandId ?? '');
     await expect(resting.locator('.ui-file-upload__file')).toHaveCount(2);
     await expect(resting.getByRole('link', { name: 'Download Report.pdf' })).toHaveAttribute(
       'download',

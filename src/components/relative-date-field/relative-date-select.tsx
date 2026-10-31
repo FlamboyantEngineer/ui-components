@@ -15,7 +15,7 @@ import { PopoverPresence } from '../popover/popover.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
-import type { FieldControlProps, FieldState } from '../field/field.js';
+import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { RelativeDateText } from './relative-date.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
@@ -91,10 +91,7 @@ export function PresetSelect({
   return (
     <AriaSelect
       className={hooks.slotClass('select')}
-      id={control.id}
-      aria-label={control['aria-label']}
-      aria-labelledby={control['aria-labelledby']}
-      aria-describedby={control['aria-describedby']}
+      {...toAriaControlProps(control)}
       value={null}
       onChange={(key) => {
         // The closed trigger's Arrow Left, Arrow Right and typing pick the first match when the
@@ -105,10 +102,6 @@ export function PresetSelect({
       onOpenChange={(next) => {
         if (!isLocked) setOpen(next);
       }}
-      isDisabled={state.isDisabled}
-      isRequired={state.isRequired}
-      isInvalid={state.validation.status === 'invalid'}
-      validationBehavior="aria"
     >
       <RelativeTrigger control={control} text={text} placeholder={placeholder} />
       <PopoverPresence />

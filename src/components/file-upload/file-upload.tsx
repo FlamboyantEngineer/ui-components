@@ -81,6 +81,8 @@ export interface FileUploadProps
   isReadOnly?: boolean | undefined;
   /** The button that opens the chooser (the drop zone's Browse button), for an owner that focuses it. */
   commandRef?: Ref<HTMLButtonElement> | undefined;
+  /** The id of that button, for an owner's label that names it. `id` is the root's. */
+  commandId?: string | undefined;
   /** Trailing actions of a listed file, such as open or download links. */
   renderFileActions?: ((file: FileUploadItem) => ReactNode) | undefined;
   /** Replaces the thumbnail of a listed file, such as with an audio or video player; nothing keeps it. */
@@ -229,6 +231,7 @@ function useFileCommand(
     isDragAcceptable: intake.isDragAcceptable,
     acceptDirectory,
     commandRef: mergedRef,
+    commandId: props.commandId,
   };
 }
 

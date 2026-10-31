@@ -101,7 +101,7 @@ describe('FileUpload rows', () => {
     expectHooksMatchSpec(container, 'FILE-UPLOAD');
   });
 
-  it('UIC-FILE-UPLOAD-1.7 names the command after the owner labels, then its own text', () => {
+  it('UIC-FILE-UPLOAD-1.7 names the command after the owner labels, then its own text, under the owner id', () => {
     const commandRef = createRef<HTMLButtonElement>();
     const { rerender } = render(
       <>
@@ -112,12 +112,14 @@ describe('FileUpload rows', () => {
           aria-labelledby="field-label"
           aria-describedby="field-help"
           commandRef={commandRef}
+          commandId="attach"
           onSelect={() => {}}
         />
       </>,
     );
     const button = screen.getByRole('button', { name: 'Attachments Add files' });
     expect(button).toHaveAccessibleDescription('Signed copies only');
+    expect(button).toHaveAttribute('id', 'attach');
     expect(commandRef.current).toBe(button);
     rerender(
       <FileUpload
@@ -125,9 +127,12 @@ describe('FileUpload rows', () => {
         label="Drop files"
         aria-label="Photos"
         commandRef={commandRef}
+        commandId="attach"
         onSelect={() => {}}
       />,
     );
-    expect(commandRef.current).toBe(screen.getByRole('button', { name: 'Photos Browse' }));
+    const browse = screen.getByRole('button', { name: 'Photos Browse' });
+    expect(commandRef.current).toBe(browse);
+    expect(browse).toHaveAttribute('id', 'attach');
   });
 });

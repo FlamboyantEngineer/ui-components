@@ -39,6 +39,8 @@ export interface CommandProps {
   acceptDirectory: boolean;
   /** The button that opens the chooser, focused when a form finds the upload empty. */
   commandRef: Ref<HTMLButtonElement>;
+  /** The owner's id for that button, else one of its own. */
+  commandId: string | undefined;
 }
 
 /** A file dropped on the upload, read on demand. */
@@ -67,10 +69,11 @@ export type DroppedItem = DroppedFile | DroppedDirectory | DroppedText;
 
 /**
  * The command's accessible name: the owner's labelling elements or label, then the command's own
- * text, so the name keeps what the command shows.
+ * text (the element `textId` holds), so the name keeps what the command shows.
  */
-function nameCommand(naming: CommandNaming, id: string, text: string) {
-  if (naming['aria-labelledby']) return { 'aria-labelledby': `${naming['aria-labelledby']} ${id}` };
+function nameCommand(naming: CommandNaming, textId: string, text: string) {
+  if (naming['aria-labelledby'])
+    return { 'aria-labelledby': `${naming['aria-labelledby']} ${textId}` };
   return naming['aria-label'] ? { 'aria-label': `${naming['aria-label']} ${text}` } : {};
 }
 
@@ -108,7 +111,9 @@ export function DropZoneCommand(props: CommandProps) {
     props;
   const strings = useUiStrings();
   const labelId = useId();
-  const browseId = useId();
+  const ownId = useId();
+  const browseId = props.commandId ?? ownId;
+  const browseTextId = useId();
   const [isOver, setOver] = useState(false);
   return (
     <DropZone
@@ -131,7 +136,7 @@ export function DropZoneCommand(props: CommandProps) {
       {hint}
       {withChooser(
         <Button
-          {...nameCommand(props.naming, browseId, strings.browse)}
+          {...nameCommand(props.naming, browseTextId, strings.browse)}
           ref={props.commandRef}
           id={browseId}
           className={hooks.slotClass('browse')}
@@ -139,7 +144,7 @@ export function DropZoneCommand(props: CommandProps) {
           isDisabled={isDisabled}
           aria-describedby={[labelId, props.describedBy].filter(Boolean).join(' ')}
         >
-          {strings.browse}
+          <span id={browseTextId}>{strings.browse}</span>
         </Button>,
       )}
     </DropZone>
@@ -149,19 +154,21 @@ export function DropZoneCommand(props: CommandProps) {
 /** The `button` command: a Button with the upload glyph that opens the chooser, then the help. */
 export function ButtonCommand(props: CommandProps) {
   const { label, hint, describedBy, isDisabled, withChooser, commandRef } = props;
-  const id = useId();
+  const ownId = useId();
+  const id = props.commandId ?? ownId;
+  const textId = useId();
   return (
     <>
       {withChooser(
         <Button
-          {...nameCommand(props.naming, id, label)}
+          {...nameCommand(props.naming, textId, label)}
           ref={commandRef}
           id={id}
           startIcon={UploadGlyph}
           isDisabled={isDisabled}
           aria-describedby={describedBy}
         >
-          {label}
+          <span id={textId}>{label}</span>
         </Button>,
       )}
       {hint}
