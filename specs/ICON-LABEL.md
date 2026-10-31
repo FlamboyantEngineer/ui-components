@@ -20,7 +20,7 @@ Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.s
 
 ### UIC-ICON-LABEL-1.3 - Layout options
 
-`truncate` shall publish `data-truncate` so the stylesheet keeps the label on one line and ellipsizes it, while the full text stays in the DOM. `grow` shall publish `data-grow` so the label takes the host row's free width. `collapsible` shall publish `data-collapsible`, marking text the stylesheet may hide in narrow containers.
+`truncate` shall publish `data-truncate` so the stylesheet keeps the label on one line and ellipsizes it, while the full text stays in the DOM. `grow` shall publish `data-grow` so the label takes the host row's free width. `collapsible` shall publish `data-collapsible`, marking text the stylesheet may hide when the label itself is narrow; the reference stylesheet makes a collapsible label its own container (`ui-icon-label`), 12rem wide where nothing constrains it, and hides the text, kept for assistive technology, when its room is under 8rem.
 
 Implementation: `src/components/icon-label/icon-label.tsx`, `labs/reference/icon-label.css`
 Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.spec.ts`

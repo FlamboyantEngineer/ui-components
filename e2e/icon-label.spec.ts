@@ -49,4 +49,23 @@ test.describe('Icon Label lab', () => {
       page.locator('[data-lab-cell="option=default size=md"] .ui-icon-label__label'),
     ).not.toHaveClass(/ui-truncation-tooltip/);
   });
+  test('UIC-ICON-LABEL-1.3 hides a collapsible label when its own room is narrow', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('icon-label');
+    for (const placement of ['alone', 'in a row']) {
+      for (const [room, isShown] of [
+        ['96px', false],
+        ['160px', true],
+        ['320px', true],
+      ] as const) {
+        const cell = page.locator(`[data-lab-cell="placement=${placement} room=${room}"]`);
+        const label = cell.locator('.ui-icon-label__label');
+        await expect(label).toHaveText('Collapsible settings');
+        const width = (await label.boundingBox())?.width ?? 0;
+        expect(width > 1, `${placement} in ${room} shows its text`).toBe(isShown);
+      }
+    }
+  });
 });
