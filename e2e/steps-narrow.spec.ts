@@ -4,10 +4,10 @@ import { requireDefined } from '../src/utils/require-defined.js';
 
 const widths = ['240', '264', '320', 'desktop'] as const;
 const counts = ['4', '6', '8'] as const;
-const variants = ['default', 'compact'] as const;
+const densities = ['default', 'compact'] as const;
 
-const list = (page: Page, steps: string, variant: string, width: string) =>
-  matrixCell(page, `steps=${steps} variant=${variant} width=${width}`).locator(`.ui-steps`);
+const list = (page: Page, steps: string, density: string, width: string) =>
+  matrixCell(page, `steps=${steps} density=${density} width=${width}`).locator(`.ui-steps`);
 
 const box = async (locator: Locator) => requireDefined(await locator.boundingBox());
 
@@ -43,9 +43,9 @@ test.describe('Steps in narrow containers', () => {
   }) => {
     await lab.open('steps');
     for (const count of counts) {
-      for (const variant of variants) {
+      for (const density of densities) {
         for (const width of widths) {
-          const steps = list(page, count, variant, width);
+          const steps = list(page, count, density, width);
           const listBox = await box(steps);
           const markers = await Promise.all(
             (await steps.locator('.ui-steps__marker').all()).map(box),
@@ -85,13 +85,13 @@ test.describe('Steps in narrow containers', () => {
     }
   });
 
-  test('UIC-STEPS-1.8 moves to the rail below 80px a column and in the compact variant', async ({
+  test('UIC-STEPS-1.8 moves to the rail below 80px a column and in the compact density', async ({
     page,
     lab,
   }) => {
     await lab.open('steps');
-    const labels = async (steps: string, variant: string, width: string) =>
-      (await visibleBoxes(list(page, steps, variant, width).locator('.ui-steps__label'))).length;
+    const labels = async (steps: string, density: string, width: string) =>
+      (await visibleBoxes(list(page, steps, density, width).locator('.ui-steps__label'))).length;
     expect(await labels('4', 'default', '320')).toBe(4);
     expect(await labels('4', 'default', '264')).toBe(1);
     expect(await labels('8', 'default', 'desktop')).toBe(8);

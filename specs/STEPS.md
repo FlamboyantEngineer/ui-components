@@ -39,9 +39,9 @@ A step's `description` shall render in `ui-steps__description` after its label, 
 Implementation: `src/components/steps/steps.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
-### UIC-STEPS-1.6 - Orientation and variant
+### UIC-STEPS-1.6 - Orientation and density
 
-`orientation` (`horizontal` by default, or `vertical`) and `variant` (`default`, or `compact`) shall publish `data-orientation` and `data-variant` on the root. A `compact` list renders no descriptions or optional marks, and visually hides every label but the current step's, which stay in the list for assistive technology.
+`orientation` (`horizontal` by default, or `vertical`) and `density` (`default`, or `compact`) shall publish `data-orientation` and `data-density` on the root. A `compact` list renders no descriptions or optional marks, and visually hides every label but the current step's, which stay in the list for assistive technology.
 
 Implementation: `src/components/steps/steps.tsx`, `labs/reference/steps.css`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
@@ -55,7 +55,7 @@ Verification: `src/components/steps/steps.test.tsx`
 
 ### UIC-STEPS-1.8 - Narrow containers
 
-The reference stylesheet shall lay a horizontal list out in equal columns, each step's label and description under its marker, so a label wraps between words and never one letter a line. When a column would be narrower than 80px, and always in the `compact` variant, it shall become a rail: the markers and connectors stay in one row, and the current step's text (or, in a complete `compact` list, the completion words) takes a full-width line below; the other steps' text stays in the list for assistive technology, and pressable steps keep their names, keyboard order and disabled state. The list never draws markers, connectors or text over one another, from 240px wide with up to 8 steps; it reads each step's place for lists of up to 12 steps. A vertical list keeps its layout at every width.
+The reference stylesheet shall lay a horizontal list out in equal columns, each step's label and description under its marker, so a label wraps between words and never one letter a line. When a column would be narrower than 80px, and always in the `compact` density, it shall become a rail: the markers and connectors stay in one row, and the current step's text (or, in a complete `compact` list, the completion words) takes a full-width line below; the other steps' text stays in the list for assistive technology, and pressable steps keep their names, keyboard order and disabled state. The list never draws markers, connectors or text over one another, from 240px wide with up to 8 steps; it reads each step's place for lists of up to 12 steps. A vertical list keeps its layout at every width.
 
 Implementation: `labs/reference/steps.css`
 Verification: `e2e/steps-narrow.spec.ts`
@@ -122,7 +122,7 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/unified-options.spec.t
 | `ui-steps__description` | slot      |                                                       | The line under the label.                                         |
 | `ui-steps__connector`   | slot      |                                                       | The decorative line to the next step.                             |
 | `data-orientation`      | attribute | `horizontal`, `vertical`                              | How the steps run.                                                |
-| `data-variant`          | attribute | `default`, `compact`                                  | Full or compact list.                                             |
+| `data-density`          | attribute | `default`, `compact`                                  | Full or compact list.                                             |
 | `data-status`           | state     | `complete`, `current`, `upcoming`, `error`, `skipped` | Where a step stands (on the item).                                |
 | `data-current`          | state     | `true`                                                | The current step's item.                                          |
 | `data-disabled`         | state     | `true`                                                | A step that refuses presses (item and button).                    |

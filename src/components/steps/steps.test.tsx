@@ -114,14 +114,14 @@ describe('Steps', () => {
     expect(itemOf('Prepare').querySelector('.ui-steps__optional')).toBeNull();
   });
 
-  it('UIC-STEPS-1.6 publishes orientation and variant, and compacts labels', () => {
+  it('UIC-STEPS-1.6 publishes orientation and density, and compacts labels', () => {
     const { container, rerender } = render(<Steps items={items} currentId="prepare" />);
     const list = screen.getByRole('list');
     expect(list).toHaveAttribute('data-orientation', 'horizontal');
-    expect(list).toHaveAttribute('data-variant', 'default');
-    rerender(<Steps items={items} currentId="prepare" orientation="vertical" variant="compact" />);
+    expect(list).toHaveAttribute('data-density', 'default');
+    rerender(<Steps items={items} currentId="prepare" orientation="vertical" density="compact" />);
     expect(list).toHaveAttribute('data-orientation', 'vertical');
-    expect(list).toHaveAttribute('data-variant', 'compact');
+    expect(list).toHaveAttribute('data-density', 'compact');
     expect(container.querySelector('.ui-steps__description')).toBeNull();
     expect(container.querySelector('.ui-steps__optional')).toBeNull();
     const label = (name: string) => itemOf(name).querySelector('.ui-steps__label') as HTMLElement;
@@ -142,7 +142,7 @@ describe('Steps', () => {
         id="progress"
         ref={ref}
         className="host"
-        data-variant="caller"
+        data-density="caller"
         data-test="steps"
       />,
     );
@@ -151,7 +151,7 @@ describe('Steps', () => {
     expect(list).toHaveAttribute('id', 'progress');
     expect(list).toHaveClass('ui-steps', 'host');
     expect(list).toHaveAttribute('data-test', 'steps');
-    expect(list).toHaveAttribute('data-variant', 'default');
+    expect(list).toHaveAttribute('data-density', 'default');
     expectHooksMatchSpec(container, 'STEPS', { callerAttributes: ['data-test'] });
   });
 
@@ -274,7 +274,7 @@ describe('Steps', () => {
       ['complete', 'complete'],
     );
     expect(container.querySelector('[aria-current]')).toBeNull();
-    rerender(<Steps items={items} isComplete variant="compact" />);
+    rerender(<Steps items={items} isComplete density="compact" />);
     expect(screen.getByRole('list')).toHaveAttribute('data-complete', 'true');
     expect(screen.getAllByRole('listitem').at(-1)?.textContent).toContain('Completed');
   });

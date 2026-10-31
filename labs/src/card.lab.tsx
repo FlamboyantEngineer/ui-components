@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Selection } from '../../src/core/props.js';
 import { Badge } from '../../src/components/badge/badge.js';
-import { Card, type CardDensity, type CardVariant } from '../../src/components/card/card.js';
+import { Card, type CardVariant } from '../../src/components/card/card.js';
+import type { Density } from '../../src/core/props.js';
 import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { Section } from '../../src/components/section-header/section-header.js';
@@ -14,7 +15,7 @@ import {
 } from './card-collapse-cases.js';
 
 const variants: CardVariant[] = ['default', 'panel'];
-const densities: CardDensity[] = ['default', 'comfortable', 'compact', 'tight'];
+const densities: Density[] = ['default', 'comfortable', 'compact', 'tight'];
 const states = ['resting', 'selected', 'interactive', 'flush'] as const;
 
 function SelectableCards() {

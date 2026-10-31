@@ -13,7 +13,7 @@ Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-g
 
 ### UIC-BUTTON-GROUP-1.2 - Density
 
-`density` shall publish `data-density`: `regular` (the default) and `compact` space the buttons apart, and `attached` joins them into one control. The reference sheet draws 8 and 2 pixel gaps, and for `attached` no gap, one shared border between neighbours and rounded corners only at the group's ends, with a focused button drawn above its neighbours.
+`density` shall publish `data-density`: `default` (the default) and `compact` space the buttons apart, and `attached` joins them into one control. The reference sheet draws 8 and 2 pixel gaps, and for `attached` no gap, one shared border between neighbours and rounded corners only at the group's ends, with a focused button drawn above its neighbours.
 
 Implementation: `src/components/button-group/button-group.tsx`, `labs/reference/button-group.css`
 Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-group.spec.ts`
@@ -37,7 +37,7 @@ Verification: `src/components/button-group/button-group.test.tsx`
 | Hook                 | Kind      | Values                           | Description                                      |
 | -------------------- | --------- | -------------------------------- | ------------------------------------------------ |
 | `ui-button-group`    | root      |                                  | The group (`<div role="group">`).                |
-| `data-density`       | attribute | `regular`, `compact`, `attached` | How close the buttons sit.                       |
+| `data-density`       | attribute | `default`, `compact`, `attached` | How close the buttons sit.                       |
 | `data-orientation`   | attribute | `horizontal`, `vertical`         | Row or column.                                   |
 | `data-justified`     | state     | `true`                           | The buttons share the group's length equally.    |
 | `data-hovered`       | state     | `true`                           | The pointer is over the group (React Aria).      |

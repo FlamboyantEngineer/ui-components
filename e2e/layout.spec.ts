@@ -373,9 +373,9 @@ test.describe('Layout lab', () => {
     const out = await box(attached.getByRole('button', { name: 'Zoom out' }));
     const reset = await box(attached.getByRole('button', { name: 'Reset zoom' }));
     expect(Math.round(reset.x)).toBe(Math.round(out.x + out.width - 1));
-    const regular = page.locator(cell(section, 'density=regular orientation=horizontal'));
-    const apart = await box(regular.getByRole('button', { name: 'Zoom out' }));
-    const next = await box(regular.getByRole('button', { name: 'Reset zoom' }));
+    const spaced = page.locator(cell(section, 'density=default orientation=horizontal'));
+    const apart = await box(spaced.getByRole('button', { name: 'Zoom out' }));
+    const next = await box(spaced.getByRole('button', { name: 'Reset zoom' }));
     expect(next.x).toBeGreaterThan(apart.x + apart.width);
     const column = page.locator(cell(section, 'density=attached orientation=vertical'));
     const top = await box(column.getByRole('button', { name: 'Zoom out' }));

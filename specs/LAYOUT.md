@@ -143,7 +143,7 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.10 - Attached toolbar groups
 
-`ToolbarRowGroup`'s `density` shall publish `data-density`: `regular` (the default) spaces its controls with the row's gap, and `attached` joins them into one segmented run, which the reference sheet draws without gaps, with one shared border between neighbours and rounded corners only at the run's ends, as an attached [Button Group](BUTTON-GROUP.md). The controls stay separate tools of the toolbar.
+`ToolbarRowGroup`'s `density` shall publish `data-density`: `default` (the default) spaces its controls with the row's gap, and `attached` joins them into one segmented run, which the reference sheet draws without gaps, with one shared border between neighbours and rounded corners only at the run's ends, as an attached [Button Group](BUTTON-GROUP.md). The controls stay separate tools of the toolbar.
 
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
@@ -189,7 +189,7 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 | `data-edge`                     | attribute | `start`, `end`                                                        | The edge a scrolling row's fade or scroll button sits at.   |
 | `data-overflow-start`           | state     | `true`                                                                | A scrolling row hides controls past its start.              |
 | `data-overflow-end`             | state     | `true`                                                                | A scrolling row hides controls past its end.                |
-| `data-density`                  | attribute | `regular`, `attached`                                                 | Whether a toolbar group's controls are joined.              |
+| `data-density`                  | attribute | `default`, `attached`                                                 | Whether a toolbar group's controls are joined.              |
 | `data-pending`                  | state     | `true`                                                                | A toolbar row whose controls are inert while it starts.     |
 | `data-grow`                     | state     | `true`, `auto`, `none`                                                | Growth inside a flex parent; absent for the default sizing. |
 | `data-fill`                     | state     | `true`                                                                | Takes the containing block's full block size.               |

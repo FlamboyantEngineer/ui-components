@@ -3,7 +3,7 @@
 import { HelpGlyph } from '../../core/glyphs.js';
 import { useId, type ReactNode } from 'react';
 import { createHooks, type ComponentHooks } from '../../core/hooks.js';
-import type { ControlSize } from '../../core/props.js';
+import type { ControlSize, Density } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { Button } from '../button/button.js';
@@ -15,7 +15,7 @@ import type { FieldSeverity, FieldState, FieldValidation } from './field-state.j
  * place for the restore button while it has neither, so its neighbours never move; `compact` keeps
  * neither, for dense filter, tool and action rows.
  */
-export type FieldDensity = 'default' | 'compact';
+export type FieldDensity = Extract<Density, 'default' | 'compact'>;
 
 export type FieldLabelLayout =
   | 'control-label'

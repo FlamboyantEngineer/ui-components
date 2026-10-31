@@ -33,8 +33,8 @@ export type ToolbarRowVariant = 'plain' | 'surface';
  */
 export type ToolbarRowOverflow = 'wrap' | 'scroll' | 'none';
 
-/** `regular` spaces a group's controls apart; `attached` joins them into one segmented run. */
-export type ToolbarRowGroupDensity = Extract<ButtonGroupDensity, 'regular' | 'attached'>;
+/** `default` spaces a group's controls apart; `attached` joins them into one segmented run. */
+export type ToolbarRowGroupDensity = Extract<ButtonGroupDensity, 'default' | 'attached'>;
 
 export interface ToolbarRowProps
   extends Omit<NativeProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
@@ -57,7 +57,7 @@ export interface ToolbarRowProps
 export interface ToolbarRowGroupProps extends BaseProps, AriaLabellingProps {
   /** The group's controls. Name the group with `aria-label` or `aria-labelledby`. */
   children?: ReactNode;
-  /** How close the controls sit. Defaults to `regular`. */
+  /** How close the controls sit. Defaults to `default`. */
   density?: ToolbarRowGroupDensity | undefined;
 }
 
@@ -194,7 +194,7 @@ export function ToolbarRow({
 export function ToolbarRowGroup({
   children,
   className,
-  density = 'regular',
+  density = 'default',
   ...rest
 }: ToolbarRowGroupProps) {
   const { orientation, wrap } = useContext(ToolbarRowContext);

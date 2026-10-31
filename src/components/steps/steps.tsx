@@ -6,7 +6,7 @@ import { Button as AriaButton, useNumberFormatter } from '../../primitives/index
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import type { BaseProps, Key, NativeProps, Orientation } from '../../core/props.js';
+import type { BaseProps, Density, Key, NativeProps, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -16,7 +16,7 @@ import { Icon } from '../icon/icon.js';
 export type StepsStatus = 'complete' | 'current' | 'upcoming' | 'error' | 'skipped';
 
 /** `compact` drops descriptions and shows only the current step's label. */
-export type StepsVariant = 'default' | 'compact';
+export type StepsDensity = Extract<Density, 'default' | 'compact'>;
 
 export interface StepsItem {
   /** Identifies the step for `currentId` and `onAction`. */
@@ -43,7 +43,7 @@ export interface StepsProps extends BaseProps, AriaLabellingProps, Pick<NativePr
   /** How the steps run. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;
   /** Defaults to `default`. */
-  variant?: StepsVariant | undefined;
+  density?: StepsDensity | undefined;
   /** Makes steps already reached pressable, and receives the `id` of the step pressed. */
   onAction?: ((id: Key) => void) | undefined;
   /** Keeps every step from being pressed. */
@@ -173,7 +173,7 @@ export function Steps({
   currentId = null,
   isComplete = false,
   orientation = 'horizontal',
-  variant = 'default',
+  density = 'default',
   onAction,
   isDisabled = false,
   className,
@@ -189,7 +189,7 @@ export function Steps({
       {...hooks.root({
         className,
         props: rest,
-        data: { orientation, variant, complete: isComplete },
+        data: { orientation, density, complete: isComplete },
       })}
     >
       {items.map((item, index) => (
@@ -201,7 +201,7 @@ export function Steps({
           isCurrent={!isComplete && index === currentIndex}
           isComplete={isComplete}
           isLast={index === items.length - 1}
-          isCompact={variant === 'compact'}
+          isCompact={density === 'compact'}
           isDisabled={isDisabled || Boolean(item.isDisabled)}
           onAction={onAction}
         />
