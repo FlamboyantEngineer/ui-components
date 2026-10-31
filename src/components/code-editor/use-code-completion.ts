@@ -38,12 +38,12 @@ function insertCompletion(
       : parseSnippet(option.insertText),
     indentation,
   );
-  const length = input.value.length - (end - range.start) + parsed.text.length;
+  const text = input.value.slice(0, range.start) + parsed.text + input.value.slice(end);
   const stops = [...parsed.fields, { start: parsed.text.length, end: parsed.text.length }].map(
     (stop) => ({ start: range.start + stop.start, end: range.start + stop.end }),
   );
   applyEdit({ start: range.start, end, text: parsed.text, selection: stops[0] as CodeRange });
-  snippet.start(stops, length);
+  snippet.start(stops, text);
 }
 
 /**

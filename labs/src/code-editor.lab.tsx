@@ -400,7 +400,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Editing keys, search and completion sources"
-        description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces; Ctrl+Z in the source undoes each Replace or Replace all as one step. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
+        description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces; Ctrl+Z in the source undoes each Replace or Replace all as one step. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields until Escape, an undo or an edit outside the field ends it), or fields after fruit."
       >
         <EditingEditor />
       </LabSection>
