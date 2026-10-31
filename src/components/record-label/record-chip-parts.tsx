@@ -8,6 +8,7 @@ import { Button } from '../button/button.js';
 import { RecordLabelText, type RecordLabelProps } from './record-label.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 import { recordLabelHooks as hooks } from './record-label-hooks.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 /**
  * The label, opening the preview from the link of an available record. The trigger stays while the
@@ -112,10 +113,7 @@ export function RecordChipParts({
       name={isStacked ? undefined : text}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
-      aria-describedby={
-        [ariaDescribedBy, isStacked && text ? nameId : undefined].filter(Boolean).join(' ') ||
-        undefined
-      }
+      aria-describedby={joinIds(ariaDescribedBy, isStacked && text ? nameId : undefined)}
       aria-details={ariaDetails}
       className={hooks.slotClass('label')}
     />

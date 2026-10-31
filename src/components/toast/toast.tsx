@@ -1,6 +1,7 @@
 'use client';
 
 import { CloseGlyph } from '../../core/glyphs.js';
+import { getToneGlyph } from '../../core/tone-glyphs.js';
 import { useCallback, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   Text,
@@ -21,7 +22,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
-import { getToneGlyph } from '../banner/banner.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';

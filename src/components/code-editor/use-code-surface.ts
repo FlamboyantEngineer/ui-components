@@ -8,10 +8,8 @@ import type { CodeSurfaceProps } from './code-surface.js';
 import type { CodeTextAreaProps } from './code-area.js';
 import { toTextLines } from './code-ranges.js';
 import { alignLayers, useCodeEditor } from './use-code-editor.js';
+import { joinIds } from '../../utils/join-ids.js';
 type ProblemOptions = Pick<CodeSurfaceProps, 'diagnostics' | 'listDiagnostics' | 'isInvalid'>;
-function joinIds(...ids: Array<string | false | undefined>): string | undefined {
-  return ids.filter(Boolean).join(' ') || undefined;
-}
 
 /** The problems' state: the reported ones, whether one is an error, and what describes the input. */
 function describeProblems(

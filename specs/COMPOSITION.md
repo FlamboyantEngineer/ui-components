@@ -34,6 +34,13 @@ Verification: `src/utils/merge-props.test.ts`
 Implementation: `src/utils/merge-props.ts`, `src/utils/use-forwarded-ref.ts`, `src/components/code-editor/use-code-surface.ts`, `src/components/context-menu/context-menu-target.ts`
 Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test.tsx`, `src/components/code-editor/code-editor.test.tsx`, `src/components/context-menu/context-menu-target.test.tsx`
 
+### UIC-COMPOSITION-2.3 - ID reference lists
+
+`joinIds(...ids)` shall join element ids into an ARIA reference list (`aria-describedby`, `aria-labelledby`, `aria-controls`), leaving out absent ids (`undefined`, `null`, `false`, `""`), and return `undefined` when none is left, so the attribute is not rendered. Components join ids through it rather than their own copies.
+
+Implementation: `src/utils/join-ids.ts`
+Verification: `src/utils/join-ids.test.ts`
+
 ## UIC-COMPOSITION-3 - Slots
 
 ### UIC-COMPOSITION-3.1 - Slot props

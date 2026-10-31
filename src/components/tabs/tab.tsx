@@ -28,8 +28,9 @@ import {
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useTabMenuTarget } from './tab-menu.js';
-import { joinIds, TabCount, TabRemoveMark } from './tab-parts.js';
+import { TabCount, TabRemoveMark } from './tab-parts.js';
 import { useTabDrag, type TabDropPosition, type TabReorder } from './tab-reorder.js';
+import { joinIds } from '../../utils/join-ids.js';
 
 export interface TabProps
   extends Omit<BaseProps, 'id'>, AriaLabellingProps, RefProps<HTMLDivElement> {

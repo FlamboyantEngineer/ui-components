@@ -5,19 +5,13 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
   type PointerEvent,
   type ReactNode,
   type RefObject,
 } from 'react';
-import {
-  TooltipContext,
-  TooltipTriggerStateContext,
-  useFocusVisible,
-  type TooltipTriggerState,
-} from '../../primitives/index.js';
+import { useFocusVisible } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { isOverflowing } from '../../utils/is-overflowing.js';
 import { createHooks } from '../../core/hooks.js';
@@ -27,7 +21,12 @@ import { tabbableSelector } from '../../utils/tabbable.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Button } from '../button/button.js';
-import { TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
+import {
+  ManualTooltip,
+  useManualTooltipState,
+  type ManualTooltipState,
+  type TooltipPlacement,
+} from '../tooltip/tooltip.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
@@ -53,11 +52,6 @@ export interface TruncationTooltipProps
   onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
 }
 
-interface TruncationState extends TooltipTriggerState {
-  /** Opens after `delay` milliseconds if the text is cut by then. */
-  schedule: (delay: number) => void;
-}
-
 const hooks = createHooks('truncation-tooltip', ['panel', 'toggle']);
 
 /** Whether an element's content is cut by its box (an inline ellipsis or a line clamp). */
@@ -65,42 +59,12 @@ function isTruncated(element: Element): boolean {
   return isOverflowing(element, 'horizontal') || isOverflowing(element, 'vertical');
 }
 
-/** React Aria tooltip trigger state that opens only while the text in `ref` is cut. */
-function useTruncationState(ref: RefObject<HTMLElement | null>): TruncationState {
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [isOpen, setOpen] = useState(false);
-  const cancel = useCallback(() => {
-    clearTimeout(timer.current);
-    timer.current = undefined;
-  }, []);
-  const open = useCallback(() => {
-    cancel();
-    if (ref.current && isTruncated(ref.current)) setOpen(true);
-  }, [cancel, ref]);
-  const close = useCallback(() => {
-    cancel();
-    setOpen(false);
-  }, [cancel]);
-  const schedule = useCallback(
-    (delay: number) => {
-      cancel();
-      timer.current = setTimeout(open, delay);
-    },
-    [cancel, open],
-  );
-  useEffect(() => cancel, [cancel]);
-  return useMemo(
-    () => ({ isOpen, shouldSkipAnimation: false, open, close, schedule }),
-    [isOpen, open, close, schedule],
-  );
-}
-
 /**
  * Opens on keyboard focus of the nearest focusable element holding the text and closes on its blur.
  * Focus while the reader uses a pointer (a press, or focus a script moves after one) is not visible
  * focus and opens nothing, as React Aria's tooltips decide.
  */
-function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: TruncationState) {
+function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: ManualTooltipState) {
   const { isFocusVisible } = useFocusVisible();
   const isVisible = useRef(isFocusVisible);
   isVisible.current = isFocusVisible;
@@ -108,7 +72,7 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Tru
     const target = ref.current?.closest<HTMLElement>(tabbableSelector);
     if (!target) return;
     const onFocus = () => {
-      if (isVisible.current) open();
+      if (isVisible.current) open(true);
     };
     const onBlur = () => close();
     target.addEventListener('focus', onFocus);
@@ -124,7 +88,7 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Tru
  * Closes on Escape, consuming the key only while the tooltip is open. An Escape that belongs to an
  * input method's composition is left to the focused editor.
  */
-function useEscapeToClose({ isOpen, close }: TruncationState, ref: RefObject<Element | null>) {
+function useEscapeToClose({ isOpen, close }: ManualTooltipState, ref: RefObject<Element | null>) {
   useEffect(() => {
     if (!isOpen) return;
     const owner = getOwnerDocument(ref.current);
@@ -178,7 +142,7 @@ function ExpandControl({
 }
 
 /** The text's pointer handlers: rest to open after `delay`, leave or press to close. */
-function createPointerHandlers(state: TruncationState, delay: number) {
+function createPointerHandlers(state: ManualTooltipState, delay: number) {
   const { schedule, close } = state;
   return {
     onPointerEnter: (event: PointerEvent) => {
@@ -206,7 +170,7 @@ export function TruncationTooltip({
   ...rest
 }: TruncationTooltipProps) {
   const [ref, setRef] = useForwardedRef(callerRef);
-  const state = useTruncationState(ref);
+  const state = useManualTooltipState(() => ref.current !== null && isTruncated(ref.current));
   useFocusReveal(ref, state);
   useEscapeToClose(state, ref);
   const pointerHandlers = createPointerHandlers(state, delay);
@@ -241,19 +205,15 @@ export function TruncationTooltip({
           }}
         />
       ) : null}
-      {/* Isolate the panel from an enclosing tooltip trigger, such as a button with a hint. */}
-      <TooltipContext value={null}>
-        <TooltipTriggerStateContext value={state}>
-          <TooltipPanel
-            variant="default"
-            className={hooks.slotClass('panel')}
-            triggerRef={ref}
-            placement={placement}
-          >
-            {children}
-          </TooltipPanel>
-        </TooltipTriggerStateContext>
-      </TooltipContext>
+      {/* Without trigger props the panel is isolated from an enclosing tooltip trigger. */}
+      <ManualTooltip
+        state={state}
+        triggerRef={ref}
+        className={hooks.slotClass('panel')}
+        placement={placement}
+      >
+        {children}
+      </ManualTooltip>
     </>
   );
 }

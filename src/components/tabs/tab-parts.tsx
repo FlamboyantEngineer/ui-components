@@ -56,8 +56,3 @@ export function TabRemoveMark({ onRemove }: { onRemove: () => void }) {
     </span>
   );
 }
-
-/** Joins element ids for an ARIA reference list. */
-export function joinIds(...ids: Array<string | undefined>): string {
-  return ids.filter(Boolean).join(' ');
-}

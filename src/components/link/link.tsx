@@ -75,12 +75,22 @@ function withOwnDescription<P extends LinkElementProps>(props: P, own: string | 
   return { ...props, 'aria-describedby': [...ids].join(' ') };
 }
 
-/** A link that navigates renders through the provider's link renderer; a disabled one is a span. */
-export function renderLinkElement(props: JSX.IntrinsicElements['a']): ReactElement {
+/**
+ * A link that navigates renders through the provider's link renderer; a disabled one, or one
+ * without an `href` (such as the current crumb of a breadcrumb), is a span.
+ */
+export function renderLinkElement(
+  props: JSX.IntrinsicElements['a'] | JSX.IntrinsicElements['span'],
+): ReactElement {
   if ('href' in props && typeof props.href === 'string' && props['aria-disabled'] === undefined) {
-    return <UiLink {...props} href={props.href} />;
+    return <UiLink {...(props as JSX.IntrinsicElements['a'])} href={props.href} />;
   }
-  const { href: _href, target: _target, rel: _rel, ...spanProps } = props;
+  const {
+    href: _href,
+    target: _target,
+    rel: _rel,
+    ...spanProps
+  } = props as JSX.IntrinsicElements['a'];
   return <span {...(spanProps as JSX.IntrinsicElements['span'])} />;
 }
 
