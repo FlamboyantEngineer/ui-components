@@ -1,10 +1,12 @@
 'use client';
 
 import { DeleteGlyph, UndoGlyph } from '../../core/glyphs.js';
-import { useId, useState, type PointerEvent } from 'react';
+import { useId, useMemo, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { Button } from '../button/button.js';
 import type { FieldControlProps } from '../field/field.js';
@@ -46,13 +48,29 @@ function toDrawingPoint(event: PointerEvent<SVGSVGElement>, size: DrawnSignature
 }
 
 /**
+ * What a stroke is drawn against: the drawing's space and strokes, and the form resets accepted so
+ * far. A stroke begun against one drawing never lands on another, even an equal one a reset puts
+ * back; an equal drawing given again on an unrelated render keeps the stroke.
+ */
+function useStrokeOwner(size: DrawnSignature, surface: RefObject<Element | null>): string {
+  const [resets, setResets] = useState(0);
+  useNativeReset(surface, () => setResets((count) => count + 1));
+  return `${resets} ${size.width} ${size.height}\n${size.paths.join('\n')}`;
+}
+
+/**
  * Captures one stroke at a time from the primary button of a mouse, a pen or a touch. The pointer
  * is captured, so a stroke that leaves the surface keeps drawing along its edge until release; a
- * cancelled pointer drops the stroke.
+ * cancelled pointer drops the stroke, and so does a change of `owner`: the drawing replaced, reset,
+ * restored or cleared while the stroke was under way.
  */
 function useStrokeCapture(
   size: DrawnSignature,
-  { isEditable, onStroke }: { isEditable: boolean; onStroke: (path: string) => void },
+  {
+    isEditable,
+    owner,
+    onStroke,
+  }: { isEditable: boolean; owner: string; onStroke: (path: string) => void },
 ) {
   const [livePath, setLivePath] = useState<string | null>(null);
   const add = (event: PointerEvent<SVGSVGElement>, points: SignaturePoint[]) => {
@@ -61,6 +79,7 @@ function useStrokeCapture(
   };
   const handlers = usePointerDrag<SVGSVGElement, SignaturePoint[]>({
     isDisabled: !isEditable,
+    resetKey: owner,
     onCancel: () => setLivePath(null),
     onStart: (event) => {
       event.preventDefault();
@@ -89,8 +108,11 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
   const strokesId = useId();
   const size = drawing ?? { kind: 'drawn' as const, ...signatureSpace, paths: [] };
   const { paths } = size;
+  const surface = useRef<HTMLDivElement>(null);
+  const surfaceRef = useMemo(() => mergeRefs<HTMLDivElement>(control.ref, surface), [control.ref]);
   const { livePath, handlers } = useStrokeCapture(size, {
     isEditable,
+    owner: useStrokeOwner(size, surface),
     onStroke: (path) => onDraw({ ...size, paths: [...paths, path] }),
   });
   const hasStrokes = paths.length > 0;
@@ -98,7 +120,7 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
     <>
       <div
         {...hooks.slot('surface', { drawing: livePath !== null })}
-        ref={control.ref}
+        ref={surfaceRef}
         id={control.id}
         role="img"
         tabIndex={-1}
