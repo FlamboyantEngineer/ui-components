@@ -571,4 +571,29 @@ test.describe('Rich Text Editor lab', () => {
     await send.click();
     await expect(output(page, 'required-submits')).toHaveText('1');
   });
+
+  test('UIC-RICH-TEXT-EDITOR-3.5 types at a caret moved while the editor commits a render', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'form');
+    await box.click();
+    await page.keyboard.press('Home');
+    await expect(box).toBeFocused();
+    // The caret moves to the end, and the editor renders (bold toggled for the next text, twice)
+    // before the browser reports the move.
+    await box.evaluate((element) => {
+      const paragraph = element.querySelector('p') as HTMLElement;
+      const text = paragraph.lastChild as Node;
+      document.getSelection()?.collapse(text, text.textContent?.length ?? 0);
+      for (let press = 0; press < 2; press += 1) {
+        element.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'b', code: 'KeyB', ctrlKey: true, bubbles: true }),
+        );
+      }
+    });
+    await page.keyboard.type(' Early.');
+    await expect(box).toHaveText('Pick the pears on Friday. Early.');
+  });
 });
