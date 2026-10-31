@@ -8,14 +8,14 @@ import {
 import {
   useCallback,
   useLayoutEffect,
-  useRef,
   useState,
   type FocusEvent,
   type RefObject,
 } from 'react';
 import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
-import { mergeProps, mergeRefs } from '../../../utils/merge-props.js';
+import { mergeProps } from '../../../utils/merge-props.js';
+import { useForwardedRef } from '../../../utils/use-forwarded-ref.js';
 import { readLineBox } from '../../../utils/read-line-box.js';
 import { useResizeObserver } from '../../../utils/use-resize-observer.js';
 import { CompletionList, type CompletionListItem } from '../../completion-list/completion-list.js';
@@ -166,7 +166,7 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
     isEditable,
   });
   const [status, setStatus] = useState('');
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentRef, docRef] = useForwardedRef(props.ref);
   useRowLimits(contentRef, props.minRows ?? 1, props.maxRows ?? 8);
   useEditorHandle(editor.handleRef);
   const actions = { ...state, keys: editor.keys, onCancel: props.onCancel };
@@ -194,7 +194,7 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
         {...toComposerLabelling(props, strings.message)}
         {...(hasCompletions ? completions.contentAttributes : {})}
         {...hooks.slot('input', data)}
-        ref={mergeRefs(contentRef, props.ref)}
+        ref={docRef}
         role="textbox"
         aria-multiline="true"
         aria-placeholder={props.placeholder}

@@ -2,7 +2,7 @@
 
 import { useRef, type RefObject, type TextareaHTMLAttributes } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { mergeRefs } from '../../utils/merge-props.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useAutoGrow } from '../../utils/use-auto-grow.js';
 import { useTextCompletions, type TextCompletions } from '../completion-list/completion-list.js';
 import type { ComposerFrameModel } from './composer-frame.js';
@@ -94,7 +94,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
   });
   const keys = useComposerKeys(props.shortcuts, { isPending, isEditing: state.isEditing });
   const rootRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [inputRef, textAreaRef] = useForwardedRef(props.ref);
   useAutoGrow(inputRef, { minRows, maxRows, value: state.value });
   const completion = useTextCompletions({
     completions,
@@ -108,7 +108,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
   const inputProps: MessageComposerModel['inputProps'] = {
     ...(completions ? completion.inputProps : {}),
     ...toComposerLabelling(props, strings.message),
-    ref: mergeRefs(inputRef, props.ref),
+    ref: textAreaRef,
     value: state.value,
     rows: minRows,
     placeholder: props.placeholder,
