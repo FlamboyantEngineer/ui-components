@@ -79,6 +79,8 @@ interface RelativeDateOptions extends ZonedNow {
 export interface RelativeDateBounds {
   minValue?: string | undefined;
   maxValue?: string | undefined;
+  /** The zone whose day a value with an offset or a zone falls on, the device's without one. */
+  timeZone?: string | undefined;
 }
 
 /** The calendar day of a moment in `timeZone`, the device's zone without one. */
@@ -209,11 +211,14 @@ export function resolvePickedDate(
   return formatIsoDate(moment.set({ year: day.year, month: day.month, day: day.day }));
 }
 
-/** The `YYYY-MM-DD` date a value falls on, for a date or a date and time. */
-export function toValueDate(value: string): string | null {
+/**
+ * The `YYYY-MM-DD` date a value falls on, for a date or a date and time: a text with an offset or a
+ * zone falls on its day in `timeZone`, the device's zone without one.
+ */
+export function toValueDate(value: string, timeZone?: string): string | null {
   const date = parseIsoDate(value);
   if (date) return date.toString();
-  const dateTime = parseIsoDateTime(value);
+  const dateTime = parseIsoDateTime(value, timeZone);
   return dateTime ? toCalendarDate(dateTime).toString() : null;
 }
 
@@ -223,13 +228,13 @@ export function toValueDate(value: string): string | null {
  */
 export function findRelativeBoundIssue(
   value: RelativeDateValue | null,
-  bounds: RelativeDateBounds,
+  { timeZone, ...bounds }: RelativeDateBounds,
 ): BoundIssue | null {
   if (!value) return null;
   // Texts that are no date compare as equal, so they break no bound.
   const compare = (left: string, right: string) => {
-    const before = toValueDate(left);
-    const after = toValueDate(right);
+    const before = toValueDate(left, timeZone);
+    const after = toValueDate(right, timeZone);
     return before === null || after === null ? 0 : before.localeCompare(after);
   };
   return findOrderedBoundIssue(value, compare, bounds);

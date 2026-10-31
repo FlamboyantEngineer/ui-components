@@ -78,4 +78,63 @@ describe('RelativeDateField calendar', () => {
     expect(onCommit).toHaveBeenLastCalledWith({ start: '2026-05-04', end: '2026-05-08' });
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.4 reads bounds and the selected day in the field zone', async () => {
+    const user = userEvent.setup();
+    const late = '2026-04-20T23:30:00Z';
+    const fieldValidation = (label: string) =>
+      screen
+        .getByRole('button', { name: new RegExp(`${label}$`) })
+        .closest('.ui-relative-date-field');
+    const { rerender } = render(
+      <UiProvider locale="en-US" timeZone="Asia/Tokyo">
+        <RelativeDateField
+          label="Late"
+          mode="date-time"
+          defaultValue={late}
+          getNow={getNow}
+          maxValue="2026-04-20"
+        />
+        <RelativeDateField
+          label="Early"
+          mode="date-time"
+          defaultValue={late}
+          getNow={getNow}
+          minValue="2026-04-21"
+          showCalendar
+        />
+        <RelativeDateField
+          label="Zoned"
+          mode="date-time"
+          timeZone="UTC"
+          defaultValue="2026-04-21T07:30:00+09:00[Asia/Tokyo]"
+          getNow={getNow}
+          maxValue="2026-04-20"
+        />
+      </UiProvider>,
+    );
+    expect(fieldValidation('Late')).toHaveAttribute('data-validation', 'invalid');
+    expect(fieldValidation('Early')).not.toHaveAttribute('data-validation', 'invalid');
+    expect(fieldValidation('Zoned')).not.toHaveAttribute('data-validation', 'invalid');
+    await user.click(screen.getByRole('button', { name: /Early$/ }));
+    const calendar = document.querySelector('.ui-relative-date-field__calendar') as HTMLElement;
+    expect(
+      within(calendar)
+        .getByRole('button', { name: /April 21, 2026/ })
+        .closest('[role="gridcell"]'),
+    ).toHaveAttribute('aria-selected', 'true');
+    await user.keyboard('{Escape}');
+    rerender(
+      <UiProvider locale="en-US" timeZone="UTC">
+        <RelativeDateField
+          label="Late"
+          mode="date-time"
+          defaultValue={late}
+          getNow={getNow}
+          maxValue="2026-04-20"
+        />
+      </UiProvider>,
+    );
+    expect(fieldValidation('Late')).not.toHaveAttribute('data-validation', 'invalid');
+  });
 });

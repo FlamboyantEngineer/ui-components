@@ -223,7 +223,8 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   const strings = useUiStrings();
   const { locale } = useLocale();
   const kind: RelativeDateFieldMode = props.mode ?? 'date';
-  const bounds = { minValue: props.minValue, maxValue: props.maxValue };
+  const timeZone = useTimeZone(props.timeZone);
+  const bounds = { minValue: props.minValue, maxValue: props.maxValue, timeZone };
   const check = useBoundCheck(bounds);
   const { state, field } = useFieldControl<RelativeDateFieldValue<K>, RelativeDateFieldProps<K>>(
     props,
@@ -231,7 +232,6 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   );
   const getNow = useGetNow(props.getNow);
   const now = useNow(props.getNow);
-  const timeZone = useTimeZone(props.timeZone);
   const presets = (props.presets ??
     (kind === 'date-range' ? defaultRangePresets : defaultPresets)) as readonly AnyPreset[];
   // Presets resolve against the clock read when one is picked; before then they are all enabled.
