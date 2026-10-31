@@ -72,6 +72,17 @@ function mergeSafeRel(rel: string | undefined): string {
   return [...tokens, ...safeRel.filter((token) => !tokens.includes(token))].join(' ');
 }
 
+/**
+ * The element's props with the caller's description kept first. A trigger around the link, such as
+ * a hover card's, replaces `aria-describedby` with its own while it opens or offers a long press.
+ */
+function withOwnDescription<P extends LinkElementProps>(props: P, own: string | undefined): P {
+  if (!own) return props;
+  const ids = new Set([...own.split(/\s+/), ...(props['aria-describedby'] ?? '').split(/\s+/)]);
+  ids.delete('');
+  return { ...props, 'aria-describedby': [...ids].join(' ') };
+}
+
 /** A link that navigates renders through the provider's link renderer; a disabled one is a span. */
 export function renderLinkElement(props: JSX.IntrinsicElements['a']): ReactElement {
   if ('href' in props && typeof props.href === 'string' && props['aria-disabled'] === undefined) {
@@ -130,7 +141,10 @@ export function Link({
       rel={opensNewTab ? mergeSafeRel(rel) : rel}
       // The building block draws a `<span>` without `href`; its props fit an anchor's.
       render={(props: LinkElementProps, state) =>
-        render(props as JSX.IntrinsicElements['a'], state)
+        render(
+          withOwnDescription(props, rest['aria-describedby']) as JSX.IntrinsicElements['a'],
+          state,
+        )
       }
     >
       {children}

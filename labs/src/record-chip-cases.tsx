@@ -139,6 +139,28 @@ export function RecordChipCases() {
           />
         </LabSection>
         <LabSection
+          title="Chip: Caller labelling"
+          description="The caller's name and description reach the link, or the hidden text of a chip without one."
+        >
+          <p id="record-chip-hint">Opens the record in the side panel.</p>
+          <StateMatrix
+            axes={{ link: ['linked', 'plain'], layout: ['inline', 'stacked'] }}
+            render={({ link, layout }) => (
+              <RecordLabel
+                mode="chip"
+                identifier="TEST-48"
+                name="Cold start at minus twenty"
+                type="Test"
+                layout={layout}
+                href={link === 'linked' ? '#test-48' : undefined}
+                preview={<RecordPreview record={initialReferences[1] as SampleRecord} />}
+                aria-label="TEST-48 Cold start at minus twenty, a test"
+                aria-describedby="record-chip-hint"
+              />
+            )}
+          />
+        </LabSection>
+        <LabSection
           title="Chip: Unavailable"
           description="A restricted or missing record shows only that, keeping its remove button."
         >

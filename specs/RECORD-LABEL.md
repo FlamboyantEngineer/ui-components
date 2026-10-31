@@ -90,6 +90,13 @@ Verification: `src/components/record-label/record-chip.test.tsx`, `e2e/record-la
 Implementation: `src/components/record-label/record-chip-parts.tsx`
 Verification: `src/components/record-label/record-chip.test.tsx`
 
+### UIC-RECORD-LABEL-11.7 - Caller labelling
+
+`aria-label`, `aria-labelledby`, `aria-describedby` and `aria-details` shall reach the chip's label as they do in label mode ([UIC-RECORD-LABEL-1.3](RECORD-LABEL.md#uic-record-label-13---link)), never the generic root: a linked chip's link carries them, and a chip without a link, or an unavailable one, reads `aria-label` from its hidden text. A stacked chip describes its link by the caller's description, then the name; a preview's description follows both.
+
+Implementation: `src/components/record-label/record-chip-parts.tsx`, `src/components/link/link.tsx`
+Verification: `src/components/record-label/record-chip-labelling.test.tsx`, `e2e/record-label-chip.spec.ts`
+
 ## UIC-RECORD-LABEL-3 - Unified options
 
 ### UIC-RECORD-LABEL-3.1 - Modes

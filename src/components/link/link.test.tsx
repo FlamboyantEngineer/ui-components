@@ -4,6 +4,7 @@ import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
 import { Link } from './link.js';
 
 describe('Link', () => {
@@ -214,6 +215,28 @@ describe('Link', () => {
     expect(docs).toHaveAccessibleName('Docs');
     expect(notes).toHaveAccessibleName('Notes');
     expect(container.querySelector('.ui-link__external-icon')).toBeNull();
+  });
+
+  it('UIC-LINK-3.1 keeps its description first when a preview trigger describes it', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <p id="hint">Opens the record</p>
+        <HoverCardTrigger delay={0}>
+          <Link href="/records/12" aria-describedby="hint">
+            Record
+          </Link>
+          <HoverCard aria-label="Preview">Owner</HoverCard>
+        </HoverCardTrigger>
+      </>,
+    );
+    const link = screen.getByRole('link', { name: 'Record' });
+    await user.tab();
+    const card = await screen.findByRole('dialog', { name: 'Preview' });
+    expect(link.getAttribute('aria-describedby')?.split(' ')).toEqual(
+      expect.arrayContaining(['hint', card.id]),
+    );
+    expect(link).toHaveAccessibleDescription(/^Opens the record /);
   });
 
   it('UIC-LINK-3.2 UIC-LINK-3.3 takes focus and publishes React Aria states and the current page', async () => {
