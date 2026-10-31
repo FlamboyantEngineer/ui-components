@@ -57,7 +57,10 @@ export interface CellEditing<T> {
 }
 
 interface CellEditingOptions<T> {
+  /** The drawn columns; an editor whose column stops allowing edits or leaves closes. */
   columns: readonly TableColumn<T>[];
+  /** The presented rows; an editor whose row leaves them closes. */
+  rows: readonly T[];
   onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
   /** The ids of disabled rows, whose cells never open an editor or report an edit. */
   disabledKeys?: Iterable<Key> | undefined;
@@ -134,18 +137,40 @@ export function isEditingCell<T extends TableRow>(
   return editing?.rowKey === toCollectionKey(row.id) && editing.columnId === columnId;
 }
 
+/** The body row of `cell`, found again after a render. */
+function findRowElement(root: HTMLElement, cell: TableEditingCell): HTMLElement | undefined {
+  return [...root.querySelectorAll('.ui-table__body [role="row"]')].find(
+    (candidate): candidate is HTMLElement =>
+      isHTMLElement(candidate) && candidate.getAttribute('data-key') === cell.rowKey,
+  );
+}
+
+/**
+ * Where focus goes after an editor closes: its cell, else its row when the cell is gone, else the
+ * grid when the row is gone too.
+ */
+function findFocusTarget(root: HTMLElement, cell: TableEditingCell): HTMLElement | undefined {
+  const grid = root.querySelector('[role="grid"], [role="treegrid"]');
+  return (
+    findCellElement(root, cell) ??
+    findRowElement(root, cell) ??
+    (isHTMLElement(grid) ? grid : undefined)
+  );
+}
+
 /** After an editor closes, focuses its cell or the next one, unless focus moved elsewhere. */
 function useRefocus(root: RefObject<HTMLElement | null>, refocus: RefObject<Refocus | null>) {
   useLayoutEffect(() => {
     const target = refocus.current;
     refocus.current = null;
-    const element = target && root.current ? findCellElement(root.current, target.cell) : undefined;
+    const element = target && root.current ? findFocusTarget(root.current, target.cell) : undefined;
     const owner = getOwnerDocument(root.current);
     const active = owner.activeElement;
     // Focus is still in the closing editor, or fell to the page with it; elsewhere it moved on.
     if (element && (active === null || active === owner.body || element.contains(active))) {
+      const isCell = element.dataset['column'] === target?.cell.columnId;
       const next =
-        target?.move && root.current
+        isCell && target?.move && root.current
           ? findAdjacentCell(root.current, element, target.move)
           : undefined;
       (next ?? element).focus();
@@ -153,13 +178,31 @@ function useRefocus(root: RefObject<HTMLElement | null>, refocus: RefObject<Refo
   });
 }
 
+/** Whether the open cell may stay open: its row is presented and enabled, its column editable. */
+function useIsStillEditable<T extends TableRow>(
+  rows: readonly T[],
+  columns: readonly TableColumn<T>[],
+  disabledRowKeys: ReadonlySet<string>,
+) {
+  const rowKeys = useMemo(() => new Set(rows.map((row) => toCollectionKey(row.id))), [rows]);
+  return useCallback(
+    (cell: TableEditingCell) =>
+      rowKeys.has(cell.rowKey) &&
+      !disabledRowKeys.has(cell.rowKey) &&
+      columns.some((column) => column.id === cell.columnId && column.allowsEditing),
+    [rowKeys, columns, disabledRowKeys],
+  );
+}
+
 /**
  * Cell editing: one cell at a time of an enabled row opens an editor from F2, Enter or a double
  * click, and a commit reports the new value through `onCellEdit`. An editor whose row becomes
- * disabled closes without reporting. The table never changes its rows itself.
+ * disabled or leaves the presented rows, or whose column stops allowing edits, closes without
+ * reporting. The table never changes its rows itself.
  */
 export function useCellEditing<T extends TableRow>({
   columns,
+  rows,
   onCellEdit,
   disabledKeys,
   typeToEdit,
@@ -203,10 +246,11 @@ export function useCellEditing<T extends TableRow>({
     end(true);
   }, [end]);
 
-  // A row disabled while its cell is open closes the editor, discarding the draft.
+  // A row disabled or gone, or a column no longer editable, closes the editor, discarding the draft.
+  const isStillEditable = useIsStillEditable(rows, columns, disabledRowKeys);
   useLayoutEffect(() => {
-    if (editing && disabledRowKeys.has(editing.rowKey)) end(true);
-  }, [editing, disabledRowKeys, end]);
+    if (editing && !isStillEditable(editing)) end(true);
+  }, [editing, isStillEditable, end]);
   const dismiss = useCallback(() => {
     end(false);
   }, [end]);

@@ -415,6 +415,13 @@ A row in `disabledKeys` shall never be edited: F2, Enter, a double click and spr
 Implementation: `src/components/table/use-cell-editing.ts`
 Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`
 
+### UIC-TABLE-11.5 - Revoked edits
+
+An open editor whose row leaves the presented rows (removed, filtered out, paged away or collapsed under a group) or whose column stops allowing edits or is hidden shall close the same way: it discards its draft without an `onCellEdit`, and focus it held moves to the cell when it is still drawn, else to the cell's row, else to the grid. Any cell can then open an editor, and the row or column coming back does not reopen the closed one.
+
+Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/use-table-grid.ts`
+Verification: `src/components/table/use-cell-editing.test.tsx`
+
 ## UIC-TABLE-12 - Summary and loading more
 
 ### UIC-TABLE-12.1 - Summary row

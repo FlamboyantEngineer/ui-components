@@ -115,6 +115,15 @@ function useStructure<T extends TableRow>(
   );
 }
 
+/** The rows the grid presents: those of the current page outside collapsed groups and parents. */
+function useVisibleRows<T extends TableRow>(grouped: ReturnType<typeof useTableGrouping<T>>): T[] {
+  const { nodes, expansion } = grouped;
+  return useMemo(
+    () => listVisibleRows(nodes, expansion.expandedKeys),
+    [nodes, expansion.expandedKeys],
+  );
+}
+
 /** The root handlers of the features in use, merged so each sees every event. */
 function mergeRootProps<T extends TableRow>(
   columns: readonly TableColumn<T>[],
@@ -152,16 +161,18 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const keyIndex = useTableKeyIndex(options.rows, options.getChildRows, onRowAction !== undefined);
   const reordering = useTableReorder({ rows: view.rows, reorder });
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
-  const visibleRows = useMemo(
-    () => listVisibleRows(grouped.nodes, grouped.expansion.expandedKeys),
-    [grouped.nodes, grouped.expansion.expandedKeys],
-  );
+  const visibleRows = useVisibleRows<T>(grouped);
   const cells = useCellsView(options, {
     rows: visibleRows,
     structure,
     isRowDisabled: selection.isRowDisabled,
   });
-  const editing = useCellEditing({ ...options, typeToEdit: cells.view !== null });
+  const editing = useCellEditing({
+    ...options,
+    columns: layout.visibleColumns,
+    rows: visibleRows,
+    typeToEdit: cells.view !== null,
+  });
   const columnReorder = useColumnReorder({
     columns: layout.visibleColumns,
     moveColumn: layout.moveColumn,
