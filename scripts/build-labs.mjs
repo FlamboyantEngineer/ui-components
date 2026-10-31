@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Bundles every labs/src/<name>.lab.tsx into labs/build/<name>.js (ESM with shared chunks).
 // --reference bundles only labs/build/reference.css, the stylesheet the package ships, and leaves
-// the rest of labs/build as it is; `prepare` runs it.
+// the rest of labs/build as it is; `build:package` runs it.
 //   node scripts/build-labs.mjs [--dev] [--watch] [--reference]
 
 import { copyFileSync, mkdirSync, rmSync } from 'node:fs';

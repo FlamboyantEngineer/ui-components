@@ -51,6 +51,17 @@ describe('package manifest', () => {
     ).toEqual([]);
   });
 
+  it('UIC-LABS-1.4 tags every exported build output with a manifest that builds nothing', () => {
+    const release = readFileSync(join(process.cwd(), 'scripts/release.mjs'), 'utf8');
+    expect(release).toContain("const BUILT = ['dist', REFERENCE_STYLESHEET];");
+    expect(release).toContain('delete manifest.scripts.prepare;');
+    expect(release).toMatch(/'origin\/main'/);
+    for (const script of ['check-package.mjs', 'check-server-components.mjs', 'release.mjs']) {
+      const source = readFileSync(join(process.cwd(), 'scripts', script), 'utf8');
+      expect(source).toContain("'--ignore-scripts'");
+    }
+  });
+
   it('releases through git tags, not a registry, with React as the only required peer', () => {
     expect(manifest.private).toBe(true);
     expect(manifest.publishConfig).toBeUndefined();
@@ -94,7 +105,11 @@ describe('source maps', () => {
 
 describe('Git branch install', () => {
   it('UIC-LABS-1.4 UIC-LABS-1.6 prepares the entry points and the reference stylesheet, not the labs', () => {
-    expect(manifest.scripts.prepare).toBe('npm run build:package');
+    // The prepare script builds only when npm prepares or packs the package, not after npm ci.
+    expect(manifest.scripts.prepare).toBe('node scripts/prepare.mjs');
+    const prepare = readFileSync(join(process.cwd(), 'scripts/prepare.mjs'), 'utf8');
+    expect(prepare).toContain("['run', 'build:package']");
+    expect(prepare).toContain('npm_package_resolved');
     expect(manifest.scripts['build:package']).toBe(
       'npm run build && node scripts/build-labs.mjs --reference',
     );

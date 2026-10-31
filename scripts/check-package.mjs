@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Checks the installed library independently from the standalone labs archive.
-// Packing runs prepare to build the entry points from source. Every source map in the tarball must
-// resolve each of its sources to a file the tarball ships, or embed it (UIC-LABS-1.5).
+// It packs the tree as built (`npm run build:package`, or `build` and `build:labs` in `npm run
+// check`) without running the package scripts, so it never rebuilds files that checks running
+// beside it read. Every source map in the tarball must resolve each of its sources to a file the
+// tarball ships, or embed it (UIC-LABS-1.5).
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -15,13 +17,29 @@ const STYLING_DEPENDENCY =
   /^(@heroui\/|tailwind|styled-components$|@emotion\/|@stitches\/|@vanilla-extract\/|goober$|@linaria\/|styled-jsx$|jss$|react-jss$)/;
 const CSS_IMPORT = /(?:from\s*|import\s*\(?\s*)['"][^'"]+\.(?:css|scss|sass|less)['"]/;
 
+for (const built of ['dist/index.js', REFERENCE_STYLESHEET]) {
+  if (!existsSync(join(root, built))) {
+    console.error(
+      `${built} is missing: run \`npm run build:package\` before checking the package.`,
+    );
+    process.exit(1);
+  }
+}
+
 const problems = [];
 const workDir = mkdtempSync(join(tmpdir(), 'ui-package-'));
 
 try {
   const output = execFileSync(
     'npm',
-    ['pack', '--json', '--foreground-scripts=false', '--pack-destination', workDir],
+    [
+      'pack',
+      '--json',
+      '--ignore-scripts',
+      '--foreground-scripts=false',
+      '--pack-destination',
+      workDir,
+    ],
     {
       cwd: root,
       encoding: 'utf8',

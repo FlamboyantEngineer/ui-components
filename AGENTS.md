@@ -25,7 +25,7 @@ npm run test:changed   # unit tests related to your changes since origin/dev
 
   Local runs record no traces; to debug a failure, rerun that test with `--trace=on`.
 
-- Changes to exports, public types, entry points or package contents also run `npm run build && npm run check:public-types && npm run check:package`. Changes to client boundaries, the build or entry points also run `npm run check:server-components` (it needs the npm registry; set `CHROMIUM_PATH` when Playwright's own browser is not installed).
+- Changes to exports, public types, entry points or package contents also run `npm run build:package && npm run check:public-types && npm run check:package`. Changes to client boundaries, the build or entry points also run `npm run check:server-components` (it needs the npm registry; set `CHROMIUM_PATH` when Playwright's own browser is not installed).
 - Do not run `npm test`, `npm run check` or `npm run test:labs` routinely. CI runs the full suites on every pull request. Run them locally only for a release pull request (`dev` to `main`), when a change reaches across most of the library and the targeted runs cannot show it is safe, or when asked.
 
 `npm run lint` runs type-aware rules and gives ESLint a 6 GB heap; give it a few minutes. Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist or a check to get green.

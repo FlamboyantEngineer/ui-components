@@ -55,7 +55,7 @@
   "scripts": {
     "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
     "build:package": "npm run build && node scripts/build-labs.mjs --reference",
-    "prepare": "npm run build:package",
+    "prepare": "node scripts/prepare.mjs",
     "build:labs": "node scripts/build-labs.mjs",
     "labs": "node scripts/start-labs.mjs",
     "lint": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js . --max-warnings=0",
