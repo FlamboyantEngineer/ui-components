@@ -6,6 +6,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useScopedDisabled } from '../field/field.js';
 
 export interface SwitchProps extends BaseProps, AriaLabellingProps {
   /** Whether the switch is on, controlled. */
@@ -38,8 +39,13 @@ const hooks = createHooks('switch', ['track', 'thumb', 'label']);
  * `switch` inside a `<label>`, a track and thumb, and an optional visible label.
  */
 export function Switch({ children, size = 'md', className, ...rest }: SwitchProps) {
+  const isDisabled = useScopedDisabled(rest.isDisabled);
   return (
-    <AriaSwitch {...rest} {...hooks.root({ className, props: rest, data: { size } })}>
+    <AriaSwitch
+      {...rest}
+      isDisabled={isDisabled}
+      {...hooks.root({ className, props: rest, data: { size } })}
+    >
       <span {...hooks.slot('track')} aria-hidden="true">
         <span {...hooks.slot('thumb')} />
       </span>

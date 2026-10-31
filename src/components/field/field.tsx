@@ -283,7 +283,7 @@ export type {
   FieldValidity,
   FieldValueContract,
 } from './field-state.js';
-export { FieldScopeContext, useFieldScope } from './field-scope.js';
+export { FieldScopeContext, useFieldScope, useScopedDisabled } from './field-scope.js';
 export type { FieldRegistration, FieldScope } from './field-scope.js';
 export { Fieldset } from './fieldset.js';
 export type { FieldsetProps } from './fieldset.js';

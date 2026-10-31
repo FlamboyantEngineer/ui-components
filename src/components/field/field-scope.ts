@@ -64,3 +64,12 @@ export const FieldScopeContext = createContext<FieldScope>({});
 export function useFieldScope(): FieldScope {
   return useContext(FieldScopeContext);
 }
+
+/**
+ * Whether a control is disabled: by its own `isDisabled`, or by the disabled fieldset or form
+ * around it, as the field base resolves it.
+ */
+export function useScopedDisabled(isDisabled: boolean | undefined): boolean {
+  const scope = useFieldScope();
+  return Boolean(isDisabled || scope.isDisabled);
+}

@@ -1,7 +1,16 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Checkbox } from '../checkbox/checkbox.js';
+import { ColorSwatchPicker, ColorSwatchPickerItem } from '../color-swatch/color-swatch-picker.js';
+import { Combobox } from '../combobox/combobox.js';
+import { GridSizePicker } from '../grid-size-picker/grid-size-picker.js';
+import { InlineEdit } from '../inline-edit/inline-edit.js';
+import { SearchField } from '../search-field/search-field.js';
+import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
+import { Switch } from '../switch/switch.js';
 import { Fieldset } from './fieldset.js';
 
 describe('Fieldset', () => {
@@ -39,6 +48,49 @@ describe('Fieldset', () => {
       slots: ['legend'],
       callerAttributes: ['data-test'],
     });
+  });
+
+  it('UIC-FIELD-10.2 disables the library controls outside the field base too', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onChange = vi.fn();
+    const { container } = render(
+      <Fieldset legend="Settings" isDisabled>
+        <Checkbox>Notify</Checkbox>
+        <Switch>Dark</Switch>
+        <SegmentedChoice
+          aria-label="View"
+          options={[
+            { value: 'day', label: 'Day' },
+            { value: 'week', label: 'Week' },
+          ]}
+        />
+        <Combobox label="Fruit" defaultItems={[{ id: 1, label: 'Apple' }]} />
+        <SearchField label="Search" />
+        <InlineEdit label="Title" value="Rye loaf" onSave={() => {}} />
+        <GridSizePicker onSelect={onSelect} />
+        <ColorSwatchPicker aria-label="Colours" onChange={onChange}>
+          <ColorSwatchPickerItem color="#ff0000" />
+        </ColorSwatchPicker>
+      </Fieldset>,
+    );
+    for (const name of [
+      'checkbox',
+      'switch',
+      'segmented-choice',
+      'combobox',
+      'search-field',
+      'inline-edit',
+      'grid-size-picker',
+      'color-swatch-picker__item',
+    ]) {
+      const element = container.querySelector(`.ui-${name}`);
+      expect(element, name).toHaveAttribute('data-disabled', 'true');
+    }
+    await user.click(screen.getAllByRole('gridcell')[0] as HTMLElement);
+    await user.click(screen.getByRole('option'));
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('UIC-FIELD-10.2 disables every field inside, nested groups included', () => {

@@ -397,9 +397,9 @@ Verification: `src/components/field/fieldset.test.tsx`, `e2e/form.spec.ts`
 
 ### UIC-FIELD-10.2 - Shared disabled state
 
-`isDisabled` shall disable the fieldset natively, which disables its native controls, publish `data-disabled` and disable every field inside through the field scope: their state refuses every change (UIC-FIELD-2.4), their controls are disabled and they never block a form's submit. A fieldset inside a disabled one publishes `data-disabled` too.
+`isDisabled` shall disable the fieldset natively, which disables its native controls, publish `data-disabled` and disable every field inside through the field scope: their state refuses every change (UIC-FIELD-2.4), their controls are disabled and they never block a form's submit. A fieldset inside a disabled one publishes `data-disabled` too. Library controls outside the field base (`Checkbox`, `Switch`, `SegmentedChoice`, `Combobox`, `SearchField`, `InlineEdit`, `GridSizePicker` and `ColorSwatchPicker` items) resolve their disabled state the same way (`useScopedDisabled`): inside a disabled fieldset or form they publish `data-disabled` and refuse presses, picks and edits.
 
-Implementation: `src/components/field/fieldset.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-state.ts`
+Implementation: `src/components/field/fieldset.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-state.ts`, `src/components/checkbox/checkbox.tsx`, `src/components/switch/switch.tsx`, `src/components/segmented-choice/segmented-choice.tsx`, `src/components/combobox/combobox.tsx`, `src/components/search-field/search-field.tsx`, `src/components/inline-edit/inline-edit.tsx`, `src/components/grid-size-picker/grid-size-picker.tsx`, `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/field-validation.test.tsx`, `e2e/form.spec.ts`
 
 ## UIC-FIELD-11 - Pickers

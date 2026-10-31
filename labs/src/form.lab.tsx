@@ -5,6 +5,7 @@ import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-gr
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -132,6 +133,15 @@ function Delivery() {
       <Fieldset legend="Delivery address" isDisabled={isPickup} data-lab-field="address">
         <TextField label="Street" name="street" isRequired />
         <TextField label="City" name="city" isRequired />
+        <SegmentedChoice
+          aria-label="Delivery window"
+          defaultValue="morning"
+          options={[
+            { value: 'morning', label: 'Morning' },
+            { value: 'evening', label: 'Evening' },
+          ]}
+        />
+        <Switch>Leave at the door</Switch>
       </Fieldset>
       <Button type="submit">Continue</Button>
       <LabOutput name="Delivery">{submitted}</LabOutput>
@@ -220,7 +230,10 @@ mountLab(
     >
       <Newsletter />
     </LabSection>
-    <LabSection title="Fieldset" description="A fieldset groups fields and disables them together.">
+    <LabSection
+      title="Fieldset"
+      description="A fieldset groups fields and disables them together, with the other controls inside."
+    >
       <Delivery />
     </LabSection>
     <LabSection
