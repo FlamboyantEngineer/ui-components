@@ -7,6 +7,7 @@ import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TreeItemData, TreeProps } from './tree-props.js';
 import type { TreeRename } from './use-tree-rename.js';
 import type { TreeReorder } from './use-tree-reorder.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 
 interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<TreeProps<T>, 'onItemKeyDown'> {
@@ -24,10 +25,11 @@ export interface TreeKeyDown<T> {
   onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void;
 }
 
-const editableSelector = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
+/** Text widgets a host draws in a row, which keep the arrow keys for their caret. */
+const textWidgets = '[role="textbox"], [role="combobox"]';
 
 function findRow(target: EventTarget): Element | null {
-  if (!isElement(target) || target.closest(editableSelector)) return null;
+  if (!isElement(target) || isEditableTarget(target, textWidgets)) return null;
   return target.closest('[role="row"]');
 }
 

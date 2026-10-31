@@ -402,6 +402,44 @@ describe('Tree', () => {
     expect(seen).toHaveLength(2);
   });
 
+  it('UIC-TREE-3.6 keeps keys in a plaintext-only editable or a text box widget away from the owner', () => {
+    const seen: string[] = [];
+    render(
+      <FoodTree
+        defaultExpandedKeys={['fruit']}
+        renderLabel={(item) =>
+          item.id === 'pear' ? (
+            <span contentEditable="plaintext-only" aria-label="Pear notes" />
+          ) : item.id === 'apple' ? (
+            <span role="textbox" aria-label="Apple notes" />
+          ) : (
+            item.name
+          )
+        }
+        onItemKeyDown={(item, event) => {
+          seen.push(`${item.id}:${event.key}`);
+          return true;
+        }}
+      />,
+    );
+    for (const target of [
+      screen.getByLabelText('Pear notes'),
+      screen.getByRole('textbox', { name: 'Apple notes' }),
+    ]) {
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowUp',
+        altKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      act(() => {
+        target.dispatchEvent(event);
+      });
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(seen).toEqual([]);
+  });
+
   it('UIC-TREE-4.1 shows a loading row while an empty tree is pending', () => {
     const { container, rerender } = render(<FoodTree items={[]} isPending />);
     const tree = screen.getByRole('treegrid');

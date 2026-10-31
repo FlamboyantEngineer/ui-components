@@ -5,6 +5,7 @@ import { useLocale } from '../../primitives/index.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { stepColumnMove, type TableColumnMove } from './table-columns.js';
 import type { TableColumn } from './table-rows.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 
 /** What every reorderable header of one table shares for dragging columns (`useColumnDrag`). */
@@ -43,6 +44,7 @@ function listHeaders(root: Element): HTMLElement[] {
 
 /** The id of the data column whose header, in the table whose root is `root`, holds `target`. */
 function findColumnId(target: EventTarget, root: Element): string | undefined {
+  if (isEditableTarget(target)) return undefined;
   const header = isElement(target) ? target.closest('[role="columnheader"]') : null;
   return listHeaders(root).find((candidate) => candidate === header)?.dataset['column'];
 }
