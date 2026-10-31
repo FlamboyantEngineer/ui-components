@@ -143,6 +143,33 @@ test.describe('lab harness', () => {
     expect(stylesheets).toEqual(['/build/reference.css']);
   });
 
+  test('UIC-LABS-3.1 keeps the lab page layout out of the reference sheet, and its document base opt-in', async ({
+    page,
+    lab,
+  }) => {
+    const rootStyle = () =>
+      page.evaluate(() => {
+        const style = getComputedStyle(document.documentElement);
+        const root = document.getElementById('lab-root') ?? document.body;
+        const padding = getComputedStyle(root).paddingTop;
+        return { background: style.backgroundColor, scheme: style.colorScheme, padding };
+      });
+    await lab.open('provider', { stylesheet: 'none' });
+    expect(await rootStyle()).toMatchObject({ background: 'rgba(0, 0, 0, 0)', padding: '16px' });
+    await lab.open('provider');
+    expect(await rootStyle()).toEqual({
+      background: 'rgb(255, 255, 255)',
+      scheme: 'light',
+      padding: '16px',
+    });
+    await page.evaluate(() => document.documentElement.removeAttribute('data-reference-document'));
+    expect(await rootStyle()).toEqual({
+      background: 'rgba(0, 0, 0, 0)',
+      scheme: 'normal',
+      padding: '16px',
+    });
+  });
+
   test('UIC-LABS-2.1 recovers from an invalid stylesheet URL', async ({ page, lab }) => {
     await page.goto(formatLabUrl('provider', { stylesheet: 'http://[' }));
     await expect(page.locator('html')).toHaveAttribute('data-lab-ready', 'true');
