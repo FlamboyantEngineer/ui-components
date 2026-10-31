@@ -8,6 +8,7 @@ import { ChatDisplayCases } from './chat-display-cases.js';
 import { ChatEverythingCases } from './chat-everything-cases.js';
 import { ChatGroupCases } from './chat-group-cases.js';
 import { ChatHostCases } from './chat-host-cases.js';
+import { ChatInlineOptionsCases } from './chat-inline-options-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
 import { ChatQueueCases } from './chat-queue-cases.js';
 import { ChatReferenceCases } from './chat-reference-cases.js';
@@ -56,6 +57,7 @@ mountLab(
     <ChatThinkingCases />
     <ChatCaretCases />
     <ChatThinkingStyles />
+    <ChatInlineOptionsCases />
     <ChatHostCases />
     <ChatReferenceCases />
     <ChatSidebarCases />
