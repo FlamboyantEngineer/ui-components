@@ -13,10 +13,10 @@ Verification: `src/utils/compare-blocks.test.ts`
 
 ### UIC-REDLINE-COMPARE-1.2 - Added, removed and rewritten blocks
 
-Between two matches, a block without an id on each side whose texts share at least half their characters shall pair in order into one `changed` row with its word diff; blocks with ids never pair with another id. A block only the new document holds is an `added` row and one only the old document holds a `removed` row; ahead of each pair come the removed and then the added blocks before it. Pairing shall scan the remaining candidate positions directly and retain those positions while emitting rows, without copying suffix arrays or searching already paired prefixes.
+Between two matches, a block without an id on each side whose texts share at least half their characters shall pair in order into one `changed` row with its word diff; blocks with ids never pair with another id. A block only the new document holds is an `added` row and one only the old document holds a `removed` row; ahead of each pair come the removed and then the added blocks before it. Pairing shall scan the remaining candidate positions directly and retain those positions while emitting rows, without copying suffix arrays or searching already paired prefixes. A candidate whose length, or whose words shared with the deleted block (as often as both hold them), cannot reach half the characters is skipped without a word diff, and each deleted block runs at most eight word diffs against candidates; one that finds no similar block among them stays `removed`. A rewritten document of a few hundred blocks without ids therefore runs a few thousand word diffs at most, not one per pair of blocks.
 
-Implementation: `src/utils/compare-blocks.ts`
-Verification: `src/utils/compare-blocks.test.ts`
+Implementation: `src/utils/compare-blocks.ts`, `src/utils/diff.ts`
+Verification: `src/utils/compare-blocks.test.ts`, `src/utils/compare-blocks-budget.test.ts`, `e2e/redline-compare.spec.ts`
 
 ### UIC-REDLINE-COMPARE-1.3 - Moved blocks
 

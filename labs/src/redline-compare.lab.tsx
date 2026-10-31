@@ -8,6 +8,42 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import type { DocumentBlock } from '../../src/utils/compare-blocks.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LargeInputDemo } from './large-input-demo.js';
+
+const orchardWords = [
+  'apple pear plum quince cherry orchard ladder basket crate press cider frost',
+  'walnut hazel medlar damson sloe rowan elder bramble hedge barrel cellar harvest',
+]
+  .join(' ')
+  .split(' ');
+
+/** The orchard words in an order fixed by `seed`, as a paragraph. */
+function shuffleWords(seed: number): string {
+  const order = [...orchardWords];
+  let state = seed;
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    state = (state * 48_271) % 2_147_483_647;
+    const other = state % (index + 1);
+    [order[index], order[other]] = [order[other] ?? '', order[index] ?? ''];
+  }
+  return `${order.join(' ')}.`;
+}
+
+/**
+ * A 400-paragraph document without ids, one paragraph a line, and its rewrite: every paragraph's
+ * words reordered, so every old paragraph shares all its words with every new one.
+ */
+const rewrittenDocument = () =>
+  Array.from({ length: 400 }, (_, index) => shuffleWords(index + 1)).join('\n');
+
+const toParagraphs = (text: string): DocumentBlock[] =>
+  text.split('\n').map((line) => ({ type: 'paragraph', text: line }));
+
+const rewrite = (text: string) =>
+  text
+    .split('\n')
+    .map((_, index) => shuffleWords(index + 10_001))
+    .join('\n');
 
 const revision3: DocumentBlock[] = [
   { id: 'title', type: 'heading', level: 1, text: 'Pump maintenance' },
@@ -165,6 +201,20 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Rewritten document"
+      description="Four hundred paragraphs without ids, each rewritten in the same words. Pairing skips paragraphs that cannot read alike by their lengths and shared words, and runs at most eight word diffs per removed paragraph, so the comparison stays fast."
+    >
+      <LargeInputDemo label="400 rewritten paragraphs" build={rewrittenDocument}>
+        {(text) => (
+          <RedlineCompare
+            aria-label="Rewritten document"
+            oldBlocks={toParagraphs(text)}
+            newBlocks={toParagraphs(rewrite(text))}
+          />
+        )}
+      </LargeInputDemo>
     </LabSection>
     <LabSection
       title="Typed identifiers"

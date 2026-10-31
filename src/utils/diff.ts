@@ -251,13 +251,18 @@ export function diffLines(oldText: string, newText: string): LineDiffHunk[] {
   });
 }
 
+/** The tokens `diffWords` compares whole: words, runs of spaces and single punctuation marks. */
+export function splitWords(text: string): string[] {
+  return text.match(wordToken) ?? [];
+}
+
 /**
  * The word diff of two texts: equal, deleted and inserted runs of text in order. Words (letters,
  * digits and underscores), runs of spaces and single punctuation marks are compared whole.
  */
 export function diffWords(oldText: string, newText: string): WordDiffHunk[] {
-  const oldTokens = oldText.match(wordToken) ?? [];
-  const newTokens = newText.match(wordToken) ?? [];
+  const oldTokens = splitWords(oldText);
+  const newTokens = splitWords(newText);
   return joinSpacedChanges(toHunks(diffTokens(oldTokens, newTokens))).map(({ kind, tokens }) => ({
     kind,
     text: tokens.join(''),
