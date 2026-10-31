@@ -153,6 +153,22 @@ test.describe('Action Row lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ACTION-ROW-1.7 moves focus to the next action when the focused one leaves', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="changing"]');
+    await demo.getByRole('button', { name: 'Archive', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(demo.getByRole('button', { name: 'Archive', exact: true })).toHaveCount(0);
+    const share = demo.getByRole('button', { name: 'Share' });
+    await expect(share).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="last"]')).toHaveText('share');
+    await lab.expectAccessible();
+  });
+
   test('UIC-ACTION-ROW-2.5 reports an overflow submenu choice to its own action', async ({
     page,
     lab,
