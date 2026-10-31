@@ -61,9 +61,28 @@ function isMessage(value: unknown): value is MessageComposerMessage {
   );
 }
 
+/** Whether two tokens are the same pill over the same range. */
+function isSameToken(a: MessageComposerToken, b: MessageComposerToken): boolean {
+  return (
+    a.start === b.start &&
+    a.end === b.end &&
+    a.kind === b.kind &&
+    a.id === b.id &&
+    a.label === b.label &&
+    a.recordType === b.recordType
+  );
+}
+
 /** Whether two messages hold the same text and tokens. */
 export function isSameMessage(a: MessageComposerMessage, b: MessageComposerMessage): boolean {
-  return a.text === b.text && JSON.stringify(a.tokens) === JSON.stringify(b.tokens);
+  return (
+    a.text === b.text &&
+    a.tokens.length === b.tokens.length &&
+    a.tokens.every((token, at) => {
+      const other = b.tokens[at];
+      return other !== undefined && isSameToken(token, other);
+    })
+  );
 }
 
 /**

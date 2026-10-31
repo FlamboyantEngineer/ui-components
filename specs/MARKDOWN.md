@@ -106,7 +106,7 @@ Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markd
 
 ### UIC-MARKDOWN-2.2 - Heading ids
 
-With `headingIdPrefix`, headings shall carry `id` set to the prefix and their slug, and a link to `#slug` of one of the document's headings shall point to the prefixed id. The fragment names a heading as written or percent-decoded once (malformed escapes are left as written), compared as is and with accents folded as slugs fold them, so `#%E6%9D%B1%E4%BA%AC` reaches `東京` and `#caf%C3%A9` reaches `cafe`; a fragment that names no heading keeps its link unchanged. Without it headings carry no id, so two documents on a page never repeat one.
+With `headingIdPrefix`, headings shall carry `id` set to the prefix and their slug, and a link to `#slug` of one of the document's headings shall point to the prefixed id. The fragment names a heading as written or percent-decoded once (malformed escapes are left as written), compared as is and with accents folded as slugs fold them, so `#%E6%9D%B1%E4%BA%AC` reaches `東京` and `#caf%C3%A9` reaches `cafe`; a fragment that names no heading keeps its link unchanged. Without it headings carry no id, so two documents on a page never repeat one. The document's heading ids are kept as a list compared item by item, so a render that reads the same headings keeps the blocks' context.
 
 Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/markdown-heading-links.test.tsx`, `e2e/markdown.spec.ts`

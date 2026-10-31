@@ -7,7 +7,8 @@
 import { Fragment, useMemo, type ReactNode } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { createCitationOverride, type ChatSource } from '../chat-sources/chat-sources.js';
+import { useStableArray } from '../../utils/use-stable-array.js';
+import { createCitationOverride } from '../chat-sources/chat-sources.js';
 import { createCodeBlockOverride } from '../code-block/code-block.js';
 import { Markdown, type MarkdownNode } from '../markdown/markdown.js';
 import { RecordLabel, type RecordLabelResolver } from '../record-label/record-label.js';
@@ -112,13 +113,15 @@ function createTokenOverride({
   };
 }
 
+const noTokens: readonly ChatTextToken[] = [];
+
 function MarkdownText({ part, renderNode, getReference }: Omit<ChatTextPartViewProps, 'format'>) {
   // The tokens by content, so a host that rebuilds the array each render keeps the overrides.
-  const tokensKey = JSON.stringify(part.tokens ?? []);
+  const partTokens = useStableArray(part.tokens ?? noTokens);
   const placed = useMemo(() => {
-    const tokens = listTextTokens(part.text, JSON.parse(tokensKey) as ChatTextToken[]);
+    const tokens = listTextTokens(part.text, partTokens);
     return { tokens, source: writeTokenSource(part.text, tokens) };
-  }, [part.text, tokensKey]);
+  }, [part.text, partTokens]);
   const nodeRenderer = useMemo(
     () =>
       placed.tokens.length === 0
@@ -160,7 +163,7 @@ export function usePartsRenderNode(
   parts: readonly ChatPart[],
   onApplyCode: ((code: string, part: ChatCodePart) => void) | undefined,
 ): MarkdownNodeRenderer {
-  const sourcesKey = JSON.stringify(
+  const sources = useStableArray(
     parts.flatMap((part) => (part.type === 'sources' ? part.sources : [])),
   );
   const latestApply = useLatest(onApplyCode);
@@ -176,7 +179,7 @@ export function usePartsRenderNode(
             })
         : undefined,
     });
-    const cite = createCitationOverride(JSON.parse(sourcesKey) as ChatSource[]);
+    const cite = createCitationOverride(sources);
     return (node: MarkdownNode) => code(node) ?? cite(node);
-  }, [sourcesKey, hasApply, latestApply]);
+  }, [sources, hasApply, latestApply]);
 }
