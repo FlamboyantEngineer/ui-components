@@ -214,6 +214,7 @@ export function AnchoredTooltip({
   const generatedId = useId();
   const id = callerId ?? generatedId;
   const { refs, element, phase, position } = useAnchoredPanel({ anchor, isOpen, placement });
+  const { proxy: proxyRef, panel: panelRef, arrow: arrowRef } = refs;
   const zIndex = useLayerZIndex('tooltip');
   useAnchorRelationship(element, { id, relationship });
   const target = usePortalTarget();
@@ -224,7 +225,7 @@ export function AnchoredTooltip({
   // would become the containing block the positioning measures against.
   return createPortal(
     <>
-      {refs.proxy ? <span ref={refs.proxy} hidden /> : null}
+      {proxyRef ? <span ref={proxyRef} hidden /> : null}
       <div
         {...rest}
         {...hooks.root({
@@ -232,7 +233,7 @@ export function AnchoredTooltip({
           props: rest,
           data: { ...data, entering: phase.isEntering, exiting: phase.isExiting },
         })}
-        ref={refs.panel}
+        ref={panelRef}
         id={id}
         role="tooltip"
         aria-hidden={relationship === 'none' || undefined}
@@ -242,7 +243,7 @@ export function AnchoredTooltip({
           {...position.arrowProps}
           style={arrowStyle(resolvedPlacement, position.arrowProps.style)}
           {...hooks.slot('arrow', { placement: resolvedPlacement })}
-          ref={refs.arrow}
+          ref={arrowRef}
         />
         <span {...hooks.slot('content')}>{content}</span>
       </div>

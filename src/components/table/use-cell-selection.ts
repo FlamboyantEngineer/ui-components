@@ -138,7 +138,7 @@ interface ClipboardParts<T> {
  * Copying the selected cells as tab-separated text and an HTML table, and pasting tab-separated
  * text into them, which then selects the cells the paste covers.
  */
-function createClipboardHandlers<T extends TableRow>(parts: ClipboardParts<T>) {
+function useClipboardHandlers<T extends TableRow>(parts: ClipboardParts<T>) {
   const { grid, resolveBounds, write, setRange } = parts;
   const readArea = (event: ClipboardEvent<HTMLElement>) => {
     const position = readEventCell(grid, event);
@@ -240,7 +240,7 @@ export function useCellSelection<T extends TableRow>(
     if (!isAnchor) setRange(createCellRange(position));
   };
 
-  const clipboard = createClipboardHandlers({ grid, resolveBounds, write, setRange });
+  const clipboard = useClipboardHandlers({ grid, resolveBounds, write, setRange });
 
   return {
     mode,

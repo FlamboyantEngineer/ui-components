@@ -9,7 +9,6 @@ import {
   type RefObject,
 } from 'react';
 import { useFocusWithin, useLocale } from '../../primitives/index.js';
-import { mergeProps } from '../../utils/merge-props.js';
 import {
   moveMatrixFocus,
   resolveMatrixFocus,
@@ -162,9 +161,13 @@ export function useMatrixNavigation({
   return {
     focus,
     isFocusWithin,
-    gridProps: mergeProps(focusWithinProps, {
+    gridProps: {
       onKeyDown,
-      onFocus,
-    }) as MatrixNavigation['gridProps'],
+      onFocus: (event) => {
+        focusWithinProps.onFocus?.(event);
+        onFocus(event);
+      },
+      onBlur: (event) => focusWithinProps.onBlur?.(event),
+    },
   };
 }

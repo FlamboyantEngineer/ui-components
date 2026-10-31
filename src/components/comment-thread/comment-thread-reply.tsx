@@ -185,6 +185,17 @@ function CommentMenu({
   );
 }
 
+/** Whether the reply is being edited; closing the editor returns focus to the reply's menu. */
+function useReplyEditing() {
+  const [isEditing, setIsEditing] = useState(false);
+  const menuRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
+  const closeEditor = () => {
+    setIsEditing(false);
+    menuRef.current?.focus();
+  };
+  return { isEditing, openEditor: () => setIsEditing(true), closeEditor, menuRef };
+}
+
 /**
  * One comment: its author, a live time, an edited marker, the body as caller content, reactions
  * and a menu of actions with Edit (in place) and Delete (after confirmation).
@@ -208,14 +219,9 @@ export function CommentThreadReply({
   ...rest
 }: CommentThreadReplyProps) {
   const { isReadOnly } = useContext(CommentThreadContext);
-  const [isEditing, setIsEditing] = useState(false);
+  const { isEditing, openEditor, closeEditor, menuRef } = useReplyEditing();
   const strings = useUiStrings();
-  const menuRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
   const editing = isEditing && !isReadOnly;
-  const closeEditor = () => {
-    setIsEditing(false);
-    menuRef.current?.focus();
-  };
   return (
     <article
       {...rest}
@@ -235,7 +241,7 @@ export function CommentThreadReply({
             onAction={onAction}
             onEdit={onEdit}
             onDelete={onDelete}
-            onEditStart={() => setIsEditing(true)}
+            onEditStart={openEditor}
             menuRef={menuRef}
           />
         )}

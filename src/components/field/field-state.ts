@@ -242,6 +242,30 @@ interface LatestSnapshot<T> {
 }
 
 /**
+ * Sets the value being edited, unless the field is locked or a native reset holds its changes. The
+ * hold is the same object for the field's whole life.
+ */
+function useSetValue<T>(
+  latestRef: { current: LatestSnapshot<T> },
+  { setDraft, markChanged }: { setDraft: (value: T) => void; markChanged: () => void },
+) {
+  const [hold] = useState<FieldChangeHold>(() => ({ isHeld: false }));
+  const setValue = useCallback(
+    (next: T) => {
+      const current = latestRef.current;
+      if (current.isLocked || hold.isHeld) return;
+      current.value = next;
+      current.isUnsettled = current.options.value !== undefined;
+      markChanged();
+      if (current.options.value === undefined) setDraft(next);
+      current.options.onChange?.(next);
+    },
+    [latestRef, hold, setDraft, markChanged],
+  );
+  return { setValue, hold };
+}
+
+/**
  * Commits the value: right away, or, after a controlled value changed in the same event, once the
  * caller's value has rendered (a caller may change what it was given, or ignore it), so the
  * committed value is always one the field shows.
@@ -299,19 +323,7 @@ export function useFieldState<T>(
   const hasOwnHistory = Boolean(contract.hasOwnHistory);
   const [history, setHistory] = useShownHistory(value, options, { isEqual, hasOwnHistory });
 
-  const hold = useRef<FieldChangeHold>({ isHeld: false });
-  const setValue = useCallback(
-    (next: T) => {
-      const current = latestRef.current;
-      if (current.isLocked || hold.current.isHeld) return;
-      current.value = next;
-      current.isUnsettled = current.options.value !== undefined;
-      markChanged();
-      if (current.options.value === undefined) setDraft(next);
-      current.options.onChange?.(next);
-    },
-    [latestRef, setDraft, markChanged],
-  );
+  const { setValue, hold } = useSetValue(latestRef, { setDraft, markChanged });
   const commit = useCommit(latestRef, setCommitted);
 
   const lock = { isLocked, isEqual };
@@ -332,7 +344,7 @@ export function useFieldState<T>(
   };
   const canClear = !options.isRequired && canApply(value, options.emptyValue, lock);
 
-  const state: FieldState<T> = {
+  const state = {
     value,
     committedValue,
     validation: shown.validation,
@@ -359,6 +371,7 @@ export function useFieldState<T>(
     touch: reveal.touch,
     revealValidation: reveal.revealValidation,
     setDraftIssue,
+    [fieldChangeHold]: hold,
   };
-  return Object.assign(state, { [fieldChangeHold]: hold.current });
+  return state;
 }

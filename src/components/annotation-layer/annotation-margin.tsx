@@ -66,7 +66,7 @@ function useMarginGeometry(margin: HTMLElement | null, layer: HTMLElement | null
     if (element) cards.current.set(id, element);
     else cards.current.delete(id);
   };
-  return { geometry, cards: cards.current, register };
+  return { geometry, cards, register };
 }
 
 /**
@@ -108,7 +108,7 @@ export function AnnotationMargin({
     if (event.target !== event.currentTarget || !step) return;
     event.preventDefault();
     const card = placements[step(index, placements.length - 1)];
-    if (card) cards.get(card.id)?.focus();
+    if (card) cards.current.get(card.id)?.focus();
   };
 
   return (

@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { resolveDestination, type PdfTarget } from './pdf-destination.js';
 import type { PdfLinkService, PdfTextContent, PdfViewport } from './pdf-engine.js';
-import { createLinkService } from './pdf-link-service.js';
+import { useLinkService } from './pdf-link-service.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
@@ -62,18 +62,14 @@ export function usePdfLinks<V extends PdfViewport, C extends PdfTextContent>(
     },
     [latestRef],
   );
-  const linkService = useMemo(
-    () =>
-      createLinkService({
-        followDestination,
-        goToPage,
-        readPosition: () => ({
-          currentPage: latestRef.current.pages.currentPage,
-          pageCount: latestRef.current.view?.pages.length ?? 0,
-        }),
-      }),
-    [followDestination, goToPage, latestRef],
+  const readPosition = useCallback(
+    () => ({
+      currentPage: latestRef.current.pages.currentPage,
+      pageCount: latestRef.current.view?.pages.length ?? 0,
+    }),
+    [latestRef],
   );
+  const linkService = useLinkService({ followDestination, goToPage, readPosition });
 
   const { destination } = options;
   const document = options.view?.document;

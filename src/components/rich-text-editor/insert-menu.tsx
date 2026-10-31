@@ -101,14 +101,14 @@ export function InsertMenu({ items, className, ...rest }: InsertMenuProps) {
 export function InsertMenuButton({ items, className, ...rest }: InsertMenuButtonProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
-  const focusReturn = useFocusReturn(controller);
+  const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const available = useAvailableItems(items);
   const [isOpen, setOpen] = useState(false);
   if (isOpen && !controller.isEditable) setOpen(false);
   return (
     <DropdownMenu
       {...rest}
-      ref={focusReturn.ref}
+      ref={returnFocusRef}
       className={mergeClassNames(buttonHooks.className, className)}
       label={strings.insert}
       icon={PlusGlyph}
@@ -125,7 +125,7 @@ export function InsertMenuButton({ items, className, ...rest }: InsertMenuButton
       }))}
       onAction={(key) => {
         const item = available.find((candidate) => candidate.id === key);
-        if (item && controller.run(item.command)) focusReturn.request();
+        if (item && controller.run(item.command)) returnFocus();
       }}
     />
   );

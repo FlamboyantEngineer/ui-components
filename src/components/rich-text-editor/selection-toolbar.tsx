@@ -111,7 +111,7 @@ function useSelectionBox(): SelectionBox | null {
 export function SelectionToolbar({ className, children, ...rest }: SelectionToolbarProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
-  const focusReturn = useFocusReturn(controller);
+  const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const { surfaceRef } = useRichTextEditorContext('SelectionToolbar');
   const zIndex = useLayerZIndex('dropdown');
   const box = useSelectionBox();
@@ -163,7 +163,7 @@ export function SelectionToolbar({ className, children, ...rest }: SelectionTool
       style={{ zIndex }}
     >
       <div
-        ref={focusReturn.ref}
+        ref={returnFocusRef}
         onFocus={() => setOwnFocus(true)}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
@@ -181,7 +181,7 @@ export function SelectionToolbar({ className, children, ...rest }: SelectionTool
             <LinkButton
               controller={controller}
               className={hooks.slotClass('link-editor')}
-              onCommand={focusReturn.request}
+              onCommand={returnFocus}
             />
           ) : null}
           {children}

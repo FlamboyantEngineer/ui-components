@@ -87,7 +87,7 @@ function selectBlock(view: EditorView, pos: number) {
 export function BlockHandle({ className, ...rest }: BlockHandleProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
-  const focusReturn = useFocusReturn(controller);
+  const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const target = useBlockTarget(isMenuOpen);
   const select = useEditorEventCallback(selectBlock);
@@ -109,13 +109,13 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
     const turnInto = commands.turnInto.find((item) => `turn-into:${item.id}` === id);
     const command =
       turnInto?.command ?? commands.actions.find((action) => action.id === id)?.command;
-    if (command && controller.run(command)) focusReturn.request();
+    if (command && controller.run(command)) returnFocus();
   };
   return (
     <div
       {...hooks.root({ className, props: rest, data: { dragging: target.isDragging } })}
       style={{ position: 'absolute', top: target.top }}
-      ref={focusReturn.ref}
+      ref={returnFocusRef}
       onFocus={target.onFocus}
       onBlur={(event: FocusEvent) => target.onBlur(event)}
     >
