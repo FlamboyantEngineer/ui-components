@@ -7,7 +7,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { ColorField } from '../color-field/color-field.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { TextField } from '../text-field/text-field.js';
-import { Form, useFormValidity, type FormBlocker } from './form.js';
+import { Form, useFormProblems, useFormValidity, type FormBlocker } from './form.js';
 
 /** A Save button outside the submit: it saves only while nothing blocks, and asks nothing else. */
 function SaveBar({ onSave }: { onSave: () => void }) {
@@ -218,5 +218,31 @@ describe('Form validity', () => {
     expect(second).not.toBe(first);
     act(() => requireDefined(second).focus());
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus();
+  });
+
+  it('UIC-FORM-2.2 keeps problems and blockers in document order when keyed fields move', async () => {
+    const onValidityChange = vi.fn<(blockers: readonly FormBlocker[]) => void>();
+    let problems: () => readonly string[] = () => [];
+    function ProblemReader() {
+      const source = requireDefined(useFormProblems());
+      problems = () => source.getProblems().map((problem) => problem.label);
+      return null;
+    }
+    const view = (names: readonly string[]) => (
+      <Form aria-label="Record" validationMode="immediate" onValidityChange={onValidityChange}>
+        {names.map((name) => (
+          <TextField key={name} label={name} isRequired />
+        ))}
+        <ProblemReader />
+      </Form>
+    );
+    const { rerender } = render(view(['Alpha', 'Blue', 'Gamma']));
+    const labels = () =>
+      requireDefined(onValidityChange.mock.lastCall)[0].map((blocker) => blocker.label);
+    await waitFor(() => expect(labels()).toEqual(['Alpha', 'Blue', 'Gamma']));
+    expect(problems()).toEqual(['Alpha', 'Blue', 'Gamma']);
+    rerender(view(['Gamma', 'Alpha', 'Blue']));
+    await waitFor(() => expect(labels()).toEqual(['Gamma', 'Alpha', 'Blue']));
+    expect(problems()).toEqual(['Gamma', 'Alpha', 'Blue']);
   });
 });
