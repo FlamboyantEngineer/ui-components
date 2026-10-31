@@ -28,7 +28,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **S3. `index.ts` only re-exports** the public API with named `export … from` statements. No default exports anywhere (TS7). **(enforced)**
 
-**S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules. Relative imports end in `.js`; types use `import type`. **(enforced: lint)**
+**S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules. Labs import a component through its entry point (`index.js`) or its main module. Relative imports end in `.js`; types use `import type`. **(enforced: lint)**
 
 **S5. Every public component is complete:** a spec with its hook table, unit tests that name the spec's requirement IDs, a lab with its full state matrix, a browser test, and a reference partial when the spec declares class hooks. **(enforced)**
 

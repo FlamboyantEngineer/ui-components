@@ -2,7 +2,7 @@
 
 import { CheckGlyph, CopyGlyph, ErrorGlyph } from '../../core/glyphs.js';
 import { useRef, useState } from 'react';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

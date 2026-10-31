@@ -63,6 +63,35 @@ test.describe('Zoom Control lab', () => {
     await expect(control.locator('[data-lab-output="log"]')).toHaveText('150, 50, 75, 50, 100');
   });
 
+  test('UIC-ZOOM-CONTROL-1.4 steps the slider from a value between levels to an endpoint level', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('zoom-control');
+    for (const [name, key, level] of [
+      ['near-first', 'ArrowLeft', '100'],
+      ['near-last', 'ArrowRight', '150'],
+      ['near-first', 'End', '150'],
+      ['near-last', 'Home', '100'],
+    ] as const) {
+      const demo = page.locator(`[data-lab-case="${name}"]`);
+      await demo.getByRole('button', { name: /^Back to/ }).click();
+      await demo.getByRole('slider', { name: 'Zoom level' }).focus();
+      await page.keyboard.press(key);
+      await expect(demo.locator('[data-lab-output="zoom"]')).toHaveText(level);
+    }
+    await lab.expectAccessible();
+  });
+
+  test('UIC-ZOOM-CONTROL-1.4 mirrors the slider keys right to left', async ({ page, lab }) => {
+    await lab.open('zoom-control');
+    const demo = page.locator('[data-lab-case="near-first"]');
+    await demo.evaluate((element) => element.setAttribute('dir', 'rtl'));
+    await demo.getByRole('slider', { name: 'Zoom level' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(demo.locator('[data-lab-output="zoom"]')).toHaveText('100');
+  });
+
   test('UIC-ZOOM-CONTROL-1.7 disables the whole control and stays accessible', async ({
     page,
     lab,

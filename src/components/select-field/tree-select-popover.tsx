@@ -11,6 +11,7 @@ import { SearchField } from '../search-field/search-field.js';
 import { Tree, type TreeItemData } from '../tree/tree.js';
 import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
 import type { SelectTreeFieldProps } from './select-tree-field.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 
 interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
   SelectTreeFieldProps<T, 'single' | 'multiple'>,
@@ -130,7 +131,7 @@ export function TreeSelectPopover<T extends TreeItemData>(props: TreeSelectPopov
     <PopoverPanel
       {...hooks.slot('popover', { mode: 'tree' })}
       placement="bottom start"
-      offset={4}
+      offset={DEFAULT_DROPDOWN_OFFSET}
       style={triggerWidthProperty}
     >
       <TreeSelectDialog {...props} />

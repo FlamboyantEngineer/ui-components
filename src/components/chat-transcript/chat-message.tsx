@@ -7,7 +7,8 @@ import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { getDisplayName, type AvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
-import { AnchoredTooltip, TOOLTIP_DELAY } from '../tooltip/tooltip.js';
+import { AnchoredTooltip } from '../tooltip/tooltip.js';
+import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import {
   ChatMessageAvatar,

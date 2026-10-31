@@ -16,6 +16,7 @@ import type { Completion } from './completion-match.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';
 import type { CompletionsModel } from './use-completions.js';
+import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** A completion with the key the editor moves and acts on. */
 export interface CompletionListItem extends Completion {
@@ -160,7 +161,7 @@ export function CompletionList(props: CompletionListProps) {
         triggerRef={anchorRef}
         placement="bottom start"
         shouldUpdatePosition={shouldUpdatePosition}
-        offset={2}
+        offset={DEFAULT_POINT_OFFSET}
         style={{ ...triggerWidthProperty, zIndex }}
       >
         {items.length > 0 ? (

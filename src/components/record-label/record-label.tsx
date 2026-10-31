@@ -6,7 +6,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames, type HookProps } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { VisuallyHidden } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { Link } from '../link/link.js';

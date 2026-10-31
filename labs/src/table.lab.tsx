@@ -3,8 +3,8 @@ import { useState } from 'react';
 import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Table, type TableProps } from '../../src/components/table/table.js';
-import { applyTableMove, type TableColumn } from '../../src/components/table/table-rows.js';
-import { sortTableRows } from '../../src/components/table/table-sort.js';
+import { applyTableMove, type TableColumn } from '../../src/components/table/index.js';
+import { sortTableRows } from '../../src/components/table/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   CallerFilter,

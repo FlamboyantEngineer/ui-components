@@ -1,7 +1,8 @@
 'use client';
 
 import { Fragment, useSyncExternalStore, type ReactNode } from 'react';
-import { Keyboard, VisuallyHidden } from '../../primitives/index.js';
+import { Keyboard } from '../../primitives/index.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

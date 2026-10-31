@@ -3,7 +3,7 @@ import { InlineTextDiff } from '../../src/components/inline-text-diff/inline-tex
 import {
   createInlineTextDiffExcerpt,
   createInlineWordDiff,
-} from '../../src/components/inline-text-diff/text-diff.js';
+} from '../../src/components/inline-text-diff/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const longBefore = `Shipping notes for the orchard: ${'pack the apples gently, '.repeat(3)}then label each crate.`;

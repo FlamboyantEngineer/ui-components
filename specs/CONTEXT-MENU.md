@@ -6,7 +6,7 @@ A context menu lists actions for whatever the reader points at. `ContextMenu` sh
 
 ### UIC-CONTEXT-MENU-1.1 - Opening at the pointer
 
-A secondary click on the target (a `contextmenu` event) shall prevent the browser's own menu, keep the event from reaching enclosing context menu triggers, and open the menu below and after the pointer, except on a text control inside the target (a text input, a text area or editable content, not the target itself), where the browser's own menu edits the text. The menu opens 2 pixels away, flipped above or shifted along the edge when it does not fit in the viewport. The menu is a popover anchored to that point, so it publishes `data-placement`.
+A secondary click on the target (a `contextmenu` event) shall prevent the browser's own menu, keep the event from reaching enclosing context menu triggers, and open the menu below and after the pointer, except on a text control inside the target (a text input, a text area or editable content, not the target itself), where the browser's own menu edits the text. The menu opens `DEFAULT_POINT_OFFSET` (2 pixels) away, flipped above or shifted along the edge when it does not fit in the viewport. The menu is a popover anchored to that point, so it publishes `data-placement`.
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/context-menu-target.ts`, `src/components/context-menu/menu-anchor.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`

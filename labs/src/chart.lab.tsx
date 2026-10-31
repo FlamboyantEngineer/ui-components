@@ -1,11 +1,11 @@
 import { useState, type CSSProperties } from 'react';
-import { BarChart, type BarChartSeries } from '../../src/components/chart/bar-chart.js';
+import { BarChart, type BarChartSeries } from '../../src/components/chart/index.js';
 import { Chart, type ChartView } from '../../src/components/chart/chart.js';
-import { ChartAxis } from '../../src/components/chart/chart-axis.js';
-import { ChartLegend } from '../../src/components/chart/chart-legend.js';
+import { ChartAxis } from '../../src/components/chart/index.js';
+import { ChartLegend } from '../../src/components/chart/index.js';
 import { Button } from '../../src/components/button/button.js';
-import { DonutChart, type DonutChartSegment } from '../../src/components/chart/donut-chart.js';
-import { LineChart, type LineChartSeries } from '../../src/components/chart/line-chart.js';
+import { DonutChart, type DonutChartSegment } from '../../src/components/chart/index.js';
+import { LineChart, type LineChartSeries } from '../../src/components/chart/index.js';
 import type { Key } from '../../src/core/props.js';
 import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';

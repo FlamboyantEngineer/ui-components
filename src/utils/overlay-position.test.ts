@@ -3,6 +3,8 @@ import {
   DEFAULT_OVERLAY_GAP,
   DEFAULT_OVERLAY_GUTTER,
   DEFAULT_SUBMENU_OVERLAP,
+} from './overlay-defaults.js';
+import {
   createOverlayPointRect,
   resolveOverlayPlacement,
   resolveSubmenuPlacement,

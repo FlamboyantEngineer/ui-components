@@ -218,7 +218,9 @@ const hookClassNames = {
 };
 
 const COMPONENT_FILE = /\/src\/components\/([^/]+)\//;
+const LAB_FILE = /\/labs\/src\//;
 const SIBLING_COMPONENT_IMPORT = /^\.\.\/([^/]+)\/([^/]+)\.js$/;
+const LAB_COMPONENT_IMPORT = /^(?:\.\.\/)+src\/components\/([^/]+)\/([^/]+)\.js$/;
 
 const componentImports = {
   meta: {
@@ -227,17 +229,23 @@ const componentImports = {
     messages: {
       helperImport:
         "Import '{{component}}' through its main module '../{{component}}/{{component}}.js', not '{{source}}'.",
+      labHelperImport:
+        "Labs import '{{component}}' through its entry point '{{component}}/index.js' or its main module, not '{{source}}'.",
     },
     schema: [],
   },
   create(context) {
     const own = context.filename.match(COMPONENT_FILE)?.[1];
-    if (!own) return {};
+    const isLab = LAB_FILE.test(context.filename);
+    if (!own && !isLab) return {};
     function check(node, source) {
-      const match = typeof source === 'string' ? source.match(SIBLING_COMPONENT_IMPORT) : null;
+      if (typeof source !== 'string') return;
+      const match = source.match(isLab ? LAB_COMPONENT_IMPORT : SIBLING_COMPONENT_IMPORT);
       if (!match) return;
       const [, component, module] = match;
-      if (component !== own && module !== component) {
+      if (isLab && module !== component && module !== 'index') {
+        context.report({ node, messageId: 'labHelperImport', data: { component, source } });
+      } else if (!isLab && component !== own && module !== component) {
         context.report({ node, messageId: 'helperImport', data: { component, source } });
       }
     }

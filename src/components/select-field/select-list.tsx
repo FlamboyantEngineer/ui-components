@@ -20,6 +20,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { SelectListItems, type SelectOptionsDisplay } from './select-option.js';
 import { flattenPickerItems, pickerListLayout, usePickerPopoverStyle } from '../field/field.js';
 import { type SelectFieldItem } from './select-options.js';
+import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 
 /** The next page of a search's results, loaded when the end of the list scrolls into view. */
 interface SelectListMore {
@@ -121,8 +122,8 @@ export function SelectList(props: SelectListProps) {
       <PopoverPresence />
       <Popover
         {...hooks.slot('popover', { layer: 'dropdown' })}
-        offset={4}
-        containerPadding={8}
+        offset={DEFAULT_DROPDOWN_OFFSET}
+        containerPadding={DEFAULT_OVERLAY_GUTTER}
         style={style}
       >
         {props.isLoading && props.items.length > 0 ? (

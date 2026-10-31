@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { ResizeHandle } from '../../src/components/split-view/resize-handle.js';
+import { ResizeHandle } from '../../src/components/split-view/index.js';
 import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
