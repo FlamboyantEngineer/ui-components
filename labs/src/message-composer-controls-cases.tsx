@@ -69,6 +69,17 @@ function ContextControl({ count }: { count: number }) {
   );
 }
 
+/**
+ * A host's own control that shows how often it rendered: typing leaves it alone until what the
+ * controls show changes, such as the composer having something to send.
+ */
+function RenderCount() {
+  useMessageComposerControls();
+  const [tally] = useState(() => ({ renders: 0 }));
+  tally.renders += 1;
+  return <span data-lab-output="leading-send-renders">Rendered {tally.renders} times</span>;
+}
+
 /** The choices the controls hold, shared by every composer of the section. */
 function useControlChoices() {
   const [approval, setApproval] = useState('ask');
@@ -163,6 +174,7 @@ function LeadingSend() {
             <>
               <MessageComposerSendButton />
               <ContextControl count={3} />
+              <RenderCount />
             </>
           }
           endControls={
@@ -186,7 +198,7 @@ export function ComposerControlsSection() {
   return (
     <LabSection
       title="Controls"
-      description="Any controls, in any order, at the start or the end of the row below the text: the + menu, an approval select, a Plan toggle and the model picker, with Send last. When the row is too narrow for their labels (the medium and narrow rows, or drag the wide one's corner) the composer turns compact and each control shows its icon alone, named and hinted by its label. The host may place Send itself, here first, and its own controls can read whether the row is compact, as the files-in-context count does."
+      description="Any controls, in any order, at the start or the end of the row below the text: the + menu, an approval select, a Plan toggle and the model picker, with Send last. When the row is too narrow for their labels (the medium and narrow rows, or drag the wide one's corner) the composer turns compact and each control shows its icon alone, named and hinted by its label. The host may place Send itself, here first, and its own controls can read whether the row is compact, as the files-in-context count does. Typing renders no control again until what they show changes: the render count beside it moves when the text first gives Send something to send, then holds."
     >
       <ControlRows />
       <LeadingSend />

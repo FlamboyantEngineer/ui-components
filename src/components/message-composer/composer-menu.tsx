@@ -141,17 +141,16 @@ export function MessageComposerMenuButton({
 }: MessageComposerMenuButtonProps) {
   const strings = useUiStrings();
   const composer = useComposerControlsValue('MessageComposerMenuButton');
-  const { model, rootRef, isDisabled } = composer;
-  const { onAttach } = composer.props;
-  const handback = useFocusHandback(model.focusInput);
+  const { rootRef, isDisabled, onAttach } = composer;
+  const handback = useFocusHandback(composer.focusInput);
   const chooserRef = useRef<HTMLInputElement>(null);
   const helpers: MessageComposerHelpers = {
     insertText: (text) => {
-      model.insertText(text);
+      composer.insertText(text);
       handback.request();
     },
     insertPill: (pill) => {
-      model.insertPill(pill);
+      composer.insertPill(pill);
       handback.request();
     },
     attachFiles: () => {

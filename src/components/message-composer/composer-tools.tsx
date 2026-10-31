@@ -29,11 +29,11 @@ export type MessageComposerSendButtonProps = BaseProps;
 /** What the action button does: send, stop the pending reply, or save the edited message. */
 type ComposerActionMode = 'send' | 'stop' | 'save';
 
-function toActionMode({ props, model }: ComposerControlsValue): ComposerActionMode {
-  if (model.isEditing) return 'save';
+function toActionMode(composer: ComposerControlsValue): ComposerActionMode {
+  if (composer.isEditing) return 'save';
   // A composer that sends while pending offers Stop only while there is nothing to send.
-  const isSending = props.allowsPendingSubmit && model.canSubmit;
-  return props.isPending && props.onStop && !isSending ? 'stop' : 'send';
+  const isSending = composer.allowsPendingSubmit && composer.canSubmit;
+  return composer.isPending && composer.onStop && !isSending ? 'stop' : 'send';
 }
 
 /**
@@ -43,7 +43,7 @@ function toActionMode({ props, model }: ComposerControlsValue): ComposerActionMo
 export function MessageComposerAttachButton(props: MessageComposerAttachButtonProps) {
   const strings = useUiStrings();
   const composer = useComposerControlsValue('MessageComposerAttachButton');
-  const { onAttach } = composer.props;
+  const { onAttach } = composer;
   if (!onAttach) return null;
   return (
     <FileTrigger allowsMultiple onSelect={(list) => attachChosenFiles(list, onAttach)}>
@@ -65,12 +65,12 @@ export function MessageComposerAttachButton(props: MessageComposerAttachButtonPr
  */
 export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProps) {
   const strings = useUiStrings();
-  const { model, isDisabled } = useComposerControlsValue('MessageComposerEmojiButton');
-  const handback = useFocusHandback(model.focusInput);
+  const composer = useComposerControlsValue('MessageComposerEmojiButton');
+  const handback = useFocusHandback(composer.focusInput);
   return (
     <EmojiPickerTrigger
       onSelect={(selection) => {
-        model.insertText(
+        composer.insertText(
           selection.kind === 'native' ? selection.unicode : `:${selection.emoji.shortcode}:`,
         );
         handback.request();
@@ -83,7 +83,7 @@ export function MessageComposerEmojiButton(props: MessageComposerEmojiButtonProp
         icon={EmojiGlyph}
         label={strings.insertEmoji}
         size="sm"
-        isDisabled={isDisabled}
+        isDisabled={composer.isDisabled}
       />
     </EmojiPickerTrigger>
   );
@@ -100,7 +100,7 @@ function CancelButton({ composer }: { composer: ComposerControlsValue }) {
       variant="secondary"
       isDisabled={composer.isDisabled}
       preventFocusOnPress
-      onPress={composer.props.onCancel}
+      onPress={composer.onCancel}
     />
   );
 }
@@ -114,27 +114,27 @@ export function ComposerSendControl({
   ...props
 }: MessageComposerSendButtonProps & { composer: ComposerControlsValue }) {
   const strings = useUiStrings();
-  const { model, isDisabled } = composer;
+  const { isDisabled } = composer;
   const mode = toActionMode(composer);
   const isStop = mode === 'stop';
-  const isPending = Boolean(composer.props.isPending) && !composer.props.allowsPendingSubmit;
+  const isPending = composer.isPending && !composer.allowsPendingSubmit;
   return (
     <>
-      {model.isEditing ? <CancelButton composer={composer} /> : null}
+      {composer.isEditing ? <CancelButton composer={composer} /> : null}
       <Button
         {...props}
         className={mergeClassNames(hooks.slotClass('action'), props.className)}
         icon={{ send: SendGlyph, stop: StopGlyph, save: SaveGlyph }[mode]}
         label={strings[mode]}
         variant={isStop ? 'secondary' : 'primary'}
-        shortcut={isStop ? undefined : model.keys.submit[0]}
+        shortcut={isStop ? undefined : composer.submitShortcut}
         // A tooltip in both states keeps one button, so keyboard focus on it survives the switch.
         tooltip={isStop ? strings.stop : undefined}
         isPending={!isStop && isPending}
-        isDisabled={isDisabled || (!isStop && !model.canSubmit)}
+        isDisabled={isDisabled || (!isStop && !composer.canSubmit)}
         focusableWhenDisabled={!isDisabled}
         preventFocusOnPress
-        onPress={isStop ? composer.props.onStop : model.submit}
+        onPress={isStop ? composer.onStop : composer.submit}
       />
     </>
   );

@@ -4,8 +4,8 @@ import { useRef, type ReactNode, type RefObject } from 'react';
 import {
   ComposerControlsContext,
   useCompactRow,
+  useComposerControls,
   useSendButtonRegistry,
-  type ComposerControlsValue,
 } from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerToken } from './composer-message.js';
@@ -51,14 +51,14 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
   const endRef = useRef<HTMLDivElement>(null);
   const isCompact = useCompactRow(footerRef, [startRef, endRef]);
   const { hasHostSendButton, registerSendButton } = useSendButtonRegistry();
-  const controls: ComposerControlsValue = {
+  const controls = useComposerControls({
     props,
     model,
     rootRef,
     isCompact,
     isDisabled,
     registerSendButton,
-  };
+  });
   const data = {
     pending: Boolean(props.isPending),
     disabled: isDisabled,

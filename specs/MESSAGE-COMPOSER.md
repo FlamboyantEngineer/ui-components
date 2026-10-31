@@ -291,6 +291,13 @@ Verification: `src/components/message-composer/composer-controls.test.tsx`, `e2e
 Implementation: `src/components/message-composer/composer-controls.ts`
 Verification: `src/components/message-composer/composer-controls.test.tsx`, `e2e/message-composer-controls.spec.ts`
 
+### UIC-MESSAGE-COMPOSER-6.6 - Render cost
+
+Typing shall render no control in the row again until what the controls read changes: whether the composer is compact, disabled, editing or pending, whether it has something to send, the chord that sends, and whether the host passes `onAttach`, `onCancel` and `onStop`. The composer's actions and the host's callbacks the controls call keep their identity and call the latest render's. The row is measured once at mount and then as it or either group resizes, never on a keystroke, and the rich composer sets its input's row limits when `minRows` or `maxRows` change or the input resizes.
+
+Implementation: `src/components/message-composer/composer-controls.ts`, `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/rich/rich-content.tsx`
+Verification: `src/components/message-composer/composer-render-cost.test.tsx`, `e2e/message-composer-controls.spec.ts`
+
 ## UIC-MESSAGE-COMPOSER-7 - Select
 
 ### UIC-MESSAGE-COMPOSER-7.1 - Trigger

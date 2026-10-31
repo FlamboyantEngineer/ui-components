@@ -102,4 +102,20 @@ test.describe('Message Composer controls', () => {
     await target.getByRole('button', { name: 'Send' }).click();
     await expect(page.locator('[data-lab-output="leading-send-sent"]')).toHaveText('See the notes');
   });
+
+  test('UIC-MESSAGE-COMPOSER-6.6 renders a host control again only when what the controls show changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const leading = composer(page, 'leading-send');
+    const renders = page.locator('[data-lab-output="leading-send-renders"]');
+    await leading.getByRole('textbox').click();
+    await page.keyboard.type('H');
+    await expect(leading.getByRole('button', { name: 'Send' })).toBeEnabled();
+    const before = await renders.textContent();
+    await page.keyboard.type('ello there, see you at nine');
+    await expect(leading.getByRole('textbox')).toHaveValue('Hello there, see you at nine');
+    await expect(renders).toHaveText(before ?? '');
+  });
 });
