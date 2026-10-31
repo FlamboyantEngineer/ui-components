@@ -19,8 +19,9 @@ import {
 } from './field-validation.js';
 
 /**
- * The validation of the value: the control's draft issue, external errors for the field's name, the required check, `validate`
- * and the debounced `validateAsync`, shown as the validation mode allows.
+ * The validation of the value: the control's draft issue, external errors for the field's name,
+ * the required check, `validate` and the debounced `validateAsync`, shown as the validation mode
+ * allows.
  */
 export function useFieldValidation<T>(
   value: T,

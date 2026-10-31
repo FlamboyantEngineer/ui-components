@@ -200,3 +200,21 @@ test('UIC-SLIDER-4.3 shows the exported helpers in a host-side snippet', async (
     call('keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })'),
   ).toHaveText('[35,45]');
 });
+
+test('UIC-SLIDER-1.2 keeps the held value on the grid as the bounds change', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('slider');
+  const share = field(page, 'normalized');
+  const start = share.getByRole('slider', { name: 'Minimum Share' });
+  await start.focus();
+  await page.keyboard.press('End');
+  await expect(output(page, 'Share')).toHaveText('0.2 to 0.3');
+  await page.getByRole('button', { name: 'Narrow to 0.25' }).click();
+  await expect(output(page, 'Share')).toHaveText('0.2 to 0.2');
+  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
+  await expect(call('snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })')).toHaveText(
+    '0.3',
+  );
+});

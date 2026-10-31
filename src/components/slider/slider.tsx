@@ -1,7 +1,13 @@
 'use client';
 
-import { Field, useFieldControl } from '../field/field.js';
-import { SliderControl, sliderHooks as hooks, type SliderFieldProps } from './slider-parts.js';
+import { Field } from '../field/field.js';
+import {
+  SliderControl,
+  sliderHooks as hooks,
+  useSliderField,
+  type SliderFieldProps,
+} from './slider-parts.js';
+import { normalizeSliderValue } from './slider-values.js';
 
 export interface SliderProps extends SliderFieldProps<number> {
   /** The value the fill starts from, so a slider around zero fills from 0. Defaults to the minimum. */
@@ -21,7 +27,7 @@ export function Slider({
   fillOffset,
   ...props
 }: SliderProps) {
-  const { state, field, rest } = useFieldControl(props, { initialValue: props.minValue ?? 0 });
+  const { state, field, rest, grid } = useSliderField(props, props.minValue ?? 0);
   return (
     <Field
       {...field}
@@ -39,6 +45,7 @@ export function Slider({
           valueLabel={valueLabel}
           fillOffset={fillOffset}
           thumbLabels={[undefined]}
+          normalize={(next) => normalizeSliderValue(next, grid)}
         />
       )}
     </Field>
@@ -47,5 +54,7 @@ export function Slider({
 
 export { RangeSlider } from './range-slider.js';
 export { keepThumbsApart } from './thumb-spacing.js';
+export { normalizeSliderValue, snapToStep } from './slider-values.js';
+export type { SliderGrid } from './slider-values.js';
 export type { RangeSliderProps, RangeValue } from './range-slider.js';
 export type { SliderFieldProps, SliderMark, SliderValueLabel } from './slider-parts.js';

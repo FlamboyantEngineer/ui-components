@@ -13,9 +13,9 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ### UIC-SLIDER-1.2 - Range, step and format
 
-`minValue` (0 by default), `maxValue` (100 by default) and `step` (1 by default) shall bound the value, which the slider keeps within the range and on the step. `formatOptions` (`Intl.NumberFormat` options) shall format the value in the `UiProvider` locale ([PROVIDER.md](PROVIDER.md)), in the value output and in each thumb's `aria-valuetext`.
+`minValue` (0 by default), `maxValue` (100 by default) and `step` (1 by default) shall bound the value, which the slider keeps within the range and on the step. The field holds one normalized value, the one the thumbs, output, ARIA values and form inputs show, so validation, dirty state, restore and every callback see it too: a given `value`, `defaultValue` or `committedValue` is snapped to the nearest step from the minimum (rounded to the step's decimals, `0.1 + 0.2` reading `0.3`), clamped into the range (above the last step, the last step), and a range's ends are put in order. A given or held value off the grid (as when the bounds or the step change) moves onto it as a change (`onChange`), not a commit, so an owner can take the value on screen. `snapToStep(value, grid)` and `normalizeSliderValue(value, grid)` give that value. `formatOptions` (`Intl.NumberFormat` options) shall format the value in the `UiProvider` locale ([PROVIDER.md](PROVIDER.md)), in the value output and in each thumb's `aria-valuetext`.
 
-Implementation: `src/components/slider/slider.tsx`, `src/components/slider/slider-parts.tsx`
+Implementation: `src/components/slider/slider.tsx`, `src/components/slider/slider-parts.tsx`, `src/components/slider/slider-values.ts`, `src/components/slider/range-slider.tsx`
 Verification: `src/components/slider/slider.test.tsx`
 
 ### UIC-SLIDER-1.3 - Track, fill and thumb
@@ -110,7 +110,7 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ### UIC-SLIDER-4.3 - Minimum distance
 
-`minStepsBetweenThumbs` (0 by default) shall keep that many steps between the thumbs: the thumb that moves stops that far from the other, within the range. `keepThumbsApart(next, previous, bounds)` gives the range after a move from the previous one, holding back the thumb that moved, and keeps a change that moves both thumbs as it is. Thumbs already closer than that (a value set from outside, or the range's end) never jump apart: a move that brings them closer is refused and one that moves them apart is kept as it is.
+`minStepsBetweenThumbs` (0 by default) shall keep that many steps between the thumbs: the thumb that moves stops that far from the other, within the range. `keepThumbsApart(next, previous, bounds)` gives the range after a move from the previous one, holding back the thumb that moved, and keeps a change that moves both thumbs as it is. Thumbs already closer than that (a value set from outside, or the range's end) never jump apart: a move that brings them closer is refused and one that moves them apart is kept as it is. The spaced range is snapped onto the grid (UIC-SLIDER-1.2), so a fractional step gives `0.2`, not `0.19999999999999998`.
 
 Implementation: `src/components/slider/range-slider.tsx`
 Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`

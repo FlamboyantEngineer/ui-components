@@ -9,7 +9,11 @@ import {
 } from '../../src/components/slider/slider.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { keepThumbsApart } from '../../src/components/slider/index.js';
+import {
+  keepThumbsApart,
+  normalizeSliderValue,
+  snapToStep,
+} from '../../src/components/slider/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { LabOutput } from './lab-output.js';
 import {
@@ -117,6 +121,30 @@ function Range() {
         data-lab-field="range"
       />
       <LabOutput name="Price">{value.join(' to ')}</LabOutput>
+    </>
+  );
+}
+
+/** The value the field holds is always the one on screen, whatever the bounds and step. */
+function Normalized() {
+  const [maxValue, setMaxValue] = useState(1);
+  const [value, setValue] = useState<RangeValue>([0.1, 0.3]);
+  return (
+    <>
+      <RangeSlider
+        label="Share"
+        maxValue={maxValue}
+        step={0.1}
+        minStepsBetweenThumbs={1}
+        value={value}
+        onChange={setValue}
+        description="Fractional steps stay on the grid; narrowing the range moves the value onto it."
+        data-lab-field="normalized"
+      />
+      <Button onPress={() => setMaxValue((max) => (max === 1 ? 0.25 : 1))}>
+        {maxValue === 1 ? 'Narrow to 0.25' : 'Widen to 1'}
+      </Button>
+      <LabOutput name="Share">{value.join(' to ')}</LabOutput>
     </>
   );
 }
@@ -234,6 +262,12 @@ mountLab(
     <LabSection title="Range" description="The thumbs never cross and keep a minimum distance.">
       <Range />
     </LabSection>
+    <LabSection
+      title="Normalized value"
+      description="Validation, callbacks and the form all hold the snapped, clamped and ordered value."
+    >
+      <Normalized />
+    </LabSection>
     <LabSection title="Vertical" description="Vertical sliders, one with the value on its thumb.">
       <Vertical />
     </LabSection>
@@ -245,10 +279,18 @@ mountLab(
     </LabSection>
     <LabSection
       title="Host helpers"
-      description="The spacing rule a range slider with minDistance applies, for a host that adjusts a range from its own inputs."
+      description="The spacing rule a range slider with minDistance applies, and the grid every slider value is snapped onto, for a host that adjusts a range from its own inputs."
     >
       <LabHelperCalls
         calls={[
+          [
+            'snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })',
+            String(snapToStep(0.1 + 0.2, { minValue: 0, maxValue: 1, step: 0.1 })),
+          ],
+          [
+            'normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })',
+            JSON.stringify(normalizeSliderValue([80, 20], { minValue: 0, maxValue: 50, step: 10 })),
+          ],
           [
             'keepThumbsApart([40, 45], [30, 45], { distance: 10, minValue: 0, maxValue: 100 })',
             JSON.stringify(
