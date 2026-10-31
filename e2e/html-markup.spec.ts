@@ -86,4 +86,9 @@ test.describe('HTML Markup lab', () => {
     await expect(demo.getByRole('region', { name: 'Large input' })).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-HTML-MARKUP-1.3 unwraps names an ordinary object inherits', async ({ page, lab }) => {
+    await lab.open('html-markup');
+    await expect(page.locator('[data-lab-unknown]')).toHaveText('Kept in place');
+  });
 });

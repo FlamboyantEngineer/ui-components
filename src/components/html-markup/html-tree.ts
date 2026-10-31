@@ -105,19 +105,20 @@ function impliedEnd(closes: string, stopAt: string): ImpliedEnd {
 
 const paragraphEnd = impliedEnd('p', 'table td th caption button');
 
-const impliedEnds: Readonly<Record<string, ImpliedEnd>> = {
-  li: impliedEnd('li', 'ul ol table td th'),
-  dt: impliedEnd('dt dd', 'dl table td th'),
-  dd: impliedEnd('dt dd', 'dl table td th'),
-  tr: impliedEnd('tr', 'table thead tbody tfoot'),
-  td: impliedEnd('td th', 'tr table'),
-  th: impliedEnd('td th', 'tr table'),
-  thead: impliedEnd('thead tbody tfoot', 'table'),
-  tbody: impliedEnd('thead tbody tfoot', 'table'),
-  tfoot: impliedEnd('thead tbody tfoot', 'table'),
-  a: impliedEnd('a', 'table td th'),
-  ...Object.fromEntries(headings.map((tag) => [tag, impliedEnd(headings.join(' '), 'p')])),
-};
+/** The elements that close open ones on opening; a Map, so only declared names have a rule. */
+const impliedEnds: ReadonlyMap<string, ImpliedEnd> = new Map([
+  ['li', impliedEnd('li', 'ul ol table td th')],
+  ['dt', impliedEnd('dt dd', 'dl table td th')],
+  ['dd', impliedEnd('dt dd', 'dl table td th')],
+  ['tr', impliedEnd('tr', 'table thead tbody tfoot')],
+  ['td', impliedEnd('td th', 'tr table')],
+  ['th', impliedEnd('td th', 'tr table')],
+  ['thead', impliedEnd('thead tbody tfoot', 'table')],
+  ['tbody', impliedEnd('thead tbody tfoot', 'table')],
+  ['tfoot', impliedEnd('thead tbody tfoot', 'table')],
+  ['a', impliedEnd('a', 'table td th')],
+  ...headings.map((tag) => [tag, impliedEnd(headings.join(' '), 'p')] as const),
+]);
 
 type Stack = OpenElements<RawElement>;
 
@@ -134,7 +135,7 @@ function appendElement(stack: Stack, element: RawElement): void {
 function openElement(stack: Stack, token: MarkupOpenToken): void {
   const tag = token.tag.toLowerCase();
   if (paragraphClosers.has(tag)) applyImpliedEnd(stack, paragraphEnd);
-  const rule = impliedEnds[tag];
+  const rule = impliedEnds.get(tag);
   if (rule) applyImpliedEnd(stack, rule);
   if (tag === 'tr' && currentOpen(stack).tag === 'table') {
     const body: RawElement = { tag: 'tbody', attributes: {}, children: [] };
