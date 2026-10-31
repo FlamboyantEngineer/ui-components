@@ -1,13 +1,15 @@
 // @vitest-environment node
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import local from '../eslint-rules/index.js';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { runNpm } from '../scripts/lib/npm.mjs';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { relativePosix } from '../scripts/lib/script.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { createTarGz, extractTarGz } from '../scripts/lib/tar.mjs';
 
@@ -49,6 +51,14 @@ describe('script helpers', () => {
 
   it('runs npm through the shared helper', () => {
     expect(String(runNpm(['--version'])).trim()).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it('UIC-LABS-1.2 lists Windows paths with the forward slashes the vendored file list uses', () => {
+    const vendored = 'C:\\out\\labs\\build\\vendor\\pdf.min.mjs';
+    expect(relativePosix('C:\\out', vendored, win32)).toBe('labs/build/vendor/pdf.min.mjs');
+    expect(relativePosix('/out', '/out/labs/build/vendor/pdf.min.mjs')).toBe(
+      'labs/build/vendor/pdf.min.mjs',
+    );
   });
 
   it('applies the component import rule to Windows paths', () => {

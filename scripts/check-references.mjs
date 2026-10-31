@@ -10,8 +10,8 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join, relative, resolve } from 'node:path';
-import { option, reportProblems, root, walk } from './lib/script.mjs';
+import { join, resolve } from 'node:path';
+import { option, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|pdf|woff2?|ttf|otf|eot|zip|gz|tgz|wasm|mp4|webm)$/i;
 // Generated third-party metadata, not authored content.
@@ -51,7 +51,7 @@ function listFiles() {
   const dirOption = option('dir');
   if (dirOption !== undefined) {
     const dir = resolve(dirOption);
-    return { base: dir, files: walk(dir).map((file) => relative(dir, file)) };
+    return { base: dir, files: walk(dir).map((file) => relativePosix(dir, file)) };
   }
   const output = execFileSync(
     'git',

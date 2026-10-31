@@ -8,8 +8,8 @@
 //   node scripts/check-public-types.mjs button menu          check only these components
 
 import { existsSync, readFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
-import { option, reportProblems, root, walk } from './lib/script.mjs';
+import { join, relative, resolve } from 'node:path';
+import { option, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 import { findUnexportedTypes } from './lib/unexported-types.mjs';
 
 const LEAK =
@@ -27,7 +27,7 @@ if (!existsSync(dir)) {
 
 const problems = [];
 const files = walk(dir).filter((path) => {
-  const rel = relative(dir, path).split(sep).join('/');
+  const rel = relativePosix(dir, path);
   if (!rel.endsWith('.d.ts') || rel.startsWith('primitives/')) return false;
   return (
     components.length === 0 || components.some((name) => rel.startsWith(`components/${name}/`))
@@ -47,7 +47,7 @@ reportProblems(problems, {
 
 // The entry points package.json exports: the root, `core`, `testing` and every component index.
 const entries = walk(dir).filter((path) => {
-  const rel = relative(dir, path).split(sep).join('/');
+  const rel = relativePosix(dir, path);
   return /^(index|core\/index|testing\/index|components\/.+\/index)\.d\.ts$/.test(rel);
 });
 const unexported = findUnexportedTypes(dir, { entries, only: components });
