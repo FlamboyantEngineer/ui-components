@@ -12,6 +12,7 @@ import { Portal } from '../portal/portal.js';
 import {
   ProgressBar,
   resolveProgressRange,
+  toProgressRatio,
   type ProgressBarProps,
 } from '../progress-bar/progress-bar.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
@@ -107,8 +108,7 @@ function isValidStep(step: LoadingStep | undefined): step is LoadingStep {
 
 /** The bounded share of measured progress that is done, from 0 to 1. */
 function toRatio(progress: LoadingProgress): number {
-  const { value, minValue, maxValue } = resolveProgressRange(progress);
-  return maxValue > minValue ? (value - minValue) / (maxValue - minValue) : 0;
+  return toProgressRatio(resolveProgressRange(progress));
 }
 
 /** The whole, locale-formatted percentage, hidden from assistive technology (the bar has it). */

@@ -34,10 +34,10 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `src/componen
 
 ### UIC-PROGRESS-BAR-1.5 - Truthful values
 
-The bar shall never claim progress it did not measure: `minValue` defaults to 0 and `maxValue` to 100; a non-finite value or minimum falls back to the minimum, a non-finite or lower maximum to the minimum, and a value outside the range is bounded to it. An empty range (a total of zero) shows zero progress with `aria-valuenow` of the minimum, never completion.
+The bar shall never claim progress it did not measure: `minValue` defaults to 0 and `maxValue` to 100; a non-finite value or minimum falls back to the minimum, a non-finite or lower maximum to the minimum, and a value outside the range is bounded to it. An empty range (a total of zero) shows zero progress with `aria-valuenow` of the minimum, never completion. A range wider than the largest number, such as `-Number.MAX_VALUE` to `Number.MAX_VALUE`, keeps its true share: the fill or ring, the default value text and a loading card's percentage all agree (its middle is 50%).
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-bar.test.tsx`
+Implementation: `src/components/progress-bar/progress-bar.tsx`, `src/components/progress-bar/progress-root.tsx`
+Verification: `src/components/progress-bar/progress-bar.test.tsx`, `src/components/progress-bar/progress-range.test.tsx`
 
 ### UIC-PROGRESS-BAR-1.6 - Sizes
 
