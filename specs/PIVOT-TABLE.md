@@ -6,14 +6,14 @@
 
 ### UIC-PIVOT-TABLE-1.1 - Groups
 
-`pivot(records, layout, locale)` shall group the records by the layout's row fields into nested row groups (`PivotRow`), outermost first, each with its `key` (its path as JSON), its `field`, its `value` in that field, its `path` of values and the groups of the next row field as `children`; and list the columns (`PivotColumn`) as every combination of the column fields' values the records hold, each with its `key` (its path as JSON) and `path`, or one column with an empty path without column fields. A record's value in a field is its key: a string, finite number or boolean as it is, an empty value (missing, `null` or `''`) as `null`, anything else (`NaN` and infinite numbers included) as text. Keys order numbers by value, `false` before `true`, text naturally ignoring case in `locale` (a BCP 47 tag; Pivot Table passes the provider locale), and `null` last.
+`pivot(records, layout, locale)` shall group the records by the layout's row fields into nested row groups (`PivotRow`), outermost first, each with its `key` (its path as JSON), its `field`, its `value` in that field, its `path` of values and the groups of the next row field as `children`; and list the columns (`PivotColumn`) as every combination of the column fields' values the records hold, each with its `key` (its path as JSON) and `path`, or one column with an empty path without column fields. A record's value in a field is its key: a string, finite number or boolean as it is, an empty value (missing, `null` or `''`) as `null`, where a record holds only its own properties, so a field it lacks named like an `Object.prototype` member (`constructor`, `toString`) is missing, while its own fields of those names and records without a prototype read as usual, anything else (`NaN` and infinite numbers included) as text. Keys order numbers by value, `false` before `true`, text naturally ignoring case in `locale` (a BCP 47 tag; Pivot Table passes the provider locale), and `null` last.
 
 Implementation: `src/utils/pivot.ts`
 Verification: `src/utils/pivot.test.ts`
 
 ### UIC-PIVOT-TABLE-1.2 - Aggregation
 
-Each value (`PivotValue`) of the layout shall aggregate its `field` over a set of records by its `aggregate`, `sum` by default: `count` counts the non-empty values, `sum`, `min`, `max` and `average` read the finite numbers and give `null` without one, and a function receives every value of the field (empty ones included) and returns a number or `null`. Aggregates (`PivotAggregates`) list one number or `null` per value, in layout order.
+Each value (`PivotValue`) of the layout shall aggregate its `field` over a set of records by its `aggregate`, `sum` by default: `count` counts the non-empty values, `sum`, `min`, `max` and `average` read the finite numbers and give `null` without one, and a function receives every value of the field (empty ones included, a field the record lacks as `undefined`, read as in UIC-PIVOT-TABLE-1.1) and returns a number or `null`. Aggregates (`PivotAggregates`) list one number or `null` per value, in layout order.
 
 Built-in numeric aggregates shall not depend on the runtime limit on function arguments.
 
@@ -68,8 +68,8 @@ Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-tabl
 
 Every column shall sort on a header press (the table's own sort, ascending, descending, then unsorted), at every level of the row groups: the row header column in the order of the keys (UIC-PIVOT-TABLE-1.1), a value column by its aggregates. Unsorted, groups keep the order of their keys. A value column is the same column, keeping its sort, focus and width, for as long as its column key and its value exist, wherever records, the locale or the layout move them: a value is known by its `id`, else by its field, aggregation and label with its place among the values that share those. A sorted column whose key or value leaves takes its sort with it; no other column inherits it.
 
-Implementation: `src/components/pivot-table/pivot-columns.tsx`
-Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
+Implementation: `src/components/pivot-table/pivot-columns.tsx`, `src/components/table/use-table-sort.ts`
+Verification: `src/components/pivot-table/pivot-table.test.tsx`, `src/components/pivot-table/pivot-table-columns.test.tsx`, `e2e/pivot-table.spec.ts`
 
 ### UIC-PIVOT-TABLE-2.7 - Stable table inputs
 

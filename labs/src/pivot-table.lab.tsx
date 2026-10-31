@@ -286,6 +286,25 @@ mountLab(
       <RepeatedFields />
     </LabSection>
     <LabSection
+      title="Missing fields"
+      description="Fields named like built-in object members (constructor, toString) read only what a record holds: the first record lacks both and falls in the empty group with nothing to count."
+    >
+      <PivotTable
+        aria-label="Notes by maker"
+        records={[{}, { constructor: 'Maker 1', toString: 'yes' }]}
+        fields={[
+          { id: 'constructor', label: 'Maker' },
+          { id: 'toString', label: 'Text' },
+        ]}
+        defaultLayout={{
+          rows: ['constructor'],
+          columns: [],
+          values: [{ field: 'toString', aggregate: 'count' }],
+        }}
+        data-lab-field="missing"
+      />
+    </LabSection>
+    <LabSection
       title="Changing columns"
       description="Sort by a region's value, then add or remove East or swap the values: the sort stays on the same region and value, and a sorted region that leaves takes its sort with it."
     >

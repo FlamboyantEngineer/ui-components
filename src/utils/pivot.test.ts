@@ -161,4 +161,36 @@ describe('pivot', () => {
     const empty = pivot([], layout, 'en-US');
     expect(empty).toEqual({ rows: [], columns: [], totals: {}, grandTotal: [null] });
   });
+
+  it("UIC-PIVOT-TABLE-1.1 UIC-PIVOT-TABLE-1.2 reads only a record's own fields", () => {
+    const seen: unknown[][] = [];
+    const layout: PivotLayout = {
+      rows: ['constructor'],
+      columns: ['__proto__'],
+      values: [
+        { field: 'toString', aggregate: 'count' },
+        { field: 'valueOf', aggregate: 'sum' },
+        { field: 'hasOwnProperty', aggregate: (values) => (seen.push([...values]), 0) },
+      ],
+    };
+    const missing = pivot([{}, {}], layout, 'en-US');
+    expect(missing.rows.map((row) => row.value)).toEqual([null]);
+    expect(missing.columns).toEqual([{ key: '[null]', path: [null] }]);
+    expect(missing.grandTotal).toEqual([0, null, 0]);
+    // Every group, total and grand total hands the function both records' missing values.
+    expect(seen).toContainEqual([undefined, undefined]);
+    expect(seen.flat().filter((value) => value !== undefined)).toEqual([]);
+
+    const bare = Object.assign(Object.create(null) as Record<string, unknown>, {
+      constructor: 'Bare',
+      valueOf: 2,
+    });
+    const own = JSON.parse(
+      '{"constructor":"Real","__proto__":"Own","toString":10,"valueOf":3,"hasOwnProperty":1}',
+    ) as Record<string, unknown>;
+    const present = pivot([own, bare], layout, 'en-US');
+    expect(present.rows.map((row) => row.value)).toEqual(['Bare', 'Real']);
+    expect(present.columns.map((column) => column.path)).toEqual([['Own'], [null]]);
+    expect(present.grandTotal).toEqual([1, 5, 0]);
+  });
 });
