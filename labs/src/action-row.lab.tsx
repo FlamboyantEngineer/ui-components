@@ -115,6 +115,29 @@ function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
   );
 }
 
+/** A save that takes a while, in a row narrow enough to put it in the overflow menu. */
+function SlowSave() {
+  const [saves, setSaves] = useState(0);
+  const save = () => {
+    setSaves((count) => count + 1);
+    return new Promise<void>((resolve) => setTimeout(resolve, 2000));
+  };
+  return (
+    <div style={{ width: 30 }} data-lab-case="slow-save">
+      <ActionRow
+        overflow="menu"
+        actions={[
+          { verb: 'refresh', onPress: noop },
+          { verb: 'save', onPress: save },
+        ]}
+      />
+      <p>
+        Saves started: <output data-lab-output="saves">{saves}</output>
+      </p>
+    </div>
+  );
+}
+
 /** An action that removes itself: focus moves to the next action's own button. */
 function ChangingActions() {
   const [hasArchive, setHasArchive] = useState(true);
@@ -290,6 +313,12 @@ mountLab(
         axes={{ width: ['wide', 'narrow'] }}
         render={({ width }) => <CollapsingRow width={width} />}
       />
+    </LabSection>
+    <LabSection
+      title="Pending action in the overflow menu"
+      description="Save takes two seconds. Choose it from the more menu, reopen the menu: Save is busy and refuses another choice until the first save ends."
+    >
+      <SlowSave />
     </LabSection>
     <LabSection
       title="Actions that come and go"

@@ -153,6 +153,34 @@ test.describe('Action Row lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ACTION-ROW-1.5 refuses a running action again from the overflow menu', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="slow-save"]');
+    const more = demo.getByRole('button', { name: '2 more items' });
+    await more.click();
+    await page.getByRole('menuitem', { name: /^Save/ }).click();
+    await expect(demo.locator('[data-lab-output="saves"]')).toHaveText('1');
+    await more.click();
+    const save = page.getByRole('menuitem', { name: /^Save/ });
+    await expect(save).toHaveAttribute('aria-disabled', 'true');
+    await save.focus();
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-output="saves"]')).toHaveText('1');
+    await page.keyboard.press('Escape');
+    await page.clock.runFor(2000);
+    await more.click();
+    await expect(page.getByRole('menuitem', { name: /^Save/ })).not.toHaveAttribute(
+      'aria-disabled',
+    );
+    await page.getByRole('menuitem', { name: /^Save/ }).click();
+    await expect(demo.locator('[data-lab-output="saves"]')).toHaveText('2');
+    await lab.expectAccessible();
+  });
+
   test('UIC-ACTION-ROW-1.7 moves focus to the next action when the focused one leaves', async ({
     page,
     lab,
