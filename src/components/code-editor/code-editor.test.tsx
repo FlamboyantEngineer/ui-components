@@ -4,10 +4,15 @@ import { createRef, StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   createDeferredCompletions,
+  expectReplacedSourceDropsCompletions,
   expectReplacedValueDropsCompletions,
 } from '../../../test/completion-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { matchCompletions, type Completion } from '../completion-list/completion-list.js';
+import {
+  matchCompletions,
+  type Completion,
+  type Completions,
+} from '../completion-list/completion-list.js';
 import { findCompletionQuery } from './completion-match.js';
 import { CodeEditor, type CodeEditorSurfaceProps, type CodeToken } from './code-editor.js';
 
@@ -418,6 +423,25 @@ describe('CodeEditor', () => {
       else view = render(editor);
     };
     await expectReplacedValueDropsCompletions({ show, answer, changes: () => changes });
+  });
+
+  it('UIC-CODE-EDITOR-4.2 UIC-COMPLETION-LIST-2.7 drops completions from a source the host replaced', async () => {
+    const changes: string[] = [];
+    let view: RenderResult | undefined;
+    const show = (completions: Completions) => {
+      const editor = (
+        <CodeEditor
+          variant="surface"
+          aria-label="Source"
+          value="a"
+          onChange={(next) => changes.push(next)}
+          completions={completions}
+        />
+      );
+      if (view) view.rerender(editor);
+      else view = render(editor);
+    };
+    await expectReplacedSourceDropsCompletions({ show, changes: () => changes });
   });
 
   it('UIC-CODE-EDITOR-4.2 opens the completion list as the reader types and ties it to the input', async () => {

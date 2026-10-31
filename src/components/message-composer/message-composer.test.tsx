@@ -6,11 +6,16 @@ import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createDeferredCompletions,
+  expectReplacedSourceDropsCompletions,
   expectReplacedValueDropsCompletions,
 } from '../../../test/completion-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectPackages } from '../../../test/module-imports.js';
-import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
+import {
+  createTriggerCompletions,
+  type Completion,
+  type Completions,
+} from '../completion-list/completion-list.js';
 import { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
 
@@ -58,6 +63,23 @@ describe('MessageComposer', () => {
     };
     await expectReplacedValueDropsCompletions({ show, answer, changes: () => changes });
     expect(input()).toHaveValue('other text');
+  });
+
+  it('UIC-COMPLETION-LIST-2.7 drops completions from a source the host replaced', async () => {
+    const changes: string[] = [];
+    let view: RenderResult | undefined;
+    const show = (completions: Completions) => {
+      const composer = (
+        <MessageComposer
+          defaultValue="a"
+          onChange={(next) => changes.push(next)}
+          completions={completions}
+        />
+      );
+      if (view) view.rerender(composer);
+      else view = render(composer);
+    };
+    await expectReplacedSourceDropsCompletions({ show, changes: () => changes });
   });
 
   it('UIC-MESSAGE-COMPOSER-1.1 UIC-MESSAGE-COMPOSER-2.2 edits its text in a named text area that grows', async () => {

@@ -83,6 +83,13 @@ A lookup and the list it opens shall belong to the text they were looked up for:
 Implementation: `src/components/completion-list/use-completions.ts`
 Verification: `src/components/text-field/use-text-field-input.test.tsx`, `src/components/message-composer/message-composer.test.tsx`, `src/components/code-editor/code-editor.test.tsx`, `e2e/completion-list.spec.ts`
 
+### UIC-COMPLETION-LIST-2.7 - Replaced source
+
+A lookup and the list it opens shall also belong to the source that answered them: when the control's `completions` change to another source while a lookup is pending or a list is open, the old answer is discarded before it shows or inserts, and the new source is asked again for the same text and caret. Until a new source that answers later has answered, no list shows, so an option of the old source can neither be seen nor inserted. A vocabulary is the same source while it lists equal completions in the same order, so an inline list written again on each render keeps its list without asking again; a source function is the same source while it is the same function, so a host keeps it stable (defined once, or memoised) to avoid asking again on every render. TextField, MessageComposer and CodeEditor share this behaviour, alongside the replaced-text guard of UIC-COMPLETION-LIST-2.6.
+
+Implementation: `src/components/completion-list/use-completions.ts`
+Verification: `src/components/text-field/use-text-field-input.test.tsx`, `src/components/message-composer/message-composer.test.tsx`, `src/components/code-editor/code-editor.test.tsx`, `e2e/completion-list.spec.ts`
+
 ## Hooks
 
 | Hook                                | Kind      | Values                                     | Description                                             |

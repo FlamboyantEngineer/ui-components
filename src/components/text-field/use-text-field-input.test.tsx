@@ -2,10 +2,15 @@ import { render, screen, type RenderResult } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
+import {
+  createTriggerCompletions,
+  type Completion,
+  type Completions,
+} from '../completion-list/completion-list.js';
 import { TextField } from './text-field.js';
 import {
   createDeferredCompletions,
+  expectReplacedSourceDropsCompletions,
   expectReplacedValueDropsCompletions,
 } from '../../../test/completion-fixtures.js';
 
@@ -68,6 +73,24 @@ describe('TextField completions', () => {
     };
     await expectReplacedValueDropsCompletions({ show, answer, changes: () => changes });
     expect(screen.getByRole('textbox')).toHaveValue('other text');
+  });
+
+  it('UIC-TEXT-FIELD-5.1 UIC-COMPLETION-LIST-2.7 drops completions from a source the host replaced', async () => {
+    const changes: string[] = [];
+    let view: RenderResult | undefined;
+    const show = (completions: Completions) => {
+      const field = (
+        <TextField
+          label="Notes"
+          defaultValue="a"
+          onChange={(next) => changes.push(next)}
+          completions={completions}
+        />
+      );
+      if (view) view.rerender(field);
+      else view = render(field);
+    };
+    await expectReplacedSourceDropsCompletions({ show, changes: () => changes });
   });
 
   it('UIC-TEXT-FIELD-5.1 offers nothing while read-only or without completions', async () => {

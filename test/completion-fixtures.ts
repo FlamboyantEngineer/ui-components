@@ -4,6 +4,7 @@ import { expect } from 'vitest';
 import type {
   CompletionResult,
   CompletionSource,
+  Completions,
 } from '../src/components/completion-list/completion-list.js';
 
 /** A completion source whose answers the test gives, one lookup at a time. */
@@ -52,4 +53,42 @@ export async function expectReplacedValueDropsCompletions({
   expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   await user.keyboard('{Enter}');
   expect(changes().some((value) => value.includes('alpha'))).toBe(false);
+}
+
+/**
+ * Replaces a control's completions while a lookup is pending and while a list shows, and checks that
+ * the new source answers instead: an answer or a list from the old source never shows or inserts,
+ * while an equal inline vocabulary and the same source keep the list through a render.
+ * `show(completions)` renders or rerenders the control holding `a`; `changes` are the values it
+ * reported.
+ */
+export async function expectReplacedSourceDropsCompletions({
+  show,
+  changes,
+}: {
+  show: (completions: Completions) => void;
+  changes: () => readonly string[];
+}) {
+  const user = userEvent.setup();
+  const { source, answer } = createDeferredCompletions();
+  show(source);
+  await user.click(screen.getByRole('textbox'));
+  await user.keyboard('{End}{Control>} {/Control}');
+  show([{ label: 'alpine' }]);
+  expect(await screen.findByRole('option', { name: 'alpine' })).toBeInTheDocument();
+  await answer();
+  expect(screen.queryByRole('option', { name: 'alpha' })).not.toBeInTheDocument();
+  // The same vocabulary written again keeps the list.
+  show([{ label: 'alpine' }]);
+  expect(screen.getByRole('option', { name: 'alpine' })).toBeInTheDocument();
+
+  // A source still answering hides the old list, so Enter cannot insert from it.
+  show(source);
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  await user.keyboard('{Enter}');
+  await user.keyboard('{End}{Control>} {/Control}');
+  show(source);
+  await answer();
+  expect(await screen.findByRole('option', { name: 'alpha' })).toBeInTheDocument();
+  expect(changes().some((value) => /alpha|alpine/.test(value))).toBe(false);
 }

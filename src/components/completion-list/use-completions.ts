@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { isThenable } from '../../utils/is-thenable.js';
 import { matchCompletions, type Completion } from './completion-match.js';
+import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { useLatest } from '../../utils/use-latest.js';
 
 /** What a completion source knows about the place it completes. */
@@ -102,7 +103,10 @@ interface CompletionSession {
   state: CompletionState;
   setState: Dispatch<SetStateAction<CompletionState>>;
   request: RefObject<number>;
-  text: RefObject<string | null>;
+  /** The lookup the pending answer or open list belongs to, or null while there is neither. */
+  lookup: RefObject<Lookup | null>;
+  /** The source that lookup asked. */
+  source: RefObject<Completions | undefined>;
   latest: RefObject<{ state: CompletionState; options: CompletionsOptions }>;
 }
 
@@ -174,30 +178,52 @@ function toPendingState(state: CompletionState, lookup: Lookup): CompletionState
   };
 }
 
+/**
+ * Whether two sources are the same: the same source function, or vocabularies listing equal
+ * completions in the same order, as an inline list written again on each render does.
+ */
+function isSameSource(left: Completions | undefined, right: Completions | undefined): boolean {
+  if (left === right) return true;
+  if (!left || !right || typeof left === 'function' || typeof right === 'function') return false;
+  return (
+    left.length === right.length &&
+    left.every((completion, index) => isShallowEqual(completion, right[index]))
+  );
+}
+
 /** Whether the control still holds the text the session completes. */
 function holdsSessionText(session: CompletionSession): boolean {
-  return session.latest.current.options.inputRef.current?.value === session.text.current;
+  const value = session.latest.current.options.inputRef.current?.value;
+  return session.lookup.current !== null && value === session.lookup.current.value;
+}
+
+/** Whether the session's source still is the control's. */
+function hasSessionSource(session: CompletionSession): boolean {
+  return isSameSource(session.source.current, session.latest.current.options.completions);
 }
 
 function useCompletionState(options: CompletionsOptions) {
   const [state, setState] = useState<CompletionState>(closed);
   const request = useRef(0);
-  // The text the pending lookup or open list completes, or null while there is neither.
-  const text = useRef<string | null>(null);
+  const lookup = useRef<Lookup | null>(null);
+  const source = useRef<Completions | undefined>(undefined);
   // Every commit: callers pass a fresh options object each render.
   const latest = useLatest({ state, options });
-  const session = { state, setState, request, text, latest };
+  const session = { state, setState, request, lookup, source, latest };
   const isLocked = options.isLocked || options.completions === undefined;
   useLayoutEffect(() => {
     if (!isLocked) return;
     request.current += 1;
-    text.current = null;
+    lookup.current = null;
     setState(hideCompletionState);
   }, [isLocked]);
   // A value the control was given from outside, such as a controlled replacement, ends the session:
-  // its answer and range belong to the text it was looked up for.
+  // its answer and range belong to the text it was looked up for. A new source answers it again.
   useLayoutEffect(() => {
-    if (text.current !== null && !holdsSessionText(session)) closeCompletions(session);
+    const current = lookup.current;
+    if (current === null) return;
+    if (!holdsSessionText(session)) closeCompletions(session);
+    else if (!hasSessionSource(session)) askSource(session, current, true);
   });
   useLayoutEffect(
     () => () => {
@@ -211,7 +237,7 @@ function useCompletionState(options: CompletionsOptions) {
 
 function closeCompletions(session: CompletionSession) {
   session.request.current += 1;
-  session.text.current = null;
+  session.lookup.current = null;
   session.latest.current.state = hideCompletionState(session.latest.current.state);
   session.setState(hideCompletionState);
 }
@@ -225,7 +251,7 @@ function applyCompletion(session: CompletionSession, option: Completion) {
     !current.state.options.includes(option)
   )
     return;
-  if (!holdsSessionText(session)) return closeCompletions(session);
+  if (!holdsSessionText(session) || !hasSessionSource(session)) return closeCompletions(session);
   const { start, end } = current.state;
   current.state = hideCompletionState(current.state);
   try {
@@ -235,29 +261,38 @@ function applyCompletion(session: CompletionSession, option: Completion) {
   }
 }
 
+/**
+ * Asks the control's source for `lookup` and shows only that answer, while the control still holds
+ * the text it was looked up for and has not changed source. A list another source answered never
+ * stays open while the new source answers, so its options cannot be shown or inserted.
+ */
+function askSource(session: CompletionSession, lookup: Lookup, isNewSource: boolean) {
+  const { completions } = session.latest.current.options;
+  if (!completions) return;
+  const id = (session.request.current += 1);
+  session.lookup.current = lookup;
+  session.source.current = completions;
+  const show = (answer: CompletionAnswer) => {
+    if (id !== session.request.current || session.latest.current.options.isLocked) return;
+    if (!holdsSessionText(session) || !hasSessionSource(session)) return closeCompletions(session);
+    session.setState((state) => toState(answer, lookup, state.revision + 1));
+  };
+  const answer = lookUp(completions, lookup);
+  if (!isThenable(answer)) return show(answer);
+  session.setState((state) =>
+    isNewSource ? hideCompletionState(state) : toPendingState(state, lookup),
+  );
+  answer.then(show, () => undefined);
+}
+
 function trackCompletions(session: CompletionSession, reason: CompletionReason) {
   const current = session.latest.current.options;
   const input = current.inputRef.current;
   if (!input || !current.completions || current.isLocked) return;
   // Inputs without a caret (such as `email`) report none; complete at the end.
   const caret = input.selectionStart ?? input.value.length;
-  const lookup = {
-    value: input.value,
-    caret,
-    query: current.findQuery(input.value, caret),
-    reason,
-  };
-  const id = (session.request.current += 1);
-  session.text.current = lookup.value;
-  const show = (answer: CompletionAnswer) => {
-    if (id !== session.request.current || session.latest.current.options.isLocked) return;
-    if (!holdsSessionText(session)) return closeCompletions(session);
-    session.setState((state) => toState(answer, lookup, state.revision + 1));
-  };
-  const answer = lookUp(current.completions, lookup);
-  if (!isThenable(answer)) return show(answer);
-  session.setState((state) => toPendingState(state, lookup));
-  answer.then(show, () => undefined);
+  const query = current.findQuery(input.value, caret);
+  askSource(session, { value: input.value, caret, query, reason }, false);
 }
 
 /**
