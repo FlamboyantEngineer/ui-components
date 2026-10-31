@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isChordPress, matchesChord } from './shortcut-match.js';
+import { isChordPress, matchesChord, readCommandKey } from './shortcut-match.js';
 
 type Press = Partial<Omit<KeyboardEvent, 'getModifierState'>> & { altGraph?: boolean };
 
@@ -76,5 +76,17 @@ describe('matchesChord', () => {
     expect(isChordPress(press({ key: 'я', code: 'KeyZ', ctrlKey: true }), chord)).toBe(true);
     expect(isChordPress(press({ key: 'я', ctrlKey: true, repeat: true }), chord)).toBe(false);
     expect(isChordPress(press({ key: 'я', ctrlKey: true, isComposing: true }), chord)).toBe(false);
+  });
+});
+
+describe('readCommandKey', () => {
+  it('UIC-SHORTCUT-1.8 reads a non-Latin letter as the key in its place and other keys as typed', () => {
+    expect(readCommandKey({ key: 'я', code: 'KeyZ' })).toBe('z');
+    expect(readCommandKey({ key: 'Я', code: 'KeyZ' })).toBe('z');
+    expect(readCommandKey({ key: 'а', code: 'KeyF' })).toBe('f');
+    expect(readCommandKey({ key: 'Z', code: 'KeyZ' })).toBe('z');
+    expect(readCommandKey({ key: 'a', code: 'KeyQ' })).toBe('a');
+    expect(readCommandKey({ key: '+', code: 'Equal' })).toBe('+');
+    expect(readCommandKey({ key: 'ArrowUp', code: 'ArrowUp' })).toBe('arrowup');
   });
 });

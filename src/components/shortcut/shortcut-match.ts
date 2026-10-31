@@ -30,6 +30,19 @@ function readKeys(event: Pick<KeyboardEvent, 'key' | 'code'>): string[] {
 }
 
 /**
+ * The key a press with Control or Command names, lower-cased, for handlers that read one letter
+ * (`z` for undo, `f` for find): the key it types, or, when that is a character other than a Latin
+ * letter or digit, the letter or digit key in its place on a US layout, so `я` on the Z key of a
+ * Cyrillic layout reads `z`. Other keys (`+`, `-`, `ArrowUp`) read as typed.
+ */
+export function readCommandKey(event: Pick<KeyboardEvent, 'key' | 'code'>): string {
+  const typed = event.key.toLowerCase();
+  if (event.key.length !== 1 || latinLetterOrDigit.test(event.key)) return typed;
+  const physical = letterOrDigitCode.exec(event.code ?? '');
+  return (physical?.[1] ?? physical?.[2] ?? typed).toLowerCase();
+}
+
+/**
  * Whether a press is AltGr typing a character, which browsers on Windows also report as
  * Control+Alt: AltGraph is held and the key types something other than a Latin letter or digit.
  */

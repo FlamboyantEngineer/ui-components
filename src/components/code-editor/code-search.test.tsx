@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -120,6 +120,15 @@ describe('CodeEditor find and replace', () => {
     expect(screen.getByRole('status')).toHaveTextContent('No results');
     // The disabled buttons hand focus to the find box, keeping it in the bar.
     expect(screen.getByRole('searchbox', { name: 'Find' })).toHaveFocus();
+  });
+
+  it('UIC-CODE-EDITOR-7.1 opens the find row on the F key of a non-Latin layout', async () => {
+    const { container } = render(<Editor />);
+    act(() => input().focus());
+    // On a Cyrillic layout the F key types а.
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event types a key by its US layout and cannot press a Cyrillic letter on its key
+    fireEvent.keyDown(input(), { key: 'а', code: 'KeyF', ctrlKey: true });
+    expect(container.querySelector('.ui-code-editor__search')).not.toBeNull();
   });
 
   it('UIC-CODE-EDITOR-7.3 finds without replacing in a read-only editor', async () => {

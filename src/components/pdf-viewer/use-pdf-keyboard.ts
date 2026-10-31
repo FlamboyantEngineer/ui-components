@@ -1,5 +1,6 @@
 'use client';
 
+import { readCommandKey } from '../shortcut/shortcut.js';
 import { useCallback, type KeyboardEvent, type RefObject } from 'react';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { pdfZoomLevels, type PdfZoom } from './pdf-zoom.js';
@@ -74,7 +75,7 @@ export function usePdfKeyboard(options: UsePdfKeyboardOptions): PdfKeyboard {
   const onViewerKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
-      const shortcut = readShortcut(event.key);
+      const shortcut = readShortcut(readCommandKey(event));
       if (event.shiftKey && shortcut !== 'zoom-in') return;
       const { isReady, zoom, defaultZoom, findFieldRef } = latest.current;
       const field = findFieldRef.current;

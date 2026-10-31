@@ -228,7 +228,7 @@ Verification: `src/components/code-editor/code-ranges.test.ts`, `src/components/
 
 ### UIC-CODE-EDITOR-7.1 - Find row
 
-With `allowsSearch`, Ctrl+F or Cmd+F in the text area shall open a [Find Bar](FIND-BAR.md) (also `ui-code-editor__search`) between the toolbar and the source, and move focus to its find box (named by the provider string `find`) with its text selected, seeded with the text area's selection when that is one line. The bar's status reads the current match of the total (`stepOfTotal`) or `noResults`, its Previous match and Next match buttons are disabled without matches, and it ends with a Close button.
+With `allowsSearch`, Ctrl+F or Cmd+F in the text area (on a non-Latin layout, the key in the F key's place, [UIC-SHORTCUT-1.8](SHORTCUT.md)) shall open a [Find Bar](FIND-BAR.md) (also `ui-code-editor__search`) between the toolbar and the source, and move focus to its find box (named by the provider string `find`) with its text selected, seeded with the text area's selection when that is one line. The bar's status reads the current match of the total (`stepOfTotal`) or `noResults`, its Previous match and Next match buttons are disabled without matches, and it ends with a Close button.
 
 Implementation: `src/components/code-editor/code-search.tsx`, `src/components/code-editor/use-code-search.ts`, `src/components/code-editor/use-code-keys.ts`
 Verification: `src/components/code-editor/code-search.test.tsx`, `e2e/code-editor.spec.ts`

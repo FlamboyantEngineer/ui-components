@@ -128,4 +128,4 @@ export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps)
 
 export { formatAriaKeyShortcuts } from './shortcut-format.js';
 export type { ShortcutChord, ShortcutPlatform } from './shortcut-format.js';
-export { isChordPress, matchesChord } from './shortcut-match.js';
+export { isChordPress, matchesChord, readCommandKey } from './shortcut-match.js';
