@@ -20,7 +20,7 @@ import { I18nProvider, RouterProvider, useLocale } from '../primitives/index.js'
 import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
 import { mergeClassNames } from './hooks.js';
 import { OverlayPresenceScope } from './overlay-presence.js';
-import { formatMessage, type MessageValues } from './message-format.js';
+import { DEFAULT_LOCALE, formatMessage, type MessageValues } from './message-format.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
 import { en } from './locales/index.js';
 import { compileStrings, defaultStrings, type UiMessages, type UiStrings } from './strings.js';
@@ -178,7 +178,7 @@ const navigateNatively: UiNavigate = (href) => window.location.assign(href);
 const defaultContext: UiContextValue = {
   glyphs: {},
   messages: en,
-  locale: 'en-US',
+  locale: DEFAULT_LOCALE,
   strings: defaultStrings,
   renderLink: renderAnchor,
   router: { navigate: navigateNatively },
@@ -213,16 +213,19 @@ export function UiProvider({
   children,
 }: UiProviderProps) {
   const parent = useContext(UiContext);
+  // The locale React Aria uses below: this provider's, else the outer one's (a parent provider's,
+  // a host's I18nProvider or the browser's), so the text formats as the components do.
+  const outerLocale = useLocale().locale;
+  const resolvedLocale = locale ?? outerLocale;
   const text = useMemo(() => {
     const merged = messages ? { ...parent.messages, ...omitUndefined(messages) } : parent.messages;
-    const resolvedLocale = locale ?? parent.locale;
     const isSameText = merged === parent.messages && resolvedLocale === parent.locale;
     return {
       messages: merged,
       locale: resolvedLocale,
       strings: isSameText ? parent.strings : compileStrings(merged, resolvedLocale),
     };
-  }, [parent.messages, parent.locale, parent.strings, messages, locale]);
+  }, [parent.messages, parent.locale, parent.strings, messages, resolvedLocale]);
   const router = useMemo(
     () => (navigate ? { navigate, useHref } : parent.router),
     [navigate, useHref, parent.router],
@@ -255,10 +258,9 @@ export function UiProvider({
       clock,
     ],
   );
-  const outerLocale = useLocale().locale;
   // The same wrappers whatever the options, so adding or removing one never remounts the children.
   return (
-    <I18nProvider locale={locale ?? outerLocale}>
+    <I18nProvider locale={resolvedLocale}>
       <RouterProvider
         navigate={router.navigate}
         {...(router.useHref ? { useHref: router.useHref } : {})}

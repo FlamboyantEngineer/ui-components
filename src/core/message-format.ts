@@ -51,6 +51,9 @@ function toArgument(value: MessageValue | null, locale: string): string | number
   return value as string | number;
 }
 
+/** The locale of the built-in English text and of text formatted outside every provider. */
+export const DEFAULT_LOCALE = 'en-US';
+
 /**
  * Formats an ICU MessageFormat message, such as
  * `{count, plural, =0 {No files} one {# file} other {# files}}`, with the locale's plural rules,
@@ -62,7 +65,7 @@ function toArgument(value: MessageValue | null, locale: string): string | number
 export function formatMessage(
   message: string,
   values: MessageValues = {},
-  locale = 'en-US',
+  locale = DEFAULT_LOCALE,
 ): string {
   const args: Record<string, string | number> = {};
   for (const [name, value] of Object.entries(values)) args[name] = toArgument(value, locale);

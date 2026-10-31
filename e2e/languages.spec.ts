@@ -49,3 +49,17 @@ test.describe('Languages lab', () => {
     await expect(cell('3', 'ja')).toHaveText('3 件 · Ana、Ben、Chloéを選択しました');
   });
 });
+
+test.describe('Languages lab in a French browser', () => {
+  test.use({ locale: 'fr-FR' });
+
+  test('UIC-PROVIDER-3.4 UIC-PROVIDER-4.1 formats text without a locale in the browser locale', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('languages');
+    await expect(page.locator('[data-lab-output="browser-locale"]')).toHaveText(
+      /^1\s200 éléments · Vous avez choisi Ana, Ben et Chloé$/,
+    );
+  });
+});

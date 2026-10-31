@@ -59,7 +59,7 @@ Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`
 
 ### UIC-PROVIDER-3.4 - Locale rules
 
-Messages shall format with the provider's locale, defaulting to `en-US`: plural categories follow the locale's rules (including languages without plural forms, such as Japanese), `#` and `{n, number}` group digits by locale, and a list value joins with the locale's own words and punctuation (`A, B, and C`, `A, B et C`, `A、B、C`). Line and column numbers and other identifiers pass as text, so they never group.
+Messages shall format with the provider's locale, which is the locale React Aria uses below it (UIC-PROVIDER-4.1); outside every provider they format in `en-US`, the built-in English text's locale: plural categories follow the locale's rules (including languages without plural forms, such as Japanese), `#` and `{n, number}` group digits by locale, and a list value joins with the locale's own words and punctuation (`A, B, and C`, `A, B et C`, `A、B、C`). Line and column numbers and other identifiers pass as text, so they never group.
 
 Implementation: `src/core/message-format.ts`
 Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`, `e2e/languages.spec.ts`
@@ -82,10 +82,10 @@ Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-4.1 - React Aria locale
 
-`UiProvider`'s `locale` prop shall set the locale React Aria uses for formatting, collation and text direction below it. Without it, React Aria uses the outer locale or the browser's.
+`UiProvider`'s `locale` prop shall set the locale React Aria uses for formatting, collation and text direction below it. Without it, the provider takes the outer locale: a parent provider's, a host's `I18nProvider`'s, or else the browser's. That one locale serves both React Aria and the provider's text (UIC-PROVIDER-3.4) and `useFormatMessage`, so a provider given `messages` alone formats its sentences as its components format dates and numbers.
 
 Implementation: `src/core/provider.tsx`
-Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`
+Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`, `e2e/languages.spec.ts`
 
 ## UIC-PROVIDER-5 - Links
 

@@ -117,5 +117,15 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Locale from the browser"
+      description="A provider given French messages but no locale formats them in the locale the components use: the browser's here, or a host's own locale provider. Open the lab in a French browser and the count groups its digits the French way."
+    >
+      <UiProvider messages={languages.fr}>
+        <span data-lab-output="browser-locale">
+          <Counted count={1200} />
+        </span>
+      </UiProvider>
+    </LabSection>
   </>,
 );
