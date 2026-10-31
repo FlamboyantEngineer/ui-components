@@ -23,9 +23,7 @@ export function createMemoryStorage(initial?: Record<string, string>): UiStorage
 }
 
 /** Wraps a storage that may throw (quota, privacy mode) so reads return null and writes are dropped. */
-export function createSafeStorage(
-  storage: Pick<UiStorage, 'getItem' | 'setItem' | 'removeItem'>,
-): UiStorage {
+export function createSafeStorage(storage: UiStorage): UiStorage {
   return {
     getItem(key) {
       try {

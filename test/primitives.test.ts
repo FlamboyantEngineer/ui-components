@@ -16,6 +16,8 @@ const ARIA_SOURCE =
   /from\s+'(react-aria(?:-components)?(?:\/[^']*)?|react-stately(?:\/[^']*)?|@react-(?:aria|stately|types)\/[^']*|@internationalized\/[^']*)'/;
 const PRIMITIVES_IMPORT =
   /(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s+'[./]*(?:src\/)?primitives\/index\.js'/g;
+// A React Aria module path other than the private ones the package entry does not export.
+const ARIA_MODULE_PATH = /from\s+'(react-aria(?:-components)?\/(?!private\/)[^']*)'/g;
 const AREA_EXPORT = /export\s+(type\s+)?\{([^}]*)\}\s*from\s+'([^']+)';/g;
 const AREA_FUNCTION = /^export function (\w+)/gm;
 
@@ -113,6 +115,15 @@ describe('primitives boundary', { timeout: 30_000 }, () => {
     );
     expect([...used].filter((name) => !exported.has(name))).toEqual([]);
     expect([...exported.keys()].filter((name) => !used.has(name))).toEqual([]);
+  });
+
+  it('UIC-PRIMITIVES-1.2 imports React Aria from the package entry in every area', () => {
+    const deep = readdirSync(primitivesDir).flatMap((area) =>
+      [...readFileSync(join(primitivesDir, area), 'utf8').matchAll(ARIA_MODULE_PATH)].map(
+        ([, path = '']) => `${area}: ${path}`,
+      ),
+    );
+    expect(deep).toEqual([]);
   });
 
   it('UIC-PRIMITIVES-1.3 resolves every value building block under its stable name', () => {
