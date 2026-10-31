@@ -225,6 +225,24 @@ body {
   margin-top: 0;
 }
 
+/*
+ * Reduced motion: under the reader's preference every hook element and its pseudo-elements settle
+ * at once. Durations drop to zero rather than removing animations, so enter and exit animations
+ * still end (and a component waiting for their end still hears it), spinners rest as a still ring
+ * and transition delays (a pause before something hides) are kept. A partial adds its own override
+ * only to draw a different still state.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :is([class^='ui-'], [class*=' ui-']),
+  :is([class^='ui-'], [class*=' ui-'])::before,
+  :is([class^='ui-'], [class*=' ui-'])::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @keyframes ref-spin {
   to {
     transform: rotate(360deg);
