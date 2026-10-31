@@ -68,4 +68,19 @@ test.describe('Projection lab', () => {
     await expect(page.locator('[data-lab-title]')).toHaveText('Page title: Still life');
     await lab.expectAccessible();
   });
+
+  test('UIC-PROJECTION-1.9 starts a publisher that takes over from its own content', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('projection');
+    const notes = page.locator('[data-lab-notes]');
+    await notes.getByRole('textbox', { name: 'Draft note' }).fill('Draft, edited');
+    const takeover = page.getByRole('checkbox', { name: 'Review note takes over' });
+    await takeover.check();
+    await expect(notes.getByRole('textbox', { name: 'Review note' })).toHaveValue('Review');
+    await takeover.uncheck();
+    await expect(notes.getByRole('textbox', { name: 'Draft note' })).toHaveValue('Draft');
+    await lab.expectAccessible();
+  });
 });
