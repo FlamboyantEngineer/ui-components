@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { FormEvent, ReactElement } from 'react';
+import { useState, type FormEvent, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { Form } from '../form/form.js';
@@ -161,5 +161,42 @@ describe('RelativeDateField presets', () => {
       'aria-disabled',
       'true',
     );
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.4 refuses a preset whose value left the bounds while the list was open', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    let now = new Date('2026-04-20T12:00:00Z');
+    let late = false;
+    const clock = () => now;
+    function Controlled() {
+      const [value, setValue] = useState<string | null>(null);
+      return (
+        <RelativeDateField
+          label="Due"
+          value={value}
+          onChange={setValue}
+          getNow={clock}
+          timeZone="UTC"
+          maxValue="2026-04-20"
+          presets={[
+            { amount: 0, unit: 'day' },
+            { label: 'Deadline', getValue: () => (late ? '2026-04-22' : '2026-04-20') },
+          ]}
+          onCommit={onCommit}
+        />
+      );
+    }
+    renderInLocale(<Controlled />);
+    await user.click(screen.getByRole('button', { name: /Due$/ }));
+    now = new Date('2026-04-21T00:00:01Z');
+    await user.click(screen.getByRole('option', { name: 'Today' }));
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: /Due$/ }));
+    now = new Date('2026-04-20T12:00:00Z');
+    late = true;
+    await user.click(screen.getByRole('option', { name: 'Deadline' }));
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Due$/ })).toHaveTextContent('Select');
   });
 });
