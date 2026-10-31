@@ -64,10 +64,10 @@ Verification: `src/components/completion-list/text-completions.test.tsx`
 
 ### UIC-COMPLETION-LIST-2.4 - Text insertion
 
-In a text input or text area, inserting a completion shall replace the text it completes with its `insertText`, or its label, as a browser edit that stays on the undo stack and reaches the control as input, or else through the control's value, and place the caret after the inserted text, then close the list. An insertion callback captured before the list closed, the control locked or its completions were removed cannot edit the value; repeated calls before the next render insert only once. A vocabulary there completes the letters, digits, `_` and `-` before the caret. The control keeps its text box role and autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`); while the list is open, `aria-controls` names it and `aria-activedescendant` names the active option.
+In a text input or text area, inserting a completion shall replace the text it completes with its `insertText`, or its label, as a browser edit that stays on the undo stack and reaches the control as input, or else through the control's value, and place the caret after the inserted text, then close the list. A control without a caret, such as an email input, takes the completion as the end of its text: the edit replaces the whole value, as a browser edit where the browser offers one, and no caret is placed. An insertion callback captured before the list closed, the control locked or its completions were removed cannot edit the value; repeated calls before the next render insert only once. A vocabulary there completes the letters, digits, `_` and `-` before the caret. The control keeps its text box role and autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`); while the list is open, `aria-controls` names it and `aria-activedescendant` names the active option.
 
 Implementation: `src/components/completion-list/text-completions.ts`, `src/components/completion-list/completion-list.tsx`
-Verification: `src/components/completion-list/text-completions.test.tsx`
+Verification: `src/components/completion-list/text-completions.test.tsx`, `e2e/text-field.spec.ts`
 
 ### UIC-COMPLETION-LIST-2.5 - Trigger characters
 

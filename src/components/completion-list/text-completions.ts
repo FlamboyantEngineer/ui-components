@@ -64,6 +64,11 @@ export function toCompletionInputAttributes(
   };
 }
 
+/** Whether the control has a caret; an email input, for one, has no selection API. */
+function hasCaret(input: TextControl): boolean {
+  return input.selectionStart !== null;
+}
+
 /**
  * Inserts text through the browser's own editing, which keeps it on the undo stack and reports it
  * as input; `false` when the control has no focus or the browser offers no such editing.
@@ -72,9 +77,12 @@ function insertNatively(input: TextControl, range: CompletionRange, text: string
   const next = `${input.value.slice(0, range.start)}${text}${input.value.slice(range.end)}`;
   const doc = input.ownerDocument;
   if (doc.activeElement !== input || typeof doc.execCommand !== 'function') return false;
-  input.setSelectionRange(range.start, range.end);
+  const caret = hasCaret(input);
+  // Without a caret only the whole value can be selected, so the edit replaces all of it.
+  if (caret) input.setSelectionRange(range.start, range.end);
+  else input.select();
   try {
-    doc.execCommand('insertText', false, text);
+    doc.execCommand('insertText', false, caret ? text : next);
   } catch {
     return false;
   }
@@ -95,7 +103,7 @@ export function useTextCompletions(options: TextCompletionsOptions): TextComplet
     const pending = pendingCaret.current;
     if (!input || !pending || input.value !== pending.value) return;
     pendingCaret.current = null;
-    input.setSelectionRange(pending.caret, pending.caret);
+    if (hasCaret(input)) input.setSelectionRange(pending.caret, pending.caret);
   });
   const model = useCompletions({
     completions: options.completions,
