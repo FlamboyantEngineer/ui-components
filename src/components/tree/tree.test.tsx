@@ -1,5 +1,5 @@
 import { MinusGlyph, MoreGlyph, PlusGlyph } from '../../core/glyphs.js';
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -500,6 +500,37 @@ describe('Tree', () => {
       expect(rows.length).toBeLessThan(40);
       expect(rows[0]?.parentElement?.style.height).toBe('32px');
       expectHooksMatchSpec(container, 'TREE', { slots: ['item', 'label'] });
+    } finally {
+      for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
+    }
+  });
+
+  it('UIC-TREE-4.6 keeps the selection and focused row as filtering and virtualizing toggle', async () => {
+    const sizes = { clientWidth: 300, clientHeight: 400 };
+    for (const [name, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
+    }
+    try {
+      const user = userEvent.setup();
+      const onSelectionChange = vi.fn();
+      const props = { selectionMode: 'single', onSelectionChange } as const;
+      const { rerender } = render(<FoodTree {...props} />);
+      await user.click(row('Nuts'));
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      // A virtual layout draws its rows after measuring, so focus returns once they are drawn.
+      const expectKept = async () => {
+        await waitFor(() => expect(row('Nuts')).toHaveFocus());
+        expect(row('Nuts')).toHaveAttribute('aria-selected', 'true');
+      };
+      rerender(<FoodTree {...props} filterText="" />);
+      await expectKept();
+      rerender(<FoodTree {...props} />);
+      await expectKept();
+      rerender(<FoodTree {...props} virtualized />);
+      await expectKept();
+      rerender(<FoodTree {...props} />);
+      await expectKept();
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
     } finally {
       for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
     }

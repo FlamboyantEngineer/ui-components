@@ -6,7 +6,10 @@ import {
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
+import { useMemo } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { TreeEmptyState } from './tree-item.js';
 import { createTreeAriaKeys } from './tree-aria-keys.js';
@@ -46,14 +49,19 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
   });
   const hasEmptyState = isPending || !isEmptyNode(emptyMessage);
   const { dragAndDropHooks } = useDragAndDrop<T>(reordering?.dragAndDrop ?? noDragAndDrop);
-  let tree = (
+  // Turning virtualization or reordering on or off mounts React Aria's tree afresh.
+  const carried = useCarriedFocus<HTMLDivElement>(
+    `${String(root.rowHeight === null)} ${String(!!reordering)}`,
+  );
+  const ref = useMemo(() => mergeRefs(carried, root.ref), [carried, root.ref]);
+  const tree = (
     <AriaTree
       // React Aria keeps drag and drop hooks for the tree's lifetime: remount when reordering toggles.
       key={reordering ? 'reorderable' : 'fixed'}
       {...aria}
       {...ariaKeys}
       {...hooks.root({ className: root.className, props: aria, data: root.data })}
-      ref={root.ref}
+      ref={ref}
       items={items}
       dependencies={model.dependencies}
       renderEmptyState={
@@ -79,13 +87,16 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
       {model.renderItem}
     </AriaTree>
   );
-  if (props.filterText !== undefined) {
-    tree = <TextMatchProvider query={props.filterText}>{tree}</TextMatchProvider>;
-  }
-  if (root.rowHeight === null) return tree;
+  // Always drawn, so a filter starting or ending keeps the tree mounted; without one it passes through.
+  const matched = (
+    <TextMatchProvider query={props.filterText} isInherited={props.filterText === undefined}>
+      {tree}
+    </TextMatchProvider>
+  );
+  if (root.rowHeight === null) return matched;
   return (
     <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: root.rowHeight }}>
-      {tree}
+      {matched}
     </Virtualizer>
   );
 }

@@ -140,6 +140,13 @@ Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-ari
 Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
+### UIC-TREE-4.6 - Presentation changes
+
+Turning `virtualized` on or off, or `filterText` going between `undefined` and a string, shall keep an uncontrolled selection without calling `onSelectionChange`, and keep focus on the row that held it, unless focus had moved elsewhere. The tree holds the selection above React Aria and always draws its text-match provider, which passes the outer one through without a filter.
+
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-selection.ts`, `src/utils/use-carried-focus.ts`
+Verification: `src/components/tree/tree.test.tsx`
+
 ## UIC-TREE-5 - Checkbox selection
 
 ### UIC-TREE-5.1 - Selection checkboxes

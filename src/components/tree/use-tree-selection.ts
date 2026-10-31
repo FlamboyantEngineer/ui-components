@@ -109,9 +109,10 @@ function findIndeterminate<T extends TreeItemData>(
 }
 
 /**
- * React Aria's selection, passed through, or with `selectionPropagation` in multiple selection held
- * by the tree (unless controlled) and cascaded: a row whose selection changes takes its loaded, enabled descendants
- * along, and then each branch is selected exactly when all its enabled children are.
+ * The selection, held by the tree unless controlled, so React Aria's tree mounting afresh keeps
+ * it. With `selectionPropagation` in multiple selection it is also cascaded: a row whose selection
+ * changes takes its loaded, enabled descendants along, and then each branch is selected exactly
+ * when all its enabled children are.
  */
 export function useTreeSelection<T extends TreeItemData>(
   options: TreeSelectionOptions<T>,
@@ -141,7 +142,17 @@ export function useTreeSelection<T extends TreeItemData>(
   );
   const isIndeterminate = useCallback((key: Key) => indeterminate.has(key), [indeterminate]);
   if (!isPropagating) {
-    return { props: { selectedKeys, defaultSelectedKeys, onSelectionChange }, isIndeterminate };
+    // Held here, not by React Aria, so the tree mounting afresh keeps an uncontrolled selection.
+    return {
+      props: {
+        selectedKeys: current,
+        onSelectionChange(next) {
+          if (selectedKeys === undefined) setOwn(next);
+          onSelectionChange?.(next);
+        },
+      },
+      isIndeterminate,
+    };
   }
   return {
     props: {
