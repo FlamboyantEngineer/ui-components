@@ -1,6 +1,7 @@
 // Relative date text (`Tomorrow`, `In 3 days`, `5 minutes ago`) and preset values, formatted through
 // Intl for the reader's locale.
 
+import { getDefaultStrings } from '../../core/strings.js';
 import {
   formatIsoDate,
   fromDate,
@@ -122,20 +123,22 @@ export function describeRelativeDate(
 }
 
 /**
- * Describes a range relative to `now`: each end in relative words (`7 days ago – Today`), the
- * localized range, and whether it lies before, around or after today. `null` unless both ends are
+ * Describes a range relative to `now`: each end in relative words joined by `joinRange`
+ * (`7 days ago – Today`), the localized range, and whether it lies before, around or after today. `null` unless both ends are
  * dates.
  */
 export function describeRelativeRange(
   range: DateRangeValue,
-  options: RelativeDateOptions,
+  options: RelativeDateOptions & {
+    joinRange?: ((start: string, end: string) => string) | undefined;
+  },
 ): RelativeDateText | null {
   const start = describeRelativeDate(range.start, options);
   const end = describeRelativeDate(range.end, options);
   const absolute = formatDayRange(range, options.locale);
   if (!start || !end || absolute === null) return null;
   return {
-    relative: `${start.relative} – ${end.relative}`,
+    relative: (options.joinRange ?? getDefaultStrings().valueRange)(start.relative, end.relative),
     absolute,
     relation: rangeRelation(range, toZonedDay(options.now, options.timeZone)),
     // The relation moves on at midnight, with the ends' day counts.

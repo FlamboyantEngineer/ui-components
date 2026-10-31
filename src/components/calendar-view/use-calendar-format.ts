@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { useUiStrings } from '../../core/provider.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 import type { CalendarViewMode } from './calendar-view.js';
 import { getDayStart, isRepeatedTime } from './calendar-days.js';
@@ -29,6 +30,7 @@ export interface CalendarFormat {
 /** The formatters of a calendar view, made once per locale and time zone. */
 export function useCalendarFormat(timeZone: string): CalendarFormat {
   const { locale } = useLocale();
+  const { valueRange } = useUiStrings();
   return useMemo(() => {
     const make = (options: Intl.DateTimeFormatOptions) =>
       getDateFormatter(locale, { timeZone, ...options });
@@ -62,7 +64,7 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
       if (isRepeated(placed.start) || isRepeated(placed.end)) {
         // A range format names one zone for both ends; each end names its own instead.
         const zoned = isSameDay ? zonedTime : zonedDateTime;
-        return `${zoned.format(new Date(placed.start))} – ${zoned.format(new Date(placed.end))}`;
+        return valueRange(zoned.format(new Date(placed.start)), zoned.format(new Date(placed.end)));
       }
       return (isSameDay ? time : dateTime).formatRange(
         new Date(placed.start),
@@ -87,5 +89,5 @@ export function useCalendarFormat(timeZone: string): CalendarFormat {
       formatHour: (value) => hour.format(new Date(Date.UTC(2000, 0, 1, value))),
       formatWhen,
     };
-  }, [locale, timeZone]);
+  }, [locale, timeZone, valueRange]);
 }

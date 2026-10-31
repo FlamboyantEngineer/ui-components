@@ -10,7 +10,7 @@ test.describe('Languages lab', () => {
     const output = demo.locator('[data-lab-output="page"]');
     await expect(output).toHaveAttribute('lang', 'en-US');
     await expect(output.getByRole('navigation', { name: 'Pagination' })).toBeVisible();
-    await expect(output.locator('.ui-load-more')).toHaveText('Load more (1200 remaining)');
+    await expect(output.locator('.ui-load-more')).toHaveText('Load more (1,200 remaining)');
     await expect(output.getByRole('button', { name: 'Retry' })).toBeVisible();
     await expect(demo.locator('[data-lab-output="host"]')).toHaveText(
       '3 guests at the table: Ana, Ben, and Chloé',

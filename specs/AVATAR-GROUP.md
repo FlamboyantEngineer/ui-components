@@ -13,7 +13,7 @@ Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-g
 
 ### UIC-AVATAR-GROUP-1.2 - Maximum and overflow
 
-`maxVisible` shall show at most that many people from the start of the list, a whole non-negative number, all of them when it is missing. The `ui-avatar-group__overflow` element shall show `+N` for the `N` people past it, and is absent when `N` is zero.
+`maxVisible` shall show at most that many people from the start of the list, a whole non-negative number, all of them when it is missing. The `ui-avatar-group__overflow` element shall show `+N` for the `N` people past it, written by the provider's `overflowCount` message in the locale's digits, and is absent when `N` is zero.
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`
 Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-group.spec.ts`
@@ -61,7 +61,7 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e
 
 ### UIC-AVATAR-GROUP-11.2 - Maximum visible and overflow
 
-`maxVisible` shall show at most that many people from the start of the list, all of them when it is missing. The `ui-avatar-group__overflow` element shall show `+N`, where `N` is the number of people past `maxVisible` plus the whole, non-negative `overflowCount` of people the caller already left out. It is absent when `N` is zero. With no visible person and no overflow the strip renders nothing.
+`maxVisible` shall show at most that many people from the start of the list, all of them when it is missing. The `ui-avatar-group__overflow` element shall show `+N` through the provider's `overflowCount` message in the locale's number format (`+1,236`), where `N` is the number of people past `maxVisible` plus the whole, non-negative `overflowCount` of people the caller already left out. It is absent when `N` is zero. With no visible person and no overflow the strip renders nothing.
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`
 Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e/avatar-group-presence.spec.ts`

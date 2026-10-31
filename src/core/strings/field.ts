@@ -27,8 +27,8 @@ export interface FieldStrings {
   problems: string;
   /** Counts a problem list's problems by severity. */
   problemCount: (errors: number, warnings: number) => string;
-  /** Names a problem's severity, read before its message. */
-  problemSeverity: (severity: 'error' | 'warning') => string;
+  /** Names a problem's severity with the punctuation that leads into its message (`Error:`). */
+  problemSeverityLead: (severity: 'error' | 'warning') => string;
   /** A field menu action that puts the field's default value back. */
   setDefault: string;
   /** The message of a required field left empty. */
@@ -154,7 +154,7 @@ export const fieldStrings = defineStrings<FieldStrings>({
   rejectedFileUnchecked: (count) => ({ count }),
   fileCountLimit: (count) => ({ count }),
   problemCount: (errors, warnings) => ({ errors, warnings }),
-  problemSeverity: (severity) => ({ severity }),
+  problemSeverityLead: (severity) => ({ severity }),
   tooShort: (minLength) => ({ minLength }),
   tooLong: (maxLength) => ({ maxLength }),
   restoreValue: (label) => ({ label }),

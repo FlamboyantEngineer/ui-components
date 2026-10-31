@@ -34,10 +34,6 @@ const hooks = createHooks('empty-state', ['spinner', 'icon', 'title', 'descripti
 
 const loadingRegion = { role: 'status', 'aria-live': 'polite', 'aria-atomic': true } as const;
 
-function toTypographicEllipsis(node: ReactNode): ReactNode {
-  return typeof node === 'string' ? node.replace(/\.{3}/g, '…') : node;
-}
-
 /** The decorative lead: the spinner while loading, else the icon, if any. */
 function EmptyStateLead({ icon, isLoading }: { icon: IconSource; isLoading: boolean }) {
   if (isLoading) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
@@ -71,9 +67,7 @@ export function EmptyState({
     >
       <EmptyStateLead icon={icon} isLoading={isLoading} />
       {isEmptyNode(title) ? null : <Heading {...hooks.slot('title')}>{title}</Heading>}
-      <p {...hooks.slot('description')}>
-        {isLoading ? toTypographicEllipsis(description) : description}
-      </p>
+      <p {...hooks.slot('description')}>{description}</p>
       {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
     </section>
   );

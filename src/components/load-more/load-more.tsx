@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { normalizeCount } from '../../utils/count.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useInView } from '../../utils/use-in-view.js';
@@ -47,16 +48,12 @@ export interface LoadMoreProps
 const hooks = createHooks('load-more');
 
 /** The visible text: the label, then the remaining count when it is a known, nonnegative number. */
-function toVisibleText(
-  label: string,
-  remainingCount: number | undefined,
-  formatRemaining: (count: number) => string,
-): string {
+function toVisibleText(label: string, remainingCount: number | undefined, strings: UiStrings) {
   const remaining =
     remainingCount !== undefined && remainingCount >= 0
       ? normalizeCount(remainingCount)
       : undefined;
-  return remaining === undefined ? label : `${label} (${formatRemaining(remaining)})`;
+  return remaining === undefined ? label : strings.loadMoreWithRemaining(label, remaining);
 }
 
 /**
@@ -109,7 +106,7 @@ export function LoadMore({
   ...rest
 }: LoadMoreProps) {
   const strings = useUiStrings();
-  const text = toVisibleText(label ?? strings.loadMore, remainingCount, strings.remainingCount);
+  const text = toVisibleText(label ?? strings.loadMore, remainingCount, strings);
   const collection = itemLabel?.trim();
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const buttonRef = useMemo(() => mergeRefs<HTMLButtonElement>(setButton, ref), [ref]);
@@ -133,7 +130,7 @@ export function LoadMore({
       size={size}
       isDisabled={isDisabled}
       isPending={pending}
-      aria-label={collection ? `${text} ${collection}` : undefined}
+      aria-label={collection ? strings.loadMoreOf(text, collection) : undefined}
       onPress={onLoadMore ? request : undefined}
     >
       {text}

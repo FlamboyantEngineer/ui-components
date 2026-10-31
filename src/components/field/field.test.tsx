@@ -2,6 +2,8 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
+import { fr, ja } from '../../core/locales/index.js';
+import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import type { ControlSize } from '../../core/props.js';
@@ -66,6 +68,24 @@ describe('Field', () => {
       expectHooksMatchSpec(container, 'FIELD');
       unmount();
     }
+  });
+
+  it('UIC-FIELD-1.2 writes the label colon with the punctuation of the language', () => {
+    const colon = () => document.querySelector('.ui-field__colon');
+    const { rerender } = render(<TextField labelLayout="label-colon-control" />);
+    expect(colon()).toHaveTextContent(/^:$/);
+    rerender(
+      <UiProvider locale="fr-FR" messages={fr}>
+        <TextField labelLayout="label-colon-control" />
+      </UiProvider>,
+    );
+    expect(colon()?.textContent).toBe('\u00a0:');
+    rerender(
+      <UiProvider locale="ja-JP" messages={ja}>
+        <TextField labelLayout="label-colon-control" />
+      </UiProvider>,
+    );
+    expect(colon()).toHaveTextContent('：');
   });
 
   it('UIC-FIELD-1.3 UIC-FIELD-1.6 describes the control with the description then the decoration', () => {

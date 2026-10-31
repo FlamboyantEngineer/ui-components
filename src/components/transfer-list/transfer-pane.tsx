@@ -68,9 +68,7 @@ export function TransferPane({
   const titleId = useId();
   const countId = useId();
   const count =
-    selected.size > 0
-      ? `${strings.itemCount(total)}, ${strings.selectedCount(selected.size)}`
-      : strings.itemCount(total);
+    selected.size > 0 ? strings.itemsAndSelected(total, selected.size) : strings.itemCount(total);
   return (
     <div {...hooks.slot('pane', { side })}>
       <div {...hooks.slot('header')}>

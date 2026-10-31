@@ -52,7 +52,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`
 
 ### UIC-DATE-TIME-FIELD-1.6 - Previous value
 
-While the field is dirty and its committed value is not empty, the group shall start with that value, localized at the editor's precision (seconds at the `second` granularity) and hour cycle, as a `FieldPreviousValue` (`ui-date-time-field__previous`), so a difference the segments show is visible in it too. Its spaces are plain spaces whatever the runtime writes, so it hydrates as rendered on the server.
+While the field is dirty and its committed value is not empty, the group shall start with that value, localized at the editor's precision (seconds at the `second` granularity) and hour cycle (a range with an unreadable end joined by the provider's `valueRange` message), as a `FieldPreviousValue` (`ui-date-time-field__previous`), so a difference the segments show is visible in it too. Its spaces are plain spaces whatever the runtime writes, so it hydrates as rendered on the server.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`
@@ -164,7 +164,7 @@ Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`
 | `ui-date-time-field__previous`                | slot      |                                                                                                   | The committed value while dirty (also `ui-field-previous-value`).       |
 | `ui-date-time-field__input`                   | slot      |                                                                                                   | One run of segments (two in a range).                                   |
 | `ui-date-time-field__segment`                 | slot      |                                                                                                   | One part of the value, or a literal between parts.                      |
-| `ui-date-time-field__separator`               | slot      |                                                                                                   | The dash between a range's start and end.                               |
+| `ui-date-time-field__separator`               | slot      |                                                                                                   | The provider's `rangeSeparator` between a range's start and end.        |
 | `ui-date-time-field__button`                  | slot      |                                                                                                   | The calendar button.                                                    |
 | `ui-date-time-field__popover`                 | slot      |                                                                                                   | The calendar's floating surface.                                        |
 | `ui-date-time-field__dialog`                  | slot      |                                                                                                   | The dialog holding the calendar and actions.                            |

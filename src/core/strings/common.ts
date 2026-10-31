@@ -96,6 +96,8 @@ export interface CommonStrings {
   /** Names a button that removes a listed item, from the item's name. */
   removeItem: (name: string) => string;
   itemCount: (count: number) => string;
+  /** Counts a list's items and its selected ones together (`12 items, 3 selected`). */
+  itemsAndSelected: (total: number, selected: number) => string;
   /** Accessible name of a labelled item with a count (`Open, 3`), from the label and the shown count. */
   labelWithCount: (label: string, count: string) => string;
   /** Stands in for a person or group whose name is blank. */
@@ -115,8 +117,21 @@ export interface CommonStrings {
   shortcutThen: (previous: string, next: string) => string;
   retry: string;
   loadMore: string;
-  remainingCount: (count: number) => string;
+  /** A load-more label followed by the count still to load (`Load more (12 remaining)`). */
+  loadMoreWithRemaining: (label: string, count: number) => string;
+  /** A load-more label followed by the collection it loads, for its accessible name. */
+  loadMoreOf: (label: string, items: string) => string;
   countOrMore: (count: number) => string;
+  /** The count of entries hidden behind an overflow control (`+3`). */
+  overflowCount: (count: number) => string;
+  /** A range of two values already formatted, when no localized range format applies. */
+  valueRange: (start: string, end: string) => string;
+  /** What stands between the two ends of a range drawn as separate elements (` – `). */
+  rangeSeparator: string;
+  /** The punctuation that follows a label before its value (`:`). */
+  labelColon: string;
+  /** Two counts of one summary shown together (`3 of 5 columns mapped · 1 not imported`). */
+  countsSummary: (first: string, second: string) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
   /** A segmented progress bar's visible value (`1/7 · 14%`), from its formatted parts. */
@@ -144,6 +159,8 @@ export interface CommonStrings {
   signingAs: (userName: string) => string;
   /** Names the meaning a signature gives its signer's assent: approval, review, authorship. */
   signatureMeaning: string;
+  /** States the one meaning a signature can give (`Meaning of signature: Approval`). */
+  signatureMeaningIs: (meaning: string) => string;
   /** Names the field for the reason of a signature. */
   signatureReason: string;
   /** Names the field for a signer's drawn or typed signature. */
@@ -216,6 +233,7 @@ export const commonStrings = defineStrings<CommonStrings>({
   placesBeside: (name) => ({ name }),
   removeItem: (name) => ({ name }),
   itemCount: (count) => ({ count }),
+  itemsAndSelected: (total, selected) => ({ total, selected }),
   labelWithCount: (label, count) => ({ label, count }),
   nameWithStatus: (name, status) => ({ name, status }),
   presenceStatus: (status) => ({ status }),
@@ -226,8 +244,12 @@ export const commonStrings = defineStrings<CommonStrings>({
   }),
   shortcutKeyName: (key) => ({ key: spokenKeys[key] ?? 'other', name: key }),
   shortcutThen: (previous, next) => ({ previous, next }),
-  remainingCount: (count) => ({ count }),
+  loadMoreWithRemaining: (label, count) => ({ label, count }),
+  loadMoreOf: (label, items) => ({ label, items }),
   countOrMore: (count) => ({ count }),
+  overflowCount: (count) => ({ count }),
+  valueRange: (start, end) => ({ start, end }),
+  countsSummary: (first, second) => ({ first, second }),
   stepOfTotal: (current, total) => ({ current, total }),
   segmentCount: (progress) => ({ ...progress }),
   segmentProgress: (progress) => ({ ...progress, hasCurrent: progress.current !== undefined }),
@@ -238,6 +260,7 @@ export const commonStrings = defineStrings<CommonStrings>({
   logicalBoxSide: (side) => ({ side: toSelectKey(side) }),
   linkSides: (link) => ({ link }),
   signingAs: (userName) => ({ userName }),
+  signatureMeaningIs: (meaning) => ({ meaning }),
   appFramePanel: (panel) => ({ panel }),
   toggleNavigation: (isCollapsed) => ({ isCollapsed }),
   stepStatus: (status) => ({ status }),

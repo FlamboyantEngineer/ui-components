@@ -13,14 +13,14 @@ Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec
 
 ### UIC-LOAD-MORE-1.2 - Label and remaining count
 
-The visible text shall be `label` or the provider's `loadMore` string, followed by `(N remaining)` (the provider's `remainingCount` text) when `remainingCount` is given, including zero. The count is normalized ([COUNT.md](COUNT.md)): fractions round down, and a negative value or one that is not a finite number is omitted rather than invented.
+The visible text shall be `label` or the provider's `loadMore` string, followed by the count when `remainingCount` is given, including zero: the provider's `loadMoreWithRemaining` message joins them (`Load more (12 remaining)`), carrying the language's punctuation and number format. The count is normalized ([COUNT.md](COUNT.md)): fractions round down, and a negative value or one that is not a finite number is omitted rather than invented.
 
 Implementation: `src/components/load-more/load-more.tsx`, `src/utils/count.ts`, `src/core/strings.ts`
 Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec.ts`
 
 ### UIC-LOAD-MORE-1.3 - Accessible name
 
-With `itemLabel`, the accessible name shall be the complete visible text followed by the trimmed collection name ("Load more (12 remaining) messages"). Without it, the visible text names the control.
+With `itemLabel`, the accessible name shall be the complete visible text joined to the trimmed collection name by the provider's `loadMoreOf` message ("Load more (12 remaining) messages"). Without it, the visible text names the control.
 
 Implementation: `src/components/load-more/load-more.tsx`
 Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec.ts`

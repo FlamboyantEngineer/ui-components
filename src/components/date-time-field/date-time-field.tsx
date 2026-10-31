@@ -115,7 +115,11 @@ function useDateCheck(
     }
     const issue = findBoundIssue(value, mode, { ...props, ...options });
     if (issue) {
-      const limit = formatDateValue(issue.limit, mode, { ...options, locale });
+      const limit = formatDateValue(issue.limit, mode, {
+        ...options,
+        locale,
+        joinRange: strings.valueRange,
+      });
       const message =
         issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
       return { severity: 'error', message };
@@ -154,6 +158,7 @@ function toSettings(
  */
 export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateTimeFieldProps<M>) {
   const { locale } = useLocale();
+  const strings = useUiStrings();
   const all = props as AnyDateTimeFieldProps;
   const mode: DateTimeFieldMode = props.mode ?? 'date';
   // Offset and zoned texts read in the provider's hydration-stable zone, so the server and the
@@ -174,7 +179,12 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   const committed = state.committedValue;
   const previous =
     state.isDirty && committed
-      ? formatDateValue(committed, mode, { ...options, locale, hourCycle: all.hourCycle })
+      ? formatDateValue(committed, mode, {
+          ...options,
+          locale,
+          hourCycle: all.hourCycle,
+          joinRange: strings.valueRange,
+        })
       : null;
   const Control = controls[mode];
   const normalize = (value: DateFieldValue) => normalizeDateValue(value, mode, options);

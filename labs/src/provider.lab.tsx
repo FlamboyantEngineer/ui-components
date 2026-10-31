@@ -57,7 +57,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   downloadFile: ['Report.pdf'],
   mediaStage: ['Harbour.jpg'],
   problemCount: [2, 1],
-  problemSeverity: ['warning'],
+  problemSeverityLead: ['warning'],
   viewActions: ['Quick meals'],
   deleteViewTitle: ['Quick meals'],
   sortDirectionName: ['descending'],

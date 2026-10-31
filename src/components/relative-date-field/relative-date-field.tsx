@@ -140,6 +140,7 @@ interface DescribeOptions {
   timeZone: string;
   locale: string;
   fallbackAfterDays: number;
+  joinRange: (start: string, end: string) => string;
 }
 
 /**
@@ -203,6 +204,7 @@ function useValueCheck(kind: RelativeDateFieldMode, bounds: ZonedBounds) {
  * `<time>` element per end.
  */
 function Preview({ value, absolute }: { value: RelativeDateValue; absolute: string }) {
+  const strings = useUiStrings();
   const { locale } = useLocale();
   if (typeof value === 'string') {
     return (
@@ -213,7 +215,8 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
   }
   return (
     <span {...hooks.slot('preview')}>
-      <time dateTime={value.start}>{formatDay(value.start, locale) ?? value.start}</time> –{' '}
+      <time dateTime={value.start}>{formatDay(value.start, locale) ?? value.start}</time>
+      {strings.rangeSeparator}
       <time dateTime={value.end}>{formatDay(value.end, locale) ?? value.end}</time>
     </span>
   );
@@ -280,7 +283,8 @@ export function RelativeDateField<K extends RelativeDateFieldMode = 'date'>(
   const context = (at: Date): PresetContext => ({ now: at, timeZone, kind, locale });
   const value = (state.value ?? null) as RelativeDateValue | null;
   const fallbackAfterDays = props.fallbackAfterDays ?? 7;
-  const text = describeValue(value, { now, timeZone, locale, fallbackAfterDays });
+  const describe = { now, timeZone, locale, fallbackAfterDays, joinRange: strings.valueRange };
+  const text = describeValue(value, describe);
   const items = presets.map((preset, index) => ({
     id: String(index),
     label: labelPreset(preset, { kind, locale }, strings),

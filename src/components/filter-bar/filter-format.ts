@@ -47,9 +47,11 @@ function formatValue(condition: FilterCondition, field: FilterField, context: Fo
         ? strings.filterRange(number.format(value.min ?? 0), number.format(value.max ?? 0))
         : '';
     case 'date':
-      return formatDateValue(value as string, 'date', { locale });
+      return formatDateValue(value as string, 'date', { locale, joinRange: strings.valueRange });
     case 'date-range':
-      return isDateRange(value) ? formatDateValue(value, 'date-range', { locale }) : '';
+      return isDateRange(value)
+        ? formatDateValue(value, 'date-range', { locale, joinRange: strings.valueRange })
+        : '';
     case 'list':
       return formatList(value as readonly string[], field);
     case 'boolean':
