@@ -112,17 +112,29 @@ export function CheckboxTree() {
 }
 
 /** A filter field over the tree: matches show with their ancestors, marked. */
+const AMERICAS = place('americas', 'Americas', [
+  place('usa', 'United States', [place('los-angeles', 'Los Angeles')]),
+]);
+
 export function FilterTree() {
   const [query, setQuery] = useState('os');
+  const [items, setItems] = useState(ATLAS);
   return (
     <div data-lab-filter>
       <label>
         Filter places{' '}
         <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} />
       </label>
+      <button
+        type="button"
+        disabled={items.includes(AMERICAS)}
+        onClick={() => setItems([...ATLAS, AMERICAS])}
+      >
+        Add the Americas
+      </button>
       <Tree
         aria-label="Filtered places"
-        items={ATLAS}
+        items={items}
         getTextValue={name}
         filterText={query}
         emptyMessage="No places match"
