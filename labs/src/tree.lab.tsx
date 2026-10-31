@@ -115,6 +115,32 @@ function SelectionTree() {
   );
 }
 
+/** An uncontrolled selection kept while the host turns virtualization or filter mode on and off. */
+function PresentationTree() {
+  const [isVirtual, setVirtual] = useState(false);
+  const [isFiltering, setFiltering] = useState(false);
+  return (
+    <div data-lab-presentation>
+      <Button size="sm" onPress={() => setVirtual((on) => !on)}>
+        {isVirtual ? 'Stop virtualizing' : 'Virtualize'}
+      </Button>
+      <Button size="sm" onPress={() => setFiltering((on) => !on)}>
+        {isFiltering ? 'Leave filter mode' : 'Enter filter mode'}
+      </Button>
+      <Tree
+        aria-label="Changing presentation"
+        items={LIBRARY}
+        getTextValue={name}
+        getIcon={icon}
+        defaultExpandedKeys={ALL_FOLDERS}
+        selectionMode="single"
+        virtualized={isVirtual}
+        filterText={isFiltering ? '' : undefined}
+      />
+    </div>
+  );
+}
+
 function LazyTree() {
   const [loaded, setLoaded] = useState<Entry[] | null>(null);
   const [pending, setPending] = useState(false);
@@ -363,6 +389,12 @@ mountLab(
         virtualized
         data-lab-tree="virtualized"
       />
+    </LabSection>
+    <LabSection
+      title="Changing presentation"
+      description="Select a row, then virtualize or enter filter mode: the tree keeps its selection, and a row focused before a change keeps focus."
+    >
+      <PresentationTree />
     </LabSection>
     <LabSection
       title="Primitive keys"
