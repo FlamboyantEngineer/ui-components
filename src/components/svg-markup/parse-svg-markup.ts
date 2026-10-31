@@ -52,7 +52,7 @@ interface ParserState {
 /** Elements whose content is raw text, so markup inside them is never read as elements. */
 const rawTextElements: ReadonlySet<string> = new Set(['script', 'style']);
 
-const cache = createLruCache<string, SvgElementNode>(256);
+const cache = createLruCache<string, SvgElementNode | null>(256);
 
 function freezeNode(root: MutableElement | SvgTextNode): SvgNode {
   for (const node of walkTree([root], (node) =>
@@ -112,7 +112,7 @@ function isDroppedElement(state: ParserState, token: MarkupOpenToken): boolean {
   return tag === null || isRefusedAnimation(tag, token.attributes);
 }
 
-function parseTree(markup: string): SvgElementNode {
+function parseTree(markup: string): SvgElementNode | null {
   const root: MutableElement = { type: 'element', tag: '#document', attributes: {}, children: [] };
   const state: ParserState = { root, stack: createOpenElements(root) };
   const tokens = tokenizeMarkup(markup, { rawTextElements });
@@ -126,7 +126,7 @@ function parseTree(markup: string): SvgElementNode {
     (child): child is MutableElement =>
       child.type === 'element' && child.tag.toLowerCase() === 'svg',
   );
-  if (!svg) throw new Error('SVG markup must contain a root <svg> element.');
+  if (!svg) return null;
   return freezeNode({ ...svg, tag: 'svg' }) as SvgElementNode;
 }
 
@@ -135,11 +135,11 @@ function parseTree(markup: string): SvgElementNode {
  * processing instructions and doctypes are dropped; CDATA becomes text; entities are decoded. Only
  * the drawing elements and attributes of the safe-SVG policy survive: anything else, links outside
  * the drawing, and values that could load or run something are dropped. Results are cached by
- * markup string, keeping the most recently used entries. Throws when the markup has no `<svg>` root.
+ * markup string, keeping the most recently used entries. Null when the markup has no `<svg>` root.
  */
-export function parseSvgMarkup(markup: string): SvgElementNode {
+export function parseSvgMarkup(markup: string): SvgElementNode | null {
   const cached = cache.get(markup);
-  if (cached) return cached;
+  if (cached !== undefined) return cached;
   const tree = parseTree(markup);
   cache.set(markup, tree);
   return tree;

@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Icon } from '../icon/icon.js';
 import { parseSvgMarkup } from './parse-svg-markup.js';
-import { SvgMarkup, renderSvgTree } from './svg-markup.js';
+import { SvgMarkup, renderSvgDrawing } from './svg-markup.js';
 
 const outlineMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="source" width="24" height="24" style="color: red" id="source" role="presentation" focusable="true" tabindex="0">' +
@@ -32,7 +32,9 @@ describe('SvgMarkup', () => {
   it('UIC-SVG-MARKUP-2.1 constructs deep drawing children without recursive stack growth', () => {
     const markup = `<svg>${'<g>'.repeat(20_000)}<path/>${'</g>'.repeat(20_000)}</svg>`;
     // Construct the React tree without depending on the host renderer's nesting limit.
-    expect(renderSvgTree(parseSvgMarkup(markup), 'deep', {})).not.toBeNull();
+    const tree = parseSvgMarkup(markup);
+    if (!tree) throw new Error('expected a drawing');
+    expect(renderSvgDrawing(tree, 'deep').children).toHaveLength(1);
   });
 
   it.each([false, true])(

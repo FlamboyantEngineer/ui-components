@@ -9,7 +9,7 @@ import { SvgMarkup } from './svg-markup.js';
 /** The text nodes of a parsed drawing, in order. */
 function texts(markup: string): string[] {
   const found: string[] = [];
-  const pending: SvgNode[] = [parseSvgMarkup(markup)];
+  const pending: SvgNode[] = [...(parseSvgMarkup(markup)?.children ?? [])];
   for (let node = pending.shift(); node; node = pending.shift()) {
     if (node.type === 'text') found.push(node.text);
     else pending.unshift(...node.children);

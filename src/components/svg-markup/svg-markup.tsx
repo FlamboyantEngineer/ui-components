@@ -1,4 +1,4 @@
-import { createElement, useId, type ReactNode } from 'react';
+import { createElement, useId, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { mapTree } from '../../utils/map-tree.js';
@@ -83,47 +83,46 @@ function renderChildren(node: SvgElementNode, scope: SvgReferenceScope): ReactNo
   );
 }
 
-/**
- * The drawing's root `<svg>` as a React element, with its IDs and references scoped to
- * `instanceId` and the caller's `props` over the markup's root attributes.
- */
-export function renderSvgTree(
-  tree: SvgElementNode,
-  instanceId: string,
-  props: Record<string, unknown>,
-): ReactNode {
-  const scope = createSvgReferenceScope(tree, instanceId);
-  const rootAttributes = scope('svg', tree.attributes) ?? {};
-  return createElement(
-    'svg',
-    { ...toElementProps(rootAttributes, (name) => !ownedRootAttribute.test(name)), ...props },
-    renderChildren(tree, scope),
-  );
+interface SvgDrawing {
+  /** The markup's root attributes, scoped, without the ones the component and caller own. */
+  rootProps: Record<string, unknown>;
+  children: ReactNode[];
 }
 
-function tryParse(markup: string): SvgElementNode | null {
-  try {
-    return parseSvgMarkup(markup);
-  } catch {
-    return null;
-  }
+/** The drawing's root attributes and content as React props and elements, scoped to `instanceId`. */
+export function renderSvgDrawing(tree: SvgElementNode, instanceId: string): SvgDrawing {
+  const scope = createSvgReferenceScope(tree, instanceId);
+  const rootAttributes = scope('svg', tree.attributes) ?? {};
+  return {
+    rootProps: toElementProps(rootAttributes, (name) => !ownedRootAttribute.test(name)),
+    children: renderChildren(tree, scope),
+  };
 }
 
 /**
  * Renders SVG markup as React elements, without innerHTML. The root keeps the markup's drawing
  * attributes (`viewBox`, `fill`, `stroke`, …); the stylesheet sizes it. Decorative unless labelled.
  * Each instance prefixes the drawing's IDs, so its references never reach the host page or another
- * drawing.
+ * drawing. The drawing is parsed and scoped again only when `markup` changes.
  * Renders nothing when the markup has no `<svg>` root.
  */
 export function SvgMarkup({ markup, label, className, ...rest }: SvgMarkupProps) {
   const instanceId = useId();
-  const tree = tryParse(markup);
-  if (!tree) return null;
-  return renderSvgTree(tree, instanceId, {
-    ...rest,
-    ...hooks.root({ className }),
-    focusable: 'false',
-    ...toImageProps(label),
-  });
+  const tree = useMemo(() => parseSvgMarkup(markup), [markup]);
+  const drawing = useMemo(
+    () => (tree ? renderSvgDrawing(tree, instanceId) : null),
+    [tree, instanceId],
+  );
+  if (!drawing) return null;
+  return createElement(
+    'svg',
+    {
+      ...drawing.rootProps,
+      ...rest,
+      ...hooks.root({ className }),
+      focusable: 'false',
+      ...toImageProps(label),
+    },
+    drawing.children,
+  );
 }

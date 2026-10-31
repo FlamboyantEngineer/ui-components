@@ -40,7 +40,7 @@ describe('Markup reading time', () => {
   it('UIC-MARKUP-1.5 parses SVG with unterminated tags and stray closing tags in linear time', () => {
     const markup = '<svg>' + '<g>'.repeat(30_000) + '</x>'.repeat(30_000) + unterminated + '</svg>';
     expect(measure(() => parseSvgMarkup(markup))).toBeLessThan(linearBudget);
-    expect(parseSvgMarkup(markup).tag).toBe('svg');
+    expect(parseSvgMarkup(markup)?.tag).toBe('svg');
   });
 
   it('UIC-MARKUP-1.5 renders adversarial markup on the server and the client in linear time', () => {
