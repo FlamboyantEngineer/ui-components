@@ -209,6 +209,32 @@ export function formatAbsoluteTime(
   return parsed ? formatAbsolute(parsed, locale, styles) : null;
 }
 
+/** A date and time text that names its zone or offset, so it stands for one instant everywhere. */
+const zoneDesignator = /(?:Z|[+-]\d{2}(?::?\d{2})?|\])$/i;
+
+/**
+ * The value's absolute text independent of the clock and the time zone, as a server and a client
+ * hydrating its markup both render it: a date as itself, a date and time without an offset as its
+ * wall time, and an instant in UTC with the zone named (a `long` time at least). `null` when the
+ * value is not a date.
+ */
+export function formatStableTime(
+  value: string,
+  locale: string,
+  { dateStyle = 'medium', timeStyle = 'short' }: AbsoluteTimeStyles = {},
+): string | null {
+  const date = parseIsoDate(value);
+  if (date)
+    return getDateFormatter(locale, { dateStyle, timeZone: 'UTC' }).format(date.toDate('UTC'));
+  const dateTime = parseIsoDateTime(value, 'UTC');
+  if (!dateTime) return null;
+  const isInstant = zoneDesignator.test(value);
+  const style = isInstant && (timeStyle === 'short' || timeStyle === 'medium') ? 'long' : timeStyle;
+  return getDateFormatter(locale, { dateStyle, timeStyle: style, timeZone: 'UTC' }).format(
+    dateTime.toDate('UTC'),
+  );
+}
+
 /** Upper-cases the first letter, for relative text that starts a label or a sentence. */
 export function capitalizeText(text: string, locale: string): string {
   return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);

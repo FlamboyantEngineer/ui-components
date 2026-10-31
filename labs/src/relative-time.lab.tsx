@@ -6,6 +6,7 @@ import {
   type RelativeTimeStyle,
   type RelativeTimeUnitStyle,
 } from '../../src/components/relative-time/relative-time.js';
+import { formatStableTime } from '../../src/utils/relative-time.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 /** A fixed clock, so every label in the matrices reads the same on every day. */
@@ -236,6 +237,19 @@ mountLab(
       description="Stamped on the real clock: it reads now, then seconds and minutes ago, updating on one timer shared by every timestamp on the page."
     >
       <LiveStamp />
+    </LabSection>
+    <LabSection
+      title="Server text"
+      description="What the server and a hydrating client render before reading the clock: the same absolute text in any time zone, an instant in UTC. The live words replace it once hydrated."
+    >
+      <StateMatrix
+        axes={{ value: ['2026-10-31T12:00:00Z', '2026-10-31T12:00', '2026-10-31'] }}
+        render={({ value }) => (
+          <span>
+            <code>{value}</code> → <output>{formatStableTime(value, 'en-US')}</output>
+          </span>
+        )}
+      />
     </LabSection>
     <LabSection
       title="Frozen clock"

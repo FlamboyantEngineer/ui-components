@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { resetLocalTimeZone, setLocalTimeZone } from '../primitives/index.js';
-import { capitalizeText, describeRelativeTime, formatAbsoluteTime } from './relative-time.js';
+import {
+  capitalizeText,
+  describeRelativeTime,
+  formatAbsoluteTime,
+  formatStableTime,
+} from './relative-time.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
 const options = { now, locale: 'en-US', fallbackAfterDays: 7 };
@@ -255,5 +260,29 @@ describe('describeRelativeTime across daylight saving time', () => {
       describeRelativeTime('2026-11-03T04:30:00Z', late),
     );
     expect(days).toMatchObject({ relative: 'tomorrow', relation: 'future' });
+  });
+});
+
+describe('formatStableTime', () => {
+  it('UIC-RELATIVE-TIME-2.3 formats the same text in any time zone', () => {
+    const read = () => [
+      formatStableTime('2026-10-31T12:00:00Z', 'en-US'),
+      formatStableTime('2026-10-31T08:00:00-04:00[America/New_York]', 'en-US'),
+      formatStableTime('2026-10-31T12:00', 'en-US'),
+      formatStableTime('2026-10-31', 'en-US', { dateStyle: 'long' }),
+      formatStableTime('2026-10-31T12:00:00Z', 'en-US', { timeStyle: 'full' }),
+      formatStableTime('soon', 'en-US'),
+    ];
+    const expected = [
+      'Oct 31, 2026, 12:00:00 PM UTC',
+      'Oct 31, 2026, 12:00:00 PM UTC',
+      'Oct 31, 2026, 12:00 PM',
+      'October 31, 2026',
+      'Oct 31, 2026, 12:00:00 PM Coordinated Universal Time',
+      null,
+    ];
+    for (const zone of ['America/New_York', 'Asia/Tokyo', 'UTC']) {
+      expect(inTimeZone(zone, read).map((text) => text && plain(text))).toEqual(expected);
+    }
   });
 });
