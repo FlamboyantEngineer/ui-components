@@ -450,13 +450,43 @@ export function Pages() {
   );
 }
 
+/**
+ * A button that turns a change on a second after it is pressed, which leaves time to open an editor
+ * first, and turns it off at once.
+ */
+function DelayedToggle({
+  isOn,
+  onChange,
+  on,
+  off,
+}: {
+  isOn: boolean;
+  onChange: (isOn: boolean) => void;
+  on: string;
+  off: string;
+}) {
+  return (
+    <Button
+      size="sm"
+      onPress={() => {
+        if (isOn) onChange(false);
+        else window.setTimeout(() => onChange(true), 1000);
+      }}
+    >
+      {isOn ? off : on}
+    </Button>
+  );
+}
+
 export function Editing() {
   const [rows, setRows] = useState(produce.slice(0, 4));
   const [last, setLast] = useState('None');
   const [isLocked, setLocked] = useState(false);
+  const [isRemoved, setRemoved] = useState(false);
+  const [isWeightLocked, setWeightLocked] = useState(false);
   const columns: TableColumn<Produce>[] = [
     { id: 'name', header: 'Name', allowsEditing: true },
-    { id: 'weight', header: 'Weight (g)', align: 'end', allowsEditing: true },
+    { id: 'weight', header: 'Weight (g)', align: 'end', allowsEditing: !isWeightLocked },
     {
       id: 'kind',
       header: 'Kind',
@@ -477,19 +507,27 @@ export function Editing() {
   ];
   return (
     <div data-lab="editing">
-      <Button
-        size="sm"
-        onPress={() => {
-          // The delay leaves time to open an editor on the row before it is disabled.
-          if (isLocked) setLocked(false);
-          else window.setTimeout(() => setLocked(true), 1000);
-        }}
-      >
-        {isLocked ? 'Enable the Apple row' : 'Disable the Apple row in a second'}
-      </Button>
+      <DelayedToggle
+        isOn={isLocked}
+        onChange={setLocked}
+        on="Disable the Apple row in a second"
+        off="Enable the Apple row"
+      />
+      <DelayedToggle
+        isOn={isRemoved}
+        onChange={setRemoved}
+        on="Remove the Apple row in a second"
+        off="Restore the Apple row"
+      />
+      <DelayedToggle
+        isOn={isWeightLocked}
+        onChange={setWeightLocked}
+        on="Lock weights in a second"
+        off="Unlock weights"
+      />
       <Table
         aria-label="Produce, editable"
-        rows={rows}
+        rows={isRemoved ? rows.filter((row) => row.id !== 'apple') : rows}
         columns={columns}
         disabledKeys={isLocked ? ['apple'] : undefined}
         onCellEdit={({ row, columnId, value }) => {

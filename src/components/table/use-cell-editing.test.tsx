@@ -203,6 +203,47 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     expect(onCellEdit).not.toHaveBeenCalled();
   });
 
+  it('UIC-TABLE-11.5 closes an editor whose row leaves the table, focusing the grid', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    const { rerender } = render(
+      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />,
+    );
+    await user.dblClick(cell('30'));
+    await user.keyboard('{Control>}a{/Control}45');
+    const pears = fruit.filter((row) => row.id !== 'apple');
+    rerender(<Table aria-label="Fruit" rows={pears} columns={columns} onCellEdit={onCellEdit} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: 'Fruit' }).contains(document.activeElement)).toBe(true);
+    await user.dblClick(cell('60'));
+    expect(screen.getByRole('textbox')).toHaveValue('60');
+    await user.keyboard('{Escape}');
+    rerender(<Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(onCellEdit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-TABLE-11.5 closes an editor whose column stops allowing edits, focusing the cell', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    const locked = columns.map((column) =>
+      column.id === 'weight' ? { ...column, allowsEditing: false } : column,
+    );
+    const { rerender } = render(
+      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />,
+    );
+    await user.dblClick(cell('30'));
+    await user.keyboard('{Control>}a{/Control}45');
+    rerender(<Table aria-label="Fruit" rows={fruit} columns={locked} onCellEdit={onCellEdit} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(cell('30')).toHaveFocus();
+    rerender(<Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('textbox')).toHaveValue('30');
+    expect(onCellEdit).not.toHaveBeenCalled();
+  });
+
   it('UIC-TABLE-11.2 UIC-TABLE-11.3 leaves Enter and Escape to an input method while it composes', async () => {
     const user = userEvent.setup();
     const onCellEdit = vi.fn();
