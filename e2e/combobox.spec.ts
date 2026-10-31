@@ -255,6 +255,23 @@ test.describe('Combobox lab', () => {
     ]);
   });
 
+  test('UIC-COMBOBOX-3.4 keeps the caret of an edit inside the text', async ({ page, lab }) => {
+    await lab.open('combobox');
+    const input = page.locator('[data-lab-cell="aid=inline completion"]').getByRole('combobox');
+    await input.fill('cery');
+    await input.press('End');
+    for (let step = 0; step < 3; step += 1) await input.press('ArrowLeft');
+    await page.keyboard.type('h');
+    await expect(input).toHaveValue('chery');
+    const selection = () =>
+      input.evaluate((element: HTMLInputElement) => [element.selectionStart, element.selectionEnd]);
+    expect(await selection()).toEqual([2, 2]);
+    await input.fill('');
+    await page.keyboard.type('che');
+    await expect(input).toHaveValue('cherry');
+    expect(await selection()).toEqual([3, 6]);
+  });
+
   test('UIC-COMBOBOX-3.3 UIC-COMBOBOX-3.4 UIC-COMBOBOX-4.3 highlights, completes and marks typed text', async ({
     page,
     lab,

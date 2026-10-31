@@ -462,7 +462,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Typing aids"
-      description="Marked matches, the first match highlighted so Enter picks it, and inline completion of the typed text."
+      description="Marked matches, the first match highlighted so Enter picks it, and inline completion of text typed at the end; an edit inside the text keeps its caret."
     >
       <StateMatrix
         axes={{ aid: aids }}
