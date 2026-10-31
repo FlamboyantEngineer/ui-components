@@ -8,6 +8,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { defaultLayerZIndex, isLayerAbove, overlayLayers, type OverlayLayer } from './layers.js';
 import { Portal, PortalContainerProvider, PortalHost, useLayerZIndex } from './portal.js';
+import { Button } from '../button/button.js';
+import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
+import { Modal as LibraryModal } from '../modal/modal.js';
+import { AnchoredTooltip, Tooltip } from '../tooltip/tooltip.js';
 
 function wrappers(root: ParentNode = document.body): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>('.ui-portal'));
@@ -86,6 +90,56 @@ describe('Portal', () => {
 
     rerender(<Harness ready />);
     expect(screen.getByText('Orange').parentElement).toBe(inner);
+  });
+
+  it('UIC-PORTAL-1.2 UIC-PORTAL-1.3 renders React Aria and library overlays into the host', async () => {
+    const user = userEvent.setup();
+    const anchor = appendToBody(document.createElement('span'));
+    render(
+      <PortalHost id="overlay-host">
+        <MenuTrigger>
+          <Button>Actions</Button>
+          <MenuPopover>
+            <Menu aria-label="Actions" items={[{ id: 'copy', label: 'Copy' }]} />
+          </MenuPopover>
+        </MenuTrigger>
+        <Tooltip content="Hint" isOpen>
+          <Button>Hinted</Button>
+        </Tooltip>
+        <AnchoredTooltip isOpen anchor={anchor} content="Anchored" />
+        <LibraryModal title="Blocking" defaultOpen>
+          Body
+        </LibraryModal>
+        <LibraryModal title="Floating" defaultOpen isNonModal>
+          Body
+        </LibraryModal>
+        <LibraryModal title="Retained" defaultOpen keepMounted>
+          Body
+        </LibraryModal>
+      </PortalHost>,
+    );
+    const host = document.getElementById('overlay-host');
+    for (const name of ['Blocking', 'Floating', 'Retained']) {
+      expect(host).toContainElement(screen.getByRole('dialog', { name }));
+    }
+    expect(host).toContainElement(screen.getByText('Anchored'));
+    expect(host).toContainElement(await screen.findByText('Hint'));
+    await user.click(screen.getByRole('button', { name: 'Actions', hidden: true }));
+    expect(host).toContainElement(await screen.findByRole('menu', { name: 'Actions' }));
+  });
+
+  it('UIC-PORTAL-1.2 renders no React Aria overlay while the chosen container is not ready', () => {
+    render(
+      <PortalContainerProvider container={null}>
+        <LibraryModal title="Waiting" defaultOpen>
+          Body
+        </LibraryModal>
+        <LibraryModal title="Floating" defaultOpen isNonModal>
+          Body
+        </LibraryModal>
+      </PortalContainerProvider>,
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-PORTAL-1.3 a portal host renders its container after its children and owns its portals', () => {

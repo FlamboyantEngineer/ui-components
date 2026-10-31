@@ -13,7 +13,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-1.2 - Layering
 
-The overlay shall cover the viewport (fixed position, zero inset) and carry the z-index of the `modal` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)) as a functional inline style, with `data-layer="modal"`. A `layerZIndex` from `PortalContainerProvider` or `PortalHost` above it applies. A modal opened while another is open shall stack above it, and content on the `dropdown`, `context-menu`, `tooltip` and `toast` layers shall stack above every modal.
+The overlay shall cover the viewport (fixed position, zero inset) and carry the z-index of the `modal` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)) as a functional inline style, with `data-layer="modal"`. A `layerZIndex` from `PortalContainerProvider` or `PortalHost` above it applies. Every presentation renders into the overlay container they choose ([UIC-PORTAL-1.2](PORTAL.md#uic-portal-12---choosing-the-container)), the document body by default; floating and retained dialogs render through a `Portal` on the `modal` layer, so they render nothing on the server and until hydrated. A modal opened while another is open shall stack above it, and content on the `dropdown`, `context-menu`, `tooltip` and `toast` layers shall stack above every modal.
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`

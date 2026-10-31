@@ -113,6 +113,26 @@ test.describe('Portal lab', () => {
     await expect(wrapper).toHaveCount(0);
   });
 
+  test('UIC-PORTAL-1.2 UIC-PORTAL-1.3 opens React Aria menus and dialogs inside a portal host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('portal');
+    const demo = page.locator('[data-lab-demo="hosted-overlays"]');
+    const host = demo.locator('.ui-portal-host');
+    await demo.getByRole('button', { name: 'Hosted menu' }).click();
+    await expect(host.getByRole('menu', { name: 'Hosted menu' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+
+    await demo.getByRole('button', { name: 'Hosted dialog' }).click();
+    const dialog = host.getByRole('dialog', { name: 'Hosted dialog' });
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('body > [data-react-aria-overlay], body > .ui-modal')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
+
   test('UIC-PORTAL-3.2 stays usable while a React Aria modal is open', async ({ page, lab }) => {
     await lab.open('portal');
     await page.getByRole('button', { name: 'Choose a colour' }).click();
