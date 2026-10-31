@@ -1,6 +1,6 @@
 // Props and option vocabularies shared by every component (docs/CODING-GUIDELINES.md).
 
-import type { ComponentPropsWithRef, JSX } from 'react';
+import type { ComponentPropsWithRef, JSX, Ref } from 'react';
 
 /**
  * A value a caller `data-*` attribute can carry. Strings, numbers and booleans render as text, as
@@ -20,6 +20,15 @@ export interface BaseProps {
   id?: string | undefined;
   /** Caller `data-*` attributes, forwarded to the root element as React renders them. */
   [data: `data-${string}`]: DataAttributeValue;
+}
+
+/**
+ * The `ref` a component that renders a root element accepts. Props interfaces extend it, with the
+ * root's element type, instead of declaring `ref` themselves.
+ */
+export interface RefProps<E extends Element> {
+  /** The root element. */
+  ref?: Ref<E> | undefined;
 }
 
 /**

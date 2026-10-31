@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type KeyboardEvent, type ReactNode, type Ref } from 'react';
+import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import {
   Tree as AriaTree,
   ListLayout,
@@ -12,7 +12,7 @@ import type {
   CollectionSelectionProps,
   ExpansionProps,
 } from '../../core/events.js';
-import type { BaseProps, Key, Size } from '../../core/props.js';
+import type { BaseProps, Key, Size, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readTreeChildren, type TreeMoveItem } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
@@ -55,7 +55,12 @@ export type TreeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 export type TreeVariant = 'default' | 'picker';
 
 export interface TreeProps<T extends TreeItemData>
-  extends BaseProps, AriaLabellingProps, CollectionSelectionProps, ExpansionProps {
+  extends
+    BaseProps,
+    AriaLabellingProps,
+    CollectionSelectionProps,
+    ExpansionProps,
+    RefProps<HTMLDivElement> {
   /** Top-level items. Each item's `id` must be unique in the whole tree. */
   items: readonly T[];
   /** Called with the key of the row the reader activates. */
@@ -123,8 +128,6 @@ export interface TreeProps<T extends TreeItemData>
   canRename?: ((item: T) => boolean) | undefined;
   /** Sees each keydown in a row before the tree does; return `true` to claim the key. */
   onItemKeyDown?: ((item: T, event: KeyboardEvent<HTMLElement>) => boolean) | undefined;
-  /** The tree grid element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 const virtualRowHeights: Readonly<Record<TreeSize, number>> = { sm: 28, md: 32, lg: 40 };

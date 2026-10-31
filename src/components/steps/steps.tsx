@@ -6,7 +6,7 @@ import { Button as AriaButton, useNumberFormatter } from '../../primitives/index
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import type { BaseProps, Density, Key, NativeProps, Orientation } from '../../core/props.js';
+import type { BaseProps, Density, Key, Orientation, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
@@ -33,7 +33,7 @@ export interface StepsItem {
   isDisabled?: boolean | undefined;
 }
 
-export interface StepsProps extends BaseProps, AriaLabellingProps, Pick<NativeProps<'ol'>, 'ref'> {
+export interface StepsProps extends BaseProps, AriaLabellingProps, RefProps<HTMLOListElement> {
   /** The steps, in order. */
   items: readonly StepsItem[];
   /** Every step is complete, with no current step. Defaults to false. */

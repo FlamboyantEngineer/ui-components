@@ -9,12 +9,11 @@ import {
   useState,
   type CSSProperties,
   type ReactNode,
-  type Ref,
   type RefObject,
 } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
@@ -33,7 +32,8 @@ import { getOwnerWindow } from '../../utils/owner-window.js';
 
 export type { DashboardGridItem } from './dashboard-layout.js';
 
-export interface DashboardGridProps extends BaseProps, AriaLabellingProps {
+export interface DashboardGridProps
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** Where each tile sits, controlled. Overlapping tiles are pushed down. */
   layout?: readonly DashboardGridItem[] | undefined;
   /** Where each tile sits at first, uncontrolled. */
@@ -52,8 +52,6 @@ export interface DashboardGridProps extends BaseProps, AriaLabellingProps {
   isEditing?: boolean | undefined;
   /** Renders the tile of a layout item, usually a `DashboardTile`. */
   children: (item: DashboardGridItem) => ReactNode;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 /** What a tile reads from its grid. */

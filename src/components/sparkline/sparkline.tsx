@@ -1,10 +1,10 @@
 'use client';
 
-import { useId, type Ref } from 'react';
+import { useId } from 'react';
 import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   resolveSparklineGeometry,
@@ -17,7 +17,7 @@ export type { SparklineMarker } from './sparkline-geometry.js';
 /** `line` draws the values as a line; `area` also fills the space under it. */
 export type SparklineVariant = 'line' | 'area';
 
-export interface SparklineProps extends BaseProps, AriaLabellingProps {
+export interface SparklineProps extends BaseProps, AriaLabellingProps, RefProps<SVGSVGElement> {
   /** The series, in order. Values that are not finite numbers leave gaps; a value alone between them is a dot. */
   values: readonly number[];
   /** Line or filled area. Defaults to `line`. */
@@ -34,8 +34,6 @@ export interface SparklineProps extends BaseProps, AriaLabellingProps {
   height?: number | undefined;
   /** How the values in the accessible summary are formatted. */
   formatOptions?: Intl.NumberFormatOptions | undefined;
-  /** The `<svg>` element. */
-  ref?: Ref<SVGSVGElement> | undefined;
 }
 
 const hooks = createHooks('sparkline', ['area', 'line', 'dot', 'marker']);

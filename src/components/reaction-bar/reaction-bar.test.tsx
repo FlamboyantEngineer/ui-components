@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -156,6 +157,12 @@ describe('ReactionBar', () => {
     expect(container).toBeEmptyDOMElement();
     rerender(<ReactionBar reactions={[]} onToggle={() => {}} />);
     expect(screen.getByRole('button', { name: 'Add reaction' })).toBeInTheDocument();
+  });
+
+  it('UIC-REACTION-BAR-1.6 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<ReactionBar reactions={reactions} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-reaction-bar'));
   });
 
   it('UIC-REACTION-BAR-1.6 takes its names from the caller and the provider', () => {

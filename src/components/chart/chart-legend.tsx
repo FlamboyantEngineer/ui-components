@@ -1,10 +1,9 @@
 'use client';
 
-import type { Ref } from 'react';
 import { ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { ChartSeries } from './chart.js';
@@ -20,11 +19,10 @@ export interface ChartHiddenKeysProps {
   onHiddenKeysChange?: ((keys: Set<Key>) => void) | undefined;
 }
 
-export interface ChartLegendProps extends BaseProps, AriaLabellingProps, ChartHiddenKeysProps {
+export interface ChartLegendProps
+  extends BaseProps, AriaLabellingProps, ChartHiddenKeysProps, RefProps<HTMLDivElement> {
   /** The series, in the order of their colour slots. */
   items: readonly ChartSeries[];
-  /** The group element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 /** The hidden series: the caller's when controlled, otherwise the component's own. */

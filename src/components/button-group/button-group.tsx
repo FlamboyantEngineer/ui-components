@@ -1,10 +1,10 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 import { Group } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Density, Orientation } from '../../core/props.js';
+import type { BaseProps, Density, Orientation, RefProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 
 /** `default` and `compact` space the buttons apart; `attached` joins them into one control. */
@@ -20,7 +20,7 @@ export interface ButtonGroupRenderState {
   isFocusVisible: boolean;
 }
 
-export interface ButtonGroupProps extends BaseProps, AriaLabellingProps {
+export interface ButtonGroupProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The buttons: `Button` elements or `DropdownMenu` triggers. */
   children?: ReactNode;
   /** Lays the buttons out in a row or a column. Defaults to `horizontal`. */
@@ -29,8 +29,6 @@ export interface ButtonGroupProps extends BaseProps, AriaLabellingProps {
   density?: ButtonGroupDensity | undefined;
   /** The buttons share the group's length equally. */
   justified?: boolean | undefined;
-  /** The group element. */
-  ref?: Ref<HTMLDivElement> | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
   render?: ElementRender<'div', ButtonGroupRenderState> | undefined;
 }

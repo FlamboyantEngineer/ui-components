@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -48,6 +49,12 @@ function Matrix(props: Partial<PermissionMatrixProps>) {
 const box = (name: string) => screen.getByLabelText<HTMLInputElement>(name);
 
 describe('PermissionMatrix', () => {
+  it('UIC-PERMISSION-MATRIX-1.4 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Matrix ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-permission-matrix'));
+  });
+
   it('UIC-PERMISSION-MATRIX-1.1 UIC-PERMISSION-MATRIX-1.4 renders a role column per role and carries caller attributes', () => {
     const { container } = render(
       <Matrix

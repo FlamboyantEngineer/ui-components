@@ -121,7 +121,7 @@ Verification: `src/components/pivot-table/pivot-fields.test.ts`, `src/components
 
 ### UIC-PIVOT-TABLE-4.1 - Hooks and caller attributes
 
-`PivotTable` shall carry the hooks below, append the caller's `className`, forward `id` and caller `data-*` attributes to its root, and its labelling props to the table, which keeps the Table's grid semantics: the row header column names each row, and nested groups carry their level and expanded state.
+`PivotTable` shall carry the hooks below, append the caller's `className`, forward `id`, `ref` and caller `data-*` attributes to its root, and its labelling props to the table, which keeps the Table's grid semantics: the row header column names each row, and nested groups carry their level and expanded state.
 
 Implementation: `src/components/pivot-table/pivot-table.tsx`, `labs/reference/pivot-table.css`
 Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`

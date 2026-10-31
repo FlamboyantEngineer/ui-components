@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
@@ -54,7 +54,8 @@ export interface ChangeListProps
   extends
     BaseProps,
     Pick<DescriptionListProps, 'aria-label' | 'aria-labelledby'>,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'> {
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    RefProps<HTMLDListElement> {
   /** The changes, one row each. */
   changes: readonly ChangeListChange[];
   /** `compact` puts old → new on one line; `detailed` stacks the old and new values. Defaults to `compact`. */

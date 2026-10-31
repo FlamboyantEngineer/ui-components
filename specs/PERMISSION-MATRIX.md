@@ -27,7 +27,7 @@ Verification: `src/components/permission-matrix/permission-matrix.test.tsx`, `e2
 
 ### UIC-PERMISSION-MATRIX-1.4 - Hooks and caller attributes
 
-`PermissionMatrix` shall carry the hooks below, append the caller's `className` to its root and forward `id` and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
+`PermissionMatrix` shall carry the hooks below, append the caller's `className` to its root and forward `id`, `ref` and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `src/components/permission-matrix/permission-matrix-hooks.ts`
 Verification: `src/components/permission-matrix/permission-matrix.test.tsx`

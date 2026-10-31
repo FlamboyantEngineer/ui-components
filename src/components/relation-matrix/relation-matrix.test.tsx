@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -86,6 +86,12 @@ describe('RelationMatrix', () => {
     await user.click(cell(1, 0));
     expect(onCellAction).toHaveBeenCalledWith(expect.objectContaining({ row: '1', column: 1 }));
     expect(error).not.toHaveBeenCalled();
+  });
+
+  it('UIC-RELATION-MATRIX-1.5 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Matrix ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-relation-matrix'));
   });
 
   it('UIC-RELATION-MATRIX-1.1 UIC-RELATION-MATRIX-1.5 UIC-RELATION-MATRIX-4.1 renders a grid of headers and cells', () => {

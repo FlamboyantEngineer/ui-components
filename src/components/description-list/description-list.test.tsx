@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
@@ -254,6 +255,16 @@ describe('DescriptionList', () => {
     const { container } = render(<Sample />);
     expect(container.querySelector('[role], [tabindex], [aria-live]')).toBeNull();
     expect(container.querySelector('dl')).toHaveAttribute('aria-label', 'Summary');
+  });
+
+  it('UIC-DESCRIPTION-LIST-2.3 forwards ref to its root', () => {
+    const ref = createRef<HTMLDListElement>();
+    const { container } = render(
+      <DescriptionList ref={ref}>
+        <DescriptionRow label="Name">Ada</DescriptionRow>
+      </DescriptionList>,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-description-list'));
   });
 
   it('UIC-DESCRIPTION-LIST-2.3 appends caller classes and forwards ids and data attributes', () => {

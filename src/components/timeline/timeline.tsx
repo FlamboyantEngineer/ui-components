@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, type Ref } from 'react';
+import { useState } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps, SelectionProps } from '../../core/events.js';
-import type { BaseProps, Key, Selection } from '../../core/props.js';
+import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { TimelineChart, type TimelineChartActions } from './timeline-chart.js';
@@ -42,7 +42,8 @@ export interface TimelineProps
       SelectionProps,
       'selectionMode' | 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
     >,
-    ExpansionProps {
+    ExpansionProps,
+    RefProps<HTMLDivElement> {
   /** The rows, top to bottom; rows with children are groups that collapse. */
   rows: readonly TimelineRow[];
   /** The bars and milestones, each on a row. */
@@ -64,8 +65,6 @@ export interface TimelineProps
   rowHeight?: number | undefined;
   /** Called with an item's new days after a drag or a key moves or resizes it; without it items stay put. */
   onItemChange?: ((change: TimelineItemChange) => void) | undefined;
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 function toKeySet(keys: Iterable<Key> | 'all' | undefined, items: readonly TimelineItem[]) {

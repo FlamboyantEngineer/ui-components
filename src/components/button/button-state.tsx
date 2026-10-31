@@ -10,7 +10,7 @@ import type {
   PressEvent,
   PressEventProps,
 } from '../../core/events.js';
-import type { InteractionState, NativeProps } from '../../core/props.js';
+import type { InteractionState, NativeProps, RefProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { renderLinkElement } from '../link/link.js';
 import { ButtonContext, useSlottedContext } from '../../primitives/index.js';
@@ -47,11 +47,10 @@ export interface ButtonStateProps
     FocusEventProps,
     KeyboardEventProps,
     AriaLabellingProps,
-    ButtonAriaAttributes {
+    ButtonAriaAttributes,
+    RefProps<HTMLButtonElement | HTMLAnchorElement> {
   /** Runs the command; a returned promise keeps the button pending until it settles. */
   onPress?: ((event: PressEvent) => unknown) | undefined;
-  /** The `<button>`, or the `<a>` of a button with `href`. */
-  ref?: Ref<HTMLButtonElement | HTMLAnchorElement> | undefined;
   /** The native button type. Defaults to `button`. */
   type?: 'button' | 'submit' | 'reset' | undefined;
   /** Refuses interaction: the native `disabled` attribute, or `aria-disabled` with `focusableWhenDisabled`. */

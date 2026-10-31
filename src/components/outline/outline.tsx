@@ -3,7 +3,7 @@
 import { useId, useMemo, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
@@ -23,7 +23,8 @@ import { useOutlineExpansion } from './use-outline-expansion.js';
 
 export type { OutlineHeading } from './outline-tree.js';
 
-export interface OutlineProps extends BaseProps, AriaLabellingProps, ExpansionProps {
+export interface OutlineProps
+  extends BaseProps, AriaLabellingProps, ExpansionProps, RefProps<HTMLElement> {
   /** The document's headings in document order. */
   headings: readonly OutlineHeading[];
   /** The id of the current heading (controlled); `null` marks none. Overrides scroll tracking. */
@@ -195,6 +196,7 @@ export function Outline(props: OutlineProps) {
     <nav
       {...hooks.root({ className, props, data: { numbered: isNumbered, pending: isPending } })}
       id={id}
+      ref={props.ref}
       aria-label={ariaLabel ?? (labelledBy ? undefined : strings.outline)}
       aria-labelledby={labelledBy}
       aria-describedby={props['aria-describedby']}

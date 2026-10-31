@@ -7,7 +7,7 @@
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Tone, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
 import { RelationMatrixHeader } from './relation-matrix-header.js';
@@ -16,6 +16,7 @@ import { RelationMatrixRow, type RelationMatrixRowContext } from './relation-mat
 import type { MatrixPosition } from './matrix-navigation.js';
 import { useMatrixNavigation } from './use-matrix-navigation.js';
 import { useMatrixWindow } from './use-matrix-window.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 
 /** An item on one axis of the matrix. */
 export interface RelationMatrixItem {
@@ -43,7 +44,8 @@ export interface RelationMatrixCell {
 /** How the stylesheet fits long column labels: turned on their side, or cut. */
 export type RelationMatrixColumnLabels = 'rotated' | 'truncated';
 
-export interface RelationMatrixProps extends BaseProps, AriaLabellingProps {
+export interface RelationMatrixProps
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The row items, in order. */
   rows: readonly RelationMatrixItem[];
   /** The column items, in order. */
@@ -88,10 +90,11 @@ export function RelationMatrix({
   rowHeight = defaultRowHeight,
   columnWidth = defaultColumnWidth,
   className,
+  ref,
   ...rest
 }: RelationMatrixProps) {
   const strings = useUiStrings();
-  const root = useRef<HTMLDivElement>(null);
+  const [root, setRoot] = useForwardedRef(ref);
   const header = useRef<HTMLDivElement>(null);
   const corner = useRef<HTMLDivElement>(null);
   const index = useMemo(
@@ -121,7 +124,7 @@ export function RelationMatrix({
   };
   return (
     <div
-      ref={root}
+      ref={setRoot}
       role="grid"
       aria-rowcount={rows.length + 1}
       aria-colcount={columns.length + 1}

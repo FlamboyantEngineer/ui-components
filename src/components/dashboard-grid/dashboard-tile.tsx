@@ -1,9 +1,9 @@
 'use client';
 
 import { DragHandleGlyph, ResizeGlyph } from '../../core/glyphs.js';
-import { useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   dashboardGridHooks as hooks,
   useDashboardGridTile,
@@ -11,7 +11,7 @@ import {
 } from './dashboard-grid.js';
 import { useTileMove, type TileMoveKind } from './use-tile-move.js';
 
-export interface DashboardTileProps extends BaseProps {
+export interface DashboardTileProps extends BaseProps, RefProps<HTMLDivElement> {
   /** Names the tile and its handles, such as the title of the card it holds. */
   label: string;
   /** The tile's content. */
@@ -20,8 +20,6 @@ export interface DashboardTileProps extends BaseProps {
   minColumnSpan?: number | undefined;
   /** The fewest rows a resize leaves the tile. Defaults to 1. */
   minRowSpan?: number | undefined;
-  /** The tile element. */
-  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 interface TileHandleProps {

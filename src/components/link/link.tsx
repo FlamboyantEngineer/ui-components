@@ -1,7 +1,7 @@
 'use client';
 
 import { ExternalLinkGlyph } from '../../core/glyphs.js';
-import type { JSX, ReactElement, ReactNode, Ref } from 'react';
+import type { JSX, ReactElement, ReactNode } from 'react';
 import { Link as AriaLink } from '../../primitives/index.js';
 import type {
   AriaLabellingProps,
@@ -10,7 +10,7 @@ import type {
   PressEventProps,
 } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, InteractionState, NativeProps } from '../../core/props.js';
+import type { BaseProps, InteractionState, NativeProps, RefProps } from '../../core/props.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -34,9 +34,8 @@ export interface LinkProps
     HoverEventProps,
     FocusEventProps,
     AriaLabellingProps,
-    Pick<NativeProps<'a'>, 'target' | 'rel' | 'download' | 'title' | 'aria-current'> {
-  /** The `<a>`, or the `<span>` of a link without `href`. */
-  ref?: Ref<HTMLAnchorElement> | undefined;
+    Pick<NativeProps<'a'>, 'target' | 'rel' | 'download' | 'title' | 'aria-current'>,
+    RefProps<HTMLAnchorElement> {
   /** The destination. Without it the link is a pressable `<span>`. */
   href?: string | undefined;
   /** Options handed to the provider's `navigate` with the `href`. */

@@ -34,7 +34,7 @@ Verification: `src/components/relation-columns/relation-columns.test.tsx`, `e2e/
 
 ### UIC-RELATION-COLUMNS-1.5 - Hooks and caller attributes
 
-`RelationColumns` shall carry the hooks below, append the caller's `className` to the root and forward `id`, the ARIA labelling attributes and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
+`RelationColumns` shall carry the hooks below, append the caller's `className` to the root and forward `id`, `ref`, the ARIA labelling attributes and caller `data-*` attributes to it; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/relation-columns/relation-columns.tsx`, `src/components/relation-columns/relation-columns-hooks.ts`
 Verification: `src/components/relation-columns/relation-columns.test.tsx`

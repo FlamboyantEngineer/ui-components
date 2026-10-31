@@ -107,7 +107,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 ### UIC-FOLDER-MANAGER-4.1 - Hooks and caller attributes
 
-`FolderManager` shall carry the hooks below and put the caller's `className`, `id` and `data-*` attributes on its root.
+`FolderManager` shall carry the hooks below and put the caller's `className`, `id`, `ref` and `data-*` attributes on its root.
 
 Implementation: `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`

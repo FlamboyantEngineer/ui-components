@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
@@ -10,7 +10,7 @@ import { useDraftSubmission } from '../../utils/use-draft-submission.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
 
-export interface CommentComposerProps extends BaseProps {
+export interface CommentComposerProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The draft, controlled. */
   value?: string | undefined;
   /** The draft a new composer starts with, uncontrolled. Defaults to empty. */

@@ -7,13 +7,12 @@ import {
   type JSX,
   type ReactElement,
   type ReactNode,
-  type Ref,
   type RefObject,
 } from 'react';
 import { SelectionIndicator, Tab as AriaTab } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { dataAttributes, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps, SelectableState } from '../../core/props.js';
+import type { BaseProps, Key, NativeProps, SelectableState, RefProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { normalizeCount } from '../../utils/count.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
@@ -32,11 +31,10 @@ import { useTabMenuTarget } from './tab-menu.js';
 import { joinIds, TabCount, TabRemoveMark } from './tab-parts.js';
 import { useTabDrag, type TabDropPosition, type TabReorder } from './tab-reorder.js';
 
-export interface TabProps extends Omit<BaseProps, 'id'>, AriaLabellingProps {
+export interface TabProps
+  extends Omit<BaseProps, 'id'>, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** Pairs the tab with the `TabPanel` of the same `id`. */
   id?: Key | undefined;
-  /** The tab's element. */
-  ref?: Ref<HTMLDivElement> | undefined;
   /** Refuses selection and focus. */
   isDisabled?: boolean | undefined;
   /** Makes the tab a link that navigates when selected. */

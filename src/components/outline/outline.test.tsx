@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useRef, useState } from 'react';
+import { useRef, useState, createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -325,6 +325,12 @@ describe('Outline', () => {
     expect(screen.getByRole('status', { name: 'Expanded' })).toHaveTextContent('intro,design');
     await userEvent.click(toggle('Terms'));
     expect(toggle('Terms')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('UIC-OUTLINE-5.2 forwards ref to its root', () => {
+    const ref = createRef<HTMLElement>();
+    const { container } = render(<Outline headings={headings} ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-outline'));
   });
 
   it('UIC-OUTLINE-5.2 forwards its class, id, caller attributes and description', () => {

@@ -5,17 +5,10 @@
 
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
-import {
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { useMemo, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import type { BoardCardReveal } from './board-cell.js';
@@ -35,6 +28,7 @@ import {
 import { useBoardModel, type BoardModel } from './use-board-model.js';
 import { useBoardCardDrag, useBoardColumnDrag } from './use-board-drag.js';
 import { isElement } from '../../utils/is-element.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 
 /** A column of the board. */
 export interface BoardColumn {
@@ -56,7 +50,8 @@ export interface BoardLane {
   icon?: IconSource;
 }
 
-export interface BoardProps<T extends { id: Key }> extends BaseProps, AriaLabellingProps {
+export interface BoardProps<T extends { id: Key }>
+  extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The columns, in order. */
   columns: readonly BoardColumn[];
   /** The lanes, in order. Without them the board is one row of columns. */
@@ -243,9 +238,10 @@ export function Board<T extends { id: Key }>({
   persistKey,
   virtualized = false,
   className,
+  ref,
   ...rest
 }: BoardProps<T>) {
-  const root = useRef<HTMLDivElement>(null);
+  const [root, setRoot] = useForwardedRef(ref);
   const [reveals] = useState(() => new Set<BoardCardReveal>());
   const focus = useMoveFocus(root, reveals);
   const model = useBoardModel({
@@ -276,7 +272,7 @@ export function Board<T extends { id: Key }>({
   };
   return (
     <div
-      ref={root}
+      ref={setRoot}
       role="group"
       {...rest}
       {...hooks.root({ className, props: rest, data: { virtualized } })}

@@ -8,7 +8,6 @@ import {
   useContext,
   type MouseEvent,
   type ReactNode,
-  type Ref,
   type RefObject,
 } from 'react';
 import {
@@ -21,7 +20,7 @@ import {
 } from '../../primitives/index.js';
 import type { OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { PopoverPresence } from '../popover/popover.js';
@@ -35,14 +34,13 @@ import {
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 
-export interface MenuPopoverProps extends BaseProps, OverlayPositionProps {
+export interface MenuPopoverProps extends BaseProps, OverlayPositionProps, RefProps<HTMLElement> {
   /**
    * The overlay layer, which sets the z-index and `data-layer`. Defaults to the enclosing menu
    * popover's layer, or `dropdown`.
    */
   layer?: PortalProps['layer'];
   children?: ReactNode;
-  ref?: Ref<HTMLElement> | undefined;
 }
 
 /**

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { pivot, type PivotLayout, type PivotRecord, type PivotRow } from '../../utils/pivot.js';
 import { Table } from '../table/table.js';
@@ -14,7 +14,8 @@ import { pivotTableHooks as hooks } from './pivot-table-hooks.js';
 
 export type { PivotTableField } from './pivot-columns.js';
 
-export interface PivotTableProps extends BaseProps, AriaLabellingProps, ExpansionProps {
+export interface PivotTableProps
+  extends BaseProps, AriaLabellingProps, ExpansionProps, RefProps<HTMLDivElement> {
   /** The records to pivot, as plain data. */
   records: readonly PivotRecord[];
   /** The fields the table offers: their labels, formats and the chooser's cards. */
@@ -77,6 +78,7 @@ export function PivotTable({
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
   'aria-details': ariaDetails,
+  ref,
   ...rest
 }: PivotTableProps) {
   const strings = useUiStrings();
@@ -98,7 +100,7 @@ export function PivotTable({
   );
   const getChildRows = useChildRows(current.rows.length > 1);
   return (
-    <div {...hooks.root({ className, props: rest })} id={id}>
+    <div {...hooks.root({ className, props: rest })} id={id} ref={ref}>
       {fieldChooser ? (
         <PivotFieldChooser fields={fields} layout={current} onLayoutChange={setCurrent} />
       ) : null}

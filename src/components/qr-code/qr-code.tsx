@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, type Ref } from 'react';
+import { useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { encodeQr, type QrErrorCorrection } from './encode-qr.js';
 
-export interface QrCodeProps extends BaseProps, AriaLabellingProps {
+export interface QrCodeProps extends BaseProps, AriaLabellingProps, RefProps<SVGSVGElement> {
   /** The text to encode, such as a URL. */
   value: string;
   /** How much damage the code survives: `low`, `medium` (the default), `quartile` or `high`. */
@@ -16,8 +16,6 @@ export interface QrCodeProps extends BaseProps, AriaLabellingProps {
   quietZone?: number | undefined;
   /** The drawn size of one module, in pixels. Defaults to 4. */
   moduleSize?: number | undefined;
-  /** The `<svg>` element. */
-  ref?: Ref<SVGSVGElement> | undefined;
 }
 
 const hooks = createHooks('qr-code', ['modules']);

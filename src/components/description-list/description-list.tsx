@@ -3,7 +3,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   formatDescriptionValue,
@@ -19,7 +19,8 @@ export type DescriptionRowSpan = DescriptionListColumns | 'full';
 export interface DescriptionListProps
   extends
     BaseProps,
-    Pick<HTMLAttributes<HTMLDListElement>, 'hidden' | 'aria-label' | 'aria-labelledby'> {
+    Pick<HTMLAttributes<HTMLDListElement>, 'hidden' | 'aria-label' | 'aria-labelledby'>,
+    RefProps<HTMLDListElement> {
   /** `DescriptionRow` elements. */
   children?: ReactNode;
   /** `inline` puts labels and values on shared tracks; `stacked` puts values below labels. Defaults to `inline`. */

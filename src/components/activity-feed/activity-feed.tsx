@@ -5,7 +5,7 @@ import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { useNow, useTimeZone } from '../../core/clock.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, NativeProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
@@ -45,8 +45,8 @@ export interface ActivityFeedProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<NativeProps<'div'>, 'ref'>,
-    Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'> {
+    Pick<AttributionProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>,
+    RefProps<HTMLDivElement> {
   /** The events, in the order to show them (usually newest first). */
   items: readonly ActivityFeedItem[];
   /** How entries are grouped. Defaults to `day`. */

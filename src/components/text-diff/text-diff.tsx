@@ -12,7 +12,7 @@ import {
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useSyncedScroll } from '../../utils/use-synced-scroll.js';
 import { type ScrollAnchor } from '../../utils/scroll-offset-map.js';
@@ -37,6 +37,7 @@ import {
   getRowId,
   type TableOptions,
 } from './text-diff-table.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 
 export { ChangeNavigation } from './change-navigation.js';
 export type { TextDiffChange, TextDiffLine } from './diff-rows.js';
@@ -44,7 +45,7 @@ export type { TextDiffChange, TextDiffLine } from './diff-rows.js';
 /** `unified` draws both texts in one column; `split` draws the old text beside the new one. */
 export type TextDiffLayout = 'unified' | 'split';
 
-export interface TextDiffProps extends BaseProps, AriaLabellingProps {
+export interface TextDiffProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The text before the change. */
   oldText: string;
   /** The text after the change. */
@@ -171,10 +172,11 @@ export function TextDiff({
   context = 3,
   renderLineWidget,
   className,
+  ref,
   ...rest
 }: TextDiffProps) {
   const baseId = useId();
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [rootRef, setRootRef] = useForwardedRef(ref);
   const pendingFocus = useRef<string | null>(null);
   const blocks = useMemo(() => createDiffBlocks(oldText, newText), [oldText, newText]);
   // Opened folds and the current change belong to one pair of texts and start over with the next.
@@ -217,7 +219,7 @@ export function TextDiff({
     <div
       {...rest}
       {...hooks.root({ className, props: rest, data: { layout } })}
-      ref={rootRef}
+      ref={setRootRef}
       role="group"
       onKeyDown={onKeyDown}
     >

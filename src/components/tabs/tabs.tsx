@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, type ReactNode, type Ref } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key, Orientation, Size } from '../../core/props.js';
+import type { BaseProps, Key, Orientation, Size, RefProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionItemKey, toCollectionKey } from '../../utils/to-collection-key.js';
@@ -32,9 +32,7 @@ export interface TabPanelRenderState {
   isExiting: boolean;
 }
 
-export interface TabsProps extends BaseProps {
-  /** The root element. */
-  ref?: Ref<HTMLDivElement> | undefined;
+export interface TabsProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The selected tab's `id` (controlled). */
   selectedKey?: Key | undefined;
   /** The initially selected tab's `id` when uncontrolled. Defaults to the first enabled tab. */
@@ -59,11 +57,9 @@ export interface TabsProps extends BaseProps {
   render?: ElementRender<'div', TabsRenderState> | undefined;
 }
 
-export interface TabPanelProps extends Omit<BaseProps, 'id'> {
+export interface TabPanelProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
   /** Pairs the panel with the `Tab` of the same `id`. */
   id?: Key | undefined;
-  /** The panel element. */
-  ref?: Ref<HTMLDivElement> | undefined;
   /** Keeps the panel mounted, inert and hidden, while its tab is not selected. */
   shouldForceMount?: boolean | undefined;
   /** The panel's content. */

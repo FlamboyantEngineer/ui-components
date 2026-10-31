@@ -8,12 +8,11 @@ import {
   useState,
   type FormEvent,
   type ReactNode,
-  type Ref,
 } from 'react';
 import { Form as AriaForm } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import {
@@ -40,9 +39,7 @@ import { isHTMLElement } from '../../utils/is-element.js';
 /** The HTTP method a native submit uses. */
 export type FormMethod = 'get' | 'post' | 'dialog';
 
-export interface FormProps extends BaseProps, AriaLabellingProps {
-  /** The `<form>` element, for code that submits it with `requestSubmit()`. */
-  ref?: Ref<HTMLFormElement> | undefined;
+export interface FormProps extends BaseProps, AriaLabellingProps, RefProps<HTMLFormElement> {
   /** When the fields inside show their validation, unless a field sets its own. Defaults to `submit`. */
   validationMode?: FieldValidationMode | undefined;
   /**

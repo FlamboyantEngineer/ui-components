@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { LinkGlyph } from '../../core/glyphs.js';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
@@ -240,6 +241,14 @@ describe('CommentThreadReply', () => {
     );
     expect(screen.queryByRole('button', { name: 'Comment actions' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '👍 1' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('UIC-COMMENT-THREAD-2.6 forwards ref to its root', () => {
+    const ref = createRef<HTMLElement>();
+    const { container } = render(
+      <CommentThreadReply author={ana} time={minutesAgo(1)} text="Hi" ref={ref} />,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-comment-thread-reply'));
   });
 
   it('UIC-COMMENT-THREAD-2.6 forwards caller attributes', () => {

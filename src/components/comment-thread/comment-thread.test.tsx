@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -32,6 +32,12 @@ function bodies(): string[] {
 }
 
 describe('CommentThread', () => {
+  it('UIC-COMMENT-THREAD-1.1 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<CommentThread ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-comment-thread'));
+  });
+
   it('UIC-COMMENT-THREAD-1.1 lists the comments under the quoted anchor', () => {
     const { container } = render(
       <CommentThread quote="the ripest fruit" onReply={() => {}}>

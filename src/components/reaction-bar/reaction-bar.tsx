@@ -3,7 +3,7 @@
 import { EmojiGlyph } from '../../core/glyphs.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { Button } from '../button/button.js';
@@ -26,7 +26,8 @@ export interface ReactionBarProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<EmojiPickerProps, 'customEmoji' | 'recentEmoji' | 'onRecentEmojiChange' | 'loadEmoji'> {
+    Pick<EmojiPickerProps, 'customEmoji' | 'recentEmoji' | 'onRecentEmojiChange' | 'loadEmoji'>,
+    RefProps<HTMLDivElement> {
   /** The reactions, one chip each in order. Entries counting nobody draw no chip. */
   reactions: readonly ReactionEntry[];
   /**

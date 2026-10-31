@@ -1,5 +1,4 @@
-import type { Ref } from 'react';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, RefProps } from '../../core/props.js';
 import type { ScaleInterval, ScaleTick } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { chartAxisHooks as hooks } from './chart-hooks.js';
@@ -7,7 +6,7 @@ import { chartAxisHooks as hooks } from './chart-hooks.js';
 /** The edge of the drawing an axis runs along. */
 export type ChartAxisPosition = 'bottom' | 'left';
 
-export interface ChartAxisProps extends BaseProps {
+export interface ChartAxisProps extends BaseProps, RefProps<SVGGElement> {
   /** `bottom` runs along x under the drawing; `left` runs along y beside it. */
   position: ChartAxisPosition;
   /** The marks to label, from a library scale's `ticks()`. */
@@ -18,8 +17,6 @@ export interface ChartAxisProps extends BaseProps {
   range: ScaleInterval;
   /** Draws a grid line from each tick across the drawing, this long (up or to the right). */
   gridLength?: number | undefined;
-  /** The `<g>` element. */
-  ref?: Ref<SVGGElement> | undefined;
 }
 
 /** Length of a tick mark and the gap between it and its label, in pixels. */

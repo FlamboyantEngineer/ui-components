@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, Key, NativeProps, Selection } from '../../core/props.js';
+import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { AttributionProps } from '../attribution/attribution.js';
 import type { AvatarIdentity } from '../avatar/avatar.js';
@@ -52,8 +52,8 @@ export interface VersionHistoryProps
   extends
     BaseProps,
     AriaLabellingProps,
-    Pick<NativeProps<'div'>, 'ref'>,
-    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'> {
+    Pick<AttributionProps, 'showAvatar' | 'fallbackAfterDays' | 'getNow'>,
+    RefProps<HTMLDivElement> {
   /** The versions, newest first. */
   versions: readonly VersionHistoryVersion[];
   /** The version that is the current content: it is marked and cannot be restored. */

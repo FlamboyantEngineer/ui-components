@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -142,6 +143,12 @@ describe('CalendarView', () => {
     await user.click(text);
     expect(onEventAction.mock.calls).toEqual([[1], ['1']]);
   });
+  it('UIC-CALENDAR-VIEW-4.3 forwards ref to its root', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Calendar ref={ref} />);
+    expect(ref.current).toBe(container.querySelector('.ui-calendar-view'));
+  });
+
   it('UIC-CALENDAR-VIEW-1.1 UIC-CALENDAR-VIEW-4.1 UIC-CALENDAR-VIEW-4.3 shows the month of the focused day', () => {
     const { container } = render(<Calendar id="plan" className="mine" data-test="calendar" />);
     const root = container.querySelector('.ui-calendar-view');
