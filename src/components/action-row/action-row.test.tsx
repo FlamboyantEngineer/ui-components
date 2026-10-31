@@ -202,11 +202,11 @@ describe('ActionRow', () => {
     const refresh = screen.getByRole('button', { name: 'Refresh' });
     expect(refresh).toHaveFocus();
     const tooltip = await screen.findByRole('tooltip', { name: 'Refresh' });
-    expect(tooltip).toHaveClass('ui-action-row__tooltip');
+    expect(tooltip).toHaveClass('ui-tooltip');
     // A tooltip that only repeats the label does not describe the button as well.
     expect(refresh).not.toHaveAttribute('aria-describedby');
     expect(refresh).toHaveAccessibleDescription('');
-    expectHooksMatchSpec(document.body, 'ACTION-ROW', { slots: ['tooltip'] });
+    expectHooksMatchSpec(document.body, 'ACTION-ROW', { slots: ['action'] });
   });
 
   it('UIC-ACTION-ROW-1.5 publishes disabled, pending, expanded and caller states on the button', async () => {

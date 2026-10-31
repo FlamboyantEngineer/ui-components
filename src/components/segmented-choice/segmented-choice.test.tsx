@@ -431,7 +431,7 @@ describe('SegmentedChoice', () => {
     await user.tab();
     expect(list).toHaveFocus();
     expect(screen.getByRole('tooltip')).toHaveTextContent('List view');
-    expect(list).not.toHaveAttribute('aria-describedby');
+    expect(list).toHaveAccessibleDescription('');
     expectHooksMatchSpec(group, 'SEGMENTED-CHOICE', { slots: ['segment', 'indicator', 'icon'] });
   });
 

@@ -62,7 +62,7 @@ test.describe('Action Row lab', () => {
     await expect(row.getByRole('button', { name: 'Add note' })).toBeFocused();
     const tooltip = page.getByRole('tooltip');
     await expect(tooltip).toHaveText('Add note');
-    await expect(tooltip).toHaveClass(/ui-action-row__tooltip/);
+    await expect(tooltip).toHaveClass(/ui-tooltip/);
 
     const reason = page.locator('[data-lab-case="disabled-reason"]').getByRole('button', {
       name: 'Delete',
@@ -70,7 +70,10 @@ test.describe('Action Row lab', () => {
     // React Aria opens hover tooltips once the pointer has moved since the last keyboard input.
     await page.mouse.move(0, 0);
     await reason.hover();
-    await expect(page.getByRole('tooltip')).toHaveText('Only the owner can delete this file');
+    // The focus tooltip may still be fading out.
+    await expect(page.locator('.ui-tooltip:not([data-exiting])')).toHaveText(
+      'Only the owner can delete this file',
+    );
     await expect(reason).toHaveAttribute('aria-disabled', 'true');
   });
 

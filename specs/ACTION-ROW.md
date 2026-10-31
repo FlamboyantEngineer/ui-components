@@ -27,7 +27,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.4 - Tooltips
 
-Each action shall show a React Aria tooltip (`ui-action-row__tooltip`) with its `tooltip`, or its label when it has none, on hover and on keyboard focus. The open tooltip of an action with its own `tooltip` describes the button; a tooltip that only repeats the label does not describe it, as in [Icon Button](BUTTON.md). The accessible name stays the label.
+Each action shall show its `tooltip`, or its label when it has none, through the button's own `tooltip` ([Button](BUTTON.md), a `ui-tooltip` panel) on hover and on keyboard focus. The open tooltip of an action with its own `tooltip` describes the button; a tooltip that only repeats the label does not describe it ([UIC-BUTTON-11.7](BUTTON.md)). The accessible name stays the label.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
@@ -104,12 +104,8 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 | `ui-action-row__actions`   | slot      |                                                                                 | The `<div>` holding the action buttons (`role="toolbar"` with `toolbar`). |
 | `ui-action-row__overflow`  | slot      |                                                                                 | The element holding the menu of hidden actions.                           |
 | `ui-action-row__action`    | slot      |                                                                                 | One action button (also `ui-button`).                                     |
-| `ui-action-row__tooltip`   | slot      |                                                                                 | An action's tooltip.                                                      |
 | `data-size`                | attribute | `xs`, `sm`, `md`, `lg`                                                          | Size of the action buttons.                                               |
 | `data-overflow`            | attribute | `visible`, `menu`                                                               | What happens to actions that do not fit.                                  |
 | `data-selection`           | state     | `true`                                                                          | The row is a selection bar.                                               |
 | `data-orientation`         | state     | `horizontal`                                                                    | The toolbar's orientation (React Aria).                                   |
 | `data-verb`                | attribute | `custom`, `add`, `refresh`, `more`, `edit`, `delete`, `save`, `cancel`, `close` | The action's verb.                                                        |
-| `data-placement`           | state     | `top`, `bottom`, `left`, `right`, `center`                                      | Where the tooltip sits (React Aria).                                      |
-| `data-entering`            | state     | `true`                                                                          | The tooltip is animating in (React Aria).                                 |
-| `data-exiting`             | state     | `true`                                                                          | The tooltip is animating out (React Aria).                                |
