@@ -99,7 +99,7 @@ function SubmittedChoices() {
         defaultValue={['bold']}
         sizing="content"
       />{' '}
-      <button type="submit">Submit</button>
+      <button type="submit">Submit</button> <button type="reset">Reset</button>
       <p data-lab-output="submitted">Submitted: {submitted}</p>
     </form>
   );
@@ -270,7 +270,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Form submission"
-      description="With a name, the selected values submit with the form as hidden inputs."
+      description="With a name, the selected values submit with the form as hidden inputs. Reset puts back the default choices, which then submit."
     >
       <SubmittedChoices />
     </LabSection>

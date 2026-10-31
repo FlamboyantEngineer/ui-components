@@ -1,5 +1,5 @@
 import { DragHandleGlyph, FitPageGlyph, SortAscendingGlyph } from '../../core/glyphs.js';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -509,5 +509,100 @@ describe('SegmentedChoice', () => {
       </form>,
     );
     expect(new FormData(form).getAll('view')).toEqual([]);
+  });
+
+  it('UIC-SEGMENTED-CHOICE-2.7 puts back the defaults on a native reset, unless it is cancelled', async () => {
+    const user = userEvent.setup();
+    let isCancelling = false;
+    const { container } = render(
+      <form onReset={(event) => isCancelling && event.preventDefault()}>
+        <SegmentedChoice aria-label="View" name="view" options={views} defaultValue="day" />
+        <SegmentedChoice aria-label="Filter" name="filter" options={views} isClearable />
+        <SegmentedChoice
+          aria-label="Days"
+          name="days"
+          selectionMode="multiple"
+          options={views}
+          defaultValue={[]}
+        />
+        <button type="reset">Reset</button>
+      </form>,
+    );
+    const form = container.querySelector('form') as HTMLFormElement;
+    const data = () =>
+      [...new FormData(form).entries()].map(([key, value]) => `${key}=${String(value)}`);
+    const view = screen.getByRole('radiogroup', { name: 'View' });
+    const filter = screen.getByRole('radiogroup', { name: 'Filter' });
+    await user.click(within(view).getByRole('radio', { name: 'Week' }));
+    await user.click(within(filter).getByRole('radio', { name: 'Month' }));
+    await user.click(screen.getByRole('button', { name: 'Day' }));
+    expect(data()).toEqual(['view=week', 'filter=month', 'days=day']);
+
+    isCancelling = true;
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+    expect(data()).toEqual(['view=week', 'filter=month', 'days=day']);
+
+    isCancelling = false;
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(data()).toEqual(['view=day']));
+    expect(within(view).getByRole('radio', { name: 'Day' })).toBeChecked();
+    expect(within(filter).getByRole('radio', { name: 'Month' })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: 'Day' })).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(within(view).getByRole('radio', { name: 'Month' }));
+    act(() => form.reset());
+    await waitFor(() => expect(data()).toEqual(['view=day']));
+  });
+
+  it('UIC-SEGMENTED-CHOICE-2.6 UIC-SEGMENTED-CHOICE-2.7 drops a pending change on a reset and reports a controlled reset', async () => {
+    const user = userEvent.setup();
+    let settle: () => void = () => {};
+    const onChange = vi.fn((next: string | null) =>
+      next === 'week'
+        ? new Promise<void>((resolve) => {
+            settle = resolve;
+          })
+        : undefined,
+    );
+    function Controlled() {
+      const [view, setView] = useState<string | null>('day');
+      return (
+        <SegmentedChoice
+          aria-label="Shown"
+          name="shown"
+          options={views}
+          value={view}
+          onChange={(next) => setView(next)}
+        />
+      );
+    }
+    const { container } = render(
+      <form>
+        <SegmentedChoice
+          aria-label="View"
+          name="view"
+          options={views}
+          defaultValue="day"
+          onChange={onChange}
+        />
+        <Controlled />
+      </form>,
+    );
+    const form = container.querySelector('form') as HTMLFormElement;
+    const view = screen.getByRole('radiogroup', { name: 'View' });
+    const shown = screen.getByRole('radiogroup', { name: 'Shown' });
+    await user.click(within(view).getByRole('radio', { name: 'Week' }));
+    expect(view).toHaveAttribute('data-pending', 'true');
+    await user.click(within(shown).getByRole('radio', { name: 'Month' }));
+    act(() => form.reset());
+    await waitFor(() => expect(view).not.toHaveAttribute('data-pending'));
+    // The pending change never took effect, so the reset has nothing to report.
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('week');
+    await act(async () => settle());
+    expect(within(view).getByRole('radio', { name: 'Day' })).toBeChecked();
+    expect(within(shown).getByRole('radio', { name: 'Day' })).toBeChecked();
+    expect(new FormData(form).getAll('view')).toEqual(['day']);
+    expect(new FormData(form).getAll('shown')).toEqual(['day']);
   });
 });

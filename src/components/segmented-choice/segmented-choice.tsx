@@ -8,6 +8,8 @@ import type { BaseProps, Orientation, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { hasIcon, toIconProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
@@ -209,6 +211,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   name,
   render,
   className,
+  ref,
   ...rest
 }: SegmentedChoiceProps<M>) {
   const selection = useChoiceSelection<M>({
@@ -221,10 +224,13 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
     isClearable,
     isReadOnly,
   });
+  const [group, setGroup] = useForwardedRef(ref);
+  useNativeReset(group, selection.reset);
 
   return (
     <ToggleButtonGroup
       {...rest}
+      ref={setGroup}
       {...hooks.root({
         className,
         props: rest,
