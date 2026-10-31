@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { UNSAFE_PortalProvider as AriaPortalProvider } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { omitUndefined } from '../../utils/omit-undefined.js';
@@ -72,7 +73,11 @@ function useIsClient(): boolean {
   );
 }
 
-/** Chooses the container and layer z-indexes for every `Portal` below it. */
+/**
+ * Chooses the container and layer z-indexes for every `Portal` below it, and points React Aria's
+ * own overlays (popovers, menus, dialogs, tooltips, toasts) at the same container, so every
+ * library overlay below renders there.
+ */
 export function PortalContainerProvider({
   container,
   layerZIndex,
@@ -86,7 +91,15 @@ export function PortalContainerProvider({
     }),
     [parent, container, layerZIndex],
   );
-  return <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
+  const provided = <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
+  if (container === undefined) return provided;
+  // Any element, an iframe's body too, or `null`, which React Aria renders nothing into. No realm's
+  // `HTMLElement` is assumed or even read, so the server, where it does not exist, renders this too.
+  return (
+    <AriaPortalProvider getContainer={() => container as HTMLElement | null}>
+      {provided}
+    </AriaPortalProvider>
+  );
 }
 
 /**
@@ -117,6 +130,18 @@ export function usePortalContainer(): Element | null | undefined {
 }
 
 /**
+ * The element portals under the nearest provider render into, or `null` on the server, during
+ * hydration and while the chosen container is not ready. For overlays that position themselves
+ * against their containing block and so cannot sit in a `Portal` wrapper.
+ */
+export function usePortalTarget(): Element | null {
+  const { container } = useContext(PortalContext);
+  const isClient = useIsClient();
+  if (!isClient) return null;
+  return container === undefined ? document.body : container;
+}
+
+/**
  * The width of the element a dropdown opens from, published as `--ui-trigger-width` from the
  * building block's measurement, so stylesheets size the list without naming the building block.
  */
@@ -139,8 +164,8 @@ export function Portal({
   className,
   ...rest
 }: PortalProps) {
-  const { container, zIndex } = useContext(PortalContext);
-  const isClient = useIsClient();
+  const { zIndex } = useContext(PortalContext);
+  const target = usePortalTarget();
   const tabOrder = usePreservedTabOrder();
   const keepsTabOrder = preserveTabOrder && !inPlace;
   const isTopLayer = topLayer ?? isLayerAbove(layer, 'modal');
@@ -158,8 +183,6 @@ export function Portal({
     </div>
   );
   if (inPlace) return wrapper;
-  if (!isClient) return null;
-  const target = container === undefined ? document.body : container;
   if (!target) return null;
   return (
     <>

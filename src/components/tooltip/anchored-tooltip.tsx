@@ -16,7 +16,7 @@ import { useOverlayPosition } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
 
 /** A rectangle in viewport pixels, as `getBoundingClientRect` returns it. */
@@ -216,10 +216,12 @@ export function AnchoredTooltip({
   const { refs, element, phase, position } = useAnchoredPanel({ anchor, isOpen, placement });
   const zIndex = useLayerZIndex('tooltip');
   useAnchorRelationship(element, { id, relationship });
-  if (!phase.isMounted || typeof document === 'undefined') return null;
+  const target = usePortalTarget();
+  if (!phase.isMounted || !target) return null;
   const resolvedPlacement = position.placement ?? undefined;
   const data = { variant, placement: resolvedPlacement };
-  // Straight into the body, as React Aria's own tooltip: the page is the panel's containing block.
+  // Straight into the container, as React Aria's own tooltip: a `Portal` wrapper, which has no size,
+  // would become the containing block the positioning measures against.
   return createPortal(
     <>
       {refs.proxy ? <span ref={refs.proxy} hidden /> : null}
@@ -245,6 +247,6 @@ export function AnchoredTooltip({
         <span {...hooks.slot('content')}>{content}</span>
       </div>
     </>,
-    document.body,
+    target,
   );
 }
