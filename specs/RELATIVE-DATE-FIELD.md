@@ -71,9 +71,9 @@ Verification: `src/components/relative-date-field/relative-date-select.test.tsx`
 
 ### UIC-RELATIVE-DATE-FIELD-2.4 - Bounds
 
-`minValue` and `maxValue`, `YYYY-MM-DD` dates, shall disable the presets whose value (either end of a range) falls outside them, and the calendar refuses the days outside. A value outside them is invalid with the provider string `dateTooEarly` or `dateTooLate` naming the localized bound.
+`minValue` and `maxValue`, `YYYY-MM-DD` dates, shall disable the presets whose value (either end of a range) falls outside them, and the calendar refuses the days outside. A value outside them is invalid with the provider string `dateTooEarly` or `dateTooLate` naming the localized bound. A range whose end precedes its start is invalid as `dateTooEarly` naming its start, as in `DateTimeField` (the two fields share one bound check, `findOrderedBoundIssue`), and either end is checked against both bounds whatever their order; a preset whose range is reversed is disabled, and an invalid value blocks a `Form` submit.
 
-Implementation: `src/components/relative-date-field/relative-date-field.tsx`, `src/components/relative-date-field/relative-date.ts`, `src/components/relative-date-field/relative-date-calendar.tsx`
+Implementation: `src/components/relative-date-field/relative-date-field.tsx`, `src/components/relative-date-field/relative-date.ts`, `src/components/relative-date-field/relative-date-calendar.tsx`, `src/utils/date-bounds.ts`
 Verification: `src/components/relative-date-field/relative-date-select.test.tsx`, `src/components/relative-date-field/relative-date.test.ts`, `e2e/relative-date-field.spec.ts`
 
 ## Hooks

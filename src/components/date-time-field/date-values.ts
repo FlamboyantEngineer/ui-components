@@ -12,6 +12,7 @@ import {
   toCalendarDateTime,
 } from '../../primitives/index.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
+import { findOrderedBoundIssue, type BoundIssue } from '../../utils/date-bounds.js';
 
 /**
  * `date` (`YYYY-MM-DD`), `time` (`HH:mm`), `date-time` (`YYYY-MM-DDTHH:mm`, or zoned with
@@ -123,7 +124,7 @@ export function findBoundIssue(
   value: DateFieldValue,
   mode: DateTimeFieldMode,
   { minValue, maxValue, ...options }: DateBounds & DateValueOptions,
-): { bound: 'min' | 'max'; limit: string } | null {
+): BoundIssue | null {
   if (!value) return null;
   const single = toSingleMode(mode);
   // Texts the mode cannot read compare as equal, so they break no bound.
@@ -132,10 +133,7 @@ export function findBoundIssue(
     const after = toMoment(right, single, options);
     return before === null || after === null ? 0 : before - after;
   };
-  const [first, last] = typeof value === 'string' ? [value, value] : [value.start, value.end];
-  if (minValue && compare(first, minValue) < 0) return { bound: 'min', limit: minValue };
-  if (maxValue && compare(last, maxValue) > 0) return { bound: 'max', limit: maxValue };
-  return compare(last, first) < 0 ? { bound: 'min', limit: first } : null;
+  return findOrderedBoundIssue(value, compare, { minValue, maxValue });
 }
 
 /** The `YYYY-MM-DD` date a date or date-and-time text falls on, or `null`. */
