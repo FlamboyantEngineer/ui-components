@@ -80,7 +80,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.3 - Growing text area
 
-A multiline field with `minRows` or `maxRows` shall publish `data-autosize` on its root and set its text area's height (a measured size) to its text's, between `minRows` (one by default) and `maxRows` (no limit by default) rows of its line height, as the text changes; past `maxRows` the text area scrolls. `minRows` is also the text area's `rows`. Without either the text area keeps the stylesheet's height.
+A multiline field with `minRows` or `maxRows` shall publish `data-autosize` on its root and set its text area's height (a measured size) to its text's, between `minRows` (one by default) and `maxRows` (no limit by default) rows of its line height, as the text changes and again when its width changes or fonts finish loading; past `maxRows` the text area scrolls. `minRows` is also the text area's `rows`. Without either the text area keeps the stylesheet's height.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/utils/use-auto-grow.ts`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`

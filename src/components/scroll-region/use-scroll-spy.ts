@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type RefObject } from 'react';
+import { observeViewport } from '../../utils/observe-viewport.js';
 
 export interface ScrollSpyOptions {
   /** The ids of the sections to follow, in document order. */
@@ -33,7 +34,7 @@ export function resolveScrollSpy(
 /**
  * Follows which of the sections `ids` is current in a scrolling viewport, such as a `ScrollRegion`'s
  * (its `ref`), for a table of contents to mark. It updates once per animation frame as the viewport
- * scrolls or resizes, and at once when the ids change.
+ * scrolls, resizes or its content changes, and at once when the ids change.
  */
 export function useScrollSpy(
   viewport: RefObject<HTMLElement | null>,
@@ -52,17 +53,17 @@ export function useScrollSpy(
       frame = null;
       setActive(resolveScrollSpy(element, { ids: sectionIds, offset }));
     };
-    // Scrolls and resizes read the sections' positions once per animation frame.
+    // Scrolls read the sections' positions once per animation frame; so do resizes of the viewport
+    // or its children, content changes inside it (a section above that grows moves every heading
+    // without a scroll) and fonts that finish loading.
     const update = () => {
       frame ??= view.requestAnimationFrame(read);
     };
-    const resize =
-      typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(update) : null;
-    resize?.observe(element);
+    const layout = observeViewport(element, view, { measure: read, subtree: true, fonts: true });
     element.addEventListener('scroll', update, { passive: true });
     read();
     return () => {
-      resize?.disconnect();
+      layout.disconnect();
       element.removeEventListener('scroll', update);
       if (frame !== null) view.cancelAnimationFrame(frame);
     };

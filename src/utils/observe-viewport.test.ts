@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requireDefined } from '../../utils/require-defined.js';
+import { requireDefined } from './require-defined.js';
 import { observeViewport } from './observe-viewport.js';
 
 class FakeResizeObserver {

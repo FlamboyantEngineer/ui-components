@@ -19,6 +19,7 @@ import type { BaseProps, ContainerProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { tabbableSelector } from '../../utils/tabbable.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useLayoutChanges } from '../../utils/use-layout-changes.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Button } from '../button/button.js';
 import {
@@ -112,6 +113,8 @@ function useIsCut(ref: RefObject<HTMLElement | null>, children: ReactNode, isWho
     if (!isWhole) setCut(ref.current !== null && isTruncated(ref.current));
   }, [ref, isWhole]);
   useResizeObserver([ref], measure);
+  // A child re-rendering its own text, or a late font, cuts the text without resizing the box.
+  useLayoutChanges(ref, measure);
   useLayoutEffect(measure, [measure, children]);
   return isCut;
 }

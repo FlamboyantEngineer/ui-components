@@ -1,7 +1,8 @@
 'use client';
 
-import { useLayoutEffect, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, type RefObject } from 'react';
 import { clamp } from './clamp.js';
+import { listenFontsLoaded } from './listen-fonts-loaded.js';
 import { readLineBox } from './read-line-box.js';
 import { useElementSize } from './use-element-size.js';
 
@@ -31,8 +32,8 @@ export function isAutoGrowing({ minRows, maxRows }: Pick<AutoGrowOptions, 'minRo
 
 /**
  * Grows a text area with its text between `minRows` and `maxRows` (one row and no limit by default),
- * when either is set. Past `maxRows` the text area scrolls. A new width (a stylesheet or font that
- * loads late, a resized container) wraps the text anew, so it measures again.
+ * when either is set. Past `maxRows` the text area scrolls. A new width (a stylesheet that loads
+ * late, a resized container) or fonts that finish loading wrap the text anew, so it measures again.
  */
 export function useAutoGrow(area: RefObject<HTMLTextAreaElement | null>, options: AutoGrowOptions) {
   const { minRows, maxRows, value } = options;
@@ -41,4 +42,10 @@ export function useAutoGrow(area: RefObject<HTMLTextAreaElement | null>, options
   useLayoutEffect(() => {
     if (isEnabled && area.current) fitRows(area.current, minRows ?? 1, maxRows ?? Infinity);
   }, [area, isEnabled, minRows, maxRows, value, width]);
+  // A font that finishes loading re-wraps the text at the same width.
+  useEffect(() => {
+    const element = area.current;
+    if (!isEnabled || !element) return undefined;
+    return listenFontsLoaded(element, () => fitRows(element, minRows ?? 1, maxRows ?? Infinity));
+  }, [area, isEnabled, minRows, maxRows]);
 }

@@ -8,7 +8,7 @@
 
 ### UIC-MESSAGE-COMPOSER-1.1 - Text area
 
-`MessageComposer` shall render a `ui-message-composer` root holding a React Aria text area (`ui-message-composer__input`) with the text, controlled by `value` with `onChange` or starting at `defaultValue`, and the caller's `placeholder` and `maxLength` (a native limit on the characters it holds). The text area grows with its text from `minRows` (1 by default) to `maxRows` (8 by default) rows of its line height, then scrolls.
+`MessageComposer` shall render a `ui-message-composer` root holding a React Aria text area (`ui-message-composer__input`) with the text, controlled by `value` with `onChange` or starting at `defaultValue`, and the caller's `placeholder` and `maxLength` (a native limit on the characters it holds). The text area grows with its text from `minRows` (1 by default) to `maxRows` (8 by default) rows of its line height, then scrolls; it measures again when its width changes or fonts finish loading.
 
 Implementation: `src/components/message-composer/message-composer.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/use-composer-state.ts`, `src/utils/use-auto-grow.ts`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
