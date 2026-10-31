@@ -139,7 +139,10 @@ export function createHooks<const Slot extends string = never>(
       return { ...attributes, className: mergeClassNames(rootClass, className) };
     },
     slot(slot, data, className) {
-      return { ...dataAttributes(data), className: mergeClassNames(slotClass(slot), className) };
+      const attributes: DataAttributes = {};
+      // As on the root, explicit empty values clear caller attributes spread before these hooks.
+      if (data) writeDataAttributes(attributes, data, true);
+      return { ...attributes, className: mergeClassNames(slotClass(slot), className) };
     },
     slotClass,
   };

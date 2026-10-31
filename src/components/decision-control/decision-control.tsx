@@ -93,14 +93,9 @@ export function DecisionControl({
     onSubmit,
     onSubmitted: () => setCommentText(''),
   });
+  const state = { decision: picked?.value, pending: submission.isPending };
   return (
-    <div
-      {...rest}
-      {...hooks.root({ className, props: rest })}
-      // Absent states stay absent: a caller attribute of the same name never shows through.
-      data-decision={picked?.value}
-      data-pending={submission.isPending ? 'true' : undefined}
-    >
+    <div {...rest} {...hooks.root({ className, props: rest, data: state })}>
       <Form
         className={hooks.slotClass('form')}
         aria-labelledby={labelId}

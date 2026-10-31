@@ -70,6 +70,15 @@ describe('createHooks', () => {
       'data-note': 'caller',
     });
   });
+
+  it('UIC-HOOKS-2.3 clears a caller attribute on a slot for an inactive hook value', () => {
+    const props = { 'data-open': 'true', ...hooks.slot('label', { open: false, pressed: true }) };
+    expect(props).toEqual({
+      className: 'ui-button__label',
+      'data-open': undefined,
+      'data-pressed': 'true',
+    });
+  });
 });
 
 describe('dataAttributes', () => {
