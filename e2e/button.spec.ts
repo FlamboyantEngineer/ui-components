@@ -196,4 +196,29 @@ test.describe('Button lab', () => {
       page.locator('[data-lab-family="button-main"]').locator('[data-lab-swapped]'),
     ).toHaveClass(/ui-button/);
   });
+
+  test('UIC-BUTTON-1.6 keeps the focused button as its hint comes and goes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const demo = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-demo="toggles"]');
+    const pin = demo.getByRole('button', { name: 'Pin panel' });
+    await pin.evaluate((node) => node.setAttribute('data-lab-probe', 'kept'));
+    await pin.focus();
+    await page.keyboard.press('Space');
+    await expect(pin).toHaveAttribute('aria-pressed', 'true');
+    await expect(pin).toBeFocused();
+    await expect(pin).toHaveAttribute('data-lab-probe', 'kept');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('tooltip')).toHaveText('Press again to unpin');
+    await page.keyboard.press('Space');
+    await expect(pin).toHaveAttribute('aria-pressed', 'false');
+    await expect(pin).toBeFocused();
+    await expect(pin).toHaveAttribute('data-lab-probe', 'kept');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+  });
 });

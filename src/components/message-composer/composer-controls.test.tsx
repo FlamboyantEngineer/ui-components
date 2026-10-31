@@ -1,5 +1,5 @@
 import { CheckGlyph, HandRaisedGlyph, ListTaskGlyph } from '../../core/glyphs.js';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -167,6 +167,25 @@ describe('MessageComposer controls', () => {
     row.resize(container, 360, 200);
     expect(root).not.toHaveAttribute('data-compact');
     expect(screen.getByRole('button', { name: 'Plan' })).toHaveTextContent('Plan');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-6.4 keeps a focused control in place as the composer turns compact and back', () => {
+    const row = installComposerRow();
+    const { container } = render(
+      <MessageComposer
+        startControls={<MessageComposerToggle label="Plan" icon={ListTaskGlyph} />}
+      />,
+    );
+    row.resize(container, 400, 380);
+    const plan = screen.getByRole('button', { name: 'Plan' });
+    act(() => plan.focus());
+    row.resize(container, 300, 360);
+    expect(plan).toHaveAttribute('data-content', 'icon');
+    expect(screen.getByRole('button', { name: 'Plan' })).toBe(plan);
+    expect(plan).toHaveFocus();
+    row.resize(container, 360, 200);
+    expect(plan).toHaveTextContent('Plan');
+    expect(plan).toHaveFocus();
   });
 
   it('UIC-MESSAGE-COMPOSER-6.5 tells a host control whether the composer is compact or disabled', () => {

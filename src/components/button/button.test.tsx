@@ -684,4 +684,79 @@ describe('Button', () => {
     });
     expect(save).not.toHaveAttribute('data-pending');
   });
+
+  describe('UIC-BUTTON-1.6 UIC-BUTTON-1.7 a hint that comes or goes', () => {
+    const hintSteps = [
+      { name: 'a tooltip', on: { tooltip: 'Save every change' } },
+      { name: 'a shortcut', on: { shortcut: 'mod+s' } },
+      {
+        name: 'a disabled explanation',
+        on: { tooltip: 'Nothing to save', isDisabled: true, focusableWhenDisabled: true },
+      },
+      { name: 'a pending hint', on: { tooltip: 'Saving', isPending: true } },
+    ] as const;
+
+    it.each(hintSteps)(
+      'keeps the focused button and its content when $name comes and goes',
+      ({ on }) => {
+        const ref = { current: null as HTMLButtonElement | null };
+        const focusable = 'focusableWhenDisabled' in on ? { focusableWhenDisabled: true } : {};
+        const { rerender } = render(
+          <Button ref={ref} {...focusable}>
+            <span data-probe>Save</span>
+          </Button>,
+        );
+        const button = screen.getByRole('button');
+        const label = button.querySelector('[data-probe]');
+        act(() => button.focus());
+        rerender(
+          <Button ref={ref} {...on}>
+            <span data-probe>Save</span>
+          </Button>,
+        );
+        expect(screen.getByRole('button')).toBe(button);
+        expect(button.querySelector('[data-probe]')).toBe(label);
+        expect(button).toHaveFocus();
+        expect(ref.current).toBe(button);
+        rerender(
+          <Button ref={ref} {...focusable}>
+            <span data-probe>Save</span>
+          </Button>,
+        );
+        expect(screen.getByRole('button')).toBe(button);
+        expect(button.querySelector('[data-probe]')).toBe(label);
+        expect(button).toHaveFocus();
+      },
+    );
+
+    it('keeps a focused link and an open hint in step as the hint changes, comes and goes', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<Button href="/a">Open</Button>);
+      const link = screen.getByRole('link', { name: 'Open' });
+      await user.tab();
+      expect(link).toHaveFocus();
+      rerender(
+        <Button href="/a" tooltip="Open the record">
+          Open
+        </Button>,
+      );
+      expect(screen.getByRole('link')).toBe(link);
+      expect(link).toHaveFocus();
+      await user.tab({ shift: true });
+      await user.tab();
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Open the record');
+      rerender(
+        <Button href="/a" tooltip="Open the first record">
+          Open
+        </Button>,
+      );
+      expect(link).toHaveFocus();
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Open the first record');
+      expect(link).toHaveAccessibleDescription('Open the first record');
+      rerender(<Button href="/a">Open</Button>);
+      expect(screen.getByRole('link')).toBe(link);
+      expect(link).toHaveFocus();
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+  });
 });
