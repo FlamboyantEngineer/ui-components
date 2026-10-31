@@ -126,7 +126,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-4.1 - Entering and exiting
 
-Each toast shall publish `data-entering` while it appears and `data-exiting` while it leaves, timed by [`useEnterExit`](ENTER-EXIT.md) from the toast's own element. Every close (its timer, its dismiss button, its action, a swipe or the queue's `close`) keeps a shown toast in the stack, exiting, until its exit animations end, then removes it; focus moves on as React Aria moves it when the toast is removed. Without a running animation a toast leaves at once.
+Each toast shall publish `data-entering` while it appears and `data-exiting` while it leaves, timed by [`useEnterExit`](ENTER-EXIT.md) from the toast's own element. Every close (its timer, its dismiss button, its action, a swipe or the queue's `close`) keeps a shown toast in the stack, exiting, until its exit animations end, then removes it; focus moves on as React Aria moves it when the toast is removed. Without a running animation a toast leaves at once. A closing toast whose last renderer unmounts before its exit ends (its region or list leaves the page, also in the same event as the close) is removed then, calling its `onClose` once; an open toast whose renderer unmounts stays queued for the next one.
 
 Implementation: `src/components/toast/toast.tsx`, `src/components/toast/toast-queue.ts`, `src/utils/use-enter-exit.ts`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`

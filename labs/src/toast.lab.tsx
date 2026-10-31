@@ -225,6 +225,43 @@ function ShownAgainDemo() {
   );
 }
 
+const leavingQueue = createToastQueue({ defaultTimeout: 0 });
+
+/**
+ * A page that owns its toast list: the toast's action leaves the page in the same press that closes
+ * the toast, and the toast's onClose still runs once.
+ */
+function LeavingPageDemo() {
+  const [page, setPage] = useState<'list' | 'trash'>('list');
+  const [closedCount, setClosedCount] = useState(0);
+  return (
+    <div data-lab-demo="leaving-page">
+      <p>
+        <Button
+          size="sm"
+          data-lab-push="leaving"
+          onPress={() => {
+            setPage('list');
+            leavingQueue.add(
+              {
+                title: 'Row deleted',
+                action: { label: 'Open trash', onAction: () => setPage('trash') },
+              },
+              { onClose: () => setClosedCount((count) => count + 1) },
+            );
+          }}
+        >
+          Delete a row
+        </Button>{' '}
+        <span data-lab-output="closed">Toasts closed: {closedCount}</span>
+      </p>
+      <div style={{ width: 360, minHeight: 80 }}>
+        {page === 'list' ? <ToastList queue={leavingQueue} /> : <p>Trash opened.</p>}
+      </div>
+    </div>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -328,6 +365,12 @@ mountLab(
       description="A queue that shows one toast at a time. Push the four-second toast, cover it with a newer one or hide the list for a while, then close the cover or show the list again: the toast runs on with the time it had left instead of starting over."
     >
       <ShownAgainDemo />
+    </LabSection>
+    <LabSection
+      title="Leaving the page"
+      description="The toast list belongs to a page, and the toast's Open trash action leaves that page in the same press that closes the toast: the toast is removed with the page and its onClose still runs once."
+    >
+      <LeavingPageDemo />
     </LabSection>
     <LabSection
       title="Inside a frame"
