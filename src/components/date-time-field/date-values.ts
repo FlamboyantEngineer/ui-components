@@ -71,6 +71,26 @@ function toMoment(text: string, mode: SingleDateMode, options: DateValueOptions)
   return ('timeZone' in value ? value.toDate() : value.toDate('UTC')).getTime();
 }
 
+/**
+ * Whether the mode can read a value: a single text for a single mode, and a `{ start, end }` range
+ * whose ends it can both read for a range mode. `null` (no value) is readable.
+ */
+export function isReadableValue(
+  value: DateFieldValue,
+  mode: DateTimeFieldMode,
+  options: DateValueOptions = {},
+): boolean {
+  if (value === null) return true;
+  const single = toSingleMode(mode);
+  const isRange = single !== mode;
+  if (typeof value === 'string') return !isRange && toMoment(value, single, options) !== null;
+  return (
+    isRange &&
+    toMoment(value.start, single, options) !== null &&
+    toMoment(value.end, single, options) !== null
+  );
+}
+
 /** The clock a field reads at an event: the moment, and the zone its wall clock is read in. */
 export interface DateClock {
   now: Date;

@@ -119,6 +119,8 @@ export interface FieldStrings {
   dateUnavailable: string;
   /** The message of a date or time typed only in part, or of a range with one end left empty. */
   dateIncomplete: string;
+  /** The message of a value the field cannot read as a date or time of its mode, such as `2026-02-30`. */
+  dateUnreadable: string;
   /** A preset of the dates up to today, from a count of units such as `7 days`. */
   lastPeriod: (period: string) => string;
   /** A preset of the dates from today, from a count of units such as `7 days`. */

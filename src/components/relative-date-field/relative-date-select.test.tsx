@@ -199,4 +199,40 @@ describe('RelativeDateField presets', () => {
     expect(onCommit).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: /Due$/ })).toHaveTextContent('Select');
   });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.4 flags a value its mode cannot read and refuses such presets', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+    const { container } = renderInLocale(
+      <Form aria-label="Plan" validationBehavior="aria" onSubmit={onSubmit}>
+        <RelativeDateField
+          label="Due"
+          getNow={getNow}
+          defaultValue="2026-02-30"
+          presets={[
+            { label: 'Broken', getValue: () => 'not-a-date' },
+            { amount: 1, unit: 'day' },
+          ]}
+          onCommit={onCommit}
+        />
+        <RelativeDateField
+          label="Call"
+          mode="date-time"
+          getNow={getNow}
+          defaultValue="2026-05-23T08:05:00Z"
+        />
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    const roots = [...container.querySelectorAll('.ui-relative-date-field')];
+    expect(roots.map((root) => root.getAttribute('data-validation'))).toEqual(['invalid', 'valid']);
+    expect(roots[0]?.querySelector('.ui-field__message')).toHaveTextContent('Enter a valid date.');
+    await user.click(screen.getByRole('button', { name: /Due$/ }));
+    expect(screen.getByRole('option', { name: 'Broken' })).toHaveAttribute('aria-disabled', 'true');
+    await user.click(screen.getByRole('option', { name: 'Broken' }));
+    expect(onCommit).not.toHaveBeenCalled();
+  });
 });

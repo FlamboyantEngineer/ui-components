@@ -1,9 +1,10 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { ReactElement } from 'react';
+import type { FormEvent, ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Form } from '../form/form.js';
 import { DateTimeField } from './date-time-field.js';
 
 function renderInLocale(element: ReactElement) {
@@ -90,6 +91,36 @@ describe('DateTimeField field', () => {
     unmount();
     renderInLocale(<DateTimeField label="Due" defaultValue="soon" />);
     expect(segment(/^month/)).toHaveAttribute('data-placeholder', 'true');
+  });
+
+  it('UIC-DATE-TIME-FIELD-1.2 flags a value its mode cannot read and blocks the form', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+    const { container } = renderInLocale(
+      <Form aria-label="Plan" validationBehavior="aria" onSubmit={onSubmit}>
+        <DateTimeField label="Due" isRequired value="2026-02-30" />
+        <DateTimeField label="At" mode="time" value="25:00" />
+        <DateTimeField label="When" mode="date-time" value="2026-04-13" />
+        <DateTimeField
+          label="Slot"
+          mode="date-range"
+          value={{ start: '2026-04-13', end: 'later' }}
+        />
+        <DateTimeField label="Call" mode="date-time" timeZone="UTC" value="2026-04-13T03:00:00Z" />
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    const roots = [...container.querySelectorAll('.ui-date-time-field')];
+    expect(roots.map((root) => root.getAttribute('data-validation'))).toEqual([
+      'invalid',
+      'invalid',
+      'invalid',
+      'invalid',
+      'valid',
+    ]);
+    expect(roots[0]?.querySelector('.ui-field__message')).toHaveTextContent('Enter a valid date.');
   });
 
   it('UIC-DATE-TIME-FIELD-1.3 commits typed dates, times and date-times in canonical form', async () => {

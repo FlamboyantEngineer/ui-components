@@ -452,6 +452,7 @@
   "dateTooLate": "{maxValue} 以前の値を選んでください。",
   "dateUnavailable": "選択できる日付を選んでください。",
   "dateIncomplete": "日付を最後まで入力してください。",
+  "dateUnreadable": "有効な日付を入力してください。",
   "lastPeriod": "過去 {period}",
   "nextPeriod": "今後 {period}",
   "rangeMinimum": "最小",

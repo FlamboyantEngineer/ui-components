@@ -223,6 +223,21 @@ export function toValueDate(value: string, timeZone?: string): string | null {
 }
 
 /**
+ * Whether the mode can read a value: a `YYYY-MM-DD` date for `date`, a date and time (floating, with
+ * an offset or with a zone) for `date-time`, and a range of two dates for `date-range`.
+ */
+export function isReadableRelativeValue(
+  value: RelativeDateValue,
+  kind: RelativeDateFieldMode,
+): boolean {
+  if (kind === 'date-range') {
+    return typeof value === 'object' && !!parseIsoDate(value.start) && !!parseIsoDate(value.end);
+  }
+  if (typeof value !== 'string') return false;
+  return kind === 'date' ? !!parseIsoDate(value) : !!parseIsoDateTime(value);
+}
+
+/**
  * Which bound a value, or either end of a range, breaks, with that bound's date; a range whose end
  * precedes its start breaks a minimum of its start, as in `DateTimeField`.
  */
