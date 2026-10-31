@@ -27,10 +27,10 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ### UIC-PROGRESS-BAR-1.4 - Value text
 
-The value text shall default to a locale-formatted percentage (`formatOptions` changes the format). `valueLabel` replaces it, both visibly and as `aria-valuetext`, for counts such as `2/3` or explanations such as `About a minute left`.
+The value text shall default to a locale-formatted percentage (`formatOptions` changes the format). `valueLabel`, plain text, replaces it, both visibly and as `aria-valuetext`, for counts such as `2/3` or explanations such as `About a minute left`; blank text, or a value that is not text, keeps the formatted value. Being plain text, it reads the same as it shows, and the `valueText` a `render` callback receives is always a string.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-bar.test.tsx`
+Verification: `src/components/progress-bar/progress-bar.test.tsx`, `src/components/progress-bar/progress-value-label.test.tsx`, `e2e/progress-bar.spec.ts`
 
 ### UIC-PROGRESS-BAR-1.5 - Truthful values
 

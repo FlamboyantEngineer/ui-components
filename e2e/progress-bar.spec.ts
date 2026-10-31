@@ -62,6 +62,13 @@ test.describe('Progress Bar lab', () => {
     await expect(forward).toBeDisabled();
   });
 
+  test('UIC-PROGRESS-BAR-1.4 reads the value label as the text it shows', async ({ page, lab }) => {
+    await lab.open('progress-bar');
+    const cell = page.locator('[data-lab-cell="option=value label"]').first();
+    await expect(cell.getByRole('progressbar')).toHaveAttribute('aria-valuetext', '2 of 3 files');
+    await expect(cell.locator('.ui-progress-bar__value')).toHaveText('2 of 3 files');
+  });
+
   test('UIC-PROGRESS-BAR-2.1 draws hidden spinners in three sizes', async ({ page, lab }) => {
     await lab.open('progress-bar');
     for (const [size, edge] of [

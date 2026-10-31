@@ -23,8 +23,11 @@ export interface ProgressRangeProps {
   minValue?: number | undefined;
   /** The end of the range. Defaults to 100. */
   maxValue?: number | undefined;
-  /** Replaces the formatted value text, visibly and as `aria-valuetext`. */
-  valueLabel?: ReactNode;
+  /**
+   * Plain text that replaces the formatted value text, visibly and as `aria-valuetext`. Blank text,
+   * or anything but text, keeps the formatted value.
+   */
+  valueLabel?: string | undefined;
   /** How the value text is formatted. Defaults to a locale-formatted percentage. */
   formatOptions?: Intl.NumberFormatOptions | undefined;
 }
@@ -88,11 +91,13 @@ const hooks = createHooks('progress-bar', ['label', 'value', 'track', 'fill', 'r
 const spinnerHooks = createHooks('spinner');
 
 /** A bar showing how much of a known amount of work is done, or that work is under way. */
-export function ProgressBar(props: ProgressBarProps) {
+export function ProgressBar({ valueLabel, ...props }: ProgressBarProps) {
+  // Untyped callers may still pass an element, which would read as `[object Object]`.
+  const text = typeof valueLabel === 'string' && valueLabel.trim() ? valueLabel : undefined;
   return props.segments ? (
-    <SegmentedProgressBar {...props} segments={props.segments} />
+    <SegmentedProgressBar {...props} valueLabel={text} segments={props.segments} />
   ) : (
-    <RangeProgressBar {...props} />
+    <RangeProgressBar {...props} valueLabel={text} />
   );
 }
 
