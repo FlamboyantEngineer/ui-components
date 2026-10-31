@@ -7,7 +7,7 @@
   max-width: 36rem;
   color: var(--ref-text);
   font-size: var(--ref-font-size-md);
-  line-height: 20px;
+  line-height: 1.25rem;
 }
 
 .ui-activity-feed__filter {

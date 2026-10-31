@@ -40,7 +40,7 @@ p.ui-tree-compare__summary {
   border-inline-start-width: 3px;
   border-radius: var(--ref-radius);
   font-size: var(--ref-font-size-sm);
-  line-height: 20px;
+  line-height: 1.25rem;
 }
 
 .ui-tree-compare__count[data-change='added'] {

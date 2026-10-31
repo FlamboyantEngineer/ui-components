@@ -45,7 +45,7 @@
 .ui-emoji-picker__search-input {
   flex: 1;
   min-width: 0;
-  height: 28px;
+  height: var(--ref-control-height-md);
   padding: 0 8px;
   border: 0;
   background: none;
@@ -106,7 +106,7 @@
 
 .ui-emoji-picker__categories .ui-tabs__icon {
   font-size: var(--ref-font-size-lg);
-  line-height: 16px;
+  line-height: 1rem;
 }
 
 .ui-emoji-picker__categories .ui-tabs__panel {

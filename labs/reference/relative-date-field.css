@@ -127,7 +127,7 @@
 .ui-relative-date-field__option {
   display: flex;
   align-items: center;
-  min-height: 28px;
+  min-height: var(--ref-control-height-md);
   padding: 2px 8px;
   border-radius: var(--ref-radius-sm);
   cursor: default;

@@ -59,6 +59,7 @@ function readDeclarations(file) {
       const comment = match[3] ?? '';
       const isExempt = comment.includes(exemptMarker);
       const isLayoutExempt = comment.includes(layoutExemptMarker);
+      const isMono = rule[2].includes('var(--ref-mono)');
       for (const selector of selectors)
         declarations.push({
           file,
@@ -68,6 +69,7 @@ function readDeclarations(file) {
           line,
           isExempt,
           isLayoutExempt,
+          isMono,
         });
     }
   }
@@ -96,7 +98,7 @@ const layoutProperty =
 
 function isTokenFont(value) {
   if (value === 'inherit') return true;
-  // Line height is independent of the type scale, including a fixed height in a code view.
+  // A line height in px is checked on its own: only a code view may fix one.
   const parts = value.replace(/\/\s*(?:var\([^)]*\)|[\w.%+-]+)/, '').split(/\s+(?![^(]*\))/);
   return (
     /var\(--ref-(?:font|mono|script)\)$/.test(value) &&
@@ -137,6 +139,27 @@ for (const declaration of declarations) {
   }
   if (property === 'font' && !isTokenFont(value)) {
     problems.push(`${where(declaration)}: font "${value}" is not a type token shorthand`);
+  }
+  // Line boxes grow with the rem type; a code view keeps its lines on a fixed grid (UIC-LABS-3.5).
+  const lineHeight = property === 'font' ? value.match(/\/\s*([\w.%+-]+)/)?.[1] : value;
+  if (
+    /^(?:font|line-height)$/.test(property) &&
+    /^[\d.]+px$/.test(lineHeight ?? '') &&
+    !declaration.isMono
+  ) {
+    problems.push(
+      `${where(declaration)}: line height "${lineHeight}" in px outside a code view; use a unitless or rem line height`,
+    );
+  }
+  // Single-line inputs and option rows sit on the control scale, which grows with the root size.
+  if (
+    /^(?:min-)?height$/.test(property) &&
+    /\d+px/.test(value) &&
+    /(?:\binput|__search-input|__option|__editor)(?![\w-])[^\s>+~]*$/.test(selector)
+  ) {
+    problems.push(
+      `${where(declaration)}: ${property} "${value}" sizes an input or option row in px; use --ref-control-height-<size>`,
+    );
   }
   if (
     /^(?:transition|animation)(?:-duration|-delay)?$/.test(property) &&

@@ -57,7 +57,7 @@
 
 .ui-pdf-viewer__page-input {
   box-sizing: border-box;
-  height: 26px;
+  height: 1.625rem;
   padding: 0 6px;
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius);

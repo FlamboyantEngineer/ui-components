@@ -95,7 +95,7 @@
   margin: 4px 4px 2px;
   border-radius: var(--ref-radius-full);
   font-size: var(--ref-font-size-sm);
-  line-height: 22px;
+  line-height: 1.375rem;
   text-align: center;
 }
 
@@ -143,7 +143,7 @@
   color: var(--ref-text);
   font: inherit;
   font-size: var(--ref-font-size-sm);
-  line-height: 20px;
+  line-height: 1.25rem;
   text-align: start;
   white-space: nowrap;
   cursor: pointer;
@@ -253,7 +253,7 @@
   border: 1px solid var(--ref-canvas);
   border-inline-start: 3px solid var(--ref-border-strong);
   font-size: var(--ref-font-size-xs);
-  line-height: 16px;
+  line-height: 1rem;
   white-space: normal;
 }
 

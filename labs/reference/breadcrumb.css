@@ -5,19 +5,19 @@
   min-width: 0;
   max-width: 100%;
   font-size: var(--ref-font-size-md);
-  line-height: 24px;
+  line-height: 1.5rem;
 }
 .ui-breadcrumb[data-size='xs'] {
   font-size: var(--ref-font-size-xs);
-  line-height: 16px;
+  line-height: 1rem;
 }
 .ui-breadcrumb[data-size='sm'] {
   font-size: var(--ref-font-size-sm);
-  line-height: 20px;
+  line-height: 1.25rem;
 }
 .ui-breadcrumb[data-size='lg'] {
   font-size: var(--ref-font-size);
-  line-height: 28px;
+  line-height: 1.75rem;
 }
 
 .ui-breadcrumb__list {

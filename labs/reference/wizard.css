@@ -43,7 +43,7 @@
   margin: 0;
   font-size: var(--ref-font-size-lg);
   font-weight: var(--ref-font-weight-strong);
-  line-height: 20px;
+  line-height: 1.25rem;
 }
 /* Focus lands on the heading only by script, to announce the new step; it needs no ring. */
 .ui-wizard__heading:focus {

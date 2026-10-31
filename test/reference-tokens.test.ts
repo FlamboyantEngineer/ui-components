@@ -63,7 +63,7 @@ describe('reference token check', () => {
   });
 
   it('UIC-LABS-3.5 checks size, weight and family in font shorthands while preserving line height', () => {
-    const type = `${base}:root { --ref-font: system-ui; }`;
+    const type = `${base}:root { --ref-font: system-ui; --ref-mono: monospace; }`;
     const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); border-color: var(--ref-accent); font-size: var(--ref-font-size-sm); font-family: var(--ref-font); }`;
     const result = check(
       {
@@ -79,8 +79,38 @@ describe('reference token check', () => {
     const valid = check(
       {
         'card.css': `${common}
-.ui-card__code { font: var(--ref-font-size-sm)/20px var(--ref-font); }
+.ui-card__code { font: var(--ref-font-size-sm)/20px var(--ref-mono); }
 .ui-card__label { font: inherit; }`,
+      },
+      type,
+    );
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.5 UIC-LABS-3.7 keeps line heights, inputs and option rows off fixed pixels', () => {
+    const type = `${base}:root { --ref-font: system-ui; --ref-mono: monospace; --ref-control-height-md: 1.75rem; }`;
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); border-color: var(--ref-accent); font-size: var(--ref-font-size-sm); font-family: var(--ref-font); }`;
+    const result = check(
+      {
+        'card.css': `${common}
+.ui-card__title { line-height: 20px; }
+.ui-card__label { font: var(--ref-font-size-sm)/20px var(--ref-font); }
+.ui-card__search-input { height: 28px; }
+.ui-card__option { min-height: 28px; }`,
+      },
+      type,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr.match(/in px outside a code view/g)).toHaveLength(2);
+    expect(result.stderr.match(/sizes an input or option row in px/g)).toHaveLength(2);
+    const valid = check(
+      {
+        'card.css': `${common}
+.ui-card__title { line-height: 1.25rem; }
+.ui-card__code { line-height: 20px; font-family: var(--ref-mono); }
+.ui-card__search-input { height: var(--ref-control-height-md); }
+.ui-card__option { min-height: 1.75rem; }`,
       },
       type,
     );

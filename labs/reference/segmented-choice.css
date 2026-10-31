@@ -139,7 +139,7 @@
   color: var(--ref-muted);
   font-size: var(--ref-font-size-xs);
   font-weight: var(--ref-font-weight-strong);
-  line-height: 16px;
+  line-height: 1rem;
   text-align: center;
 }
 .ui-segmented-choice__segment[data-selected] .ui-segmented-choice__count {

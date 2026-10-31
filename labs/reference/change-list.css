@@ -2,7 +2,7 @@
 
 .ui-change-list {
   font-size: var(--ref-font-size-md);
-  line-height: 20px;
+  line-height: 1.25rem;
 }
 
 .ui-change-list[data-variant='compact'] {

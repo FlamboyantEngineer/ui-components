@@ -202,7 +202,7 @@
   flex-wrap: wrap;
   align-items: center;
   column-gap: 8px;
-  min-height: 28px;
+  min-height: var(--ref-control-height-md);
   padding: 2px 8px;
   border-radius: var(--ref-radius-sm);
   cursor: default;
