@@ -18,6 +18,7 @@ import {
   removeChosenKey,
   type TreeIndex,
 } from './tree-index.js';
+import { useCloseWhenLocked } from './select-model.js';
 import { TreeSelectPopover } from './tree-select-popover.js';
 import { TreeSelectTrigger } from './tree-select-trigger.js';
 import type { SelectTreeFieldProps, SelectFieldValueDisplay } from './select-tree-field.js';
@@ -164,6 +165,7 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
     props.onOpenChange,
   );
   const isEditable = !state.isReadOnly && !state.isDisabled;
+  useCloseWhenLocked(open, !isEditable, () => setOpen(false));
   const text = nodes.summary;
   return (
     <>

@@ -1,8 +1,10 @@
 'use client';
 
-import { useId, useState, type KeyboardEvent, type Ref } from 'react';
+import { useId, useLayoutEffect, useState, type KeyboardEvent, type Ref } from 'react';
 import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { FieldState } from '../field/field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { flattenPickerItems } from '../field/field.js';
@@ -46,7 +48,8 @@ interface SelectModelProps extends SelectConfig {
 
 function isSeedKey(event: KeyboardEvent<HTMLElement>): boolean {
   if (event.key.length !== 1 || event.key === ' ') return false;
-  if (event.ctrlKey || event.metaKey || event.altKey || event.nativeEvent.isComposing) return false;
+  if (event.ctrlKey || event.metaKey || event.altKey || isComposingKey(event.nativeEvent))
+    return false;
   return event.currentTarget.contains(event.target as Node);
 }
 
@@ -77,7 +80,9 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
   const emptyKey = useId();
   const search = useSelectSearch(config);
   const isRemote = Boolean(config.loadOptions);
-  const known = mergeSelectOptions(flattenPickerItems(config.options), search.seen);
+  // The latest loader result of an option wins over earlier ones and over the seed `options`, so a
+  // row, the trigger and a chip draw the same version of it.
+  const known = mergeSelectOptions(search.seen, flattenPickerItems(config.options));
   const keys = toChosenKeys(state.value, known);
   const chosen = resolveSelectOptions(keys, known);
   const diff = state.isDirty
@@ -99,7 +104,8 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
     added: diff.added,
     removed,
     blockedKeys,
-    isFull: blockedKeys.size > 0,
+    /** A multiple select holds `maxValues` keys or more, whatever options are known. */
+    isFull: isMultiple && config.maxValues !== undefined && keys.length >= config.maxValues,
     listed: empty ? [empty, ...listed] : listed,
     /** A single select's chosen option, the empty option standing for no value. */
     single: isMultiple ? null : (chosen[0] ?? empty),
@@ -109,6 +115,19 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
 }
 
 export type SelectModel = ReturnType<typeof useSelectModel>;
+
+/**
+ * Closes an open picker once its field turns read-only or disabled, through the ordinary close
+ * (`onOpenChange(false)`), so it stays closed when the field unlocks. While locked it is drawn
+ * closed whatever its owner says.
+ */
+export function useCloseWhenLocked(isOpen: boolean, isLocked: boolean, close: () => void) {
+  const shouldClose = isOpen && isLocked;
+  const latestClose = useLatest(close);
+  useLayoutEffect(() => {
+    if (shouldClose) latestClose.current();
+  }, [shouldClose, latestClose]);
+}
 
 /** Open state (controlled or held here), the filter text and the actions that commit keys. */
 export function useSelectActions(
@@ -130,8 +149,19 @@ export function useSelectActions(
     setFilterText(text);
     model.search?.search(text);
   };
+  useCloseWhenLocked(open, state.isReadOnly || state.isDisabled, () => {
+    changeFilter('');
+    setOwnOpen(false);
+  });
   const commitKeys = (next: readonly Key[]) => {
     const ordered = orderSelectKeys(next, model.known).filter((key) => key !== model.empty?.id);
+    // A multiple select never grows past `maxValues`; a removal is always taken.
+    const isOverLimit =
+      isMultiple &&
+      config.maxValues !== undefined &&
+      ordered.length > config.maxValues &&
+      ordered.length > model.keys.length;
+    if (isOverLimit) return;
     state.setValue(isMultiple ? ordered : (ordered[0] ?? null));
     state.commit();
   };

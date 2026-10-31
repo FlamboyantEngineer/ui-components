@@ -318,6 +318,49 @@ describe('SelectTreeField', () => {
     expect(row('Europe')).toHaveFocus();
   });
 
+  it('UIC-SELECT-FIELD-10.1 leaves a composing Enter and Escape on a row to the input method', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        onChange={onChange}
+        defaultOpen
+      />,
+    );
+    await user.keyboard('{ArrowDown}');
+    expect(row('Europe')).toHaveFocus();
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(row('Europe'), { key: 'Enter', keyCode: 229 });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(row('Europe'), { key: 'Escape', isComposing: true });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(tree()).toBeInTheDocument();
+  });
+
+  it('UIC-SELECT-FIELD-1.3 closes an open popover for good when the field turns disabled', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const props = {
+      mode: 'tree',
+      label: 'Place',
+      items: places,
+      getTextValue,
+      onOpenChange,
+    } as const;
+    const { rerender } = render(<SelectField {...props} />);
+    await user.click(trigger(/Place/));
+    expect(tree()).toBeInTheDocument();
+    rerender(<SelectField {...props} isDisabled />);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    rerender(<SelectField {...props} />);
+    expect(screen.queryByRole('treegrid')).not.toBeInTheDocument();
+    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+  });
+
   it('UIC-SELECT-FIELD-10.2 UIC-SELECT-FIELD-10.3 chooses several with cascading checkboxes and chips', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

@@ -1,5 +1,5 @@
 import { PlusGlyph } from '../../core/glyphs.js';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
@@ -196,6 +196,17 @@ describe('SelectField list', () => {
     expect(onCommit).not.toHaveBeenCalled();
     await user.keyboard('{Escape}{Escape}');
     expect(trigger('Kiwi Fruit')).toBeInTheDocument();
+  });
+
+  it('UIC-SELECT-FIELD-3.6 leaves a key an input method composition owns on the closed trigger', () => {
+    render(<SelectField label="Fruit" options={orchard} defaultValue="kiwi" />);
+    const button = trigger('Kiwi Fruit');
+    act(() => button.focus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+    fireEvent.keyDown(button, { key: 'm', keyCode: 229 });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(button, { key: 'm', isComposing: true });
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-3.6 opens on Space without seeding, and keeps type-to-select on short lists', async () => {
