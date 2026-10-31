@@ -179,6 +179,52 @@ function FrameDemo() {
   );
 }
 
+const shownAgainQueue = createToastQueue({ maxVisibleToasts: 1 });
+
+/**
+ * One toast at a time: a timed toast covered by a newer one, or hidden with its list, runs on with
+ * the time that remained once it shows again.
+ */
+function ShownAgainDemo() {
+  const [isListShown, setListShown] = useState(true);
+  const cover = useRef('');
+  return (
+    <div data-lab-demo="shown-again">
+      <p>
+        <Button
+          size="sm"
+          data-lab-push="timed"
+          onPress={() => shownAgainQueue.add({ title: 'Export ready' }, { timeout: 4000 })}
+        >
+          Push four-second toast
+        </Button>{' '}
+        <Button
+          size="sm"
+          data-lab-push="cover"
+          onPress={() => {
+            cover.current = shownAgainQueue.add({ title: 'Covering toast' }, { timeout: 0 });
+          }}
+        >
+          Cover it
+        </Button>{' '}
+        <Button
+          size="sm"
+          data-lab-action="uncover"
+          onPress={() => shownAgainQueue.close(cover.current)}
+        >
+          Close the cover
+        </Button>{' '}
+        <Button size="sm" data-lab-action="toggle-list" onPress={() => setListShown(!isListShown)}>
+          {isListShown ? 'Hide list' : 'Show list'}
+        </Button>
+      </p>
+      <div style={{ width: 360, minHeight: 80 }}>
+        {isListShown ? <ToastList queue={shownAgainQueue} data-lab-list="shown-again" /> : null}
+      </div>
+    </div>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -276,6 +322,12 @@ mountLab(
       description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Closing the follow-up toast adds the next one from its onClose. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
     >
       <LiveDemo />
+    </LabSection>
+    <LabSection
+      title="Shown again"
+      description="A queue that shows one toast at a time. Push the four-second toast, cover it with a newer one or hide the list for a while, then close the cover or show the list again: the toast runs on with the time it had left instead of starting over."
+    >
+      <ShownAgainDemo />
     </LabSection>
     <LabSection
       title="Inside a frame"

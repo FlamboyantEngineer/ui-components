@@ -89,6 +89,35 @@ test.describe('Toast lab', () => {
     });
   });
 
+  test('UIC-TOAST-1.2 runs a covered or hidden toast on with the time that remained', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    const demo = page.locator('[data-lab-demo="shown-again"]');
+    const timed = demo.getByRole('alertdialog', { name: 'Export ready' });
+    await demo.locator('[data-lab-push="timed"]').click();
+    await expect(timed).toBeVisible();
+    await page.waitForTimeout(2000);
+    await demo.locator('[data-lab-push="cover"]').click();
+    await expect(timed).toHaveCount(0);
+    await page.waitForTimeout(3000);
+    await demo.locator('[data-lab-action="uncover"]').click();
+    await expect(timed).toBeVisible();
+    // About two seconds remained; starting over would keep it for four.
+    await expect(timed).toHaveCount(0, { timeout: 3200 });
+
+    await demo.locator('[data-lab-push="timed"]').click();
+    await expect(timed).toBeVisible();
+    await page.waitForTimeout(2000);
+    await demo.locator('[data-lab-action="toggle-list"]').click();
+    await expect(timed).toHaveCount(0);
+    await page.waitForTimeout(3000);
+    await demo.locator('[data-lab-action="toggle-list"]').click();
+    await expect(timed).toBeVisible();
+    await expect(timed).toHaveCount(0, { timeout: 3200 });
+  });
+
   test('UIC-TOAST-1.5 UIC-TOAST-3.6 updates a pending toast in place', async ({ page, lab }) => {
     await lab.open('toast');
     await page.locator('[data-lab-push="pending"]').click();

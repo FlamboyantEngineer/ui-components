@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { HelpGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { hydrateRoot } from 'react-dom/client';
@@ -854,6 +855,98 @@ describe('Toast updates and motion', () => {
     act(() => screen.getByRole('button', { name: 'Outside' }).focus());
     expect(region).not.toHaveAttribute('data-expanded');
     expectHooksMatchSpec(document.body, 'TOAST');
+  });
+});
+
+describe('Toast lifetimes when shown again', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('UIC-TOAST-1.2 runs a displaced toast on with the time that remained', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue({ maxVisibleToasts: 1 });
+    render(<ToastRegion queue={queue} />);
+    act(() => {
+      queue.add({ title: 'First' }, { timeout: 1000 });
+    });
+    await advance(600);
+    for (const title of ['Second', 'Third']) {
+      let key = '';
+      act(() => {
+        key = queue.add({ title }, { timeout: 0 });
+      });
+      expect(titles()).toEqual([title]);
+      await advance(2000);
+      act(() => queue.close(key));
+      expect(titles()).toEqual(['First']);
+      await advance(100);
+    }
+    await advance(199);
+    expect(titles()).toEqual(['First']);
+    await advance(1);
+    expect(titles()).toEqual([]);
+  });
+
+  it('UIC-TOAST-1.2 keeps the time that remained across a region remount, also in Strict Mode', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue();
+    const view = render(<ToastRegion queue={queue} />);
+    act(() => {
+      queue.add({ title: 'Report ready' }, { timeout: 1000 });
+    });
+    await advance(600);
+    view.unmount();
+    await advance(5000);
+    render(
+      <StrictMode>
+        <ToastRegion queue={queue} />
+      </StrictMode>,
+    );
+    expect(titles()).toEqual(['Report ready']);
+    await advance(399);
+    expect(titles()).toEqual(['Report ready']);
+    await advance(1);
+    expect(titles()).toEqual([]);
+  });
+
+  it('UIC-TOAST-1.2 UIC-TOAST-1.5 starts over only for a new lifetime given while hidden', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue({ maxVisibleToasts: 1, defaultTimeout: 1000 });
+    render(<ToastRegion queue={queue} />);
+    let edited = '';
+    let retimed = '';
+    let settle: () => void = () => {};
+    act(() => {
+      queue.promise(
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+        { pending: { title: 'Syncing' }, success: { title: 'Synced' }, error: { title: 'Failed' } },
+      );
+      retimed = queue.add({ title: 'Retimed' });
+      edited = queue.add({ title: 'Edited' });
+    });
+    await advance(600);
+    let cover = '';
+    act(() => {
+      cover = queue.add({ title: 'Cover' }, { timeout: 0 });
+      queue.update(edited, { title: 'Edited again' });
+      queue.update(retimed, { title: 'Retimed again' }, { timeout: 1000 });
+    });
+    await act(async () => settle());
+    act(() => queue.close(cover));
+    expect(titles()).toEqual(['Edited again']);
+    await advance(400);
+    expect(titles()).toEqual(['Retimed again']);
+    await advance(999);
+    expect(titles()).toEqual(['Retimed again']);
+    await advance(1);
+    expect(titles()).toEqual(['Synced']);
+    await advance(999);
+    expect(titles()).toEqual(['Synced']);
+    await advance(1);
+    expect(titles()).toEqual([]);
   });
 });
 
