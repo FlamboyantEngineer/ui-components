@@ -18,19 +18,19 @@ While the query is not empty the search field's clear button shall follow the in
 Implementation: `src/components/property-filter/property-filter.tsx`
 Verification: `src/components/property-filter/property-filter.test.tsx`, `e2e/property-filter.spec.ts`
 
-### UIC-PROPERTY-FILTER-1.4 - Controlled query and matching
-
-`query` with `onQueryChange` shall control the search box's query, so a host can restore or link to a search, and `defaultQuery` start an uncontrolled one; `onQueryChange` reports every change, typing and clearing alike. `filter` shall pass to the scope ([UIC-PROPERTY-SCOPE-1.6](PROPERTY-SCOPE.md#uic-property-scope-16---custom-matching)).
-
-Implementation: `src/components/property-filter/property-filter.tsx`
-Verification: `src/components/property-filter/property-filter.test.tsx`, `e2e/property-filter.spec.ts`
-
 ### UIC-PROPERTY-FILTER-1.3 - Hooks and caller attributes
 
 The panel's root shall carry `ui-property-filter` beside the panel's hooks, append the caller's `className`, and take `id`, caller `data-*` attributes and `labelLayout` as a `PropertyPanel` does.
 
 Implementation: `src/components/property-filter/property-filter.tsx`
 Verification: `src/components/property-filter/property-filter.test.tsx`
+
+### UIC-PROPERTY-FILTER-1.4 - Controlled query and matching
+
+`query` with `onQueryChange` shall control the search box's query, so a host can restore or link to a search, and `defaultQuery` start an uncontrolled one; `onQueryChange` reports every change, typing and clearing alike. `filter` shall pass to the scope ([UIC-PROPERTY-SCOPE-1.6](PROPERTY-SCOPE.md#uic-property-scope-16---custom-matching)).
+
+Implementation: `src/components/property-filter/property-filter.tsx`
+Verification: `src/components/property-filter/property-filter.test.tsx`, `e2e/property-filter.spec.ts`
 
 ## Hooks
 

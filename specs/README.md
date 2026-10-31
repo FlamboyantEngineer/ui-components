@@ -30,6 +30,7 @@ A component's hooks are listed only in its own spec. A family spec (for example 
   - `<AREA>` is the spec's name in upper case (`BUTTON`, `MODAL`, `HOOKS`, `PROVIDER`).
   - `Implementation:` lists the files that implement the requirement, each in backticks.
   - `Verification:` lists the tests that verify it, each in backticks. At least one of those tests names the requirement ID in a test title or comment.
+  - Within a group, requirements are numbered from 1 without gaps and appear in number order, and groups appear in ascending order (gaps between group numbers are allowed). A requirement sits under its own group's heading.
   - IDs are never reused. A withdrawn requirement keeps its heading with the statement `Withdrawn.` and its last verification.
 
 - Optional test sequences use `### UIC-<AREA>-T<n>.<m> - <Title>` headings for multi-step browser checks.
@@ -52,7 +53,7 @@ A component's hooks are listed only in its own spec. A family spec (for example 
   - `property`: a measured `--ui-*` custom property set inline.
   - `Values` lists the allowed values in backticks; empty means free text (an ID, a count).
 
-`npm run check:specs` enforces this format, the existence of every listed path, that the listed tests name each ID, that every component directory is implemented by some spec, and that the reference stylesheet partials (`labs/reference/`) style every root and slot hook. The test helper `expectHooksMatchSpec` in `test/hooks.ts` fails a test when rendered markup carries a hook its spec does not declare.
+`npm run check:specs` enforces this format, including the group headings and numbering, the existence of every listed path, that the listed tests name each ID, that every component directory is implemented by some spec, and that the reference stylesheet partials (`labs/reference/`) style every root and slot hook. The test helper `expectHooksMatchSpec` in `test/hooks.ts` fails a test when rendered markup carries a hook its spec does not declare.
 
 ## Host requirement IDs
 

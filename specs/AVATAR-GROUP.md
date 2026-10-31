@@ -41,6 +41,15 @@ Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-g
 Implementation: `src/components/avatar-group/avatar-group.tsx`
 Verification: `src/components/avatar-group/avatar-group.test.tsx`
 
+## UIC-AVATAR-GROUP-3 - Unified options
+
+### UIC-AVATAR-GROUP-3.1 - Layouts
+
+layout shall select stack (default), strip or decorative dots. All layouts share people, windowing and overflow; avatar layouts support optional status, cards and person commands. Outlined avatars in groups shall have an opaque theme-matched background.
+
+Implementation: `src/components/avatar-group/avatar-group.tsx`
+Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/unified-options.spec.ts`
+
 ## UIC-AVATAR-GROUP-11 - People
 
 ### UIC-AVATAR-GROUP-11.1 - Order and status
@@ -114,15 +123,6 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`
 Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`
-
-## UIC-AVATAR-GROUP-3 - Unified options
-
-### UIC-AVATAR-GROUP-3.1 - Layouts
-
-layout shall select stack (default), strip or decorative dots. All layouts share people, windowing and overflow; avatar layouts support optional status, cards and person commands. Outlined avatars in groups shall have an opaque theme-matched background.
-
-Implementation: `src/components/avatar-group/avatar-group.tsx`
-Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/unified-options.spec.ts`
 
 ## Hooks
 

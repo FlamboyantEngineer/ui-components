@@ -46,6 +46,22 @@ Verification: `src/components/record-label/record-label.test.tsx`, `e2e/record-l
 Implementation: `src/components/record-label/record-label.tsx`
 Verification: `src/components/record-label/record-label.test.tsx`
 
+## UIC-RECORD-LABEL-3 - Unified options
+
+### UIC-RECORD-LABEL-3.1 - Modes
+
+mode shall select label (default) or chip. Both preserve record identity and links; chip adds optional metadata, preview, removal and stacked layout.
+
+Implementation: `src/components/record-label/record-label.tsx`
+Verification: `src/components/record-label/record-label.test.tsx`
+
+### UIC-RECORD-LABEL-3.2 - References in messages
+
+Components that carry references to records in a message's text ([UIC-MESSAGE-COMPOSER-4.9](MESSAGE-COMPOSER.md#uic-message-composer-49---record-references), [UIC-CHAT-PARTS-2.5](CHAT-PARTS.md#uic-chat-parts-25---record-references)) shall draw each one as a chip built from a `RecordLabelReference` (`{ id, label, recordType? }`: the record's opaque identity, the text the reference shows, used as the chip's identifier, and the host's kind or scope) and the `RecordLabelPresentation` a `RecordLabelResolver` returns for it (`name`, `icon`, `href`, `isExternal`, `unavailable`, `type`, `version`, `state` and `preview`). The presentation is looked up each time the chip draws and is never stored with the reference.
+
+Implementation: `src/components/record-label/record-label.tsx`
+Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/message-composer/rich/composer-pill.test.tsx`
+
 ## UIC-RECORD-LABEL-11 - Contract
 
 ### UIC-RECORD-LABEL-11.1 - Label and parts
@@ -103,22 +119,6 @@ The label, its details and the remove button shall keep their elements, state an
 
 Implementation: `src/components/record-label/record-chip-parts.tsx`, `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/record-label/record-chip-identity.test.tsx`, `e2e/record-label-chip.spec.ts`
-
-## UIC-RECORD-LABEL-3 - Unified options
-
-### UIC-RECORD-LABEL-3.1 - Modes
-
-mode shall select label (default) or chip. Both preserve record identity and links; chip adds optional metadata, preview, removal and stacked layout.
-
-Implementation: `src/components/record-label/record-label.tsx`
-Verification: `src/components/record-label/record-label.test.tsx`
-
-### UIC-RECORD-LABEL-3.2 - References in messages
-
-Components that carry references to records in a message's text ([UIC-MESSAGE-COMPOSER-4.9](MESSAGE-COMPOSER.md#uic-message-composer-49---record-references), [UIC-CHAT-PARTS-2.5](CHAT-PARTS.md#uic-chat-parts-25---record-references)) shall draw each one as a chip built from a `RecordLabelReference` (`{ id, label, recordType? }`: the record's opaque identity, the text the reference shows, used as the chip's identifier, and the host's kind or scope) and the `RecordLabelPresentation` a `RecordLabelResolver` returns for it (`name`, `icon`, `href`, `isExternal`, `unavailable`, `type`, `version`, `state` and `preview`). The presentation is looked up each time the chip draws and is never stored with the reference.
-
-Implementation: `src/components/record-label/record-label.tsx`
-Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/message-composer/rich/composer-pill.test.tsx`
 
 ## Hooks
 

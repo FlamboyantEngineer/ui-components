@@ -73,19 +73,19 @@ A portal on a layer above `modal` (`dropdown`, `context-menu`, `tooltip`, `toast
 Implementation: `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 
-### UIC-PORTAL-3.4 - Preserved tab order
-
-With `preserveTabOrder`, Tab shall move into the portal's content and out of it as if the content sat where the portal is declared: from the element before that place to the content's first tab stop, from its last tab stop to the element after that place, and back the same way with Shift+Tab. Content without a tab stop is passed over, and the content is skipped when the document's own order reaches it at the container. Tab stops follow the browser's own: a radio group is one stop, its checked button, or with none checked its first button (as Chromium enters it either way); positive `tabIndex` values are not given their earlier place. At the ends of the page's tab order, focus leaves the document as it would without the portal, and coming back starts again at the page's first (or, with Shift+Tab, last) stop: before Tab moves, the guards and content that would only lead out of the page are taken out of the tab order until focus lands again. This holds for several portals, portals nested in another's content, `PortalHost` containers and containers placed before or after where the portals are declared. The portal renders this with two empty focus guards where it is declared and one at each end of its wrapper; each moves focus on as soon as it receives it, so the guards are never a stop of their own. A portal in place keeps the document's order without guards.
-
-Implementation: `src/components/portal/portal.tsx`, `src/components/portal/tab-order.tsx`, `src/utils/tabbable.ts`
-Verification: `src/components/portal/portal.test.tsx`, `src/utils/tabbable.test.ts`, `e2e/portal.spec.ts`
-
 ### UIC-PORTAL-3.3 - Hooks and caller attributes
 
 `Portal` and `PortalHost` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to their element.
 
 Implementation: `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`
+
+### UIC-PORTAL-3.4 - Preserved tab order
+
+With `preserveTabOrder`, Tab shall move into the portal's content and out of it as if the content sat where the portal is declared: from the element before that place to the content's first tab stop, from its last tab stop to the element after that place, and back the same way with Shift+Tab. Content without a tab stop is passed over, and the content is skipped when the document's own order reaches it at the container. Tab stops follow the browser's own: a radio group is one stop, its checked button, or with none checked its first button (as Chromium enters it either way); positive `tabIndex` values are not given their earlier place. At the ends of the page's tab order, focus leaves the document as it would without the portal, and coming back starts again at the page's first (or, with Shift+Tab, last) stop: before Tab moves, the guards and content that would only lead out of the page are taken out of the tab order until focus lands again. This holds for several portals, portals nested in another's content, `PortalHost` containers and containers placed before or after where the portals are declared. The portal renders this with two empty focus guards where it is declared and one at each end of its wrapper; each moves focus on as soon as it receives it, so the guards are never a stop of their own. A portal in place keeps the document's order without guards.
+
+Implementation: `src/components/portal/portal.tsx`, `src/components/portal/tab-order.tsx`, `src/utils/tabbable.ts`
+Verification: `src/components/portal/portal.test.tsx`, `src/utils/tabbable.test.ts`, `e2e/portal.spec.ts`
 
 ## Hooks
 

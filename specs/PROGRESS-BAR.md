@@ -76,6 +76,15 @@ A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, wit
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
 
+## UIC-PROGRESS-BAR-3 - Unified options
+
+### UIC-PROGRESS-BAR-3.1 - Shape and meaning
+
+shape shall select linear (default) or circular independently of mode, progress (default) or meter. Meter mode retains bounded values, thresholds and its meter role; it is never indeterminate or complete.
+
+Implementation: `src/components/progress-bar/progress-bar.tsx`
+Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/unified-options.spec.ts`
+
 ## UIC-PROGRESS-BAR-4 - Segmented progress
 
 ### UIC-PROGRESS-BAR-4.1 - Segments
@@ -265,15 +274,6 @@ A meter shall take no tab stop and handle no keys or pointer input; it announces
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-meter.test.tsx`, `e2e/progress-meter.spec.ts`
-
-## UIC-PROGRESS-BAR-3 - Unified options
-
-### UIC-PROGRESS-BAR-3.1 - Shape and meaning
-
-shape shall select linear (default) or circular independently of mode, progress (default) or meter. Meter mode retains bounded values, thresholds and its meter role; it is never indeterminate or complete.
-
-Implementation: `src/components/progress-bar/progress-bar.tsx`
-Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/unified-options.spec.ts`
 
 ## Hooks
 

@@ -85,6 +85,15 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar.test.tsx`
 
+## UIC-AVATAR-4 - Unified options
+
+### UIC-AVATAR-4.1 - Optional presence
+
+Avatar shall publish an optional status and its decorative indicator outside the clipped surface. Its root announces the name and optional human-readable status, and also handles cards, commands and name tooltips.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar.test.tsx`, `e2e/unified-options.spec.ts`
+
 ## UIC-AVATAR-11 - Contract
 
 ### UIC-AVATAR-11.1 - Avatar and status
@@ -149,15 +158,6 @@ A pressable avatar (with `onPress` or `card`) shall keep the same button element
 
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar-root.tsx`, `src/components/user-card/user-card.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
-
-## UIC-AVATAR-4 - Unified options
-
-### UIC-AVATAR-4.1 - Optional presence
-
-Avatar shall publish an optional status and its decorative indicator outside the clipped surface. Its root announces the name and optional human-readable status, and also handles cards, commands and name tooltips.
-
-Implementation: `src/components/avatar/avatar.tsx`
-Verification: `src/components/avatar/avatar.test.tsx`, `e2e/unified-options.spec.ts`
 
 ## Hooks
 

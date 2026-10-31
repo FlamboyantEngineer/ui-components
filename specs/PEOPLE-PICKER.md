@@ -64,19 +64,19 @@ Before a search, `recent` people other than the current user shall be listed, in
 Implementation: `src/components/people-picker/people-picker.tsx`, `src/core/field-strings.ts`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
 
-### UIC-PEOPLE-PICKER-3.5 - Known people
-
-Before a search, `knownPeople` other than the current user shall be listed after the current user and before the recent people, in the given order and without a heading; a recent person among them is listed here only. They are known like people a search returned (UIC-PEOPLE-PICKER-3.1), so a value that holds them, such as a saved one, shows their names in the input or the chips before any search.
-
-Implementation: `src/components/people-picker/people-picker.tsx`
-Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
-
 ### UIC-PEOPLE-PICKER-3.4 - Hooks and caller attributes
 
 `PeoplePicker` shall carry the hooks below beside the combobox's, append the caller's `className` after `ui-people-picker`, forward caller `data-*` attributes to the combobox root, and hand `id` to the combobox, which gives it to its input.
 
 Implementation: `src/components/people-picker/people-picker.tsx`
 Verification: `src/components/people-picker/people-picker.test.tsx`
+
+### UIC-PEOPLE-PICKER-3.5 - Known people
+
+Before a search, `knownPeople` other than the current user shall be listed after the current user and before the recent people, in the given order and without a heading; a recent person among them is listed here only. They are known like people a search returned (UIC-PEOPLE-PICKER-3.1), so a value that holds them, such as a saved one, shows their names in the input or the chips before any search.
+
+Implementation: `src/components/people-picker/people-picker.tsx`
+Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
 
 ## Hooks
 

@@ -110,6 +110,13 @@ With `calendarHeading="select"`, the calendar heading shall show a month select 
 Implementation: `src/components/date-time-field/date-time-calendar-heading.tsx`, `src/components/date-time-field/date-time-calendar.tsx`
 Verification: `src/components/date-time-field/date-time-calendar-heading.test.tsx`, `e2e/date-time-field.spec.ts`
 
+### UIC-DATE-TIME-FIELD-3.4 - Calendar date states
+
+`getDateState(isoDate)` returns an optional `{ tone, description, isDisabled, isTaken }` for each ISO calendar day. Semantic tones are neutral, info, success, warning and danger; the stylesheet chooses their colors. The description is exposed to assistive technology. Disabled and taken dates are unavailable in the calendar, typed input, quick presets and every day of an inclusive range. Taken dates are struck through by the reference stylesheet. Disabled dates and dates outside the viewed month are faded without a strike-through. Highlights can coexist with unavailability.
+
+Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`, `src/components/date-time-field/date-values.ts`
+Verification: `src/components/date-time-field/date-states.test.tsx`, `e2e/date-states.spec.ts`
+
 ## UIC-DATE-TIME-FIELD-4 - Time, zones, ranges and forms
 
 ### UIC-DATE-TIME-FIELD-4.1 - Granularity and hour cycle
@@ -139,13 +146,6 @@ Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/co
 
 Implementation: `src/components/date-time-field/date-time-form.tsx`, `src/components/date-time-field/date-time-field.tsx`
 Verification: `src/components/date-time-field/date-time-form.test.tsx`
-
-### UIC-DATE-TIME-FIELD-3.5 - Calendar date states
-
-`getDateState(isoDate)` returns an optional `{ tone, description, isDisabled, isTaken }` for each ISO calendar day. Semantic tones are neutral, info, success, warning and danger; the stylesheet chooses their colors. The description is exposed to assistive technology. Disabled and taken dates are unavailable in the calendar, typed input, quick presets and every day of an inclusive range. Taken dates are struck through by the reference stylesheet. Disabled dates and dates outside the viewed month are faded without a strike-through. Highlights can coexist with unavailability.
-
-Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`, `src/components/date-time-field/date-values.ts`
-Verification: `src/components/date-time-field/date-states.test.tsx`, `e2e/date-states.spec.ts`
 
 ### UIC-DATE-TIME-FIELD-4.5 - Incomplete drafts
 
