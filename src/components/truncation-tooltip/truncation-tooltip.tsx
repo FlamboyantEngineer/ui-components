@@ -27,7 +27,8 @@ import { tabbableSelector } from '../../utils/tabbable.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Button } from '../button/button.js';
-import { TOOLTIP_DELAY, TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
+import { TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
+import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 
 /** The pointer handlers the component owns on its text. */
 type TruncationPointerHandler = 'onPointerEnter' | 'onPointerLeave' | 'onPointerDown';

@@ -6,6 +6,7 @@ import type { OpenStateProps } from '../../core/events.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { TOOLTIP_DELAY, TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -62,13 +63,7 @@ interface TooltipPanelProps extends Pick<TooltipProps, 'placement'>, TooltipPane
   triggerRef?: RefObject<Element | null> | undefined;
 }
 
-/** The hover delay before a tooltip opens, in milliseconds. */
-export const TOOLTIP_DELAY = 500;
-
 const hooks = createHooks('tooltip', ['arrow', 'content']);
-
-/** The gap between the panel and its trigger, room for the arrow, in pixels. */
-const tooltipOffset = 8;
 
 /** The tooltip panel with its hooks; inside a `TooltipTrigger` or standalone with `triggerRef`. */
 export function TooltipPanel({
@@ -83,7 +78,7 @@ export function TooltipPanel({
     <AriaTooltip
       {...rest}
       placement={placement}
-      offset={tooltipOffset}
+      offset={TOOLTIP_OFFSET}
       {...hooks.root({ className, data: { variant, layer: 'tooltip' } })}
       style={{ zIndex }}
     >

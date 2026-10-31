@@ -16,6 +16,7 @@ import { PopoverPresence } from '../popover/popover.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 
 interface HeadingSelectProps {
   unit: 'month' | 'year';
@@ -45,7 +46,7 @@ function HeadingSelect({ unit, items, ...select }: HeadingSelectProps) {
       <PopoverPresence />
       <Popover
         {...hooks.slot('calendar-select-popover', { layer: 'dropdown' })}
-        offset={2}
+        offset={DEFAULT_POINT_OFFSET}
         style={{ zIndex }}
       >
         <ListBox className={hooks.slotClass('calendar-select-list')} items={items}>

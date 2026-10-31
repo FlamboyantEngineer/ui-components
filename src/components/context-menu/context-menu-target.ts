@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { mergeRefs } from '../../utils/merge-props.js';
 import type { MenuController } from './menu-controller.js';
+import { LONG_PRESS_DELAY } from '../../utils/overlay-defaults.js';
 
 /** The props a context menu target receives; its own values are called first. */
 export interface ContextMenuTargetProps {
@@ -34,7 +35,6 @@ interface ContextMenuTargetOptions {
   targetRef: RefObject<HTMLElement | null>;
 }
 
-const longPressDelay = 500;
 /** How far a touch may travel and still count as resting, in pixels. */
 const longPressTolerance = 10;
 
@@ -96,7 +96,7 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
         // The platform may still send its own contextmenu event for this press.
         suppressUntil.current = Date.now() + 1000;
         openAt(controller, currentTarget, { x, y });
-      }, longPressDelay);
+      }, LONG_PRESS_DELAY);
       pending.current = { timer, pointerId, x, y };
     },
     onPointerMove(event: PointerEvent<HTMLElement>) {

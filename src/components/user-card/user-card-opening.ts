@@ -14,6 +14,7 @@ import {
   usePreviewTrigger,
   useTooltipTriggerState,
 } from '../../primitives/index.js';
+import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 
 /** `press` opens the card on a click, Enter or Space; `hover` on hover, keyboard focus or long press. */
 export type UserCardTriggerType = 'press' | 'hover';
@@ -77,8 +78,8 @@ function useHoverOpening({
   isOpen,
   setOpen,
   buttonRef,
-  delay = 600,
-  closeDelay = 200,
+  delay = HOVER_CARD_DELAY,
+  closeDelay = HOVER_CARD_CLOSE_DELAY,
   isDisabled,
 }: OpeningOptions & Pick<CardOpeningOptions, 'delay' | 'closeDelay' | 'isDisabled'>): Opening {
   const state = useTooltipTriggerState({
