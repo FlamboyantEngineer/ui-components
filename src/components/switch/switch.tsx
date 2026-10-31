@@ -6,6 +6,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useInputRef, useResetHeldValue } from '../../utils/use-reset-held-value.js';
 import { useScopedDisabled } from '../field/field.js';
 
 export interface SwitchProps extends BaseProps, AriaLabellingProps {
@@ -40,9 +41,20 @@ const hooks = createHooks('switch', ['track', 'thumb', 'label']);
  */
 export function Switch({ children, size = 'md', className, ...rest }: SwitchProps) {
   const isDisabled = useScopedDisabled(rest.isDisabled);
+  const input = useInputRef(rest.inputRef);
+  const held = useResetHeldValue({
+    value: rest.isSelected,
+    defaultValue: rest.defaultSelected ?? false,
+    onChange: rest.onChange,
+    ref: input.ref,
+  });
   return (
     <AriaSwitch
       {...rest}
+      isSelected={held.value}
+      defaultSelected={undefined}
+      onChange={held.onChange}
+      inputRef={input.setRef}
       isDisabled={isDisabled}
       {...hooks.root({ className, props: rest, data: { size } })}
     >

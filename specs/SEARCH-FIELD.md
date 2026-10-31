@@ -39,6 +39,13 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 Implementation: `src/components/search-field/search-field.tsx`
 Verification: `src/components/search-field/search-field.test.tsx`
 
+### UIC-SEARCH-FIELD-1.6 - Native form reset
+
+A native reset of the form the field submits with shall apply once every listener has seen it, and never when one cancelled it: then the query stays, with no change reported and no new validation. A reset that goes through puts back the query the field mounted with, reported through `onChange` once.
+
+Implementation: `src/components/search-field/search-field.tsx`, `src/utils/use-native-reset.ts`
+Verification: `src/components/search-field/search-field.test.tsx`
+
 ## UIC-SEARCH-FIELD-2 - Label, messages and loading
 
 ### UIC-SEARCH-FIELD-2.1 - Label layout

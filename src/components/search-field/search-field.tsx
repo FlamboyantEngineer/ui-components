@@ -15,6 +15,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useNativeReset } from '../../utils/use-native-reset.js';
 import { Button, ButtonSpinner } from '../button/button.js';
 import {
   FieldMessage,
@@ -135,19 +136,31 @@ function SearchBox({
   );
 }
 
-/** The query, controlled by the caller or held here, so `validate` can check it as it changes. */
-function useQuery({
-  value,
-  defaultValue,
-  onChange,
-}: Pick<SearchFieldProps, 'value' | 'defaultValue' | 'onChange'>) {
+/**
+ * The query, controlled by the caller or held here, so `validate` can check it as it changes. A
+ * native form reset puts back the query the field mounted with, once every listener has seen it,
+ * and never when one cancelled it.
+ */
+function useQuery(
+  { value, defaultValue, onChange }: Pick<SearchFieldProps, 'value' | 'defaultValue' | 'onChange'>,
+  input: RefObject<HTMLInputElement | null>,
+) {
   const [own, setOwn] = useState(defaultValue ?? '');
   const query = value ?? own;
   const change = (next: string) => {
     if (value === undefined) setOwn(next);
     onChange?.(next);
   };
-  return { query, change };
+  const [initial] = useState(query);
+  const isResetting = useNativeReset(input, () => {
+    if (query !== initial) change(initial);
+  });
+  return {
+    query,
+    change: (next: string) => {
+      if (!isResetting()) change(next);
+    },
+  };
 }
 
 /**
@@ -259,7 +272,7 @@ export function SearchField({
   const ownInput = useRef<HTMLInputElement>(null);
   const input = inputRef ?? ownInput;
   const messageId = useId();
-  const { query, change } = useQuery({ value, defaultValue, onChange });
+  const { query, change } = useQuery({ value, defaultValue, onChange }, input);
   const validation = useQueryValidation(query, { validate, validationBehavior, input });
   const isInvalid = validation.status === 'invalid';
   const hasLabel = labelLayout === 'label-control';

@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { pressReset, readPantry, ResetForm } from '../../../test/reset-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxItem } from './combobox.js';
@@ -515,5 +516,37 @@ describe('Combobox', () => {
     render(<Combobox aria-label="Fruit" defaultItems={fruit} inputRef={inputRef} autoFocus />);
     expect(inputRef.current).toBe(input());
     expect(input()).toHaveFocus();
+  });
+
+  it('UIC-COMBOBOX-3.6 keeps its choice through a cancelled native reset and resets otherwise', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const field = (cancels: boolean) => (
+      <ResetForm cancels={cancels}>
+        <Combobox
+          label="Fruit"
+          name="fruit"
+          defaultItems={fruit}
+          defaultValue="apple"
+          onChange={onChange}
+        />
+      </ResetForm>
+    );
+    const { rerender } = render(field(true));
+    const input = screen.getByRole('combobox', { name: 'Fruit' });
+    await user.click(input);
+    await user.keyboard('{ArrowDown}');
+    await user.click(await screen.findByRole('option', { name: 'Banana' }));
+    expect(input).toHaveValue('Banana');
+    onChange.mockClear();
+    await pressReset(user);
+    expect(input).toHaveValue('Banana');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(readPantry()).toEqual([['fruit', 'banana']]);
+    rerender(field(false));
+    await pressReset(user);
+    await waitFor(() => expect(input).toHaveValue('Apple'));
+    expect(onChange.mock.calls).toEqual([['apple']]);
+    expect(readPantry()).toEqual([['fruit', 'apple']]);
   });
 });

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { pressReset, readPantry, ResetForm } from '../../../test/reset-fixtures.js';
 import { GridList, GridListItem } from '../../primitives/index.js';
 import { Checkbox } from './checkbox.js';
 import { cycleCheckState } from './check-state.js';
@@ -201,5 +202,65 @@ describe('Checkbox', () => {
     expect(input).not.toBePartiallyChecked();
     await user.click(input);
     expect(input).toBePartiallyChecked();
+  });
+
+  it('UIC-CHECKBOX-1.6 keeps its state through a cancelled native reset and resets otherwise', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ResetForm cancels>
+        <Checkbox name="sealed" onChange={onChange}>
+          Sealed
+        </Checkbox>
+      </ResetForm>,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Sealed' });
+    await user.click(box);
+    onChange.mockClear();
+    await pressReset(user);
+    expect(box).toBeChecked();
+    expect(onChange).not.toHaveBeenCalled();
+    expect(readPantry()).toEqual([['sealed', 'on']]);
+    rerender(
+      <ResetForm cancels={false}>
+        <Checkbox name="sealed" onChange={onChange}>
+          Sealed
+        </Checkbox>
+      </ResetForm>,
+    );
+    await pressReset(user);
+    expect(box).not.toBeChecked();
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(readPantry()).toEqual([]);
+  });
+
+  it('UIC-CHECKBOX-1.6 reports the mounted state once to a controlled box on a reset', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    function Controlled({ cancels }: { cancels: boolean }) {
+      const [isSelected, setSelected] = useState(true);
+      return (
+        <ResetForm cancels={cancels}>
+          <Checkbox
+            isSelected={isSelected}
+            onChange={(next) => {
+              onChange(next);
+              setSelected(next);
+            }}
+          >
+            Sealed
+          </Checkbox>
+        </ResetForm>
+      );
+    }
+    const { rerender } = render(<Controlled cancels />);
+    await user.click(screen.getByRole('checkbox', { name: 'Sealed' }));
+    onChange.mockClear();
+    await pressReset(user);
+    expect(onChange).not.toHaveBeenCalled();
+    rerender(<Controlled cancels={false} />);
+    await pressReset(user);
+    expect(onChange.mock.calls).toEqual([[true]]);
+    expect(screen.getByRole('checkbox', { name: 'Sealed' })).toBeChecked();
   });
 });
