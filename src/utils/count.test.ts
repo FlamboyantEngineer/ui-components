@@ -32,15 +32,22 @@ describe('formatCount', () => {
       [1, 0, '0+'],
     ];
     for (const [count, max, expected] of cases) {
-      expect(formatCount(count, { max })).toBe(expected);
+      expect(formatCount(count, 'en-US', { max })).toBe(expected);
     }
   });
 
   it('UIC-COUNT-1.3 marks a partial count with + unless a cap applies', () => {
-    expect(formatCount(12, { more: true })).toBe('12+');
-    expect(formatCount(120, { max: 99, more: true })).toBe('99+');
-    expect(formatCount(5, { max: 9, more: true })).toBe('5+');
-    expect(formatCount(12, { more: false })).toBe('12');
-    expect(formatCount(Number.NaN, { more: true })).toBe('');
+    expect(formatCount(12, 'en-US', { more: true })).toBe('12+');
+    expect(formatCount(120, 'en-US', { max: 99, more: true })).toBe('99+');
+    expect(formatCount(5, 'en-US', { max: 9, more: true })).toBe('5+');
+    expect(formatCount(12, 'en-US', { more: false })).toBe('12');
+    expect(formatCount(Number.NaN, 'en-US', { more: true })).toBe('');
+  });
+
+  it('UIC-COUNT-1.4 writes counts and caps in the locale digits and grouping', () => {
+    expect(formatCount(12345, 'en-US')).toBe('12,345');
+    expect(formatCount(12345, 'fr-FR')).toBe('12\u202f345');
+    expect(formatCount(1200, 'ar-EG', { max: 999 })).toBe('٩٩٩+');
+    expect(formatCount(7, 'ar-EG', { more: true })).toBe('٧+');
   });
 });

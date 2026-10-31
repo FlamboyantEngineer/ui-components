@@ -168,6 +168,23 @@ describe('Badge', () => {
     expect(container.querySelector('.ui-badge__label')?.textContent).toBe('');
   });
 
+  it('UIC-BADGE-3.1 UIC-COUNT-1.4 writes counts in the provider locale digits and grouping', () => {
+    const { container, rerender } = render(
+      <UiProvider locale="fr-FR">
+        <Badge count={12345} />
+      </UiProvider>,
+    );
+    const label = () => container.querySelector('.ui-badge__label')?.textContent;
+    expect(label()).toBe('12\u202f345');
+    rerender(
+      <UiProvider locale="ar-EG">
+        <Badge count={120} max={99} />
+      </UiProvider>,
+    );
+    expect(label()).toBe('٩٩+');
+    expect(container.querySelector('.ui-badge__accessible-label')?.textContent).toBe('١٢٠');
+  });
+
   it('UIC-BADGE-3.2 keeps the full count for assistive technology without naming a generic element', () => {
     const { container, rerender } = render(<Badge count={12} max={9} />);
     const label = () => container.querySelector('.ui-badge__label');

@@ -62,7 +62,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-1.9 - Counts
 
-An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`; zero, negative and non-finite counts show nothing. The count is hidden from assistive technology and read in the segment's accessible name instead, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment.
+An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`, in the provider locale's digits ([COUNT.md](COUNT.md)); zero, negative and non-finite counts show nothing. The count is hidden from assistive technology and read in the segment's accessible name instead, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/core/strings/common.ts`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`

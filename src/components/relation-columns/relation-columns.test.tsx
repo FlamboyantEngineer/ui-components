@@ -121,6 +121,18 @@ describe('RelationColumns', () => {
     expect(goal.querySelector('.ui-relation-columns__item-count')).toHaveTextContent('00 upstream');
   });
 
+  it('UIC-RELATION-COLUMNS-1.2 shows counts in the provider locale digits', () => {
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <Walk />
+      </UiProvider>,
+    );
+    const shown = [
+      ...container.querySelectorAll('.ui-relation-columns__column-count [aria-hidden]'),
+    ];
+    expect(shown.map((count) => count.textContent)).toContain('٢');
+  });
+
   it('UIC-RELATION-COLUMNS-1.3 UIC-RELATION-COLUMNS-1.4 opens the next column on a choice and trims it from the trail', async () => {
     const onPathChange = vi.fn<(path: RelationColumnsPath) => void>();
     render(<Walk onPathChange={onPathChange} />);

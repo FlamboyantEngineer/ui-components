@@ -11,6 +11,7 @@ import {
 import { useLocale } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { formatCount } from '../../utils/count.js';
 import { useItemDrag } from '../../utils/use-item-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
@@ -95,7 +96,7 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
   const { columnKey, title, icon, titleId, count, limit, isOverLimit, isCollapsed } = props;
   const { onCollapsedChange, drag, onStep, actions } = props;
   const strings = useUiStrings();
-  const { direction } = useLocale();
+  const { direction, locale } = useLocale();
   const header = useColumnHeaderDrag({ columnKey, title, drag });
   const onHandleKeyDown = (event: KeyboardEvent) => {
     const step = steps[event.key];
@@ -143,7 +144,11 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
         {title}
       </span>
       <span {...hooks.slot('column-count')}>
-        <span aria-hidden="true">{limit === undefined ? count : `${count}/${limit}`}</span>
+        <span aria-hidden="true">
+          {limit === undefined
+            ? formatCount(count, locale)
+            : strings.cardCountOfLimit(count, limit)}
+        </span>
         <VisuallyHidden elementType="span">{strings.cardCount(count, limit)}</VisuallyHidden>
       </span>
       {isEmptyNode(actions) ? null : <div {...hooks.slot('column-actions')}>{actions}</div>}

@@ -6,6 +6,7 @@ import { CloseGlyph } from '../../core/glyphs.js';
 import type { MouseEvent, PointerEvent } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatCount } from '../../utils/count.js';
+import { useLocale } from '../../primitives/index.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
 interface TabCountProps {
@@ -18,10 +19,11 @@ interface TabCountProps {
 /** A tab's shown count, and the hidden description that gives the full count. */
 export function TabCount({ id, count, countMax, countLabel }: TabCountProps) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   return (
     <>
       {' '}
-      <span {...hooks.slot('count')}>{formatCount(count, { max: countMax })}</span>
+      <span {...hooks.slot('count')}>{formatCount(count, locale, { max: countMax })}</span>
       <span id={id} hidden>
         {countLabel ?? strings.itemCount(count)}
       </span>

@@ -1,6 +1,11 @@
 'use client';
 
-import { SelectionIndicator, ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
+import {
+  SelectionIndicator,
+  ToggleButton,
+  ToggleButtonGroup,
+  useLocale,
+} from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Orientation, Size, RefProps } from '../../core/props.js';
@@ -129,15 +134,20 @@ function renderGroupState(
 }
 
 /** The shown text of a positive count, or `null` when the option shows none. */
-function formatOptionCount(count: number | null | undefined, max: number): string | null {
+function formatOptionCount(
+  count: number | null | undefined,
+  max: number,
+  locale: string,
+): string | null {
   const value = normalizeCount(count);
-  return value === undefined || value === 0 ? null : formatCount(value, { max });
+  return value === undefined || value === 0 ? null : formatCount(value, locale, { max });
 }
 
 function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   const showsIconOnly = iconOnly && hasIcon(option.icon);
-  const count = formatOptionCount(option.count, countMax);
+  const count = formatOptionCount(option.count, countMax, locale);
   const name = count === null ? option.label : strings.labelWithCount(option.label, count);
   const segment = (
     <ToggleButton
