@@ -142,10 +142,14 @@ export function CalendarBody({
   );
 }
 
-/** Picks a value and closes the picker. */
-function usePick(onPick: (value: DateFieldValue) => void) {
+/**
+ * Picks a value and closes the picker, unless the field refuses the value, as it stands when
+ * chosen: then the picker stays open on the current value.
+ */
+function usePick(onPick: (value: DateFieldValue) => void, settings: DateControlSettings) {
   const overlay = useContext(OverlayTriggerStateContext);
   return (value: DateFieldValue) => {
+    if (!settings.isPickable(value)) return;
     onPick(value);
     overlay?.close();
   };
@@ -153,7 +157,7 @@ function usePick(onPick: (value: DateFieldValue) => void) {
 
 /** The caller's presets beside the calendar; one the field would refuse is disabled. */
 function DatePresets({ settings, onPick }: Pick<CalendarPopoverProps, 'settings' | 'onPick'>) {
-  const pick = usePick(onPick);
+  const pick = usePick(onPick, settings);
   if (settings.presets.length === 0) return null;
   return (
     <div {...hooks.slot('presets')}>
@@ -176,11 +180,12 @@ function DatePresets({ settings, onPick }: Pick<CalendarPopoverProps, 'settings'
 /**
  * The picker's quick actions: Today for a date, Now for a date and time, and Clear unless the field
  * is required. Each picks its value, read when pressed from the provider's clock and in its zone
- * (the field's `timeZone` first), and closes the picker.
+ * (the field's `timeZone` first), and closes the picker. Today and Now are disabled while the field
+ * would refuse their value, and a value refused when pressed is not picked.
  */
 function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'children'>) {
   const strings = useUiStrings();
-  const pick = usePick(onPick);
+  const pick = usePick(onPick, settings);
   const getNow = useGetNow();
   const zone = useTimeZone(settings.timeZone);
   const current = (single: 'date' | 'date-time') =>
@@ -198,8 +203,16 @@ function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'chi
   );
   return (
     <div {...hooks.slot('actions')}>
-      {mode === 'date' ? action(strings.today, () => current('date')) : null}
-      {mode === 'date-time' ? action(strings.now, () => current('date-time')) : null}
+      {mode === 'date'
+        ? action(strings.today, () => current('date'), !settings.isPickable(current('date')))
+        : null}
+      {mode === 'date-time'
+        ? action(
+            strings.now,
+            () => current('date-time'),
+            !settings.isPickable(current('date-time')),
+          )
+        : null}
       {settings.isRequired ? null : action(strings.clear, () => null, !settings.canClear)}
     </div>
   );

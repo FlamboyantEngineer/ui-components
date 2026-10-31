@@ -210,4 +210,28 @@ describe('DateTimeField time settings, zones and ranges', () => {
     expect(onCommit).toHaveBeenLastCalledWith('2026-04-21T00:30:00+09:00[Asia/Tokyo]');
     unmount();
   });
+
+  it('UIC-DATE-TIME-FIELD-2.2 disables Today and Now outside the bounds and refuses a stale press', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    let now = new Date('2026-04-20T12:00:00Z');
+    const getNow = () => now;
+    render(
+      <UiProvider locale="en-US" getNow={getNow} timeZone="UTC">
+        <DateTimeField label="Due" maxValue="2026-04-19" onCommit={onCommit} />
+        <DateTimeField label="Ship" maxValue="2026-04-20" onCommit={onCommit} />
+      </UiProvider>,
+    );
+    const [due, ship] = screen.getAllByRole('button', { name: /Calendar/ });
+    await user.click(requireDefined(due));
+    expect(await screen.findByRole('button', { name: 'Today' })).toBeDisabled();
+    await user.keyboard('{Escape}');
+    await user.click(requireDefined(ship));
+    const today = await screen.findByRole('button', { name: 'Today' });
+    expect(today).toBeEnabled();
+    now = new Date('2026-04-21T12:00:00Z');
+    await user.click(today);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Today' })).toBeInTheDocument();
+  });
 });
