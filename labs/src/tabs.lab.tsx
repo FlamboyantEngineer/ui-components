@@ -257,8 +257,8 @@ mountLab(
       <MealTabs />
     </LabSection>
     <LabSection
-      title="Tabs that lock while editing"
-      description="Press Lock in a second, then rename a tab with F2 and type: when the tabs lock, the edit ends without renaming and focus stays on the tabs."
+      title="Tabs that lock while in use"
+      description="Press Lock in a second, then rename a tab with F2 and type, or open a tab's menu: when the tabs lock, the edit ends without renaming and the menu closes, so Delete cannot run."
     >
       <LockingTabs />
     </LabSection>

@@ -22,7 +22,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import {
   findTabElement,
-  isTabDisabled,
+  isTabAvailable,
   TabsSharedContext,
   type TabsShared,
   type TabListModel,
@@ -66,23 +66,12 @@ interface TabRenameOverlayProps {
   listRef: RefObject<HTMLElement | null>;
 }
 
-/**
- * Whether the tab `key` is in the drawn list and enabled, through the `Tabs`, the list's
- * `disabledKeys` or its own `isDisabled`.
- */
-function isRenameable(shared: TabsShared, state: TabListModel | null, key: Key): boolean {
-  if (isTabDisabled(shared, key)) return false;
-  return (
-    !state || (state.collection.getItem(key) !== null && !state.selectionManager.isDisabled(key))
-  );
-}
-
 /** A list's renaming while the owner takes renames. */
 export function createTabRename({ shared, onRename, validateName }: TabRenameOptions) {
   if (!onRename) return null;
   const rename: TabRename = {
     editingKey: shared.editingKey,
-    canRename: (key) => isRenameable(shared, shared.stateRef.current, key),
+    canRename: (key) => isTabAvailable(shared, key),
     start(key) {
       const manager = shared.stateRef.current?.selectionManager;
       if (!rename.canRename(key)) return;
@@ -259,7 +248,7 @@ function focusListTab(list: HTMLElement | null, key: Key) {
 export function TabRenameOverlay({ rename, state, listRef }: TabRenameOverlayProps) {
   const shared = useContext(TabsSharedContext);
   const key = shared.editingKey;
-  const isOpen = key !== null && rename !== null && isRenameable(shared, state, key);
+  const isOpen = key !== null && rename !== null && isTabAvailable(shared, key, state);
   const { setEditingKey } = shared;
   useLayoutEffect(() => {
     if (key !== null && !isOpen) setEditingKey((current) => (current === key ? null : current));

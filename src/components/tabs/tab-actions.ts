@@ -49,6 +49,8 @@ export interface TabsShared {
   setEditingKey: Dispatch<(current: Key | null) => Key | null>;
   /** The tab being dragged, while a drag that started in the list is under way. */
   draggingKey: RefObject<Key | null>;
+  /** The tab whose menu was opened last, which the open menu acts on. */
+  menuKey: RefObject<Key | null>;
   /** The collection state of the drawn list, for actions that run on an event. */
   stateRef: RefObject<TabListModel | null>;
 }
@@ -80,6 +82,7 @@ export const TabsSharedContext = createContext<TabsShared>({
   editingKey: null,
   setEditingKey: () => {},
   draggingKey: { current: null },
+  menuKey: { current: null },
   stateRef: { current: null },
 });
 
@@ -89,7 +92,14 @@ export const TabActionsContext = createContext<TabActions>({
   keyShortcuts: undefined,
   rename: null,
   reorder: null,
-  menu: { controller: idleController, isEnabled: false, getEntries: () => [] },
+  menu: {
+    controller: idleController,
+    isEnabled: false,
+    getEntries: () => [],
+    showFor: () => {},
+    openKey: () => null,
+    isAvailable: () => false,
+  },
 });
 
 /** The keys of the drawn list's tabs, in order. */
@@ -110,11 +120,27 @@ export function isTabDisabled(shared: TabsShared, key: Key): boolean {
   return shared.isDisabled || shared.disabledKeys.has(key);
 }
 
+/**
+ * Whether the tab `key` is in the drawn list and enabled, through the `Tabs`, the list's
+ * `disabledKeys` or its own `isDisabled`, so the reader can act on it now.
+ */
+export function isTabAvailable(
+  shared: TabsShared,
+  key: Key,
+  state: TabListModel | null = shared.stateRef.current,
+): boolean {
+  if (isTabDisabled(shared, key)) return false;
+  return (
+    !state || (state.collection.getItem(key) !== null && !state.selectionManager.isDisabled(key))
+  );
+}
+
 /** Creates the state a `Tabs` shares with both renders of its list. */
 export function useTabsShared({ orientation, isDisabled, disabledKeys }: TabsSharedOptions) {
   const controller = useMenuController();
   const [editingKey, setEditingKey] = useState<Key | null>(null);
   const draggingKey = useRef<Key | null>(null);
+  const menuKey = useRef<Key | null>(null);
   const stateRef = useRef<TabListModel | null>(null);
   const disabled = useMemo(() => new Set(disabledKeys ?? []), [disabledKeys]);
   return useMemo<TabsShared>(
@@ -126,6 +152,7 @@ export function useTabsShared({ orientation, isDisabled, disabledKeys }: TabsSha
       editingKey,
       setEditingKey,
       draggingKey,
+      menuKey,
       stateRef,
     }),
     [orientation, isDisabled, disabled, controller, editingKey],
