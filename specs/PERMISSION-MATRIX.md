@@ -32,6 +32,13 @@ Verification: `src/components/permission-matrix/permission-matrix.test.tsx`, `e2
 Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `src/components/permission-matrix/permission-matrix-hooks.ts`
 Verification: `src/components/permission-matrix/permission-matrix.test.tsx`
 
+### UIC-PERMISSION-MATRIX-1.5 - Role columns follow role ids
+
+Each role column shall be identified by its role's `id` and the id's type, so `1` and `'1'` are distinct roles. When `roles` are reordered, inserted or changed (including `isReadOnly`), every checkbox and group checkbox stays with its role and permission: the focused one keeps focus, and its next change reports the same role. When the focused role is removed, its checkbox leaves with it, and focus goes to the cell in the same row that takes its place rather than retargeting the removed control to another role.
+
+Implementation: `src/components/permission-matrix/permission-matrix.tsx`
+Verification: `src/components/permission-matrix/permission-matrix-roles.test.tsx`, `e2e/permission-matrix.spec.ts`
+
 ## UIC-PERMISSION-MATRIX-2 - Grants
 
 ### UIC-PERMISSION-MATRIX-2.1 - Changes as data
