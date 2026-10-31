@@ -70,6 +70,7 @@ describe('Link', () => {
       <Link
         href="/a"
         download="apples.txt"
+        title="Apple varieties"
         className="caller"
         id="apples"
         data-variant="caller"
@@ -80,6 +81,8 @@ describe('Link', () => {
     );
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('download', 'apples.txt');
+    expect(link).toHaveAttribute('title', 'Apple varieties');
+    expect(link).toHaveAccessibleName('Apples');
     expect(link).toHaveClass('ui-link', 'caller');
     expect(link).toHaveAttribute('id', 'apples');
     expect(link).toHaveAttribute('data-variant', 'primary');

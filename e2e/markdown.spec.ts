@@ -68,9 +68,11 @@ test.describe('Markdown lab', () => {
     const internal = links.getByRole('link', { name: 'planting guide' });
     await expect(internal).toHaveAttribute('href', '/guides/planting');
     await expect(internal).not.toHaveAttribute('target');
+    await expect(internal).toHaveAttribute('title', 'Planting by season');
     const external = links.getByRole('link', { name: 'seed catalogue (opens in a new tab)' });
     await expect(external).toHaveAttribute('target', '_blank');
     await expect(external).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect(external).toHaveAttribute('title', 'Seeds for every orchard');
     await expect(links.getByRole('link', { name: 'orchard@example.com' })).toHaveAttribute(
       'href',
       'mailto:orchard@example.com',

@@ -163,7 +163,11 @@ function renderInline(node: MarkdownInline, children: ReactNode, context: Render
       return <del>{children}</del>;
     case 'link':
       return (
-        <Link href={resolveHref(node.href, context)} isExternal={externalUrl.test(node.href)}>
+        <Link
+          href={resolveHref(node.href, context)}
+          isExternal={externalUrl.test(node.href)}
+          title={node.title || undefined}
+        >
           {children}
         </Link>
       );
@@ -173,7 +177,7 @@ function renderInline(node: MarkdownInline, children: ReactNode, context: Render
           {...hooks.slot('image')}
           src={node.src}
           alt={node.alt}
-          title={node.title ?? undefined}
+          title={node.title || undefined}
         />
       );
     case 'lineBreak':

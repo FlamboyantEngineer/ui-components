@@ -113,10 +113,10 @@ Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markd
 
 ### UIC-MARKDOWN-2.3 - Links
 
-Links shall render through [Link](LINK.md), so they navigate through the provider's link renderer and `navigate` ([UIC-PROVIDER-5](PROVIDER.md#uic-provider-5---links)). A link to an absolute `http` or `https` URL opens in a new tab, with Link's safe `rel` and new-tab text; other links stay in the page.
+Links shall render through [Link](LINK.md), so they navigate through the provider's link renderer and `navigate` ([UIC-PROVIDER-5](PROVIDER.md#uic-provider-5---links)). A link to an absolute `http` or `https` URL opens in a new tab, with Link's safe `rel` and new-tab text; other links stay in the page. A link's title, inline or from its reference definition, becomes the anchor's `title` (an empty title is left out); the link's text stays its name.
 
 Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
-Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
+Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/markdown-link-titles.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.4 - Code
 
