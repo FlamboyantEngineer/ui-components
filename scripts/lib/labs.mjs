@@ -1,4 +1,4 @@
-// Shared lab discovery and page templates for build-labs, check-labs and new-lab.
+// Shared lab discovery, page templates and server address for the lab scripts and the browser tests.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,6 +10,10 @@ export { root };
 export const labsDir = join(root, 'labs');
 export const labSourceDir = join(labsDir, 'src');
 export const referenceDir = join(labsDir, 'reference');
+
+/** Where the lab server listens by default; `LABS_PORT` picks another port. */
+export const LABS_HOST = '127.0.0.1';
+export const LABS_PORT = Number(process.env.LABS_PORT ?? 4173);
 
 /**
  * The tiers of the lab index from the simplest up, each with its groups in order: foundations,

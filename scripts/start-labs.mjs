@@ -2,7 +2,7 @@
 // Brings the labs up to date, then serves them: installs the dependencies when package-lock.json
 // changed since the last install, and builds the labs when one of their sources changed since the
 // last build. --dry-run prints those steps without running them or serving.
-//   node scripts/start-labs.mjs [--dry-run] [--port 4173] [--host 127.0.0.1] [--dir labs]
+//   node scripts/start-labs.mjs [--dry-run] [--port $LABS_PORT] [--host 127.0.0.1] [--dir labs]
 
 import { lstatSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';

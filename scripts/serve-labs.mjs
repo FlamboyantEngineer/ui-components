@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Plain static file server for labs/. Labs need nothing beyond static serving.
-//   node scripts/serve-labs.mjs [--port 4173] [--host 127.0.0.1] [--dir labs]
+//   node scripts/serve-labs.mjs [--port $LABS_PORT] [--host 127.0.0.1] [--dir labs]
 
 import { createReadStream, realpathSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
+import { LABS_HOST, LABS_PORT } from './lib/labs.mjs';
 import { option, root } from './lib/script.mjs';
 
-const port = Number(option('port', process.env.PORT ?? '4173'));
-const host = option('host', '127.0.0.1');
+const port = Number(option('port', String(LABS_PORT)));
+const host = option('host', LABS_HOST);
 const dir = realpathSync(resolve(root, option('dir', 'labs')));
 
 const TYPES = {
@@ -21,9 +22,17 @@ const TYPES = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.ico': 'image/x-icon',
   '.pdf': 'application/pdf',
+  '.wasm': 'application/wasm',
+  '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
+  // Extensionless files, such as a vendored LICENSE.
+  '': 'text/plain; charset=utf-8',
 };
 
 const server = createServer((request, response) => {
@@ -58,8 +67,18 @@ const server = createServer((request, response) => {
     response.writeHead(404, { 'content-type': 'text/plain' }).end('Not found');
     return;
   }
+  const extension = extname(file).toLowerCase();
+  const type = TYPES[extension];
+  if (!type) {
+    // A guessed type breaks the files that need theirs, such as WebAssembly, so fail loudly.
+    console.error(`No content type for ${extension} files (${pathname}); add one to TYPES.`);
+    response
+      .writeHead(500, { 'content-type': 'text/plain' })
+      .end(`No content type for ${extension} files`);
+    return;
+  }
   response.writeHead(200, {
-    'content-type': TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream',
+    'content-type': type,
     'content-length': stat.size,
     'cache-control': 'no-store',
   });

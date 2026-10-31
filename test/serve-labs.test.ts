@@ -17,6 +17,9 @@ beforeAll(async () => {
   writeFileSync(join(fixture, 'outside.txt'), 'Outside the lab directory');
   symlinkSync('../outside.txt', join(labs, 'outside.txt'));
   symlinkSync('index.html', join(labs, 'alias.html'));
+  writeFileSync(join(labs, 'LICENSE'), 'License text');
+  writeFileSync(join(labs, 'module.wasm'), new Uint8Array([0, 97, 115, 109]));
+  writeFileSync(join(labs, 'notes.unknown'), 'Unknown');
   server = spawn(process.execPath, [
     join(process.cwd(), 'scripts/serve-labs.mjs'),
     '--port',
@@ -72,5 +75,35 @@ describe('static lab server', () => {
     const inside = await fetch(`${baseUrl}alias.html`);
     expect(inside.status).toBe(200);
     expect(await inside.text()).toContain('<title>Labs</title>');
+  });
+
+  it('UIC-LABS-1.1 serves each file type with its own content type and refuses unknown types', async () => {
+    const license = await fetch(`${baseUrl}LICENSE`);
+    expect(license.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    const wasm = await fetch(`${baseUrl}module.wasm`);
+    expect(wasm.headers.get('content-type')).toBe('application/wasm');
+    const unknown = await fetch(`${baseUrl}notes.unknown`);
+    expect(unknown.status).toBe(500);
+    expect(await unknown.text()).toBe('No content type for .unknown files');
+  });
+
+  it('UIC-LABS-1.1 listens on the port LABS_PORT names', async () => {
+    const other = spawn(process.execPath, [join(process.cwd(), 'scripts/serve-labs.mjs')], {
+      env: { ...process.env, LABS_PORT: '0' },
+    });
+    try {
+      const url = await new Promise<string>((resolve, reject) => {
+        other.stdout.on('data', (chunk: Buffer) => {
+          const match = chunk.toString().match(/http:\/\/127\.0\.0\.1:(\d+)\//);
+          if (match) resolve(match[0]);
+        });
+        other.once('exit', (code) => reject(new Error(`Lab server exited with ${code}`)));
+      });
+      expect(url).not.toBe('http://127.0.0.1:4173/');
+    } finally {
+      const stopped = new Promise<void>((resolve) => other.once('exit', () => resolve()));
+      other.kill();
+      await stopped;
+    }
   });
 });
