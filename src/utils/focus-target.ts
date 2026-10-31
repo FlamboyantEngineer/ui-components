@@ -44,6 +44,28 @@ export function getDeepActiveElement(owner: Document = document): Element | null
   return active;
 }
 
+/**
+ * The element holding focus in the tree `node` belongs to, followed into open shadow roots: a
+ * document or shadow root whose focus sits inside a shadow host reports the host, not the element
+ * inside it.
+ */
+export function getComposedActiveElement(node: Node): Element | null {
+  const root = node.getRootNode() as Partial<DocumentOrShadowRoot>;
+  let active = root.activeElement ?? null;
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+  return active;
+}
+
+/** Whether `node` is `container` or inside it, also through the shadow roots of its hosts. */
+export function containsComposed(container: Node, node: Node | null): boolean {
+  let current = node;
+  while (current) {
+    if (current === container) return true;
+    current = current.parentNode ?? (current as Partial<ShadowRoot>).host ?? null;
+  }
+  return false;
+}
+
 /** The element a focus target names now, if it is still in the document. */
 export function resolveFocusTarget(target: FocusTarget | undefined): HTMLElement | null {
   const element = typeof target === 'function' ? target() : target?.current;

@@ -86,6 +86,24 @@ test.describe('Loading Overlay lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-LOADING-OVERLAY-3.3 keeps and returns focus inside a shadow root', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    const demo = page.locator('[data-lab-demo="shadow-region"]');
+    const note = demo.getByRole('textbox', { name: 'Note' });
+    const region = demo.locator('.ui-loading-region');
+    const content = region.locator('.ui-loading-region__content');
+    await note.focus();
+    // Starts the save without moving focus, as work finishing elsewhere would.
+    await page.getByRole('button', { name: 'Save note' }).dispatchEvent('click');
+    await expect(content).toHaveAttribute('aria-busy', 'true');
+    await expect(region).toBeFocused();
+    await expect(content).not.toHaveAttribute('aria-busy');
+    await expect(note).toBeFocused();
+  });
+
   test('UIC-LOADING-OVERLAY-3.1 keeps keyboard focus on the region while it blocks and returns it', async ({
     page,
     lab,
