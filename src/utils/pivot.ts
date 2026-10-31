@@ -23,6 +23,12 @@ export interface PivotValue {
   aggregate?: PivotAggregateName | PivotAggregateFunction | undefined;
   /** The value's header, instead of the aggregation and the field's label. */
   label?: string | undefined;
+  /**
+   * The value's identity, unique among the layout's values, which keeps its columns' sort and
+   * focus as values move. Defaults to its field, aggregation and label; give one to tell apart
+   * values those leave equal, such as two custom aggregations of one field.
+   */
+  id?: string | undefined;
 }
 
 /** Which fields group the rows, which group the columns, and which aggregate in the cells. */

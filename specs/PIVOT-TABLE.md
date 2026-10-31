@@ -47,8 +47,8 @@ Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-tabl
 
 Each row header cell shall hold a `ui-pivot-table__key` with the group's key, and each value cell a `ui-pivot-table__value` with its aggregate formatted by `Intl.NumberFormat` in the provider's locale, with the field's `formatOptions` except for counts, or nothing for `null` or a column the group has no record in. Total cells publish `data-total`.
 
-Implementation: `src/components/pivot-table/pivot-columns.tsx`
-Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
+Implementation: `src/components/pivot-table/pivot-columns.tsx`, `src/components/table/use-table-sort.ts`
+Verification: `src/components/pivot-table/pivot-table.test.tsx`, `src/components/pivot-table/pivot-table-columns.test.tsx`, `e2e/pivot-table.spec.ts`
 
 ### UIC-PIVOT-TABLE-2.4 - Totals
 
@@ -66,7 +66,7 @@ Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-tabl
 
 ### UIC-PIVOT-TABLE-2.6 - Sorting
 
-Every column shall sort on a header press (the table's own sort, ascending, descending, then unsorted), at every level of the row groups: the row header column in the order of the keys (UIC-PIVOT-TABLE-1.1), a value column by its aggregates. Unsorted, groups keep the order of their keys.
+Every column shall sort on a header press (the table's own sort, ascending, descending, then unsorted), at every level of the row groups: the row header column in the order of the keys (UIC-PIVOT-TABLE-1.1), a value column by its aggregates. Unsorted, groups keep the order of their keys. A value column is the same column, keeping its sort, focus and width, for as long as its column key and its value exist, wherever records, the locale or the layout move them: a value is known by its `id`, else by its field, aggregation and label with its place among the values that share those. A sorted column whose key or value leaves takes its sort with it; no other column inherits it.
 
 Implementation: `src/components/pivot-table/pivot-columns.tsx`
 Verification: `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`

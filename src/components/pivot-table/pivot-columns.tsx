@@ -144,8 +144,32 @@ function createRowColumn(options: PivotColumnsOptions): PivotTableColumn {
 }
 
 interface ValueSpec {
+  /** The value's identity among the layout's values. */
+  id: string;
   label: string;
   format: (number: number | null) => string;
+}
+
+/**
+ * Each value's identity: its `id`, else its field, aggregation and label, with the place among
+ * values that share those, so its columns keep their table state wherever it moves.
+ */
+export function getValueIds(values: readonly PivotValue[]): string[] {
+  const seen = new Map<string, number>();
+  return values.map((value) => {
+    const { aggregate = 'sum' } = value;
+    const base =
+      value.id === undefined
+        ? JSON.stringify([
+            value.field,
+            typeof aggregate === 'function' ? 'custom' : aggregate,
+            value.label ?? null,
+          ])
+        : JSON.stringify(value.id);
+    const count = (seen.get(base) ?? 0) + 1;
+    seen.set(base, count);
+    return count === 1 ? base : `${base}#${count}`;
+  });
 }
 
 /** A value column: its cells and, with row fields, its total in the summary row. */
@@ -177,10 +201,10 @@ function createKeyColumns(
   const footer = { hasFooter: layout.rows.length > 0, isTotal: false };
   const columns: PivotTableColumn[] = [];
   const groups: PivotTableColumnGroup[] = [];
-  result.columns.forEach((column, columnIndex) => {
+  result.columns.forEach((column) => {
     const label = layout.columns.length > 0 ? columnLabel(column, options) : '';
     const ids = values.map((value, valueIndex) => {
-      const id = `c${columnIndex}v${valueIndex}`;
+      const id = `value:${column.key}:${value.id}`;
       const read = (row: PivotTableRow) => cellsOf(row, result)[column.key]?.[valueIndex] ?? null;
       const header = isGrouped || label === '' ? value.label : label;
       const total = result.totals[column.key]?.[valueIndex] ?? null;
@@ -188,7 +212,7 @@ function createKeyColumns(
       return id;
     });
     if (isGrouped && label !== '')
-      groups.push({ id: `g${columnIndex}`, header: label, columns: ids });
+      groups.push({ id: `key:${column.key}`, header: label, columns: ids });
   });
   const [only] = values;
   if (!isGrouped && only && layout.columns.length > 0 && columns.length > 0) {
@@ -209,7 +233,7 @@ function createTotalColumns(
   const columns = values.map((value, valueIndex) =>
     createValueColumn(
       {
-        id: `t${valueIndex}`,
+        id: `total:${value.id}`,
         header: isGrouped ? value.label : strings.pivotTotal,
         read: (row) => totalOf(row, result)[valueIndex] ?? null,
         total: result.grandTotal[valueIndex] ?? null,
@@ -233,9 +257,11 @@ function createTotalColumns(
  */
 export function createPivotColumns(options: PivotColumnsOptions): PivotColumns {
   const { layout, fields, strings, locale } = options;
-  const values = layout.values.map((value) => {
+  const ids = getValueIds(layout.values);
+  const values = layout.values.map((value, index) => {
     const field = findField(fields, value.field);
     return {
+      id: requireDefined(ids[index]),
       label: getValueLabel(value, field, strings),
       format: createFormatter(value, field, locale),
     };
