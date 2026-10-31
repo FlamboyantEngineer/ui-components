@@ -41,7 +41,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.6 - Closing
 
-With `onClose`, the bar shall end with a Close icon button (`ui-find-bar__close`, the `close` glyph and string) that calls it, and Escape anywhere in the bar calls it too, before the find box would empty itself; Escape inside the options menu only closes the menu. Returning focus is the caller's.
+With `onClose`, the bar shall end with a Close icon button (`ui-find-bar__close`, the `close` glyph and string) that calls it, and Escape anywhere in the bar calls it too, before the find box would empty itself; Escape inside the options menu only closes the menu, and an Escape that cancels an input method candidate (a composing key) belongs to the input method, so the bar and the half-typed text stay. Returning focus is the caller's.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`

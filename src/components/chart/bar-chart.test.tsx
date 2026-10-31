@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -172,6 +172,27 @@ describe('BarChart', () => {
     expect(outer).not.toHaveBeenCalled();
     await user.keyboard('{Escape}');
     expect(outer).toHaveBeenCalledWith('Escape');
+  });
+
+  it('UIC-CHART-4.4 leaves a composing Escape to the input method in a field elsewhere', async () => {
+    const user = userEvent.setup();
+    const outer = vi.fn();
+    render(
+      <div onKeyDown={(event) => outer(event.key)}>
+        <input aria-label="Notes" />
+        <BarChart aria-label="Crates" categories={months} series={crates} />
+      </div>,
+    );
+    const notes = screen.getByRole('textbox', { name: 'Notes' });
+    act(() => notes.focus());
+    await user.hover(requireDefined(bars()[1]));
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(notes, { key: 'Escape', isComposing: true, keyCode: 229 });
+    expect(tooltip()).not.toBeNull();
+    expect(outer).toHaveBeenCalledTimes(1);
+    await user.keyboard('{Escape}');
+    expect(tooltip()).toBeNull();
+    expect(outer).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-CHART-2.1 UIC-CHART-4.5 hides series from the legend and summarises the drawn values', async () => {
