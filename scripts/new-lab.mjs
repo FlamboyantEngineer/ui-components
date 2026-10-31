@@ -16,13 +16,9 @@ import {
   renderLabPage,
   renderReferenceIndex,
 } from './lib/labs.mjs';
+import { option } from './lib/script.mjs';
 
 const args = process.argv.slice(2);
-
-function option(name) {
-  const index = args.indexOf(`--${name}`);
-  return index === -1 ? undefined : args[index + 1];
-}
 
 function sync() {
   const labs = collectLabs();

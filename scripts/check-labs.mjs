@@ -18,6 +18,7 @@ import {
   renderReferenceIndex,
   root,
 } from './lib/labs.mjs';
+import { reportProblems } from './lib/script.mjs';
 
 const problems = [];
 const sources = new Set(listLabSources());
@@ -84,9 +85,7 @@ if (existsSync(componentsDir)) {
   }
 }
 
-if (problems.length > 0) {
-  console.error('Lab problems:');
-  for (const problem of problems) console.error(`  ${problem}`);
-  process.exit(1);
-}
-console.log(`${labs.length} labs are complete and indexed.`);
+reportProblems(problems, {
+  heading: 'Lab problems',
+  success: `${labs.length} labs are complete and indexed.`,
+});

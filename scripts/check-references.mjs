@@ -8,12 +8,10 @@
 //   --denylist <path> reads another denylist file of the same shape (the script's own tests use one)
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
+import { option, reportProblems, root, walk } from './lib/script.mjs';
 
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|pdf|woff2?|ttf|otf|eot|zip|gz|tgz|wasm|mp4|webm)$/i;
 // Generated third-party metadata, not authored content.
@@ -39,11 +37,9 @@ if (args[0] === '--encode') {
 }
 
 function loadDenylist() {
-  const listIndex = args.indexOf('--denylist');
-  const denylistPath =
-    listIndex === -1
-      ? join(root, 'scripts', 'reference-denylist.json')
-      : resolve(args[listIndex + 1] ?? '');
+  const denylistPath = resolve(
+    option('denylist', join(root, 'scripts', 'reference-denylist.json')),
+  );
   const entries = JSON.parse(readFileSync(denylistPath, 'utf8'));
   return entries.map((entry, index) => ({
     index,
@@ -51,21 +47,10 @@ function loadDenylist() {
   }));
 }
 
-function walk(dir) {
-  const files = [];
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    const stat = statSync(full);
-    if (stat.isDirectory()) files.push(...walk(full));
-    else files.push(full);
-  }
-  return files;
-}
-
 function listFiles() {
-  const dirIndex = args.indexOf('--dir');
-  if (dirIndex !== -1) {
-    const dir = resolve(args[dirIndex + 1] ?? '.');
+  const dirOption = option('dir');
+  if (dirOption !== undefined) {
+    const dir = resolve(dirOption);
     return { base: dir, files: walk(dir).map((file) => relative(dir, file)) };
   }
   const output = execFileSync(
@@ -122,13 +107,8 @@ for (const file of files) {
   }
 }
 
-if (findings.length > 0) {
-  console.error('Host references found. Rewrite these in neutral terms:');
-  for (const finding of findings) console.error(`  ${finding}`);
-  console.error(
-    '\nDecode an entry with: node -e "console.log(Buffer.from(process.argv[1], \'base64\').toString())" <source>',
-  );
-  process.exit(1);
-}
-
-console.log(`No host references in ${files.length} files (${denylist.length} denylist entries).`);
+reportProblems(findings, {
+  heading: 'Host references found. Rewrite these in neutral terms',
+  hint: 'Decode an entry with: node -e "console.log(Buffer.from(process.argv[1], \'base64\').toString())" <source>',
+  success: `No host references in ${files.length} files (${denylist.length} denylist entries).`,
+});

@@ -11,10 +11,9 @@
 //     every measured property hook.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { reportProblems, root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const specsDir = join(root, 'specs');
 
 const ID = String.raw`UIC-[A-Z0-9]+(?:-[A-Z0-9]+)*-T?\d+(?:\.\d+)?[a-z]?`;
@@ -253,11 +252,7 @@ if (existsSync(referenceDir)) {
   }
 }
 
-if (problems.length > 0) {
-  console.error('Spec problems:');
-  for (const problem of problems) console.error(`  ${problem}`);
-  process.exit(1);
-}
-console.log(
-  `${specFiles.length} specs, ${ids.size} IDs and ${classHooks.size} class hooks are consistent.`,
-);
+reportProblems(problems, {
+  heading: 'Spec problems',
+  success: `${specFiles.length} specs, ${ids.size} IDs and ${classHooks.size} class hooks are consistent.`,
+});

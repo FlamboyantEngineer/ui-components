@@ -1,12 +1,15 @@
 // @vitest-environment node
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { walk as walkFiles } from '../scripts/lib/script.mjs';
 import * as primitives from '../src/primitives/index.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
+const walk = walkFiles as (dir: string) => string[];
 const root = process.cwd();
 const primitivesDir = join(root, 'src', 'primitives');
 const ARIA_SOURCE =
@@ -15,13 +18,6 @@ const PRIMITIVES_IMPORT =
   /(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s+'[./]*(?:src\/)?primitives\/index\.js'/g;
 const AREA_EXPORT = /export\s+(type\s+)?\{([^}]*)\}\s*from\s+'([^']+)';/g;
 const AREA_FUNCTION = /^export function (\w+)/gm;
-
-function walk(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const full = join(dir, name);
-    return statSync(full).isDirectory() ? walk(full) : [full];
-  });
-}
 
 function sourceFiles() {
   return ['src', 'labs/src', 'test']

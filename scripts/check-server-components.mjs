@@ -12,11 +12,10 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
-import { runNpm } from './lib/npm.mjs';
+import { packTarball, runNpm } from './lib/npm.mjs';
+import { reportProblems, root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const NEXT_VERSION = '16.4.3';
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const reactVersion = JSON.parse(
@@ -223,18 +222,7 @@ function stopServer() {
 try {
   // Built once here and packed as built, so packing runs no package script.
   runNpm(['run', 'build:package'], { cwd: root, stdio: 'inherit' });
-  const output = runNpm(
-    [
-      'pack',
-      '--json',
-      '--ignore-scripts',
-      '--foreground-scripts=false',
-      '--pack-destination',
-      workDir,
-    ],
-    { cwd: root },
-  );
-  const [pack] = JSON.parse(output);
+  const pack = packTarball(root, workDir);
   write('package.json', JSON.stringify({ name: 'consumer', private: true, type: 'module' }));
   write('app/layout.js', LAYOUT);
   write('app/page.js', ROOT_PAGE);
@@ -283,8 +271,7 @@ try {
   rmSync(workDir, { recursive: true, force: true });
 }
 
-if (problems.length > 0) {
-  console.error(problems.join('\n'));
-  process.exit(1);
-}
-console.log(`Next.js ${NEXT_VERSION} builds, serves and hydrates the installed package.`);
+reportProblems(problems, {
+  heading: 'Server components problems',
+  success: `Next.js ${NEXT_VERSION} builds, serves and hydrates the installed package.`,
+});

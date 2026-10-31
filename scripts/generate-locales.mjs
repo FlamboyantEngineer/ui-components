@@ -6,10 +6,9 @@
 // src/core/locales/index.test.ts fails while a module and its JSON file disagree.
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { basename, join } from 'node:path';
+import { root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const localesDir = join(root, 'src/core/locales');
 const names = new Intl.DisplayNames('en', { type: 'language' });
 

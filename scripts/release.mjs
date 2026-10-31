@@ -9,12 +9,11 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { runNpm } from './lib/npm.mjs';
+import { join } from 'node:path';
+import { packTarball, runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
+import { root } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const BUILT = ['dist', REFERENCE_STYLESHEET];
 
 const git = (args, options = {}) =>
@@ -66,12 +65,10 @@ try {
 }
 
 // Packed as built, from the files the tag holds.
-const [pack] = JSON.parse(
-  runNpm(['pack', '--json', '--ignore-scripts', '--foreground-scripts=false'], { cwd: root }),
-);
+const pack = packTarball(root);
 console.log(
   `Tagged ${tag} on ${git(['rev-parse', '--short', `${tag}^{commit}`])} and packed ${pack.filename}.`,
 );
 console.log(
-  `Publish with: git push origin ${tag}, then attach ${pack.filename} and ui-components-labs-${version}.tgz to the ${tag} GitHub Release.`,
+  `Publish with: git push origin ${tag}. The release workflow attaches the archives; where it does not run, attach ${pack.filename} and ui-components-labs-${version}.tgz to the ${tag} GitHub Release.`,
 );

@@ -110,8 +110,10 @@ describe('package manifest', () => {
     expect(release).toMatch(/'origin\/main'/);
     for (const script of ['check-package.mjs', 'check-server-components.mjs', 'release.mjs']) {
       const source = readFileSync(join(process.cwd(), 'scripts', script), 'utf8');
-      expect(source).toContain("'--ignore-scripts'");
+      expect(source).toContain('packTarball(');
     }
+    const npm = readFileSync(join(process.cwd(), 'scripts/lib/npm.mjs'), 'utf8');
+    expect(npm).toContain("'--ignore-scripts'");
   });
 
   it('releases through git tags, not a registry, with React as the only required peer', () => {

@@ -17,12 +17,11 @@
 // helper is defined in a server-safe module and exported from there, so a server component can call
 // it rather than receive a client reference.
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { flag, reportProblems, root, walk } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const DIRECTIVE = "'use client';";
 // The exports of React's server build (react.react-server).
 const SERVER_REACT = new Set([
@@ -70,15 +69,7 @@ const CLIENT_HELPERS = new Set([
   'resolveScrollSpy',
 ]);
 const SERVER_HOOKS = new Set(['useCallback', 'useDebugValue', 'useId', 'useMemo']);
-const fix = process.argv.includes('--fix');
-
-function walk(dir) {
-  return readdirSync(dir).flatMap((name) => {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) return walk(full);
-    return /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name) ? [full] : [];
-  });
-}
+const fix = flag('fix');
 
 /** The module a declaration imports or re-exports from; the caller has checked it names one. */
 const specifierOf = (statement) =>
@@ -164,7 +155,11 @@ function clientReason(source) {
 }
 
 const modules = new Map();
-for (const path of walk(join(root, 'src'))) {
+const SOURCE = /\.tsx?$/;
+const TEST = /\.test\.tsx?$/;
+for (const path of walk(join(root, 'src')).filter(
+  (file) => SOURCE.test(file) && !TEST.test(file),
+)) {
   const text = readFileSync(path, 'utf8');
   const kind = path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, kind);
@@ -364,9 +359,8 @@ for (const { path, source } of modules.values()) {
   }
 }
 
-if (problems.length > 0) {
-  console.error(problems.join('\n'));
-  console.error(`\n${problems.length} client boundary problem(s). \`--fix\` adds the directives.`);
-  process.exit(1);
-}
-console.log(fix ? 'Client boundaries fixed.' : 'Client boundaries match.');
+reportProblems(problems, {
+  heading: `${problems.length} client boundary problem(s)`,
+  hint: '`--fix` adds the directives.',
+  success: fix ? 'Client boundaries fixed.' : 'Client boundaries match.',
+});

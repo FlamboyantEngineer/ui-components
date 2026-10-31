@@ -5,11 +5,10 @@
 //   S2 component directory layout, S3 re-export-only entry points, I2 props that extend BaseProps.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { basename, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { basename, join, relative, sep } from 'node:path';
 import ts from 'typescript';
+import { reportProblems, root, walk } from './lib/script.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const componentsDir = join(root, 'src', 'components');
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+)*$/;
 // Components that render no element of their own: they provide context, portal or relay content.
@@ -18,14 +17,7 @@ const NO_ELEMENT = /(?:Provider|Host|Outlet|Content|Trigger)$/;
 const problems = [];
 const rel = (path) => relative(root, path).split(sep).join('/');
 
-function walk(dir) {
-  return readdirSync(dir).flatMap((name) => {
-    const full = join(dir, name);
-    return statSync(full).isDirectory() ? [full, ...walk(full)] : [full];
-  });
-}
-
-for (const path of walk(join(root, 'src'))) {
+for (const path of walk(join(root, 'src'), { directories: true })) {
   const name = basename(path);
   if (!KEBAB.test(name))
     problems.push(`${rel(path)}: file and directory names are kebab-case (N1)`);
@@ -159,9 +151,7 @@ for (const file of indexFiles) {
   }
 }
 
-if (problems.length > 0) {
-  console.error('Structure problems (docs/CODING-GUIDELINES.md):');
-  for (const problem of problems) console.error(`  ${problem}`);
-  process.exit(1);
-}
-console.log(`${components.length} component directories follow the structure rules.`);
+reportProblems(problems, {
+  heading: 'Structure problems (docs/CODING-GUIDELINES.md)',
+  success: `${components.length} component directories follow the structure rules.`,
+});

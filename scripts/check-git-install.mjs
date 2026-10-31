@@ -24,12 +24,12 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { runNpm } from './lib/npm.mjs';
+import { reportProblems, root } from './lib/script.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PACKAGE = '@flamboyantengineer/ui-components';
 const tsc = join(root, 'node_modules', 'typescript', 'bin', 'tsc');
 const { peerDependencies } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
@@ -175,9 +175,7 @@ try {
   rmSync(workDir, { recursive: true, force: true });
 }
 
-if (problems.length > 0) {
-  console.error('Git install problems:');
-  for (const problem of problems) console.error(`  ${problem}`);
-  process.exit(1);
-}
-console.log(`${dependency} installs and prepares through npm install and npm ci.`);
+reportProblems(problems, {
+  heading: 'Git install problems',
+  success: `${dependency} installs and prepares through npm install and npm ci.`,
+});

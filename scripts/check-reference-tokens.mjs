@@ -8,12 +8,9 @@
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { option, reportProblems, root } from './lib/script.mjs';
 
-const dirFlag = process.argv.indexOf('--dir');
-const referenceDir =
-  dirFlag === -1
-    ? join(import.meta.dirname, '..', 'labs', 'reference')
-    : (process.argv[dirFlag + 1] ?? '');
+const referenceDir = option('dir', join(root, 'labs', 'reference'));
 const exemptMarker = 'token-exempt:';
 const layoutExemptMarker = 'layout-exempt:';
 const problems = [];
@@ -310,11 +307,7 @@ for (const name of baseTokens) {
   else seen.set(key, name);
 }
 
-if (problems.length > 0) {
-  console.error(problems.join('\n'));
-  console.error(`\n${problems.length} reference token problem(s).`);
-  process.exit(1);
-}
-console.log(
-  `${files.length} reference stylesheets use ${baseTokens.size} base tokens consistently.`,
-);
+reportProblems(problems, {
+  heading: `${problems.length} reference token problem(s)`,
+  success: `${files.length} reference stylesheets use ${baseTokens.size} base tokens consistently.`,
+});
