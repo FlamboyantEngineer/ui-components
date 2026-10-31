@@ -65,6 +65,10 @@ export interface PermissionMatrixProps extends BaseProps, AriaLabellingProps {
   inherited?: readonly PermissionMatrixGrant[] | undefined;
   /** The saved grants dirty cells differ from. Defaults to the grants of the first render. */
   committedValue?: readonly PermissionMatrixGrant[] | undefined;
+  /** Renders only the rows in view, for many permissions; the stylesheet must bound the table's height. */
+  virtualized?: boolean | undefined;
+  /** Row height in pixels for a virtualized table. Defaults to the table's. */
+  rowHeight?: number | undefined;
 }
 
 type PermissionRow = PermissionMatrixPermission;
@@ -145,6 +149,8 @@ export function PermissionMatrix({
   onChange,
   inherited = noGrants,
   committedValue,
+  virtualized,
+  rowHeight,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
@@ -197,6 +203,8 @@ export function PermissionMatrix({
           rows={permissions}
           groupBy={grouping.groupBy}
           renderGroupLabel={grouping.renderGroupLabel}
+          virtualized={virtualized}
+          rowHeight={rowHeight}
         />
       </PermissionCellsContext>
     </div>

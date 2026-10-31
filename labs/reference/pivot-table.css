@@ -66,3 +66,12 @@
   min-height: 0;
   margin-top: 0;
 }
+
+/* A virtualized table fills the height the page gives the pivot, below the chooser. */
+.ui-pivot-table:has(> .ui-table[data-virtualized]) {
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
+}
+.ui-pivot-table:has(> .ui-pivot-table__chooser):has(> .ui-table[data-virtualized]) {
+  grid-template-rows: auto minmax(0, 1fr);
+}

@@ -37,3 +37,8 @@
 .ui-permission-matrix__grant[data-dirty] .ui-checkbox__box {
   border-color: var(--ref-dirty);
 }
+
+/* A virtualized table fills the height the page gives the matrix. */
+.ui-permission-matrix:has(> .ui-table[data-virtualized]) {
+  height: 100%;
+}

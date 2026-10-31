@@ -109,6 +109,12 @@ function RoleEditor() {
   );
 }
 
+/** 600 permissions in three groups, for the virtualized matrix. */
+const manyPermissions: PermissionMatrixPermission[] = Array.from({ length: 600 }, (_, index) => {
+  const group = groups[index % groups.length] as PermissionMatrixGroup;
+  return { id: `many-${index}`, label: `${group.label} task ${index + 1}`, group: group.id };
+});
+
 mountLab(
   <>
     <LabSection
@@ -138,6 +144,22 @@ mountLab(
       description="Tick cells or whole groups; changed cells are marked dirty until saved. Guest reads recipes and Reviewer uploads photos through an inherited role, drawn mixed until granted directly. Arrow keys move between checkboxes and Space toggles. Reversing the roles keeps the focused checkbox on its role."
     >
       <RoleEditor />
+    </LabSection>
+    <LabSection
+      title="Virtualized"
+      description="600 permissions in three groups; only the rows in view are rendered."
+    >
+      <div data-lab-demo="virtualized" style={{ height: 320 }}>
+        <PermissionMatrix
+          aria-label="Many permissions"
+          roles={roles}
+          permissions={manyPermissions}
+          groups={groups}
+          defaultValue={saved}
+          virtualized
+          rowHeight={36}
+        />
+      </div>
     </LabSection>
   </>,
 );

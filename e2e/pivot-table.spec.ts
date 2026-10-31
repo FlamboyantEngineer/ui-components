@@ -119,4 +119,27 @@ test.describe('Pivot Table lab', () => {
     await expect(zone('Fields').locator('.ui-board__card')).toContainText(['Year']);
     await lab.expectAccessible('[data-lab-field="sales"]');
   });
+
+  test('UIC-PIVOT-TABLE-2.8 renders a window of 3,000 row groups and scrolls to the last one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pivot-table');
+    const demo = page.locator('[data-lab-demo="virtualized"]');
+    const grid = demo.getByRole('grid', { name: 'Deliveries by store' });
+    await expect(demo.locator('.ui-pivot-table__table')).toHaveAttribute(
+      'data-virtualized',
+      'true',
+    );
+    await expect(grid.getByRole('rowheader', { name: 'Store 0001' })).toBeVisible();
+    expect(await grid.getByRole('row').count()).toBeLessThan(60);
+    await demo
+      .locator('.ui-table__scroll')
+      .evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await demo.scrollIntoViewIfNeeded();
+    await expect(grid.getByRole('rowheader', { name: 'Store 3000' })).toBeInViewport();
+    await expect(grid.getByRole('rowheader', { name: 'Store 0001' })).toHaveCount(0);
+    expect(await grid.getByRole('row').count()).toBeLessThan(60);
+    await lab.expectAccessible('[data-lab-demo="virtualized"]');
+  });
 });

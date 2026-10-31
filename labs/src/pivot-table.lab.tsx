@@ -159,6 +159,13 @@ function RepeatedFields() {
   );
 }
 
+/** Deliveries to 3,000 stores, each a row group of the virtualized pivot. */
+const deliveries = Array.from({ length: 6000 }, (_, index) => ({
+  store: `Store ${String(Math.floor(index / 2) + 1).padStart(4, '0')}`,
+  fruit: fruits[index % fruits.length],
+  boxes: 5 + ((index * 7) % 23),
+}));
+
 mountLab(
   <>
     <LabSection
@@ -195,6 +202,25 @@ mountLab(
           ],
         }}
       />
+    </LabSection>
+    <LabSection
+      title="Virtualized"
+      description="3,000 stores, each a row group; only the rows in view are rendered."
+    >
+      <div data-lab-demo="virtualized" style={{ height: 320 }}>
+        <PivotTable
+          aria-label="Deliveries by store"
+          records={deliveries}
+          fields={[
+            { id: 'store', label: 'Store' },
+            { id: 'fruit', label: 'Fruit' },
+            { id: 'boxes', label: 'Boxes' },
+          ]}
+          defaultLayout={{ rows: ['store'], columns: [], values: [{ field: 'boxes' }] }}
+          virtualized
+          rowHeight={36}
+        />
+      </div>
     </LabSection>
     <LabSection
       title="Field chooser"
