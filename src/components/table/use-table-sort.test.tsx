@@ -112,4 +112,40 @@ describe('Table sorting by several columns', { timeout: 15_000 }, () => {
     expect(onSortDescriptorsChange).toHaveBeenCalledWith([]);
     expect(header('Weight')).toHaveAttribute('data-sort-priority', '1');
   });
+
+  it('UIC-TABLE-2.2 drops a sort on a column the table loses, so the column returns unsorted', () => {
+    const onSortChange = vi.fn();
+    const onSortDescriptorsChange = vi.fn();
+    const tables = (shown: readonly TableColumn<Fruit>[]) => (
+      <>
+        <Table
+          aria-label="Single"
+          rows={fruit}
+          columns={shown}
+          defaultSortDescriptor={{ column: 'weight', direction: 'ascending' }}
+          onSortChange={onSortChange}
+        />
+        <Table
+          aria-label="Several"
+          rows={fruit}
+          columns={shown}
+          defaultSortDescriptors={[
+            { column: 'weight', direction: 'ascending' },
+            { column: 'name', direction: 'descending' },
+          ]}
+          onSortDescriptorsChange={onSortDescriptorsChange}
+        />
+      </>
+    );
+    const { rerender } = render(tables(columns));
+    const withoutWeight = columns.filter((column) => column.id !== 'weight');
+    rerender(tables(withoutWeight));
+    expect(onSortChange).toHaveBeenCalledWith(null);
+    expect(onSortDescriptorsChange).toHaveBeenCalledWith([
+      { column: 'name', direction: 'descending' },
+    ]);
+    rerender(tables(columns));
+    for (const weight of screen.getAllByRole('columnheader', { name: /^Weight/ }))
+      expect(weight).toHaveAttribute('aria-sort', 'none');
+  });
 });

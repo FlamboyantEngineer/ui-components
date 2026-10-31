@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import type { SortDescriptor } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { nextSortDescriptor, nextSortDescriptors, toSortDescriptors } from './table-sort.js';
@@ -41,12 +41,24 @@ export interface TableSortState {
   };
 }
 
+/** Runs `discard` after a render that found the sort the table holds on a column it lost. */
+function useStaleSortRemoval(isStale: boolean, discard: () => void) {
+  useEffect(() => {
+    if (isStale) discard();
+  });
+}
+
 /**
  * A table's sort: one column cycling through ascending, descending and unsorted, or, with a sort
  * list, several columns where a plain press sorts by one column and Shift adds or cycles a column.
- * `onChange` runs after every change, so the table can return to its first page.
+ * `onChange` runs after every change, so the table can return to its first page. A sort on a
+ * column missing from `columnIds` is ignored, and dropped while the table owns it.
  */
-export function useTableSort(options: TableSortOptions, onChange: () => void): TableSortState {
+export function useTableSort(
+  options: TableSortOptions,
+  columnIds: ReadonlySet<string>,
+  onChange: () => void,
+): TableSortState {
   const isMultiple =
     options.sortDescriptors !== undefined || options.defaultSortDescriptors !== undefined;
   const [single, setSingle] = useControllableState(
@@ -65,22 +77,31 @@ export function useTableSort(options: TableSortOptions, onChange: () => void): T
     isAdditive.current = event.shiftKey;
   };
   const descriptors = useMemo(
-    () => (isMultiple ? multiple : toSortDescriptors(single)),
-    [isMultiple, multiple, single],
+    () =>
+      (isMultiple ? multiple : toSortDescriptors(single)).filter((descriptor) =>
+        columnIds.has(String(descriptor.column)),
+      ),
+    [isMultiple, multiple, single, columnIds],
   );
+  const isControlled = isMultiple
+    ? options.sortDescriptors !== undefined
+    : options.sortDescriptor !== undefined;
+  const heldCount = isMultiple ? multiple.length : Number(single !== null);
+  useStaleSortRemoval(!isControlled && heldCount !== descriptors.length, () => {
+    if (isMultiple) setMultiple(descriptors);
+    else setSingle(descriptors[0] ?? null);
+  });
 
   const onSortChange = (requested: SortDescriptor) => {
     if (isMultiple)
-      setMultiple(nextSortDescriptors(multiple, requested.column, isAdditive.current));
-    else setSingle(nextSortDescriptor(single, requested));
+      setMultiple(nextSortDescriptors(descriptors, requested.column, isAdditive.current));
+    else setSingle(nextSortDescriptor(descriptors[0] ?? null, requested));
     onChange();
   };
 
   return {
     descriptors,
-    isControlled: isMultiple
-      ? options.sortDescriptors !== undefined
-      : options.sortDescriptor !== undefined,
+    isControlled,
     isMultiple,
     onSortChange,
     rootProps: { onPointerDownCapture: noteModifier, onKeyDownCapture: noteModifier },

@@ -63,10 +63,10 @@ Verification: `src/components/table/table.test.tsx`, `src/components/table/table
 
 ### UIC-TABLE-2.2 - Table-owned order
 
-Without a `sortDescriptor` prop the table shall own the sort, starting from `defaultSortDescriptor`, and order the rows itself by the sorted column's values: numbers, booleans and dates numerically, text naturally and ignoring case in the provider locale (UIC-TABLE-2.10). Rows the column cannot separate keep their given order, each value is read once per row, and the caller's array is never modified.
+Without a `sortDescriptor` prop the table shall own the sort, starting from `defaultSortDescriptor`, and order the rows itself by the sorted column's values: numbers, booleans and dates numerically, text naturally and ignoring case in the provider locale (UIC-TABLE-2.10). Rows the column cannot separate keep their given order, each value is read once per row, and the caller's array is never modified. A sort on a column that leaves `columns` is dropped and reported through `onSortChange` or `onSortDescriptorsChange`, so the column returns unsorted and no column that takes its id inherits it; a caller-owned sort on a missing column is ignored.
 
-Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/table-sort.ts`, `src/components/table/table-rows.ts`
-Verification: `src/components/table/table.test.tsx`, `src/components/table/table-rows.test.ts`
+Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/use-table-sort.ts`, `src/components/table/table-sort.ts`, `src/components/table/table-rows.ts`
+Verification: `src/components/table/table.test.tsx`, `src/components/table/table-rows.test.ts`, `src/components/table/use-table-sort.test.tsx`
 
 ### UIC-TABLE-2.3 - Caller-owned order
 

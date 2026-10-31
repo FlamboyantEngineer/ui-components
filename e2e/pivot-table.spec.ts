@@ -87,6 +87,31 @@ test.describe('Pivot Table lab', () => {
     await lab.expectAccessible('[data-lab-field="quarters"]');
   });
 
+  test('UIC-PIVOT-TABLE-2.6 keeps a sort on its region and value as columns arrive and move', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pivot-table');
+    const changing = field(page, 'changing');
+    const amounts = changing.getByRole('columnheader', { name: 'Sum of Amount' });
+    const sorted = changing.locator('th[aria-sort="ascending"]');
+    // Regions in key order, then the row totals; South's amount sorts Team A first.
+    await amounts.nth(1).click();
+    await expect(rowHeaders(changing)).toHaveText(['Team A', 'Team B']);
+    await page.getByRole('button', { name: 'Add East' }).click();
+    await expect(amounts).toHaveCount(4);
+    await expect(amounts.nth(2)).toHaveAttribute('aria-sort', 'ascending');
+    await expect(sorted).toHaveCount(1);
+    await expect(rowHeaders(changing)).toHaveText(['Team A', 'Team B']);
+    await page.getByRole('button', { name: 'Swap values' }).click();
+    await expect(amounts.nth(2)).toHaveAttribute('aria-sort', 'ascending');
+    await expect(sorted).toHaveCount(1);
+    await expect(rowHeaders(changing)).toHaveText(['Team A', 'Team B']);
+    await page.getByRole('button', { name: 'Remove East' }).click();
+    await expect(amounts.nth(1)).toHaveAttribute('aria-sort', 'ascending');
+    await lab.expectAccessible('[data-lab-field="changing"]');
+  });
+
   test('UIC-PIVOT-TABLE-3.2 UIC-PIVOT-TABLE-3.3 UIC-PIVOT-TABLE-3.4 moves fields and picks aggregations', async ({
     page,
     lab,

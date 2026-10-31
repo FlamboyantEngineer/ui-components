@@ -108,7 +108,8 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
   const resetPage = () => {
     if (pagination && requestedPage !== 1) setPage(1);
   };
-  const sort = useTableSort(options, resetPage);
+  const columnIds = useMemo(() => new Set(columns.map((column) => String(column.id))), [columns]);
+  const sort = useTableSort(options, columnIds, resetPage);
   const { locale } = useLocale();
 
   const presented = useMemo(() => {
