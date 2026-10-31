@@ -343,7 +343,7 @@ describe('PinInput', () => {
     );
     const first = cells()[0] as HTMLElement;
     await user.click(first);
-     
+
     fireEvent.compositionStart(first);
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
     fireEvent.input(first, { target: { value: 'k' }, isComposing: true });
@@ -351,13 +351,13 @@ describe('PinInput', () => {
     expect(focusedIndex()).toBe(0);
     expect(onChange).not.toHaveBeenCalled();
     // A cancelled composition puts the cell's character back.
-     
+
     fireEvent.compositionEnd(first, { data: '' });
     expect(values()).toEqual(['', '']);
     expect(onChange).not.toHaveBeenCalled();
     // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot compose with an input method
     fireEvent.input(first, { target: { value: 'k' }, isComposing: true });
-     
+
     fireEvent.compositionEnd(first, { data: 'k' });
     expect(values()).toEqual(['k', '']);
     expect(onChange).toHaveBeenCalledExactlyOnceWith('k');
