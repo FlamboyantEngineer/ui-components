@@ -242,6 +242,31 @@ test.describe('Card lab', () => {
     await lab.expectAccessible('[data-lab-demo="waterfall"]');
   });
 
+  test('UIC-CARD-5.3 keeps the selection and focus when the grid switches layout', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const demo = page.locator('[data-lab-demo="switching"]');
+    const row = (name: string) => demo.getByRole('row', { name });
+    await row('Green salad').focus();
+    await page.keyboard.press('Space');
+    await row('Tomato soup').focus();
+    await page.keyboard.press('Space');
+    for (const mode of ['virtual grid', 'waterfall', 'grid', 'waterfall', 'virtual grid', 'grid']) {
+      // The host switching, as on a resize: focus stays where it was.
+      await demo.getByRole('button', { name: `Show as ${mode}` }).dispatchEvent('click');
+      await expect(demo.getByRole('button', { name: `Show as ${mode}` })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await expect(row('Tomato soup')).toHaveAttribute('data-selected', 'true');
+      await expect(row('Green salad')).not.toHaveAttribute('data-selected');
+      await expect(row('Tomato soup')).toBeFocused();
+    }
+    await lab.expectAccessible('[data-lab-demo="switching"]');
+  });
+
   test("UIC-CARD-6.1 UIC-CARD-6.2 collapses a record and keeps its body's state", async ({
     page,
     lab,

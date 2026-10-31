@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -566,6 +566,90 @@ describe('CardGrid', () => {
     } finally {
       for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
     }
+  });
+
+  it(
+    'UIC-CARD-5.3 keeps the selection and the focused card when the grid changes layout or virtualization',
+    { timeout: 20_000 },
+    async () => {
+      const sizes = { clientWidth: 600, clientHeight: 300 };
+      for (const [name, value] of Object.entries(sizes)) {
+        Object.defineProperty(HTMLElement.prototype, name, {
+          configurable: true,
+          get: () => value,
+        });
+      }
+      const onSelectionChange = vi.fn();
+      const grid = (options: { virtualized?: boolean; layout?: 'grid' | 'waterfall' }) => (
+        <CardGrid
+          aria-label="Cities"
+          items={cities}
+          selectionMode="multiple"
+          defaultSelectedKeys={['lisbon']}
+          onSelectionChange={onSelectionChange}
+          {...options}
+        >
+          {(city) => (
+            <CardGridItem textValue={city.name}>
+              <Card title={city.name} role="group" />
+            </CardGridItem>
+          )}
+        </CardGrid>
+      );
+      const isSelected = (name: string) =>
+        screen.getByRole('row', { name }).getAttribute('data-selected') === 'true';
+      try {
+        const user = userEvent.setup();
+        const { rerender } = render(grid({}));
+        const toggle = (name: string) =>
+          within(screen.getByRole('row', { name })).getByRole('checkbox');
+        await user.click(toggle('Lisbon'));
+        await user.click(toggle('Oslo'));
+        expect([isSelected('Lisbon'), isSelected('Oslo')]).toEqual([false, true]);
+        const notified = onSelectionChange.mock.calls.length;
+
+        for (const options of [{ virtualized: true }, { layout: 'waterfall' as const }, {}]) {
+          rerender(grid(options));
+          expect([isSelected('Lisbon'), isSelected('Oslo')]).toEqual([false, true]);
+          await waitFor(() => expect(screen.getByRole('row', { name: 'Oslo' })).toHaveFocus());
+        }
+        expect(onSelectionChange).toHaveBeenCalledTimes(notified);
+
+        // Focus moved out of the grid stays where it went.
+        const outside = document.body.appendChild(document.createElement('button'));
+        outside.focus();
+        rerender(grid({ virtualized: true }));
+        expect(outside).toHaveFocus();
+        outside.remove();
+      } finally {
+        for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
+      }
+    },
+  );
+
+  it('UIC-CARD-5.3 follows controlled selection across virtualization without reporting changes', () => {
+    const onSelectionChange = vi.fn();
+    const grid = (virtualized: boolean) => (
+      <CardGrid
+        aria-label="Cities"
+        items={cities}
+        selectionMode="multiple"
+        selectedKeys={['nairobi']}
+        onSelectionChange={onSelectionChange}
+        virtualized={virtualized}
+      >
+        {(city) => (
+          <CardGridItem textValue={city.name}>
+            <Card title={city.name} role="group" />
+          </CardGridItem>
+        )}
+      </CardGrid>
+    );
+    const { rerender } = render(grid(false));
+    rerender(grid(true));
+    rerender(grid(false));
+    expect(screen.getByRole('row', { name: 'Nairobi' })).toHaveAttribute('data-selected', 'true');
+    expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
   it('UIC-CARD-5.3 selects cards with toggles and hands the state to each card', async () => {
