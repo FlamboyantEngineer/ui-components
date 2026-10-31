@@ -1,5 +1,7 @@
 import { HelpGlyph } from '../../core/glyphs.js';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -26,6 +28,13 @@ async function advance(ms: number) {
   await act(async () => {
     vi.advanceTimersByTime(ms);
   });
+}
+
+/** The body of a same-origin iframe, a document with its own element constructors. */
+function requireFrameBody(frame: HTMLIFrameElement): HTMLElement {
+  const body = frame.contentDocument?.body;
+  if (!body) throw new Error('The frame has no body');
+  return body;
 }
 
 describe('ToastQueue', () => {
@@ -351,6 +360,53 @@ describe('ToastRegion', () => {
     expect(region.style.zIndex).toBe('900');
     unmount();
     target.remove();
+  });
+
+  it('UIC-TOAST-2.4 renders into an iframe body, a container of another window', async () => {
+    const user = userEvent.setup();
+    const frame = document.body.appendChild(document.createElement('iframe'));
+    const body = requireFrameBody(frame);
+    expect(body).not.toBeInstanceOf(HTMLElement);
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    const { unmount } = render(
+      <PortalContainerProvider container={body}>
+        <ToastRegion queue={queue} />
+      </PortalContainerProvider>,
+    );
+    act(() => {
+      queue.add({ title: 'Saved in the frame' });
+    });
+    const region = within(body).getByRole('region');
+    expect(region.parentElement).toBe(body);
+    expect(region.style.zIndex).toBe('160');
+    expect(within(region).getByText('Saved in the frame')).toBeInTheDocument();
+    await user.click(within(region).getByRole('button', { name: 'Dismiss' }));
+    expect(within(body).queryByRole('region')).not.toBeInTheDocument();
+    unmount();
+    frame.remove();
+  });
+
+  it('UIC-TOAST-2.4 hydrates a portal host with queued toasts, then shows them', async () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    queue.add({ title: 'Saved' });
+    const app = (
+      <PortalHost>
+        <ToastRegion queue={queue} />
+      </PortalHost>
+    );
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(app);
+    const recoverable: unknown[] = [];
+    const errors = vi.spyOn(console, 'error');
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      root = hydrateRoot(host, app, { onRecoverableError: (error) => recoverable.push(error) });
+    });
+    expect(recoverable).toEqual([]);
+    expect(errors).not.toHaveBeenCalled();
+    expect(within(host).getByRole('region')).toHaveTextContent('Saved');
+    act(() => root?.unmount());
+    host.remove();
   });
 
   it('UIC-TOAST-2.4 renders inside a portal host with its layer override', () => {

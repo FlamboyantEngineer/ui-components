@@ -300,4 +300,15 @@ test.describe('Toast over overlays', () => {
     await expect(dialog).toBeVisible();
     await expect(push).toBeFocused();
   });
+
+  test('UIC-TOAST-2.4 shows toasts in a same-origin frame body', async ({ page, lab }) => {
+    await lab.open('toast');
+    const frame = page.frameLocator('iframe[title="Toast frame"]');
+    await page.getByRole('button', { name: 'Push into the frame' }).click();
+    const region = frame.getByRole('region');
+    await expect(region).toContainText('Saved in the frame');
+    await expect(page.locator('body > .ui-toast-region')).toHaveCount(0);
+    await region.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(frame.getByRole('region')).toHaveCount(0);
+  });
 });
