@@ -59,6 +59,21 @@ test.describe('Grid Size Picker lab', () => {
     await expect(output(page, 'inline')).toHaveText('3 × 4');
   });
 
+  test('UIC-GRID-SIZE-PICKER-2.1 moves from the focused cell while the pointer previews another', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('grid-size-picker');
+    const picker = field(page, 'inline');
+    await picker.getByRole('gridcell', { name: cellName(1, 1) }).focus();
+    await picker.getByRole('gridcell', { name: cellName(3, 3) }).hover();
+    await expect(picker.locator('.ui-grid-size-picker__readout')).toHaveText('3 × 3');
+    await page.keyboard.press('ArrowRight');
+    await expect(picker.getByRole('gridcell', { name: cellName(1, 2) })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'inline')).toHaveText('1 × 2');
+  });
+
   test('UIC-GRID-SIZE-PICKER-2.1 UIC-GRID-SIZE-PICKER-2.3 chooses from the keyboard in a popover', async ({
     page,
     lab,

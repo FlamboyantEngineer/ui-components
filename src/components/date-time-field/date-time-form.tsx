@@ -1,3 +1,4 @@
+import { FieldFormValue } from '../field/field.js';
 import type { DateFieldValue } from './date-values.js';
 
 interface DateFormNames {
@@ -6,18 +7,6 @@ interface DateFormNames {
   /** The form names of a range's ends. */
   startName?: string | undefined;
   endName?: string | undefined;
-}
-
-function HiddenValue({
-  name,
-  value,
-  isDisabled,
-}: {
-  name: string | undefined;
-  value: string;
-  isDisabled: boolean;
-}) {
-  return name ? <input type="hidden" name={name} value={value} disabled={isDisabled} /> : null;
 }
 
 /**
@@ -36,13 +25,13 @@ export function DateFormInputs({
   const range = typeof value === 'object' ? value : null;
   return (
     <>
-      <HiddenValue
+      <FieldFormValue
         name={names.name}
         value={typeof value === 'string' ? value : ''}
         isDisabled={isDisabled}
       />
-      <HiddenValue name={names.startName} value={range?.start ?? ''} isDisabled={isDisabled} />
-      <HiddenValue name={names.endName} value={range?.end ?? ''} isDisabled={isDisabled} />
+      <FieldFormValue name={names.startName} value={range?.start ?? ''} isDisabled={isDisabled} />
+      <FieldFormValue name={names.endName} value={range?.end ?? ''} isDisabled={isDisabled} />
     </>
   );
 }

@@ -103,7 +103,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Inline"
-      description="Hover or focus a cell to preview its size; the grid grows one past the preview. Press, Enter or Space chooses; a press dragged off its cell before release chooses nothing."
+      description="Hover or focus a cell to preview its size; the grid grows one past the preview. The arrow keys move from the focused cell, wherever the pointer rests. Press chooses the pointed cell, Enter or Space the focused one; a press dragged off its cell before release chooses nothing."
     >
       <InlinePicker />
     </LabSection>

@@ -62,16 +62,16 @@ Verification: `src/utils/tree-reorder.test.ts`
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`
 
-### UIC-TREE-REORDER-2.6 - Drops of several rows
+### UIC-TREE-REORDER-2.5 - Applying a move
 
-`resolveTreeDropMany(rows, { keys, targetKey, position }, rules)` shall return the moves a drop of several rows makes, in the order they apply: the first dragged row (in the order shown) lands where the drop says and each other row just after the row before it, so the rows keep their order. Rows inside another dragged row move with it and get no move of their own. It returns `null` when a row cannot move, when the target is a dragged row or inside one, when a row may not enter the target's parent (or the target, for `inside`) under `rules.canMoveInto`, when the drop lands just after a row whose children are listed, or when the rows already sit together in that order at that spot.
+`applyTreeMove(items, move)` shall return new nested items with the row placed before, after or inside (last child of) its target, leaving the input unchanged and keeping the identity of subtrees the move does not touch. A move whose row or target is missing, or whose target lies inside the moved row, returns the items as they were.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`
 
-### UIC-TREE-REORDER-2.5 - Applying a move
+### UIC-TREE-REORDER-2.6 - Drops of several rows
 
-`applyTreeMove(items, move)` shall return new nested items with the row placed before, after or inside (last child of) its target, leaving the input unchanged and keeping the identity of subtrees the move does not touch. A move whose row or target is missing, or whose target lies inside the moved row, returns the items as they were.
+`resolveTreeDropMany(rows, { keys, targetKey, position }, rules)` shall return the moves a drop of several rows makes, in the order they apply: the first dragged row (in the order shown) lands where the drop says and each other row just after the row before it, so the rows keep their order. Rows inside another dragged row move with it and get no move of their own. It returns `null` when a row cannot move, when the target is a dragged row or inside one, when a row may not enter the target's parent (or the target, for `inside`) under `rules.canMoveInto`, when the drop lands just after a row whose children are listed, or when the rows already sit together in that order at that spot.
 
 Implementation: `src/utils/tree-reorder.ts`
 Verification: `src/utils/tree-reorder.test.ts`

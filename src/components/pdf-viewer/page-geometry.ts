@@ -1,4 +1,4 @@
-import type { PdfViewport } from './pdf-engine.js';
+import type { PdfPage, PdfViewport } from './pdf-engine.js';
 
 /** A position on a page as displayed, in points (1/72 inch) from the page's top-left corner. */
 export interface PdfPoint {
@@ -119,4 +119,9 @@ export function findBoxAtPoint<T extends PdfRect>(
     }
   }
   return undefined;
+}
+
+/** The rotation a page shows at: its own, turned further by the reader's, in degrees. */
+export function toPageRotation(page: Pick<PdfPage, 'rotate'>, rotation: number): number {
+  return (((page.rotate + rotation) % 360) + 360) % 360;
 }

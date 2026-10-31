@@ -186,4 +186,23 @@ test.describe('Timeline lab', () => {
     await expect(plan.locator('[data-lab-demo="selection"]')).toHaveText('Selected: 1');
     await lab.expectAccessible('[data-lab-demo="plan"]');
   });
+
+  test('UIC-TIMELINE-1.11 UIC-TIMELINE-2.2 runs time from the right edge in a right-to-left locale', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const demo = page.locator('[data-lab-demo="rtl"]');
+    const list = requireDefined(await demo.locator('.ui-timeline__list').boundingBox());
+    const shopping = demo.getByRole('button', { name: 'Shopping' });
+    const chopping = demo.getByRole('button', { name: 'Chopping' });
+    const before = requireDefined(await chopping.boundingBox());
+    const first = requireDefined(await shopping.boundingBox());
+    expect(list.x).toBeGreaterThan(before.x + before.width);
+    expect(first.x).toBeGreaterThan(before.x);
+    await chopping.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(async () => (await chopping.boundingBox())?.x).toBeLessThan(before.x);
+    await lab.expectAccessible('[data-lab-demo="rtl"]');
+  });
 });

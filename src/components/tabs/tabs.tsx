@@ -97,7 +97,7 @@ function usePersistedSelection({
   const [storedKey, setStoredKey] = usePersistentState<Key | null>(
     isPersisted ? persistKey : undefined,
     selection.defaultSelectedKey ?? null,
-    keyCodec,
+    { codec: keyCodec },
   );
   if (!isPersisted) return selection;
   return {

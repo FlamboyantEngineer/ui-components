@@ -1,6 +1,7 @@
 // Reads the library's ISO 8601 date and time texts as the date objects the date building blocks
 // edit, and writes those objects back as texts (specs/PRIMITIVES.md, UIC-PRIMITIVES-1.2). A
-// replacement library provides the same functions for its own date objects.
+// replacement library provides the same functions for its own date objects. The module is
+// server-safe, so it also re-exports the date functions that server-safe utilities call.
 
 import {
   getLocalTimeZone,
@@ -17,6 +18,21 @@ import {
   type Time,
   type ZonedDateTime,
 } from '@internationalized/date';
+
+export {
+  DateFormatter,
+  fromDate,
+  getLocalTimeZone,
+  now,
+  resetLocalTimeZone,
+  setLocalTimeZone,
+  startOfWeek,
+  toCalendarDate,
+  toCalendarDateTime,
+  toZoned,
+  today,
+} from '@internationalized/date';
+export type { CalendarDate, DateValue } from '@internationalized/date';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ZONE = /\[[^\]]+\]$/;

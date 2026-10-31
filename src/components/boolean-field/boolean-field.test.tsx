@@ -127,7 +127,7 @@ describe('BooleanField', () => {
     expect(box).toBeRequired();
   });
 
-  it('UIC-BOOLEAN-FIELD-1.5 submits its value in a form', () => {
+  it('UIC-BOOLEAN-FIELD-1.5 submits true or false whatever the variant, and nothing while unset or disabled', () => {
     const form = (variant: BooleanFieldVariant, value: boolean | null) => {
       const { container, unmount } = render(
         <form>
@@ -138,15 +138,27 @@ describe('BooleanField', () => {
       unmount();
       return data.getAll('ripe');
     };
-    expect(form('checkbox', true)).toEqual(['true']);
-    expect(form('checkbox', false)).toEqual([]);
-    expect(form('switch', true)).toEqual(['true']);
-    expect(form('segmented', false)).toEqual(['false']);
-    expect(form('segmented', null)).toEqual([]);
-    expect(form('dropdown', false)).toEqual(['false']);
-    expect(form('dropdown', null)).toEqual([]);
-    expect(form('toggle-button', true)).toEqual(['true']);
-    expect(form('toggle-button', false)).toEqual(['false']);
+    const variants: BooleanFieldVariant[] = [
+      'checkbox',
+      'switch',
+      'segmented',
+      'dropdown',
+      'toggle-button',
+    ];
+    for (const variant of variants) {
+      expect(form(variant, true)).toEqual(['true']);
+      expect(form(variant, false)).toEqual(['false']);
+      expect(form(variant, null)).toEqual([]);
+    }
+    const { container: disabled } = render(
+      <form>
+        <BooleanField label="Ripe" name="ripe" variant="checkbox" value isDisabled />
+      </form>,
+    );
+    expect(new FormData(disabled.querySelector('form') as HTMLFormElement).getAll('ripe')).toEqual(
+      [],
+    );
+    expect(screen.getByRole('checkbox')).not.toHaveAttribute('name');
     const { container } = render(
       <BooleanField label="Ripe" name="ripe" variant="segmented" value />,
     );

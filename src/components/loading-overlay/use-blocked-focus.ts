@@ -2,7 +2,7 @@
 
 // Keyboard focus around content that turns inert while its region loads.
 
-import { useLayoutEffect, type RefObject } from 'react';
+import { useCallback, useLayoutEffect, type RefObject } from 'react';
 import { containsComposed, getComposedActiveElement } from '../../utils/focus-target.js';
 
 interface BlockedFocusOptions {
@@ -62,9 +62,15 @@ function handOver(root: HTMLElement, target: HTMLElement) {
  * element that had it once blocking ends, unless the reader has moved focus elsewhere meanwhile.
  * Nested regions keep that chain whatever order their loads end in. Focus is read in the region's
  * own tree and followed into shadow roots, so a region in a shadow root, or an element inside a
- * shadow host in the content, is found and returned to.
+ * shadow host in the content, is found and returned to. Returns the region's `holdFocus`
+ * ([`LoadingBoundary`](../../core/loading-boundary.tsx)): focus outside the content, such as in a
+ * menu the content opened, moves to the root and returns to `target` once blocking ends.
  */
-export function useBlockedFocus({ rootRef, contentRef, isBlocked }: BlockedFocusOptions) {
+export function useBlockedFocus({
+  rootRef,
+  contentRef,
+  isBlocked,
+}: BlockedFocusOptions): (target: HTMLElement | null) => void {
   // A layout effect runs before the browser moves focus out of the newly inert content.
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -97,4 +103,15 @@ export function useBlockedFocus({ rootRef, contentRef, isBlocked }: BlockedFocus
       blockedContents.delete(root);
     };
   }, [rootRef]);
+  return useCallback(
+    (target: HTMLElement | null) => {
+      const root = rootRef.current;
+      if (!root || !target) return;
+      const active = getComposedActiveElement(root);
+      if (!active || active === root.ownerDocument.body || containsComposed(root, active)) return;
+      returnTargets.set(root, target);
+      root.focus({ preventScroll: true });
+    },
+    [rootRef],
+  );
 }

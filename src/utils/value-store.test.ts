@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createValueStore, useStoreValue } from './value-store.js';
+import { useStoreValue } from './use-store-value.js';
+import { createValueStore } from './value-store.js';
 
 describe('createValueStore', () => {
   it('holds a value and notifies subscribers only when it changes', () => {

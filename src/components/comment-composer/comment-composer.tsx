@@ -62,7 +62,7 @@ function useDraft({
   onChange,
   persistKey,
 }: Pick<CommentComposerProps, 'value' | 'defaultValue' | 'onChange' | 'persistKey'>) {
-  const [own, setOwn] = usePersistentState(persistKey, defaultValue, draftCodec);
+  const [own, setOwn] = usePersistentState(persistKey, defaultValue, { codec: draftCodec });
   const setDraft = (next: string) => {
     if (value === undefined) setOwn(next);
     onChange?.(next);

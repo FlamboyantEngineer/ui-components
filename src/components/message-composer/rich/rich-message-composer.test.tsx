@@ -425,11 +425,12 @@ describe('RichMessageComposer', () => {
     );
     await user.click(box());
     await user.keyboard('@mar{Enter}hi');
+    // The draft reaches storage once typing pauses, or at the latest when the composer unmounts.
+    unmount();
     expect(JSON.parse(storage.getItem('draft') ?? '')).toEqual({
       text: '@Maria Santos hi',
       tokens: [{ start: 0, end: 13, ...maria }],
     });
-    unmount();
     render(
       <UiProvider storage={storage}>
         <RichMessageComposer persistKey="draft" />

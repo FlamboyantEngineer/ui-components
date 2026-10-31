@@ -193,7 +193,7 @@ test.describe('List Row lab', () => {
   });
 });
 
-test('UIC-LIST-ROW-4.7 keeps row handles and checkboxes left of vertically centered content', async ({
+test('UIC-LIST-ROW-4.1 keeps row handles and checkboxes left of vertically centered content', async ({
   page,
   lab,
 }) => {

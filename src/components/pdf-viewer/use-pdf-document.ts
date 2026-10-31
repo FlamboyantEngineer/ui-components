@@ -14,6 +14,7 @@ import {
   type PdfTextContent,
   type PdfViewport,
 } from './pdf-engine.js';
+import { toPageRotation } from './page-geometry.js';
 import type { PdfSize } from './pdf-zoom.js';
 import { useLatest } from '../../utils/use-latest.js';
 
@@ -171,11 +172,6 @@ function createPasswordHandler(
     };
     setPassword(() => ({ ...key, failures, isChecking: false, submit }));
   };
-}
-
-/** The rotation a page shows at: its own, turned further by the reader's, in degrees. */
-export function toPageRotation(page: Pick<PdfPage, 'rotate'>, rotation: number): number {
-  return (((page.rotate + rotation) % 360) + 360) % 360;
 }
 
 /**

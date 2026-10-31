@@ -128,7 +128,7 @@ export function TeamChatSection() {
   return (
     <LabSection
       title="Team chat"
-      description="Mention people with @. In an empty composer Up edits your last message: Save (Enter) or Cancel (Escape). Edit and Reply put a banner above the composer. Each conversation keeps its own draft, with its pills, in the provider's storage: switch conversations, or reload the page."
+      description="Mention people with @. In an empty composer Up edits your last message: Save (Enter) or Cancel (Escape). Edit and Reply put a banner above the composer. Each conversation keeps its own draft, with its pills, in the provider's storage: switch conversations, or reload the page. Storage is written once typing pauses or focus leaves, not on every key press."
     >
       <TeamChat />
     </LabSection>

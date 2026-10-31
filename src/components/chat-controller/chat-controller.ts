@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { useStoreValue } from '../../utils/value-store.js';
+import { useStoreValue } from '../../utils/use-store-value.js';
 import type { ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import type { ChatQuestionAnswer } from '../chat-question/chat-question.js';

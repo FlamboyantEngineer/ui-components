@@ -76,7 +76,7 @@ export function usePersistedValue<T>({
   const [own, setOwn] = usePersistentState(
     value === undefined ? persistKey : undefined,
     defaultValue,
-    codec,
+    { codec: codec },
   );
   const setValue = useCallback(
     (next: T) => {

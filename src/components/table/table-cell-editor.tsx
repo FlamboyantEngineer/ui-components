@@ -3,7 +3,7 @@
 import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Input, TableStateContext } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { getColumnText } from './table-column.js';
+import { getColumnText } from './table-columns.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import { readCellText, type CellReading } from './table-cell-writes.js';
 import {

@@ -19,6 +19,7 @@ import {
   type TooltipTriggerState,
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { isOverflowing } from '../../utils/is-overflowing.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -58,9 +59,7 @@ const hooks = createHooks('truncation-tooltip', ['panel', 'toggle']);
 
 /** Whether an element's content is cut by its box (an inline ellipsis or a line clamp). */
 function isTruncated(element: Element): boolean {
-  return (
-    element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 1
-  );
+  return isOverflowing(element, 'horizontal') || isOverflowing(element, 'vertical');
 }
 
 /** React Aria tooltip trigger state that opens only while the text in `ref` is cut. */

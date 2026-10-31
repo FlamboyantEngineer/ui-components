@@ -1,12 +1,13 @@
 'use client';
 
 import { useId, type KeyboardEvent } from 'react';
-import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
+import { useDateFormatter, useLocale, useNumberFormatter } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import {
   resolveKeyboardChange,
+  toInlineStart,
   type TimelineItemChange,
   type TimelineScale,
 } from './timeline-geometry.js';
@@ -81,11 +82,13 @@ export function TimelineItemButton({
   const descriptionId = useId();
   const { item, read, left, right } = placed;
   const description = useItemDescription(placed, predecessors, isEditable);
-  const drag = useTimelineDrag({ read, dayWidth, isEditable, onDraft, onCommit });
+  const isRtl = useLocale().direction === 'rtl';
+  const drag = useTimelineDrag({ read, dayWidth, isRtl, isEditable, onDraft, onCommit });
   const progress = readProgress(placed);
   const isBar = read.kind === 'bar';
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    const change = isEditable ? resolveKeyboardChange(read, event, scale) : null;
+    const key = { key: event.key, shiftKey: event.shiftKey, isRtl };
+    const change = isEditable ? resolveKeyboardChange(read, key, scale) : null;
     if (!change) return;
     event.preventDefault();
     if (change.start !== read.start || change.end !== read.end) onCommit(change);
@@ -103,7 +106,7 @@ export function TimelineItemButton({
       })}
       style={{
         position: 'absolute',
-        left,
+        ...toInlineStart(left, isRtl),
         width: isBar ? right - left : undefined,
         touchAction: isEditable ? 'none' : undefined,
       }}

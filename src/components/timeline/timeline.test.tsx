@@ -344,6 +344,68 @@ describe('Timeline', () => {
     expect(part('gridline')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('UIC-TIMELINE-1.11 UIC-TIMELINE-2.1 UIC-TIMELINE-2.2 mirrors the axis, keys and drags right to left', async () => {
+    const user = userEvent.setup();
+    const onItemChange = vi.fn();
+    const tree = (locale: string) => (
+      <UiProvider locale={locale}>
+        <Timeline
+          aria-label="Kitchen plan"
+          rows={rows}
+          items={items}
+          range={march}
+          scale="day"
+          today="2026-03-11"
+          dependencies={[{ from: 'measure', to: 'quote' }]}
+          onItemChange={onItemChange}
+        />
+      </UiProvider>
+    );
+    const placed = (container: HTMLElement) => {
+      const style = (selector: string) =>
+        requireDefined(container.querySelector<HTMLElement>(selector)).style;
+      return [
+        item('Measure rooms').style,
+        style('.ui-timeline__today'),
+        style('.ui-timeline__list'),
+      ];
+    };
+    const view = render(tree('en-US'));
+    const starts = placed(view.container).map((style) => style.left);
+    expect(starts.every(Boolean)).toBe(true);
+    view.unmount();
+    const { container } = render(tree('ar'));
+    const mirrored = placed(container);
+    expect(mirrored.map((style) => style.right)).toEqual(starts);
+    expect(mirrored.map((style) => style.left)).toEqual(['', '', '']);
+    const connectors = requireDefined(container.querySelector('.ui-timeline__connectors g'));
+    expect(connectors).toHaveAttribute('transform', expect.stringContaining('scale(-1 1)'));
+
+    const bar = item('Measure rooms');
+    bar.focus();
+    await user.keyboard('{ArrowLeft}');
+    expect(onItemChange).toHaveBeenLastCalledWith({
+      id: 'measure',
+      start: '2026-03-03',
+      end: '2026-03-07',
+    });
+    await user.keyboard('{ArrowRight}');
+    expect(onItemChange).toHaveBeenLastCalledWith({
+      id: 'measure',
+      start: '2026-03-01',
+      end: '2026-03-05',
+    });
+    // A drag to the left moves later on a right-to-left axis, and to the right earlier.
+    capturePointer(bar);
+    const startAfter = async (to: number) => {
+      await drag(user, bar, 200, to);
+      const [change] = onItemChange.mock.lastCall as [{ start: string }];
+      return change.start;
+    };
+    expect((await startAfter(140)) > '2026-03-02').toBe(true);
+    expect((await startAfter(260)) < '2026-03-02').toBe(true);
+  });
+
   it('UIC-TIMELINE-2.1 moves and resizes bars by pointer and commits on release', async () => {
     const user = userEvent.setup();
     const onItemChange = vi.fn();

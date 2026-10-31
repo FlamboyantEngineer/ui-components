@@ -32,19 +32,19 @@ The scope shall keep a status region (`role="status"`, `ui-property-scope__statu
 Implementation: `src/components/property-scope/property-scope.tsx`, `src/core/strings.ts`
 Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`
 
-### UIC-PROPERTY-SCOPE-1.6 - Custom matching
-
-With `filter`, a row shall match while `filter(text, query)` returns true, where `text` joins the texts [UIC-PROPERTY-SCOPE-1.1](#uic-property-scope-11---matching-rows) names with single spaces and `query` is the query as typed, in place of holding every term; a card's name is matched the same way. A blank query still filters nothing, and marks still show the query's terms.
-
-Implementation: `src/components/property-scope/property-scope.tsx`, `src/components/property-scope/scope-tally.ts`
-Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`
-
 ### UIC-PROPERTY-SCOPE-1.5 - Hooks and caller attributes
 
 `PropertyScope` shall carry the hooks below on a `<div>` around its content, append the caller's `className`, and forward `id` and caller `data-*` attributes to it.
 
 Implementation: `src/components/property-scope/property-scope.tsx`
 Verification: `src/components/property-scope/property-scope.test.tsx`
+
+### UIC-PROPERTY-SCOPE-1.6 - Custom matching
+
+With `filter`, a row shall match while `filter(text, query)` returns true, where `text` joins the texts [UIC-PROPERTY-SCOPE-1.1](#uic-property-scope-11---matching-rows) names with single spaces and `query` is the query as typed, in place of holding every term; a card's name is matched the same way. A blank query still filters nothing, and marks still show the query's terms.
+
+Implementation: `src/components/property-scope/property-scope.tsx`, `src/components/property-scope/scope-tally.ts`
+Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`
 
 ## Hooks
 

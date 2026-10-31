@@ -228,6 +228,7 @@ export function Field<T>({
 
 export type { FieldControlProps, FieldDensity, FieldLabelLayout } from './field-parts.js';
 export { FieldMessage } from './field-parts.js';
+export { FieldFormValue } from './field-form-value.js';
 export { resolveFieldValidation, toIssueList } from './field-validation.js';
 export { useFieldControl } from './field-control.js';
 export { toAriaControlProps } from './aria-control-props.js';
@@ -268,12 +269,6 @@ export { getFieldUndo } from './field-undo.js';
 export type { FieldUndo } from './field-undo.js';
 export { countCodePoints, validateString } from './string-rules.js';
 export type { StringRuleMessages, StringRules } from './string-rules.js';
-export {
-  PickerOptionRow,
-  flattenPickerItems,
-  isPickerSection,
-  pickerListLayout,
-  usePickerEmptyContent,
-  usePickerPopoverStyle,
-} from './field-picker.js';
-export type { PickerItem, PickerOption, PickerSection } from './field-picker.js';
+export { PickerOptionRow, usePickerEmptyContent, usePickerPopoverStyle } from './field-picker.js';
+export { flattenPickerItems, isPickerSection, pickerListLayout } from './field-picker-items.js';
+export type { PickerItem, PickerOption, PickerSection } from './field-picker-items.js';

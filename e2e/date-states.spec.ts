@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures.js';
 
-test('UIC-DATE-TIME-FIELD-3.5 shows calendar highlights, fades other months and strikes only taken dates', async ({
+test('UIC-DATE-TIME-FIELD-3.4 shows calendar highlights, fades other months and strikes only taken dates', async ({
   page,
   lab,
 }) => {

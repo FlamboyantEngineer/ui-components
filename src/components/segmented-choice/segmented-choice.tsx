@@ -166,13 +166,17 @@ function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
       )}
     </ToggleButton>
   );
-  // The tooltip of an icon-only segment repeats its name, so it adds no description.
-  return showsIconOnly ? (
-    <Tooltip content={option.label} relationship="label">
+  // Every segment sits in a tooltip, enabled only while it shows its icon alone, so a change of
+  // `iconOnly` keeps the segment element and its focus. That tooltip repeats the segment's name, so
+  // it adds no description.
+  return (
+    <Tooltip
+      content={option.label}
+      relationship={showsIconOnly ? 'label' : 'description'}
+      isDisabled={!showsIconOnly}
+    >
       {segment}
     </Tooltip>
-  ) : (
-    segment
   );
 }
 

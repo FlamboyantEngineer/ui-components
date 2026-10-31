@@ -342,6 +342,13 @@ Every text control shall take the native text-entry attributes of its input thro
 Implementation: `src/components/field/field-control.ts`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `src/components/search-field/search-field.test.tsx`
 
+### UIC-FIELD-8.4 - Form value
+
+A field control whose own input does not submit its value shall submit it through one shared part, `FieldFormValue`: hidden inputs under the field's `name`, holding one value (`null` or `undefined` submit an empty string) or one input per value of a list (an empty list submits nothing). Without a `name` it renders nothing, and a disabled field submits nothing. TextField (with `displayValue`), NumberField's radix input, PinInput, TagsInput, FileField, DateTimeField, RelativeDateField and every BooleanField variant submit through it.
+
+Implementation: `src/components/field/field-form-value.tsx`
+Verification: `src/components/field/field-form-value.test.tsx`, `src/components/boolean-field/boolean-field.test.tsx`
+
 ## UIC-FIELD-9 - Previous values
 
 ### UIC-FIELD-9.1 - Marker
@@ -380,7 +387,7 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 
 The pickers built on fields (`Combobox`, `SelectField` and `PeoplePicker` on the combobox) shall share one option model, one remote loader and one way to draw an option and an empty list. An option (`PickerOption`) has an `id`, a `label`, an optional `description`, `icon` and `isDisabled`; a section (`PickerSection`) has an `id`, an optional `label` heading it, and `options`. A remote loader (`RemoteLoader`) takes the query, an abort signal and, for a next page, the cursor, and returns the results or a page (`RemotePage`, `{ items, cursor }`). An option row draws the option's icon, label and description in the picker's own `option`, `option-icon`, `option-label` and `option-description` slots, or the caller's `renderOption` content. An empty list shows the provider's `loading` while searching, `searchFailed` after a failure, `typeToSearch` while the text is too short, else the caller's empty state or `noResults`.
 
-Implementation: `src/components/field/field-picker.tsx`, `src/utils/use-remote-search.ts`
+Implementation: `src/components/field/field-picker.tsx`, `src/components/field/field-picker-items.ts`, `src/utils/use-remote-search.ts`
 Verification: `src/components/field/field-picker.test.tsx`
 
 ## Hooks

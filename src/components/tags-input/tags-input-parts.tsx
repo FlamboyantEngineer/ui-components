@@ -15,7 +15,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import { assignOccurrenceKeys, type KeyedValue } from '../../utils/stable-keys.js';
-import type { FieldControlProps, FieldState } from '../field/field.js';
+import { FieldFormValue, type FieldControlProps, type FieldState } from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
 
 /** What the input does with text: type it, enter it as tags, or split a paste. */
@@ -105,21 +105,6 @@ function pasteTags(event: ClipboardEvent<HTMLInputElement>, entry: TagsInputEntr
   entry.enter(value.slice(0, start) + pasted + value.slice(selectionEnd ?? start));
 }
 
-/** Hidden inputs that submit each tag under the form name; a disabled field submits nothing. */
-function TagInputs({
-  name,
-  tags,
-  isDisabled,
-}: {
-  name: string;
-  tags: ReadonlyArray<KeyedValue<string>>;
-  isDisabled: boolean;
-}) {
-  return tags.map((tag) => (
-    <input key={tag.key} type="hidden" name={name} value={tag.value} disabled={isDisabled} />
-  ));
-}
-
 /**
  * The tags in the library's `TagGroup`. It renders again only when the tags or their state change,
  * not on each keystroke in the input, so typing stays fast with many tags.
@@ -207,7 +192,11 @@ export function TagsInputControl({
           onBlur={onBlur}
         />
       </Group>
-      {name ? <TagInputs name={name} tags={tags} isDisabled={state.isDisabled} /> : null}
+      <FieldFormValue
+        name={name}
+        value={tags.map((tag) => tag.value)}
+        isDisabled={state.isDisabled}
+      />
     </>
   );
 }

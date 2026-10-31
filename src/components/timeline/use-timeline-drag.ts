@@ -12,6 +12,8 @@ import {
 interface TimelineDragOptions {
   read: ReadItem;
   dayWidth: number;
+  /** The axis runs right to left, so a drag to the left moves later. */
+  isRtl: boolean;
   isEditable: boolean;
   /** The change a drag in progress shows, or `null` when it ends. */
   onDraft: (change: TimelineItemChange | null) => void;
@@ -42,6 +44,7 @@ function readEdge(target: EventTarget, kind: ReadItem['kind']): TimelineDragEdge
 export function useTimelineDrag({
   read,
   dayWidth,
+  isRtl,
   isEditable,
   onDraft,
   onCommit,
@@ -71,7 +74,8 @@ export function useTimelineDrag({
   };
 
   const move = (event: PointerEvent<HTMLElement>, active: Drag) => {
-    const travel = event.clientX - active.originX;
+    // Later days lie to the left of a right-to-left axis.
+    const travel = (event.clientX - active.originX) * (isRtl ? -1 : 1);
     if (Math.abs(travel) >= dragThreshold) moved.current = true;
     const days = Math.round(travel / dayWidth);
     if (days === active.days) return;

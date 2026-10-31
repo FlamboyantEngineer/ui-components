@@ -119,6 +119,13 @@ A stored value that cannot be parsed, or that parses to data of the wrong shape,
 Implementation: `src/core/provider.tsx`, `src/core/storage.ts`, `src/utils/json-codec.ts`
 Verification: `src/core/provider.test.tsx`, `src/utils/json-codec.test.ts`
 
+### UIC-PROVIDER-6.3 - Delayed writes
+
+`usePersistentState(key, initialValue, { codec, writeDelay })` shall return the value, its setter and `flush`. The value changes at once. With `writeDelay`, the adapter write waits that many milliseconds after the last change and writes only the last value, encoded only then, so a burst of changes such as typing writes once; `flush` writes a waiting change now. A waiting change shall be written under the key and adapter it was made for when the key or adapter changes, when the component unmounts and when the page hides (`pagehide`). Without `writeDelay` every change is written at once.
+
+Implementation: `src/core/provider.tsx`
+Verification: `src/core/provider-delayed-write.test.tsx`
+
 ## UIC-PROVIDER-7 - Overlay presence
 
 ### UIC-PROVIDER-7.1 - Interactive overlays

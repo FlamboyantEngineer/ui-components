@@ -14,7 +14,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
-import type { FieldControlProps, FieldState } from '../field/field.js';
+import { FieldFormValue, type FieldControlProps, type FieldState } from '../field/field.js';
 import {
   filterPinCharacters,
   findActivePinCell,
@@ -234,7 +234,7 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
           />
         ))}
       </Group>
-      {name ? <input type="hidden" name={name} value={value} disabled={state.isDisabled} /> : null}
+      <FieldFormValue name={name} value={value} isDisabled={state.isDisabled} />
     </>
   );
 }

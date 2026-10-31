@@ -1,11 +1,12 @@
 'use client';
 
-import { useDateFormatter } from '../../primitives/index.js';
+import { useDateFormatter, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TimeScaleUnit } from '../../utils/time-scale.js';
 import {
   resolveScaleCells,
   timelineScales,
+  toInlineStart,
   type TimelineAxis,
   type TimelineScale,
 } from './timeline-geometry.js';
@@ -48,6 +49,7 @@ function useScaleLabel(
  * the larger unit (months or years) over a row of the scale's unit.
  */
 export function TimelineHeader({ axis, scale }: TimelineHeaderProps) {
+  const isRtl = useLocale().direction === 'rtl';
   const label = useScaleLabel(scale);
   const plan = timelineScales[scale];
   const tiers: Array<[ScaleTier, TimeScaleUnit]> = [
@@ -70,7 +72,11 @@ export function TimelineHeader({ axis, scale }: TimelineHeaderProps) {
             <span
               key={cell.start}
               {...hooks.slot('scale-cell')}
-              style={{ position: 'absolute', left: cell.left, width: cell.width }}
+              style={{
+                position: 'absolute',
+                ...toInlineStart(cell.left, isRtl),
+                width: cell.width,
+              }}
             >
               {label(cell.start, unit, tier)}
             </span>

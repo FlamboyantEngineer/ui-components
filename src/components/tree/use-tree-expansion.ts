@@ -35,7 +35,7 @@ export function useTreeExpansion({
   const [storedKeys, setStoredKeys] = usePersistentState<Key[]>(
     persistKey,
     () => (defaultExpandedKeys ? [...defaultExpandedKeys] : []),
-    keyListCodec,
+    { codec: keyListCodec },
   );
   const expanded = useMemo(
     () => new Set<Key>(isControlled ? expandedKeys : storedKeys),

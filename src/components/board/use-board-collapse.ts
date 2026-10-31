@@ -35,7 +35,7 @@ export function useCollapsedKeys({
   const [own, setOwn] = usePersistentState<Key[]>(
     value === undefined ? storageKey : undefined,
     () => [...(defaultValue ?? [])],
-    keyListCodec,
+    { codec: keyListCodec },
   );
   const keys = useMemo(() => new Set(value ?? own), [value, own]);
   return {

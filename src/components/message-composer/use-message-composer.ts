@@ -131,6 +131,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
     onFocus: props.onFocus,
     onBlur: (event) => {
       model?.close();
+      state.flushDraft();
       props.onBlur?.(event);
     },
   };

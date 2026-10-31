@@ -4,7 +4,10 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type AnchorHTMLAttributes,
   type Dispatch,
@@ -76,6 +79,59 @@ export interface GlyphProps {
 export interface PersistCodec<T> {
   parse(raw: string): T;
   stringify(value: T): string;
+}
+
+/** How `usePersistentState` stores its value. */
+export interface PersistentStateOptions<T> {
+  /** How the value is written to and read from the adapter. Defaults to JSON. */
+  codec?: PersistCodec<T> | undefined;
+  /**
+   * Milliseconds the adapter write waits after the last change, so a burst of changes, such as
+   * typing, writes once. The state itself changes at once. Defaults to 0, writing each change.
+   */
+  writeDelay?: number | undefined;
+}
+
+/** The value, its setter, and `flush`, which writes a delayed change to the adapter now. */
+export type PersistentState<T> = [T, Dispatch<SetStateAction<T>>, () => void];
+
+/** A change waiting to be written, with the store it belongs to; encoded only when written. */
+interface PendingWrite {
+  storage: UiStorage;
+  key: string;
+  encode: () => string;
+}
+
+/**
+ * Writes changes to the adapter after `writeDelay`, keeping only the last one. The pending write
+ * goes out at once when the key or adapter changes, the component unmounts or the page hides.
+ */
+function useDelayedWrite(owner: { key: string | undefined; storage: UiStorage | undefined }) {
+  const pending = useRef<PendingWrite | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const flush = useCallback(() => {
+    clearTimeout(timer.current);
+    timer.current = undefined;
+    const write = pending.current;
+    pending.current = null;
+    write?.storage.setItem(write.key, write.encode());
+  }, []);
+  const schedule = useCallback(
+    (write: PendingWrite, delay: number) => {
+      pending.current = write;
+      clearTimeout(timer.current);
+      timer.current = setTimeout(flush, delay);
+    },
+    [flush],
+  );
+  // Before the next owner's value is read or written, the last owner's change lands.
+  useLayoutEffect(() => flush, [flush, owner.key, owner.storage]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, [flush]);
+  return useMemo(() => ({ schedule, flush }), [schedule, flush]);
 }
 
 /** Client-side navigation for React Aria links, inherited by nested providers. */
@@ -221,12 +277,14 @@ export function Glyph({ icon: Component, className }: GlyphProps) {
 /**
  * State persisted through the provider storage adapter under `key`. Without a key it is plain state.
  * Changing the key or adapter reads the new store. Unreadable values fall back to `initialValue`.
+ * With `writeDelay`, the adapter write follows the last change of a burst; `flush` writes it now.
  */
 export function usePersistentState<T>(
   key: string | undefined,
   initialValue: T | (() => T),
-  codec: PersistCodec<T> = jsonCodec as PersistCodec<T>,
-): [T, Dispatch<SetStateAction<T>>] {
+  options: PersistentStateOptions<T> = {},
+): PersistentState<T> {
+  const { codec = jsonCodec as PersistCodec<T>, writeDelay = 0 } = options;
   const adapter = useUiStorage();
   const storage = key === undefined ? undefined : adapter;
   // Plain state does not belong to an adapter; persisted state belongs to both adapter and key.
@@ -250,18 +308,23 @@ export function usePersistentState<T>(
     setState(current);
   }
 
-  const latest = useLatest({ ...current, codec });
+  const latest = useLatest({ ...current, codec, writeDelay });
+  const delayed = useDelayedWrite(current);
 
   const setValue = useCallback<Dispatch<SetStateAction<T>>>(
     (action) => {
-      const { key, storage, codec, value } = latest.current;
+      const { key, storage, codec, value, writeDelay } = latest.current;
       const next = typeof action === 'function' ? (action as (previous: T) => T)(value) : action;
       latest.current.value = next;
-      if (key !== undefined && storage !== undefined) storage.setItem(key, codec.stringify(next));
+      if (key !== undefined && storage !== undefined) {
+        const write = { storage, key, encode: () => codec.stringify(next) };
+        delayed.schedule(write, writeDelay);
+        if (writeDelay <= 0) delayed.flush();
+      }
       setState({ key, storage, value: next });
     },
-    [latest],
+    [latest, delayed],
   );
 
-  return [current.value, setValue];
+  return [current.value, setValue, delayed.flush];
 }

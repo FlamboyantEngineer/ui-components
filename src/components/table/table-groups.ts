@@ -2,7 +2,7 @@ import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { ReactNode } from 'react';
 import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
-import { getColumnText } from './table-column.js';
+import { getColumnText } from './table-columns.js';
 import {
   compareCellValues,
   getCellValue,
