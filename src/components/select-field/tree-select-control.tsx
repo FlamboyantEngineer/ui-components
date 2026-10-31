@@ -5,8 +5,8 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { formatPath } from '../../utils/path.js';
+import { FieldFormValue } from '../field/field.js';
 import type { FieldControlProps, FieldInputProps, FieldState } from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
 import type { TreeItemData } from '../tree/tree.js';
@@ -145,28 +145,9 @@ function TreeSelectChips({ label, chosen, onRemove }: TreeSelectChipsProps) {
   );
 }
 
-/** The hidden inputs a form submits: one per chosen key, or one empty entry for a single choice. */
-function HiddenInputs({
-  name,
-  keys,
-  isMultiple,
-  isDisabled,
-}: {
-  name: string;
-  keys: readonly Key[];
-  isMultiple: boolean;
-  isDisabled: boolean;
-}) {
-  const entries = isMultiple ? keys : [keys[0] ?? ''];
-  return entries.map((key) => (
-    <input
-      key={toKeyIdentity(key)}
-      type="hidden"
-      name={name}
-      value={String(key)}
-      disabled={isDisabled}
-    />
-  ));
+/** A single choice's form value: its key, or none. */
+function toSingleFormValue(key: Key | undefined): string | null {
+  return key === undefined ? null : String(key);
 }
 
 /**
@@ -225,14 +206,11 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
           onRemove={isEditable ? nodes.remove : undefined}
         />
       ) : null}
-      {props.name ? (
-        <HiddenInputs
-          name={props.name}
-          keys={nodes.keys}
-          isMultiple={isMultiple}
-          isDisabled={state.isDisabled}
-        />
-      ) : null}
+      <FieldFormValue
+        name={props.name}
+        value={isMultiple ? nodes.keys.map(String) : toSingleFormValue(nodes.keys[0])}
+        isDisabled={state.isDisabled}
+      />
     </>
   );
 }
