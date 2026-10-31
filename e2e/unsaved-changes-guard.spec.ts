@@ -158,6 +158,22 @@ test.describe('Unsaved Changes Guard lab', () => {
     await expect(demo.locator('[data-lab-answer]')).toHaveText('Left');
   });
 
+  test('UIC-UNSAVED-CHANGES-GUARD-2.6 closes the question a clean leave replaces', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('unsaved-changes-guard');
+    const demo = page.locator('[data-lab-demo="saved-elsewhere"]');
+    await demo.getByRole('button', { name: 'Leave, then save elsewhere' }).click();
+    const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
+    await expect(dialog).toBeVisible();
+    await page.clock.runFor(1000);
+    await page.clock.runFor(100);
+    await expect(demo.locator('[data-lab-answers]')).toHaveText('First Stayed · Second Left');
+    await expect(dialog).toBeHidden();
+  });
+
   test('UIC-UNSAVED-CHANGES-GUARD-1.1 UIC-UNSAVED-CHANGES-GUARD-1.2 UIC-UNSAVED-CHANGES-GUARD-3.1 asks a nested guard about its own sources', async ({
     page,
     lab,

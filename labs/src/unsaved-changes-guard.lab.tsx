@@ -212,6 +212,37 @@ function ChangingSource() {
   );
 }
 
+/** A source saved elsewhere a second after Leave asks, followed by a second leave that finds it clean. */
+function SavedElsewhere() {
+  const { confirmLeave } = useUnsavedChangesGuard();
+  const [isDirty, setDirty] = useState(true);
+  const [answers, setAnswers] = useState<string[]>([]);
+  useUnsavedChanges({ isDirty, label: 'Reading list', onSave: () => wait(300) });
+  const ask = (name: string) =>
+    void confirmLeave().then((ok) =>
+      setAnswers((list) => [...list, `${name} ${ok ? 'Left' : 'Stayed'}`]),
+    );
+  return (
+    <div data-lab-demo="saved-elsewhere">
+      <Button
+        size="sm"
+        onPress={() => {
+          setDirty(true);
+          setAnswers([]);
+          ask('First');
+          setTimeout(() => {
+            setDirty(false);
+            setTimeout(() => ask('Second'), 100);
+          }, 1000);
+        }}
+      >
+        Leave, then save elsewhere
+      </Button>{' '}
+      <output data-lab-answers="">{answers.join(' · ') || 'Not asked'}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -257,6 +288,14 @@ mountLab(
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <ChangingSource />
+      </UnsavedChangesGuard>
+    </LabSection>
+    <LabSection
+      title="A clean leave replaces the question"
+      description="Press the button: a second later the reading list is saved elsewhere and a second leave finds nothing unsaved. It answers the first question Stayed, closes it and leaves."
+    >
+      <UnsavedChangesGuard shouldConfirmUnload={false}>
+        <SavedElsewhere />
       </UnsavedChangesGuard>
     </LabSection>
   </>,

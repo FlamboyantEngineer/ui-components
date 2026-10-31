@@ -213,4 +213,43 @@ describe('UnsavedChangesGuard sources', () => {
     expect(notesSave).not.toHaveBeenCalled();
     await waitFor(() => expect(actionNames()).toEqual(['Stay', 'Discard']));
   });
+
+  it.each([
+    ['becomes clean', { Profile: { isDirty: false } }],
+    ['unmounts', {}],
+  ])(
+    'UIC-UNSAVED-CHANGES-GUARD-2.6 closes the open question when a clean leave replaces it after the source %s',
+    async (_, clean: Sources) => {
+      const { leave, update } = setup({ Profile: { isDirty: true } });
+      const first = leave();
+      await screen.findByRole('alertdialog');
+      update(clean);
+      await expect(leave()).resolves.toBe(true);
+      await expect(first).resolves.toBe(false);
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    },
+  );
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a late save of a question a clean leave replaced to itself', async () => {
+    const user = userEvent.setup();
+    const save = deferred();
+    const dirty: Sources = { Profile: { isDirty: true, onSave: () => save.promise } };
+    const { leave, update } = setup(dirty);
+    const first = leave();
+    await screen.findByRole('alertdialog');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    update({ Profile: { isDirty: false } });
+    await expect(leave()).resolves.toBe(true);
+    await expect(first).resolves.toBe(false);
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    update(dirty);
+    const third = leave();
+    await screen.findByRole('alertdialog');
+    await act(async () => save.resolve());
+    expect(screen.getByRole('alertdialog')).toBeVisible();
+    expect(document.querySelector('.ui-modal__primary')).not.toHaveAttribute('data-pending');
+    expect(await settled(third)).toBe('pending');
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
+    await expect(third).resolves.toBe(false);
+  });
 });
