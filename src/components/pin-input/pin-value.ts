@@ -29,14 +29,26 @@ export function writePinCharacters(
   );
 }
 
+/** What the browser says about an input event: its kind and the text it inserted. */
+export interface PinInputEdit {
+  inputType?: string | undefined;
+  data?: string | null | undefined;
+}
+
 /**
- * The text a cell received. Typing into a filled cell whose character is not selected leaves the
- * old character beside the new one, so only the new one counts; longer text (an autofilled code)
- * counts whole.
+ * The text a cell received. Typing (`insertText`, or an input method's composition) inserts its
+ * `data` at the caret, beside the cell's old character when that was not selected, so only `data`
+ * counts. Any other change, such as autofill or a replacement, sets the cell's whole text, so all of
+ * it counts, even when it happens to hold the old character.
  */
-export function readEnteredText(typed: string, previous: string): string {
-  if (previous === '' || typed.length !== 2) return typed;
-  return typed.startsWith(previous) ? typed.slice(1) : typed.slice(0, 1);
+export function readEnteredText(typed: string, edit: PinInputEdit): string {
+  const isTyped = edit.inputType === 'insertText' || edit.inputType === 'insertCompositionText';
+  return isTyped && edit.data ? edit.data : typed;
+}
+
+/** Whether `value` is a full code: exactly `length` characters, each one a cell of `type` takes. */
+export function isPinCodeComplete(value: string, cells: { length: number; type: PinInputType }) {
+  return value.length === cells.length && filterPinCharacters(value, cells.type) === value;
 }
 
 /** The cell that takes the next character: the first empty one, or the last once all are filled. */
