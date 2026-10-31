@@ -97,6 +97,57 @@ test.describe('Description List lab', () => {
     expect(requireDefined(rows[3]).top).toBeGreaterThan(requireDefined(rows[0]).top);
   });
 
+  test('UIC-DESCRIPTION-LIST-1.3 UIC-DESCRIPTION-LIST-1.4 keeps a nested list in its own layout', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('description-list');
+    for (const outer of ['inline', 'stacked'] as const) {
+      for (const inner of ['inline', 'stacked'] as const) {
+        const list = page.locator(
+          `[data-lab-cell="outer=${outer} inner=${inner}"] [data-lab-inner]`,
+        );
+        const rows = list.locator(':scope > .ui-description-list__row');
+        const boxes = (await rects(rows)) as DOMRect[];
+        const [carrier, crates, route] = boxes.map((box) => requireDefined(box));
+        const listBox = requireDefined(await list.boundingBox());
+        // Two columns of rows, and a row spanning both.
+        expect(Math.round(requireDefined(crates).top)).toBe(
+          Math.round(requireDefined(carrier).top),
+        );
+        expect(requireDefined(crates).left).toBeGreaterThan(requireDefined(carrier).right - 1);
+        expect(Math.round(requireDefined(route).width)).toBe(Math.round(listBox.width));
+        const first = rows.first();
+        const label = requireDefined(
+          await first.locator('.ui-description-list__label').boundingBox(),
+        );
+        const value = requireDefined(
+          await first.locator('.ui-description-list__value').boundingBox(),
+        );
+        const secondary = requireDefined(
+          await first.locator('.ui-description-list__secondary').boundingBox(),
+        );
+        if (inner === 'inline') {
+          expect(Math.round(value.y)).toBe(Math.round(label.y));
+          expect(value.x).toBeGreaterThan(label.x + label.width - 1);
+          expect(value.width).toBeGreaterThan(label.width);
+        } else {
+          expect(value.y).toBeGreaterThan(label.y);
+          expect(Math.round(value.x)).toBe(Math.round(label.x));
+        }
+        expect(Math.round(secondary.x)).toBe(Math.round(value.x));
+        expect(secondary.y).toBeGreaterThan(value.y);
+      }
+    }
+    // Narrow viewports put every list, nested ones included, in one column.
+    await page.setViewportSize({ width: 600, height: 900 });
+    const rows = page.locator(
+      '[data-lab-cell="outer=stacked inner=inline"] [data-lab-inner] > .ui-description-list__row',
+    );
+    const boxes = (await rects(rows)) as DOMRect[];
+    expect(requireDefined(boxes[1]).top).toBeGreaterThan(requireDefined(boxes[0]).top);
+  });
+
   test('UIC-DESCRIPTION-LIST-1.5 formats values for the provider locale', async ({ page, lab }) => {
     await lab.open('description-list');
     const values = (locale: string) =>
