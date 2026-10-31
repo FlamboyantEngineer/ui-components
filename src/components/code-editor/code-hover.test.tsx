@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -113,7 +113,8 @@ describe('CodeEditor problems and hover tips', () => {
     await user.keyboard('{F8}');
     expect([input().selectionStart, input().selectionEnd]).toEqual([4, 9]);
     expect(announcement).toHaveTextContent('Shadowed name.');
-    expect(tooltip()).toHaveTextContent('Shadowed name.');
+    // The tip follows on the next frame, once the browser has scrolled the selection into view.
+    await waitFor(() => expect(tooltip()).toHaveTextContent('Shadowed name.'));
     await user.keyboard('{F8}');
     expect([input().selectionStart, input().selectionEnd]).toEqual([26, 30]);
     expect(announcement).toHaveTextContent('Unknown name "totl".');
