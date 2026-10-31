@@ -192,8 +192,8 @@ export function Field<T>({
   const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const getRoot = useCallback(() => slots.read('root'), [slots]);
   const onKeyDown = useFieldUndo(getRoot, state);
-  const focus = useFieldLeave(state as FieldState<unknown>, slots, commitOnBlur);
-  useFieldFormBinding(state as FieldState<unknown>, slots, label);
+  const focus = useFieldLeave(state, slots, commitOnBlur);
+  useFieldFormBinding(state, slots, label);
   useAutoFocus(autoFocus, slots);
   const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
   const hasLabel = labelLayout !== 'control-only';
@@ -206,11 +206,7 @@ export function Field<T>({
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
-  const data = toFieldData(
-    { labelLayout, size, density },
-    state as FieldState<unknown>,
-    focus.isFocused,
-  );
+  const data = toFieldData({ labelLayout, size, density }, state, focus.isFocused);
   return (
     <FieldContextMenu model={menuModel}>
       <div
@@ -229,7 +225,7 @@ export function Field<T>({
           size={toInnerControlSize(size)}
           help={help ? { id: ids.help, content: help } : null}
           menu={menu.length > 0 ? menuModel : null}
-          onRestore={state.isDirty ? () => restoreField(state as FieldState<unknown>, slots) : null}
+          onRestore={state.isDirty ? () => restoreField(state, slots) : null}
         />
         {decoration ? (
           <div {...hooks.slot('decoration')} id={ids.decoration}>

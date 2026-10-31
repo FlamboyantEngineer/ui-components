@@ -155,7 +155,7 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
   );
   return {
     state,
-    field: buckets.field as unknown as FieldLayoutProps,
+    field: buckets.field as FieldLayoutProps,
     rest: buckets.rest as FieldControlRest<T, P>,
   };
 }

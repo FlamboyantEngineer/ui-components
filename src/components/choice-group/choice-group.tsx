@@ -3,7 +3,7 @@
 import { createContext, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { ControlSize, Orientation } from '../../core/props.js';
-import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
+import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
 import { ChoiceBox } from './choice-box.js';
 
 export type ChoiceGroupSize = ControlSize;
@@ -72,11 +72,7 @@ export function ChoiceGroup<M extends ChoiceGroupSelectionMode = 'single'>({
     >
       {(control) => (
         <ChoiceContext.Provider value={settings}>
-          <ChoiceBox
-            control={control}
-            state={state as unknown as FieldState<string | null | string[]>}
-            config={rest}
-          >
+          <ChoiceBox control={control} state={state} config={rest}>
             {children}
           </ChoiceBox>
         </ChoiceContext.Provider>
