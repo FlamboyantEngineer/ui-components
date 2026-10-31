@@ -13,6 +13,7 @@ import {
 } from '../field/field.js';
 import { colorFieldHooks as hooks } from './color-field-panel.js';
 import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface ColorEntryProps {
   control: FieldControlProps;
@@ -97,7 +98,9 @@ export function ColorEntry({
         onChange={setDraft}
         onBlur={() => apply({ shouldCommit: false })}
         onKeyDown={(event) => {
-          if (event.key === 'Enter') apply({ shouldCommit: true });
+          // Keys an input method composition owns neither apply nor drop the draft.
+          if (isComposingKey(event.nativeEvent)) event.continuePropagation();
+          else if (event.key === 'Enter') apply({ shouldCommit: true });
           else if (event.key === 'Escape' && draft !== null) setDraft(null);
           else event.continuePropagation();
         }}

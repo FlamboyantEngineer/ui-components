@@ -377,4 +377,27 @@ describe('SignaturePad', () => {
     expect(surface()).toHaveAttribute('id', 'sign-control');
     expectHooksMatchSpec(container, 'SIGNATURE-PAD', { callerAttributes: ['data-testid'] });
   });
+
+  it.each([
+    { name: 'during a composition', init: { isComposing: true } },
+    { name: 'that confirms a candidate', init: { keyCode: 229 } },
+  ])('UIC-SIGNATURE-PAD-3.2 leaves an Enter $name to the input method', async ({ init }) => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <SignaturePad
+        label="Signature"
+        defaultValue={{ kind: 'typed', text: '' }}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Signature' });
+    await user.type(input, 'Ada');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(input, { key: 'Enter', ...init });
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.keyboard('{Enter}');
+    expect(onCommit).toHaveBeenCalledOnce();
+    expect(onCommit).toHaveBeenLastCalledWith({ kind: 'typed', text: 'Ada' });
+  });
 });

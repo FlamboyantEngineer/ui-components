@@ -84,6 +84,21 @@ test.describe('Signature Pad lab', () => {
     await expect(field.getByRole('img', { name: 'Your signature' })).toBeVisible();
   });
 
+  test('UIC-SIGNATURE-PAD-3.2 leaves an Enter during a composition to the input method', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const field = page.locator('[data-lab-field="live"]');
+    await field.getByRole('radio', { name: 'Type' }).click();
+    const input = field.getByRole('textbox', { name: 'Your signature' });
+    await input.fill('Ada');
+    await input.dispatchEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true });
+    await expect(page.locator('[data-lab-output="Commits"]')).toHaveText('0');
+    await input.press('Enter');
+    await expect(page.locator('[data-lab-output="Commits"]')).toHaveText('1');
+  });
+
   test('UIC-FIELD-1.11 UIC-SIGNATURE-PAD-3.2 reaches the restore button by Tab and commits on leaving the field', async ({
     page,
     lab,

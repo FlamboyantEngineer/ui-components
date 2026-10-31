@@ -63,7 +63,7 @@ function LiveSignature() {
     <>
       <SignaturePad
         label="Your signature"
-        description="Draw with a mouse, a pen or a finger, or choose Type to type your name."
+        description="Draw with a mouse, a pen or a finger, or choose Type to type your name; Enter commits, except the Enter that confirms an input method candidate."
         value={value}
         isReadOnly={isReadOnly}
         onChange={setValue}
