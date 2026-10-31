@@ -311,6 +311,17 @@ describe('NumberField', () => {
     expect(root(container)).not.toHaveAttribute('data-dirty');
   });
 
+  it('UIC-NUMBER-FIELD-3.1 draws zero affixes and skips empty ones', () => {
+    const { container, rerender } = render(
+      <NumberField label="Weight" startAdornment={0} endAdornment={0} />,
+    );
+    expect(container.querySelector('.ui-number-field__start')).toHaveTextContent('0');
+    expect(container.querySelector('.ui-number-field__end')).toHaveTextContent('0');
+    rerender(<NumberField label="Weight" startAdornment={false} endAdornment={null} />);
+    expect(container.querySelector('.ui-number-field__start')).toBeNull();
+    expect(container.querySelector('.ui-number-field__end')).toBeNull();
+  });
+
   it('UIC-NUMBER-FIELD-3.1 frames literal affixes with the number', () => {
     const { container } = render(
       <NumberField label="Rent" defaultValue={1000} startAdornment="$" endAdornment="/mo" />,

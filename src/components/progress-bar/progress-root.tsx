@@ -11,6 +11,7 @@ import { useNumberFormatter } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import type { ProgressBarProps, ProgressValues } from './progress-bar.js';
 import { resolveMeterTone } from './progress-meter.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
 interface ProgressRootProps extends Omit<
@@ -150,7 +151,7 @@ export function ProgressText({
 }: ProgressTextProps) {
   return (
     <>
-      {label != null ? <Label className={textHooks.slotClass('label')}>{label}</Label> : null}
+      {!isEmptyNode(label) ? <Label className={textHooks.slotClass('label')}>{label}</Label> : null}
       {showValueLabel && !values.isIndeterminate ? (
         <span {...textHooks.slot('value')}>{values.valueText}</span>
       ) : null}

@@ -22,6 +22,7 @@ import { PdfViewerSearch } from './pdf-viewer-search.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** The document commands of the toolbar's menu. */
 export interface PdfCommands {
@@ -194,7 +195,9 @@ export function PdfViewerToolbar({
   return (
     <div {...hooks.slot('toolbar')} onKeyDownCapture={keepCaretKeys} onKeyDown={onKeyDown}>
       <ToolbarScroller aria-label={strings.controlsFor(label)}>
-        {leadingActions ? <div {...hooks.slot('leading-actions')}>{leadingActions}</div> : null}
+        {isEmptyNode(leadingActions) ? null : (
+          <div {...hooks.slot('leading-actions')}>{leadingActions}</div>
+        )}
         <Button
           icon={SidebarGlyph}
           label={strings.sidebar}
@@ -228,7 +231,7 @@ export function PdfViewerToolbar({
           <PdfViewerSearch search={search} fieldRef={findFieldRef} />
         )}
         <PdfViewerCommands isReady={isReady} commands={commands} />
-        {actions ? <div {...hooks.slot('actions')}>{actions}</div> : null}
+        {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
       </ToolbarScroller>
     </div>
   );

@@ -15,6 +15,7 @@ import {
   type RichTextEditorContextValue,
 } from './rich-text-context.js';
 import { TaskItemView } from './task-item-view.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 /** The engine state behind an editor and the function that applies its transactions. */
 export interface SyncedEditor {
@@ -133,7 +134,9 @@ export function EditorSurface(props: EditorSurfaceProps) {
     >
       <RichTextEditorContext value={context}>
         <div {...hooks.slot('frame')}>
-          {props.toolbar ? <div {...hooks.slot('toolbar')}>{props.toolbar}</div> : null}
+          {isEmptyNode(props.toolbar) ? null : (
+            <div {...hooks.slot('toolbar')}>{props.toolbar}</div>
+          )}
           <div {...hooks.slot('surface')} ref={surfaceRef} style={{ position: 'relative' }}>
             <ProseMirrorDoc
               {...contentAttributes}

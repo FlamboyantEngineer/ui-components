@@ -6,7 +6,7 @@ The chart family draws data as accessible SVG with no charting dependency, on th
 
 ### UIC-CHART-1.1 - Parts
 
-`Chart` shall render a `ui-chart` element holding a `ui-chart__header` with the visible `label` in a `ui-chart__title` slot, when given, and the `ui-chart__view-toggle`; then the summary in a `ui-chart__summary` slot; then, in the chart view, the `legend` (such as a [ChartLegend](#uic-chart-2---legend)) and the drawing (`children`) in a `ui-chart__body` slot.
+`Chart` shall render a `ui-chart` element holding a `ui-chart__header` with the visible `label` in a `ui-chart__title` slot, when given, and the `ui-chart__view-toggle`; then the summary in a `ui-chart__summary` slot; then, in the chart view, the `legend` (such as a [ChartLegend](#uic-chart-2---legend)) and the drawing (`children`) in a `ui-chart__body` slot. A `label` that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no title, and the figure is named by `aria-label` or `aria-labelledby` instead; `0` draws a title.
 
 Implementation: `src/components/chart/chart.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`

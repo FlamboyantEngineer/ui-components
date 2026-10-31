@@ -9,6 +9,7 @@ import type {
   NumberFieldCommitBehavior,
 } from './number-field.js';
 import {
+  NumberAdornment,
   NumberScrubber,
   Stepper,
   createModifierStepHandler,
@@ -106,7 +107,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
             <Stepper slot="decrement" labelledBy={control['aria-labelledby']} />
           )}
           {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
-          {startAdornment ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
+          <NumberAdornment side="start">{startAdornment}</NumberAdornment>
           <Input
             {...hooks.slot('input')}
             ref={control.ref}
@@ -115,7 +116,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
             enterKeyHint={enterKeyHint}
             {...entry.toInputProps(inputState)}
           />
-          {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
+          <NumberAdornment side="end">{endAdornment}</NumberAdornment>
           {hideStepper ? null : (
             <Stepper slot="increment" labelledBy={control['aria-labelledby']} />
           )}

@@ -250,6 +250,16 @@ describe('TextField', () => {
     expect(onCommit).toHaveBeenLastCalledWith('Apple');
   });
 
+  it('UIC-TEXT-FIELD-3.1 draws zero adornments and skips empty ones', () => {
+    const { container, rerender } = render(
+      <TextField label="Count" startAdornment={0} endAdornment={0} />,
+    );
+    expect(container.querySelector('.ui-text-field__start')).toHaveTextContent('0');
+    expect(container.querySelector('.ui-text-field__end')).toHaveTextContent('0');
+    rerender(<TextField label="Count" startAdornment={false} endAdornment={null} />);
+    expect(container.querySelector('.ui-text-field__group')).toBeNull();
+  });
+
   it('UIC-TEXT-FIELD-3.1 frames adornments with the input', () => {
     const { container, rerender } = render(
       <TextField
