@@ -178,6 +178,19 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page the line joining an entry to the next runs under its marker, on the right."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <ActivityFeed
+          aria-label="Activity, right to left"
+          items={events.slice(0, 3)}
+          groupBy="none"
+          getNow={getNow}
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Filter and older events"
       description="A filter in the feed's slot narrows the events; scrolling to the end loads two older pages."
     >

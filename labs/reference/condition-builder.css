@@ -13,13 +13,13 @@
 .ui-condition-builder__group:not([data-depth='1']) {
   padding: 8px 10px;
   border: 1px solid var(--ref-border);
-  border-left: 3px solid var(--ref-accent);
+  border-inline-start: 3px solid var(--ref-accent);
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
 }
 
 .ui-condition-builder__group[data-combinator='or']:not([data-depth='1']) {
-  border-left-color: var(--ref-warning);
+  border-inline-start-color: var(--ref-warning);
 }
 
 .ui-condition-builder__group-header {

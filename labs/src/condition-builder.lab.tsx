@@ -128,6 +128,18 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page the nesting rail of each group runs down its start edge, on the right."
+    >
+      <div dir="rtl" style={column} data-lab-demo="rtl">
+        <ConditionBuilder
+          aria-label="Conditions, right to left"
+          fields={bookFields}
+          defaultValue={nested}
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Filtering a catalogue"
       description="The tree narrows a list of books through a matcher made once per tree with createConditionMatcher. Add, duplicate, move (Alt+Arrow keys on a menu button) and delete rules and groups."
     >

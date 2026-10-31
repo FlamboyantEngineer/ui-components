@@ -223,7 +223,7 @@ button.ui-diagram-canvas__port:hover {
 
 .ui-diagram-canvas__minimap {
   position: absolute;
-  right: 8px;
+  inset-inline-end: 8px;
   bottom: 8px;
   width: 160px;
   height: 100px;

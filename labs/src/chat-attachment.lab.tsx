@@ -175,6 +175,14 @@ mountLab(
       <Matrix />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page a thumbnail's download link sits in its start corner, on the right, and its remove button in the end corner."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <ChatAttachment {...kindSamples.image} id="rtl-photo" onRemove={() => {}} />
+      </div>
+    </LabSection>
+    <LabSection
       title="Gallery"
       description="A list named by its heading: the photos open the media viewer on the pressed one, with the other photos to page through; the PDF and the text file are chips."
     >
