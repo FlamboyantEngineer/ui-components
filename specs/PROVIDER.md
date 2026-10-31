@@ -66,9 +66,9 @@ Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`, `
 
 ### UIC-PROVIDER-3.5 - Shipped languages
 
-The package shall ship English (`en`), French (`fr`), Spanish (`es`) and Japanese (`ja`) language files from `@flamboyantengineer/ui-components/locales`, and as JSON from `@flamboyantengineer/ui-components/locales/<language>.json` for hosts that load or edit them as data. Every shipped file has every English key, and each message uses only values its English message provides.
+The package shall ship English (`en`), French (`fr`), Spanish (`es`) and Japanese (`ja`) language files from `@flamboyantengineer/ui-components/locales`, and as JSON from `@flamboyantengineer/ui-components/locales/<language>.json` for hosts that load or edit them as data. Every shipped file has every English key, and each message uses only values its English message provides. The JSON files are the source translators edit; `npm run generate:locales` writes each as a module the library imports, so the built package contains no JSON import attributes, and the build copies the JSON files beside the modules. A test fails while a module and its JSON file disagree, and `npm run check:package` rejects an import attribute in the built JavaScript.
 
-Implementation: `src/core/locales/`, `package.json`
+Implementation: `src/core/locales/`, `scripts/generate-locales.mjs`, `scripts/copy-locales.mjs`, `scripts/check-package.mjs`, `package.json`
 Verification: `src/core/locales/index.test.ts`, `e2e/languages.spec.ts`
 
 ### UIC-PROVIDER-3.6 - Host messages
