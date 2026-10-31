@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listTabbables } from './tabbable.js';
+import { listTabbables, listTabStops } from './tabbable.js';
 
 describe('listTabbables', () => {
   it('lists the elements Tab reaches, in document order', () => {
@@ -19,6 +19,24 @@ describe('listTabbables', () => {
       'One',
       'Two',
       'Three',
+    ]);
+  });
+
+  it('UIC-PORTAL-3.4 counts a radio group as one stop, its checked button or else its first', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <input type="radio" name="size" aria-label="Small" />
+      <input type="radio" name="size" aria-label="Large" checked />
+      <input type="radio" name="fruit" aria-label="Plum" />
+      <input type="radio" name="fruit" aria-label="Fig" />
+      <input type="radio" aria-label="Alone" />
+      <form><input type="radio" name="size" aria-label="Form size" /></form>
+    `;
+    expect(listTabStops(root).map((element) => element.ariaLabel)).toEqual([
+      'Large',
+      'Plum',
+      'Alone',
+      'Form size',
     ]);
   });
 });

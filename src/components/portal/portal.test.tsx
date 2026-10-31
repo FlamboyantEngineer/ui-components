@@ -404,9 +404,31 @@ describe('Portal', () => {
     expect(button('Before')).toHaveFocus();
   });
 
-  it('UIC-PORTAL-3.4 skips content without tab stops and content reached at the document end', async () => {
+  it('UIC-PORTAL-3.4 enters a radio group at its checked button, as Tab does in place', async () => {
     const user = userEvent.setup();
-    const { rerender } = render(
+    render(
+      <>
+        <button type="button">Before</button>
+        <Portal preserveTabOrder>
+          <input type="radio" name="size" aria-label="Small" />
+          <input type="radio" name="size" aria-label="Large" defaultChecked />
+        </Portal>
+        <button type="button">After</button>
+      </>,
+    );
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await user.tab();
+    expect(screen.getByRole('radio', { name: 'Large' })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+    screen.getByRole('button', { name: 'After' }).focus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('radio', { name: 'Large' })).toHaveFocus();
+  });
+
+  it('UIC-PORTAL-3.4 skips content without tab stops', async () => {
+    const user = userEvent.setup();
+    render(
       <>
         <button type="button">Before</button>
         <Portal preserveTabOrder>
@@ -420,20 +442,7 @@ describe('Portal', () => {
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
     await user.tab({ shift: true });
     expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
-
-    rerender(
-      <>
-        <button type="button">Before</button>
-        <Portal preserveTabOrder>
-          <button type="button">Plum</button>
-        </Portal>
-        <button type="button">After</button>
-      </>,
-    );
-    screen.getByRole('button', { name: 'After' }).focus();
-    // The next stop in document order is the wrapper's first guard, after the page: it was visited.
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Plum' })).not.toHaveFocus();
-    expect(document.body).toHaveFocus();
+    // Reached at the document end, the content is skipped as Tab leaves the page: user-event
+    // ignores `inert`, so the browser test e2e/portal.spec.ts follows that.
   });
 });
