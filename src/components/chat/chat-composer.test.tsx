@@ -15,6 +15,7 @@ import { createMemoryStorage } from '../../core/storage.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { ChatModelPicker } from '../chat-model-picker/chat-model-picker.js';
 import { MessageComposerMenuButton } from '../message-composer/index.js';
+import { Modal } from '../modal/modal.js';
 
 installEditorDom();
 
@@ -109,6 +110,24 @@ describe('Chat composer', () => {
     await user.click(box());
     await user.keyboard('New{Enter}');
     expect(onSend).toHaveBeenCalledWith('New', []);
+  });
+
+  it('UIC-CHAT-2.4 keeps a Modal around the chat open on the Escape that ends a reply', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { container } = render(
+      <Modal isOpen onOpenChange={onOpenChange} title="Thread">
+        <TestChat onSend={() => {}} onReply={() => {}} />
+      </Modal>,
+    );
+    await user.hover(article('m1'));
+    await user.click(within(article('m1')).getByRole('button', { name: 'Reply' }));
+    await waitFor(() => expect(box()).toHaveFocus());
+    await user.keyboard('{Escape}');
+    expect(container.ownerDocument.querySelector('.ui-chat__banner')).toBeNull();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('UIC-CHAT-2.4 shows the quote of a reply and jumps to the message it answers', async () => {

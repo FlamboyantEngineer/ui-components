@@ -6,6 +6,7 @@ import type { CellCoordinates } from '../../utils/cell-reference.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeTokenizer } from '../code-editor/code-editor.js';
+import { Modal } from '../modal/modal.js';
 import { FormulaBar } from './formula-bar.js';
 
 const tokenize: CodeTokenizer = (source) =>
@@ -98,6 +99,23 @@ describe('FormulaBar', () => {
     await user.tab();
     expect(referenceBox()).toHaveValue('A1');
     expect(referenceBox()).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('UIC-FORMULA-BAR-2.2 leaves an Escape with nothing to drop to a Modal around the bar', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <Modal isOpen onOpenChange={onOpenChange} title="Sheet">
+        <Sheet />
+      </Modal>,
+    );
+    await user.click(referenceBox());
+    await user.keyboard('c9');
+    await user.keyboard('{Escape}');
+    expect(referenceBox()).toHaveValue('A1');
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('UIC-FORMULA-BAR-3.2 commits the draft with Enter and the confirm button', async () => {

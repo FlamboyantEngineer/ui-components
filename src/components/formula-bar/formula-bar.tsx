@@ -19,6 +19,7 @@ import {
   parseCellReference,
   type CellCoordinates,
 } from '../../utils/cell-reference.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completions } from '../completion-list/completion-list.js';
 import { Button } from '../button/button.js';
@@ -107,8 +108,12 @@ function FormulaBarReference({
     isSelectPending.current = false;
     inputRef.current?.select();
   });
+  // Escape drops a typed or refused reference; with neither, or while an input method composes,
+  // it is not the box's, so a surface around the bar can close on it.
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Escape') {
+      if (typed === null && refused === null) return;
       setTyped(null);
       setRefused(null);
     } else if (event.key === 'Enter' && typed !== null) {
