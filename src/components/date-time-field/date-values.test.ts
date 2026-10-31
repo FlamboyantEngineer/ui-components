@@ -53,6 +53,26 @@ describe('date values', () => {
     expect(formatIsoDate(requireDefined(parseIsoDateTime(zoned, 'Asia/Tokyo')))).toBe(zoned);
   });
 
+  it('UIC-DATE-TIME-FIELD-4.2 truncates a repeated hour within the occurrence it is in', () => {
+    const zone = 'America/New_York';
+    const second = requireDefined(parseIsoDateTime('2026-11-01T06:30:45.123Z', zone));
+    const first = requireDefined(parseIsoDateTime('2026-11-01T05:30:45.123Z', zone));
+    expect(formatIsoDate(second, 'hour')).toBe('2026-11-01T01:00:00-05:00[America/New_York]');
+    expect(formatIsoDate(second)).toBe('2026-11-01T01:30:00-05:00[America/New_York]');
+    expect(formatIsoDate(second, 'second')).toBe('2026-11-01T01:30:45-05:00[America/New_York]');
+    expect(formatIsoDate(first, 'hour')).toBe('2026-11-01T01:00:00-04:00[America/New_York]');
+    expect(formatIsoDate(first)).toBe('2026-11-01T01:30:00-04:00[America/New_York]');
+    expect(formatIsoDate(first, 'second')).toBe('2026-11-01T01:30:45-04:00[America/New_York]');
+    // Lord Howe Island falls back half an hour: 01:30 to 01:59 repeat, 01:00 occurs once.
+    const lordHowe = 'Australia/Lord_Howe';
+    const repeated = requireDefined(parseIsoDateTime('2026-04-04T15:15:30Z', lordHowe));
+    expect(formatIsoDate(repeated)).toBe('2026-04-05T01:45:00+10:30[Australia/Lord_Howe]');
+    expect(formatIsoDate(repeated, 'hour')).toBe('2026-04-05T01:00:00+11:00[Australia/Lord_Howe]');
+    // A wall time the zone skips moves forward, as before.
+    const skipped = requireDefined(parseIsoDateTime('2026-03-08T07:30:00Z', zone));
+    expect(formatIsoDate(skipped, 'hour')).toBe('2026-03-08T03:00:00-04:00[America/New_York]');
+  });
+
   it('UIC-DATE-TIME-FIELD-1.2 keeps four-digit years in floating date and time texts', () => {
     for (const year of ['0001', '0099', '0999', '1000']) {
       const text = `${year}-04-20T12:30`;
