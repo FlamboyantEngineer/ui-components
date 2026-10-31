@@ -173,10 +173,10 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-4.8 - Snippets
 
-A completion's `insertText` shall be inserted instead of its label. Only `insertText` interprets `${…}` as a field holding its default text; a label is literal text. A backslash before `$`, `}` or another backslash quotes that character, including inside a field. Other backslashes remain literal. The lines after the first take the indentation of the line the insertion goes into. After the insertion the first field is selected (or else the caret goes after the insertion), and while the caret stays in the current field Tab selects the next field, then the end of the insertion, and Shift+Tab the previous field; Tab with the caret elsewhere, or after the last field, ends the stepping.
+A completion's `insertText` shall be inserted instead of its label. Only `insertText` interprets `${…}` as a field holding its default text; a label is literal text. A backslash before `$`, `}` or another backslash quotes that character, including inside a field. Other backslashes remain literal. The lines after the first take the indentation of the line the insertion goes into. After the insertion the first field is selected (or else the caret goes after the insertion), and while the caret stays in the current field Tab selects the next field, then the end of the insertion, and Shift+Tab the previous field; Tab with the caret elsewhere, or after the last field, ends the stepping. So does any change to the text outside the current field (a replaced, restored, reset or undone text, even of the same length, or an edit elsewhere), the editor becoming read-only or disabled, Escape (so Escape then Tab leaves the editor) and leaving the editor; edits inside the current field keep it and move the later fields.
 
 Implementation: `src/components/code-editor/completion-match.ts`, `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/use-code-snippet.ts`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/completion-match.test.ts`, `e2e/code-editor.spec.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/completion-match.test.ts`, `src/components/code-editor/use-code-completion.test.tsx`, `e2e/code-editor.spec.ts`
 
 ## UIC-CODE-EDITOR-5 - Attributes
 

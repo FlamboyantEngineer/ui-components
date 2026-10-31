@@ -301,6 +301,38 @@ test.describe('Code Editor lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CODE-EDITOR-4.8 ends snippet stepping after an undo and on Escape then Tab', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const input = editor(page, 'editing').getByRole('textbox', { name: 'Editable source' });
+    const selection = () =>
+      input.evaluate((area: HTMLTextAreaElement) =>
+        area.value.slice(area.selectionStart, area.selectionEnd),
+      );
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Control+Space');
+    await page.keyboard.type('pi');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue(/\npick\(test, yes, no\)$/);
+    await page.keyboard.press('Control+z');
+    await expect(input).not.toHaveValue(/pick\(test/);
+    // Tab indents the restored line instead of selecting a field of the undone snippet.
+    await page.keyboard.press('Tab');
+    await expect(input).toHaveValue(/\n {4}pi$/);
+    expect(await selection()).toBe('    pi');
+    await page.keyboard.press('End');
+    await page.keyboard.press('Control+Space');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue(/pick\(test, yes, no\)$/);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Tab');
+    await expect(input).not.toBeFocused();
+  });
+
   test('UIC-CODE-EDITOR-7.1 UIC-CODE-EDITOR-7.2 UIC-CODE-EDITOR-7.3 UIC-CODE-EDITOR-7.4 finds and replaces in the source', async ({
     page,
     lab,

@@ -166,4 +166,79 @@ describe('CodeEditor completion sources', () => {
     await user.keyboard('{Tab}');
     expect(input()).not.toHaveFocus();
   });
+
+  it('UIC-CODE-EDITOR-4.8 ends stepping when the text is replaced, even by text of the same length', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const editor = (value: string) => (
+      <CodeEditor
+        variant="surface"
+        aria-label="Source"
+        completions={fruit}
+        value={value}
+        onChange={onChange}
+      />
+    );
+    const { rerender } = render(editor(''));
+    await user.click(input());
+    rerender(editor('pi'));
+    await user.keyboard('{End}{Control>} {/Control}');
+    await waitFor(() => expect(screen.getByRole('option', { name: /pick/ })).toBeVisible());
+    await user.keyboard('{Enter}');
+    const inserted = onChange.mock.lastCall?.[0] as string;
+    expect(inserted).toBe('pick(fruit, count)');
+    rerender(editor(inserted));
+    rerender(editor('a'.repeat(inserted.length)));
+    act(() => input().setSelectionRange(6, 6));
+    await user.keyboard('{Tab}');
+    expect(input()).not.toHaveFocus();
+  });
+
+  it('UIC-CODE-EDITOR-4.8 ends stepping after an edit outside the field', async () => {
+    const user = userEvent.setup();
+    render(<Editor completions={fruit} />);
+    await user.click(input());
+    await user.keyboard('pi{Enter}');
+    act(() => input().setSelectionRange(0, 0));
+    await user.keyboard('x');
+    act(() => input().setSelectionRange(7, 7));
+    await user.keyboard('{Tab}');
+    expect(input()).not.toHaveFocus();
+  });
+
+  it('UIC-CODE-EDITOR-4.8 ends stepping when the editor locks or after Escape', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Editor completions={fruit} />);
+    await user.click(input());
+    await user.keyboard('pi{Enter}');
+    rerender(<Editor completions={fruit} isReadOnly />);
+    await user.keyboard('{Tab}');
+    expect(input()).not.toHaveFocus();
+    rerender(<Editor completions={fruit} />);
+    await user.click(input());
+    await user.keyboard('{Control>}a{/Control}{Backspace}pi{Enter}{Escape}{Tab}');
+    expect(input()).not.toHaveFocus();
+  });
+
+  it('UIC-CODE-EDITOR-4.8 ends stepping when the host rejects the insertion', async () => {
+    const user = userEvent.setup();
+    render(
+      <CodeEditor
+        variant="surface"
+        aria-label="Source"
+        completions={fruit}
+        value="pi"
+        onChange={() => undefined}
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{End}');
+    await user.keyboard('{Control>} {/Control}');
+    await waitFor(() => expect(screen.getByRole('option', { name: /pick/ })).toBeVisible());
+    await user.keyboard('{Enter}');
+    expect(input()).toHaveValue('pi');
+    act(() => input().setSelectionRange(1, 1));
+    await user.keyboard('{Tab}');
+    expect(input()).not.toHaveFocus();
+  });
 });
