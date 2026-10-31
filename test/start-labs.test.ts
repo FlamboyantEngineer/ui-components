@@ -27,8 +27,18 @@ function checkout(files: Record<string, number>) {
   const fixture = mkdtempSync(join(tmpdir(), 'ui-lab-start-'));
   fixtures.push(fixture);
   mkdirSync(join(fixture, 'scripts', 'lib'), { recursive: true });
-  for (const script of ['start-labs.mjs', 'serve-labs.mjs', 'lib/npm.mjs', 'lib/script.mjs']) {
+  // The scripts date from before every file, so the lab library among them is no newer than a build.
+  const scripts = [
+    'start-labs.mjs',
+    'serve-labs.mjs',
+    'lib/npm.mjs',
+    'lib/script.mjs',
+    'lib/labs.mjs',
+    'lib/reference-stylesheet.mjs',
+  ];
+  for (const script of scripts) {
     copyFileSync(join(process.cwd(), 'scripts', script), join(fixture, 'scripts', script));
+    utimesSync(join(fixture, 'scripts', script), 1, 1);
   }
   for (const [path, seconds] of Object.entries(files)) {
     mkdirSync(dirname(join(fixture, path)), { recursive: true });

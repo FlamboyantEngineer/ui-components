@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { LABS_HOST, LABS_PORT } from './scripts/lib/labs.mjs';
 
-const port = Number(process.env.LABS_PORT ?? 4173);
+const origin = `http://${String(LABS_HOST)}:${String(LABS_PORT)}`;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -13,14 +15,14 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   reporter: process.env.CI ? [['list'], ['github']] : 'list',
   use: {
-    baseURL: `http://127.0.0.1:${port}/`,
+    baseURL: `${origin}/`,
     // Recording a trace for every test costs about a sixth of the run, and CI keeps no files from a
     // run, so no run records one; rerun a failing test with `--trace=on`.
     trace: 'off',
   },
   webServer: {
-    command: `node scripts/serve-labs.mjs --port ${port}`,
-    url: `http://127.0.0.1:${port}/index.html`,
+    command: 'node scripts/serve-labs.mjs',
+    url: `${origin}/index.html`,
     reuseExistingServer: !process.env.CI,
   },
   projects: [
