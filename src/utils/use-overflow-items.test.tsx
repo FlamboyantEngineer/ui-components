@@ -12,6 +12,7 @@ interface RowProps {
   fixed?: string;
   /** Places the indicator after this many visible items, marked with `indicatorRef`. */
   indicatorAfter?: number;
+  minVisible?: number;
 }
 
 function Row(props: RowProps) {
@@ -21,6 +22,7 @@ function Row(props: RowProps) {
       items,
       collapseFrom,
       getPriority: priorities ? (item) => priorities[item] ?? 0 : undefined,
+      minVisible: props.minVisible,
     });
   const indicator =
     hiddenItems.length > 0 ? (
@@ -72,6 +74,17 @@ describe('useOverflowItems', () => {
     render(<Row room={120} items={fruit} priorities={{ Cherry: 1 }} />);
     // Cherry (60) is kept first; Apple (50) would not fit beside it and "+3" (20).
     expect(rowText()).toEqual(['Cherry', '+3']);
+  });
+
+  it('UIC-OVERFLOW-LIST-1.5 keeps minVisible items however little room there is', () => {
+    const props = {
+      items: trail,
+      collapseFrom: 'start',
+      indicatorAfter: 1,
+      minVisible: 2,
+    } as const;
+    render(<Row {...props} room={10} priorities={{ Aa: 1, Ff: 1 }} />);
+    expect(rowText()).toEqual(['Aa', '+4', 'Ff']);
   });
 
   it('UIC-OVERFLOW-LIST-1.5 solves again when the priorities change', () => {

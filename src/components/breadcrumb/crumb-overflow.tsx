@@ -24,6 +24,8 @@ export interface CrumbOverflow {
   visibleKeys: ReadonlySet<Key> | null;
   /** The hidden crumbs' positions in the trail. */
   hiddenIndices: readonly number[];
+  /** Every middle crumb is hidden, so the first and current crumbs share what room is left. */
+  isCollapsed: boolean;
   containerRef: RefCallback<HTMLElement>;
   indicatorRef: RefCallback<HTMLElement>;
 }
@@ -51,8 +53,8 @@ export function toCrumbText(item: CrumbEntry, index: number): string {
 }
 
 /**
- * Which crumbs a trail collapsing into a menu keeps: the first and the current crumb, then as many
- * as fit from the current end. The others leave the trail but stay in its collection.
+ * Which crumbs a trail collapsing into a menu keeps: the first and the current crumb always, then as
+ * many as fit from the current end. The others leave the trail but stay in its collection.
  */
 export function useCrumbOverflow(items: readonly CrumbEntry[], isMenu: boolean): CrumbOverflow {
   const overflowKey = useId();
@@ -63,6 +65,8 @@ export function useCrumbOverflow(items: readonly CrumbEntry[], isMenu: boolean):
     items: keys,
     collapseFrom: 'start',
     getPriority: (_key, index) => (index === 0 || index === last ? 1 : 0),
+    // The endpoints never leave: with no room for them, they shrink and ellipsize instead.
+    minVisible: 2,
   });
   const visibleKeys = useMemo(() => {
     const visible = new Set<Key>(overflow.visibleItems);
@@ -74,6 +78,7 @@ export function useCrumbOverflow(items: readonly CrumbEntry[], isMenu: boolean):
     overflowKey,
     visibleKeys: collapses ? visibleKeys : null,
     hiddenIndices: keys.flatMap((key, index) => (hidden.has(key) ? [index] : [])),
+    isCollapsed: collapses && overflow.visibleItems.length === 2,
     containerRef: overflow.containerRef,
     indicatorRef: overflow.indicatorRef,
   };

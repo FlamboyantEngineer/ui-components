@@ -180,6 +180,52 @@ test.describe('Breadcrumb lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-BREADCRUMB-1.7 keeps the first and current crumbs, shrunk, in a trail narrower than them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('breadcrumb');
+    for (const state of ['default', 'disabled', 'right to left']) {
+      const trail = page.getByRole('navigation', { name: `Tiny trail, ${state}` });
+      const crumbs = trail.locator('.ui-breadcrumb__item:not(.ui-breadcrumb__overflow)');
+      await expect(crumbs).toHaveText(['Home', 'Lemon tart']);
+      await expect(trail).toHaveAttribute('data-collapsed', 'true');
+      await expect(trail.locator('[aria-current="page"]')).toHaveText('Lemon tart');
+      const list = await trail.locator('.ui-breadcrumb__list').boundingBox();
+      for (const label of await crumbs.locator('.ui-breadcrumb__label').all()) {
+        const box = await label.boundingBox();
+        expect(box?.width ?? 0).toBeGreaterThan(0);
+        expect(box?.x ?? 0).toBeGreaterThanOrEqual((list?.x ?? 0) - 0.5);
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+          (list?.x ?? 0) + (list?.width ?? 0) + 0.5,
+        );
+      }
+    }
+    const trail = page.getByRole('navigation', { name: 'Tiny trail, default' });
+    await trail.getByRole('button', { name: '4 more items' }).click();
+    await expect(page.getByRole('menuitem')).toHaveText([
+      'Recipes',
+      'Desserts',
+      'Tarts and pies',
+      'Citrus',
+    ]);
+    await page.getByRole('menuitem', { name: 'Citrus' }).click();
+    await expect(page).toHaveURL(/#citrus$/);
+
+    // Widening shows the middle crumbs again at their natural width; narrowing collapses them.
+    const frame = trail.locator('xpath=..');
+    await frame.evaluate((element: HTMLElement) => (element.style.width = '560px'));
+    await expect(trail.locator('.ui-breadcrumb__overflow')).toHaveCount(0);
+    await expect(trail).not.toHaveAttribute('data-collapsed');
+    await frame.evaluate((element: HTMLElement) => (element.style.width = '120px'));
+    await expect(trail).toHaveAttribute('data-collapsed', 'true');
+    await expect(trail.locator('.ui-breadcrumb__item:not(.ui-breadcrumb__overflow)')).toHaveText([
+      'Home',
+      'Lemon tart',
+    ]);
+    await lab.expectAccessible();
+  });
+
   test('UIC-BREADCRUMB-1.8 opens the places beside a crumb from the button after it', async ({
     page,
     lab,
