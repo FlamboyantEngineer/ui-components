@@ -8,11 +8,26 @@ import { capturePointer } from '../../utils/pointer-drag.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { measuredProperty } from '../../core/hooks.js';
 
-/** The direction a toast is swiped to dismiss it. */
-export type ToastSwipeDirection = 'up' | 'down' | 'left' | 'right';
+/**
+ * The direction a toast is swiped to dismiss it: `start` and `end` follow the reading direction,
+ * the others are physical.
+ */
+export type ToastSwipeDirection = 'up' | 'down' | 'left' | 'right' | 'start' | 'end';
+
+/** A swipe direction on the screen. */
+export type ToastSwipeEdge = Exclude<ToastSwipeDirection, 'start' | 'end'>;
+
+/** The screen direction of `direction` in a reading direction. */
+export function resolveSwipeDirection(
+  direction: ToastSwipeDirection,
+  readingDirection: 'ltr' | 'rtl',
+): ToastSwipeEdge {
+  if (direction !== 'start' && direction !== 'end') return direction;
+  return (direction === 'end') === (readingDirection === 'ltr') ? 'right' : 'left';
+}
 
 interface ToastSwipeOptions {
-  direction: ToastSwipeDirection;
+  direction: ToastSwipeEdge;
   /** Pixels a release must pass to dismiss. */
   threshold: number;
   onDismiss: () => void;
@@ -22,7 +37,7 @@ interface ToastSwipeOptions {
 const swipeSlop = 8;
 
 /** The pointer's travel toward `direction`, in pixels; negative when it moves the other way. */
-function toTravel(direction: ToastSwipeDirection, deltaX: number, deltaY: number): number {
+function toTravel(direction: ToastSwipeEdge, deltaX: number, deltaY: number): number {
   if (direction === 'right') return deltaX;
   if (direction === 'left') return -deltaX;
   return direction === 'down' ? deltaY : -deltaY;

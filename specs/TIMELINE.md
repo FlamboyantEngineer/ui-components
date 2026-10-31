@@ -76,18 +76,25 @@ Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts
 Implementation: `src/components/timeline/timeline.tsx`, `src/components/timeline/timeline-hooks.ts`
 Verification: `src/components/timeline/timeline.test.tsx`
 
+### UIC-TIMELINE-1.11 - Reading direction
+
+The time axis shall follow the provider locale's reading direction: right to left, time runs from the right edge to the left, with the row list and the corner pinned to the right. Bars, milestones, gridlines, scale cells and the today marker are offset from the axis's start edge (`right` right to left, `left` otherwise), dependency connectors are mirrored onto the flipped axis, and a bar's `start` handle sits at its right edge. The keys and the pointer follow the axis (UIC-TIMELINE-2.1, UIC-TIMELINE-2.2).
+
+Implementation: `src/components/timeline/timeline-chart.tsx`, `src/components/timeline/timeline-header.tsx`, `src/components/timeline/timeline-item.tsx`
+Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
+
 ## UIC-TIMELINE-2 - Editing and selection
 
 ### UIC-TIMELINE-2.1 - Pointer moves and resizes
 
-With `onItemChange`, a primary-button pointer drag on an item that is not `isReadOnly` shall capture the pointer and move the item by whole days (the pointer's travel divided by the pixels per day, rounded); a drag that starts on a bar's `ui-timeline__handle` (`data-edge` `start` or `end`, drawn only on movable bars) moves that end instead, never past the other. The item shows the days as it goes and publishes `data-dragging`; releasing the pointer calls `onItemChange({ id, start, end })` once when the days changed, and a cancelled drag drops them. Making the item read-only or removing `onItemChange` during a drag shall release capture, clear the draft and dragging state, and report no change. Re-enabling editing requires a new press. An item that leaves the chart during a drag (a switch to the table view, a collapsed group, a removed item) shall likewise discard its draft and report no change, so the chart shows the source dates again and the next pointer or keyboard edit starts from them. The owner applies the change to `items`. A press that travels 3 pixels or more does not select; a drag that is cancelled or loses capture leaves the next keyboard press on the item to select as usual.
+With `onItemChange`, a primary-button pointer drag on an item that is not `isReadOnly` shall capture the pointer and move the item by whole days (the pointer's travel divided by the pixels per day, rounded, toward the later end of the axis, which is the left right to left); a drag that starts on a bar's `ui-timeline__handle` (`data-edge` `start` or `end`, drawn only on movable bars) moves that end instead, never past the other. The item shows the days as it goes and publishes `data-dragging`; releasing the pointer calls `onItemChange({ id, start, end })` once when the days changed, and a cancelled drag drops them. Making the item read-only or removing `onItemChange` during a drag shall release capture, clear the draft and dragging state, and report no change. Re-enabling editing requires a new press. An item that leaves the chart during a drag (a switch to the table view, a collapsed group, a removed item) shall likewise discard its draft and report no change, so the chart shows the source dates again and the next pointer or keyboard edit starts from them. The owner applies the change to `items`. A press that travels 3 pixels or more does not select; a drag that is cancelled or loses capture leaves the next keyboard press on the item to select as usual.
 
 Implementation: `src/components/timeline/use-timeline-drag.ts`, `src/components/timeline/timeline-geometry.ts`, `src/components/timeline/timeline-item.tsx`
 Verification: `src/components/timeline/timeline.test.tsx`, `src/components/timeline/timeline-geometry.test.ts`, `e2e/timeline.spec.ts`
 
 ### UIC-TIMELINE-2.2 - Keyboard moves and resizes
 
-With `onItemChange`, Left and Right Arrow on a focused movable item shall move it one unit of the scale (a day, a week, a month or a quarter) back or forward, keeping a bar's length in days, and Shift with Left and Right Arrow shall move a bar's last day by one unit, never before its first; each key calls `onItemChange` with the new days. Shift with arrows does nothing on a milestone.
+With `onItemChange`, Left and Right Arrow on a focused movable item shall move it one unit of the scale (a day, a week, a month or a quarter) back or forward, mirrored right to left so the arrow points the way the item moves on the axis, keeping a bar's length in days, and Shift with Left and Right Arrow shall move a bar's last day by one unit, never before its first; each key calls `onItemChange` with the new days. Shift with arrows does nothing on a milestone.
 
 Implementation: `src/components/timeline/timeline-item.tsx`, `src/components/timeline/timeline-geometry.ts`, `src/utils/time-scale.ts`
 Verification: `src/components/timeline/timeline.test.tsx`, `src/components/timeline/timeline-geometry.test.ts`, `e2e/timeline.spec.ts`

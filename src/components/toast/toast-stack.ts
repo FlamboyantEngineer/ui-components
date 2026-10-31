@@ -24,7 +24,7 @@ import { useElementSize } from '../../utils/use-element-size.js';
 import type { ToastSwipeDirection } from './use-toast-swipe.js';
 
 export interface ToastStackSettings {
-  /** The direction a toast is swiped to dismiss it. Defaults to `right`. */
+  /** The direction a toast is swiped to dismiss it. Defaults to `end`, the reading direction's end. */
   swipeDirection?: ToastSwipeDirection | undefined;
   /** Pixels a swipe must travel to dismiss a toast. Defaults to 50. */
   swipeThreshold?: number | undefined;
@@ -53,7 +53,7 @@ interface ToastStackPosition {
 const defaultSwipeThreshold = 50;
 
 const ToastStackContext = createContext<ToastStackValue>({
-  swipeDirection: 'right',
+  swipeDirection: 'end',
   swipeThreshold: defaultSwipeThreshold,
   heights: new Map(),
   report: () => {},
@@ -67,7 +67,7 @@ export const ToastStackProvider = ToastStackContext.Provider;
  * their timers are paused.
  */
 export function useToastStack(
-  { swipeDirection = 'right', swipeThreshold = defaultSwipeThreshold }: ToastStackSettings,
+  { swipeDirection = 'end', swipeThreshold = defaultSwipeThreshold }: ToastStackSettings,
   isPaused = false,
 ): ToastStackValue {
   const [heights, setHeights] = useState<ReadonlyMap<string, number>>(() => new Map());

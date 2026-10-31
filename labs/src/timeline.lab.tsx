@@ -11,6 +11,7 @@ import {
   type TimelineView,
 } from '../../src/components/timeline/timeline.js';
 import type { Key } from '../../src/core/props.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -219,6 +220,25 @@ function ZoomCell({ scale, mode }: { scale: TimelineScale; mode: string }) {
   );
 }
 
+/** The dinner plan in a right-to-left locale: time runs from the right, keys and drags follow. */
+function RightToLeftCell() {
+  return (
+    <div dir="rtl" style={cellBox} data-lab-demo="rtl">
+      <UiProvider locale="he-IL">
+        <OwnedTimeline
+          aria-label="Dinner plan, right to left"
+          rows={smallRows}
+          dependencies={smallDependencies}
+          scale="day"
+          range={ranges.day}
+          today={today}
+          initialItems={smallItems}
+        />
+      </UiProvider>
+    </div>
+  );
+}
+
 function StateCell({ state }: { state: string }) {
   const props = {
     'aria-label': `Dinner plan, ${state}`,
@@ -317,6 +337,12 @@ mountLab(
         axes={{ state: ['selected', 'collapsed', 'no items'] }}
         render={({ state }) => <StateCell state={state} />}
       />
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left locale time runs from the right edge, the row names pin to the right, dependencies mirror, and Left Arrow or a drag to the left moves an item later."
+    >
+      <RightToLeftCell />
     </LabSection>
     <LabSection
       title="Project plan"

@@ -12,6 +12,7 @@ import {
   UNSTABLE_ToastStateContext as ToastStateContext,
   type QueuedToast,
   type ToastState,
+  useLocale,
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, measuredProperty, pickDataAttributes } from '../../core/hooks.js';
@@ -43,7 +44,7 @@ import {
   type ToastStackSettings,
 } from './toast-stack.js';
 import { useToastPresence, useToastSnapshot, useToastTimer } from './use-toast-lifecycle.js';
-import { useToastSwipe } from './use-toast-swipe.js';
+import { resolveSwipeDirection, useToastSwipe } from './use-toast-swipe.js';
 
 export type {
   ToastAction,
@@ -160,7 +161,9 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
   const isPaused = useIsStackPaused();
   useToastTimer(toast.timer, { lifecycle, snapshot }, isPaused);
   useToastPresence(lifecycle, isMounted);
-  const { index, offset, swipeDirection, swipeThreshold } = useToastStackPosition(toast.key, ref);
+  const { index, offset, swipeThreshold, ...stack } = useToastStackPosition(toast.key, ref);
+  const { direction } = useLocale();
+  const swipeDirection = resolveSwipeDirection(stack.swipeDirection, direction);
   const swipe = useToastSwipe({
     direction: swipeDirection,
     threshold: swipeThreshold,
