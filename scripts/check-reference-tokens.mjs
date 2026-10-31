@@ -200,6 +200,11 @@ for (const declaration of declarations) {
 }
 for (const file of files) {
   const css = stripComments(readFileSync(join(referenceDir, file), 'utf8'));
+  // Query thresholds share one unit, rem, with the type and control scales (UIC-LABS-3.7).
+  for (const match of css.matchAll(/@(?:container|media)\b[^{]*?\d+(?:\.\d+)?px/g)) {
+    const line = css.slice(0, match.index).split('\n').length;
+    problems.push(`labs/reference/${file}:${line}: a query threshold in px; use rem`);
+  }
   for (const match of css.matchAll(/@container\s+(?!ui-[\w-]+\s)/g)) {
     const line = css.slice(0, match.index).split('\n').length;
     problems.push(

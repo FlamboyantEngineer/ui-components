@@ -198,67 +198,67 @@
   --ref-steps-rail: 1;
   --ref-steps-text-align: start;
 }
-@container ui-steps (width < 160px) {
+@container ui-steps (width < 10rem) {
   .ui-steps:has(> :nth-child(2)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 240px) {
+@container ui-steps (width < 15rem) {
   .ui-steps:has(> :nth-child(3)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 320px) {
+@container ui-steps (width < 20rem) {
   .ui-steps:has(> :nth-child(4)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 400px) {
+@container ui-steps (width < 25rem) {
   .ui-steps:has(> :nth-child(5)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 480px) {
+@container ui-steps (width < 30rem) {
   .ui-steps:has(> :nth-child(6)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 560px) {
+@container ui-steps (width < 35rem) {
   .ui-steps:has(> :nth-child(7)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 640px) {
+@container ui-steps (width < 40rem) {
   .ui-steps:has(> :nth-child(8)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 720px) {
+@container ui-steps (width < 45rem) {
   .ui-steps:has(> :nth-child(9)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 800px) {
+@container ui-steps (width < 50rem) {
   .ui-steps:has(> :nth-child(10)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 880px) {
+@container ui-steps (width < 55rem) {
   .ui-steps:has(> :nth-child(11)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;
   }
 }
-@container ui-steps (width < 960px) {
+@container ui-steps (width < 60rem) {
   .ui-steps:has(> :nth-child(12)) > .ui-steps__item {
     --ref-steps-rail: 1;
     --ref-steps-text-align: start;

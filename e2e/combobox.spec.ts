@@ -365,12 +365,15 @@ test.describe('Combobox lab', () => {
     }).toPass();
     // Pause only once the list is open: the popover needs running timers to appear.
     await page.clock.pauseAt(Date.now() + 1000);
+    // A list whose end is already within a screen of view loads a page on opening; count from here.
+    const loaded = area.locator('[data-lab-output="loaded"]');
+    const before = Number(await loaded.textContent());
     await page.locator('.ui-combobox__listbox').evaluate((listbox) => {
       listbox.scrollTop = listbox.scrollHeight;
     });
     await expect(page.locator('.ui-combobox__load-more')).toHaveText('Loading');
     await page.clock.runFor(500);
-    await expect(area.locator('[data-lab-output="loaded"]')).toHaveText('40');
+    await expect(loaded).toHaveText(String(before + 20));
     await expect(page.getByRole('option', { name: 'Hanoi 30', exact: true })).toBeAttached();
     await page.clock.resume();
   });

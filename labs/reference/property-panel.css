@@ -230,13 +230,13 @@
   grid-column: 1 / 3;
 }
 
-@container ui-property-panel (width >= 520px) {
+@container ui-property-panel (width >= 32.5rem) {
   .ui-property-row {
     grid-template-columns: 128px minmax(0, 1fr) auto;
   }
 }
 
-@container ui-property-panel (width < 360px) {
+@container ui-property-panel (width < 22.5rem) {
   .ui-property-panel[data-label-layout='responsive'] .ui-property-row {
     grid-template-columns: minmax(0, 1fr) auto;
     padding-block: 4px;

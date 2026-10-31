@@ -85,7 +85,7 @@
   padding-inline-end: 8px;
 }
 
-@container ui-list-row (width <= 250px) {
+@container ui-list-row (width <= 15.625rem) {
   .ui-list-row__trailing {
     flex-basis: 100%;
     padding-inline: 8px;

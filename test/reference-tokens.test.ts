@@ -208,6 +208,14 @@ ${common}`,
 @container ui-card (width < 20rem) { .ui-card__body { display: block; } }`,
     });
     expect(named.stderr).not.toContain('container');
+    expect(named.stderr).not.toContain('threshold');
+    const pixels = check({
+      'card.css': `.ui-card { container: ui-card / inline-size; }
+@container ui-card (width < 320px) { .ui-card__body { display: block; } }
+@media (max-width: 700px) { .ui-card { display: block; } }`,
+    });
+    expect(pixels.stderr).toContain('card.css:2: a query threshold in px; use rem');
+    expect(pixels.stderr).toContain('card.css:3: a query threshold in px; use rem');
     const unnamed = check({
       'card.css': `.ui-card { container-type: inline-size; }
 @container (max-width: 20rem) { .ui-card__body { display: block; } }`,

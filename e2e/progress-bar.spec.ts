@@ -128,6 +128,8 @@ test.describe('Progress Bar lab', () => {
   });
 
   test('UIC-PROGRESS-BAR-2.2 keeps a named spinner inline in a sentence', async ({ page, lab }) => {
+    // A turning ring's box grows with its angle; measure it at rest.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await lab.open('progress-bar');
     const sentence = page
       .locator('[data-lab-family="progress-bar-main"]')
