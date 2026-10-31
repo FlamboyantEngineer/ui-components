@@ -1,8 +1,11 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
+import { resetLocalTimeZone, setLocalTimeZone } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { DateTimeField } from './date-time-field.js';
 
@@ -233,5 +236,97 @@ describe('DateTimeField time settings, zones and ranges', () => {
     await user.click(today);
     expect(onCommit).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Today' })).toBeInTheDocument();
+  });
+
+  describe('when the server and the browser are in different time zones', () => {
+    afterEach(() => resetLocalTimeZone());
+
+    function hourSegments(host: HTMLElement) {
+      return [...host.querySelectorAll('[data-type="hour"]')].map((part) => part.textContent);
+    }
+
+    /** Renders on a server in UTC, then hydrates in a browser in New York. */
+    async function hydrateAcrossZones(element: ReactElement) {
+      const host = document.body.appendChild(document.createElement('div'));
+      setLocalTimeZone('UTC');
+      host.innerHTML = renderToString(<UiProvider locale="en-US">{element}</UiProvider>);
+      const serverHours = hourSegments(host);
+      setLocalTimeZone('America/New_York');
+      const recoverable: unknown[] = [];
+      let app: ReturnType<typeof hydrateRoot> | undefined;
+      await act(async () => {
+        app = hydrateRoot(host, <UiProvider locale="en-US">{element}</UiProvider>, {
+          onRecoverableError: (error) => recoverable.push(error),
+        });
+      });
+      const unmount = () => {
+        act(() => app?.unmount());
+        host.remove();
+      };
+      return { host, serverHours, recoverable, unmount };
+    }
+
+    it.each([
+      { name: 'an offset', value: '2026-11-01T06:30:00Z' },
+      { name: 'a zoned', value: '2026-11-01T07:30:00+01:00[Europe/Paris]' },
+    ])(
+      'UIC-DATE-TIME-FIELD-1.2 hydrates $name value, then reads it in the browser zone',
+      async ({ value }) => {
+        const onChange = vi.fn();
+        const { host, serverHours, recoverable, unmount } = await hydrateAcrossZones(
+          <DateTimeField
+            label="Instant"
+            mode="date-time"
+            hourCycle={24}
+            defaultValue={value}
+            minValue="2026-10-01T00:00:00Z"
+            onChange={onChange}
+          />,
+        );
+        expect(serverHours).toEqual(['06']);
+        expect(recoverable).toEqual([]);
+        expect(hourSegments(host)).toEqual(['01']);
+        expect(onChange).not.toHaveBeenCalled();
+        unmount();
+      },
+    );
+
+    it('UIC-DATE-TIME-FIELD-1.2 hydrates both ends of a range and the previous value', async () => {
+      const onChange = vi.fn();
+      const { host, serverHours, recoverable, unmount } = await hydrateAcrossZones(
+        <DateTimeField
+          label="Window"
+          mode="date-time-range"
+          hourCycle={24}
+          value={{ start: '2026-11-01T06:30:00Z', end: '2026-11-01T09:00:00Z' }}
+          committedValue={{ start: '2026-11-01T05:00:00Z', end: '2026-11-01T09:00:00Z' }}
+          maxValue="2026-12-01T00:00:00Z"
+          onChange={onChange}
+        />,
+      );
+      expect(serverHours).toEqual(['06', '09']);
+      expect(recoverable).toEqual([]);
+      expect(hourSegments(host)).toEqual(['01', '04']);
+      expect(host.querySelector('.ui-date-time-field__previous')).toHaveTextContent(
+        'Nov 1, 2026, 01:00 – 04:00',
+      );
+      expect(onChange).not.toHaveBeenCalled();
+      unmount();
+    });
+
+    it('UIC-DATE-TIME-FIELD-1.2 keeps a floating value as written', async () => {
+      const { host, serverHours, recoverable, unmount } = await hydrateAcrossZones(
+        <DateTimeField
+          label="Local"
+          mode="date-time"
+          hourCycle={24}
+          defaultValue="2026-11-01T06:30"
+        />,
+      );
+      expect(serverHours).toEqual(['06']);
+      expect(recoverable).toEqual([]);
+      expect(hourSegments(host)).toEqual(['06']);
+      unmount();
+    });
   });
 });

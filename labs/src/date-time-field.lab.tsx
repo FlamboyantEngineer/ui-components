@@ -177,6 +177,14 @@ function Zones() {
         data-lab-field="zoned"
       />
       <DateTimeField
+        label="Launch"
+        mode="date-time"
+        defaultValue="2026-04-13T15:00:00Z"
+        description="An instant with an offset, shown as wall time in your time zone."
+        onCommit={setCommitted}
+        data-lab-field="offset"
+      />
+      <DateTimeField
         label="Shift"
         mode="date-time-range"
         timeZone="UTC"

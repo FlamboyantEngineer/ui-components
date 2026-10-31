@@ -4,6 +4,7 @@ import { useLocale } from '../../primitives/index.js';
 import type { Tone } from '../../core/props.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useTimeZone } from '../../core/clock.js';
 import {
   Field,
   useFieldControl,
@@ -29,6 +30,7 @@ import {
   type DateRangeValue,
   type DateTimeFieldGranularity,
   type DateTimeFieldMode,
+  type DateValueOptions,
 } from './date-values.js';
 import { dateTimeFieldHooks as hooks } from './date-time-field-hooks.js';
 
@@ -99,10 +101,13 @@ const controls = {
  * The field's own check: a value outside the bounds, or on a date `isDateUnavailable` refuses, is
  * invalid with a message naming the reason.
  */
-function useDateCheck(props: AnyDateTimeFieldProps, mode: DateTimeFieldMode) {
+function useDateCheck(
+  props: AnyDateTimeFieldProps,
+  mode: DateTimeFieldMode,
+  options: DateValueOptions,
+) {
   const strings = useUiStrings();
   const { locale } = useLocale();
-  const options = { timeZone: props.timeZone, granularity: props.granularity };
   return (value: DateFieldValue): FieldIssue | null => {
     const issue = findBoundIssue(value, mode, { ...props, ...options });
     if (issue) {
@@ -121,21 +126,19 @@ function useDateCheck(props: AnyDateTimeFieldProps, mode: DateTimeFieldMode) {
 
 function toSettings(
   props: AnyDateTimeFieldProps,
-  isPickable: (value: DateFieldValue) => boolean,
+  options: DateValueOptions & Pick<DateControlSettings, 'isPickable'>,
   state: Pick<FieldState<unknown>, 'isRequired' | 'canClear'>,
 ): DateControlSettings {
   return {
     isRequired: state.isRequired,
     canClear: state.canClear,
-    timeZone: props.timeZone,
-    granularity: props.granularity,
+    ...options,
     hourCycle: props.hourCycle,
     hideTimeZone: props.hideTimeZone,
     getDateState: props.getDateState,
     isDateUnavailable: createDateUnavailableCheck(props),
     presets: props.presets ?? [],
     calendarHeading: props.calendarHeading ?? 'text',
-    isPickable,
   };
 }
 
@@ -149,7 +152,14 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   const { locale } = useLocale();
   const all = props as AnyDateTimeFieldProps;
   const mode: DateTimeFieldMode = props.mode ?? 'date';
-  const check = useDateCheck(all, mode);
+  // Offset and zoned texts read in the provider's hydration-stable zone, so the server and the
+  // first client render agree; the browser's zone applies once the clock may be read.
+  const options = {
+    timeZone: all.timeZone,
+    localZone: useTimeZone(),
+    granularity: all.granularity,
+  };
+  const check = useDateCheck(all, mode, options);
   const empty = null as DateTimeFieldValue<M>;
   const { state, field } = useFieldControl<DateTimeFieldValue<M>, DateTimeFieldProps<M>>(props, {
     initialValue: empty,
@@ -160,16 +170,10 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   const committed = state.committedValue;
   const previous =
     state.isDirty && committed
-      ? formatDateValue(committed, mode, {
-          locale,
-          timeZone: props.timeZone,
-          granularity: all.granularity,
-          hourCycle: all.hourCycle,
-        })
+      ? formatDateValue(committed, mode, { ...options, locale, hourCycle: all.hourCycle })
       : null;
   const Control = controls[mode];
-  const normalize = (value: DateFieldValue) =>
-    normalizeDateValue(value, mode, { timeZone: all.timeZone, granularity: all.granularity });
+  const normalize = (value: DateFieldValue) => normalizeDateValue(value, mode, options);
   const pick = (picked: DateFieldValue) => {
     const value = normalize(picked);
     state.setValue(value as DateTimeFieldValue<M>);
@@ -191,7 +195,11 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
             state={state}
             mode={mode}
             bounds={props}
-            settings={toSettings(all, (value) => !check(normalize(value)), state)}
+            settings={toSettings(
+              all,
+              { ...options, isPickable: (value) => !check(normalize(value)) },
+              state,
+            )}
             previous={previous}
             onPick={pick}
           />

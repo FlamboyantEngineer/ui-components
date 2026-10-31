@@ -40,6 +40,11 @@ type SingleDateMode = 'date' | 'time' | 'date-time';
 export interface DateValueOptions {
   /** Edits dates and times in this IANA time zone, as zoned values, instead of floating ones. */
   timeZone?: string | undefined;
+  /**
+   * Without `timeZone`, the zone a floating value's wall clock is in: an offset or zoned text reads
+   * as wall time there (the local time zone by default).
+   */
+  localZone?: string | undefined;
   granularity?: DateTimeFieldGranularity | undefined;
 }
 
@@ -61,7 +66,7 @@ function toMoment(text: string, mode: SingleDateMode, options: DateValueOptions)
     return time ? ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 : null;
   }
   if (mode === 'date') return parseIsoDate(text)?.toDate('UTC').getTime() ?? null;
-  const value = parseIsoDateTime(text, options.timeZone);
+  const value = parseIsoDateTime(text, options.timeZone, options.localZone);
   if (!value) return null;
   return ('timeZone' in value ? value.toDate() : value.toDate('UTC')).getTime();
 }
@@ -96,7 +101,7 @@ function normalizeText(text: string, mode: SingleDateMode, options: DateValueOpt
       ? parseIsoDate(text)
       : mode === 'time'
         ? parseIsoTime(text)
-        : parseIsoDateTime(text, options.timeZone);
+        : parseIsoDateTime(text, options.timeZone, options.localZone);
   return value ? formatIsoDate(value, options.granularity) : text;
 }
 
@@ -143,7 +148,7 @@ function toCalendarDay(
   options: DateValueOptions = {},
 ): string | null {
   if (mode === 'date') return parseIsoDate(text)?.toString() ?? null;
-  const value = parseIsoDateTime(text, options.timeZone);
+  const value = parseIsoDateTime(text, options.timeZone, options.localZone);
   return value ? toCalendarDate(value).toString() : null;
 }
 
@@ -169,11 +174,12 @@ export function isUnavailableValue(
 }
 
 function toDate(text: string, mode: SingleDateMode, options: DateValueOptions): Date | null {
-  if (mode === 'date') return parseIsoDate(text)?.toDate(getLocalTimeZone()) ?? null;
+  const localZone = options.localZone ?? getLocalTimeZone();
+  if (mode === 'date') return parseIsoDate(text)?.toDate(localZone) ?? null;
   if (mode === 'date-time') {
-    const value = parseIsoDateTime(text, options.timeZone);
+    const value = parseIsoDateTime(text, options.timeZone, localZone);
     if (!value) return null;
-    return 'timeZone' in value ? value.toDate() : value.toDate(getLocalTimeZone());
+    return 'timeZone' in value ? value.toDate() : value.toDate(localZone);
   }
   const time = parseIsoTime(text);
   return time ? new Date(2000, 0, 1, time.hour, time.minute, time.second) : null;
@@ -190,11 +196,12 @@ function formatOptions(
   mode: SingleDateMode,
   options: FormatDateOptions,
 ): Intl.DateTimeFormatOptions {
-  if (mode === 'date') return { dateStyle: 'medium' };
+  if (mode === 'date') return { dateStyle: 'medium', timeZone: options.localZone };
   const timeStyle = options.granularity === 'second' ? 'medium' : 'short';
   const clock = options.hourCycle === undefined ? {} : { hour12: options.hourCycle === 12 };
   if (mode === 'time') return { timeStyle, ...clock };
-  return { dateStyle: 'medium', timeStyle, timeZone: options.timeZone, ...clock };
+  const timeZone = options.timeZone ?? options.localZone;
+  return { dateStyle: 'medium', timeStyle, timeZone, ...clock };
 }
 
 /**
