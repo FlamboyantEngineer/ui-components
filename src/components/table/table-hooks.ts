@@ -13,6 +13,7 @@ export const tableHooks = createHooks('table', [
   'header',
   'column-group',
   'column',
+  'column-content',
   'column-label',
   'sort-icon',
   'column-filter',

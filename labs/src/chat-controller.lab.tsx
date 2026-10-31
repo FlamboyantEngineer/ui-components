@@ -41,7 +41,7 @@ mountLab(
   <>
     <LabSection
       title="Fake agent"
-      description="Pick a behaviour and send a message. Messages sent while a reply runs wait in the queue; approvals and questions answer through the cards; files named broken… fail their first upload."
+      description="Pick a behaviour and send a message. Messages sent while a reply runs wait in the queue; approvals and questions answer through the cards; files named broken… fail their first upload. Streamed deltas reach the chat once per frame, however fast they arrive."
     >
       <ChatControllerDemo />
     </LabSection>

@@ -1,12 +1,14 @@
 'use client';
 
-import { Fragment, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { mergeRefs } from '../../utils/merge-props.js';
+import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { IconSource } from '../icon/icon.js';
@@ -57,122 +59,150 @@ const hooks = createHooks('toolbar-scroller', [
   'scroll-button',
 ]);
 
-interface MenuStripProps<T extends ToolbarScrollerItem> {
-  items: readonly T[];
-  renderItem: (item: T) => ReactNode;
-  stripProps: Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;
+const noItems: readonly never[] = Object.freeze([]);
+
+const focusSelectors = {
+  item: `.${hooks.slotClass('item')}`,
+  overflow: `.${hooks.slotClass('overflow')} button`,
+};
+
+/** The menu of the tools that do not fit, at the end of the strip. */
+function OverflowMenu<T extends ToolbarScrollerItem>({ hidden }: { hidden: readonly T[] }) {
+  const strings = useUiStrings();
+  return (
+    <div {...hooks.slot('overflow')}>
+      <DropdownMenu
+        iconOnly
+        size="sm"
+        placement="bottom end"
+        label={strings.moreItems(hidden.length)}
+        items={hidden.map(({ id, label, icon, isDisabled }) => ({ id, label, icon, isDisabled }))}
+        onAction={(key) => hidden.find((item) => item.id === key)?.onAction?.()}
+      />
+    </div>
+  );
 }
 
-/** The strip of a scroller that collapses tools into a menu: the tools that fit, then the menu. */
-function MenuStrip<T extends ToolbarScrollerItem>({
-  items,
-  renderItem,
-  stripProps,
-}: MenuStripProps<T>) {
-  const strings = useUiStrings();
-  const { containerRef, visibleItems, hiddenItems } = useOverflowItems({
-    items,
-    getPriority: (item) => item.priority ?? 0,
-  });
+/** The scroll button at `edge`, drawn only while the strip scrolls with scroll buttons. */
+function ScrollButton({
+  edge,
+  isShown,
+  isHidden,
+  onPage,
+}: {
+  edge: 'start' | 'end';
+  isShown: boolean;
+  isHidden: boolean;
+  onPage: (edge: 'start' | 'end') => void;
+}) {
+  if (!isShown) return null;
   return (
-    <Toolbar
-      {...stripProps}
-      ref={containerRef}
-      className={hooks.slotClass('strip')}
-      orientation="horizontal"
-    >
-      {visibleItems.map((item) => (
-        <div key={toKeyIdentity(item.id)} {...hooks.slot('item')}>
-          {renderItem(item)}
-        </div>
-      ))}
-      {hiddenItems.length > 0 ? (
-        <div {...hooks.slot('overflow')}>
-          <DropdownMenu
-            iconOnly
-            size="sm"
-            placement="bottom end"
-            label={strings.moreItems(hiddenItems.length)}
-            items={hiddenItems.map(({ id, label, icon, isDisabled }) => ({
-              id,
-              label,
-              icon,
-              isDisabled,
-            }))}
-            onAction={(key) => hiddenItems.find((item) => item.id === key)?.onAction?.()}
-          />
-        </div>
-      ) : null}
-    </Toolbar>
+    <ScrollStripButton
+      {...hooks.slot('scroll-button', { edge })}
+      edge={edge}
+      isHidden={isHidden}
+      onPress={onPage}
+    />
   );
 }
 
 /**
- * One horizontal row of tools that scrolls instead of squeezing them. A toolbar gives the tools
- * arrow-key focus; scroll buttons and decorative fades appear only at an edge that hides tools.
+ * The strip of either overflow mode: scrolling, or keeping the tools that fit and handing the
+ * others to the overflow menu. One strip serves both, with one ref.
+ */
+function useScrollerStrip<T extends ToolbarScrollerItem>(
+  isMenu: boolean,
+  items: readonly T[] | undefined,
+) {
+  const scroll = useToolbarScroll(!isMenu);
+  const collapse = useOverflowItems({
+    items: isMenu && items ? items : noItems,
+    getPriority: (item) => item.priority ?? 0,
+  });
+  const focusRef = useOverflowFocus(focusSelectors);
+  const { stripRef } = scroll;
+  const { containerRef } = collapse;
+  const ref = useMemo(
+    () => (isMenu ? mergeRefs(stripRef, containerRef, focusRef) : mergeRefs(stripRef, focusRef)),
+    [isMenu, stripRef, containerRef, focusRef],
+  );
+  return {
+    scroll,
+    ref,
+    edges: isMenu ? { start: false, end: false } : scroll.edges,
+    shown: isMenu ? collapse.visibleItems : items,
+    hidden: isMenu ? collapse.hiddenItems : noItems,
+  };
+}
+
+/**
+ * One horizontal row of tools that scrolls instead of squeezing them, or collapses the tools that
+ * do not fit into a menu. A toolbar gives the tools arrow-key focus; scroll buttons and decorative
+ * fades appear only at an edge that hides tools. Both overflow modes draw the tools in the same
+ * strip, so changing the mode keeps every tool that stays visible mounted, with its state and focus.
  */
 export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerItem>({
   children,
   scrollButtons = true,
   items,
   renderItem,
-  overflow = 'scroll',
+  overflow: requestedOverflow = 'scroll',
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   className,
   ...rest
 }: ToolbarScrollerProps<T>) {
-  const { stripRef, edges, syncOverflow, pageToward, onFocus } = useToolbarScroll();
-
-  const stripProps = { 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy };
-  if (overflow === 'menu' && items && renderItem) {
-    return (
-      <div {...rest} {...hooks.root({ className, props: rest, data: { overflow } })}>
-        <MenuStrip items={items} renderItem={renderItem} stripProps={stripProps} />
-      </div>
-    );
-  }
+  const isMenu = requestedOverflow === 'menu' && items !== undefined && renderItem !== undefined;
+  const { scroll, ref, edges, shown, hidden } = useScrollerStrip(isMenu, items);
+  const data = isMenu
+    ? { overflow: 'menu' }
+    : { overflow: 'scroll', overflowStart: edges.start, overflowEnd: edges.end };
+  const hasButtons = scrollButtons && !isMenu;
   return (
     <div
       {...rest}
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { overflow: 'scroll', overflowStart: edges.start, overflowEnd: edges.end },
-      })}
-      onFocus={onFocus}
+      {...hooks.root({ className, props: rest, data })}
+      onFocus={isMenu ? undefined : scroll.onFocus}
     >
-      {scrollButtons ? (
-        <ScrollStripButton
-          {...hooks.slot('scroll-button', { edge: 'start' })}
-          edge="start"
-          isHidden={!edges.start}
-          onPress={pageToward}
-        />
-      ) : null}
+      <ScrollButton
+        edge="start"
+        isShown={hasButtons}
+        isHidden={!edges.start}
+        onPage={scroll.pageToward}
+      />
       <Toolbar
-        ref={stripRef}
+        ref={ref}
         className={hooks.slotClass('strip')}
         orientation="horizontal"
-        {...stripProps}
-        onScroll={syncOverflow}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        onScroll={isMenu ? undefined : scroll.syncOverflow}
       >
-        {items && renderItem
-          ? items.map((item) => (
-              <Fragment key={toKeyIdentity(item.id)}>{renderItem(item)}</Fragment>
+        {shown && renderItem
+          ? shown.map((item) => (
+              <div key={toKeyIdentity(item.id)} {...hooks.slot('item')}>
+                {renderItem(item)}
+              </div>
             ))
           : children}
+        {hidden.length > 0 ? <OverflowMenu hidden={hidden} /> : null}
       </Toolbar>
-      <span {...hooks.slot('fade', { edge: 'start' })} aria-hidden="true" hidden={!edges.start} />
-      <span {...hooks.slot('fade', { edge: 'end' })} aria-hidden="true" hidden={!edges.end} />
-      {scrollButtons ? (
-        <ScrollStripButton
-          {...hooks.slot('scroll-button', { edge: 'end' })}
-          edge="end"
-          isHidden={!edges.end}
-          onPress={pageToward}
-        />
-      ) : null}
+      {isMenu ? null : (
+        <>
+          <span
+            {...hooks.slot('fade', { edge: 'start' })}
+            aria-hidden="true"
+            hidden={!edges.start}
+          />
+          <span {...hooks.slot('fade', { edge: 'end' })} aria-hidden="true" hidden={!edges.end} />
+        </>
+      )}
+      <ScrollButton
+        edge="end"
+        isShown={hasButtons}
+        isHidden={!edges.end}
+        onPage={scroll.pageToward}
+      />
     </div>
   );
 }

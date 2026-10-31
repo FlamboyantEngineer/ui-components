@@ -262,6 +262,25 @@ function LeavingPageDemo() {
   );
 }
 
+const listQueue = createToastQueue({ defaultTimeout: 0 });
+for (const [index, tone] of tones.entries()) {
+  listQueue.add({
+    tone,
+    title: titles[tone],
+    description: index === 1 ? 'Changes to the city list were kept.' : undefined,
+    action: index === 3 ? { label: 'Retry', onAction: () => {} } : undefined,
+  });
+}
+
+/** Four permanent toasts in a narrow list placed in the page: every one shows, none is piled. */
+function InPlaceListDemo() {
+  return (
+    <div data-lab-demo="in-place-list" style={{ width: 280 }}>
+      <ToastList queue={listQueue} />
+    </div>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -353,6 +372,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="List in place"
+      description="A ToastList with four permanent toasts in a 280-pixel column. A list in place never piles: every toast, its action and its dismiss button show in the flow and take focus in order."
+    >
+      <InPlaceListDemo />
     </LabSection>
     <LabSection
       title="Live region"

@@ -59,7 +59,7 @@ Verification: `src/utils/pointer-drag.test.tsx`
 
 ### UIC-DRAG-INTERACTIONS-2.3 - Item moves
 
-Tabs, board columns and editor steps shall share one native item drag implementation. It shall advertise a move and its media type, record and clear the dragged key, validate each landing against the latest move resolver, publish the accepted move's position, clear it on exit or drop, and report only accepted drops. A disabled tab may remain a drop target. The before and after halves shall follow orientation and reading direction.
+Tabs, board columns, editor steps and table columns shall share one native item drag implementation. It shall advertise a move and its media type, record and clear the dragged key, validate each landing against the latest move resolver, publish the accepted move's position, clear it on exit or drop, and report only accepted drops. A disabled tab may remain a drop target. The before and after halves shall follow orientation and reading direction.
 
 Implementation: `src/utils/use-item-drag.ts`, `src/utils/pointer-drag.ts`, `src/utils/use-drag-type.ts`
-Verification: `src/components/tabs/tab-reorder.test.tsx`, `src/components/board/board.test.tsx`, `src/components/step-list-editor/step-list-editor.test.tsx`
+Verification: `src/components/tabs/tab-reorder.test.tsx`, `src/components/board/board.test.tsx`, `src/components/step-list-editor/step-list-editor.test.tsx`, `src/components/table/use-column-reorder.test.tsx`

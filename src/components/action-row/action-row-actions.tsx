@@ -8,6 +8,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import type { ButtonSize } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -20,7 +21,6 @@ import {
   type MenuItemEntry,
   type MenuSize,
 } from '../menu/menu.js';
-import { useActionFocus } from './use-action-focus.js';
 import { useActionPending, type ActionPress } from './use-action-pending.js';
 import { toActionContent, toActionKey, type ActionRowAction } from './action-verbs.js';
 
@@ -34,6 +34,11 @@ interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 
 }
 
 const hooks = createHooks('action-row', ['actions', 'action', 'overflow']);
+
+const focusSelectors = {
+  item: `.${hooks.slotClass('action')}`,
+  overflow: `.${hooks.slotClass('overflow')} button`,
+};
 
 /** An action without a menu presses and states its own popup; a menu trigger leaves both to the menu. */
 function toPressProps(
@@ -186,7 +191,7 @@ export function ActionRowActions({
   const { containerRef, visibleItems, hiddenItems } = useOverflowItems({
     items: isCollapsing ? actions : [],
   });
-  const focusRef = useActionFocus();
+  const focusRef = useOverflowFocus(focusSelectors);
   const toPress = useActionPending();
   const toKeyed = (action: ActionRowAction): KeyedAction => {
     const key = toActionKey(action);

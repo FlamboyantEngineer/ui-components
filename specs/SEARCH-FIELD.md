@@ -1,6 +1,6 @@
 # Search Field
 
-`SearchField` is a search or filter box, built on React Aria's `SearchField`: a search glyph, the query input, a spinner while results load and a clear button while it holds text. The query filters or finds; it is not a stored value, so the search box has no field around it (no dirty state, undo or field menu), but it can draw its label, a description and an error message around the box. A value that is stored is a [Text Field](TEXT-FIELD.md); text completed from suggestions the control shows is a [Combobox](COMBOBOX.md).
+`SearchField` is a search or filter box, built on React Aria's `SearchField`: a search glyph, the query input, a spinner while results load and a clear button while it holds text. The query filters or finds; it is not a stored value, so the search box has no field around it (no dirty state, undo or field menu), but it checks its query in the field vocabulary (`validate` returns [field issues](FIELD.md)) and can draw its label, a description and the field's message region around the box. A value that is stored is a [Text Field](TEXT-FIELD.md); text completed from suggestions the control shows is a [Combobox](COMBOBOX.md).
 
 ## UIC-SEARCH-FIELD-1 - Contract
 
@@ -50,7 +50,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 
 ### UIC-SEARCH-FIELD-2.2 - Description and error message
 
-In the `label-control` layout, `description` shall render below the box (`ui-search-field__description`) and describe the input, and an error message (`ui-search-field__error`) shall show while the query is invalid: `errorMessage`, or else the messages of `validate`. The query is invalid while `isInvalid` is set or `validate` (`SearchFieldValidate`) returns a message or a list of messages for it; it is valid while `validate` returns `true`, `null` or nothing. `validationBehavior` (`native` by default) also reports `validate`'s error to the browser's constraint validation; `aria` reports it through ARIA only. The error message describes the input after the description.
+In the `label-control` layout, `description` shall render below the box (`ui-search-field__description`) and describe the input. `validate` checks the query as a field's `validate` does (UIC-FIELD-3.1): it returns `FieldIssues`, where an `error` makes the query invalid and a `warning` only advises. The root publishes the status as `data-validation` (`valid`, `invalid` or `warning`) and, while invalid, `data-invalid` on the root, the group and the input, which is `aria-invalid`. In the `label-control` layout the first message shows in the field's message region (`ui-search-field__message`, carrying `data-severity` `error` or `warning`), a polite live region that stays in the document and describes the input after the description while it holds a message. `validationBehavior` keeps the field default, `aria`; `native` also gives an error to the input's constraint validation, so a form submit is refused while the query is invalid.
 
 Implementation: `src/components/search-field/search-field.tsx`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
@@ -74,10 +74,12 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 | `ui-search-field__spinner`     | slot      |                                 | The busy indicator.                                                 |
 | `ui-search-field__clear`       | slot      |                                 | The clear button (also `ui-button`, or `ui-button`).                |
 | `ui-search-field__description` | slot      |                                 | The description of the `label-control` layout.                      |
-| `ui-search-field__error`       | slot      |                                 | The error message of the `label-control` layout.                    |
+| `ui-search-field__message`     | slot      |                                 | The validation message region of the `label-control` layout.        |
 | `data-size`                    | attribute | `xs`, `sm`, `md`, `lg`          | On the root: box size.                                              |
 | `data-label-layout`            | attribute | `control-only`, `label-control` | On the root: where the label sits.                                  |
 | `data-pending`                 | state     | `true`                          | On the root: results are loading.                                   |
+| `data-validation`              | state     | `valid`, `invalid`, `warning`   | On the root: the query's validation status.                         |
+| `data-severity`                | state     | `error`, `warning`              | On the message: the severity of the message shown.                  |
 | `data-empty`                   | state     | `true`                          | On the root: the query is empty (React Aria).                       |
 | `data-disabled`                | state     | `true`                          | On the root, the group and the input: disabled (React Aria).        |
 | `data-readonly`                | state     | `true`                          | On the root: read-only (React Aria).                                |
