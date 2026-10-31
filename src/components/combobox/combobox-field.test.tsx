@@ -76,6 +76,49 @@ describe('Combobox entry', () => {
     expect(input()).toHaveValue('Apple');
   });
 
+  it('UIC-COMBOBOX-3.4 leaves an edit inside the text and its caret alone', async () => {
+    const user = userEvent.setup();
+    const items = [{ id: 'abcd', label: 'abcd' }];
+    render(
+      <Combobox
+        aria-label="Letters"
+        defaultItems={items}
+        defaultInputValue="ac"
+        completesInline
+        autoHighlight
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{End}{ArrowLeft}b');
+    expect(input()).toHaveValue('abc');
+    expect(input().selectionStart).toBe(2);
+    expect(input().selectionEnd).toBe(2);
+    await user.keyboard('x');
+    expect(input()).toHaveValue('abxc');
+    expect(input().selectionStart).toBe(3);
+    // Replacing a selection inside the text does not complete either.
+    input().setSelectionRange(1, 3);
+    await user.keyboard('b');
+    expect(input()).toHaveValue('abc');
+    expect(input().selectionStart).toBe(2);
+    await user.keyboard('{Delete}');
+    expect(input()).toHaveValue('ab');
+    expect(highlighted()).toBe('abcd');
+  });
+
+  it('UIC-COMBOBOX-3.4 completes text typed or pasted at the end', async () => {
+    const user = userEvent.setup();
+    render(<Combobox aria-label="Fruit" defaultItems={fruit} completesInline />);
+    await user.click(input());
+    await user.paste('le');
+    expect(input()).toHaveValue('lemon');
+    expect(input().selectionStart).toBe(2);
+    expect(input().selectionEnd).toBe(5);
+    await user.keyboard('m');
+    expect(input()).toHaveValue('lemon');
+    expect(input().selectionStart).toBe(3);
+  });
+
   it('UIC-COMBOBOX-3.4 finds completions and first options from the suggestions', () => {
     const options = flattenOptions(fruit);
     expect(findCompletion(options, 'Le')).toEqual({ typed: 'Le', text: 'Lemon', key: 'lemon' });

@@ -129,7 +129,7 @@ Verification: `src/components/combobox/combobox-field.test.tsx`, `e2e/combobox.s
 
 ### UIC-COMBOBOX-3.4 - Inline completion
 
-With `completesInline`, typing that inserts text shall complete it in the input with the rest of the label of the first enabled option, in list order, whose label starts with the typed text (ignoring case), keeping the typed characters as typed and selecting the added part, so the next keystroke replaces it; that option is highlighted, so Enter or Tab picks it. Deleting text never completes it again until the next insertion, and text composition is left alone. The list stays filtered by the typed text rather than the completion; the input publishes `aria-autocomplete="both"`.
+With `completesInline`, typing or pasting that inserts text and leaves the caret at the end of the input shall complete it in the input with the rest of the label of the first enabled option, in list order, whose label starts with the typed text (ignoring case), keeping the typed characters as typed and selecting the added part, so the next keystroke replaces it; that option is highlighted, so Enter or Tab picks it. An insertion or replacement inside the text keeps its caret and completes nothing, deleting text never completes it again until the next insertion at the end, and text composition is left alone. The list stays filtered by the typed text rather than the completion; the input publishes `aria-autocomplete="both"`.
 
 Implementation: `src/components/combobox/combobox-field.tsx`, `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-effects.ts`, `src/components/combobox/combobox-options.ts`
 Verification: `src/components/combobox/combobox-field.test.tsx`, `e2e/combobox.spec.ts`
