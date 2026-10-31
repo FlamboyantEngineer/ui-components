@@ -235,8 +235,10 @@ const componentImports = {
     schema: [],
   },
   create(context) {
-    const own = context.filename.match(COMPONENT_FILE)?.[1];
-    const isLab = LAB_FILE.test(context.filename);
+    // ESLint passes native paths, with backslashes on Windows.
+    const filename = context.filename.replaceAll('\\', '/');
+    const own = filename.match(COMPONENT_FILE)?.[1];
+    const isLab = LAB_FILE.test(filename);
     if (!own && !isLab) return {};
     function check(node, source) {
       if (typeof source !== 'string') return;

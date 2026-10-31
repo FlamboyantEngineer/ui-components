@@ -25,7 +25,8 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -50,7 +51,7 @@ const richTextPeers = [
 
 const dependency =
   process.argv[2] ??
-  `git+file://${root}#${execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()}`;
+  `git+${pathToFileURL(root).href}#${execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()}`;
 const workDir = mkdtempSync(join(tmpdir(), 'ui-git-install-'));
 const consumer = join(workDir, 'consumer');
 
@@ -106,7 +107,7 @@ export const unknown: ComponentProps<typeof Button> = { notAProp: true };
 const problems = [];
 
 function npm(args) {
-  execFileSync('npm', [...args, '--no-audit', '--no-fund'], {
+  runNpm([...args, '--no-audit', '--no-fund'], {
     cwd: consumer,
     stdio: 'inherit',
     // An empty cache per install, so npm prepares the package instead of reusing a packed copy.

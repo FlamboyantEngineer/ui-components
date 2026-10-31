@@ -15,6 +15,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { labsDir, listLabPages, root } from './lib/labs.mjs';
+import { createTarGz, extractTarGz } from './lib/tar.mjs';
 
 const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const destination = resolve(process.argv[2] ?? root);
@@ -46,10 +47,10 @@ const workDir = mkdtempSync(join(tmpdir(), 'ui-labs-package-'));
 mkdirSync(destination, { recursive: true });
 try {
   const archive = join(workDir, filename);
-  execFileSync('tar', ['-czf', archive, '-C', root, ...entries]);
+  createTarGz(archive, root, entries);
   const extract = join(workDir, 'extract');
   mkdirSync(extract);
-  execFileSync('tar', ['-xzf', archive, '-C', extract]);
+  extractTarGz(archive, extract);
   for (const file of required) {
     if (statSync(join(extract, 'labs', file)).size === 0) throw new Error(`Empty labs/${file}`);
   }

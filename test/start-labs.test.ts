@@ -26,8 +26,8 @@ afterEach(() => {
 function checkout(files: Record<string, number>) {
   const fixture = mkdtempSync(join(tmpdir(), 'ui-lab-start-'));
   fixtures.push(fixture);
-  for (const script of ['start-labs.mjs', 'serve-labs.mjs']) {
-    mkdirSync(join(fixture, 'scripts'), { recursive: true });
+  mkdirSync(join(fixture, 'scripts', 'lib'), { recursive: true });
+  for (const script of ['start-labs.mjs', 'serve-labs.mjs', 'lib/npm.mjs']) {
     copyFileSync(join(process.cwd(), 'scripts', script), join(fixture, 'scripts', script));
   }
   for (const [path, seconds] of Object.entries(files)) {
