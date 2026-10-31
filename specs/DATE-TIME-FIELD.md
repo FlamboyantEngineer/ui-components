@@ -91,7 +91,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-3.1 - Unavailable dates
 
-`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date (any day in a range) stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. Only a range's ends are refused: the calendar picks, and the field keeps, a range whose ends are available whatever days it spans. A value outside the bounds reports the bound instead.
+`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. A range is refused when any day it spans is unavailable, its ends and every day between them included, whether it is typed, picked in the calendar or chosen as a preset. A value outside the bounds reports the bound instead.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/core/strings.ts`
 Verification: `src/components/date-time-field/date-time-presets.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
