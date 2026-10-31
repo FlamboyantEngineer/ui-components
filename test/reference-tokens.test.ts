@@ -202,6 +202,17 @@ ${common}`,
     expect(result.stderr).not.toContain('card.css:4');
   });
 
+  it('UIC-LABS-3.5 checks the base outside its token blocks', () => {
+    const result = check(
+      { 'card.css': `.ui-card { color: var(--ref-text); background: var(--ref-canvas); }` },
+      `${base}.ui-card__title { font-weight: 500; color: var(--ref-accent); border-radius: var(--ref-radius); font-size: var(--ref-font-size-sm); }
+@media (prefers-reduced-motion: reduce) { .ui-card { transition-duration: 0s !important; } }`,
+    );
+    expect(result.stderr).toContain('base.css:12: font-weight "500" is not a weight token');
+    expect(result.stderr).not.toContain('literal duration');
+    expect(result.stderr).not.toContain('base.css:2');
+  });
+
   it('UIC-LABS-3.1 names every container and every container query', () => {
     const named = check({
       'card.css': `.ui-card { container: ui-card / inline-size; }
