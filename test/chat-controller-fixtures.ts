@@ -68,10 +68,14 @@ export function createTestSend() {
 
 /** Lets pending promises and the events they stream settle, inside `act`. */
 export function settle(): Promise<void> {
-  return act(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+  return act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    // The controller writes streamed events to the conversation once per frame.
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
 }
 
-/** Pushes events into a stream and lets them settle. */
+/** Pushes events into a stream and lets them settle, through the next frame's write. */
 export async function push(stream: TestStream, ...events: ChatStreamEvent[]): Promise<void> {
   stream.push(...events);
   await settle();
