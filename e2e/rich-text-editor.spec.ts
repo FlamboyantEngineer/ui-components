@@ -596,4 +596,54 @@ test.describe('Rich Text Editor lab', () => {
     await page.keyboard.type(' Early.');
     await expect(box).toHaveText('Pick the pears on Friday. Early.');
   });
+
+  test('UIC-RICH-TEXT-EDITOR-7.1 keeps the floating toolbar over its selection when the layout moves', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'shifting');
+    const floating = page.getByRole('toolbar', { name: 'Moving note formatting' });
+    const selectedRect = () =>
+      box.evaluate(() => {
+        const rect = document.getSelection()?.getRangeAt(0).getBoundingClientRect();
+        return { left: rect?.left ?? 0, top: rect?.top ?? 0, right: rect?.right ?? 0 };
+      });
+    const expectAttached = async () => {
+      await expect
+        .poll(async () => {
+          const range = await selectedRect();
+          const toolbar = await floating.boundingBox();
+          if (!toolbar) return 'hidden';
+          const above = Math.abs(toolbar.y + toolbar.height - range.top) <= 12;
+          const beside =
+            toolbar.x <= range.right + 8 && toolbar.x + toolbar.width >= range.left - 8;
+          return above && beside
+            ? 'attached'
+            : `toolbar ${JSON.stringify(toolbar)} range ${JSON.stringify(range)}`;
+        })
+        .toBe('attached');
+    };
+    await box.click();
+    await pressEnd(page);
+    await page.keyboard.press('Control+Shift+ArrowLeft');
+    await expect(floating).toBeVisible();
+    await expectAttached();
+    const before = await floating.boundingBox();
+    await page.getByRole('button', { name: 'Lower' }).click();
+    await expect(box).toBeFocused();
+    await expectAttached();
+    expect(((await floating.boundingBox())?.y ?? 0) - (before?.y ?? 0)).toBeGreaterThan(140);
+    await page.getByRole('button', { name: 'Narrow' }).click();
+    await expectAttached();
+    await page.setViewportSize({ width: 700, height: 700 });
+    await expectAttached();
+    // Scrolled out of the window, the range has nothing to show the toolbar with; scrolled back,
+    // it does again.
+    const { top } = await selectedRect();
+    await page.evaluate((offset) => window.scrollBy(0, offset), top + 400);
+    await expect(floating).toHaveCount(0);
+    await page.evaluate((offset) => window.scrollBy(0, -offset), top + 400);
+    await expectAttached();
+  });
 });

@@ -6,6 +6,7 @@ import {
   useEditorState,
 } from '@handlewithcare/react-prosemirror';
 import { TextSelection } from 'prosemirror-state';
+import type { EditorView } from 'prosemirror-view';
 import { useRef, useState, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { Popover, useLocale, type Placement } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -21,6 +22,7 @@ import { useRichTextController } from './rich-text-controller.js';
 import { useFocusReturn } from './use-focus-return.js';
 import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
 import { isElement } from '../../utils/is-element.js';
+import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 
 export interface SelectionToolbarProps extends BaseProps, AriaLabellingProps {
   /** Controls after the marks and the link button. */
@@ -30,6 +32,8 @@ export interface SelectionToolbarProps extends BaseProps, AriaLabellingProps {
 interface SelectionBox {
   key: string;
   rect: DOMRect;
+  /** Whether any of the range shows in the window, so the toolbar has something to stay with. */
+  isVisible: boolean;
 }
 
 const hooks = createHooks('selection-toolbar', ['row', 'link-editor']);
@@ -52,22 +56,50 @@ function useFollowedPlacement(key: string): Placement {
   return direction === 'rtl' ? 'top right' : 'top left';
 }
 
-/** The viewport box of a selected text range, or null for a caret or a node selection. */
+/** The viewport box of the selected text range, or null for a caret or a node selection. */
+function measureSelection(view: EditorView, current: SelectionBox | null): SelectionBox | null {
+  const { selection } = view.state;
+  if (selection.empty || !(selection instanceof TextSelection)) return null;
+  const start = view.coordsAtPos(selection.from);
+  const end = view.coordsAtPos(selection.to);
+  const [left, right] = [Math.min(start.left, end.left), Math.max(start.right, end.right)];
+  const key = `${selection.from}:${selection.to}:${left}:${start.top}:${right}:${end.bottom}`;
+  if (current?.key === key) return current;
+  const window = view.dom.ownerDocument.defaultView;
+  const content = view.dom.getBoundingClientRect();
+  // Edges count: a range touching the visible content still has the toolbar.
+  const isVisible =
+    end.bottom >= Math.max(0, content.top) &&
+    start.top <= Math.min(window?.innerHeight ?? Infinity, content.bottom) &&
+    right >= Math.max(0, content.left) &&
+    left <= Math.min(window?.innerWidth ?? Infinity, content.right);
+  return {
+    key,
+    rect: new DOMRect(left, start.top, right - left, end.bottom - start.top),
+    isVisible,
+  };
+}
+
+/**
+ * The selected range's box, measured again after each state change and, while there is a range,
+ * whenever the layout may have moved it: a scroll, a window resize, the content resizing or moving
+ * (a sidebar opening, wrapping, fonts loading), at most once per animation frame.
+ */
 function useSelectionBox(): SelectionBox | null {
   const state = useEditorState();
   const [box, setBox] = useState<SelectionBox | null>(null);
+  useEditorEffect((view) => setBox((current) => measureSelection(view, current)), [state]);
+  const hasRange = box !== null;
   useEditorEffect(
     (view) => {
-      const { selection } = view.state;
-      if (selection.empty || !(selection instanceof TextSelection)) return setBox(null);
-      const start = view.coordsAtPos(selection.from);
-      const end = view.coordsAtPos(selection.to);
-      const [left, right] = [Math.min(start.left, end.left), Math.max(start.right, end.right)];
-      const key = `${selection.from}:${selection.to}:${left}:${start.top}:${right}:${end.bottom}`;
-      const rect = new DOMRect(left, start.top, right - left, end.bottom - start.top);
-      setBox((current) => (current?.key === key ? current : { key, rect }));
+      if (!hasRange) return undefined;
+      return autoUpdateOverlay({
+        anchor: view.dom,
+        everyFrame: true,
+        update: () => setBox((current) => measureSelection(view, current)),
+      });
     },
-    [state],
+    [hasRange],
   );
   return box;
 }
@@ -90,6 +122,7 @@ export function SelectionToolbar({ className, children, ...rest }: SelectionTool
   const placement = useFollowedPlacement(box?.key ?? '');
   const isOpen =
     box !== null &&
+    box.isVisible &&
     controller.isEditable &&
     dismissed !== box.key &&
     (hasEditorFocus || hasOwnFocus);

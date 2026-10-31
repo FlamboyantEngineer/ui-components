@@ -11,6 +11,7 @@ import {
   FormEditor,
   RequiredEditor,
   FullEditor,
+  ShiftingEditor,
   LockedChromeEditor,
   LongDocumentEditor,
   shortNote,
@@ -53,6 +54,12 @@ mountLab(
       description="Type a slash and a command label or keyword; equally good matches keep their menu order."
     >
       <FullEditor />
+    </LabSection>
+    <LabSection
+      title="Floating toolbar on a moving editor"
+      description="Lower moves the editor down and Narrow rewraps it, without an edit or a new selection: the floating toolbar stays over the selected word."
+    >
+      <ShiftingEditor />
     </LabSection>
     <LabSection
       title="Locking open chrome"
