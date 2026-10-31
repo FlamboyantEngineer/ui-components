@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ModalHost,
@@ -107,6 +107,46 @@ function Results() {
   );
 }
 
+const workspaces = { North: createModalController(), South: createModalController() };
+
+/** Two workspaces, each with its own controller; one host shows the current one's modals. */
+function Workspaces() {
+  const [current, setCurrent] = useState<keyof typeof workspaces>('North');
+  const [isSwitching, setSwitching] = useState(false);
+  useEffect(() => {
+    if (!isSwitching) return undefined;
+    // Lab-only stand-in for the host switching workspace while a modal is open.
+    const timer = setTimeout(() => {
+      setSwitching(false);
+      setCurrent((name) => (name === 'North' ? 'South' : 'North'));
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [isSwitching]);
+  const openNote = (name: keyof typeof workspaces) =>
+    workspaces[name].open({
+      title: `${name} note`,
+      'data-lab-modal': `${name.toLowerCase()}-note`,
+      content: <input aria-label="Note" defaultValue={`${name} default`} />,
+      primaryAction: { label: 'Save', onPress: (close) => close() },
+    });
+  return (
+    <div data-lab-demo="workspaces">
+      <p>Showing: {current}</p>
+      <Button
+        size="sm"
+        onPress={() => {
+          if (workspaces.South.getSnapshot().length === 0) openNote('South');
+          setSwitching(true);
+          openNote(current);
+        }}
+      >
+        Edit a note, then switch workspace
+      </Button>
+      <ModalHost controller={workspaces[current]} />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -160,6 +200,12 @@ mountLab(
       >
         Open two at once
       </Button>
+    </LabSection>
+    <LabSection
+      title="Switching controllers"
+      description="Each workspace has its own controller and both number their first modal the same. Edit the North note: two seconds later the host shows the South workspace, whose note opens fresh with its own default."
+    >
+      <Workspaces />
     </LabSection>
     <ModalHost controller={controller} />
   </>,

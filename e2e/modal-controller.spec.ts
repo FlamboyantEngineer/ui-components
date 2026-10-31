@@ -113,4 +113,15 @@ test.describe('Modal Controller lab', () => {
     await expect(page.getByRole('dialog', { name: 'Pick a colour' })).toBeVisible();
     await lab.expectAccessible('.ui-modal');
   });
+
+  test("UIC-MODAL-CONTROLLER-2.3 shows another controller's modal fresh", async ({ page, lab }) => {
+    await lab.open('modal-controller');
+    await page.getByRole('button', { name: 'Edit a note, then switch workspace' }).click();
+    const north = page.getByRole('dialog', { name: 'North note' });
+    await north.getByRole('textbox', { name: 'Note' }).fill('North draft');
+    const south = page.getByRole('dialog', { name: 'South note' });
+    await expect(south).toBeVisible();
+    await expect(south.getByRole('textbox', { name: 'Note' })).toHaveValue('South default');
+    await expect(north).toHaveCount(0);
+  });
 });
