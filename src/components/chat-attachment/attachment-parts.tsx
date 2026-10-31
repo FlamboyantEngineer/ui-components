@@ -1,7 +1,7 @@
 'use client';
 
 import { CloseGlyph, DownloadGlyph, type GlyphComponent } from '../../core/glyphs.js';
-import { useContext, useState, type RefObject } from 'react';
+import { useCallback, useContext, useState, type RefObject } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';
@@ -26,12 +26,15 @@ export const chatAttachmentHooks = createHooks('chat-attachment', [
 
 const hooks = chatAttachmentHooks;
 
-/** The image to show, until it fails to load: a broken image falls back to the file chip. */
+/**
+ * The image to show, until it fails to load: a broken image falls back to the file chip. Only the
+ * src that failed is broken, so an error of a departed src never hides the current one.
+ */
 export function useThumbnail(src: string | undefined) {
   const [brokenSrc, setBrokenSrc] = useState<string | undefined>(undefined);
   return {
     src: src === brokenSrc ? undefined : src,
-    onError: () => setBrokenSrc(src),
+    onError: setBrokenSrc,
   };
 }
 
@@ -39,7 +42,45 @@ interface AttachmentThumbnailProps {
   src: string;
   name: string;
   onPreview: (() => void) | undefined;
-  onError: () => void;
+  /** Receives the src that failed. */
+  onError: (src: string) => void;
+}
+
+/**
+ * The thumbnail image: a new element per src, so a departed request's events never reach it, and
+ * an image that failed before its handler was attached (before hydration) is settled as broken.
+ */
+function ThumbnailImage({
+  src,
+  alt,
+  onError,
+}: {
+  src: string;
+  alt: string;
+  onError: (src: string) => void;
+}) {
+  const fail = useCallback(() => onError(src), [onError, src]);
+  const settleEarly = useCallback(
+    (image: HTMLImageElement | null) => {
+      if (!image?.complete || image.naturalWidth > 0) return;
+      // An image without intrinsic size, such as some SVG, has no width once loaded either.
+      if (typeof image.decode !== 'function') return fail();
+      image.decode().catch(() => {
+        if (image.isConnected) fail();
+      });
+    },
+    [fail],
+  );
+  return (
+    <img
+      ref={settleEarly}
+      {...hooks.slot('thumbnail')}
+      {...untrustedImageProps}
+      src={src}
+      alt={alt}
+      onError={fail}
+    />
+  );
 }
 
 /**
@@ -49,15 +90,7 @@ interface AttachmentThumbnailProps {
 export function AttachmentThumbnail({ src, name, onPreview, onError }: AttachmentThumbnailProps) {
   const strings = useUiStrings();
   if (!onPreview) {
-    return (
-      <img
-        {...hooks.slot('thumbnail')}
-        {...untrustedImageProps}
-        src={src}
-        alt={name}
-        onError={onError}
-      />
-    );
+    return <ThumbnailImage key={src} src={src} alt={name} onError={onError} />;
   }
   return (
     <Button
@@ -66,13 +99,7 @@ export function AttachmentThumbnail({ src, name, onPreview, onError }: Attachmen
       aria-label={strings.viewAttachment(name)}
       onPress={onPreview}
     >
-      <img
-        {...hooks.slot('thumbnail')}
-        {...untrustedImageProps}
-        src={src}
-        alt=""
-        onError={onError}
-      />
+      <ThumbnailImage key={src} src={src} alt="" onError={onError} />
     </Button>
   );
 }
