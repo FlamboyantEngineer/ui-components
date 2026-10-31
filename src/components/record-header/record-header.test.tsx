@@ -47,9 +47,9 @@ describe('RecordHeader', { timeout: 15_000 }, () => {
     rerender(<RecordHeader identifier="REQ-12" title="Cooling rack" headingLevel={1} />);
     expect(screen.getByRole('heading', { level: 1 }).tagName).toBe('H1');
     rerender(
-      <HeadingLevelContext.Provider value={1}>
+      <HeadingLevelContext value={1}>
         <RecordHeader identifier="REQ-12" title="Cooling rack" />
-      </HeadingLevelContext.Provider>,
+      </HeadingLevelContext>,
     );
     expect(screen.getByRole('heading', { name: 'Cooling rack' }).tagName).toBe('H2');
   });

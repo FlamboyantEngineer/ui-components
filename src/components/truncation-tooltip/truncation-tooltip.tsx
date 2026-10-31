@@ -242,8 +242,8 @@ export function TruncationTooltip({
         />
       ) : null}
       {/* Isolate the panel from an enclosing tooltip trigger, such as a button with a hint. */}
-      <TooltipContext.Provider value={null}>
-        <TooltipTriggerStateContext.Provider value={state}>
+      <TooltipContext value={null}>
+        <TooltipTriggerStateContext value={state}>
           <TooltipPanel
             variant="default"
             className={hooks.slotClass('panel')}
@@ -252,8 +252,8 @@ export function TruncationTooltip({
           >
             {children}
           </TooltipPanel>
-        </TooltipTriggerStateContext.Provider>
-      </TooltipContext.Provider>
+        </TooltipTriggerStateContext>
+      </TooltipContext>
     </>
   );
 }

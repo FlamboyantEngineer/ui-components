@@ -52,14 +52,14 @@ describe('Portal', () => {
     }
     const onClick = vi.fn();
     render(
-      <Fruit.Provider value="pear">
+      <Fruit value="pear">
         <div onClick={onClick}>
           <Portal>
             <Reader />
             <button type="button">Pick</button>
           </Portal>
         </div>
-      </Fruit.Provider>,
+      </Fruit>,
     );
     expect(wrappers()[0]).toHaveTextContent('pear');
     await userEvent.click(screen.getByRole('button', { name: 'Pick' }));

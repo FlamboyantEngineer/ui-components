@@ -39,9 +39,7 @@ export function LoadingBoundaryProvider({
     () => (outer.isSuspended ? outer : isSuspended ? { isSuspended, holdFocus } : available),
     [outer, isSuspended, holdFocus],
   );
-  return (
-    <LoadingBoundaryContext.Provider value={value}>{children}</LoadingBoundaryContext.Provider>
-  );
+  return <LoadingBoundaryContext value={value}>{children}</LoadingBoundaryContext>;
 }
 
 /** The loading boundary around the caller; outside any, content that is always available. */

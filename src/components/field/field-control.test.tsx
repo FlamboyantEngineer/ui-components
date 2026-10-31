@@ -113,9 +113,9 @@ describe('useFieldControl', () => {
   it('UIC-FIELD-8.1 gives the form name to both the field state and the control', () => {
     let parts: { state: FieldState<string>; rest: object } | undefined;
     render(
-      <FieldScopeContext.Provider value={{ validationErrors: { fruit: 'Sold out.' } }}>
+      <FieldScopeContext value={{ validationErrors: { fruit: 'Sold out.' } }}>
         <Sample label="Fruit" name="fruit" onParts={(next) => (parts = next)} />
-      </FieldScopeContext.Provider>,
+      </FieldScopeContext>,
     );
     expect(parts?.rest).toEqual({ name: 'fruit' });
     expect(screen.getByRole('textbox')).toHaveAttribute('name', 'fruit');

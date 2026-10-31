@@ -145,16 +145,16 @@ describe('Projection', () => {
     }
     render(
       <ProjectionProvider>
-        <Season.Provider value="summer">
+        <Season value="summer">
           <section aria-label="Outlet">
             <ProjectionOutlet slot="season" />
           </section>
-        </Season.Provider>
-        <Season.Provider value="winter">
+        </Season>
+        <Season value="winter">
           <ProjectionContent slot="season">
             <SeasonLabel />
           </ProjectionContent>
-        </Season.Provider>
+        </Season>
       </ProjectionProvider>,
     );
     expect(region('Outlet')).toHaveTextContent('summer');

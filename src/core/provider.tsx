@@ -283,7 +283,7 @@ export function UiProvider({
         {...(router.useHref ? { useHref: router.useHref } : {})}
       >
         <OverlayPresenceScope>
-          <UiContext.Provider value={value}>{children}</UiContext.Provider>
+          <UiContext value={value}>{children}</UiContext>
         </OverlayPresenceScope>
       </RouterProvider>
     </I18nProvider>

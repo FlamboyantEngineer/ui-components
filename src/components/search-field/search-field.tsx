@@ -105,7 +105,7 @@ const hooks = createHooks('search-field', [
 function ClearButton({ label, text, onPress }: { label: string; text?: string; onPress(): void }) {
   const shared = { className: hooks.slotClass('clear'), size: 'xs' as const, onPress };
   return (
-    <ButtonContext.Provider value={null}>
+    <ButtonContext value={null}>
       {text ? (
         <Button {...shared} variant="ghost" aria-label={label}>
           {text}
@@ -113,7 +113,7 @@ function ClearButton({ label, text, onPress }: { label: string; text?: string; o
       ) : (
         <Button {...shared} icon={CloseGlyph} label={label} />
       )}
-    </ButtonContext.Provider>
+    </ButtonContext>
   );
 }
 

@@ -90,7 +90,7 @@ export function SelectTrigger({
       </AriaButton>
       {clearLabel ? (
         // Inside the select every button would otherwise take the trigger's props.
-        <ButtonContext.Provider value={null}>
+        <ButtonContext value={null}>
           <Button
             className={hooks.slotClass('clear')}
             icon={CloseGlyph}
@@ -99,7 +99,7 @@ export function SelectTrigger({
             size="xs"
             onPress={onClear}
           />
-        </ButtonContext.Provider>
+        </ButtonContext>
       ) : null}
     </div>
   );

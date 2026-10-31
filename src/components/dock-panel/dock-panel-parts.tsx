@@ -212,9 +212,7 @@ function PaneFrame({ entry, shownKey, isOverlay, focus }: PaneFrameProps) {
   const { id, elementId } = entry.launcher;
   const isHidden = id !== shownKey;
   const value = { elementId, isHidden, isOverlay, paneRef: focus.paneRef(id) };
-  return (
-    <DockPanelPaneContext.Provider value={value}>{entry.element}</DockPanelPaneContext.Provider>
-  );
+  return <DockPanelPaneContext value={value}>{entry.element}</DockPanelPaneContext>;
 }
 
 /**

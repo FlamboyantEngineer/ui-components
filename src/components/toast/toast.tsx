@@ -276,14 +276,14 @@ export function ToastList({
   const attributes = { ...pickDataAttributes(rest), id: rest.id };
   return (
     <ToastStackProvider value={stack}>
-      <ToastStateContext.Provider value={state}>
+      <ToastStateContext value={state}>
         <AriaToastList
           className={listHooks.root({ className }).className}
           render={(props) => <ol {...props} {...attributes} />}
         >
           {renderToast}
         </AriaToastList>
-      </ToastStateContext.Provider>
+      </ToastStateContext>
     </ToastStackProvider>
   );
 }

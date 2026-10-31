@@ -79,7 +79,7 @@ export function ChatAttachmentList({
   if (attachments.length === 0) return null;
   const labelledBy = rest['aria-labelledby'];
   return (
-    <AttachmentRemovalContext.Provider value={removal}>
+    <AttachmentRemovalContext value={removal}>
       <ul
         {...hooks.root({ className, props: rest })}
         id={id}
@@ -112,6 +112,6 @@ export function ChatAttachmentList({
           onSelectionChange={(key) => setViewer({ key, isOpen: true })}
         />
       ) : null}
-    </AttachmentRemovalContext.Provider>
+    </AttachmentRemovalContext>
   );
 }

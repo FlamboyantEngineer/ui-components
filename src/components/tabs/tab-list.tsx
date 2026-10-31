@@ -281,9 +281,9 @@ export function TabList({
   // React Aria builds the collection from a hidden render of the list, which draws no parts.
   if (!state) {
     return (
-      <TabActionsContext.Provider value={actions}>
+      <TabActionsContext value={actions}>
         <AriaTabList {...rest}>{keyCollectionChildren(rest.children)}</AriaTabList>
-      </TabActionsContext.Provider>
+      </TabActionsContext>
     );
   }
 
@@ -302,7 +302,7 @@ export function TabList({
   // The overlays keep their place whether or not a bar wraps the list, so a presentation change
   // that adds or drops the bar keeps a rename's draft, message and focus.
   return (
-    <TabActionsContext.Provider value={actions}>
+    <TabActionsContext value={actions}>
       {hasBar ? (
         <TabBar {...{ state, orientation, isMenu, hasButtons, menu, onAdd }} scroll={scroll}>
           {list}
@@ -313,6 +313,6 @@ export function TabList({
       <ListStateSync state={state} />
       <TabRenameOverlay rename={actions.rename} state={state} listRef={listRef} />
       <TabMenuOverlay menu={actions.menu} state={state} />
-    </TabActionsContext.Provider>
+    </TabActionsContext>
   );
 }

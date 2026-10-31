@@ -91,7 +91,7 @@ export function PortalContainerProvider({
     }),
     [parent, container, layerZIndex],
   );
-  const provided = <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
+  const provided = <PortalContext value={value}>{children}</PortalContext>;
   if (container === undefined) return provided;
   // Any element, an iframe's body too, or `null`, which React Aria renders nothing into. No realm's
   // `HTMLElement` is assumed or even read, so the server, where it does not exist, renders this too.

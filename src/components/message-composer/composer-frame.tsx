@@ -72,7 +72,7 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
       {banner ? <div {...hooks.slot('banner')}>{banner}</div> : null}
       {attachments ? <div {...hooks.slot('attachments')}>{attachments}</div> : null}
       {children}
-      <ComposerControlsContext.Provider value={controls}>
+      <ComposerControlsContext value={controls}>
         <div {...hooks.slot('footer')} ref={footerRef}>
           <div {...hooks.slot('start')} ref={startRef}>
             {startControls}
@@ -82,7 +82,7 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
             {hasHostSendButton ? null : <ComposerSendControl composer={controls} />}
           </div>
         </div>
-      </ComposerControlsContext.Provider>
+      </ComposerControlsContext>
     </div>
   );
 }

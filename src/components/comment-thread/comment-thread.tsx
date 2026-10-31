@@ -189,7 +189,7 @@ export function CommentThread({
         rest['aria-label'] ?? (rest['aria-labelledby'] ? undefined : strings.commentThread)
       }
     >
-      <CommentThreadContext.Provider value={{ isReadOnly }}>
+      <CommentThreadContext value={{ isReadOnly }}>
         <CommentThreadHeader
           quote={quote}
           isResolved={resolved}
@@ -206,7 +206,7 @@ export function CommentThread({
             isFirst={Children.toArray(children).length === 0}
           />
         )}
-      </CommentThreadContext.Provider>
+      </CommentThreadContext>
     </div>
   );
 }

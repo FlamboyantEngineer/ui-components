@@ -77,6 +77,12 @@ const ENUM_SYNTAX = {
   message: 'Use a string-literal union or an `as const` object instead of `enum` (TS6).',
 };
 
+const CONTEXT_PROVIDER_SYNTAX = {
+  selector:
+    "MemberExpression[property.name='Provider'], JSXMemberExpression[property.name='Provider']",
+  message: 'Render a context as `<Context value>`, not `<Context.Provider>` (I5).',
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -133,7 +139,7 @@ export default tseslint.config(
         { allowThrowingAny: true, allowThrowingUnknown: true },
       ],
       'preserve-caught-error': 'error',
-      'no-restricted-syntax': ['error', ENUM_SYNTAX],
+      'no-restricted-syntax': ['error', ENUM_SYNTAX, CONTEXT_PROVIDER_SYNTAX],
     },
   },
   {
@@ -238,6 +244,7 @@ export default tseslint.config(
             'Use isNode, isElement or isHTMLElement (src/utils/is-element.ts), which hold for nodes of any window.',
         },
         ENUM_SYNTAX,
+        CONTEXT_PROVIDER_SYNTAX,
       ],
       '@typescript-eslint/naming-convention': [
         'error',
@@ -295,6 +302,7 @@ export default tseslint.config(
           message: 'Query by role, label or text, or by a documented hook, not by test id.',
         },
         ENUM_SYNTAX,
+        CONTEXT_PROVIDER_SYNTAX,
       ],
     },
   },

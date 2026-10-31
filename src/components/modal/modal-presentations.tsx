@@ -160,9 +160,9 @@ function FloatingModal({ state, rootProps, children, isRetained }: FloatingModal
           {...hooks.slot('panel', phase)}
           style={{ pointerEvents: 'auto', ...retainedStyle(isMounted) }}
         >
-          <OverlayTriggerStateContext.Provider value={state}>
-            <ModalShownContext.Provider value={isMounted}>{children}</ModalShownContext.Provider>
-          </OverlayTriggerStateContext.Provider>
+          <OverlayTriggerStateContext value={state}>
+            <ModalShownContext value={isMounted}>{children}</ModalShownContext>
+          </OverlayTriggerStateContext>
         </div>
       </div>
     </Portal>
@@ -197,9 +197,7 @@ function AnchoredModal({
         isDismissable && (shouldCloseOnInteractOutside?.(element) ?? true)
       }
     >
-      <OverlayTriggerStateContext.Provider value={state}>
-        {children}
-      </OverlayTriggerStateContext.Provider>
+      <OverlayTriggerStateContext value={state}>{children}</OverlayTriggerStateContext>
     </PopoverPanel>
   );
 }
@@ -228,11 +226,9 @@ function RetainedModal({ state, rootProps, children, ...dismissal }: BlockingMod
       >
         <FocusScope contain={state.isOpen}>
           <div {...modalProps} ref={panelRef} className={hooks.slotClass('panel')}>
-            <OverlayTriggerStateContext.Provider value={state}>
-              <ModalShownContext.Provider value={phase.isMounted}>
-                {children}
-              </ModalShownContext.Provider>
-            </OverlayTriggerStateContext.Provider>
+            <OverlayTriggerStateContext value={state}>
+              <ModalShownContext value={phase.isMounted}>{children}</ModalShownContext>
+            </OverlayTriggerStateContext>
           </div>
         </FocusScope>
       </div>

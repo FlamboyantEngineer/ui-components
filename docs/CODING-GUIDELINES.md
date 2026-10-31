@@ -57,6 +57,8 @@ export interface ButtonProps
 
 **I4. Forward, do not filter.** Spread the remaining props onto the wrapped component or root element, and let `createHooks(...).root({ className, props, data })` merge hook classes and caller attributes. Hook values the component writes win over caller attributes of the same name.
 
+**I5. Render a context as `<Context value>`.** The library targets React 19, so a provider renders the context itself, never `<Context.Provider>`, which React plans to deprecate. **(enforced)**
+
 ## Simplicity
 
 **C1. Small units.** A function has at most 80 lines and a cyclomatic complexity of at most 15, nests at most three levels deep, and takes at most three parameters (pass an options object instead). A module has at most 300 lines; split helpers into sibling modules before that. **(enforced in library source)**

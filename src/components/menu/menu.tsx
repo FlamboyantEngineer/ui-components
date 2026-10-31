@@ -266,13 +266,13 @@ export function Menu(props: MenuProps) {
     const { 'aria-labelledby': _labelledBy, ...unlabelled } = trigger;
     context = unlabelled;
   }
-  menu = <MenuContext.Provider value={context}>{menu}</MenuContext.Provider>;
+  menu = <MenuContext value={context}>{menu}</MenuContext>;
   menu = <AutocompleteMatches isOn={highlightMatches}>{menu}</AutocompleteMatches>;
   if (filterable) menu = <MenuFilter isOpenedByTrigger={Boolean(trigger)}>{menu}</MenuFilter>;
   return (
-    <MenuSizeContext.Provider value={resolvedSize}>
-      <MenuActionContext.Provider value={action}>{menu}</MenuActionContext.Provider>
-    </MenuSizeContext.Provider>
+    <MenuSizeContext value={resolvedSize}>
+      <MenuActionContext value={action}>{menu}</MenuActionContext>
+    </MenuSizeContext>
   );
 }
 

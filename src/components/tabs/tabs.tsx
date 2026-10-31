@@ -132,7 +132,7 @@ export function Tabs({
     disabledKeys,
   });
   return (
-    <TabsSharedContext.Provider value={shared}>
+    <TabsSharedContext value={shared}>
       <AriaTabs
         // Another storage key restores that key's selection.
         key={persistKey}
@@ -143,7 +143,7 @@ export function Tabs({
         disabledKeys={disabledKeys}
         {...hooks.root({ className, props: rest, data: { size } })}
       />
-    </TabsSharedContext.Provider>
+    </TabsSharedContext>
   );
 }
 

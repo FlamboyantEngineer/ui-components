@@ -12,7 +12,7 @@ describe('AnnotationMargin', () => {
       height: 1,
     }));
     render(
-      <AnnotationContext.Provider
+      <AnnotationContext
         value={{
           anchors: [{ annotation: { id: 'note' }, rects }],
           activeId: null,
@@ -21,7 +21,7 @@ describe('AnnotationMargin', () => {
         }}
       >
         <AnnotationMargin renderCard={() => 'Note'} />
-      </AnnotationContext.Provider>,
+      </AnnotationContext>,
     );
     const card = screen.getByRole('listitem');
     expect(card).toHaveTextContent('Note');

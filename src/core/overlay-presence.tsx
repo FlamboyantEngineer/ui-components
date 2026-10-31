@@ -87,9 +87,7 @@ const OverlayPresenceContext = createContext<OverlayPresenceStore>(defaultStore)
 export function OverlayPresenceScope({ children }: { children?: ReactNode }) {
   const parent = useContext(OverlayPresenceContext);
   const [store] = useState(() => (parent === defaultStore ? createOverlayPresenceStore() : parent));
-  return (
-    <OverlayPresenceContext.Provider value={store}>{children}</OverlayPresenceContext.Provider>
-  );
+  return <OverlayPresenceContext value={store}>{children}</OverlayPresenceContext>;
 }
 
 /**

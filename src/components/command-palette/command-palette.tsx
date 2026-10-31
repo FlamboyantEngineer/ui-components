@@ -117,7 +117,7 @@ function CommandPaletteDialog({
           <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
           <Input className={hooks.slotClass('search-input')} placeholder={hint} />
         </SearchField>
-        <MenuContext.Provider value={{ onClose: close }}>
+        <MenuContext value={{ onClose: close }}>
           <Menu
             {...menu}
             highlightMatches
@@ -125,7 +125,7 @@ function CommandPaletteDialog({
               <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
             )}
           />
-        </MenuContext.Provider>
+        </MenuContext>
       </Autocomplete>
     </Dialog>
   );
