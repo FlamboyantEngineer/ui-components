@@ -66,7 +66,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.1 - Adornments
 
-`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame. Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content.
+`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which publishes `data-framed` and which the reference sheet then frames as one box. Adornments are not part of the value or the control's name. The group is always there, so adding or removing an adornment or the reveal button keeps the same input element, with its focus, selection, composition and the caller's ref; without adornments or a reveal button it has no `data-framed` and the reference sheet lets the input be its own frame (`display: contents`). Content that renders nothing (`null`, `undefined`, a boolean or an empty string) counts as absent; `0` counts as content.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -160,6 +160,7 @@ Verification: `src/components/text-field/text-field-parts.test.tsx`, `e2e/text-f
 | `ui-text-field__reveal`      | slot  |        | The reveal button (also `ui-button`).                                 |
 | `ui-text-field__count`       | slot  |        | The character count, inside the field's description.                  |
 | `ui-text-field__completions` | slot  |        | The completion list's popover (also `ui-completion-list`).            |
+| `data-framed`                | state | `true` | On the group: it holds adornments or a reveal button.                 |
 | `data-multiline`             | state | `true` | On the root: the field edits several lines.                           |
 | `data-autosize`              | state | `true` | On the root: the text area grows with its text.                       |
 | `data-display-value`         | state | `true` | On the root: the control shows the display value, not the value.      |
