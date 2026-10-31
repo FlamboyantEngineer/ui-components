@@ -605,4 +605,50 @@ describe('SegmentedChoice', () => {
     expect(new FormData(form).getAll('view')).toEqual(['day']);
     expect(new FormData(form).getAll('shown')).toEqual(['day']);
   });
+
+  it('UIC-SEGMENTED-CHOICE-1.7 keeps each segment and its focus as icon-only presentation changes', async () => {
+    const user = userEvent.setup();
+    const withIcons = (icon: boolean): SegmentedChoiceOption[] => [
+      { value: 'day', label: 'Day', icon: icon ? SortAscendingGlyph : undefined },
+      { value: 'week', label: 'Week', icon: FitPageGlyph },
+      { value: 'month', label: 'Month', isDisabled: true },
+    ];
+    const draw = (iconOnly: boolean, icon = true) => (
+      <SegmentedChoice
+        aria-label="View"
+        options={withIcons(icon)}
+        iconOnly={iconOnly}
+        defaultValue="day"
+      />
+    );
+    const { rerender } = render(draw(false));
+    await user.tab();
+    const day = screen.getByRole('radio', { name: 'Day' });
+    expect(day).toHaveFocus();
+    expect(day).not.toHaveAttribute('aria-describedby');
+
+    rerender(draw(true));
+    expect(screen.getByRole('radio', { name: 'Day' })).toBe(day);
+    expect(day).toHaveFocus();
+    expect(day).toHaveAccessibleDescription('');
+    // A segment without an icon keeps its label; a disabled one stays disabled.
+    expect(screen.getByRole('radio', { name: 'Month' })).toHaveTextContent('Month');
+    expect(screen.getByRole('radio', { name: 'Month' })).toBeDisabled();
+
+    // The icon leaves and comes back while icon-only.
+    rerender(draw(true, false));
+    expect(screen.getByRole('radio', { name: 'Day' })).toBe(day);
+    expect(day).toHaveTextContent('Day');
+    rerender(draw(true));
+    rerender(draw(false));
+    expect(screen.getByRole('radio', { name: 'Day' })).toBe(day);
+    expect(day).toHaveFocus();
+    expect(day).toBeChecked();
+
+    // Roving focus and selection still work.
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('radio', { name: 'Week' })).toHaveFocus();
+    await user.keyboard(' ');
+    expect(screen.getByRole('radio', { name: 'Week' })).toBeChecked();
+  });
 });

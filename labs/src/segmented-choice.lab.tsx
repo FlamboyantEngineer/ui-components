@@ -44,6 +44,29 @@ const circle = (
   </svg>
 );
 
+/** The checkbox switches icon-only presentation, as a narrow layout would: focus stays on the segment. */
+function CompactToggle() {
+  const [isCompact, setCompact] = useState(false);
+  return (
+    <div data-lab-case="compact-toggle">
+      <SegmentedChoice
+        aria-label="Fit"
+        iconOnly={isCompact}
+        sizing="content"
+        defaultValue="width"
+        options={[
+          { value: 'width', label: 'Fit width', icon: FitWidthGlyph },
+          { value: 'page', label: 'Fit page', icon: FitPageGlyph },
+          { value: 'actual', label: 'Actual size' },
+        ]}
+      />
+      <Checkbox isSelected={isCompact} onChange={setCompact}>
+        Icons only
+      </Checkbox>
+    </div>
+  );
+}
+
 function InheritedSetting() {
   const inherited = 'week';
   const [explicit, setExplicit] = useState<string | null>(null);
@@ -248,6 +271,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Switching to icons only"
+      description="Focus a segment, then switch icons only on or off: the segment keeps its focus. Actual size has no icon and keeps its label."
+    >
+      <CompactToggle />
     </LabSection>
     <LabSection
       title="Multiple selection"
