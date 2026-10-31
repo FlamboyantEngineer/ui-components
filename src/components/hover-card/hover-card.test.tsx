@@ -251,6 +251,26 @@ describe('HoverCard', () => {
     expect(card()).toBeNull();
   });
 
+  it('UIC-HOVER-CARD-1.4 keeps the trigger while it is disabled, closing its card and popup semantics', async () => {
+    const { rerender } = render(<Preview triggerProps={{ delay: 0 }} />);
+    const button = trigger();
+    await user.tab();
+    await user.tab();
+    await advance(100);
+    expect(card()).not.toBeNull();
+    rerender(<Preview triggerProps={{ delay: 0, isDisabled: true }} />);
+    await advance(1000);
+    expect(card()).toBeNull();
+    expect(trigger()).toBe(button);
+    expect(button).toHaveFocus();
+    for (const name of ['aria-haspopup', 'aria-expanded', 'aria-describedby']) {
+      expect(button).not.toHaveAttribute(name);
+    }
+    rerender(<Preview triggerProps={{ delay: 0 }} />);
+    expect(trigger()).toBe(button);
+    expect(button).toHaveAttribute('aria-haspopup', 'dialog');
+  });
+
   it('UIC-HOVER-CARD-2.1 becomes a plain container around content with its own dialog', async () => {
     render(
       <HoverCardTrigger defaultOpen>

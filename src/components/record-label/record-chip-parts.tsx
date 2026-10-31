@@ -20,18 +20,22 @@ const hooks = createHooks('record-label', [
   'remove',
 ]);
 
-/** The label, opening the preview from the link of an available record. */
+/**
+ * The label, opening the preview from the link of an available record. The trigger stays while the
+ * preview comes and goes, so the label keeps its identity and focus.
+ */
 function ChipLabel({
   preview,
   href,
   unavailable,
   label,
 }: Pick<RecordLabelProps, 'preview' | 'href' | 'unavailable'> & { label: ReactNode }) {
-  if (preview === undefined || preview === null || href === undefined || unavailable) return label;
+  const hasPreview =
+    preview !== undefined && preview !== null && href !== undefined && !unavailable;
   return (
-    <HoverCardTrigger>
+    <HoverCardTrigger isDisabled={!hasPreview}>
       {label}
-      <HoverCard className={hooks.slotClass('preview')}>{preview}</HoverCard>
+      {hasPreview ? <HoverCard className={hooks.slotClass('preview')}>{preview}</HoverCard> : null}
     </HoverCardTrigger>
   );
 }
@@ -139,7 +143,7 @@ export function RecordChipParts({
   const data = { mode: 'chip', layout: isStacked ? 'stacked' : 'inline', size, unavailable };
   return (
     <span {...rest} {...hooks.root({ className, data })}>
-      {isStacked ? <span {...hooks.slot('header')}>{parts}</span> : parts}
+      <span {...hooks.slot('header')}>{parts}</span>
       {isStacked && text ? (
         <TruncationTooltip id={nameId} className={hooks.slotClass('name')}>
           {text}

@@ -27,7 +27,7 @@ Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.s
 
 ### UIC-HOVER-CARD-1.4 - Controlled state
 
-`isOpen` with `onOpenChange` on the trigger shall control the card, and `defaultOpen` shall open it at first; hover, focus, Escape and the delays running out report changes through `onOpenChange`. `isDisabled` opens nothing.
+`isOpen` with `onOpenChange` on the trigger shall control the card, and `defaultOpen` shall open it at first; hover, focus, Escape and the delays running out report changes through `onOpenChange`. `isDisabled` opens nothing, closes an open card and leaves the trigger as it would be without the card (no `aria-haspopup`, `aria-expanded` or description), while keeping the trigger mounted, so a card can come and go around a focused trigger.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`

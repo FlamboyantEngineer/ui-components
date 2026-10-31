@@ -87,6 +87,30 @@ test.describe('RecordLabel chip mode', () => {
     );
   });
 
+  test('UIC-RECORD-LABEL-11.8 keeps the focused link while the preview arrives and the layout changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('record-label');
+    const demo = page.locator('[data-lab-demo="late-preview"]');
+    const card = page.locator('.ui-record-label__preview');
+    const link = demo.getByRole('link', { name: /^REQ-12/ });
+    await expect(demo).toHaveAttribute('data-loaded', 'true');
+    await demo.getByRole('button', { name: 'Reload preview' }).dispatchEvent('click');
+    await expect(demo).toHaveAttribute('data-loaded', 'false');
+    await expect(link).not.toHaveAttribute('aria-haspopup');
+    await link.focus();
+    await expect(demo).toHaveAttribute('data-loaded', 'true');
+    await expect(link).toBeFocused();
+    await expect(link).toHaveAttribute('aria-haspopup', 'dialog');
+    await expect(card).toHaveCount(0);
+    for (const layout of ['stacked', 'inline']) {
+      await demo.getByRole('button', { name: 'Switch layout' }).dispatchEvent('click');
+      await expect(demo.locator('.ui-record-label')).toHaveAttribute('data-layout', layout);
+      await expect(link).toBeFocused();
+    }
+  });
+
   test('UIC-RECORD-LABEL-11.4 removes references from a field', async ({ page, lab }) => {
     await lab.open('record-label');
     const field = page
