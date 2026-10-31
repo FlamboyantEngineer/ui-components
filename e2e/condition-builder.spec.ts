@@ -25,7 +25,7 @@ test.describe('Condition Builder lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-CONDITION-BUILDER-1.3 UIC-CONDITION-BUILDER-1.4 UIC-CONDITION-BUILDER-2.1 edits the tree that narrows the list', async ({
+  test('UIC-CONDITION-BUILDER-1.3 UIC-CONDITION-BUILDER-1.4 UIC-CONDITION-BUILDER-2.1 UIC-CONDITION-BUILDER-2.2 edits the tree that narrows the list', async ({
     page,
     lab,
   }) => {

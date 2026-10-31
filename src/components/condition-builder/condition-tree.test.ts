@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
 import {
   copyConditionNode,
+  createConditionMatcher,
   findConditionNode,
   matchesConditionGroup,
   moveConditionNode,
@@ -104,5 +105,59 @@ describe('condition tree', () => {
       'Long travel',
     ]);
     expect(titles({ ...query, rules: [] })).toHaveLength(4);
+  });
+
+  it('UIC-CONDITION-BUILDER-2.2 resolves fields once and reads only active values per record', () => {
+    const reads = vi.fn();
+    const fields = new Proxy<FilterField[]>(
+      [
+        { id: 'pages', label: 'Pages', type: 'number' },
+        { id: 'genre', label: 'Genre', type: 'choice' },
+        { id: 'title', label: 'Title', type: 'text' },
+      ],
+      {
+        get(target, property, receiver) {
+          reads(property);
+          return Reflect.get(target, property, receiver) as unknown;
+        },
+      },
+    );
+    const group: ConditionGroup = {
+      type: 'group',
+      id: 'root',
+      combinator: 'and',
+      rules: [
+        { type: 'rule', id: 'long', field: 'pages', operator: 'at-least', value: 400 },
+        {
+          type: 'group',
+          id: 'kinds',
+          combinator: 'or',
+          rules: [
+            { type: 'rule', id: 'h', field: 'genre', operator: 'any-of', value: ['history'] },
+            { type: 'rule', id: 'blank', field: 'title', operator: 'contains', value: '' },
+            { type: 'rule', id: 'unknown', field: 'colour', operator: 'equals', value: 'red' },
+          ],
+        },
+      ],
+    };
+    const books = [
+      { title: 'Long history', pages: 520, genre: 'history' },
+      { title: 'Long travel', pages: 480, genre: 'travel' },
+      { title: 'Short history', pages: 120, genre: 'history' },
+    ];
+    const getValue = vi.fn(
+      (book: (typeof books)[number], id: string) => book[id as keyof typeof book],
+    );
+    const matches = createConditionMatcher({ group, fields, getValue });
+    reads.mockClear();
+    expect(books.filter(matches).map((book) => book.title)).toEqual(['Long history']);
+    expect(reads).not.toHaveBeenCalled();
+    expect(new Set(getValue.mock.calls.map(([, id]) => id))).toEqual(new Set(['pages', 'genre']));
+    const options = { fields, getValue };
+    expect(books.map((book) => matchesConditionGroup(book, group, options))).toEqual(
+      books.map(matches),
+    );
+    const none = createConditionMatcher({ group: { ...group, rules: [] }, fields, getValue });
+    expect(books.every(none)).toBe(true);
   });
 });

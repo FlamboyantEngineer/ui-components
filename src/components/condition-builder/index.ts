@@ -7,4 +7,4 @@ export type {
   ConditionRule,
   ConditionRuleValidator,
 } from './condition-builder.js';
-export { matchesConditionGroup } from './condition-tree.js';
+export { createConditionMatcher, matchesConditionGroup } from './condition-tree.js';

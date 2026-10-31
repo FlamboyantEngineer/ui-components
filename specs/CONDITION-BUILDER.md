@@ -1,6 +1,6 @@
 # Condition Builder
 
-`ConditionBuilder` edits a boolean expression as a tree: groups that match all or any of their rules, rules that test one field with an operator and a value, and groups nested inside groups. It shares the [Filter Bar](FILTER-BAR.md)'s field definitions, operators, value shapes and value controls, so a host can switch from flat filters to an advanced expression without changing its fields. The value is plain data, and `matchesConditionGroup` evaluates it against a record.
+`ConditionBuilder` edits a boolean expression as a tree: groups that match all or any of their rules, rules that test one field with an operator and a value, and groups nested inside groups. It shares the [Filter Bar](FILTER-BAR.md)'s field definitions, operators, value shapes and value controls, so a host can switch from flat filters to an advanced expression without changing its fields. The value is plain data, and `createConditionMatcher` (or `matchesConditionGroup` for a single record) evaluates it against records.
 
 ## UIC-CONDITION-BUILDER-1 - Tree and editing
 
@@ -58,6 +58,13 @@ Verification: `src/components/condition-builder/condition-builder.test.tsx`
 ### UIC-CONDITION-BUILDER-2.1 - Evaluating a tree
 
 `matchesConditionGroup(record, group, { fields, getValue })` shall match a record when it matches every active node of an `and` group or one of an `or` group, testing rules as `matchesFilterCondition` does ([UIC-FILTER-BAR-3.1](FILTER-BAR.md#uic-filter-bar-31---matching-one-condition)) and nested groups recursively. Rules missing their value, rules on unknown fields and groups holding no active rule are not active; a group with no active node matches every record.
+
+Implementation: `src/components/condition-builder/condition-tree.ts`
+Verification: `src/components/condition-builder/condition-tree.test.ts`, `e2e/condition-builder.spec.ts`
+
+### UIC-CONDITION-BUILDER-2.2 - Precompiled matching
+
+`createConditionMatcher({ group, fields, getValue })` shall return a test of a record that matches as [UIC-CONDITION-BUILDER-2.1](#uic-condition-builder-21---evaluating-a-tree) describes, mirroring `createFilterMatcher` ([UIC-FILTER-BAR-3.2](FILTER-BAR.md#uic-filter-bar-32---matching-a-record)): it indexes the fields and resolves the active nodes once, so testing a record reads no field definitions and only the values of active rules. `matchesConditionGroup` delegates to it; a host testing many records against one tree creates the matcher once.
 
 Implementation: `src/components/condition-builder/condition-tree.ts`
 Verification: `src/components/condition-builder/condition-tree.test.ts`, `e2e/condition-builder.spec.ts`
