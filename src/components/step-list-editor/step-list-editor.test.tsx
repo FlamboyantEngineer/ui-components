@@ -262,6 +262,26 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(editor).not.toHaveAttribute('data-dirty');
   });
 
+  it('UIC-STEP-LIST-EDITOR-3.1 keeps the fields of a new step, or of an uncommitted list, as plain inputs', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <StepListEditor
+        columns={columns}
+        defaultValue={[...steps, { id: 'new', values: { action: 'Close' } }]}
+        committedValue={steps}
+      />,
+    );
+    await user.type(field(4, 'Action'), ' the tab');
+    await user.tab();
+    expect(field(4, 'Action')).toHaveValue('Close the tab');
+    expect(field(4, 'Action').closest('.ui-text-field')).not.toHaveAttribute('data-dirty');
+    expect(screen.queryByRole('button', { name: /Restore/ })).not.toBeInTheDocument();
+    rerender(<StepListEditor columns={columns} defaultValue={steps} />);
+    await user.type(field(1, 'Action'), '!');
+    expect(field(1, 'Action').closest('.ui-text-field')).not.toHaveAttribute('data-dirty');
+    expect(screen.queryByRole('button', { name: /Restore/ })).not.toBeInTheDocument();
+  });
+
   it('UIC-STEP-LIST-EDITOR-3.2 shows read-only steps without handles, menus or the add button', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

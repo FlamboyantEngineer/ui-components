@@ -61,7 +61,7 @@ Verification: `src/components/step-list-editor/step-list.test.ts`, `src/componen
 
 ### UIC-STEP-LIST-EDITOR-3.1 - Dirty marks
 
-With `committedValue`, the steps as last saved, a step shall publish `data-dirty` when it is new or any of its columns differs from the committed step with the same `id`; each field of a committed step compares itself with the committed text, publishing the field's own `data-dirty` and restore button ([Field](FIELD.md)); and the editor publishes `data-dirty` while its steps differ from the committed ones in any way, a step removed or moved included. Without `committedValue` nothing is marked.
+With `committedValue`, the steps as last saved, a step shall publish `data-dirty` when it is new or any of its columns differs from the committed step with the same `id`; each field of a committed step compares itself with the committed text, publishing the field's own `data-dirty` and restore button ([Field](FIELD.md)); and the editor publishes `data-dirty` while its steps differ from the committed ones in any way, a step removed or moved included. Without `committedValue` nothing is marked. The fields of a step with no committed counterpart (a new step, or every step without `committedValue`) are plain inputs (`tracksChanges: false`, UIC-FIELD-2.7): they are never dirty, never commit and take no `committedValue`.
 
 Implementation: `src/components/step-list-editor/step-list-editor.tsx`, `src/components/step-list-editor/step-row.tsx`, `src/components/step-list-editor/step-list.ts`, `labs/reference/step-list-editor.css`
 Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `src/components/step-list-editor/step-list.test.ts`, `e2e/step-list-editor.spec.ts`
