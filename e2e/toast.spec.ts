@@ -18,6 +18,49 @@ test.describe('Toast lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-TOAST-2.3 shows every toast of a list in place, reachable and uncovered', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    const demo = page.locator('[data-lab-demo="in-place-list"]');
+    const toasts = demo.locator('.ui-toast');
+    await expect(toasts).toHaveCount(4);
+    const boxes = [];
+    for (const toast of await toasts.all()) {
+      await expect(toast).toHaveCSS('opacity', '1');
+      const box = await toast.boundingBox();
+      expect(box?.width).toBeLessThanOrEqual(280);
+      boxes.push(box);
+    }
+    // Newest first, each below the one before it, so no toast covers another.
+    for (const [index, box] of boxes.entries()) {
+      if (index > 0) expect(box?.y).toBeGreaterThanOrEqual((boxes[index - 1]?.y ?? 0) + 1);
+    }
+    const dismissButtons = demo.getByRole('button', { name: 'Dismiss' });
+    await expect(dismissButtons).toHaveCount(4);
+    await dismissButtons.first().focus();
+    for (const index of [1, 2, 3]) {
+      // Tab passes the toast itself and, on the last one, its action.
+      await expect(async () => {
+        await page.keyboard.press('Tab');
+        await expect(dismissButtons.nth(index)).toBeFocused({ timeout: 200 });
+      }).toPass();
+      const button = dismissButtons.nth(index);
+      const covered = await button.evaluate((element) => {
+        const { x, y, width, height } = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(x + width / 2, y + height / 2);
+        return !element.contains(hit);
+      });
+      expect(covered).toBe(false);
+    }
+    await demo.getByRole('button', { name: 'Retry' }).press('Enter');
+    await expect(toasts).toHaveCount(3);
+    await dismissButtons.first().press('Enter');
+    await expect(toasts).toHaveCount(2);
+    await lab.expectAccessible('[data-lab-demo="in-place-list"]');
+  });
+
   test('UIC-TOAST-1.1 UIC-TOAST-2.1 UIC-TOAST-2.2 pushes toasts into a landmark without moving focus', async ({
     page,
     lab,

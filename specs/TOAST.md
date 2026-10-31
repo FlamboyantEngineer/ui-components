@@ -66,9 +66,9 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-2.3 - In-place list
 
-`ToastList` shall draw a queue's visible toasts in place as a `ui-toast-list`, with the same toast markup, but without the portal, the landmark and the pausing of a region.
+`ToastList` shall draw a queue's visible toasts in place as a `ui-toast-list`, with the same toast markup, but without the portal, the landmark and the pausing of a region. A list in place is never piled or expanded: every visible toast, its action and its dismiss button show and take focus in order, so it holds no invisible focus stop. The reference stylesheet piles toasts only inside a `ui-toast-region` and lays a list in place out as a column at the list's width, newest first.
 
-Implementation: `src/components/toast/toast.tsx`
+Implementation: `src/components/toast/toast.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-2.4 - Overlay layer
