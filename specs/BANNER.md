@@ -59,10 +59,10 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-3.1 - Pending
 
-`isPending` shall replace the glyph with a decorative `ui-banner__spinner` slot, set `aria-busy="true"` and publish `data-pending`. Without it neither attribute renders.
+`isPending` shall replace the glyph with a decorative `ui-banner__spinner` slot, set `aria-busy="true"` and publish `data-pending`. Without it neither attribute renders. The reference sheet spins the spinner unless the reader prefers reduced motion, when it stands still as an open ring.
 
-Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
-Verification: `src/components/banner/banner.test.tsx`
+Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`, `labs/reference/empty-state.css`
+Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-3.2 - Entering, exiting and hidden
 

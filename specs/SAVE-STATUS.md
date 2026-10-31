@@ -27,7 +27,7 @@ Verification: `src/components/save-status/save-status.test.tsx`, `e2e/save-statu
 
 ### UIC-SAVE-STATUS-1.4 - Hiding the saved label
 
-With `hideSavedAfter`, the `saved` label shall leave `hideSavedAfter` milliseconds after the phase becomes `saved`; the root publishes `data-exiting` while the stylesheet's animations on it run, then the glyph and label are removed and `data-phase` stays `saved`. A label that appears publishes `data-entering` the same way. Any other phase restarts the count, and without `hideSavedAfter` the label stays.
+With `hideSavedAfter`, the `saved` label shall leave `hideSavedAfter` milliseconds after the phase becomes `saved`; the root publishes `data-exiting` while the stylesheet's animations on it run, then the glyph and label are removed and `data-phase` stays `saved`. A label that appears publishes `data-entering` the same way. The reference sheet fades the label in and out unless the reader prefers reduced motion; without animations the states end at once and the label still leaves on schedule. Any other phase restarts the count, and without `hideSavedAfter` the label stays.
 
 Implementation: `src/components/save-status/save-status.tsx`, `src/utils/use-delayed-flag.ts`, `src/utils/use-enter-exit.ts`, `labs/reference/save-status.css`
 Verification: `src/components/save-status/save-status.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/save-status.spec.ts`

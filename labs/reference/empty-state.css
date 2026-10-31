@@ -62,3 +62,10 @@
 .ui-banner__spinner {
   margin-block-start: 2px;
 }
+@media (prefers-reduced-motion: reduce) {
+  /* The open ring still reads as pending while it stands still. */
+  .ui-banner__spinner,
+  .ui-empty-state__spinner {
+    animation: none;
+  }
+}

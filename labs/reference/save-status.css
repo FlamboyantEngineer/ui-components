@@ -51,3 +51,10 @@
 .ui-save-status[data-exiting] {
   animation: ref-fade var(--ref-duration-slow) ease-in reverse;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-save-status[data-entering],
+  .ui-save-status[data-exiting] {
+    animation: none;
+  }
+}

@@ -91,4 +91,27 @@ test.describe('Save Status lab', () => {
     await lab.open('save-status', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-SAVE-STATUS-1.4 hides the saved label on schedule without motion', async ({
+    page,
+    lab,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.clock.install();
+    await lab.open('save-status');
+    const demo = page.locator('[data-lab-demo="autosave"]');
+    const status = demo.locator('.ui-save-status');
+    const region = status.getByRole('status');
+    await demo.getByRole('textbox', { name: 'Notes' }).fill('Grocery list: apples');
+    await page.clock.runFor(1000);
+    await page.clock.runFor(800);
+    await expect(region).toHaveText('Saved');
+    expect(await status.evaluate((node: Element) => getComputedStyle(node).animationName)).toBe(
+      'none',
+    );
+    await page.clock.runFor(2000);
+    await expect(region).toHaveText('');
+    await expect(status).toHaveAttribute('data-phase', 'saved');
+    await expect(status).not.toHaveAttribute('data-exiting');
+  });
 });
