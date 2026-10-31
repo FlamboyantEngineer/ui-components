@@ -36,7 +36,7 @@ export function PdfViewerPassword({ request }: PdfViewerPasswordProps) {
         description={strings.passwordRequired}
         value={password}
         // A password has no saved value to restore: whatever is typed counts as committed.
-        committedValue={password}
+        tracksChanges={false}
         onChange={setPassword}
         validationMode="immediate"
         validate={(value) =>

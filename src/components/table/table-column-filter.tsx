@@ -60,13 +60,13 @@ function NumberRangeFields<T extends TableRow>({ value, onChange }: TableColumnF
       <NumberField
         label={strings.rangeFrom}
         value={min}
-        committedValue={min}
+        tracksChanges={false}
         onChange={(next) => onChange({ ...range, min: next })}
       />
       <NumberField
         label={strings.rangeTo}
         value={max}
-        committedValue={max}
+        tracksChanges={false}
         onChange={(next) => onChange({ ...range, max: next })}
       />
     </>
@@ -88,7 +88,7 @@ function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) 
           mode="date-range"
           label={label}
           value={range}
-          committedValue={range}
+          tracksChanges={false}
           onChange={(next) => onChange(next)}
         />
       );
@@ -104,7 +104,7 @@ function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) 
           selectionMode="multiple"
           label={label}
           value={ticked}
-          committedValue={ticked}
+          tracksChanges={false}
           onChange={onChange}
         >
           {options.map((option) => (
@@ -121,7 +121,7 @@ function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) 
         <TextField
           label={strings.contains}
           value={text}
-          committedValue={text}
+          tracksChanges={false}
           onChange={onChange}
         />
       );

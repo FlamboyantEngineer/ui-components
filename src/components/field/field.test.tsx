@@ -319,6 +319,14 @@ describe('Field', () => {
     expect(screen.queryByRole('button', { name: 'Restore Fruit' })).not.toBeInTheDocument();
   });
 
+  it('UIC-FIELD-2.7 shows no dirty state or Restore for a plain input', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<TextField options={{ tracksChanges: false }} />);
+    await user.type(screen.getByRole('textbox'), 'Fig');
+    expect(root(container)).not.toHaveAttribute('data-dirty');
+    expect(screen.queryByRole('button', { name: 'Restore Fruit' })).not.toBeInTheDocument();
+  });
+
   it('UIC-FIELD-4.1 UIC-SLOT-REGISTRY-1.2 moves keyboard focus to the control before the button leaves', async () => {
     const user = userEvent.setup();
     // The caller controls the committed value, so leaving the input keeps the field dirty.

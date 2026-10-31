@@ -47,7 +47,7 @@ export function ConditionRuleRow({ rule, index, count }: ConditionRuleRowProps) 
         className={hooks.slotClass('field')}
         options={fields.map(({ id, label }) => ({ id, label }))}
         value={rule.field}
-        committedValue={rule.field}
+        tracksChanges={false}
         onChange={(id) => (id === null ? undefined : chooseField(String(id)))}
       />
       {field ? (

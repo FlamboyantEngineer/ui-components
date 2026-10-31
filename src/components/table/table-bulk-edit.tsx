@@ -58,20 +58,18 @@ function BulkEditField({ edit, label, value, onChange }: BulkEditFieldProps) {
   switch (edit.type) {
     case 'number': {
       const number = typeof value === 'number' ? value : null;
-      return (
-        <NumberField label={label} value={number} committedValue={number} onChange={onChange} />
-      );
+      return <NumberField label={label} value={number} tracksChanges={false} onChange={onChange} />;
     }
     case 'date': {
       const date = typeof value === 'string' ? value : null;
-      return <DateTimeField label={label} value={date} committedValue={date} onChange={onChange} />;
+      return <DateTimeField label={label} value={date} tracksChanges={false} onChange={onChange} />;
     }
     case 'boolean':
       return (
         <BooleanField
           label={label}
           value={value === true}
-          committedValue={false}
+          tracksChanges={false}
           onChange={onChange}
         />
       );
@@ -82,14 +80,14 @@ function BulkEditField({ edit, label, value, onChange }: BulkEditFieldProps) {
           label={label}
           options={edit.options.map((option) => ({ id: option, label: option }))}
           value={chosen}
-          committedValue={null}
+          tracksChanges={false}
           onChange={(next: Key | null) => onChange(next === null ? null : String(next))}
         />
       );
     }
     default: {
       const text = typeof value === 'string' ? value : '';
-      return <TextField label={label} value={text} committedValue="" onChange={onChange} />;
+      return <TextField label={label} value={text} tracksChanges={false} onChange={onChange} />;
     }
   }
 }
@@ -142,7 +140,7 @@ function TableBulkEditDialog<T extends TableRow>(
           label: getColumnText(candidate),
         }))}
         value={columnId}
-        committedValue={columnId}
+        tracksChanges={false}
         onChange={(next: Key | null) => {
           const id = next === null ? null : String(next);
           setColumnId(id);

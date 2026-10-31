@@ -122,7 +122,7 @@ function MappingRow({
           placeholder={strings.doNotImport}
           isReadOnly={isReadOnly}
           value={target}
-          committedValue={target}
+          tracksChanges={false}
           validate={() => (warning ? { severity: 'warning', message: warning } : null)}
           onChange={(next) => onChange(next === null ? null : String(next))}
         />

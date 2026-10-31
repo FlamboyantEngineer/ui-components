@@ -103,7 +103,7 @@ function ConflictBlock(props: ConflictBlockProps) {
         minRows={1}
         spellCheck={false}
         value={text}
-        committedValue={text}
+        tracksChanges={false}
         onChange={(text) => onResolve({ resolution: 'edited', text })}
       />
     </div>

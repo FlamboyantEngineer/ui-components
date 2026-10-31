@@ -49,7 +49,7 @@ export function FeedbackForm({ reasons, onSubmit, onSkip }: FeedbackFormProps) {
         label={strings.feedbackComment}
         multiline
         value={comment}
-        committedValue={comment}
+        tracksChanges={false}
         onChange={setComment}
         className={actionHooks.slotClass('comment')}
       />

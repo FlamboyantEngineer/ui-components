@@ -96,14 +96,14 @@ function RangeValue({ condition, labelLayout, slotClass, setValue }: ValueContro
         label={strings.rangeFrom}
         labelLayout={labelLayout}
         value={range.min}
-        committedValue={range.min}
+        tracksChanges={false}
         onChange={(min) => setValue({ ...range, min })}
       />
       <NumberField
         label={strings.rangeTo}
         labelLayout={labelLayout}
         value={range.max}
-        committedValue={range.max}
+        tracksChanges={false}
         onChange={(max) => setValue({ ...range, max })}
       />
     </div>
@@ -124,7 +124,7 @@ function ValueControl(props: ValueControlProps) {
         <NumberField
           {...shared}
           value={value as number | null}
-          committedValue={value as number | null}
+          tracksChanges={false}
           onChange={setValue}
         />
       );
@@ -135,7 +135,7 @@ function ValueControl(props: ValueControlProps) {
         <DateTimeField
           {...shared}
           value={value as string | null}
-          committedValue={value as string | null}
+          tracksChanges={false}
           onChange={setValue}
         />
       );
@@ -146,7 +146,7 @@ function ValueControl(props: ValueControlProps) {
           {...shared}
           mode="date-range"
           value={range}
-          committedValue={range}
+          tracksChanges={false}
           onChange={setValue}
         />
       );
@@ -159,18 +159,13 @@ function ValueControl(props: ValueControlProps) {
           {...shared}
           variant="segmented"
           value={value as boolean}
-          committedValue={value as boolean}
+          tracksChanges={false}
           onChange={(next) => setValue(next ?? true)}
         />
       );
     case 'text':
       return (
-        <TextField
-          {...shared}
-          value={value as string}
-          committedValue={value as string}
-          onChange={setValue}
-        />
+        <TextField {...shared} value={value as string} tracksChanges={false} onChange={setValue} />
       );
   }
 }
@@ -191,7 +186,7 @@ function ChoiceValue({ field, condition, labelLayout, slotClass, setValue }: Val
       selectionMode="multiple"
       options={options}
       value={value}
-      committedValue={value}
+      tracksChanges={false}
       onChange={(keys) => setValue(keys.map(String))}
     />
   );
@@ -218,7 +213,7 @@ export function FilterConditionFields(props: FilterConditionFieldsProps) {
             label: strings.filterOperator(operator),
           }))}
           value={condition.operator}
-          committedValue={condition.operator}
+          tracksChanges={false}
           onChange={(operator) =>
             operator === null
               ? undefined

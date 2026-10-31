@@ -39,7 +39,7 @@ function FieldCard({
           labelLayout="control-only"
           options={aggregates.map((id) => ({ id, label: strings.pivotAggregate(id) }))}
           value={aggregate}
-          committedValue={aggregate}
+          tracksChanges={false}
           onChange={(id) =>
             id === null
               ? undefined
