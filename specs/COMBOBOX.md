@@ -6,7 +6,7 @@
 
 ### UIC-COMBOBOX-1.1 - Structure
 
-`Combobox` shall render, inside its `ui-combobox` root: the `label` (`ui-combobox__label`), which names the input; a field group (`ui-combobox__field`) holding, for the `search` variant, a decorative search glyph (`ui-combobox__search-icon`), the text input with `role="combobox"` (`ui-combobox__input`), the busy indicator and the clear button when they apply, and the React Aria button that opens the list (`ui-combobox__button`); then the `description` (`ui-combobox__description`) and the `errorMessage` while invalid (`ui-combobox__error`). Without `label`, `aria-label` names the input.
+`Combobox` shall render, inside its `ui-combobox` root: the `label` (`ui-combobox__label`), which names the input; a field group (`ui-combobox__field`) holding, for the `search` variant, a decorative search glyph (`ui-combobox__search-icon`), the text input with `role="combobox"` (`ui-combobox__input`), the busy indicator and the clear button when they apply, and the React Aria button that opens the list (`ui-combobox__button`); then the `description` (`ui-combobox__description`) and the `errorMessage` while invalid (`ui-combobox__error`). Without `label`, `aria-label` names the input. A `label` or `description` that renders nothing (`null`, `undefined`, a boolean or an empty string) draws no slot; any other content, `0` included, draws it.
 
 Implementation: `src/components/combobox/combobox.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`
@@ -43,7 +43,7 @@ Verification: `e2e/combobox.spec.ts`
 
 ### UIC-COMBOBOX-2.1 - Options and sections
 
-Suggestions shall be options (`id`, `label`, optional `description`, `icon` as a built-in icon component or element, and `isDisabled`) or sections (`id`, `title`, `options`). An option draws its icon (`ui-combobox__option-icon`), label (`ui-combobox__option-label`) and description (`ui-combobox__option-description`) in a `role="option"` row (`ui-combobox__option`), named by its label and description text; a section draws a group (`ui-combobox__section`) headed by its title (`ui-combobox__section-header`).
+Suggestions shall be options (`id`, `label`, optional `description`, `icon` as a built-in icon component or element, and `isDisabled`) or sections (`id`, `title`, `options`). An option draws its icon (`ui-combobox__option-icon`), label (`ui-combobox__option-label`) and description (`ui-combobox__option-description`) in a `role="option"` row (`ui-combobox__option`), named by its label and description text (a description of `0` included, one that renders nothing draws no slot); a section draws a group (`ui-combobox__section`) headed by its title (`ui-combobox__section-header`).
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`

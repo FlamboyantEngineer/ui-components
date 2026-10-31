@@ -442,6 +442,19 @@ test.describe('Combobox lab', () => {
     await expect(icon).toHaveAttribute('data-glyph', 'folder');
     await lab.expectAccessible('[data-lab-demo="remembered-chips"]');
   });
+
+  test('UIC-COMBOBOX-1.1 UIC-COMBOBOX-2.1 draws and reads label and descriptions of zero', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const demo = page.locator('[data-lab-demo="zero"]');
+    const input = demo.getByRole('combobox', { name: '0', exact: true });
+    await expect(input).toHaveAccessibleDescription('0');
+    await input.click();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('option', { name: 'Pears 0' })).toBeVisible();
+  });
 });
 
 for (const [device, viewport] of [
