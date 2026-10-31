@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { resetLocalTimeZone, setLocalTimeZone } from '../primitives/index.js';
 import { capitalizeText, describeRelativeTime, formatAbsoluteTime } from './relative-time.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
@@ -10,6 +11,20 @@ const hour = 60 * minute;
 const at = (hours: number, minutes: number, seconds = 0) =>
   new Date(2026, 4, 23, hours, minutes, seconds).toISOString();
 const plain = (text: string | undefined) => text?.replace(/\s/g, ' ');
+
+/** Runs `read` with the process and the date library in `timeZone`. */
+function inTimeZone<T>(timeZone: string, read: () => T): T {
+  const previous = process.env.TZ;
+  process.env.TZ = timeZone;
+  setLocalTimeZone(timeZone);
+  try {
+    return read();
+  } finally {
+    if (previous === undefined) delete process.env.TZ;
+    else process.env.TZ = previous;
+    resetLocalTimeZone();
+  }
+}
 
 describe('describeRelativeTime', () => {
   it('UIC-RELATIVE-TIME-2.1 words instants within a day in seconds and says when the words change', () => {
@@ -183,5 +198,62 @@ describe('formatAbsoluteTime', () => {
     );
     expect(formatAbsoluteTime('2026-05-21', 'en-US', { dateStyle: 'long' })).toBe('May 21, 2026');
     expect(formatAbsoluteTime('soon', 'en-US')).toBeNull();
+  });
+});
+
+describe('describeRelativeTime across daylight saving time', () => {
+  // 01:45 EDT on the night New York repeats the hour from 01:00 to 02:00.
+  const repeated = {
+    ...options,
+    now: new Date('2026-11-01T05:45:00Z'),
+    dateStyle: 'short' as const,
+    timeStyle: 'long' as const,
+  };
+
+  it('UIC-RELATIVE-TIME-2.1 keeps the instant of an offset, UTC or zoned value in a repeated hour', () => {
+    const spellings = [
+      '2026-11-01T01:30:00-05:00',
+      '2026-11-01T06:30:00Z',
+      '2026-11-01T06:30:00.000+00:00',
+      '2026-11-01T01:30:00-05:00[America/New_York]',
+    ];
+    for (const value of spellings) {
+      const text = inTimeZone('America/New_York', () => describeRelativeTime(value, repeated));
+      expect(text).toMatchObject({
+        relative: 'in 45 minutes',
+        relation: 'future',
+        isRelative: true,
+      });
+      expect(plain(text?.absolute)).toBe('11/1/26, 1:30:00 AM EST');
+      // Exactly 45 minutes away, the words read 44 minutes a millisecond later.
+      expect(text?.nextChange).toBe(1);
+    }
+    const earlier = inTimeZone('America/New_York', () =>
+      describeRelativeTime('2026-11-01T01:30:00-04:00', repeated),
+    );
+    expect(earlier).toMatchObject({ relative: '15 minutes ago', relation: 'past' });
+    expect(plain(earlier?.absolute)).toBe('11/1/26, 1:30:00 AM EDT');
+  });
+
+  it('UIC-RELATIVE-TIME-2.1 reads a value without an offset as local wall time', () => {
+    // A wall time the hour repeats reads as its first occurrence.
+    const floating = inTimeZone('America/New_York', () =>
+      describeRelativeTime('2026-11-01T01:30:00', repeated),
+    );
+    expect(floating).toMatchObject({ relative: '15 minutes ago', relation: 'past' });
+    expect(plain(floating?.absolute)).toBe('11/1/26, 1:30:00 AM EDT');
+  });
+
+  it('UIC-RELATIVE-TIME-2.1 dates an instant by its local calendar day', () => {
+    const late = { ...options, now: new Date('2026-11-01T05:45:00Z') };
+    // 03:30 UTC on November 2 is still November 1 in New York, so it reads today.
+    const text = inTimeZone('America/New_York', () =>
+      describeRelativeTime('2026-11-02T03:30:00Z', late),
+    );
+    expect(text).toMatchObject({ relative: 'in 22 hours', relation: 'future' });
+    const days = inTimeZone('America/New_York', () =>
+      describeRelativeTime('2026-11-03T04:30:00Z', late),
+    );
+    expect(days).toMatchObject({ relative: 'tomorrow', relation: 'future' });
   });
 });

@@ -35,6 +35,15 @@ const nearSamples = {
   'in 40 seconds': instant(20, 10, 30, 40),
 } as const;
 
+/** 01:44:30 EDT in New York on the night the hour from 01:00 to 02:00 repeats. */
+const getRepeatedHourNow = () => new Date('2026-11-01T05:44:30Z');
+const repeatedHour = {
+  'second 01:30 (offset)': '2026-11-01T01:30:00-05:00',
+  'second 01:30 (UTC)': '2026-11-01T06:30:00Z',
+  'second 01:30 (zone)': '2026-11-01T01:30:00-05:00[America/New_York]',
+  'first 01:30 (offset)': '2026-11-01T01:30:00-04:00',
+} as const;
+
 const precisions: readonly RelativeTimePrecision[] = ['minute', 'second'];
 
 const unitStyles: readonly RelativeTimeUnitStyle[] = ['long', 'short', 'narrow'];
@@ -163,6 +172,22 @@ mountLab(
             getNow={getNow}
             showTooltip={tooltip === 'shown'}
             fallbackAfterDays={fallback === '7 days' ? 7 : 2}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Repeated daylight saving hour"
+      description="Against 01:44 EDT on the night New York repeats an hour, each spelling of 01:30 EST keeps its instant: 45 minutes ahead. In other time zones the same instants read in local time."
+    >
+      <StateMatrix
+        axes={{ value: Object.keys(repeatedHour) as Array<keyof typeof repeatedHour> }}
+        render={({ value }) => (
+          <RelativeTime
+            value={repeatedHour[value]}
+            getNow={getRepeatedHourNow}
+            timeStyle="long"
+            dateStyle="short"
           />
         )}
       />

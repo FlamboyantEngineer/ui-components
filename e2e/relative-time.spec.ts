@@ -152,3 +152,25 @@ test.describe('Relative Time lab', () => {
     await page.clock.resume();
   });
 });
+
+test.describe('Relative Time lab in New York', () => {
+  test.use({ timezoneId: 'America/New_York' });
+
+  test('UIC-RELATIVE-TIME-1.1 UIC-RELATIVE-TIME-1.3 keeps instants through a repeated daylight saving hour', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-time');
+    for (const value of ['second 01:30 (offset)', 'second 01:30 (UTC)', 'second 01:30 (zone)']) {
+      const time = page.locator(cell(`value=${value}`));
+      await expect(time).toHaveText('In 45 minutes');
+      await expect(time).toHaveAttribute('data-relation', 'future');
+      await time.focus();
+      await expect(page.getByRole('tooltip').last()).toHaveText(/1:30:00\sAM\sEST/);
+      await time.blur();
+    }
+    const earlier = page.locator(cell('value=first 01:30 (offset)'));
+    await expect(earlier).toHaveText('14 minutes ago');
+    await expect(earlier).toHaveAttribute('data-relation', 'past');
+  });
+});

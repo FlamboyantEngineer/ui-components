@@ -25,6 +25,8 @@ export {
   fromDate,
   getLocalTimeZone,
   now,
+  resetLocalTimeZone,
+  setLocalTimeZone,
   startOfWeek,
   toCalendarDate,
   toCalendarDateTime,
