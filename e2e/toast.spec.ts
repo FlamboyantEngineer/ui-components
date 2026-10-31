@@ -58,6 +58,17 @@ test.describe('Toast lab', () => {
     await expect(region.getByRole('alertdialog')).toHaveCount(0);
   });
 
+  test('UIC-TOAST-1.4 adds a toast from the onClose of a dismissed one', async ({ page, lab }) => {
+    await lab.open('toast');
+    await page.locator('[data-lab-push="follow-up"]').click();
+    const region = page.locator('.ui-toast-region');
+    await expect(region.locator('.ui-toast__title')).toHaveText(['Import finished']);
+    await region.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(region.locator('.ui-toast__title')).toHaveText(['Review the imported rows']);
+    await region.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(region.getByRole('alertdialog')).toHaveCount(0);
+  });
+
   test('UIC-TOAST-1.2 closes short-lived toasts unless the region is hovered', async ({
     page,
     lab,
