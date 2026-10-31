@@ -6,6 +6,7 @@ import {
   getListFormat,
   getNumberFormat,
   getRelativeTimeFormat,
+  normalizeIntlSpaces,
 } from './intl-format.js';
 
 describe('intl formatters', () => {
@@ -38,5 +39,14 @@ describe('intl formatters', () => {
     const replacement = getNumberFormat('en-US-x-evict');
     expect(replacement).not.toBe(first);
     expect(replacement.format(1234.5)).toBe(first.format(1234.5));
+  });
+
+  it('UIC-INTL-FORMAT-1.3 writes the spaces runtimes format differently the same way', () => {
+    expect(normalizeIntlSpaces('6:30\u202fPM')).toBe('6:30 PM');
+    expect(normalizeIntlSpaces('6:30 PM')).toBe('6:30 PM');
+    expect(normalizeIntlSpaces('1:00\u2009–\u20094:00')).toBe('1:00 – 4:00');
+    expect(normalizeIntlSpaces('Nov 1, 2026, 6:30\u202fPM', '\u00a0')).toBe(
+      'Nov\u00a01,\u00a02026,\u00a06:30\u00a0PM',
+    );
   });
 });

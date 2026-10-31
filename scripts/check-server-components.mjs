@@ -74,6 +74,40 @@ export default function Page() {
 }
 `;
 
+// Date fields on a 12-hour clock, whose Intl spacing literals differ between Node and browsers
+// (U+202F against U+0020), beside a 24-hour control; all in one explicit zone (UIC-DATE-TIME-FIELD-1.1).
+const DATES_PAGE = `import { Button, DateTimeField, Disclosure, UiProvider } from '${manifest.name}';
+
+export default function Page() {
+  const zone = 'America/New_York';
+  return (
+    <UiProvider locale="en-US">
+      <main>
+        <DateTimeField label="Alarm" mode="time" defaultValue="18:30" />
+        <DateTimeField label="Start" mode="date-time" timeZone={zone} defaultValue="2026-11-01T06:30:00Z" />
+        <DateTimeField
+          label="Window"
+          mode="date-time-range"
+          timeZone={zone}
+          defaultValue={{ start: '2026-11-01T06:30:00Z', end: '2026-11-01T18:00:00Z' }}
+        />
+        <DateTimeField
+          label="Shift"
+          mode="date-time"
+          hourCycle={24}
+          timeZone={zone}
+          defaultValue="2026-11-01T06:30:00Z"
+        />
+        <Button>Save</Button>
+        <Disclosure title="Opening hours">
+          <p>Nine to five.</p>
+        </Disclosure>
+      </main>
+    </UiProvider>
+  );
+}
+`;
+
 // Server-safe helpers called through their public entry points, which must not hand the server a
 // client reference (UIC-SERVER-COMPONENTS-1.4).
 const HELPERS_PAGE = `import { resolveAvatarColor } from '${manifest.name}/avatar';
@@ -228,6 +262,7 @@ try {
   write('app/page.js', ROOT_PAGE);
   write('app/subpaths/page.js', SUBPATH_PAGE);
   write('app/helpers/page.js', HELPERS_PAGE);
+  write('app/dates/page.js', DATES_PAGE);
   install([
     `next@${NEXT_VERSION}`,
     `react@${reactVersion}`,
@@ -255,6 +290,7 @@ try {
     'class="ui-badge',
   ]);
   await checkPage(browser, origin, '/subpaths', ['Added new', 'Add row', 'class="ui-glyph']);
+  await checkPage(browser, origin, '/dates', ['class="ui-date-time-field']);
   await checkMarkup(origin, '/helpers', ['Streamed box 1 true 200 40-50']);
   stopServer();
 

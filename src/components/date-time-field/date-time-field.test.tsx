@@ -294,6 +294,25 @@ describe('DateTimeField field', () => {
     expectHooksMatchSpec(container, 'DATE-TIME-FIELD', { slots: ['previous'] });
   });
 
+  it('UIC-DATE-TIME-FIELD-1.1 UIC-DATE-TIME-FIELD-1.6 writes spaces the same on every runtime', () => {
+    const { container } = renderInLocale(
+      <DateTimeField
+        label="When"
+        mode="date-time-range"
+        value={{ start: '2026-11-01T18:30', end: '2026-11-02T09:00' }}
+        committedValue={{ start: '2026-11-01T18:00', end: '2026-11-02T09:00' }}
+      />,
+    );
+    const literals = [...container.querySelectorAll('[data-type="literal"]')].map(
+      (part) => part.textContent,
+    );
+    expect(literals).toContain('\u00a0');
+    expect(literals.join('')).not.toMatch(/[ \u2009\u202f]/);
+    const previous = container.querySelector('.ui-date-time-field__previous del')?.textContent;
+    expect(previous).toMatch(/6:00 PM/);
+    expect(previous).not.toMatch(/[\u00a0\u2009\u202f]/);
+  });
+
   it('UIC-DATE-TIME-FIELD-1.6 writes the previous value at the editor precision and hour cycle', () => {
     /** The previous value a field shows, read once and then unmounted. */
     function previousOf(element: ReactElement) {

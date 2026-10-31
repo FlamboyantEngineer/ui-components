@@ -24,6 +24,7 @@ import { useMemo, type ReactNode } from 'react';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { Glyph } from '../../core/provider.js';
+import { normalizeIntlSpaces } from '../../utils/intl-format.js';
 import {
   FieldPreviousValue,
   toAriaControlProps,
@@ -179,7 +180,9 @@ function Segments({ slot }: { slot?: 'start' | 'end' }) {
     <DateInput slot={slot} className={hooks.slotClass('input')}>
       {(segment) => (
         <DraftAwareSegment segment={segment} slot={slot}>
-          <DateSegment segment={segment} className={hooks.slotClass('segment')} />
+          <DateSegment segment={segment} className={hooks.slotClass('segment')}>
+            {({ text }) => normalizeIntlSpaces(text, '\u00a0')}
+          </DateSegment>
         </DraftAwareSegment>
       )}
     </DateInput>
