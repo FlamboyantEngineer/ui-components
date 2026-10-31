@@ -22,7 +22,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 While open, the tour shall render a decorative spotlight (`ui-tour__spotlight`, hidden from assistive technology) in a portal on the modal layer, below the dialog, fixed over the target's box in the viewport with functional inline position and size, following it as the page scrolls or resizes and the target changes size. It never takes pointer events. The host stylesheet draws it, for example as a ring whose wide shadow dims the rest of the page; unstyled it is invisible.
 
-Position and size transitions shall run only when both the previous and next highlight positions exist. The first highlight, a change to a step without a target, and a change from such a step to a highlight shall settle immediately, including Back navigation. Other host animations, such as opacity, are unaffected.
+Position and size transitions shall run only when both the previous and next highlight positions exist. The first highlight, a change to a step without a target, and a change from such a step to a highlight shall settle immediately, including Back navigation. Other host animations, such as opacity, are unaffected, and an engine without the Web Animations API settles without cancelling anything.
 
 Implementation: `src/components/tour/tour-spotlight.tsx`, `src/utils/overlay-auto-update.ts`, `labs/reference/tour.css`
 Verification: `src/components/tour/tour.test.tsx`, `src/components/tour/tour-spotlight.test.tsx`, `e2e/tour.spec.ts`
