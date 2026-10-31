@@ -50,10 +50,10 @@
 .ui-state-machine-view__initial-marker {
   position: absolute;
   top: 50%;
-  right: 100%;
+  inset-inline-end: 100%;
   width: 10px;
   height: 10px;
-  margin-right: 10px;
+  margin-inline-end: 10px;
   border-radius: 50%;
   background: var(--ref-text);
   transform: translateY(-50%);
@@ -61,7 +61,7 @@
 
 .ui-state-machine-view[data-orientation='vertical'] .ui-state-machine-view__initial-marker {
   top: auto;
-  right: auto;
+  inset-inline-end: auto;
   bottom: 100%;
   left: 50%;
   margin: 0 0 10px;

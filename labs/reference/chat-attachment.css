@@ -127,11 +127,11 @@
 }
 
 .ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__download {
-  left: 4px;
+  inset-inline-start: 4px;
 }
 
 .ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__remove {
-  right: 4px;
+  inset-inline-end: 4px;
 }
 
 .ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__progress,

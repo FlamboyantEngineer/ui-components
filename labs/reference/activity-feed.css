@@ -55,7 +55,7 @@
   position: absolute;
   top: 28px;
   bottom: -12px;
-  left: 11px;
+  inset-inline-start: 11px;
   width: 2px;
   background: var(--ref-border);
   content: '';

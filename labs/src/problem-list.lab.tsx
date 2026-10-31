@@ -112,6 +112,14 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Right to left"
+      description="In a right-to-left page the severity bar sits on the start edge, on the right."
+    >
+      <div dir="rtl" style={{ width: 300 }} data-lab-demo="rtl">
+        <ProblemList title="Problems, right to left" problems={errors} />
+      </div>
+    </LabSection>
+    <LabSection
       title="With a form"
       description="Book without filling the form: the list collects the fields' problems, each moves focus to its field, and it empties as you fix them."
     >

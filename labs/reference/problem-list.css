@@ -6,7 +6,7 @@
   margin: 0 0 12px;
   padding: 10px 12px;
   border: 1px solid var(--ref-border);
-  border-left-width: 4px;
+  border-inline-start-width: 4px;
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
   color: var(--ref-text);
@@ -22,7 +22,7 @@
 }
 
 .ui-problem-list[data-empty] {
-  border-left-color: var(--ref-success);
+  border-inline-start-color: var(--ref-success);
 }
 
 .ui-problem-list__title {

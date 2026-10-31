@@ -23,7 +23,7 @@
   position: absolute;
   top: 16px;
   bottom: -4px;
-  left: 5px;
+  inset-inline-start: 5px;
   width: 2px;
   background: var(--ref-border);
   content: '';
