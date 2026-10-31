@@ -13,7 +13,9 @@ const listTypes = { and: 'conjunction', or: 'disjunction', unit: 'unit' } as con
 /**
  * A value a message argument takes. Numbers format with the locale (`{count}`, `#` in a plural),
  * string arrays and `MessageList`s read as a locale-aware list, and booleans pick a `select` branch
- * named `true` or `false`. Missing values read as empty text and pick a `select`'s `other` branch.
+ * named `true` or `false`. An argument passed as `undefined` or `null` reads as empty text, picks a
+ * `select`'s `other` branch and counts as zero in a plural or number; leaving the argument out
+ * altogether is an error (see `formatMessage`).
  */
 export type MessageValue = string | number | boolean | readonly string[] | MessageList | undefined;
 
@@ -52,7 +54,10 @@ function toArgument(value: MessageValue | null, locale: string): string | number
 /**
  * Formats an ICU MessageFormat message, such as
  * `{count, plural, =0 {No files} one {# file} other {# files}}`, with the locale's plural rules,
- * number formats and list patterns. Throws when the message is malformed.
+ * number formats and list patterns. Every argument the message names must be a key of `values`;
+ * pass `undefined` or `null` for one without a value. Throws when the message is malformed or names
+ * an argument `values` leaves out, so a misspelt argument or a stale translation fails loudly
+ * instead of printing a gap.
  */
 export function formatMessage(
   message: string,

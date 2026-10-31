@@ -73,7 +73,7 @@ Verification: `src/core/locales/index.test.ts`, `e2e/languages.spec.ts`
 
 ### UIC-PROVIDER-3.6 - Host messages
 
-`formatMessage(message, values, locale)` and `useFormatMessage()` shall format a host's own ICU messages with the same rules, the hook with the provider's locale, so a host builds its sentences, counts and lists the way the library does. A list value `{ items, type: 'or' }` or `{ items, type: 'unit' }` joins its items with "or" or with commas only.
+`formatMessage(message, values, locale)` and `useFormatMessage()` shall format a host's own ICU messages with the same rules, the hook with the provider's locale, so a host builds its sentences, counts and lists the way the library does. A list value `{ items, type: 'or' }` or `{ items, type: 'unit' }` joins its items with "or" or with commas only. An argument passed as `undefined` or `null` reads as empty text, picks a `select`'s `other` branch and counts as zero in a plural or number; an argument the message names but `values` leaves out throws, as a malformed message does, so a misspelt argument or a stale translation never prints a silent gap.
 
 Implementation: `src/core/message-format.ts`, `src/core/provider.tsx`
 Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`
