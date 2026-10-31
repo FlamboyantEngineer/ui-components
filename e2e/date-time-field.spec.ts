@@ -261,3 +261,17 @@ test.describe('Date Time Field lab', () => {
     });
   }
 });
+
+test.describe('Date Time Field lab in another time zone', () => {
+  test.use({ timezoneId: 'America/New_York' });
+
+  test('UIC-DATE-TIME-FIELD-1.2 shows an offset value as wall time in the browser zone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const launch = field(page, 'offset');
+    await expect(launch.getByRole('spinbutton', { name: /^hour/ })).toHaveText('11');
+    await expect(launch.getByRole('spinbutton', { name: /^day/ })).toHaveText('13');
+  });
+});

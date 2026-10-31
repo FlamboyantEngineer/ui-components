@@ -61,17 +61,18 @@ export function parseIsoTime(text: string | null | undefined): Time | null {
 
 /**
  * A date and time text as the wall time it edits as. Without `timeZone` the result is a floating
- * local date and time: a floating text reads as written, and a text with an offset or a zone reads
- * as the local wall time of its instant. With `timeZone` the result is zoned there: a zoned or
- * offset text converts to the zone, and a floating text reads as wall time in it. `null` when the
- * text is not a date and time.
+ * date and time: a floating text reads as written, and a text with an offset or a zone reads as the
+ * wall time of its instant in `localZone` (the local time zone by default). With `timeZone` the
+ * result is zoned there: a zoned or offset text converts to the zone, and a floating text reads as
+ * wall time in it. `null` when the text is not a date and time.
  */
 export function parseIsoDateTime(
   text: string | null | undefined,
   timeZone?: string,
+  localZone?: string,
 ): CalendarDateTime | ZonedDateTime | null {
   if (!text || isoDatePattern.test(text)) return null;
-  const zone = timeZone ?? getLocalTimeZone();
+  const zone = timeZone ?? localZone ?? getLocalTimeZone();
   const zoned = attempt(() => {
     if (zonePattern.test(text)) return toTimeZone(parseZonedDateTime(text), zone);
     if (offsetPattern.test(text)) return parseAbsolute(text, zone);

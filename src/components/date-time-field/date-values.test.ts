@@ -268,3 +268,27 @@ it('UIC-DATE-TIME-FIELD-3.1 checks interior days through leap dates and zoned da
     ),
   ).toBe(true);
 });
+
+it('UIC-DATE-TIME-FIELD-1.2 reads offset texts in the local zone it is given', () => {
+  const text = '2026-11-01T06:30:00Z';
+  expect(parseIsoDateTime(text, undefined, 'UTC')?.toString()).toBe('2026-11-01T06:30:00');
+  expect(parseIsoDateTime(text, undefined, 'America/New_York')?.toString()).toBe(
+    '2026-11-01T01:30:00',
+  );
+  expect(parseIsoDateTime('2026-11-01T06:30', undefined, 'Asia/Tokyo')?.toString()).toBe(
+    '2026-11-01T06:30:00',
+  );
+  const options = { locale: 'en-US', hourCycle: 24 as const };
+  expect(plain(formatDateValue(text, 'date-time', { ...options, localZone: 'UTC' }))).toBe(
+    'Nov 1, 2026, 06:30',
+  );
+  expect(plain(formatDateValue(text, 'date-time', { ...options, localZone: 'Asia/Tokyo' }))).toBe(
+    'Nov 1, 2026, 15:30',
+  );
+  expect(formatDateValue('2026-11-01', 'date', { locale: 'en-US', localZone: 'UTC' })).toBe(
+    'Nov 1, 2026',
+  );
+  const bounds = { minValue: '2026-11-01T02:00', localZone: 'America/New_York' };
+  expect(findBoundIssue(text, 'date-time', bounds)?.bound).toBe('min');
+  expect(findBoundIssue(text, 'date-time', { ...bounds, localZone: 'UTC' })).toBeNull();
+});

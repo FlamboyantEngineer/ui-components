@@ -82,8 +82,12 @@ interface DatePickerControlProps {
 }
 
 /** A date or a date and time text as the value the date pickers edit, or `null`. */
-function toPickerValue(text: string | null | undefined, mode: 'date' | 'date-time', zone?: string) {
-  return mode === 'date' ? parseIsoDate(text) : parseIsoDateTime(text, zone);
+function toPickerValue(
+  text: string | null | undefined,
+  mode: 'date' | 'date-time',
+  { timeZone, localZone }: DateValueOptions,
+) {
+  return mode === 'date' ? parseIsoDate(text) : parseIsoDateTime(text, timeZone, localZone);
 }
 
 /** The building block's unavailable-date check, asking the caller's about the calendar date. */
@@ -130,14 +134,14 @@ function usePlaceholderValue({ mode, settings }: DatePickerControlProps) {
 
 function useBoundValues({ mode, bounds, settings }: DatePickerControlProps) {
   const single = toSingleMode(mode) === 'date' ? 'date' : 'date-time';
-  const { timeZone } = settings;
+  const { timeZone, localZone } = settings;
   const { minValue, maxValue } = bounds;
   return useMemo(
     () => ({
-      minValue: toPickerValue(minValue, single, timeZone),
-      maxValue: toPickerValue(maxValue, single, timeZone),
+      minValue: toPickerValue(minValue, single, { timeZone, localZone }),
+      maxValue: toPickerValue(maxValue, single, { timeZone, localZone }),
     }),
-    [single, timeZone, minValue, maxValue],
+    [single, timeZone, localZone, minValue, maxValue],
   );
 }
 
@@ -187,8 +191,11 @@ export function DateControl(props: DatePickerControlProps) {
   const { state, mode, settings, onPick } = props;
   const single = mode === 'date' ? 'date' : 'date-time';
   const text = typeof state.value === 'string' ? state.value : null;
-  const { timeZone, granularity } = settings;
-  const value = useMemo(() => toPickerValue(text, single, timeZone), [text, single, timeZone]);
+  const { timeZone, localZone, granularity } = settings;
+  const value = useMemo(
+    () => toPickerValue(text, single, { timeZone, localZone }),
+    [text, single, timeZone, localZone],
+  );
   return (
     <DatePicker<DateValue>
       {...datePickerProps(props)}
@@ -221,12 +228,12 @@ export function DateRangeControl(props: DatePickerControlProps) {
   const range = typeof state.value === 'object' ? state.value : null;
   const start = range?.start;
   const end = range?.end;
-  const { timeZone, granularity } = settings;
+  const { timeZone, localZone, granularity } = settings;
   const value = useMemo(() => {
-    const first = toPickerValue(start, single, timeZone);
-    const last = toPickerValue(end, single, timeZone);
+    const first = toPickerValue(start, single, { timeZone, localZone });
+    const last = toPickerValue(end, single, { timeZone, localZone });
     return first && last ? { start: first, end: last } : null;
-  }, [start, end, single, timeZone]);
+  }, [start, end, single, timeZone, localZone]);
   const toText = (date: DateValue) => formatIsoDate(date, granularity);
   return (
     <DateRangePicker<DateValue>
