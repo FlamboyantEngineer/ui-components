@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Link, useLocale } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../test/hooks.js';
+import { numberCodec } from '../utils/json-codec.js';
 import { requireDefined } from '../utils/require-defined.js';
 import {
   Glyph,
@@ -271,7 +272,7 @@ describe('links', () => {
 
 describe('storage', () => {
   function Counter({ storageKey }: { storageKey?: string }) {
-    const [count, setCount] = usePersistentState(storageKey, 0);
+    const [count, setCount] = usePersistentState(storageKey, 0, { codec: numberCodec });
     return (
       <button type="button" onClick={() => setCount((value) => value + 1)}>
         {`Count ${count}`}

@@ -174,6 +174,14 @@ export {
   useUiStorage,
   useUiStrings,
 } from './provider.js';
+export {
+  booleanCodec,
+  createJsonCodec,
+  createListCodec,
+  keyCodec,
+  keyListCodec,
+  numberCodec,
+} from '../utils/json-codec.js';
 export type {
   GlyphProps,
   PersistCodec,

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { createJsonCodec } from '../../utils/json-codec.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 
@@ -104,6 +105,12 @@ export function stepColumnMove(
   if (!target || pinRank(target) !== pinRank(requireDefined(columns[index]))) return null;
   return { id, targetId: target.id, position: step === 1 ? 'after' : 'before' };
 }
+
+/**
+ * A stored layout or set of widths, read as any JSON: `readColumnLayout` and `pickColumnWidths`
+ * keep its usable parts, so one stale column does not discard the rest.
+ */
+export const storedColumnsCodec = createJsonCodec((value): unknown => value);
 
 /** The usable part of a stored layout: arrays of known column ids, each listed once. */
 export function readColumnLayout(
