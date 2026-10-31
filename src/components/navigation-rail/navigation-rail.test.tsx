@@ -490,6 +490,23 @@ describe('NavigationRail', () => {
     expect(screen.getByRole('link', { name: 'North field' })).toBeInTheDocument();
   });
 
+  it('UIC-NAVIGATION-RAIL-2.6 UIC-COMPOSITION-5.1 reports no change for an open group pressed in a collapsed rail', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    render(
+      <NavigationRail aria-label="Main navigation" defaultCollapsed>
+        <NavigationRailSection>
+          <NavigationRailGroup label="Fields" isExpanded onExpandedChange={onExpandedChange}>
+            <NavigationRailItem label="North field" href="/north" />
+          </NavigationRailGroup>
+        </NavigationRailSection>
+      </NavigationRail>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Fields' }));
+    expect(nav()).not.toHaveAttribute('data-collapsed');
+    expect(onExpandedChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-NAVIGATION-RAIL-3.2 forwards classes, ids and data attributes', () => {
     const { container } = render(
       <NavigationRail aria-label="Main navigation" className="extra" id="rail" data-app="notes">
