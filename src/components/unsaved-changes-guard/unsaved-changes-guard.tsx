@@ -23,6 +23,7 @@ import {
   type UnsavedChangesEntry,
   type UnsavedChangesStore,
   type UnsavedChangesSummary,
+  isUnsavable,
 } from './unsaved-changes-store.js';
 
 export interface UnsavedChangesGuardProps extends BaseProps {
@@ -70,8 +71,6 @@ interface GuardContextValue {
 interface LeaveRequest extends ConfirmLeaveOptions {
   /** Names this question, so each one gets a dialog of its own. */
   id: number;
-  /** What was unsaved when the reader was asked; the dialog keeps it while it closes. */
-  summary: UnsavedChangesSummary;
   /** Answers the question; only the first answer counts. */
   settle: (allowed: boolean) => void;
 }
@@ -122,8 +121,7 @@ function useLeaveRequests(store: UnsavedChangesStore) {
   const [isOpen, setOpen] = useState(false);
   const confirmLeave = useCallback(
     (options: ConfirmLeaveOptions = {}) => {
-      const summary = store.getSummary();
-      if (!summary.isDirty) return Promise.resolve(true);
+      if (!store.getSummary().isDirty) return Promise.resolve(true);
       return new Promise<boolean>((resolve) => {
         pending.current?.settle(false);
         let isSettled = false;
@@ -131,7 +129,6 @@ function useLeaveRequests(store: UnsavedChangesStore) {
         const request: LeaveRequest = {
           ...options,
           id: nextId.current,
-          summary,
           settle: (allowed) => {
             if (isSettled) return;
             isSettled = true;
@@ -184,7 +181,10 @@ function resolveLeaveActions({
   };
 }
 
-/** Save, Discard and Stay when every dirty source can save; otherwise Discard and Stay. */
+/**
+ * Save, Discard and Stay when every dirty source can save; otherwise Discard and Stay. The question
+ * follows the dirty sources until an action starts or it closes, then holds what it showed.
+ */
 function LeaveConfirmation({
   store,
   request,
@@ -195,22 +195,31 @@ function LeaveConfirmation({
   ...rest
 }: LeaveConfirmationProps) {
   const strings = useUiStrings();
-  const { canSave, labels } = request?.summary ?? summary;
+  const [held, setHeld] = useState<UnsavedChangesSummary | null>(null);
+  const { canSave, labels } = held ?? summary;
   const leaveAfter = (run: () => Promise<void>) => async (close: () => void) => {
-    await run();
+    setHeld(summary);
+    try {
+      await run();
+    } catch (error) {
+      setHeld(null);
+      // A source lost its save meanwhile: the question now offers Discard alone.
+      if (isUnsavable(error)) return;
+      throw error;
+    }
     request?.settle(true);
     close();
   };
-  // A dialog per question: an action still running for a replaced question settles, fails and
-  // closes only its own dialog, so the new question starts with none running.
   return (
     <Modal
-      key={request?.id}
       {...rest}
       role="alertdialog"
       tone={canSave ? 'neutral' : 'danger'}
       onOpenChange={(next) => {
-        if (!next) request?.settle(false);
+        if (!next) {
+          setHeld((current) => current ?? summary);
+          request?.settle(false);
+        }
         rest.onOpenChange(next);
       }}
       {...resolveLeaveActions({ canSave, strings, leaveAfter, store })}
@@ -261,7 +270,10 @@ export function UnsavedChangesGuard({
   return (
     <GuardContext value={context}>
       {children}
+      {/* A dialog per question: an action still running for a replaced question settles, fails and
+          closes only its own dialog, so the new question starts with none running. */}
       <LeaveConfirmation
+        key={shown?.id}
         {...rest}
         store={store}
         request={shown}

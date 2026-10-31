@@ -185,6 +185,33 @@ function ReplacedQuestion() {
   );
 }
 
+/** A source that loses its save a second after Leave asks, as when the connection drops. */
+function ChangingSource() {
+  const { confirmLeave } = useUnsavedChangesGuard();
+  const [isOffline, setOffline] = useState(false);
+  const [answer, setAnswer] = useState('Not asked');
+  useUnsavedChanges({
+    isDirty: true,
+    label: 'Packing list',
+    onSave: isOffline ? undefined : () => wait(300),
+  });
+  return (
+    <div data-lab-demo="changing">
+      <Button
+        size="sm"
+        onPress={() => {
+          setOffline(false);
+          setTimeout(() => setOffline(true), 1000);
+          void confirmLeave().then((ok) => setAnswer(ok ? 'Left' : 'Stayed'));
+        }}
+      >
+        Leave, then go offline
+      </Button>{' '}
+      <output data-lab-answer="">{answer}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -222,6 +249,14 @@ mountLab(
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <ReplacedQuestion />
+      </UnsavedChangesGuard>
+    </LabSection>
+    <LabSection
+      title="A source changes under the question"
+      description="Press the button: the question offers Save, and a second later the packing list loses its save, so the open question offers Discard alone. A Save pressed before then stops at the packing list and leaves the question open."
+    >
+      <UnsavedChangesGuard shouldConfirmUnload={false}>
+        <ChangingSource />
       </UnsavedChangesGuard>
     </LabSection>
   </>,
