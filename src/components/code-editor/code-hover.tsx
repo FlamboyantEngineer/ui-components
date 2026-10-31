@@ -16,6 +16,7 @@ import { findOffsetAt, measureRange, readCopyText, type CopyText } from './code-
 import { codeEditorHooks as hooks, type CodeDiagnostic } from './code-layers.js';
 import type { CodeRange } from './code-ranges.js';
 import type { CodeSegment } from './code-segments.js';
+import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** A diagnostic and the source it marks. */
 export interface MarkedDiagnostic {
@@ -150,7 +151,7 @@ export function CodeHoverTooltip({ model, inputRef }: CodeHoverTooltipProps) {
       triggerRef={inputRef}
       getTargetRect={() => tip?.rect}
       placement="top start"
-      offset={4}
+      offset={DEFAULT_DROPDOWN_OFFSET}
       style={{ zIndex }}
       onPointerEnter={model.hold}
       onPointerLeave={model.onPointerLeave}

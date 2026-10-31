@@ -19,6 +19,7 @@ import { getMarkItems } from './format-items.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 import { useRichTextController } from './rich-text-controller.js';
 import { useFocusReturn } from './use-focus-return.js';
+import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
 
 export interface SelectionToolbarProps extends BaseProps, AriaLabellingProps {
   /** Controls after the marks and the link button. */
@@ -124,7 +125,7 @@ export function SelectionToolbar({ className, children, ...rest }: SelectionTool
       triggerRef={surfaceRef}
       getTargetRect={() => box?.rect ?? null}
       placement={placement}
-      offset={6}
+      offset={DEFAULT_OVERLAY_GAP}
       style={{ zIndex }}
     >
       <div

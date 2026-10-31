@@ -18,6 +18,7 @@ import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
+import { TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** A rectangle in viewport pixels, as `getBoundingClientRect` returns it. */
 export interface TooltipRect {
@@ -63,9 +64,6 @@ export interface AnchoredTooltipProps extends BaseProps {
 type RelatedAttribute = 'aria-describedby' | 'aria-labelledby';
 
 const hooks = createHooks('tooltip', ['arrow', 'content']);
-
-/** The gap between the panel and its anchor, room for the arrow, in pixels. */
-const tooltipOffset = 8;
 
 function isVirtualAnchor(anchor: TooltipAnchor): anchor is TooltipVirtualAnchor {
   return !(anchor instanceof Element) && !('current' in anchor);
@@ -145,7 +143,7 @@ function useAnchoredPanel({
     targetRef,
     overlayRef: panelRef,
     arrowRef,
-    offset: tooltipOffset,
+    offset: TOOLTIP_OFFSET,
     isOpen: isShown,
     getTargetRect: virtual ? () => toDomRect(virtual) : undefined,
     shouldUpdatePosition,

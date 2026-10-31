@@ -23,6 +23,7 @@ import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
+import { POPOVER_ARROW_OFFSET, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {
@@ -178,7 +179,7 @@ export function Popover({
   return (
     <PopoverPanel
       {...rest}
-      offset={offset ?? (showArrow ? 7 : 8)}
+      offset={offset ?? (showArrow ? POPOVER_ARROW_OFFSET : POPOVER_OFFSET)}
       {...hooks.root({ className, props: rest })}
       arrowClassName={showArrow ? hooks.slotClass('arrow') : undefined}
     >

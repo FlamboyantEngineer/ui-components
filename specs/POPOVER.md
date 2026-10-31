@@ -20,7 +20,7 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
 
 ### UIC-POPOVER-1.3 - Placement
 
-`placement` (a `Placement`, `bottom` by default, such as `top`, `start`, `end` or `bottom start`) shall choose the side of the trigger the popover opens on, `offset` its distance from the trigger (8 pixels by default), `crossOffset` its shift along that side and `containerPadding` the space it keeps inside the viewport (12 pixels by default). The popover flips to the opposite side when it does not fit, unless `shouldFlip` is false. The panel publishes the resolved side in `data-placement`.
+`placement` (a `Placement`, `bottom` by default, such as `top`, `start`, `end` or `bottom start`) shall choose the side of the trigger the popover opens on, `offset` its distance from the trigger (`POPOVER_OFFSET`, 8 pixels, by default; `POPOVER_ARROW_OFFSET`, 7 pixels, with an arrow), `crossOffset` its shift along that side and `containerPadding` the space it keeps inside the viewport (12 pixels by default). The popover flips to the opposite side when it does not fit, unless `shouldFlip` is false. The panel publishes the resolved side in `data-placement`.
 
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`

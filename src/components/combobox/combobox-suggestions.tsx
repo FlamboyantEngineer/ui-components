@@ -37,6 +37,7 @@ import {
   type ComboboxItem,
   type ComboboxOption,
 } from './combobox-options.js';
+import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 
 /** Draws an option's content in the list, from the option and its row's state. */
 export type ComboboxOptionRenderer = (option: ComboboxOption, state: SelectableState) => ReactNode;
@@ -232,8 +233,8 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
         onOpenChange={(open) => {
           if (!open) state?.close();
         }}
-        offset={4}
-        containerPadding={8}
+        offset={DEFAULT_DROPDOWN_OFFSET}
+        containerPadding={DEFAULT_OVERLAY_GUTTER}
         style={style}
         // Focus leaving the popover closes it, unless it returns to the input from the list header.
         shouldCloseOnInteractOutside={(element) => element !== inputRef.current}

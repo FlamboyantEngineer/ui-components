@@ -3,6 +3,7 @@ import type { Placement } from '../../core/props.js';
 import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuOverlayProps } from '../menu/menu.js';
 import type { MenuAnchor } from './menu-controller.js';
+import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 
 /** Whether an anchor is an element rather than a point. */
 export function isElementAnchor(anchor: MenuAnchor): anchor is Element {
@@ -21,8 +22,6 @@ type MenuAnchorProps = Pick<
   MenuOverlayProps,
   'triggerRef' | 'getTargetRect' | 'placement' | 'offset'
 >;
-
-const pointGap = 2;
 
 /** A zero-size rect at a viewport point, in the shape React Aria's positioning reads. */
 function toPointRect(x: number, y: number): DOMRect {
@@ -56,5 +55,5 @@ export function useMenuAnchor({ anchor, placement, owner }: MenuAnchorOptions): 
   );
 
   if (!getTargetRect) return { triggerRef, placement };
-  return { triggerRef, getTargetRect, placement: 'bottom start', offset: pointGap };
+  return { triggerRef, getTargetRect, placement: 'bottom start', offset: DEFAULT_POINT_OFFSET };
 }

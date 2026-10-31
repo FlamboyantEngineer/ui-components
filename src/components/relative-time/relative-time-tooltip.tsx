@@ -7,7 +7,8 @@ import {
   useTooltipTrigger,
   type TooltipTriggerState,
 } from '../../primitives/index.js';
-import { TOOLTIP_DELAY, TooltipPanel } from '../tooltip/tooltip.js';
+import { TooltipPanel } from '../tooltip/tooltip.js';
+import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 
 type TimeWithTooltipProps = JSX.IntrinsicElements['time'] & {
   /** The tooltip's text. */
