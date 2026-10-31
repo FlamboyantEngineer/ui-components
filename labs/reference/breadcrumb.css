@@ -78,6 +78,10 @@
 .ui-breadcrumb[data-overflow='menu'] .ui-breadcrumb__item {
   flex: none;
 }
+/* With every middle crumb in the menu, the first and current crumbs shrink and ellipsize. */
+.ui-breadcrumb[data-collapsed] .ui-breadcrumb__item:not(.ui-breadcrumb__overflow) {
+  flex: 0 1 auto;
+}
 
 .ui-breadcrumb__overflow {
   color: var(--ref-muted);

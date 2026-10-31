@@ -192,9 +192,11 @@ function renderCrumbs(
     />
   ));
   if (overflow.visibleKeys === null) return crumbs;
-  const entries = overflow.hiddenIndices.map((index) => {
+  // The current crumb never navigates, so it never joins the menu of hidden crumbs.
+  const entries = overflow.hiddenIndices.flatMap((index) => {
+    if (index === items.length - 1) return [];
     const item = items[index] as BreadcrumbItem;
-    return { id: toCrumbKey(item, index), label: toCrumbText(item, index), href: item.href };
+    return [{ id: toCrumbKey(item, index), label: toCrumbText(item, index), href: item.href }];
   });
   crumbs.splice(
     1,
@@ -226,12 +228,16 @@ export function Breadcrumb({
   ...rest
 }: BreadcrumbProps) {
   const rtl = useLocale().direction === 'rtl';
+  const collapse = useCrumbOverflow(items, overflow === 'menu');
   const navProps = {
     ...rest,
-    ...hooks.root({ className, props: rest, data: { size, overflow } }),
+    ...hooks.root({
+      className,
+      props: rest,
+      data: { size, overflow, collapsed: collapse.isCollapsed },
+    }),
   };
   const glyph = separator ?? (rtl ? ChevronLeftGlyph : ChevronRightGlyph);
-  const collapse = useCrumbOverflow(items, overflow === 'menu');
   const containerRef = collapse.containerRef;
 
   return (

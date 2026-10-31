@@ -157,6 +157,33 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Narrower than the endpoints"
+      description="120 pixel frames, narrower than the two endpoints. The first and current crumbs never leave: every middle crumb moves into the menu and the two endpoints ellipsize; rest the pointer on one to read it whole. The current crumb is never in the menu."
+    >
+      <StateMatrix
+        axes={{ state: ['default', 'disabled', 'right to left'] }}
+        render={({ state }) => {
+          const trail = (
+            <div data-lab-frame="" style={{ width: 120 }}>
+              <Breadcrumb
+                aria-label={`Tiny trail, ${state}`}
+                items={deepTrail}
+                overflow="menu"
+                isDisabled={state === 'disabled'}
+              />
+            </div>
+          );
+          return state === 'right to left' ? (
+            <UiProvider locale="ar-EG">
+              <div dir="rtl">{trail}</div>
+            </UiProvider>
+          ) : (
+            trail
+          );
+        }}
+      />
+    </LabSection>
+    <LabSection
       title="Nearby places"
       description="A crumb with a menu offers the places beside it from a button after its link."
     >

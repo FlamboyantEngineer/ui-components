@@ -34,7 +34,7 @@ Verification: `src/components/overflow-list/overflow-list.test.tsx`
 
 ### UIC-OVERFLOW-LIST-1.5 - Priorities and indicator placement
 
-`useOverflowItems`'s `getPriority(item, index)` shall rank items: those with a lower priority are hidden first, and items of the same priority leave from `collapseFrom`, so a row can keep its first item, its selected item or its most used tools. Kept items stay in their order. A new set of priorities is measured afresh, with the indicator kept mounted. The element given the returned `indicatorRef` is the indicator wherever the caller places it among the items (after a kept first item, for example); without it the indicator is the child at the collapsing end.
+`useOverflowItems`'s `getPriority(item, index)` shall rank items: those with a lower priority are hidden first, and items of the same priority leave from `collapseFrom`, so a row can keep its first item, its selected item or its most used tools. Kept items stay in their order. A new set of priorities is measured afresh, with the indicator kept mounted. The element given the returned `indicatorRef` is the indicator wherever the caller places it among the items (after a kept first item, for example); without it the indicator is the child at the collapsing end. `minVisible` keeps that many items, the first in keep order, however little room there is; the caller lets them shrink.
 
 Implementation: `src/utils/use-overflow-items.ts`, `src/utils/overflow-measure.ts`
 Verification: `src/utils/use-overflow-items.test.tsx`

@@ -33,6 +33,11 @@ export interface OverflowItemsOptions<T> {
    * leave from `collapseFrom`. Defaults to 0 for every item.
    */
   getPriority?: ((item: T, index: number) => number) | undefined;
+  /**
+   * How many items stay however little room there is: the first ones in keep order (the highest
+   * priorities). The caller lets them shrink when the row is narrower than they are. Defaults to 0.
+   */
+  minVisible?: number | undefined;
 }
 
 export interface OverflowItems<T> {
@@ -232,6 +237,7 @@ export function useOverflowItems<T>({
   items,
   collapseFrom = 'end',
   getPriority,
+  minVisible = 0,
 }: OverflowItemsOptions<T>): OverflowItems<T> {
   const { elements, refs } = useOverflowElements();
   const cache = useRef<MeasureCache>(createMeasureCache());
@@ -271,7 +277,7 @@ export function useOverflowItems<T>({
     const element = elements.container.current;
     if (!element) return;
     const measured = cache.current;
-    const visibleCount = measureCommit({
+    const measuredCount = measureCommit({
       element,
       itemContainer: elements.itemContainer.current,
       indicator: elements.indicator.current,
@@ -282,8 +288,9 @@ export function useOverflowItems<T>({
       collapseFrom,
       isStale,
     });
-    measured.isAwaitingChildren = visibleCount === null;
-    if (visibleCount === null) return;
+    measured.isAwaitingChildren = measuredCount === null;
+    if (measuredCount === null) return;
+    const visibleCount = Math.min(items.length, Math.max(minVisible, measuredCount));
     const changed = visibleCount !== state.visibleCount;
     if (!isStale && (!changed || measured.corrections >= maxCorrections)) {
       measured.corrections = 0;
@@ -301,6 +308,7 @@ export function useOverflowItems<T>({
     isStale,
     state.visibleCount,
     generation,
+    minVisible,
   ]);
 
   return {
