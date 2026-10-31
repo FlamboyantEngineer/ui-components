@@ -158,6 +158,33 @@ test.describe('Scroll Region lab', () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 
+  test('UIC-SCROLL-REGION-2.4 leaves a zoom wheel over a thumb to the browser', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const region = page.locator('[data-lab-region="overlay"]');
+    const viewport = region.locator('.ui-scroll-region__viewport');
+    const thumb = region.locator('.ui-scroll-region__thumb[data-orientation="vertical"]');
+    await region.scrollIntoViewIfNeeded();
+    const outcome = await thumb.evaluate((node) => {
+      let reachedDocument = false;
+      const listen = () => (reachedDocument = true);
+      document.addEventListener('wheel', listen, { once: true });
+      const event = new WheelEvent('wheel', {
+        deltaY: 40,
+        ctrlKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      node.dispatchEvent(event);
+      document.removeEventListener('wheel', listen);
+      return { prevented: event.defaultPrevented, reachedDocument };
+    });
+    expect(outcome).toEqual({ prevented: false, reachedDocument: true });
+    expect((await metrics(viewport)).scrollTop).toBe(0);
+  });
+
   test('UIC-SCROLL-REGION-2.7 follows content that shrinks and grows inside a retained child', async ({
     page,
     lab,

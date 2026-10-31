@@ -37,9 +37,18 @@ function canScrollBy(element: HTMLElement, { left, top, rtl }: ScrollStep): bool
 }
 
 /**
+ * Whether a wheel event is a browser zoom gesture: the wheel with Ctrl or Meta held, which a
+ * trackpad pinch also reports as Ctrl and the wheel.
+ */
+function isZoomWheel(event: WheelEvent): boolean {
+  return event.ctrlKey || event.metaKey;
+}
+
+/**
  * The wheel over a thumb scrolls its viewport. React's wheel listeners are passive, so a native one
  * keeps the page from scrolling too while the viewport can still move that way; at the viewport's
- * edge the wheel scrolls the page, as a native scrollbar's does.
+ * edge the wheel scrolls the page, as a native scrollbar's does. A zoom gesture is left alone, to the
+ * browser and the page's own handlers.
  */
 export function useThumbWheel(
   thumb: RefObject<HTMLElement | null>,
@@ -49,6 +58,7 @@ export function useThumbWheel(
     const element = thumb.current;
     if (!element) return;
     const onWheel = (event: WheelEvent) => {
+      if (isZoomWheel(event)) return;
       const scroller = viewport.current;
       event.stopPropagation();
       if (!scroller) return;
