@@ -4,17 +4,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObje
 import type { Key, Orientation } from '../../core/props.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { clamp } from '../../utils/clamp.js';
+import { isOverflowing } from '../../utils/is-overflowing.js';
 import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 
 interface ListScrollOptions {
   orientation: Orientation;
   selectedKey: Key | null;
-}
-
-function isOverflowing(list: HTMLElement, orientation: Orientation): boolean {
-  return orientation === 'vertical'
-    ? list.scrollHeight > list.clientHeight + 1
-    : list.scrollWidth > list.clientWidth + 1;
 }
 
 /**
