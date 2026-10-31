@@ -509,4 +509,18 @@ test.describe('Code Editor lab', () => {
     expect(await element?.evaluate((node) => node.isConnected)).toBe(true);
     await expect(count).toHaveText('Count 1');
   });
+
+  test('UIC-CODE-EDITOR-6.3 indents a blank first line from the very start of the text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const input = editor(page, 'blank-first').getByRole('textbox', { name: 'Blank first line' });
+    await input.click();
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('Tab');
+    await expect(input).toHaveValue('  \nreturn basket');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('  \n  \nreturn basket');
+  });
 });
