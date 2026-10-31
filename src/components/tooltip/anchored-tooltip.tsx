@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -16,6 +15,7 @@ import { useOverlayPosition } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { useFollowAnchor } from '../../utils/use-follow-anchor.js';
 import { useLayerZIndex, usePortalTarget } from '../portal/portal.js';
 import type { TooltipPlacement, TooltipRelationship, TooltipVariant } from './tooltip.js';
 
@@ -115,26 +115,6 @@ function useAnchorRelationship(
   }, [element, id, relationship]);
 }
 
-/** Places the panel again on every scroll while it is open, so it follows its anchor. */
-function useFollowScroll(isOpen: boolean, updatePosition: () => void) {
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    let frame: number | undefined;
-    const onScroll = () => {
-      frame ??= requestAnimationFrame(() => {
-        frame = undefined;
-        updatePosition();
-      });
-    };
-    const options = { capture: true, passive: true };
-    window.addEventListener('scroll', onScroll, options);
-    return () => {
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', onScroll, options);
-    };
-  }, [isOpen, updatePosition]);
-}
-
 /** The rectangle of a virtual anchor as the positioning reads it. */
 function toDomRect(anchor: TooltipVirtualAnchor): DOMRect {
   const { left, top, width, height } = anchor.getBoundingClientRect();
@@ -158,16 +138,18 @@ function useAnchoredPanel({
   const isShown = isOpen && (element !== null || virtual !== null);
   const elementRef = useMemo(() => ({ current: element }), [element]);
   const phase = useEnterExit(panelRef, isShown);
+  const targetRef = virtual ? proxyRef : elementRef;
+  const shouldUpdatePosition = useFollowAnchor({ anchorRef: targetRef, isOpen: isShown });
   const position = useOverlayPosition({
     placement,
-    targetRef: virtual ? proxyRef : elementRef,
+    targetRef,
     overlayRef: panelRef,
     arrowRef,
     offset: tooltipOffset,
     isOpen: isShown,
     getTargetRect: virtual ? () => toDomRect(virtual) : undefined,
+    shouldUpdatePosition,
   });
-  useFollowScroll(isShown, position.updatePosition);
   return {
     refs: { panel: panelRef, arrow: arrowRef, proxy: virtual ? proxyRef : null },
     element: isShown ? element : null,

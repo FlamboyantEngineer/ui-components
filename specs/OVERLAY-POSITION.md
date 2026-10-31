@@ -108,7 +108,14 @@ Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.5 - Auto-update
 
-`autoUpdateOverlay({ anchor, overlay, update })` shall call `update` at once and then, at most once per animation frame, after any scroll in the anchor's document, a resize of its window, or a size change of the anchor or the overlay, from the timers and observers of the anchor's own window. `everyFrame` also compares the anchor's box every animation frame and calls `update` when it moved; movement and other changes in the same frame share one update. The returned function removes every listener, observer and pending frame, including when called during an update; later observer reports do nothing.
+`autoUpdateOverlay({ anchor, overlay, update })` shall call `update` at once and then, at most once per animation frame, after any scroll in the anchor's document, a resize of its window, or a size change of the anchor or of the overlay when one is given, from the timers and observers of the anchor's own window. `everyFrame` also compares the anchor's box every animation frame and calls `update` when it moved; movement and other changes in the same frame share one update. The returned function removes every listener, observer and pending frame, including when called during an update; later observer reports do nothing.
 
 Implementation: `src/utils/overlay-auto-update.ts`
 Verification: `src/utils/overlay-auto-update.test.ts`
+
+### UIC-OVERLAY-POSITION-3.6 - Following an anchor with a React Aria overlay
+
+`useFollowAnchor({ anchorRef, isOpen, target })` shall keep an open React Aria overlay on its anchor: after each change `autoUpdateOverlay` reports for the anchor (any scroll in its document, a resize of its window, a size change of the anchor), and when `target` (such as a point's `getTargetRect`) changes, it returns `false` for one render and `true` again as the overlay's `shouldUpdatePosition`, so React Aria measures afresh without closing, remounting or redrawing the overlay. While closed it follows nothing. It is the one follow mechanism of `AnchoredTooltip`, `MenuOverlay` (and so `MenuPopover`, context-menu point anchors and menubar menus) and `CompletionList`; none of them toggles between spellings of a placement or listens on a window other than the anchor's.
+
+Implementation: `src/utils/use-follow-anchor.ts`, `src/components/tooltip/anchored-tooltip.tsx`, `src/components/menu/menu-popover.tsx`, `src/components/context-menu/menu-anchor.ts`, `src/components/completion-list/completion-list.tsx`
+Verification: `src/utils/use-follow-anchor.test.tsx`

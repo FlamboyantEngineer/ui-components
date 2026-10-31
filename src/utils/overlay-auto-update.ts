@@ -5,7 +5,7 @@ export interface OverlayAutoUpdateOptions {
   /** The element the overlay is anchored to. */
   anchor: Element;
   /** The overlay itself, whose size changes also call for a new solution. */
-  overlay: Element;
+  overlay?: Element | undefined;
   /** Solves and applies the overlay's placement again. */
   update: () => void;
   /** Also compare the anchor's box every animation frame, for anchors that move on their own. */
@@ -67,7 +67,7 @@ export function autoUpdateOverlay({
   const observer =
     typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(schedule) : null;
   observer?.observe(anchor);
-  observer?.observe(overlay);
+  if (overlay) observer?.observe(overlay);
 
   update();
   if (everyFrame) request();
