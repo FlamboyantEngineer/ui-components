@@ -78,8 +78,8 @@
 }
 
 :is(.ui-number-field__decrement, .ui-number-field__increment) .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-number-field[data-dirty] .ui-number-field__group {
@@ -116,8 +116,8 @@
 }
 
 .ui-number-field__scrubber .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-number-field:is([data-readonly], [data-disabled]) .ui-number-field__scrubber {

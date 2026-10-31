@@ -279,8 +279,8 @@
 }
 
 .ui-block-handle__grip .ui-glyph {
-  width: 14px;
-  height: 14px;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
 }
 
 .ui-block-handle__menu.ui-button[data-content='icon'] {

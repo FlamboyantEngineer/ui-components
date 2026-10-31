@@ -20,20 +20,8 @@
   margin-block-start: 0.15em;
 }
 .ui-inline-error__spinner {
-  flex: none;
-  box-sizing: border-box;
-  width: 14px;
-  height: 14px;
+  --ref-spinner-size: var(--ref-icon-size-md);
   margin-block-start: 0.15em;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .ui-inline-error__spinner {
-    animation: none;
-  }
 }
 .ui-inline-error__message {
   flex: 1 1 12rem;

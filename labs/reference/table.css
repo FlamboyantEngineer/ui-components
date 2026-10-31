@@ -172,13 +172,6 @@
 .ui-table__column[data-allows-sorting] .ui-table__column-label {
   max-width: calc(100% - 18px);
 }
-.ui-table__column[data-kind='actions'] .ui-table__column-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
 .ui-table__sort-icon {
   margin-inline-start: 4px;
   opacity: 0.45;

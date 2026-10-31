@@ -98,14 +98,6 @@
   align-items: end;
 }
 
-.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport {
-  scrollbar-width: none;
-}
-
-.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport::-webkit-scrollbar {
-  display: none;
-}
-
 .ui-scroll-region__track {
   position: absolute;
 }

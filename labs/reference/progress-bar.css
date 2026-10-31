@@ -67,25 +67,16 @@
 }
 
 .ui-spinner {
-  display: inline-block;
-  box-sizing: border-box;
-  width: 16px;
-  height: 16px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
+  --ref-spinner-size: var(--ref-icon-size-lg);
   vertical-align: -0.2em;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
 .ui-spinner[data-size='sm'] {
-  width: 12px;
-  height: 12px;
+  --ref-spinner-size: var(--ref-icon-size-sm);
 }
 
 .ui-spinner[data-size='lg'] {
-  width: 20px;
-  height: 20px;
+  --ref-spinner-size: var(--ref-icon-size-xl);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -93,8 +84,7 @@
     transition: none;
   }
 
-  .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill,
-  .ui-spinner {
+  .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill {
     animation: none;
   }
 }

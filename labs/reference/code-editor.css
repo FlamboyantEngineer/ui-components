@@ -336,11 +336,7 @@
   position: relative;
 }
 .ui-code-editor__input {
-  scrollbar-width: none;
   scrollbar-gutter: auto;
-}
-.ui-code-editor__input::-webkit-scrollbar {
-  display: none;
 }
 .ui-code-editor__highlight {
   scrollbar-gutter: auto;

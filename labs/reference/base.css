@@ -86,6 +86,14 @@
   --ref-category-6: #bf3989;
   --ref-category-7: var(--ref-muted);
 
+  /* Icons: a built-in glyph pinned to a size takes one of these; otherwise it follows its text. */
+  --ref-icon-size-sm: 12px;
+  --ref-icon-size-md: 14px;
+  --ref-icon-size-lg: 16px;
+  --ref-icon-size-xl: 20px;
+  /* The ring of every spinner; a partial sets it on its spinner to another icon size. */
+  --ref-spinner-size: var(--ref-icon-size-sm);
+
   /* The box of a checkbox or a radio, by control size. */
   --ref-mark-size-xs: 12px;
   --ref-mark-size-sm: 14px;
@@ -223,6 +231,67 @@ body {
 [data-lab-control-sample] .ui-field__message:empty {
   min-height: 0;
   margin-top: 0;
+}
+
+/*
+ * Spinners: every busy ring shares one geometry, a ring open on one side that turns once per
+ * --ref-duration-spin in its text colour, --ref-spinner-size across. Partials place it, colour it
+ * and pick its size; reduced motion stills it with every other animation.
+ */
+.ui-spinner,
+.ui-button__spinner,
+.ui-combobox__spinner,
+.ui-menu-item__spinner,
+.ui-menu__load-more-spinner,
+.ui-search-field__spinner,
+.ui-inline-error__spinner,
+.ui-banner__spinner,
+.ui-empty-state__spinner,
+.ui-chat-reasoning__spinner,
+.ui-chat-steps__spinner,
+.ui-chat-plan__spinner,
+.ui-chat-status-line__spinner,
+.ui-toast__spinner {
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--ref-spinner-size);
+  height: var(--ref-spinner-size);
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
+}
+
+/* Visually hidden: text kept for assistive technology but not drawn. */
+.ui-table__column[data-kind='actions'] .ui-table__column-label,
+.ui-chat-tool-call[data-variant='row']:is([data-status='succeeded'], [data-status='failed'])
+  :is(.ui-chat-tool-call__status, .ui-chat-tool-call__duration),
+.ui-emoji-picker__categories .ui-tabs__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Hidden scrollbars: strips that scroll by drag, wheel or their own controls draw no scrollbar. */
+.ui-code-editor__input,
+.ui-dock-panel__launchers,
+.ui-tabs__list,
+.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip,
+.ui-toolbar-scroller__strip,
+.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport {
+  scrollbar-width: none;
+}
+.ui-code-editor__input::-webkit-scrollbar,
+.ui-dock-panel__launchers::-webkit-scrollbar,
+.ui-tabs__list::-webkit-scrollbar,
+.ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip::-webkit-scrollbar,
+.ui-toolbar-scroller__strip::-webkit-scrollbar,
+.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport::-webkit-scrollbar {
+  display: none;
 }
 
 /*

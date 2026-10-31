@@ -107,14 +107,7 @@
 }
 
 .ui-menu-item__spinner {
-  box-sizing: border-box;
-  width: 12px;
-  height: 12px;
   margin: 2px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
 .ui-menu-item__label {
@@ -220,17 +213,6 @@
   min-height: 28px;
   padding: 2px 8px;
   color: var(--ref-muted);
-}
-
-.ui-menu__load-more-spinner {
-  box-sizing: border-box;
-  flex: none;
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
 /* Context menus use the menu hooks; their popover sits on the context-menu layer. */
