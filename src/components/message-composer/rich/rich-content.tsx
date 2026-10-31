@@ -5,13 +5,7 @@ import {
   useEditorEventCallback,
   useEditorEventListener,
 } from '@handlewithcare/react-prosemirror';
-import {
-  useCallback,
-  useLayoutEffect,
-  useState,
-  type FocusEvent,
-  type RefObject,
-} from 'react';
+import { useCallback, useLayoutEffect, useState, type FocusEvent, type RefObject } from 'react';
 import { useFocusRing, useHover } from '../../../primitives/index.js';
 import { useUiStrings } from '../../../core/provider.js';
 import { mergeProps } from '../../../utils/merge-props.js';

@@ -219,4 +219,23 @@ test.describe('Dock Panel lab', () => {
     await expect(panel.getByLabel('Link draft')).toHaveValue('Unsaved link');
     await expect(panel.getByLabel('Tip draft')).toBeHidden();
   });
+
+  test('UIC-DOCK-PANEL-1.1 is as tall as its open pane in a host with no height, and fills a host with one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = page.getByRole('region', { name: 'Tasks', exact: true });
+    const button = page.getByRole('button', { name: 'New task' });
+    await expect(button).toBeVisible();
+    const rect = await box(panel);
+    const end = await box(button);
+    expect(end.y + end.height).toBeLessThanOrEqual(rect.y + rect.height);
+    const first = await box(page.getByText('Import records'));
+    expect(first.y).toBeGreaterThanOrEqual(rect.y);
+
+    const frame = await box(page.locator('[data-lab-frame="workspace"]'));
+    const workspace = await box(inspector(page));
+    expect(Math.round(workspace.height)).toBe(Math.round(frame.height));
+  });
 });
