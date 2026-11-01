@@ -34,6 +34,25 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Dots at small sizes"
+      description="The help, info, error and warning glyphs keep their dots at the small box and in 10 and 12 pixel text; switch the theme to check them on the dark page too."
+    >
+      <div data-lab-dots>
+        <StateMatrix
+          axes={{ glyph: ['help', 'info', 'error', 'warning'] as const, size: ['sm', '10', '12'] }}
+          render={({ glyph, size }) =>
+            size === 'sm' ? (
+              <Icon icon={glyphCatalog[glyph]} size="sm" />
+            ) : (
+              <span style={{ fontSize: Number(size) }}>
+                <Icon icon={glyphCatalog[glyph]} size="inherit" /> Ripe pears
+              </span>
+            )
+          }
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Inherited size"
       description="Icons sized inherit in text of three font sizes: each box follows the font."
     >
