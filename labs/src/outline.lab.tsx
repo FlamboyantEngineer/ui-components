@@ -1,9 +1,10 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Outline, type OutlineHeading } from '../../src/components/outline/outline.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ShadowRootHost } from './shadow-root-host.js';
 
 const guide: readonly OutlineHeading[] = [
   { id: 'guide-welcome', label: 'Welcome', level: 2 },
@@ -59,15 +60,46 @@ function StateCell({ state, isNumbered }: { state: (typeof states)[number]; isNu
   );
 }
 
+/**
+ * The guide's scrolling element: a `ScrollRegion`, or a plain element scrolled by inline styles
+ * where the page's stylesheet does not reach (a shadow root).
+ */
+function GuideViewport(props: {
+  viewport: RefObject<HTMLDivElement | null>;
+  name: string;
+  isPlain: boolean;
+  children: ReactNode;
+}) {
+  const { viewport, name, isPlain, children } = props;
+  if (!isPlain) {
+    return (
+      <ScrollRegion ref={viewport} role="region" aria-label={`${name} text`} tabIndex={0}>
+        {children}
+      </ScrollRegion>
+    );
+  }
+  return (
+    <div
+      ref={viewport}
+      role="region"
+      aria-label={`${name} text`}
+      tabIndex={0}
+      style={{ overflow: 'auto', flex: 1, minHeight: 0 }}
+    >
+      {children}
+    </div>
+  );
+}
+
 /** A guide scrolled in a region; the outline follows it below the sticky header. */
-function Reader() {
+function Reader({ demo = 'reader', name = 'Guide', isPlain = false }) {
   const viewport = useRef<HTMLDivElement>(null);
   const [followed, setFollowed] = useState('nothing yet');
   return (
-    <div style={columns} data-lab-demo="reader">
+    <div style={columns} data-lab-demo={demo}>
       <div style={{ width: 220 }}>
         <Outline
-          aria-label="Guide"
+          aria-label={name}
           headings={guide}
           viewportRef={viewport}
           trackingOffset={40}
@@ -79,7 +111,7 @@ function Reader() {
         </p>
       </div>
       <div style={frame}>
-        <ScrollRegion ref={viewport} role="region" aria-label="Guide text" tabIndex={0}>
+        <GuideViewport viewport={viewport} name={name} isPlain={isPlain}>
           <p style={stickyHeader}>City guide</p>
           {guide.map((heading) => {
             const Heading = `h${heading.level + 1}` as 'h3' | 'h4' | 'h5';
@@ -92,7 +124,7 @@ function Reader() {
               </section>
             );
           })}
-        </ScrollRegion>
+        </GuideViewport>
       </div>
     </div>
   );
@@ -161,6 +193,14 @@ mountLab(
       description="Scroll the guide: the outline marks the section under the 40px sticky header. Follow an entry to jump to its heading, which takes focus."
     >
       <Reader />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="The same guide inside an open shadow root, as a web component holds it, scrolled by a plain element since the page's stylesheet does not reach inside, with the same heading ids as the guide above. Its outline follows and jumps to its own headings, never to the page's."
+    >
+      <ShadowRootHost demo="shadow-guide">
+        <Reader demo="shadow-reader" name="Embedded guide" isPlain />
+      </ShadowRootHost>
     </LabSection>
     <LabSection
       title="Controlled sections"

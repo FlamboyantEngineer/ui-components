@@ -74,6 +74,24 @@ afterEach(() => {
 });
 
 describe('useScrollSpy', () => {
+  it('UIC-SCROLL-REGION-4.5 looks the sections up in the shadow root of the viewport', () => {
+    const decoy = document.body.appendChild(document.createElement('section'));
+    decoy.id = 'plums';
+    const host = document.body.appendChild(document.createElement('div'));
+    const shadow = host.attachShadow({ mode: 'open' });
+    const viewport = shadow.appendChild(document.createElement('div'));
+    for (const id of ['apples', 'pears']) {
+      viewport.appendChild(document.createElement('section')).id = id;
+    }
+    viewport.getBoundingClientRect = () => ({ top: 0 }) as DOMRect;
+    try {
+      expect(resolveScrollSpy(viewport, { ids: ['apples', 'pears', 'plums'] })).toBe('pears');
+    } finally {
+      decoy.remove();
+      host.remove();
+    }
+  });
+
   it('UIC-SCROLL-REGION-4.5 reads the sections again when content above them grows', async () => {
     Object.assign(sectionTops, { apples: 100, pears: 400, plums: 700 });
     viewportBox.scrollTop = 250;
