@@ -47,7 +47,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-2.1 - Default schema
 
-The default schema shall hold the nodes `doc`, `paragraph`, `heading` (`level` 1 to 3), `blockquote`, `codeBlock`, `horizontalRule`, `bulletList`, `orderedList` (`start`), `listItem`, `taskList`, `taskItem` (`checked`), `text` and `hardBreak`, and the marks `link` (`href`, `title`), `bold`, `italic`, `underline`, `strike` and `code`, named as most ProseMirror-based editors name them, so their JSON loads unchanged. Each parses its HTML elements (pasted or dropped) and renders standard HTML; links keep only safe addresses (`http`, `https`, `mailto`, `tel` or relative).
+The default schema shall hold the nodes `doc`, `paragraph`, `heading` (`level` 1 to 3), `blockquote`, `codeBlock`, `horizontalRule`, `bulletList`, `orderedList` (`start`, any whole number including 0 and negatives; a missing or unreadable `start` reads as 1), `listItem`, `taskList`, `taskItem` (`checked`), `text` and `hardBreak`, and the marks `link` (`href`, `title`), `bold`, `italic`, `underline`, `strike` and `code`, named as most ProseMirror-based editors name them, so their JSON loads unchanged. Each parses its HTML elements (pasted or dropped) and renders standard HTML; links keep only safe addresses (`http`, `https`, `mailto`, `tel` or relative).
 
 Implementation: `src/components/rich-text-editor/default-schema.ts`, `src/components/rich-text-editor/rich-text-schema.ts`, `src/utils/safe-url.ts`
 Verification: `src/components/rich-text-editor/rich-text-schema.test.ts`, `e2e/rich-text-editor.spec.ts`

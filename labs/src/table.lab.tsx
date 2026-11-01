@@ -408,7 +408,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editing"
-      description="F2, Enter or a double click opens a cell's editor; Enter commits and Escape cancels. A disabled row opens no editor, and disabling the row of an open editor closes it without an edit. With a Japanese, Chinese or Korean input method, Enter and Escape confirm or cancel the candidate and leave the editor open."
+      description="F2, Enter or a double click opens a cell's editor; Enter commits and Escape cancels. In Weight, plain decimal text such as 12.5 becomes a number, while 0x10, 1e3 or an integer too large to hold exactly stays text. A disabled row opens no editor, and disabling the row of an open editor closes it without an edit. With a Japanese, Chinese or Korean input method, Enter and Escape confirm or cancel the candidate and leave the editor open."
     >
       <Editing />
     </LabSection>

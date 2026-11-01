@@ -84,6 +84,26 @@ describe('createRichTextSchema', () => {
     );
   });
 
+  it('UIC-RICH-TEXT-EDITOR-2.1 keeps any whole list start, 0 and negatives included', () => {
+    const starts = ['0', '-2', '7', 'abc', '', '1.5'].map(
+      (start) => parse(`<ol start="${start}"><li><p>Item</p></li></ol>`).content[0].attrs.start,
+    );
+    expect(starts).toEqual([0, -2, 7, 1, 1, 1]);
+    expect(parse('<ol><li><p>Item</p></li></ol>').content[0].attrs).toEqual({ start: 1 });
+    expect(
+      render({
+        type: 'doc',
+        content: [
+          {
+            type: 'orderedList',
+            attrs: { start: 0 },
+            content: [{ type: 'listItem', content: [{ type: 'paragraph' }] }],
+          },
+        ],
+      }),
+    ).toBe('<ol start="0"><li><p></p></li></ol>');
+  });
+
   it('UIC-RICH-TEXT-EDITOR-2.1 keeps only safe link addresses', () => {
     const json = parse(
       '<p><a href="https://example.com" title="Site">a</a><a href="javascript:alert(1)">b</a></p>',

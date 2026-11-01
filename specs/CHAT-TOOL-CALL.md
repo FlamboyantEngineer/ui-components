@@ -27,7 +27,7 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat
 
 ### UIC-CHAT-TOOL-CALL-1.4 - Duration
 
-Given `durationMs`, the duration shall show in the provider's `toolCallDuration` short form (`350 ms`, `1.2 s`, `2 min 5 s`), hidden from assistive technology, beside its long form for assistive technology (`350 milliseconds`, `1.2 seconds`, `2 minutes 5 seconds`), visually hidden.
+Given `durationMs`, the duration shall show in the provider's `toolCallDuration` short form (`350 ms`, `1.2 s`, `2 min 5 s`), hidden from assistive technology, beside its long form for assistive technology (`350 milliseconds`, `1.2 seconds`, `2 minutes 5 seconds`), visually hidden. The unit shall follow the value as rounded for display, so 59 950 ms reads `1 min` rather than `60 s`, and 119 600 ms reads `2 min` rather than `1 min 60 s`.
 
 Implementation: `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/strings/chat-tool.ts`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`

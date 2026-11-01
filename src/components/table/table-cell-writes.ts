@@ -39,12 +39,17 @@ export function formatCellText(value: TableCellValue): string {
   return value === null || value === undefined ? '' : String(value);
 }
 
-/** Typed text as a cell value: a number when the cell held a number and the text reads as one. */
+/** Plain decimal text: a sign, digits and a fraction, with no hex, binary, octal or exponent form. */
+const decimalText = /^\s*[+-]?(?:\d+\.?\d*|\.\d+)\s*$/;
+
+/**
+ * Typed text as a cell value: a number when the cell held a number and the text is plain decimal
+ * text whose size a number holds exactly; any other text stays text.
+ */
 export function parseCellText(text: string, previous: TableCellValue): TableCellValue {
+  if (typeof previous !== 'number' || !decimalText.test(text)) return text;
   const number = Number(text);
-  return typeof previous === 'number' && text.trim() !== '' && Number.isFinite(number)
-    ? number
-    : text;
+  return Math.abs(number) <= Number.MAX_SAFE_INTEGER ? number : text;
 }
 
 /** A text read as a cell's value by the column's `parseValue`, checked by its `validateValue`. */

@@ -2,6 +2,7 @@ import type { FieldIssue } from '../../src/components/field/field.js';
 import {
   FormatToolbar,
   RichTextEditor,
+  type RichTextDocument,
   type RichTextEditorProps,
 } from '../../src/components/rich-text-editor/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -33,6 +34,21 @@ const stateProps: Record<(typeof states)[number], Partial<RichTextEditorProps>> 
   invalid: { defaultValue: shortNote, validate: checkFruit },
   'read-only': { defaultValue: taskNote, isReadOnly: true },
   disabled: { defaultValue: taskNote, isDisabled: true },
+};
+
+/** A countdown numbered from 0, which a copy and paste keeps. */
+const countdown: RichTextDocument = {
+  type: 'doc',
+  content: [
+    {
+      type: 'orderedList',
+      attrs: { start: 0 },
+      content: ['Preheat the oven', 'Slice the pears', 'Bake'].map((text) => ({
+        type: 'listItem',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+      })),
+    },
+  ],
 };
 
 mountLab(
@@ -67,6 +83,12 @@ mountLab(
       description="Open a slash, insert or link menu, then make the note read-only. Its chrome closes and the document stays unchanged."
     >
       <LockedChromeEditor />
+    </LabSection>
+    <LabSection
+      title="List numbered from 0"
+      description="A numbered list keeps any whole start, 0 and negatives included. Copy the list and paste it below: the pasted list still starts at 0."
+    >
+      <RichTextEditor label="Steps" defaultValue={countdown} />
     </LabSection>
     <LabSection title="Custom schema">
       <CustomSchemaEditor />
