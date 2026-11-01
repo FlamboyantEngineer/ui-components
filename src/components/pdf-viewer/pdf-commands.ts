@@ -2,28 +2,46 @@
 
 import { downloadBlob } from '../../utils/download.js';
 import type { PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
-import { renderPageBitmap } from './page-bitmap.js';
+import { renderPageBitmap, type PageBitmap } from './page-bitmap.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
 // Printed pages are drawn at 150 dots per inch: sharp on paper without huge bitmaps.
 const printScale = 150 / 72;
 
-/** Each page as an image at the print resolution, as the document itself sets it. */
-async function drawPrintedPages<V extends PdfViewport, C extends PdfTextContent>(
+/** Draws one page at the print resolution, cancelling the drawing when `signal` aborts. */
+async function drawPrintedPage<V extends PdfViewport, C extends PdfTextContent>(
+  bitmap: PageBitmap<V, C>,
+  canvas: HTMLCanvasElement,
+  signal: AbortSignal,
+): Promise<Blob> {
+  signal.throwIfAborted();
+  const task = renderPageBitmap(bitmap, canvas);
+  const cancel = () => task.cancel();
+  signal.addEventListener('abort', cancel, { once: true });
+  try {
+    await task.promise;
+  } finally {
+    signal.removeEventListener('abort', cancel);
+  }
+  signal.throwIfAborted();
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
+  if (!blob) throw new Error('A printed page could not be encoded.');
+  return blob;
+}
+
+/** Each page as an image at the print resolution, as the document itself sets it, in order. */
+async function* drawPrintedPages<V extends PdfViewport, C extends PdfTextContent>(
   loaded: LoadedPdf<V, C>,
   owner: Document,
-): Promise<string[]> {
-  const urls: string[] = [];
+  signal: AbortSignal,
+): AsyncGenerator<Blob> {
   for (const page of loaded.pages) {
     const viewport = page.getViewport({ scale: printScale });
     const canvas = owner.createElement('canvas');
     canvas.width = Math.floor(viewport.width);
     canvas.height = Math.floor(viewport.height);
-    await renderPageBitmap({ loaded, page, viewport }, canvas).promise;
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
-    if (blob) urls.push(URL.createObjectURL(blob));
+    yield await drawPrintedPage({ loaded, page, viewport }, canvas, signal);
   }
-  return urls;
 }
 
 function whenLoaded(image: HTMLImageElement): Promise<void> {
@@ -39,7 +57,7 @@ function whenLoaded(image: HTMLImageElement): Promise<void> {
  */
 async function fillPrintFrame(frame: HTMLIFrameElement, urls: readonly string[]): Promise<void> {
   const frameDocument = frame.contentDocument;
-  if (!frameDocument) return;
+  if (!frameDocument) throw new Error('The print frame has no document.');
   frameDocument.body.remove();
   const loads = urls.map((url) => {
     const sheet = frameDocument.createElement('div');
@@ -56,14 +74,7 @@ async function fillPrintFrame(frame: HTMLIFrameElement, urls: readonly string[])
   await Promise.all(loads);
 }
 
-/**
- * Prints every page through the browser's print dialog: the pages are drawn as images into a
- * hidden frame in the viewer's document `owner`, which is printed and removed once printing is over.
- */
-export async function printPdf<V extends PdfViewport, C extends PdfTextContent>(
-  loaded: LoadedPdf<V, C>,
-  owner: Document,
-): Promise<void> {
+function createPrintFrame(owner: Document): HTMLIFrameElement {
   const frame = owner.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
   frame.tabIndex = -1;
@@ -72,13 +83,40 @@ export async function printPdf<V extends PdfViewport, C extends PdfTextContent>(
   frame.style.height = '0';
   frame.style.visibility = 'hidden';
   owner.body.append(frame);
-  const urls = await drawPrintedPages(loaded, owner);
+  return frame;
+}
+
+/**
+ * Prints every page through the browser's print dialog: the pages are drawn as images into a
+ * hidden frame in the viewer's document `owner`, which is printed and removed once printing is over.
+ * The frame and every image drawn so far are released as well when a page fails to draw or encode,
+ * the frame fails to fill or print, or `signal` aborts, which also cancels the page being drawn.
+ * Rejects with the failure, or with the abort reason.
+ */
+export async function printPdf<V extends PdfViewport, C extends PdfTextContent>(
+  loaded: LoadedPdf<V, C>,
+  owner: Document,
+  signal: AbortSignal = new AbortController().signal,
+): Promise<void> {
+  const frame = createPrintFrame(owner);
+  const urls: string[] = [];
+  let isReleased = false;
   const release = () => {
+    if (isReleased) return;
+    isReleased = true;
+    signal.removeEventListener('abort', release);
     frame.remove();
     for (const url of urls) URL.revokeObjectURL(url);
   };
+  signal.addEventListener('abort', release, { once: true });
   try {
+    // Every image's address is kept as soon as it exists, so a failure on a later page releases it.
+    for await (const blob of drawPrintedPages(loaded, owner, signal)) {
+      signal.throwIfAborted();
+      urls.push(URL.createObjectURL(blob));
+    }
     await fillPrintFrame(frame, urls);
+    signal.throwIfAborted();
     const frameWindow = frame.contentWindow;
     if (!frameWindow) throw new Error('The print frame has no window.');
     frameWindow.addEventListener('afterprint', release, { once: true });

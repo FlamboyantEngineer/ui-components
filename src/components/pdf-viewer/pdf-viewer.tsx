@@ -19,6 +19,7 @@ import { PdfViewerStage } from './pdf-viewer-stage.js';
 import { PdfViewerToolbar } from './pdf-viewer-toolbar.js';
 import type { PdfZoom } from './pdf-zoom.js';
 import type { PdfDocumentAccess } from './use-pdf-access.js';
+import type { PdfCommandName } from './use-pdf-commands.js';
 import type { PdfSearchControls } from './use-pdf-search.js';
 import type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 import { usePdfViewer } from './use-pdf-viewer.js';
@@ -36,6 +37,7 @@ export type { PdfSearchOptions } from './pdf-search.js';
 export type { PdfDocumentAccess, PdfPageContent } from './use-pdf-access.js';
 export type { PdfVisiblePosition } from './use-pdf-visible-position.js';
 export type { PdfSearchControls } from './use-pdf-search.js';
+export type { PdfCommandName } from './use-pdf-commands.js';
 
 export interface PdfViewerProps<
   V extends PdfViewport = PdfViewport,
@@ -70,6 +72,11 @@ export interface PdfViewerProps<
   showAnnotations?: boolean | undefined;
   /** Called when the engine or the document cannot be opened. */
   onError?: ((error: Error) => void) | undefined;
+  /**
+   * Called when printing or saving the document fails. A print cancelled by a newer one, another
+   * document or the viewer's unmount is not a failure.
+   */
+  onCommandError?: ((command: PdfCommandName, error: Error) => void) | undefined;
   /** The page the reader is on, zero-based: the viewer goes to it when it changes. */
   page?: number | undefined;
   /** The page a document opens at when `page` is not set, zero-based. */

@@ -1,9 +1,15 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createEngine, renderReady, renderViewer } from '../../../test/pdf-fixtures.js';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import {
+  createEngine,
+  renderReady,
+  renderViewer,
+  type TestEngine,
+} from '../../../test/pdf-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toPdfFileName } from './pdf-commands.js';
+import type { PdfRenderParams } from './pdf-engine.js';
 
 async function chooseCommand(name: string) {
   await userEvent.click(screen.getByRole('button', { name: 'More options' }));
@@ -117,5 +123,104 @@ describe('PdfViewer commands', () => {
       ),
     );
     document.querySelector('iframe')?.remove();
+  });
+});
+
+describe('PdfViewer print failures', () => {
+  beforeEach(() => {
+    let created = 0;
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn(() => `blob:page-${++created}`),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) =>
+      callback(new Blob(['png'])),
+    );
+  });
+
+  afterEach(() => {
+    Reflect.deleteProperty(URL, 'createObjectURL');
+    Reflect.deleteProperty(URL, 'revokeObjectURL');
+  });
+
+  /** Makes the printed renders of the pages settle as `settle` decides, page by page. */
+  function holdPrintedPages(engine: TestEngine) {
+    const tasks: Array<{ resolve: () => void; reject: (cause: Error) => void; cancel: Mock }> = [];
+    const viewerRender = engine.render.getMockImplementation();
+    engine.render.mockImplementation((params: PdfRenderParams) => {
+      if (params.viewport.scale !== 150 / 72) return requireDefined(viewerRender)(params);
+      const cancel = vi.fn();
+      const promise = new Promise<void>((resolve, reject) => {
+        tasks.push({ resolve: () => resolve(), reject, cancel });
+      });
+      return { promise, cancel };
+    });
+    return tasks;
+  }
+
+  it('UIC-PDF-VIEWER-9.3 releases the frame and the pages drawn so far when a later page fails', async () => {
+    const onCommandError = vi.fn();
+    const engine = createEngine();
+    const tasks = holdPrintedPages(engine);
+    await renderReady({ onCommandError }, engine);
+    await chooseCommand('Print');
+    await waitFor(() => expect(tasks).toHaveLength(1));
+    expect(document.querySelector('iframe')).not.toBeNull();
+    await act(async () => requireDefined(tasks[0]).resolve());
+    await waitFor(() => expect(tasks).toHaveLength(2));
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    const failure = new Error('The page could not be drawn.');
+    await act(async () => requireDefined(tasks[1]).reject(failure));
+    await waitFor(() => expect(onCommandError).toHaveBeenCalledWith('print', failure));
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:page-1');
+  });
+
+  it('UIC-PDF-VIEWER-9.3 reports a page that cannot be encoded', async () => {
+    vi.mocked(HTMLCanvasElement.prototype.toBlob).mockImplementation((callback) => callback(null));
+    const onCommandError = vi.fn();
+    await renderReady({ onCommandError });
+    await chooseCommand('Print');
+    await waitFor(() => expect(onCommandError).toHaveBeenCalledWith('print', expect.any(Error)));
+    expect(document.querySelector('iframe')).toBeNull();
+  });
+
+  it('UIC-PDF-VIEWER-9.3 cancels a pending print when the viewer unmounts, without a failure', async () => {
+    const onCommandError = vi.fn();
+    const engine = createEngine();
+    const tasks = holdPrintedPages(engine);
+    const view = await renderReady({ onCommandError }, engine);
+    await chooseCommand('Print');
+    await waitFor(() => expect(tasks).toHaveLength(1));
+    await act(async () => requireDefined(tasks[0]).resolve());
+    await waitFor(() => expect(tasks).toHaveLength(2));
+    view.unmount();
+    expect(requireDefined(tasks[1]).cancel).toHaveBeenCalled();
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:page-1');
+    await act(async () => requireDefined(tasks[1]).reject(new Error('Rendering cancelled.')));
+    expect(onCommandError).not.toHaveBeenCalled();
+  });
+
+  it('UIC-PDF-VIEWER-9.3 cancels a pending print when another document opens', async () => {
+    const engine = createEngine();
+    const tasks = holdPrintedPages(engine);
+    const view = await renderReady({}, engine);
+    await chooseCommand('Print');
+    await waitFor(() => expect(tasks).toHaveLength(1));
+    view.update({ source: '/files/Other.pdf' });
+    await waitFor(() => expect(requireDefined(tasks[0]).cancel).toHaveBeenCalled());
+    expect(document.querySelector('iframe')).toBeNull();
+  });
+
+  it('UIC-PDF-VIEWER-9.4 reports a save that fails', async () => {
+    const onCommandError = vi.fn();
+    const engine = createEngine();
+    const failure = new Error('The file could not be read.');
+    engine.pdf.getData.mockRejectedValue(failure);
+    await renderReady({ onCommandError }, engine);
+    await chooseCommand('Download');
+    await waitFor(() => expect(onCommandError).toHaveBeenCalledWith('download', failure));
   });
 });
