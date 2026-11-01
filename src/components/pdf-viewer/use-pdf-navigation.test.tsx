@@ -10,7 +10,7 @@ import {
   stubIntersectionObserver,
   stubLayout,
 } from '../../../test/pdf-fixtures.js';
-import type { PdfViewport } from './pdf-engine.js';
+import type { PdfDocumentParams, PdfViewport } from './pdf-engine.js';
 
 const scroller = () => screen.getByRole('document');
 const pageField = () => screen.getByLabelText('Page');
@@ -59,6 +59,54 @@ describe('PdfViewer navigation', () => {
     expect(onPageChange).toHaveBeenLastCalledWith(2);
   });
 
+  it('UIC-PDF-VIEWER-4.3 opens each new document at the caller page, without reporting another', async () => {
+    stubLayout();
+    const onPageChange = vi.fn();
+    const { engine } = createEngine();
+    const short = createEngine({ lines: [['Markets'], ['Harvest']] });
+    // The two-page document opens from its own engine's copy.
+    const loadEngine = async () => ({
+      ...engine,
+      getDocument: (params: PdfDocumentParams) =>
+        'url' in params && params.url === '/files/Short.pdf'
+          ? short.engine.getDocument(params)
+          : engine.getDocument(params),
+    });
+    const view = renderViewer({ defaultZoom: 100, page: 2, onPageChange, loadEngine });
+    await waitFor(() => expect(pageField()).toHaveValue('3'));
+    for (const source of ['/files/B.pdf', '/files/A.pdf', '/files/B.pdf'] as const) {
+      view.update({ defaultZoom: 100, page: 2, onPageChange, loadEngine, source });
+      await waitFor(() => expect(scroller().scrollTop).toBe(0));
+      await waitFor(() => expect(pageField()).toHaveValue('3'));
+      expect(scroller().scrollTop).toBe(1600);
+    }
+    // A shorter document opens at its last page.
+    view.update({
+      defaultZoom: 100,
+      page: 2,
+      onPageChange,
+      loadEngine,
+      source: '/files/Short.pdf',
+    });
+    await waitFor(() => expect(pageField()).toHaveValue('2'));
+    // Only the shorter document's page differs from the caller's; no first page shows in between.
+    expect(onPageChange.mock.calls).toEqual([[1]]);
+  });
+
+  it('UIC-PDF-VIEWER-4.3 serves a page requested while the next document loads, once it is shown', async () => {
+    const view = await renderReady({ defaultZoom: 100, page: 0 });
+    view.update({ defaultZoom: 100, page: 0, source: null });
+    view.update({ defaultZoom: 100, page: 1, source: null });
+    view.update({ defaultZoom: 100, page: 1, source: '/files/Other.pdf' });
+    await waitFor(() => expect(screen.getAllByRole('presentation').length).toBeGreaterThan(0));
+    // Hidden, the viewer keeps the request until it is shown.
+    expect(scroller().scrollTop).toBe(0);
+    stubLayout();
+    view.update({ defaultZoom: 100, page: 1, source: '/files/Other.pdf', revealRect: null });
+    expect(scroller().scrollTop).toBe(800);
+    expect(pageField()).toHaveValue('2');
+  });
+
   it('UIC-PDF-VIEWER-4.3 reports the first page once a document opens without a caller page', async () => {
     const onPageChange = vi.fn();
     await renderReady({ onPageChange });
@@ -84,6 +132,17 @@ describe('PdfViewer navigation', () => {
     expect(scroller().scrollTop).toBe(1600);
     expect(scroller().scrollLeft).toBeCloseTo((600 + 30) * pointsToPixels - 300);
     expect(pageField()).toHaveValue('3');
+  });
+
+  it('UIC-PDF-VIEWER-7.3 reveals the same rectangle in each new document, before the caller page', async () => {
+    stubLayout();
+    const rect = { pageIndex: 1, left: 0, top: 150, width: 60, height: 15 };
+    const view = await renderReady({ defaultZoom: 100, page: 2, revealRect: rect });
+    expect(scroller().scrollTop).toBeCloseTo(800 + 150 * pointsToPixels);
+    view.update({ defaultZoom: 100, page: 2, revealRect: rect, source: '/files/Other.pdf' });
+    await waitFor(() => expect(scroller().scrollTop).toBe(0));
+    await waitFor(() => expect(scroller().scrollTop).toBeCloseTo(800 + 150 * pointsToPixels));
+    expect(pageField()).toHaveValue('2');
   });
 
   it('UIC-PDF-VIEWER-7.3 waits until the viewer is shown', async () => {

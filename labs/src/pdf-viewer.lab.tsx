@@ -233,7 +233,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Toolbar elsewhere"
-      description="The toolbar is projected above a contents panel beside the document, with a leading action; the contents set the page and follow the reader."
+      description="The toolbar is projected above a contents panel beside the document, with a leading action; the contents set the page and follow the reader, and the other copy of the report opens at that page."
     >
       <ProjectedToolbar />
     </LabSection>

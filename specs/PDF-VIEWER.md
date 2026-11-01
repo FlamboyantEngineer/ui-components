@@ -161,14 +161,14 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 ### UIC-PDF-VIEWER-4.3 - Controlled page
 
-`page` (zero-based), with `onPageChange`, shall put the caller in charge of the page: when `page` changes to a page other than the one the reader is on, the viewer goes to it once, landing as in UIC-PDF-VIEWER-4.2, as soon as the document has opened, the page is laid out and the viewer is shown; a page past the end goes to the last page. Once the document has opened, `onPageChange` shall report the page the reader is on whenever it changes — by scrolling, the toolbar, find or a revealed rectangle — unless `page` already names it. A `page` that repeats a page reported since the caller last caught up goes nowhere, so a caller that follows the reports never pulls the reader back. The page field shows the page the reader is on.
+`page` (zero-based), with `onPageChange`, shall put the caller in charge of the page: when `page` changes to a page other than the one the reader is on, the viewer goes to it once, landing as in UIC-PDF-VIEWER-4.2, as soon as the document has opened, the page is laid out and the viewer is shown; a page past the end goes to the last page. Once the document has opened, `onPageChange` shall report the page the reader is on whenever it changes — by scrolling, the toolbar, find or a revealed rectangle — unless `page` already names it. A `page` that repeats a page reported since the caller last caught up goes nowhere, so a caller that follows the reports never pulls the reader back. Each newly opened document shall start at the caller's current `page`, even when it has not changed since the previous document, without reporting the first page in between; the reports of the previous document no longer count as echoes. The page field shows the page the reader is on.
 
 Implementation: `src/components/pdf-viewer/use-pdf-navigation.ts`, `src/components/pdf-viewer/use-pdf-pages.ts`
 Verification: `src/components/pdf-viewer/use-pdf-navigation.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-4.4 - Opening page
 
-Without `page`, a document shall open at `defaultPage` (zero-based, limited to its pages), landing as in UIC-PDF-VIEWER-4.2 once it is laid out and the viewer is shown.
+Without `page`, a document shall open at `defaultPage` (zero-based, limited to its pages), landing as in UIC-PDF-VIEWER-4.2 once it is laid out and the viewer is shown. A document opens at the first of these that is set: `revealRect` (UIC-PDF-VIEWER-7.3), `page`, `defaultPage`. A `destination` set when it opens is looked up after, and moves the reader once found (UIC-PDF-VIEWER-4.5). A request left over from the previous document is dropped. Requests wait while the document loads and while the viewer is hidden.
 
 Implementation: `src/components/pdf-viewer/use-pdf-navigation.ts`
 Verification: `src/components/pdf-viewer/use-pdf-navigation.test.tsx`
@@ -288,7 +288,7 @@ Verification: `src/components/pdf-viewer/use-pdf-navigation.test.tsx`, `e2e/pdf-
 
 ### UIC-PDF-VIEWER-7.3 - Revealing a rectangle
 
-Each time `revealRect` (a page index and a rectangle in page coordinates) changes value, the viewer shall bring that rectangle into view once: its top lands where a page's top lands when going to a page, and the view moves sideways to centre it when it is not fully visible across. A request made before the document has opened or while the viewer is hidden waits until the page is laid out and the viewer is shown. An equal rectangle passed again does nothing, so a rectangle rebuilt on every render never pulls the reader back; after `null`, it is a new request.
+Each time `revealRect` (a page index and a rectangle in page coordinates) changes value, the viewer shall bring that rectangle into view once: its top lands where a page's top lands when going to a page, and the view moves sideways to centre it when it is not fully visible across. A request made before the document has opened or while the viewer is hidden waits until the page is laid out and the viewer is shown. An equal rectangle passed again does nothing, so a rectangle rebuilt on every render never pulls the reader back; after `null`, it is a new request. Each newly opened document shall reveal the current rectangle, even an equal one.
 
 Implementation: `src/components/pdf-viewer/use-pdf-navigation.ts`, `src/components/pdf-viewer/use-pdf-pages.ts`
 Verification: `src/components/pdf-viewer/use-pdf-navigation.test.tsx`, `e2e/pdf-viewer.spec.ts`

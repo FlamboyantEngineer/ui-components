@@ -391,6 +391,21 @@ test.describe('PDF Viewer lab', () => {
     await expect(output).toHaveText('1');
     await expect(field).toHaveValue('1');
 
+    // A new document opens at the caller's page, though the page itself has not changed.
+    await projected.getByRole('button', { name: 'Markets' }).click();
+    await expect(field).toHaveValue('3');
+    const openOther = page
+      .locator('[data-lab-section="Toolbar elsewhere"]')
+      .getByRole('button', { name: 'Open the other copy' });
+    for (let copy = 0; copy < 2; copy += 1) {
+      await openOther.click();
+      await expect(projected.locator('.ui-pdf-viewer__scroller')).not.toHaveAttribute('aria-busy');
+      await expect(field).toHaveValue('3');
+      await expect(output).toHaveText('3');
+    }
+    await scroller.evaluate((element) => element.scrollTo({ top: 0 }));
+    await expect(output).toHaveText('1');
+
     const firstPage = projected.locator('.ui-pdf-viewer__page').first();
     const before = (await box(firstPage)).width;
     await toolbar.getByRole('button', { name: 'Zoom in' }).click();

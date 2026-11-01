@@ -25,6 +25,8 @@ export const sampleUrl = 'build/samples/seasonal-report.pdf';
 /** The same sample behind the password `orchard`. */
 export const lockedUrl = 'build/samples/seasonal-report-locked.pdf';
 export const workerSrc = 'build/vendor/pdf.worker.min.mjs';
+/** The same sample at another address, so a viewer opens it as a new document. */
+export const otherCopyUrl = `${sampleUrl}?copy=2`;
 const engineUrl = new URL('build/vendor/pdf.min.mjs', document.baseURI).href;
 export const loadEngine = () => import(engineUrl) as Promise<typeof Pdfjs>;
 
@@ -221,10 +223,14 @@ export function CallerOwnedFind() {
   );
 }
 
-/** The toolbar spans a contents panel beside the document; the contents drive the page. */
+/**
+ * The toolbar spans a contents panel beside the document; the contents drive the page, which the
+ * other copy of the report opens at too.
+ */
 export function ProjectedToolbar() {
   const [isContentsOpen, setContentsOpen] = useState(true);
   const [page, setPage] = useState(0);
+  const [source, setSource] = useState(sampleUrl);
   return (
     <ProjectionProvider>
       <div
@@ -254,7 +260,7 @@ export function ProjectedToolbar() {
         ) : null}
         <PdfViewer
           aria-label="Report beside its contents"
-          source={sampleUrl}
+          source={source}
           loadEngine={loadEngine}
           workerSrc={workerSrc}
           toolbarSlot="report-tools"
@@ -268,7 +274,14 @@ export function ProjectedToolbar() {
         />
       </div>
       <p>
-        Page: <output data-lab-output="page">{page + 1}</output>
+        Page: <output data-lab-output="page">{page + 1}</output>{' '}
+        <Button
+          size="sm"
+          variant="ghost"
+          onPress={() => setSource((current) => (current === sampleUrl ? otherCopyUrl : sampleUrl))}
+        >
+          Open the other copy
+        </Button>
       </p>
     </ProjectionProvider>
   );
