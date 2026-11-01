@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useEffect, useState, type Ref } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -112,6 +112,42 @@ describe('Modal retention', () => {
       await user.keyboard('{Escape}');
       await waitFor(() => expect(opener).toHaveFocus());
       expect(onExitComplete).toHaveBeenCalledTimes(round);
+    }
+  });
+
+  it('UIC-MODAL-9.3 keeps focus in the leaving dialog until its exit ends, then returns it', async () => {
+    const user = userEvent.setup();
+    let finish = () => {};
+    const exit = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    let animations: Array<{ finished: Promise<void> }> = [];
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value: () => animations,
+    });
+    try {
+      render(<RetainedPage lifecycle={[]} />);
+      const opener = screen.getByRole('button', { name: 'Write' });
+      await user.click(opener);
+      const note = screen.getByRole('textbox', { name: 'Note' });
+      await waitFor(() => expect(note).toHaveFocus());
+      animations = [{ finished: exit }];
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(overlay()).toHaveAttribute('data-exiting', 'true'));
+      // Through the exit, focus stays in the dialog, never on the body.
+      expect(overlay()).not.toHaveAttribute('inert');
+      expect(document.body).not.toHaveFocus();
+      expect(overlay()?.contains(document.activeElement)).toBe(true);
+      animations = [];
+      await act(async () => {
+        finish();
+        await exit;
+      });
+      await waitFor(() => expect(opener).toHaveFocus());
+      expect(overlay()).toHaveAttribute('inert');
+    } finally {
+      delete (Element.prototype as Partial<Element>).getAnimations;
     }
   });
 

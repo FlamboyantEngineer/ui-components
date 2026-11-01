@@ -42,14 +42,14 @@ const chosenSelector = [
  * Focuses the control, or when it is a group the element focus enters it by: its chosen option,
  * such as a segment or radio, else its first focusable element, such as the first date segment.
  */
-export function focusControl(control: HTMLElement | null) {
+export function focusControl(control: HTMLElement | null, options?: FocusOptions) {
   if (!control) return;
   const target = control.matches(focusableSelector)
     ? control
     : (control.querySelector<HTMLElement>(chosenSelector) ??
       control.querySelector<HTMLElement>(focusableSelector) ??
       control);
-  target.focus();
+  target.focus(options);
 }
 
 function isValidatable(element: HTMLElement | null): element is ValidatableElement {

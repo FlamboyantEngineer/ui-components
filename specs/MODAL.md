@@ -241,9 +241,9 @@ Verification: `src/components/modal/modal-retained.test.tsx`, `e2e/modal.spec.ts
 
 ### UIC-MODAL-9.3 - Each opening
 
-Each opening of a retained dialog shall move focus in as a first opening does ([UIC-MODAL-3.1](#uic-modal-31---initial-focus)), contain it while open, and on each close return it to `finalFocus` or the element focused when it opened, once per transition, and call `onExitComplete` once, however many times it opens and closes. Its footer actions start each opening afresh ([UIC-MODAL-5.4](#uic-modal-54---separate-openings)).
+Each opening of a retained dialog shall move focus in as a first opening does ([UIC-MODAL-3.1](#uic-modal-31---initial-focus)), contain it while open, and on each close return it to `finalFocus` or the element focused when it opened, once per transition, when its exit has ended: until then the leaving dialog keeps focus and is not inert, so focus never falls to the body while it animates out; it turns inert once the exit ends, and call `onExitComplete` once, however many times it opens and closes. Its footer actions start each opening afresh ([UIC-MODAL-5.4](#uic-modal-54---separate-openings)).
 
-Implementation: `src/components/modal/modal-dialog.tsx`, `src/utils/focus-target.ts`
+Implementation: `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal-presentations.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/modal/modal-retained.test.tsx`
 
 ### UIC-MODAL-9.4 - Other modals

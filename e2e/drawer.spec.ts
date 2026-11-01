@@ -256,6 +256,23 @@ test.describe('Drawer lab', () => {
     await expect(page.getByRole('dialog', { name: 'Trip settings' })).toBeVisible();
   });
 
+  test('UIC-DRAWER-3.1 focuses an autoFocus field once the panel has slid in', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('drawer');
+    await page.getByRole('button', { name: 'Find a city' }).click();
+    const field = page
+      .getByRole('dialog', { name: 'Find a city' })
+      .getByRole('textbox', { name: 'City' });
+    await expect(field).toBeFocused();
+    // Focused after the entrance: the panel rests fully in view at its edge.
+    const panel = await boxOf(page.locator('[data-lab-drawer="autofocus"] .ui-drawer__panel'));
+    const viewport = page.viewportSize();
+    expect(Math.round(panel.x + panel.width)).toBe(viewport?.width);
+    await expect(page.locator('[data-lab-drawer="autofocus"][data-entering]')).toHaveCount(0);
+  });
+
   test('UIC-DRAWER-2.1 stays open on an Escape its content handled', async ({ page, lab }) => {
     await lab.open('drawer');
     await page.getByRole('button', { name: 'Search drawer' }).click();

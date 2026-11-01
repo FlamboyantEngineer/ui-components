@@ -7,6 +7,7 @@ import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
+import { TextField } from '../text-field/text-field.js';
 import { Drawer, DrawerTrigger, type DrawerProps } from './drawer.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
 
@@ -448,5 +449,28 @@ describe('Drawer', () => {
     );
     expect(await screen.findByRole('heading', { name: 'Details' })).toHaveProperty('tagName', 'H2');
     expect(screen.getByRole('heading', { name: 'Stops' })).toHaveProperty('tagName', 'H3');
+  });
+
+  it('UIC-DRAWER-3.1 focuses a field with autoFocus once the panel has slid in, without scrolling', async () => {
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    try {
+      render(
+        <Page>
+          <TextField label="Destination" autoFocus />
+        </Page>,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Filters' }));
+      const field = await screen.findByRole('textbox', { name: 'Destination' });
+      expect(overlay()).toHaveAttribute('data-entering', 'true');
+      expect(field).not.toHaveFocus();
+      await settle();
+      await waitFor(() => expect(field).toHaveFocus());
+      const calls = focus.mock.contexts.flatMap((element, index) =>
+        element === field ? [focus.mock.calls[index]?.[0]] : [],
+      );
+      expect(calls).toEqual([{ preventScroll: true }]);
+    } finally {
+      focus.mockRestore();
+    }
   });
 });
