@@ -294,3 +294,59 @@ test.describe('Segmented Choice lab', () => {
     await expect(capped.locator('.ui-segmented-choice__count')).toHaveText('99+');
   });
 });
+
+test('UIC-SEGMENTED-CHOICE-1.3 keeps descenders and accents whole in labels and counts at every size', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('segmented-choice');
+  const heights = { xs: 20, sm: 24, md: 28, lg: 32 } as const;
+  for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+    const group = page.locator(`[data-lab-glyphs="content-${size}"]`);
+    await group.scrollIntoViewIfNeeded();
+    const frame = await group.boundingBox();
+    if (!frame) throw new Error('The group has no layout box.');
+    expect(frame.height).toBe(heights[size]);
+    const clip = { x: frame.x, y: frame.y, width: frame.width, height: frame.height };
+    const unclip = (overflow: string) =>
+      group.evaluate((node, value) => {
+        const parts = node.querySelectorAll<HTMLElement>(
+          '.ui-segmented-choice__label, .ui-segmented-choice__count',
+        );
+        parts.forEach((part) => (part.style.overflow = value));
+      }, overflow);
+    const clipped = (await page.screenshot({ clip })).toString('base64');
+    await unclip('visible');
+    const whole = (await page.screenshot({ clip })).toString('base64');
+    await unclip('');
+    // Inside the frame, away from its rounded corners, the drawing is the same with nothing clipped.
+    const changed = await page.evaluate(
+      async ([first, second]) => {
+        const read = async (data: string) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${data}`;
+          await image.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext('2d');
+          if (!context) throw new Error('No canvas context.');
+          context.drawImage(image, 0, 0);
+          return context.getImageData(0, 0, image.width, image.height);
+        };
+        const [a, b] = [await read(first), await read(second)];
+        let count = 0;
+        for (let y = 0; y < a.height; y += 1) {
+          for (let x = 8; x < a.width - 8; x += 1) {
+            const at = (y * a.width + x) * 4;
+            if ([0, 1, 2].some((channel) => a.data[at + channel] !== b.data[at + channel]))
+              count += 1;
+          }
+        }
+        return count;
+      },
+      [clipped, whole],
+    );
+    expect(changed, size).toBe(0);
+  }
+});

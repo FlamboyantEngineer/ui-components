@@ -354,6 +354,30 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Glyph room"
+      description="Descenders, accents and counts keep their whole glyphs at every size and in narrow equal-width segments: the labels and count badges clip only sideways, where a long label ends in an ellipsis."
+    >
+      <StateMatrix
+        axes={{ segments: ['content', 'equal'], size: ['xs', ...sizes] }}
+        render={({ segments, size }) => (
+          <div style={segments === 'equal' ? { width: 220 } : undefined}>
+            <SegmentedChoice
+              aria-label={`Glyphs, ${segments}, ${size}`}
+              size={size}
+              sizing={segments}
+              defaultValue="typography"
+              data-lab-glyphs={`${segments}-${size}`}
+              options={[
+                { value: 'typography', label: 'Typography', count: 7 },
+                { value: 'quietly', label: 'Quietly gjpqy', count: 42 },
+                { value: 'accents', label: 'Émigré Åçñ', count: 1000 },
+              ]}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Asynchronous change"
       description="The pick shows at once and stays pending while it saves; a failed save puts the previous choice back."
     >
