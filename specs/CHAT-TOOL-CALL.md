@@ -55,7 +55,7 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat
 
 ### UIC-CHAT-TOOL-CALL-1.8 - Variant
 
-The root shall publish `variant` as `data-variant`: `card` (the default), a call shown on its own, or `row`, a quiet call among the steps of a reply. [Chat Parts](CHAT-PARTS.md#uic-chat-parts-32---tool-calls) draws every call as a `row`, in a group of steps or alone, so styles written for the row reach every call of a reply. The variant changes no content or behaviour.
+The root shall publish `variant` as `data-variant`: `card` (the default), a call shown on its own, or `row`, a quiet call among the steps of a reply. [Chat Parts](CHAT-PARTS.md#uic-chat-parts-32---tool-calls) draws every call as a `row` in a group of steps, so its state survives parts streamed after it and styles written for the row reach every call of a reply. The variant changes no content or behaviour.
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-parts.spec.ts`

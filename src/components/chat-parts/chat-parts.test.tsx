@@ -124,19 +124,43 @@ describe('ChatParts', () => {
     expect(stepsTrigger(container)).toHaveAccessibleName('Working…');
   });
 
-  it('UIC-CHAT-PARTS-5.1 moves a single step into a group once a part follows it', () => {
+  it('UIC-CHAT-PARTS-5.1 keeps a single tool call in one group as parts stream after it', () => {
     const { container, rerender } = render(<ChatParts parts={[call()]} isStreaming />);
-    expect(container.querySelector('.ui-chat-steps')).toBeNull();
-    expect(screen.getByRole('button', { name: /^Search recipes/ })).toBeInTheDocument();
+    const group = container.querySelector('.ui-chat-steps');
+    expect(group).not.toBeNull();
+    const card = container.querySelector('.ui-chat-tool-call');
     rerender(<ChatParts parts={[call({ status: 'succeeded' }), answer('Soup')]} isStreaming />);
+    expect(container.querySelector('.ui-chat-steps')).toBe(group);
     expect(stepsTrigger(container)).toHaveAccessibleName('Ran a search');
     expect(container.querySelector('.ui-chat-steps__glyph')).toHaveAttribute(
       'data-glyph',
       'search',
     );
+    rerender(
+      <ChatParts
+        parts={[call({ status: 'succeeded' }), answer('Soup')]}
+        isStreaming
+        expandedParts={{ 'steps:c1': true }}
+      />,
+    );
+    expect(container.querySelector('.ui-chat-tool-call')).toBe(card);
   });
 
-  it('UIC-CHAT-PARTS-3.2 draws every tool call as a row, alone or in a group', () => {
+  it('UIC-CHAT-PARTS-5.1 keeps a denial reason and its focus when text streams after the call', async () => {
+    const user = userEvent.setup();
+    const asking = call({ status: 'approval-requested', approval: {} });
+    const props = { onApprove: vi.fn(), onDeny: vi.fn(), isStreaming: true };
+    const { rerender } = render(<ChatParts parts={[asking]} {...props} />);
+    await user.click(screen.getByRole('button', { name: /^Deny/ }));
+    await user.keyboard('Do not send private data');
+    const reason = screen.getByRole('textbox');
+    rerender(<ChatParts parts={[asking, answer('Working...')]} {...props} />);
+    expect(screen.getByRole('textbox')).toBe(reason);
+    expect(reason).toHaveValue('Do not send private data');
+    expect(reason).toHaveFocus();
+  });
+
+  it('UIC-CHAT-PARTS-3.2 draws every tool call as a row in a group', () => {
     const { container } = render(
       <ChatParts
         parts={[
@@ -145,13 +169,14 @@ describe('ChatParts', () => {
           done('Now the forecast.'),
           forecast('failed'),
         ]}
+        expandedParts={{ 'steps:c1': true, 'steps:c3': true }}
       />,
     );
     const calls = [...container.querySelectorAll('.ui-chat-tool-call')];
     expect(calls.map((card) => card.closest('.ui-chat-steps') !== null)).toEqual([
       true,
       true,
-      false,
+      true,
     ]);
     calls.forEach((card) => expect(card).toHaveAttribute('data-variant', 'row'));
   });

@@ -35,15 +35,17 @@ function toStepsKey(first: ChatStepPart): string {
   return `steps:${first.id}`;
 }
 
-/** Whether a run of steps folds into a group: it holds a tool call, and a second step or a part after it. */
-function isGroupedRun(steps: readonly ChatStepPart[], isFollowed: boolean): boolean {
-  return steps.some((step) => step.type === 'tool-call') && (steps.length > 1 || isFollowed);
+/**
+ * Whether a run of steps folds into a group: it holds a tool call. A lone call is grouped too, so
+ * parts streamed after it never move it under a new parent and remount it.
+ */
+function isGroupedRun(steps: readonly ChatStepPart[]): boolean {
+  return steps.some((step) => step.type === 'tool-call');
 }
 
 /**
  * The parts to render in order. A run of consecutive steps becomes one group when it holds a tool
- * call and either two or more steps or one step that further parts follow; otherwise its steps
- * stay alone.
+ * call, even a lone one; a run of reasoning alone stays ungrouped.
  */
 export function groupChatParts(parts: readonly ChatPart[]): ChatPartsItem[] {
   const items: ChatPartsItem[] = [];
@@ -53,7 +55,7 @@ export function groupChatParts(parts: readonly ChatPart[]): ChatPartsItem[] {
     while (end < parts.length && isStepPart(requireDefined(parts[end]))) end += 1;
     const steps = parts.slice(start, end) as ChatStepPart[];
     const [first] = steps;
-    if (first && isGroupedRun(steps, end < parts.length)) {
+    if (first && isGroupedRun(steps)) {
       items.push({ kind: 'steps', key: toStepsKey(first), steps });
     } else {
       steps.forEach((step, offset) => {

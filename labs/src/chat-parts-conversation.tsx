@@ -196,7 +196,7 @@ export function ToolRenderers() {
         parts={[weatherCall]}
         messageId="renderer-body"
         toolRenderers={{ get_weather: forecastRenderer }}
-        expandedParts={{ [weatherCall.id]: true }}
+        expandedParts={{ [`steps:${weatherCall.id}`]: true, [weatherCall.id]: true }}
       />
       <ChatParts
         parts={[booking]}
@@ -217,6 +217,7 @@ export function ToolRenderers() {
           },
         ]}
         messageId="renderer-own-key"
+        expandedParts={{ 'steps:call-to-string': true }}
         toolRenderers={{ get_weather: forecastRenderer }}
       />
     </Stack>
@@ -260,8 +261,16 @@ const hyphenCall = (id: string, label: string): ChatToolCallPart => ({
 export function HyphenatedIds() {
   return (
     <Stack space="sm" data-lab-demo="hyphenated-ids">
-      <ChatParts parts={[hyphenCall('p', 'Searched the first list')]} messageId="m-1" />
-      <ChatParts parts={[hyphenCall('1-p', 'Searched the second list')]} messageId="m" />
+      <ChatParts
+        parts={[hyphenCall('p', 'Searched the first list')]}
+        messageId="m-1"
+        expandedParts={{ 'steps:p': true }}
+      />
+      <ChatParts
+        parts={[hyphenCall('1-p', 'Searched the second list')]}
+        messageId="m"
+        expandedParts={{ 'steps:1-p': true }}
+      />
     </Stack>
   );
 }
