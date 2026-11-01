@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import {
   MenuContext,
   OverlayTriggerStateContext,
@@ -13,6 +13,7 @@ import {
   useMenuTriggerState,
 } from '../../primitives/index.js';
 import type { OpenStateProps } from '../../core/events.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { MenuTriggerPress } from './menu-trigger-press.js';
 
 export interface MenuTriggerProps extends OpenStateProps {
@@ -32,13 +33,21 @@ export interface MenuTriggerProps extends OpenStateProps {
  * keeps its element, focus and state while its menu comes and goes.
  */
 export function MenuTrigger({ isDisabled = false, children, ...openState }: MenuTriggerProps) {
-  const state = useMenuTriggerState(openState);
+  const { isOpen, onOpenChange } = openState;
+  // A disabled trigger draws a controlled menu closed whatever its owner says.
+  const state = useMenuTriggerState({
+    ...openState,
+    isOpen: isOpen === undefined ? undefined : isOpen && !isDisabled,
+  });
   const ref = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { menuTriggerProps, menuProps } = useMenuTrigger({ type: 'menu', isDisabled }, state, ref);
-  useEffect(() => {
-    if (isDisabled && state.isOpen) state.close();
-  }, [isDisabled, state]);
+  // An open menu whose trigger turns disabled closes once, through the ordinary close, so it stays
+  // closed when the trigger is enabled again.
+  useCloseWhenLocked(isOpen ?? state.isOpen, isDisabled, () => {
+    if (isOpen === undefined) state.close();
+    else onOpenChange?.(false);
+  });
   // A collection's hidden pass renders its items' content only to read the collection.
   if (useIsHidden()) return null;
   const popover = {

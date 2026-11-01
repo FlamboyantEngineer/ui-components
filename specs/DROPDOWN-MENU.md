@@ -53,6 +53,13 @@ With `onPress`, `DropdownMenu` shall draw a `role="group"` element (the root, pu
 Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`, `src/core/strings/common.ts`, `labs/reference/dropdown-menu.css`
 Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`
 
+### UIC-DROPDOWN-MENU-1.8 - Disabled while open
+
+`isDisabled` shall reach the menu trigger as well as the button, plain or split: a menu open when the trigger turns disabled closes through `onOpenChange(false)`, once, its items choose nothing, focus leaves it as on any close, and enabling the trigger again leaves it closed. A controlled menu is drawn closed while disabled (UIC-MENU-4.1). An `ActionRow` overflow menu is a `DropdownMenu` and follows the same rule.
+
+Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`, `src/components/menu/menu-trigger.tsx`
+Verification: `src/components/dropdown-menu/dropdown-menu-locking.test.tsx`
+
 ## Hooks
 
 | Hook                       | Kind  | Values | Description                                                           |

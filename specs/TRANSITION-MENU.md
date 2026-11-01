@@ -41,10 +41,10 @@ Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/tr
 
 ### UIC-TRANSITION-MENU-1.6 - Disabled
 
-With `isDisabled`, the trigger shall be disabled and the root publish `data-disabled`.
+With `isDisabled`, the trigger shall be disabled and the root publish `data-disabled`. A menu open when the menu turns disabled, or while a transition runs, closes and stays closed once enabled again; its transitions run nothing meanwhile.
 
 Implementation: `src/components/transition-menu/transition-menu.tsx`
-Verification: `src/components/transition-menu/transition-menu.test.tsx`
+Verification: `src/components/transition-menu/transition-menu.test.tsx`, `src/components/transition-menu/transition-menu-locking.test.tsx`
 
 ### UIC-TRANSITION-MENU-1.7 - Hooks and caller attributes
 
