@@ -54,11 +54,15 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
   events: readonly CalendarViewEvent[];
   /** The view on show, controlled. */
   view?: CalendarViewMode | undefined;
-  /** The view on show at first, uncontrolled. Defaults to `month`. */
+  /** The view on show at first, uncontrolled. Defaults to `month`, or the first of `views` without it. */
   defaultView?: CalendarViewMode | undefined;
   /** Called with the view the reader picks. */
   onViewChange?: ((view: CalendarViewMode) => void) | undefined;
-  /** The views the reader may pick between; one view hides the choice. Defaults to both. */
+  /**
+   * The views the reader may pick between, in order; one view hides the choice. Repeats are ignored,
+   * and an empty list allows both. A `view` or `defaultView` outside them draws the first allowed
+   * view instead, without calling `onViewChange`. Defaults to both.
+   */
   views?: readonly CalendarViewMode[] | undefined;
   /** The focused day as `YYYY-MM-DD`, controlled; its month or week is on show. */
   date?: string | undefined;
@@ -85,6 +89,31 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
 }
 
 const allViews: readonly CalendarViewMode[] = ['month', 'week'];
+
+/** The allowed views: `views` without repeats or unknown views, or both when none is left. */
+function toAllowedViews(views: readonly CalendarViewMode[]): readonly CalendarViewMode[] {
+  const allowed = [...new Set(views)].filter((entry) => allViews.includes(entry));
+  return allowed.length > 0 ? allowed : allViews;
+}
+
+/**
+ * The view on show: the chosen one (controlled or the reader's pick) while it is allowed, else the
+ * default view when allowed, else the first allowed view. A view that stops being allowed is not
+ * reported through `onViewChange`; it shows again if it is allowed again.
+ */
+function useCalendarMode({
+  view,
+  defaultView = 'month',
+  onViewChange,
+  views,
+}: Pick<CalendarViewProps, 'view' | 'defaultView' | 'onViewChange'> & {
+  views: readonly CalendarViewMode[];
+}) {
+  const allowed = toAllowedViews(views);
+  const fallback = allowed.includes(defaultView) ? defaultView : (allowed[0] ?? 'month');
+  const [chosen, setMode] = useControllableState(view, fallback, onViewChange);
+  return { mode: allowed.includes(chosen) ? chosen : fallback, setMode, allowed };
+}
 
 /** The toolbar: Today, previous and next, the period on show (a polite live region) and the views. */
 function CalendarToolbar(props: {
@@ -149,7 +178,7 @@ function CalendarToolbar(props: {
 export function CalendarView({
   events,
   view,
-  defaultView = 'month',
+  defaultView,
   onViewChange,
   views = allViews,
   date,
@@ -167,7 +196,7 @@ export function CalendarView({
   const readNow = useGetNow(getNow);
   const now = useNow(getNow);
   const today = now ? getDayOf(now.getTime(), zone) : null;
-  const [mode, setMode] = useControllableState(view, defaultView, onViewChange);
+  const { mode, setMode, allowed } = useCalendarMode({ view, defaultView, onViewChange, views });
   const [focusedText, setFocused] = useControllableState<string | null>(
     date,
     defaultDate ?? null,
@@ -183,7 +212,7 @@ export function CalendarView({
   return (
     <div {...root}>
       <CalendarContent
-        {...{ events, mode, views, focused, today, maxEvents, onEventAction, renderDay }}
+        {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
         timeZone={zone}
         onFocusedChange={setFocused}
         onModeChange={setMode}
