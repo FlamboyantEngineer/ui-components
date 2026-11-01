@@ -305,3 +305,25 @@ test('UIC-LOADING-OVERLAY-2.3 announces a full-screen cover over a dialog and bl
   await expect(cover).toHaveCount(0);
   await expect(page.getByRole('dialog', { name: 'Edit the recipe' })).toBeVisible();
 });
+
+test('UIC-LOADING-OVERLAY-3.5 keeps a dialog opened from a loading region usable and returns focus after Save', async ({
+  page,
+  lab,
+}) => {
+  await page.clock.install();
+  await lab.open('loading-overlay');
+  const demo = page.locator('[data-lab-demo="dialog-from-region"]');
+  const edit = demo.getByRole('button', { name: 'Edit the list' });
+  await edit.click();
+  const dialog = page.getByRole('dialog', { name: 'Edit the list' });
+  await dialog.getByRole('button', { name: 'Refresh the list' }).click();
+  await dialog.getByRole('button', { name: 'Sort' }).click();
+  await page.getByRole('menuitem', { name: 'By date' }).click();
+  await expect(demo.locator('[data-lab-output="sorted"]')).toHaveText('date');
+  await page.clock.runFor(3000);
+  await dialog.getByRole('button', { name: 'Save' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(demo.locator('.ui-loading-region')).toBeFocused();
+  await page.clock.runFor(3000);
+  await expect(edit).toBeFocused();
+});

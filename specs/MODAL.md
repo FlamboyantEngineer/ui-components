@@ -103,7 +103,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-3.3 - Restoration
 
-When the modal closes, focus shall return to the element that was focused when it opened, usually its trigger. Closing a modal opened from another shall return focus inside the one beneath. The opener is read through open shadow roots and frames, and focus returns to it whether the modal floats, is retained or not, so a modal inside a web component (a portal host in its shadow root) returns focus to its trigger there.
+When the modal closes, focus shall return to the element that was focused when it opened, usually its trigger. Closing a modal opened from another shall return focus inside the one beneath. The opener is read through open shadow roots and frames, and focus returns to it whether the modal floats, is retained or not, so a modal inside a web component (a portal host in its shadow root) returns focus to its trigger there. A dialog opened from content that a `LoadingRegion` or `Skeleton` blocks stays usable, with the menus and popups inside it, and when it closes while that content is blocked, focus waits on the region and returns to the opener once blocking ends ([UIC-LOADING-OVERLAY-3.5](LOADING-OVERLAY.md#uic-loading-overlay-35---overlays-opened-from-the-content)).
 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal-shadow.test.tsx`, `e2e/modal.spec.ts`

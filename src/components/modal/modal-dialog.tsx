@@ -14,7 +14,9 @@ import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
-import { getDeepActiveElement } from '../../utils/focus-target.js';
+import { getDeepActiveElement, resolveFocusTarget } from '../../utils/focus-target.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import { usePortalContainer } from '../portal/portal.js';
 import { ModalShownContext } from './modal-retained.js';
@@ -142,15 +144,43 @@ function ModalOpening({
 }: ModalOpeningProps) {
   // The dialog has no element yet: the opener is focused in its portal container's document.
   const container = usePortalContainer();
-  const [opener] = useState(() => {
-    const active = getDeepActiveElement(getOwnerDocument(container));
-    // React Aria's own restoration cannot see an opener inside a shadow root.
-    const isShadowed = active !== null && active.getRootNode() !== active.ownerDocument;
-    return returnsToOpener || isShadowed ? active : null;
-  });
+  const [focusedAtOpening] = useState(() => getDeepActiveElement(getOwnerDocument(container)));
+  // React Aria's own restoration cannot see an opener inside a shadow root.
+  const isShadowed =
+    focusedAtOpening !== null && focusedAtOpening.getRootNode() !== focusedAtOpening.ownerDocument;
+  const opener = returnsToOpener || isShadowed ? focusedAtOpening : null;
+  // Closing while the content it was opened from loads, focus waits on that content's boundary.
+  useHoldFocusOnLeave(
+    () => dialogRef.current,
+    () =>
+      resolveFocusTarget(finalFocus) ?? (isHTMLElement(focusedAtOpening) ? focusedAtOpening : null),
+  );
   useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
   useExitComplete(onExitComplete);
   return null;
+}
+
+/** The dialog's key handler: Escape, the primary shortcut, then the caller's handler. */
+function toDialogKeyDown({
+  canEscape,
+  isFloating,
+  shouldCloseOnEscape,
+  actionState,
+  hasCustomActions,
+  onCallerKeyDown,
+}: Pick<ModalDialogProps, 'canEscape' | 'isFloating' | 'shouldCloseOnEscape'> & {
+  actionState: ModalActions;
+  hasCustomActions: boolean;
+  onCallerKeyDown: ModalDialogProps['onKeyDown'];
+}) {
+  return (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Escape') {
+      handleEscape(event, { canEscape, isFloating, shouldCloseOnEscape, close: actionState.close });
+      return;
+    }
+    handlePrimaryShortcut(event, { actionState, hasCustomActions });
+    if (!event.defaultPrevented) onCallerKeyDown?.(event);
+  };
 }
 
 /** The dialog element: header, body and footer, with its focus, Escape and shortcut handling. */
@@ -182,49 +212,48 @@ export function ModalDialog({
   const isShown = useContext(ModalShownContext);
   const actionState = useModalActions(footer);
   const hasCustomActions = footer.actions !== undefined;
-  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Escape') {
-      handleEscape(event, { canEscape, isFloating, shouldCloseOnEscape, close: actionState.close });
-      return;
-    }
-    handlePrimaryShortcut(event, { actionState, hasCustomActions });
-    if (!event.defaultPrevented) onCallerKeyDown?.(event);
-  };
+  const onKeyDown = toDialogKeyDown({
+    ...{ canEscape, isFloating, shouldCloseOnEscape, actionState, hasCustomActions },
+    onCallerKeyDown,
+  });
   return (
     <>
-      <Dialog
-        ref={dialogRef}
-        id={id}
-        role={role}
-        className={hooks.slotClass('dialog')}
-        aria-label={ariaLabel}
-        aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
-        // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
-        render={(props) => <section {...props} onKeyDown={onKeyDown} />}
-      >
-        <ModalHeader
-          {...{ title, description, descriptionId, headerActions, showCloseButton }}
-          isDismissDisabled={isDismissDisabled}
-          onClose={actionState.close}
-        />
-        <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
-          {children}
-        </ModalBody>
-        <ModalFooter
-          {...footer}
-          ref={footerRef}
-          actionState={actionState}
-          isDismissDisabled={isDismissDisabled}
-        />
-        {initialFocus === 'dialog' || !isShown ? null : (
-          <InitialFocus
-            dialogRef={dialogRef}
-            bodyRef={bodyRef}
-            footerRef={footerRef}
-            target={initialFocus === 'first' ? undefined : initialFocus}
+      {/* Its own place to work: menus and popups inside stay usable while the page beneath loads. */}
+      <AvailableLoadingBoundary>
+        <Dialog
+          ref={dialogRef}
+          id={id}
+          role={role}
+          className={hooks.slotClass('dialog')}
+          aria-label={ariaLabel}
+          aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
+          // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
+          render={(props) => <section {...props} onKeyDown={onKeyDown} />}
+        >
+          <ModalHeader
+            {...{ title, description, descriptionId, headerActions, showCloseButton }}
+            isDismissDisabled={isDismissDisabled}
+            onClose={actionState.close}
           />
-        )}
-      </Dialog>
+          <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
+            {children}
+          </ModalBody>
+          <ModalFooter
+            {...footer}
+            ref={footerRef}
+            actionState={actionState}
+            isDismissDisabled={isDismissDisabled}
+          />
+          {initialFocus === 'dialog' || !isShown ? null : (
+            <InitialFocus
+              dialogRef={dialogRef}
+              bodyRef={bodyRef}
+              footerRef={footerRef}
+              target={initialFocus === 'first' ? undefined : initialFocus}
+            />
+          )}
+        </Dialog>
+      </AvailableLoadingBoundary>
       {isShown ? (
         <ModalOpening
           {...{ finalFocus, onExitComplete, dialogRef }}

@@ -1,10 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
 import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { SelectField } from '../select-field/select-field.js';
+import { Modal } from '../modal/modal.js';
+import { Drawer } from '../drawer/drawer.js';
+import { CommandPalette } from '../command-palette/command-palette.js';
 import { Skeleton } from '../skeleton/skeleton.js';
 import { LoadingRegion } from './loading-overlay.js';
 
@@ -164,4 +167,128 @@ describe('LoadingRegion and Skeleton suspend the overlays their content opened',
     rerender(view(true));
     expect(screen.getByRole('menuitem', { name: 'Run action' })).toHaveFocus();
   });
+});
+
+type DialogKind = 'modal' | 'drawer' | 'palette';
+
+/** A page region whose Edit button opens a dialog holding a menu; the host drives both states. */
+function DialogPage({
+  kind,
+  isLoading,
+  isOpen,
+  onOpen,
+}: {
+  kind: DialogKind;
+  isLoading: boolean;
+  isOpen: boolean;
+  onOpen: () => void;
+}) {
+  const dialog =
+    kind === 'modal' ? (
+      <Modal title="Edit" isOpen={isOpen} onOpenChange={() => {}} cancelAction={null}>
+        <Actions />
+      </Modal>
+    ) : kind === 'drawer' ? (
+      <Drawer title="Edit" isOpen={isOpen} onOpenChange={() => {}}>
+        <Actions />
+      </Drawer>
+    ) : (
+      <CommandPalette
+        shortcut={null}
+        isOpen={isOpen}
+        onOpenChange={() => {}}
+        items={[{ id: 'run', label: 'Run action' }]}
+      />
+    );
+  return (
+    <LoadingRegion isLoading={isLoading} label="Refreshing">
+      <button type="button" onClick={onOpen}>
+        Edit
+      </button>
+      {dialog}
+    </LoadingRegion>
+  );
+}
+
+function setupDialog(kind: DialogKind) {
+  let state = { isLoading: false, isOpen: false };
+  const view = () => (
+    <DialogPage
+      kind={kind}
+      {...state}
+      onOpen={() => {
+        state = { ...state, isOpen: true };
+        rerender(view());
+      }}
+    />
+  );
+  const { rerender } = render(view());
+  return {
+    set: (next: Partial<typeof state>) => {
+      state = { ...state, ...next };
+      rerender(view());
+    },
+  };
+}
+
+describe('Dialogs opened from loading content are their own loading boundary', () => {
+  // React Aria's sheet watches its panel with an intersection observer, which jsdom lacks.
+  beforeEach(() => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.stubGlobal('matchMedia', () => ({ matches: false }));
+    Element.prototype.scrollTo = () => {};
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    // @ts-expect-error -- jsdom has no scrollTo; the stub goes away with the suite.
+    delete Element.prototype.scrollTo;
+  });
+
+  it.each<DialogKind>(['modal', 'drawer'])(
+    'UIC-LOADING-OVERLAY-3.5 opens a menu inside a %s while the page beneath loads',
+    async (kind) => {
+      const user = userEvent.setup();
+      const { set } = setupDialog(kind);
+      await user.click(screen.getByRole('button', { name: 'Edit' }));
+      await screen.findByRole('dialog', { name: 'Edit' });
+      set({ isLoading: true });
+      await user.click(screen.getByRole('button', { name: 'Actions' }));
+      expect(await screen.findByRole('menuitem', { name: 'Run action' })).toBeInTheDocument();
+    },
+  );
+
+  it('UIC-LOADING-OVERLAY-3.5 keeps a menu open in a modal when the page beneath starts loading', async () => {
+    const user = userEvent.setup();
+    const { set } = setupDialog('modal');
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    await screen.findByRole('dialog', { name: 'Edit' });
+    await openRunAction(user);
+    set({ isLoading: true });
+    expect(screen.getByRole('menuitem', { name: 'Run action' })).toHaveFocus();
+    expect(regionRoot()).not.toHaveFocus();
+  });
+
+  it.each<DialogKind>(['modal', 'palette'])(
+    'UIC-LOADING-OVERLAY-3.5 holds focus on the region when a %s closes as loading starts, then returns it to the opener',
+    async (kind) => {
+      const user = userEvent.setup();
+      const { set } = setupDialog(kind);
+      const edit = screen.getByRole('button', { name: 'Edit' });
+      await user.click(edit);
+      const dialog = await screen.findByRole('dialog');
+      await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+      set({ isLoading: true, isOpen: false });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(document.body).not.toHaveFocus();
+      expect(regionRoot()).toHaveFocus();
+      set({ isLoading: false });
+      expect(edit).toHaveFocus();
+    },
+  );
 });

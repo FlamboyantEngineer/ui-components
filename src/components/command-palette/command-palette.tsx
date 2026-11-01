@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchGlyph } from '../../core/glyphs.js';
-import { useMemo, useState, type KeyboardEvent } from 'react';
+import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
   Autocomplete,
   Dialog,
@@ -18,7 +18,11 @@ import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
+import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
+import { getDeepActiveElement } from '../../utils/focus-target.js';
+import { getOwnerDocument } from '../../utils/owner-window.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
 import { useDocumentShortcut } from './command-palette-shortcut.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -100,6 +104,14 @@ function CommandPaletteDialog({
     onInputChange,
   );
   const hint = placeholder ?? strings.searchCommands;
+  const dialogRef = useRef<HTMLElement>(null);
+  const container = usePortalContainer();
+  const [opener] = useState(() => getDeepActiveElement(getOwnerDocument(container)));
+  // Closing while the content it was opened from loads, focus waits on that content's boundary.
+  useHoldFocusOnLeave(
+    () => dialogRef.current,
+    () => (isHTMLElement(opener) ? opener : null),
+  );
   const menuContext = useMemo(() => ({ onClose: close }), [close]);
   // Seen before the field, which would otherwise keep the key press for itself.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
@@ -115,30 +127,34 @@ function CommandPaletteDialog({
   };
   return (
     <Dialog
+      ref={dialogRef}
       id={id}
       aria-label={label ?? strings.commandPalette}
       className={hooks.slotClass('dialog')}
       render={(props) => <section {...props} onKeyDownCapture={onKeyDownCapture} />}
     >
-      <Autocomplete
-        inputValue={query}
-        onInputChange={setQuery}
-        filter={filter === null ? undefined : (filter ?? contains)}
-      >
-        <SearchField className={hooks.slotClass('search')} aria-label={hint} autoFocus>
-          <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
-          <Input className={hooks.slotClass('search-input')} placeholder={hint} />
-        </SearchField>
-        <MenuContext value={menuContext}>
-          <Menu
-            {...menu}
-            highlightMatches
-            renderEmptyState={() => (
-              <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
-            )}
-          />
-        </MenuContext>
-      </Autocomplete>
+      {/* Its own place to work while the page beneath loads. */}
+      <AvailableLoadingBoundary>
+        <Autocomplete
+          inputValue={query}
+          onInputChange={setQuery}
+          filter={filter === null ? undefined : (filter ?? contains)}
+        >
+          <SearchField className={hooks.slotClass('search')} aria-label={hint} autoFocus>
+            <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
+            <Input className={hooks.slotClass('search-input')} placeholder={hint} />
+          </SearchField>
+          <MenuContext value={menuContext}>
+            <Menu
+              {...menu}
+              highlightMatches
+              renderEmptyState={() => (
+                <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
+              )}
+            />
+          </MenuContext>
+        </Autocomplete>
+      </AvailableLoadingBoundary>
     </Dialog>
   );
 }
