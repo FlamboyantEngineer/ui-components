@@ -183,6 +183,11 @@ function ControlledChart() {
   );
 }
 
+const typedSeries: BarChartSeries[] = [
+  { id: 1, label: 'Numeric series', values: [2, 3] },
+  { id: '1', label: 'Text series', values: [4, 5] },
+];
+
 function TypedKeys() {
   const [isReversed, setReversed] = useState(false);
   const [hidden, setHidden] = useState<Set<Key>>(new Set());
@@ -211,6 +216,15 @@ function TypedKeys() {
           gridLength={30}
         />
       </svg>
+      <div style={box(320)}>
+        <BarChart
+          label="Typed series"
+          categories={['First', 'Second']}
+          series={isReversed ? [...typedSeries].reverse() : typedSeries}
+          height={140}
+          showLegend={false}
+        />
+      </div>
       <output data-lab-output="typed-hidden">
         {[...hidden].map((key) => `${typeof key} ${key}`).join(', ') || 'none'}
       </output>
@@ -222,7 +236,7 @@ mountLab(
   <>
     <LabSection
       title="Typed identities"
-      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered."
+      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered. A focused or hovered bar keeps its series through the reorder, though its colour slot follows the new position."
     >
       <TypedKeys />
     </LabSection>

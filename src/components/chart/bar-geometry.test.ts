@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { toValueIdentity } from './chart-identity.js';
 import { resolveBarGeometry, type BarGeometryInput } from './bar-geometry.js';
 
 const margin = { top: 10, right: 10, bottom: 10, left: 10 };
@@ -14,8 +15,8 @@ describe('resolveBarGeometry', () => {
     const input: BarGeometryInput = {
       categories: ['A', 'B'],
       series: [
-        { series: 0, values: [10, 20] },
-        { series: 1, values: [5, -5] },
+        { series: 0, id: 0, values: [10, 20] },
+        { series: 1, id: 1, values: [5, -5] },
       ],
       layout: 'grouped',
       orientation: 'vertical',
@@ -29,10 +30,10 @@ describe('resolveBarGeometry', () => {
     expect(geometry.values.domain).toEqual([-10, 20]);
     expect(geometry.values.ticks().map((tick) => tick.label)).toEqual(['-10', '0', '10', '20']);
     expect(geometry.bars.map((bar) => [bar.key, ...box(bar)])).toEqual([
-      ['0:0', 22, 43.33, 36, 33.33],
-      ['1:0', 62, 60, 36, 16.67],
-      ['0:1', 122, 10, 36, 66.67],
-      ['1:1', 162, 76.67, 36, 16.67],
+      [toValueIdentity(0, '["A",0]'), 22, 43.33, 36, 33.33],
+      [toValueIdentity(1, '["A",0]'), 62, 60, 36, 16.67],
+      [toValueIdentity(0, '["B",0]'), 122, 10, 36, 66.67],
+      [toValueIdentity(1, '["B",0]'), 162, 76.67, 36, 16.67],
     ]);
   });
 
@@ -40,9 +41,9 @@ describe('resolveBarGeometry', () => {
     const geometry = resolveBarGeometry({
       categories: ['A'],
       series: [
-        { series: 0, values: [10] },
-        { series: 1, values: [5] },
-        { series: 3, values: [-4] },
+        { series: 0, id: 0, values: [10] },
+        { series: 1, id: 1, values: [5] },
+        { series: 3, id: 3, values: [-4] },
       ],
       layout: 'stacked',
       orientation: 'horizontal',
@@ -62,7 +63,7 @@ describe('resolveBarGeometry', () => {
   it('UIC-CHART-5.1 draws no bar for values that are not finite and keeps zero in an empty domain', () => {
     const geometry = resolveBarGeometry({
       categories: ['A', 'B'],
-      series: [{ series: 0, values: [Number.NaN, Infinity] }],
+      series: [{ series: 0, id: 0, values: [Number.NaN, Infinity] }],
       layout: 'grouped',
       orientation: 'vertical',
       width: 100,

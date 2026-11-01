@@ -16,10 +16,25 @@ test('UIC-CHART-2.1 UIC-CHART-3.1 UIC-CHART-3.2 keeps numeric and text identitie
   await demo.getByRole('button', { name: 'Reverse typed entries' }).click();
   await expect(numeric).toHaveAttribute('aria-pressed', 'false');
   await expect(text).toHaveAttribute('aria-pressed', 'true');
-  await expect(demo.locator('.ui-chart-axis__label')).toHaveText(['Text 1', 'Number 1']);
+  await expect(demo.locator(':scope > svg .ui-chart-axis__label')).toHaveText([
+    'Text 1',
+    'Number 1',
+  ]);
   await numeric.click();
   await text.click();
   await expect(hidden).toHaveText('string 1');
+  // A bar keeps its element, and its series, when the series reorder.
+  const bar = demo.getByRole('img', { name: 'Text series, Second: 5' });
+  await bar.evaluate((element) => element.setAttribute('data-lab-mark', 'kept'));
+  const series = await bar.getAttribute('data-series');
+  await demo.getByRole('button', { name: 'Reverse typed entries' }).click();
+  await expect(demo.locator('[data-lab-mark="kept"]')).toHaveAccessibleName(
+    'Text series, Second: 5',
+  );
+  await expect(demo.locator('[data-lab-mark="kept"]')).not.toHaveAttribute(
+    'data-series',
+    series ?? '',
+  );
 });
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const tooltip = (page: Page) => page.locator('.ui-chart__tooltip');
