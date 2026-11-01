@@ -1,7 +1,7 @@
 // Pure rules of a version history: filtering, the people to filter by, the two-version selection
 // and the order a comparison reports.
 
-import { getLocalTimeZone, parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
+import { parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { getDateFormatter } from '../../utils/intl-format.js';
 
@@ -73,17 +73,20 @@ export function orderForComparison(
   return position(first) > position(second) ? [first, second] : [second, first];
 }
 
-/** A version's time as a medium date (and short time), or `null` when it cannot be read. */
-export function formatVersionTime(value: string, locale: string): string | null {
+/**
+ * A version's time as a medium date (and short time), or `null` when it cannot be read. A date or a
+ * floating date and time reads as written; an instant reads in `timeZone`.
+ */
+export function formatVersionTime(value: string, locale: string, timeZone: string): string | null {
   const date = parseIsoDate(value);
   if (date) {
-    return getDateFormatter(locale, { dateStyle: 'medium' }).format(
-      date.toDate(getLocalTimeZone()),
+    return getDateFormatter(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+      date.toDate('UTC'),
     );
   }
-  const dateTime = parseIsoDateTime(value);
+  const dateTime = parseIsoDateTime(value, timeZone);
   if (!dateTime) return null;
-  return getDateFormatter(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-    dateTime.toDate(getLocalTimeZone()),
+  return getDateFormatter(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(
+    dateTime.toDate(timeZone),
   );
 }

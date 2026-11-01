@@ -3,12 +3,17 @@
 import { BellSlashGlyph } from '../../core/glyphs.js';
 import type { ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
+import { useNow, useTimeZone } from '../../core/clock.js';
+import { useClockTick } from '../../core/clock-tick.js';
 import { createHooks } from '../../core/hooks.js';
 import type { PresenceStatus } from '../../core/props.js';
-import { useGetNow, useTimeZone } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
-import { capitalizeText, describeRelativeTime } from '../../utils/relative-time.js';
+import {
+  capitalizeText,
+  describeRelativeTime,
+  formatStableTime,
+} from '../../utils/relative-time.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { Avatar, resolveStatusLabel, type AvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
@@ -72,17 +77,25 @@ export const listHooks = createHooks('chat-list', [
   'skeleton',
 ]);
 
-/** The time as the row shows it, for the row's name. */
+/**
+ * The time as the row shows it, for the row's name: the stable absolute text on the server and while
+ * hydrating, as the row's time shows it, then the words against `getNow()` in the reader's zone,
+ * renamed when they change.
+ */
 function useTimeText(
   value: string | undefined,
   { fallbackAfterDays = 7, getNow, timeZone }: ChatListTimeOptions,
 ): string | undefined {
   const { locale } = useLocale();
-  const now = useGetNow(getNow);
+  const now = useNow(getNow);
   const zone = useTimeZone(timeZone);
-  const text = value
-    ? describeRelativeTime(value, { now: now(), locale, fallbackAfterDays, timeZone: zone })
-    : null;
+  const text =
+    value && now
+      ? describeRelativeTime(value, { now, locale, fallbackAfterDays, timeZone: zone })
+      : null;
+  useClockTick(text?.nextChange ?? null, now?.getTime() ?? 0);
+  if (!value) return undefined;
+  if (!now) return formatStableTime(value, locale) ?? undefined;
   if (!text) return undefined;
   return text.isRelative ? capitalizeText(text.relative, locale) : text.relative;
 }

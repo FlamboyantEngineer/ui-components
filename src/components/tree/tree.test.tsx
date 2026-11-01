@@ -153,6 +153,18 @@ describe('Tree', () => {
     expect(glyphs()).toEqual(['minus', 'plus']);
   });
 
+  it('UIC-TREE-1.3 points a collapsed chevron to the inline end right to left', () => {
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <FoodTree defaultExpandedKeys={['fruit']} />
+      </UiProvider>,
+    );
+    const glyphs = [...container.querySelectorAll('.ui-tree__expand .ui-icon')].map((icon) =>
+      icon.getAttribute('data-glyph'),
+    );
+    expect(glyphs).toEqual(['chevron-down', 'chevron-left']);
+  });
+
   it('UIC-TREE-2.1 expands from the expand button, the arrow keys and a press on a branch row', async () => {
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();

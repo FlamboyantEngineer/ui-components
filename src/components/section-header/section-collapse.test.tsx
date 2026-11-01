@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { Section, type SectionProps } from './section-header.js';
 
 // Turning collapsibility on or off keeps the content (UIC-SECTION-HEADER-2.3).
@@ -61,6 +62,20 @@ describe('Section collapsibility changes', () => {
     rerender({ collapsible: true, isExpanded: true, onExpandedChange });
     expect(input).toHaveValue('unsaved');
     expect(onMount).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-SECTION-HEADER-2.3 moves focus to the trigger from hidden content inside a shadow root', () => {
+    const tree = (isExpanded: boolean) => (
+      <ShadowHost name="page">
+        <Section title="Details" collapsible isExpanded={isExpanded}>
+          <input aria-label="Draft" />
+        </Section>
+      </ShadowHost>
+    );
+    const { rerender } = render(tree(true));
+    inShadow('page').getByRole('textbox', { name: 'Draft' }).focus();
+    rerender(tree(false));
+    expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: 'Details' }));
   });
 
   it('UIC-SECTION-HEADER-2.3 keeps an uncontrolled default when collapsible turns on', async () => {

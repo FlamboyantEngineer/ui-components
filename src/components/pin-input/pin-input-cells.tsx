@@ -12,6 +12,7 @@ import { Group, Input, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { containsFocus } from '../../utils/focus-target.js';
 import { isComposingInput, isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
@@ -130,7 +131,7 @@ function useCellWriter(
     const pending = pendingFocus.current;
     pendingFocus.current = null;
     const group = slots.read('group');
-    const isInside = group?.contains(group.ownerDocument.activeElement) ?? false;
+    const isInside = containsFocus(group);
     if (!pending || pending.from === state.value) return;
     if (isInside) slots.readAll('cell')[pending.index]?.focus();
     if (!isPinCodeComplete(state.value, cells)) return;

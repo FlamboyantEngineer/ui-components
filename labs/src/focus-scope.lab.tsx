@@ -5,6 +5,7 @@ import { FocusScope, useFocusManager } from '../../src/components/focus-scope/fo
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ShadowRootHost } from './shadow-root-host.js';
 
 const fruit = ['Apples', 'Pears', 'Plums', 'Cherries'];
 
@@ -100,6 +101,43 @@ function RenameFlow() {
         </FocusScope>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * A rename scope in an open shadow root. Its buttons are native: React Aria's presses do not reach
+ * into shadow roots.
+ */
+function ShadowRename() {
+  const [isEditing, setEditing] = useState(false);
+  const [name, setName] = useState('Lemon tart');
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  return (
+    <ShadowRootHost demo="shadow-rename">
+      <h3 ref={headingRef} tabIndex={-1} data-lab-output="name">
+        {name}
+      </h3>
+      <button type="button" onClick={() => setEditing(true)}>
+        Rename
+      </button>
+      {isEditing ? (
+        <FocusScope autoFocus finalFocus={headingRef} role="group" aria-label="Rename recipe">
+          <label>
+            New name <input defaultValue={name} name="name" />
+          </label>
+          <button
+            type="button"
+            onClick={(event) => {
+              const field = event.currentTarget.parentElement?.querySelector('input');
+              setName(field?.value ?? name);
+              setEditing(false);
+            }}
+          >
+            Save name
+          </button>
+        </FocusScope>
+      ) : null}
+    </ShadowRootHost>
   );
 }
 
@@ -206,6 +244,12 @@ mountLab(
       description="Rename focuses the name field rather than the first field, and saving sends focus to the renamed heading instead of the Rename button."
     >
       <RenameFlow />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="A rename scope lives in an open shadow root, unstyled there, with native buttons. Saving sends focus to the renamed heading: the scope reads focus through the shadow root."
+    >
+      <ShadowRename />
     </LabSection>
     <LabSection
       title="Inside a frame"

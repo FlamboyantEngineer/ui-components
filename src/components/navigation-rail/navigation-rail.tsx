@@ -1,14 +1,16 @@
 'use client';
 
 import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, type ReactNode } from 'react';
 import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
+import { useUiStorage, useUiStrings } from '../../core/provider.js';
 import { booleanCodec, numberCodec } from '../../utils/json-codec.js';
+import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
@@ -88,10 +90,19 @@ interface RailResizeProps {
   maxWidth: number;
   onResize: (width: number | null) => void;
   onResizeEnd: (width: number) => void;
+  /** Changes with the persist key, storage or bounds; a drag begun for another owner is dropped. */
+  owner: object;
 }
 
 /** The handle that resizes the expanded rail: live while dragging, committed when the drag ends. */
-function RailResizeHandle({ width, minWidth, maxWidth, onResize, onResizeEnd }: RailResizeProps) {
+function RailResizeHandle({
+  width,
+  minWidth,
+  maxWidth,
+  onResize,
+  onResizeEnd,
+  owner,
+}: RailResizeProps) {
   const strings = useUiStrings();
   return (
     <ResizeHandle
@@ -102,6 +113,7 @@ function RailResizeHandle({ width, minWidth, maxWidth, onResize, onResizeEnd }: 
       minValue={minWidth}
       maxValue={maxWidth}
       extent={maxWidth}
+      resetKey={owner}
       onChange={onResize}
       onChangeEnd={(next) => {
         onResize(null);
@@ -174,7 +186,9 @@ export function NavigationRail({
     persistKey: persistKey === undefined ? undefined : `${persistKey}:width`,
     codec: numberCodec,
   });
-  const [liveWidth, setLiveWidth] = useState<number | null>(null);
+  // A drag or preview begun under another key, storage or bounds is dropped, never committed.
+  const owner = useShallowStable({ persistKey, storage: useUiStorage(), minWidth, maxWidth });
+  const [liveWidth, setLiveWidth] = useOwnedPreview<number>(owner);
   // A stored or controlled width outside the bounds is drawn at the nearest bound.
   const width = clamp(liveWidth ?? committedWidth, minWidth, maxWidth);
   const state = useMemo(
@@ -211,6 +225,7 @@ export function NavigationRail({
             maxWidth={maxWidth}
             onResize={setLiveWidth}
             onResizeEnd={setWidth}
+            owner={owner}
           />
         ) : null}
       </NavigationRailContext>

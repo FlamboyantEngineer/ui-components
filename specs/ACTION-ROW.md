@@ -48,9 +48,9 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.7 - Action identity
 
-Each action shall be identified by its `id`: required on a custom action, and defaulting to the verb on a standard one, so a row with the same verb twice gives each an `id` (ids are unique within a row, as React keys are). The `id` identifies the action, not its button element. An action keeps its own button, with its focus and internal press and pending state, while other actions are added, removed or reordered, and a button is never reused for another action. When the action holding focus leaves the row, or moves into the overflow menu, focus moves to the next button in the actions slot that is still there, else to the overflow menu's button, else to the previous button, so it never falls to the page.
+Each action shall be identified by its `id`: required on a custom action, and defaulting to the verb on a standard one, so a row with the same verb twice gives each an `id` (ids are unique within a row, as React keys are). The `id` identifies the action, not its button element. An action keeps its own button, with its focus and internal press and pending state, while other actions are added, removed or reordered, and a button is never reused for another action. When the action holding focus leaves the row, or moves into the overflow menu, focus moves to the next button in the actions slot that is still there, else to the overflow menu's button, else to the previous button, so it never falls to the page. Focus is read through open shadow roots, so this holds for a row inside one.
 
-Implementation: `src/components/action-row/action-verbs.ts`, `src/components/action-row/action-row-actions.tsx`, `src/utils/use-overflow-focus.ts`
+Implementation: `src/components/action-row/action-verbs.ts`, `src/components/action-row/action-row-actions.tsx`, `src/utils/use-overflow-focus.ts`, `src/utils/focus-target.ts`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ## UIC-ACTION-ROW-2 - Row

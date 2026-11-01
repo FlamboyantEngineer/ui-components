@@ -231,6 +231,15 @@ test('UIC-SCROLL-STRIP-1.4 reports and scrolls a right-to-left strip from its in
     api.syncOverflow();
     await flush();
     expect(api.overflow).toEqual({ start: true, end: false });
+
+    // Horizontal travel follows the pointer: rightward goes back toward the inline start.
+    wheel(strip, { deltaX: 80 });
+    expect(geometry.position).toBe(-120);
+    wheel(strip, { deltaX: -30 });
+    expect(geometry.position).toBe(-150);
+    wheel(strip, { deltaX: 500 });
+    expect(geometry.position).toBe(0);
+    expect(wheel(strip, { deltaX: 20 }).defaultPrevented).toBe(false);
   } finally {
     await act(async () => root.unmount());
   }

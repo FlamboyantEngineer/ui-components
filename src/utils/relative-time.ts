@@ -3,7 +3,6 @@
 
 import {
   fromDate,
-  getLocalTimeZone,
   parseIsoDate,
   parseIsoDateTime,
   toCalendarDate,
@@ -28,8 +27,8 @@ export type RelativeTimeStyle = 'full' | 'long' | 'medium' | 'short';
 
 /** The absolute text's styles and zone. */
 interface AbsoluteTimeStyles {
-  /** The IANA time zone days and times are read in. Defaults to the device's. */
-  timeZone?: string | undefined;
+  /** The IANA time zone days and times are read in: the reader's, from `useTimeZone`. */
+  timeZone: string;
   /** The absolute date's style. Defaults to `medium`. */
   dateStyle?: RelativeTimeStyle | undefined;
   /** The absolute time's style, for a date and time. Defaults to `short`. */
@@ -190,12 +189,11 @@ function formatAbsolute(
   locale: string,
   { dateStyle = 'medium', timeStyle = 'short', timeZone }: AbsoluteTimeStyles,
 ): string {
-  const zone = timeZone ?? getLocalTimeZone();
   return getDateFormatter(locale, {
     dateStyle,
     timeStyle: parsed.instant ? timeStyle : undefined,
-    timeZone: zone,
-  }).format(parsed.instant ?? parsed.date.toDate(zone));
+    timeZone,
+  }).format(parsed.instant ?? parsed.date.toDate(timeZone));
 }
 
 /**
@@ -205,9 +203,9 @@ function formatAbsolute(
 export function formatAbsoluteTime(
   value: string,
   locale: string,
-  styles: AbsoluteTimeStyles = {},
+  styles: AbsoluteTimeStyles,
 ): string | null {
-  const parsed = parseValue(value, styles.timeZone ?? getLocalTimeZone());
+  const parsed = parseValue(value, styles.timeZone);
   return parsed ? formatAbsolute(parsed, locale, styles) : null;
 }
 
@@ -252,7 +250,7 @@ export function describeRelativeTime(
   value: string,
   options: RelativeTimeOptions,
 ): RelativeTimeText | null {
-  const zone = options.timeZone ?? getLocalTimeZone();
+  const zone = options.timeZone;
   const parsed = parseValue(value, zone);
   if (!parsed) return null;
   const { locale, now } = options;

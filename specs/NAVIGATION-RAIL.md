@@ -27,7 +27,7 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/na
 
 ### UIC-NAVIGATION-RAIL-1.4 - Persistence
 
-With `persistKey`, an uncontrolled rail shall restore its collapsed state from the provider storage under `<persistKey>:collapsed` and its width under `<persistKey>:width`, and save each when it changes, never during a drag. A controlled value ignores storage, and an unreadable stored value, or one of the wrong type (a collapsed state that is not a boolean, a width that is not a finite number), falls back to the default.
+With `persistKey`, an uncontrolled rail shall restore its collapsed state from the provider storage under `<persistKey>:collapsed` and its width under `<persistKey>:width`, and save each when it changes, never during a drag. A drag running when the persist key, the storage adapter or the width bounds change shall be abandoned: its live width is dropped, `data-resizing` clears, and its release commits nothing under either key. A controlled value ignores storage, and an unreadable stored value, or one of the wrong type (a collapsed state that is not a boolean, a width that is not a finite number), falls back to the default.
 
 Implementation: `src/components/navigation-rail/navigation-rail.tsx`, `src/components/navigation-rail/navigation-rail-state.ts`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`

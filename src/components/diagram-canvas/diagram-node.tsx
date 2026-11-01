@@ -15,7 +15,7 @@ import {
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import { isInteractiveTarget } from './is-interactive-target.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 import { capturePointer } from '../../utils/pointer-drag.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -80,6 +80,8 @@ function useNodePointer(id: Key, controller: RefObject<DiagramController>, isEdi
   return usePointerDrag<HTMLElement, PointerStart>({
     capture: false,
     resetKey: isEditing,
+    // The preview lives in the canvas: a node removed or hidden mid-drag must not leave it behind.
+    cancelsOnUnmount: true,
     onCancel: () => controller.current.moves.cancel(),
     onStart: (event) => {
       const { selection, moves, connect } = controller.current;

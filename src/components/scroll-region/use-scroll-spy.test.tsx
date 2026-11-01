@@ -74,6 +74,24 @@ afterEach(() => {
 });
 
 describe('useScrollSpy', () => {
+  it('UIC-SCROLL-REGION-4.5 reads the sections again when content above them grows', async () => {
+    Object.assign(sectionTops, { apples: 100, pears: 400, plums: 700 });
+    viewportBox.scrollTop = 250;
+    render(<Contents ids={['apples', 'pears', 'plums']} />);
+    const viewport = requireDefined(document.getElementById('chapters'));
+    stubLayout(viewport);
+    scroll(viewport);
+    expect(toc()).toHaveTextContent('apples');
+    // A disclosure in the first section closes: every later heading moves up without a scroll.
+    Object.assign(sectionTops, { pears: 300, plums: 600 });
+    await act(async () => {
+      requireDefined(document.getElementById('apples')).append(document.createElement('p'));
+      await Promise.resolve();
+    });
+    flushFrames();
+    expect(toc()).toHaveTextContent('pears');
+  });
+
   it('UIC-SCROLL-REGION-4.5 reports the last section whose top reached the viewport top', () => {
     Object.assign(sectionTops, { apples: 100, pears: 400, plums: 700 });
     const { rerender } = render(<Contents ids={['apples', 'pears', 'plums']} />);

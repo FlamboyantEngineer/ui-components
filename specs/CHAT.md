@@ -43,10 +43,10 @@ Verification: `src/components/chat/chat.test.tsx`, `src/components/chat/chat-mes
 
 ### UIC-CHAT-1.6 - Days, groups and unread
 
-The messages shall be laid out by `groupChatMessages` ([UIC-CHAT-TRANSCRIPT-6](CHAT-TRANSCRIPT.md)): a `ChatDateSeparator` (read against `getNow`) before each day, the `ChatUnreadDivider` before `firstUnreadId`, and each message's group position.
+The messages shall be laid out by `groupChatMessages` ([UIC-CHAT-TRANSCRIPT-6](CHAT-TRANSCRIPT.md)): a `ChatDateSeparator` (read against `getNow`) before each day, the `ChatUnreadDivider` before `firstUnreadId`, and each message's group position. Days follow the reader's time zone from the provider ([UIC-PROVIDER](PROVIDER.md)): the provider's `timeZone`, else UTC on the server and while hydrating and the device's after, so a server render and its hydration lay out the same days.
 
 Implementation: `src/components/chat/chat.tsx`
-Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
+Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`, `src/components/chat/chat-server.test.tsx`
 
 ### UIC-CHAT-1.7 - Transcript behaviour
 

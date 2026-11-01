@@ -128,11 +128,14 @@ describe('DescriptionList', () => {
     expectTypeOf<{ start: Date; end: Date }>().not.toMatchTypeOf<DescriptionValue>();
     const medium = (options: Intl.DateTimeFormatOptions = {}) =>
       new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', ...options });
-    expect(formatDescriptionValue('2026-05-14', { locale: 'en-US' })).toBe('May 14, 2026');
+    expect(formatDescriptionValue('2026-05-14', { locale: 'en-US', timeZone: 'UTC' })).toBe(
+      'May 14, 2026',
+    );
     for (const timeZone of ['America/New_York', 'Pacific/Kiritimati', 'UTC']) {
       expect(
         formatDescriptionValue('2026-05-14', {
           locale: 'en-US',
+          timeZone: 'UTC',
           formatOptions: { dateStyle: 'medium', timeZone },
         }),
       ).toBe('May 14, 2026');
@@ -141,6 +144,7 @@ describe('DescriptionList', () => {
           { start: '2026-05-14', end: '2026-05-21' },
           {
             locale: 'en-US',
+            timeZone: 'UTC',
             formatOptions: { dateStyle: 'medium', timeZone },
           },
         ),
@@ -149,15 +153,22 @@ describe('DescriptionList', () => {
     expect(
       formatDescriptionValue('2026-05-14T23:30:00Z', {
         locale: 'en-US',
+        timeZone: 'UTC',
         formatOptions: { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' },
       }),
     ).toBe(medium({ timeStyle: 'short', timeZone: 'UTC' }).format(Date.UTC(2026, 4, 14, 23, 30)));
     expect(
-      formatDescriptionValue({ start: '2026-05-14', end: '2026-05-21' }, { locale: 'en-US' }),
+      formatDescriptionValue(
+        { start: '2026-05-14', end: '2026-05-21' },
+        { locale: 'en-US', timeZone: 'UTC' },
+      ),
     ).toBe(medium().formatRange(new Date(2026, 4, 14), new Date(2026, 4, 21)));
-    expect(formatDescriptionValue('Pending', { locale: 'en-US' })).toBe('Pending');
+    expect(formatDescriptionValue('Pending', { locale: 'en-US', timeZone: 'UTC' })).toBe('Pending');
     expect(
-      formatDescriptionValue({ start: 'Spring', end: '2026-05-21' }, { locale: 'en-US' }),
+      formatDescriptionValue(
+        { start: 'Spring', end: '2026-05-21' },
+        { locale: 'en-US', timeZone: 'UTC' },
+      ),
     ).toBe('Spring – 2026-05-21');
   });
 
@@ -201,11 +212,16 @@ describe('DescriptionList', () => {
     expect(
       formatDescriptionValue(['a', 'b'], {
         locale: 'en-US',
+        timeZone: 'UTC',
         formatOptions: { type: 'disjunction' },
       }),
     ).toBe('a or b');
     expect(
-      formatDescriptionValue(day, { locale: 'en-US', formatOptions: { year: 'numeric' } }),
+      formatDescriptionValue(day, {
+        locale: 'en-US',
+        timeZone: 'UTC',
+        formatOptions: { year: 'numeric' },
+      }),
     ).toBe('2024');
   });
 

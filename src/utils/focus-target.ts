@@ -59,6 +59,21 @@ export function containsComposed(container: Node, node: Node | null): boolean {
   return false;
 }
 
+/** Whether focus sits on `container` or inside it, read in its tree and through open shadow roots. */
+export function containsFocus(container: Node | null | undefined): boolean {
+  return !!container && containsComposed(container, getComposedActiveElement(container));
+}
+
+/**
+ * Whether focus fell to the page: nothing in the document `node` belongs to holds it, or its body
+ * does. An element that leaves a shadow root with focus leaves the page's focus on the body too.
+ */
+export function isFocusLost(node: Node): boolean {
+  const owner = node.ownerDocument ?? (node as Document);
+  const active = owner.activeElement;
+  return !active || active === owner.body;
+}
+
 /** The element a focus target names now, if it is still in the document. */
 export function resolveFocusTarget(target: FocusTarget | undefined): HTMLElement | null {
   const element = typeof target === 'function' ? target() : target?.current;
@@ -67,9 +82,9 @@ export function resolveFocusTarget(target: FocusTarget | undefined): HTMLElement
 
 /**
  * When the container leaves the page, or the component closes a container that stays, moves focus
- * to `finalFocus`, else to `fallback`, provided focus was still inside the container or on the body
- * of the container's own document (a frame's, for a root mounted in one), so a reader who moved
- * elsewhere keeps their place. It runs while the container is removed, before React Aria's own
+ * to `finalFocus`, else to `fallback`, provided focus was still inside the container, read through
+ * open shadow roots, or on the body of the container's own document (a frame's, for a root mounted
+ * in one), so a reader who moved elsewhere keeps their place. It runs while the container is removed, before React Aria's own
  * restoration, which then stands down.
  */
 export function useFocusReturn({ containerRef, finalFocus, fallback }: FocusReturnOptions) {
@@ -80,9 +95,11 @@ export function useFocusReturn({ containerRef, finalFocus, fallback }: FocusRetu
   useLayoutEffect(() => {
     const container = containerRef.current;
     const owner = container?.ownerDocument ?? document;
+    // The tree the container lives in, read before the container leaves it.
+    const root = container?.getRootNode() ?? owner;
     return () => {
-      const active = owner.activeElement;
-      if (active !== owner.body && !container?.contains(active)) return;
+      const active = getComposedActiveElement(root);
+      if (!isFocusLost(owner) && !(container && containsComposed(container, active))) return;
       // A frame keeps its focused element while the page around it holds focus; that is not ours.
       if (owner.defaultView?.frameElement && !owner.hasFocus()) return;
       const { finalFocus: chosen, fallback: opener } = optionsRef.current;

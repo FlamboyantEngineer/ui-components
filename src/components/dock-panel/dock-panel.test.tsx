@@ -13,6 +13,7 @@ import { renderToString } from 'react-dom/server';
 import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -443,6 +444,18 @@ describe('DockPanel panes', () => {
     await user.keyboard('{F4}');
     expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
   });
+
+  it('UIC-DOCK-PANEL-2.4 returns focus to the launcher from a closing pane inside a shadow root', () => {
+    const tree = (isExpanded: boolean) => (
+      <ShadowHost name="page">
+        <Panel isExpanded={isExpanded} />
+      </ShadowHost>
+    );
+    const { rerender } = render(tree(true));
+    act(() => inShadow('page').getByRole('textbox', { name: 'File filter' }).focus());
+    rerender(tree(false));
+    expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: 'Files' }));
+  });
 });
 
 describe('DockPanel size', () => {
@@ -532,6 +545,26 @@ describe('DockPanel persistence', () => {
       </UiProvider>
     );
   }
+
+  it('UIC-DOCK-PANEL-3.3 abandons a resize when the persist key changes', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage({ 'side:size': '320', 'other:size': '400' });
+    const { container, rerender } = render(persisted(storage));
+    const separator = screen.getByRole('separator');
+    prepareCapture(separator);
+    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
+    await user.pointer({ target: separator, coords: { clientX: 450 } });
+    expect(root(container)).toHaveAttribute('data-resizing', 'true');
+    expect(root(container).style.width).toBe('370px');
+    rerender(persisted(storage, { persistKey: 'other' }));
+    expect(root(container)).not.toHaveAttribute('data-resizing');
+    expect(root(container).style.width).toBe('400px');
+    await user.pointer({ target: separator, coords: { clientX: 420 } });
+    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 420 } });
+    expect(storage.getItem('side:size')).toBe('320');
+    expect(storage.getItem('other:size')).toBe('400');
+    expect(root(container).style.width).toBe('400px');
+  });
 
   it('UIC-DOCK-PANEL-3.3 saves and restores the selection, expanded state and size', async () => {
     const user = userEvent.setup();

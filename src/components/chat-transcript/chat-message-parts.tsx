@@ -11,6 +11,7 @@ import {
 } from '../../core/glyphs.js';
 import type { ReactNode, RefCallback } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { useTimeZone } from '../../core/clock.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { formatAbsoluteTime } from '../../utils/relative-time.js';
@@ -70,10 +71,14 @@ const deliveryGlyphs: Record<ChatMessageDelivery, GlyphComponent> = {
   failed: ErrorGlyph,
 };
 
-/** A message's time as the absolute date and time, for its accessible name. */
+/**
+ * A message's time as the absolute date and time, for its accessible name, in the reader's zone
+ * (`useTimeZone`), so a server render and its hydration agree.
+ */
 export function useAbsoluteTime(time: string | undefined): string | undefined {
   const { locale } = useLocale();
-  return time ? (formatAbsoluteTime(time, locale) ?? undefined) : undefined;
+  const timeZone = useTimeZone();
+  return time ? (formatAbsoluteTime(time, locale, { timeZone }) ?? undefined) : undefined;
 }
 
 /** The author's avatar, marked and named with their presence when they have one. */

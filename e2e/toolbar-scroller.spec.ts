@@ -78,6 +78,23 @@ test.describe('Toolbar Scroller lab', () => {
       .toBeLessThan(-100);
   });
 
+  test('UIC-SCROLL-STRIP-1.4 follows horizontal wheel travel right to left', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toolbar-scroller');
+    const strip = page.locator(`${cell('rtl', 'off', 'start')} .ui-toolbar-scroller__strip`);
+    const position = () => strip.evaluate((node) => node.scrollLeft);
+    await strip.hover();
+    await page.mouse.wheel(-60, 0);
+    await expect.poll(position).toBeLessThan(-30);
+    const afterLeft = await position();
+    await page.mouse.wheel(0, 40);
+    await expect.poll(position).toBeLessThan(afterLeft);
+    await page.mouse.wheel(400, 0);
+    await expect.poll(position).toBe(0);
+  });
+
   test('UIC-TOOLBAR-SCROLLER-1.2 UIC-TOOLBAR-SCROLLER-2.5 moves focus with the arrow keys and keeps it in view', async ({
     page,
     lab,

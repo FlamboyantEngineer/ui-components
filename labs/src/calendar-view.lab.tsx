@@ -65,6 +65,7 @@ const states = {
 // New York changes its clocks in the weeks of 8 March (forward at 2 AM) and 1 November 2026 (back at 2 AM).
 const clockChanges: CalendarViewEvent[] = [
   { id: 'spring-noon', title: 'Noon call', start: '2026-03-08T12:00', end: '2026-03-08T13:00' },
+  { id: 'spring-day', title: 'Open day', start: '2026-03-08T00:00', end: '2026-03-09T00:00' },
   { id: 'spring-gap', title: 'Night shift', start: '2026-03-08T01:30', end: '2026-03-08T03:30' },
   { id: 'spring-next', title: 'Noon call', start: '2026-03-09T12:00', end: '2026-03-09T13:00' },
   { id: 'fall-noon', title: 'Noon call', start: '2026-11-01T12:00', end: '2026-11-01T13:00' },
@@ -198,7 +199,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Clock changes"
-      description="Weeks in New York when the clocks go forward (8 March) and back (1 November). Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST)."
+      description="Weeks in New York when the clocks go forward (8 March) and back (1 November). Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; Open day runs midnight to midnight, 23 hours that day, and is still a bar; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST)."
     >
       <div style={{ display: 'grid', gap: 16 }}>
         {(['2026-03-08', '2026-11-01'] as const).map((date) => (
@@ -221,6 +222,22 @@ mountLab(
     >
       <div style={frame(900)} data-lab-demo="locale" lang="fr">
         <UiProvider locale="fr-FR" messages={fr}>
+          <CalendarView
+            events={events}
+            timeZone="UTC"
+            getNow={getNow}
+            defaultDate="2026-03-18"
+            defaultView="week"
+          />
+        </UiProvider>
+      </div>
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="An Arabic locale, right to left: the days run from the right, the chevrons mirror, and the overlapping Team lunch and Design review on 18 March pack from the right edge."
+    >
+      <div style={frame(900)} data-lab-demo="rtl" dir="rtl">
+        <UiProvider locale="ar-EG">
           <CalendarView
             events={events}
             timeZone="UTC"

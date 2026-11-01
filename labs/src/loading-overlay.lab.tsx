@@ -1,5 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import {
@@ -9,6 +8,7 @@ import {
   type LoadingCardProps,
 } from '../../src/components/loading-overlay/loading-overlay.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ShadowRootHost } from './shadow-root-host.js';
 
 const progressStates = ['indeterminate', 'determinate'] as const;
 const longHint = 'Measuring the layout of every page in the quarterly report';
@@ -26,13 +26,7 @@ function cardProps(progress: (typeof progressStates)[number], extras: string): L
 
 /** A region rendered into an open shadow root, as a web component would hold it. */
 function ShadowRegionDemo() {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [root, setRoot] = useState<ShadowRoot | null>(null);
   const [isSaving, setSaving] = useState(false);
-  useLayoutEffect(() => {
-    const host = hostRef.current;
-    if (host) setRoot(host.shadowRoot ?? host.attachShadow({ mode: 'open' }));
-  }, []);
   useEffect(() => {
     if (!isSaving) return undefined;
     // Lab-only stand-in for the save finishing.
@@ -53,9 +47,7 @@ function ShadowRegionDemo() {
       <p>
         <Button onPress={() => setSaving(true)}>Save note</Button>
       </p>
-      <div data-lab-demo="shadow-region" ref={hostRef}>
-        {root ? createPortal(region, root) : null}
-      </div>
+      <ShadowRootHost demo="shadow-region">{region}</ShadowRootHost>
     </>
   );
 }

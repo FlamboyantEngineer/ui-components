@@ -50,7 +50,7 @@ Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-com
 
 ### UIC-TREE-COMPARE-2.3 - Indentation on both sides
 
-Both cells of a row shall indent from the row's `--ui-tree-level`, so each side reads as its own hierarchy. The tree's expand button serves the row on the left; the right cell of a row with child rows repeats its glyph (`ui-tree-compare__branch`, `chevron-right` or `chevron-down`), decoratively.
+Both cells of a row shall indent from the row's `--ui-tree-level`, so each side reads as its own hierarchy. The tree's expand button serves the row on the left; the right cell of a row with child rows repeats its glyph (`ui-tree-compare__branch`, `chevron-down`, or while collapsed a chevron pointing to the inline end: `chevron-right`, `chevron-left` right to left), decoratively.
 
 Implementation: `src/components/tree-compare/tree-compare-parts.tsx`, `labs/reference/tree-compare.css`
 Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`

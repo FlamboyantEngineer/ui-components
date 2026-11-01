@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
+import { containsFocus } from '../../utils/focus-target.js';
 
 export interface DockPanelFocus {
   /** A ref callback for the pane with `key`. */
@@ -49,8 +50,7 @@ export function useDockPanelFocus(openKey: Key | null): DockPanelFocus {
       return;
     }
     if (before === null || before === openKey) return;
-    const pane = panes.get(before);
-    if (pane?.contains(pane.ownerDocument.activeElement)) launchers.get(before)?.focus();
+    if (containsFocus(panes.get(before))) launchers.get(before)?.focus();
   });
 
   return {

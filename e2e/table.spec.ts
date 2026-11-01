@@ -854,6 +854,23 @@ test.describe('Table lab', () => {
       await lab.expectAccessible('[data-lab="spreadsheet"]');
     });
 
+    test('UIC-TABLE-14.1 leaves presses on a switch in a cell to the switch', async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('table');
+      const grid = section(page, 'spreadsheet').getByRole('grid', {
+        name: 'Stock, one cell at a time',
+      });
+      const toggle = grid.getByRole('switch', { name: 'Organic Banana' });
+      await grid.getByText('Organic Banana').click();
+      await expect(toggle).toBeChecked();
+      await expect(grid.locator('[data-in-range]')).toHaveCount(1);
+      await expect(
+        grid.locator(`[data-key="${toCollectionKey('apple')}"] > [data-column="name"]`),
+      ).toHaveAttribute('data-in-range', 'true');
+    });
+
     test('UIC-TABLE-14.5 UIC-TABLE-14.6 UIC-TABLE-14.7 fills, types to edit and checks values', async ({
       page,
       lab,

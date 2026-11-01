@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
+import { UiProvider } from '../../src/core/provider.js';
 import {
   applyTreeMove,
   getVisibleTreeRows,
@@ -496,6 +497,22 @@ mountLab(
       description="An owner checks a move before it applies it, with the same rules the tree uses: no move into a row's own descendants, and none to another parent without canMoveInto."
     >
       <LabHelperCalls calls={moveCalls} />
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="An Arabic locale, right to left: rows indent from the right and a collapsed folder's chevron points left, toward the inline end, as ArrowLeft expands it."
+    >
+      <div dir="rtl" data-lab-demo="rtl">
+        <UiProvider locale="ar-EG">
+          <Tree
+            aria-label="Library"
+            items={LIBRARY}
+            getTextValue={name}
+            getIcon={icon}
+            defaultExpandedKeys={['recipes']}
+          />
+        </UiProvider>
+      </div>
     </LabSection>
   </>,
 );

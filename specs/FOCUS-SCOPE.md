@@ -69,6 +69,13 @@ Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scop
 Implementation: `src/components/focus-scope/focus-scope.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/focus-scope/focus-scope.test.tsx`, `src/utils/focus-target.test.ts`, `e2e/focus-scope.spec.ts`
 
+### UIC-FOCUS-SCOPE-2.8 - Focus in shadow roots
+
+A scope shall read focus in its own tree and follow it into open shadow roots, so the final focus of [UIC-FOCUS-SCOPE-2.7](#uic-focus-scope-27---final-focus) holds for a scope inside a shadow root: focus on an element inside the scope counts as inside, not as moved elsewhere, and focus the reader moved elsewhere in the shadow root stays there.
+
+Implementation: `src/components/focus-scope/focus-scope.tsx`, `src/utils/focus-target.ts`
+Verification: `src/components/focus-scope/focus-scope-shadow.test.tsx`, `e2e/focus-scope.spec.ts`
+
 ## UIC-FOCUS-SCOPE-3 - Focus manager
 
 ### UIC-FOCUS-SCOPE-3.1 - Moving focus within a scope

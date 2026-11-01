@@ -10,6 +10,7 @@ import {
   type DiagramNodeAddRequest,
   type DiagramViewport,
 } from '../../src/components/diagram-canvas/diagram-canvas.js';
+import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -184,6 +185,26 @@ function PartContent({ node }: { node: DiagramNode<Part> }) {
   );
 }
 
+/** Removes the selected parts two seconds after the press, so a drag can be running when they go. */
+function DelayedRemove({ onRemove }: { onRemove: () => void }) {
+  const [isPending, setPending] = useState(false);
+  return (
+    <Button
+      size="sm"
+      isDisabled={isPending}
+      onPress={() => {
+        setPending(true);
+        window.setTimeout(() => {
+          setPending(false);
+          onRemove();
+        }, 2000);
+      }}
+    >
+      {isPending ? 'Removing soon…' : 'Remove selected in 2 seconds'}
+    </Button>
+  );
+}
+
 function Plant() {
   const [isEditing, setEditing] = useState(true);
   const [nodes, setNodes] = useState(plantNodes);
@@ -221,6 +242,15 @@ function Plant() {
         />{' '}
         Editing enabled
       </label>
+      <DelayedRemove
+        onRemove={() => {
+          const isGone = (id: Key) => selection === 'all' || selection.has(id);
+          setNodes((current) => current.filter((node) => !isGone(node.id)));
+          setEdges((current) =>
+            current.filter((edge) => !isGone(edge.source) && !isGone(edge.target)),
+          );
+        }}
+      />
       <DiagramCanvas<Part>
         aria-label="Water plant"
         data-lab-field="plant"
@@ -357,7 +387,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editable plant"
-      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections; selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
+      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections, and so does a part that goes mid-drag: press Remove selected in 2 seconds, then drag a selected part or its port until it goes. Selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
     >
       <Plant />
     </LabSection>

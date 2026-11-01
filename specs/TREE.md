@@ -22,7 +22,7 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-1.3 - Expand glyphs
 
-The expand button shall draw built-in glyphs: `chevron-right` when collapsed and `chevron-down` when expanded, or `plus` and `minus` with `expandGlyph="plus-minus"`. The root publishes the choice as `data-expand-glyph`.
+The expand button shall draw built-in glyphs: a chevron pointing to the inline end when collapsed (`chevron-right`, or `chevron-left` right to left) and `chevron-down` when expanded, or `plus` and `minus` with `expandGlyph="plus-minus"`. The root publishes the choice as `data-expand-glyph`.
 
 Implementation: `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/tree.test.tsx`

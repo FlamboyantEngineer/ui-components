@@ -20,6 +20,8 @@ const by = (authorId: string | undefined, id: string, createdAt: string): ChatGr
   createdAt,
 });
 
+const inUtc = { timeZone: 'UTC' };
+
 describe('groupChatMessages', () => {
   it('UIC-CHAT-TRANSCRIPT-6.1 puts date separators and the unread divider between the messages', () => {
     const messages = [
@@ -28,7 +30,7 @@ describe('groupChatMessages', () => {
       by('ana', 'm3', '2026-04-20T08:00:00'),
       by('ana', 'm4', '2026-04-20T08:01:00'),
     ];
-    const items = groupChatMessages(messages, { firstUnreadId: 'm3' });
+    const items = groupChatMessages(messages, { ...inUtc, firstUnreadId: 'm3' });
     expect(describeItems(items)).toEqual([
       '2026-04-19',
       'm1:single',
@@ -52,12 +54,12 @@ describe('groupChatMessages', () => {
 
   it('UIC-CHAT-TRANSCRIPT-6.1 starts no day for a message whose time cannot be read', () => {
     const messages = [by('ana', 'm1', '2026-04-20T08:00:00'), by('ana', 'm2', 'later')];
-    expect(describeItems(groupChatMessages(messages))).toEqual([
+    expect(describeItems(groupChatMessages(messages, inUtc))).toEqual([
       '2026-04-20',
       'm1:single',
       'm2:single',
     ]);
-    expect(groupChatMessages([])).toEqual([]);
+    expect(groupChatMessages([], inUtc)).toEqual([]);
   });
 
   it('UIC-CHAT-TRANSCRIPT-6.2 groups consecutive messages by one author within the gap', () => {
@@ -69,7 +71,7 @@ describe('groupChatMessages', () => {
       by('ben', 'm5', '2026-04-20T08:15:00'),
       by('ana', 'm6', '2026-04-20T08:16:00'),
     ];
-    expect(describeItems(groupChatMessages(messages))).toEqual([
+    expect(describeItems(groupChatMessages(messages, inUtc))).toEqual([
       '2026-04-20',
       'm1:first',
       'm2:middle',
@@ -78,11 +80,9 @@ describe('groupChatMessages', () => {
       'm5:single',
       'm6:single',
     ]);
-    expect(describeItems(groupChatMessages(messages, { maxGap: 60 * 1000 })).slice(1, 4)).toEqual([
-      'm1:single',
-      'm2:single',
-      'm3:single',
-    ]);
+    expect(
+      describeItems(groupChatMessages(messages, { ...inUtc, maxGap: 60 * 1000 })).slice(1, 4),
+    ).toEqual(['m1:single', 'm2:single', 'm3:single']);
   });
 
   it('UIC-CHAT-TRANSCRIPT-6.2 breaks groups at system notices, authorless messages and failed sends', () => {
@@ -97,7 +97,7 @@ describe('groupChatMessages', () => {
       { ...by('ana', 'm8', '2026-04-20T08:03:30'), delivery: 'sent' },
       { ...by('ana', 'm9', '2026-04-20T08:04:00'), isSystem: true },
     ];
-    expect(describeItems(groupChatMessages(messages))).toEqual([
+    expect(describeItems(groupChatMessages(messages, inUtc))).toEqual([
       '2026-04-20',
       'm1:single',
       'm2:single',
@@ -118,7 +118,7 @@ describe('groupChatMessages', () => {
       by('ana', 'm3', '2026-04-20T08:02:00'),
       by('ana', 'm4', '2026-04-20T08:03:00'),
     ];
-    expect(describeItems(groupChatMessages(messages, { firstUnreadId: 'm3' }))).toEqual([
+    expect(describeItems(groupChatMessages(messages, { ...inUtc, firstUnreadId: 'm3' }))).toEqual([
       '2026-04-20',
       'm1:first',
       'm2:last',
@@ -133,7 +133,7 @@ describe('groupChatMessages', () => {
       by('ana', 'm1', '2026-04-20T23:58:00'),
       by('ana', 'm2', '2026-04-21T00:01:00'),
     ];
-    expect(describeItems(groupChatMessages(messages))).toEqual([
+    expect(describeItems(groupChatMessages(messages, inUtc))).toEqual([
       '2026-04-20',
       'm1:single',
       '2026-04-21',

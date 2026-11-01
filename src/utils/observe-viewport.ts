@@ -1,3 +1,5 @@
+import { listenFontsLoaded } from './listen-fonts-loaded.js';
+
 // Layout observation shared by a region's overlay scrollbars, edges and overview: one measurement
 // per animation frame whenever the viewport, its children or other watched elements resize, or its
 // content changes.
@@ -33,6 +35,8 @@ interface ViewportObserverOptions {
    * viewport comes or goes; deeper content changes still wait for a frame.
    */
   immediate?: boolean | undefined;
+  /** Also measure when the document's fonts finish loading, which re-wraps text in place. */
+  fonts?: boolean | undefined;
 }
 
 export interface ViewportObserver {
@@ -50,7 +54,7 @@ export interface ViewportObserver {
 export function observeViewport(
   element: HTMLElement,
   view: Window & typeof globalThis,
-  { measure, getExtraTargets, subtree = false, immediate = false }: ViewportObserverOptions,
+  { measure, getExtraTargets, subtree = false, immediate = false, fonts }: ViewportObserverOptions,
 ): ViewportObserver {
   let active = true;
   let frame: number | null = null;
@@ -101,6 +105,7 @@ export function observeViewport(
   });
   mutations.observe(element, subtree ? contentChanges : { childList: true });
   if (subtree) element.addEventListener('load', schedule, true);
+  const stopFonts = fonts ? listenFontsLoaded(element, schedule) : null;
   // An immediate observer's owner measures as it starts, so only a deferred one schedules here.
   if (immediate) watch();
   else observe();
@@ -113,6 +118,7 @@ export function observeViewport(
       observed.clear();
       mutations.disconnect();
       element.removeEventListener('load', schedule, true);
+      stopFonts?.();
       if (frame !== null) view.cancelAnimationFrame(frame);
       frame = null;
     },

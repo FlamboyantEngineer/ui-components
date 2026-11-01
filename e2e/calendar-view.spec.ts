@@ -94,6 +94,12 @@ test.describe('Calendar View lab', () => {
       expect(await offset(demo, day, /^Noon call/)).toBeCloseTo(noon, 2);
       expect(await offset(demo, next, /^Noon call/)).toBeCloseTo(noon, 2);
     }
+    const openDay = page
+      .locator('[data-lab-demo="clock-change-2026-03-08"]')
+      .getByRole('button', { name: /^Open day/ });
+    await expect(
+      openDay.locator('xpath=ancestor::*[contains(@class,"ui-calendar-view__all-day")]'),
+    ).toHaveCount(1);
     expect(await offset('2026-03-08', '2026-03-08', /^Night shift/)).toBeCloseTo(
       (await label('2026-03-08', '1 AM')) + 0.5 / 24,
       2,
@@ -197,6 +203,24 @@ test.describe('Calendar View lab', () => {
     await expect(calendar.locator('[data-lab-output]')).toHaveText(
       '2026-04-28, month. No event opened',
     );
+  });
+
+  test('UIC-CALENDAR-VIEW-2.5 packs overlapping events from the right edge right to left', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    const day = page.locator(
+      '[data-lab-demo="rtl"] [data-date="2026-03-18"] .ui-calendar-view__timed',
+    );
+    const [first, second] = await day
+      .locator(':scope > *')
+      .evaluateAll((blocks) =>
+        blocks
+          .filter((block) => block instanceof HTMLElement && block.style.width === '50%')
+          .map((block) => block.getBoundingClientRect().x),
+      );
+    expect(first).toBeGreaterThan(second ?? Infinity);
   });
 
   test('UIC-CALENDAR-VIEW-1.5 follows the provider locale', async ({ page, lab }) => {

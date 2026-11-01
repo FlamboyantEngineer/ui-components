@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type RefObject } from 'react';
-import { observeViewport, type ViewportObserver } from './observe-viewport.js';
+import { observeViewport, type ViewportObserver } from '../../utils/observe-viewport.js';
 
 type Targets = () => Iterable<Element | null>;
 

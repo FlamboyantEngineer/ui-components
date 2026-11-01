@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale } from '../../primitives/index.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -68,6 +69,8 @@ function WeekDay({
   event,
 }: WeekDayProps) {
   const isActive = date === day.focused;
+  // Concurrent events pack from the inline start, which is the right edge right to left.
+  const inlineStart = useLocale().direction === 'rtl' ? 'right' : 'left';
   return (
     <CalendarDayCell
       day={date}
@@ -100,7 +103,7 @@ function WeekDay({
               position: 'absolute',
               top: `${block.top}%`,
               height: `${block.height}%`,
-              left: `${block.left}%`,
+              [inlineStart]: `${block.left}%`,
               width: `${block.width}%`,
             }}
           />

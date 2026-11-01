@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -345,6 +345,39 @@ describe('TruncationTooltip', () => {
     expect(text).not.toHaveAttribute('data-expanded');
     expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
     vi.restoreAllMocks();
+  });
+
+  it('UIC-TRUNCATION-TOOLTIP-2.1 measures again when fonts load or a child changes its text', async () => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    let textWidth = 80;
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(() => textWidth);
+    const fonts = new EventTarget();
+    Object.defineProperty(document, 'fonts', { configurable: true, value: fonts });
+    try {
+      render(
+        <TruncationTooltip expandable>
+          <span>Short</span>
+        </TruncationTooltip>,
+      );
+      expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument();
+      textWidth = 140;
+      act(() => {
+        fonts.dispatchEvent(new Event('loadingdone'));
+      });
+      expect(await screen.findByRole('button', { name: 'Show more' })).toBeInTheDocument();
+      textWidth = 60;
+      act(() => {
+        screen.getByText('Short').textContent = 'Tiny';
+      });
+      await waitFor(() =>
+        expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument(),
+      );
+    } finally {
+      vi.restoreAllMocks();
+      delete (document as { fonts?: unknown }).fonts;
+    }
   });
 
   it('UIC-TRUNCATION-TOOLTIP-2.1 draws no control for text that fits and follows controlled state', () => {

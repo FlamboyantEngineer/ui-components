@@ -1,5 +1,5 @@
 import { InfoGlyph } from '../../core/glyphs.js';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -9,6 +9,13 @@ import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tab, TabList, TabPanel, Tabs, type TabsProps } from './tabs.js';
+
+/** Gives the document a font set whose `loadingdone` the test fires; returns the firing. */
+function stubFonts() {
+  const fonts = new EventTarget();
+  Object.defineProperty(document, 'fonts', { configurable: true, value: fonts });
+  return () => fonts.dispatchEvent(new Event('loadingdone'));
+}
 
 function Fruit(props: Omit<TabsProps, 'children'> & { listLabel?: string }) {
   const { listLabel = 'Fruit', ...rest } = props;
@@ -385,6 +392,42 @@ describe('Tabs', () => {
     } finally {
       vi.unstubAllGlobals();
       delete (HTMLElement.prototype as { scrollTo?: unknown }).scrollTo;
+    }
+  });
+
+  it('UIC-TABS-2.4 follows tab content that changes outside a render and fonts that load', async () => {
+    let textWidth = 10;
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'tablist'
+        ? (this.textContent ?? '').length * textWidth
+        : 0;
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'tablist' ? 200 : 0;
+    });
+    const loadFonts = stubFonts();
+    try {
+      render(<Fruit />);
+      const list = screen.getByRole('tablist');
+      expect(list).not.toHaveAttribute('data-overflowing');
+      const badge = document.createElement('span');
+      badge.textContent = ' (12 new)';
+      act(() => screen.getByRole('tab', { name: 'Cherry' }).append(badge));
+      await waitFor(() => expect(list).toHaveAttribute('data-overflowing', 'true'));
+      act(() => badge.remove());
+      await waitFor(() => expect(list).not.toHaveAttribute('data-overflowing'));
+      textWidth = 20;
+      act(() => {
+        loadFonts();
+      });
+      await waitFor(() => expect(list).toHaveAttribute('data-overflowing', 'true'));
+    } finally {
+      vi.restoreAllMocks();
+      delete (document as { fonts?: unknown }).fonts;
     }
   });
 

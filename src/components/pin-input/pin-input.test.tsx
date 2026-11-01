@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { Form } from '../form/form.js';
 import { PinInput, type PinInputProps } from './pin-input.js';
 
@@ -282,6 +283,19 @@ describe('PinInput', () => {
     cells()[1]?.setSelectionRange(1, 1);
     await user.keyboard('5');
     expect(values()).toEqual(['1', '5', '3', '4']);
+  });
+
+  it('UIC-PIN-INPUT-2.1 advances inside a shadow root', () => {
+    render(
+      <ShadowHost name="page">
+        <PinInput label="Code" length={4} />
+      </ShadowHost>,
+    );
+    const [first, second] = inShadow('page').getAllByRole('textbox');
+    act(() => first?.focus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event's typing does not reach a React input inside a shadow root
+    fireEvent.change(first as HTMLElement, { target: { value: '1' } });
+    expect(deepActive()).toBe(second);
   });
 
   it('UIC-PIN-INPUT-2.1 follows a value the caller changes and stays put when it refuses one', async () => {

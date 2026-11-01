@@ -11,6 +11,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { ActionRow, actionVerbs, orderActions, type ActionRowAction } from './action-row.js';
 
@@ -211,6 +212,37 @@ describe('ActionRow', () => {
       );
       expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: /^\d+ more/ })).toHaveFocus();
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('UIC-ACTION-ROW-1.7 moves focus to the overflow menu button inside a shadow root', () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-action-row__action') ? 30 : 0;
+      return new DOMRect(0, 0, width, 30);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-action-row__actions') ? 70 : 0;
+    });
+    const actions: ActionRowAction[] = [
+      { verb: 'add', onPress: noop },
+      { verb: 'delete', onPress: noop },
+    ];
+    const tree = (shown: ActionRowAction[]) => (
+      <ShadowHost name="page">
+        <ActionRow overflow="menu" actions={shown} />
+      </ShadowHost>
+    );
+    try {
+      const { rerender } = render(tree(actions));
+      inShadow('page').getByRole('button', { name: 'Delete' }).focus();
+      rerender(tree([...actions, { verb: 'edit', onPress: noop }]));
+      expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: /^\d+ more/ }));
     } finally {
       vi.restoreAllMocks();
     }

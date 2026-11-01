@@ -4,6 +4,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useUiStorage, type PersistCodec } from '../../core/provider.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 import { usePersistedValue } from '../../utils/use-persisted-value.js';
+import { useOwnedPreview } from '../../utils/use-owned-preview.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import {
@@ -88,7 +89,7 @@ function usePaneShape(panes: readonly SplitViewPane[]) {
   );
 }
 
-/** Live sizes and reopening sizes, held for the owner they were taken under. */
+/** Reopening sizes, held for the owner they were taken under. */
 interface Owned<T> {
   owner: object;
   value: T;
@@ -130,8 +131,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     setStored(next);
     setStoredIds(ids);
   };
-  const [live, setLive] = useState<Owned<readonly number[]> | null>(null);
-  const preview = live?.owner === owner ? live.value : null;
+  const [preview, setPreview] = useOwnedPreview<readonly number[]>(owner);
   const current = normalizeSplitSizes(panes, controlled ?? preview ?? committed);
   const latest = useRef(current);
   const reopened = useRef<Owned<Map<number, number>>>({ owner, value: new Map() });
@@ -161,7 +161,7 @@ export function useSplitSizes(options: SplitSizesOptions): SplitSizes {
     latest.current = next;
     if (!controlled) {
       if (isEnd) setCommitted(next);
-      setLive(isEnd ? null : { owner, value: next });
+      setPreview(isEnd ? null : next);
     }
     if (phase !== 'end') {
       options.onSizesChange?.(next);

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from 'react';
 import { isOverflowing } from '../../utils/is-overflowing.js';
+import { listenFontsLoaded } from '../../utils/listen-fonts-loaded.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 
 /** Content changes that can widen the text without resizing the element: nodes, text, classes, styles. */
@@ -34,11 +35,10 @@ export function useHorizontalOverflow(ref: RefObject<HTMLElement | null>): boole
     if (!element) return undefined;
     const observer = new MutationObserver(measure);
     observer.observe(element, contentChanges);
-    const fonts = element.ownerDocument.fonts as FontFaceSet | undefined;
-    fonts?.addEventListener('loadingdone', measure);
+    const stopFonts = listenFontsLoaded(element, measure);
     return () => {
       observer.disconnect();
-      fonts?.removeEventListener('loadingdone', measure);
+      stopFonts();
     };
   }, [ref, measure]);
   return overflowing;

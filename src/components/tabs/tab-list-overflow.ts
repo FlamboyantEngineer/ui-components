@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
-import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { useLayoutChanges } from '../../utils/use-layout-changes.js';
 import { clamp } from '../../utils/clamp.js';
 import { isOverflowing } from '../../utils/is-overflowing.js';
 import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
@@ -42,7 +42,10 @@ function centerTab(list: HTMLElement, tab: HTMLElement, orientation: Orientation
   }
 }
 
-/** Whether the list's tabs do not fit, measured after every commit and when the list resizes. */
+/**
+ * Whether the list's tabs do not fit, measured after every commit and, once a frame, when the list
+ * or a tab resizes, a tab's content changes outside a render of the list, or fonts load.
+ */
 export function useListOverflow(
   listRef: RefObject<HTMLElement | null>,
   orientation: Orientation,
@@ -56,7 +59,7 @@ export function useListOverflow(
   // Tabs added, removed or relabelled re-render the list.
   useLayoutEffect(measure);
 
-  useResizeObserver([listRef], measure);
+  useLayoutChanges(listRef, measure);
 
   return overflowing;
 }

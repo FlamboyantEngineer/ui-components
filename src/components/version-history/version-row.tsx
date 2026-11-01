@@ -26,6 +26,8 @@ interface VersionRowContext extends Pick<
 > {
   currentKey: Key | null;
   locale: string;
+  /** The zone version times read in: `timeZone`, else the provider's (`useTimeZone`). */
+  timeZone: string;
   strings: UiStrings;
   /** Whether versions can be named and renamed. */
   canRename: boolean;
@@ -54,12 +56,12 @@ const hooks = versionHistoryHooks;
 /** The version as a dialog target: its key, its title and its own name. */
 function toVersionTarget(
   version: VersionHistoryVersion,
-  context: Pick<VersionRowContext, 'locale' | 'strings'>,
+  context: Pick<VersionRowContext, 'locale' | 'timeZone' | 'strings'>,
 ): VersionDialogTarget {
   const label = version.label?.trim() ?? '';
   const title =
     label ||
-    formatVersionTime(version.time, context.locale) ||
+    formatVersionTime(version.time, context.locale, context.timeZone) ||
     capitalizeText(context.strings.unknownTime, context.locale);
   return { key: version.id, title, label };
 }

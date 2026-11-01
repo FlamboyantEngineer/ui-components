@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -370,6 +370,26 @@ describe('TextField', () => {
     expect(area.style.height).toBe('40px');
     rerender(<TextField label="Notes" multiline />);
     expect(area.style.height).toBe('');
+  });
+
+  it('UIC-TEXT-FIELD-3.3 measures a growing text area again when fonts finish loading', () => {
+    const fonts = new EventTarget();
+    Object.defineProperty(document, 'fonts', { configurable: true, value: fonts });
+    try {
+      render(<TextField label="Notes" multiline minRows={1} defaultValue="One line of notes" />);
+      const area = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Notes' });
+      area.style.lineHeight = '20px';
+      area.style.padding = '0px';
+      let lines = 1;
+      Object.defineProperty(area, 'scrollHeight', { configurable: true, get: () => lines * 20 });
+      lines = 2;
+      act(() => {
+        fonts.dispatchEvent(new Event('loadingdone'));
+      });
+      expect(area.style.height).toBe('40px');
+    } finally {
+      delete (document as { fonts?: unknown }).fonts;
+    }
   });
 
   it('UIC-TEXT-FIELD-3.4 counts trimmed text with trim, as the length rules do', () => {

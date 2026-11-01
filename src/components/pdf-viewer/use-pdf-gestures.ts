@@ -12,7 +12,8 @@ import {
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { isElement, isNode } from '../../utils/is-element.js';
+import { isNode } from '../../utils/is-element.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 
 interface UsePdfGesturesOptions<V extends PdfViewport, C extends PdfTextContent> {
   /** The open document as the reader turned it. */
@@ -23,30 +24,6 @@ interface UsePdfGesturesOptions<V extends PdfViewport, C extends PdfTextContent>
   elements: RefObject<ReadonlyMap<number, HTMLElement>>;
   onPageClick?: ((target: PdfPagePoint<V>) => void) | undefined;
   onSelectionChange?: ((selection: PdfSelection<V> | null) => void) | undefined;
-}
-
-/** Elements that act on a click of their own: links, controls and anything focusable. */
-const interactiveSelector = [
-  'a[href]',
-  'button',
-  'input',
-  'select',
-  'textarea',
-  'label',
-  'summary',
-  '[contenteditable]',
-  '[tabindex]',
-  '[role="button"]',
-  '[role="link"]',
-  '[role="checkbox"]',
-  '[role="menuitem"]',
-].join(',');
-
-/** Whether `target` sits in an interactive element inside `page`, which keeps the click. */
-function isInteractive(target: EventTarget | null, page: Element): boolean {
-  if (!isElement(target)) return false;
-  const match = target.closest(interactiveSelector);
-  return match !== null && page.contains(match);
 }
 
 /** The selection, when it holds text and lies inside `scroller`. */
@@ -134,7 +111,7 @@ export function usePdfGestures<V extends PdfViewport, C extends PdfTextContent>(
       const pageIndex = findPageIndex(isNode(event.target) ? event.target : null, elements.current);
       const page = elements.current.get(pageIndex);
       const viewport = view?.getViewport(pageIndex, scale);
-      if (!page || !viewport || isInteractive(event.target, page)) return;
+      if (!page || !viewport || isInteractiveTarget(event.target, page)) return;
       const client = { left: event.clientX, top: event.clientY };
       onPageClick({
         pageIndex,

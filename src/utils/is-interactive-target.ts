@@ -1,6 +1,6 @@
-import { isElement } from '../../utils/is-element.js';
+import { isElement } from './is-element.js';
 
-/** Controls and editable content that handle their own presses and pointer drags. */
+/** Controls, editable content and anything focusable: they handle their own presses and drags. */
 const interactiveSelector = [
   'a[href]',
   'button',
@@ -21,6 +21,7 @@ const interactiveSelector = [
   '[role="menuitem"]',
   '[role="option"]',
   '[role="tab"]',
+  '[tabindex]',
 ].join(', ');
 
 /**
