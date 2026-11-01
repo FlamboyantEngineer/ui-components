@@ -446,3 +446,64 @@ describe('AnnotationMargin', () => {
     expectHooksMatchSpec(container, 'ANNOTATION-LAYER', { callerAttributes: ['data-owner'] });
   });
 });
+
+describe('AnnotationLayer under a scale', () => {
+  // The layer is 400 by 200 CSS pixels, drawn 1.5 times wider and twice taller.
+  beforeEach(() => {
+    boxes.layer = { top: 100, left: 50, width: 600, height: 400 };
+    boxes.margin = { top: 120, left: 650 };
+    targetRects.phrase = [{ top: 180, left: 95, width: 300, height: 40 }];
+    const ownSize = (element: HTMLElement, layerSize: number, cardSize: number) => {
+      if (element.getAttribute('data-box') === 'layer') return layerSize;
+      return element.classList.contains('ui-annotation-layer__card') ? cardSize : 0;
+    };
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return ownSize(this, 400, 0);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return ownSize(this, 200, cardHeight);
+    });
+  });
+
+  it('UIC-ANNOTATION-LAYER-1.2 measures, hits and lays out cards in the layer’s own pixels', async () => {
+    const user = userEvent.setup();
+    const onCurrentKeyChange = vi.fn();
+    const { container } = render(
+      <AnnotationLayer
+        annotations={[{ id: 'phrase', targetId: 'phrase' }]}
+        data-box="layer"
+        onCurrentKeyChange={onCurrentKeyChange}
+      >
+        <span id="phrase">slice</span>
+        <AnnotationMargin data-box="margin" renderCard={() => 'Note'} />
+      </AnnotationLayer>,
+    );
+    expect(marks(container)[0]).toHaveStyle({
+      top: '40px',
+      left: '30px',
+      width: '200px',
+      height: '20px',
+    });
+    // The margin starts 10 of the layer's pixels down, so the card sits 30 pixels into it.
+    expect(cards(container)[0]?.style.top).toBe('30px');
+
+    // Presses in the layer's pixels: just past the mark's right and bottom edges, then just inside.
+    const root = container.firstElementChild as HTMLElement;
+    const press = (x: number, y: number) =>
+      user.pointer({
+        keys: '[MouseLeft]',
+        target: root,
+        coords: { clientX: 50 + x * 1.5, clientY: 100 + y * 2 },
+      });
+    await press(231, 50);
+    await press(100, 61);
+    await press(29, 50);
+    expect(onCurrentKeyChange).not.toHaveBeenCalled();
+    await press(229, 59);
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('phrase');
+  });
+});
