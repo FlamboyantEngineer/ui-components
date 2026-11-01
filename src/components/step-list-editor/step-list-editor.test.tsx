@@ -140,6 +140,40 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(field(3, 'Action')).toHaveFocus();
   });
 
+  it('UIC-STEP-LIST-EDITOR-1.3 gives added steps ids no restored step holds', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const view = render(<StepListEditor columns={columns} value={steps} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { name: 'Add step' }));
+    const first = requireDefined((onChange.mock.lastCall?.[0] as StepListEditorStep[])[3]).id;
+    // A list saved earlier holds the ids this editor would make next.
+    const base = first.slice(0, -1);
+    const restored: StepListEditorStep[] = [
+      ...steps,
+      { id: `${base}2`, values: { action: 'Restored' } },
+      { id: `${base}3`, values: { action: 'Kept' } },
+    ];
+    view.rerender(<StepListEditor columns={columns} value={restored} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { name: 'Add step' }));
+    const added = onChange.mock.lastCall?.[0] as StepListEditorStep[];
+    expect(new Set(idsOf(added)).size).toBe(6);
+    view.rerender(<StepListEditor columns={columns} value={added} onChange={onChange} />);
+    await runAction(user, 4, 'Duplicate');
+    const duplicated = onChange.mock.lastCall?.[0] as StepListEditorStep[];
+    expect(new Set(idsOf(duplicated)).size).toBe(7);
+    view.rerender(<StepListEditor columns={columns} value={added} onChange={onChange} />);
+    await user.type(field(6, 'Action'), 'N');
+    const edited = onChange.mock.lastCall?.[0] as StepListEditorStep[];
+    expect(edited.map((item) => item.values.action)).toEqual([
+      'Open the form',
+      'Type a name',
+      'Press Save',
+      'Restored',
+      'Kept',
+      'N',
+    ]);
+  });
+
   it('UIC-STEP-LIST-EDITOR-2.1 duplicates and deletes steps, moving focus', async () => {
     const user = userEvent.setup();
     const onValue = vi.fn();

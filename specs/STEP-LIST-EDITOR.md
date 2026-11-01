@@ -22,7 +22,7 @@ Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/
 
 ### UIC-STEP-LIST-EDITOR-1.3 - Plain value
 
-The value shall be an array of steps `{ id, values }`, where `values` maps column ids to text and a missing column reads as empty. `value` with `onChange` controls the steps and `defaultValue` starts an uncontrolled list, empty by default; `onChange` receives a new array after each edit, insertion, removal or move, and every step keeps its `id`. Typing in a field replaces that column's text in its step. Steps the editor adds get ids unique within the document.
+The value shall be an array of steps `{ id, values }`, where `values` maps column ids to text and a missing column reads as empty. `value` with `onChange` controls the steps and `defaultValue` starts an uncontrolled list, empty by default; `onChange` receives a new array after each edit, insertion, removal or move, and every step keeps its `id`. Typing in a field replaces that column's text in its step. Steps the editor adds, inserts or duplicates get ids unique within the document that no step of the current list holds, so a list saved from an earlier page and restored never shares an id with a step added after it.
 
 Implementation: `src/components/step-list-editor/step-list-editor.tsx`, `src/components/step-list-editor/step-list.ts`, `src/utils/use-id-factory.ts`
 Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `src/components/step-list-editor/step-list.test.ts`, `e2e/step-list-editor.spec.ts`

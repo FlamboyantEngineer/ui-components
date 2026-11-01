@@ -18,6 +18,7 @@ import {
 import { ConditionGroupView } from './condition-group.js';
 import {
   copyConditionNode,
+  listConditionIds,
   findConditionNode,
   moveConditionNode,
   removeConditionNode,
@@ -93,9 +94,11 @@ function useBuilderActions(options: {
   const createId = useIdFactory();
   const requestFocus = useNodeFocusRequest(options.rootRef);
   return useMemo(() => {
-    const newRule = (): ConditionRule | null => {
+    // Each edit's ids skip every id in the current tree, restored and nested ones included.
+    const startIds = () => createId(listConditionIds(latest.current.tree));
+    const newRule = (nextId: () => string): ConditionRule | null => {
       const field = latest.current.fields[0];
-      return field ? { type: 'rule', id: createId(), ...createFilterCondition(field) } : null;
+      return field ? { type: 'rule', id: nextId(), ...createFilterCondition(field) } : null;
     };
     const edit = (change: (tree: ConditionGroup) => ConditionGroup) => {
       const { tree, setTree } = latest.current;
@@ -129,7 +132,7 @@ function useBuilderActions(options: {
         const node = findConditionNode(tree, id);
         const parent = findParentGroup(id, tree);
         if (!node || !parent) return;
-        const copy = copyConditionNode(node, createId);
+        const copy = copyConditionNode(node, startIds());
         const at = parent.rules.indexOf(node) + 1;
         edit((current) =>
           replaceConditionNode(current, parent.id, {
@@ -140,14 +143,16 @@ function useBuilderActions(options: {
         requestFocus({ elementId: elementId(copy.id), selector: 'button' });
       },
       addRule: (groupId) => {
-        const rule = newRule();
+        const rule = newRule(startIds());
         if (rule) append(groupId, rule, rule.id);
       },
       addGroup: (groupId) => {
-        const rule = newRule();
+        const nextId = startIds();
+        const id = nextId();
+        const rule = newRule(nextId);
         const group: ConditionGroup = {
           type: 'group',
-          id: createId(),
+          id,
           combinator: 'and',
           rules: rule ? [rule] : [],
         };

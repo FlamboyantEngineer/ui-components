@@ -218,6 +218,60 @@ describe('ConditionBuilder', () => {
     expect(menuOf(within(nested).getByRole('group', { name: 'Rule 2' }))).toHaveFocus();
   });
 
+  it('UIC-CONDITION-BUILDER-1.1 gives added and duplicated nodes ids no restored node holds', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const empty: ConditionGroup = { type: 'group', id: 'root', combinator: 'and', rules: [] };
+    const view = render(<ConditionBuilder fields={fields} value={empty} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { name: 'Add rule' }));
+    const first = requireDefined((onChange.mock.lastCall?.[0] as ConditionGroup).rules[0]).id;
+    // A tree saved earlier holds the ids this builder would make next, one of them nested.
+    const base = first.slice(0, -1);
+    const restoredRule = (id: string, value: string): ConditionRule => ({
+      type: 'rule',
+      id,
+      field: 'title',
+      operator: 'contains',
+      value,
+    });
+    const restored: ConditionGroup = {
+      ...empty,
+      rules: [
+        restoredRule(`${base}2`, 'kept'),
+        {
+          type: 'group',
+          id: `${base}3`,
+          combinator: 'or',
+          rules: [restoredRule(`${base}4`, 'deep')],
+        },
+      ],
+    };
+    view.rerender(<ConditionBuilder fields={fields} value={restored} onChange={onChange} />);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Add rule' }).at(-1)));
+    const added = onChange.mock.lastCall?.[0] as ConditionGroup;
+    const allIds = (node: ConditionGroup): string[] => [
+      node.id,
+      ...node.rules.flatMap((child) => (child.type === 'group' ? allIds(child) : [child.id])),
+    ];
+    expect(new Set(allIds(added)).size).toBe(allIds(added).length);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Add group' })[0]));
+    const grouped = onChange.mock.lastCall?.[0] as ConditionGroup;
+    expect(new Set(allIds(grouped)).size).toBe(allIds(grouped).length);
+    view.rerender(<ConditionBuilder fields={fields} value={added} onChange={onChange} />);
+    const menu = await openActions(user, rule('Group'), 0);
+    await user.click(within(menu).getByRole('menuitem', { name: 'Duplicate' }));
+    const duplicated = onChange.mock.lastCall?.[0] as ConditionGroup;
+    expect(new Set(allIds(duplicated)).size).toBe(allIds(duplicated).length);
+    view.rerender(<ConditionBuilder fields={fields} value={added} onChange={onChange} />);
+    await user.type(within(rule('Rule 3')).getByRole('textbox'), 'n');
+    const edited = onChange.mock.lastCall?.[0] as ConditionGroup;
+    expect(edited.rules.map((node) => (node.type === 'rule' ? node.value : node.id))).toEqual([
+      'kept',
+      `${base}3`,
+      'n',
+    ]);
+  });
+
   it('UIC-CONDITION-BUILDER-1.5 duplicates a group from its menu under new ids', async () => {
     const user = userEvent.setup();
     const onValue = vi.fn();

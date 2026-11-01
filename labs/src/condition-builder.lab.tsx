@@ -94,6 +94,38 @@ function LiveQuery() {
   );
 }
 
+/** Saves the tree and restores it into a fresh builder, which adds nodes under ids of its own. */
+function SavedTree() {
+  const [saved, setSaved] = useState<ConditionGroup>(nested);
+  const [tree, setTree] = useState<ConditionGroup>(nested);
+  const [restores, setRestores] = useState(0);
+  const ids = JSON.stringify(tree).match(/"id":"[^"]+"/g) ?? [];
+  return (
+    <div data-lab-demo="saved" style={{ maxWidth: 760 }}>
+      <ConditionBuilder
+        key={restores}
+        aria-label="Saved conditions"
+        fields={bookFields}
+        defaultValue={saved}
+        onChange={setTree}
+      />
+      <button type="button" onClick={() => setSaved(tree)}>
+        Save the tree
+      </button>{' '}
+      <button
+        type="button"
+        onClick={() => {
+          setTree(saved);
+          setRestores((count) => count + 1);
+        }}
+      >
+        Restore the saved tree
+      </button>
+      <p data-lab-unique>{`${new Set(ids).size} of ${ids.length} ids unique`}</p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -138,6 +170,12 @@ mountLab(
           defaultValue={nested}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Restoring a saved tree"
+      description="Add a rule, save the tree, restore it into a fresh builder and add another: every node keeps an id of its own."
+    >
+      <SavedTree />
     </LabSection>
     <LabSection
       title="Filtering a catalogue"
