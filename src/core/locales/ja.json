@@ -538,6 +538,8 @@
   "peopleCount": "{count} 人",
   "qrCodeOf": "QR コード: {value}",
   "qrCodeTooLong": "QR コードにするにはテキストが長すぎます。",
+  "barcodeOf": "{format} バーコード: {value}",
+  "barcodeInvalid": "この値は {format} でエンコードできません。",
   "filters": "フィルター",
   "addFilter": "フィルターを追加",
   "clearAllFilters": "すべてクリア",
