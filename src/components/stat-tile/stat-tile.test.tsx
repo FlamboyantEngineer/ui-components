@@ -89,6 +89,39 @@ describe('StatTile', () => {
     expect(tile).not.toHaveAttribute('data-trend');
   });
 
+  it('UIC-STAT-TILE-1.3 UIC-STAT-TILE-1.4 keeps the direction of a change that rounds to zero', () => {
+    const { rerender } = render(<StatTile label="Errors" value={100} delta={-0.0001} />);
+    const tile = screen.getByRole('region');
+    const precise = { maximumFractionDigits: 0 };
+    const cases = [
+      [-0.0001, undefined, '-0', 'down'],
+      [0.0001, undefined, '+0', 'up'],
+      [0.4, precise, '+0', 'up'],
+      [-0.4, precise, '-0', 'down'],
+      [-0.00001, { style: 'percent' }, '-0%', 'down'],
+      [0, precise, '0', 'flat'],
+      [-0, precise, '0', 'flat'],
+    ] as const;
+    for (const [delta, options, text, trend] of cases) {
+      for (const goal of ['increase', 'decrease', 'none'] as const) {
+        rerender(
+          <StatTile
+            label="Errors"
+            value={100}
+            delta={delta}
+            deltaFormatOptions={options}
+            goal={goal}
+          />,
+        );
+        // The delta's text is all a reader hears of the change: the glyph is decorative.
+        expect(slot(tile, 'delta')?.textContent).toBe(text);
+        expect(tile).toHaveAttribute('data-trend', trend);
+      }
+    }
+    rerender(<StatTile label="Errors" value={100} delta={-3} />);
+    expect(slot(tile, 'delta')?.textContent).toBe('-3');
+  });
+
   it('UIC-STAT-TILE-1.3 formats the delta with its own options or the value options', () => {
     const { rerender } = render(
       <StatTile

@@ -63,10 +63,12 @@ mountLab(
     </LabSection>
     <LabSection
       title="Values"
-      description="A plain count, a percent with a percent delta, a compact currency, a worded value, no delta and a loading tile."
+      description="A plain count, a percent with a percent delta, a fall too small to show that keeps its sign (-0%), a compact currency, a worded value, no delta and a loading tile."
     >
       <StateMatrix
-        axes={{ value: ['count', 'percent', 'currency', 'worded', 'no delta', 'loading'] }}
+        axes={{
+          value: ['count', 'percent', 'tiny change', 'currency', 'worded', 'no delta', 'loading'],
+        }}
         render={({ value }) => (
           <div style={column(170)}>
             {value === 'count' ? <StatTile label="Visitors" value={5230} delta={410} /> : null}
@@ -77,6 +79,15 @@ mountLab(
                 formatOptions={{ style: 'percent', maximumFractionDigits: 2 }}
                 delta={-0.0004}
                 deltaFormatOptions={{ style: 'percent', maximumFractionDigits: 2 }}
+              />
+            ) : null}
+            {value === 'tiny change' ? (
+              <StatTile
+                label="Error rate"
+                value={0.012}
+                formatOptions={{ style: 'percent', maximumFractionDigits: 1 }}
+                delta={-0.00001}
+                goal="decrease"
               />
             ) : null}
             {value === 'currency' ? (

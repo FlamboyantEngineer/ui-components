@@ -20,7 +20,7 @@ Verification: `src/components/stat-tile/stat-tile.test.tsx`, `e2e/stat-tile.spec
 
 ### UIC-STAT-TILE-1.3 - Delta and trend
 
-A finite `delta` shall show with its sign (`+12`, `-3`, `0`), formatted with `deltaFormatOptions` or else `formatOptions`, after a decorative trend glyph (`trend-up`, `trend-down` or `trend-flat`) in a `ui-stat-tile__trend-icon` slot. The root publishes `data-trend`: `up` for a positive delta, `down` for a negative one and `flat` for zero. Without a finite delta neither the delta nor the trend renders.
+A finite `delta` shall show with its sign (`+12`, `-3`, `0`), a change that rounds to zero keeping it (`+0`, `-0%`) so its text carries its direction, while only a zero delta reads unsigned, formatted with `deltaFormatOptions` or else `formatOptions`, after a decorative trend glyph (`trend-up`, `trend-down` or `trend-flat`) in a `ui-stat-tile__trend-icon` slot. The root publishes `data-trend`: `up` for a positive delta, `down` for a negative one and `flat` for zero. Without a finite delta neither the delta nor the trend renders.
 
 Implementation: `src/components/stat-tile/stat-tile.tsx`, `src/core/glyphs.tsx`
 Verification: `src/components/stat-tile/stat-tile.test.tsx`, `e2e/stat-tile.spec.ts`
