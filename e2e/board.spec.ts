@@ -251,6 +251,33 @@ test.describe('Board lab', () => {
     await expect(grid.getByRole('row', { name: 'Inventory item 500' })).toBeVisible();
   });
 
+  test('UIC-BOARD-1.7 keeps the cards in view, focus and state when virtualization turns off and on', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'virtualized');
+    const grid = board.getByRole('grid', { name: 'To do' });
+    await grid.evaluate((element) => element.scrollTo(0, 2000));
+    const card = grid.getByRole('row').nth(3);
+    const name = (await card.textContent()) ?? '';
+    const named = grid.getByRole('row', { name, exact: true });
+    // A mark on the card element survives only while the card stays mounted.
+    await named.evaluate((row) => row.setAttribute('data-lab-mark', ''));
+    await named.focus();
+    const toggle = board.getByRole('button', { name: 'Virtualize' });
+    for (const virtualized of [false, true]) {
+      await toggle.dispatchEvent('click');
+      if (virtualized) await expect(grid).toHaveAttribute('data-virtualized', 'true');
+      else await expect(grid).not.toHaveAttribute('data-virtualized');
+      await expect(named).toHaveAttribute('data-lab-mark', '');
+      await expect(named).toBeFocused();
+      const count = await grid.getByRole('row').count();
+      if (virtualized) expect(count).toBeLessThan(60);
+      else expect(count).toBe(400);
+    }
+  });
+
   test('UIC-BOARD-1.7 UIC-BOARD-2.3 keeps focus on a card moved into a virtualized cell out of view', async ({
     page,
     lab,

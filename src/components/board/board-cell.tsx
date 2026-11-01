@@ -11,6 +11,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type ComponentProps,
   type KeyboardEvent,
   type ReactNode,
@@ -19,6 +20,7 @@ import {
   GridList,
   GridListItem,
   ListLayout,
+  Rect,
   useDragAndDrop,
   Virtualizer,
 } from '../../primitives/index.js';
@@ -73,6 +75,34 @@ interface BoardCellProps<T> {
 
 /** The estimated height of a card in a virtualized cell, in pixels; cards are measured. */
 const estimatedCardHeight = 96;
+
+type CardLayoutOptions = NonNullable<ConstructorParameters<typeof ListLayout>[0]> & {
+  /** Lay out only the cards in view; otherwise every card renders. */
+  isVirtualized: boolean;
+};
+
+/**
+ * A cell's list layout, which renders only the cards in view while the board is virtualized and
+ * every card otherwise. Every cell renders through the virtualizer either way, so that turning
+ * virtualization on or off keeps the cards, their focus and their state mounted. It wraps one
+ * layout instance, since library source extends no class (I1).
+ */
+function createCardLayout(): ListLayout<unknown, CardLayoutOptions> {
+  const layout = new ListLayout<unknown, CardLayoutOptions>();
+  let isVirtualized = true;
+  const update = layout.update.bind(layout);
+  layout.update = (context) => {
+    isVirtualized = context.layoutOptions?.isVirtualized ?? true;
+    update(context);
+  };
+  const shouldInvalidate = layout.shouldInvalidateLayoutOptions.bind(layout);
+  layout.shouldInvalidateLayoutOptions = (next, previous) =>
+    next.isVirtualized !== previous.isVirtualized || shouldInvalidate(next, previous);
+  const getVisible = layout.getVisibleLayoutInfos.bind(layout);
+  layout.getVisibleLayoutInfos = (rect) =>
+    getVisible(isVirtualized ? rect : new Rect(0, 0, Infinity, Infinity));
+  return layout;
+}
 
 type DragAndDropOptions = Parameters<typeof useDragAndDrop>[0];
 
@@ -238,6 +268,7 @@ function BoardCards<T extends { id: Key }>({
   const keys = useMemo(() => createKeyIndex(items.map((item) => item.id)), [items]);
   const dragAndDropHooks = useCellDragAndDrop(drag, address, keys);
   const grid = useCardReveal(virtualized ? options.reveals : null, items);
+  const [layout] = useState(createCardLayout);
   const renderEmptyState = useCallback(
     () => (
       <EmptyState size="sm" description={strings.noCards} className={hooks.slotClass('empty')} />
@@ -281,9 +312,12 @@ function BoardCards<T extends { id: Key }>({
       )}
     </GridList>
   );
-  if (!virtualized) return list;
   return (
-    <Virtualizer layout={ListLayout} layoutOptions={{ estimatedRowSize: estimatedCardHeight }}>
+    <Virtualizer
+      layout={layout}
+      layoutOptions={{ estimatedRowSize: estimatedCardHeight, isVirtualized: virtualized }}
+      shouldObserveItemSize
+    >
       {list}
     </Virtualizer>
   );

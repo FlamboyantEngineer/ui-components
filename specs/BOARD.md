@@ -50,7 +50,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-1.7 - Virtualized cells
 
-`virtualized` shall render each cell's grid list through React Aria's `Virtualizer` with its list layout, measuring each card from an estimate, so only the cards in view of the cell (plus a small buffer) are in the document; keyboard navigation and drag and drop reach every card. The root and each grid list publish `data-virtualized`, and the stylesheet bounds the cells' height.
+`virtualized` shall render only the cards in view of each cell (plus a small buffer); keyboard navigation and drag and drop reach every card. Every cell renders its grid list through React Aria's `Virtualizer` with a list layout that measures each card from an estimate and re-measures it when its content resizes; without `virtualized` the layout renders every card. Turning `virtualized` on or off therefore keeps the cards that stay rendered mounted, with their focus and the state inside them, even when the items change in the same render. The root and each grid list publish `data-virtualized`, and the stylesheet bounds the cells' height.
 
 Implementation: `src/components/board/board-cell.tsx`, `labs/reference/board.css`
 Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
