@@ -6,7 +6,7 @@
 
 ### UIC-INLINE-EDIT-1.1 - Read view
 
-`InlineEdit` shall render a `<div>` root (`ui-inline-edit`) holding, while not editing, a button (`ui-inline-edit__read`) that shows the value (`ui-inline-edit__value`), drawn by `renderValue` or else as text, followed by the `edit` glyph (`ui-inline-edit__icon`). While the value is empty (nullish, blank text or an empty list) the button shows `placeholder` instead (`ui-inline-edit__placeholder`) and the root publishes `data-empty`.
+`InlineEdit` shall render a `<div>` root (`ui-inline-edit`) holding, while not editing, a button (`ui-inline-edit__read`) that shows the value (`ui-inline-edit__value`), drawn by `renderValue` or else as text, followed by the `edit` glyph (`ui-inline-edit__icon`). While the value is empty (nullish, blank text or an empty list) the button shows `placeholder` instead (`ui-inline-edit__placeholder`) and the root publishes `data-empty`. In the reference sheet, hovering the read view gives it a light fill and shows a small (12-pixel) pencil, and keyboard focus draws the editing control's own focus frame (a focus-coloured border and a thin ring) rather than a wider halo, so the frame keeps its size when Enter commits an edit and focus returns to the read view.
 
 Implementation: `src/components/inline-edit/inline-edit.tsx`, `src/components/inline-edit/use-inline-edit.ts`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`

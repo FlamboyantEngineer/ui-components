@@ -25,18 +25,22 @@
   cursor: text;
 }
 
+/* A light fill and the small pencil say the value is editable; the frame stays for focus. */
 .ui-inline-edit__read[data-hovered] {
-  border-color: var(--ref-border);
-  background: var(--ref-hover);
+  background: color-mix(in srgb, var(--ref-hover), transparent 40%);
 }
 
 .ui-inline-edit__read[data-pressed] {
   background: var(--ref-pressed);
 }
 
+/*
+ * Keyboard focus draws the editing control's own focus frame (a focus-coloured border and a thin
+ * ring), so the frame keeps its size between editing and the read state focus returns to on Enter.
+ */
 .ui-inline-edit__read[data-focus-visible] {
-  outline: none;
-  box-shadow: var(--ref-focus-halo);
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-inline-edit__read[data-disabled] {
@@ -53,6 +57,9 @@
 }
 
 .ui-inline-edit__icon {
+  flex: none;
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
   color: var(--ref-muted);
   opacity: 0;
   transition: opacity var(--ref-duration-fast);

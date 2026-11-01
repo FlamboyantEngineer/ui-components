@@ -187,3 +187,54 @@ test.describe('Inline Edit lab', () => {
     await expect(title.locator('.ui-inline-edit__value')).toHaveText('Spelt loaf');
   });
 });
+
+test('UIC-INLINE-EDIT-1.2 keeps the focus frame the same size from editing to the read view after Enter', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('inline-edit');
+  const title = page.locator(field('title'));
+  const read = title.locator('.ui-inline-edit__read');
+  const frame = (locator: typeof read) =>
+    locator.evaluate((node) => {
+      const style = getComputedStyle(node);
+      const box = node.getBoundingClientRect();
+      return {
+        x: Math.round(box.x),
+        y: Math.round(box.y),
+        height: Math.round(box.height),
+        border: style.borderTopWidth,
+        borderColor: style.borderTopColor,
+        outline: `${style.outlineStyle} ${style.outlineWidth}`,
+        shadow: style.boxShadow,
+      };
+    });
+  await read.focus();
+  await page.keyboard.press('Enter');
+  const input = title.getByRole('textbox');
+  await expect(input).toBeFocused();
+  const editing = await frame(input);
+  await page.keyboard.press('End');
+  await page.keyboard.type(' again');
+  await page.keyboard.press('Enter');
+  await expect(read).toBeFocused();
+  await expect(read).toHaveAttribute('data-focus-visible', 'true');
+  const after = await frame(read);
+  expect(after).toEqual({ ...editing, shadow: 'none' });
+  expect(editing.shadow).toBe('none');
+});
+
+test('UIC-INLINE-EDIT-1.1 hovers with a light fill and a small pencil', async ({ page, lab }) => {
+  await lab.open('inline-edit');
+  const read = page.locator(field('title')).locator('.ui-inline-edit__read');
+  await read.hover();
+  const icon = read.locator('.ui-inline-edit__icon');
+  await expect(icon).toHaveCSS('opacity', '1');
+  const size = await icon.boundingBox();
+  expect(size?.width).toBe(12);
+  const fill = await read.evaluate((node) => getComputedStyle(node).backgroundColor);
+  const alpha = Number(/[\d.]+(?=\))/.exec(fill)?.[0]);
+  expect(alpha).toBeGreaterThan(0);
+  expect(alpha).toBeLessThan(0.05);
+  await expect(read).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+});
