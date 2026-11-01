@@ -12,7 +12,7 @@ import { isOwnFieldTarget } from './field-root.js';
 import { useFieldScope } from './field-scope.js';
 import { fieldChangeHold, type FieldChangeHold, type FieldState } from './field-state.js';
 import { isFieldValueEqual } from './field-value.js';
-import { isHTMLElement } from '../../utils/is-element.js';
+import { hasNativeFormOwner } from '../../utils/form-owner.js';
 
 type FieldSlots = SlotRegistry<'root' | 'control'>;
 
@@ -57,10 +57,13 @@ function isValidatable(element: HTMLElement | null): element is ValidatableEleme
   return element !== null && 'setCustomValidity' in element;
 }
 
-/** The form the control belongs to (its `form` owner when it has one), else the enclosing form. */
+/**
+ * The form the control belongs to: a native control's own `form` owner, null included, else the
+ * form around the field.
+ */
 function findForm(slots: FieldSlots): HTMLFormElement | null {
   const control = slots.read('control');
-  if (control && 'form' in control && isHTMLElement(control.form, 'form')) return control.form;
+  if (control && hasNativeFormOwner(control)) return control.form;
   return slots.read('root')?.closest('form') ?? null;
 }
 

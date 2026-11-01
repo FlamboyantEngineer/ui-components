@@ -171,4 +171,29 @@ describe('Field in a form', () => {
     await settle();
     expect(input).toHaveValue('initial');
   });
+
+  it('UIC-FIELD-2.6 keeps a control whose form names no form out of the form around the field', async () => {
+    const user = userEvent.setup();
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    const view = (hasOwner: boolean) => (
+      <>
+        <form id="nearby" aria-label="Nearby form">
+          <OwnedField form="missing-form" />
+        </form>
+        {hasOwner ? <form id="missing-form" aria-label="Owner" /> : null}
+      </>
+    );
+    const { rerender } = render(view(false));
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Note' });
+    expect(input.form).toBeNull();
+    await user.clear(input);
+    await user.type(input, 'edited');
+    resetForm('nearby');
+    await settle();
+    expect(input).toHaveValue('edited');
+    rerender(view(true));
+    resetForm('missing-form');
+    await settle();
+    expect(input).toHaveValue('initial');
+  });
 });

@@ -59,4 +59,64 @@ describe('useNativeReset', () => {
     await settle();
     expect(onReset).toHaveBeenCalledTimes(1);
   });
+
+  it('UIC-FIELD-2.6 leaves a native control whose form names no form out of the form around it', async () => {
+    const onReset = vi.fn();
+    const nearby = (
+      <form id="nearby">
+        <Control form="missing-form" onReset={onReset} />
+      </form>
+    );
+    const { rerender } = render(nearby);
+    resetForm('nearby');
+    await settle();
+    expect(onReset).not.toHaveBeenCalled();
+    // The named form arriving later owns the control from then on.
+    rerender(
+      <>
+        {nearby}
+        <form id="missing-form" />
+      </>,
+    );
+    resetForm('nearby');
+    await settle();
+    expect(onReset).not.toHaveBeenCalled();
+    resetForm('missing-form');
+    await settle();
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-FIELD-2.6 drops a control whose named form is removed', async () => {
+    const onReset = vi.fn();
+    const view = (hasOwner: boolean) => (
+      <>
+        <form id="nearby">
+          <Control form="owner" onReset={onReset} />
+        </form>
+        {hasOwner ? <form id="owner" /> : null}
+      </>
+    );
+    const { rerender } = render(view(true));
+    rerender(view(false));
+    resetForm('nearby');
+    await settle();
+    expect(onReset).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FIELD-2.6 resets an element without a native owner, such as a group root, with the form around it', async () => {
+    const onReset = vi.fn();
+    function Group() {
+      const ref = useRef<HTMLDivElement>(null);
+      useNativeReset(ref, onReset);
+      return <div ref={ref} role="group" aria-label="Sizes" />;
+    }
+    render(
+      <form id="around">
+        <Group />
+      </form>,
+    );
+    resetForm('around');
+    await settle();
+    expect(onReset).toHaveBeenCalledTimes(1);
+  });
 });

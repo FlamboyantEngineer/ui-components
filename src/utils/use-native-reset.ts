@@ -1,13 +1,8 @@
 'use client';
 
 import { useEffect, useRef, type RefObject } from 'react';
+import { findFormOwner } from './form-owner.js';
 import { useLatest } from './use-latest.js';
-
-/** The form an element takes part in: its `form` owner when it has one, else the form around it. */
-function findForm(element: Element): HTMLFormElement | null {
-  const owner = 'form' in element ? (element.form as HTMLFormElement | null) : null;
-  return owner ?? element.closest('form');
-}
 
 /** What a control does around a native reset besides applying it. */
 export interface NativeResetOptions {
@@ -21,7 +16,8 @@ export interface NativeResetOptions {
  * Runs `onReset` after a native reset of the form `ref`'s element takes part in (a reset button or
  * `form.reset()`), once every listener has seen the reset, and not for one a listener cancelled
  * with `preventDefault`. The form is the one the element takes part in when the reset happens, so a
-control whose `form` attribute or enclosing form changes resets with its new owner only. Returns whether a
+control whose `form` attribute or enclosing form changes resets with its new owner only, and a
+ * native control whose `form` names no form resets with none. Returns whether a
  * reset is under way, from the document's capture phase until then, so a control can hold the
  * changes React Aria makes on the form's own reset listener, which runs before a cancelling one.
  */
@@ -40,7 +36,7 @@ export function useNativeReset(
     // The document's capture phase sees the reset first; the timer runs after every listener.
     const onEvent = (event: Event) => {
       const element = ref.current;
-      if (!element || event.target !== findForm(element)) return;
+      if (!element || event.target !== findFormOwner(element)) return;
       view.clearTimeout(timer);
       if (!isResetting.current) latest.current.onStart?.();
       isResetting.current = true;

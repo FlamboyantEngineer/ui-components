@@ -259,4 +259,24 @@ test.describe('Form lab', () => {
     await form.getByRole('button', { name: 'Save page' }).click();
     await expect(page.locator('[data-lab-output="Page saved"]')).toHaveText('heading=Spring');
   });
+
+  test('UIC-FIELD-2.6 UIC-CHECKBOX-1.6 leaves controls whose form names no form out of the form around them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const section = page.locator('[data-lab-section="Owned by another form"]');
+    const note = section.getByRole('textbox', { name: 'Note' });
+    const sealed = section.getByRole('checkbox', { name: 'Sealed' });
+    await note.fill('Pear');
+    await sealed.check({ force: true });
+    await section.getByRole('button', { name: 'Reset nearby' }).click();
+    await expect(note).toHaveValue('Pear');
+    await expect(sealed).toBeChecked();
+    await section.getByRole('switch', { name: 'Add the named form' }).click({ force: true });
+    await section.getByRole('button', { name: 'Reset named' }).click();
+    await expect(note).toHaveValue('Fig');
+    await expect(sealed).not.toBeChecked();
+    await lab.expectAccessible('[data-lab-section="Owned by another form"]');
+  });
 });

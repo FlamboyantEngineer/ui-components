@@ -210,6 +210,34 @@ function ConfirmedReset() {
   );
 }
 
+/** Points an input at the form named `elsewhere`, which may not exist. */
+const ownedElsewhere = (input: HTMLInputElement | null) => input?.setAttribute('form', 'elsewhere');
+
+/**
+ * Inputs inside one form whose `form` attribute names another: while no form has that id they
+ * belong to none, so the form around them leaves them alone; once it exists, its reset is theirs.
+ */
+function OwnedElsewhere() {
+  const [hasOwner, setHasOwner] = useState(false);
+  return (
+    <>
+      <form aria-label="Nearby form">
+        <TextField label="Note" defaultValue="Fig" inputRef={ownedElsewhere} />
+        <Checkbox inputRef={ownedElsewhere}>Sealed</Checkbox>
+        <Button type="reset">Reset nearby</Button>
+      </form>
+      <Switch isSelected={hasOwner} onChange={setHasOwner}>
+        Add the named form
+      </Switch>
+      {hasOwner ? (
+        <form id="elsewhere" aria-label="Named form">
+          <Button type="reset">Reset named</Button>
+        </form>
+      ) : null}
+    </>
+  );
+}
+
 /** A button outside the form submits it through the form's ref, with the same validation. */
 function OutsideSubmit() {
   const form = useRef<HTMLFormElement>(null);
@@ -318,6 +346,12 @@ mountLab(
       description="Edit the fields (a date typed in part, a typed colour), the search, the combobox, the checkbox and the switch, then press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
     >
       <ConfirmedReset />
+    </LabSection>
+    <LabSection
+      title="Owned by another form"
+      description="The note and the checkbox sit inside the nearby form, but their form attribute names a form that does not exist yet, so they belong to no form: edit them and Reset nearby leaves them. Add the named form, and its Reset puts them back."
+    >
+      <OwnedElsewhere />
     </LabSection>
     <LabSection
       title="Submitting from outside"
