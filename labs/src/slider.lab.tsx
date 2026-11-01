@@ -200,7 +200,7 @@ function SavedForm() {
         onChange={setValue}
         committedValue={saved}
         defaultValue={50}
-        menu={['set-default']}
+        menu={['reset', 'set-default']}
         data-lab-field="saved"
       />
       <RangeSlider

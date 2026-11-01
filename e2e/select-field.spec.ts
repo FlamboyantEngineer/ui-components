@@ -196,13 +196,13 @@ test.describe('Select Field lab', () => {
   }) => {
     await lab.open('select-field');
     const area = page.locator('[data-lab-section="Field menu"]');
-    await area.getByRole('button', { name: 'Fruit actions' }).click();
+    await area.locator('.ui-field__label', { hasText: 'Fruit' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(area.locator('.ui-select-field__value')).toHaveAttribute(
       'data-placeholder',
       'true',
     );
-    await area.getByRole('button', { name: 'Fruit actions' }).click();
+    await area.locator('.ui-field__label', { hasText: 'Fruit' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(area.getByRole('button', { name: 'Pear Fruit' })).toBeVisible();
   });

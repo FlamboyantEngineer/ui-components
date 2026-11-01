@@ -92,7 +92,6 @@ function SavedGroup() {
         value={value}
         onChange={setValue}
         committedValue={saved}
-        menu={['clear']}
         description="Each ticked fruit submits under the name fruit."
         data-lab-field="saved"
       >

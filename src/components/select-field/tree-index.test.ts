@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  closeChosenBranches,
   collectAncestorKeys,
   getAncestorKeys,
   getTopChosenKeys,
@@ -47,6 +48,19 @@ describe('tree index', () => {
       'peru',
     ]);
     expect(getTopChosenKeys(['oslo', 'portugal'], index)).toEqual(['oslo', 'portugal']);
+  });
+
+  it('UIC-SELECT-FIELD-10.2 reads a branch whose loaded children are all chosen as chosen', () => {
+    expect(closeChosenBranches(['oslo', 'bergen'], index)).toEqual(['norway', 'oslo', 'bergen']);
+    expect(closeChosenBranches(['oslo', 'bergen', 'portugal'], index)).toEqual([
+      'europe',
+      'norway',
+      'oslo',
+      'bergen',
+      'portugal',
+    ]);
+    expect(closeChosenBranches(['oslo', 'peru'], index)).toEqual(['oslo', 'peru']);
+    expect(closeChosenBranches([], index)).toEqual([]);
   });
 
   it('UIC-SELECT-FIELD-10.3 removes a key alone, or with its descendants and ancestors', () => {

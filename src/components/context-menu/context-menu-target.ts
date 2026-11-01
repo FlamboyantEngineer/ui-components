@@ -10,6 +10,7 @@ import {
   type MouseEvent,
   type PointerEvent,
   type Ref,
+  type RefCallback,
   type RefObject,
 } from 'react';
 import { mergeRefs } from '../../utils/merge-props.js';
@@ -70,6 +71,11 @@ function isTextInside(target: EventTarget, owner: Element): boolean {
   return isHTMLElement(target, 'input') && textInputTypes.has(target.type);
 }
 
+/** Whether an event reached the target from a portal it renders, such as its own open menu. */
+function isFromPortal(event: { target: EventTarget; currentTarget: Element }): boolean {
+  return !event.currentTarget.contains(event.target as Node);
+}
+
 function isKeyboardContextMenu(event: KeyboardEvent) {
   return event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
 }
@@ -109,7 +115,7 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
     onPointerDownCapture(event: PointerEvent<HTMLElement>) {
       own.onPointerDownCapture?.(event);
       cancel();
-      if (isDisabled || event.pointerType !== 'touch') return;
+      if (isDisabled || event.pointerType !== 'touch' || isFromPortal(event)) return;
       if (isTextInside(event.target, event.currentTarget)) return;
       const { nativeEvent, clientX: x, clientY: y, pointerId, currentTarget } = event;
       pressOwners.set(nativeEvent, currentTarget);
@@ -143,9 +149,12 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
  * menu at the pointer, the Context Menu key or Shift+F10 below the element, a long touch at the
  * touch point. A secondary click, long touch or key on a text control inside the target keeps the
  * browser's own menu, which edits the text. A request whose default the target's own handler, or
- * one inside it, prevented opens nothing, whether a secondary click, a long touch or a key.
+ * one inside it, prevented opens nothing, whether a secondary click, a long touch or a key. Events
+ * from a portal the target renders, such as its own open menu, open nothing.
  */
-export function useContextMenuTarget(options: ContextMenuTargetOptions): ContextMenuTargetProps {
+export function useContextMenuTarget(
+  options: ContextMenuTargetOptions,
+): ContextMenuTargetProps & { ref: RefCallback<HTMLElement> } {
   const { controller, isDisabled, opensFromTextKeys = false, own, targetRef } = options;
   const suppressUntil = useRef(0);
   const { cancel, ...pointerHandlers } = useLongPress(options, suppressUntil);
@@ -156,7 +165,7 @@ export function useContextMenuTarget(options: ContextMenuTargetOptions): Context
     ref,
     onContextMenu(event) {
       own.onContextMenu?.(event);
-      if (isDisabled) return;
+      if (isDisabled || isFromPortal(event)) return;
       // The target or something inside it handled the request and kept the browser's menu away.
       if (event.defaultPrevented) {
         cancel();
@@ -173,6 +182,7 @@ export function useContextMenuTarget(options: ContextMenuTargetOptions): Context
     onKeyDown(event) {
       own.onKeyDown?.(event);
       if (isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
+      if (isFromPortal(event)) return;
       // A text control inside the target keeps the key for its own editing menu.
       if (!opensFromTextKeys && isTextInside(event.target, event.currentTarget)) return;
       event.preventDefault();

@@ -62,7 +62,7 @@ test.describe('Choice Group multiple lab', () => {
     await expect(saved.getByRole('checkbox', { name: 'Apple' })).toBeFocused();
     await page.keyboard.press('ControlOrMeta+z');
     await expect(saved.getByRole('checkbox', { name: 'Apple' })).toBeChecked();
-    await saved.getByRole('button', { name: 'Basket actions' }).click();
+    await saved.locator('.ui-field__label', { hasText: 'Basket' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(saved.getByRole('checkbox', { checked: true })).toHaveCount(0);
     await saved.getByText('Plum').click();

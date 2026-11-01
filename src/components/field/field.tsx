@@ -5,13 +5,8 @@ import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } 
 import { DialogEnteringContext } from '../../utils/dialog-entering.js';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
-import {
-  FieldContextMenu,
-  FieldMenuButton,
-  useFieldMenu,
-  type FieldMenuEntry,
-  type FieldMenuModel,
-} from './field-menu.js';
+import { defaultFieldMenu, type FieldMenuEntry } from './field-menu-entries.js';
+import { useFieldContextMenu, useFieldMenu } from './field-menu.js';
 import {
   FieldHelp,
   FieldLabel,
@@ -57,7 +52,11 @@ export interface FieldProps<T> extends BaseProps {
   help?: ReactNode;
   /** Badges and other marks the host renders for the field; they describe the control. */
   decoration?: ReactNode;
-  /** The field menu, opened from a menu button and as the field's context menu. */
+  /**
+   * The field's context menu, opened by a secondary click or long touch on the field or Shift+F10
+   * or the Context Menu key in it. Defaults to Clear (when the field may be cleared) and Reset; an
+   * empty list leaves the browser's context menu alone.
+   */
   menu?: readonly FieldMenuEntry[] | undefined;
   /** Called with the id of the chosen menu entry, after a built-in action has run. */
   onMenuAction?: ((key: Key) => void) | undefined;
@@ -153,18 +152,16 @@ function toFieldData(
   };
 }
 
-/** The buttons after the control, one size below the field: restore while dirty, help and menu. */
+/** The buttons after the control, one size below the field: restore while dirty, and help. */
 function FieldButtons({
   label,
   size,
   help,
-  menu,
   onRestore,
 }: {
   label: string;
   size: ControlSize;
   help: { id: string; content: ReactNode } | null;
-  menu: FieldMenuModel | null;
   onRestore: (() => void) | null;
 }) {
   return (
@@ -175,15 +172,12 @@ function FieldButtons({
           {help.content}
         </FieldHelp>
       ) : null}
-      {menu ? (
-        <FieldMenuButton model={menu} size={size} className={hooks.slotClass('menu')} />
-      ) : null}
     </>
   );
 }
 
 /**
- * Lays out a field around its control: the label, the control, the restore, help and menu buttons,
+ * Lays out a field around its control: the label, the control, the restore and help buttons,
  * the host's decoration, the description and the validation message. It gives the control its ids
  * and ARIA, applies undo and redo chords pressed inside it, registers its undo for `getFieldUndo`
  * and takes part in an enclosing form.
@@ -197,7 +191,7 @@ export function Field<T>({
   description,
   help,
   decoration,
-  menu = [],
+  menu = defaultFieldMenu,
   onMenuAction,
   renderMessage,
   autoFocus,
@@ -216,6 +210,11 @@ export function Field<T>({
   useFieldFormBinding(state, slots, label);
   useAutoFocus(autoFocus, slots);
   const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
+  const contextMenu = useFieldContextMenu(menuModel, {
+    ref: slots.ref('root'),
+    onKeyDown,
+    focusControl: () => focusControl(slots.read('control')),
+  });
   const hasLabel = labelLayout !== 'control-only';
   const control = toFieldControlProps(state, ids, {
     ref: slots.ref('control'),
@@ -228,40 +227,37 @@ export function Field<T>({
   ) : null;
   const data = toFieldData({ labelLayout, size, density }, state, focus.isFocused);
   return (
-    <FieldContextMenu model={menuModel}>
-      <div
-        {...hooks.root({ className, props: rest, data })}
-        id={id}
-        ref={slots.ref('root')}
-        onKeyDown={onKeyDown}
-        onFocus={focus.onFocus}
-        onBlur={focus.onBlur}
-      >
-        {labelLayout === 'control-label' ? null : labelElement}
-        <div {...hooks.slot('control')}>{children(control)}</div>
-        {labelLayout === 'control-label' ? labelElement : null}
-        <FieldButtons
-          label={label}
-          size={toInnerControlSize(size)}
-          help={isEmptyNode(help) ? null : { id: ids.help, content: help }}
-          menu={menu.length > 0 ? menuModel : null}
-          onRestore={state.isDirty ? () => restoreField(state, slots) : null}
-        />
-        {isEmptyNode(decoration) ? null : (
-          <div {...hooks.slot('decoration')} id={ids.decoration}>
-            {decoration}
-          </div>
-        )}
-        {isEmptyNode(description) ? null : (
-          <div {...hooks.slot('description')} id={ids.description}>
-            {description}
-          </div>
-        )}
-        <FieldMessage id={ids.message} validation={state.validation}>
-          {renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message}
-        </FieldMessage>
-      </div>
-    </FieldContextMenu>
+    <div
+      {...hooks.root({ className, props: rest, data })}
+      {...contextMenu.targetProps}
+      id={id}
+      onFocus={focus.onFocus}
+      onBlur={focus.onBlur}
+    >
+      {labelLayout === 'control-label' ? null : labelElement}
+      <div {...hooks.slot('control')}>{children(control)}</div>
+      {labelLayout === 'control-label' ? labelElement : null}
+      <FieldButtons
+        label={label}
+        size={toInnerControlSize(size)}
+        help={isEmptyNode(help) ? null : { id: ids.help, content: help }}
+        onRestore={state.isDirty ? () => restoreField(state, slots) : null}
+      />
+      {isEmptyNode(decoration) ? null : (
+        <div {...hooks.slot('decoration')} id={ids.decoration}>
+          {decoration}
+        </div>
+      )}
+      {isEmptyNode(description) ? null : (
+        <div {...hooks.slot('description')} id={ids.description}>
+          {description}
+        </div>
+      )}
+      <FieldMessage id={ids.message} validation={state.validation}>
+        {renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message}
+      </FieldMessage>
+      {contextMenu.menu}
+    </div>
   );
 }
 
@@ -281,7 +277,7 @@ export type {
   FieldLayoutProps,
   FieldTextInputProps,
 } from './field-control.js';
-export type { FieldMenuAction, FieldMenuEntry } from './field-menu.js';
+export type { FieldMenuAction, FieldMenuEntry } from './field-menu-entries.js';
 export { FieldPreviousValue } from './field-previous-value.js';
 export type { FieldPreviousValueProps } from './field-previous-value.js';
 export { FieldRestoreButton } from './field-restore-button.js';

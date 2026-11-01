@@ -234,7 +234,7 @@ Verification: `src/components/select-field/tree-index.test.ts`, `src/components/
 
 ### UIC-SELECT-FIELD-9.3 - Single choice
 
-In a single choice, pressing a row, or Enter or Space on the focused row, shall make its node the value, commit it and close the popover; doing so on the chosen row keeps the value and closes the popover. Pressing the expand button only expands or collapses its row. A node whose id is `''` is a value like any other: chosen, it fills the field and satisfies a required field; only `null` (or an empty list in multiple choice) is no value.
+In a single choice, pressing a leaf row, or Enter or Space on the focused leaf row, shall make its node the value, commit it and close the popover; doing so on the chosen row keeps the value and closes the popover. A branch row opens and closes instead ([UIC-SELECT-FIELD-9.6](#uic-select-field-96---branches-and-leaves)). Pressing the expand button only expands or collapses its row. A node whose id is `''` is a value like any other: chosen, it fills the field and satisfies a required field; only `null` (or an empty list in multiple choice) is no value.
 
 Implementation: `src/components/select-field/select-tree-field.tsx`, `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`
 Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
@@ -255,6 +255,13 @@ A chosen key that matches no loaded node shall read as the key itself, with `dat
 Implementation: `src/components/select-field/tree-select-control.tsx`
 Verification: `src/components/select-field/select-tree-field.test.tsx`
 
+### UIC-SELECT-FIELD-9.6 - Branches and leaves
+
+A branch is a node with children, or one `hasChildItems` reports as having unloaded children. Pressing a branch row, or Enter (or, in a single choice, Space) on it, shall expand it when it is collapsed and collapse it when it is expanded, choosing nothing and keeping the popover open; the row's checkbox in a multiple choice is not a press on the row. By default only leaves are chosen: a branch never becomes the value, and in a multiple choice a branch's checkbox chooses its loaded leaves (with `selectionPropagation`) or nothing (without it). With `selectableBranches`, pressing an expanded branch row, or Enter or Space on it, chooses it instead, a collapsed one still expands first, and a branch's checkbox chooses the branch as in `Tree`.
+
+Implementation: `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-branch-press.ts`, `src/components/select-field/select-tree-field.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
 ## UIC-SELECT-FIELD-10 - Search, multiple choice and states
 
 ### UIC-SELECT-FIELD-10.1 - Search
@@ -266,7 +273,7 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/sel
 
 ### UIC-SELECT-FIELD-10.2 - Multiple choice
 
-With `selectionMode` `multiple`, the value shall be the list of chosen keys in reading order, each row draws a checkbox, the popover stays open while the reader chooses, and every change commits at once. With `selectionPropagation` (the default), choosing a node chooses its loaded descendants and a node is chosen exactly when all its loaded children are, as in `Tree`; without it each row is chosen on its own. A chosen branch whose children load or are added later takes them along, reported as a change (`onChange`), not a commit, so a branch is never claimed whole while some of its loaded children are not chosen and the rows, chips and form values agree. Keys of nodes not loaded stay as they are. The trigger reads the provider's `selectedCount` string for the chips shown.
+With `selectionMode` `multiple`, the value shall be the list of chosen keys in reading order, each row draws a checkbox, the popover stays open while the reader chooses, and every change commits at once. With `selectionPropagation` (the default), choosing a node chooses its loaded descendants and a node is chosen exactly when all its loaded children are, as in `Tree`; without it each row is chosen on its own. A chosen branch whose children load or are added later takes them along, reported as a change (`onChange`), not a commit, so a branch is never claimed whole while some of its loaded children are not chosen and the rows, chips and form values agree. Keys of nodes not loaded stay as they are. Without `selectableBranches` the value holds leaves only, and a branch whose loaded children are all chosen still reads as chosen: its row is selected and it shows as one chip. The trigger reads the provider's `selectedCount` string for the chips shown.
 
 Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-index.ts`
 Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`

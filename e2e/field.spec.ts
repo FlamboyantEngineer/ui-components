@@ -207,7 +207,7 @@ test.describe('Field lab', () => {
     await expect(dish).toHaveValue('Soups');
   });
 
-  test('UIC-FIELD-6.3 UIC-FIELD-6.4 opens the field menu from a right click, the keyboard and its button', async ({
+  test('UIC-FIELD-6.3 UIC-FIELD-6.4 opens the field menu from a right click and the keyboard and returns focus to the control', async ({
     page,
     lab,
   }) => {
@@ -221,11 +221,13 @@ test.describe('Field lab', () => {
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(input).toHaveValue('');
     await expect(output).toHaveText('clear');
+    // Opened from outside the field, the menu returns focus to its control.
+    await expect(input).toBeFocused();
 
     await input.focus();
     await page.keyboard.press('Shift+F10');
     // Clear is disabled once the field is empty, so focus starts on the next entry.
-    await expect(page.getByRole('menuitem', { name: 'Set to default' })).toBeFocused();
+    await expect(page.getByRole('menuitem', { name: 'Reset' })).toBeFocused();
     await expect(page.getByRole('menuitem', { name: 'Clear' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -233,14 +235,19 @@ test.describe('Field lab', () => {
     await page.keyboard.press('Escape');
     await expect(input).toBeFocused();
 
-    await menuField.getByRole('button', { name: 'Fruit actions' }).click();
+    // Reset puts back the committed value, Set to default the default.
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('menuitem', { name: 'Reset' }).click();
+    await expect(input).toHaveValue('Pear');
+    await expect(output).toHaveText('reset');
+    await page.keyboard.press('Shift+F10');
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(input).toHaveValue('Apple');
     await expect(output).toHaveText('set-default');
-    // Focus is back on the field's menu button, inside the field, so the chord undoes it.
-    await expect(menuField.getByRole('button', { name: 'Fruit actions' })).toBeFocused();
+    // Focus is back on the control, inside the field, so the chord undoes it.
+    await expect(input).toBeFocused();
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(input).toHaveValue('');
+    await expect(input).toHaveValue('Pear');
   });
 
   test('UIC-FIELD-3.8 settles a check that throws, then checks the next value', async ({
@@ -303,16 +310,13 @@ test.describe('Field lab', () => {
     await input.focus();
     await page.keyboard.press('Tab');
     await expect(parts.getByRole('button', { name: 'Help for Town' })).toBeFocused();
-    await page.keyboard.press('Tab');
-    const menuButton = parts.getByRole('button', { name: 'Town actions' });
-    await expect(menuButton).toBeFocused();
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('Shift+Tab');
+    await expect(input).toBeFocused();
+    // A required field leaves Clear out, and Reset waits for an edit, so Help takes focus.
+    await page.keyboard.press('Shift+F10');
     await expect(page.getByRole('menuitem', { name: 'Help' })).toBeFocused();
     await expect(parts).toHaveAttribute('data-focused', 'true');
     await page.keyboard.press('Escape');
-    await expect(menuButton).toBeFocused();
-    await page.keyboard.press('Shift+Tab');
-    await page.keyboard.press('Shift+Tab');
     await expect(input).toBeFocused();
     await expect(parts).toHaveAttribute('data-focused', 'true');
     await expect(parts).not.toHaveAttribute('data-touched');

@@ -142,7 +142,6 @@ function Unset() {
           value={value}
           onChange={setValue}
           unsetLabel="Inherited"
-          menu={['clear']}
           data-lab-field={`unset-${variant}`}
         />
       ))}
@@ -182,7 +181,7 @@ function Saved() {
         defaultValue={false}
         trueLabel="Fresh"
         falseLabel="Stale"
-        menu={['set-default']}
+        menu={['reset', 'set-default']}
         data-lab-field="dirty-toggle"
       />
       <button type="submit">Save</button>

@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Form } from '../form/form.js';
 import { ChoiceGroup, Choice } from './choice-group.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 const toppings: Array<{ value: string; label: string; isDisabled?: boolean }> = [
   { value: 'basil', label: 'Basil' },
@@ -157,12 +158,7 @@ describe('ChoiceGroup', () => {
   it('UIC-CHOICE-GROUP-4.5 shows dirty state, restores, undoes and refuses changes while locked', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
-      <ChoiceGroup
-        selectionMode="multiple"
-        label="Toppings"
-        committedValue={['basil']}
-        menu={['clear']}
-      >
+      <ChoiceGroup selectionMode="multiple" label="Toppings" committedValue={['basil']}>
         {toppings.map(({ label, ...option }) => (
           <Choice key={option.value} {...option}>
             {label}
@@ -177,8 +173,7 @@ describe('ChoiceGroup', () => {
     expect(screen.getByRole('checkbox', { name: 'Basil' })).toHaveFocus();
     await user.keyboard('{Control>}z{/Control}');
     expect(screen.getByRole('checkbox', { name: 'Olives' })).toBeChecked();
-    await user.click(screen.getByRole('button', { name: 'Toppings actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, screen.getByRole('checkbox', { name: 'Olives' }), 'Clear');
     expect(
       screen.getAllByRole('checkbox').filter((box) => (box as HTMLInputElement).checked),
     ).toEqual([]);

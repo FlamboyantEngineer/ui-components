@@ -302,7 +302,6 @@ function PlainInput() {
       <SampleField
         label="Filter text"
         options={{ defaultValue: 'Plum', emptyValue: '', tracksChanges: false, onChange: setText }}
-        menu={['clear']}
         data-lab-field="plain"
       />
       <LabOutput name="Plain value">{text}</LabOutput>
@@ -365,6 +364,7 @@ function UndoToolbar() {
 
 const menu: FieldMenuEntry[] = [
   'clear',
+  'reset',
   'set-default',
   'help',
   { type: 'separator', id: 'rule' },
@@ -380,7 +380,7 @@ function MenuField() {
         options={{ defaultValue: 'Apple', committedValue: 'Pear', emptyValue: '' }}
         menu={menu}
         onMenuAction={(key: Key) => setLast(String(key))}
-        help="Right-click the field or use its menu button."
+        help="Right-click the field, or press Shift+F10 in it, for its menu."
         data-lab-field="menu"
       />
       <LabOutput name="Menu">{last}</LabOutput>
@@ -474,7 +474,7 @@ mountLab(
             Imported
           </Badge>
         }
-        menu={['clear', 'help']}
+        menu={['clear', 'reset', 'help']}
         data-lab-field="parts"
       />
     </LabSection>
@@ -500,7 +500,10 @@ mountLab(
     >
       <UndoToolbar />
     </LabSection>
-    <LabSection title="Field menu" description="Clear, Set to default, Help and a custom entry.">
+    <LabSection
+      title="Field menu"
+      description="The field's context menu: right-click the field, long-press it, or press Shift+F10 in it. Clear empties it, Reset puts back the committed value (Pear), Set to default puts back the default (Apple); Help and a custom entry follow. The text of the input keeps the browser's own menu on a right-click."
+    >
       <MenuField />
     </LabSection>
     <LabSection title="String rules" description="Length, format and trimming rules.">
@@ -517,13 +520,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving inside a field"
-      description="A required field in blur mode: Tab to its help and menu buttons, or open its menu, and the message waits until focus leaves the field."
+      description="A required field in blur mode: Tab to its help button, or open its menu with Shift+F10, and the message waits until focus leaves the field."
     >
       <SampleField
         label="Town"
         options={{ defaultValue: '', isRequired: true, validationMode: 'blur' }}
         help="The town the order ships to."
-        menu={['help']}
+        menu={['clear', 'reset', 'help']}
         data-lab-field="blur-parts"
       />
     </LabSection>

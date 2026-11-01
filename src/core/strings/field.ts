@@ -33,6 +33,8 @@ export interface FieldStrings {
   problemSeverityLead: (severity: 'error' | 'warning') => string;
   /** A field menu action that puts the field's default value back. */
   setDefault: string;
+  /** A field menu action that puts the field's last committed (saved) value back. */
+  resetValue: string;
   /** The message of a required field left empty. */
   valueRequired: string;
   /** The message of a field whose value is being checked. */

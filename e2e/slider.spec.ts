@@ -172,7 +172,7 @@ test.describe('Slider lab', () => {
     await expect(volume).toBeFocused();
     await page.keyboard.press('ControlOrMeta+z');
     await expect(volume).toHaveAttribute('aria-valuetext', '41');
-    await saved.getByRole('button', { name: 'Volume actions' }).click();
+    await saved.locator('.ui-field__label', { hasText: 'Volume' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(volume).toHaveAttribute('aria-valuetext', '50');
 

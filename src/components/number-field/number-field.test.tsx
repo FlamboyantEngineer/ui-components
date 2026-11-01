@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { NumberField, type NumberFieldProps } from './number-field.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -346,11 +347,9 @@ describe('NumberField', () => {
     const user = userEvent.setup();
     const { container } = render(<SavedField defaultValue={2} menu={['clear', 'set-default']} />);
     const input = screen.getByRole('textbox');
-    await user.click(screen.getByRole('button', { name: 'Weight actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, input, 'Clear');
     expect(input).toHaveValue('');
-    await user.click(screen.getByRole('button', { name: 'Weight actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
+    await chooseFieldMenuItem(user, input, 'Set to default');
     expect(input).toHaveValue('2');
     expect(root(container)).not.toHaveAttribute('data-dirty');
   });

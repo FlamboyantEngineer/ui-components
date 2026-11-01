@@ -112,7 +112,9 @@ test.describe('Text Field lab', () => {
     await page.keyboard.press('ControlOrMeta+Shift+z');
     await expect(input).toHaveValue('Apple');
 
-    await dirty.getByRole('button', { name: 'Favourite fruit actions' }).click();
+    await dirty
+      .locator('.ui-field__label', { hasText: 'Favourite fruit' })
+      .click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(input).toHaveValue('');
     // The input's own text keeps the browser's menu; the rest of the field opens the field menu.

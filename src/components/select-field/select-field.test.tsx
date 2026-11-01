@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
@@ -246,11 +247,9 @@ describe('SelectField field', () => {
         menu={['clear', 'set-default']}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, trigger('Pear Fruit'), 'Clear');
     expect(trigger('Select an option Fruit')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
+    await chooseFieldMenuItem(user, trigger('Select an option Fruit'), 'Set to default');
     expect(trigger('Pear Fruit')).toBeInTheDocument();
   });
 
@@ -267,8 +266,7 @@ describe('SelectField field', () => {
         onCommit={onCommit}
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, trigger(), 'Clear');
     expect(onCommit).toHaveBeenCalledWith([]);
   });
 

@@ -142,7 +142,7 @@ test.describe('Choice Group lab', () => {
     await page.keyboard.press('ControlOrMeta+z');
     await expect(saved.getByRole('radio', { name: 'Apple' })).toBeChecked();
     await expect(saved.getByRole('radio', { name: 'Apple' })).toBeFocused();
-    await saved.getByRole('button', { name: 'Snack actions' }).click();
+    await saved.locator('.ui-field__label', { hasText: 'Snack' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(saved.getByRole('radio', { checked: true })).toHaveCount(0);
     await expect(output(page, 'Snack')).toHaveText('none');

@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { Form } from '../form/form.js';
 import { PinInput, type PinInputProps } from './pin-input.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -685,7 +686,7 @@ describe('PinInput', () => {
 
   it('UIC-PIN-INPUT-2.7 shows dirty state, restores, undoes and clears from the menu', async () => {
     const user = userEvent.setup();
-    const { container } = render(<SavedCode menu={['clear']} />);
+    const { container } = render(<SavedCode />);
     await user.click(cells()[3] as HTMLElement);
     await user.keyboard('9');
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('1239');
@@ -698,8 +699,7 @@ describe('PinInput', () => {
     expect(values()).toEqual(['1', '2', '3', '']);
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
     expect(values()).toEqual(['1', '2', '3', '9']);
-    await user.click(screen.getByRole('button', { name: 'Code actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, cells()[0] as HTMLElement, 'Clear');
     expect(values()).toEqual(['', '', '', '']);
   });
 });

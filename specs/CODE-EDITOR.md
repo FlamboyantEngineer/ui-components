@@ -159,9 +159,9 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-4.5 - Position
 
-The list shall open in a non-modal React Aria popover (the Completion List's root, also `ui-code-editor__popover`) on the `dropdown` overlay layer, at a caret marker (`ui-code-editor__caret`) placed in the highlighted copy while the list is open: below the caret line, or above it when there is more room there, kept inside the viewport. It follows the caret as the reader types and as the text area scrolls.
+The list shall open in a non-modal React Aria popover (the Completion List's root, also `ui-code-editor__popover`) on the `dropdown` overlay layer, at a caret marker (`ui-code-editor__caret`) placed in the highlighted copy while the list is open: below the caret line, or above it when there is more room there, kept inside the viewport. It follows the caret as the reader types and as the text area scrolls, staying open when the text area scrolls itself to keep the caret in view and the highlighted copy scrolls with it, at every size.
 
-Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/code-editor/code-layers.tsx`
+Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/use-mirror-scroll-hold.ts`, `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.6 - Completion sources

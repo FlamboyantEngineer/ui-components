@@ -156,11 +156,34 @@ function MultipleChoice({ propagation }: { propagation: boolean }) {
         getTextValue={getTextValue}
         selectionMode="multiple"
         selectionPropagation={propagation}
+        selectableBranches={!propagation}
         value={value}
         onChange={setValue}
         data-lab-field={name}
       />
       <Output name={name} value={value.join(', ') || 'none'} />
+    </>
+  );
+}
+
+/** A press on a branch opens it; only leaves are chosen, unless branches are selectable. */
+function BranchChoice({ selectable }: { selectable: boolean }) {
+  const [value, setValue] = useState<Key | null>(null);
+  const name = selectable ? 'branches' : 'leaves';
+  return (
+    <>
+      <SelectField
+        mode="tree"
+        label={selectable ? 'Area' : 'City'}
+        items={places}
+        getTextValue={getTextValue}
+        selectableBranches={selectable}
+        valueDisplay="path"
+        value={value}
+        onChange={setValue}
+        data-lab-field={name}
+      />
+      <Output name={name} value={String(value)} />
     </>
   );
 }
@@ -242,6 +265,7 @@ function GrowingBranch() {
         label="Team"
         items={[{ id: 'team', name: 'Whole team', children }]}
         getTextValue={getTextValue}
+        selectableBranches
         value={value}
         onChange={setValue}
         data-lab-field="growing"
@@ -280,16 +304,23 @@ export const treeChoices = (
     </LabSection>
     <LabSection
       title="Tree choices: Single choice"
-      description="Search keeps each match's ancestors; Down moves from the search to the tree; a press, Enter or Space chooses and closes."
+      description="Search keeps each match's ancestors; Down moves from the search to the tree; a press, Enter or Space on a leaf chooses it and closes, and on a branch opens or closes it."
     >
       <SingleChoice />
     </LabSection>
     <LabSection
       title="Tree choices: Multiple choice"
-      description="Checkboxes cascade through a branch, or choose each row on its own; chips remove a branch or a row."
+      description="Cascading checkboxes choose a branch's leaves, and a branch whose leaves are all chosen reads as one chip; without cascading, each row, branches included, is chosen on its own. Chips remove a branch or a row."
     >
       <MultipleChoice propagation />
       <MultipleChoice propagation={false} />
+    </LabSection>
+    <LabSection
+      title="Tree choices: Branches and leaves"
+      description="A press on a branch opens or closes it, so only leaves are chosen; with selectableBranches, a press on an open branch chooses it."
+    >
+      <BranchChoice selectable={false} />
+      <BranchChoice selectable />
     </LabSection>
     <LabSection
       title="Tree choices: Primitive keys"

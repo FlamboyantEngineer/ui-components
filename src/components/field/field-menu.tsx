@@ -1,20 +1,20 @@
 'use client';
 
-import { CloseGlyph, HelpGlyph, RefreshGlyph } from '../../core/glyphs.js';
-import type { ReactElement } from 'react';
-import type { ControlSize, Key } from '../../core/props.js';
+import { CloseGlyph, HelpGlyph, RefreshGlyph, RestoreGlyph } from '../../core/glyphs.js';
+import { useEffect, useRef } from 'react';
+import { getComposedActiveElement } from '../../utils/focus-target.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import { ContextMenuTrigger } from '../context-menu/context-menu.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import {
+  ContextMenu,
+  useContextMenuTarget,
+  useMenuController,
+  type ContextMenuTargetProps,
+} from '../context-menu/context-menu.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
+import type { FieldMenuEntry } from './field-menu-entries.js';
 import type { FieldState } from './field-state.js';
-
-/** A built-in field menu action: Clear, Set to default or Help. */
-export type FieldMenuAction = 'clear' | 'set-default' | 'help';
-
-/** A built-in action by name, or any menu entry. */
-export type FieldMenuEntry = FieldMenuAction | MenuEntry;
 
 export interface FieldMenuModel {
   /** The accessible name of both menus. */
@@ -28,9 +28,19 @@ function toMenuEntry(
   entry: FieldMenuEntry,
   state: FieldState<unknown>,
   strings: UiStrings,
-): MenuEntry {
+): MenuEntry | null {
   if (entry === 'clear') {
+    // A field that can never be cleared does not offer it.
+    if (!state.isClearable) return null;
     return { id: entry, label: strings.clear, icon: CloseGlyph, isDisabled: !state.canClear };
+  }
+  if (entry === 'reset') {
+    return {
+      id: entry,
+      label: strings.resetValue,
+      icon: RestoreGlyph,
+      isDisabled: !state.isDirty,
+    };
   }
   if (entry === 'set-default') {
     return {
@@ -51,57 +61,62 @@ function toMenuEntry(
 export function useFieldMenu(
   state: FieldState<unknown>,
   label: string,
-  options: { menu: readonly FieldMenuEntry[]; onMenuAction?: ((key: Key) => void) | undefined },
+  options: {
+    menu: readonly FieldMenuEntry[];
+    onMenuAction?: ((key: Key) => void) | undefined;
+  },
 ): FieldMenuModel {
   const strings = useUiStrings();
+  const entries = options.menu
+    .map((entry) => toMenuEntry(entry, state, strings))
+    .filter((entry) => entry !== null);
   return {
     label: strings.fieldActions(label),
-    entries: options.menu.map((entry) => toMenuEntry(entry, state, strings)),
-    isDisabled: state.isDisabled || options.menu.length === 0,
+    entries,
+    isDisabled: state.isDisabled || entries.length === 0,
     onAction(key) {
-      if (key === 'clear') state.clear();
-      if (key === 'set-default') state.setToDefault();
+      const apply = { clear: state.clear, reset: state.restore, 'set-default': state.setToDefault };
+      if (key === 'clear' || key === 'reset' || key === 'set-default') apply[key]();
       options.onMenuAction?.(key);
     },
   };
 }
 
-/** The field's menu button. */
-export function FieldMenuButton({
-  model,
-  size,
-  className,
-}: {
-  model: FieldMenuModel;
-  size: ControlSize;
-  className: string;
-}) {
-  return (
-    <DropdownMenu
-      iconOnly
-      label={model.label}
-      size={size}
-      menuSize="md"
-      className={className}
-      items={model.entries}
-      onAction={model.onAction}
-      isDisabled={model.isDisabled}
-    />
-  );
-}
-
-/** Opens the field menu on a secondary click, a long touch, Shift+F10 or the Context Menu key. */
-export function FieldContextMenu({
-  model,
-  children,
-}: {
-  model: FieldMenuModel;
-  children: ReactElement;
-}) {
-  return (
-    <ContextMenuTrigger isDisabled={model.isDisabled} opensFromTextKeys aria-label={model.label}>
-      {children}
+/**
+ * Makes the field root the field menu's target: a secondary click or long touch on it, or
+ * Shift+F10 or the Context Menu key in it, opens the menu. The root renders the returned menu inside
+ * it, so focus in the open menu stays in the field and does not commit its draft. A secondary click
+ * from outside the field focuses the control first, so the menu returns focus there on close.
+ */
+export function useFieldContextMenu(
+  model: FieldMenuModel,
+  own: ContextMenuTargetProps & { focusControl: () => void },
+) {
+  const controller = useMenuController();
+  const targetRef = useRef<HTMLElement | null>(null);
+  const { focusControl, ...ownProps } = own;
+  const targetProps = useContextMenuTarget({
+    controller,
+    isDisabled: model.isDisabled,
+    opensFromTextKeys: true,
+    own: {
+      ...ownProps,
+      onContextMenu(event) {
+        const root = event.currentTarget;
+        const isOpening = !model.isDisabled && !event.defaultPrevented;
+        if (isOpening && !root.contains(getComposedActiveElement(root))) focusControl();
+      },
+    },
+    targetRef,
+  });
+  useEffect(() => {
+    if (model.isDisabled) controller.close();
+  }, [model.isDisabled, controller]);
+  // A field with nothing to offer mounts no menu.
+  const menu = model.isDisabled ? null : (
+    <ContextMenu controller={controller} triggerRef={targetRef} aria-label={model.label}>
       <Menu items={model.entries} onAction={model.onAction} />
-    </ContextMenuTrigger>
+    </ContextMenu>
   );
+  return { targetProps, menu };
 }

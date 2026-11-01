@@ -135,6 +135,8 @@ export interface FieldState<T> {
   validationBehavior: FieldValidationBehavior;
   canUndo: boolean;
   canRedo: boolean;
+  /** The field may ever be cleared: it has an empty value and is not required. */
+  isClearable: boolean;
   canClear: boolean;
   canSetDefault: boolean;
   /** Changes the value while editing. */
@@ -342,7 +344,8 @@ export function useFieldState<T>(
     setValue(target);
     commit();
   };
-  const canClear = !options.isRequired && canApply(value, options.emptyValue, lock);
+  const isClearable = !options.isRequired && options.emptyValue !== undefined;
+  const canClear = isClearable && canApply(value, options.emptyValue, lock);
 
   const state = {
     value,
@@ -359,6 +362,7 @@ export function useFieldState<T>(
     validationBehavior: options.validationBehavior ?? scope.validationBehavior ?? 'aria',
     canUndo: !isLocked && canStepFieldHistory(history, -1),
     canRedo: !isLocked && canStepFieldHistory(history, 1),
+    isClearable,
     canClear,
     canSetDefault: canApply(value, options.defaultValue, lock),
     setValue,

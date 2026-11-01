@@ -419,6 +419,7 @@
   "problemCount": "{errors, plural, =0 {{warnings, plural, =0 {No problems} one {# warning} other {# warnings}}} one {# error{warnings, plural, =0 {} one {, # warning} other {, # warnings}}} other {# errors{warnings, plural, =0 {} one {, # warning} other {, # warnings}}}}",
   "problemSeverityLead": "{severity, select, error {Error:} other {Warning:}}",
   "setDefault": "Set to default",
+  "resetValue": "Reset",
   "valueRequired": "A value is required.",
   "validating": "Validating",
   "tooShort": "{minLength, plural, one {Use at least # character.} other {Use at least # characters.}}",

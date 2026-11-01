@@ -130,10 +130,10 @@ test.describe('Number Field lab', () => {
     await expect(input).toHaveValue('4');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(input).toHaveValue('5');
-    await dirty.getByRole('button', { name: 'Servings actions' }).click();
+    await dirty.locator('.ui-field__label', { hasText: 'Servings' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(input).toHaveValue('');
-    await dirty.getByRole('button', { name: 'Servings actions' }).click();
+    await dirty.locator('.ui-field__label', { hasText: 'Servings' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(input).toHaveValue('2');
     await page.getByRole('button', { name: 'Save', exact: true }).click();

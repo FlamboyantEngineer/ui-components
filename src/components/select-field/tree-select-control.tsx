@@ -12,6 +12,7 @@ import { Tag, TagGroup } from '../tag-group/tag-group.js';
 import type { TreeItemData } from '../tree/tree.js';
 import {
   getAncestorKeys,
+  closeChosenBranches,
   getTopChosenKeys,
   indexTreeItems,
   orderChosenKeys,
@@ -99,7 +100,10 @@ function useChosenNodes<T extends TreeItemData>(props: TreeSelectControlProps<T>
   useLayoutEffect(() => {
     if (isUnsettled) setValue(keys);
   });
-  const shown = cascade ? getTopChosenKeys(keys, index) : keys;
+  // Without selectable branches the value holds leaves only; a branch whose loaded leaves are all
+  // chosen still reads as chosen, as one row and one chip.
+  const display = cascade && !props.selectableBranches ? closeChosenBranches(keys, index) : keys;
+  const shown = cascade ? getTopChosenKeys(display, index) : keys;
   const describe = { index, getTextValue: props.getTextValue, display: props.valueDisplay };
   const commit = (next: Iterable<Key>) => {
     const ordered = orderChosenKeys(next, index);
@@ -111,6 +115,7 @@ function useChosenNodes<T extends TreeItemData>(props: TreeSelectControlProps<T>
   return {
     index,
     keys,
+    display,
     cascade,
     getChildren,
     chosen,
@@ -199,9 +204,10 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
             onLoadChildren={props.onLoadChildren}
             isMultiple={isMultiple}
             getChildren={nodes.getChildren}
-            keys={nodes.keys}
+            keys={nodes.display}
             index={nodes.index}
             cascade={nodes.cascade}
+            selectableBranches={props.selectableBranches ?? false}
             onChoose={(keys) => {
               nodes.commit(keys);
               if (!isMultiple) setOpen(false);
