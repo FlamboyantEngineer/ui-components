@@ -632,3 +632,29 @@ test('UIC-COMBOBOX-1.1 keeps the list button at the trailing edge, centred, besi
   await input.press('Escape');
   await lab.expectAccessible();
 });
+
+test('UIC-COMBOBOX-5.5 ends the list header 6px below its field, populated or empty', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('combobox');
+  const input = section(page, 'Filter in the list header').getByRole('combobox', {
+    name: 'City by first letters',
+  });
+  await input.click();
+  await page.keyboard.press('ArrowDown');
+  const header = page.locator('.ui-combobox__list-header');
+  const gapBelow = () =>
+    header.evaluate((element) => {
+      const control = element.querySelector('.ui-field__control')?.getBoundingClientRect();
+      const box = element.getBoundingClientRect();
+      // The header's bottom border is 1px.
+      return box.bottom - 1 - (control?.bottom ?? 0);
+    });
+  expect(await gapBelow()).toBeCloseTo(6, 0);
+  // No city starts with "x": the empty list keeps the same header.
+  await page.getByRole('textbox', { name: 'Starts with' }).fill('x');
+  await expect(page.getByRole('listbox').getByRole('option', { name: 'Paris' })).toHaveCount(0);
+  await expect(header).toBeVisible();
+  expect(await gapBelow()).toBeCloseTo(6, 0);
+});

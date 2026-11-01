@@ -159,6 +159,15 @@
   border-bottom: 1px solid var(--ref-border);
 }
 
+/*
+ * A field in the header keeps no empty message line, so the header ends 6px below the control; a
+ * message that shows still takes its line.
+ */
+.ui-combobox__list-header .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}
+
 /* The listbox scrolls inside the popover, whose height React Aria limits to the room in view. */
 .ui-combobox__popover {
   display: flex;
