@@ -8,6 +8,7 @@ import { Link } from '../link/link.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { Separator } from '../separator/separator.js';
 import { TextMatch } from '../text-match/text-match.js';
+import type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
 import type {
   MarkdownBlock,
   MarkdownInline,
@@ -18,16 +19,17 @@ import type {
 
 export interface RenderContext {
   /** The caller's `renderNode`. */
-  renderNode: ((node: MarkdownNode, children: ReactNode) => ReactNode) | undefined;
+  renderNode: MarkdownRenderNode | undefined;
   headingIdPrefix: string | undefined;
   headingIds: ReadonlySet<string>;
 }
 
 /**
- * A node to render, whether it sits directly in an item of a tight list, and for a top-level block
- * its position in the document, which keys it.
+ * A node to render, whether it sits directly in an item of a tight list, whether it sits inside a
+ * link or a task item's label, and for a top-level block its position in the document, which keys
+ * it.
  */
-interface RenderEntry {
+interface RenderEntry extends MarkdownNodePlace {
   node: MarkdownNode;
   isTight: boolean;
   key?: number;
@@ -60,19 +62,30 @@ function splitTask(node: MarkdownListItem) {
 
 /**
  * The entries a node renders its children from. A task item renders its label's inlines in place of
- * its first paragraph, then its other blocks, so every node renders once.
+ * its first paragraph, then its other blocks, so every node renders once. A link's content and a
+ * task item's label are interactive places, as is everything inside them.
  */
-function listChildEntries({ node, isTight }: RenderEntry): RenderEntry[] | undefined {
+function listChildEntries({
+  node,
+  isTight,
+  isInteractive,
+}: RenderEntry): RenderEntry[] | undefined {
   if (!('children' in node)) return undefined;
   if (node.type === 'list') {
-    return node.children.map((item) => ({ node: item, isTight: node.tight }));
+    return node.children.map((item) => ({ node: item, isTight: node.tight, isInteractive }));
   }
   if (node.type !== 'listItem') {
-    return node.children.map((child) => ({ node: child, isTight: false }));
+    const inside = isInteractive || node.type === 'link';
+    return node.children.map((child) => ({ node: child, isTight: false, isInteractive: inside }));
+  }
+  if (node.checked === null) {
+    return node.children.map((child) => ({ node: child, isTight, isInteractive }));
   }
   const { label, blocks } = splitTask(node);
-  const children = node.checked === null ? node.children : [...label, ...blocks];
-  return children.map((child) => ({ node: child, isTight }));
+  return [
+    ...label.map((child) => ({ node: child, isTight, isInteractive: true })),
+    ...blocks.map((child) => ({ node: child, isTight, isInteractive })),
+  ];
 }
 
 function renderEntries(entries: RenderEntry[], context: RenderContext): ReactNode[] {
@@ -84,7 +97,7 @@ function renderEntries(entries: RenderEntry[], context: RenderContext): ReactNod
 /** Renders nodes from the leaves up, without recursion, so deep nesting cannot overflow the stack. */
 function renderAll(nodes: readonly MarkdownNode[], context: RenderContext): ReactNode[] {
   return renderEntries(
-    nodes.map((node) => ({ node, isTight: false })),
+    nodes.map((node) => ({ node, isTight: false, isInteractive: false })),
     context,
   );
 }
@@ -95,13 +108,16 @@ export function renderMarkdownBlock(
   index: number,
   context: RenderContext,
 ): ReactNode {
-  return renderEntries([{ node: block, isTight: false, key: index }], context)[0];
+  return renderEntries(
+    [{ node: block, isTight: false, isInteractive: false, key: index }],
+    context,
+  )[0];
 }
 
 function renderNode(entry: RenderEntry, mapped: ReactNode[], context: RenderContext): ReactNode {
   const { node } = entry;
   const children = 'children' in node ? mapped : null;
-  const custom = context.renderNode?.(node, children);
+  const custom = context.renderNode?.(node, children, { isInteractive: entry.isInteractive });
   if (custom !== undefined) return custom;
   return isInline(node)
     ? renderInline(node, children, context)

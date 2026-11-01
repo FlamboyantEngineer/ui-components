@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { MarkdownNode } from '../markdown/markdown.js';
+import type { MarkdownNodePlace } from '../markdown/markdown-place.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { ChatCitation } from './chat-citation.js';
 import type { ChatSource } from './chat-source-summary.js';
@@ -35,13 +36,14 @@ export function splitCitationMarkers(text: string, count: number): CitationPiece
 
 /**
  * Creates a `renderNode` for `Markdown` that draws the `[n]` markers in text as `ChatCitation`s of
- * `sources` (the first source is `[1]`). Markers of unknown numbers, and markers in code, stay text.
- * Create it once per sources array (for example with `useMemo`), so a streaming `Markdown` keeps
- * its finished blocks.
+ * `sources` (the first source is `[1]`). Markers of unknown numbers, markers in code, and markers in
+ * a link or a task label, where a citation's link or button must not nest, stay text. Create it once
+ * per sources array (for example with `useMemo`), so a streaming `Markdown` keeps its finished
+ * blocks.
  */
 export function createCitationOverride(sources: readonly ChatSource[]) {
-  return (node: MarkdownNode): ReactNode => {
-    if (node.type !== 'text') return undefined;
+  return (node: MarkdownNode, _children?: ReactNode, place?: MarkdownNodePlace): ReactNode => {
+    if (node.type !== 'text' || place?.isInteractive) return undefined;
     const pieces = splitCitationMarkers(node.text, sources.length);
     if (pieces.every((piece) => typeof piece === 'string')) return undefined;
     return pieces.flatMap((piece, at) =>

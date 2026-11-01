@@ -86,6 +86,11 @@ test.describe('Chat Sources lab', () => {
     await expect(answer.locator('.ui-markdown .ui-chat-citation')).toHaveCount(5);
     await expect(answer.locator('.ui-markdown')).toContainText('such as [7], stays text');
     await expect(answer.getByText('list[1]')).toHaveJSProperty('tagName', 'CODE');
+    const link = answer.getByRole('link', { name: /^the timetable \[2\]/ });
+    await expect(link).toHaveAttribute('href', 'https://example.com/timetable');
+    await expect(link.locator('a, button')).toHaveCount(0);
+    await expect(answer.locator('label a, label button')).toHaveCount(0);
+    await expect(answer.getByRole('checkbox', { name: 'Booked the train [2]' })).toBeChecked();
     await expect(answer.getByRole('list', { name: '3 sources' })).toBeVisible();
     await lab.expectAccessible('[data-lab-demo="answer"]');
   });
