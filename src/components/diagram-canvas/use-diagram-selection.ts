@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 
@@ -25,7 +26,29 @@ function toSelection(keys: Iterable<Key> | 'all' | undefined): Selection | undef
   return keys === 'all' ? 'all' : new Set(keys as Iterable<Key>);
 }
 
-/** The selected nodes and edges, controlled or not, in the canvas's selection mode. */
+const noKeys: ReadonlySet<Key> = new Set();
+
+/**
+ * The selection the canvas acts on: none in `none` mode, the nodes and edges it holds that still
+ * exist, and of those only the first in `single` mode (for `'all'`, the first node).
+ */
+function toEffective(
+  value: Selection,
+  selectionMode: SelectionMode,
+  allKeys: readonly Key[],
+): ReadonlySet<Key> {
+  if (selectionMode === 'none') return noKeys;
+  const eligible = new Set(allKeys);
+  const keys = value === 'all' ? allKeys : [...value].filter((key) => eligible.has(key));
+  return new Set(selectionMode === 'single' ? keys.slice(0, 1) : keys);
+}
+
+/**
+ * The selected nodes and edges, controlled or not, in the canvas's selection mode. The canvas shows
+ * and acts on the effective selection only. The selection it holds, or its owner holds, is left as
+ * it is and reported to nobody: it returns in full when the mode widens again, and the next
+ * selection change starts from the effective one.
+ */
 export function useDiagramSelection(options: DiagramSelectionOptions): DiagramSelection {
   const { selectionMode, allKeys } = options;
   const [value, setValue] = useControllableState<Selection>(
@@ -33,7 +56,10 @@ export function useDiagramSelection(options: DiagramSelectionOptions): DiagramSe
     toSelection(options.defaultSelectedKeys) ?? new Set(),
     options.onSelectionChange,
   );
-  const selected: ReadonlySet<Key> = value === 'all' ? new Set(allKeys) : value;
+  const selected = useMemo(
+    () => toEffective(value, selectionMode, allKeys),
+    [value, selectionMode, allKeys],
+  );
   const replace = (keys: readonly Key[]) => {
     if (selectionMode === 'none') return;
     const next = selectionMode === 'single' ? keys.slice(0, 1) : keys;

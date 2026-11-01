@@ -341,6 +341,56 @@ describe('DiagramCanvas nodes', () => {
     expect(status()).toHaveTextContent('1 item removed');
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.1 UIC-DIAGRAM-CANVAS-4.5 acts on the selection the current mode allows', async () => {
+    const onNodesChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    const props = {
+      onNodesChange,
+      onSelectionChange,
+      defaultSelectedKeys: ['valve', 'pump', 'e1'],
+    };
+    const { rerender } = render(<EditableDiagram {...props} selectionMode="multiple" />);
+    expect(node('Valve')).toHaveAttribute('data-selected', 'true');
+    expect(node('Pump')).toHaveAttribute('data-selected', 'true');
+
+    rerender(<EditableDiagram {...props} selectionMode="none" />);
+    expect(node('Valve')).not.toHaveAttribute('data-selected');
+    act(() => node('Pump').focus());
+    await userEvent.keyboard('{ArrowRight}');
+    const moved = requireDefined(onNodesChange.mock.calls.at(-1))[0] as typeof pipeNodes;
+    expect(moved.map(({ id, x }) => [id, x])).toEqual([
+      ['pump', 10],
+      ['valve', 300],
+      ['tank', 300],
+    ]);
+
+    rerender(<EditableDiagram {...props} selectionMode="single" />);
+    expect(node('Valve')).toHaveAttribute('data-selected', 'true');
+    expect(node('Pump')).not.toHaveAttribute('data-selected');
+    act(() => node('Valve').focus());
+    await userEvent.keyboard('{Delete}');
+    const left = requireDefined(onNodesChange.mock.calls.at(-1))[0] as typeof pipeNodes;
+    expect(left.map(({ id }) => id)).toEqual(['pump', 'tank']);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
+
+    rerender(<EditableDiagram {...props} selectionMode="multiple" />);
+    expect(node('Pump')).not.toHaveAttribute('data-selected');
+  });
+
+  it('UIC-DIAGRAM-CANVAS-4.1 shows a controlled selection in the current mode and keeps it whole', () => {
+    const { rerender } = render(
+      <EditableDiagram selectedKeys={['tank', 'gone', 'pump']} selectionMode="single" />,
+    );
+    expect(node('Tank')).toHaveAttribute('data-selected', 'true');
+    expect(node('Pump')).not.toHaveAttribute('data-selected');
+    rerender(<EditableDiagram selectedKeys="all" selectionMode="single" />);
+    expect(node('Pump')).toHaveAttribute('data-selected', 'true');
+    expect(node('Tank')).not.toHaveAttribute('data-selected');
+    rerender(<EditableDiagram selectedKeys={['tank', 'gone', 'pump']} selectionMode="multiple" />);
+    expect(node('Tank')).toHaveAttribute('data-selected', 'true');
+    expect(node('Pump')).toHaveAttribute('data-selected', 'true');
+  });
+
   it('UIC-DIAGRAM-CANVAS-4.5 moves focus to the previous node after the last, then to the viewport', async () => {
     const user = userEvent.setup();
     const { container } = render(<EditableDiagram />);
