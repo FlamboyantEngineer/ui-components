@@ -23,6 +23,7 @@ import { useCarriedFocus } from '../../utils/use-carried-focus.js';
 import { useHeldSelection } from '../../utils/use-held-selection.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
 import { renderTextKeyRow } from '../../utils/text-control-keys.js';
+import { CardSelectionContext, useCardSelectionSlot } from './card-selection.js';
 
 /** `grid` lines cards up in rows and columns; `waterfall` stacks cards of different heights in columns. */
 export type CardGridLayout = 'grid' | 'waterfall';
@@ -162,10 +163,21 @@ export function CardGrid<T extends object>({
   );
 }
 
+/** The item's content, offering its selection checkbox to the card it holds. */
+function CardGridItemContent({ checkbox, children }: { checkbox: ReactNode; children: ReactNode }) {
+  const { slot, isClaimed } = useCardSelectionSlot(checkbox);
+  return (
+    <>
+      {isClaimed ? null : checkbox}
+      <CardSelectionContext value={slot}>{children}</CardSelectionContext>
+    </>
+  );
+}
+
 /**
- * One item of a `CardGrid`, usually holding a `Card`. While the grid selects with toggles, it draws
- * a selection checkbox before its content; a render function receives the item's `isSelected` for
- * the card.
+ * One item of a `CardGrid`, usually holding a `Card`. While the grid selects with toggles, it has a
+ * selection checkbox: the card it holds draws it at the start of its header row, and content that
+ * is no card has it before it. A render function receives the item's `isSelected` for the card.
  */
 export function CardGridItem({ className, children, ...rest }: CardGridItemProps) {
   return (
@@ -176,12 +188,15 @@ export function CardGridItem({ className, children, ...rest }: CardGridItemProps
       render={renderTextKeyRow}
     >
       {({ selectionMode, selectionBehavior, isSelected }) => (
-        <>
-          {selectionMode !== 'none' && selectionBehavior === 'toggle' ? (
-            <Checkbox size="sm" slot="selection" className={itemHooks.slotClass('checkbox')} />
-          ) : null}
+        <CardGridItemContent
+          checkbox={
+            selectionMode !== 'none' && selectionBehavior === 'toggle' ? (
+              <Checkbox size="sm" slot="selection" className={itemHooks.slotClass('checkbox')} />
+            ) : null
+          }
+        >
           {typeof children === 'function' ? children({ isSelected }) : children}
-        </>
+        </CardGridItemContent>
       )}
     </GridListItem>
   );

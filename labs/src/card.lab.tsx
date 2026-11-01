@@ -14,6 +14,7 @@ import {
   CollapsibleRecords,
   CustomHeaderCard,
   ResizablePane,
+  TopRowGrid,
 } from './card-collapse-cases.js';
 import { RowMenu } from './row-menu.js';
 import { ShadowRootApp } from './shadow-root-host.js';
@@ -448,6 +449,13 @@ mountLab(
     </LabSection>
     <LabSection title="Collapsible cards in a selectable grid">
       <CollapsibleGrid />
+    </LabSection>
+    <LabSection
+      title="Header row in a selectable grid"
+      description="Each card's header row holds the selection checkbox, the badge, the title, the toggle and More, each in its own room; the actions follow on their own line. Narrow the grid: long titles shorten, then the cards turn compact and minimal, and nothing overlaps. The second grid is right to left."
+    >
+      <TopRowGrid initialWidth={560} />
+      <TopRowGrid dir="rtl" initialWidth={320} />
     </LabSection>
     <LabSection
       title="Inside a shadow root"

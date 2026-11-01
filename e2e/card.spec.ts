@@ -482,3 +482,64 @@ test('UIC-CARD-7.2 UIC-PORTAL-1.8 returns focus to More inside a shadow root', a
   await expect(more).toHaveAttribute('aria-expanded', 'false');
   await expect(more).toBeFocused();
 });
+
+test('UIC-CARD-6.3 UIC-CARD-5.3 keeps the header row controls apart at every width and direction', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('card');
+  type Box = { x: number; y: number; width: number; height: number };
+  const overlaps = (a: Box, b: Box) =>
+    a.x + a.width > b.x + 0.5 &&
+    b.x + b.width > a.x + 0.5 &&
+    a.y + a.height > b.y + 0.5 &&
+    b.y + b.height > a.y + 0.5;
+  const rowParts =
+    ':scope > :is(.ui-card-grid-item__checkbox, .ui-card__leading, .ui-card__toggle, .ui-card__more, .ui-card__abbreviation):not([hidden]), :scope > .ui-card__heading .ui-card__title';
+  const checkRows = async (demo: string, width: number | null) => {
+    const root = page.locator(`[data-lab-demo="${demo}"]`);
+    if (width !== null) {
+      const frame =
+        demo === 'pane' ? root.locator('[data-lab-pane]') : root.locator('> div').last();
+      await frame.evaluate((node, next) => {
+        (node as HTMLElement).style.width = `${next}px`;
+      }, width);
+    }
+    await root.scrollIntoViewIfNeeded();
+    const headers = root.locator('.ui-card__header');
+    await expect(headers.first()).toBeVisible();
+    for (const header of await headers.all()) {
+      const boxes = await header.evaluate((node, selector) => {
+        return [...node.querySelectorAll(selector)]
+          .map((part) => part.getBoundingClientRect())
+          .filter((rect) => rect.width > 0)
+          .map(({ x, y, width: w, height }) => ({ x, y, width: w, height }));
+      }, rowParts);
+      expect(boxes.length, `${demo} at ${width}`).toBeGreaterThanOrEqual(1);
+      for (const [index, box] of boxes.entries()) {
+        for (const other of boxes.slice(index + 1)) {
+          expect(overlaps(box, other), `${demo} at ${width}: ${JSON.stringify([box, other])}`).toBe(
+            false,
+          );
+        }
+      }
+    }
+  };
+  await checkRows('collapse-grid', null);
+  for (const width of [560, 400, 260, 160]) await checkRows('top-row', width);
+  await checkRows('top-row-rtl', null);
+  for (const width of [520, 300, 100]) await checkRows('pane', width);
+
+  const rtl = page.locator('[data-lab-demo="top-row-rtl"] .ui-card__header').first();
+  const checkbox = await rtl.locator('.ui-card-grid-item__checkbox').boundingBox();
+  const toggle = await rtl.locator('.ui-card__toggle').boundingBox();
+  if (!checkbox || !toggle) throw new Error('no layout');
+  expect(checkbox.x).toBeGreaterThan(toggle.x);
+
+  const grid = page.locator('[data-lab-demo="collapse-grid"]');
+  const row = grid.getByRole('row').first();
+  await row.getByRole('button', { name: /^Details/ }).click();
+  await expect(grid.locator('[data-lab-output="grid-selected"]')).toHaveText('none');
+  await row.locator('.ui-card-grid-item__checkbox').click();
+  await expect(grid.locator('[data-lab-output="grid-selected"]')).toHaveText('R4');
+});
