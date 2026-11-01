@@ -142,3 +142,12 @@ export function reflowDashboardLayout(
   );
   return inOrder(scaled, settle([...scaled].sort(byPosition)));
 }
+
+/**
+ * How many columns of at least `minWidth` fit across `width` with `gap` between each two, at least
+ * one. A measurement a hair short of a whole fit, as fractional layout gives, still fits.
+ */
+export function fitColumns(width: number, minWidth: number, gap: number): number {
+  const fit = Math.floor((width + gap) / (minWidth + gap) + 1e-6);
+  return Math.max(1, fit);
+}

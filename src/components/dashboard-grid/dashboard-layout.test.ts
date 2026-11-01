@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  fitColumns,
   normalizeDashboardLayout,
   placeDashboardItem,
   reflowDashboardLayout,
@@ -65,5 +66,17 @@ describe('dashboard layouts', () => {
       ['a', 0, 0, 1, 2],
       ['b', 0, 2, 1, 2],
     ]);
+  });
+
+  it('UIC-DASHBOARD-GRID-3.1 counts the gaps between the columns that fit', () => {
+    // Six 100 pixel columns and five 12 pixel gaps need 660 pixels.
+    expect(fitColumns(600, 100, 12)).toBe(5);
+    expect(fitColumns(660, 100, 12)).toBe(6);
+    expect(fitColumns(659.5, 100, 12)).toBe(5);
+    // A measurement a hair short of a whole fit, as fractional layout gives, still fits.
+    expect(fitColumns(659.9999999, 100, 12)).toBe(6);
+    expect(fitColumns(600, 100, 0)).toBe(6);
+    expect(fitColumns(599, 100, 0)).toBe(5);
+    expect(fitColumns(40, 100, 12)).toBe(1);
   });
 });

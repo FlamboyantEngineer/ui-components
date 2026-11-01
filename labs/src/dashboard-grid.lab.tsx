@@ -43,6 +43,7 @@ const smallTitles = new Map<Key, string>([
 ]);
 
 const frame = (width: number): CSSProperties => ({ width });
+const frameWidths = { wide: 360, tight: 320, narrow: 140 } as const;
 
 function TileContent({ id }: { id: string }) {
   switch (id) {
@@ -207,12 +208,12 @@ mountLab(
     </LabSection>
     <LabSection
       title="States"
-      description="Reading and editing a small grid on three columns with numeric and text IDs kept distinct, and the same grid narrow enough to reflow onto one column, read only."
+      description="Reading and editing a small grid on three columns with numeric and text IDs kept distinct; at 320 pixels three 100 pixel columns and their two 12 pixel gaps no longer fit, so it reflows onto two columns, and narrower onto one, read only."
     >
       <StateMatrix
-        axes={{ mode: ['reading', 'editing'], width: ['wide', 'narrow'] }}
+        axes={{ mode: ['reading', 'editing'], width: ['wide', 'tight', 'narrow'] }}
         render={({ mode, width }) => (
-          <div style={frame(width === 'wide' ? 360 : 140)}>
+          <div style={frame(frameWidths[width])}>
             <DashboardGrid
               aria-label={`${mode} ${width} grid`}
               defaultLayout={small}
