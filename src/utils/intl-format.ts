@@ -21,23 +21,42 @@ function createFormatCache<L extends string | undefined, O extends object, F>(
   };
 }
 
-/** Formats dates and date ranges. */
-interface DateFormat {
-  format: (date: Date) => string;
-  formatRange: (start: Date, end: Date) => string;
+/** Formats dates and date ranges, every space written as a plain space (`normalizeIntlSpaces`). */
+interface DateFormat<D> {
+  format: (date: D) => string;
+  formatRange: (start: D, end: D) => string;
 }
 
-/** A shared React Aria `DateFormatter`, which corrects the hour cycle of some locales. */
-export const getDateFormatter = createFormatCache<string, Intl.DateTimeFormatOptions, DateFormat>(
-  (locale, options) => new DateFormatter(locale, options),
-);
+/** A date formatter whose texts agree across runtimes, so a server render hydrates unchanged. */
+function withPlainSpaces<D>(formatter: DateFormat<D>): DateFormat<D> {
+  return {
+    format: (date) => normalizeIntlSpaces(formatter.format(date)),
+    formatRange: (start, end) => normalizeIntlSpaces(formatter.formatRange(start, end)),
+  };
+}
 
-/** A shared `Intl.DateTimeFormat`. */
+/**
+ * A shared React Aria `DateFormatter`, which corrects the hour cycle of some locales. Its texts write
+ * every space as a plain space.
+ */
+export const getDateFormatter = createFormatCache<
+  string,
+  Intl.DateTimeFormatOptions,
+  DateFormat<Date>
+>((locale, options) => withPlainSpaces(new DateFormatter(locale, options)));
+
+/** A shared `Intl.DateTimeFormat`. Its texts write every space as a plain space. */
 export const getDateTimeFormat = createFormatCache<
   string | undefined,
   Intl.DateTimeFormatOptions,
-  Intl.DateTimeFormat
->((locale, options) => new Intl.DateTimeFormat(locale, options));
+  DateFormat<Date | number> & Pick<Intl.DateTimeFormat, 'resolvedOptions'>
+>((locale, options) => {
+  const format = new Intl.DateTimeFormat(locale, options);
+  return {
+    ...withPlainSpaces<Date | number>(format),
+    resolvedOptions: () => format.resolvedOptions(),
+  };
+});
 
 /** A shared `Intl.NumberFormat`. */
 export const getNumberFormat = createFormatCache<

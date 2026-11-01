@@ -163,9 +163,16 @@ test.describe('Description List lab', () => {
         'Apples, pears, and plums',
         new Intl.NumberFormat('en-US').formatRange(3, 7),
         date.formatRange(picked, shipped),
+        new Intl.DateTimeFormat('en-US', { timeStyle: 'short' }).formatRange(
+          new Date(2024, 8, 14, 18, 30),
+          new Date(2024, 8, 14, 20),
+        ),
       ];
     });
     await expect(values('en-US')).toHaveText(expected);
+    // Dates and times write plain spaces, whatever the runtime writes (UIC-INTL-FORMAT-1.3).
+    const texts = await values('en-US').allTextContents();
+    expect(texts.join('')).not.toMatch(/[\u00a0\u2009\u202f]/);
     await expect(values('de-DE').first()).toHaveText('1.234,5');
     await expect(values('de-DE').nth(3)).toHaveText('Apples, pears und plums');
     await lab.expectAccessible();
