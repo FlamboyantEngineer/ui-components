@@ -260,7 +260,7 @@ describe('Board', () => {
       'aria-expanded',
       'false',
     );
-    expect(screen.queryByRole('grid', { name: 'Doing North team' })).not.toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: 'Doing North team' })).toHaveTextContent('Boil jam');
     expect(container.querySelectorAll('.ui-board__cell[data-collapsed]')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'Collapse South team' }));
     expect(screen.getByRole('group', { name: 'South team' })).toHaveAttribute(

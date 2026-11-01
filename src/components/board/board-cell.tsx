@@ -22,6 +22,7 @@ import { EmptyState } from '../empty-state/empty-state.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardCellAddress } from './board-moves.js';
 import type { BoardCardDrag } from './use-board-drag.js';
+import type { BoardCardState } from './board.js';
 import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 
 /** Scrolls the virtualized cell holding the card `key` toward it; other cells ignore the call. */
@@ -29,7 +30,7 @@ export type BoardCardReveal = (key: Key) => void;
 
 /** What every cell of a board draws its cards with. */
 export interface BoardCellOptions<T> {
-  renderCard: (item: T) => ReactNode;
+  renderCard: (item: T, state: BoardCardState) => ReactNode;
   getTextValue: (item: T) => string;
   onAction: ((key: Key) => void) | undefined;
   onAddCard: ((cell: BoardCellAddress) => void) | undefined;
@@ -147,10 +148,14 @@ function useCellDragAndDrop(
   return useDragAndDrop(options).dragAndDropHooks;
 }
 
-/** The cell's cards: a grid list of the caller's card content, virtualized on request. */
+/**
+ * The cell's cards: a grid list of the caller's card content, virtualized on request. A collapsed
+ * column's cell keeps its cards and draws no empty state.
+ */
 function BoardCards<T extends { id: Key }>({
   address,
   items,
+  isCollapsed,
   labelledBy,
   options,
 }: BoardCellProps<T>) {
@@ -165,12 +170,13 @@ function BoardCards<T extends { id: Key }>({
     ),
     [strings.noCards],
   );
+  const cardState = { isColumnCollapsed: isCollapsed };
   const list = (
     <GridList
       ref={grid}
       aria-labelledby={labelledBy}
       items={items}
-      dependencies={[renderCard, getTextValue, keyShortcuts]}
+      dependencies={[renderCard, getTextValue, keyShortcuts, isCollapsed]}
       onAction={
         onAction &&
         ((key) => {
@@ -179,7 +185,7 @@ function BoardCards<T extends { id: Key }>({
         })
       }
       dragAndDropHooks={dragAndDropHooks}
-      renderEmptyState={renderEmptyState}
+      renderEmptyState={isCollapsed ? undefined : renderEmptyState}
       {...hooks.slot('cards', { virtualized, reordering: drag !== null })}
     >
       {(item) => (
@@ -194,7 +200,7 @@ function BoardCards<T extends { id: Key }>({
               {allowsDragging && drag ? (
                 <DragHandle className={hooks.slotClass('card-handle')} />
               ) : null}
-              <div {...hooks.slot('card-content')}>{renderCard(item)}</div>
+              <div {...hooks.slot('card-content')}>{renderCard(item, cardState)}</div>
             </>
           )}
         </GridListItem>
@@ -211,18 +217,17 @@ function BoardCards<T extends { id: Key }>({
 
 /**
  * One column of one lane: its cards, then the add-card button when the board takes new cards. A
- * collapsed column's cell stays as an empty placeholder so the lanes keep their columns aligned.
+ * collapsed column's cell keeps its cards mounted, drawn narrower, without the add-card button.
  */
 export function BoardCell<T extends { id: Key }>(props: BoardCellProps<T>) {
   const strings = useUiStrings();
   const { address, isCollapsed, isOverLimit, labelledBy, options } = props;
   const { onAddCard } = options;
   const data = { collapsed: isCollapsed, overLimit: isOverLimit };
-  if (isCollapsed) return <div {...hooks.slot('cell', data)} />;
   return (
     <div {...hooks.slot('cell', data)}>
       <BoardCards {...props} />
-      {onAddCard ? (
+      {onAddCard && !isCollapsed ? (
         <Button
           variant="ghost"
           size="sm"

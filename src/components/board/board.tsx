@@ -42,6 +42,12 @@ export interface BoardColumn {
   icon?: IconSource;
 }
 
+/** What a board tells `renderCard` about where a card is drawn. */
+export interface BoardCardState {
+  /** The card's column is collapsed, so the card is drawn as narrow as the column. */
+  isColumnCollapsed: boolean;
+}
+
 /** A lane (swimlane) of the board: a row that repeats every column. */
 export interface BoardLane {
   id: Key;
@@ -65,8 +71,11 @@ export interface BoardProps<T extends { id: Key }>
   getLane?: ((item: T) => Key) | undefined;
   /** A card's text, for typeahead, its drag handle and what it carries when dragged. */
   getTextValue: (item: T) => string;
-  /** Draws a card's content, such as a `Card` body or a custom layout. */
-  renderCard: (item: T) => ReactNode;
+  /**
+   * Draws a card's content, such as a `Card` body or a custom layout. A collapsed column keeps its
+   * cards, drawn as narrow as the column: `isColumnCollapsed` lets the caller draw a shorter card.
+   */
+  renderCard: (item: T, state: BoardCardState) => ReactNode;
   /** Turns on card moves by drag and drop and Alt+Arrow keys, and reports each one. */
   onMove?: ((move: BoardMove) => void) | undefined;
   /** Turns on column moves by drag and drop and Alt+Arrow keys, and reports each one. */

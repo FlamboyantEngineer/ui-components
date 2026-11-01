@@ -77,13 +77,12 @@ export function useBoardModel<T extends { id: Key }>(props: BoardModelProps<T>):
       createBoardLayout({
         columns: columnKeys,
         lanes: laneKeys,
-        collapsedColumns: collapsedColumns.keys,
         items,
         getKey: (item) => item.id,
         getColumn,
         getLane: lanes ? getLane : undefined,
       }),
-    [columnKeys, laneKeys, lanes, collapsedColumns.keys, items, getColumn, getLane],
+    [columnKeys, laneKeys, lanes, items, getColumn, getLane],
   );
   const itemsByKey = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const countColumn = (column: Key) =>

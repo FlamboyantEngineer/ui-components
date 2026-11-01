@@ -40,21 +40,20 @@ export interface BoardCellAddress {
 /** The direction of a keyboard card move, in reading order. */
 export type BoardMoveDirection = 'up' | 'down' | 'previous' | 'next';
 
-/** The cards of every cell in order, and the columns a keyboard move can reach. */
+/** The cards of every cell in order, and the columns in order. */
 export interface BoardLayout {
   /** The cards of each cell, by column, then by lane. */
   cells: ReadonlyMap<Key, ReadonlyMap<Key | null, readonly Key[]>>;
   /** Each card's cell. */
   addresses: ReadonlyMap<Key, BoardCellAddress>;
-  /** The columns cards can move into by keyboard, in order (collapsed columns are left out). */
-  openColumns: readonly Key[];
+  /** The columns, in order: a keyboard move reaches every one, collapsed or open. */
+  columns: readonly Key[];
 }
 
 interface BoardLayoutOptions<T> {
   columns: readonly Key[];
   /** The lanes in order, or `[null]` for a board without lanes. */
   lanes: readonly (Key | null)[];
-  collapsedColumns: ReadonlySet<Key>;
   items: readonly T[];
   getKey: (item: T) => Key;
   getColumn: (item: T) => Key;
@@ -74,7 +73,7 @@ export function getCellCards(
  * board with lanes) is not on the board are left out.
  */
 export function createBoardLayout<T>(options: BoardLayoutOptions<T>): BoardLayout {
-  const { columns, lanes, collapsedColumns, items, getKey, getColumn, getLane } = options;
+  const { columns, lanes, items, getKey, getColumn, getLane } = options;
   const cells = new Map<Key, Map<Key | null, Key[]>>(
     columns.map((column) => [column, new Map(lanes.map((lane) => [lane, []]))]),
   );
@@ -86,8 +85,7 @@ export function createBoardLayout<T>(options: BoardLayoutOptions<T>): BoardLayou
     cell.push(getKey(item));
     addresses.set(getKey(item), address);
   }
-  const openColumns = columns.filter((column) => !collapsedColumns.has(column));
-  return { cells, addresses, openColumns };
+  return { cells, addresses, columns };
 }
 
 /** The move that lands `key` at `index` among the other cards of `address`. */
@@ -151,11 +149,9 @@ export function resolveBoardKeyboardMove(
     if (targetKey === undefined) return null;
     return { key, ...address, targetKey, position: direction === 'up' ? 'before' : 'after' };
   }
-  const columnIndex = layout.openColumns.indexOf(address.column);
+  const columnIndex = layout.columns.indexOf(address.column);
   const column =
-    columnIndex < 0
-      ? undefined
-      : layout.openColumns[columnIndex + (direction === 'previous' ? -1 : 1)];
+    columnIndex < 0 ? undefined : layout.columns[columnIndex + (direction === 'previous' ? -1 : 1)];
   if (column === undefined) return null;
   return moveToIndex(layout, { key, address: { column, lane: address.lane }, index });
 }
