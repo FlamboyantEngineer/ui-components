@@ -194,6 +194,92 @@ describe('routeDiagramEdge', () => {
     expect(straight.path).toBe('M 100 26 L 200 26');
   });
 
+  describe('UIC-DIAGRAM-CANVAS-2.3 parallel edges', () => {
+    const a = { x: 0, y: 0, width: 100, height: 48 };
+    const b = { x: 300, y: 0, width: 100, height: 48 };
+    const offsets = (count: number) =>
+      Array.from({ length: count }, (_, index) => (index - (count - 1) / 2) * 24);
+    const ends = (path: string) => {
+      const numbers = [...path.matchAll(/-?[\d.]+/g)].map(Number);
+      return { start: numbers.slice(0, 2), end: numbers.slice(-2) };
+    };
+    const routings = ['bezier', 'orthogonal'] as const;
+
+    it.each(routings)('keeps %s ends on their boxes and apart, however many', (routing) => {
+      for (const count of [2, 4, 12]) {
+        for (const rect of [b, { x: 300, y: 0, width: 10, height: 10 }]) {
+          const routes = offsets(count).map((offset) =>
+            routeDiagramEdge({ source: { rect: a }, target: { rect }, routing, offset }),
+          );
+          for (const route of routes) {
+            const { start, end } = ends(route.path);
+            expect(start[0]).toBe(100);
+            expect(start[1]).toBeGreaterThan(0);
+            expect(start[1]).toBeLessThan(48);
+            expect(end[0]).toBe(300);
+            expect(end[1]).toBeGreaterThanOrEqual(rect.y);
+            expect(end[1]).toBeLessThanOrEqual(rect.y + rect.height);
+          }
+          expect(new Set(routes.map((route) => route.path)).size).toBe(count);
+          expect(new Set(routes.map((route) => JSON.stringify(route.label))).size).toBe(count);
+        }
+      }
+    });
+
+    it.each(routings)('keeps %s port ends exact and parts the routes and labels', (routing) => {
+      const source = { rect: a, port: { side: 'right', position: 0.5 } } as const;
+      const target = { rect: b, port: { side: 'left', position: 0.5 } } as const;
+      // Four parallels, the third reversed, as spreadParallelEdges offsets them.
+      const routes = [-36, -12, 36].map((offset) =>
+        routeDiagramEdge({ source, target, routing, offset }),
+      );
+      const back = routeDiagramEdge({ source: target, target: source, routing, offset: -12 });
+      for (const route of routes) {
+        expect(ends(route.path)).toEqual({ start: [100, 24], end: [300, 24] });
+        expect(route.arrow.startsWith('M 300 24 L 292')).toBe(true);
+      }
+      expect(ends(back.path)).toEqual({ start: [300, 24], end: [100, 24] });
+      const all = [...routes, back];
+      expect(new Set(all.map((route) => route.path)).size).toBe(4);
+      expect(new Set(all.map((route) => JSON.stringify(route.label))).size).toBe(4);
+    });
+
+    it('parts orthogonal routes between crossing port sides with notches at the corner', () => {
+      const source = { rect: a, port: { side: 'right', position: 0.5 } } as const;
+      const target = {
+        rect: { x: 300, y: 200, width: 100, height: 48 },
+        port: { side: 'top', position: 0.5 },
+      } as const;
+      const [inside, outside] = [-12, 12].map(
+        (offset) => routeDiagramEdge({ source, target, routing: 'orthogonal', offset }).path,
+      );
+      expect(inside).toBe('M 100 24 L 338 24 L 338 36 L 350 36 L 350 200');
+      expect(outside).toBe('M 100 24 L 362 24 L 362 36 L 350 36 L 350 200');
+    });
+
+    it('keeps the one straight line between two ports and parts the labels', () => {
+      const source = { rect: a, port: { side: 'right', position: 0.5 } } as const;
+      const target = { rect: b, port: { side: 'left', position: 0.5 } } as const;
+      const [first, second] = [-12, 12].map((offset) =>
+        routeDiagramEdge({ source, target, routing: 'straight', offset }),
+      );
+      expect(first?.path).toBe('M 100 24 L 300 24');
+      expect(second?.path).toBe(first?.path);
+      expect(first?.label).toEqual({ x: 200, y: 12 });
+      expect(second?.label).toEqual({ x: 200, y: 36 });
+    });
+
+    it('nests further loops from the same points with their own labels', () => {
+      const loops = [0, 24, 48].map((offset) =>
+        routeDiagramEdge({ source: { rect: a }, target: { rect: { ...a } }, offset }),
+      );
+      for (const loop of loops) {
+        expect(ends(loop.path)).toEqual({ start: [34, 0], end: [66, 0] });
+      }
+      expect(loops.map((loop) => loop.label.y)).toEqual([-36, -54, -72]);
+    });
+  });
+
   it('UIC-DIAGRAM-CANVAS-2.3 loops an edge from a box back to itself over its top', () => {
     const route = routeDiagramEdge({ source: { rect: left }, target: { rect: { ...left } } });
     expect(route.path).toBe('M 34 0 C 10 -48 90 -48 66 0');

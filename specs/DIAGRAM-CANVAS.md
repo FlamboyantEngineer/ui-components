@@ -42,7 +42,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`
 
 `routeDiagramEdge({ source, target, routing, offset })` shall return an edge's SVG path, a closed arrowhead whose tip is the target end, and the middle of the path for its label. `straight` joins the ends with a line between the points where the line between the boxes' centres leaves each box; `orthogonal` leaves each end along its side and runs in horizontal and vertical segments, turning in the middle or once at a corner, and going around when the ends cannot face each other, such as ports on the same side or a target behind the source: the detour crosses over in the middle when that clears both boxes, else takes the shortest way that does, over a lane 20 pixels outside them or out past both boxes on the ports' side, and never crosses either box when such a way exists; `bezier` (the default) curves out of each side. An end may be a bare point, as the preview of a connection is. The canvas draws edges in an SVG layer (`ui-diagram-canvas__edges`, hidden from assistive technology) under the nodes: each edge is a `ui-diagram-canvas__edge` group holding its path (`ui-diagram-canvas__edge-path`), its arrowhead (`ui-diagram-canvas__edge-arrow`) and a pointer target along the path (`ui-diagram-canvas__edge-hit`), with its `label` above the layer in `ui-diagram-canvas__edge-label`. Edges whose ends match no node are not drawn.
 
-Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/orthogonal-route.ts`, `src/components/diagram-canvas/diagram-edges.tsx`
+Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/edge-anchors.ts`, `src/components/diagram-canvas/orthogonal-route.ts`, `src/components/diagram-canvas/diagram-edges.tsx`
 Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/components/diagram-canvas/diagram-canvas.test.tsx`
 
 ### UIC-DIAGRAM-CANVAS-2.2 - Ports as ends
@@ -54,10 +54,10 @@ Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/component
 
 ### UIC-DIAGRAM-CANVAS-2.3 - Parallel edges and loops
 
-Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top. Edges group as parallel only when their endpoint keys match in type and spelling, delimiters included, and a group of any size (tens of thousands of edges) spreads in edge order.
+Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An end without a port slides along its side by the offset, easing toward the side's corners past half the room so it stays on its box and keeps its own place, however many edges or however small the box. A port end never moves: a curved edge bends through a middle point moved by what the ends did not slide, leaving and reaching each port along its side, and an orthogonal edge moves its middle run, its detour lane, or a notch at its corner by its offset (between ports in line, it jogs to a lane its offset away). A straight edge between the same two ports has only one line, so parallel ones share it and each moves its label by its offset instead. An edge from a node to itself loops over the node's top; each further loop on the node starts and ends at the same points and reaches 24 pixels higher and 12 wider, with its label above the last. Every route and label stays apart this way, so each edge keeps its own pointer target and label. Edges group as parallel only when their endpoint keys match in type and spelling, delimiters included, and a group of any size (tens of thousands of edges) spreads in edge order.
 
-Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/diagram-model.ts`
-Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/components/diagram-canvas/diagram-model.test.ts`
+Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/edge-anchors.ts`, `src/components/diagram-canvas/orthogonal-route.ts`, `src/components/diagram-canvas/diagram-model.ts`
+Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
 
 ## UIC-DIAGRAM-CANVAS-3 - Pan and zoom
 

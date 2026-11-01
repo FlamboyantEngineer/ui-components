@@ -124,11 +124,15 @@ describe('diagram model', () => {
       { id: 'back', source: 'b', target: 'a' },
       { id: 'lone', source: 'a', target: 'c' },
       { id: 'loop', source: 'a', target: 'a' },
+      { id: 'second-loop', source: 'a', target: 'a' },
+      { id: 'third-loop', source: 'a', target: 'a' },
     ]);
     expect(offsets.get('forward')).toBe(-12);
     expect(offsets.get('back')).toBe(-12);
     expect(offsets.get('lone')).toBe(0);
-    expect(offsets.has('loop')).toBe(false);
+    expect(offsets.get('loop')).toBe(0);
+    expect(offsets.get('second-loop')).toBe(24);
+    expect(offsets.get('third-loop')).toBe(48);
   });
 
   it('UIC-DIAGRAM-CANVAS-2.3 distinguishes numeric and text node keys in parallel groups', () => {

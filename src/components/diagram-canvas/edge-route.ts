@@ -1,6 +1,20 @@
 import { requireDefined } from '../../utils/require-defined.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
+import {
+  add,
+  center,
+  findRightHand,
+  length,
+  normalize,
+  normals,
+  resolveSideAnchors,
+  resolveStraightAnchors,
+  subtract,
+  type Anchor,
+} from './edge-anchors.js';
 import { findOrthogonalCorners } from './orthogonal-route.js';
+
+export { resolvePortPoint } from './edge-anchors.js';
 /** How an edge runs between its ends: a straight line, horizontal and vertical runs, or a curve. */
 export type DiagramEdgeRouting = 'straight' | 'orthogonal' | 'bezier';
 
@@ -49,38 +63,9 @@ export interface DiagramRoute {
   label: DiagramPoint;
 }
 
-interface Anchor {
-  point: DiagramPoint;
-  /** The outward direction of the side the end leaves from, or null for a point on a straight line. */
-  normal: DiagramPoint | null;
-}
-
-const normals: Record<DiagramPortSide, DiagramPoint> = {
-  top: { x: 0, y: -1 },
-  right: { x: 1, y: 0 },
-  bottom: { x: 0, y: 1 },
-  left: { x: -1, y: 0 },
-};
-
 const arrowLength = 8;
 const arrowHalfWidth = 4;
 const loopHeight = 48;
-
-const add = (a: DiagramPoint, b: DiagramPoint, scale = 1) => ({
-  x: a.x + b.x * scale,
-  y: a.y + b.y * scale,
-});
-const subtract = (a: DiagramPoint, b: DiagramPoint) => ({ x: a.x - b.x, y: a.y - b.y });
-const length = (a: DiagramPoint) => Math.hypot(a.x, a.y);
-
-function normalize(vector: DiagramPoint): DiagramPoint {
-  const size = length(vector);
-  return size === 0 ? { x: 1, y: 0 } : { x: vector.x / size, y: vector.y / size };
-}
-
-function center(rect: DiagramRect): DiagramPoint {
-  return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
-}
 
 function round(value: number): number {
   return Math.round(value * 100) / 100;
@@ -88,89 +73,6 @@ function round(value: number): number {
 
 function formatPoint(point: DiagramPoint): string {
   return `${round(point.x)} ${round(point.y)}`;
-}
-
-/** The point of a port on its box. */
-export function resolvePortPoint(
-  rect: DiagramRect,
-  port: { side: DiagramPortSide; position: number },
-): DiagramPoint {
-  const along = { x: rect.x + rect.width * port.position, y: rect.y + rect.height * port.position };
-  if (port.side === 'top') return { x: along.x, y: rect.y };
-  if (port.side === 'bottom') return { x: along.x, y: rect.y + rect.height };
-  if (port.side === 'left') return { x: rect.x, y: along.y };
-  return { x: rect.x + rect.width, y: along.y };
-}
-
-/** The side of `from` that faces `to`: on the axis with the wider gap between the boxes. */
-function findFacingSide(from: DiagramRect, to: DiagramRect): DiagramPortSide {
-  const delta = subtract(center(to), center(from));
-  const horizontal = Math.abs(delta.x) - (from.width + to.width) / 2;
-  const vertical = Math.abs(delta.y) - (from.height + to.height) / 2;
-  if (horizontal >= vertical) return delta.x >= 0 ? 'right' : 'left';
-  return delta.y >= 0 ? 'bottom' : 'top';
-}
-
-/** Where the ray from the box's centre toward `toward` leaves the box. */
-function findBoundaryPoint(rect: DiagramRect, toward: DiagramPoint): DiagramPoint {
-  const middle = center(rect);
-  const delta = subtract(toward, middle);
-  const scales = [
-    delta.x === 0 ? Infinity : rect.width / 2 / Math.abs(delta.x),
-    delta.y === 0 ? Infinity : rect.height / 2 / Math.abs(delta.y),
-  ];
-  const scale = Math.min(...scales);
-  return Number.isFinite(scale) ? add(middle, delta, scale) : middle;
-}
-
-/** The right-hand perpendicular of the direction from `from` to `to` (y grows downward). */
-function findRightHand(from: DiagramPoint, to: DiagramPoint): DiagramPoint {
-  const direction = normalize(subtract(to, from));
-  return { x: -direction.y, y: direction.x };
-}
-
-function resolvePortAnchor(end: DiagramEdgeEnd): Anchor | null {
-  if (!end.port) return null;
-  return { point: resolvePortPoint(end.rect, end.port), normal: normals[end.port.side] };
-}
-
-/** The ends of a straight edge: ports, or where the line between the centres leaves each box. */
-function resolveStraightAnchors(options: DiagramRouteOptions): [Anchor, Anchor] {
-  const { source, target, offset = 0 } = options;
-  const sourcePort = resolvePortAnchor(source);
-  const targetPort = resolvePortAnchor(target);
-  const from = sourcePort?.point ?? center(source.rect);
-  const to = targetPort?.point ?? center(target.rect);
-  const shift = findRightHand(from, to);
-  const shifted = (end: DiagramEdgeEnd, toward: DiagramPoint): Anchor => {
-    const rect = { ...end.rect, ...add(end.rect, shift, offset) };
-    return { point: findBoundaryPoint(rect, add(toward, shift, offset)), normal: null };
-  };
-  return [sourcePort ?? shifted(source, to), targetPort ?? shifted(target, from)];
-}
-
-/** The ends of a curved or orthogonal edge: ports, or the middles of the sides that face. */
-function resolveSideAnchors(options: DiagramRouteOptions): [Anchor, Anchor] {
-  const { source, target, offset = 0 } = options;
-  const side = (end: DiagramEdgeEnd, other: DiagramEdgeEnd): Anchor => {
-    const facing = findFacingSide(end.rect, other.rect);
-    return {
-      point: resolvePortPoint(end.rect, { side: facing, position: 0.5 }),
-      normal: normals[facing],
-    };
-  };
-  const from = resolvePortAnchor(source) ?? side(source, target);
-  const to = resolvePortAnchor(target) ?? side(target, source);
-  const shift = findRightHand(from.point, to.point);
-  const slide = (anchor: Anchor, end: DiagramEdgeEnd): Anchor => {
-    if (end.port || !anchor.normal || offset === 0) return anchor;
-    const along =
-      anchor.normal.x === 0
-        ? { x: Math.sign(shift.x) || 1, y: 0 }
-        : { x: 0, y: Math.sign(shift.y) || 1 };
-    return { ...anchor, point: add(anchor.point, along, offset) };
-  };
-  return [slide(from, source), slide(to, target)];
 }
 
 function formatArrow(tip: DiagramPoint, direction: DiagramPoint): string {
@@ -193,28 +95,51 @@ function routeCurve(from: DiagramPoint, controls: [DiagramPoint, DiagramPoint], 
   };
 }
 
-function routeBezier([from, to]: [Anchor, Anchor]): DiagramRoute {
+/**
+ * A curve out of each side. A parallel edge whose ends could not slide its whole offset, such as
+ * port ends, which never move, bends through a middle point moved to the right of travel by the
+ * rest, in two curves that still leave and reach each end along its side.
+ */
+function routeBezier([from, to]: [Anchor, Anchor], offset: number): DiagramRoute {
   const reach = Math.max(24, length(subtract(to.point, from.point)) * 0.4);
   const fromNormal = from.normal ?? normalize(subtract(to.point, from.point));
   const toNormal = to.normal ?? normalize(subtract(from.point, to.point));
-  return routeCurve(
-    from.point,
-    [add(from.point, fromNormal, reach), add(to.point, toNormal, reach)],
-    to.point,
+  const fromControl = add(from.point, fromNormal, reach);
+  const toControl = add(to.point, toNormal, reach);
+  const spare = offset - ((from.slide ?? 0) + (to.slide ?? 0)) / 2;
+  if (Math.abs(spare) < 0.01) return routeCurve(from.point, [fromControl, toControl], to.point);
+  const direction = normalize(subtract(to.point, from.point));
+  const middle = add(
+    add(from.point, subtract(to.point, from.point), 0.5),
+    findRightHand(from.point, to.point),
+    spare,
   );
+  const half = reach / 2;
+  const first = routeCurve(from.point, [fromControl, add(middle, direction, -half)], middle);
+  const second = routeCurve(middle, [add(middle, direction, half), toControl], to.point);
+  return {
+    path: `${first.path} ${second.path.replace(/^M \S+ \S+ /, '')}`,
+    arrow: second.arrow,
+    label: middle,
+  };
 }
 
-/** A loop from the top of a box back to it, for an edge whose ends are the same box. */
-function routeLoop(rect: DiagramRect): DiagramRoute {
+/**
+ * A loop from the top of a box back to it, for an edge whose ends are the same box. Further loops
+ * on the box reach higher and wider by their offset, from the same two points.
+ */
+function routeLoop(rect: DiagramRect, offset: number): DiagramRoute {
   const middle = center(rect);
   const spread = Math.min(rect.width / 4, 16);
   const from = { x: middle.x - spread, y: rect.y };
   const to = { x: middle.x + spread, y: rect.y };
+  const grow = Math.abs(offset);
+  const width = spread * 2.5 + grow / 2;
   return routeCurve(
     from,
     [
-      { x: middle.x - spread * 2.5, y: rect.y - loopHeight },
-      { x: middle.x + spread * 2.5, y: rect.y - loopHeight },
+      { x: middle.x - width, y: rect.y - loopHeight - grow },
+      { x: middle.x + width, y: rect.y - loopHeight - grow },
     ],
     to,
   );
@@ -266,29 +191,38 @@ function routePolyline(points: readonly DiagramPoint[]): DiagramRoute {
 }
 
 /**
+ * A straight line. Between two ports, parallel edges share the only straight line there is, so
+ * each keeps its label apart instead, moved to the right of travel by its offset.
+ */
+function routeStraight(options: DiagramRouteOptions): DiagramRoute {
+  const [from, to] = resolveStraightAnchors(options);
+  const route = routePolyline([from.point, to.point]);
+  if (!options.source.port || !options.target.port || !options.offset) return route;
+  const shift = findRightHand(from.point, to.point);
+  return { ...route, label: add(route.label, shift, options.offset) };
+}
+
+/**
  * The SVG geometry of an edge between two boxes: its path, an arrowhead at the target and the
  * middle of the path for its label. Ends with a port start at the port and leave along its side;
  * ends without one use the side that faces the other end (or, for a straight edge, the point where
  * the line between the centres crosses the box). An edge from a box to itself loops over its top.
  */
 export function routeDiagramEdge(options: DiagramRouteOptions): DiagramRoute {
-  const { source, target, routing = 'bezier' } = options;
+  const { source, target, routing = 'bezier', offset = 0 } = options;
   if (!source.port && !target.port && isShallowEqual(source.rect, target.rect)) {
-    return routeLoop(source.rect);
+    return routeLoop(source.rect, offset);
   }
-  if (routing === 'straight') {
-    const [from, to] = resolveStraightAnchors(options);
-    return routePolyline([from.point, to.point]);
-  }
+  if (routing === 'straight') return routeStraight(options);
   const anchors = resolveSideAnchors(options);
-  if (routing === 'bezier') return routeBezier(anchors);
+  if (routing === 'bezier') return routeBezier(anchors, offset);
   const [from, to] = anchors;
   return routePolyline([
     from.point,
     ...findOrthogonalCorners(
       { point: from.point, normal: from.normal ?? normals.right },
       { point: to.point, normal: to.normal ?? normals.left },
-      [source.rect, target.rect],
+      { boxes: [source.rect, target.rect], shift: offset },
     ),
     to.point,
   ]);

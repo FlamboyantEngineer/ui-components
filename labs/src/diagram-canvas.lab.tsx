@@ -448,6 +448,79 @@ const sameSideEdges: DiagramEdge[] = [
   },
 ];
 
+const stateNodes: DiagramNode[] = [
+  {
+    id: 'idle',
+    x: 0,
+    y: 60,
+    width: 120,
+    height: 48,
+    label: 'Idle',
+    ports: [{ id: 'out', side: 'right', label: 'out' }],
+  },
+  {
+    id: 'running',
+    x: 300,
+    y: 60,
+    width: 120,
+    height: 48,
+    label: 'Running',
+    ports: [{ id: 'in', side: 'left', label: 'in' }],
+  },
+];
+
+const stateEdges: DiagramEdge[] = [
+  {
+    id: 'start',
+    source: 'idle',
+    target: 'running',
+    sourcePort: 'out',
+    targetPort: 'in',
+    label: 'start',
+  },
+  {
+    id: 'resume',
+    source: 'idle',
+    target: 'running',
+    sourcePort: 'out',
+    targetPort: 'in',
+    label: 'resume',
+  },
+  {
+    id: 'retry',
+    source: 'idle',
+    target: 'running',
+    sourcePort: 'out',
+    targetPort: 'in',
+    label: 'retry',
+  },
+  { id: 'stop', source: 'running', target: 'idle', label: 'stop' },
+  { id: 'tick', source: 'running', target: 'running', label: 'tick' },
+  { id: 'poll', source: 'running', target: 'running', label: 'poll' },
+];
+
+function StateMachine() {
+  const [routing, setRouting] = useState<DiagramEdgeRouting>('bezier');
+  return (
+    <>
+      <SegmentedChoice
+        aria-label="State routing"
+        options={routings.map((value) => ({ value, label: value }))}
+        value={routing}
+        onChange={(value) => setRouting((value as DiagramEdgeRouting | null) ?? 'bezier')}
+        size="sm"
+      />
+      <DiagramCanvas
+        aria-label="States"
+        data-lab-field="states"
+        nodes={stateNodes}
+        edges={stateEdges}
+        routing={routing}
+      />
+    </>
+  );
+}
+
 function Modules() {
   const [selection, setSelection] = useState<Selection>(new Set<Key>());
   return (
@@ -506,6 +579,12 @@ mountLab(
         edges={sameSideEdges}
         routing="orthogonal"
       />
+    </LabSection>
+    <LabSection
+      title="Parallel edges and loops"
+      description="Three transitions share the same two ports, a fourth runs back without ports and two loops sit on one state. Curved and orthogonal edges part their routes and labels while port ends stay put and loops start from the same points; straight edges between the same ports share their line and part their labels."
+    >
+      <StateMachine />
     </LabSection>
     <LabSection
       title="Read only graph"

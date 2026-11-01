@@ -187,6 +187,30 @@ test.describe('Diagram Canvas lab', () => {
     }
   });
 
+  test('UIC-DIAGRAM-CANVAS-2.3 parts parallel edges and loops in every routing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    const states = page.locator('[data-lab-field="states"]');
+    await states.scrollIntoViewIfNeeded();
+    const labels = ['start', 'resume', 'retry', 'stop', 'tick', 'poll'];
+    for (const routing of ['bezier', 'orthogonal', 'straight']) {
+      await page.getByRole('radiogroup', { name: 'State routing' }).getByText(routing).click();
+      await expect(states).toHaveAttribute('data-routing', routing);
+      const centres = new Set<string>();
+      for (const label of labels) {
+        const box = requireDefined(await states.getByText(label, { exact: true }).boundingBox());
+        centres.add(`${Math.round(box.x + box.width / 2)},${Math.round(box.y + box.height / 2)}`);
+      }
+      expect(centres.size).toBe(labels.length);
+      const paths = await states
+        .locator('.ui-diagram-canvas__edge-path')
+        .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('d')));
+      expect(new Set(paths).size).toBe(routing === 'straight' ? labels.length - 2 : labels.length);
+    }
+  });
+
   test('UIC-DIAGRAM-CANVAS-3.5 centres the view from the minimap', async ({ page, lab }) => {
     await lab.open('diagram-canvas');
     await viewportBox(page);
