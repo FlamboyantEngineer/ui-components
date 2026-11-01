@@ -25,6 +25,7 @@ import { getOwnerDocument } from '../../utils/owner-window.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
 import { useDocumentShortcut } from './command-palette-shortcut.js';
+import { useReturnFocusOnClose } from './command-palette-focus.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** Whether a command whose text is `textValue` matches the typed `inputValue`. */
@@ -192,8 +193,11 @@ export function CommandPalette({
     if (next !== open) setOpen(next);
   };
   useDocumentShortcut(shortcut, () => changeOpen(true));
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useReturnFocusOnClose(open, overlayRef);
   return (
     <ModalOverlay
+      ref={overlayRef}
       {...hooks.root({ className, props: rest, data: { layer: 'modal', size } })}
       isOpen={open}
       onOpenChange={changeOpen}

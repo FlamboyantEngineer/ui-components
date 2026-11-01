@@ -80,6 +80,56 @@ test.describe('Command Palette lab', () => {
     await expect(palette(page)).toHaveCount(0);
   });
 
+  test('UIC-COMMAND-PALETTE-1.1 fades out over half a second with focus already back on the page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('command-palette');
+    const opener = section(page, 'Document shortcut').getByRole('button', { name: 'Commands' });
+    for (const how of ['Escape', 'outside', 'command'] as const) {
+      await opener.click();
+      const search = palette(page).getByRole('searchbox');
+      await expect(search).toBeFocused();
+      if (how === 'Escape') await page.keyboard.press('Escape');
+      else if (how === 'outside') await page.mouse.click(10, 10);
+      else {
+        await page.keyboard.type('fi');
+        await expect(command(page, /^New file/)).toHaveAttribute('data-focused', 'true');
+        await page.keyboard.press('Enter');
+      }
+      const closed = await page.evaluate(() => performance.now());
+      // Focus is back at once, and the leaving palette takes no press or key.
+      await expect(opener, how).toBeFocused({ timeout: 150 });
+      const overlay = page.locator('[data-lab-palette="global"]');
+      await expect(overlay).toHaveAttribute('data-exiting', 'true');
+      await expect(overlay).toHaveCSS('pointer-events', 'none');
+      expect(await overlay.evaluate((node) => (node as HTMLElement).inert)).toBe(true);
+      // One fade of half a second, running now.
+      const fade = await overlay.evaluate((node) =>
+        node.getAnimations().map((animation) => ({
+          name: (animation as CSSAnimation).animationName,
+          duration: animation.effect?.getTiming().duration,
+          state: animation.playState,
+        })),
+      );
+      expect(fade).toEqual([{ name: 'ref-command-palette-out', duration: 500, state: 'running' }]);
+      await expect(overlay).toHaveCount(0, { timeout: 2000 });
+      const gone = await page.evaluate(() => performance.now());
+      expect(gone - closed).toBeGreaterThan(400);
+      expect(gone - closed).toBeLessThan(1500);
+      await expect(opener).toBeFocused();
+    }
+
+    // Under reduced motion the palette leaves at once.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await opener.click();
+    await expect(palette(page).getByRole('searchbox')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-lab-palette="global"]')).toHaveCount(0, { timeout: 150 });
+    await expect(opener).toBeFocused();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+  });
+
   test('UIC-COMMAND-PALETTE-1.2 UIC-COMMAND-PALETTE-1.5 covers the viewport on the modal layer at each size', async ({
     page,
     lab,
