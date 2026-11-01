@@ -273,7 +273,10 @@ mountLab(
     >
       <UnitSwitch />
     </LabSection>
-    <LabSection title="Fast steps" description="Modifier steps and a scrub handle.">
+    <LabSection
+      title="Fast steps"
+      description="Modifier steps and a scrub handle. A scrub the browser cancels (a pen leaving the screen) puts the start value back and saves nothing."
+    >
       <FastSteps />
     </LabSection>
     <LabSection title="Lock during a scrub" description="A lock ends the current pointer gesture.">

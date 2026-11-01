@@ -352,6 +352,34 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     ]);
   });
 
+  it('UIC-TABLE-14.5 extends a fill and a range drag only from the pointer that started it', async () => {
+    const user = userEvent.setup();
+    const onBatch = vi.fn();
+    render(<Sheet onBatch={onBatch} columns={uncheckedColumns} />);
+    // user-event drives one mouse; a second finger is a pointer of its own.
+    const otherPointer = { pointerId: 5, isPrimary: false };
+    await user.click(cell('Apple', 'count'));
+    const handle = requireDefined(document.querySelector('.ui-table__fill-handle'));
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle },
+      { target: cell('Pear', 'count') },
+    ]);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot move a second pointer
+    fireEvent.pointerOver(cell('Fig', 'count'), otherPointer);
+    expect(cell('Pear', 'count')).toHaveAttribute('data-fill-target', 'true');
+    expect(cell('Fig', 'count')).not.toHaveAttribute('data-fill-target');
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onBatch).toHaveBeenLastCalledWith([{ row: items[1], columnId: 'count', value: 1 }]);
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: cell('Apple', 'name') },
+      { target: cell('Pear', 'name') },
+    ]);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot move a second pointer
+    fireEvent.pointerOver(cell('Fig', 'note'), otherPointer);
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(selectedText()).toEqual(['Apple', 'Pear']);
+  });
+
   it('UIC-TABLE-14.5 fills by dragging the fill handle and down and right with the keyboard', async () => {
     const user = userEvent.setup();
     const onBatch = vi.fn();
