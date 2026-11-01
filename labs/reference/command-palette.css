@@ -6,20 +6,34 @@
   box-sizing: border-box;
   padding: 12vh 16px 16px;
   background: var(--ref-scrim);
+  /* The palette's own close fade, kept apart from the shared overlay durations. */
+  --ref-command-palette-exit-duration: 500ms;
 }
 
 .ui-command-palette[data-entering] {
   animation: ref-command-palette-in var(--ref-duration-fast) ease-out;
 }
 
+/* Closing fades the scrim and panel out; the leaving overlay already lets presses through. */
+.ui-command-palette[data-exiting] {
+  animation: ref-command-palette-out var(--ref-command-palette-exit-duration) ease-out forwards;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ui-command-palette[data-entering] {
+  .ui-command-palette:is([data-entering], [data-exiting]) {
     animation: none;
   }
 }
 
 @keyframes ref-command-palette-in {
   from {
+    opacity: 0;
+  }
+}
+
+@keyframes ref-command-palette-out {
+  to {
     opacity: 0;
   }
 }

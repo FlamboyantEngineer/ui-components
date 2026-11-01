@@ -178,21 +178,10 @@ function WordPalette() {
   );
 }
 
-// A slow fade as the palette closes, for this demo only, so it can be reopened while it leaves.
-const slowExitStyle = `
-.ui-command-palette[data-lab-palette='slow-exit'][data-exiting] {
-  animation: lab-slow-exit 2s linear forwards;
-}
-@keyframes lab-slow-exit {
-  to { opacity: 0; }
-}
-`;
-
-/** A palette that fades out over two seconds; Control+Shift+O toggles it, even while it fades. */
+/** A palette Control+Shift+O toggles, even during its half-second fade out. */
 function SlowExitPalette() {
   return (
     <>
-      <style>{slowExitStyle}</style>
       <p>Control+Shift+O opens and closes this palette, which starts from “fi” each time.</p>
       <Opener
         label="Slow-closing commands"
@@ -338,7 +327,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reopened while closing"
-      description="This palette fades out over two seconds. Type, close it with its chord and reopen it before the fade ends: the search starts again from its default text instead of keeping what was typed."
+      description="Every palette fades out over half a second, while focus is already back on the page. Type, close this one with its chord and reopen it before the fade ends: the search starts again from its default text instead of keeping what was typed."
     >
       <SlowExitPalette />
     </LabSection>

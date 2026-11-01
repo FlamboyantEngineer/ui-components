@@ -6,9 +6,9 @@
 
 ### UIC-COMMAND-PALETTE-1.1 - Opening and closing
 
-`CommandPalette` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every change through `onOpenChange`, and render nothing while closed. While open it renders, at the end of the document body, the `ui-command-palette` overlay, the `ui-command-palette__panel` box and the `ui-command-palette__dialog` element with `role="dialog"`. A press outside the panel closes it, and so does Escape once the search field is empty ([UIC-COMMAND-PALETTE-2.3](#uic-command-palette-23---keyboard)).
+`CommandPalette` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every change through `onOpenChange`, and render nothing while closed. While open it renders, at the end of the document body, the `ui-command-palette` overlay, the `ui-command-palette__panel` box and the `ui-command-palette__dialog` element with `role="dialog"`. A press outside the panel closes it, and so does Escape once the search field is empty ([UIC-COMMAND-PALETTE-2.3](#uic-command-palette-23---keyboard)). A palette whose stylesheet gives it an exit animation stays mounted while it plays (`data-exiting`), but closing hands focus back at once, on the next frame, to the element that held it before the palette opened, unless focus already moved elsewhere; the leaving overlay is `inert`, so it takes no press, key or focus, and reopening it lifts that. The reference sheet fades the overlay out over 500 milliseconds (`--ref-command-palette-exit-duration`, its own, apart from the shared overlay durations) with `pointer-events: none`, and leaves at once under reduced motion.
 
-Implementation: `src/components/command-palette/command-palette.tsx`
+Implementation: `src/components/command-palette/command-palette.tsx`, `src/components/command-palette/command-palette-focus.ts`, `labs/reference/command-palette.css`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`
 
 ### UIC-COMMAND-PALETTE-1.2 - Layering
