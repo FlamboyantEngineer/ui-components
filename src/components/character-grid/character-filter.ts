@@ -1,6 +1,6 @@
 // Searching a character grid's categories, and naming a character's code points.
 
-import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
+import { splitMatchTerms, textMatchesTerms } from '../text-match/match-ranges.js';
 
 /** A character a grid offers. */
 export interface CharacterGridCharacter {

@@ -6,7 +6,7 @@ import { walkTree } from '../../utils/walk-tree.js';
 import { mapTree } from '../../utils/map-tree.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
-import { textMatchesTerms } from '../text-match/text-match.js';
+import { textMatchesTerms } from '../text-match/match-ranges.js';
 
 /** A folder: a key unique among all folders, its name and its subfolders in order. */
 export interface FolderItem {

@@ -232,7 +232,7 @@ function importedValues(module) {
     for (const element of bindings.elements) {
       if (element.isTypeOnly) continue;
       const name = (element.propertyName ?? element.name).text;
-      imports.set(element.name.text, { name, origin: definingModule(target, name) });
+      imports.set(element.name.text, { name, via: target, origin: definingModule(target, name) });
     }
   }
   return imports;
@@ -285,7 +285,8 @@ function renderedModules(module, imports) {
 for (const module of modules.values()) {
   const imports = importedValues(module);
   module.rendered = renderedModules(module, imports);
-  module.used = valueUses(module, imports).filter((use) => use.origin);
+  module.uses = valueUses(module, imports);
+  module.used = module.uses.filter((use) => use.origin);
 }
 for (let changed = true; changed; ) {
   changed = false;
@@ -325,6 +326,21 @@ for (const { path, text, source, reason } of modules.values()) {
     problems.push(`${name}: ${reason}, so it starts with ${DIRECTIVE}`);
   } else {
     problems.push(`${name}: runs on the server, so it drops ${DIRECTIVE}`);
+  }
+}
+
+// A server module that calls or reads a server-safe helper through a client module's re-export gets
+// a client reference on the server, though the helper itself is pure: it imports from the helper's
+// own module instead.
+for (const { path, reason, uses } of modules.values()) {
+  if (reason) continue;
+  for (const { name, via, origin } of uses) {
+    if (!origin || origin === via || !modules.get(via)?.reason || modules.get(origin)?.reason) {
+      continue;
+    }
+    problems.push(
+      `${relative(root, path)}: uses ${name} through client ${relative(root, via)}; import it from ${relative(root, origin)}`,
+    );
   }
 }
 

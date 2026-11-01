@@ -28,7 +28,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **S3. `index.ts` only re-exports** the public API with named `export … from` statements. No default exports anywhere (TS7). **(enforced)**
 
-**S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules. Labs import a component through its entry point (`index.js`) or its main module. Relative imports end in `.js`; types use `import type`. **(enforced: lint)**
+**S4. Import other components through their main module** (`../icon/icon.js`), never through another component's helper modules, except a server-safe helper module of a component whose main module is a client module: a server-safe caller imports such a helper from the module that defines it (`../filter-bar/filter-matching.js`), since through the client main module the server would receive a client reference (UIC-SERVER-COMPONENTS-1.4). Labs import a component through its entry point (`index.js`) or its main module. Relative imports end in `.js`; types use `import type`. **(enforced: lint)**
 
 **S5. Every public component is complete:** a spec with its hook table, unit tests that name the spec's requirement IDs, a lab with its full state matrix, a browser test, and a reference partial when the spec declares class hooks. **(enforced)**
 

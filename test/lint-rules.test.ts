@@ -79,6 +79,19 @@ describe('library source lint rules', { timeout: 30_000 }, () => {
     expect(ids).not.toContain('ui/no-static-inline-style');
   });
 
+  it('UIC-SERVER-COMPONENTS-1.4 lets a module import a server-safe helper of a client component directly', async () => {
+    const imports = (path: string) => `import { probe } from '../${path}';\nexport { probe };\n`;
+    const file = 'src/components/probe/probe-model.ts';
+    // filter-bar.tsx is a client module; filter-matching.ts is server-safe.
+    expect(await ruleIds(imports('filter-bar/filter-matching.js'), file)).not.toContain(
+      'ui/component-imports',
+    );
+    // filter-editor.tsx is a client helper, which goes through the main module.
+    expect(await ruleIds(imports('filter-bar/filter-editor.js'), file)).toContain(
+      'ui/component-imports',
+    );
+  });
+
   it('UIC-PRIMITIVES-1.4 makes labs import a component through its entry point or main module', async () => {
     const lab = 'labs/src/probe.lab.tsx';
     const imports = (path: string) =>

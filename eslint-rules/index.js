@@ -277,6 +277,29 @@ function findUnexportedNames(filename, source, node) {
     .filter((name) => !exported.has(name));
 }
 
+/** Whether a module's source starts with the 'use client' directive. */
+function isClientModule(file) {
+  for (const extension of ['.ts', '.tsx']) {
+    try {
+      return readFileSync(`${file}${extension}`, 'utf8').startsWith("'use client';");
+    } catch {
+      // Try the next extension.
+    }
+  }
+  return null;
+}
+
+/**
+ * Whether `source` names a server-safe helper module of a component whose main module is a client
+ * module: a server-safe module calls that helper there, since through the main module the server
+ * hands it a client reference (UIC-SERVER-COMPONENTS-1.4).
+ */
+function isServerHelperOfClientMain(filename, source, component) {
+  const dir = path.resolve(path.dirname(filename), '..', component);
+  const target = path.resolve(path.dirname(filename), source).replace(/\.js$/, '');
+  return isClientModule(path.join(dir, component)) === true && isClientModule(target) === false;
+}
+
 const componentImports = {
   meta: {
     type: 'problem',
@@ -312,7 +335,12 @@ const componentImports = {
       const [, component, module] = match;
       if (isLab && module !== component && module !== 'index') {
         context.report({ node, messageId: 'labHelperImport', data: { component, source } });
-      } else if (!isLab && component !== own && module !== component) {
+      } else if (
+        !isLab &&
+        component !== own &&
+        module !== component &&
+        !isServerHelperOfClientMain(filename, source, component)
+      ) {
         context.report({ node, messageId: 'helperImport', data: { component, source } });
       }
     }
