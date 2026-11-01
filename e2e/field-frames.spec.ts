@@ -4,8 +4,9 @@ import { expect, test } from './fixtures.js';
 /** Each lab's field frame: the box a value is typed or picked in, and what takes focus in it. */
 const frames: { lab: string; frame: string; focus?: string }[] = [
   { lab: 'field', frame: '.ui-field__control > input' },
-  { lab: 'text-field', frame: '.ui-text-field__input:not(.ui-text-field__group *)' },
-  { lab: 'text-field', frame: '.ui-text-field__group' },
+  // The input is the frame until adornments make the group the frame (data-framed).
+  { lab: 'text-field', frame: '.ui-text-field__group:not([data-framed]) > .ui-text-field__input' },
+  { lab: 'text-field', frame: '.ui-text-field__group[data-framed]' },
   { lab: 'search-field', frame: '.ui-search-field__group' },
   { lab: 'number-field', frame: '.ui-number-field__group' },
   { lab: 'select-field', frame: '.ui-select-field__trigger' },
