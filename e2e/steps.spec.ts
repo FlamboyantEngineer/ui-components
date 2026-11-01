@@ -83,6 +83,50 @@ test.describe('Steps lab', () => {
     await expect(demo.locator('[data-lab-current]')).toHaveText('Current step: map');
   });
 
+  test('UIC-STEPS-1.4 UIC-STEPS-4.1 walks a sequence of custom icons to completion and back', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('steps');
+    const demo = page.locator('[data-lab-demo="icons"]');
+    const glyphs = (orientation: string) =>
+      demo
+        .getByRole('list', { name: `Publishing, ${orientation}` })
+        .locator('.ui-steps__marker')
+        .evaluateAll((markers) =>
+          markers.map((marker) => marker.querySelector('[data-glyph]')?.getAttribute('data-glyph')),
+        );
+    const press = (name: string) => demo.getByRole('button', { name, exact: true }).click();
+    const icons = ['upload', 'edit', 'users', 'calendar', 'send'];
+    const expectGlyphs = async (expected: string[]) => {
+      for (const orientation of ['horizontal', 'vertical', 'compact']) {
+        await expect.poll(() => glyphs(orientation)).toEqual(expected);
+      }
+    };
+    await expectGlyphs(icons);
+    await press('Next');
+    await press('Next');
+    await expectGlyphs(['check', 'check', 'users', 'calendar', 'send']);
+    const horizontal = demo.getByRole('list', { name: 'Publishing, horizontal' });
+    await expect(horizontal.getByRole('listitem').nth(2)).toHaveAttribute('aria-current', 'step');
+    await expect(horizontal.getByRole('listitem').nth(0)).toHaveText(/^Upload Completed$/);
+    await press('Back');
+    await expectGlyphs(['check', 'edit', 'users', 'calendar', 'send']);
+    for (let step = 0; step < 3; step += 1) await press('Next');
+    await expectGlyphs(['check', 'check', 'check', 'check', 'send']);
+    await press('Next');
+    await expectGlyphs(['check', 'check', 'check', 'check', 'check']);
+    await expect(demo.locator('[data-lab-current]')).toHaveText('Current step: Completed');
+    await expect(demo.getByRole('list', { name: 'Publishing, compact' })).toContainText(
+      'Completed',
+    );
+    await expect(horizontal.locator('[aria-current]')).toHaveCount(0);
+    await press('Reset');
+    await expectGlyphs(icons);
+    await expect(demo.getByRole('button', { name: 'Back' })).toBeDisabled();
+    await lab.expectAccessible();
+  });
+
   test('UIC-STEPS-3.1 names each list and passes axe', async ({ page, lab }) => {
     await lab.open('steps');
     await expect(page.getByRole('list', { name: 'Steps' }).first()).toBeVisible();

@@ -1,4 +1,11 @@
 import { useState } from 'react';
+import {
+  CalendarGlyph,
+  EditGlyph,
+  SendGlyph,
+  UploadGlyph,
+  UsersGlyph,
+} from '../../src/core/glyphs.js';
 import { Button } from '../../src/components/button/button.js';
 import { Steps, type StepsItem, type StepsStatus } from '../../src/components/steps/steps.js';
 import type { Key } from '../../src/core/props.js';
@@ -52,6 +59,49 @@ function ImportProgress() {
       <Button size="sm" isDisabled={current === null} onPress={() => move(1)}>
         {current === null ? 'Completed' : index === importSteps.length - 1 ? 'Finish' : 'Next'}
       </Button>
+    </div>
+  );
+}
+
+const iconSteps: StepsItem[] = [
+  { id: 'upload', label: 'Upload', icon: UploadGlyph },
+  { id: 'edit', label: 'Edit', icon: EditGlyph },
+  { id: 'invite', label: 'Invite', icon: UsersGlyph, isOptional: true },
+  { id: 'schedule', label: 'Schedule', icon: CalendarGlyph },
+  { id: 'send', label: 'Send', icon: SendGlyph },
+];
+
+/**
+ * A sequence whose markers are all custom icons, walked with Back, Next and Reset. Each icon shows
+ * while its step is upcoming or current; a completed step shows the check like any other step.
+ */
+function IconProgress() {
+  const [current, setCurrent] = useState<Key | null>('upload');
+  const index =
+    current === null ? iconSteps.length : iconSteps.findIndex((step) => step.id === current);
+  const go = (to: number) => setCurrent(iconSteps[to]?.id ?? null);
+  const shared = { items: iconSteps, currentKey: current, isComplete: current === null };
+  return (
+    <div data-lab-demo="icons" style={{ display: 'grid', gap: 16 }}>
+      <Steps {...shared} aria-label="Publishing, horizontal" />
+      <div style={{ display: 'flex', gap: 32, alignItems: 'start' }}>
+        <Steps {...shared} orientation="vertical" aria-label="Publishing, vertical" />
+        <div style={{ width: 280 }}>
+          <Steps {...shared} density="compact" aria-label="Publishing, compact" />
+        </div>
+      </div>
+      <p data-lab-current>Current step: {current === null ? 'Completed' : String(current)}</p>
+      <p style={{ display: 'flex', gap: 8 }}>
+        <Button size="sm" isDisabled={index === 0} onPress={() => go(index - 1)}>
+          Back
+        </Button>
+        <Button size="sm" isDisabled={current === null} onPress={() => go(index + 1)}>
+          Next
+        </Button>
+        <Button size="sm" isDisabled={index === 0} onPress={() => go(0)}>
+          Reset
+        </Button>
+      </p>
     </div>
   );
 }
@@ -154,6 +204,12 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Custom icons"
+      description="Every step draws its own icon instead of a number while it is upcoming or current. Next completes the current step, which then shows the check, so finished steps stay recognisable; Back returns a step to current, and Reset starts over. Next on the last step completes the sequence. The same state is drawn horizontal, vertical and compact; the markers are decorative, so each step is still named by its label and status words."
+    >
+      <IconProgress />
     </LabSection>
     <LabSection
       title="Import progress"
