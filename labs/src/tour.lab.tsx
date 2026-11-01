@@ -229,6 +229,44 @@ function ReplacedTarget() {
   );
 }
 
+/** A step whose field clears itself on Escape: that Escape stays with the field. */
+function EscapeInContent() {
+  const [isOpen, setOpen] = useState(false);
+  const [outcome, setOutcome] = useState('open');
+  const [draft, setDraft] = useState('Draft text');
+  return (
+    <div data-lab-demo="escape-in-content">
+      <p>
+        <Button onPress={() => setOpen(true)}>Open the note tour</Button> Outcome:{' '}
+        <output data-lab-output="escape outcome">{outcome}</output>
+      </p>
+      <Tour
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        onSkip={() => setOutcome('skipped')}
+        steps={[
+          {
+            target: '#no-highlight-note',
+            title: 'Quick note',
+            content: (
+              <input
+                aria-label="Note"
+                value={draft}
+                onChange={(event) => setDraft(event.currentTarget.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Escape' || draft === '') return;
+                  event.preventDefault();
+                  setDraft('');
+                }}
+              />
+            ),
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -257,6 +295,12 @@ mountLab(
       description="Open the tour, then refresh the list: the newest order's row is replaced lower down and the spotlight and dialog follow it. Clear the list and the step shows centred; refresh again and it points at the new row."
     >
       <ReplacedTarget />
+    </LabSection>
+    <LabSection
+      title="Escape in the step's content"
+      description="Open the tour and press Escape in the note: the first Escape clears the field and the tour stays; the next Escape, with the field empty, skips the tour."
+    >
+      <EscapeInContent />
     </LabSection>
     <LabSection
       title="Highlight transitions"
