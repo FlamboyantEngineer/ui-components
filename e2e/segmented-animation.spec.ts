@@ -54,16 +54,26 @@ for (const shape of ['linear', 'donut', 'pie']) {
     await drawing.scrollIntoViewIfNeeded();
     await expect(drawing).toHaveAttribute('data-animation-state', 'running');
     const timing = await pauseSequence(drawing);
-    expect(timing.map((part) => Math.round(part.duration))).toEqual([420, 60, 40, 80]);
-    expect(timing.map((part) => Math.round(part.delay ?? 0))).toEqual([0, 420, 480, 520]);
-    expect(timing.map((part) => part.iterations)).toEqual([1, 1, 1, 1]);
-    const halfFirst = await fillAt(drawing, 210);
-    expect(halfFirst[0]).toBeCloseTo(shape === 'linear' ? 0.5 : 26.25, 2);
-    expect(halfFirst.slice(1)).toEqual([0, 0, 0]);
-    const halfSecond = await fillAt(drawing, 450);
-    expect(halfSecond[0]).toBeCloseTo(shape === 'linear' ? 1 : 52.5, 2);
-    expect(halfSecond[1]).toBeCloseTo(shape === 'linear' ? 0.5 : 3.75, 2);
-    expect(halfSecond.slice(2)).toEqual([0, 0]);
+    expect(timing.map((part) => Math.round(part.duration))).toEqual([600]);
+    expect(timing.map((part) => Math.round(part.delay ?? 0))).toEqual([0]);
+    expect(timing.map((part) => part.iterations)).toEqual([1]);
+    // Shares are 52.5, 7.5, 5 and 10 (75 drawn): a segment's full drawing is its share (an arc's
+    // dash) or 1.
+    const full = [52.5, 7.5, 5, 10].map((share) => (shape === 'linear' ? 1 : share));
+    expect(await fillAt(drawing, 0)).toEqual([0, 0, 0, 0]);
+    // The sweep eases in: a quarter of the time draws far less than a quarter of the 75.
+    const early = await fillAt(drawing, 150);
+    expect(early[0]).toBeGreaterThan(0);
+    expect(early[0]).toBeLessThan(((full[0] ?? 0) * 10) / 52.5);
+    // Halfway through the time the symmetric ease has drawn half: 37.5 of the first segment's 52.5.
+    const half = await fillAt(drawing, 300);
+    expect(half[0]).toBeCloseTo(((full[0] ?? 0) * 37.5) / 52.5, 1);
+    expect(half.slice(1)).toEqual([0, 0, 0]);
+    // Later the first segment is whole and the second runs: the handover has no gap.
+    const handover = await fillAt(drawing, 360);
+    expect(handover[0]).toBeCloseTo(full[0] ?? 0, 2);
+    expect(handover[1]).toBeGreaterThan(0);
+    expect(await fillAt(drawing, 600)).toEqual(full.map((value) => expect.closeTo(value, 2)));
     await expect(demo.getByRole('listitem')).toHaveText([
       /Passed\s*42\s*52\.5%/,
       /Failed\s*6\s*7\.5%/,

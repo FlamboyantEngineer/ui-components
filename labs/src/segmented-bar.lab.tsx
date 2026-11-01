@@ -142,7 +142,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="One-time sequential animation"
-      description="Opt in with animated: each shape fills once when first visible, in segment order and proportional time across 0.6 seconds, half the shared loop duration. Replay remounts the bar. Reduced motion shows the complete result immediately."
+      description="Opt in with animated: each shape fills once when first visible, in segment order, as one sweep across 0.6 seconds (half the shared loop duration) that eases in, speeds up through the middle and settles at the end. Each segment hands over to the next with no pause, so the uneven segments here keep their order and proportions. Replay remounts the bar. Reduced motion shows the complete result immediately."
     >
       <StateMatrix
         axes={{ shape: ['linear', 'donut', 'pie'], motion: ['static', 'animated'] }}

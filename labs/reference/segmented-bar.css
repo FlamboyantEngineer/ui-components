@@ -187,25 +187,40 @@
   stroke: var(--ref-tone);
 }
 
+/*
+ * The entry sequence is one eased sweep: the track or ring animates a progress from 0 to 1 that
+ * starts slowly, speeds up and settles, and each segment fills the part of that progress it covers
+ * (from its start to its end, as shares of the total). Segments therefore hand over without a
+ * pause or an overlap, and the ease spans the whole drawing rather than restarting per segment.
+ */
+@property --ref-segmented-bar-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .ui-segmented-bar [data-animation-state='waiting'] .ui-segmented-bar__segment {
     visibility: hidden;
   }
 
+  .ui-segmented-bar [data-animation-state='running'] {
+    animation: ref-segmented-progress var(--ref-segmented-bar-duration)
+      cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+
+  /* How much of each segment the progress has reached, from 0 to 1. */
   .ui-segmented-bar [data-animation-state='running'] .ui-segmented-bar__segment {
-    animation-duration: calc(
-      var(--ref-segmented-bar-duration) * var(--ui-segment-share) / var(--ui-segment-total)
+    --ref-segmented-bar-fill: clamp(
+      0,
+      (var(--ref-segmented-bar-progress) * var(--ui-segment-total) - var(--ui-segment-start)) /
+        max(var(--ui-segment-share), 0.0001),
+      1
     );
-    animation-delay: calc(
-      var(--ref-segmented-bar-duration) * var(--ui-segment-start) / var(--ui-segment-total)
-    );
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-iteration-count: 1;
   }
 
   .ui-segmented-bar__track[data-animation-state='running'] > .ui-segmented-bar__segment {
-    animation-name: ref-segmented-linear;
+    transform: scaleX(var(--ref-segmented-bar-fill));
     transform-origin: left center;
   }
 
@@ -217,26 +232,17 @@
   }
 
   .ui-segmented-bar__ring[data-animation-state='running'] .ui-segmented-bar__segment {
-    animation-name: ref-segmented-arc;
+    stroke-dasharray: calc(var(--ref-segmented-bar-fill) * var(--ui-segment-share) * 1px)
+      calc((100 - var(--ref-segmented-bar-fill) * var(--ui-segment-share)) * 1px);
   }
 }
 
-@keyframes ref-segmented-linear {
+@keyframes ref-segmented-progress {
   from {
-    transform: scaleX(0);
+    --ref-segmented-bar-progress: 0;
   }
   to {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes ref-segmented-arc {
-  from {
-    stroke-dasharray: 0px 100px;
-  }
-  to {
-    stroke-dasharray: calc(var(--ui-segment-share) * 1px)
-      calc((100 - var(--ui-segment-share)) * 1px);
+    --ref-segmented-bar-progress: 1;
   }
 }
 
