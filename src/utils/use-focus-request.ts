@@ -53,6 +53,16 @@ function createFocusAttempt(target: FocusRequestTarget) {
 }
 
 /**
+ * Moves focus to the element `target` finds now, retrying on the next frames until it holds focus,
+ * as a request does. Returns a function that stops the retries.
+ */
+export function focusWithRetry(target: FocusRequestTarget): () => void {
+  const current = createFocusAttempt(target);
+  current.attempt();
+  return current.stop;
+}
+
+/**
  * Returns `request(target)`, which moves focus to the element `target` finds after the next render,
  * for editors that add, remove or move the element being edited. An edit made from a menu runs
  * while the menu still makes the rest of the page inert, and a collection may move its rows a frame
@@ -67,9 +77,7 @@ export function useFocusRequest(): (target: FocusRequestTarget) => void {
     if (!target) return;
     request.current = null;
     cancel.current();
-    const current = createFocusAttempt(target);
-    cancel.current = current.stop;
-    current.attempt();
+    cancel.current = focusWithRetry(target);
   });
   return useCallback((target: FocusRequestTarget) => {
     cancel.current();

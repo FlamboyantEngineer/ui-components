@@ -93,6 +93,24 @@ test.describe('Chat Attachment lab', () => {
     await expect(opener).toBeFocused();
   });
 
+  test('UIC-CHAT-ATTACHMENT-2.2 ends the viewer when its gallery empties and opens nothing once refilled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-attachment');
+    const demo = page.locator('[data-lab-demo="emptying"]');
+    await demo.getByRole('button', { name: 'Clear in a moment' }).click();
+    await demo.getByRole('button', { name: 'View Harbour.svg' }).click();
+    await settledViewer(page);
+    await expect(page.locator('.ui-media-viewer')).toHaveCount(0);
+    const add = demo.getByRole('button', { name: 'Add a photo' });
+    await expect(add).toBeFocused();
+    await add.click();
+    await expect(demo.getByRole('button', { name: 'View Meadow.svg' })).toBeVisible();
+    await expect(page.locator('.ui-media-viewer')).toHaveCount(0);
+    await expect(add).toBeFocused();
+  });
+
   test('UIC-CHAT-ATTACHMENT-2.3 UIC-CHAT-ATTACHMENT-2.4 keeps the focus in the composer strip as files are removed', async ({
     page,
     lab,

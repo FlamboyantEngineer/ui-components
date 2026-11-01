@@ -78,10 +78,10 @@ Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`, `e
 
 ### UIC-CHAT-ATTACHMENT-2.2 - Gallery
 
-Each listed image that shows a thumbnail shall be a preview button; pressing it opens a `MediaViewer` on that image, with every listed image that shows a thumbnail, in order, to page through. The viewer shows an image's safe `url`, else its thumbnail, uses the thumbnail in its strip and offers Download for a complete attachment with a `url`. Closing the viewer returns the focus to the button that opened it.
+Each listed image that shows a thumbnail shall be a preview button; pressing it opens a `MediaViewer` on that image, with every listed image that shows a thumbnail, in order, to page through. The viewer shows an image's safe `url`, else its thumbnail, uses the thumbnail in its strip and offers Download for a complete attachment with a `url`. Closing the viewer returns the focus to the button that opened it. The viewer follows the listed images: when its image leaves while others stay, it shows the image now at its place, else the last one; when no image is listed, the viewer session ends, so images listed later open only when pressed. A viewer that ends open while holding the focus hands it to the list's first control, else to `finalFocus`.
 
 Implementation: `src/components/chat-attachment/chat-attachment-list.tsx`
-Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`, `e2e/chat-attachment.spec.ts`
+Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`, `src/components/chat-attachment/chat-attachment-viewer-session.test.tsx`, `e2e/chat-attachment.spec.ts`
 
 ### UIC-CHAT-ATTACHMENT-2.3 - Remove and Retry
 

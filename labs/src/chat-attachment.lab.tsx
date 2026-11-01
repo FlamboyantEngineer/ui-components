@@ -155,6 +155,45 @@ function Gallery() {
   );
 }
 
+/** How long the emptying gallery waits before its owner clears it. */
+const clearDelay = 1500;
+
+/**
+ * A gallery its owner clears while the viewer may be open, then fills with another photo: the
+ * viewer ends with the photos, focus goes to Add a photo, and the new photo opens only when pressed.
+ */
+function EmptyingGallery() {
+  const [listed, setListed] = useState<ChatAttachmentData[]>(tripAttachments.slice(0, 2));
+  const addRef = useRef<HTMLButtonElement>(null);
+  const timer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current !== null) window.clearTimeout(timer.current);
+    },
+    [],
+  );
+  return (
+    <div data-lab-demo="emptying">
+      <ChatAttachmentList attachments={listed} finalFocus={addRef} />
+      <Button
+        size="sm"
+        onPress={() => {
+          timer.current = window.setTimeout(() => setListed([]), clearDelay);
+        }}
+      >
+        Clear in a moment
+      </Button>
+      <Button
+        ref={addRef}
+        size="sm"
+        onPress={() => setListed((current) => [...current, ...tripAttachments.slice(2, 3)])}
+      >
+        Add a photo
+      </Button>
+    </div>
+  );
+}
+
 /** One attachment whose thumbnail asks its owner for a preview. */
 function StandalonePreview() {
   const [previews, setPreviews] = useState(0);
@@ -187,6 +226,12 @@ mountLab(
       description="A list named by its heading: the photos open the media viewer on the pressed one, with the other photos to page through; the PDF and the text file are chips."
     >
       <Gallery />
+    </LabSection>
+    <LabSection
+      title="Gallery that empties"
+      description="Press Clear in a moment, then open a photo: when the owner clears the list the viewer ends with it and focus moves to Add a photo. Adding a photo then lists it without opening the viewer again. While other photos stay, a viewer whose photo leaves shows the photo now in its place."
+    >
+      <EmptyingGallery />
     </LabSection>
     <LabSection
       title="Composer strip"
