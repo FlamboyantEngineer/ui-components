@@ -109,6 +109,75 @@ describe('LineChart', () => {
     expect(document.activeElement).toHaveAttribute('data-active', 'true');
   });
 
+  it('UIC-CHART-4.3 moves between unequally sampled series by x, not by point order', async () => {
+    const user = userEvent.setup();
+    const sparse = [
+      {
+        id: 'alpha',
+        label: 'Alpha',
+        points: [
+          { x: 0, y: 1 },
+          { x: 100, y: 3 },
+        ],
+      },
+      {
+        id: 'blue',
+        label: 'Blue',
+        points: [
+          { x: 0, y: 2 },
+          { x: 1, y: 4 },
+          { x: Number.NaN, y: 6 },
+          { x: 100, y: 5 },
+        ],
+      },
+      {
+        id: 'gamma',
+        label: 'Gamma',
+        points: [
+          { x: 40, y: 7 },
+          { x: 70, y: 8 },
+        ],
+      },
+    ];
+    render(<LineChart aria-label="Samples" series={sparse} showLegend={false} />);
+    screen.getByRole('img', { name: 'Alpha, 100: 3' }).focus();
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toHaveAccessibleName('Blue, 100: 5');
+    await user.keyboard('{ArrowLeft}{ArrowDown}');
+    // From x=1 the nearest Gamma point is x=40; from x=100 it is x=70.
+    expect(document.activeElement).toHaveAccessibleName('Gamma, 40: 7');
+    await user.keyboard('{End}{ArrowUp}');
+    expect(document.activeElement).toHaveAccessibleName('Blue, 100: 5');
+    await user.keyboard('{ArrowUp}{Home}');
+    expect(document.activeElement).toHaveAccessibleName('Alpha, 0: 1');
+  });
+
+  it('UIC-CHART-4.3 compares dates between series with different ranges', async () => {
+    const user = userEvent.setup();
+    const day = (date: number) => `2026-03-${String(date).padStart(2, '0')}`;
+    const ranges = [
+      {
+        id: 'weekly',
+        label: 'Weekly',
+        points: [
+          { x: day(2), y: 1 },
+          { x: day(30), y: 2 },
+        ],
+      },
+      {
+        id: 'daily',
+        label: 'Daily',
+        points: [27, 28, 29, 30, 31].map((date) => ({ x: day(date), y: date })),
+      },
+    ];
+    render(<LineChart aria-label="Ranges" series={ranges} timeZone="UTC" showLegend={false} />);
+    screen.getByRole('img', { name: 'Weekly, Mar 30, 2026: 2' }).focus();
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toHaveAccessibleName('Daily, Mar 30, 2026: 30');
+    await user.keyboard('{Home}{ArrowUp}');
+    expect(document.activeElement).toHaveAccessibleName('Weekly, Mar 30, 2026: 2');
+  });
+
   it('UIC-CHART-4.5 summarises the drawn values and marks a chart without any', () => {
     const { rerender } = render(<LineChart aria-label="Defects" series={defects} timeZone="UTC" />);
     expect(screen.getByRole('figure')).toHaveAccessibleDescription(

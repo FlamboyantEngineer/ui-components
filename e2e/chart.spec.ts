@@ -64,6 +64,18 @@ test.describe('Chart lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CHART-4.3 moves between unevenly sampled series by x', async ({ page, lab }) => {
+    await lab.open('chart');
+    const figure = page.locator('[data-lab-demo="uneven"]').getByRole('figure');
+    await figure.getByRole('img', { name: 'Hourly reading, 24: 16' }).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(figure.getByRole('img', { name: 'Spot check, 24: 12' })).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowUp');
+    await expect(figure.getByRole('img', { name: 'Hourly reading, 0: 10' })).toBeFocused();
+    await lab.expectAccessible('[data-lab-demo="uneven"]');
+  });
+
   test('UIC-CHART-4.2 UIC-CHART-4.3 UIC-CHART-4.4 names, focuses and describes each value', async ({
     page,
     lab,
