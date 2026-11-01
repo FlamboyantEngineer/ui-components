@@ -52,14 +52,14 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 ### UIC-NOTIFICATION-CENTER-1.7 - Empty and loading
 
-While no notification shows, the list shall show a small `EmptyState` (`ui-notification-list__empty`): the loading state reading the provider's `loading` string while `isLoading`, else the `bell` glyph with `noUnreadNotifications` and `unreadNotificationsEmpty` under the unread filter, or `noNotifications` and `notificationsEmpty`. While `isLoading`, each day group (`ui-notification-list__group`) carries `aria-busy="true"`; the root does not, so the loading state and the arrival announcement have no busy ancestor.
+While no notification shows and `hasMore` is not set, the list shall show a small `EmptyState` (`ui-notification-list__empty`): the loading state reading the provider's `loading` string while `isLoading`, else, unless the unread filter shows nothing while the unread count is above zero (the list then claims nothing), the `bell` glyph with `noUnreadNotifications` and `unreadNotificationsEmpty` under the unread filter, or `noNotifications` and `notificationsEmpty`. While `isLoading`, each day group (`ui-notification-list__group`) carries `aria-busy="true"`; the root does not, so the loading state and the arrival announcement have no busy ancestor.
 
 Implementation: `src/components/notification-center/notification-list.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-1.8 - Loading more
 
-With `hasMore` and at least one row shown, the list shall end with a `LoadMore` (`ui-notification-list__load-more`) that calls `onLoadMore` when pressed and each time it comes into view (`autoLoad`), pending while `isLoading` or while the promise `onLoadMore` returns is unsettled.
+While `hasMore`, the list shall end with a `LoadMore` (`ui-notification-list__load-more`), even when no loaded notification matches the filter (rows the filter hides say nothing of later pages), that calls `onLoadMore` when pressed and each time it comes into view (`autoLoad`; staying in view never loads again, so a page that adds no match does not repeat), pending while `isLoading` or while the promise `onLoadMore` returns is unsettled.
 
 Implementation: `src/components/notification-center/notification-list.tsx`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
@@ -82,7 +82,7 @@ Verification: `src/components/notification-center/notification-center.test.tsx`,
 
 ### UIC-NOTIFICATION-CENTER-2.2 - Panel
 
-Pressing the bell shall open a `NotificationList` with every list prop of the centre in a `Popover` (`ui-notification-center__panel`) placed at `placement` (`bottom end` by default), or with `presentation="drawer"` in a small `Drawer` from the end edge with a close button, for narrow screens. The panel's heading, which names its dialog, is `title`, else the provider's `notifications` string. `isOpen` (controlled), `defaultOpen` and `onOpenChange` control it. Focus moves into the panel on open; Escape and an outside press close it and return focus to the bell. The root publishes `data-presentation` and `data-open`.
+Pressing the bell shall open a `NotificationList` with every list prop of the centre in a `Popover` (`ui-notification-center__panel`) placed at `placement` (`bottom end` by default), or with `presentation="drawer"` in a small `Drawer` from the end edge with a close button, for narrow screens. The panel's heading, which names its dialog, is `title`, else the provider's `notifications` string. `isOpen` (controlled), `defaultOpen` and `onOpenChange` control it. Focus moves into the panel on open; Escape and an outside press close it and return focus to the bell. The root publishes `data-presentation` and `data-open`. The centre owns the filter (`filter`, `defaultFilter`, `onFilterChange`) for as long as it is mounted and hands it to the list, so closing and reopening the panel or changing `presentation` keeps the reader's choice and reports no change.
 
 Implementation: `src/components/notification-center/notification-center.tsx`
 Verification: `src/components/notification-center/notification-center.test.tsx`, `e2e/notification-center.spec.ts`

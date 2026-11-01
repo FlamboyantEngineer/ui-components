@@ -220,8 +220,11 @@ export function NotificationList({
       {groups.map((group) => (
         <ListGroup key={group.day} group={group} actions={rowActions} isBusy={isLoading} />
       ))}
-      {groups.length === 0 ? <ListEmptyState filter={filter} isLoading={isLoading} /> : null}
-      {hasMore && groups.length > 0 ? (
+      {groups.length === 0 && !hasMore && (isLoading || !(filter === 'unread' && unread > 0)) ? (
+        <ListEmptyState filter={filter} isLoading={isLoading} />
+      ) : null}
+      {/* Rows that the filter hides on loaded pages say nothing of later pages, so Load more stays. */}
+      {hasMore ? (
         <LoadMore
           autoLoad
           isPending={isLoading}

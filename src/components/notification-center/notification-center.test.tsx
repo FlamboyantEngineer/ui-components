@@ -156,6 +156,66 @@ describe('NotificationCenter', () => {
     delete Element.prototype.scrollTo;
   });
 
+  it('UIC-NOTIFICATION-CENTER-1.5 UIC-NOTIFICATION-CENTER-2.2 keeps the filter across closing, reopening and presentations', async () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.stubGlobal('matchMedia', () => ({ matches: false }));
+    Element.prototype.scrollTo = () => {};
+    const onFilterChange = vi.fn();
+    const { rerender } = render(
+      <NotificationCenter items={items} getNow={getNow} onFilterChange={onFilterChange} />,
+    );
+    const panelList = () => document.querySelector('.ui-notification-list');
+    await userEvent.click(bell());
+    await screen.findByRole('dialog');
+    await userEvent.click(screen.getByRole('radio', { name: /^Unread/ }));
+    expect(onFilterChange).toHaveBeenCalledWith('unread');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await userEvent.click(bell());
+    await screen.findByRole('dialog');
+    expect(panelList()).toHaveAttribute('data-filter', 'unread');
+    expect(screen.queryByText('Weekly digest')).not.toBeInTheDocument();
+    rerender(
+      <NotificationCenter
+        items={items}
+        getNow={getNow}
+        presentation="drawer"
+        onFilterChange={onFilterChange}
+      />,
+    );
+    await settleSheet();
+    await waitFor(() => expect(panelList()).toHaveAttribute('data-filter', 'unread'));
+    expect(onFilterChange).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+    // @ts-expect-error -- jsdom has no scrollTo; the stub goes away with the test.
+    delete Element.prototype.scrollTo;
+  });
+
+  it('UIC-NOTIFICATION-CENTER-1.8 keeps Load more in the panel while the filter shows no row', async () => {
+    const onLoadMore = vi.fn();
+    render(
+      <NotificationCenter
+        items={items.filter((item) => item.isRead)}
+        getNow={getNow}
+        defaultFilter="unread"
+        unreadCount={4}
+        hasMore
+        onLoadMore={onLoadMore}
+      />,
+    );
+    await userEvent.click(bell());
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).queryByText('Nothing unread')).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Load more' }));
+    expect(onLoadMore).toHaveBeenCalled();
+  });
+
   it('UIC-NOTIFICATION-CENTER-3.1 announces arrivals once, open or closed', async () => {
     const { container, rerender } = render(<NotificationCenter items={items} getNow={getNow} />);
     const status = container.querySelector('.ui-notification-center__announcement');

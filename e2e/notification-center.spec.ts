@@ -105,6 +105,36 @@ test.describe('Notification Center lab', () => {
     ]);
   });
 
+  test('UIC-NOTIFICATION-CENTER-1.7 UIC-NOTIFICATION-CENTER-1.8 loads unread notifications of a later page', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('notification-center');
+    const inbox = page.locator('[data-lab-unread-later]');
+    await expect(inbox).toHaveAttribute('data-filter', 'unread');
+    await expect(inbox).not.toContainText('Nothing unread');
+    await inbox.locator('.ui-notification-list__load-more').scrollIntoViewIfNeeded();
+    await expect(inbox.getByText('Export of Cities.xlsx failed')).toBeVisible();
+    await expect(inbox.locator('.ui-notification-list__load-more')).toHaveCount(0);
+  });
+
+  test('UIC-NOTIFICATION-CENTER-1.5 UIC-NOTIFICATION-CENTER-2.2 keeps the filter when the panel opens again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('notification-center');
+    const bell = page.locator('[data-lab-live]').getByRole('button', { name: /^Notifications/ });
+    await bell.click();
+    const dialog = page.getByRole('dialog', { name: 'Notifications' });
+    await dialog.getByRole('radio', { name: /^Unread/ }).click();
+    await expect(dialog.locator('.ui-notification-list')).toHaveAttribute('data-filter', 'unread');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await bell.click();
+    await expect(dialog.getByRole('radio', { name: /^Unread/ })).toBeChecked();
+    await expect(dialog).toContainText('Nothing unread');
+  });
+
   test('UIC-NOTIFICATION-CENTER-1.7 shows the empty and loading states', async ({ page, lab }) => {
     await lab.open('notification-center');
     await expect(matrixCell(page, 'state=loading').locator('.ui-empty-state')).toHaveAttribute(
