@@ -1,10 +1,11 @@
 import { MoreGlyph } from '../../core/glyphs.js';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { ChatList, type ChatConversation } from './chat-list.js';
 
 const getNow = () => new Date('2026-04-20T10:30:00');
@@ -181,6 +182,44 @@ describe('ChatList', () => {
     expect(row(/^Travel helper/)).toHaveAttribute('aria-selected', 'true');
     rerender(<ChatList conversations={conversations} selectedKey={null} />);
     expect(row(/^Travel helper/)).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('UIC-CHAT-LIST-1.5 opens a row menu from the keyboard and returns focus to its button', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(
+      <ChatList
+        conversations={conversations}
+        onSelectionChange={onSelectionChange}
+        renderActions={(conversation) => (
+          <MenuTrigger>
+            <Button icon={MoreGlyph} label={`More for ${conversation.title}`} size="sm" />
+            <MenuPopover>
+              <Menu onAction={(key) => onAction(conversation.id, key)}>
+                <MenuItem id="mute">Mute</MenuItem>
+              </Menu>
+            </MenuPopover>
+          </MenuTrigger>
+        )}
+      />,
+    );
+    const more = screen.getByRole('button', { name: 'More for Ana Lima' });
+    for (const key of ['{Enter}', ' ']) {
+      act(() => row(/^Ana Lima/).focus());
+      await user.keyboard('{ArrowRight}');
+      expect(more).toHaveFocus();
+      await user.keyboard(key);
+      expect(await screen.findByRole('menuitem', { name: 'Mute' })).toHaveFocus();
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(more).toHaveFocus());
+    }
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('menuitem', { name: 'Mute' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledWith('ana', 'mute');
+    await waitFor(() => expect(more).toHaveFocus());
+    expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
   it('UIC-CHAT-LIST-1.5 UIC-CHAT-LIST-1.3 is one tab stop with arrow keys, typeahead and row controls', async () => {
