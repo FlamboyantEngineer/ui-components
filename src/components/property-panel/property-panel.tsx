@@ -1,7 +1,7 @@
 'use client';
 
-import { useId, useMemo, type ReactNode } from 'react';
-import { DisclosureGroup } from '../../primitives/index.js';
+import { useContext, useId, useMemo, useState, type ReactNode } from 'react';
+import { DisclosureGroup, DisclosureGroupStateContext } from '../../primitives/index.js';
 import type { ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
@@ -58,7 +58,22 @@ const panelHooks = createHooks('property-panel', ['header', 'body']);
 const groupHooks = createHooks('property-group', ['heading']);
 const iconGroupHooks = createHooks('property-icon-group');
 
-/** The body: React Aria's disclosure group while the panel opens and closes its sections. */
+/** Hands the panel's disclosure group state on to the sections only while the panel manages it. */
+function ManagedSections({ isManaged, children }: { isManaged: boolean; children: ReactNode }) {
+  const group = useContext(DisclosureGroupStateContext);
+  return (
+    <DisclosureGroupStateContext value={isManaged ? group : null}>
+      {children}
+    </DisclosureGroupStateContext>
+  );
+}
+
+/**
+ * The body: always React Aria's disclosure group, so the sections keep their place in the tree
+ * whether or not the panel opens and closes them; while it does not, the sections keep their own
+ * state. The group is always controlled: uncontrolled keys start from `defaultExpandedKeys` each
+ * time the panel starts managing its sections.
+ */
 function PanelBody({
   expansion,
   children,
@@ -74,16 +89,19 @@ function PanelBody({
     expandedKeys !== undefined ||
     defaultExpandedKeys !== undefined ||
     allowsMultipleExpanded !== undefined;
-  if (!isManaged) return <div {...panelHooks.slot('body')}>{children}</div>;
+  const [own, setOwn] = useState(() => ({ isManaged, keys: new Set(defaultExpandedKeys) }));
+  if (own.isManaged !== isManaged) setOwn({ isManaged, keys: new Set(defaultExpandedKeys) });
   return (
     <DisclosureGroup
       className={panelHooks.slotClass('body')}
-      expandedKeys={expandedKeys}
-      defaultExpandedKeys={defaultExpandedKeys}
-      onExpandedChange={onExpandedChange}
+      expandedKeys={expandedKeys ?? own.keys}
+      onExpandedChange={(keys) => {
+        if (expandedKeys === undefined) setOwn({ isManaged, keys });
+        onExpandedChange?.(keys);
+      }}
       allowsMultipleExpanded={allowsMultipleExpanded ?? true}
     >
-      {children}
+      <ManagedSections isManaged={isManaged}>{children}</ManagedSections>
     </DisclosureGroup>
   );
 }

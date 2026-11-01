@@ -162,6 +162,35 @@ test.describe('Property Panel lab', () => {
     await lab.expectAccessible('[data-lab-grouped="all"]');
   });
 
+  test('UIC-PROPERTY-PANEL-1.4 keeps a draft when the panel switches to and from an accordion', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const area = page.locator('[data-lab-switching]');
+    const title = area.getByRole('textbox', { name: 'Title' });
+    await title.fill('Draft title');
+    const accordion = area.getByRole('switch', { name: 'Accordion' });
+    await accordion.focus();
+    await page.keyboard.press('Space');
+    await expect(accordion).toBeChecked();
+    await expect(title).toHaveValue('Draft title');
+    await area.getByRole('button', { name: /^Text/ }).click();
+    await expect(area.getByRole('button', { name: /^Page/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await accordion.focus();
+    await page.keyboard.press('Space');
+    await expect(accordion).not.toBeChecked();
+    await expect(area.getByRole('button', { name: /^Page/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(title).toHaveValue('Draft title');
+    await lab.expectAccessible('[data-lab-switching]');
+  });
+
   test('UIC-PROPERTY-PANEL-1.5 locks every field of a disabled or read-only panel', async ({
     page,
     lab,

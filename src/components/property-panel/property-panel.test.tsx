@@ -233,6 +233,67 @@ describe('PropertyPanel', () => {
     );
   });
 
+  it('UIC-PROPERTY-PANEL-1.4 keeps the sections’ content when the panel starts or stops managing them', async () => {
+    function Counter() {
+      const [count, setCount] = useState(0);
+      return (
+        <button type="button" onClick={() => setCount(count + 1)}>
+          Count {count}
+        </button>
+      );
+    }
+    function Panel(props: {
+      allowsMultipleExpanded?: boolean;
+      defaultExpandedKeys?: Key[];
+      expandedKeys?: Key[];
+    }) {
+      return (
+        <PropertyPanel aria-label="Shape" {...props}>
+          <PropertySection id="main" title="Main">
+            <PropertyRow label="Width">
+              <input aria-label="Width value" />
+            </PropertyRow>
+            <PropertyCard name="Frame" defaultExpanded>
+              <Counter />
+            </PropertyCard>
+          </PropertySection>
+          <PropertySection id="more" title="More">
+            <PropertyRow label="Depth">3</PropertyRow>
+          </PropertySection>
+        </PropertyPanel>
+      );
+    }
+    const errors = vi.spyOn(console, 'error');
+    const user = userEvent.setup();
+    const { rerender } = render(<Panel />);
+    const input = screen.getByRole('textbox', { name: 'Width value' });
+    await user.click(screen.getByRole('button', { name: 'Count 0' }));
+    await user.type(input, 'Uncommitted width');
+    const expectKept = () => {
+      expect(screen.getByRole('textbox', { name: 'Width value', hidden: true })).toBe(input);
+      expect(input).toHaveValue('Uncommitted width');
+      expect(screen.getByRole('button', { name: 'Count 1', hidden: true })).toBeInTheDocument();
+    };
+    rerender(<Panel allowsMultipleExpanded={false} defaultExpandedKeys={['main']} />);
+    expectKept();
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('button', { name: /Main/ })).toHaveAttribute('aria-expanded', 'true');
+    rerender(<Panel />);
+    expectKept();
+    rerender(<Panel expandedKeys={['main', 'more']} />);
+    expectKept();
+    expect(screen.getByRole('button', { name: /More/ })).toHaveAttribute('aria-expanded', 'true');
+    rerender(<Panel allowsMultipleExpanded={false} />);
+    expectKept();
+    expect(screen.getByRole('button', { name: /Main/ })).toHaveAttribute('aria-expanded', 'false');
+    rerender(<Panel />);
+    expectKept();
+    expect(screen.getByRole('button', { name: /Main/ })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: /Frame/ })).toHaveAttribute('aria-expanded', 'true');
+    expect(errors).not.toHaveBeenCalled();
+    errors.mockRestore();
+  });
+
   it('UIC-PROPERTY-PANEL-1.5 disables or locks every field inside and keeps sections browsable', async () => {
     function Name() {
       const state = useFieldState<string>({ defaultValue: 'Plum' });

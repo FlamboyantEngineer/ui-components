@@ -9,6 +9,7 @@ import {
 import { useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import {
   PropertyCard,
   PropertyGroup,
@@ -204,6 +205,30 @@ function GroupedSections({ isAccordion }: { isAccordion: boolean }) {
   );
 }
 
+/** A panel that starts or stops opening its sections as an accordion; drafts inside survive. */
+function SwitchingPanel() {
+  const [isAccordion, setAccordion] = useState(false);
+  return (
+    <div data-lab-switching style={{ width: widths.wide }}>
+      <Switch isSelected={isAccordion} onChange={setAccordion}>
+        Accordion
+      </Switch>
+      <PropertyPanel
+        aria-label="Switching panel"
+        allowsMultipleExpanded={isAccordion ? false : undefined}
+        defaultExpandedKeys={isAccordion ? ['page'] : undefined}
+      >
+        <PropertySection id="page" title="Page">
+          <TextSetting label="Title" value="Report" />
+        </PropertySection>
+        <PropertySection id="text" title="Text">
+          <TextSetting label="Font" value="Serif" />
+        </PropertySection>
+      </PropertyPanel>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -293,6 +318,12 @@ mountLab(
         <GroupedSections isAccordion />
         <GroupedSections isAccordion={false} />
       </div>
+    </LabSection>
+    <LabSection
+      title="Switching to an accordion"
+      description="The switch makes the panel open its sections one at a time, or hands them back their own state; a draft typed in Title survives both ways."
+    >
+      <SwitchingPanel />
     </LabSection>
     <LabSection
       title="Locked panels"
