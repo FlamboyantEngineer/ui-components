@@ -296,7 +296,7 @@ function StepBoard(props: {
   );
 }
 
-/** A board whose first card draws a board of its own; both use the keys a and b. */
+/** A board whose first card draws a board of its own (both use the keys a and b) and whose second has a field. */
 function NestedBoards() {
   return (
     <div style={frame} data-lab-demo="nested">
@@ -316,7 +316,10 @@ function NestedBoards() {
               ]}
             />
           ) : (
-            step.title
+            <>
+              {step.title}
+              <input aria-label={`Notes for ${step.title}`} defaultValue="Use the soft cloth" />
+            </>
           )
         }
       />
@@ -389,8 +392,8 @@ mountLab(
       <TypedBoard />
     </LabSection>
     <LabSection
-      title="Nested boards"
-      description="A card that draws a board of its own. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys."
+      title="Nested boards and fields"
+      description="A card that draws a board of its own, and a card with a notes field. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys. In the notes field, the arrow keys, Alt+Arrow keys and typing stay with the field."
     >
       <NestedBoards />
     </LabSection>
