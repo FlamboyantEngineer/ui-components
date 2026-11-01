@@ -435,7 +435,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Row groups"
-      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft. Numeric aggregates also handle large groups. A number and the text of the same number keep separate groups."
+      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft. Numeric aggregates also handle large groups. A number and the text of the same number keep separate groups. Dates group by their local day, the day the date filter reads, with an unreadable date among the empty values and an early year as its four-digit day."
     >
       <Grouping />
     </LabSection>

@@ -30,9 +30,12 @@ const htmlEscapes: Readonly<Record<string, string>> = {
   '"': '&quot;',
 };
 
-/** A value as the text a copy writes and a fill reads: dates in ISO 8601, nothing as empty text. */
+/**
+ * A value as the text a copy writes, a fill reads and an editor starts with: dates in ISO 8601,
+ * nothing and an invalid date as empty text.
+ */
 export function formatCellText(value: TableCellValue): string {
-  if (value instanceof Date) return value.toISOString();
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? '' : value.toISOString();
   return value === null || value === undefined ? '' : String(value);
 }
 

@@ -812,6 +812,23 @@ test.describe('Table lab', () => {
     await lab.expectAccessible('[data-lab="grouping-typed"]');
   });
 
+  test('UIC-TABLE-13.1 groups dates by local day with unreadable dates among the empty values', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const grid = section(page, 'grouping-dates').getByRole('treegrid', {
+      name: 'Deliveries, grouped by day',
+    });
+    const labels = grid.locator('.ui-table__group-label');
+    await expect(labels).toHaveCount(3);
+    await expect(labels.nth(0)).toContainText('0999-05-01');
+    await expect(labels.nth(1)).toContainText('2024-05-01');
+    await expect(grid.locator('.ui-table__group-count')).toHaveText(['1', '2', '1']);
+    await expect(grid.getByRole('row', { name: /^Unreadable crate/ })).toBeVisible();
+    await lab.expectAccessible('[data-lab="grouping-dates"]');
+  });
+
   test('UIC-TABLE-13.4 collapses and expands groups in a virtualized table', async ({
     page,
     lab,

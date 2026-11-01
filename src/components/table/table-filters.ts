@@ -8,6 +8,7 @@ import {
   type TableColumn,
   type TableRow,
 } from './table-rows.js';
+import { toLocalDay } from '../../utils/local-day.js';
 
 /**
  * How a column filters: `text` keeps cells containing the text, `number` and `date` keep cells
@@ -56,13 +57,12 @@ function isBound(value: number | null | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-/** A cell's day as `YYYY-MM-DD`, from a date or a text starting with one, in local time. */
+/**
+ * A cell's day as `YYYY-MM-DD`: a date's in local time (years 1 to 9999), or that of a text
+ * starting with one.
+ */
 function toDay(value: TableCellValue): string | null {
-  if (value instanceof Date) {
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    return Number.isNaN(value.getTime()) ? null : `${value.getFullYear()}-${month}-${day}`;
-  }
+  if (value instanceof Date) return toLocalDay(value);
   return typeof value === 'string' && isoDay.test(value) ? value.slice(0, 10) : null;
 }
 

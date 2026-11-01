@@ -13,6 +13,7 @@ import {
   type TableRow,
 } from './table-rows.js';
 import type { TableNode } from './table-tree.js';
+import { toLocalDay } from '../../utils/local-day.js';
 
 /** A grouping by a computed value: its id, its name in group headers and each row's value. */
 export interface TableGrouping<T> {
@@ -79,15 +80,20 @@ export function isGroupNode<T>(node: TableBodyNode<T>): node is TableGroupNode<T
   return 'group' in node;
 }
 
-/** Whether a value counts as no value: absent, null or empty text. */
+/** Whether a value counts as no value: absent, null, empty text or an invalid date. */
 function isEmptyCellValue(value: TableCellValue): boolean {
+  if (value instanceof Date) return Number.isNaN(value.getTime());
   return value === null || value === undefined || value === '';
 }
 
-/** A value as the text of a group key or a group header: dates as their `YYYY-MM-DD` day. */
+/**
+ * A value as the text of a group key or a group header: dates as their local `YYYY-MM-DD` day, as
+ * the date filter reads them (a year outside 1 to 9999 as its UTC day in ISO 8601's expanded form).
+ */
 export function formatGroupValue(value: TableCellValue): string {
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
-  return isEmptyCellValue(value) ? '' : String(value);
+  if (isEmptyCellValue(value)) return '';
+  if (value instanceof Date) return toLocalDay(value) ?? value.toISOString().split('T')[0] ?? '';
+  return String(value);
 }
 
 /**

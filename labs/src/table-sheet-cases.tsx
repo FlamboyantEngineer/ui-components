@@ -190,6 +190,26 @@ const codedReadings: CodedReading[] = [
   { id: 'r4', name: 'Fourth reading', code: 'true', amount: 40 },
 ];
 
+interface Delivery {
+  id: string;
+  name: string;
+  due: Date;
+}
+
+const ancient = new Date(2024, 4, 1, 12);
+ancient.setFullYear(999);
+
+// Imported dates: two on the same local day, one late in the evening, an unreadable one and an
+// early year, which groups and filters by its four-digit day.
+const deliveries: Delivery[] = [
+  { id: 'd1', name: 'Morning crate', due: new Date(2024, 4, 1, 8) },
+  { id: 'd2', name: 'Evening crate', due: new Date(2024, 4, 1, 23, 30) },
+  { id: 'd3', name: 'Unreadable crate', due: new Date('not a date') },
+  { id: 'd4', name: 'Archive crate', due: ancient },
+];
+
+const dayFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+
 export function Grouping() {
   const [choice, setChoice] = useState('Kind');
   const [collapsed, setCollapsed] = useState<Set<Key>>(new Set());
@@ -230,6 +250,25 @@ export function Grouping() {
           ]}
           groupBy={['code']}
           renderGroupLabel={(group) => `Code ${String(group.value)} (${typeof group.value})`}
+          size="sm"
+        />
+      </div>
+      <h3>Dates</h3>
+      <div data-lab="grouping-dates">
+        <Table
+          aria-label="Deliveries, grouped by day"
+          rows={deliveries}
+          columns={[
+            { id: 'name', header: 'Name' },
+            {
+              id: 'due',
+              header: 'Due',
+              filter: { type: 'date' },
+              renderCell: (row) =>
+                Number.isNaN(row.due.getTime()) ? 'Unreadable' : dayFormat.format(row.due),
+            },
+          ]}
+          groupBy={['due']}
           size="sm"
         />
       </div>

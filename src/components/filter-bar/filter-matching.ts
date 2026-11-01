@@ -9,6 +9,7 @@ import {
   type FilterField,
   type FilterValue,
 } from './filter-model.js';
+import { toLocalDay } from '../../utils/local-day.js';
 
 /** A record's value for one field: a scalar, a date, a list of values or nothing. */
 export type FilterRecordValue =
@@ -42,13 +43,7 @@ function toScalars(value: FilterRecordValue): Scalar[] {
  * starting with one. Invalid dates and years outside that range have no day.
  */
 function toDay(value: Scalar): string | null {
-  if (value instanceof Date) {
-    const year = value.getFullYear();
-    if (Number.isNaN(year) || year < 1 || year > 9999) return null;
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    return `${String(year).padStart(4, '0')}-${month}-${day}`;
-  }
+  if (value instanceof Date) return toLocalDay(value);
   return typeof value === 'string' && isoDay.test(value) ? value.slice(0, 10) : null;
 }
 
