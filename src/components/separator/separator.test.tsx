@@ -6,7 +6,7 @@ import { ToolbarRow, ToolbarRowSeparator } from '../layout/toolbar-row.js';
 import { Menu, MenuItem, MenuSeparator } from '../menu/menu.js';
 import { Separator } from './separator.js';
 
-const variants = ['solid', 'dashed', 'dotted'] as const;
+const variants = ['solid', 'dashed', 'dotted', 'wiggly'] as const;
 const positions = ['start', 'center', 'end'] as const;
 
 describe('Separator', () => {
@@ -44,6 +44,7 @@ describe('Separator', () => {
     expect(rule()).toHaveAttribute('data-orientation', 'horizontal');
     expect(rule()).toHaveAttribute('data-variant', 'solid');
     expect(rule()).not.toHaveAttribute('data-label-position');
+    expect(rule()).not.toHaveAttribute('data-label-placement');
     for (const variant of variants) {
       for (const orientation of ['horizontal', 'vertical'] as const) {
         rerender(<Separator variant={variant} orientation={orientation} />);
@@ -126,6 +127,30 @@ describe('Separator', () => {
       expect(rule()).toHaveAttribute('aria-orientation', 'vertical');
       expectHooksMatchSpec(container, 'SEPARATOR', { slots: 'all' });
     }
+  });
+
+  it('UIC-SEPARATOR-2.3 publishes the label placement of a labelled separator apart from its position', () => {
+    const { container, rerender } = render(<Separator label="2026" labelPosition="end" />);
+    const rule = () => container.querySelector('.ui-separator');
+    expect(rule()).toHaveAttribute('data-label-placement', 'across');
+    for (const labelPlacement of ['before', 'after'] as const) {
+      for (const orientation of ['horizontal', 'vertical'] as const) {
+        rerender(
+          <Separator
+            label="2026"
+            labelPlacement={labelPlacement}
+            labelPosition="end"
+            orientation={orientation}
+          />,
+        );
+        expect(rule()).toHaveAttribute('data-label-placement', labelPlacement);
+        expect(rule()).toHaveAttribute('data-label-position', 'end');
+        expect(screen.getByRole('separator', { name: '2026' })).toBe(rule());
+        expectHooksMatchSpec(container, 'SEPARATOR', { slots: 'all' });
+      }
+    }
+    rerender(<Separator labelPlacement="before" />);
+    expect(rule()).not.toHaveAttribute('data-label-placement');
   });
 
   it('UIC-SEPARATOR-3.2 lets the caller name a labelled separator', () => {

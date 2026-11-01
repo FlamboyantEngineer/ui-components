@@ -94,6 +94,84 @@ test.describe('Separator lab', () => {
     expect(top.height).toBeGreaterThan(20);
   });
 
+  test('UIC-SEPARATOR-1.3 draws a wiggly line along either axis', async ({ page, lab }) => {
+    await lab.open('separator');
+    const horizontal = matrixCell(page, 'orientation=horizontal variant=wiggly').getByRole(
+      'separator',
+    );
+    const across = await box(horizontal);
+    expect(across.width).toBe(200);
+    expect(across.height).toBe(6);
+    expect(await horizontal.evaluate((node) => getComputedStyle(node).maskImage)).toContain('svg');
+    const vertical = matrixCell(page, 'orientation=vertical variant=wiggly').getByRole('separator');
+    const down = await box(vertical);
+    expect(down.width).toBe(6);
+    expect(down.height).toBeGreaterThanOrEqual(16);
+    const line = matrixCell(page, 'variant=wiggly labelPosition=center').locator(
+      '.ui-separator__start-line',
+    );
+    expect((await box(line)).height).toBe(6);
+  });
+
+  test('UIC-SEPARATOR-2.3 sets a label before or after an unbroken line, aligned by its position', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('separator');
+    const parts = async (name: string, cell: string) => {
+      const rule = matrixCell(page, cell).getByRole('separator', { name });
+      return {
+        rule,
+        line: await box(rule.locator('.ui-separator__start-line')),
+        label: await box(rule.locator('.ui-separator__label')),
+        endLine: rule.locator('.ui-separator__end-line'),
+      };
+    };
+
+    const above = await parts('Desserts', 'orientation=horizontal placement=before align=start');
+    await expect(above.rule).toHaveAttribute('data-label-placement', 'before');
+    await expect(above.endLine).toBeHidden();
+    expect(above.line.width).toBe(200);
+    expect(above.label.y + above.label.height).toBeLessThanOrEqual(above.line.y);
+    expect(above.label.x).toBe(above.line.x);
+
+    const below = await parts('Desserts', 'orientation=horizontal placement=after align=end');
+    expect(below.line.width).toBe(200);
+    expect(below.label.y).toBeGreaterThanOrEqual(below.line.y + below.line.height);
+    expect(below.label.x + below.label.width).toBeCloseTo(below.line.x + below.line.width, 0);
+
+    const centred = await parts('Desserts', 'orientation=horizontal placement=after align=center');
+    const middle = centred.label.x + centred.label.width / 2;
+    expect(Math.abs(middle - (centred.line.x + centred.line.width / 2))).toBeLessThanOrEqual(1);
+
+    const before = await parts('or', 'orientation=vertical placement=before align=start');
+    await expect(before.rule).toHaveAttribute('aria-orientation', 'vertical');
+    expect(before.label.x + before.label.width).toBeLessThanOrEqual(before.line.x);
+    expect(before.label.y).toBe(before.line.y);
+    expect(before.line.height).toBeGreaterThan(100);
+
+    const after = await parts('or', 'orientation=vertical placement=after align=end');
+    expect(after.label.x).toBeGreaterThanOrEqual(after.line.x + after.line.width);
+    expect(after.label.y + after.label.height).toBeCloseTo(after.line.y + after.line.height, 0);
+
+    const across = await parts('or', 'orientation=vertical placement=across align=center');
+    expect(across.line.y + across.line.height).toBeLessThanOrEqual(across.label.y);
+    await expect(across.endLine).toBeVisible();
+
+    const rtlBefore = await parts('or', 'direction=rtl orientation=vertical placement=before');
+    expect(rtlBefore.label.x).toBeGreaterThanOrEqual(rtlBefore.line.x + rtlBefore.line.width);
+    const rtlAbove = await parts(
+      'Desserts',
+      'direction=rtl orientation=horizontal placement=before',
+    );
+    expect(rtlAbove.label.x + rtlAbove.label.width).toBeCloseTo(
+      rtlAbove.line.x + rtlAbove.line.width,
+      0,
+    );
+    expect(rtlAbove.label.y + rtlAbove.label.height).toBeLessThanOrEqual(rtlAbove.line.y);
+    await lab.expectAccessible();
+  });
+
   test('UIC-SEPARATOR-3.3 keeps separators out of the tab sequence', async ({ page, lab }) => {
     await lab.open('separator');
     const demo = page.locator('[data-lab-demo="sign-in"]');

@@ -20,7 +20,7 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 ### UIC-SEPARATOR-1.3 - Line styles
 
-`variant` shall publish `data-variant`: `solid` (the default), `dashed` or `dotted`. The stylesheet draws the line in that style, on a labelled separator's start and end lines too.
+`variant` shall publish `data-variant`: `solid` (the default), `dashed`, `dotted` or `wiggly`. The stylesheet draws the line in that style, on a labelled separator's start and end lines too; a wiggly line is a wave along the line's axis, in either orientation.
 
 Implementation: `src/components/separator/separator.tsx`, `labs/reference/separator.css`
 Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`
@@ -51,6 +51,13 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 ### UIC-SEPARATOR-2.2 - Label position
 
 `labelPosition` shall publish `data-label-position` on a labelled separator: `start`, `center` (the default) or `end`, where the label sits along the line in the writing direction. The stylesheet shortens the line on the label's side to a fixed inset. An unlabelled separator publishes no label position.
+
+Implementation: `src/components/separator/separator.tsx`, `labs/reference/separator.css`
+Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`
+
+### UIC-SEPARATOR-2.3 - Label placement
+
+`labelPlacement` shall publish `data-label-placement` on a labelled separator, independently of its position: `across` (the default), the label between the start and end lines, or `before` or `after` the line, where the stylesheet draws one unbroken line (the start line; it does not draw the end line) and sets the label beside it, above or below a horizontal line, at the inline start or end of a vertical one (so the right in a right-to-left context for `before`). The label position still aligns the label along the line. The separator keeps its role, orientation and name in every placement. An unlabelled separator publishes no label placement.
 
 Implementation: `src/components/separator/separator.tsx`, `labs/reference/separator.css`
 Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`
@@ -96,12 +103,13 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 ## Hooks
 
-| Hook                       | Kind      | Values                      | Description                                                  |
-| -------------------------- | --------- | --------------------------- | ------------------------------------------------------------ |
-| `ui-separator`             | root      |                             | The rule: `<hr>`, or `<div>` when vertical or labelled.      |
-| `ui-separator__start-line` | slot      |                             | The line before a label.                                     |
-| `ui-separator__label`      | slot      |                             | The label drawn across the line.                             |
-| `ui-separator__end-line`   | slot      |                             | The line after a label.                                      |
-| `data-orientation`         | attribute | `horizontal`, `vertical`    | Direction of the rule.                                       |
-| `data-variant`             | attribute | `solid`, `dashed`, `dotted` | Line style.                                                  |
-| `data-label-position`      | attribute | `start`, `center`, `end`    | Where a labelled separator's label sits; absent without one. |
+| Hook                       | Kind      | Values                                | Description                                                                       |
+| -------------------------- | --------- | ------------------------------------- | --------------------------------------------------------------------------------- |
+| `ui-separator`             | root      |                                       | The rule: `<hr>`, or `<div>` when vertical or labelled.                           |
+| `ui-separator__start-line` | slot      |                                       | The line before a label.                                                          |
+| `ui-separator__label`      | slot      |                                       | The label drawn across the line.                                                  |
+| `ui-separator__end-line`   | slot      |                                       | The line after a label.                                                           |
+| `data-orientation`         | attribute | `horizontal`, `vertical`              | Direction of the rule.                                                            |
+| `data-variant`             | attribute | `solid`, `dashed`, `dotted`, `wiggly` | Line style.                                                                       |
+| `data-label-position`      | attribute | `start`, `center`, `end`              | Where a labelled separator's label sits; absent without one.                      |
+| `data-label-placement`     | attribute | `across`, `before`, `after`           | Where a labelled separator's label sits relative to the line; absent without one. |
