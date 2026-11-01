@@ -25,9 +25,10 @@
   color: var(--ref-muted);
 }
 
+/* A checkbox keeps its size in a narrow role column; the cell centres it. */
 .ui-permission-matrix__grant,
 .ui-permission-matrix__group-grant {
-  justify-content: center;
+  flex: none;
 }
 
 .ui-permission-matrix__grant[data-inherited]:not([data-selected]) .ui-checkbox__box {
