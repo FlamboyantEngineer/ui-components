@@ -215,6 +215,23 @@ mountLab(
     >
       <Formats />
     </LabSection>
+    <LabSection
+      title="Sizes"
+      description="The swatch follows the field's size, keeping the same inset from the frame at xs, sm, md and lg, picked or typed."
+    >
+      <StateMatrix
+        axes={{ entry: ['picked', 'typed'], size: ['xs', 'sm', 'md', 'lg'] }}
+        render={({ entry, size }) => (
+          <ColorField
+            label={`Accent ${entry} ${size}`}
+            labelLayout="control-only"
+            size={size}
+            allowsTyping={entry === 'typed'}
+            defaultValue="#2e8b57"
+          />
+        )}
+      />
+    </LabSection>
     <LabSection title="Preset swatches and eye dropper" description="Presets beside the picker.">
       <Presets />
     </LabSection>

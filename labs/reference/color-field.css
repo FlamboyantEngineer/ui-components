@@ -63,6 +63,12 @@
   flex: none;
 }
 
+/* The swatch follows the field's height, so it sits the same 4px inside the frame at every size. */
+.ui-color-field .ui-color-field__swatch.ui-color-swatch {
+  width: calc(var(--ref-field-height) - 10px);
+  height: calc(var(--ref-field-height) - 10px);
+}
+
 .ui-color-field__value {
   font-family: var(--ref-mono);
   font-size: var(--ref-font-size-sm);
