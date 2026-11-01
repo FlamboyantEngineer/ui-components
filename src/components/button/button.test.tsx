@@ -533,11 +533,11 @@ describe('Button', () => {
     expect(link).toHaveAttribute('aria-keyshortcuts', 'Control+N');
     expect(link).not.toHaveAttribute('type');
     expect(link.querySelector('.ui-button__start-icon')).not.toBeNull();
-    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Help (opens in a new tab)' })).toHaveAttribute(
       'rel',
       'noopener noreferrer',
     );
-    expect(screen.getByRole('link', { name: 'Forum' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Forum (opens in a new tab)' })).toHaveAttribute(
       'rel',
       'nofollow noopener noreferrer',
     );
@@ -545,7 +545,7 @@ describe('Button', () => {
     await user.click(link);
     expect(onPress).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(document.body, 'BUTTON', {
-      slots: ['label', 'start-icon'],
+      slots: ['label', 'start-icon', 'end-icon', 'new-tab-label'],
       callerAttributes: ['data-router'],
     });
   });
@@ -601,6 +601,46 @@ describe('Button', () => {
     expect(onKeyDown).toHaveBeenCalled();
     expect(onKeyUp).toHaveBeenCalled();
     expect(onFocusChange).toHaveBeenCalledWith(true);
+  });
+
+  it('UIC-BUTTON-1.9 marks a link that opens a new tab with the external-link glyph', () => {
+    const { container } = render(
+      <>
+        <Button href="/reports">Reports</Button>
+        <Button href="https://example.com/help" isExternal>
+          Help
+        </Button>
+        <Button href="/guide" target="_blank">
+          Guide
+        </Button>
+        <Button href="/print" target="_blank" endIcon={SaveGlyph}>
+          Print
+        </Button>
+        <Button href="/notes" target="_blank" endIcon={null}>
+          Notes
+        </Button>
+        <Button href="https://example.com/help" isExternal isDisabled>
+          Archive
+        </Button>
+        <Button href="/share" isExternal icon={PlusGlyph} label="Share" />
+      </>,
+    );
+    const glyph = (name: RegExp) =>
+      screen.getByRole('link', { name }).querySelector('.ui-button__end-icon [data-glyph]');
+    const reports = screen.getByRole('link', { name: 'Reports' });
+    expect(reports.querySelector('.ui-button__end-icon')).toBeNull();
+    const help = screen.getByRole('link', { name: 'Help (opens in a new tab)' });
+    expect(help).toHaveAttribute('target', '_blank');
+    expect(help).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(glyph(/^Help/)).toHaveAttribute('data-glyph', 'external-link');
+    expect(glyph(/^Guide \(opens in a new tab\)$/)).toHaveAttribute('data-glyph', 'external-link');
+    expect(glyph(/^Print \(opens in a new tab\)$/)).toHaveAttribute('data-glyph', 'save');
+    expect(glyph(/^Notes \(opens in a new tab\)$/)).toBeNull();
+    const archive = screen.getByRole('link', { name: 'Archive' });
+    expect(archive.querySelector('.ui-button__end-icon')).toBeNull();
+    const share = screen.getByRole('link', { name: 'Share (opens in a new tab)' });
+    expect(share.querySelector('.ui-button__end-icon')).toBeNull();
+    expect(container.querySelectorAll('.ui-button__new-tab-label')).toHaveLength(4);
   });
 
   it('UIC-BUTTON-1.9 keeps target and rel off a disabled link', () => {

@@ -4,12 +4,14 @@ import { useState, type ReactNode } from 'react';
 import { Button as AriaButton, Link as AriaLink, ProgressBar } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
+import { ExternalLinkGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, type IconSource } from '../icon/icon.js';
 import { hasIcon, toIconProps } from '../icon/icon.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { useButtonAction, type ButtonActionProps } from './button-action.js';
 import {
   toAriaButtonProps,
@@ -58,8 +60,13 @@ export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BasePr
   label?: string | undefined;
   /** An icon before the label. */
   startIcon?: IconSource;
-  /** An icon after the label. */
+  /**
+   * An icon after the label. A link that opens a new tab shows the external-link glyph here unless
+   * one is given; `null` or `false` shows none.
+   */
   endIcon?: IconSource;
+  /** A link button opens its destination in a new tab: `target="_blank"` unless `target` is given. */
+  isExternal?: boolean | undefined;
   /** Take the full width of the container. */
   fullWidth?: boolean | undefined;
   /**
@@ -83,9 +90,18 @@ type ButtonPartsProps = Pick<
 > & {
   /** The label shown when there is neither an icon nor any children. */
   fallbackLabel?: string | undefined;
+  /** Says in hidden text that the link opens a new tab. */
+  opensNewTab?: boolean | undefined;
 };
 
-const hooks = createHooks('button', ['spinner', 'start-icon', 'label', 'end-icon', 'icon']);
+const hooks = createHooks('button', [
+  'spinner',
+  'start-icon',
+  'label',
+  'end-icon',
+  'icon',
+  'new-tab-label',
+]);
 
 /** The busy indicator of a pending button: an indeterminate progress bar React Aria announces. */
 export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
@@ -108,7 +124,9 @@ function ButtonParts({
   endIcon,
   isPending,
   pendingLabel,
+  opensNewTab = false,
 }: ButtonPartsProps) {
+  const strings = useUiStrings();
   const children = isEmptyNode(given) ? fallbackLabel : given;
   return (
     <>
@@ -127,6 +145,13 @@ function ButtonParts({
       )}
       {hasIcon(endIcon) ? (
         <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} />
+      ) : null}
+      {/* The space separates the label from the hidden text in the accessible name. */}
+      {opensNewTab ? ' ' : null}
+      {opensNewTab ? (
+        <VisuallyHidden elementType="span" className={hooks.slotClass('new-tab-label')}>
+          {strings.opensInNewTab}
+        </VisuallyHidden>
       ) : null}
     </>
   );
@@ -184,6 +209,28 @@ function resolveButtonPresentation(
   };
 }
 
+/**
+ * A link button's target, its accessible name and whether it opens a new tab: then it shows the
+ * external-link glyph after its label unless the caller gave an end icon, and says so in hidden
+ * text, or in the name of an icon-only link.
+ */
+function useNewTab(
+  props: Pick<ButtonProps, 'href' | 'target' | 'isExternal' | 'endIcon' | 'aria-label'>,
+  { isDisabled, isIcon, name }: { isDisabled: boolean; isIcon: boolean; name?: string | undefined },
+) {
+  const strings = useUiStrings();
+  const target = props.target ?? (props.isExternal ? '_blank' : undefined);
+  const opensNewTab = props.href !== undefined && target === '_blank' && !isDisabled;
+  const iconName = opensNewTab ? `${name} ${strings.opensInNewTab}` : name;
+  return {
+    target,
+    endIcon:
+      opensNewTab && !isIcon && props.endIcon === undefined ? ExternalLinkGlyph : props.endIcon,
+    hasNewTabLabel: opensNewTab && !isIcon,
+    ariaLabel: isIcon ? iconName : props['aria-label'],
+  };
+}
+
 /** A labelled command button, or a link drawn as one with `href`. */
 export function Button({
   variant,
@@ -200,17 +247,21 @@ export function Button({
   className,
   onError,
   pendingDelay,
-  ...rest
+  isExternal,
+  ...given
 }: ButtonProps) {
   const presentation = resolveButtonPresentation({
-    ...rest,
+    ...given,
     icon,
     label,
     tooltip,
     variant,
     content,
   });
-  const own = { ...rest, isDisabled: useInheritedDisabled(rest) };
+  const isDisabled = useInheritedDisabled(given);
+  const newTab = useNewTab({ ...given, isExternal, endIcon }, { ...presentation, isDisabled });
+  const rest = { ...given, target: newTab.target };
+  const own = { ...rest, isDisabled };
   const selection = useButtonSelection(own);
   const { isBusy, ...action } = useButtonAction({ ...own, ...selection, onError, pendingDelay });
   const platform = useDetectedPlatform();
@@ -234,26 +285,23 @@ export function Button({
       fallbackLabel={presentation.isIcon ? undefined : label}
       icon={icon}
       startIcon={startIcon}
-      endIcon={endIcon}
+      endIcon={newTab.endIcon}
       isPending={!isLink && action.isPending}
       pendingLabel={rest.pendingLabel}
+      opensNewTab={newTab.hasNewTabLabel}
     >
       {children}
     </ButtonParts>
   );
   const element = isLink ? (
-    <AriaLink
-      {...toAriaLinkProps(rest, options)}
-      {...hookProps}
-      aria-label={presentation.isIcon ? presentation.name : rest['aria-label']}
-    >
+    <AriaLink {...toAriaLinkProps(rest, options)} {...hookProps} aria-label={newTab.ariaLabel}>
       {parts}
     </AriaLink>
   ) : (
     <AriaButton
       {...toAriaButtonProps({ ...own, ...selection, ...action }, options)}
       {...hookProps}
-      aria-label={presentation.isIcon ? presentation.name : rest['aria-label']}
+      aria-label={newTab.ariaLabel}
     >
       {parts}
     </AriaButton>
