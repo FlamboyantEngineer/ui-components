@@ -332,15 +332,11 @@ describe('SignaturePad', () => {
     expect(root(container)).toHaveAttribute('data-mode', 'draw');
 
     const { container: typed } = render(
-      <SignaturePad
-        label="Name"
-        allowsTyping={false}
-        defaultValue={{ kind: 'typed', text: 'Bo' }}
-      />,
+      <SignaturePad label="Name" modes={['draw']} defaultValue={{ kind: 'typed', text: 'Bo' }} />,
     );
     expect(typed.querySelector('.ui-signature-pad__modes')).toBeNull();
     expect(root(typed)).toHaveAttribute('data-mode', 'type');
-    const { container: plain } = render(<SignaturePad label="Plain" allowsTyping={false} />);
+    const { container: plain } = render(<SignaturePad label="Plain" modes={['draw']} />);
     expect(plain.querySelector('.ui-signature-pad__modes')).toBeNull();
     expect(root(plain)).toHaveAttribute('data-mode', 'draw');
   });
@@ -350,7 +346,7 @@ describe('SignaturePad', () => {
     const { container, rerender } = render(<SignaturePad label="Signature" />);
     await user.click(screen.getByRole('radio', { name: 'Type' }));
     expect(root(container)).toHaveAttribute('data-mode', 'type');
-    rerender(<SignaturePad label="Signature" allowsTyping={false} />);
+    rerender(<SignaturePad label="Signature" modes={['draw']} />);
     expect(root(container)).toHaveAttribute('data-mode', 'draw');
     expect(surface()).toBeInTheDocument();
     rerender(<SignaturePad label="Signature" />);

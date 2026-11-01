@@ -18,8 +18,25 @@ export interface TypedSignature {
   text: string;
 }
 
-/** A drawn or typed signature. A field with no signature holds `null`. */
-export type SignatureValue = DrawnSignature | TypedSignature;
+/**
+ * A signature given as an existing image, uploaded or pasted: the image as a `data:` URL, so the
+ * value serializes as JSON and holds no temporary browser resource, with its media type and its
+ * natural size in pixels.
+ */
+export interface ImageSignature {
+  kind: 'image';
+  /** The image as a `data:` URL. */
+  src: string;
+  /** The image's media type, such as `image/png`. */
+  type: string;
+  /** The image's natural width, in pixels. */
+  width: number;
+  /** The image's natural height, in pixels. */
+  height: number;
+}
+
+/** A drawn, typed or image signature. A field with no signature holds `null`. */
+export type SignatureValue = DrawnSignature | TypedSignature | ImageSignature;
 
 /** A pointer position in the drawing space. */
 export interface SignaturePoint {

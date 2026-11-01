@@ -1,6 +1,8 @@
 export { SignaturePad } from './signature-pad.js';
 export type {
   DrawnSignature,
+  ImageSignature,
+  SignaturePadMode,
   SignaturePadProps,
   SignatureValue,
   TypedSignature,

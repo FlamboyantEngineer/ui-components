@@ -165,6 +165,22 @@ export interface FieldStrings {
   signatureStrokes: (count: number) => string;
   /** Removes the last stroke of a drawn signature. */
   undoStroke: string;
+  /** The signature pad's choice that gives the signature as an uploaded or pasted image. */
+  signatureImage: string;
+  /** Chooses an image file as the signature. */
+  uploadSignatureImage: string;
+  /** Pastes the clipboard's image as the signature. */
+  pasteSignatureImage: string;
+  /** Shown in a signature pad's empty image area, and describes it. */
+  signatureImageEmpty: string;
+  /** Refuses a signature image of a type the pad does not take. */
+  signatureImageType: string;
+  /** Refuses a signature image larger than the limit, from the formatted size. */
+  signatureImageSize: (size: string) => string;
+  /** Refuses a signature image the browser cannot decode. */
+  signatureImageUnreadable: string;
+  /** Says that a paste held no image. */
+  signatureImageNoPaste: string;
   /** Names the end thumb of a range slider, read before the slider's label. */
   rangeMaximum: string;
 }
@@ -205,4 +221,5 @@ export const fieldStrings = defineStrings<FieldStrings>({
   lastPeriod: (period) => ({ period }),
   nextPeriod: (period) => ({ period }),
   signatureStrokes: (count) => ({ count }),
+  signatureImageSize: (size) => ({ size }),
 });

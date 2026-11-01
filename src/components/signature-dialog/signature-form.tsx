@@ -35,7 +35,7 @@ export interface SignatureDetails {
   meaning: Key;
   /** The reason given, or empty text. */
   reason: string;
-  /** The drawn or typed signature, or `null` when none was asked or given. */
+  /** The drawn, typed or image signature, or `null` when none was asked or given. */
   signature: SignatureValue | null;
 }
 

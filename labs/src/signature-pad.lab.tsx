@@ -4,6 +4,8 @@ import { Form } from '../../src/components/form/form.js';
 import {
   SignaturePad,
   type DrawnSignature,
+  type ImageSignature,
+  type SignaturePadMode,
   type SignatureValue,
 } from '../../src/components/signature-pad/signature-pad.js';
 import {
@@ -27,20 +29,32 @@ const underline = 'M60 175 L540 165';
 
 const signature: DrawnSignature = { kind: 'drawn', width: 600, height: 200, paths: [loop, tail] };
 
+/** A small transparent PNG of a wavy signature, as an image signature holds it. */
+const imageSignature: ImageSignature = {
+  kind: 'image',
+  src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAgCAYAAADtwH1UAAAA1ElEQVR42u2Y2w3EIAwEKeNKSFnpv4m7CqJg3+IHzEr5isDWDrIxYyCEEEIIIbSXPtf9ffpwJ9H8lRAAbgCgNCYLeBvzZ/6thq2GUBL4TCLqZC0AOgN3JeeFpAKuNsYKOxSCJbgi0dk9VMbM7JMKwRpUbYjqcKQfMM8iT7B/kvSszY5XDkBXI73xtiglinIS3asGtdXXlFs01KjrZMT19W1gLHeljBioqkzQ5YaqXQwpa/5JhpR+wOORq8HTcpXJ+kgIA6HjSxDf4j6JeQA4GwBC2+oHOV2NzjMN4EUAAAAASUVORK5CYII=',
+  type: 'image/png',
+  width: 96,
+  height: 32,
+};
+
 const samples: SampleValues<SignatureValue | null> = {
   value: signature,
   edited: { ...signature, paths: [loop, tail, underline] },
-  invalid: { kind: 'drawn', width: 600, height: 200, paths: [underline] },
+  invalid: imageSignature,
   warning: { kind: 'typed', text: 'A. L.' },
   empty: null,
 };
 
-const modes = ['draw', 'type', 'draw only'] as const;
+const modes = ['draw', 'type', 'image', 'draw only'] as const;
 const modeSamples: Record<(typeof modes)[number], SignatureValue> = {
   draw: signature,
   type: { kind: 'typed', text: 'Ada Lovelace' },
+  image: imageSignature,
   'draw only': signature,
 };
+const drawOnly: readonly SignaturePadMode[] = ['draw'];
+const withoutTyping: readonly SignaturePadMode[] = ['draw', 'image'];
 
 function Sample({
   state,
@@ -63,7 +77,7 @@ function LiveSignature() {
     <>
       <SignaturePad
         label="Your signature"
-        description="Draw with a mouse, a pen or a finger, or choose Type to type your name; Enter commits, except the Enter that confirms an input method candidate."
+        description="Draw with a mouse, a pen or a finger, choose Type to type your name, or choose Image to upload or paste a PNG, JPEG, WebP or GIF of 2 MB at most; Enter commits, except the Enter that confirms an input method candidate."
         value={value}
         isReadOnly={isReadOnly}
         onChange={setValue}
@@ -79,6 +93,9 @@ function LiveSignature() {
       <LabOutput name="Kind">{value?.kind ?? 'empty'}</LabOutput>
       <LabOutput name="Strokes">{drawing ? drawing.paths.length : 0}</LabOutput>
       <LabOutput name="Typed">{value?.kind === 'typed' ? value.text : 'none'}</LabOutput>
+      <LabOutput name="Image">
+        {value?.kind === 'image' ? `${value.type} ${value.width}×${value.height}` : 'none'}
+      </LabOutput>
       <LabOutput name="Commits">{commits}</LabOutput>
       {drawing ? (
         <div data-lab-previews>
@@ -109,7 +126,7 @@ function InForm() {
         label="Received by"
         name="signature"
         isRequired
-        allowsTyping={false}
+        modes={withoutTyping}
         data-lab-field="form"
       />
       <Button type="submit" variant="primary">
@@ -140,7 +157,7 @@ function BlankValue() {
         label="Witness"
         name="witness"
         isRequired
-        allowsTyping={allowsTyping}
+        modes={allowsTyping ? undefined : drawOnly}
         data-lab-field="blank"
       />
       <Button onPress={() => setAllowsTyping((current) => !current)}>
@@ -164,26 +181,29 @@ mountLab(
     </LabSection>
     <LabSection
       title="Modes"
-      description="A drawn signature, a typed one, and a pad that offers drawing only."
+      description="A drawn signature, a typed one, an image one, and a pad that offers drawing only."
     >
       <StateMatrix
         axes={{ mode: modes }}
         render={({ mode }) => (
           <SignaturePad
             label="Signature"
-            allowsTyping={mode !== 'draw only'}
+            modes={mode === 'draw only' ? drawOnly : undefined}
             defaultValue={modeSamples[mode]}
           />
         )}
       />
     </LabSection>
     <LabSection
-      title="Drawing and output"
-      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup. Cancelling or locking the drawing, or a replacement arriving mid-stroke (start drawing after Replace in 2 seconds), discards its unfinished stroke."
+      title="Drawing, typing, images and output"
+      description="Draw strokes, undo or clear them, type a name, or upload or paste an image (copy an image, focus the image area or a button and press Ctrl+V or Cmd+V, or use Paste image); a file of another type, too large or unreadable is refused with a message. Changing the mode clears a signature given another way. The drawing shows as an image and as SVG markup. Cancelling or locking the drawing, or a replacement arriving mid-stroke (start drawing after Replace in 2 seconds), discards its unfinished stroke."
     >
       <LiveSignature />
     </LabSection>
-    <LabSection title="In a form" description="Confirm without signing to see the message.">
+    <LabSection
+      title="In a form"
+      description="Confirm without signing to see the message; a drawn or image signature is submitted as JSON."
+    >
       <InForm />
     </LabSection>
     <LabSection

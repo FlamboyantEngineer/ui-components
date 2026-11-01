@@ -20,7 +20,7 @@ Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/
 
 ### UIC-SIGNATURE-DIALOG-1.3 - Reason and drawn signature
 
-`reason` shall ask for a reason in a multiline [Text Field](TEXT-FIELD.md) named by the provider string `signatureReason`: `optional` (the default) asks without requiring it, `required` requires it and `none` leaves it out. `drawing` shall ask the same way for a drawn or typed signature in a `SignaturePad` named by the provider string `signature` (`none` by default).
+`reason` shall ask for a reason in a multiline [Text Field](TEXT-FIELD.md) named by the provider string `signatureReason`: `optional` (the default) asks without requiring it, `required` requires it and `none` leaves it out. `drawing` shall ask the same way for a drawn, typed or image signature in a `SignaturePad` named by the provider string `signature` (`none` by default).
 
 Implementation: `src/components/signature-dialog/signature-form.tsx`
 Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/signature-dialog.spec.ts`

@@ -2,6 +2,12 @@ import type { Locator, Page } from '@playwright/test';
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
+/** A 2 × 1 PNG: one opaque dark pixel beside a transparent one. */
+const tinyPng = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAD0lEQVR42mOQ0Ej4zwAEAAkcAaBuYLc8AAAAAElFTkSuQmCC',
+  'base64',
+);
+
 /** Draws one stroke across the area through points given as fractions of its box. */
 async function drawStroke(page: Page, area: Locator, points: Array<[number, number]>) {
   await area.scrollIntoViewIfNeeded();
@@ -148,7 +154,8 @@ test.describe('Signature Pad lab', () => {
     await lab.open('signature-pad');
     const form = page.locator('[data-lab-form="delivery"]');
     const field = form.locator('[data-lab-field="form"]');
-    await expect(field.locator('.ui-signature-pad__modes')).toHaveCount(0);
+    await expect(field.getByRole('radio')).toHaveCount(2);
+    await expect(field.getByRole('radio', { name: 'Type' })).toHaveCount(0);
     await form.getByRole('button', { name: 'Confirm delivery' }).click();
     await expect(field).toHaveAttribute('data-validation', 'invalid');
     const area = field.getByRole('img', { name: 'Received by' });
@@ -208,5 +215,51 @@ test.describe('Signature Pad lab', () => {
     });
     expect(colors.stroke).toBe(colors.text);
     await lab.expectAccessible();
+  });
+
+  test('UIC-SIGNATURE-PAD-4.1 UIC-SIGNATURE-PAD-4.2 UIC-SIGNATURE-PAD-4.3 uploads and pastes an image, refuses other files and leaves no hidden image', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const field = page.locator('[data-lab-field="live"]');
+    await field.getByRole('radio', { name: 'Image' }).click();
+    const area = field.getByRole('img', { name: 'Your signature' });
+    await expect(area).toHaveAccessibleDescription(/^No image yet\. Upload or paste one\./);
+    const chooser = page.waitForEvent('filechooser');
+    await field.getByRole('button', { name: 'Upload image' }).click();
+    await (await chooser).setFiles({ name: 'sign.png', mimeType: 'image/png', buffer: tinyPng });
+    await expect(page.locator('[data-lab-output="Image"]')).toHaveText('image/png 2×1');
+    const preview = field.locator('.ui-signature-pad__image-preview');
+    await expect(preview).toBeVisible();
+    const fit = await preview.evaluate((node) => getComputedStyle(node).objectFit);
+    expect(fit).toBe('contain');
+    const refused = page.waitForEvent('filechooser');
+    await field.getByRole('button', { name: 'Upload image' }).click();
+    await (
+      await refused
+    ).setFiles({ name: 'note.txt', mimeType: 'text/plain', buffer: Buffer.from('hi') });
+    await expect(field.getByRole('status')).toHaveText('Choose a PNG, JPEG, WebP or GIF image.');
+    await expect(page.locator('[data-lab-output="Image"]')).toHaveText('image/png 2×1');
+    await field.getByRole('button', { name: 'Clear' }).click();
+    await expect(page.locator('[data-lab-output="Kind"]')).toHaveText('empty');
+    await area.click();
+    await area.evaluate(
+      (node, bytes) => {
+        const transfer = new DataTransfer();
+        transfer.items.add(new File([new Uint8Array(bytes)], 'pasted.png', { type: 'image/png' }));
+        node.dispatchEvent(
+          new ClipboardEvent('paste', { clipboardData: transfer, bubbles: true, cancelable: true }),
+        );
+      },
+      [...tinyPng],
+    );
+    await expect(page.locator('[data-lab-output="Image"]')).toHaveText('image/png 2×1');
+    await expect(field.locator('.ui-signature-pad__image-message')).toBeEmpty();
+    await lab.expectAccessible('[data-lab-field="live"]');
+    await field.getByRole('radio', { name: 'Draw' }).click();
+    await expect(page.locator('[data-lab-output="Kind"]')).toHaveText('empty');
+    await field.getByRole('radio', { name: 'Image' }).click();
+    await expect(preview).toHaveCount(0);
   });
 });
