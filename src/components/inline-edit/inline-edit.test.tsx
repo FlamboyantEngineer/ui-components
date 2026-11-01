@@ -1,5 +1,5 @@
 import { isEmptyValue } from '../../utils/is-empty-value.js';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -576,6 +576,74 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(container.querySelector('.ui-inline-edit__icon')).toBeNull();
     await user.click(read());
     expect(onEditingChange).not.toHaveBeenCalled();
+  });
+
+  it('UIC-INLINE-EDIT-1.8 freezes an open editor once disabled, keeping its draft', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const view = (isDisabled: boolean) => (
+      <InlineEdit
+        label="Title"
+        value="Initial"
+        onSave={onSave}
+        isDisabled={isDisabled}
+        showActions
+      />
+    );
+    const { rerender } = render(view(false));
+    await user.click(read());
+    await user.keyboard('{Control>}a{/Control}Draft');
+    rerender(view(true));
+    expect(textbox()).toBeDisabled();
+    expect(textbox()).toHaveValue('Draft');
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.blur(textbox());
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    expect(onSave).not.toHaveBeenCalled();
+    expect(textbox()).toHaveValue('Draft');
+    rerender(view(false));
+    expect(textbox()).toBeEnabled();
+    await user.click(textbox());
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith('Draft'));
+  });
+
+  it('UIC-INLINE-EDIT-1.8 lets a running save finish but starts no queued save once disabled', async () => {
+    const first = deferred();
+    const onSave = vi.fn(() => first.promise);
+    let commitNext: (value: string) => void = () => {};
+    const view = (isDisabled: boolean) => (
+      <InlineEdit
+        label="Title"
+        value="Initial"
+        onSave={onSave}
+        isDisabled={isDisabled}
+        defaultEditing
+        renderEditor={({ commit, isDisabled: isEditorDisabled }) => {
+          commitNext = commit;
+          return <span>{isEditorDisabled ? 'Frozen' : 'Editable'}</span>;
+        }}
+      />
+    );
+    const { rerender } = render(view(false));
+    act(() => commitNext('First'));
+    act(() => commitNext('Second'));
+    expect(onSave).toHaveBeenCalledTimes(1);
+    rerender(view(true));
+    expect(screen.getByText('Frozen')).toBeInTheDocument();
+    act(() => commitNext('Third'));
+    await act(async () => {
+      first.resolve();
+      await first.promise;
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Frozen')).toBeInTheDocument();
+    rerender(view(false));
+    act(() => commitNext('Third'));
+    expect(onSave).toHaveBeenLastCalledWith('Third');
   });
 
   it('UIC-INLINE-EDIT-2.1 names the read view by its label and the value it shows', () => {

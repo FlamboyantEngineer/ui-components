@@ -2,7 +2,7 @@
 
 import { CheckGlyph, CloseGlyph, EditGlyph } from '../../core/glyphs.js';
 import { isEmptyValue } from '../../utils/is-empty-value.js';
-import { useId, type ReactNode } from 'react';
+import { useId, type ReactNode, type Ref } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -32,6 +32,8 @@ export interface InlineEditEditorProps<T> {
   label: string;
   /** A save is running. */
   isPending: boolean;
+  /** The inline edit is disabled: the editor keeps its draft but saves nothing until enabled. */
+  isDisabled: boolean;
 }
 
 export interface InlineEditProps<T = string> extends BaseProps {
@@ -58,7 +60,10 @@ export interface InlineEditProps<T = string> extends BaseProps {
   defaultEditing?: boolean | undefined;
   /** Called when the editor opens or closes. */
   onEditingChange?: ((isEditing: boolean) => void) | undefined;
-  /** Keeps the value read only: the read view does not open the editor. */
+  /**
+   * Keeps the value read only: the read view does not open the editor, and an open editor keeps
+   * its draft but saves nothing (Enter, focus leaving, the save button or `commit`) until enabled.
+   */
   isDisabled?: boolean | undefined;
 }
 
@@ -76,7 +81,8 @@ const hooks = createHooks('inline-edit', [
 ]);
 
 /** The default editor: a one-line text field named by the label. */
-function renderTextEditor<T>({ value, onChange, label, isPending }: InlineEditEditorProps<T>) {
+function renderTextEditor<T>(props: InlineEditEditorProps<T>) {
+  const { value, onChange, label, isPending, isDisabled } = props;
   const text = String(value ?? '');
   return (
     <TextField
@@ -87,6 +93,7 @@ function renderTextEditor<T>({ value, onChange, label, isPending }: InlineEditEd
       tracksChanges={false}
       onChange={(next) => onChange(next as T)}
       isPending={isPending}
+      isDisabled={isDisabled}
     />
   );
 }
@@ -94,10 +101,12 @@ function renderTextEditor<T>({ value, onChange, label, isPending }: InlineEditEd
 /** The save and cancel buttons after the editor. */
 function InlineEditActions({
   isPending,
+  isDisabled,
   onSave,
   onCancel,
 }: {
   isPending: boolean;
+  isDisabled: boolean;
   onSave: () => void;
   onCancel: () => void;
 }) {
@@ -111,6 +120,7 @@ function InlineEditActions({
         variant="secondary"
         className={hooks.slotClass('save')}
         isPending={isPending}
+        isDisabled={isDisabled}
         onPress={onSave}
       />
       <Button
@@ -123,6 +133,46 @@ function InlineEditActions({
         onPress={onCancel}
       />
     </span>
+  );
+}
+
+/** The read view: a button named "Edit" and the label, showing the value, that opens the editor. */
+function InlineEditRead({
+  ref,
+  label,
+  isDisabled,
+  onOpen: open,
+  content,
+  nameId,
+  valueId,
+}: {
+  ref: Ref<HTMLButtonElement>;
+  label: string;
+  isDisabled: boolean;
+  onOpen: () => void;
+  content: ReactNode;
+  nameId: string;
+  valueId: string;
+}) {
+  const strings = useUiStrings();
+  return (
+    <AriaButton
+      ref={ref}
+      className={hooks.slotClass('read')}
+      aria-labelledby={`${nameId} ${valueId}`}
+      isDisabled={isDisabled}
+      onPress={open}
+      onKeyDown={(event) => {
+        if (event.key === 'F2') open();
+        else event.continuePropagation();
+      }}
+    >
+      <VisuallyHidden elementType="span" id={nameId}>
+        {strings.editValue(label)}
+      </VisuallyHidden>
+      {content}
+      {isDisabled ? null : <Glyph icon={EditGlyph} className={hooks.slotClass('icon')} />}
+    </AriaButton>
   );
 }
 
@@ -145,6 +195,7 @@ export function InlineEdit<T = string>(props: InlineEditProps<T>) {
     defaultEditing: props.defaultEditing ?? false,
     onEditingChange: props.onEditingChange,
     failureMessage: strings.saveFailed,
+    isDisabled,
   });
   const { isEditing, isPending, error, edited, setEdited, open, cancel, commit } = edit;
   const { editorHandlers, editorRef, readRef } = edit;
@@ -168,41 +219,41 @@ export function InlineEdit<T = string>(props: InlineEditProps<T>) {
               cancel: cancel,
               label,
               isPending: isPending,
+              isDisabled,
             })}
           </div>
           {showActions ? (
-            <InlineEditActions isPending={isPending} onSave={() => commit()} onCancel={cancel} />
+            <InlineEditActions
+              isPending={isPending}
+              isDisabled={isDisabled}
+              onSave={() => commit()}
+              onCancel={cancel}
+            />
           ) : null}
           {error === null ? null : (
             <InlineError className={hooks.slotClass('error')}>{error}</InlineError>
           )}
         </div>
       ) : (
-        <AriaButton
+        <InlineEditRead
           ref={readRef}
-          className={hooks.slotClass('read')}
-          aria-labelledby={`${nameId} ${valueId}`}
+          label={label}
           isDisabled={isDisabled}
-          onPress={open}
-          onKeyDown={(event) => {
-            if (event.key === 'F2') open();
-            else event.continuePropagation();
-          }}
-        >
-          <VisuallyHidden elementType="span" id={nameId}>
-            {strings.editValue(label)}
-          </VisuallyHidden>
-          {isEmpty ? (
-            <span id={valueId} {...hooks.slot('placeholder')}>
-              {placeholder}
-            </span>
-          ) : (
-            <span id={valueId} {...hooks.slot('value')}>
-              {renderValue ? renderValue(value) : String(value)}
-            </span>
-          )}
-          {isDisabled ? null : <Glyph icon={EditGlyph} className={hooks.slotClass('icon')} />}
-        </AriaButton>
+          onOpen={open}
+          content={
+            isEmpty ? (
+              <span id={valueId} {...hooks.slot('placeholder')}>
+                {placeholder}
+              </span>
+            ) : (
+              <span id={valueId} {...hooks.slot('value')}>
+                {renderValue ? renderValue(value) : String(value)}
+              </span>
+            )
+          }
+          nameId={nameId}
+          valueId={valueId}
+        />
       )}
     </div>
   );

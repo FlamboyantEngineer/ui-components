@@ -11,6 +11,7 @@ import {
   useState,
   type FocusEvent,
   type KeyboardEvent,
+  type RefObject,
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -27,6 +28,8 @@ interface InlineEditStateOptions<T> {
   onEditingChange: ((isEditing: boolean) => void) | undefined;
   /** The message of a failed save that carries none of its own. */
   failureMessage: string;
+  /** Freezes an open editor: nothing new is saved until it is enabled again. */
+  isDisabled: boolean;
 }
 
 /** What closing the editor does with focus: back to the read view, or left where it went. */
@@ -116,6 +119,8 @@ interface SaveQueueOptions<T> {
   edited: T;
   onSave: (value: T) => void | Promise<unknown>;
   failureMessage: string;
+  /** No save starts, and a queued one waits for a new commit once enabled. */
+  isDisabled: boolean;
   setDraft: (draft: { value: T } | null) => void;
   setError: (error: string | null) => void;
   close: (focusReturn: FocusReturn) => void;
@@ -169,7 +174,9 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     if (queuedSave) {
       const newer = queuedSave.request ? queuedSave.request.value : latest.current.edited;
       if (!isFieldValueEqual(newer, next)) {
-        void save(newer, queuedSave.focusReturn);
+        // A save waiting behind this one has not started: a disabled editor drops it and keeps
+        // its draft for a commit once enabled.
+        if (!latest.current.isDisabled) void save(newer, queuedSave.focusReturn);
         return;
       }
     }
@@ -178,6 +185,7 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     }
   };
   const commit = (request: SaveRequest<T>, focusReturn: FocusReturn = 'read') => {
+    if (latest.current.isDisabled) return;
     if (request) setDraft({ value: request.value });
     if (saving.current?.session === session && !saving.current.signal.aborted) {
       queued.current = { request, focusReturn };
@@ -188,6 +196,50 @@ function useSaveQueue<T>(options: SaveQueueOptions<T>) {
     else void save(target, focusReturn);
   };
   return { isPending: pending?.session === session, commit };
+}
+
+/**
+ * The editor's key and focus handlers: Escape cancels; Enter and focus leaving save. A save waits
+ * for the task that asked for it to end, so the editor's own handling of the key or the blur (a
+ * number field parsing its text) updates the value being edited first; it then runs with the
+ * handlers of the latest render.
+ */
+function useEditorHandlers<T>(options: {
+  commit: (request: SaveRequest<T>, focusReturn?: FocusReturn) => void;
+  cancel: () => void;
+  timerRef: RefObject<ReturnType<typeof setTimeout> | undefined>;
+}) {
+  const { cancel, timerRef } = options;
+  const latestCommit = useLatest(options.commit);
+  const commitLater = (focusReturn: FocusReturn) => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => latestCommit.current(null, focusReturn), 0);
+  };
+  return {
+    onKeyDownCapture: (event: KeyboardEvent<HTMLDivElement>) => {
+      if (!isEditorKey(event) || isComposingKey(event.nativeEvent)) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        cancel();
+      } else if (event.key === 'Enter' && !isOwnEnter(event)) {
+        // The editor still sees Enter; its default (submitting a form) does not run.
+        event.preventDefault();
+        commitLater('read');
+      }
+    },
+    // Enter stops at the editor, so the surrounding collection or form never acts on it.
+    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Enter' && isEditorKey(event) && !isOwnEnter(event))
+        event.stopPropagation();
+    },
+    // Focus moving into an overlay the editor opened (a list, a calendar) comes back through React.
+    onFocus: () => clearTimeout(timerRef.current),
+    onBlur: (event: FocusEvent<HTMLDivElement>) => {
+      if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+      commitLater('none');
+    },
+  };
 }
 
 /**
@@ -218,6 +270,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     setEditing(false);
   };
   const open = () => {
+    if (options.isDisabled) return;
     setDraft(null);
     setError(null);
     setEditing(true);
@@ -228,6 +281,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     edited,
     onSave: options.onSave,
     failureMessage: options.failureMessage,
+    isDisabled: options.isDisabled,
     setDraft,
     setError,
     close,
@@ -236,46 +290,16 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     if (!isPending) close(focusReturn);
   };
 
-  // A commit waits for the task that asked for it to end, so the editor's own handling of the key
-  // or the blur (a number field parsing its text) updates the value being edited first; it then
-  // runs with the handlers of the latest render.
-  const latestCommit = useLatest(commit);
-  const commitLater = (focusReturn: FocusReturn) => {
-    clearTimeout(commitTimer.current);
-    commitTimer.current = setTimeout(() => latestCommit.current(null, focusReturn), 0);
-  };
-  const editorHandlers = {
-    onKeyDownCapture: (event: KeyboardEvent<HTMLDivElement>) => {
-      if (!isEditorKey(event) || isComposingKey(event.nativeEvent)) return;
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        cancel();
-      } else if (event.key === 'Enter' && !isOwnEnter(event)) {
-        // The editor still sees Enter; its default (submitting a form) does not run.
-        event.preventDefault();
-        commitLater('read');
-      }
-    },
-    // Enter stops at the editor, so the surrounding collection or form never acts on it.
-    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === 'Enter' && isEditorKey(event) && !isOwnEnter(event))
-        event.stopPropagation();
-    },
-    // Focus moving into an overlay the editor opened (a list, a calendar) comes back through React.
-    onFocus: () => clearTimeout(commitTimer.current),
-    onBlur: (event: FocusEvent<HTMLDivElement>) => {
-      if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-      commitLater('none');
-    },
-  };
+  const editorHandlers = useEditorHandlers({ commit, cancel, timerRef: commitTimer });
 
   return {
     isEditing,
     isPending,
     error,
     edited,
-    setEdited: (next: T) => setDraft({ value: next }),
+    setEdited: (next: T) => {
+      if (!options.isDisabled) setDraft({ value: next });
+    },
     open,
     cancel: () => cancel(),
     /** Saves the value being edited, or the value given, which may be `undefined` or `null`. */

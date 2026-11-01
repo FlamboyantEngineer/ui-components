@@ -123,6 +123,23 @@ test.describe('Inline Edit lab', () => {
     await expect(bakeOn.locator('.ui-inline-edit__value')).toHaveText('Jun 2, 2026');
   });
 
+  test('UIC-INLINE-EDIT-1.8 freezes an open editor while locked', async ({ page, lab }) => {
+    await lab.open('inline-edit');
+    const lockable = page.locator('[data-lab-field="lockable"]');
+    await lockable.getByRole('button', { name: 'Lock in 1.5 seconds' }).click();
+    await lockable.getByRole('button', { name: /^Edit Note/ }).click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('Bake at dawn');
+    const note = lockable.getByRole('textbox', { name: 'Note' });
+    await expect(note).toBeDisabled();
+    await expect(note).toHaveValue('Bake at dawn');
+    await expect(lockable.getByRole('button', { name: 'Save' })).toBeDisabled();
+    await lockable.getByRole('button', { name: 'Unlock' }).click();
+    await note.click();
+    await page.keyboard.press('Enter');
+    await expect(lockable.locator('.ui-inline-edit__value')).toHaveText('Bake at dawn');
+  });
+
   test('UIC-INLINE-EDIT-2.1 names the read view and passes axe', async ({ page, lab }) => {
     await lab.open('inline-edit');
     await expect(
