@@ -95,6 +95,21 @@ describe('filter model', () => {
     });
   });
 
+  it('UIC-FILTER-BAR-1.2 gives every new condition and operator change its own empty range and list', () => {
+    const ranged = { ...number, operators: ['between' as const] };
+    const first = createFilterCondition(ranged);
+    const second = createFilterCondition(ranged);
+    expect(first.value).not.toBe(second.value);
+    if (first.value && typeof first.value === 'object' && 'min' in first.value) first.value.min = 9;
+    expect(second.value).toEqual({ min: null, max: null });
+    expect(createFilterCondition(ranged).value).toEqual({ min: null, max: null });
+    const condition = { field: 'pages', operator: 'less-than', value: 3 } as const;
+    expect(changeFilterOperator(condition, number, 'between').value).not.toBe(
+      changeFilterOperator(condition, number, 'between').value,
+    );
+    expect(createFilterCondition(choice).value).not.toBe(createFilterCondition(choice).value);
+  });
+
   it('UIC-FILTER-BAR-1.2 keeps the value across operators of the same shape', () => {
     const condition = { field: 'pages', operator: 'less-than', value: 3 } as const;
     expect(changeFilterOperator(condition, number, 'at-least')).toEqual({

@@ -28,6 +28,21 @@ describe('filter matching', () => {
     expect(test('title', 'starts-with', 'salt')('The Salt Road')).toBe(false);
   });
 
+  it('UIC-FILTER-BAR-3.1 compares text as written, spaces included', () => {
+    expect(test('title', 'equals', ' Alpha ')(' alpha ')).toBe(true);
+    expect(test('title', 'equals', ' Alpha ')('Alpha')).toBe(false);
+    expect(test('title', 'not-equals', ' Alpha ')(' Alpha ')).toBe(false);
+    expect(test('title', 'not-equals', ' Alpha ')('Alpha')).toBe(true);
+    expect(test('title', 'starts-with', ' Al')(' Alpha')).toBe(true);
+    expect(test('title', 'starts-with', ' Al')('Alpha')).toBe(false);
+    expect(test('title', 'contains', 'salt ')('The Salt Road')).toBe(true);
+    expect(test('title', 'contains', ' salt')('Salt')).toBe(false);
+    expect(test('title', 'not-contains', ' salt')('Salt')).toBe(true);
+    expect(test('title', 'equals', ' Alpha ')(['Blue', ' ALPHA '])).toBe(true);
+    // A blank operand is incomplete: it passes every record.
+    expect(test('title', 'equals', '   ')('anything')).toBe(true);
+  });
+
   it('UIC-FILTER-BAR-3.1 compares numbers and inclusive ranges', () => {
     expect(test('pages', 'equals', 300)(300)).toBe(true);
     expect(test('pages', 'not-equals', 300)(300)).toBe(false);
@@ -54,6 +69,28 @@ describe('filter matching', () => {
     ]);
     expect(test('published', 'after', '2024-03-02')('soon')).toBe(false);
     expect(test('published', 'after', '2024-03-02')(new Date(Number.NaN))).toBe(false);
+  });
+
+  it.each([1, 99, 999, 1000, 2024])(
+    'UIC-FILTER-BAR-3.1 reads a Date in year %i as the same day as its ISO text',
+    (year) => {
+      const date = new Date(2000, 0, 2, 12);
+      date.setFullYear(year);
+      const day = `${String(year).padStart(4, '0')}-01-02`;
+      expect(test('published', 'equals', day)(date)).toBe(true);
+      expect(test('published', 'equals', day)(day)).toBe(true);
+      expect(test('published', 'before', '1000-01-01')(date)).toBe(year < 1000);
+      expect(test('published', 'after', '0050-06-01')(date)).toBe(year > 50);
+      const within = test('published', 'between', { start: '0001-01-01', end: '0999-12-31' });
+      expect(within(date)).toBe(year < 1000);
+    },
+  );
+
+  it('UIC-FILTER-BAR-3.1 gives a Date outside years 1 to 9999 no day', () => {
+    const ancient = new Date(2000, 0, 2);
+    ancient.setFullYear(0);
+    expect(test('published', 'before', '0001-01-01')(ancient)).toBe(false);
+    expect(test('published', 'not-empty', null)(ancient)).toBe(true);
   });
 
   it('UIC-FILTER-BAR-3.1 matches options, lists, booleans and emptiness', () => {

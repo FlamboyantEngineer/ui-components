@@ -104,16 +104,21 @@ export function getFilterValueKind(
   return 'text';
 }
 
-const emptyValues: Readonly<Record<FilterValueKind, FilterValue>> = {
-  none: null,
-  text: '',
-  number: null,
-  'number-range': { min: null, max: null },
-  date: null,
-  'date-range': null,
-  list: [],
-  boolean: true,
-};
+/** A fresh empty value of a kind: each call returns its own range or list, never a shared one. */
+function createEmptyValue(kind: FilterValueKind): FilterValue {
+  switch (kind) {
+    case 'text':
+      return '';
+    case 'number-range':
+      return { min: null, max: null };
+    case 'list':
+      return [];
+    case 'boolean':
+      return true;
+    default:
+      return null;
+  }
+}
 
 /** A new condition on `field`: its first operator and that operator's empty value. */
 export function createFilterCondition(field: FilterField): FilterCondition {
@@ -121,7 +126,7 @@ export function createFilterCondition(field: FilterField): FilterCondition {
   return {
     field: field.id,
     operator,
-    value: emptyValues[getFilterValueKind(field.type, operator)],
+    value: createEmptyValue(getFilterValueKind(field.type, operator)),
   };
 }
 
@@ -133,7 +138,7 @@ export function changeFilterOperator(
 ): FilterCondition {
   const kind = getFilterValueKind(field.type, operator);
   const isSameKind = kind === getFilterValueKind(field.type, condition.operator);
-  return { ...condition, operator, value: isSameKind ? condition.value : emptyValues[kind] };
+  return { ...condition, operator, value: isSameKind ? condition.value : createEmptyValue(kind) };
 }
 
 function isNumber(value: unknown): value is number {
