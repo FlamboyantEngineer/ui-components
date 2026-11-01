@@ -350,3 +350,24 @@ test('UIC-SEGMENTED-CHOICE-1.3 keeps descenders and accents whole in labels and 
     expect(changed, size).toBe(0);
   }
 });
+
+test('UIC-SEGMENTED-CHOICE-1.3 gives equal segments the widest label in a content-sized row', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('condition-builder');
+  const combinators = page.locator('.ui-condition-builder__combinator');
+  expect(await combinators.count()).toBeGreaterThan(1);
+  for (const combinator of await combinators.all()) {
+    const labels = await combinator.evaluate((node) =>
+      [...node.querySelectorAll<HTMLElement>('.ui-segmented-choice__label')].map((label) => ({
+        text: label.textContent,
+        cut: label.scrollWidth > label.clientWidth || label.scrollHeight > label.clientHeight,
+        width: label.closest('.ui-segmented-choice__segment')?.getBoundingClientRect().width,
+      })),
+    );
+    expect(labels.map(({ text }) => text)).toEqual(['All', 'Any']);
+    expect(labels.filter(({ cut }) => cut)).toEqual([]);
+    expect(labels[0]?.width).toBe(labels[1]?.width);
+  }
+});
