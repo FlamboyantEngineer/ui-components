@@ -53,6 +53,13 @@ The builder shall carry the hooks below, append the caller's `className`, and fo
 Implementation: `src/components/condition-builder/condition-builder.tsx`, `src/components/condition-builder/condition-context.ts`
 Verification: `src/components/condition-builder/condition-builder.test.tsx`
 
+### UIC-CONDITION-BUILDER-1.8 - Context menus and optional menu buttons
+
+Each rule and each nested group shall also offer the same actions, disabled at the same ends, as a [context menu](CONTEXT-MENU.md) named by `conditionActions`: a secondary click or a long touch on the node, or the Context Menu key or Shift+F10 on a control in it, opens the menu of the innermost node, so a rule's menu never opens its group's too. A text control in a rule, or a control with a context menu of its own such as a field's, keeps the request. `showActionButtons={false}` leaves out every menu button (`ui-condition-builder__actions`) and keeps the context menus; each rule's and nested group's element then takes the button's place in the tab order (`tabIndex` 0), and on it the menu keys open its context menu and Alt+Arrow Up and Alt+Arrow Down move it as on the button ([UIC-CONDITION-BUILDER-3.2](#uic-condition-builder-32---moving-from-the-keyboard)). After a move the moved node's menu button takes focus, or without one the node itself; duplicating and deleting move focus as [UIC-CONDITION-BUILDER-1.5](#uic-condition-builder-15---moving-duplicating-and-deleting) describes.
+
+Implementation: `src/components/condition-builder/condition-actions.tsx`, `src/components/condition-builder/condition-builder.tsx`, `src/components/condition-builder/condition-rule.tsx`, `src/components/condition-builder/condition-group.tsx`
+Verification: `src/components/condition-builder/condition-builder.test.tsx`, `e2e/condition-builder.spec.ts`
+
 ## UIC-CONDITION-BUILDER-2 - Matching
 
 ### UIC-CONDITION-BUILDER-2.1 - Evaluating a tree

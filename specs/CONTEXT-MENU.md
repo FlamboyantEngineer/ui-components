@@ -13,7 +13,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/c
 
 ### UIC-CONTEXT-MENU-1.2 - Opening from the keyboard
 
-The Context Menu key or Shift+F10 pressed on the focused target shall open the menu below the target, as React Aria places a menu against its trigger. Pressed in a text control inside the target (a text input, a text area or editable content, not the target itself), the keys stay with the control and its editing menu, as a secondary click does, unless `opensFromTextKeys` asks for the menu there too, for a menu about that control, such as a field's.
+The Context Menu key or Shift+F10 pressed on the focused target shall open the menu below the target, as React Aria places a menu against its trigger. Pressed in a text control inside the target (a text input, a text area or editable content, not the target itself), the keys stay with the control and its editing menu, as a secondary click does, unless `opensFromTextKeys` asks for the menu there too, for a menu about that control, such as a field's. A control inside the target that stops the key before it bubbles, as React Aria controls such as a select trigger do, still opens the menu of the innermost target the key reached, once every handler has run, unless a handler prevented the key's default.
 
 Implementation: `src/components/context-menu/context-menu-target.ts`, `src/components/context-menu/menu-anchor.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `src/components/context-menu/context-menu-text.test.tsx`, `e2e/context-menu.spec.ts`

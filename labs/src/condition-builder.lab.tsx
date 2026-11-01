@@ -147,6 +147,24 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Menu buttons and context menus"
+      description="Every rule and nested group also opens its actions as a context menu: right-click it, touch and hold it, or press Shift+F10 or the Context Menu key on it. Fields keep their own menus. Without menu buttons, Tab stops on each rule and group instead, where Alt+Arrow keys move it."
+    >
+      <StateMatrix
+        axes={{ buttons: ['shown', 'hidden'] }}
+        render={({ buttons }) => (
+          <div style={column}>
+            <ConditionBuilder
+              aria-label={`Conditions, buttons ${buttons}`}
+              fields={bookFields}
+              defaultValue={nested}
+              showActionButtons={buttons === 'shown'}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Depth limit"
       description="With maxDepth 2, a nested group offers Add rule but no Add group."
     >
@@ -179,7 +197,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filtering a catalogue"
-      description="The tree narrows a list of books through a matcher made once per tree with createConditionMatcher. Add, duplicate, move (Alt+Arrow keys on a menu button) and delete rules and groups."
+      description="The tree narrows a list of books through a matcher made once per tree with createConditionMatcher. Add, duplicate, move (Alt+Arrow keys on a menu button) and delete rules and groups, from their menu buttons or context menus."
     >
       <LiveQuery />
     </LabSection>

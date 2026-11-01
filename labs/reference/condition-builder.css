@@ -64,6 +64,13 @@
   gap: 6px;
 }
 
+/* Without menu buttons, rules and nested groups take focus themselves. */
+:is(.ui-condition-builder__rule, .ui-condition-builder__group):focus-visible {
+  border-radius: var(--ref-radius);
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
 .ui-condition-builder__actions {
   display: inline-flex;
   margin-inline-start: auto;

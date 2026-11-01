@@ -25,6 +25,8 @@ interface ConditionBuilderContextValue {
   actions: ConditionBuilderActions;
   /** The element id of a node, or of a group's add-rule button. */
   elementId(id: string, part?: 'add'): string;
+  /** Rules and nested groups show their menu buttons, not only their context menus. */
+  showActionButtons: boolean;
 }
 
 export const conditionBuilderHooks = createHooks('condition-builder', [

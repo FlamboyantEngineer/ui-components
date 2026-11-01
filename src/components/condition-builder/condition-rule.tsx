@@ -8,7 +8,7 @@ import {
   isFilterConditionComplete,
 } from '../filter-bar/filter-bar.js';
 import { SelectField } from '../select-field/select-field.js';
-import { ConditionActions } from './condition-actions.js';
+import { ConditionActions, ConditionMenuTarget } from './condition-actions.js';
 import { conditionBuilderHooks as hooks, useConditionBuilder } from './condition-context.js';
 import type { ConditionRule } from './condition-tree.js';
 
@@ -28,7 +28,7 @@ export const ConditionRuleRow = memo(function ConditionRuleRow({
   count,
 }: ConditionRuleRowProps) {
   const strings = useUiStrings();
-  const { fields, validate, actions, elementId } = useConditionBuilder();
+  const { fields, validate, actions, elementId, showActionButtons } = useConditionBuilder();
   const messageId = useId();
   const field = fields.find((candidate) => candidate.id === rule.field);
   const isIncomplete = field !== undefined && !isFilterConditionComplete(rule, field);
@@ -38,37 +38,39 @@ export const ConditionRuleRow = memo(function ConditionRuleRow({
     if (next && next.id !== rule.field) actions.update({ ...rule, ...createFilterCondition(next) });
   };
   return (
-    <div
-      {...hooks.slot('rule', { incomplete: isIncomplete, invalid: Boolean(message) })}
-      id={elementId(rule.id)}
-      role="group"
-      aria-label={strings.conditionRule(index + 1)}
-      aria-describedby={message ? messageId : undefined}
-    >
-      <SelectField
-        label={strings.filterField}
-        labelLayout="control-only"
-        className={hooks.slotClass('field')}
-        options={fields.map(({ id, label }) => ({ id, label }))}
-        value={rule.field}
-        tracksChanges={false}
-        onChange={(id) => (id === null ? undefined : chooseField(String(id)))}
-      />
-      {field ? (
-        <FilterConditionFields
-          field={field}
-          condition={rule}
-          onChange={(condition) => actions.update({ ...rule, ...condition })}
+    <ConditionMenuTarget id={rule.id} index={index} count={count}>
+      <div
+        {...hooks.slot('rule', { incomplete: isIncomplete, invalid: Boolean(message) })}
+        id={elementId(rule.id)}
+        role="group"
+        aria-label={strings.conditionRule(index + 1)}
+        aria-describedby={message ? messageId : undefined}
+      >
+        <SelectField
+          label={strings.filterField}
           labelLayout="control-only"
-          slotClass={hooks.slotClass}
+          className={hooks.slotClass('field')}
+          options={fields.map(({ id, label }) => ({ id, label }))}
+          value={rule.field}
+          tracksChanges={false}
+          onChange={(id) => (id === null ? undefined : chooseField(String(id)))}
         />
-      ) : null}
-      <ConditionActions id={rule.id} index={index} count={count} />
-      {message ? (
-        <p {...hooks.slot('message')} id={messageId}>
-          {message}
-        </p>
-      ) : null}
-    </div>
+        {field ? (
+          <FilterConditionFields
+            field={field}
+            condition={rule}
+            onChange={(condition) => actions.update({ ...rule, ...condition })}
+            labelLayout="control-only"
+            slotClass={hooks.slotClass}
+          />
+        ) : null}
+        {showActionButtons ? <ConditionActions id={rule.id} index={index} count={count} /> : null}
+        {message ? (
+          <p {...hooks.slot('message')} id={messageId}>
+            {message}
+          </p>
+        ) : null}
+      </div>
+    </ConditionMenuTarget>
   );
 });

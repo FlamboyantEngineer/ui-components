@@ -89,4 +89,51 @@ test.describe('Condition Builder lab', () => {
     await addRule();
     await expect(demo.locator('[data-lab-unique]')).toHaveText(/^(\d+) of \1 ids unique$/);
   });
+
+  test('UIC-CONDITION-BUILDER-1.8 opens rule and group context menus with and without menu buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('condition-builder');
+    const shown = matrixCell(page, 'buttons=shown');
+    const hidden = matrixCell(page, 'buttons=hidden');
+    await expect(shown.getByRole('button', { name: 'Actions' })).toHaveCount(4);
+    await expect(hidden.getByRole('button', { name: 'Actions' })).toHaveCount(0);
+    const nested = hidden.getByRole('group', { name: 'Group' });
+    const inner = nested.getByRole('group', { name: 'Rule 1' });
+    // A secondary click between the rule's controls opens its menu, not the group's.
+    await inner.scrollIntoViewIfNeeded();
+    const field = await inner.locator('.ui-condition-builder__field').boundingBox();
+    const operator = await inner.locator('.ui-condition-builder__operator').boundingBox();
+    if (!field || !operator) throw new Error('The rule has no layout box.');
+    await page.mouse.click((field.x + field.width + operator.x) / 2, field.y + field.height / 2, {
+      button: 'right',
+    });
+    const menu = page.getByRole('menu', { name: 'Actions' });
+    await expect(menu).toHaveCount(1);
+    await expect(menu.getByRole('menuitem', { name: 'Move up' })).toBeDisabled();
+    await menu.getByRole('menuitem', { name: 'Move down' }).click();
+    const moved = nested.getByRole('group', { name: 'Rule 2' });
+    await expect(moved).toBeFocused();
+    // On the focused rule, the menu key opens the same menu, and Alt+Arrow moves it back.
+    await page.keyboard.press('Shift+F10');
+    await expect(page.getByRole('menu', { name: 'Actions' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(moved).toBeFocused();
+    await page.keyboard.press('Alt+ArrowUp');
+    await expect(nested.getByRole('group', { name: 'Rule 1' })).toBeFocused();
+    // The group's header opens the group's own menu; the shown buttons keep their context menus.
+    await nested
+      .locator('.ui-condition-builder__group-header')
+      .click({ button: 'right', position: { x: 300, y: 8 } });
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
+    await expect(hidden.getByRole('group', { name: 'Group' })).toHaveCount(2);
+    await shown
+      .getByRole('group', { name: 'Rule 1' })
+      .first()
+      .click({ button: 'right', position: { x: 2, y: 2 } });
+    await expect(page.getByRole('menu', { name: 'Actions' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await lab.expectAccessible();
+  });
 });
