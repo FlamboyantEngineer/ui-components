@@ -57,9 +57,9 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/query-fiel
 
 ### UIC-CODE-EDITOR-2.1 - Gutter
 
-`lineNumbers` shall draw a gutter (`ui-code-editor__gutter`, hidden from assistive technology) with one row (`ui-code-editor__line`) per source line, split on line feeds, holding its number (`ui-code-editor__line-number`) and a hidden copy of the line (`ui-code-editor__line-text`, a zero-width space for an empty line), and publish `data-numbered` on the root.
+`lineNumbers` shall draw a gutter (`ui-code-editor__gutter`, hidden from assistive technology) with one row (`ui-code-editor__line`) per source line, split on line feeds, holding its number (`ui-code-editor__line-number`) and a hidden copy of the line (`ui-code-editor__line-text`, a zero-width space for an empty line), and publish `data-numbered` on the root. The reference sheet clips the gutter's background to the surface frame's rounded corners, so the frame's border stays whole where the gutter meets it.
 
-Implementation: `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-editor.tsx`
+Implementation: `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-editor.tsx`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-2.2 - Wrapped lines

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { cellSelector, expect, familySelector, test } from './fixtures.js';
+import { cellSelector, expect, familySelector, matrixCell, test } from './fixtures.js';
 
 function cell(page: Page, wrap: string, state: string, size: string): Locator {
   return page.locator(
@@ -543,5 +543,36 @@ test.describe('Code Editor lab', () => {
     await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/\npick\(test, yes, no\)$/);
+  });
+  test('UIC-CODE-EDITOR-2.1 keeps the frame corners whole where the gutter meets them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    for (const wrap of ['soft', 'off']) {
+      for (const size of ['sm', 'md', 'lg']) {
+        const editor = matrixCell(page, `wrap=${wrap} state=numbered size=${size}`).locator(
+          '.ui-code-editor',
+        );
+        await editor.scrollIntoViewIfNeeded();
+        // Just inside the frame's box but outside its rounded corners, the gutter paints nothing.
+        const shot = (await editor.screenshot()).toString('base64');
+        const corners = await page.evaluate(async (data) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${data}`;
+          await image.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext('2d');
+          if (!context) return [];
+          context.drawImage(image, 0, 0);
+          const pixel = (x: number, y: number) => [...context.getImageData(x, y, 1, 1).data].join();
+          const gutter = pixel(6, image.height - 8);
+          return [pixel(1, 1), pixel(1, image.height - 2)].map((corner) => corner !== gutter);
+        }, shot);
+        expect(corners, `${wrap} ${size}`).toEqual([true, true]);
+      }
+    }
   });
 });
