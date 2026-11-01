@@ -39,8 +39,9 @@ export interface NumberFieldMark {
 }
 
 /**
- * The props `Slider` and `RangeSlider` share: the field's props (a slider always holds a value, so
- * it is never required and never cleared) and the range, step, orientation and format.
+ * The props the slider display of a number and of a range share: the field's props (a slider
+ * always holds a value, so it is never required and never cleared) and the range, step,
+ * orientation and format.
  */
 export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequired' | 'emptyValue'> {
   /** The lowest value. Defaults to 0. */
@@ -66,7 +67,7 @@ export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequire
 type SliderValue = number | [number, number];
 
 /**
- * The field of a slider whose value is always on its grid (UIC-SLIDER-1.2): a given value, default
+ * The field of a slider whose value is always on its grid (UIC-NUMBER-FIELD-5.2): a given value, default
  * or committed value is held snapped into the bounds and steps, a range in order, and a given or
  * held value off the grid (as the bounds or step change) moves onto it, reporting the change.
  */
