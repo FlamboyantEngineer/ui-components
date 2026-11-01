@@ -31,7 +31,14 @@ test.describe('Hover Card lab', () => {
     await expect(trigger).toBeFocused();
     await expect(card).toBeVisible();
     await page.keyboard.press('Tab');
-    await expect(card.getByRole('button', { name: 'Save Kyoto' })).toBeFocused();
+    const save = card.getByRole('button', { name: 'Save Kyoto' });
+    await expect(save).toBeFocused();
+    await expect(card).toBeVisible();
+    // The Save button's own tooltip opens inside the card, which stays open.
+    await expect(page.getByRole('tooltip')).toHaveText('Keep it in your list');
+    await expect(card).toBeVisible();
+    await save.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Keep it in your list');
     await expect(card).toBeVisible();
   });
 

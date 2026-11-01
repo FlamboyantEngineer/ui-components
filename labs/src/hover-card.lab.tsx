@@ -127,7 +127,9 @@ function HintedTrigger() {
         </Button>
         <HoverCard aria-label={`About ${city.name}`}>
           <p>{city.note}</p>
-          <Button size="sm">Save {city.name}</Button>
+          <Button size="sm" tooltip="Keep it in your list">
+            Save {city.name}
+          </Button>
         </HoverCard>
       </HoverCardTrigger>
     </div>
@@ -183,7 +185,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A trigger with its own hint"
-      description="The Kyoto button has a tooltip and a shortcut of its own; inside the hover card trigger they yield, so the card opens on hover and focus."
+      description="The Kyoto button has a tooltip and a shortcut of its own; inside the hover card trigger they yield, so the card opens on hover and focus. The card's Save button keeps its own tooltip, which opens on focus and hover while the card stays open."
     >
       <HintedTrigger />
     </LabSection>

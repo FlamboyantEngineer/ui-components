@@ -230,6 +230,28 @@ describe('HoverCard', () => {
     expect(trigger()).toHaveFocus();
   });
 
+  it('UIC-HOVER-CARD-1.3 opens the tooltip of a control inside the open card and stays open', async () => {
+    render(
+      <Preview triggerProps={{ delay: 0 }}>
+        <Button tooltip="Keep this city">Save city</Button>
+      </Preview>,
+    );
+    await user.tab();
+    await user.tab();
+    await advance(0);
+    expect(card()).not.toBeNull();
+    await user.tab();
+    const save = screen.getByRole('button', { name: 'Save city' });
+    expect(save).toHaveFocus();
+    await advance(1000);
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Keep this city');
+    expect(card()).not.toBeNull();
+    await hover(user, save);
+    await advance(1000);
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Keep this city');
+    expect(card()).not.toBeNull();
+  });
+
   it('UIC-HOVER-CARD-1.3 stays open while the pointer moves into the card, then closes after the close delay', async () => {
     render(<Preview triggerProps={{ delay: 0, closeDelay: 400 }} />);
     await hover(user, trigger());
