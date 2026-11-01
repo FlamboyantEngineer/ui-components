@@ -95,19 +95,22 @@ function useResetFiles(
   useNativeReset(ref, () => {
     if (ref.current) fillInput(ref.current, latest.current.files, held);
   });
+  // The document's capture phase sees the form data of every form, so the input's current owner
+  // is the one that counts, after a change of its `form` attribute or of the form around it too.
   useEffect(() => {
-    const form = ref.current?.form;
-    if (!form) return undefined;
-    const onFormData = (event: FormDataEvent) => {
+    const document = ref.current?.ownerDocument;
+    if (!document) return undefined;
+    const onFormData = (event: Event) => {
       const { name: key, isDisabled: isLeftOut, files: listed } = latest.current;
       const input = ref.current;
-      if (key === undefined || isLeftOut || !input || (input.files?.length ?? 0) === listed.length)
-        return;
-      event.formData.delete(key);
-      for (const file of listed) event.formData.append(key, file);
+      if (!input || event.target !== input.form || !('formData' in event)) return;
+      if (key === undefined || isLeftOut || (input.files?.length ?? 0) === listed.length) return;
+      const { formData } = event as FormDataEvent;
+      formData.delete(key);
+      for (const file of listed) formData.append(key, file);
     };
-    form.addEventListener('formdata', onFormData);
-    return () => form.removeEventListener('formdata', onFormData);
+    document.addEventListener('formdata', onFormData, true);
+    return () => document.removeEventListener('formdata', onFormData, true);
   }, [ref, latest]);
 }
 

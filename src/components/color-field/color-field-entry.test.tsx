@@ -309,4 +309,35 @@ describe('ColorField native reset', () => {
     await waitFor(() => expect(input()).toHaveValue('#336699'));
     expect(new FormData(form).get('accent')).toBe('#336699');
   });
+
+  it('UIC-COLOR-FIELD-4.3 UIC-FIELD-2.6 resets its typed text and value together with its new form', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <form id="first-owner" aria-label="First" />
+        <form id="second-owner" aria-label="Second" />
+        <ColorField label="Accent" name="accent" allowsTyping defaultValue="#336699" />
+      </>,
+    );
+    const moveTo = (form: string) => {
+      for (const field of document.querySelectorAll('input')) field.setAttribute('form', form);
+    };
+    const reset = async (name: string) => {
+      act(() => screen.getByRole<HTMLFormElement>('form', { name }).reset());
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    };
+    moveTo('first-owner');
+    await user.clear(input());
+    await user.type(input(), '#12');
+    moveTo('second-owner');
+    await reset('First');
+    expect(input()).toHaveValue('#12');
+    await reset('Second');
+    await waitFor(() => expect(input()).toHaveValue('#336699'));
+    await user.clear(input());
+    await user.type(input(), '#45');
+    moveTo('first-owner');
+    await reset('First');
+    await waitFor(() => expect(input()).toHaveValue('#336699'));
+  });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Key } from '../../src/core/props.js';
 import {
   FileUpload,
@@ -129,30 +129,67 @@ function Uploads({ variant }: { variant: FileUploadVariant | 'rules' }) {
   );
 }
 
-/** A form that needs one file: submitting reads the form data the upload contributes. */
+/** The names of the files a submitted form carries under `attachments`. */
+function sentFiles(form: HTMLFormElement): string {
+  const files = new FormData(form).getAll('attachments') as File[];
+  return files.map((file) => file.name).join(', ') || 'no files';
+}
+
+/**
+ * A form that needs one file: submitting reads the form data the upload contributes. The upload's
+ * input can move to another form through its `form` attribute, as a host's layout may do; resets
+ * and submits then follow that form.
+ */
 function UploadForm() {
   const upload = useSimulatedUpload();
   const [sent, setSent] = useState('nothing');
+  const [otherSent, setOtherSent] = useState('nothing');
+  const [isMoved, setMoved] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const input = formRef.current?.querySelector('input[name="attachments"]');
+    if (isMoved) input?.setAttribute('form', 'upload-other-form');
+    else input?.removeAttribute('form');
+  }, [isMoved, upload.files]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const files = new FormData(event.currentTarget).getAll('attachments') as File[];
-    setSent(files.map((file) => file.name).join(', ') || 'no files');
+    setSent(sentFiles(event.currentTarget));
   };
   return (
-    <form onSubmit={submit} data-lab-form="upload">
-      <FileUpload
-        label="Attach the signed form"
-        name="attachments"
-        isRequired
-        files={upload.files}
-        onSelect={upload.add}
-        onRemove={upload.remove}
-      />
-      <button type="submit">Send</button> <button type="reset">Reset</button>
-      <p>
-        Sent: <output data-lab-output="form-sent">{sent}</output>
-      </p>
-    </form>
+    <>
+      <form ref={formRef} onSubmit={submit} data-lab-form="upload">
+        <FileUpload
+          label="Attach the signed form"
+          name="attachments"
+          isRequired
+          files={upload.files}
+          onSelect={upload.add}
+          onRemove={upload.remove}
+        />
+        <button type="submit">Send</button> <button type="reset">Reset</button>{' '}
+        <button type="button" onClick={() => setMoved((moved) => !moved)}>
+          {isMoved ? 'Move the files back' : 'Move the files to the other form'}
+        </button>
+        <p>
+          Sent: <output data-lab-output="form-sent">{sent}</output>
+        </p>
+      </form>
+      <form
+        id="upload-other-form"
+        aria-label="Other form"
+        data-lab-form="upload-other"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setOtherSent(sentFiles(event.currentTarget));
+        }}
+      >
+        <button type="submit">Send the other form</button>{' '}
+        <button type="reset">Reset the other form</button>
+        <p>
+          Other form sent: <output data-lab-output="other-form-sent">{otherSent}</output>
+        </p>
+      </form>
+    </>
   );
 }
 
@@ -275,7 +312,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="In a form"
-      description="The upload is required: Send refuses an empty upload and moves focus to it; the form data carries the chosen files. Reset leaves the listed files, which the page holds, and the next Send still carries them."
+      description="The upload is required: Send refuses an empty upload and moves focus to it; the form data carries the chosen files. Reset leaves the listed files, which the page holds, and the next Send still carries them. Moving the files to the other form makes that form send and reset them, and this one neither."
     >
       <UploadForm />
     </LabSection>
