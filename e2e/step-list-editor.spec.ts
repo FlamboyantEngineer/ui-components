@@ -72,6 +72,22 @@ test.describe('Step List Editor lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-STEP-LIST-EDITOR-1.4 reads a column named constructor as its own values only', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('step-list-editor');
+    const recipe = page.getByRole('group', { name: 'Recipe steps' });
+    const note = (number: number) =>
+      recipe.getByRole('group', { name: `Step ${number}` }).getByRole('textbox', { name: 'Note' });
+    await expect(note(1)).toHaveValue('');
+    await expect(note(2)).toHaveValue('Do not overmix');
+    await recipe.getByRole('button', { name: 'Add step' }).click();
+    await expect(note(4)).toHaveValue('');
+    await note(4).fill('Cool on a rack');
+    await expect(note(4)).toHaveValue('Cool on a rack');
+  });
+
   test('UIC-STEP-LIST-EDITOR-2.2 UIC-STEP-LIST-EDITOR-2.3 moves steps with Alt+Arrow keys and the menu, keeping focus', async ({
     page,
     lab,
