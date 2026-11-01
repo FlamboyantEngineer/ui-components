@@ -13,7 +13,7 @@ Verification: `src/components/filter-bar/filter-model.test.ts`, `src/components/
 
 ### UIC-FILTER-BAR-1.2 - Condition values
 
-A condition's value shall take the shape its operator needs on its field's type: text for a `text` field, a number, a `{ min, max }` range for `number` with `between`, a `YYYY-MM-DD` date, a `{ start, end }` range of dates for `date` with `between`, a list of option values for `choice` and `person`, a boolean, and `null` for `empty` and `not-empty`. A new condition takes the field's first operator and an empty value of its shape (a boolean starts at `true`); changing the operator keeps the value when the new operator takes the same shape and empties it otherwise. A condition is complete when it holds every value its operator needs (`isFilterConditionComplete`); a range needs both ends.
+A condition's value shall take the shape its operator needs on its field's type: text for a `text` field, a number, a `{ min, max }` range for `number` with `between`, a `YYYY-MM-DD` date, a `{ start, end }` range of dates for `date` with `between`, a list of option values for `choice` and `person`, a boolean, and `null` for `empty` and `not-empty`. A new condition takes the field's first operator and an empty value of its shape (a boolean starts at `true`), a range or list of its own that no other condition shares; changing the operator keeps the value when the new operator takes the same shape and empties it otherwise. A condition is complete when it holds every value its operator needs (`isFilterConditionComplete`); a range needs both ends.
 
 Implementation: `src/components/filter-bar/filter-model.ts`
 Verification: `src/components/filter-bar/filter-model.test.ts`
@@ -73,7 +73,7 @@ Verification: `src/components/filter-bar/filter-bar.test.tsx`
 
 ### UIC-FILTER-BAR-3.1 - Matching one condition
 
-`matchesFilterCondition(value, condition, field)` shall test a record's value for the field against a condition: text without case (contains, starts with, is), numbers by comparison or an inclusive range, dates by day (a `Date` in local time, or a text starting with `YYYY-MM-DD`) before, after, on or within an inclusive range, option values by membership, booleans by equality, and `empty` as `null`, `undefined`, an empty text or an empty list. A list value passes when one of its entries passes, and a negated operator (`not-contains`, `not-equals`, `none-of`) fails when one of its entries matches. A condition missing its value passes every record.
+`matchesFilterCondition(value, condition, field)` shall test a record's value for the field against a condition: text without case and as written, spaces included (contains, starts with, is), numbers by comparison or an inclusive range, dates by day (a `Date` in local time, read as a four-digit `YYYY-MM-DD` day in years 1 to 9999 and as no day outside them, or a text starting with `YYYY-MM-DD`) before, after, on or within an inclusive range, option values by membership, booleans by equality, and `empty` as `null`, `undefined`, an empty text or an empty list. A list value passes when one of its entries passes, and a negated operator (`not-contains`, `not-equals`, `none-of`) fails when one of its entries matches. A condition missing its value passes every record.
 
 Implementation: `src/components/filter-bar/filter-matching.ts`
 Verification: `src/components/filter-bar/filter-matching.test.ts`

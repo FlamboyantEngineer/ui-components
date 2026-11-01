@@ -1,11 +1,15 @@
 import { useState, type CSSProperties } from 'react';
 import {
+  createFilterCondition,
   createFilterMatcher,
   FilterBar,
+  matchesFilterCondition,
   type FilterCondition,
+  type FilterField,
 } from '../../src/components/filter-bar/filter-bar.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabHelperCalls } from './lab-helper-calls.js';
 import { bookFields, getBookValue, sampleBooks } from './filter-samples.js';
 
 const column: CSSProperties = { width: 420 };
@@ -73,6 +77,19 @@ function Catalogue() {
   );
 }
 
+const titleField: FilterField = { id: 'title', label: 'Title', type: 'text' };
+const publishedField: FilterField = { id: 'published', label: 'Published', type: 'date' };
+const pagesRange: FilterField = {
+  id: 'pages',
+  label: 'Pages',
+  type: 'number',
+  operators: ['between'],
+};
+const padded: FilterCondition = { field: 'title', operator: 'equals', value: ' Alpha ' };
+const earlyDay: FilterCondition = { field: 'published', operator: 'equals', value: '0099-01-02' };
+const earlyDate = new Date(2000, 0, 2, 12);
+earlyDate.setFullYear(99);
+
 mountLab(
   <>
     <LabSection
@@ -114,6 +131,33 @@ mountLab(
       description="A search field in the search slot and the filters narrow a list of books through createFilterMatcher. Add a filter, edit a chip, remove one or clear all."
     >
       <Catalogue />
+    </LabSection>
+    <LabSection
+      title="Matching helpers"
+      description="Text compares without case but as written, spaces included; a Date in any year from 1 to 9999 reads as its four-digit day; each new condition gets its own empty range."
+    >
+      <LabHelperCalls
+        calls={[
+          [
+            "matchesFilterCondition(' ALPHA ', { operator: 'equals', value: ' Alpha ' }, title)",
+            String(matchesFilterCondition(' ALPHA ', padded, titleField)),
+          ],
+          [
+            "matchesFilterCondition('Alpha', { operator: 'equals', value: ' Alpha ' }, title)",
+            String(matchesFilterCondition('Alpha', padded, titleField)),
+          ],
+          [
+            "matchesFilterCondition(new Date(99, 0, 2), { operator: 'equals', value: '0099-01-02' }, published)",
+            String(matchesFilterCondition(earlyDate, earlyDay, publishedField)),
+          ],
+          [
+            'createFilterCondition(pagesRange).value === createFilterCondition(pagesRange).value',
+            String(
+              createFilterCondition(pagesRange).value === createFilterCondition(pagesRange).value,
+            ),
+          ],
+        ]}
+      />
     </LabSection>
   </>,
 );

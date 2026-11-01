@@ -37,20 +37,25 @@ function toScalars(value: FilterRecordValue): Scalar[] {
   return Array.isArray(value) ? [...value] : [value as Scalar];
 }
 
-/** A record value's day as `YYYY-MM-DD`, from a date (in local time) or a text starting with one. */
+/**
+ * A record value's day as `YYYY-MM-DD`, from a date (in local time, years 1 to 9999) or a text
+ * starting with one. Invalid dates and years outside that range have no day.
+ */
 function toDay(value: Scalar): string | null {
   if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) return null;
+    const year = value.getFullYear();
+    if (Number.isNaN(year) || year < 1 || year > 9999) return null;
     const month = String(value.getMonth() + 1).padStart(2, '0');
     const day = String(value.getDate()).padStart(2, '0');
-    return `${value.getFullYear()}-${month}-${day}`;
+    return `${String(year).padStart(4, '0')}-${month}-${day}`;
   }
   return typeof value === 'string' && isoDay.test(value) ? value.slice(0, 10) : null;
 }
 
 function testText(operator: FilterCondition['operator'], wanted: string, value: Scalar): boolean {
   const text = String(value).toLowerCase();
-  const needle = wanted.trim().toLowerCase();
+  // The operand compares as written, spaces included; only a blank one is incomplete.
+  const needle = wanted.toLowerCase();
   if (operator === 'equals' || operator === 'not-equals') return text === needle;
   if (operator === 'starts-with') return text.startsWith(needle);
   return text.includes(needle);

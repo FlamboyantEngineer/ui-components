@@ -74,4 +74,13 @@ test.describe('Filter Bar lab', () => {
     await expect(several.locator('.ui-filter-bar')).toHaveAttribute('data-empty', 'true');
     await expect(several.getByRole('button', { name: 'Add filter' })).toBeFocused();
   });
+
+  test('UIC-FILTER-BAR-1.2 UIC-FILTER-BAR-3.1 matches padded text, early years and fresh ranges', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('filter-bar');
+    const results = page.locator('[data-lab-helpers] [data-lab-call]');
+    await expect(results).toHaveText(['true', 'false', 'true', 'false']);
+  });
 });
