@@ -543,3 +543,51 @@ test('UIC-CARD-6.3 UIC-CARD-5.3 keeps the header row controls apart at every wid
   await row.locator('.ui-card-grid-item__checkbox').click();
   await expect(grid.locator('[data-lab-output="grid-selected"]')).toHaveText('R4');
 });
+
+test('UIC-CARD-6.2 collapses and expands each record from its toggle and row 4 from outside', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('card');
+  const demo = page.locator('[data-lab-demo="collapse"]');
+  const output = demo.locator('[data-lab-output="expanded"]');
+  const names = ['Orchard row 4', 'Orchard row 5, the long stretch beside the old stone barn'];
+  for (const name of names) {
+    const card = demo.getByRole('region', { name });
+    const toggle = card.getByRole('button', { name: `Details ${name}` });
+    const body = card.locator('.ui-card__body');
+    await card.getByRole('button', { name: 'Water' }).click();
+    await card.getByRole('textbox', { name: 'Crates' }).fill('3');
+    await card.getByRole('textbox', { name: 'Crates' }).press('Enter');
+    await card.getByText('Pruned this week').click();
+    await expect(card.getByRole('checkbox', { name: 'Pruned this week' })).toBeChecked();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(body).toBeHidden();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(body).toBeVisible();
+    await expect(card.getByRole('checkbox', { name: 'Pruned this week' })).toBeChecked();
+  }
+
+  const first = demo.getByRole('region', { name: names[0] });
+  const toggle = first.getByRole('button', { name: `Details ${names[0]}` });
+  const notes = first.getByRole('textbox', { name: 'Notes' });
+  await notes.fill('Thin the fruit');
+  await notes.focus();
+  // A press from outside that leaves focus where it was hides the focused field.
+  await demo.getByRole('button', { name: 'Collapse row 4' }).dispatchEvent('click');
+  await expect(output).toHaveText('false');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toBeFocused();
+  await demo.getByRole('button', { name: 'Expand row 4' }).click();
+  await expect(output).toHaveText('true');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(notes).toHaveValue('Thin the fruit');
+  await demo.getByRole('button', { name: 'Collapse row 4' }).click();
+  await expect(output).toHaveText('false');
+  await toggle.click();
+  await expect(output).toHaveText('true');
+  await expect(demo.getByRole('button', { name: 'Collapse row 4' })).toBeVisible();
+});

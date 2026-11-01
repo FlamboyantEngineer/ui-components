@@ -88,13 +88,13 @@ const paneRows = [
   { name: 'Plum row 8, the long stretch by the gate', short: 'P8', done: 90 },
 ];
 
-/** Collapsible records, one controlled by the lab so "Collapse all" works from outside. */
+/** Collapsible records, one controlled by the lab so a button outside collapses and expands it. */
 export function CollapsibleRecords() {
   const [first, setFirst] = useState(true);
   return (
     <div data-lab-demo="collapse" style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
-      <Button size="sm" onPress={() => setFirst(false)}>
-        Collapse row 4
+      <Button size="sm" onPress={() => setFirst(!first)}>
+        {first ? 'Collapse row 4' : 'Expand row 4'}
       </Button>
       <RowCard row={requireDefined(rows[0])} isExpanded={first} onExpandedChange={setFirst} />
       <RowCard row={requireDefined(rows[1])} />

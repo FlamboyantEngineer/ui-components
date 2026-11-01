@@ -434,7 +434,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Collapsible records"
-      description="Collapse a record and expand it again: its notes keep what you typed. The button above collapses row 4 from outside."
+      description="Collapse a record with the chevron at the end of its title row and expand it again: its notes keep what you typed, and its buttons, fields and checkbox never toggle it. The button above collapses and expands row 4 from outside, which controls that card."
     >
       <CollapsibleRecords />
     </LabSection>
