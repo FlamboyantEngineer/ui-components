@@ -1,15 +1,18 @@
 'use client';
 
-import { useContext, useEffect, type ReactNode } from 'react';
+import { useContext, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import {
   FocusableContext,
   OverlayTriggerStateContext,
-  PreviewTrigger,
+  PopoverContext,
+  usePreviewTrigger,
 } from '../../primitives/index.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { PopoverPanel } from '../popover/popover.js';
+import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
+import { usePreviewState } from '../../utils/use-preview-state.js';
 
 /** A focusable trigger and the `HoverCard` it opens on hover and focus. */
 export interface HoverCardTriggerProps extends OpenStateProps {
@@ -54,11 +57,51 @@ function TriggerProps({ isEnabled, children }: { isEnabled: boolean; children: R
  * trigger (a React Aria focusable such as a `Link` or `Button`) or keyboard focus reaches it, or on a
  * long press, and closes it `closeDelay` milliseconds after both leave the trigger and the card.
  */
-export function HoverCardTrigger({ children, ...trigger }: HoverCardTriggerProps) {
+export function HoverCardTrigger({
+  children,
+  delay = HOVER_CARD_DELAY,
+  closeDelay = HOVER_CARD_CLOSE_DELAY,
+  isDisabled,
+  ...openState
+}: HoverCardTriggerProps) {
+  // React Aria's PreviewTrigger, with a state of the card's own (`usePreviewState`), so a tooltip
+  // inside the open card neither closes it nor is closed by it.
+  const state = usePreviewState({ ...openState, delay, closeDelay });
+  const triggerRef = useRef<HTMLElement>(null);
+  const popoverRef = useRef<HTMLElement>(null);
+  const { triggerProps, popoverProps } = usePreviewTrigger(
+    { isDisabled, triggerRef, popoverRef },
+    state,
+  );
+  // Popovers expect an overlay state; the preview state keeps the open and close delays.
+  const overlayState = useMemo(
+    () => ({
+      isOpen: state.isOpen,
+      open: () => state.open(),
+      close: () => state.close(),
+      setOpen: (open: boolean) => (open ? state.open() : state.close()),
+      toggle: () => (state.isOpen ? state.close() : state.open()),
+      point: null,
+      setPoint: () => {},
+    }),
+    [state],
+  );
+  const popover = {
+    trigger: 'PreviewTrigger',
+    triggerRef,
+    ref: popoverRef,
+    isNonModal: true,
+    shouldSkipAnimation: state.shouldSkipAnimation,
+    ...popoverProps,
+  };
   return (
-    <PreviewTrigger {...trigger}>
-      <TriggerProps isEnabled={!trigger.isDisabled}>{children}</TriggerProps>
-    </PreviewTrigger>
+    <OverlayTriggerStateContext value={overlayState}>
+      <PopoverContext value={popover}>
+        <FocusableContext value={{ ...triggerProps, ref: triggerRef }}>
+          <TriggerProps isEnabled={!isDisabled}>{children}</TriggerProps>
+        </FocusableContext>
+      </PopoverContext>
+    </OverlayTriggerStateContext>
   );
 }
 
