@@ -11,14 +11,12 @@ import { findTopBlocks } from './block-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 import { isElement, isHTMLElement, isNode } from '../../utils/is-element.js';
 
-/** The block a handle serves and where it sits, with the handle's own focus and drag state. */
+/** The block a handle serves and where it sits, with the handle's own focus state. */
 interface BlockTarget {
   /** The block's position in the document. */
   pos: number;
   /** The block's top edge in the surface, in pixels. */
   top: number;
-  isDragging: boolean;
-  setDragging: (isDragging: boolean) => void;
   onFocus: () => void;
   onBlur: (event: FocusEvent) => void;
 }
@@ -39,7 +37,8 @@ function findTopLevelPos(doc: DocNode, pos: number): number {
 
 /**
  * The block under the pointer, or else the block holding the selection while the document or the
- * handle has focus (or `isHeld`, as while the handle's menu is open), placed against the surface.
+ * handle has focus (or `isHeld`, as while the handle's menu is open or its block is dragged),
+ * placed against the surface.
  */
 export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   const { surfaceRef } = useRichTextEditorContext('BlockHandle');
@@ -47,7 +46,6 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   const [hovered, setHovered] = useState<Hovered | null>(null);
   const [hasEditorFocus, setEditorFocus] = useState(false);
   const [hasOwnFocus, setOwnFocus] = useState(false);
-  const [isDragging, setDragging] = useState(false);
   const [top, setTop] = useState<number | null>(null);
   const isFocused = hasEditorFocus || hasOwnFocus || isHeld;
   const hoveredPos = hovered?.doc === state.doc && !isHeld ? hovered.pos : null;
@@ -91,8 +89,6 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   return {
     pos,
     top,
-    isDragging,
-    setDragging,
     onFocus: () => setOwnFocus(true),
     onBlur: (event) => {
       const related = event.relatedTarget;

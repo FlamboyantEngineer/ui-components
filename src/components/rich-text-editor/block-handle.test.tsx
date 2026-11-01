@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   ViewProbe,
-  editorView,
   getContent,
   installEditorDom,
   renderEditor,
@@ -26,17 +25,25 @@ function texts(document: RichTextDocument | undefined) {
   return document?.content?.map((block) => block.content?.[0]?.text ?? block.type);
 }
 
-function renderHandle(props: { isReadOnly?: boolean } = {}) {
+function renderHandle({
+  grip,
+  menu,
+  ...props
+}: { isReadOnly?: boolean; grip?: boolean; menu?: boolean } = {}) {
   return renderEditor({
     ...props,
     defaultValue: blocks,
     children: (
       <>
         <ViewProbe />
-        <BlockHandle className="caller" data-testid="handle" />
+        <BlockHandle className="caller" data-testid="handle" grip={grip} menu={menu} />
       </>
     ),
   });
+}
+
+function surface() {
+  return document.querySelector('.ui-rich-text-editor__surface');
 }
 
 function handle() {
@@ -70,20 +77,52 @@ describe('BlockHandle', () => {
   });
 
   it('UIC-RICH-TEXT-EDITOR-9.2 drags its block with the grip', () => {
-    renderHandle();
+    const { value } = renderHandle();
     selectRange(7);
     const grip = document.querySelector('.ui-block-handle__grip') as HTMLElement;
+    const surface = document.querySelector('.ui-rich-text-editor__surface') as HTMLElement;
     expect(grip).toHaveAttribute('aria-hidden', 'true');
     expect(grip).toHaveAttribute('draggable', 'true');
-    const dataTransfer = { setData: vi.fn(), setDragImage: vi.fn(), effectAllowed: 'all' };
+    const dataTransfer = {
+      setData: vi.fn(),
+      setDragImage: vi.fn(),
+      effectAllowed: 'all',
+      dropEffect: 'none',
+    };
     fireEvent.dragStart(grip, { dataTransfer });
     expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'Two');
     expect(dataTransfer.effectAllowed).toBe('move');
-    expect(editorView.current?.dragging?.move).toBe(true);
-    expect(editorView.current?.dragging?.slice.content.firstChild?.textContent).toBe('Two');
     expect(handle()).toHaveAttribute('data-dragging', 'true');
+    // Unlaid blocks all sit at the top, so a pointer below them points after the last block.
+    fireEvent.dragOver(getContent(), { dataTransfer, clientY: 10 });
+    expect(dataTransfer.dropEffect).toBe('move');
+    expect(document.querySelector('.ui-block-handle__drop-indicator')).toHaveStyle({
+      position: 'absolute',
+    });
+    fireEvent.drop(getContent(), { dataTransfer, clientY: 10 });
+    expect(texts(value())).toEqual(['One', 'Three', 'Two']);
+    expect(document.querySelector('.ui-block-handle__drop-indicator')).toBeNull();
     fireEvent.dragEnd(grip);
     expect(handle()).not.toHaveAttribute('data-dragging');
+    expect(surface).toContainElement(handle() as HTMLElement);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-9.2 changes nothing for a cancelled drag or a drop in place', () => {
+    const { value } = renderHandle();
+    selectRange(14);
+    const grip = document.querySelector('.ui-block-handle__grip') as HTMLElement;
+    const dataTransfer = { setData: vi.fn(), setDragImage: vi.fn(), dropEffect: 'none' };
+    fireEvent.dragStart(grip, { dataTransfer });
+    fireEvent.dragOver(getContent(), { dataTransfer, clientY: 10 });
+    expect(document.querySelector('.ui-block-handle__drop-indicator')).toBeNull();
+    fireEvent.drop(getContent(), { dataTransfer, clientY: 10 });
+    fireEvent.dragEnd(grip);
+    expect(texts(value())).toBeUndefined();
+    selectRange(2);
+    fireEvent.dragStart(grip, { dataTransfer });
+    fireEvent.dragEnd(grip);
+    fireEvent.drop(getContent(), { dataTransfer, clientY: 10 });
+    expect(texts(value())).toBeUndefined();
   });
 
   it('UIC-RICH-TEXT-EDITOR-9.3 moves, turns, duplicates and deletes its block from the menu', async () => {
@@ -170,5 +209,31 @@ describe('BlockHandle', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     rerender(editor(false));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-9.4 shows the chosen controls and keeps a gutter only for a handle', () => {
+    const { unmount } = renderHandle({ menu: false });
+    expect(surface()).toHaveAttribute('data-gutter', 'true');
+    selectRange(7);
+    expect(document.querySelector('.ui-block-handle__grip')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Block actions' })).not.toBeInTheDocument();
+    unmount();
+    renderHandle({ grip: false });
+    selectRange(7);
+    expect(document.querySelector('.ui-block-handle__grip')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Block actions' })).toBeInTheDocument();
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-9.4 keeps no gutter and no handle without controls or without a handle', async () => {
+    const { unmount } = renderHandle({ grip: false, menu: false });
+    selectRange(7);
+    expect(handle()).toBeNull();
+    expect(surface()).not.toHaveAttribute('data-gutter');
+    unmount();
+    const { value, user } = renderEditor({ defaultValue: blocks, children: <ViewProbe /> });
+    expect(surface()).not.toHaveAttribute('data-gutter');
+    selectRange(7);
+    await user.keyboard('{Alt>}{Shift>}{ArrowUp}{/Shift}{/Alt}');
+    expect(texts(value())).toEqual(['Two', 'One', 'Three']);
   });
 });

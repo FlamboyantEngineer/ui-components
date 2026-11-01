@@ -12,6 +12,8 @@ export interface RichTextEditorContextValue {
   surfaceRef: RefObject<HTMLDivElement | null>;
   /** Adds attributes to the content element, such as the active option of a list it controls. */
   setContentAttributes: (attributes: Readonly<Record<string, string | undefined>>) => void;
+  /** Keeps the surface's gutter for a block handle while it is mounted; returns the release. */
+  reserveGutter: () => () => void;
 }
 
 export const richTextEditorHooks = createHooks('rich-text-editor', [

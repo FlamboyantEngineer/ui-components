@@ -42,8 +42,12 @@
   border-bottom: 1px solid var(--ref-border);
 }
 
-/* The block handle sits in the inline-start gutter the surface leaves free. */
+/* The block handle sits in the inline-start gutter the surface keeps while one is mounted. */
 .ui-rich-text-editor__surface {
+  padding-inline-start: 12px;
+}
+
+.ui-rich-text-editor__surface[data-gutter] {
   padding-inline-start: 36px;
 }
 
@@ -281,6 +285,15 @@
 .ui-block-handle__grip .ui-glyph {
   width: var(--ref-icon-size-md);
   height: var(--ref-icon-size-md);
+}
+
+/* The line between blocks where a dragged block would land. */
+.ui-block-handle__drop-indicator {
+  inset-inline: 4px;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--ref-accent);
+  pointer-events: none;
 }
 
 .ui-block-handle__menu.ui-button[data-content='icon'] {
