@@ -184,6 +184,25 @@ test.describe('Select Field lab', () => {
     await expect(page.getByRole('listbox')).toBeHidden();
   });
 
+  test('UIC-SELECT-FIELD-3.1 UIC-SELECT-FIELD-3.5 cancels a seeded filter with one Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const trigger = field(page, 'filter').getByRole('button', { name: 'Kiwi Orchard' });
+    await trigger.focus();
+    await page.keyboard.type('m');
+    const search = page.getByRole('searchbox', { name: 'Search' });
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('m');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(trigger).toHaveAccessibleName('Kiwi Orchard');
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await expect(search).toHaveValue('');
+  });
+
   test('UIC-SELECT-FIELD-3.5 UIC-SELECT-FIELD-3.6 filters from a key typed on the closed trigger', async ({
     page,
     lab,

@@ -176,7 +176,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Hover and focus"
-      description="Rest the pointer on a person or Tab to them: the card opens after a short delay without taking focus, stays open while the pointer moves into it, and Tab enters it. One card loads its details on opening; another is opened from outside."
+      description="The first pointer entry or Tab to a person opens their card after a short delay without taking focus. Move into the card or Tab to enter it. One card loads its details on opening; another is opened from outside."
     >
       <HoverCards />
     </LabSection>

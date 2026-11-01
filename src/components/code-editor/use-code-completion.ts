@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { isFocused } from '../../utils/focus-target.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import {
@@ -34,6 +34,22 @@ interface PendingInput {
   source: Completions | undefined;
 }
 
+/** The editor's completion session also owns the input method's composition lifecycle. */
+export interface CodeCompletionsModel extends CompletionsModel {
+  isComposing: boolean;
+  startComposition(): void;
+  endComposition(): void;
+}
+
+function hasSameInput(input: HTMLTextAreaElement, edit: PendingInput) {
+  return (
+    input === edit.input &&
+    input.value === edit.value &&
+    input.selectionStart === edit.selectionStart &&
+    input.selectionEnd === edit.selectionEnd
+  );
+}
+
 function isSameInputSource(left: Completions | undefined, right: Completions | undefined) {
   if (left === right) return true;
   if (!left || !right || typeof left === 'function' || typeof right === 'function') return false;
@@ -46,6 +62,7 @@ function isSameInputSource(left: Completions | undefined, right: Completions | u
 /** Retargets an input session at the controlled commit, before the engine checks for replacements. */
 function useInputCompletionCommit(options: CodeCompletionOptions) {
   const pending = useRef<PendingInput | null>(null);
+  const completed = useRef<PendingInput | null>(null);
   const trackRef = useRef<CompletionsModel['track'] | null>(null);
   useLayoutEffect(() => {
     const edit = pending.current;
@@ -66,16 +83,15 @@ function useInputCompletionCommit(options: CodeCompletionOptions) {
       return;
     }
     pending.current = null;
-    if (
-      input.value === edit.value &&
-      input.selectionStart === edit.selectionStart &&
-      input.selectionEnd === edit.selectionEnd
-    )
+    if (hasSameInput(input, edit)) {
+      completed.current = edit;
       trackRef.current?.('input');
+    }
   });
   useLayoutEffect(
     () => () => {
       pending.current = null;
+      completed.current = null;
       trackRef.current = null;
     },
     [],
@@ -85,6 +101,13 @@ function useInputCompletionCommit(options: CodeCompletionOptions) {
     capture() {
       const input = options.inputRef.current;
       if (!input) return;
+      const previous = completed.current;
+      if (
+        previous &&
+        hasSameInput(input, previous) &&
+        isSameInputSource(previous.source, options.completions)
+      )
+        return;
       const { value, selectionStart, selectionEnd } = input;
       pending.current = {
         input,
@@ -97,6 +120,7 @@ function useInputCompletionCommit(options: CodeCompletionOptions) {
     },
     cancel() {
       pending.current = null;
+      completed.current = null;
     },
   };
 }
@@ -129,7 +153,9 @@ function insertCompletion(
  * Completion for a code editor's input: the shared completions engine completing the
  * identifier-like word before the caret, inserting snippets with their fields as editor edits.
  */
-export function useCodeCompletion(options: CodeCompletionOptions): CompletionsModel {
+export function useCodeCompletion(options: CodeCompletionOptions): CodeCompletionsModel {
+  const [isComposing, setIsComposing] = useState(false);
+  const composing = useRef(false);
   // This hook's layout effect precedes the shared engine's replaced-text reconciliation.
   const { trackRef, capture, cancel } = useInputCompletionCommit(options);
   const completion = useCompletions({
@@ -144,12 +170,30 @@ export function useCodeCompletion(options: CodeCompletionOptions): CompletionsMo
   });
   return {
     ...completion,
+    isOpen: completion.isOpen && !isComposing,
+    isComposing,
+    startComposition() {
+      composing.current = true;
+      setIsComposing(true);
+      cancel();
+      completion.close();
+    },
+    endComposition() {
+      if (!composing.current) return;
+      composing.current = false;
+      // This commit also resumes an unchanged value, for which onChange need not fire.
+      capture();
+      setIsComposing(false);
+    },
     track(reason) {
+      if (composing.current) return;
       if (reason === 'input') return capture();
       cancel();
       completion.track(reason);
     },
     close() {
+      composing.current = false;
+      setIsComposing(false);
       cancel();
       completion.close();
     },

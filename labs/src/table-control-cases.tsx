@@ -3,9 +3,43 @@ import { Button } from '../../src/components/button/button.js';
 import { CodeEditor } from '../../src/components/code-editor/code-editor.js';
 import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
+import { SelectField } from '../../src/components/select-field/select-field.js';
 import { Table } from '../../src/components/table/table.js';
 
 const completions = [{ label: 'fruit.count' }, { label: 'fruit.ripe' }];
+
+/** A listbox button owns its picker keys without moving or selecting its table cell. */
+export function PickerCell() {
+  return (
+    <div data-lab-demo="picker-cell">
+      <Table
+        aria-label="Fruit sizes"
+        selectionMode="multiple"
+        columns={[
+          { id: 'name', header: 'Name', isRowHeader: true, renderCell: (row) => row.name },
+          {
+            id: 'size',
+            header: 'Size',
+            renderCell: (row) => (
+              <SelectField
+                label={`${row.name} size`}
+                defaultValue="small"
+                options={[
+                  { id: 'small', label: 'Small' },
+                  { id: 'large', label: 'Large' },
+                ]}
+              />
+            ),
+          },
+        ]}
+        rows={[
+          { id: 'apple', name: 'Apple' },
+          { id: 'banana', name: 'Banana' },
+        ]}
+      />
+    </div>
+  );
+}
 
 /** The host keeps a cell editor's value outside the table's collection. */
 export function CompletingCell() {

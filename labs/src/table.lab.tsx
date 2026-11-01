@@ -25,7 +25,7 @@ import {
 } from './table-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 import { GroupKeyTable, ObjectKeyTable, TypedTable } from './collection-identity-cases.js';
-import { HeaderFilter } from './table-control-cases.js';
+import { HeaderFilter, PickerCell } from './table-control-cases.js';
 import { ContentWidths, GroupedReordering } from './table-content-contracts.js';
 
 function TrailingActions() {
@@ -389,6 +389,12 @@ mountLab(
       description="Edit with caret keys, spaces and Enter. Control+Enter or Command+Enter applies the modal; direct header activation still sorts."
     >
       <HeaderFilter />
+    </LabSection>
+    <LabSection
+      title="A picker in a cell"
+      description="ArrowDown opens the cell's listbox; Escape returns focus without moving or selecting the row."
+    >
+      <PickerCell />
     </LabSection>
     <LabSection
       title="Resizing"

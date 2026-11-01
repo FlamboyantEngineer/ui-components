@@ -135,8 +135,10 @@ With `completions`, the text area shall autocomplete from a list (`aria-autocomp
 
 Controlled updates through a collection such as a table cell shall keep the same text area, focus and caret. Input-triggered completions shall look up the typed text once the controlled cell update has committed, while that edit still owns the same text and caret, before the engine reconciles replaced text. Narrowing an open list shall keep it open without waiting for another animation frame. A later input, caret move, loss of focus, unmount, replacement source or locked editor cancels the deferred lookup.
 
+Starting input-method composition shall close suggestions and cancel a pending answer. Intermediate composition input shall still report text changes, but shall not request or reopen suggestions, and composition keys shall stay with the input method. Ending composition shall resume suggestions once for the committed final text and caret, including an unchanged final value or a final input delivered after `compositionend`.
+
 Implementation: `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/use-completions.ts`, `src/core/strings.ts`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-table-completion.test.tsx`, `e2e/code-editor.spec.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-table-completion.test.tsx`, `src/components/code-editor/code-composition.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.3 - Choosing
 

@@ -52,10 +52,10 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-2.5 - Header inset
 
-With `scrollbarInset="header"`, sticky headers inside the viewport that attach `useScrollRegionHeaderRef()` shall be measured, and the root publishes the tallest in `--ui-scroll-region-header-size` so the stylesheet starts the vertical track below it; Page Up and Page Down then move by the visible length below the header. Without the inset the hook returns `undefined`.
+With `scrollbarInset="header"`, sticky headers inside the viewport that attach `useScrollRegionHeaderRef()` shall be measured, and the root publishes the tallest in `--ui-scroll-region-header-size` so the stylesheet starts the vertical track below it; Page Up and Page Down then move by the visible length below the header. Without the inset the hook returns `undefined`. [Table](TABLE.md) attaches the ref to its actual header automatically, including its grouped header rows; removing a Table or switching the inset off releases that registration.
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
-Verification: `src/components/scroll-region/scroll-region.test.tsx`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`, `src/components/table/table-header.tsx`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-2.6 - Content lift
 

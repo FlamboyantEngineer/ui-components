@@ -1,6 +1,23 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('User Card Trigger lab', () => {
+  test('UIC-USER-CARD-TRIGGER-1.3 opens the first hover preview after programmatic trigger focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-card-trigger');
+    const trigger = page.locator('[data-lab-trigger="hover-avatar"]');
+    const card = page.getByRole('dialog', { name: 'Priya Nair' });
+    await trigger.focus();
+    await expect(card).toHaveCount(0);
+    await trigger.hover();
+    await expect(card).toBeVisible();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-USER-CARD-TRIGGER-1.1 UIC-USER-CARD-TRIGGER-1.2 opens a card from the keyboard and returns focus', async ({
     page,
     lab,

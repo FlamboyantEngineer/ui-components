@@ -13,10 +13,10 @@ Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.2 - Opening
 
-Hovering the trigger with a mouse or pen shall open the panel after `delay` milliseconds (500 by default); keyboard focus shall open it at once. Right after one tooltip closes, a neighbouring trigger opens its tooltip without the delay, and only one tooltip is open at a time. Touch never opens it. `trigger="focus"` opens it on keyboard focus only and `isDisabled` never opens it.
+Hovering the trigger with a mouse or pen shall open the panel after `delay` milliseconds (500 by default); keyboard focus shall open it at once. The first genuine pointer movement onto a trigger shall work without a prior interaction elsewhere. An enter caused only by layout or keyboard navigation while the input is not a pointer shall wait for genuine pointer movement. Right after one tooltip closes, a neighbouring trigger opens its tooltip without the delay, and only one tooltip is open at a time. Touch never opens it. `trigger="focus"` opens it on keyboard focus only and `isDisabled` never opens it.
 
-Implementation: `src/components/tooltip/tooltip.tsx`
-Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
+Implementation: `src/components/tooltip/tooltip.tsx`, `src/utils/use-pointer-entry.tsx`
+Verification: `src/components/tooltip/tooltip.test.tsx`, `src/utils/use-pointer-entry.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.3 - Closing
 

@@ -158,10 +158,12 @@ Verification: `src/components/table/table.test.tsx`
 
 A control inside a cell (a row action, a selection checkbox, a cell's own content or a detail row's content) shall keep focus when it takes it, by keyboard, pointer or `focus()`, in flat and nested rows: the cell becomes the grid's focused cell, so the grid never moves focus to another row or cell. The control keeps focus and its element while it turns pending or unavailable (`focusableWhenDisabled`) and while rows are added around it with stable row IDs, and the arrow keys move on from its cell when it is not a text control. A text control in a cell (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) keeps every key but Tab and Escape: the arrow keys, Home, End and typed characters are its own, and neither the grid's navigation nor its typeahead take them.
 
+A listbox picker button (a native button or an element with role `button`, with `aria-haspopup="listbox"`) shall keep these same keys, including when a child of its trigger receives the event. ArrowDown opens its own list without moving the cell or selecting a row; Escape returns focus to its trigger. Ordinary buttons and menu buttons keep the grid's existing arrow navigation.
+
 A text control inside a column header shall keep the same editing keys, without sorting or navigating the grid. Pointer activation of a nested control shall run only the control. Control+Enter and Meta+Enter skip the collection's handlers and reach enclosing shortcuts; plain Enter remains with the field. Focusing and activating the column header directly shall still sort an enabled sortable column.
 
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/table-column.tsx`, `src/utils/text-control-keys.tsx`
-Verification: `src/components/table/table-cell-focus.test.tsx`, `src/components/table/table-column-controls.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
+Verification: `src/components/table/table-cell-focus.test.tsx`, `src/components/table/table-column-controls.test.tsx`, `src/components/table/table-picker-controls.test.tsx`, `e2e/table.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ## UIC-TABLE-4 - Column sizing
 
@@ -296,10 +298,10 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-7.2 - Sticky header
 
-`stickyHeader` shall publish `data-sticky-header` on the root, from which the stylesheet keeps the header in view while a bounded scroll area scrolls.
+`stickyHeader` shall publish `data-sticky-header` on the root, from which the stylesheet keeps the header in view while a bounded scroll area scrolls. Inside an overlay [Scroll Region](SCROLL-REGION.md) with `scrollbarInset="header"`, Table shall register its actual header through `useScrollRegionHeaderRef`, including both rows of grouped column headers. The region shall measure the full header without caller registration or DOM queries; changing or removing the header releases its registration. Without a header inset, Table shall register no header.
 
-Implementation: `src/components/table/table.tsx`
-Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table-group-header.tsx`
+Verification: `src/components/table/table.test.tsx`, `src/components/scroll-region/scroll-region.test.tsx`, `e2e/table.spec.ts`, `e2e/scroll-region.spec.ts`
 
 ### UIC-TABLE-7.3 - Virtualization
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { keepTextControlKeys } from '../../utils/text-control-keys.js';
+import { renderTreePrimaryKeyRow } from './tree-primary-keys.js';
 import { useCallback, type JSX, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
@@ -87,16 +88,14 @@ function createRowElement(options: RowElementOptions) {
     const drag = isHandleDrag
       ? { onDragStart, onDrag, onDragEnd }
       : { draggable, onDragStart, onDrag, onDragEnd };
-    return (
-      <div
-        {...keepTextControlKeys(others)}
-        {...(isMovable ? drag : {})}
-        data-current={isCurrent || undefined}
-        data-indeterminate={isIndeterminate || undefined}
-        aria-current={isCurrent ? (href ? 'page' : true) : undefined}
-        aria-keyshortcuts={isMovable ? keyShortcuts : undefined}
-      />
-    );
+    return renderTreePrimaryKeyRow({
+      ...keepTextControlKeys(others),
+      ...(isMovable ? drag : {}),
+      'data-current': isCurrent || undefined,
+      'data-indeterminate': isIndeterminate || undefined,
+      'aria-current': isCurrent ? (href ? 'page' : true) : undefined,
+      'aria-keyshortcuts': isMovable ? keyShortcuts : undefined,
+    });
   };
 }
 

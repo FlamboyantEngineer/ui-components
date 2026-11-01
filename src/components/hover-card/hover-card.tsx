@@ -15,6 +15,7 @@ import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-de
 import { usePreviewState } from '../../utils/use-preview-state.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import { usePointerEntry } from '../../utils/use-pointer-entry.js';
 
 /** A focusable trigger and the `HoverCard` it opens on hover and focus. */
 export interface HoverCardTriggerProps extends OpenStateProps {
@@ -47,7 +48,10 @@ const hooks = createHooks('hover-card', ['arrow']);
  */
 function TriggerProps({ isEnabled, children }: { isEnabled: boolean; children: ReactNode }) {
   const props = useContext(FocusableContext);
-  return <FocusableContext value={isEnabled ? props : null}>{children}</FocusableContext>;
+  const continued = usePointerEntry(props ?? {}, !isEnabled);
+  return (
+    <FocusableContext value={isEnabled && props ? continued : null}>{children}</FocusableContext>
+  );
 }
 
 /**

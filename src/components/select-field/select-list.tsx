@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type FocusEvent, type ReactNode } from 'react';
+import { useContext, useMemo, type FocusEvent, type ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import {
   Autocomplete,
@@ -13,6 +13,7 @@ import {
   Virtualizer,
   type AutocompleteProps,
   Popover,
+  OverlayTriggerStateContext,
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -22,6 +23,7 @@ import { flattenPickerItems, pickerListLayout, usePickerPopoverStyle } from '../
 import { type SelectFieldItem } from './select-options.js';
 import { DEFAULT_DROPDOWN_OFFSET, DEFAULT_OVERLAY_GUTTER } from '../../utils/overlay-defaults.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The next page of a search's results, loaded when the end of the list scrolls into view. */
 interface SelectListMore {
@@ -91,6 +93,7 @@ function OptionList(props: SelectListProps) {
  */
 export function SelectList(props: SelectListProps) {
   const strings = useUiStrings();
+  const state = useContext(OverlayTriggerStateContext);
   const style = usePickerPopoverStyle();
   const { contains } = useFilter({ sensitivity: 'base' });
   const descriptions = useMemo(
@@ -135,7 +138,22 @@ export function SelectList(props: SelectListProps) {
               aria-label={strings.search}
               autoFocus
             >
-              <Input className={hooks.slotClass('search-input')} onFocus={moveCaretToEnd} />
+              <Input
+                className={hooks.slotClass('search-input')}
+                onFocus={moveCaretToEnd}
+                onKeyDownCapture={(event) => {
+                  if (
+                    event.key !== 'Escape' ||
+                    event.defaultPrevented ||
+                    isComposingKey(event.nativeEvent) ||
+                    !state
+                  )
+                    return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  state.close();
+                }}
+              />
             </SearchField>
             <OptionList {...props} />
           </Autocomplete>

@@ -13,6 +13,7 @@ import {
 import type { SortDescriptor } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
+import { useScrollRegionHeaderRef } from '../scroll-region/scroll-region.js';
 import { getColumnSizing, resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';
 import { DataColumn, type TableColumnHeaderState } from './table-column.js';
 import type { TableColumnGroup } from './table-columns.js';
@@ -175,6 +176,7 @@ function getHeaderState<T>(
  */
 export function TableHeader<T>(props: TableHeaderProps<T>) {
   const strings = useUiStrings();
+  const headerRef = useScrollRegionHeaderRef();
   const { structure, model } = props;
   const hasGroups = hasGroupRow(model.groups);
   const selectionPin = getColumnPin(structure, 'selection');
@@ -185,6 +187,7 @@ export function TableHeader<T>(props: TableHeaderProps<T>) {
   ) : null;
   return (
     <AriaTableHeader
+      ref={headerRef}
       className={hooks.slotClass('header')}
       render={hasGroups ? createGroupedHeader(props) : undefined}
     >

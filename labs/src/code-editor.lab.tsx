@@ -401,7 +401,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Completions"
-        description="Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
+        description="Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes. Input-method composition hides suggestions until its final text commits."
       >
         <CompletingEditor />
       </LabSection>

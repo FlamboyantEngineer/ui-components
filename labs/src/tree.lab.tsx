@@ -22,6 +22,7 @@ import {
   PrimitiveTree,
 } from './tree-cases.js';
 import { RowMenu } from './row-menu.js';
+import { ModalTree } from './tree-modal-case.js';
 
 interface Entry {
   id: string;
@@ -452,6 +453,12 @@ mountLab(
       description="Numeric and text ids stay distinct in selection, expansion, actions and reordering. Space key is disabled independently of Dash key."
     >
       <PrimitiveTree />
+    </LabSection>
+    <LabSection
+      title="Modal shortcuts"
+      description="Enter activates a row. Control+Enter or Command+Enter applies the enclosing modal without activating the row."
+    >
+      <ModalTree />
     </LabSection>
     <LabSection
       title="Reordering"

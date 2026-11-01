@@ -19,6 +19,24 @@ async function usePointer(page: Page) {
 }
 
 test.describe('Tooltip lab', () => {
+  test('UIC-TOOLTIP-1.2 UIC-TOOLTIP-1.3 opens on the first pointer entry and closes on leave', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const trigger = matrixCell(page, 'placement=bottom').getByRole('button');
+    const hint = page.getByRole('tooltip', { name: 'Placed bottom' });
+    await bringIntoView(page, trigger);
+    await trigger.hover();
+    await expect(hint).toBeVisible();
+    await expect(trigger).toHaveAttribute(
+      'aria-describedby',
+      (await hint.getAttribute('id')) ?? '',
+    );
+    await page.mouse.move(0, 0);
+    await expect(hint).toHaveCount(0);
+  });
+
   test('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.2 opens after the hover delay and at once on keyboard focus', async ({
     page,
     lab,

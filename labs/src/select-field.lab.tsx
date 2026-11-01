@@ -412,7 +412,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Filtering"
-        description="More than 10 options filter inside the open list; typing on the closed trigger starts the filter."
+        description="More than 10 options filter inside the open list; typing on the closed trigger starts the filter. Escape cancels the filtered list without changing the value."
       >
         <SelectField
           label="Orchard"

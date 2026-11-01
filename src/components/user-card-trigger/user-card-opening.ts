@@ -16,6 +16,7 @@ import {
 import { usePreviewState } from '../../utils/use-preview-state.js';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 import { focusRestoreEvent } from '../../utils/keep-control-focus-return.js';
+import { usePointerEntry } from '../../utils/use-pointer-entry.js';
 
 /** `press` opens the card on a click, Enter or Space; `hover` on hover, keyboard focus or long press. */
 export type UserCardTriggerType = 'press' | 'hover';
@@ -112,8 +113,9 @@ function useHoverOpening({
   );
   // The style only stops the touch callout of a long press, a visual style the hooks leave out.
   const { style: _style, ...ariaProps } = triggerProps;
+  const continued = usePointerEntry(ariaProps, Boolean(isDisabled) || !isActive);
   return {
-    triggerProps: ariaProps,
+    triggerProps: continued,
     state: overlayState,
     dialog: null,
     popover: {

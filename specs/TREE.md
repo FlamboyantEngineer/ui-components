@@ -100,8 +100,10 @@ Verification: `src/components/tree/tree.test.tsx`
 
 `onItemKeyDown` shall receive each keydown in a row, with the row's item, before the tree's own keyboard handling. When it returns `true` the tree prevents the key's default and does nothing more with it. Keys typed in an editable element inside a row (a field such as a rename field, editable content of any `contenteditable` value but `false`, or an element with role `textbox` or `combobox`) reach neither the owner hook nor reordering. Every key but Tab and Escape typed in a text control inside a row (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) also stays with the control: neither the row's navigation, the tree's arrow keys, Home, End nor its typeahead take it.
 
-Implementation: `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/utils/text-control-keys.tsx`
-Verification: `src/components/tree/tree.test.tsx`, `src/utils/text-control-keys.test.tsx`
+Inside a modal, Control+Enter and Meta+Enter on a row shall reach the innermost modal's primary-action shortcut without activating or selecting the row. The owner key handler still runs first and may refuse the shortcut; a pending primary action remains unavailable. Plain Enter retains the row's action, and a tree outside a modal retains its modified-Enter behavior.
+
+Implementation: `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`, `src/components/tree/tree-primary-keys.tsx`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-modal-keys.test.tsx`, `e2e/tree.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ## UIC-TREE-4 - States and options
 

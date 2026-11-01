@@ -61,7 +61,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Placements"
-      description="Hover or focus each trigger; hints flip when there is no room."
+      description="The first pointer entry or keyboard focus opens each hint; hints flip when there is no room."
     >
       <StateMatrix
         axes={{ placement: placements }}

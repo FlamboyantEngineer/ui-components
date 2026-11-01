@@ -22,7 +22,7 @@ Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `e2
 
 With `trigger="hover"`, the trigger shall open the card in a [Hover Card](HOVER-CARD.md) (React Aria `PreviewTrigger`), whose element also carries `ui-hover-card`: the card opens `delay` milliseconds (600 by default) after the pointer rests on the trigger or keyboard focus reaches it, or on a long press, without moving focus; the popover publishes `data-trigger="PreviewTrigger"`. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Tab from the trigger moves into the open card. The card stays open while the pointer travels between the trigger and the card, and closes `closeDelay` milliseconds (200 by default) after the pointer and focus have left both, or on Escape, keeping or returning focus to the trigger. Pressing the trigger runs `onPress` and does not toggle the card. A disabled trigger opens nothing.
 
-Implementation: `src/components/user-card-trigger/user-card-trigger.tsx`, `src/components/hover-card/hover-card.tsx`
+Implementation: `src/components/user-card-trigger/user-card-trigger.tsx`, `src/components/user-card-trigger/user-card-opening.ts`, `src/components/hover-card/hover-card.tsx`, `src/utils/use-pointer-entry.tsx`
 Verification: `src/components/user-card-trigger/user-card-trigger.test.tsx`, `e2e/user-card-trigger.spec.ts`
 
 ### UIC-USER-CARD-TRIGGER-1.4 - Controlled open state

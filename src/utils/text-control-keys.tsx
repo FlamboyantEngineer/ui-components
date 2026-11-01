@@ -8,7 +8,7 @@ const keylessInputs = ['checkbox', 'radio', 'button', 'submit', 'reset', 'color'
 
 /**
  * Controls that use the arrow, Home, End and character keys themselves: text inputs, sliders and
- * selects, text areas, editable content, and the text widgets a host draws.
+ * selects, listbox picker buttons, text areas, editable content, and the text widgets a host draws.
  */
 const textControls = [
   `input:not(${keylessInputs})`,
@@ -17,6 +17,8 @@ const textControls = [
   '[contenteditable]:not([contenteditable="false"])',
   '[role="textbox"]',
   '[role="combobox"]',
+  'button[aria-haspopup="listbox"]',
+  '[role="button"][aria-haspopup="listbox"]',
 ].join(', ');
 
 /** Whether `target` is in a text control: a field, editable content or a host's text widget. */
