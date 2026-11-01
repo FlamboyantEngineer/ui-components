@@ -66,6 +66,17 @@ function MarkBox({ mark, scale }: { mark: Mark; scale: number }) {
   );
 }
 
+/** A note field drawn over the first page: Home, End and the page keys edit it, not the document. */
+function PageNote({ scale }: { scale: number }) {
+  return (
+    <input
+      aria-label="Page note"
+      defaultValue="Check the harvest totals"
+      style={{ position: 'absolute', left: 44 * scale, top: 120 * scale, pointerEvents: 'auto' }}
+    />
+  );
+}
+
 /** Marks drawn over the pages, made from a selection's menu, removed from a mark's menu, revealed. */
 export function AnnotatedReader() {
   const [marks, setMarks] = useState<readonly Mark[]>(presetMarks);
@@ -98,11 +109,16 @@ export function AnnotatedReader() {
           // A reader who moves on may ask for the same mark again.
           onPageChange={() => setRevealRect(null)}
           onPageViewports={(viewports) => setRendered([...viewports.keys()])}
-          renderPageOverlay={({ pageIndex, viewport }) =>
-            marks
-              .filter((mark) => mark.pageIndex === pageIndex)
-              .map((mark) => <MarkBox key={mark.id} mark={mark} scale={viewport.scale} />)
-          }
+          renderPageOverlay={({ pageIndex, viewport }) => (
+            <>
+              {marks
+                .filter((mark) => mark.pageIndex === pageIndex)
+                .map((mark) => (
+                  <MarkBox key={mark.id} mark={mark} scale={viewport.scale} />
+                ))}
+              {pageIndex === 0 ? <PageNote scale={viewport.scale} /> : null}
+            </>
+          )}
           getSelectionMenuItems={(selection) => [
             { id: 'mark', label: 'Mark selection', onAction: () => addMark(selection) },
           ]}
