@@ -10,9 +10,11 @@
   color: var(--ref-text);
 }
 
+/* The avatar is centred on the name, and the name alone sets the person's baseline in the sentence:
+   a picture's baseline is its bottom edge, so baseline-aligning the avatar lifted it. */
 .ui-attribution .ui-attribution__person {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 4px;
   vertical-align: baseline;
   color: var(--ref-text);
@@ -43,5 +45,6 @@
 }
 
 .ui-attribution__name {
+  align-self: baseline;
   font-weight: var(--ref-font-weight-strong);
 }

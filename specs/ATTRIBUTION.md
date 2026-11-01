@@ -20,9 +20,9 @@ Verification: `src/components/attribution/attribution.test.tsx`, `src/components
 
 ### UIC-ATTRIBUTION-1.3 - Person
 
-The person shall render in the `ui-attribution__person` slot with the trimmed `person.name` in the `ui-attribution__name` slot, or the provider's `unnamed` string when the name is blank or there is no person. With `showAvatar`, a decorative extra-small `Avatar` (`ui-attribution__avatar`) built from the person's identity comes before the name.
+The person shall render in the `ui-attribution__person` slot with the trimmed `person.name` in the `ui-attribution__name` slot, or the provider's `unnamed` string when the name is blank or there is no person. With `showAvatar`, a decorative extra-small `Avatar` (`ui-attribution__avatar`) built from the person's identity comes before the name. The reference stylesheet centres the avatar on the name and lets the name alone set the person's baseline in the sentence, for pictures and initials, with or without a card.
 
-Implementation: `src/components/attribution/attribution.tsx`
+Implementation: `src/components/attribution/attribution.tsx`, `labs/reference/attribution.css`
 Verification: `src/components/attribution/attribution.test.tsx`, `e2e/attribution.spec.ts`
 
 ### UIC-ATTRIBUTION-1.4 - Person card
