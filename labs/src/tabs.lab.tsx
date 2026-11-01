@@ -6,6 +6,7 @@ import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   DisabledRemovalTabs,
+  LiveRenameTabs,
   LockingTabs,
   SwitchingTabs,
   MealTabs,
@@ -287,6 +288,12 @@ mountLab(
       description="Double-click a tab or press F2 to rename it (names must be unique); drag a tab or press Alt+Arrow to move it; right-click or press Shift+F10 for its menu."
     >
       <MealTabs />
+    </LabSection>
+    <LabSection
+      title="Renaming from another field"
+      description="The field renames the selected tab on every keystroke while focus stays in the field. The tab keeps its key, so it stays selected and its panel keeps the draft typed in it; its accessible name follows the new label. Long names make the list scroll; an empty name shows Untitled."
+    >
+      <LiveRenameTabs />
     </LabSection>
     <LabSection
       title="Tabs that lock while in use"
