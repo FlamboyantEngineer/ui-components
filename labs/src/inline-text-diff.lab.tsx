@@ -1,4 +1,6 @@
 import { useId, useState } from 'react';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import type { InlineTextDiffView } from '../../src/components/inline-text-diff/inline-text-diff.js';
 import { InlineTextDiff } from '../../src/components/inline-text-diff/inline-text-diff.js';
 import {
   createInlineTextDiffExcerpt,
@@ -32,6 +34,7 @@ function LiveDiff() {
   const afterId = useId();
   const [before, setBefore] = useState('The quick brown fox');
   const [after, setAfter] = useState('The quick red fox');
+  const [view, setView] = useState<InlineTextDiffView>('changes');
   return (
     <div data-lab-live>
       <p>
@@ -44,8 +47,23 @@ function LiveDiff() {
         <label htmlFor={afterId}>After </label>
         <input id={afterId} value={after} onChange={(event) => setAfter(event.target.value)} />
       </p>
+      <SegmentedChoice
+        aria-label="Show"
+        sizing="content"
+        options={[
+          { value: 'changes', label: 'Changes' },
+          { value: 'final', label: 'Final text' },
+        ]}
+        value={view}
+        onChange={(value) => setView(value === 'final' ? 'final' : 'changes')}
+      />
       <p>
-        Changed: <InlineTextDiff segments={createInlineTextDiffExcerpt(before, after)} />
+        Changed:{' '}
+        <InlineTextDiff
+          segments={createInlineTextDiffExcerpt(before, after)}
+          view={view}
+          finalText={after}
+        />
       </p>
     </div>
   );
@@ -86,7 +104,10 @@ mountLab(
         }}
       />
     </LabSection>
-    <LabSection title="Live" description="Edit both values to see the excerpt follow.">
+    <LabSection
+      title="Live"
+      description="Edit both values to see the excerpt follow. Show switches between the marked changes and the final text: the whole value after the change, without marks, passed as finalText because the excerpt cuts its context."
+    >
       <LiveDiff />
     </LabSection>
     <LabSection
