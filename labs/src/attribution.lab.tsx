@@ -85,6 +85,33 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Avatar with the name"
+      description="Initials and a picture, as a plain name and opening a card, in a narrow column so the sentence wraps: the avatar stays centred on the name, and the name on the sentence's baseline."
+    >
+      <StateMatrix
+        axes={{ avatar: ['initials', 'picture'], person: ['name', 'card'] }}
+        render={({ avatar, person }) => {
+          const who = avatar === 'picture' ? jon : maria;
+          return (
+            <p style={{ maxWidth: '14em', margin: 0 }}>
+              <Attribution
+                time={times.minutes}
+                getNow={getNow}
+                person={who}
+                template="The summary was rewritten {time} by {person} after the review"
+                showAvatar
+                card={
+                  person === 'card' ? (
+                    <UserCard name={who.name} description="Field research" />
+                  ) : undefined
+                }
+              />
+            </p>
+          );
+        }}
+      />
+    </LabSection>
+    <LabSection
       title="Times"
       description="Minutes ago, yesterday, an absolute date past the fallback and a missing time, at the start of the sentence and inside it."
     >
