@@ -15,6 +15,7 @@ import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { Completion } from './completion-match.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';
+import { useMirrorScrollHold } from './use-mirror-scroll-hold.js';
 import type { CompletionsModel } from './use-completions.js';
 import { DEFAULT_POINT_OFFSET } from '../../utils/overlay-defaults.js';
 
@@ -142,6 +143,7 @@ export function CompletionList(props: CompletionListProps) {
   // The editor passes new items as the caret moves, which moves the anchor.
   const shouldUpdatePosition = useFollowAnchor({ anchorRef, isOpen: isShown, target: items });
   useActiveCompletion(listId, activeKey, { isOpen: isShown, anchorRef });
+  const isMirrorScroll = useMirrorScrollHold(anchorRef, isShown);
   const documentation = items.find((item) => item.id === activeKey)?.documentation;
   const documentationId = documentation ? `${listId}-documentation` : undefined;
   const { className, ...rest } = props;
@@ -156,7 +158,9 @@ export function CompletionList(props: CompletionListProps) {
       <Popover
         {...hooks.root({ className, props: rest })}
         isOpen={isShown}
-        onOpenChange={(open) => onOpenChange?.(open)}
+        onOpenChange={(open) => {
+          if (open || !isMirrorScroll()) onOpenChange?.(open);
+        }}
         isNonModal
         triggerRef={anchorRef}
         placement="bottom start"

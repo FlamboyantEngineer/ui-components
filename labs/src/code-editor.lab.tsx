@@ -204,6 +204,84 @@ function CheckedEditor() {
   );
 }
 
+/** Market stalls a pretend server knows, looked up after a short wait. */
+const stalls: Completion[] = [
+  {
+    label: 'plums',
+    kind: 'variable',
+    description: 'Stall 4',
+    documentation: 'Dark plums, sold by the crate.',
+  },
+  { label: 'pears', kind: 'variable', description: 'Stall 2' },
+  { label: 'peaches', kind: 'variable', description: 'Stall 7' },
+  {
+    label: 'order',
+    kind: 'snippet',
+    description: 'order(stall, crates)',
+    documentation: 'Orders crates from a stall. Tab moves between the two fields.',
+    insertText: 'order(${stall}, ${crates})',
+  },
+  { label: 'apricots', kind: 'variable', description: 'Stall 1' },
+];
+
+/** An asynchronous source: the matching stalls arrive after 300 milliseconds. */
+const askMarket: CompletionSource = ({ query, isExplicit }) =>
+  query || isExplicit ? new Promise((resolve) => setTimeout(() => resolve(stalls), 300)) : [];
+
+/**
+ * Autocomplete, as a reader first meets it: a word list, a source that answers later with a
+ * snippet, and the same list at every size in a scrolled, resizable editor.
+ */
+function AutocompleteDemo() {
+  const [words, setWords] = useState('let total = ');
+  const [market, setMarket] = useState('// Ask the market\n');
+  return (
+    <div data-lab-demo="autocomplete" style={{ display: 'grid', gap: 12 }}>
+      <CodeEditor
+        variant="surface"
+        aria-label="Autocomplete from a word list"
+        data-lab-editor="autocomplete-words"
+        tokenize={tokenize}
+        toolbar={<span>Type ba, or press Ctrl+Space</span>}
+        value={words}
+        onChange={setWords}
+        completions={vocabulary}
+      />
+      <p>
+        Inserted: <output data-lab-output="autocomplete-words">{words}</output>
+      </p>
+      <CodeEditor
+        variant="surface"
+        aria-label="Autocomplete from an asynchronous source"
+        data-lab-editor="autocomplete-market"
+        tokenize={tokenize}
+        toolbar={<span>Type p or or, wait for the market</span>}
+        lineNumbers
+        value={market}
+        onChange={setMarket}
+        completions={askMarket}
+      />
+      <p>
+        Inserted: <output data-lab-output="autocomplete-market">{market}</output>
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'start' }}>
+        {(['sm', 'md', 'lg'] as const).map((size) => (
+          <Editor
+            key={size}
+            aria-label={`Autocomplete at size ${size}`}
+            data-lab-editor={`autocomplete-${size}`}
+            size={size}
+            resize="both"
+            lineNumbers
+            initialValue={longSource}
+            completions={vocabulary}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CompletingEditor() {
   const [value, setValue] = useState('let total = ');
   return (
@@ -366,6 +444,12 @@ mountLab(
     {languageExamples}
     <div data-lab-family="surface">
       <LabSection
+        title="Autocomplete"
+        description="Pass completions: a list of words ({ label, description }) or a source function that answers at once or with a promise. Suggestions open as you type a word and on Ctrl+Space with nothing typed. Arrow keys move, Enter or Tab inserts, a click inserts, Escape closes. In the first editor type ba and pick basket. In the second, type p and wait for the market's stalls, or type or and insert the order snippet: Tab moves from stall to crates. The three editors below scroll and resize: open the list near the bottom of each and it stays at the caret."
+      >
+        <AutocompleteDemo />
+      </LabSection>
+      <LabSection
         title="Sizes, wrapping and states"
         description="Each size against wrapping and the states: line numbers, an error, a warning, read-only and disabled."
       >
@@ -394,7 +478,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Completions"
-        description="Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
+        description="A small word list (see Autocomplete above for the full tour). Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
       >
         <CompletingEditor />
       </LabSection>

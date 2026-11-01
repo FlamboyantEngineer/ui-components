@@ -305,6 +305,84 @@ test.describe('Code Editor lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CODE-EDITOR-4.2 UIC-CODE-EDITOR-4.3 UIC-CODE-EDITOR-4.4 tours autocomplete from a word list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const words = editor(page, 'autocomplete-words');
+    const input = words.getByRole('textbox', { name: 'Autocomplete from a word list' });
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await input.click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Control+Space');
+    await expect(list.getByRole('option').first()).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(list).toBeHidden();
+    await page.keyboard.type('ba');
+    await list.getByRole('option', { name: /basket/ }).click();
+    await expect(list).toBeHidden();
+    await expect(input).toBeFocused();
+    await expect(
+      page.locator(`${familySelector('surface')} [data-lab-output="autocomplete-words"]`),
+    ).toHaveText('let total = basket');
+  });
+
+  test('UIC-CODE-EDITOR-4.6 UIC-CODE-EDITOR-4.8 tours autocomplete from an asynchronous source with a snippet', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const market = editor(page, 'autocomplete-market');
+    const input = market.getByRole('textbox', { name: 'Autocomplete from an asynchronous source' });
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type('p');
+    await expect(list.getByRole('option')).toHaveText([
+      'plums Stall 4',
+      'pears Stall 2',
+      'peaches Stall 7',
+    ]);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.type('or');
+    await expect(list.getByRole('option')).toHaveText(['order order(stall, crates)']);
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('plums');
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('3');
+    await expect(input).toHaveValue('// Ask the market\norder(plums, 3)');
+  });
+
+  for (const size of ['sm', 'md', 'lg'] as const) {
+    test(`UIC-CODE-EDITOR-4.5 keeps the list open at the caret after the ${size} editor scrolls`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('code-editor');
+      const scrolled = editor(page, `autocomplete-${size}`);
+      const input = scrolled.getByRole('textbox', { name: `Autocomplete at size ${size}` });
+      const list = page.getByRole('listbox', { name: 'Suggestions' });
+      await input.click();
+      await page.keyboard.press('Control+End');
+      await page.keyboard.type(' ba');
+      await expect(list).toBeVisible();
+      expect(await input.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+      // Still open a moment later, after the layers followed the text area's scroll.
+      await page.waitForTimeout(200);
+      await expect(list).toBeVisible();
+      const caret = await box(scrolled.locator('.ui-code-editor__caret'));
+      const popover = await box(page.locator('.ui-code-editor__popover'));
+      const below = popover.y - (caret.y + caret.height);
+      const above = caret.y - (popover.y + popover.height);
+      expect(Math.min(Math.abs(below), Math.abs(above))).toBeLessThan(8);
+      expect(Math.abs(popover.x - caret.x)).toBeLessThan(12);
+      await page.keyboard.press('Enter');
+      await expect(input).toHaveValue(/ basket$/);
+    });
+  }
+
   test('UIC-CODE-EDITOR-4.8 ends snippet stepping after an undo and on Escape then Tab', async ({
     page,
     lab,
