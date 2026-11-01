@@ -177,4 +177,145 @@ test.describe('Code Block lab', () => {
     );
     await lab.expectAccessible('[data-lab-demo="markdown"]');
   });
+
+  test('UIC-CODE-BLOCK-1.5 keeps line numbers level with their lines and out of the text', async ({
+    page,
+    lab,
+    baseURL,
+  }) => {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {
+      origin: new URL(baseURL ?? 'http://127.0.0.1/').origin,
+    });
+    await lab.open('code-block');
+    const demo = page.locator('[data-lab-demo="line-numbers"]');
+    const script = demo.getByRole('group', { name: 'count-nights.js' });
+    const code = script.locator('code');
+    const numbers = script.locator('.ui-code-block__line-number');
+    await expect(numbers).toHaveCount(6);
+    const offsets = await script.locator('.ui-code-block__line').evaluateAll((lines) =>
+      lines.map((line) => {
+        const number = line.querySelector('.ui-code-block__line-number');
+        const box = line.getBoundingClientRect();
+        return {
+          number: number ? getComputedStyle(number, '::before').content : null,
+          gap: number ? Math.abs(number.getBoundingClientRect().top - box.top) : 0,
+        };
+      }),
+    );
+    expect(offsets.map((line) => line.number)).toEqual([
+      '"1"',
+      '"2"',
+      '"3"',
+      '"4"',
+      '"5"',
+      '"6"',
+      null,
+    ]);
+    expect(Math.max(...offsets.map((line) => line.gap))).toBeLessThan(1);
+    const expected = await code.evaluate((element) => element.textContent);
+    expect(expected).toMatch(/^\/\* Nights of a trip,\n {3}counted per stop\. \*\/\n/);
+    const selected = await code.evaluate((element) => {
+      const selection = getSelection();
+      selection?.selectAllChildren(element);
+      return selection?.toString();
+    });
+    // The browser leaves a selection's final line break out; the numbers stay out of it.
+    expect(selected).toBe(expected?.replace(/\n$/, ''));
+    await script.getByRole('button', { name: 'Copy code' }).click();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(expected);
+
+    const wrapped = demo.getByRole('group', { name: 'Wrapped' });
+    const first = wrapped.locator('.ui-code-block__line').first();
+    const rows = await first.evaluate(
+      (line) => line.getClientRects().length > 0 && line.getBoundingClientRect().height,
+    );
+    const lineHeight = await first.evaluate((line) =>
+      parseFloat(getComputedStyle(line).lineHeight),
+    );
+    expect(Number(rows)).toBeGreaterThan(lineHeight * 2);
+    await expect(first.locator('.ui-code-block__line-number')).toHaveCount(1);
+    const pre = wrapped.locator('pre');
+    await expect(pre).toHaveAttribute('data-wrap', 'soft');
+    await expect(pre).not.toHaveAttribute('data-overflowing');
+    await lab.expectAccessible('[data-lab-demo="line-numbers"]');
+  });
+
+  test('UIC-CODE-BLOCK-1.3 UIC-CODE-BLOCK-1.5 UIC-CODE-BLOCK-1.6 scrolls a large file both ways with its numbers', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-block');
+    const demo = page.locator('[data-lab-demo="large"]');
+    const pre = demo.locator('pre');
+    await expect(pre).toHaveAttribute('data-overflowing', 'true');
+    await expect(pre).toHaveAttribute('data-line-numbers', 'true');
+    expect(await pre.evaluate((element) => element.clientHeight)).toBeLessThanOrEqual(360);
+    await expect(demo.locator('.ui-code-block__line-number')).toHaveCount(1022);
+    await demo.getByRole('button', { name: 'Copy code' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(pre).toBeFocused();
+    await page.keyboard.press('End');
+    await page.keyboard.press('PageDown');
+    await expect(async () => {
+      expect(await pre.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    }).toPass();
+    const gutter = async () =>
+      pre.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const visible = [...element.querySelectorAll('.ui-code-block__line-number')].find(
+          (number) => number.getBoundingClientRect().top >= box.top,
+        );
+        const line = visible?.parentElement;
+        return {
+          left: Math.round((visible?.getBoundingClientRect().left ?? 0) - box.left),
+          level: Math.abs(
+            (visible?.getBoundingClientRect().top ?? 0) - (line?.getBoundingClientRect().top ?? 1),
+          ),
+        };
+      });
+    expect((await gutter()).level).toBeLessThan(1);
+    await pre.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+    });
+    expect(await pre.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+    const scrolled = await gutter();
+    expect(scrolled.left).toBe(0);
+    expect(scrolled.level).toBeLessThan(1);
+
+    await demo.getByRole('radio', { name: 'Wrap' }).click();
+    await expect(pre).toHaveAttribute('data-wrap', 'soft');
+    expect(await pre.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(
+      true,
+    );
+    await expect(pre).toHaveAttribute('data-overflowing', 'true');
+    await demo.getByRole('checkbox', { name: 'Line numbers' }).focus();
+    await page.keyboard.press('Space');
+    await expect(pre).not.toHaveAttribute('data-line-numbers');
+    await expect(demo.locator('.ui-code-block__line-number')).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-demo="large"]');
+  });
+
+  test('UIC-CODE-BLOCK-1.4 highlights several languages through their tokenizers', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-block');
+    const demo = page.locator('[data-lab-demo="highlighted-languages"]');
+    const expected: Record<string, string[]> = {
+      'shelves.ts': ['keyword', 'comment', 'number'],
+      'basket.json': ['key', 'string', 'number', 'literal'],
+      'card.css': ['comment', 'keyword', 'number'],
+      'labels.py': ['comment', 'keyword', 'string', 'number'],
+      'restock.sh': ['comment', 'keyword', 'string', 'number'],
+    };
+    for (const [title, types] of Object.entries(expected)) {
+      const block = demo.getByRole('group', { name: title });
+      for (const type of types) {
+        await expect(
+          block.locator(`.ui-code-block__token[data-token="${type}"]`).first(),
+        ).toBeVisible();
+      }
+    }
+    await lab.expectAccessible('[data-lab-demo="highlighted-languages"]');
+  });
 });

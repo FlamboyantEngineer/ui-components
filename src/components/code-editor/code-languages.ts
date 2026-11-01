@@ -123,6 +123,10 @@ const tokenizers = Object.fromEntries(
   Object.entries(presets).map(([language, syntax]) => [language, createCodeTokenizer(syntax)]),
 ) as Record<keyof typeof presets, CodeTokenizer>;
 
+/**
+ * The tokenizer for custom `syntax`, or else for a `language` preset; none for plain text. A
+ * `CodeBlock` can take it as `tokenize` to highlight as the editor does.
+ */
 export function resolveCodeTokenizer({
   language = 'text',
   syntax,
