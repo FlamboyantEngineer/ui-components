@@ -137,6 +137,29 @@ describe('FormulaBar', () => {
     expect(onCommit).toHaveBeenLastCalledWith('=B1*2+10', { row: 0, column: 0 });
   });
 
+  it('UIC-FORMULA-BAR-3.4 drops the buttons and describes the keys instead', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <FormulaBar
+        cell={{ row: 0, column: 0 }}
+        value="=1"
+        showActions={false}
+        evaluate={() => '1'}
+        onCommit={onCommit}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    expect(container.querySelector('.ui-formula-bar__cancel')).toBeNull();
+    expect(contentBox()).toHaveAccessibleDescription('Result 1 Enter confirms, Escape cancels.');
+    await user.click(contentBox());
+    await user.keyboard('{End}+2{Escape}');
+    expect(contentBox()).toHaveValue('=1');
+    await user.keyboard('{End}+2{Enter}');
+    expect(onCommit).toHaveBeenCalledWith('=1+2', { row: 0, column: 0 });
+  });
+
   it('UIC-FORMULA-BAR-2.2 keeps every reference Enter from submitting a form around the bar', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());

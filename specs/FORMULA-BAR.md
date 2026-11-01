@@ -57,6 +57,13 @@ With `evaluate`, the bar shall show `evaluate(content, cell)` for the draft and 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
 
+### UIC-FORMULA-BAR-3.4 - Without buttons
+
+With `showActions={false}` the bar shall draw neither the cancel nor the confirm button and keep no room for them; Enter and Escape in the editor still commit and cancel as in UIC-FORMULA-BAR-3.2, with the same composition guard and the same locked, read-only and dirty rules, and the editor's description gains the provider string `formulaKeysHint` ("Enter confirms, Escape cancels."), after the result, so a reader learns the keys the missing buttons stood for. `showActions` defaults to true.
+
+Implementation: `src/components/formula-bar/formula-bar.tsx`
+Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
+
 ## UIC-FORMULA-BAR-4 - Accessibility and hooks
 
 ### UIC-FORMULA-BAR-4.1 - Accessible bar

@@ -50,6 +50,11 @@ export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
   isReadOnly?: boolean | undefined;
   /** Refuses focus and every edit. */
   isDisabled?: boolean | undefined;
+  /**
+   * Draws the cancel and confirm buttons. Defaults to true; without them, Enter and Escape still
+   * commit and cancel, and the content's description says so.
+   */
+  showActions?: boolean | undefined;
 }
 
 const hooks = createHooks('formula-bar', [
@@ -61,6 +66,9 @@ const hooks = createHooks('formula-bar', [
   'editor',
   'result',
 ]);
+
+/** Space-separated ids for an ARIA id list, or undefined when there are none. */
+const joinIds = (...ids: (string | null)[]) => ids.filter(Boolean).join(' ') || undefined;
 
 const describeSource = (cell: CellCoordinates | null, value: string) =>
   cell ? `${cell.row}:${cell.column}:${value}` : '';
@@ -162,14 +170,25 @@ function FormulaBarReference({
   );
 }
 
-/** The buttons that restore and commit the content, enabled while the bar may do so. */
+/**
+ * The buttons that restore and commit the content, enabled while the bar may do so; without them
+ * (`hintId` given), the hidden text naming the keys that do it, which describes the content.
+ */
 function FormulaBarButtons(props: {
   canCancel: boolean;
   canCommit: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  hintId: string | null;
 }) {
   const strings = useUiStrings();
+  if (props.hintId) {
+    return (
+      <VisuallyHidden elementType="span" id={props.hintId}>
+        {strings.formulaKeysHint}
+      </VisuallyHidden>
+    );
+  }
   return (
     <>
       <Button
@@ -247,11 +266,13 @@ export function FormulaBar({
   placeholder,
   isReadOnly = false,
   isDisabled = false,
+  showActions = true,
   className,
   ...rest
 }: FormulaBarProps) {
   const strings = useUiStrings();
   const resultId = useId();
+  const hintId = useId();
   const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel } =
     useFormulaDraft({ cell, value, onCommit, isReadOnly, isDisabled });
   const onKeyDown = (event: KeyboardEvent) => {
@@ -281,13 +302,14 @@ export function FormulaBar({
         canCommit={canCommit}
         onCancel={cancel}
         onConfirm={commit}
+        hintId={showActions ? null : hintId}
       />
       <Glyph icon={FormulaGlyph} className={hooks.slotClass('glyph')} />
       <CodeEditor
         variant="surface"
         className={hooks.slotClass('editor')}
         aria-label={strings.formulaCellContent}
-        aria-describedby={evaluate && cell ? resultId : undefined}
+        aria-describedby={joinIds(evaluate && cell ? resultId : null, showActions ? null : hintId)}
         multiline={false}
         value={text}
         onChange={setDraft}

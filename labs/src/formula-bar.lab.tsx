@@ -200,6 +200,27 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Without buttons"
+      description="showActions={false} drops Cancel and Confirm and their room: Enter commits and Escape cancels, and the content's description names those keys. Shown beside the default bar, in a 320px column with a long formula."
+    >
+      <StateMatrix
+        axes={{ width: ['320px', 'full'], actions: ['buttons', 'keys only'] }}
+        render={({ width, actions }) => (
+          <div style={{ width: width === 'full' ? undefined : 320 }}>
+            <FormulaBar
+              aria-label={`Formula bar, ${actions}, ${width}`}
+              cell={{ row: 1, column: 3 }}
+              value="=SUM(B2:B40)*C2+AVERAGE(B2:B40)-MIN(B2:B40)+MAX(B2:B40)"
+              tokenize={tokenizeFormula}
+              evaluate={(value, at) => evaluateAt(value, sampleCells, at)}
+              showActions={actions === 'buttons'}
+              data-lab-actions={actions}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Spreadsheet"
       description="Wired to a table in spreadsheet mode: the bar follows the selected cell, typing a reference such as C4 and Enter selects that cell, and Enter in the content commits it. The table shows evaluated values and edits raw contents; Escape restores the content and SUM, AVERAGE, MIN and MAX complete as you type. Selecting another cell discards an uncommitted draft: coming back shows the cell's content. Lock the bar with a draft open: Cancel and Confirm turn off, and the draft waits, uncommitted, until you unlock it."
     >

@@ -598,6 +598,7 @@
   "formulaCellContent": "セルの内容",
   "formulaInvalidReference": "{text} という名前のセルはありません",
   "formulaResult": "結果",
+  "formulaKeysHint": "Enterで確定、Escでキャンセル。",
   "relationItems": "項目",
   "related": "関連",
   "relationCount": "{count, plural, =0 {関連はありません} other {関連 # 件}}",
