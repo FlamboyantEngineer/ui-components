@@ -224,10 +224,10 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-5.6 - Open state
 
-The list's open state shall be controllable: `isOpen` (controlled) or `defaultOpen` sets it, and `onOpenChange` reports each change the reader asks for (typing, the button, the arrow keys, Escape, a pick, leaving the input). A controlled list the caller does not change stays as `isOpen` says; closing it commits the text as Escape does.
+The list's open state shall be controllable: `isOpen` (controlled) or `defaultOpen` sets it, and `onOpenChange` reports each change the reader asks for (typing, the button, the arrow keys, Escape, a pick, leaving the input). A controlled list the caller does not change stays as `isOpen` says; closing it commits the text as Escape does. A list open when the field turns disabled or read-only, by its own props or a disabled fieldset or form, shall close through `onOpenChange(false)`, once, with focus left on the input, pick nothing and stay closed when the field unlocks, until the reader opens it; a controlled `isOpen` is drawn closed while locked.
 
-Implementation: `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-effects.ts`
-Verification: `src/components/combobox/combobox.test.tsx`
+Implementation: `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-effects.ts`, `src/utils/use-close-when-locked.ts`
+Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-locking.test.tsx`
 
 ### UIC-COMBOBOX-5.7 - Input reference and focus on mount
 

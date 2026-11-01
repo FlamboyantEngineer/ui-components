@@ -27,10 +27,10 @@ Verification: `src/components/relative-date-field/relative-date-field.test.tsx`,
 
 ### UIC-RELATIVE-DATE-FIELD-1.4 - States, restore and menu
 
-The field base's validation (an invalid field marks its select invalid), restore button, undo and redo chords and field menu shall apply; Clear sets `null`. A read-only field keeps its trigger focusable but never opens the presets, and pressing it calls no `onOpenChange`; a disabled field disables its trigger and keeps its presets closed, even when explicitly opened. Both keep their preview.
+The field base's validation (an invalid field marks its select invalid), restore button, undo and redo chords and field menu shall apply; Clear sets `null`. A read-only field keeps its trigger focusable but never opens the presets, and pressing it calls no `onOpenChange`; a disabled field disables its trigger and keeps its presets closed, even when explicitly opened. Both keep their preview. Presets open when the field turns read-only or disabled, by its own props or a disabled fieldset or form, close through `onOpenChange(false)`, once, pick nothing, and stay closed when the field unlocks; a controlled `isOpen` is drawn closed while locked.
 
 Implementation: `src/components/relative-date-field/relative-date-field.tsx`
-Verification: `src/components/relative-date-field/relative-date-field.test.tsx`
+Verification: `src/components/relative-date-field/relative-date-field.test.tsx`, `src/components/relative-date-field/relative-date-locking.test.tsx`
 
 ### UIC-RELATIVE-DATE-FIELD-1.5 - Hooks and caller attributes
 

@@ -34,6 +34,24 @@ test.describe('Combobox lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-COMBOBOX-5.6 closes an open list for good when the field is disabled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const demo = page.locator('[data-lab-case="lock-while-open"]');
+    await demo.getByRole('button', { name: 'Disable in a second' }).click();
+    await demo.getByRole('combobox').click();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await expect(demo.getByRole('combobox')).toBeDisabled();
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="open"]')).toHaveText('false');
+    await demo.getByRole('button', { name: 'Enable' }).click();
+    await expect(demo.getByRole('combobox')).toBeEnabled();
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+  });
+
   test('UIC-COMBOBOX-1.3 shows disabled, read-only, invalid and pending states', async ({
     page,
     lab,

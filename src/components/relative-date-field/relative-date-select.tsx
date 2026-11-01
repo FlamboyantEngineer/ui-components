@@ -13,6 +13,7 @@ import {
 } from '../../primitives/index.js';
 import { PopoverPresence } from '../popover/popover.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { Glyph } from '../../core/provider.js';
 import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
@@ -60,7 +61,8 @@ function RelativeTrigger({
 
 /**
  * The preset list: a select that never holds a choice, so picking the same preset again commits.
- * Only the open list picks; a locked field neither opens it nor reports opening. Its popover can
+ * Only the open list picks; a locked field neither opens it nor reports opening, and locking an
+ * open list closes it for good. Its popover can
  * hold more beside the list, such as a calendar.
  */
 export function PresetSelect({
@@ -79,6 +81,7 @@ export function PresetSelect({
   const [open, setOpen] = useControllableState(isOpen, Boolean(defaultOpen), onOpenChange);
   const isLocked = state.isReadOnly || state.isDisabled;
   const isListOpen = open && !isLocked;
+  useCloseWhenLocked(open, isLocked, () => setOpen(false));
   return (
     <AriaSelect
       className={hooks.slotClass('select')}

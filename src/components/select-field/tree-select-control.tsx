@@ -19,7 +19,7 @@ import {
   settleCascadeKeys,
   type TreeIndex,
 } from './tree-index.js';
-import { useCloseWhenLocked } from './select-model.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { TreeSelectPopover } from './tree-select-popover.js';
 import { TreeSelectTrigger } from './tree-select-trigger.js';
 import type { SelectTreeFieldProps, SelectFieldValueDisplay } from './select-tree-field.js';
