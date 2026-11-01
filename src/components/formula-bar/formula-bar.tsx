@@ -109,14 +109,21 @@ function FormulaBarReference({
     inputRef.current?.select();
   });
   // Escape drops a typed or refused reference; with neither, or while an input method composes,
-  // it is not the box's, so a surface around the bar can close on it.
+  // it is not the box's, so a surface around the bar can close on it. Enter is always the box's:
+  // it goes to a typed reference, and never submits a form around the bar.
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Escape') {
       if (typed === null && refused === null) return;
       setTyped(null);
       setRefused(null);
-    } else if (event.key === 'Enter' && typed !== null) {
+    } else if (event.key === 'Enter') {
+      if (typed === null) {
+        // Nothing to move to or refuse, so nothing renders: select the reference at once.
+        event.preventDefault();
+        event.currentTarget.select();
+        return;
+      }
       const target = parseCellReference(typed);
       if (target && isInGrid(target, { rowCount, columnCount })) {
         setTyped(null);
@@ -248,7 +255,7 @@ export function FormulaBar({
   const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel } =
     useFormulaDraft({ cell, value, onCommit, isReadOnly, isDisabled });
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.nativeEvent.isComposing) return;
+    if (isComposingKey(event.nativeEvent)) return;
     if (event.key === 'Enter') commit();
     else if (event.key === 'Escape' && isDirty) cancel();
     else return;

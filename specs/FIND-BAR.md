@@ -20,7 +20,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.3 - Stepping through matches
 
-Previous match and Next match icon buttons (`ui-find-bar__previous` and `ui-find-bar__next`, the `arrow-up` and `arrow-down` glyphs, the provider's `previousMatch` and `nextMatch` strings) shall call `onPrevious` and `onNext`, as Shift+Enter and Enter in the find box do; the buttons are disabled and the keys do nothing while there is no match, or when the Enter confirms a text composition. Enter never submits an enclosing form.
+Previous match and Next match icon buttons (`ui-find-bar__previous` and `ui-find-bar__next`, the `arrow-up` and `arrow-down` glyphs, the provider's `previousMatch` and `nextMatch` strings) shall call `onPrevious` and `onNext`, as Shift+Enter and Enter in the find box do; the buttons are disabled and the keys do nothing while there is no match, or when the Enter confirms a text composition (`isComposing`, or key code 229). Enter never submits an enclosing form.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`
@@ -34,7 +34,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-1.5 - Replacing
 
-With `onReplace` or `onReplaceAll`, the bar shall add a replacement box (`ui-find-bar__replacement`, named by the provider's `replaceWith` string) and, for each handler given, a Replace (`ui-find-bar__replace`, the `replace` string) or Replace all (`ui-find-bar__replace-all`, the `replaceAll` string) button that calls it with the replacement text; Enter in the replacement box replaces, except the Enter that confirms a text composition. The buttons are disabled and Enter does nothing while there is no match. The replacement is `replacement` (controlled) or `defaultReplacement` (uncontrolled), reported through `onReplacementChange`.
+With `onReplace` or `onReplaceAll`, the bar shall add a replacement box (`ui-find-bar__replacement`, named by the provider's `replaceWith` string) and, for each handler given, a Replace (`ui-find-bar__replace`, the `replace` string) or Replace all (`ui-find-bar__replace-all`, the `replaceAll` string) button that calls it with the replacement text; Enter in the replacement box replaces, except the Enter that confirms a text composition (`isComposing`, or key code 229). The buttons are disabled and Enter does nothing while there is no match. The replacement is `replacement` (controlled) or `defaultReplacement` (uncontrolled), reported through `onReplacementChange`.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts`

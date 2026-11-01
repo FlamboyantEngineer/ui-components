@@ -205,6 +205,20 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(onValue).toHaveBeenCalledTimes(2);
   });
 
+  it.each([
+    ['while composing', { isComposing: true }],
+    ['with key code 229', { keyCode: 229 }],
+  ])(
+    'UIC-STEP-LIST-EDITOR-2.3 leaves Alt+Arrow keys an input method composes, %s',
+    (_, composition) => {
+      const onValue = vi.fn();
+      render(<Controlled onValue={onValue} />);
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+      fireEvent.keyDown(field(1, 'Action'), { key: 'ArrowDown', altKey: true, ...composition });
+      expect(onValue).not.toHaveBeenCalled();
+    },
+  );
+
   it('UIC-STEP-LIST-EDITOR-2.4 UIC-DRAG-INTERACTIONS-2.3 makes a step draggable only while its handle is pressed', async () => {
     const user = userEvent.setup();
     render(<Controlled />);

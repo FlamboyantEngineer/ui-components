@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
 import { Table } from '../../src/components/table/table.js';
+import { Button } from '../../src/components/button/button.js';
 import type { TableCellRange } from '../../src/components/table/index.js';
 import type { TableColumn } from '../../src/components/table/index.js';
 import { formatCellReference, type CellCoordinates } from '../../src/utils/cell-reference.js';
@@ -135,6 +136,35 @@ function Spreadsheet() {
   );
 }
 
+/** A bar inside a form: Enter in either box never submits it (UIC-FORMULA-BAR-2.2). */
+function FormBar() {
+  const [cell, setCell] = useState<CellCoordinates>({ row: 0, column: 0 });
+  const [submits, setSubmits] = useState(0);
+  return (
+    <form
+      data-lab-demo="form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmits((count) => count + 1);
+      }}
+    >
+      <FormulaBar
+        aria-label="Order form formula bar"
+        cell={cell}
+        value=""
+        rowCount={5}
+        columnCount={4}
+        tokenize={tokenizeFormula}
+        onCellChange={setCell}
+      />
+      <Button type="submit" size="sm">
+        Submit the form
+      </Button>{' '}
+      <output data-lab-output>{`Submitted ${submits} times`}</output>
+    </form>
+  );
+}
+
 const states = {
   formula: { cell: { row: 1, column: 3 }, value: '=B2*C2' },
   text: { cell: { row: 0, column: 0 }, value: 'Item' },
@@ -174,6 +204,12 @@ mountLab(
       description="Wired to a table in spreadsheet mode: the bar follows the selected cell, typing a reference such as C4 and Enter selects that cell, and Enter in the content commits it. The table shows evaluated values and edits raw contents; Escape restores the content and SUM, AVERAGE, MIN and MAX complete as you type. Selecting another cell discards an uncommitted draft: coming back shows the cell's content. Lock the bar with a draft open: Cancel and Confirm turn off, and the draft waits, uncommitted, until you unlock it."
     >
       <Spreadsheet />
+    </LabSection>
+    <LabSection
+      title="Inside a form"
+      description="Enter in the reference box always stays with the bar, whether the reference is unchanged, moves to a cell or is refused, so the form around it is submitted only by its own button. An Enter that confirms an input method composition goes to the input method."
+    >
+      <FormBar />
     </LabSection>
   </>,
 );

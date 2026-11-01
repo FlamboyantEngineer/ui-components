@@ -191,20 +191,26 @@ describe('FindBar', () => {
     });
   });
 
-  it('UIC-FIND-BAR-1.3 UIC-FIND-BAR-1.5 ignores the Enter that confirms a text composition', () => {
-    const onReplace = vi.fn();
-    const onNext = vi.fn();
-    render(<FindBar matchCount={3} currentIndex={0} onReplace={onReplace} onNext={onNext} />);
-    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
-    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Replace with' }), {
-      key: 'Enter',
-      isComposing: true,
-    });
-    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
-    fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Enter', isComposing: true });
-    expect(onReplace).not.toHaveBeenCalled();
-    expect(onNext).not.toHaveBeenCalled();
-  });
+  it.each([
+    ['while composing', { isComposing: true }],
+    ['with key code 229', { keyCode: 229 }],
+  ])(
+    'UIC-FIND-BAR-1.3 UIC-FIND-BAR-1.5 ignores the Enter that confirms a text composition, %s',
+    (_, composition) => {
+      const onReplace = vi.fn();
+      const onNext = vi.fn();
+      render(<FindBar matchCount={3} currentIndex={0} onReplace={onReplace} onNext={onNext} />);
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+      fireEvent.keyDown(screen.getByRole('textbox', { name: 'Replace with' }), {
+        key: 'Enter',
+        ...composition,
+      });
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+      fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Enter', ...composition });
+      expect(onReplace).not.toHaveBeenCalled();
+      expect(onNext).not.toHaveBeenCalled();
+    },
+  );
 
   it('UIC-FIND-BAR-1.5 shows only the replace buttons asked for, with a controlled replacement', () => {
     const { rerender } = render(<FindBar matchCount={1} />);
