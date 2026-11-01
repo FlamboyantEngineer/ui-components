@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -38,6 +38,28 @@ function Harness(props: HarnessProps) {
         {...props}
       />
     </>
+  );
+}
+
+/** An editor stand-in that draws its caret marker in a mirror layer beside the focused control. */
+function MirrorHarness({ onOpenChange }: Pick<CompletionListProps, 'onOpenChange'>) {
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  return (
+    <section aria-label="Editor">
+      <section aria-label="Mirror">
+        <span ref={anchorRef} />
+      </section>
+      <textarea aria-label="Source" />
+      <CompletionList
+        id="people"
+        isOpen
+        onOpenChange={onOpenChange}
+        anchorRef={anchorRef}
+        items={people}
+        activeKey="maria"
+        onAction={() => undefined}
+      />
+    </section>
   );
 }
 
@@ -173,5 +195,18 @@ describe('CompletionList', () => {
     expect(popover).not.toHaveAttribute('id', 'people');
     expect(screen.getByRole('listbox')).toHaveAttribute('id', 'people');
     expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { callerAttributes: ['data-testid'] });
+  });
+
+  it('UIC-COMPLETION-LIST-1.1 stays open while a mirror layer scrolls and closes when the editor scrolls', async () => {
+    const onOpenChange = vi.fn();
+    render(<MirrorHarness onOpenChange={onOpenChange} />);
+    await screen.findByRole('listbox');
+    screen.getByRole('textbox', { name: 'Source' }).focus();
+    fireEvent.scroll(screen.getByRole('region', { name: 'Mirror' }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+    // The hold ends with the mirror's scroll.
+    await new Promise((resolve) => setTimeout(resolve));
+    fireEvent.scroll(screen.getByRole('region', { name: 'Editor' }));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
