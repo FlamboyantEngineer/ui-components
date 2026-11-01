@@ -517,7 +517,12 @@ test.describe('Combobox lab', () => {
     await expect(filter).toHaveValue('pa');
     await expect(input).toHaveValue('');
     await expect(listbox.getByRole('option')).toHaveText(['Paris']);
-    // The text field keeps its own keys: Enter commits the filter, and Escape would revert an edit.
+    // The text field keeps its own keys: its Escape puts back an unconfirmed filter and keeps the
+    // list open, and Enter confirms the filter.
+    await page.keyboard.press('Escape');
+    await expect(filter).toBeFocused();
+    await expect(listbox).toBeVisible();
+    await page.keyboard.type('pa');
     await page.keyboard.press('Enter');
     await expect(filter).toBeFocused();
     await page.keyboard.press('Escape');

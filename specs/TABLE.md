@@ -403,7 +403,7 @@ Verification: `src/components/table/use-cell-editing.test.tsx`, `src/utils/is-co
 
 ### UIC-TABLE-11.3 - Custom editors
 
-`renderEditor(row, editor)` shall draw the cell's editor instead, given the cell's `value`, the column's `label`, `commit(value)` and `cancel()`; Escape inside it cancels. Focus returns to the cell when the edit ends, unless it has moved elsewhere.
+`renderEditor(row, editor)` shall draw the cell's editor instead, given the cell's `value`, the column's `label`, `commit(value)` and `cancel()`; Escape inside it cancels, unless the editor's own control handled that Escape (`preventDefault`, such as closing its own popover): then the edit stays open. Focus returns to the cell when the edit ends, unless it has moved elsewhere.
 
 Implementation: `src/components/table/table-cell-editor.tsx`, `src/components/table/use-cell-editing.ts`
 Verification: `src/components/table/use-cell-editing.test.tsx`

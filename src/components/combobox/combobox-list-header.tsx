@@ -1,5 +1,6 @@
 'use client';
 
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import {
   useContext,
   type KeyboardEvent,
@@ -50,6 +51,8 @@ export function ComboboxListHeader({ slot, inputRef, children }: ComboboxListHea
         // The list is non-modal, so only the input closes it on Escape by itself. A composing
         // Escape cancels the input method's candidate in a header field instead.
         if (event.key !== 'Escape' || isComposingKey(event.nativeEvent)) return;
+        // A header control that handled the Escape itself keeps the list open.
+        if (stopConsumedEscape(event)) return;
         event.preventDefault();
         event.stopPropagation();
         inputRef.current?.focus();

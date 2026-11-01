@@ -221,14 +221,14 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     const user = userEvent.setup();
     const onValue = vi.fn();
     render(<Controlled onValue={onValue} />);
-    const action = field(1, 'Action');
-    act(() => action.focus());
+    const handle = screen.getByRole('button', { name: 'Move step 1' });
+    act(() => handle.focus());
     await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
     expect(onValue).not.toHaveBeenCalled();
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
     expect(idsOf(onValue.mock.lastCall?.[0])).toEqual(['type', 'open', 'save']);
-    expect(action).toHaveFocus();
-    expect(field(2, 'Action')).toBe(action);
+    expect(handle).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Move step 2' })).toBe(handle);
 
     const menu = screen.getByRole('button', { name: 'Actions for step 2' });
     act(() => menu.focus());
@@ -237,6 +237,15 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.keyboard('{Shift>}{Alt>}{ArrowUp}{/Alt}{/Shift}');
     expect(onValue).toHaveBeenCalledTimes(2);
+  });
+
+  it("UIC-STEP-LIST-EDITOR-2.3 leaves Alt+Arrow keys to a step's text field", () => {
+    const onValue = vi.fn();
+    render(<Controlled onValue={onValue} />);
+    // eslint-disable-next-line testing-library/prefer-user-event -- the test reads whether the keydown was prevented
+    const isKept = fireEvent.keyDown(field(1, 'Action'), { key: 'ArrowDown', altKey: true });
+    expect(isKept).toBe(true);
+    expect(onValue).not.toHaveBeenCalled();
   });
 
   it.each([

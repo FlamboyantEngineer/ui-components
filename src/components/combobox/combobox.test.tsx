@@ -435,6 +435,39 @@ describe('Combobox', () => {
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 
+  it('UIC-COMBOBOX-5.5 keeps the list open on an Escape a header control handled', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        label="Fruit"
+        defaultItems={fruit}
+        listHeader={
+          <input
+            aria-label="Filter options"
+            onKeyDown={(event) => {
+              // The filter's own Escape clears it first.
+              if (event.key !== 'Escape' || event.currentTarget.value === '') return;
+              event.currentTarget.value = '';
+              event.preventDefault();
+            }}
+          />
+        }
+      />,
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Fruit' }));
+    await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
+    const filter = screen.getByRole('textbox', { name: 'Filter options' });
+    await user.click(filter);
+    await user.keyboard('ap{Escape}');
+    expect(filter).toHaveValue('');
+    expect(filter).toHaveFocus();
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Fruit' })).toHaveFocus();
+  });
+
   it('UIC-COMBOBOX-5.5 gives focus back after a checkbox press and on Escape in the list header', async () => {
     const user = userEvent.setup();
     render(

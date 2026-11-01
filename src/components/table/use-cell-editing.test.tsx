@@ -35,7 +35,16 @@ const columns: TableColumn<Fruit>[] = [
           onClick={() => editor.commit('Blue')}
         >{`Blue for ${editor.label}`}</button>
         <button type="button" onClick={editor.cancel}>{`Keep ${String(editor.value)}`}</button>
-        <input aria-label={`${row.name} colour`} autoFocus />
+        <input
+          aria-label={`${row.name} colour`}
+          autoFocus
+          onKeyDown={(event) => {
+            // The editor's own Escape clears its draft first.
+            if (event.key !== 'Escape' || event.currentTarget.value === '') return;
+            event.currentTarget.value = '';
+            event.preventDefault();
+          }}
+        />
       </span>
     ),
   },
@@ -155,7 +164,11 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     cell('Red').focus();
     await user.keyboard('{F2}');
     const row = screen.getByRole('row', { name: 'Apple' });
-    expect(within(row).getByRole('textbox', { name: 'Apple colour' })).toHaveFocus();
+    const draft = within(row).getByRole('textbox', { name: 'Apple colour' });
+    expect(draft).toHaveFocus();
+    await user.keyboard('Teal{Escape}');
+    expect(draft).toHaveFocus();
+    expect(draft).toHaveValue('');
     await user.keyboard('{Escape}');
     expect(cell('Red')).toHaveFocus();
     await user.keyboard('{F2}');

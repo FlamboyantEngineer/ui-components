@@ -1,5 +1,6 @@
 'use client';
 
+import { stopConsumedEscape } from '../../utils/consumed-escape.js';
 import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Input, TableStateContext } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -60,6 +61,8 @@ function useKeyboardNavigationLock() {
 /** Ends the edit of an Escape key, keeping the key from the grid. */
 function handleEscape(event: KeyboardEvent, cancel: () => void): void {
   if (event.key !== 'Escape') return;
+  // An editor that handled the Escape itself (closing its own popover, say) keeps the edit open.
+  if (stopConsumedEscape(event)) return;
   // An input method's Escape cancels its candidate, not the edit, and stays inside the editor.
   if (isComposingKey(event.nativeEvent)) {
     event.stopPropagation();

@@ -94,17 +94,20 @@ test.describe('Step List Editor lab', () => {
   }) => {
     await lab.open('step-list-editor');
     const demo = page.locator('[data-lab-demo="live"]');
-    const action = demo
-      .locator('.ui-step-list-editor__step[data-key="open"]')
-      .getByRole('textbox', { name: 'Action' });
-    await action.focus();
+    const step = demo.locator('.ui-step-list-editor__step[data-key="open"]');
+    // In a step's text field the chord is the field's, for its caret.
+    await step.getByRole('textbox', { name: 'Action' }).focus();
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect.poll(() => stepOrder(demo)).toEqual(['open', 'name', 'password', 'submit']);
+    const handle = step.getByRole('button', { name: /^Move step/ });
+    await handle.focus();
     await page.keyboard.press('Alt+ArrowDown');
     await expect.poll(() => stepOrder(demo)).toEqual(['name', 'open', 'password', 'submit']);
-    await expect(action).toBeFocused();
+    await expect(handle).toBeFocused();
     await expect(demo.locator('.ui-step-list-editor__number').nth(1)).toHaveText('2');
     await page.keyboard.press('Alt+ArrowDown');
     await expect.poll(() => stepOrder(demo)).toEqual(['name', 'password', 'open', 'submit']);
-    await expect(action).toBeFocused();
+    await expect(handle).toBeFocused();
 
     await demo.getByRole('button', { name: 'Actions for step 4' }).click();
     await page.getByRole('menuitem', { name: 'Move up' }).click();
