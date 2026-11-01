@@ -57,3 +57,20 @@
   flex: none;
   margin-inline-start: auto;
 }
+
+/*
+ * The lab's searched passage, which the host draws: every match highlighted, the current one in
+ * the accent tint with an outline and an underline, so it stands out beyond its colour.
+ */
+[data-lab-case='passage'] mark {
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-highlight);
+  color: inherit;
+}
+
+[data-lab-case='passage'] mark[data-lab-current] {
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-strong), transparent);
+  outline: 2px solid var(--ref-accent-ink);
+  text-decoration: underline 2px;
+  text-underline-offset: 3px;
+}
