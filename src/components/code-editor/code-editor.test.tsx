@@ -132,6 +132,27 @@ describe('CodeEditor', () => {
     }
   });
 
+  it('UIC-CODE-EDITOR-1.8 publishes the resize direction, none for a single line', () => {
+    const { container, rerender } = render(
+      <CodeEditor variant="surface" aria-label="Source" value="" />,
+    );
+    expect(root(container)).toHaveAttribute('data-resize', 'vertical');
+    for (const resize of ['vertical', 'both', 'none'] as const) {
+      rerender(<CodeEditor variant="surface" aria-label="Source" value="" resize={resize} />);
+      expect(root(container)).toHaveAttribute('data-resize', resize);
+      expectHooksMatchSpec(container, 'CODE-EDITOR');
+    }
+    rerender(
+      <CodeEditor variant="surface" aria-label="Source" value="" resize="both" multiline={false} />,
+    );
+    expect(root(container)).toHaveAttribute('data-resize', 'none');
+    rerender(<CodeEditor label="Source" value="" resize="both" />);
+    expect(container.querySelector('.ui-code-editor[data-variant="surface"]')).toHaveAttribute(
+      'data-resize',
+      'both',
+    );
+  });
+
   it('UIC-CODE-EDITOR-1.5 shows the toolbar row above the source', () => {
     const { container } = render(
       <CodeEditor

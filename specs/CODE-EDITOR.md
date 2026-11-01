@@ -53,6 +53,13 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/code-editor/use-code-keys.ts`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/query-field.spec.ts`
 
+### UIC-CODE-EDITOR-1.8 - Resizing
+
+`resize` shall publish `data-resize`: `vertical` (the default) lets the reader resize the surface's height, `both` its height and width, and `none` neither; a single-line editor publishes `none` whatever `resize` says. The reference sheet puts the grip on the surface, not the text area, so the text area, the highlighted copy and the gutter resize together. With `both`, the frame wraps the surface, which keeps its starting width, grows sideways only into the room its container gives it, shrinks to 200 pixels and takes the toolbar, search row and problem list with it; a code field takes the same width. Soft-wrapped lines rewrap, and the text, caret, selection and focus stay. The field variant passes `resize` to its surface.
+
+Implementation: `src/components/code-editor/code-surface.tsx`, `src/components/code-editor/use-code-surface.ts`, `labs/reference/code-editor.css`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+
 ## UIC-CODE-EDITOR-2 - Line numbers
 
 ### UIC-CODE-EDITOR-2.1 - Gutter
@@ -420,6 +427,7 @@ Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.sp
 | `ui-code-editor__popover`       | slot      |                                                                                        | The completion list (also `ui-completion-list`).                         |
 | `ui-code-editor__search`        | slot      |                                                                                        | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
 | `data-size`                     | attribute | `sm`, `md`, `lg`                                                                       | Starting height and source metrics.                                      |
+| `data-resize`                   | attribute | `vertical`, `both`, `none`                                                             | Which way the reader may resize the surface.                             |
 | `data-wrap`                     | attribute | `soft`, `off`                                                                          | Whether long lines wrap.                                                 |
 | `data-token`                    | attribute |                                                                                        | On a token: its type, from the caller's tokenizer.                       |
 | `data-numbered`                 | state     | `true`                                                                                 | The gutter shows.                                                        |

@@ -79,6 +79,49 @@
   height: 280px;
 }
 
+/*
+ * Resizing: the surface's height by default. With both sides, the frame wraps the surface, which
+ * keeps the starting width, grows sideways only into the room its container gives it and shrinks
+ * to a usable minimum; the toolbar, search row and problem list take the surface's width.
+ */
+.ui-code-editor[data-resize='both'] .ui-code-editor__surface {
+  min-width: 200px;
+  max-width: 100%;
+  resize: both;
+}
+
+.ui-code-editor[data-resize='none'] .ui-code-editor__surface {
+  resize: none;
+}
+
+.ui-code-editor[data-variant='surface'][data-resize='both'] {
+  width: fit-content;
+  min-width: 0;
+}
+
+.ui-code-editor[data-variant='surface'][data-resize='both'] > .ui-code-editor__surface {
+  width: 418px;
+}
+
+.ui-code-editor[data-variant='surface'][data-resize='both'] > :not(.ui-code-editor__surface) {
+  box-sizing: border-box;
+  width: 0;
+  min-width: 100%;
+}
+
+.ui-code-editor[data-variant='field']:has(.ui-code-editor[data-resize='both']) {
+  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-code-editor .ui-field__control > .ui-code-editor[data-resize='both'] {
+  flex: 0 1 auto;
+  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* One line: the surface is one line tall and does not resize. */
 .ui-code-editor[data-single-line] .ui-code-editor__surface {
   height: calc(var(--ref-code-editor-line) + 2 * var(--ref-code-editor-pad));

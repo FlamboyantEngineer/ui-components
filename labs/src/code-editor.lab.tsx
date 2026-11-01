@@ -442,6 +442,46 @@ mountLab(
         />
       </LabSection>
       <LabSection
+        title="Resizing sideways"
+        description="With resize set to both, drag the grip at the surface's bottom corner sideways as well as down: the frame, toolbar and problem list follow the surface, which grows only into the dashed box's width and shrinks to 200 pixels. The text, caret and selection stay put and soft-wrapped lines rewrap. The default resizes the height only; a single-line editor never resizes."
+      >
+        <div
+          data-lab-demo="resize"
+          style={{
+            display: 'grid',
+            gap: 12,
+            width: 640,
+            maxWidth: '100%',
+            padding: 4,
+            border: '1px dashed currentColor',
+          }}
+        >
+          <Editor
+            aria-label="Resizable source"
+            data-lab-editor="resize-both"
+            resize="both"
+            lineNumbers
+            toolbar={<span>Drag the corner sideways</span>}
+            diagnostics={[{ message: 'Unknown name "baskets".', line: 2 }]}
+          />
+          <CodeEditor
+            label="Resizable field"
+            data-lab-editor="resize-field"
+            resize="both"
+            defaultValue={sample}
+            tokenize={tokenize}
+          />
+          <Editor aria-label="Height only" data-lab-editor="resize-vertical" size="sm" />
+          <Editor
+            aria-label="Single line"
+            data-lab-editor="resize-single"
+            multiline={false}
+            resize="both"
+            initialValue="pick(fruit.ripe)"
+          />
+        </div>
+      </LabSection>
+      <LabSection
         title="Blank first line"
         description="The text starts with a line break. With the caret at the very start, Tab indents the blank first line to the next stop."
       >
