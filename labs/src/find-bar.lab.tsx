@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { FindBar, type FindBarProps } from '../../src/components/find-bar/find-bar.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -150,6 +151,38 @@ function Passage() {
   );
 }
 
+/** An uncontrolled bar whose options and replace controls come and go (UIC-FIND-BAR-1.7). */
+function ChangingControls() {
+  const [hasOptions, setHasOptions] = useState(true);
+  const [canReplace, setCanReplace] = useState(true);
+  const [reported, setReported] = useState('none');
+  const [replaced, setReplaced] = useState('nothing yet');
+  return (
+    <div data-lab-case="changing-controls">
+      <FindBar
+        label="Find in the notes"
+        defaultQuery="pear"
+        matchCount={3}
+        currentIndex={0}
+        options={hasOptions ? options : []}
+        onSelectedOptionsChange={(keys) => setReported([...keys].join(', ') || 'none')}
+        defaultReplacement="plum"
+        onReplace={canReplace ? (replacement) => setReplaced(replacement) : undefined}
+      />
+      <Checkbox isSelected={hasOptions} onChange={setHasOptions}>
+        Offer matching options
+      </Checkbox>
+      <Checkbox isSelected={canReplace} onChange={setCanReplace}>
+        Allow replacing
+      </Checkbox>
+      <p>
+        Reported options: <output data-lab-output="reported">{reported}</output>; replaced with:{' '}
+        <output data-lab-output="replaced">{replaced}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -172,6 +205,12 @@ mountLab(
       description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar (an Escape that cancels an input method candidate only cancels it). Ctrl+F in the passage opens it again."
     >
       <Passage />
+    </LabSection>
+    <LabSection
+      title="Controls that come and go"
+      description="An uncontrolled bar. Turn on an option or type a replacement, then turn the options or replacing off and on again: the bar keeps what you chose and typed, and the options menu returns closed."
+    >
+      <ChangingControls />
     </LabSection>
   </>,
 );

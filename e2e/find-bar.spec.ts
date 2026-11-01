@@ -115,6 +115,35 @@ test.describe('Find Bar lab', () => {
     await expect(status).toHaveText('No results');
   });
 
+  test('UIC-FIND-BAR-1.7 keeps chosen options and typed replacement while their controls are gone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('find-bar');
+    const area = page.locator('[data-lab-case="changing-controls"]');
+    await area.getByRole('button', { name: 'Find options' }).click();
+    const menu = page.getByRole('menu', { name: 'Find options' });
+    await menu.getByRole('menuitemcheckbox', { name: 'Match case' }).click();
+    await page.keyboard.press('Escape');
+    await expect(area.locator('[data-lab-output="reported"]')).toHaveText('case');
+    await area.getByRole('textbox', { name: 'Replace with' }).fill('fig');
+    await area.getByText('Offer matching options').click();
+    await area.getByText('Allow replacing').click();
+    await expect(area.getByRole('button', { name: 'Find options' })).toHaveCount(0);
+    await expect(area.getByRole('textbox', { name: 'Replace with' })).toHaveCount(0);
+    await area.getByText('Offer matching options').click();
+    await area.getByText('Allow replacing').click();
+    await expect(area.getByRole('textbox', { name: 'Replace with' })).toHaveValue('fig');
+    await area.getByRole('button', { name: 'Replace', exact: true }).click();
+    await expect(area.locator('[data-lab-output="replaced"]')).toHaveText('fig');
+    await area.getByRole('button', { name: 'Find options' }).click();
+    await expect(menu.getByRole('menuitemcheckbox', { name: 'Match case' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(area.locator('[data-lab-output="reported"]')).toHaveText('case');
+  });
+
   test('UIC-FIND-BAR-1.6 closes on Escape and Close, and the caller reopens it with Ctrl+F', async ({
     page,
     lab,
