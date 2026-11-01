@@ -34,11 +34,11 @@ test.describe('Select Field tree choices lab', () => {
     );
     await expect(cell('mode=multiple display=label').locator('.ui-select-field__chip')).toHaveText([
       'Portugal',
-      'Quito',
+      'Ecuador',
     ]);
     await expect(cell('mode=multiple display=path').locator('.ui-select-field__chip')).toHaveText([
       'Europe/Portugal',
-      'Americas/Ecuador/Quito',
+      'Americas/Ecuador',
     ]);
     await expect(
       cell('state=disabled layout=label-control').getByRole('button').first(),
@@ -90,7 +90,7 @@ test.describe('Select Field tree choices lab', () => {
       .getByRole('button', { name: /Expand/ })
       .click();
     await dialog.getByRole('row', { name: 'Norway' }).locator('.ui-tree__checkbox').click();
-    await expect(output(page, 'cascade')).toHaveText('norway, oslo, bergen, tromso');
+    await expect(output(page, 'cascade')).toHaveText('oslo, bergen, tromso');
     await expect(dialog).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
@@ -102,6 +102,36 @@ test.describe('Select Field tree choices lab', () => {
     const second = await openPopover(page, stops.locator('.ui-select-field__trigger'), 'Stops');
     await second.getByRole('row', { name: 'Europe' }).locator('.ui-tree__checkbox').click();
     await expect(output(page, 'independent')).toHaveText('europe');
+  });
+
+  test('UIC-SELECT-FIELD-9.6 opens branches on press and chooses leaves, or open branches when asked', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const city = field(page, 'leaves');
+    const dialog = await openPopover(page, city.locator('.ui-select-field__trigger'), 'City');
+    const europe = dialog.getByRole('row', { name: 'Europe' });
+    await europe.click();
+    await expect(europe).toHaveAttribute('aria-expanded', 'true');
+    await expect(dialog).toBeVisible();
+    await europe.click();
+    await expect(europe).toHaveAttribute('aria-expanded', 'false');
+    await europe.click();
+    await dialog.getByRole('row', { name: 'Norway' }).click();
+    await dialog.getByRole('row', { name: 'Bergen' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(output(page, 'leaves')).toHaveText('bergen');
+    const area = field(page, 'branches');
+    const second = await openPopover(page, area.locator('.ui-select-field__trigger'), 'Area');
+    const americas = second.getByRole('row', { name: 'Americas' });
+    await americas.click();
+    await expect(americas).toHaveAttribute('aria-expanded', 'true');
+    await expect(output(page, 'branches')).toHaveText('null');
+    await americas.click();
+    await expect(second).toHaveCount(0);
+    await expect(output(page, 'branches')).toHaveText('americas');
+    await expect(area.locator('.ui-select-field__value')).toHaveText('Americas');
   });
 
   test('UIC-SELECT-FIELD-10.4 UIC-SELECT-FIELD-9.5 loads a branch lazily', async ({

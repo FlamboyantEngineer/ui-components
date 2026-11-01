@@ -225,15 +225,117 @@ describe('SelectTreeField', () => {
     }
     render(<Controlled />);
     await user.click(row('Americas'));
+    await user.click(row('Peru'));
+    expect(onCommit).toHaveBeenLastCalledWith('peru');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.click(trigger('Place Peru'));
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('peru');
+    await user.click(trigger('Place Peru'));
+    await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown}{ArrowRight}{ArrowDown}{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('oslo');
+    await waitFor(() => expect(trigger('Place Oslo')).toHaveFocus());
+  });
+
+  it('UIC-SELECT-FIELD-9.6 opens a branch on press and chooses only leaves by default', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        onCommit={onCommit}
+        defaultOpen
+      />,
+    );
+    await user.click(row('Europe'));
+    expect(row('Europe')).toHaveAttribute('aria-expanded', 'true');
+    expect(row('Europe')).toHaveAttribute('aria-selected', 'false');
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await user.click(row('Europe'));
+    expect(row('Europe')).toHaveAttribute('aria-expanded', 'false');
+    // Enter and Space open and close a branch from the keyboard as well.
+    row('Americas').focus();
+    await user.keyboard('{Enter}');
+    expect(row('Americas')).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard(' ');
+    expect(row('Americas')).toHaveAttribute('aria-expanded', 'false');
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.keyboard('{Enter}{ArrowDown}{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('peru');
+  });
+
+  it('UIC-SELECT-FIELD-9.6 chooses an open branch with selectableBranches', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        selectableBranches
+        onCommit={onCommit}
+        defaultOpen
+      />,
+    );
+    await user.click(row('Americas'));
+    expect(row('Americas')).toHaveAttribute('aria-expanded', 'true');
+    expect(onCommit).not.toHaveBeenCalled();
+    // The expand button still closes it without choosing.
+    const expand = row('Americas').querySelector('[slot="chevron"]');
+    if (!(expand instanceof HTMLElement)) throw new Error('no expand button');
+    await user.click(expand);
+    expect(row('Americas')).toHaveAttribute('aria-expanded', 'false');
+    await user.click(row('Americas'));
+    await user.click(row('Americas'));
     expect(onCommit).toHaveBeenLastCalledWith('americas');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(trigger('Place Americas'));
-    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
-    expect(onCommit).toHaveBeenLastCalledWith('americas');
-    await user.click(trigger('Place Americas'));
-    await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown}{Enter}');
-    expect(onCommit).toHaveBeenLastCalledWith('norway');
-    await waitFor(() => expect(trigger('Place Norway')).toHaveFocus());
+    row('Europe').focus();
+    await user.keyboard('{Enter}');
+    expect(row('Europe')).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('europe');
+  });
+
+  it('UIC-SELECT-FIELD-9.6 chooses a branch’s leaves from its checkbox in a multiple choice', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <SelectField
+        mode="tree"
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        selectionMode="multiple"
+        onChange={onChange}
+        defaultOpen
+      />,
+    );
+    await user.click(row('Europe'));
+    expect(row('Europe')).toHaveAttribute('aria-expanded', 'true');
+    expect(onChange).not.toHaveBeenCalled();
+    await user.click(within(row('Norway')).getByRole('checkbox'));
+    expect(onChange).toHaveBeenLastCalledWith(['oslo', 'bergen']);
+    expect(row('Norway')).toHaveAttribute('aria-selected', 'true');
+    await user.click(row('Portugal'));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    await user.click(row('Lisbon'));
+    expect(onChange).toHaveBeenLastCalledWith(['oslo', 'bergen', 'lisbon']);
+    expect(row('Europe')).toHaveAttribute('aria-selected', 'true');
+    await user.keyboard('{Escape}');
+    const chips = screen.getByRole('grid', { name: 'Place selected values' });
+    expect(
+      within(chips)
+        .getAllByRole('row')
+        .map((chip) => chip.textContent),
+    ).toEqual(['Europe']);
+    await user.click(within(chips).getByRole('button', { name: 'Remove Europe' }));
+    expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
   it('UIC-SELECT-FIELD-9.4 reads a chosen node as its path', () => {
@@ -407,6 +509,7 @@ describe('SelectTreeField', () => {
         items={places}
         getTextValue={getTextValue}
         selectionMode="multiple"
+        selectableBranches
         defaultValue={['peru']}
         onChange={onChange}
       />,
@@ -455,6 +558,7 @@ describe('SelectTreeField', () => {
         getTextValue={getTextValue}
         selectionMode="multiple"
         selectionPropagation={false}
+        selectableBranches
         defaultValue={['europe', 'oslo']}
         onChange={onChange}
       />,
