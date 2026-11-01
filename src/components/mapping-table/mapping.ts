@@ -1,5 +1,7 @@
 // The plain data of a column mapping: suggestions, and the counts and problems a mapping has.
 
+import { readOwn } from '../../utils/read-own.js';
+
 /** A column of the source data, such as a column of a spreadsheet being imported. */
 export interface MappingTableColumn {
   /** Unique among the columns: the key of the column's target in the mapping. */
@@ -36,7 +38,10 @@ export interface MappingSummary {
   skippedCount: number;
   /** The ids of the required targets no column maps to, in target order. */
   unmappedRequired: readonly string[];
-  /** The ids of the columns mapped to each target that more than one column maps to. */
+  /**
+   * The ids of the columns mapped to each target that more than one column maps to. It inherits
+   * nothing, so a target id such as `constructor` reads only its own entry.
+   */
   duplicates: Readonly<Record<string, readonly string[]>>;
   /** Every required target is mapped. Duplicates warn without blocking. */
   isComplete: boolean;
@@ -63,7 +68,7 @@ export function readMappedTarget(
   column: string,
   targets: readonly MappingTableTarget[],
 ): string | null {
-  const target = value[column] ?? null;
+  const target = readOwn(value, column) ?? null;
   return target !== null && targets.some((candidate) => candidate.id === target) ? target : null;
 }
 
@@ -82,7 +87,8 @@ export function summarizeMapping(
   const unmappedRequired = targets
     .filter((target) => target.isRequired && !sources.has(target.id))
     .map((target) => target.id);
-  const duplicates = Object.fromEntries([...sources].filter(([, ids]) => ids.length > 1));
+  const duplicates: Record<string, readonly string[]> = Object.create(null);
+  for (const [target, ids] of sources) if (ids.length > 1) duplicates[target] = ids;
   return {
     mappedCount,
     skippedCount: columns.length - mappedCount,

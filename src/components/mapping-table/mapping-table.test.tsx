@@ -181,4 +181,44 @@ describe('MappingTable', { timeout: 15_000 }, () => {
       'true',
     );
   });
+
+  it.each(['constructor', '__proto__', 'toString', 'plain'])(
+    'UIC-MAPPING-TABLE-1.5 maps columns to a target named %s without reading inherited entries',
+    (id) => {
+      const named: MappingTableTarget[] = [{ id, label: 'Target' }];
+      const pair: MappingTableColumn[] = [
+        { id: 'a', label: 'Alpha' },
+        { id: 'b', label: 'Blue' },
+      ];
+      const view = (value: MappingTableValue) => (
+        <MappingTable columns={pair} targets={named} value={value} onChange={() => undefined} />
+      );
+      const { rerender } = render(view({}));
+      expect(row('a')).not.toHaveAttribute('data-duplicate');
+      rerender(view({ a: id }));
+      expect(row('a')).not.toHaveAttribute('data-duplicate');
+      expect(choice('Alpha')).toHaveTextContent('Target');
+      rerender(view({ a: id, b: id }));
+      expect(row('a')).toHaveTextContent('Target is also mapped from Blue.');
+      expect(row('b')).toHaveAttribute('data-duplicate', 'true');
+      rerender(view({ a: null, b: id }));
+      expect(row('b')).not.toHaveAttribute('data-duplicate');
+      expect(choice('Blue')).toHaveTextContent('Target');
+    },
+  );
+
+  it('UIC-MAPPING-TABLE-1.5 reads a column named like an inherited property as unmapped until set', () => {
+    const view = (value: MappingTableValue) => (
+      <MappingTable
+        columns={[{ id: 'constructor', label: 'Builder' }]}
+        targets={targets}
+        value={value}
+        onChange={() => undefined}
+      />
+    );
+    const { rerender } = render(view({}));
+    expect(choice('Builder')).toHaveTextContent('Don’t import');
+    rerender(view(Object.fromEntries([['constructor', 'city']])));
+    expect(choice('Builder')).toHaveTextContent('City');
+  });
 });

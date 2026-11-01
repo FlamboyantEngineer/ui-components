@@ -27,20 +27,22 @@ const targets: MappingTableTarget[] = [
   { id: 'phone', label: 'Phone' },
   { id: 'city', label: 'City' },
   { id: 'company', label: 'Company' },
+  // An id objects inherit a property under: it maps and warns like any other (UIC-MAPPING-TABLE-1.5).
+  { id: 'constructor', label: 'Builder' },
 ];
 
-const synonyms: Readonly<Record<string, readonly string[]>> = {
-  name: ['name', 'fullname'],
-  email: ['email', 'mail'],
-  phone: ['phone', 'telephone', 'mobile'],
-  city: ['city', 'town'],
-};
+const synonyms = new Map<string, readonly string[]>([
+  ['name', ['name', 'fullname']],
+  ['email', ['email', 'mail']],
+  ['phone', ['phone', 'telephone', 'mobile']],
+  ['city', ['city', 'town']],
+]);
 
 const normalize = (text: string) => text.toLowerCase().replace(/[^a-z]/g, '');
 
 /** Matches a column's name against each target's name and a few synonyms. */
 const suggestTarget: MappingTableSuggest = (source, choices) =>
-  choices.find((target) => (synonyms[target.id] ?? []).includes(normalize(source.label)))?.id ??
+  choices.find((target) => (synonyms.get(target.id) ?? []).includes(normalize(source.label)))?.id ??
   null;
 
 const suggested = suggestMapping(columns, targets, suggestTarget);
@@ -98,7 +100,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Mapping"
-      description="Choose a target or Don’t import for each column. The import button waits until every required target is mapped."
+      description="Choose a target or Don’t import for each column. The import button waits until every required target is mapped. Builder's id is constructor, a name every object inherits; choosing it for two columns warns like any other target."
     >
       <LiveMapping />
     </LabSection>
