@@ -2,7 +2,6 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
-import { useUiStrings } from '../../core/provider.js';
 import { Field, FieldFormValue, useFieldControl, type FieldInputProps } from '../field/field.js';
 import {
   createEditorPlugins,
@@ -57,17 +56,13 @@ function DocumentFormValue({
  * document as JSON. Its toolbar and floating chrome drive it through `useRichTextController`.
  */
 export function RichTextEditor(props: RichTextEditorProps) {
-  const strings = useUiStrings();
   const schema = props.schema ?? getDefaultRichTextSchema();
   const engine = getEngineSchema(schema);
   const empty = useMemo(() => createEmptyDocument(engine), [engine]);
   const fieldControl = useFieldControl<RichTextDocument, RichTextEditorProps>(props, {
     initialValue: empty,
     emptyValue: empty,
-    check: (value) =>
-      props.isRequired && isDocumentBlank(value, engine)
-        ? { severity: 'error', message: strings.valueRequired, validity: 'valueMissing' }
-        : null,
+    isEmpty: (value) => isDocumentBlank(value, engine),
     isEqual: isRichTextEqual,
     hasOwnHistory: true,
   });

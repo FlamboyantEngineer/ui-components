@@ -256,6 +256,23 @@ mountLab(
       <LockedScrub />
     </LabSection>
     <LabSection
+      title="Unreadable values"
+      description="NaN and the infinities read as no value in every base: the field shows empty, a required one asks for a value, and the form submits nothing."
+    >
+      <StateMatrix
+        axes={{ given: ['NaN', 'Infinity', '-Infinity'], base: ['decimal', 'hexadecimal'] }}
+        render={({ given, base }) => (
+          <NumberField
+            label="Count"
+            isRequired
+            validationMode="immediate"
+            radix={base === 'decimal' ? 10 : 16}
+            defaultValue={Number(given)}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Fine steps"
       description="Alt with an arrow preserves tiny decimal increments."
     >

@@ -80,6 +80,24 @@ export function checkTag(
   return checkTagAgainst(tag, { length: value.length, has: (tag) => value.includes(tag) }, rules);
 }
 
+/** Whether the tags hold no tag with text: a list of blank tags is as empty as no tags. */
+export function hasNoTagText(value: readonly string[]): boolean {
+  return value.every((tag) => tag.trim() === '');
+}
+
+/** The first tag a given value repeats, as an issue, while the field refuses duplicates. */
+export function checkGivenTags(value: readonly string[], rules: TagRules): FieldIssue | null {
+  if (rules.allowsDuplicates) return null;
+  const repeated = value.find((tag, index) => value.indexOf(tag) !== index);
+  return repeated === undefined
+    ? null
+    : {
+        severity: 'error',
+        message: rules.strings.duplicateValue(repeated),
+        validity: 'customError',
+      };
+}
+
 /**
  * Turns entered text into tags, trimmed, skipping empty ones. With `keepLast` the text after the
  * last delimiter stays in the input, as it is still being typed. Refused tags stay in the input

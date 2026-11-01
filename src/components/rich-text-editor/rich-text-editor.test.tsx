@@ -527,12 +527,15 @@ describe('RichTextEditor', () => {
       [blank([empty, { type: 'paragraph', content: [{ type: 'text', text: ' a' }] }]), undefined],
     ];
     const validation = () => getContent().closest('.ui-field')?.getAttribute('data-validation');
+    const filling = () => getContent().closest('.ui-field')?.getAttribute('data-filled');
     const { rerender } = render(<RichTextEditor label="Notes" isRequired />);
+    expect(filling()).toBeNull();
     for (const [index, document] of blanks.entries()) {
       rerender(
         <RichTextEditor key={`blank ${index}`} label="Notes" isRequired defaultValue={document} />,
       );
       expect(validation()).toBe('invalid');
+      expect(filling()).toBeNull();
     }
     for (const [index, [document, custom]] of filled.entries()) {
       rerender(
@@ -545,6 +548,7 @@ describe('RichTextEditor', () => {
         />,
       );
       expect(validation()).toBe('valid');
+      expect(filling()).toBe('true');
     }
   });
 

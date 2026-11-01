@@ -9,7 +9,14 @@ import {
   type FieldInputProps,
   type FieldTextInputProps,
 } from '../field/field.js';
-import { checkTag, hasTagDelimiter, resolveTagEntry, type TagRules } from './tag-entry.js';
+import {
+  checkGivenTags,
+  checkTag,
+  hasNoTagText,
+  hasTagDelimiter,
+  resolveTagEntry,
+  type TagRules,
+} from './tag-entry.js';
 import { TagsInputControl, tagsInputHooks as hooks } from './tags-input-parts.js';
 
 export interface TagsInputProps extends FieldInputProps<string[]>, FieldTextInputProps {
@@ -68,7 +75,8 @@ export function TagsInput({
   const { state, field, rest } = useFieldControl(props, {
     initialValue: [],
     emptyValue: [],
-    check: findRejection,
+    isEmpty: hasNoTagText,
+    check: (value) => findRejection(value) ?? checkGivenTags(value, rules),
   });
   const rejection = findRejection(state.value);
   const enter = (entered: string, keepLast: boolean) => {

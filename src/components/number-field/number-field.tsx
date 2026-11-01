@@ -93,10 +93,15 @@ function isOnStep(value: number, step: number, origin: number): boolean {
   return Math.abs(steps - Math.round(steps)) < stepTolerance;
 }
 
+/** A finite number: NaN and the infinities read as no value, shown and submitted empty. */
+function isReadableNumber(value: number | null): value is number {
+  return value !== null && Number.isFinite(value);
+}
+
 /** The range and step error of a value, if any. An empty value passes; requiring one is the field's. */
 function checkNumber(value: number | null, rules: NumberRules): FieldIssue | null {
   const { minValue, maxValue, step, format, strings } = rules;
-  if (value === null) return null;
+  if (!isReadableNumber(value)) return null;
   if (rules.radix !== 10 && !Number.isSafeInteger(value))
     return {
       severity: 'error',
@@ -144,9 +149,14 @@ export function NumberField({
   const strings = useUiStrings();
   const { minValue, maxValue, step, formatOptions } = props;
   const formatter = useNumberFormatter(formatOptions);
-  const { state, field, rest } = useFieldControl(props, {
+  const {
+    state: held,
+    field,
+    rest,
+  } = useFieldControl(props, {
     initialValue: null,
     emptyValue: null,
+    isEmpty: (value) => !isReadableNumber(value),
     check: (value) =>
       checkNumber(value, {
         radix,
@@ -158,13 +168,15 @@ export function NumberField({
         strings,
       }),
   });
+  // A non-finite value reaches the controls as empty, as the field judges it.
+  const state = isReadableNumber(held.value) ? held : { ...held, value: null };
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
   const data = { hideStepper, radix };
   return (
     <Field
       {...field}
       {...hooks.root({ className: field.className, data })}
-      state={state}
+      state={held}
       commitOnBlur
     >
       {(control) => {
