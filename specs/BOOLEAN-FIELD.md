@@ -6,7 +6,7 @@
 
 ### UIC-BOOLEAN-FIELD-1.1 - Field control
 
-`BooleanField` shall render a `Field` around its control, built with `useFieldControl`, and take the field's props. Its root element is the field's root, which carries `ui-boolean-field` beside `ui-field` and publishes the value in `data-value` (`true`, `false` or `unset`). A field given no value, committed value or default starts unset. A required field is invalid while unset; `false` is a value.
+`BooleanField` shall render a `Field` around its control, built with `useFieldControl`, and take the field's props. Its root element is the field's root, which carries `ui-boolean-field` beside `ui-field` and publishes the value in `data-value` (`true`, `false` or `unset`). A field given no value, committed value or default starts `false` when it is a two-state control (the `checkbox`, `switch` or `toggle-button` variant without `allowsUnset`), and unset otherwise (the `segmented` and `dropdown` variants, and any variant with `allowsUnset`), so an ordinary checkbox never starts mixed. `isRequired` asks a two-state control for consent: only `true` fills it, like a required native checkbox, so `false` leaves it invalid with the required message. It asks the other variants for an answer: they are invalid while unset, and `false` is a value. An explicit `null` value still shows unset in any variant.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`, `src/components/field/field-control.ts`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`

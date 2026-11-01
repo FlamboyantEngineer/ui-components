@@ -20,6 +20,31 @@ const variants = [
   'toggle-button',
 ] as const satisfies readonly BooleanFieldVariant[];
 
+const twoState = new Set<BooleanFieldVariant>(['checkbox', 'switch', 'toggle-button']);
+
+/** Required means consent on a two-state control and a picked value on a choice. */
+function Required() {
+  return (
+    <>
+      <BooleanField
+        label="Accept the terms"
+        isRequired
+        description="Starts unchecked; required asks for a tick."
+        data-lab-field="required-consent"
+      />
+      <BooleanField
+        label="Share the report"
+        variant="segmented"
+        trueLabel="Share"
+        falseLabel="Keep private"
+        isRequired
+        description="Starts with nothing picked; either answer fills it."
+        data-lab-field="required-choice"
+      />
+    </>
+  );
+}
+
 function Sample({
   state,
   layout,
@@ -34,7 +59,8 @@ function Sample({
     edited: false,
     invalid: false,
     warning: true,
-    empty: null,
+    // A checkbox, switch or toggle button holds on or off; only a choice starts unset.
+    empty: twoState.has(variant) ? false : null,
   });
   return <BooleanField label="Ripe" labelLayout={layout} variant={variant} {...props} />;
 }
@@ -159,6 +185,12 @@ mountLab(
       description="Switch captions, segment and option names, and a toggle button that keeps the width of its widest name."
     >
       <Labels />
+    </LabSection>
+    <LabSection
+      title="Required: consent or an answer"
+      description="A checkbox, switch or toggle button starts false, and required asks for true, as consent does. The segmented and dropdown variants start with nothing picked, and required asks for either answer: false is a value. Only allowsUnset makes a checkbox mixed."
+    >
+      <Required />
     </LabSection>
     <LabSection
       title="Returning to unset"
