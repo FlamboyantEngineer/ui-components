@@ -189,6 +189,28 @@ describe('NavigationRail', () => {
     expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('260px');
   });
 
+  it.each([
+    ['collapsed', { isCollapsed: true }],
+    ['made fixed', { isResizable: false }],
+  ])('UIC-NAVIGATION-RAIL-1.3 drops a drag when the rail is %s mid-drag', async (_, change) => {
+    const user = userEvent.setup();
+    const onWidthChange = vi.fn();
+    const props = { isResizable: true, isCollapsed: false, onWidthChange };
+    const { rerender } = render(<Rail {...props} />);
+    const handle = screen.getByRole('separator');
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle, coords: { clientX: 240 } },
+      { coords: { clientX: 285 } },
+    ]);
+    expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('285px');
+    rerender(<Rail {...props} {...change} />);
+    await user.pointer({ keys: '[/MouseLeft]' });
+    rerender(<Rail {...props} />);
+    expect(onWidthChange).not.toHaveBeenCalled();
+    expect(nav()).not.toHaveAttribute('data-resizing');
+    expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('240px');
+  });
+
   it('UIC-NAVIGATION-RAIL-1.3 draws a width outside the bounds at the nearest bound', () => {
     render(<Rail isResizable width={900} />);
     expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('400px');

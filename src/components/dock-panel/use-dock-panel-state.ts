@@ -39,6 +39,8 @@ export interface DockPanelState {
   changeSize: (size: number) => void;
   /** The size after a drag or a key step, which a persisted panel saves. */
   commitSize: (size: number) => void;
+  /** Drops the size of a drag abandoned without an end. */
+  cancelSize: () => void;
   /**
    * Changes with the persist key, the storage and the bounds: a drag or a live size taken for
    * another owner is dropped, never committed.
@@ -111,6 +113,7 @@ export function useDockPanelState(options: DockPanelStateOptions): DockPanelStat
       setLiveSize(null);
       commitSize(size);
     },
+    cancelSize: () => setLiveSize(null),
     sizeOwner,
   };
 }

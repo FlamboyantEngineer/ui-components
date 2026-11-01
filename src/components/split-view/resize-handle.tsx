@@ -1,6 +1,13 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
@@ -56,6 +63,12 @@ export interface ResizeHandleProps
   onChangeEnd?: ((value: number) => void) | undefined;
   /** Called when a pointer drag starts and ends. */
   onResizingChange?: ((isResizing: boolean) => void) | undefined;
+  /**
+   * A drag abandoned without an end: the handle unmounted, became disabled, or its `resetKey`,
+   * orientation, sized pane or writing direction changed. A preview of the drag's values held
+   * outside the handle should be dropped.
+   */
+  onChangeCancel?: (() => void) | undefined;
   /** Ignore pointer and keyboard input and leave the tab order. */
   isDisabled?: boolean | undefined;
   /**
@@ -74,7 +87,7 @@ interface Drag {
 type ResizeInteractionOptions = ResizeKeyboardInput &
   Pick<
     ResizeHandleProps,
-    'onChange' | 'onChangeEnd' | 'onResizingChange' | 'isDisabled' | 'resetKey'
+    'onChange' | 'onChangeEnd' | 'onResizingChange' | 'onChangeCancel' | 'isDisabled' | 'resetKey'
   > & {
     getUnitsPerPixel: () => number;
   };
@@ -97,12 +110,18 @@ function chain<E>(first: ((event: E) => void) | undefined, second: (event: E) =>
 function useResizeInteraction(options: ResizeInteractionOptions) {
   const { orientation, value, minValue, maxValue, getUnitsPerPixel, onChange, onChangeEnd } =
     options;
-  const { sizedPane = 'before', direction = 'ltr', onResizingChange } = options;
+  const { sizedPane = 'before', direction = 'ltr', onResizingChange, onChangeCancel } = options;
   const [isResizing, setResizing] = useState(false);
   // Pointer travel toward the inline end (or down) grows the pane before the separator.
   const sign =
     (orientation === 'vertical' && direction === 'rtl' ? -1 : 1) *
     (sizedPane === 'before' ? 1 : -1);
+  // A drag belongs to the axis and direction it began on, as well as to the caller's reset key.
+  const geometry = `${orientation}:${sign}`;
+  const resetKey = useMemo(
+    () => ({ owner: options.resetKey, geometry }),
+    [options.resetKey, geometry],
+  );
   const latest = useRef(value);
   useLayoutEffect(() => {
     if (!isResizing) latest.current = value;
@@ -124,8 +143,12 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
   };
   const pointer = usePointerDrag<HTMLDivElement, Drag>({
     isDisabled: options.isDisabled,
-    resetKey: options.resetKey,
-    onCancel: () => changeResizing(false),
+    resetKey,
+    cancelsOnUnmount: true,
+    onCancel: () => {
+      changeResizing(false);
+      onChangeCancel?.();
+    },
     onStart: (event) => {
       event.preventDefault();
       latest.current = value;
@@ -193,6 +216,7 @@ export function ResizeHandle({
   onChange,
   onChangeEnd,
   onResizingChange,
+  onChangeCancel,
   isDisabled = false,
   resetKey,
   className,
@@ -211,6 +235,7 @@ export function ResizeHandle({
     onChange,
     onChangeEnd,
     onResizingChange,
+    onChangeCancel,
     isDisabled,
     resetKey,
   });

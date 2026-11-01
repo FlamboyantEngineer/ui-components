@@ -537,6 +537,38 @@ describe('DockPanel size', () => {
   });
 });
 
+describe('DockPanel abandoned resize', () => {
+  it('UIC-DOCK-PANEL-3.2 drops a drag when the panel collapses mid-drag', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<Panel isExpanded />);
+    const separator = screen.getByRole('separator');
+    prepareCapture(separator);
+    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
+    await user.pointer({ target: separator, coords: { clientX: 545 } });
+    expect(root(container).style.width).toBe('275px');
+    rerender(<Panel isExpanded={false} />);
+    await user.pointer({ keys: '[/MouseLeft]', target: container, coords: { clientX: 545 } });
+    rerender(<Panel isExpanded />);
+    expect(root(container)).not.toHaveAttribute('data-resizing');
+    expect(root(container).style.width).toBe('320px');
+  });
+
+  it('UIC-DOCK-PANEL-3.2 drops a drag when the panel moves to another edge', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(<Panel />);
+    const separator = screen.getByRole('separator');
+    prepareCapture(separator);
+    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
+    await user.pointer({ target: separator, coords: { clientX: 545 } });
+    rerender(<Panel position="bottom" />);
+    expect(root(container)).not.toHaveAttribute('data-resizing');
+    expect(root(container).style.height).toBe('320px');
+    await user.pointer({ target: separator, coords: { clientX: 545, clientY: 200 } });
+    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientY: 200 } });
+    expect(root(container).style.height).toBe('320px');
+  });
+});
+
 describe('DockPanel persistence', () => {
   function persisted(storage: UiStorage, props: Partial<DockPanelProps> = {}) {
     return (

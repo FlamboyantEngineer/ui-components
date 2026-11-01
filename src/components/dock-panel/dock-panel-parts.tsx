@@ -151,6 +151,7 @@ export function DockPanelSeparator({
       aria-controls={bodyId}
       onChange={state.changeSize}
       onChangeEnd={state.commitSize}
+      onChangeCancel={state.cancelSize}
       onResizingChange={onResizingChange}
       resetKey={state.sizeOwner}
     />

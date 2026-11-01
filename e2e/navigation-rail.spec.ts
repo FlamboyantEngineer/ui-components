@@ -131,6 +131,33 @@ test.describe('Navigation Rail lab', () => {
     await expect(reloaded.getByRole('separator')).toHaveAttribute('aria-valuenow', '280');
   });
 
+  test('UIC-NAVIGATION-RAIL-1.3 drops a drag when the rail collapses during it', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('navigation-rail');
+    const demo = page.locator('[data-lab-demo="collapsed-mid-drag"]');
+    const rail = demo.getByRole('navigation', { name: 'Pantry navigation' });
+    const handle = rail.getByRole('separator', { name: 'Resize navigation' });
+    await handle.scrollIntoViewIfNeeded();
+    const box = await handle.boundingBox();
+    if (!box) throw new Error('The resize handle has no box');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 45, box.y + box.height / 2, { steps: 3 });
+    await expect(rail).toHaveAttribute('data-resizing', 'true');
+    await page.clock.runFor(1000);
+    await expect(rail).toHaveAttribute('data-collapsed', 'true');
+    await page.mouse.up();
+    await rail.getByRole('button', { name: 'Expand navigation' }).click();
+    await expect(rail.getByRole('separator')).toHaveAttribute('aria-valuenow', '240');
+    await expect(rail).not.toHaveAttribute('data-resizing');
+    await expect(demo.locator('[data-lab-output="committed width"]')).toHaveText(
+      'No width committed',
+    );
+  });
+
   test('UIC-NAVIGATION-RAIL-3.1 passes axe', async ({ page, lab }) => {
     await lab.open('navigation-rail');
     await expect(page.locator('#lab-root .ui-navigation-rail').first()).toBeAttached();

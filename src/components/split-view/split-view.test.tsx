@@ -652,6 +652,79 @@ describe('SplitView panes', () => {
 });
 
 describe('ResizeHandle', () => {
+  const handleProps = {
+    value: 300,
+    minValue: 120,
+    maxValue: 640,
+    'aria-label': 'Resize details',
+  };
+
+  it('UIC-SPLIT-VIEW-3.4 abandons a drag when the handle unmounts and reports the cancel', () => {
+    const onChangeCancel = vi.fn();
+    const onResizingChange = vi.fn();
+    const onChangeEnd = vi.fn();
+    const { unmount } = render(
+      <ResizeHandle
+        {...handleProps}
+        orientation="vertical"
+        onChangeCancel={onChangeCancel}
+        onResizingChange={onResizingChange}
+        onChangeEnd={onChangeEnd}
+      />,
+    );
+    const handle = screen.getByRole('separator', { name: 'Resize details' });
+    Object.assign(handle, { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() });
+    pointer('pointerDown', handle, { clientX: 100 });
+    unmount();
+    expect(onResizingChange.mock.calls).toEqual([[true], [false]]);
+    expect(onChangeCancel).toHaveBeenCalledOnce();
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['orientation', { orientation: 'horizontal' as const }],
+    ['sized pane', { sizedPane: 'after' as const }],
+  ])('UIC-SPLIT-VIEW-3.4 abandons a drag when its %s changes', (_, change) => {
+    const onChange = vi.fn();
+    const onChangeEnd = vi.fn();
+    const onChangeCancel = vi.fn();
+    const props = { ...handleProps, onChange, onChangeEnd, onChangeCancel };
+    const { rerender } = render(<ResizeHandle {...props} orientation="vertical" />);
+    const handle = screen.getByRole('separator', { name: 'Resize details' });
+    Object.assign(handle, { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() });
+    pointer('pointerDown', handle, { clientX: 100, clientY: 400 });
+    rerender(<ResizeHandle {...props} orientation="vertical" {...change} />);
+    expect(onChangeCancel).toHaveBeenCalledOnce();
+    expect(handle).not.toHaveAttribute('data-resizing');
+    pointer('pointerMove', handle, { clientX: 140, clientY: 300 });
+    pointer('pointerUp', handle, { clientX: 140, clientY: 300 });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
+  it('UIC-SPLIT-VIEW-3.4 abandons a drag when the writing direction changes', () => {
+    const onChangeEnd = vi.fn();
+    const onChangeCancel = vi.fn();
+    const handle = (locale: string) => (
+      <UiProvider locale={locale}>
+        <ResizeHandle
+          {...handleProps}
+          orientation="vertical"
+          onChangeEnd={onChangeEnd}
+          onChangeCancel={onChangeCancel}
+        />
+      </UiProvider>
+    );
+    const { rerender } = render(handle('en-US'));
+    const separator = screen.getByRole('separator', { name: 'Resize details' });
+    Object.assign(separator, { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() });
+    pointer('pointerDown', separator, { clientX: 100 });
+    rerender(handle('he-IL'));
+    expect(onChangeCancel).toHaveBeenCalledOnce();
+    pointer('pointerUp', separator, { clientX: 140 });
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
   it('UIC-SPLIT-VIEW-3.1 is a focusable separator across the split reporting its rounded value and bounds', () => {
     const { container, rerender } = render(resizable({ defaultSize: 33.4 }));
     const separator = screen.getByRole('separator');
