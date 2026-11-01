@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode, Ref } from 'react';
-import type { BaseProps, ContainerProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ContainerProps, ControlSize, Orientation } from '../../core/props.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
@@ -75,6 +75,11 @@ export interface ResizableSplitViewProps extends SplitViewBaseProps {
   onSizeChangeEnd?: ((size: number) => void) | undefined;
   /** Restores and saves the uncontrolled sizes through the provider storage under this key. */
   persistKey?: string | undefined;
+  /**
+   * How thick the separators are drawn (`xs` to `lg`), unlike `size`, which sizes the first pane.
+   * Defaults to `md`.
+   */
+  separatorSize?: ControlSize | undefined;
   /** The separators' accessible name, or one per separator by index. Defaults to `resize`. */
   separatorLabel?: string | ((index: number) => string) | undefined;
   /** Called with a pane's index when it collapses. */

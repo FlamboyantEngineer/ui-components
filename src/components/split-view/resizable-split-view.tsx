@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useImperativeHandle, useState, type KeyboardEvent } from 'react';
-import type { Orientation } from '../../core/props.js';
+import type { ControlSize, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -34,6 +34,7 @@ interface SeparatorHandleProps {
   getLength: () => number;
   label: string;
   controls: string;
+  size: ControlSize | undefined;
   onResizingChange: (isResizing: boolean) => void;
 }
 
@@ -110,6 +111,7 @@ function SeparatorHandle({
       }}
       aria-label={handle.label}
       aria-controls={handle.controls}
+      size={handle.size}
       onResizingChange={handle.onResizingChange}
       resetKey={split.owner}
       onChange={(value) => split.update(apply(value), 'change')}
@@ -126,6 +128,7 @@ export function ResizableSplitView({
   orientation = 'horizontal',
   panes,
   separatorLabel,
+  separatorSize,
   handleRef,
   grow,
   fill,
@@ -178,6 +181,7 @@ export function ResizableSplitView({
               getLength={getLength}
               label={labelOf(index - 1)}
               controls={`${ids[index - 1]} ${ids[index]}`}
+              size={separatorSize}
               onResizingChange={setResizing}
             />
           ) : null}
