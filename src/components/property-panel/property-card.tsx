@@ -1,5 +1,6 @@
 'use client';
 
+import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import type { ReactNode } from 'react';
 import {
   Button as AriaButton,
@@ -109,9 +110,11 @@ export function PropertyCard({
           {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
         </div>
         <DisclosurePanel className={hooks.slotClass('body')}>
-          <FieldScopeContext value={fieldScope}>
-            <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
-          </FieldScopeContext>
+          <DisclosureContentScope>
+            <FieldScopeContext value={fieldScope}>
+              <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
+            </FieldScopeContext>
+          </DisclosureContentScope>
         </DisclosurePanel>
       </Disclosure>
     </DisclosureGroupStateContext>

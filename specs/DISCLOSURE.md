@@ -73,9 +73,9 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-3.1 - Accordion
 
-`DisclosureGroup` shall render a `ui-disclosure-group` element whose disclosures expand by their `id`: by default opening one closes the one open before, and `allowsMultipleExpanded` lets several stay open.
+`DisclosureGroup` shall render a `ui-disclosure-group` element whose disclosures expand by their `id`: by default opening one closes the one open before, and `allowsMultipleExpanded` lets several stay open. Only the group's own disclosures join it: a disclosure's panel scopes its content out of the disclosure, so a disclosure inside a panel keeps its own `defaultExpanded` or `isExpanded` state and never changes the group's keys, and an expand toggle inside a panel owns its state rather than taking the disclosure's (UIC-EXPAND-TOGGLE-1.7). `PropertySection` and `PropertyCard` panels scope their content the same way.
 
-Implementation: `src/components/disclosure/disclosure.tsx`
+Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
 
 ### UIC-DISCLOSURE-3.2 - Expanded keys

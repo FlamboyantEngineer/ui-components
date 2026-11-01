@@ -48,10 +48,10 @@ Verification: `src/components/expand-toggle/expand-toggle.test.tsx`
 
 ### UIC-EXPAND-TOGGLE-1.7 - Disclosure trigger
 
-Inside a React Aria `Disclosure` the toggle shall be the disclosure's trigger (`slot="trigger"`): it shows and toggles the disclosure's expanded state, and React Aria gives it `aria-expanded`, its id and `aria-controls` naming the `DisclosurePanel`, which React Aria labels by the toggle and sizes with its own measured panel height for animation. `isExpanded` and `defaultExpanded` give way to the disclosure's state; `onExpandedChange` still reports each press. A disabled disclosure, or one in a disabled `DisclosureGroup`, disables the toggle: it leaves the tab order and reports nothing, and is enabled again with the disclosure. Its chevron, name and `data-expanded` follow the disclosure.
+Inside a React Aria `Disclosure` the toggle shall be the disclosure's trigger (`slot="trigger"`): it shows and toggles the disclosure's expanded state, and React Aria gives it `aria-expanded`, its id and `aria-controls` naming the `DisclosurePanel`, which React Aria labels by the toggle and sizes with its own measured panel height for animation. `isExpanded` and `defaultExpanded` give way to the disclosure's state; `onExpandedChange` still reports each press. A disabled disclosure, or one in a disabled `DisclosureGroup`, disables the toggle: it leaves the tab order and reports nothing, and is enabled again with the disclosure. Its chevron, name and `data-expanded` follow the disclosure. Only a toggle in the disclosure itself is its trigger: one inside the disclosure's panel, such as an `Outline` or `Board` lane toggle, owns its own state and `aria-expanded` (UIC-DISCLOSURE-3.1).
 
-Implementation: `src/components/expand-toggle/expand-toggle.tsx`
-Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`, `src/components/button/button-slot.test.tsx`
+Implementation: `src/components/expand-toggle/expand-toggle.tsx`, `src/components/disclosure/disclosure-parts.tsx`
+Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`, `src/components/button/button-slot.test.tsx`, `src/components/disclosure/disclosure.test.tsx`
 
 ### UIC-EXPAND-TOGGLE-1.8 - Loading children
 

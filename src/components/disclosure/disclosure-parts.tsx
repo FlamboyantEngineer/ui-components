@@ -146,14 +146,30 @@ export function DisclosureTitle({
 }
 
 /**
- * The content a disclosure shows and hides. It stays mounted while
- * collapsed, and headings inside take the levels below the disclosure's title.
+ * Scopes a disclosure panel's content out of its disclosure: a disclosure inside keeps its own
+ * state instead of joining the enclosing group, and an expand toggle inside owns its state instead
+ * of showing and toggling the enclosing disclosure.
+ */
+export function DisclosureContentScope({ children }: { children: ReactNode }) {
+  return (
+    <DisclosureGroupStateContext value={null}>
+      <DisclosureStateContext value={null}>{children}</DisclosureStateContext>
+    </DisclosureGroupStateContext>
+  );
+}
+
+/**
+ * The content a disclosure shows and hides. It stays mounted while collapsed, headings inside take
+ * the levels below the disclosure's title, and the disclosures and expand toggles inside are its
+ * content's own (`DisclosureContentScope`).
  */
 export function DisclosurePanel({ className, children, ...rest }: DisclosurePanelProps) {
   const { level } = useContext(DisclosurePartsContext);
   return (
     <AriaDisclosurePanel {...rest} className={mergeClassNames(hooks.slotClass('panel'), className)}>
-      <HeadingLevelContext value={level}>{children}</HeadingLevelContext>
+      <HeadingLevelContext value={level}>
+        <DisclosureContentScope>{children}</DisclosureContentScope>
+      </HeadingLevelContext>
     </AriaDisclosurePanel>
   );
 }

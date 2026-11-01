@@ -9,6 +9,7 @@ import {
   DisclosurePanel,
   DisclosureTitle,
 } from '../../src/components/disclosure/disclosure.js';
+import { Outline } from '../../src/components/outline/outline.js';
 import { HeadingLevelContext } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -153,6 +154,34 @@ function DisabledGroup() {
   );
 }
 
+/** An accordion section holding its own disclosure, and a disclosure holding an outline. */
+function NestedContent() {
+  return (
+    <div style={column(360)} data-lab-demo="nested-content">
+      <DisclosureGroup defaultExpandedKeys={['delivery']}>
+        <Disclosure id="delivery" title="Delivery">
+          <p>Ships in two days.</p>
+          <Disclosure title="Advanced delivery">
+            <p>Leave with a neighbour.</p>
+          </Disclosure>
+        </Disclosure>
+        <Disclosure id="returns" title="Returns">
+          <p>Free within a month.</p>
+        </Disclosure>
+      </DisclosureGroup>
+      <Disclosure title="Contents" defaultExpanded>
+        <Outline
+          aria-label="Guide contents"
+          headings={[
+            { id: 'start', label: 'Getting started', level: 1 },
+            { id: 'install', label: 'Install', level: 2 },
+          ]}
+        />
+      </Disclosure>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -210,6 +239,12 @@ mountLab(
       description="A disabled group disables every trigger and keeps the open disclosure open."
     >
       <DisabledGroup />
+    </LabSection>
+    <LabSection
+      title="Nested content"
+      description="A disclosure inside an accordion section keeps its own state: opening Advanced delivery leaves Delivery open. The outline inside Contents owns its toggles: closing Getting started leaves Contents open."
+    >
+      <NestedContent />
     </LabSection>
     <LabSection
       title="Find in page"
