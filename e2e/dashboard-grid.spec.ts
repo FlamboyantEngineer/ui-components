@@ -83,6 +83,29 @@ test.describe('Dashboard Grid lab', () => {
     await expect(grid.locator('[data-moving]')).toHaveCount(0);
   });
 
+  test('UIC-DASHBOARD-GRID-2.2 drops a drag the browser cancels', async ({ page, lab }) => {
+    await lab.open('dashboard-grid');
+    const grid = overview(page).getByRole('group', { name: 'Overview' });
+    const before = await layout(page).textContent();
+    const handle = grid.getByRole('button', { name: 'Move Visitors' });
+    await handle.hover();
+    const box = requireDefined(await handle.boundingBox());
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 200, { steps: 4 });
+    const visitors = grid.getByRole('group', { name: 'Visitors', exact: true });
+    await expect(visitors).toHaveAttribute('data-moving', 'true');
+    // The mouse's pointer is 1 in Chromium; the browser cancels it as it would a taken-over touch.
+    await page.evaluate(() =>
+      window.dispatchEvent(
+        new PointerEvent('pointercancel', { pointerId: 1, pointerType: 'mouse', bubbles: true }),
+      ),
+    );
+    await expect(grid.locator('[data-moving]')).toHaveCount(0);
+    await page.mouse.up();
+    await expect(layout(page)).toHaveText(requireDefined(before));
+    await expect(grid.getByRole('status')).toHaveText('');
+  });
+
   test('UIC-DASHBOARD-GRID-2.7 keeps tiles added during a drag and stops a drag whose tile goes', async ({
     page,
     lab,

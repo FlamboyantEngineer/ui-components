@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, type DOMAttributes } from 'react';
+import { useEffect, useRef, type DOMAttributes, type PointerEvent } from 'react';
 import { useLocale, useMove } from '../../primitives/index.js';
 import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 
 /** `move` shifts a tile; `resize` changes its span from its bottom end corner. */
@@ -72,6 +73,36 @@ function resolveMovedItem(
 }
 
 /**
+ * Whether the pointer that pressed the handle ended by a cancellation (`pointercancel`, such as a
+ * touch the browser takes over for scrolling) rather than a release. React Aria ends a move the
+ * same way for both, so the handle listens for its pointer's end before React Aria does.
+ */
+function usePointerCancellation() {
+  const cancelled = useRef(false);
+  const onPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    cancelled.current = false;
+    const { pointerId } = event;
+    const owner = getOwnerWindow(event.currentTarget);
+    const onEnd = (end: globalThis.PointerEvent) => {
+      if (end.pointerId !== pointerId) return;
+      cancelled.current = end.type === 'pointercancel';
+      owner.removeEventListener('pointerup', onEnd, true);
+      owner.removeEventListener('pointercancel', onEnd, true);
+    };
+    owner.addEventListener('pointerup', onEnd, true);
+    owner.addEventListener('pointercancel', onEnd, true);
+  };
+  /** Whether the last pointer was cancelled, forgetting it. */
+  const take = () => {
+    const wasCancelled = cancelled.current;
+    cancelled.current = false;
+    return wasCancelled;
+  };
+  return { onPointerDown, take };
+}
+
+/**
  * Pointer drags and arrow keys that move or resize a tile by whole cells. A pointer move snaps to
  * the nearest cell, and previews again only when it reaches another cell; each arrow key press
  * moves one cell, toward the inline end for the right arrow in left-to-right text and the left
@@ -80,6 +111,7 @@ function resolveMovedItem(
 export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonElement> {
   const { direction } = useLocale();
   const start = useRef<MoveStart | null>(null);
+  const cancellation = usePointerCancellation();
   const sign = direction === 'rtl' ? -1 : 1;
   const { moveProps } = useMove({
     onMoveStart: () => {
@@ -110,7 +142,10 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
     onMoveEnd: (event) => {
       const active = start.current;
       start.current = null;
-      if (active) options.onCommit(active.session, event.pointerType === 'keyboard');
+      if (!active) return;
+      // A cancelled pointer keeps nothing: the tile goes back to its committed cells.
+      if (cancellation.take()) options.onAbandon(active.session);
+      else options.onCommit(active.session, event.pointerType === 'keyboard');
     },
   });
   // A handle that unmounts mid-gesture ends it: its pointer can never commit afterwards.
@@ -129,6 +164,10 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
     ...moveProps,
     onKeyDown: (event) => {
       if (isFreeEditKey(event.nativeEvent) && !event.shiftKey) onKeyDown?.(event);
+    },
+    onPointerDown: (event) => {
+      cancellation.onPointerDown(event);
+      moveProps.onPointerDown?.(event);
     },
   };
 }
