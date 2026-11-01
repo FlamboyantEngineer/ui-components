@@ -125,4 +125,76 @@ describe('emoji support', { timeout: 15_000 }, () => {
     await user.type(screen.getByRole('searchbox'), 'melting');
     expect(screen.getByRole('row', { name: 'melting face' })).toBeInTheDocument();
   });
+
+  it('UIC-EMOJI-PICKER-5.1 counts a canvas that fails to build or read back as unknown, and measures again', () => {
+    const unknown = { version: undefined, countryFlags: true };
+    vi.stubGlobal('OffscreenCanvas', function Refused() {
+      throw new DOMException('Canvas refused', 'SecurityError');
+    });
+    expect(detectEmojiSupport('Refused')).toEqual(unknown);
+    vi.stubGlobal('OffscreenCanvas', function NoContext() {
+      return {
+        getContext: () => {
+          throw new Error('No context for you');
+        },
+      };
+    });
+    expect(detectEmojiSupport('Refused')).toEqual(unknown);
+    const { constructed } = stubPlatform(() => 'colour');
+    const realGetImageData = vi.fn(() => {
+      throw new DOMException('The canvas has been tainted by cross-origin data.', 'SecurityError');
+    });
+    vi.stubGlobal('OffscreenCanvas', function Tainted(width: number, height: number) {
+      constructed(width, height);
+      return {
+        getContext: () => ({
+          font: '',
+          textBaseline: '',
+          fillStyle: '',
+          clearRect() {},
+          fillText() {},
+          measureText: () => ({ width: 16 }),
+          getImageData: realGetImageData,
+        }),
+      };
+    });
+    expect(detectEmojiSupport('Refused')).toEqual(unknown);
+    expect(realGetImageData).toHaveBeenCalled();
+    // No failure was kept: a canvas that works now measures.
+    stubPlatform(() => 'colour');
+    expect(detectEmojiSupport('Refused')).toEqual({ version: 17, countryFlags: true });
+  });
+
+  it('UIC-EMOJI-PICKER-5.1 shows the picker when readback is denied, and renderEmoji skips the canvas', async () => {
+    const constructed = vi.fn();
+    vi.stubGlobal('OffscreenCanvas', function Denied() {
+      constructed();
+      return {
+        getContext: () => ({
+          font: '',
+          textBaseline: '',
+          fillStyle: '',
+          clearRect() {},
+          fillText() {},
+          measureText: () => ({ width: 16 }),
+          getImageData() {
+            throw new DOMException('Readback denied', 'SecurityError');
+          },
+        }),
+      };
+    });
+    // A font of its own, so no earlier measurement answers for it.
+    const { unmount } = render(
+      <div style={{ fontFamily: 'Denied' }}>
+        <EmojiPicker loadEmoji={loadFixture} />
+      </div>,
+    );
+    expect(await screen.findByRole('row', { name: 'grinning face' })).toBeInTheDocument();
+    expect(constructed).toHaveBeenCalled();
+    unmount();
+    constructed.mockClear();
+    render(<EmojiPicker loadEmoji={loadFixture} renderEmoji={(unicode) => unicode} />);
+    expect(await screen.findByRole('row', { name: 'grinning face' })).toBeInTheDocument();
+    expect(constructed).not.toHaveBeenCalled();
+  });
 });

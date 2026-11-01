@@ -369,6 +369,105 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ unicode: '😀' }));
   });
 
+  it('UIC-EMOJI-PICKER-2.1 chooses nothing on Enter while the emoji load or failed to', async () => {
+    const onSelect = vi.fn();
+    const onRecentEmojiChange = vi.fn();
+    let finish: (data: NativeEmoji[]) => void = () => {};
+    const pending = () =>
+      new Promise<NativeEmoji[]>((resolve) => {
+        finish = resolve;
+      });
+    const props = { customEmoji: [parrot], onSelect, onRecentEmojiChange };
+    const { unmount } = render(<EmojiPicker {...props} loadEmoji={pending} />);
+    const search = screen.getByRole('searchbox');
+    await userEvent.click(search);
+    await userEvent.keyboard('{Enter}');
+    await userEvent.type(search, 'parrot');
+    await userEvent.keyboard('{Enter}{ArrowDown}');
+    expect(screen.getByRole('status')).toHaveTextContent('Loading');
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onRecentEmojiChange).not.toHaveBeenCalled();
+    await act(async () => finish(fixture));
+    await screen.findByRole('row', { name: ':party_parrot:' });
+    await userEvent.click(search);
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    unmount();
+
+    onSelect.mockClear();
+    render(<EmojiPicker {...props} loadEmoji={() => Promise.reject(new Error('offline'))} />);
+    expect(await screen.findByRole('status')).toHaveTextContent('Emoji could not be loaded.');
+    await userEvent.click(screen.getByRole('searchbox'));
+    await userEvent.keyboard('{Enter}');
+    await userEvent.type(screen.getByRole('searchbox'), 'parrot');
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('UIC-EMOJI-PICKER-2.1 UIC-EMOJI-PICKER-3.1 keeps a loading popover open on Enter', async () => {
+    const onSelect = vi.fn();
+    render(
+      <EmojiPickerTrigger
+        loadEmoji={() => new Promise<NativeEmoji[]>(() => {})}
+        customEmoji={[parrot]}
+        onSelect={onSelect}
+      >
+        <Button>React</Button>
+      </EmojiPickerTrigger>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'React' }));
+    await screen.findByRole('dialog', { name: 'Emoji picker' });
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Emoji picker' })).toBeInTheDocument();
+  });
+
+  it('UIC-EMOJI-PICKER-2.1 moves down to the first emoji after the grid was moved through', async () => {
+    await renderPicker();
+    const grid = screen.getByRole('grid', { name: 'Smileys & Emotion' });
+    await userEvent.click(within(grid).getByRole('row', { name: 'slightly smiling face' }));
+    await userEvent.click(screen.getByRole('searchbox'));
+    await userEvent.keyboard('{ArrowDown}');
+    expect(within(grid).getByRole('row', { name: 'grinning face' })).toHaveFocus();
+    await userEvent.type(screen.getByRole('searchbox'), 'smile');
+    await userEvent.keyboard('{ArrowDown}');
+    const results = screen.getByRole('grid', { name: 'Search results' });
+    expect(within(results).getAllByRole('row')[0]).toHaveFocus();
+    // Nothing to move to: focus stays in the field.
+    await userEvent.clear(screen.getByRole('searchbox'));
+    await userEvent.type(screen.getByRole('searchbox'), 'zzz');
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('searchbox')).toHaveFocus();
+  });
+
+  it('UIC-EMOJI-PICKER-1.6 UIC-EMOJI-PICKER-2.1 moves down to the first emoji of a virtualized grid scrolled past it', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(304);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(160);
+    const user = userEvent.setup();
+    const many: CustomEmoji[] = Array.from({ length: 400 }, (_, index) => ({
+      shortcode: `sticker_${index}`,
+      src: `/sticker-${index}.png`,
+    }));
+    render(<EmojiPicker loadEmoji={loadFixture} customEmoji={many} virtualized />);
+    const grid = await screen.findByRole('grid', { name: 'Custom' });
+    await user.click(within(grid).getByRole('row', { name: ':sticker_0:' }));
+    await user.keyboard('{End}');
+    await waitFor(() =>
+      expect(within(grid).getByRole('row', { name: ':sticker_399:' })).toHaveFocus(),
+    );
+    // jsdom does not scroll by itself: scroll the grid to its end as a browser would.
+    grid.scrollTop = 1500;
+    fireEvent.scroll(grid);
+    await waitFor(() =>
+      expect(within(grid).queryByRole('row', { name: ':sticker_0:' })).not.toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole('searchbox'));
+    await user.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(within(grid).getByRole('row', { name: ':sticker_0:' })).toHaveFocus(),
+    );
+  });
+
   it('UIC-EMOJI-PICKER-2.2 UIC-EMOJI-PICKER-2.3 fills the recent and custom tabs from data', async () => {
     await renderPicker({
       recentEmoji: ['👍🏾', ':missing:', ':party_parrot:'],

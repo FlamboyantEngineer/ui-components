@@ -108,6 +108,8 @@ export interface EmojiPickerState {
   grid: EmojiGridOptions;
   /** The grid shown, which Down in the search field moves to. */
   gridRef: RefObject<HTMLDivElement | null>;
+  /** Moves focus to the first emoji of the grid shown, mounted or not; nothing without a grid. */
+  enterGrid(): void;
   tone: SkinTone;
   setTone(tone: SkinTone): void;
   /**
@@ -115,7 +117,7 @@ export interface EmojiPickerState {
    * that show it.
    */
   activeEmoji: ValueStore<EmojiEntry | null>;
-  /** Chooses the first emoji shown, for Enter in the search field. */
+  /** Chooses the first emoji shown, for Enter in the search field; nothing while none is shown. */
   chooseFirst(): void;
   autoFocus: boolean | undefined;
 }
@@ -287,8 +289,11 @@ export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPick
   const [tabId, setTabId] = useState<string>();
   const [activeEmoji] = useState(() => createValueStore<EmojiEntry | null>(null));
   const gridRef = useRef<HTMLDivElement>(null);
+  const [isEntering, setEntering] = useState(false);
   const tab = tabs.find((item) => item.id === tabId) ?? tabs[0];
-  const first = search.isSearching ? search.results[0] : tab?.entries[0];
+  // The body shows no emoji, custom ones included, while the standard ones load or failed to.
+  const isShown = data.emoji !== null && !data.failed;
+  const first = isShown ? (search.isSearching ? search.results[0] : tab?.entries[0]) : undefined;
   return {
     data,
     search,
@@ -302,8 +307,13 @@ export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPick
       renderEmoji: options.renderEmoji,
       gridRef,
       virtualized: options.virtualized,
+      focusOnEntry: isEntering ? 'first' : undefined,
+      onEntered: () => setEntering(false),
     },
     gridRef,
+    enterGrid: () => {
+      if (gridRef.current) setEntering(true);
+    },
     tone,
     setTone,
     activeEmoji,
