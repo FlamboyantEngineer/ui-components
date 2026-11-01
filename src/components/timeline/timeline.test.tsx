@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
@@ -513,6 +514,104 @@ describe('Timeline', () => {
     },
   );
 
+  it.each([
+    ['moved dates', { start: '2026-03-15', end: '2026-03-19' }, {}],
+    ['a milestone', { kind: 'milestone' as const, end: undefined }, {}],
+    ['an equal copy at another scale', {}, { scale: 'week' as const }],
+    ['an equal copy in another direction', {}, { locale: 'he-IL' }],
+  ])(
+    'UIC-TIMELINE-2.1 gives up a drag when the host replaces the item with %s',
+    async (_name, replaced, props) => {
+      const user = userEvent.setup();
+      const onItemChange = vi.fn();
+      const plan = (
+        list: TimelineItem[],
+        { locale = 'en-US', ...extra }: Partial<TimelineProps> & { locale?: string } = {},
+      ) => (
+        <UiProvider locale={locale}>
+          <Timeline
+            aria-label="Kitchen plan"
+            rows={rows}
+            items={list}
+            range={march}
+            scale="day"
+            onItemChange={onItemChange}
+            {...extra}
+          />
+        </UiProvider>
+      );
+      const { rerender } = render(plan(items));
+      for (const edge of ['move', 'start', 'end'] as const) {
+        const bar = item('Measure rooms');
+        const target =
+          edge === 'move' ? bar : requireDefined(bar.querySelector(`[data-edge="${edge}"]`));
+        capturePointer(bar);
+        capturePointer(target as HTMLElement);
+        await user.pointer([
+          { keys: '[MouseLeft>]', target, coords: { clientX: 100 } },
+          { coords: { clientX: 164 } },
+        ]);
+        expect(bar).toHaveAttribute('data-dragging', 'true');
+        const fresh = items.map((entry) =>
+          entry.id === 'measure' ? { ...entry, ...replaced } : { ...entry },
+        );
+        rerender(plan(fresh, props));
+        expect(item('Measure rooms')).not.toHaveAttribute('data-dragging');
+        await user.pointer({ keys: '[/MouseLeft]' });
+        expect(onItemChange).not.toHaveBeenCalled();
+        rerender(plan(items));
+      }
+      const bar = item('Measure rooms');
+      expect(bar.style.left).toBe('32px');
+      capturePointer(bar);
+      await drag(user, bar, 100, 164);
+      expect(onItemChange).toHaveBeenCalledExactlyOnceWith({
+        id: 'measure',
+        start: '2026-03-04',
+        end: '2026-03-08',
+      });
+    },
+  );
+
+  it('UIC-TIMELINE-2.1 keeps a drag through equal copies of its item and changes to others', async () => {
+    const user = userEvent.setup();
+    const onItemChange = vi.fn();
+    const plan = (list: TimelineItem[]) => (
+      <UiProvider locale="en-US">
+        <Timeline
+          aria-label="Kitchen plan"
+          rows={rows}
+          items={list}
+          range={march}
+          scale="day"
+          onItemChange={onItemChange}
+        />
+      </UiProvider>
+    );
+    const { rerender } = render(plan(items));
+    const bar = item('Measure rooms');
+    capturePointer(bar);
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: bar, coords: { clientX: 100 } },
+      { coords: { clientX: 164 } },
+    ]);
+    rerender(
+      plan(
+        items.map((entry) =>
+          entry.id === 'quote' ? { ...entry, label: 'Get three quotes' } : { ...entry },
+        ),
+      ),
+    );
+    expect(item('Measure rooms')).toHaveAttribute('data-dragging', 'true');
+    expect(item('Measure rooms').style.left).toBe(`${3 * 32}px`);
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onItemChange).toHaveBeenCalledExactlyOnceWith({
+      id: 'measure',
+      start: '2026-03-04',
+      end: '2026-03-08',
+    });
+  });
+
   it('UIC-TIMELINE-2.1 drops a cancelled drag and ignores a press that does not move', async () => {
     const user = userEvent.setup();
     const onItemChange = vi.fn();
@@ -550,6 +649,34 @@ describe('Timeline', () => {
       start: '2026-03-20',
       end: '2026-03-20',
     });
+  });
+
+  it('UIC-TIMELINE-2.2 edits only on plain arrows and Shift with arrows', async () => {
+    const user = userEvent.setup();
+    const onItemChange = vi.fn();
+    render(<OwnedTimeline onItemChange={onItemChange} />);
+    for (const name of ['Measure rooms', 'Handover']) {
+      const target = item(name);
+      target.focus();
+      for (const chord of ['Control', 'Alt', 'Meta']) {
+        await user.keyboard(`{${chord}>}{ArrowRight}{ArrowLeft}{/${chord}}`);
+      }
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot mark a key as composing.
+      fireEvent.keyDown(target, { key: 'ArrowRight', isComposing: true });
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot send key code 229.
+      fireEvent.keyDown(target, { key: 'ArrowRight', keyCode: 229 });
+      const handled = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        bubbles: true,
+        cancelable: true,
+      });
+      handled.preventDefault();
+      target.dispatchEvent(handled);
+      expect(onItemChange).not.toHaveBeenCalled();
+    }
+    item('Measure rooms').focus();
+    await user.keyboard('{Shift>}{ArrowRight}{/Shift}{ArrowRight}');
+    expect(onItemChange).toHaveBeenCalledTimes(2);
   });
 
   it('UIC-TIMELINE-2.3 keeps items fixed without a change handler or when read-only', async () => {
@@ -597,6 +724,73 @@ describe('Timeline', () => {
     );
     await user.click(item('Handover'));
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['quote', 'done']));
+  });
+
+  it('UIC-TIMELINE-2.4 reconciles the selection with the selection mode', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const plan = (selectionMode: TimelineProps['selectionMode']) => (
+      <Timeline
+        aria-label="Plan"
+        rows={rows}
+        items={items}
+        range={march}
+        selectionMode={selectionMode}
+        defaultSelectedKeys={['quote', 'measure']}
+        onSelectionChange={onSelectionChange}
+      />
+    );
+    const { rerender } = render(plan('multiple'));
+    expect(item('Measure rooms')).toHaveAttribute('aria-pressed', 'true');
+    expect(item('Get quotes')).toHaveAttribute('aria-pressed', 'true');
+    rerender(plan('single'));
+    expect(item('Measure rooms')).toHaveAttribute('aria-pressed', 'true');
+    expect(item('Get quotes')).toHaveAttribute('aria-pressed', 'false');
+    expect(item('Get quotes')).not.toHaveAttribute('data-selected');
+    rerender(plan('none'));
+    expect(item('Measure rooms')).not.toHaveAttribute('aria-pressed');
+    expect(item('Measure rooms')).not.toHaveAttribute('data-selected');
+    rerender(plan('multiple'));
+    await user.click(item('Handover'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['measure', 'quote', 'done']));
+    rerender(plan('single'));
+    await user.click(item('Get quotes'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['quote']));
+  });
+
+  it('UIC-TIMELINE-2.4 forgets removed items and follows items that arrive later', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const plan = (list: TimelineItem[], keys?: 'all' | Key[], view?: 'table') => (
+      <UiProvider locale="en-US">
+        <Timeline
+          aria-label="Plan"
+          rows={rows}
+          items={list}
+          range={march}
+          selectionMode="multiple"
+          defaultSelectedKeys={keys}
+          view={view}
+          onSelectionChange={onSelectionChange}
+        />
+      </UiProvider>
+    );
+    const { rerender, unmount } = render(plan(items, ['measure']));
+    rerender(plan(items.filter((entry) => entry.id !== 'measure')));
+    await user.click(item('Get quotes'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['quote']));
+    rerender(plan(items));
+    expect(item('Measure rooms')).toHaveAttribute('aria-pressed', 'false');
+    rerender(plan(items, undefined, 'table'));
+    const table = screen.getByRole('grid', { name: 'Plan' });
+    expect(within(table).getAllByRole('row', { selected: true })).toHaveLength(1);
+    unmount();
+    const view = render(plan([], 'all'));
+    view.rerender(plan(items, 'all'));
+    expect(item('Measure rooms')).toHaveAttribute('aria-pressed', 'true');
+    expect(item('Handover')).toHaveAttribute('aria-pressed', 'true');
+    await user.click(item('Handover'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['measure', 'quote', 'walls']));
   });
 
   it('UIC-TIMELINE-2.1 UIC-TIMELINE-2.4 selects from the keyboard after a cancelled drag', async () => {
@@ -652,6 +846,91 @@ describe('Timeline', () => {
     expect(first).toHaveTextContent('40%');
     await user.click(requireDefined(within(table).getAllByRole('checkbox')[2]));
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['quote']));
+  });
+
+  it('UIC-TIMELINE-1.5 UIC-TIMELINE-3.1 reads progress alike in the chart and the table', () => {
+    const values: [string, number | undefined, string][] = [
+      ['None', undefined, ''],
+      ['Not a number', Number.NaN, ''],
+      ['Endless', Number.POSITIVE_INFINITY, ''],
+      ['Endless back', Number.NEGATIVE_INFINITY, ''],
+      ['Behind', -0.5, '0%'],
+      ['Zero', 0, '0%'],
+      ['Done', 1, '100%'],
+      ['Over', 1.5, '100%'],
+    ];
+    const progressItems: TimelineItem[] = [
+      ...values.map(([label, progress], index) => ({
+        id: `p${index}`,
+        rowId: 'build',
+        label,
+        start: '2026-03-02',
+        end: '2026-03-06',
+        progress,
+      })),
+      {
+        id: 'm',
+        rowId: 'build',
+        label: 'Mark',
+        start: '2026-03-09',
+        kind: 'milestone',
+        progress: 0.5,
+      },
+    ];
+    const { rerender } = renderTimeline({ items: progressItems });
+    for (const [label, , shown] of values) {
+      const bar = item(label);
+      const fill = bar.querySelector<HTMLElement>('.ui-timeline__progress');
+      if (shown === '') expect(fill).toBeNull();
+      else expect(fill?.style.width).toBe(shown);
+    }
+    expect(item('Mark').querySelector('.ui-timeline__progress')).toBeNull();
+    rerender(
+      <UiProvider locale="en-US">
+        <Timeline
+          aria-label="Kitchen plan"
+          rows={rows}
+          items={progressItems}
+          range={march}
+          view="table"
+        />
+      </UiProvider>,
+    );
+    const table = screen.getByRole('grid', { name: 'Kitchen plan' });
+    const progressOf = (label: string) => {
+      const header = within(table).getByRole('rowheader', { name: label });
+      return requireDefined(header.closest('[role="row"]')?.lastElementChild).textContent;
+    };
+    for (const [label, , shown] of values) expect(progressOf(label)).toBe(shown);
+    expect(progressOf('Mark')).toBe('');
+  });
+
+  it('UIC-TIMELINE-1.2 leaves out items outside the range and cuts bars at its ends', () => {
+    const edges: TimelineItem[] = [
+      { id: 'in', rowId: 'build', label: 'Inside', start: '2026-03-03', end: '2026-03-04' },
+      { id: 'out', rowId: 'build', label: 'Outside', start: '2026-05-01', end: '2026-05-05' },
+      { id: 'before', rowId: 'build', label: 'Before', start: '2026-01-05', end: '2026-02-27' },
+      { id: 'early', rowId: 'survey', label: 'Early', start: '2026-02-25', end: '2026-03-02' },
+      { id: 'late', rowId: 'budget', label: 'Late', start: '2026-03-30', end: '2026-04-09' },
+      { id: 'first', rowId: 'survey', label: 'First', start: '2026-03-01', kind: 'milestone' },
+      { id: 'last', rowId: 'budget', label: 'Last', start: '2026-03-31', kind: 'milestone' },
+      { id: 'after', rowId: 'budget', label: 'After', start: '2026-04-01', kind: 'milestone' },
+    ];
+    const { rerender } = renderTimeline({ items: edges });
+    expect(screen.queryByRole('button', { name: 'Outside' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Before' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'After' })).not.toBeInTheDocument();
+    expect(item('Early')).toHaveStyle({ left: '0px', width: '64px' });
+    expect(item('Late')).toHaveStyle({ left: `${29 * 32}px`, width: '64px' });
+    expect(item('First').style.left).toBe('16px');
+    expect(item('Last').style.left).toBe(`${30 * 32 + 16}px`);
+    rerender(
+      <UiProvider locale="en-US">
+        <Timeline aria-label="Kitchen plan" rows={rows} items={edges} range={march} view="table" />
+      </UiProvider>,
+    );
+    const table = screen.getByRole('grid', { name: 'Kitchen plan' });
+    expect(within(table).getByRole('rowheader', { name: 'Outside' })).toBeInTheDocument();
   });
 
   it('UIC-TIMELINE-4.1 names the root and labels each row group', () => {

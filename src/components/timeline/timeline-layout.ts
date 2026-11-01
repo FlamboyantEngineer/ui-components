@@ -6,6 +6,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   createTimelineAxis,
   isDependencyConflict,
+  isInTimelineRange,
   readTimelineItem,
   resolveConnectorPath,
   resolveItemSpan,
@@ -54,11 +55,15 @@ interface TimelineLayoutOptions {
   items: readonly TimelineItem[];
   dependencies: readonly TimelineDependency[];
   rowHeight: number;
+  /** A drag in progress, read in place of its item's days; the item itself stays the source. */
+  draft?: TimelineItemChange | null | undefined;
 }
 
 interface ReadTimelineEntry {
   item: TimelineItem;
   read: ReadItem | null;
+  /** The item's own days without a draft, which decide whether the range shows it. */
+  source: ReadItem | null;
 }
 
 function placeItems(
@@ -68,9 +73,10 @@ function placeItems(
 ): Map<Key, PlacedItem> {
   const rowIndex = new Map(rows.map((entry, index) => [entry.row.id, index]));
   const placed = new Map<Key, PlacedItem>();
-  for (const { item, read } of items.values()) {
+  for (const { item, read, source } of items.values()) {
     const index = rowIndex.get(item.rowId);
-    if (!read || index === undefined) continue;
+    // A drag out of the range keeps its item, held at the range's end, until it is released.
+    if (!read || !source || index === undefined || !isInTimelineRange(axis, source)) continue;
     placed.set(item.id, { item, read, rowIndex: index, ...resolveItemSpan(axis, read) });
   }
   return placed;
@@ -99,8 +105,13 @@ function collectPredecessors(
  * out; their dependencies still count toward descriptions.
  */
 export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineLayout {
-  const { axis, rows, items, dependencies, rowHeight } = options;
-  const indexed = new Map(items.map((item) => [item.id, { item, read: readTimelineItem(item) }]));
+  const { axis, rows, items, dependencies, rowHeight, draft } = options;
+  const readEntry = (item: TimelineItem) => {
+    const source = readTimelineItem(item);
+    const isDrafted = draft && item.id === draft.id;
+    return { item, source, read: isDrafted ? readTimelineItem({ ...item, ...draft }) : source };
+  };
+  const indexed = new Map(items.map((item) => [item.id, readEntry(item)]));
   const placed = placeItems(axis, rows, indexed);
   const rowItems = new Map<Key, PlacedItem[]>(rows.map((entry) => [entry.row.id, []]));
   for (const entry of placed.values()) requireDefined(rowItems.get(entry.item.rowId)).push(entry);
@@ -120,11 +131,6 @@ export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineL
   return { rowItems, connectors, predecessors: collectPredecessors(indexed, dependencies) };
 }
 
-function applyDraft(items: readonly TimelineItem[], draft: TimelineItemChange | null) {
-  if (!draft) return items;
-  return items.map((item) => (item.id === draft.id ? { ...item, ...draft } : item));
-}
-
 /**
  * The axis over the timeline's range (resolved from the items as given, so a drag never shifts it)
  * and the layout of its visible rows, with a drag in progress shown in place of the item's days.
@@ -139,12 +145,12 @@ export function layoutTimeline(
     locale: string;
   },
 ): { axis: TimelineAxis; layout: TimelineLayout } | null {
-  const { items, draft, range, scale, today, locale } = options;
+  const { items, range, scale, today, locale } = options;
   const resolved = resolveTimelineRange({ range, items, scale, today, locale });
   if (!resolved) return null;
   const axis = createTimelineAxis(resolved, scale, locale);
   return {
     axis,
-    layout: resolveTimelineLayout({ ...options, axis, items: applyDraft(items, draft) }),
+    layout: resolveTimelineLayout({ ...options, axis }),
   };
 }

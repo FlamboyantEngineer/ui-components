@@ -80,6 +80,106 @@ test.describe('Timeline lab', () => {
     );
   });
 
+  test('UIC-TIMELINE-2.1 gives up a drag when the host reschedules its bar', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const plan = page.locator('[data-lab-demo="plan"]');
+    const lastChange = plan.locator('[data-lab-demo="last-change"]');
+    const bar = plan.getByRole('button', { name: 'Strip kitchen' });
+    await bar.scrollIntoViewIfNeeded();
+    const box = requireDefined(await bar.boundingBox());
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 35, box.y + box.height / 2, { steps: 5 });
+    await expect(bar).toHaveAttribute('data-dragging', 'true');
+    await plan.getByRole('button', { name: 'Postpone demolition' }).press('Space');
+    await expect(bar).not.toHaveAttribute('data-dragging');
+    await page.mouse.up();
+    await expect(lastChange).toHaveText('Last change: None yet');
+    await expect(bar).toHaveAccessibleDescription(/Mar 30, 2026.*Apr 3, 2026/);
+    await bar.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(lastChange).toHaveText('Last change: Strip kitchen: Apr 6, 2026 to Apr 10, 2026');
+  });
+
+  test('UIC-TIMELINE-2.4 shows one selected item after switching to single selection', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const plan = page.locator('[data-lab-demo="plan"]');
+    const strip = plan.getByRole('button', { name: 'Strip kitchen' });
+    const measure = plan.getByRole('button', { name: 'Measure rooms' });
+    await measure.focus();
+    await page.keyboard.press('Enter');
+    await strip.focus();
+    await page.keyboard.press('Enter');
+    await expect(plan.locator('[data-lab-demo="selection"]')).toHaveText('Selected: 2');
+    await plan.getByRole('button', { name: 'Select one at a time' }).click();
+    await expect(measure).toHaveAttribute('aria-pressed', 'true');
+    await expect(strip).toHaveAttribute('aria-pressed', 'false');
+    await strip.focus();
+    await page.keyboard.press('Enter');
+    await expect(plan.locator('[data-lab-demo="selection"]')).toHaveText('Selected: 1');
+    await expect(measure).toHaveAttribute('aria-pressed', 'false');
+    await expect(strip).toHaveAttribute('aria-pressed', 'true');
+    await lab.expectAccessible();
+  });
+
+  for (const direction of ['ltr', 'rtl'] as const) {
+    test(`UIC-TIMELINE-1.2 keeps the bars under their dates at the range ends (${direction})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('timeline');
+      const cell = page.locator(`[data-lab-demo="edges-${direction}"]`);
+      await cell.scrollIntoViewIfNeeded();
+      await expect(cell.getByRole('button', { name: 'Spring picnic' })).toHaveCount(0);
+      const body = cell.locator('.ui-timeline__body');
+      const header = cell.locator('.ui-timeline__header');
+      const shopping = cell.getByRole('button', { name: 'Shopping' });
+      const offset = async () =>
+        requireDefined(await shopping.boundingBox()).x -
+        requireDefined(await header.boundingBox()).x;
+      const before = await offset();
+      const scrolled = () => body.evaluate((element) => element.scrollLeft);
+      await cell.getByRole('button', { name: 'Defrost' }).focus();
+      for (const key of ['Tab', 'Tab', 'Tab', 'Shift+Tab', 'Shift+Tab', 'Shift+Tab']) {
+        await page.keyboard.press(key);
+        expect(await scrolled()).toBe(0);
+      }
+      await cell.getByRole('button', { name: 'Pickling' }).focus();
+      await cell.getByRole('button', { name: 'Tasting' }).focus();
+      expect(await scrolled()).toBe(0);
+      expect(await offset()).toBe(before);
+      // Defrost starts before March, so it is cut where the range starts.
+      const first = requireDefined(
+        await cell.locator('.ui-timeline__scale-cell').first().boundingBox(),
+      );
+      const defrost = requireDefined(
+        await cell.getByRole('button', { name: 'Defrost' }).boundingBox(),
+      );
+      const edge = (box: { x: number; width: number }) =>
+        direction === 'ltr' ? box.x : box.x + box.width;
+      expect(Math.abs(edge(defrost) - edge(first))).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test('UIC-TIMELINE-2.2 leaves arrow keys with Control or Alt alone', async ({ page, lab }) => {
+    await lab.open('timeline');
+    const plan = page.locator('[data-lab-demo="plan"]');
+    const lastChange = plan.locator('[data-lab-demo="last-change"]');
+    await plan.getByRole('button', { name: 'Strip kitchen' }).focus();
+    for (const chord of ['Control+ArrowRight', 'Alt+ArrowLeft', 'Control+Shift+ArrowRight']) {
+      await page.keyboard.press(chord);
+    }
+    await expect(lastChange).toHaveText('Last change: None yet');
+    await page.keyboard.press('Shift+ArrowRight');
+    await expect(lastChange).toHaveText('Last change: Strip kitchen: Mar 16, 2026 to Mar 27, 2026');
+  });
+
   for (const away of ['table', 'collapse'] as const) {
     test(`UIC-TIMELINE-2.1 drops a drag whose bar leaves the chart (${away})`, async ({
       page,

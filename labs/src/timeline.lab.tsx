@@ -63,6 +63,15 @@ const ranges: Record<TimelineScale, { start: string; end: string }> = {
   quarter: { start: '2026-01-01', end: '2026-12-31' },
 };
 
+/** Items at and beyond the ends of March: cut where they cross, left out where they miss it. */
+const edgeItems: TimelineItem[] = [
+  { id: 'early', rowId: 1, label: 'Defrost', start: '2026-02-25', end: '2026-03-03' },
+  { id: 'inside', rowId: 1, label: 'Shopping', start: '2026-03-09', end: '2026-03-12' },
+  { id: 'outside', rowId: 1, label: 'Spring picnic', start: '2026-05-01', end: '2026-05-05' },
+  { id: 'late', rowId: '1', label: 'Pickling', start: '2026-03-27', end: '2026-04-08' },
+  { id: 'last', rowId: '1', label: 'Tasting', start: '2026-03-31', kind: 'milestone' },
+];
+
 const planRows: TimelineRow[] = [
   {
     id: 'planning',
@@ -239,6 +248,23 @@ function RightToLeftCell() {
   );
 }
 
+function EdgeCell({ direction }: { direction: 'ltr' | 'rtl' }) {
+  return (
+    <div dir={direction} style={cellBox} data-lab-demo={`edges-${direction}`}>
+      <UiProvider locale={direction === 'rtl' ? 'he-IL' : 'en-US'}>
+        <OwnedTimeline
+          aria-label={`March edges, ${direction}`}
+          rows={smallRows}
+          scale="day"
+          range={ranges.day}
+          today={today}
+          initialItems={edgeItems}
+        />
+      </UiProvider>
+    </div>
+  );
+}
+
 function StateCell({ state }: { state: string }) {
   const props = {
     'aria-label': `Dinner plan, ${state}`,
@@ -268,6 +294,7 @@ function PlanDemo() {
   const [selected, setSelected] = useState<Set<Key>>(new Set());
   const [lastChange, setLastChange] = useState('None yet');
   const [isLocked, setLocked] = useState(false);
+  const [isSingle, setSingle] = useState(false);
   const onItemChange = (change: TimelineItemChange) => {
     setItems((current) => applyChange(current, change));
     const name = items.find((item) => item.id === change.id)?.label;
@@ -296,6 +323,23 @@ function PlanDemo() {
         <Button size="sm" onPress={() => setLocked((current) => !current)}>
           {isLocked ? 'Unlock timeline' : 'Lock timeline'}
         </Button>
+        <Button
+          size="sm"
+          onPress={() =>
+            setItems((current) =>
+              current.map((item) =>
+                item.id === 'strip'
+                  ? { ...item, start: '2026-03-30', end: '2026-04-03', kind: 'bar' as const }
+                  : item,
+              ),
+            )
+          }
+        >
+          Postpone demolition
+        </Button>
+        <Button size="sm" onPress={() => setSingle((current) => !current)}>
+          {isSingle ? 'Select several' : 'Select one at a time'}
+        </Button>
       </div>
       <Timeline
         aria-label="Kitchen renovation"
@@ -305,7 +349,7 @@ function PlanDemo() {
         scale={scale}
         view={view}
         today={today}
-        selectionMode="multiple"
+        selectionMode={isSingle ? 'single' : 'multiple'}
         selectedKeys={selected}
         onSelectionChange={(keys) =>
           setSelected(new Set(keys === 'all' ? items.map((item) => item.id) : keys))
@@ -345,8 +389,17 @@ mountLab(
       <RightToLeftCell />
     </LabSection>
     <LabSection
+      title="Range edges"
+      description="March only: Defrost and Pickling cross its ends and are cut there, Tasting falls on its last day, and Spring picnic in May is left out of the chart, so Tab never scrolls the bars away from the dates. Left to right and right to left."
+    >
+      <StateMatrix
+        axes={{ direction: ['ltr', 'rtl'] as const }}
+        render={({ direction }) => <EdgeCell direction={direction} />}
+      />
+    </LabSection>
+    <LabSection
       title="Project plan"
-      description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates, and so does switching to the table or collapsing the bar's group while dragging."
+      description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end; with Control, Alt or Meta the arrows do nothing), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates, and so does switching to the table or collapsing the bar's group while dragging. Select one at a time keeps only the first selected item shown as selected, and the next press starts from it. Postpone demolition moves Strip kitchen two weeks later, as another person's edit would: press it from the keyboard while dragging Strip kitchen and the drag is given up, so releasing it changes nothing."
     >
       <PlanDemo />
     </LabSection>

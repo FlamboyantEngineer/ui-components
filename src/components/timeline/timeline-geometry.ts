@@ -1,6 +1,7 @@
 // Pure timeline layout: the range and axis, scale header cells, item spans, item changes from keys
 // and drags, and dependency connector paths (specs/TIMELINE.md).
 
+import { clamp } from '../../utils/clamp.js';
 import type { Key, Tone } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -133,6 +134,17 @@ export function readTimelineItem(item: TimelineItem): ReadItem | null {
 }
 
 /**
+ * A bar's progress as a share from 0 to 1, clamped, or `undefined` when there is none: for a
+ * milestone, and for a missing or non-finite value. The chart and the table read it alike.
+ */
+export function readTimelineProgress(item: TimelineItem): number | undefined {
+  const { progress, kind = 'bar' } = item;
+  if (kind !== 'bar' || typeof progress !== 'number' || !Number.isFinite(progress))
+    return undefined;
+  return clamp(progress, 0, 1);
+}
+
+/**
  * The caller's range when it is readable; otherwise the items' first to last day (today when there
  * are none), widened to whole units of the scale plus one unit on each side. `null` when there is
  * neither a range nor an item and today is unknown, before the clock may be read.
@@ -205,7 +217,14 @@ export function resolveItemSpan(axis: TimelineAxis, item: ReadItem) {
     const center = left + axis.dayWidth / 2;
     return { left: center, right: center };
   }
-  return { left, right: axis.scale.map(addTimeUnits(item.end, 'day', 1)) };
+  // A bar that crosses an end of the range is cut at it, so nothing reaches past the axis.
+  const right = axis.scale.map(addTimeUnits(item.end, 'day', 1));
+  return { left: clamp(left, 0, axis.width), right: clamp(right, 0, axis.width) };
+}
+
+/** Whether any day of the item falls in the axis's range, so the chart draws it. */
+export function isInTimelineRange(axis: TimelineAxis, item: ReadItem): boolean {
+  return item.end >= axis.range.start && item.start <= axis.range.end;
 }
 
 /**

@@ -5,9 +5,8 @@ import { useLocale } from '../../primitives/index.js';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps, SelectionProps } from '../../core/events.js';
-import type { BaseProps, Key, Selection, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, Selection, SelectionMode, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { requireDefined } from '../../utils/require-defined.js';
 import { TimelineChart, type TimelineChartActions } from './timeline-chart.js';
 import {
   type TimelineDependency,
@@ -67,12 +66,32 @@ export interface TimelineProps
   onItemChange?: ((change: TimelineItemChange) => void) | undefined;
 }
 
-function toKeySet(keys: Iterable<Key> | 'all' | undefined, items: readonly TimelineItem[]) {
+type StoredSelection = ReadonlySet<Key> | 'all';
+
+function toStored(keys: Iterable<Key> | 'all' | undefined): StoredSelection | undefined {
   if (keys === undefined) return undefined;
-  return new Set<Key>(keys === 'all' ? items.map((item) => item.id) : keys);
+  return keys === 'all' ? 'all' : new Set(keys);
 }
 
-/** The selected items, controlled or not, and a toggle that selects or deselects one item. */
+/**
+ * The selection as it applies now: the stored keys that name a current item, in item order, at
+ * most one of them in single mode and none without selection. `all` stands for every current item.
+ */
+function resolveSelected(
+  stored: StoredSelection,
+  items: readonly TimelineItem[],
+  selectionMode: SelectionMode,
+): ReadonlySet<Key> {
+  if (selectionMode === 'none') return new Set();
+  const ids = items.map((item) => item.id);
+  const present = stored === 'all' ? ids : ids.filter((id) => stored.has(id));
+  return new Set(selectionMode === 'single' ? present.slice(0, 1) : present);
+}
+
+/**
+ * The selected items, controlled or not, reconciled with the current items and mode, and a toggle
+ * that selects or deselects one item from that reconciled selection.
+ */
 function useItemSelection(
   props: Pick<
     TimelineProps,
@@ -81,20 +100,24 @@ function useItemSelection(
   items: readonly TimelineItem[],
 ) {
   const { selectionMode = 'none', onSelectionChange } = props;
-  const [selected, setSelected] = useControllableState<ReadonlySet<Key>>(
-    toKeySet(props.selectedKeys, items),
-    toKeySet(props.defaultSelectedKeys, items) ?? new Set(),
-    onSelectionChange ? (keys) => onSelectionChange(new Set(keys)) : undefined,
+  const [stored, setStored] = useControllableState<StoredSelection>(
+    toStored(props.selectedKeys),
+    toStored(props.defaultSelectedKeys) ?? new Set(),
+    onSelectionChange
+      ? (keys) => onSelectionChange(new Set(resolveSelected(keys, items, selectionMode)))
+      : undefined,
   );
+  const selected = resolveSelected(stored, items, selectionMode);
   const toggle = (id: Key) => {
     const isSelected = selected.has(id);
-    if (selectionMode === 'single') return setSelected(new Set(isSelected ? [] : [id]));
+    if (selectionMode === 'single') return setStored(new Set(isSelected ? [] : [id]));
     const next = new Set(selected);
     if (isSelected) next.delete(id);
     else next.add(id);
-    setSelected(next);
+    setStored(next);
   };
-  const replace = (keys: Selection) => setSelected(requireDefined(toKeySet(keys, items)));
+  const replace = (keys: Selection) =>
+    setStored(resolveSelected(keys === 'all' ? 'all' : new Set(keys), items, selectionMode));
   return { selectionMode, selected, toggle, replace };
 }
 
