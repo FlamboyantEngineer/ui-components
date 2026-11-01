@@ -178,44 +178,54 @@ A rename shall keep its field, draft, validation message and focus when the list
 Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-bar.tsx`, `src/components/tabs/tab-rename.tsx`
 Verification: `src/components/tabs/tab-rename-presentation.test.tsx`, `e2e/tabs.spec.ts`
 
+### UIC-TABS-3.11 - Actions between tabs
+
+`TabList.renderAfterTab(key)` may return ordinary content after that tab. Null adds no part. Actions shall remain outside selection, panel and hidden-tab menu keys, with normal keyboard focus and an independent overflow identity. The visual list retains its native geometry and key handlers. In this composition the `ui-tabs__owner` tablist shall own only the IDs of mounted native tabs through `aria-owns`, updating after late collection commits, insertion, removal and ID changes. The visual `ui-tabs__list` is a group. If every action, the selected tab and the overflow indicator cannot fit together, a horizontal menu list shall scroll with all parts mounted until enough room returns. Actions shall never be hidden or enter the menu. The `data-inline-actions` bar fills the room offered by its parent row, so collapsing children does not change the room being measured. With no action content, the original tablist structure is unchanged.
+
+Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-list-parts.tsx`, `src/components/tabs/tab-action-room.ts`, `src/components/tabs/tab-list-layout.ts`, `src/components/tabs/tab-bar.tsx`
+Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-actions.spec.ts`
+
 ## Hooks
 
-| Hook                     | Kind      | Values                   | Description                                                                |
-| ------------------------ | --------- | ------------------------ | -------------------------------------------------------------------------- |
-| `ui-tabs`                | root      |                          | The `Tabs` element holding the list and panels.                            |
-| `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons or an add button.    |
-| `ui-tabs__list`          | slot      |                          | The `TabList` (`role="tablist"`).                                          |
-| `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-button`).                        |
-| `ui-tabs__overflow`      | slot      |                          | The element holding the menu of hidden tabs.                               |
-| `ui-tabs__add`           | slot      |                          | The add button (also `ui-button`).                                         |
-| `ui-tabs__tab`           | slot      |                          | One `Tab` (`role="tab"`, an `<a>` with `href`).                            |
-| `ui-tabs__indicator`     | slot      |                          | The selection indicator inside the selected tab.                           |
-| `ui-tabs__icon`          | slot      |                          | A tab's leading icon (also `ui-icon`).                                     |
-| `ui-tabs__label`         | slot      |                          | A tab's label.                                                             |
-| `ui-tabs__count`         | slot      |                          | A tab's shown count.                                                       |
-| `ui-tabs__remove`        | slot      |                          | A removable tab's close mark.                                              |
-| `ui-tabs__rename`        | slot      |                          | The element after the list laid over a tab being renamed.                  |
-| `ui-tabs__rename-input`  | slot      |                          | The name field of a tab being renamed.                                     |
-| `ui-tabs__rename-error`  | slot      |                          | The message of a refused name.                                             |
-| `ui-tabs__panel`         | slot      |                          | One `TabPanel` (`role="tabpanel"`).                                        |
-| `data-size`              | attribute | `sm`, `md`, `lg`         | Tab block size, on the root.                                               |
-| `data-orientation`       | attribute | `horizontal`, `vertical` | Layout and arrow-key axis, on the root, the bar and the list (React Aria). |
-| `data-overflow`          | attribute | `scroll`, `menu`         | What the bar's list does with tabs that do not fit.                        |
-| `data-edge`              | attribute | `start`, `end`           | The edge a scroll button belongs to.                                       |
-| `data-label`             | attribute |                          | A plain-text label, on the label slot.                                     |
-| `data-key`               | attribute |                          | Opaque collection key (React Aria): not the `id`, not for styling.         |
-| `data-collection`        | attribute |                          | React Aria's collection identifier on the list and tabs; not for styling.  |
-| `data-overflowing`       | state     | `true`                   | The list's tabs do not fit.                                                |
-| `data-selected`          | state     | `true`                   | The selected tab.                                                          |
-| `data-disabled`          | state     | `true`                   | A disabled tab, or every tab on the root.                                  |
-| `data-hovered`           | state     | `true`                   | Pointer over a tab.                                                        |
-| `data-pressed`           | state     | `true`                   | A tab is being pressed.                                                    |
-| `data-focused`           | state     | `true`                   | A focused tab or panel, or focus within the root.                          |
-| `data-focus-visible`     | state     | `true`                   | Keyboard focus on a tab or panel, or within the root.                      |
-| `data-inert`             | state     | `true`                   | A force-mounted panel that is not selected.                                |
-| `data-renaming`          | state     | `true`                   | A tab being renamed.                                                       |
-| `data-dragging`          | state     | `true`                   | A tab being dragged.                                                       |
-| `data-drop-position`     | state     | `before`, `after`        | The side of a tab a dragged tab would land on, in reading order.           |
-| `data-invalid`           | state     | `true`                   | The name field holds a refused name (React Aria).                          |
-| `data-entering`          | state     | `true`                   | The indicator or a panel is entering (React Aria animation hook).          |
-| `data-exiting`           | state     | `true`                   | The indicator or a panel is exiting (React Aria animation hook).           |
+| Hook                     | Kind      | Values                   | Description                                                                              |
+| ------------------------ | --------- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| `ui-tabs`                | root      |                          | The `Tabs` element holding the list and panels.                                          |
+| `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons or an add button.                  |
+| `ui-tabs__owner`         | slot      |                          | The semantic tablist owning mounted tabs when action parts are present.                  |
+| `ui-tabs__action`        | slot      |                          | An ordinary action part, excluded from tab selection.                                    |
+| `ui-tabs__list`          | slot      |                          | The visual `TabList` (`role="group"` with actions, otherwise `tablist`).                 |
+| `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-button`).                                      |
+| `ui-tabs__overflow`      | slot      |                          | The element holding the menu of hidden tabs.                                             |
+| `ui-tabs__add`           | slot      |                          | The add button (also `ui-button`).                                                       |
+| `ui-tabs__tab`           | slot      |                          | One `Tab` (`role="tab"`, an `<a>` with `href`).                                          |
+| `ui-tabs__indicator`     | slot      |                          | The selection indicator inside the selected tab.                                         |
+| `ui-tabs__icon`          | slot      |                          | A tab's leading icon (also `ui-icon`).                                                   |
+| `ui-tabs__label`         | slot      |                          | A tab's label.                                                                           |
+| `ui-tabs__count`         | slot      |                          | A tab's shown count.                                                                     |
+| `ui-tabs__remove`        | slot      |                          | A removable tab's close mark.                                                            |
+| `ui-tabs__rename`        | slot      |                          | The element after the list laid over a tab being renamed.                                |
+| `ui-tabs__rename-input`  | slot      |                          | The name field of a tab being renamed.                                                   |
+| `ui-tabs__rename-error`  | slot      |                          | The message of a refused name.                                                           |
+| `ui-tabs__panel`         | slot      |                          | One `TabPanel` (`role="tabpanel"`).                                                      |
+| `data-size`              | attribute | `sm`, `md`, `lg`         | Tab block size, on the root.                                                             |
+| `data-orientation`       | attribute | `horizontal`, `vertical` | Layout and arrow-key axis, on the root, the bar and the list (React Aria).               |
+| `data-inline-actions`    | state     | `true`                   | The bar contains independent action parts; its reference layout fills the available row. |
+| `data-overflow`          | attribute | `scroll`, `menu`         | What the bar's list does with tabs that do not fit.                                      |
+| `data-edge`              | attribute | `start`, `end`           | The edge a scroll button belongs to.                                                     |
+| `data-label`             | attribute |                          | A plain-text label, on the label slot.                                                   |
+| `data-key`               | attribute |                          | Opaque collection key (React Aria): not the `id`, not for styling.                       |
+| `data-collection`        | attribute |                          | React Aria's collection identifier on the list and tabs; not for styling.                |
+| `data-overflowing`       | state     | `true`                   | The list's tabs do not fit.                                                              |
+| `data-selected`          | state     | `true`                   | The selected tab.                                                                        |
+| `data-disabled`          | state     | `true`                   | A disabled tab, or every tab on the root.                                                |
+| `data-hovered`           | state     | `true`                   | Pointer over a tab.                                                                      |
+| `data-pressed`           | state     | `true`                   | A tab is being pressed.                                                                  |
+| `data-focused`           | state     | `true`                   | A focused tab or panel, or focus within the root.                                        |
+| `data-focus-visible`     | state     | `true`                   | Keyboard focus on a tab or panel, or within the root.                                    |
+| `data-inert`             | state     | `true`                   | A force-mounted panel that is not selected.                                              |
+| `data-renaming`          | state     | `true`                   | A tab being renamed.                                                                     |
+| `data-dragging`          | state     | `true`                   | A tab being dragged.                                                                     |
+| `data-drop-position`     | state     | `before`, `after`        | The side of a tab a dragged tab would land on, in reading order.                         |
+| `data-invalid`           | state     | `true`                   | The name field holds a refused name (React Aria).                                        |
+| `data-entering`          | state     | `true`                   | The indicator or a panel is entering (React Aria animation hook).                        |
+| `data-exiting`           | state     | `true`                   | The indicator or a panel is exiting (React Aria animation hook).                         |

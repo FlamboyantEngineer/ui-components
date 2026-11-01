@@ -1,3 +1,4 @@
+import { InlineActionTabs } from './tabs-inline-actions.js';
 import { HelpGlyph, InfoGlyph, SearchGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
@@ -286,6 +287,13 @@ mountLab(
       description="Tabs with an href navigate through the provider's router; the selection follows the route."
     >
       <LinkTabs />
+    </LabSection>
+    <LabSection
+      title="Actions between tabs"
+      description="An ordinary action between selectable tabs."
+    >
+      <InlineActionTabs />
+      <InlineActionTabs overflow="menu" />
     </LabSection>
     <LabSection
       title="Manual activation"
