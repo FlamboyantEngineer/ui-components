@@ -132,11 +132,23 @@ function ApprovalActions({
   );
 }
 
-/** The optional reason for a denial, with Send and Cancel. */
+/**
+ * The optional reason for a denial, with Send and Cancel. Leaving while it holds focus, as when the
+ * card shows another call, hands focus to Deny.
+ */
 function DenyForm({ state }: { state: ToolCallApprovalState }) {
   const strings = useUiStrings();
+  const formRef = useRef<HTMLFormElement>(null);
+  const { rescueFocus } = state;
+  useLayoutEffect(() => {
+    const form = formRef.current;
+    return () => {
+      if (form?.contains(form.ownerDocument.activeElement)) rescueFocus();
+    };
+  }, [rescueFocus]);
   return (
     <Form
+      ref={formRef}
       className={hooks.slotClass('deny-form')}
       onSubmit={(event) => {
         event.preventDefault();

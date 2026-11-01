@@ -122,3 +122,43 @@ export function ApprovalDemo() {
     </div>
   );
 }
+
+/** The calls the queue demo asks about in turn, each a separate call with its own id. */
+const queuedCalls = [
+  { id: 'queued-read', name: 'read_file', args: { path: 'notes/today.md' } },
+  { id: 'queued-delete', name: 'delete_file', args: { path: 'notes/old.md' } },
+] as const;
+
+/**
+ * One card that a host reuses for its next waiting call: Next call shows the other call in place,
+ * with a fresh approval, even while a reason is being typed for the first. The callbacks list which
+ * call each decision reached.
+ */
+export function QueueDemo() {
+  const [index, setIndex] = useState(0);
+  const [events, setEvents] = useState<string[]>([]);
+  const call = queuedCalls[index % queuedCalls.length] ?? queuedCalls[0];
+  const record = (event: string) => setEvents((list) => [...list, `${call.id}: ${event}`]);
+  return (
+    <div data-lab-demo="queue">
+      <ChatToolCall
+        id={call.id}
+        name={call.name}
+        args={call.args}
+        status="approval-requested"
+        onApprove={() => record('onApprove()')}
+        onDeny={(reason) => record(`onDeny(${reason === undefined ? '' : `"${reason}"`})`)}
+      />
+      <p>
+        <Button size="sm" onPress={() => setIndex((value) => value + 1)}>
+          Next call
+        </Button>
+      </p>
+      <ol aria-label="Queue callbacks" data-lab-events="queue">
+        {events.map((event, position) => (
+          <li key={position}>{event}</li>
+        ))}
+      </ol>
+    </div>
+  );
+}

@@ -1,10 +1,12 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useCallback, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface ToolCallApprovalOptions {
+  /** The call's identity: a new one starts with no denial draft. */
+  callId: string;
   /** The call waits for the reader's decision. */
   isPending: boolean;
   onApprove?: (() => void) | undefined;
@@ -28,6 +30,19 @@ export interface ToolCallApprovalState {
   sendDenial: () => void;
   /** The card's capture-phase key handler. */
   onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void;
+  /** The form left while it held focus, for another call or a decision made elsewhere: focus Deny. */
+  rescueFocus: () => void;
+}
+
+/** The deny reason form of one call: whether it is open and the reason typed in it. */
+interface DenialDraft {
+  callId: string;
+  isOpen: boolean;
+  reason: string;
+}
+
+function startDraft(callId: string): DenialDraft {
+  return { callId, isOpen: false, reason: '' };
 }
 
 function isCommandEnter(event: KeyboardEvent<HTMLElement>): boolean {
@@ -38,27 +53,31 @@ function isCommandEnter(event: KeyboardEvent<HTMLElement>): boolean {
  * The approval's state and keys. While the call waits for a decision and focus is in the card,
  * Ctrl+Enter or Cmd+Enter approves (or sends the denial while its form is open) and Escape
  * focuses Deny (or cancels the open form). The keys are caught before the focused control sees
- * them, so a focused button is not pressed too; Escape on Deny itself goes on to the page.
+ * them, so a focused button is not pressed too; Escape on Deny itself goes on to the page. The
+ * draft belongs to `callId`: another call starts with the form closed and no reason.
  */
 export function useToolCallApproval({
+  callId,
   isPending,
   onApprove,
   onDeny,
 }: ToolCallApprovalOptions): ToolCallApprovalState {
-  const [isOpen, setIsOpen] = useState(false);
-  const [reason, setReason] = useState('');
+  const [stored, setStored] = useState(() => startDraft(callId));
   const denyRef = useRef<HTMLButtonElement>(null);
   const requestFocus = useFocusRequest();
-  // A decision made elsewhere closes the form and forgets its reason, so a later request starts clean.
-  if (isOpen && !isPending) {
-    setIsOpen(false);
-    setReason('');
+  let draft = stored;
+  // Another call, or a decision made elsewhere, closes the form and forgets its reason, so a later
+  // request starts clean.
+  if (stored.callId !== callId || (stored.isOpen && !isPending)) {
+    draft = startDraft(callId);
+    setStored(draft);
   }
-  const isDenying = isOpen && isPending && onDeny !== undefined;
+  const { reason } = draft;
+  const isDenying = draft.isOpen && isPending && onDeny !== undefined;
+  const focusDeny = useCallback(() => requestFocus(() => denyRef.current), [requestFocus]);
   const closeDenyForm = () => {
-    setIsOpen(false);
-    setReason('');
-    requestFocus(() => denyRef.current);
+    setStored(startDraft(callId));
+    focusDeny();
   };
   const sendDenial = () => {
     const trimmed = reason.trim();
@@ -86,11 +105,12 @@ export function useToolCallApproval({
   return {
     isDenying,
     reason,
-    setReason,
+    setReason: (next) => setStored({ callId, isOpen: true, reason: next }),
     denyRef,
-    openDenyForm: () => setIsOpen(true),
+    openDenyForm: () => setStored({ callId, isOpen: true, reason: '' }),
     closeDenyForm,
     sendDenial,
     onKeyDownCapture,
+    rescueFocus: focusDeny,
   };
 }
