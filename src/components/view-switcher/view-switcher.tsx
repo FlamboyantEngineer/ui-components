@@ -1,7 +1,16 @@
 'use client';
 
 import { StarGlyph } from '../../core/glyphs.js';
-import { useEffect, useState, type ReactNode } from 'react';
+import {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { TabListStateContext } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -11,7 +20,8 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { IconSource } from '../icon/icon.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
+import { Tab, TabList, Tabs } from '../tabs/tabs.js';
+import { listTabbables } from '../../utils/tabbable.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   listViewActions,
@@ -99,15 +109,17 @@ function ViewLabel({
   );
 }
 
-/** The views as tabs, each with a menu of its actions; the panel holds the content. */
+/** The views as tabs, each with a menu of its actions. */
 function ViewTabs({
   props,
   selectedKey,
   onSelect,
   getActions,
   actions,
+  panelRef,
 }: {
   props: ViewSwitcherProps;
+  panelRef: RefObject<HTMLDivElement | null>;
   selectedKey: Key | null;
   onSelect: (key: Key) => void;
   getActions: (key: Key) => MenuEntry[];
@@ -143,12 +155,7 @@ function ViewTabs({
         </TabList>
         {actions}
       </div>
-      {views.map((view) => (
-        // Only the selected view's panel renders; it holds the content shown for that view.
-        <TabPanel key={toKeyIdentity(view.id)} id={view.id} className={hooks.slotClass('panel')}>
-          {props.children}
-        </TabPanel>
-      ))}
+      <TabPanelLink panelRef={panelRef} />
     </Tabs>
   );
 }
@@ -226,6 +233,34 @@ function useSelectedView(props: ViewSwitcherProps) {
   return { selected, selectedKey, select };
 }
 
+/** Sets or removes an attribute so it holds `value`. */
+function syncAttribute(element: Element, name: string, value: string | null) {
+  if (value === null) element.removeAttribute(name);
+  else if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+}
+
+/**
+ * Ties the panel, kept outside the tabs, to the selected tab after every commit of the tabs, as
+ * React Aria's tab panel would: the id the tab controls, the tab as its label, and a tab stop
+ * while it holds nothing tabbable. Unmounting, when the variant changes, unties it.
+ */
+function TabPanelLink({ panelRef }: { panelRef: RefObject<HTMLDivElement | null> }) {
+  // Commits with the tabs, whose selection lives in this context.
+  useContext(TabListStateContext);
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return undefined;
+    const tab = panel.previousElementSibling?.querySelector('[role="tab"][aria-selected="true"]');
+    syncAttribute(panel, 'id', tab?.getAttribute('aria-controls') ?? null);
+    syncAttribute(panel, 'aria-labelledby', tab?.id || null);
+    syncAttribute(panel, 'tabindex', listTabbables(panel).length === 0 ? '0' : null);
+    return () => {
+      for (const name of ['id', 'aria-labelledby', 'tabindex']) panel.removeAttribute(name);
+    };
+  });
+  return null;
+}
+
 /**
  * Names and switches the saved views of a collection, as tabs or a menu. The selected view shows a
  * modified mark while its settings differ from its saved ones; its actions save, save as a new
@@ -235,6 +270,7 @@ export function ViewSwitcher(props: ViewSwitcherProps) {
   const { views, variant = 'tabs', isDirty = false, defaultViewKey = null } = props;
   const { className, id } = props;
   const strings = useUiStrings();
+  const panelRef = useRef<HTMLDivElement>(null);
   const { selected, selectedKey, select: setSelectedKey } = useSelectedView(props);
   const [dialog, setDialog] = useState<ViewDialog | null>(null);
   const context: ViewActionContext = {
@@ -270,16 +306,22 @@ export function ViewSwitcher(props: ViewSwitcherProps) {
           onSelect={setSelectedKey}
           getActions={getActions}
           actions={actions}
+          panelRef={panelRef}
         />
       ) : (
-        <>
-          <div {...hooks.slot('bar')}>
-            <ViewMenu props={props} selected={selected} onSelect={setSelectedKey} />
-            {actions}
-          </div>
-          {props.children}
-        </>
+        <div {...hooks.slot('bar')}>
+          <ViewMenu props={props} selected={selected} onSelect={setSelectedKey} />
+          {actions}
+        </div>
       )}
+      {/* The content keeps its place in either variant, so switching variants keeps its state. */}
+      <div
+        ref={panelRef}
+        {...hooks.slot('panel')}
+        role={variant === 'tabs' && selected ? 'tabpanel' : undefined}
+      >
+        {props.children}
+      </div>
       <ViewDialogs
         dialog={dialog}
         onClose={() => setDialog((open) => open && { ...open, isOpen: false })}

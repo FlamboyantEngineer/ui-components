@@ -70,3 +70,6 @@
   min-width: 0;
   outline: none;
 }
+.ui-view-switcher__panel:focus-visible {
+  box-shadow: var(--ref-focus-inset);
+}

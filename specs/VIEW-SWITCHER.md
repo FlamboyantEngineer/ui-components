@@ -6,7 +6,7 @@
 
 ### UIC-VIEW-SWITCHER-1.1 - Views as tabs
 
-`ViewSwitcher` shall render a `<div>` root (`ui-view-switcher`) publishing `variant` (`tabs` by default) in `data-variant`. As tabs it holds [Tabs](TABS.md) with a bar (`ui-view-switcher__bar`) holding a `TabList` (`ui-view-switcher__tabs`) that collapses the tabs that do not fit into its "more" menu, with one `Tab` (`ui-view-switcher__tab`) per view in order, showing the view's `icon` and `label` (`ui-view-switcher__label`), followed by the actions menu (UIC-VIEW-SWITCHER-1.4); then one `TabPanel` (`ui-view-switcher__panel`) for the selected view holding `children`.
+`ViewSwitcher` shall render a `<div>` root (`ui-view-switcher`) publishing `variant` (`tabs` by default) in `data-variant`. As tabs it holds [Tabs](TABS.md) with a bar (`ui-view-switcher__bar`) holding a `TabList` (`ui-view-switcher__tabs`) that collapses the tabs that do not fit into its "more" menu, with one `Tab` (`ui-view-switcher__tab`) per view in order, showing the view's `icon` and `label` (`ui-view-switcher__label`), followed by the actions menu (UIC-VIEW-SWITCHER-1.4); then the panel (`ui-view-switcher__panel`) holding `children`, a `tabpanel` labelled by the selected tab, carrying the id the tab controls, and a tab stop while it holds nothing tabbable. As a menu the same panel follows the bar without the tab panel role. The panel keeps its place whichever the variant and whichever view is selected, so `children` keep their state, drafts and focus when the variant changes; a host that wants fresh content per view keys its content by the selected view.
 
 Implementation: `src/components/view-switcher/view-switcher.tsx`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
@@ -89,6 +89,6 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 | `ui-view-switcher__default`  | slot      |                | The default view's mark.                                    |
 | `ui-view-switcher__modified` | slot      |                | The selected view's modified mark.                          |
 | `ui-view-switcher__actions`  | slot      |                | The actions menu's button (also `ui-dropdown-menu`).        |
-| `ui-view-switcher__panel`    | slot      |                | The selected view's content (also `ui-tabs__panel`).        |
+| `ui-view-switcher__panel`    | slot      |                | The selected view's content.                                |
 | `data-variant`               | attribute | `tabs`, `menu` | How the views show.                                         |
 | `data-dirty`                 | state     | `true`         | The selected view's settings differ from its saved ones.    |

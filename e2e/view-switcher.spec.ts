@@ -27,6 +27,25 @@ test.describe('View Switcher lab', () => {
     );
   });
 
+  test('UIC-VIEW-SWITCHER-1.1 keeps the content when the layout switches', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('view-switcher');
+    const area = page.locator('[data-lab-switching]');
+    const note = area.getByRole('textbox', { name: 'Note' });
+    await note.fill('Unsaved note');
+    const toggle = area.getByRole('switch', { name: 'Menu layout' });
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(area.getByRole('tab')).toHaveCount(0);
+    await expect(note).toHaveValue('Unsaved note');
+    await page.keyboard.press('Space');
+    await expect(area.getByRole('tabpanel', { name: /All recipes/ })).toContainText('Note');
+    await expect(note).toHaveValue('Unsaved note');
+    await lab.expectAccessible('[data-lab-switching]');
+  });
+
   test('UIC-VIEW-SWITCHER-1.2 UIC-VIEW-SWITCHER-1.4 modifies, saves and resets a view', async ({
     page,
     lab,

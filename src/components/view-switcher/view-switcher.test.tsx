@@ -350,4 +350,59 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     await user.click(screen.getByRole('button', { name: 'All recipes' }));
     expect(await screen.findByRole('menu')).toHaveAccessibleName('Saved views');
   });
+
+  it('UIC-VIEW-SWITCHER-1.1 keeps the content’s state when the variant changes', async () => {
+    const user = userEvent.setup();
+    function Counter() {
+      const [count, setCount] = useState(0);
+      return (
+        <button type="button" onClick={() => setCount(count + 1)}>
+          Count {count}
+        </button>
+      );
+    }
+    function Switcher({ variant }: { variant: 'tabs' | 'menu' }) {
+      return (
+        <ViewSwitcher views={views} selectedKey="quick" variant={variant}>
+          <input aria-label="Notes" />
+          <Counter />
+        </ViewSwitcher>
+      );
+    }
+    const { rerender } = render(<Switcher variant="tabs" />);
+    const input = screen.getByRole('textbox', { name: 'Notes' });
+    await user.click(screen.getByRole('button', { name: 'Count 0' }));
+    await user.type(input, 'Unsaved content');
+    const expectKept = () => {
+      expect(screen.getByRole('textbox', { name: 'Notes' })).toBe(input);
+      expect(input).toHaveValue('Unsaved content');
+      expect(input).toHaveFocus();
+      expect(screen.getByRole('button', { name: 'Count 1' })).toBeInTheDocument();
+    };
+    const panel = screen.getByRole('tabpanel', { name: 'Quick meals' });
+    expect(requireDefined(tabs()[1])).toHaveAttribute('aria-controls', panel.id);
+    rerender(<Switcher variant="menu" />);
+    expectKept();
+    expect(screen.queryByRole('tabpanel')).not.toBeInTheDocument();
+    expect(input.closest('.ui-view-switcher__panel')).not.toHaveAttribute('id');
+    expect(input.closest('.ui-view-switcher__panel')).not.toHaveAttribute('aria-labelledby');
+    rerender(<Switcher variant="tabs" />);
+    expectKept();
+    expect(screen.getByRole('tabpanel', { name: 'Quick meals' })).toBe(panel);
+    expect(requireDefined(tabs()[1])).toHaveAttribute('aria-controls', panel.id);
+    expect(panel).not.toHaveAttribute('tabindex');
+  });
+
+  it('UIC-VIEW-SWITCHER-1.1 follows the selected tab and makes an empty panel a tab stop', async () => {
+    const user = userEvent.setup();
+    render(
+      <ViewSwitcher views={views}>
+        <p>Rows</p>
+      </ViewSwitcher>,
+    );
+    expect(screen.getByRole('tabpanel', { name: 'All recipes' })).toHaveAttribute('tabindex', '0');
+    await user.click(requireDefined(tabs()[2]));
+    const panel = screen.getByRole('tabpanel', { name: 'Baking' });
+    expect(requireDefined(tabs()[2])).toHaveAttribute('aria-controls', panel.id);
+  });
 });

@@ -6,6 +6,7 @@ import {
   UsersGlyph,
 } from '../../src/core/glyphs.js';
 import { useState } from 'react';
+import { Switch } from '../../src/components/switch/switch.js';
 import {
   DisplayOptions,
   type DisplayOptionsValue,
@@ -121,6 +122,28 @@ function RecipeViews({ variant }: { variant: 'tabs' | 'menu' }) {
   );
 }
 
+/** A switcher whose layout flips between tabs and a menu; the note typed below it survives. */
+function SwitchingLayout() {
+  const [isMenu, setMenu] = useState(false);
+  return (
+    <div data-lab-switching>
+      <Switch isSelected={isMenu} onChange={setMenu}>
+        Menu layout
+      </Switch>
+      <ViewSwitcher
+        aria-label="Switching views"
+        variant={isMenu ? 'menu' : 'tabs'}
+        views={matrixViews}
+        defaultViewKey="all"
+      >
+        <label>
+          Note <input />
+        </label>
+      </ViewSwitcher>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -157,6 +180,12 @@ mountLab(
       description="The same views in a menu, for many views or little room; the heading above names the menu."
     >
       <RecipeViews variant="menu" />
+    </LabSection>
+    <LabSection
+      title="Switching layout"
+      description="The switch moves the views between tabs and a menu; a note typed in the content survives either way."
+    >
+      <SwitchingLayout />
     </LabSection>
   </>,
 );
