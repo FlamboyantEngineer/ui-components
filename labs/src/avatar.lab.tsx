@@ -6,6 +6,7 @@ import {
   type AvatarSize,
 } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
+import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { brokenPicture, otherPicture, samplePicture } from './people-samples.js';
 
@@ -172,6 +173,24 @@ mountLab(
               shape={shape}
               variant={variant}
               size="lg"
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Group card trigger"
+        description="A group avatar that opens a card keeps its glyph centred in every shape."
+      >
+        <StateMatrix
+          axes={{ shape: shapes, variant: variants }}
+          render={({ shape, variant }) => (
+            <Avatar
+              name="Design team"
+              kind="group"
+              shape={shape}
+              variant={variant}
+              size="lg"
+              card={<UserCard name="Design team" description="Six people" />}
             />
           )}
         />
