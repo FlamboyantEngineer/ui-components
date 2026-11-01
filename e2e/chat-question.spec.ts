@@ -181,6 +181,26 @@ test.describe('Chat Question lab', () => {
     );
   });
 
+  test('UIC-CHAT-QUESTION-2.7 sends again from a card that is pending again while its earlier request is unsettled', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-question');
+    const card = demo(page, 'reopened');
+    const record = page.locator('[data-lab-record="reopened"]');
+    const host = card.locator('xpath=..');
+    await card.getByRole('textbox', { name: 'What should the app be called?' }).fill('Notebook');
+    await card.getByRole('button', { name: 'Submit' }).click();
+    await expect(record).toHaveText('Sent 1');
+    await host.getByRole('button', { name: 'Withdraw' }).click();
+    await host.getByRole('button', { name: 'Reopen' }).click();
+    await expect(card).not.toHaveAttribute('data-submitting');
+    await card.getByRole('textbox', { name: 'What should the app be called?' }).fill('Journal');
+    await card.getByRole('button', { name: 'Submit' }).click();
+    await expect(record).toHaveText('Sent 2');
+    await expect(card).toHaveAttribute('data-submitting', 'true');
+  });
+
   test('UIC-CHAT-QUESTION-1.8 shows the preview of the focused option beside the options', async ({
     page,
     lab,

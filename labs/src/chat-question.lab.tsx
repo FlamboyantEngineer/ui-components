@@ -137,6 +137,36 @@ function AsyncCard() {
 }
 
 /**
+ * A host that never answers: Withdraw takes the card out of pending while its answers are still
+ * sent, and Reopen puts the same card, with the same id, back. The card sends again at once.
+ */
+function ReopenedCard() {
+  const [status, setStatus] = useState<ChatQuestionStatus>('pending');
+  const [sent, setSent] = useState(0);
+  return (
+    <div>
+      <ChatQuestion
+        id="ask-reopened"
+        questions={[nameQuestion]}
+        status={status}
+        onSubmit={() => {
+          setSent((count) => count + 1);
+          return new Promise<void>(() => {});
+        }}
+        data-lab-demo="reopened"
+      />
+      <p data-lab-record="reopened">{`Sent ${sent}`}</p>
+      <Button size="sm" isDisabled={status !== 'pending'} onPress={() => setStatus('dismissed')}>
+        Withdraw
+      </Button>
+      <Button size="sm" isDisabled={status === 'pending'} onPress={() => setStatus('pending')}>
+        Reopen
+      </Button>
+    </div>
+  );
+}
+
+/**
  * A conversation's view of a card: Submit and Dismiss settle it, the submitted answers show
  * below, and Ask again puts a fresh card back.
  */
@@ -265,6 +295,12 @@ mountLab(
       description="The host takes a moment to accept: the card is locked and Submit (or Dismiss) shows its spinner meanwhile, and pressing again sends nothing. The first Submit is refused: every answer and the question shown stay, and the error is announced. The retry is accepted and the host settles the card."
     >
       <AsyncCard />
+    </LabSection>
+    <LabSection
+      title="Pending again"
+      description="The host never answers. Submit, then Withdraw while the answers are still sent, then Reopen: the same card is pending again and sends at once, while the earlier request is ignored."
+    >
+      <ReopenedCard />
     </LabSection>
     <LabSection
       title="Read-only"
