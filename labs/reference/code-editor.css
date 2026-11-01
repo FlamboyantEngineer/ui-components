@@ -9,6 +9,8 @@
   box-sizing: border-box;
   width: 420px;
   max-width: 100%;
+  /* Clips the gutter, toolbar and status backgrounds to the rounded frame, so its corners show. */
+  overflow: clip;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
