@@ -499,6 +499,7 @@
   "noMatchingVersions": "No versions match the filters.",
   "downloadFile": "Download {name}",
   "previewUnavailable": "No preview is available for this file.",
+  "imageLoadFailed": "“{name}” could not be loaded.",
   "thumbnails": "Thumbnails",
   "mediaStage": "{name}, viewer",
   "gridSizePicker": "Table size",

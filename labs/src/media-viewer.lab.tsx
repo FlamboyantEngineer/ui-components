@@ -10,6 +10,7 @@ import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
+import { FailingImages, LargeSet, NoteDrafts, RefreshingList } from './media-viewer-cases.js';
 
 /** A drawn landscape of the given size, as an SVG data URL. */
 function scene(width: number, height: number, sky: string, ground: string): string {
@@ -157,6 +158,30 @@ mountLab(
       description="Press a photo to open it. Arrow keys move through the set, + and - zoom, the header turns and downloads, and Escape closes."
     >
       <Gallery />
+    </LabSection>
+    <LabSection
+      title="Large set"
+      description="A hundred photos without thumbnail URLs: the shown photo loads at once, and the thumbnails load as the strip scrolls to them."
+    >
+      <LargeSet />
+    </LabSection>
+    <LabSection
+      title="Loading and failure"
+      description="An expired link and a missing file: each shows why it failed with Retry, and the zoom and rotate controls wait for a loaded image. The page answers the expired link's failure with a fresh URL."
+    >
+      <FailingImages />
+    </LabSection>
+    <LabSection
+      title="Drafts per file"
+      description="Text files the page renders as drafts. Edit one and move to the next: each file starts its own draft."
+    >
+      <NoteDrafts />
+    </LabSection>
+    <LabSection
+      title="Refreshing list"
+      description="A viewer opened on mount. Close it, then refresh the list: it empties for a moment and fills again, and the viewer stays closed."
+    >
+      <RefreshingList />
     </LabSection>
   </>,
 );

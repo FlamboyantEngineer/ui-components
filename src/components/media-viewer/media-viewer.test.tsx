@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { MediaViewer, type MediaViewerItem, type MediaViewerProps } from './media-viewer.js';
 
 const items: MediaViewerItem[] = [
@@ -201,6 +203,7 @@ describe('MediaViewer', () => {
     const user = userEvent.setup();
     render(<Viewer />);
     const zoomValue = () => document.querySelector('.ui-zoom-control__value')?.textContent;
+    loadImage(800, 600);
     await user.keyboard('+');
     expect(zoomValue()).toBe('125%');
     await user.keyboard('--');
@@ -322,6 +325,191 @@ describe('MediaViewer', () => {
     expectHooksMatchSpec(document.body, 'MEDIA-VIEWER', {
       callerAttributes: ['data-test'],
       slots: ['stage', 'previous', 'next', 'viewport', 'canvas', 'image', 'counter'],
+    });
+  });
+
+  describe('caller rendering per item', () => {
+    const files: MediaViewerItem[] = [
+      { id: 1, src: '/a.pdf', name: 'Numeric file', type: 'application/pdf' },
+      { id: '1', src: '/b.pdf', name: 'Text file', type: 'application/pdf' },
+      { id: 'c', src: '/c.pdf', name: 'Third file', type: 'application/pdf' },
+    ];
+
+    function Draft({ item }: { item: MediaViewerItem }) {
+      const [draft, setDraft] = useState(item.name);
+      return (
+        <input
+          aria-label={`Draft of ${String(item.id)}`}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+      );
+    }
+
+    const renderDraft = (item: MediaViewerItem) => <Draft item={item} />;
+
+    it('UIC-MEDIA-VIEWER-3.1 gives each typed id its own rendering state', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<Viewer items={files} renderItem={renderDraft} />);
+      const first = screen.getByRole('textbox', { name: 'Draft of 1' });
+      await user.clear(first);
+      await user.type(first, 'Changed');
+      // A re-render and a change to the item's other fields keep the state.
+      rerender(
+        <Viewer
+          items={[
+            { ...requireDefined(files[0]), name: 'Renamed' },
+            requireDefined(files[1]),
+            requireDefined(files[2]),
+          ]}
+          renderItem={renderDraft}
+        />,
+      );
+      expect(screen.getByRole('textbox', { name: 'Draft of 1' })).toHaveValue('Changed');
+      await user.click(screen.getByRole('button', { name: 'Next' }));
+      expect(screen.getByRole('textbox', { name: 'Draft of 1' })).toHaveValue('Text file');
+      await user.click(screen.getByRole('button', { name: 'Third file' }));
+      expect(screen.getByRole('textbox')).toHaveValue('Third file');
+      // Coming back renders the item afresh.
+      await user.click(screen.getByRole('button', { name: 'Renamed' }));
+      expect(screen.getByRole('textbox')).toHaveValue('Renamed');
+      // A controlled selection and a reorder keep the rule.
+      rerender(
+        <Viewer
+          items={[requireDefined(files[2]), requireDefined(files[1])]}
+          selectedKey="1"
+          renderItem={renderDraft}
+        />,
+      );
+      expect(screen.getByRole('textbox')).toHaveValue('Text file');
+    });
+
+    it('UIC-MEDIA-VIEWER-3.1 keeps focus in the viewer when a key replaces the focused rendering', async () => {
+      const user = userEvent.setup();
+      render(
+        <Viewer
+          items={files}
+          renderItem={(item) => <button type="button">Open {item.name}</button>}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Open Numeric file' }));
+      await user.keyboard('{PageDown}');
+      expect(title()).toBe('Text file');
+      expect(screen.getByRole('group', { name: /Text file/ })).toHaveFocus();
+    });
+  });
+
+  describe('open state across an empty list', () => {
+    it('UIC-MEDIA-VIEWER-1.1 keeps a closed viewer closed while its items empty and refill', async () => {
+      const user = userEvent.setup();
+      const onOpenChange = vi.fn();
+      const viewer = (list: MediaViewerItem[]) => (
+        <MediaViewer items={list} defaultOpen onOpenChange={onOpenChange} />
+      );
+      const { rerender } = render(viewer(items));
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      rerender(viewer([]));
+      rerender(viewer(items.slice(0, 1)));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(onOpenChange.mock.calls).toEqual([[false]]);
+    });
+
+    it('UIC-MEDIA-VIEWER-1.1 shows an open viewer again when its items return, and waits for a first list', () => {
+      const onOpenChange = vi.fn();
+      const viewer = (list: MediaViewerItem[]) => (
+        <MediaViewer items={list} defaultOpen onOpenChange={onOpenChange} />
+      );
+      const { rerender } = render(viewer([]));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      rerender(viewer(items));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      rerender(viewer([]));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      rerender(viewer(items));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(onOpenChange).not.toHaveBeenCalled();
+      // A controlled viewer follows its prop throughout.
+      rerender(<MediaViewer items={[]} isOpen={false} />);
+      rerender(<MediaViewer items={items} isOpen={false} />);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('image loading', () => {
+    function stage() {
+      return document.querySelector('.ui-media-viewer__stage');
+    }
+
+    it('UIC-MEDIA-VIEWER-2.4 shows loading, disables image controls and enables them once loaded', async () => {
+      const user = userEvent.setup();
+      render(<Viewer />);
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      expect(document.querySelector('.ui-media-viewer__loading')).toHaveTextContent('Loading');
+      expect(document.querySelector('.ui-media-viewer__loading')).toHaveAttribute('role', 'status');
+      expect(screen.getByRole('button', { name: 'Rotate clockwise' })).toBeDisabled();
+      await user.keyboard('+');
+      expect(document.querySelector('.ui-zoom-control__value')).toHaveTextContent('100%');
+      loadImage(800, 600);
+      expect(stage()).toHaveAttribute('data-status', 'loaded');
+      expect(document.querySelector('.ui-media-viewer__loading')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Rotate clockwise' })).toBeEnabled();
+      expect(screen.getByRole('link', { name: /Download/ })).toBeInTheDocument();
+    });
+
+    it('UIC-MEDIA-VIEWER-2.4 shows a failure with Retry, reports it, and loads a fresh src', async () => {
+      const user = userEvent.setup();
+      const onImageError = vi.fn();
+      const { rerender } = render(<Viewer onImageError={onImageError} />);
+      fireEvent.error(document.querySelector('.ui-media-viewer__image') as HTMLImageElement);
+      expect(stage()).toHaveAttribute('data-status', 'failed');
+      expect(screen.getByRole('alert')).toHaveTextContent('“Harbour.jpg” could not be loaded.');
+      expect(onImageError).toHaveBeenCalledWith(items[0]);
+      expect(screen.getByRole('button', { name: 'Rotate clockwise' })).toBeDisabled();
+      await user.click(screen.getByRole('button', { name: 'Retry' }));
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      // A response that decodes to nothing fails too.
+      loadImage(0, 0);
+      expect(stage()).toHaveAttribute('data-status', 'failed');
+      rerender(
+        <Viewer
+          items={[
+            { ...requireDefined(items[0]), src: '/media/harbour-fresh.jpg' },
+            ...items.slice(1),
+          ]}
+          onImageError={onImageError}
+        />,
+      );
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      expect(loadImage(800, 600)).toHaveAttribute('src', '/media/harbour-fresh.jpg');
+      expect(stage()).toHaveAttribute('data-status', 'loaded');
+    });
+
+    it('UIC-MEDIA-VIEWER-2.4 ignores a report from an image moved away from', async () => {
+      const user = userEvent.setup();
+      const onImageError = vi.fn();
+      render(<Viewer onImageError={onImageError} />);
+      const first = document.querySelector('.ui-media-viewer__image') as HTMLImageElement;
+      await user.click(screen.getByRole('button', { name: 'Next' }));
+      fireEvent.error(first);
+      expect(onImageError).not.toHaveBeenCalled();
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      loadImage(400, 300);
+      await user.click(screen.getByRole('button', { name: 'Previous' }));
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      loadImage(800, 600);
+      expect(stage()).toHaveAttribute('data-status', 'loaded');
+    });
+
+    it('UIC-MEDIA-VIEWER-1.3 loads thumbnails lazily', () => {
+      render(<Viewer />);
+      const thumbnails = document.querySelectorAll('.ui-media-viewer__thumbnail-image');
+      expect(thumbnails.length).toBeGreaterThan(0);
+      for (const thumbnail of thumbnails) expect(thumbnail).toHaveAttribute('loading', 'lazy');
+      expect(document.querySelector('.ui-media-viewer__image')).not.toHaveAttribute(
+        'loading',
+        'lazy',
+      );
     });
   });
 });

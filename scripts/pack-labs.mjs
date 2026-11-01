@@ -32,6 +32,7 @@ const required = [
   'build/vendor/LICENSE',
   'build/samples/seasonal-report.pdf',
   'build/samples/seasonal-report-locked.pdf',
+  'build/samples/landscape.svg',
   ...listLabPages().flatMap((name) => [`${name}.html`, `build/${name}.js`]),
 ];
 for (const file of required) {

@@ -499,6 +499,7 @@
   "noMatchingVersions": "フィルターに一致するバージョンはありません。",
   "downloadFile": "{name}をダウンロード",
   "previewUnavailable": "このファイルのプレビューはありません。",
+  "imageLoadFailed": "「{name}」を読み込めませんでした。",
   "thumbnails": "サムネイル",
   "mediaStage": "{name}、ビューアー",
   "gridSizePicker": "表のサイズ",

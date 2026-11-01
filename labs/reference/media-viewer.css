@@ -64,6 +64,13 @@
   flex: 1 1 auto;
 }
 
+.ui-media-viewer__loading {
+  padding: 16px;
+  color: var(--ref-muted);
+  text-align: center;
+}
+
+.ui-media-viewer__error,
 .ui-media-viewer__fallback {
   display: flex;
   flex-direction: column;
@@ -72,6 +79,14 @@
   gap: 8px;
   margin: auto;
   color: var(--ref-muted);
+}
+
+.ui-media-viewer__stage[data-status='loading'] .ui-media-viewer__image {
+  visibility: hidden;
+}
+
+.ui-media-viewer__retry {
+  margin-top: 4px;
 }
 
 .ui-media-viewer__fallback-icon {
