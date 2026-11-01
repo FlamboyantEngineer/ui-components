@@ -181,6 +181,35 @@ function LockableNote() {
   );
 }
 
+/**
+ * An editor whose first parts take no focus: a hidden form input, a disabled fieldset and a hidden
+ * group come before the field that opening focuses.
+ */
+function BakerWithHiddenParts() {
+  const [baker, setBaker] = useState('Maria Santos');
+  return (
+    <InlineEdit
+      label="Baker"
+      value={baker}
+      onSave={setBaker}
+      data-lab-field="baker"
+      renderEditor={({ value, onChange, label, isDisabled }) => (
+        <>
+          <input type="hidden" name="baker-id" value="baker-7" />
+          <fieldset disabled>
+            <legend>Station</legend>
+            <input aria-label="Station" defaultValue="Oven 2" />
+          </fieldset>
+          <div hidden>
+            <button type="button">Pick a baker</button>
+          </div>
+          <TextField label={label} value={value} onChange={onChange} isDisabled={isDisabled} />
+        </>
+      )}
+    />
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -206,6 +235,12 @@ mountLab(
       description="Start the lock, open the note and type: once locked, the editor keeps the draft but saves nothing, through Enter, leaving or the save button, until it is unlocked."
     >
       <LockableNote />
+    </LabSection>
+    <LabSection
+      title="An editor with hidden parts"
+      description="The baker's editor starts with a hidden form input, a disabled fieldset and a hidden group: opening it focuses and selects the baker's name, the first part Tab reaches."
+    >
+      <BakerWithHiddenParts />
     </LabSection>
   </>,
 );

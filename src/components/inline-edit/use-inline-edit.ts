@@ -18,6 +18,7 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useLifetimeSignal } from '../../utils/use-lifetime-signal.js';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { listTabbables } from '../../utils/tabbable.js';
 import { isFieldValueEqual } from '../field/field.js';
 
 interface InlineEditStateOptions<T> {
@@ -35,9 +36,21 @@ interface InlineEditStateOptions<T> {
 /** What closing the editor does with focus: back to the read view, or left where it went. */
 type FocusReturn = 'read' | 'none';
 
-const focusableSelector = ['input', 'textarea', 'select', 'button', '[tabindex]']
-  .map((element) => `${element}:not([disabled]):not([tabindex="-1"])`)
-  .join(', ');
+/**
+ * Moves focus to the editor's first control that takes it: one Tab reaches (so not a hidden input,
+ * nor a control that is disabled, hidden or inert), trying the next when focus does not land. Text
+ * in an input is selected, and a text area's caret goes to its end.
+ */
+function focusEditor(editor: HTMLElement | null) {
+  if (!editor) return;
+  for (const target of listTabbables(editor)) {
+    target.focus();
+    if (target.ownerDocument.activeElement !== target) continue;
+    if (isHTMLElement(target, 'input')) target.select();
+    if (isHTMLElement(target, 'textarea')) target.setSelectionRange(-1, -1);
+    return;
+  }
+}
 
 /**
  * Whether Enter on this element belongs to the element: a button, an open list, or a new line in a
@@ -67,10 +80,7 @@ function useEditFocus(isEditing: boolean) {
     const isFirst = !hasMounted.current;
     hasMounted.current = true;
     if (isEditing && !isFirst) {
-      const target = editorRef.current?.querySelector<HTMLElement>(focusableSelector);
-      target?.focus();
-      if (isHTMLElement(target, 'input')) target.select();
-      if (isHTMLElement(target, 'textarea')) target.setSelectionRange(-1, -1);
+      focusEditor(editorRef.current);
     } else if (!isEditing && focusReturnRef.current === 'read') {
       readRef.current?.focus();
     }
