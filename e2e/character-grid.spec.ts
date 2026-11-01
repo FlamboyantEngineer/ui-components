@@ -71,6 +71,33 @@ test.describe('Character Grid lab', () => {
     await expect(grid.getByRole('status')).toHaveText('No results');
   });
 
+  test('UIC-CHARACTER-GRID-2.1 UIC-SEARCH-FIELD-1.4 leaves the candidate-confirming Enter to the input method', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('character-grid');
+    const grid = field(page, 'inline');
+    const search = grid.getByRole('searchbox', { name: 'Search characters' });
+    const before = await output(page, 'inline').textContent();
+    await search.fill('degre');
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Input.imeSetComposition', { text: 'e', selectionStart: 1, selectionEnd: 1 });
+    await cdp.send('Input.insertText', { text: 'e' });
+    // Chromium reports the Enter that confirms a candidate with key code 229.
+    await cdp.send('Input.dispatchKeyEvent', {
+      type: 'rawKeyDown',
+      key: 'Enter',
+      code: 'Enter',
+      windowsVirtualKeyCode: 229,
+    });
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter' });
+    await expect(search).toHaveValue('degree');
+    await expect(grid.getByRole('row', { name: 'Degree sign' })).toBeVisible();
+    await expect(output(page, 'inline')).toHaveText(before ?? '');
+    await search.press('Enter');
+    await expect(output(page, 'inline')).toHaveText('° Degree sign');
+  });
+
   test('UIC-CHARACTER-GRID-2.3 UIC-CHARACTER-GRID-2.1 inserts from a popover and closes with Escape', async ({
     page,
     lab,

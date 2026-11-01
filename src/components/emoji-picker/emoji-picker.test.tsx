@@ -396,6 +396,25 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(screen.getByRole('row', { name: 'banana' })).toHaveFocus();
   });
 
+  it('UIC-EMOJI-PICKER-2.1 leaves a composing Enter in the search to the input method', async () => {
+    const onSelect = vi.fn();
+    const onRecentEmojiChange = vi.fn();
+    await renderPicker({ onSelect, onRecentEmojiChange });
+    const search = screen.getByRole('searchbox');
+    for (const query of ['', 'fruit']) {
+      await userEvent.clear(search);
+      if (query) await userEvent.type(search, query);
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+      fireEvent.keyDown(search, { key: 'Enter', isComposing: true });
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set keyCode on a keydown
+      fireEvent.keyDown(search, { key: 'Enter', keyCode: 229 });
+    }
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onRecentEmojiChange).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ unicode: '🍌' }));
+  });
+
   it('UIC-EMOJI-PICKER-2.1 moves down into the grid, chooses on Enter and clears on Escape', async () => {
     const onSelect = vi.fn();
     await renderPicker({ onSelect });
