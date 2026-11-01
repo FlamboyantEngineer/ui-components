@@ -50,10 +50,17 @@ Verification: `src/utils/is-element.test.ts`
 
 ### UIC-PORTAL-1.7 - Own document and window
 
-Components shall listen, look up and measure in the document and window of their own element (`getOwnerDocument`, `getOwnerWindow`), so in a same-origin frame or a popup window they hear that window's keys and presses, find ids in their own tree (its shadow root, else its document), hit-test, read the focused element and computed styles, schedule animation frames and read the pixel ratio there. An overlay with no element yet reads the document of its portal container. Lint rejects the script's `document`, `window`, `getComputedStyle`, `requestAnimationFrame` and `cancelAnimationFrame` in `src/components`, except where a choice is made in render before there is an element (eye-dropper and touch-pointer support, the default portal container and the pane host a dock panel creates), where the controller owns no element, and for leaving or opening a page. Timers use the bare `setTimeout` and `clearTimeout`.
+Components shall listen, look up and measure in the document and window of their own element (`getOwnerDocument`, `getOwnerWindow`), so in a same-origin frame or a popup window they hear that window's keys and presses, find ids in their own tree (its shadow root, else its document) and, for ids of their own parts or targets, only inside themselves, hit-test, read the focused element and computed styles, schedule animation frames and read the pixel ratio there. An overlay with no element yet reads the document of its portal container. Lint rejects the script's `document`, `window`, `getComputedStyle`, `requestAnimationFrame` and `cancelAnimationFrame` in `src/components`, except where a choice is made in render before there is an element (eye-dropper and touch-pointer support, the default portal container and the pane host a dock panel creates), where the controller owns no element, and for leaving or opening a page. Timers use the bare `setTimeout` and `clearTimeout`.
 
 Implementation: `src/utils/owner-window.ts`, `eslint.config.js`
 Verification: `src/utils/owner-window.test.ts`, `src/components/problem-list/problem-list.test.tsx`, `src/components/pdf-viewer/page-bitmap.test.ts`
+
+### UIC-PORTAL-1.8 - Shadow roots
+
+`enableShadowRoots()` shall turn on support for rendering inside shadow roots, as web components hold the library, for the whole page: presses, focus moves, focus containment and outside-press checks follow events and focus across shadow boundaries, through React Aria's shadow DOM support. A host calls it once before rendering into a shadow root; it cannot be turned off, and without it presses on the library's buttons inside a shadow root may not register. Ids a component looks up inside itself are found in its own tree and never outside the component (UIC-PORTAL-1.7).
+
+Implementation: `src/components/portal/shadow-roots.ts`, `src/primitives/flags.ts`
+Verification: `e2e/merge-view.spec.ts`, `e2e/text-diff.spec.ts`, `e2e/redline-compare.spec.ts`, `e2e/annotation-layer.spec.ts`
 
 ## UIC-PORTAL-2 - Layers
 

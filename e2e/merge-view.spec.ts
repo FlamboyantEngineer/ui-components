@@ -149,4 +149,19 @@ test.describe('Merge View lab', () => {
     }).toPass();
     await lab.expectAccessible('[data-lab-field="settings"]');
   });
+
+  test('UIC-MERGE-VIEW-3.2 UIC-PORTAL-1.8 moves between conflicts inside a shadow root', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('merge-view');
+    const demo = page.locator('[data-lab-demo="shadow-merge"]');
+    await demo.scrollIntoViewIfNeeded();
+    await demo.getByRole('button', { name: 'Next conflict' }).click();
+    await expect(demo.getByRole('textbox', { name: 'Result of conflict 1' })).toBeFocused();
+    await demo.getByRole('button', { name: 'Next conflict' }).click();
+    await expect(demo.getByRole('textbox', { name: 'Result of conflict 2' })).toBeFocused();
+    await demo.getByRole('button', { name: 'Previous conflict' }).click();
+    await expect(demo.getByRole('textbox', { name: 'Result of conflict 1' })).toBeFocused();
+  });
 });

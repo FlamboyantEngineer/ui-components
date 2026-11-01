@@ -146,4 +146,23 @@ test.describe('Redline Compare lab', () => {
     await expect(page.getByRole('group', { name: /^Pump maintenance/ })).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-REDLINE-COMPARE-2.4 UIC-REDLINE-COMPARE-3.1 UIC-PORTAL-1.8 moves focus to rows inside a shadow root', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('redline-compare');
+    const demo = page.locator('[data-lab-demo="shadow-redline"]');
+    await demo.scrollIntoViewIfNeeded();
+    const rows = demo.locator('.ui-redline-compare__row');
+    await demo.getByRole('button', { name: 'Next change' }).click();
+    await expect(rows.and(page.locator('[data-current]'))).toBeFocused();
+    await demo.getByRole('button', { name: 'Go to new position' }).click();
+    const moved = rows.filter({ has: page.getByRole('button', { name: 'Go to old position' }) });
+    await expect(moved).toBeFocused();
+    await moved.getByRole('button', { name: 'Go to old position' }).click();
+    await expect(
+      rows.filter({ has: page.getByRole('button', { name: 'Go to new position' }) }),
+    ).toBeFocused();
+  });
 });

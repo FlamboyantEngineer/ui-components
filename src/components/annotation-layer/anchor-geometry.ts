@@ -1,5 +1,6 @@
 // Anchor rectangles in the layer's own coordinates, measured from elements, and hit testing.
 
+import { getElementByIdWithin } from '../../utils/owner-window.js';
 import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 
@@ -41,8 +42,8 @@ export function findTargets(layer: Element, annotations: readonly Annotation[]):
   const targets = new Map<Key, Element>();
   for (const { id, rects, targetId } of annotations) {
     if (rects || targetId === undefined) continue;
-    const element = layer.ownerDocument.getElementById(targetId);
-    if (element && layer.contains(element)) targets.set(id, element);
+    const element = getElementByIdWithin(layer, targetId);
+    if (element) targets.set(id, element);
   }
   return targets;
 }

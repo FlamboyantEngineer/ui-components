@@ -1,5 +1,6 @@
 'use client';
 
+import { getElementByIdWithin } from '../../utils/owner-window.js';
 import { useId, useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -137,8 +138,7 @@ export function MergeView({
   const { blocks, current } = merge;
   const moveTo = (conflict: number) => {
     merge.setCurrent(conflict);
-    rootRef.current?.ownerDocument
-      .getElementById(getConflictId(baseId, conflict))
+    getElementByIdWithin(rootRef.current, getConflictId(baseId, conflict))
       ?.querySelector('textarea')
       ?.focus();
   };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { MergeView, type MergeViewResult } from '../../src/components/merge-view/merge-view.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const base = [
@@ -217,6 +218,14 @@ mountLab(
       description="A whole section added to an empty text is one clean change, and every line appears in the result."
     >
       <MergeView aria-label="Inserted section merge" base="" ours={insertedSection} theirs="" />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="The same merge inside an open shadow root, as a web component holds it: Next conflict and Previous conflict still move focus into each conflict's result."
+    >
+      <ShadowRootApp demo="shadow-merge">
+        <MergeView aria-label="Shadow merge" base={base} ours={ours} theirs={theirs} />
+      </ShadowRootApp>
     </LabSection>
   </>,
 );

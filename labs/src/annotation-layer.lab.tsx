@@ -10,6 +10,7 @@ import { CommentThread } from '../../src/components/comment-thread/comment-threa
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
 import type { Key } from '../../src/core/props.js';
 import { requireDefined } from './require-defined.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
@@ -96,6 +97,36 @@ function Method({ prefix, isLong = false }: { prefix: string; isLong?: boolean }
         <span id={`${prefix}-blind`}>bake the shell blind</span> for 15 minutes.
       </p>
     </div>
+  );
+}
+
+/**
+ * A note inside an open shadow root whose target id is also used by a phrase outside it: the
+ * layer anchors to its own phrase, and to nothing once that phrase goes.
+ */
+function ShadowReview() {
+  const [hasPhrase, setPhrase] = useState(true);
+  return (
+    <>
+      <p>
+        Outside the shadow root: <span id="shadow-blind">bake the shell blind</span>.
+      </p>
+      <p>
+        <Button size="sm" onPress={() => setPhrase(!hasPhrase)}>
+          {hasPhrase ? 'Remove the phrase' : 'Restore the phrase'}
+        </Button>
+      </p>
+      <ShadowRootApp demo="shadow-notes">
+        <AnnotationLayer annotations={[{ id: 'blind', targetId: 'shadow-blind' }]}>
+          <p>
+            Prick the base and{' '}
+            {hasPhrase ? <span id="shadow-blind">bake the shell blind</span> : 'bake it'} for 15
+            minutes.
+          </p>
+          <AnnotationMargin aria-label="Shadow notes" renderCard={renderCard} />
+        </AnnotationLayer>
+      </ShadowRootApp>
+    </>
   );
 }
 
@@ -224,6 +255,12 @@ mountLab(
         <p>Two annotations with different primitive ID types.</p>
         <AnnotationMargin renderCard={(annotation) => `${typeof annotation.id} ID card`} />
       </AnnotationLayer>
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="A note inside an open shadow root, as a web component holds it, anchored to a phrase with the same id as one outside the root. The note anchors to its own phrase, and shows its anchor as removed once that phrase goes, never the phrase outside."
+    >
+      <ShadowReview />
     </LabSection>
   </>,
 );

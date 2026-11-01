@@ -7,6 +7,7 @@ import {
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import type { DocumentBlock } from '../../src/utils/compare-blocks.js';
 import { requireDefined } from './require-defined.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LargeInputDemo } from './large-input-demo.js';
 
@@ -253,6 +254,14 @@ mountLab(
         ]}
         data-lab-demo="typed"
       />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="Visitor notes inside an open shadow root, as a web component holds them: Next change and the links between a moved paragraph's two positions still move focus to the right row."
+    >
+      <ShadowRootApp demo="shadow-redline">
+        <RedlineCompare aria-label="Shadow notes" oldBlocks={draftNotes} newBlocks={finalNotes} />
+      </ShadowRootApp>
     </LabSection>
   </>,
 );

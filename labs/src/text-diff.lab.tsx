@@ -11,6 +11,7 @@ import {
 } from '../../src/components/text-diff/text-diff.js';
 import type { ScrollAnchor } from '../../src/utils/scroll-offset-map.js';
 import { useSyncedScroll } from '../../src/utils/use-synced-scroll.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { diffSequences, mapScrollOffset } from '../../src/utils/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
@@ -318,6 +319,19 @@ mountLab(
           ],
         ]}
       />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="Folded settings inside an open shadow root, as a web component holds them: moving between changes and showing folded lines still move focus to the right row."
+    >
+      <ShadowRootApp demo="shadow-diff">
+        <TextDiff
+          aria-label="Shadow settings"
+          oldText={oldSettings}
+          newText={newSettings}
+          context={2}
+        />
+      </ShadowRootApp>
     </LabSection>
   </>,
 );

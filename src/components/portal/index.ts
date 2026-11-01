@@ -1,4 +1,5 @@
 export { Portal, PortalContainerProvider, PortalHost, useLayerZIndex } from './portal.js';
+export { enableShadowRoots } from './shadow-roots.js';
 export type {
   LayerZIndex,
   PortalContainerProviderProps,

@@ -1,5 +1,6 @@
 'use client';
 
+import { getElementByIdWithin } from '../../utils/owner-window.js';
 import { useId, useMemo, type KeyboardEvent, type Ref } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -74,7 +75,7 @@ function useRedlineNavigation(
   const index = changes.findIndex((row) => row.key === current);
   const rowId = (key: string) => `${baseId}-row-${positions.get(key)}`;
   const focusRow = (key: string) => {
-    const element = rootRef.current?.ownerDocument.getElementById(rowId(key));
+    const element = getElementByIdWithin(rootRef.current, rowId(key));
     element?.focus();
     element?.scrollIntoView?.({ block: 'nearest' });
   };

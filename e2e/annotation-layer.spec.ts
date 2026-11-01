@@ -162,4 +162,26 @@ test.describe('Annotation Layer lab', () => {
     await lab.open('annotation-layer');
     await lab.expectAccessible();
   });
+
+  test('UIC-ANNOTATION-LAYER-1.2 UIC-PORTAL-1.8 anchors to targets inside its own shadow root', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('annotation-layer');
+    const demo = page.locator('[data-lab-demo="shadow-notes"]');
+    await demo.scrollIntoViewIfNeeded();
+    const marks = demo.locator('.ui-annotation-layer__mark');
+    const card = demo.locator('.ui-annotation-layer__card');
+    await expect(marks).toHaveCount(1);
+    await expect(card).not.toHaveAttribute('data-orphaned', 'true');
+    const phrase = await boxOf(demo.locator('#shadow-blind'));
+    const mark = await boxOf(marks.first());
+    expect(Math.abs(mark.y - phrase.y)).toBeLessThan(2);
+    await page.getByRole('button', { name: 'Remove the phrase' }).click();
+    await expect(marks).toHaveCount(0);
+    await expect(card).toHaveAttribute('data-orphaned', 'true');
+    await page.getByRole('button', { name: 'Restore the phrase' }).click();
+    await expect(marks).toHaveCount(1);
+    await expect(card).not.toHaveAttribute('data-orphaned', 'true');
+  });
 });

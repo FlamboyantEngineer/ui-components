@@ -215,3 +215,18 @@ test('UIC-DIFF-3.1 UIC-SYNCED-SCROLL-1.2 shows the exported helpers in a host-si
     ),
   ).toHaveText('400');
 });
+
+test('UIC-TEXT-DIFF-1.6 UIC-TEXT-DIFF-2.2 UIC-PORTAL-1.8 moves focus to rows inside a shadow root', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('text-diff');
+  const demo = page.locator('[data-lab-demo="shadow-diff"]');
+  await demo.scrollIntoViewIfNeeded();
+  const lines = demo.locator('.ui-text-diff__line');
+  await demo.getByRole('button', { name: 'Next change' }).click();
+  await expect(demo.locator('.ui-text-diff__line[data-current]').first()).toBeFocused();
+  await demo.getByRole('button', { name: 'Show 9 more lines' }).first().click();
+  await expect(lines.nth(5)).toBeFocused();
+  await expect(lines.nth(5)).toContainText('retries = 3');
+});

@@ -1,5 +1,6 @@
 'use client';
 
+import { getElementByIdWithin } from '../../utils/owner-window.js';
 import {
   useId,
   useLayoutEffect,
@@ -188,7 +189,7 @@ export function TextDiff({
   const previous = current === null ? -1 : current - 1;
   const next = current === null ? 0 : current + 1;
 
-  const focusRow = (id: string) => rootRef.current?.ownerDocument.getElementById(id)?.focus();
+  const focusRow = (id: string) => getElementByIdWithin(rootRef.current, id)?.focus();
   useLayoutEffect(() => {
     if (pendingFocus.current === null) return;
     focusRow(pendingFocus.current);

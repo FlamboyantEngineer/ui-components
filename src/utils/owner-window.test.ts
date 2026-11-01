@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { getElementByIdFrom, getOwnerDocument, getOwnerWindow } from './owner-window.js';
+import {
+  getElementByIdFrom,
+  getElementByIdWithin,
+  getOwnerDocument,
+  getOwnerWindow,
+} from './owner-window.js';
 
 function frameWindow(): Window {
   const frame = document.createElement('iframe');
@@ -35,5 +40,19 @@ describe('owner document and window', () => {
     shadow.innerHTML = '<p id="note">Shadow</p><span></span>';
     expect(getElementByIdFrom(shadow.querySelector('span'), 'note')?.textContent).toBe('Shadow');
     expect(getElementByIdFrom(null, 'note')).toBeNull();
+  });
+
+  it('UIC-PORTAL-1.7 finds an id inside a container in its shadow root, never outside it', () => {
+    document.body.innerHTML = '<p id="row">Outside</p>';
+    const shadow = document.body
+      .appendChild(document.createElement('div'))
+      .attachShadow({ mode: 'open' });
+    shadow.innerHTML = '<section><p id="row">Inside</p></section><p id="beside">Beside</p>';
+    const section = shadow.querySelector('section');
+    expect(getElementByIdWithin(section, 'row')?.textContent).toBe('Inside');
+    expect(getElementByIdWithin(section, 'beside')).toBeNull();
+    const light = document.body.appendChild(document.createElement('section'));
+    expect(getElementByIdWithin(light, 'row')).toBeNull();
+    expect(getElementByIdWithin(null, 'row')).toBeNull();
   });
 });

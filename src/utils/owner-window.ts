@@ -28,3 +28,15 @@ export function getElementByIdFrom(node: Node | null | undefined, id: string): H
   if (root?.nodeType === 11) return (root as ShadowRoot).getElementById(id);
   return getOwnerDocument(node).getElementById(id);
 }
+
+/**
+ * The element with `id` inside `container`, looked up in the tree `container` is in (its shadow
+ * root, else its document), or `null` when the element with that id lies outside `container`.
+ */
+export function getElementByIdWithin(
+  container: Node | null | undefined,
+  id: string,
+): HTMLElement | null {
+  const element = container ? getElementByIdFrom(container, id) : null;
+  return element && container?.contains(element) ? element : null;
+}

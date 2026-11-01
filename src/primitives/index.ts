@@ -257,3 +257,4 @@ export {
   ColorThumb,
 } from './colors.js';
 export { parseColor, type Color } from './color-values.js';
+export { enableShadowDOM } from './flags.js';
