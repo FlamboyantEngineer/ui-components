@@ -6,7 +6,7 @@ import {
   MoreVerticalGlyph,
   SearchGlyph,
 } from '../../src/core/glyphs.js';
-import { useState, type CSSProperties } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
@@ -252,6 +252,78 @@ function LongBoard() {
   );
 }
 
+interface Step {
+  id: string;
+  title: string;
+  column: string;
+}
+
+const stepColumns: BoardColumn[] = [
+  { id: 'todo', title: 'To do' },
+  { id: 'done', title: 'Done' },
+];
+
+const placeStep = (step: Step, cell: { column: Key }): Step => ({
+  ...step,
+  column: String(cell.column),
+});
+
+/** A board that applies its own moves and reports the last one. */
+function StepBoard(props: {
+  label: string;
+  steps: Step[];
+  renderStep?: (step: Step) => ReactNode;
+}) {
+  const { label, renderStep } = props;
+  const [steps, setSteps] = useState(props.steps);
+  const [output, setOutput] = useState(`${label}: no move yet`);
+  return (
+    <>
+      <Board
+        aria-label={label}
+        columns={stepColumns}
+        items={steps}
+        getColumn={(step) => step.column}
+        getTextValue={(step) => step.title}
+        renderCard={renderStep ?? ((step) => step.title)}
+        onMove={(move) => {
+          setOutput(`${label}: moved ${String(move.key)} to ${String(move.column)}`);
+          setSteps(applyBoardMove(steps, move, placeStep));
+        }}
+      />
+      <output data-lab-output>{output}</output>
+    </>
+  );
+}
+
+/** A board whose first card draws a board of its own; both use the keys a and b. */
+function NestedBoards() {
+  return (
+    <div style={frame} data-lab-demo="nested">
+      <StepBoard
+        label="Rooms"
+        steps={[
+          { id: 'a', title: 'Paint the hall', column: 'todo' },
+          { id: 'b', title: 'Wash the windows', column: 'todo' },
+        ]}
+        renderStep={(step) =>
+          step.id === 'a' ? (
+            <StepBoard
+              label="Hall steps"
+              steps={[
+                { id: 'a', title: 'Sand the walls', column: 'todo' },
+                { id: 'b', title: 'Prime the walls', column: 'todo' },
+              ]}
+            />
+          ) : (
+            step.title
+          )
+        }
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -315,6 +387,12 @@ mountLab(
       description="Numeric and text keys identify separate cards and columns; keyboard moves keep focus on the item that moved."
     >
       <TypedBoard />
+    </LabSection>
+    <LabSection
+      title="Nested boards"
+      description="A card that draws a board of its own. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys."
+    >
+      <NestedBoards />
     </LabSection>
   </>,
 );
