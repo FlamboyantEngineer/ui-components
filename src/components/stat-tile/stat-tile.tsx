@@ -84,7 +84,9 @@ export function StatTile({
   const valueText = valueLabel ?? (typeof value === 'number' ? format.format(value) : null);
   const deltaFormat = useNumberFormatter({
     ...(deltaFormatOptions ?? formatOptions),
-    signDisplay: 'exceptZero',
+    // A change that rounds to zero keeps its sign (`+0`, `-0`), so its text still says which
+    // way it went; only no change at all reads `0`.
+    signDisplay: change?.trend === 'flat' ? 'exceptZero' : 'always',
   });
   return (
     <Card

@@ -41,6 +41,14 @@ test.describe('Stat Tile lab', () => {
     const cell = (value: string) => matrixCell(page, `value=${value}`);
     await expect(cell('percent').locator('.ui-stat-tile__value')).toHaveText('99.87%');
     await expect(cell('percent').locator('.ui-stat-tile__delta')).toHaveText('-0.04%');
+    // A fall too small to show keeps its sign in the text every reader gets.
+    const tiny = cell('tiny change').getByRole('region', { name: 'Error rate' });
+    await expect(tiny).toHaveAttribute('data-trend', 'down');
+    await expect(tiny).toMatchAriaSnapshot(`
+      - region "Error rate":
+        - heading "Error rate"
+        - text: 1.2% -0%
+    `);
     await expect(cell('currency').locator('.ui-stat-tile__value')).toHaveText('€48K');
     await expect(cell('worded').locator('.ui-stat-tile__value')).toHaveText('Healthy');
     await expect(cell('no delta').locator('.ui-stat-tile__delta')).toHaveCount(0);
