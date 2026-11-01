@@ -61,6 +61,32 @@ function ChangedWhileSigning() {
   );
 }
 
+type CompactSetup = 'optional comment' | 'no comment' | 'signed' | 'disabled';
+
+/** One control in a narrow column, as a side panel would hold it. */
+function CompactDecision({
+  picked,
+  setup,
+}: {
+  picked: keyof typeof pickedValues;
+  setup: CompactSetup;
+}) {
+  return (
+    <div style={{ width: 240 }}>
+      <DecisionControl
+        label={`Narrow, ${picked} picked, ${setup}`}
+        defaultValue={pickedValues[picked]}
+        comment={setup === 'no comment' ? 'none' : 'optional'}
+        signature={setup === 'signed' ? { userName: 'Ada Park' } : undefined}
+        isDisabled={setup === 'disabled'}
+        onSubmit={() =>
+          Promise.reject(new Error('The review closed before your decision arrived.'))
+        }
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -92,6 +118,18 @@ mountLab(
             onSubmit={() => {}}
           />
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Compact width"
+      description="Each state in a 240 pixel column: the comment starts at two rows and keeps no room for a message it has not got. Submit fails in every cell, so the error shows where it would."
+    >
+      <StateMatrix
+        axes={{
+          picked: ['none', 'approve', 'reject'] as const,
+          setup: ['optional comment', 'no comment', 'signed', 'disabled'] as const,
+        }}
+        render={({ picked, setup }) => <CompactDecision picked={picked} setup={setup} />}
       />
     </LabSection>
     <LabSection

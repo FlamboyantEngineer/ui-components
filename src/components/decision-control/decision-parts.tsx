@@ -216,7 +216,7 @@ export function DecisionSignature({
 
 /**
  * The comment field, unless no decision asks for one: required by `comment`, or by the decision
- * picked.
+ * picked. Two rows to start, growing with the text, and no room kept for a message it has not got.
  */
 export function DecisionComment({
   comment,
@@ -239,6 +239,8 @@ export function DecisionComment({
     <TextField
       label={strings.comment}
       multiline
+      minRows={2}
+      density="compact"
       isRequired={comment === 'required' || Boolean(picked?.requiresComment)}
       isDisabled={isDisabled}
       value={value}

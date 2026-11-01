@@ -126,4 +126,42 @@ test.describe('Decision Control lab', () => {
     await lab.open('decision-control');
     await lab.expectAccessible();
   });
+
+  test('UIC-DECISION-CONTROL-1.3 keeps every state compact in a narrow column', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('decision-control');
+    /** The largest gap between the form's parts, and whether any part leaves the root's width. */
+    const layout = (address: string) =>
+      matrixCell(page, address)
+        .locator('.ui-decision-control')
+        .evaluate((root) => {
+          const outer = root.getBoundingClientRect();
+          const parts = [...(root.firstElementChild?.children ?? [])].map((part) =>
+            part.getBoundingClientRect(),
+          );
+          return {
+            gap: Math.max(
+              ...parts.slice(1).map((part, index) => part.top - (parts[index]?.bottom ?? 0)),
+            ),
+            fits: parts.every((part) => part.left >= outer.left && part.right <= outer.right + 0.5),
+          };
+        });
+    for (const picked of ['none', 'approve', 'reject']) {
+      for (const setup of ['optional comment', 'no comment', 'signed', 'disabled']) {
+        const where = `picked=${picked} setup=${setup}`;
+        const { gap, fits } = await layout(where);
+        expect(gap, where).toBeLessThanOrEqual(8);
+        expect(fits, where).toBe(true);
+      }
+    }
+    // A failed submission adds its error between the comment and Submit, as tight.
+    const form = page.getByRole('form', { name: 'Narrow, approve picked, optional comment' });
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(form.getByText('The review closed before your decision arrived.')).toBeVisible();
+    const failed = await layout('picked=approve setup=optional comment');
+    expect(failed.gap).toBeLessThanOrEqual(8);
+    expect(failed.fits).toBe(true);
+  });
 });

@@ -20,7 +20,7 @@ Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/
 
 ### UIC-DECISION-CONTROL-1.3 - Comment
 
-A multi-line `TextField` (`ui-decision-control__comment`) labelled by the provider's `comment` string shall follow the choice unless `comment` is `none` and no option has `requiresComment`. It is required when `comment` is `required`, or when the picked option has `requiresComment`, so a scored vote can ask for a reason with its negative scores only.
+A multi-line `TextField` (`ui-decision-control__comment`) labelled by the provider's `comment` string shall follow the choice unless `comment` is `none` and no option has `requiresComment`. It is required when `comment` is `required`, or when the picked option has `requiresComment`, so a scored vote can ask for a reason with its negative scores only. The field starts at two rows and grows with its text, and takes the `compact` field density, so it keeps no room for a validation message it has not got.
 
 Implementation: `src/components/decision-control/decision-parts.tsx`
 Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/decision-control.spec.ts`
