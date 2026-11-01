@@ -46,6 +46,16 @@ describe('MenuPopover and SubmenuTrigger', () => {
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
   });
 
+  it('UIC-MENU-4.3 closes on Escape pressed in the same task as a page scroll', async () => {
+    const user = userEvent.setup({ delay: null });
+    render(<MenuButton items={fruitEntries} aria-label="Fruit" />);
+    await openMenu(user);
+    // A browser's page scroll bubbles from the document to the window.
+    fireEvent(document, new Event('scroll', { bubbles: true }));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+  });
+
   it('UIC-MENU-4.4 stacks the popover on its layer, honouring provider z-indexes', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<MenuButton items={fruitEntries} aria-label="Fruit" />);
