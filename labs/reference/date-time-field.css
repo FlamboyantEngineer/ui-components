@@ -18,7 +18,8 @@
 
 /*
  * Where the field is too narrow, a range's end, the separator and the button wrap onto further rows
- * of the frame, so every segment stays visible and reachable.
+ * of the frame, so every segment stays visible and reachable. Each row is a full control row, so a
+ * field on one row takes its size's height whatever the surrounding type.
  */
 .ui-date-time-field__group {
   display: inline-flex;
@@ -28,10 +29,11 @@
   min-width: 0;
   box-sizing: border-box;
   min-height: var(--ref-field-height);
-  padding: 2px 4px 2px 8px;
+  padding: 0 4px 0 8px;
   border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: var(--ref-field-fill);
+  line-height: 1.25;
 }
 
 .ui-date-time-field[data-mode='time'] .ui-date-time-field__group {
@@ -73,6 +75,7 @@
 .ui-date-time-field__input {
   display: inline-flex;
   align-items: center;
+  min-height: calc(var(--ref-field-height) - 2px);
   white-space: nowrap;
 }
 
