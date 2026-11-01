@@ -16,6 +16,13 @@ const pairMessages: ChatMessageData[] = [
     text: 'Are we still on for the market on Saturday?',
   }),
   textMessage({
+    id: 'pair-1b',
+    authorId: readerId,
+    time: '2026-04-19T18:04:00',
+    text: 'Yes! 9 at the main gate?',
+    delivery: 'read',
+  }),
+  textMessage({
     id: 'pair-2',
     authorId: readerId,
     time: '2026-04-19T18:05:00',
@@ -71,7 +78,7 @@ export function ChatPeopleCases() {
   return (
     <LabSection
       title="Between two people"
-      description="Your messages walk through Sending, Sent, Delivered and Read; the failed one offers Retry. Ana shows as Active in the header, types (the indicator under the transcript) and answers. Hover or focus a message for its actions: Reply quotes it in a banner above the composer, React adds an emoji, and on your own messages Edit (or Up in the empty composer) edits it in place and Delete asks first. Your draft is kept for this conversation: type, reload the page, and it is still there."
+      description="Your messages walk through Sending, Sent, Delivered and Read; the failed one offers Retry. Ana shows as Active in the header, types (the indicator under the transcript) and answers. Hover or focus a message for its actions: Reply quotes it in a banner above the composer, React adds an emoji, and on your own messages Edit (or Up in the empty composer) edits it in place and Delete asks first. Your first answer went twice with the same words: Edit on either starts from that message, leaving any edit of the other. Your draft is kept for this conversation: type, reload the page, and it is still there."
     >
       <PairDemo />
     </LabSection>
