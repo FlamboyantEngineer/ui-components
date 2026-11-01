@@ -212,7 +212,7 @@ export function useTabMenuTarget(menu: TabMenu, options: TabMenuTargetOptions) {
       onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
         if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) showEntries();
       },
-      onPointerDown: (event: PointerEvent<HTMLElement>) => {
+      onPointerDownCapture: (event: PointerEvent<HTMLElement>) => {
         if (event.pointerType === 'touch') showEntries();
       },
     },
