@@ -23,7 +23,8 @@ interface PinnedOffsets {
 const noOffsets: TablePinOffsets = {};
 
 function sumWidths(columns: readonly PinnedColumnWidth[], pin: TableColumnPin) {
-  const offsets: Record<string, number> = {};
+  // No prototype: a column key such as `__proto__` is a key like any other.
+  const offsets = Object.create(null) as Record<string, number>;
   let offset = 0;
   for (const column of columns) {
     if (column.pin !== pin) continue;

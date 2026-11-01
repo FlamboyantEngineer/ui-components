@@ -21,6 +21,7 @@ import {
   selectionColumnId,
 } from './table-structure.js';
 import type { TableNode } from './table-tree.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** A row's caller attributes: `false` leaves an attribute out, unlike a root `data-*` prop. */
 function toRowAttributes(attributes: TableRowAttributes | undefined) {
@@ -88,7 +89,7 @@ export function TableDataRow<T extends TableRow>({
     >
       {structure.hasSelection ? (
         <Cell
-          style={getPinStyle(selectionPin, model.pinOffsets[selectionColumnId])}
+          style={getPinStyle(selectionPin, readOwn(model.pinOffsets, selectionColumnId))}
           render={renderCellElement(structure.isVirtualized)}
           {...hooks.slot('cell', { kind: 'selection', pinned: selectionPin })}
         >
@@ -106,7 +107,7 @@ export function TableDataRow<T extends TableRow>({
       ))}
       {structure.hasActions && renderRowActions ? (
         <Cell
-          style={getPinStyle(actionsPin, model.pinOffsets[actionsColumnId])}
+          style={getPinStyle(actionsPin, readOwn(model.pinOffsets, actionsColumnId))}
           render={renderCellElement(structure.isVirtualized)}
           {...hooks.slot('cell', { kind: 'actions', pinned: actionsPin })}
         >

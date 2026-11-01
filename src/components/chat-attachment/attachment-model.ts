@@ -6,6 +6,7 @@ import {
 } from '../../core/glyphs.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** The kinds an attachment can be: `file` is any other or unknown type. */
 export type ChatAttachmentKind = 'image' | 'pdf' | 'archive' | 'text' | 'file';
@@ -106,7 +107,7 @@ export function getAttachmentKind(mediaType: string, name: string): ChatAttachme
   const type = mediaType.trim().toLowerCase();
   if (!genericTypes.has(type)) return kindOfType(type);
   const extension = /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? '';
-  return extensionKinds[extension] ?? 'file';
+  return readOwn(extensionKinds, extension) ?? 'file';
 }
 
 /** The glyph of a kind; other files take the glyph of their media family (video, audio, file). */

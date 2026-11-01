@@ -91,6 +91,37 @@ export function TypedTable() {
   );
 }
 
+const shelves = [
+  { id: 'a', name: 'Alpha shelf', code: 'A-1', maker: 'North works', size: 'Large' },
+  { id: 'b', name: 'Blue shelf', code: 'B-2', maker: 'South works', size: 'Small' },
+];
+
+/** Column ids that an object also inherits: each pins, resizes and filters like any other id. */
+export function ObjectKeyTable() {
+  return (
+    <div data-lab-demo="object-key-table" style={{ maxWidth: 420, overflowX: 'auto' }}>
+      <Table
+        aria-label="Prototype-named column ids"
+        rows={shelves}
+        columns={[
+          { id: '__proto__', header: 'Code', pin: 'start', width: 90, getValue: (row) => row.code },
+          {
+            id: 'constructor',
+            header: 'Maker',
+            pin: 'start',
+            width: 130,
+            allowsResizing: true,
+            filter: { type: 'text' },
+            getValue: (row) => row.maker,
+          },
+          { id: 'name', header: 'Name', width: 160 },
+          { id: 'valueOf', header: 'Size', width: 120, getValue: (row) => row.size },
+        ]}
+      />
+    </div>
+  );
+}
+
 const typedColumns: BoardColumn[] = [
   { id: 1, title: 'Numeric column' },
   { id: '1', title: 'Text column' },

@@ -70,6 +70,24 @@ describe('column sizing', () => {
       ),
     ).toEqual({ name: 80, city: '1fr' });
     expect(pickColumnWidths({ name: 160, city: 'auto' }, columns)).toEqual({ name: 160 });
+    const named = [
+      { id: '__proto__', minWidth: 40 },
+      { id: 'constructor', minWidth: 40 },
+    ];
+    const picked = pickColumnWidths(
+      new Map<unknown, unknown>([
+        ['__proto__', 120],
+        ['constructor', '2fr'],
+      ]),
+      named,
+    );
+    expect(Object.entries(picked)).toEqual([
+      ['__proto__', 120],
+      ['constructor', '2fr'],
+    ]);
+    expect(Object.entries(pickColumnWidths(JSON.parse('{"__proto__":90}'), named))).toEqual([
+      ['__proto__', 90],
+    ]);
     for (const garbage of [null, 'wide', 42, ['name', 100]]) {
       expect(pickColumnWidths(garbage, columns)).toEqual({});
     }

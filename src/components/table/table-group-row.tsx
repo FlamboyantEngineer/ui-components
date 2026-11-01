@@ -33,6 +33,7 @@ import {
   selectionColumnId,
 } from './table-structure.js';
 import { renderLabelledRow } from './table-spanning-row.js';
+import { readOwn } from '../../utils/read-own.js';
 
 /** A column's cell in a group header row: its aggregate of the group's rows, if it has one. */
 function renderAggregate<T extends TableRow>(
@@ -91,7 +92,7 @@ function EdgeCell<T>({ kind, model }: { kind: 'selection' | 'actions'; model: Ta
   const columnId = kind === 'selection' ? selectionColumnId : actionsColumnId;
   return (
     <Cell
-      style={getPinStyle(pin, model.pinOffsets[columnId])}
+      style={getPinStyle(pin, readOwn(model.pinOffsets, columnId))}
       {...hooks.slot('aggregate-cell', { kind, pinned: pin })}
     />
   );
@@ -118,7 +119,7 @@ function TableGroupRow<T extends TableRow>({
   const firstColumn = structure.columns[0];
   const labelPin = firstColumn ? getColumnPin(structure, firstColumn) : undefined;
   const labelStyle = ({ level }: CellRenderProps): CSSProperties => ({
-    ...getPinStyle(labelPin, firstColumn ? pinOffsets[firstColumn.id] : undefined),
+    ...getPinStyle(labelPin, firstColumn ? readOwn(pinOffsets, firstColumn.id) : undefined),
     ...measuredProperty('table-level', String(level)),
   });
   const labelId = useId();
@@ -154,7 +155,7 @@ function TableGroupRow<T extends TableRow>({
         return (
           <Cell
             key={column.id}
-            style={getPinStyle(pin, pinOffsets[column.id])}
+            style={getPinStyle(pin, readOwn(pinOffsets, column.id))}
             {...hooks.slot('aggregate-cell', {
               kind: 'data',
               align: column.align ?? 'start',

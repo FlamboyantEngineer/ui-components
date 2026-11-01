@@ -77,7 +77,8 @@ export function pickColumnWidths(
   columns: readonly TableColumnSizing[],
 ): TableColumnWidths {
   const byId = new Map(columns.map((column) => [column.id, column]));
-  const widths: Record<string, TableColumnSize> = {};
+  // No prototype: a column id such as `__proto__` is a key like any other.
+  const widths = Object.create(null) as Record<string, TableColumnSize>;
   for (const [key, value] of listEntries(source)) {
     const column = byId.get(String(key));
     if (column && isColumnSize(value)) widths[column.id] = clampColumnWidth(value, column);

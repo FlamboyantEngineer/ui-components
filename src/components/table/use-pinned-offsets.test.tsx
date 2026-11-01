@@ -64,6 +64,41 @@ describe('Table pinned columns', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'TABLE');
   });
 
+  it('UIC-TABLE-8.6 pins, sizes and filters columns with prototype-named ids', () => {
+    interface Odd {
+      id: string;
+      __proto__: string;
+      constructor: string;
+    }
+    const odd = [{ id: 'one' }] as unknown as Odd[];
+    render(
+      <Table<Odd>
+        aria-label="Odd ids"
+        rows={odd}
+        columns={[
+          { id: '__proto__', header: 'Proto', pin: 'start', width: 100, renderCell: () => 'P' },
+          { id: 'constructor', header: 'Maker', pin: 'start', width: 80, renderCell: () => 'M' },
+          {
+            id: 'valueOf',
+            header: 'Value',
+            width: 90,
+            filter: { type: 'text' },
+            renderCell: () => 'V',
+          },
+        ]}
+        defaultFilter={{ columns: JSON.parse('{"valueOf":"zz"}') as Record<string, string> }}
+      />,
+    );
+    expect(header('Proto')).toHaveAttribute('data-pinned', 'start');
+    expect(offset(header('Proto'))).toBe('0px');
+    expect(offset(header('Maker'))).toBe('100px');
+    expect(header('Value')).not.toHaveAttribute('data-pinned');
+    // The filter on `valueOf` reads the filter's own value, not the object's method.
+    expect(header('Value')).toHaveAttribute('data-filtered');
+    expect(header('Proto')).not.toHaveAttribute('data-filtered');
+    expect(screen.queryByRole('gridcell', { name: 'P' })).not.toBeInTheDocument();
+  });
+
   it('UIC-TABLE-8.6 leaves the fixed columns unpinned without pins at their edge', () => {
     const { container } = renderCities({ columns: columns.slice(0, 2) });
     expect(container.querySelector('th[data-kind="selection"]')).toHaveAttribute(

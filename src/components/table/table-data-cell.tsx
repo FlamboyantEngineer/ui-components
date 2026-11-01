@@ -15,6 +15,7 @@ import { getCellValue, type TableColumn, type TableRow } from './table-rows.js';
 import { renderCellElement } from './table-spanning-row.js';
 import { getCellWrap, getColumnPin, getPinStyle } from './table-structure.js';
 import { isEditingCell } from './use-cell-editing.js';
+import { readOwn } from '../../utils/read-own.js';
 
 function renderCellContent<T extends TableRow>(row: T, column: TableColumn<T>): ReactNode {
   if (column.renderCell) return column.renderCell(row);
@@ -67,7 +68,7 @@ export function TableDataCell<T extends TableRow>(props: {
 }) {
   const { row, column, isFirst, model } = props;
   const pin = getColumnPin(model.structure, column);
-  const pinStyle = getPinStyle(pin, model.pinOffsets[column.id]);
+  const pinStyle = getPinStyle(pin, readOwn(model.pinOffsets, column.id));
   const isTree = model.structure.treeColumn === column.id;
   const isEditing = isEditingCell(model.editing.editing, row, column.id);
   const range = describeRangeCell(model.cells, row, column);

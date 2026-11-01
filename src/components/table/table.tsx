@@ -41,6 +41,7 @@ import { useTableGrid, type TableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
 import type { TablePagination } from './use-table-rows.js';
 import type { TableSortOptions } from './use-table-sort.js';
+import { readOwn } from '../../utils/read-own.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
 
@@ -160,13 +161,13 @@ function createHeaderModel<T extends TableRow>(
     sort: view.sort.descriptors,
     isMultipleSort: view.sort.isMultiple,
     columnDrag: grid.columnReorder.drag,
-    isFiltered: (column) => !isEmptyFilterValue(values[column.id]),
+    isFiltered: (column) => !isEmptyFilterValue(readOwn(values, column.id)),
     renderFilter: (column) =>
       column.filter ? (
         <TableColumnFilter
           column={column}
           label={getColumnText(column)}
-          value={values[column.id]}
+          value={readOwn(values, column.id)}
           rows={options.rows}
           getChildRows={options.getChildRows}
           onChange={(value) => view.onFilterChange(setColumnFilter(view.filter, column.id, value))}
