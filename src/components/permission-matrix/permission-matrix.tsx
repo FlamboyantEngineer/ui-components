@@ -92,23 +92,31 @@ interface PermissionGrouping {
 }
 
 /**
- * Groups the rows by their group's position in `groups`, so groups keep the caller's order;
- * permissions outside every group come last, named by the provider's `emptyValue`.
+ * Groups the rows by their group's id, so a group's header row, its controls and its collapsed
+ * state stay with the group as groups move, and orders the groups as `groups` does; permissions
+ * outside every group come last, named by the provider's `emptyValue`.
  */
 function useGrouping(
   groups: readonly PermissionMatrixGroup[] | undefined,
   emptyLabel: string,
 ): PermissionGrouping {
   return useMemo(() => {
-    const order = new Map(groups?.map((group, index) => [group.id, index]));
-    const position = (row: PermissionRow) =>
-      row.group === undefined ? null : (order.get(row.group) ?? null);
-    const label = (index: number | null) =>
-      index === null ? emptyLabel : (groups?.[index]?.label ?? emptyLabel);
+    const order = new Map<unknown, number>(groups?.map((group, index) => [group.id, index]));
+    const labels = new Map<unknown, string>(groups?.map((group) => [group.id, group.label]));
+    const groupOf = (row: PermissionRow) =>
+      row.group !== undefined && order.has(row.group) ? row.group : null;
+    const label = (id: unknown) => labels.get(id) ?? emptyLabel;
+    const position = (value: unknown) => order.get(value) ?? Number.POSITIVE_INFINITY;
+    const grouping = {
+      id: 'group',
+      label: '',
+      getValue: groupOf,
+      compareValues: (left: unknown, right: unknown) => position(left) - position(right),
+    };
     return {
-      groupBy: groups ? [{ id: 'group', label: '', getValue: position }] : undefined,
-      renderGroupLabel: (group) => label(typeof group.value === 'number' ? group.value : null),
-      labelRows: (rows) => label(rows[0] ? position(rows[0]) : null),
+      groupBy: groups ? [grouping] : undefined,
+      renderGroupLabel: (group) => label(group.value),
+      labelRows: (rows) => label(rows[0] ? groupOf(rows[0]) : null),
     };
   }, [groups, emptyLabel]);
 }

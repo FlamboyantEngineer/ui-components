@@ -53,6 +53,13 @@ Verification: `src/components/permission-matrix/permission-matrix-identity.test.
 Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `labs/reference/permission-matrix.css`
 Verification: `src/components/permission-matrix/permission-matrix.test.tsx`, `e2e/permission-matrix.spec.ts`
 
+### UIC-PERMISSION-MATRIX-1.8 - Groups follow group ids
+
+Each group header row shall be identified by its group's `id` and the id's type, so `1` and `'1'` are distinct groups, while `groups` gives only their order. When `groups` are reordered, inserted or removed, every group checkbox stays with its group: the focused one keeps focus and its next change reports the same group's permissions, and a collapsed group stays collapsed while the other groups keep their own state.
+
+Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `src/components/table/table-groups.ts`
+Verification: `src/components/permission-matrix/permission-matrix-groups.test.tsx`, `e2e/permission-matrix.spec.ts`
+
 ## UIC-PERMISSION-MATRIX-2 - Grants
 
 ### UIC-PERMISSION-MATRIX-2.1 - Changes as data

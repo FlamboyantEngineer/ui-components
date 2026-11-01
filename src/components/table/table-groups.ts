@@ -22,6 +22,11 @@ export interface TableGrouping<T> {
   label: string;
   /** The value the row is grouped by. */
   getValue: (row: T) => TableCellValue;
+  /**
+   * Orders two groups by their values, for groups the caller orders apart from their values; the
+   * group without a value stays last.
+   */
+  compareValues?: ((left: TableCellValue, right: TableCellValue) => number) | undefined;
 }
 
 /** One level of grouping: a column id, grouping by the column's values, or a computed grouping. */
@@ -115,12 +120,17 @@ export function resolveGroupings<T extends TableRow>(
 interface GroupOrder {
   direction: SortDirection;
   collator: Intl.Collator;
+  compareValues: TableGrouping<unknown>['compareValues'];
 }
 
-/** Orders two group values in a direction, keeping groups without a value last. */
+/**
+ * Orders two group values in a direction, or by the grouping's own order, keeping groups without a
+ * value last.
+ */
 function compareGroupValues(left: TableCellValue, right: TableCellValue, order: GroupOrder) {
   const isLeftEmpty = isEmptyCellValue(left);
   if (isLeftEmpty !== isEmptyCellValue(right)) return isLeftEmpty ? 1 : -1;
+  if (order.compareValues && !isLeftEmpty) return order.compareValues(left, right);
   const compared = compareCellValues(left, right, order.collator);
   return order.direction === 'descending' ? -compared : compared;
 }
@@ -205,7 +215,8 @@ function groupLevel<T>(
 ): readonly TableBodyNode<T>[] {
   const [grouping, ...rest] = groupings;
   if (!grouping) return nodes;
-  const order = { direction: grouping.direction, collator: at.collator };
+  const { direction, compareValues } = grouping;
+  const order = { direction, compareValues, collator: at.collator };
   const ordered = bucketNodes(nodes, grouping).sort(
     (left, right) =>
       compareGroupValues(left.value, right.value, order) || compareKinds(left.kind, right.kind),
