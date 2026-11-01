@@ -115,7 +115,8 @@ describe('Combobox chips', () => {
       const group = chips.closest('.ui-combobox__chips');
       expect(group).toHaveClass('ui-tag-group');
       expect(group).toHaveAttribute('data-size', 'sm');
-      expect(group?.parentElement).toHaveClass('ui-combobox__field');
+      expect(group?.parentElement).toHaveClass('ui-combobox__entry');
+      expect(group?.parentElement?.parentElement).toHaveClass('ui-combobox__field');
       expect(
         within(chips)
           .getAllByRole('row')

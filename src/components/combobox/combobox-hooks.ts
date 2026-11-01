@@ -3,6 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 /** The hook classes every module of the combobox family writes (specs/COMBOBOX.md). */
 export const comboboxHooks = createHooks('combobox', [
   'field',
+  'entry',
   'search-icon',
   'input',
   'spinner',

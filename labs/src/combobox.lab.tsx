@@ -406,6 +406,14 @@ function RememberedChips() {
   );
 }
 
+/** The cities each chips case starts with: none, one, or enough to wrap in a narrow column. */
+const chipValues: Record<string, string[]> = {
+  none: [],
+  one: ['paris'],
+  many: ['paris', 'lima', 'oslo', 'cairo'],
+  'right to left': ['paris', 'lima', 'oslo', 'cairo'],
+};
+
 mountLab(
   <>
     <LabSection
@@ -463,18 +471,20 @@ mountLab(
     </LabSection>
     <LabSection
       title="Chips by size"
-      description="A multiple combobox shows its chosen options as chips at every size."
+      description="A multiple combobox shows its chosen options as chips at every size. In a 240px column, with no chip, one or many that wrap, and right to left, the list button stays at the trailing edge, centred in the field; typed text adds the clear button beside it."
     >
       <StateMatrix
-        axes={{ size: sizes }}
-        render={({ size }) => (
-          <Combobox
-            aria-label={`Cities ${size}`}
-            size={size}
-            selectionMode="multiple"
-            defaultItems={cities}
-            defaultValue={['paris', 'lima']}
-          />
+        axes={{ chips: ['none', 'one', 'many', 'right to left'], size: sizes }}
+        render={({ chips, size }) => (
+          <div style={{ width: 240 }} dir={chips === 'right to left' ? 'rtl' : undefined}>
+            <Combobox
+              aria-label={`Cities ${chips} ${size}`}
+              size={size}
+              selectionMode="multiple"
+              defaultItems={cities}
+              defaultValue={chipValues[chips]}
+            />
+          </div>
         )}
       />
     </LabSection>
