@@ -10,6 +10,11 @@ import {
 import { useLocale } from '../../primitives/index.js';
 import type { CalendarViewMode } from './calendar-view.js';
 import { moveFocusedDay } from './calendar-days.js';
+import {
+  containsComposed,
+  getComposedActiveElement,
+  isFocusLost,
+} from '../../utils/focus-target.js';
 
 interface CalendarGridOptions {
   /** The focused day, which holds the grid's tab stop. */
@@ -33,7 +38,9 @@ export const dayCellSelector = '[role="gridcell"][data-date]';
  * Arrow keys, Home, End, PageUp and PageDown on a day cell move from that cell's day, make the day
  * they reach the focused day (showing its month or week), then focus its cell; focus landing in a
  * day of the period makes it the focused day, so the tab stop follows the reader. A move the owner
- * of a controlled date does not apply leaves focus where it is.
+ * of a controlled date does not apply leaves focus where it is: a move is followed only when the
+ * render it causes, in the same turn of the event loop, shows its day, and only while focus is still
+ * in the grid (or was lost with the cell it left).
  */
 export function useCalendarGrid({
   focused,
@@ -44,15 +51,18 @@ export function useCalendarGrid({
   const { locale, direction } = useLocale();
   const ref = useRef<HTMLDivElement>(null);
   /** The day a keyboard move asked for, focused once it is the focused day. */
-  const pendingFocus = useRef<string | null>(null);
+  const pendingFocus = useRef<{ day: string } | null>(null);
   const focusDay = (day: string) =>
     ref.current?.querySelector<HTMLElement>(`${dayCellSelector}[data-date="${day}"]`)?.focus();
   // Runs after every render: a render that does not show the requested day drops the request.
   useLayoutEffect(() => {
     const pending = pendingFocus.current;
-    if (pending === null) return;
+    const grid = ref.current;
+    if (pending === null || !grid) return;
     pendingFocus.current = null;
-    if (pending === focused) focusDay(pending);
+    if (pending.day !== focused) return;
+    const active = getComposedActiveElement(grid);
+    if (isFocusLost(grid) || containsComposed(grid, active)) focusDay(pending.day);
   });
   return {
     ref,
@@ -69,8 +79,14 @@ export function useCalendarGrid({
         focusDay(next);
         return;
       }
-      pendingFocus.current = next;
+      const request = { day: next };
+      pendingFocus.current = request;
       setFocused(next);
+      // A move the owner accepts renders before the next task; one it declines expires then, so a
+      // later change to the same date does not take focus.
+      setTimeout(() => {
+        if (pendingFocus.current === request) pendingFocus.current = null;
+      }, 0);
     },
     onFocus: (event) => {
       const cell = (event.target as Element).closest(dayCellSelector);
