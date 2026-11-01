@@ -41,6 +41,8 @@ export interface CardHeaderProps {
   header: ReactNode;
   leading: ReactNode;
   meta: ReactNode;
+  /** The selection checkbox of the grid item holding the card, at the start of the header row. */
+  selection: ReactNode;
   /** Shown in place of the title in the minimal presentation. */
   abbreviation: string | undefined;
   /** The id of the summary when the minimal presentation moved it, which More also reveals. */
@@ -194,6 +196,7 @@ function CustomHeader(props: CardHeaderProps) {
   ];
   return (
     <header {...hooks.slot('header')} onKeyDown={onKeyDown}>
+      {props.selection}
       {isAbbreviated ? (
         <span {...hooks.slot('abbreviation')} aria-hidden="true">
           {abbreviation}
@@ -211,6 +214,8 @@ function CustomHeader(props: CardHeaderProps) {
 
 /**
  * The `<header>`: custom content, or the regions of the title block; nothing when all are empty.
+ * Its first row holds the grid item's selection checkbox, the leading content, the title block, the
+ * toggle and More, in that order; the actions follow on a line of their own.
  * Every region keeps its place in every presentation, so its content stays mounted with its state;
  * a smaller presentation hides the regions it moves until the More button opens them. Custom
  * content's `CardTitle` and `CardAction` take the title's and the action's props from the card.
@@ -230,9 +235,11 @@ export function CardHeader(props: CardHeaderProps) {
   };
   const present = (Object.keys(has) as MovableRegion[]).filter((region) => has[region]);
   const hasHeading = !isEmptyNode(title) || has.description || has.meta;
-  if (!hasHeading && present.length === 0 && !props.movedSummaryId) return null;
+  const hasSelection = !isEmptyNode(props.selection);
+  if (!hasHeading && !hasSelection && present.length === 0 && !props.movedSummaryId) return null;
   return (
     <header {...hooks.slot('header')} onKeyDown={onKeyDown}>
+      {props.selection}
       {has.leading ? (
         <div {...hooks.slot('leading')} {...regions.place('leading')}>
           {props.leading}
@@ -253,13 +260,13 @@ export function CardHeader(props: CardHeaderProps) {
           ) : null}
         </div>
       ) : null}
+      {toggle ? <Toggle toggle={toggle} titleId={titleId} regions={regions} /> : null}
+      <MoreControl header={props} regions={regions} present={present} />
       {has.actions ? (
         <div {...hooks.slot('actions')} {...regions.place('actions')}>
           {props.actions}
         </div>
       ) : null}
-      {toggle ? <Toggle toggle={toggle} titleId={titleId} regions={regions} /> : null}
-      <MoreControl header={props} regions={regions} present={present} />
     </header>
   );
 }

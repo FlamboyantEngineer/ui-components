@@ -15,6 +15,7 @@ import { useFocusRescue } from './card-focus.js';
 import { CardHeader, type CardToggle } from './card-header.js';
 import { cardHooks as hooks } from './card-hooks.js';
 import { CardSummary, useCardMore } from './card-more.js';
+import { CardSelectionContext, useClaimedSelection } from './card-selection.js';
 import {
   useCardPresentation,
   type CardPresentation,
@@ -118,6 +119,11 @@ function toLabelledBy(
   return hasTitle ? title.id : undefined;
 }
 
+/** The card's action options, apart from its other props. */
+function toActionOptions({ href, target, rel, onAction }: CardActionOptions): CardActionOptions {
+  return { href, target, rel, onAction };
+}
+
 interface CardCollapse {
   /** Whether the media, body and footer show. */
   isExpanded: boolean;
@@ -197,14 +203,10 @@ export function Card(props: CardProps) {
   const parentLevel = useContext(HeadingLevelContext);
   const [root, setRoot] = useState<HTMLElement | null>(null);
   const [slottedTitle, setSlottedTitle] = useState<HTMLElement | null>(null);
-  const options = {
-    href: props.href,
-    target: props.target,
-    rel: props.rel,
-    onAction: props.onAction,
-  };
+  const options = toActionOptions(props);
   const { isActionable, actionRef, onClick, onPointerDownCapture } = useCardAction(options);
   const collapse = useCardCollapse(props);
+  const selection = useClaimedSelection();
   const presentation = useCardPresentation(root, props.presentationSteps);
   const { more, summary } = useCardMore(presentation, {
     isPresent: !isEmptyNode(props.summary),
@@ -233,42 +235,46 @@ export function Card(props: CardProps) {
       onClick={isActionable ? onClick : undefined}
       onPointerDownCapture={isActionable ? onPointerDownCapture : undefined}
     >
-      {isEmptyNode(media) ? null : (
-        <div {...hooks.slot('media')} id={collapse.ids.media} hidden={isHidden}>
-          {media}
+      {/* The checkbox of the grid item holding the card is this card's alone, not nested cards'. */}
+      <CardSelectionContext value={null}>
+        {isEmptyNode(media) ? null : (
+          <div {...hooks.slot('media')} id={collapse.ids.media} hidden={isHidden}>
+            {media}
+          </div>
+        )}
+        <CardHeader
+          header={header}
+          title={title}
+          description={props.description}
+          actions={props.actions}
+          leading={props.leading}
+          meta={props.meta}
+          abbreviation={props.abbreviation}
+          selection={selection}
+          movedSummaryId={summary.movedId}
+          presentation={presentation}
+          more={more}
+          toggle={collapse.toggle}
+          headingLevel={level}
+          titleId={titleId}
+          titleRef={setSlottedTitle}
+          action={{ options, isActionable, ref: actionRef }}
+        />
+        <CardSummary id={summary.id} isMoved={summary.isMoved} isHidden={summary.isHidden}>
+          {props.summary}
+        </CardSummary>
+        <div {...hooks.slot('body')} id={collapse.ids.body} hidden={isHidden}>
+          {/* Always the same provider, so a title that arrives or leaves never remounts the body. */}
+          <HeadingLevelContext value={isTitled ? level : parentLevel}>
+            {isLoading ? <Skeleton className={hooks.slotClass('skeleton')} /> : children}
+          </HeadingLevelContext>
         </div>
-      )}
-      <CardHeader
-        header={header}
-        title={title}
-        description={props.description}
-        actions={props.actions}
-        leading={props.leading}
-        meta={props.meta}
-        abbreviation={props.abbreviation}
-        movedSummaryId={summary.movedId}
-        presentation={presentation}
-        more={more}
-        toggle={collapse.toggle}
-        headingLevel={level}
-        titleId={titleId}
-        titleRef={setSlottedTitle}
-        action={{ options, isActionable, ref: actionRef }}
-      />
-      <CardSummary id={summary.id} isMoved={summary.isMoved} isHidden={summary.isHidden}>
-        {props.summary}
-      </CardSummary>
-      <div {...hooks.slot('body')} id={collapse.ids.body} hidden={isHidden}>
-        {/* Always the same provider, so a title that arrives or leaves never remounts the body. */}
-        <HeadingLevelContext value={isTitled ? level : parentLevel}>
-          {isLoading ? <Skeleton className={hooks.slotClass('skeleton')} /> : children}
-        </HeadingLevelContext>
-      </div>
-      {isEmptyNode(footer) ? null : (
-        <footer {...hooks.slot('footer')} id={collapse.ids.footer} hidden={isHidden}>
-          {footer}
-        </footer>
-      )}
+        {isEmptyNode(footer) ? null : (
+          <footer {...hooks.slot('footer')} id={collapse.ids.footer} hidden={isHidden}>
+            {footer}
+          </footer>
+        )}
+      </CardSelectionContext>
     </section>
   );
 }

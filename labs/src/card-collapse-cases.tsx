@@ -211,3 +211,57 @@ export function CollapsibleGrid() {
     </div>
   );
 }
+
+const gridSteps: CardPresentationSteps = { compact: { width: 260 }, minimal: { width: 120 } };
+
+/**
+ * Adaptive, collapsible cards in a selectable grid whose width the slider sets: the checkbox, the
+ * badge, the title, the toggle and More share the header row without overlapping at any width.
+ */
+export function TopRowGrid({ dir, initialWidth }: { dir?: 'rtl'; initialWidth: number }) {
+  const [width, setWidth] = useState(initialWidth);
+  const [selected, setSelected] = useState<Selection>(new Set());
+  const name = dir === 'rtl' ? 'top-row-rtl' : 'top-row';
+  return (
+    <div data-lab-demo={name} dir={dir}>
+      <Slider
+        label={dir === 'rtl' ? 'Grid width, right to left' : 'Grid width'}
+        minValue={160}
+        maxValue={720}
+        value={width}
+        onChange={(next) => setWidth(next)}
+      />
+      <div style={{ width }}>
+        <CardGrid
+          aria-label={dir === 'rtl' ? 'Rows, right to left' : 'Rows by width'}
+          items={[...rows, ...paneRows].map((row) => ({ ...row, id: row.short }))}
+          selectionMode="multiple"
+          selectedKeys={selected}
+          onSelectionChange={setSelected}
+        >
+          {(row) => (
+            <CardGridItem textValue={row.name}>
+              {({ isSelected }) => (
+                <Card
+                  title={row.name}
+                  abbreviation={row.short}
+                  role="group"
+                  leading={<Badge tone="success">Active</Badge>}
+                  meta="Updated Monday"
+                  actions={<Button size="sm">Water</Button>}
+                  isSelected={isSelected}
+                  isCollapsible
+                  defaultExpanded={false}
+                  summary={`Harvest ${row.done}% done`}
+                  presentationSteps={gridSteps}
+                >
+                  Twelve trees.
+                </Card>
+              )}
+            </CardGridItem>
+          )}
+        </CardGrid>
+      </div>
+    </div>
+  );
+}

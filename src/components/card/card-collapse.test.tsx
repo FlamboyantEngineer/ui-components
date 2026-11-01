@@ -202,6 +202,30 @@ describe('Card collapse in collections', () => {
   });
 });
 
+describe('Card header row', () => {
+  it('UIC-CARD-6.3 keeps the leading content, title, toggle and More in the first row and the actions after them', () => {
+    const { container } = render(
+      <Card
+        title="Orchard row 4"
+        leading={<span>Active</span>}
+        actions={<button type="button">Water</button>}
+        isCollapsible
+      >
+        Body
+      </Card>,
+    );
+    const header = requireDefined(container.querySelector('.ui-card__header'));
+    expect(
+      [...header.children].map((child) =>
+        [...child.classList].find((name) => name.startsWith('ui-card__')),
+      ),
+    ).toEqual(['ui-card__leading', 'ui-card__heading', 'ui-card__toggle', 'ui-card__actions']);
+    const toggle = screen.getByRole('button', { name: 'Details Orchard row 4' });
+    const water = screen.getByRole('button', { name: 'Water' });
+    expect(toggle.compareDocumentPosition(water) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
 const steps = { compact: { width: 320 }, minimal: { width: 120 } };
 
 describe('Card adaptive presentation', () => {

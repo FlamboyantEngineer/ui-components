@@ -691,6 +691,41 @@ describe('CardGrid', () => {
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
+  it('UIC-CARD-5.3 UIC-CARD-6.3 draws the selection checkbox at the start of the card header row', async () => {
+    const onSelectionChange = vi.fn();
+    render(
+      <CardGrid aria-label="Cities" selectionMode="multiple" onSelectionChange={onSelectionChange}>
+        <CardGridItem id="oslo" textValue="Oslo">
+          <Card title="Oslo" role="group" isCollapsible actions={<Button>Visit</Button>}>
+            <Card title="Old town" role="group">
+              Streets
+            </Card>
+          </Card>
+        </CardGridItem>
+        <CardGridItem id="lima" textValue="Lima">
+          <p>Lima, plain content</p>
+        </CardGridItem>
+      </CardGrid>,
+    );
+    const [oslo, lima] = screen.getAllByRole('row');
+    const checkbox = within(oslo as HTMLElement).getByRole('checkbox');
+    const header = checkbox.closest('.ui-card-grid-item__checkbox')?.parentElement;
+    expect(header).toHaveClass('ui-card__header');
+    expect(header?.firstElementChild).toBe(checkbox.closest('.ui-card-grid-item__checkbox'));
+    expect(within(oslo as HTMLElement).getAllByRole('checkbox')).toHaveLength(1);
+    expect(
+      within(screen.getByRole('group', { name: 'Old town' })).queryByRole('checkbox'),
+    ).not.toBeInTheDocument();
+    const plain = within(lima as HTMLElement).getByRole('checkbox');
+    expect(plain.closest('.ui-card__header')).toBeNull();
+    expect(plain.closest('.ui-card-grid-item__checkbox')).not.toBeNull();
+
+    await userEvent.click(checkbox);
+    expect([...(onSelectionChange.mock.lastCall?.[0] as Set<string>)]).toEqual(['oslo']);
+    await userEvent.click(screen.getByRole('button', { name: 'Details Oslo' }));
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-CARD-5.3 selects cards with toggles and hands the state to each card', async () => {
     const onSelectionChange = vi.fn();
     const { container, rerender } = render(
