@@ -1,21 +1,33 @@
-import { expect, test } from './fixtures.js';
+import type { Locator } from '@playwright/test';
+import { expect, matrixCell, test } from './fixtures.js';
+
+/** A state mark drawn as a tint, with the same thin border on every edge. */
+async function expectEvenEdges(target: Locator) {
+  const edges = await target.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return [
+      style.borderTopWidth,
+      style.borderRightWidth,
+      style.borderBottomWidth,
+      style.borderLeftWidth,
+    ];
+  });
+  expect(edges).toEqual(['1px', '1px', '1px', '1px']);
+}
 
 test.describe('reference stylesheet right to left', () => {
-  test('UIC-LABS-3.1 puts the condition rail and the severity bar on the start edge', async ({
+  test('UIC-LABS-3.1 tints nested condition groups and problem lists instead of a one-sided bar', async ({
     page,
     lab,
   }) => {
     await lab.open('condition-builder');
-    const group = page.locator(
-      '[data-lab-demo="rtl"] .ui-condition-builder__group[data-depth="2"]',
-    );
-    await expect(group.first()).toHaveCSS('border-right-width', '3px');
-    await expect(group.first()).toHaveCSS('border-left-width', '1px');
+    const group = page
+      .locator('[data-lab-demo="rtl"] .ui-condition-builder__group[data-depth="2"]')
+      .first();
+    await expectEvenEdges(group);
 
     await lab.open('problem-list');
-    const list = page.locator('[data-lab-demo="rtl"] .ui-problem-list');
-    await expect(list).toHaveCSS('border-right-width', '4px');
-    await expect(list).toHaveCSS('border-left-width', '1px');
+    await expectEvenEdges(page.locator('[data-lab-demo="rtl"] .ui-problem-list'));
   });
 
   test('UIC-LABS-3.1 mirrors the attachment corner buttons and the feed line', async ({
@@ -36,17 +48,19 @@ test.describe('reference stylesheet right to left', () => {
     expect(inset).toBe('11px');
   });
 
-  test('UIC-LABS-1.6 UIC-LABS-3.1 draws the current page bar on the start edge', async ({
+  test('UIC-LABS-1.6 UIC-LABS-3.1 marks the current page by tint and a thin frame, not an edge bar', async ({
     page,
     lab,
   }) => {
     await lab.open('navigation-rail');
     const link = page.locator('[data-lab-demo="rtl"] .ui-navigation-rail__link[data-current]');
-    await expect(link).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
+    await expect(link).toHaveCSS('box-shadow', 'none');
+    await expect(link).toHaveCSS('outline-style', 'solid');
+    await expect(link).toHaveCSS('outline-width', '1px');
     await lab.expectAccessible('[data-lab-demo="rtl"]');
   });
 
-  test('UIC-LABS-3.1 marks board column moves, uncovered headers and step connectors on the start side', async ({
+  test('UIC-LABS-3.1 marks board column moves and step connectors on the start side, and tints uncovered headers', async ({
     page,
     lab,
   }) => {
@@ -65,7 +79,8 @@ test.describe('reference stylesheet right to left', () => {
     const uncovered = page
       .locator('[data-lab-demo="rtl"] .ui-relation-matrix__row-header[data-uncovered]')
       .first();
-    await expect(uncovered).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
+    await expect(uncovered).toHaveCSS('box-shadow', 'none');
+    await expect(uncovered).toHaveCSS('font-weight', '600');
     await lab.expectAccessible('[data-lab-demo="rtl"]');
 
     await lab.open('steps');
@@ -75,7 +90,7 @@ test.describe('reference stylesheet right to left', () => {
     await lab.expectAccessible('[data-lab-demo="rtl"]');
   });
 
-  test('UIC-LABS-3.1 marks duplicate mapping columns on the start edge and fades skeletons toward the end', async ({
+  test('UIC-LABS-3.1 tints duplicate mapping columns and fades skeletons toward the end', async ({
     page,
     lab,
   }) => {
@@ -85,7 +100,8 @@ test.describe('reference stylesheet right to left', () => {
         '[data-lab-demo="rtl"] .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column',
       )
       .first();
-    await expect(duplicate).toHaveCSS('box-shadow', / -3px 0px 0px 0px inset$/);
+    await expect(duplicate).toHaveCSS('box-shadow', 'none');
+    await expect(duplicate).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await lab.expectAccessible('[data-lab-demo="rtl"]');
 
     await lab.open('card');
@@ -95,5 +111,58 @@ test.describe('reference stylesheet right to left', () => {
     await lab.open('user-card');
     const loading = page.locator('[data-lab-demo="rtl"] .ui-user-card__skeleton');
     await expect(loading).toHaveCSS('mask-image', /^linear-gradient\(to left,/);
+  });
+});
+
+test.describe('reference stylesheet state emphasis', () => {
+  /** No border thicker than 1px on any edge and no inset bar: the mark is a tint, weight or marker. */
+  async function expectNoEdgeBar(target: Locator) {
+    const marks = await target.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        widest: Math.max(
+          ...[
+            style.borderTopWidth,
+            style.borderRightWidth,
+            style.borderBottomWidth,
+            style.borderLeftWidth,
+          ].map((width) => Number.parseFloat(width)),
+        ),
+        insetBar: /inset/.test(style.boxShadow) && /(^|\s)-?[2-9]px 0px 0px/.test(style.boxShadow),
+      };
+    });
+    expect(marks.insetBar).toBe(false);
+    expect(marks.widest).toBeLessThanOrEqual(1);
+  }
+
+  const cases = [
+    ['tree', '.ui-tree__item[data-current]'],
+    ['navigation-rail', '.ui-navigation-rail__link[data-current]'],
+    ['outline', '.ui-outline__item[data-current] > .ui-outline__row > .ui-outline__link'],
+    ['tree-compare', '.ui-tree-compare__count'],
+    ['problem-list', '.ui-problem-list'],
+    ['condition-builder', '.ui-condition-builder__group:not([data-depth="1"])'],
+    ['change-list', '.ui-change-list__side'],
+    ['comment-thread', '.ui-comment-thread__quote'],
+  ] as const;
+  for (const [name, selector] of cases) {
+    test(`UIC-LABS-3.1 marks ${name} state without a one-sided bar`, async ({ page, lab }) => {
+      await lab.open(name);
+      const marked = page.locator(selector);
+      await expect(marked.first()).toBeAttached();
+      for (const target of (await marked.all()).slice(0, 6)) await expectNoEdgeBar(target);
+    });
+  }
+
+  test('UIC-LABS-3.1 marks the current text-diff change without a one-sided bar', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-diff');
+    const diff = matrixCell(page, 'content=edited layout=unified');
+    await diff.getByRole('button', { name: 'Next change' }).click();
+    const cells = diff.locator('.ui-text-diff__line[data-current] > td');
+    await expect(cells.first()).toBeAttached();
+    for (const target of await cells.all()) await expectNoEdgeBar(target);
   });
 });

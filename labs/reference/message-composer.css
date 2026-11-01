@@ -41,9 +41,8 @@
   gap: 6px;
   min-width: 0;
   padding: 4px 6px;
-  border-inline-start: 2px solid var(--ref-accent);
   border-radius: var(--ref-radius-sm);
-  background: var(--ref-surface);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-subtle), var(--ref-surface));
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
 }

@@ -161,7 +161,8 @@ test.describe('Table lab', () => {
     await demo.getByRole('button', { name: 'Add fig' }).click();
     const fig = grid.getByRole('row', { name: /^Fig/ });
     await expect(fig).toHaveAttribute('data-change', 'added');
-    await expect(fig.getByRole('rowheader')).not.toHaveCSS('box-shadow', 'none');
+    await expect(fig).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(fig.getByRole('rowheader')).toHaveCSS('box-shadow', 'none');
     await lab.expectAccessible('[data-lab="row-marks"]');
   });
 

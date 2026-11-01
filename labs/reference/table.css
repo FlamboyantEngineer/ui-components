@@ -244,15 +244,15 @@
   opacity: var(--ref-dragging-opacity);
 }
 /* Caller row marks from getRowAttributes, as the table lab sets them. */
-.ui-table__row[data-change='added'] > .ui-table__cell:first-child {
-  box-shadow: inset 3px 0 0 var(--ref-success);
+.ui-table__row[data-change='added'] {
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
 }
 .ui-table__row[data-status='empty'] {
   color: var(--ref-muted);
   text-decoration: line-through;
 }
 .ui-table__row[data-status='low'] > .ui-table__cell:last-child {
-  box-shadow: inset -3px 0 0 var(--ref-warning);
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
 }
 :is(
   .ui-table__row,

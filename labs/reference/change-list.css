@@ -90,7 +90,6 @@
   align-items: baseline;
   gap: 8px;
   padding: 4px 8px;
-  border-inline-start: 3px solid var(--ref-border);
   background: var(--ref-surface);
 }
 

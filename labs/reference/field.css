@@ -185,11 +185,11 @@
  * the control and announcing, and a tooltip against the control shows it while focused or hovered.
  */
 .ui-field__message-tooltip[data-severity='error'] {
-  border-inline-start: 3px solid var(--ref-danger);
+  border: 1px solid color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-border));
 }
 
 .ui-field__message-tooltip[data-severity='warning'] {
-  border-inline-start: 3px solid var(--ref-warning);
+  border: 1px solid color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-border));
 }
 
 /* Several issues listed in the message start where a single one does: no indent, no bullets. */

@@ -7,7 +7,8 @@
 .ui-signature-dialog__summary {
   margin-bottom: 12px;
   padding: 8px 12px;
-  border-inline-start: 3px solid var(--ref-border-strong);
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
   background: var(--ref-surface);
 }
 

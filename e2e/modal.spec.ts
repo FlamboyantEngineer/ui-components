@@ -293,7 +293,10 @@ test.describe('Modal lab', () => {
         .click();
       const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-md"]`);
       await expect(overlay).toHaveAttribute('data-tone', tone);
-      await expect(overlay.locator('.ui-modal__panel')).toHaveCSS('border-top-width', '3px');
+      // The tone tints the panel's whole border, the same width on every edge.
+      const panel = overlay.locator('.ui-modal__panel');
+      await expect(panel).toHaveCSS('border-top-width', '1px');
+      await expect(panel).not.toHaveCSS('border-top-color', 'rgb(209, 217, 224)');
       await page.keyboard.press('Escape');
       await expect(overlay).toHaveCount(0);
     }

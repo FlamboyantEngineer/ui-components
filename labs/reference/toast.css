@@ -39,10 +39,14 @@
   gap: 8px;
   box-sizing: border-box;
   padding: 10px 10px 10px 12px;
-  border: 1px solid var(--ref-border);
-  border-inline-start: 4px solid var(--ref-info);
+  --toast-tone: var(--ref-info);
+  border: 1px solid color-mix(in srgb, var(--toast-tone) var(--ref-tint-border), var(--ref-border));
   border-radius: var(--ref-radius);
-  background: var(--ref-raised);
+  background: linear-gradient(
+      color-mix(in srgb, var(--toast-tone) var(--ref-tint-subtle), transparent),
+      color-mix(in srgb, var(--toast-tone) var(--ref-tint-subtle), transparent)
+    )
+    var(--ref-raised);
   box-shadow: var(--ref-shadow);
   outline: none;
   transform: translate(var(--ui-toast-swipe-x, 0px), var(--ui-toast-swipe-y, 0px));
@@ -107,7 +111,7 @@
 }
 
 .ui-toast:is([data-tone='success'], [data-tone='warning'], [data-tone='danger']) {
-  border-inline-start-color: var(--ref-tone);
+  --toast-tone: var(--ref-tone);
 }
 
 .ui-toast__icon {

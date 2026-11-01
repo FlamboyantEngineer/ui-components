@@ -274,11 +274,13 @@ button.ui-diagram-canvas__port:hover {
 }
 
 .ui-diagram-canvas__outline-item[data-selected] {
-  box-shadow: inset 3px 0 0 var(--ref-accent);
+  background: var(--ref-selected);
+  outline: 1px solid color-mix(in srgb, var(--ref-accent) var(--ref-tint-border), transparent);
+  outline-offset: -1px;
 }
 
-[dir='rtl'] .ui-diagram-canvas__outline-item[data-selected] {
-  box-shadow: inset -3px 0 0 var(--ref-accent);
+.ui-diagram-canvas__outline-item[data-selected] .ui-diagram-canvas__outline-link {
+  color: var(--ref-text);
 }
 
 .ui-diagram-canvas__outline-label {

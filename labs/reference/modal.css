@@ -66,10 +66,10 @@
   max-height: none;
 }
 
-/* Every tone but neutral marks the panel's top edge. */
+/* Every tone but neutral tints the panel's border. */
 
 .ui-modal:not([data-tone='neutral']) .ui-modal__panel {
-  border-top: 3px solid var(--ref-tone);
+  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-border));
 }
 
 /* A non-modal dialog leaves the page visible: no backdrop, and the panel floats at the end corner. */

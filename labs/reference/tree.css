@@ -49,11 +49,8 @@
 }
 
 .ui-tree__item[data-current] {
-  box-shadow: inset 3px 0 0 var(--ref-accent);
-}
-
-[dir='rtl'] .ui-tree__item[data-current] {
-  box-shadow: inset -3px 0 0 var(--ref-accent);
+  outline: 1px solid color-mix(in srgb, var(--ref-accent) var(--ref-tint-border), transparent);
+  outline-offset: -1px;
 }
 
 .ui-tree__item[data-focus-visible] {
