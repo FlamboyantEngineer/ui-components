@@ -507,3 +507,92 @@ describe('AnnotationLayer under a scale', () => {
     expect(onCurrentKeyChange).toHaveBeenLastCalledWith('phrase');
   });
 });
+
+describe('AnnotationLayer inside clipping elements', () => {
+  beforeEach(() => {
+    boxes.scroller = { top: 120, left: 50, width: 200, height: 80 };
+    const clientSize = (element: HTMLElement, axis: 'width' | 'height') =>
+      boxes[element.getAttribute('data-box') ?? '']?.[axis] ?? 0;
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return clientSize(this, 'width');
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return clientSize(this, 'height');
+    });
+  });
+
+  function Steps({ onCurrentKeyChange }: { onCurrentKeyChange?: (id: Key | null) => void }) {
+    return (
+      <AnnotationLayer
+        annotations={[{ id: 'fold', targetId: 'fold' }]}
+        data-box="layer"
+        onCurrentKeyChange={onCurrentKeyChange}
+      >
+        <div data-box="scroller" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+          <span id="fold">Fold in the egg whites</span>
+        </div>
+        <AnnotationMargin
+          data-box="margin"
+          renderCard={(annotation, { isOrphaned }) => `Note${isOrphaned ? ' (orphaned)' : ''}`}
+        />
+      </AnnotationLayer>
+    );
+  }
+
+  it('UIC-ANNOTATION-LAYER-1.5 draws and hits only the part of an anchor its scroller shows', async () => {
+    const user = userEvent.setup();
+    const onCurrentKeyChange = vi.fn();
+    targetRects.fold = [{ top: 180, left: 60, width: 260, height: 40 }];
+    const { container } = render(<Steps onCurrentKeyChange={onCurrentKeyChange} />);
+    // Cut at the scroller's bottom (200) and right edge (250).
+    expect(marks(container)).toHaveLength(1);
+    expect(marks(container)[0]).toHaveStyle({
+      top: '80px',
+      left: '10px',
+      width: '190px',
+      height: '20px',
+    });
+    const root = container.firstElementChild as HTMLElement;
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: root,
+      coords: { clientX: 100, clientY: 210 },
+    });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: root,
+      coords: { clientX: 270, clientY: 190 },
+    });
+    expect(onCurrentKeyChange).not.toHaveBeenCalled();
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: root,
+      coords: { clientX: 100, clientY: 195 },
+    });
+    expect(onCurrentKeyChange).toHaveBeenLastCalledWith('fold');
+  });
+
+  it('UIC-ANNOTATION-LAYER-1.5 hides a scrolled-out anchor, keeps its card, and shows it again', async () => {
+    targetRects.fold = [{ top: 230, left: 60, width: 100, height: 20 }];
+    const { container } = render(<Steps />);
+    expect(marks(container)).toHaveLength(0);
+    const card = requireDefined(cards(container)[0]);
+    expect(card).toHaveTextContent('Note');
+    expect(card).not.toHaveAttribute('data-orphaned');
+    // The card stays level with where the anchor is.
+    expect(card.style.top).toBe('130px');
+
+    targetRects.fold = [{ top: 150, left: 60, width: 100, height: 20 }];
+    act(() => {
+      container.querySelector('[data-box="scroller"]')?.dispatchEvent(new Event('scroll'));
+    });
+    await nextFrame();
+    expect(marks(container)).toHaveLength(1);
+    expect(marks(container)[0]).toHaveStyle({ top: '50px', height: '20px' });
+    expect(card.style.top).toBe('50px');
+  });
+});

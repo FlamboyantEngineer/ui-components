@@ -3,6 +3,7 @@
 import { getElementByIdWithin } from '../../utils/owner-window.js';
 import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { clipToAncestors, toScale } from './anchor-clip.js';
 
 /** A rectangle in pixels from the top left corner of the layer's content. */
 export interface AnnotationRect {
@@ -22,10 +23,26 @@ export interface Annotation {
   targetId?: string | undefined;
 }
 
-/** An annotation with the rectangles its anchor covers now; none when the anchor is gone. */
+/** An annotation with the rectangles its anchor shows now, and where its anchor starts. */
 export interface AnchoredAnnotation {
   annotation: Annotation;
+  /** The anchor's visible rectangles, drawn as marks and hit by presses. */
   rects: readonly AnnotationRect[];
+  /** The top of the anchor, `null` when it is gone; a hidden anchor keeps its top. */
+  top: number | null;
+}
+
+/** What a target element's anchor covers now, in the layer's content coordinates. */
+export interface MeasuredAnchor {
+  /** The visible parts of the element's boxes. */
+  rects: AnnotationRect[];
+  /** The top of the visible parts, else of the element's boxes. */
+  top: number | null;
+}
+
+/** The top of the highest rectangle, or `null` for none. */
+export function toAnchorTop(rects: readonly AnnotationRect[]): number | null {
+  return rects.length === 0 ? null : rects.reduce((top, rect) => Math.min(top, rect.top), Infinity);
 }
 
 /** A point in the layer's content coordinates. */
@@ -42,11 +59,6 @@ export interface LayerPoint {
 export interface LayerFrame {
   toLocalPoint(x: number, y: number): LayerPoint;
   toLocalRect(box: { top: number; left: number; width: number; height: number }): AnnotationRect;
-}
-
-/** The scale from the layer's own CSS pixels to viewport pixels, 1 for an unlaid-out side. */
-function toScale(viewportSize: number, ownSize: number): number {
-  return viewportSize > 0 && ownSize > 0 ? viewportSize / ownSize : 1;
 }
 
 /** The layer's frame as laid out now. */
@@ -78,38 +90,47 @@ export function findTargets(layer: Element, annotations: readonly Annotation[]):
   return targets;
 }
 
-/** The boxes of each target element inside the layer, by annotation id, in its content coordinates. */
+/**
+ * What each target element inside the layer covers, by annotation id, in its content coordinates:
+ * its boxes cut to what the scrolling or clipping elements between it and the layer let show.
+ */
 export function measureTargets(
   layer: HTMLElement,
   annotations: readonly Annotation[],
-): Map<Key, AnnotationRect[]> {
+): Map<Key, MeasuredAnchor> {
   const frame = getLayerFrame(layer);
-  const measured = new Map<Key, AnnotationRect[]>();
+  const measured = new Map<Key, MeasuredAnchor>();
   for (const [id, element] of findTargets(layer, annotations)) {
-    measured.set(id, Array.from(element.getClientRects(), frame.toLocalRect));
+    const boxes = Array.from(element.getClientRects());
+    const rects = clipToAncestors(boxes, element, layer).map(frame.toLocalRect);
+    measured.set(id, {
+      rects,
+      top: toAnchorTop(rects) ?? toAnchorTop(boxes.map(frame.toLocalRect)),
+    });
   }
   return measured;
 }
 
-/** Whether two measurements hold the same rectangles for the same annotations. */
+function isSameRect(a: AnnotationRect, b: AnnotationRect): boolean {
+  return a.top === b.top && a.left === b.left && a.width === b.width && a.height === b.height;
+}
+
+/** Whether two measurements hold the same anchors for the same annotations. */
 export function isSameMeasurement(
-  a: ReadonlyMap<Key, readonly AnnotationRect[]>,
-  b: ReadonlyMap<Key, readonly AnnotationRect[]>,
+  a: ReadonlyMap<Key, MeasuredAnchor>,
+  b: ReadonlyMap<Key, MeasuredAnchor>,
 ): boolean {
   if (a.size !== b.size) return false;
-  for (const [id, rects] of a) {
+  for (const [id, anchor] of a) {
     const other = b.get(id);
-    if (!other || other.length !== rects.length) return false;
-    const isSame = rects.every((rect, index) => {
-      const next = requireDefined(other[index]);
-      return (
-        rect.top === next.top &&
-        rect.left === next.left &&
-        rect.width === next.width &&
-        rect.height === next.height
-      );
-    });
-    if (!isSame) return false;
+    if (!other || other.top !== anchor.top || other.rects.length !== anchor.rects.length) {
+      return false;
+    }
+    if (
+      !anchor.rects.every((rect, index) => isSameRect(rect, requireDefined(other.rects[index])))
+    ) {
+      return false;
+    }
   }
   return true;
 }

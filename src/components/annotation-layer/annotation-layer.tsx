@@ -23,8 +23,10 @@ import {
   getLayerFrame,
   isSameMeasurement,
   measureTargets,
+  toAnchorTop,
   type Annotation,
   type AnnotationRect,
+  type MeasuredAnchor,
 } from './anchor-geometry.js';
 import { isElement } from '../../utils/is-element.js';
 
@@ -74,7 +76,7 @@ function useMeasuredTargets(
   annotations: readonly Annotation[],
   content: ReactNode,
 ) {
-  const [measured, setMeasured] = useState<ReadonlyMap<Key, readonly AnnotationRect[]>>(new Map());
+  const [measured, setMeasured] = useState<ReadonlyMap<Key, MeasuredAnchor>>(new Map());
   const latestRef = useLatest({ layer, annotations });
   const remeasure = useCallback(() => {
     const { layer, annotations } = latestRef.current;
@@ -125,10 +127,13 @@ export function AnnotationLayer({
 
   const anchors = useMemo(
     () =>
-      annotations.map((annotation) => ({
-        annotation,
-        rects: annotation.rects ?? measured.get(annotation.id) ?? noRects,
-      })),
+      annotations.map((annotation) => {
+        if (annotation.rects) {
+          return { annotation, rects: annotation.rects, top: toAnchorTop(annotation.rects) };
+        }
+        const anchor = measured.get(annotation.id);
+        return { annotation, rects: anchor?.rects ?? noRects, top: anchor?.top ?? null };
+      }),
     [annotations, measured],
   );
   const latestSetActive = useLatest(setActive);

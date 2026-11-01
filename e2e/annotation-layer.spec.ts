@@ -156,6 +156,34 @@ test.describe('Annotation Layer lab', () => {
     await expectMarkOnPhrase();
     await phrase.click();
     await expect(demo.locator('[data-lab-active]')).toHaveText('fold');
+
+    // Scrolled partly out, the mark is cut at the region's edge; fully out, it goes, and returns.
+    const add = demo.getByRole('button', { name: 'Add a step above' });
+    for (let step = 2; step <= 5; step += 1) {
+      await add.press('Enter');
+      await expect(demo.getByText(`Added step ${step}`)).toBeVisible();
+    }
+    const region = demo.getByRole('region', { name: 'Steps' });
+    const scrollPhraseTo = (offset: number) =>
+      region.evaluate((node, top) => {
+        const target = node.querySelector('#scroll-step') as HTMLElement;
+        const from = target.getBoundingClientRect().top - node.getBoundingClientRect().top;
+        node.scrollTop += from - top;
+      }, offset);
+    await region.evaluate((node) => {
+      node.scrollTop = 0;
+    });
+    await expect(mark).toHaveCount(0);
+    const height = await region.evaluate((node) => node.clientHeight);
+    await scrollPhraseTo(height - 8);
+    await expect(async () => {
+      const [edge, box, anchor] = [await boxOf(region), await boxOf(mark), await boxOf(phrase)];
+      expect(Math.abs(box.y - anchor.y)).toBeLessThan(1);
+      expect(Math.abs(box.y + box.height - (edge.y + height))).toBeLessThan(2);
+      expect(box.height).toBeLessThan(anchor.height);
+    }).toPass();
+    await scrollPhraseTo(40);
+    await expectMarkOnPhrase();
   });
 
   test('UIC-ANNOTATION-LAYER-1.2 UIC-ANNOTATION-LAYER-1.3 aligns and hits a mark on a zoomed surface', async ({

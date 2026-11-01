@@ -239,7 +239,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrolling and changing content"
-      description="The steps scroll inside the layer, and their own button adds a step above the note without the layer rendering. The highlight follows the phrase, and pressing the phrase makes its note active."
+      description="The steps scroll inside the layer, and their own button adds a step above the note without the layer rendering. The highlight follows the phrase, is cut at the region’s edge when the phrase scrolls partly out and goes when it scrolls out, and pressing the phrase makes its note active."
     >
       <ScrollingReview />
     </LabSection>
