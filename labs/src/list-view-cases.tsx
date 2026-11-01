@@ -8,6 +8,8 @@ import {
   type ListViewItemProps,
   type ListViewMove,
 } from '../../src/components/list-row/index.js';
+import { NumberField } from '../../src/components/number-field/number-field.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { RowMenu } from './row-menu.js';
 
 export const selections = ['none', 'single', 'multiple', 'replace'] as const;
@@ -192,5 +194,24 @@ export function LongListCase() {
         Loaded {count} of {TOTAL}
       </p>
     </div>
+  );
+}
+
+/** Rows with a note field and a servings field, which keep their caret and arrow keys. */
+export function FieldRowsCase() {
+  return (
+    <ListView aria-label="Fruit notes" data-lab-demo="field-rows">
+      <ListViewItem
+        id="apple"
+        title="Apple"
+        trailing={<TextField label="Note for Apple" defaultValue="Crisp" />}
+      />
+      <ListViewItem
+        id="banana"
+        title="Banana"
+        trailing={<NumberField label="Servings of Banana" defaultValue={2} />}
+      />
+      <ListViewItem id="cherry" title="Cherry" />
+    </ListView>
   );
 }

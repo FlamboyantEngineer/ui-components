@@ -122,19 +122,19 @@ Verification: `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-3.1 - Grid list of rows
 
-`ListView` shall render React Aria's `GridList` in its `stack` layout with the `ui-list-view` root, named by its `aria-label` or `aria-labelledby`, and `ListViewItem` a `GridListItem` (`ui-list-view-item`, keyed by its `id`) whose cell holds the row text drawn by `ListRowContent` (`title`, `meta`, `icon`, `leading`) followed by `trailing` controls in the `ui-list-view-item__trailing` slot. A menu or popover a trailing control opened returns focus to that control as it closes, not to its row. Rows come from `ListViewItem` and `ListViewSection` children, or from `items` with a function in `children` that draws one per item and redraws them when `dependencies` change. The list is one tab stop: ArrowDown and ArrowUp move between rows, Home and End to the first and last, and Enter or a press calls `onAction` with the row's key or follows the item's `href` (React Aria). A string `title` is the item's `textValue` unless one is given. `divided` publishes `data-divided` and the item's `tone` (`neutral` by default, `danger`) `data-tone`, as on `List` and `ListRow`.
+`ListView` shall render React Aria's `GridList` in its `stack` layout with the `ui-list-view` root, named by its `aria-label` or `aria-labelledby`, and `ListViewItem` a `GridListItem` (`ui-list-view-item`, keyed by its `id`) whose cell holds the row text drawn by `ListRowContent` (`title`, `meta`, `icon`, `leading`) followed by `trailing` controls in the `ui-list-view-item__trailing` slot. A menu or popover a trailing control opened returns focus to that control as it closes, not to its row. Rows come from `ListViewItem` and `ListViewSection` children, or from `items` with a function in `children` that draws one per item and redraws them when `dependencies` change. The list is one tab stop: ArrowDown and ArrowUp move between rows, Home and End to the first and last, and Enter or a press calls `onAction` with the row's key or follows the item's `href` (React Aria). A text control inside a row's `trailing` controls (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) keeps every key but Tab and Escape: the arrow keys, Home, End and typed characters move its caret or change its value, and neither the row's navigation between its controls, the list's arrow keys nor its typeahead take them; Tab and Escape still reach the list. A string `title` is the item's `textValue` unless one is given. `divided` publishes `data-divided` and the item's `tone` (`neutral` by default, `danger`) `data-tone`, as on `List` and `ListRow`.
 
 IDs on `ListViewItem` and `ListViewSection`, including IDs inferred from dynamic items, retain their primitive type: numeric `1` and text `'1'` remain distinct, as do text IDs differing only by whitespace. Selection, action and reorder callbacks report the original IDs. Internally encoded collection IDs keep React keys and accessibility references unique. A `ListViewItem` or `ListViewSection` rendered through a host component that forwards its props, as a child or for each of `items`, keeps its `id` ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)): selection, disabled keys and callbacks reach it by that `id`.
 
-Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
-Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ### UIC-LIST-ROW-3.2 - Typeahead
 
-Typing printable characters while a row has focus shall move focus to the next row whose text value starts with the typed text (React Aria).
+Typing printable characters while a row has focus shall move focus to the next row whose text value starts with the typed text (React Aria). Characters typed in a text control inside a row are its own and never move focus (UIC-LIST-ROW-3.1).
 
-Implementation: `src/components/list-row/list-view.tsx`
-Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+Implementation: `src/components/list-row/list-view.tsx`, `src/utils/text-control-keys.tsx`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`, `src/utils/text-control-keys.test.tsx`
 
 ### UIC-LIST-ROW-3.3 - Selection
 

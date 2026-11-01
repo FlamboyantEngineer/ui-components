@@ -11,6 +11,7 @@ import {
 import { MetaLine } from '../../src/components/meta-line/meta-line.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
+  FieldRowsCase,
   LinksCase,
   LongListCase,
   ReorderCase,
@@ -244,6 +245,14 @@ mountLab(
     >
       <div style={{ width: 300 }}>
         <LongListCase />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Fields in rows"
+      description="A text field and a number field in the rows keep their keys: the arrow keys, Home, End and typed letters move the caret or step the value, and only Tab and Escape leave for the list."
+    >
+      <div style={{ width: 420 }}>
+        <FieldRowsCase />
       </div>
     </LabSection>
     <LabSection

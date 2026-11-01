@@ -38,6 +38,7 @@ import { DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { ListRowContent, type ListRowContentProps, type ListRowTone } from './list-row.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
+import { renderTextKeyRow } from '../../utils/text-control-keys.js';
 
 /** A reorder request: move `keys` before or after the row `targetKey`. */
 export interface ListViewMove {
@@ -270,6 +271,7 @@ export function ListViewItem({
       id={toCollectionItemKey(id)}
       textValue={textValue ?? (typeof title === 'string' ? title : undefined)}
       {...itemHooks.root({ className, props: rest, data: { tone } })}
+      render={renderTextKeyRow}
     >
       {({ selectionMode, selectionBehavior, allowsDragging }) => (
         <>

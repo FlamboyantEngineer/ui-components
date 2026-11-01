@@ -1,5 +1,6 @@
 'use client';
 
+import { keepTextControlKeys } from '../../utils/text-control-keys.js';
 import { useCallback, type JSX, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
@@ -82,7 +83,7 @@ function createRowElement(options: RowElementOptions) {
     const { draggable, onDragStart, onDrag, onDragEnd, ...others } = domProps;
     return (
       <div
-        {...others}
+        {...keepTextControlKeys(others)}
         {...(isMovable ? { draggable, onDragStart, onDrag, onDragEnd } : {})}
         data-current={isCurrent || undefined}
         data-indeterminate={isIndeterminate || undefined}

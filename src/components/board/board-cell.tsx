@@ -33,7 +33,7 @@ import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardCellAddress } from './board-moves.js';
 import type { BoardCardDrag } from './use-board-drag.js';
 import type { BoardCardState } from './board.js';
-import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isTextControlKey } from '../../utils/text-control-keys.js';
 import { isElement } from '../../utils/is-element.js';
 import { isMoveChord, type CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
@@ -197,24 +197,10 @@ function useCellDragAndDrop(
   return useDragAndDrop(options).dragAndDropHooks;
 }
 
-/** Text widgets a host draws in a card, which keep the arrow keys for their caret. */
-const textWidgets = '[role="textbox"], [role="combobox"]';
-
-/** The keys a text control in a card leaves to the grid: moving focus out and closing. */
-const passedKeys = new Set(['Tab', 'Escape']);
-
 /** Whether a keydown's target is in a nested collection's row, such as a board drawn in the card. */
 function isNestedKey(event: KeyboardEvent<HTMLElement>): boolean {
   const { target, currentTarget } = event;
   return !isElement(target) || target.closest('[role="row"]') !== currentTarget;
-}
-
-/**
- * Whether a keydown belongs to a text control inside the card: its caret keys, move chords and
- * characters, which the row's navigation, the board's moves and the grid's typeahead leave to it.
- */
-function isTextKey(event: KeyboardEvent<HTMLElement>): boolean {
-  return !passedKeys.has(event.key) && isEditableTarget(event.target, textWidgets);
 }
 
 /**
@@ -236,12 +222,12 @@ function createCardRow(
       {...domProps}
       aria-keyshortcuts={keyShortcuts}
       onKeyDownCapture={(event) => {
-        if (isTextKey(event) || isNestedKey(event)) return;
+        if (isTextControlKey(event) || isNestedKey(event)) return;
         if (onCardKeyDown && isMoveChord(event) && event.key.startsWith('Arrow')) return;
         domProps.onKeyDownCapture?.(event);
       }}
       onKeyDown={(event) => {
-        if (isTextKey(event)) {
+        if (isTextControlKey(event)) {
           event.stopPropagation();
           return;
         }
