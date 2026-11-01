@@ -183,6 +183,8 @@
 }
 .ui-card__header > .ui-card__actions[data-moved] {
   justify-content: flex-start;
+  padding-block-start: 8px;
+  border-block-start: 1px dashed var(--ref-border);
 }
 .ui-card__summary {
   min-width: 0;
@@ -213,6 +215,7 @@
 .ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
   > .ui-card__header:has(> .ui-card__more[data-expanded]) {
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 .ui-card:is([data-presentation='compact'], [data-presentation='minimal']) .ui-card__heading {
   flex: 1 1 0;

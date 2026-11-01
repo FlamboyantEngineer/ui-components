@@ -6,7 +6,7 @@
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { MoreGlyph } from '../../core/glyphs.js';
+import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { cardHooks as hooks } from './card-hooks.js';
@@ -21,7 +21,10 @@ export interface CardMore {
   setOpen: (isOpen: boolean) => void;
 }
 
-/** The More button: discloses the regions a smaller presentation moved, where they stand. */
+/**
+ * The More button: discloses the regions a smaller presentation moved, where they stand. It draws a
+ * plus while they are hidden and a minus while they show, so it reads as a disclosure, not a menu.
+ */
 function MoreButton({
   more,
   titleId,
@@ -39,8 +42,8 @@ function MoreButton({
       id={id}
       variant="ghost"
       size="sm"
-      icon={MoreGlyph}
-      label={strings.more}
+      icon={more.isOpen ? MinusGlyph : PlusGlyph}
+      label={strings.showMore}
       aria-labelledby={`${id} ${titleId}`}
       aria-expanded={more.isOpen}
       aria-controls={controls}

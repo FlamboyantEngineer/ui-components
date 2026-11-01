@@ -1,9 +1,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, type SVGProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../../test/shadow-fixtures.js';
+import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Board } from '../board/board.js';
 import { Card, CardAction, CardGrid, CardGridItem, CardTitle } from './index.js';
@@ -297,11 +298,11 @@ describe('Card adaptive presentation', () => {
     const user = userEvent.setup();
     const { container } = render(<RecordCard presentationSteps={steps} />);
     await resize(cardRoot(), 400);
-    expect(screen.queryByRole('button', { name: 'More Orchard row' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Show more Orchard row' })).not.toBeInTheDocument();
     const water = screen.getByRole('button', { name: 'Water' });
     act(() => water.focus());
     await resize(cardRoot(), 260);
-    const more = screen.getByRole('button', { name: 'More Orchard row' });
+    const more = screen.getByRole('button', { name: 'Show more Orchard row' });
     expect(more).toHaveFocus();
     expect(more).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: 'Water' })).not.toBeInTheDocument();
@@ -326,6 +327,26 @@ describe('Card adaptive presentation', () => {
     expect(screen.queryByRole('button', { name: 'Water' })).not.toBeInTheDocument();
   });
 
+  it('UIC-CARD-7.2 draws More as a plus that turns into a minus, named Show more', async () => {
+    const user = userEvent.setup();
+    const glyph = (name: string) =>
+      function Glyph(props: SVGProps<SVGSVGElement>) {
+        return <svg {...props} data-glyph={name} />;
+      };
+    render(
+      <UiProvider icons={{ plus: glyph('plus'), minus: glyph('minus') }}>
+        <RecordCard presentationSteps={steps} />
+      </UiProvider>,
+    );
+    await resize(cardRoot(), 260);
+    const more = screen.getByRole('button', { name: 'Show more Orchard row' });
+    expect(more.querySelector('svg')).toHaveAttribute('data-glyph', 'plus');
+    await user.click(more);
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(more.querySelector('svg')).toHaveAttribute('data-glyph', 'minus');
+    expect(more).toHaveAccessibleName('Show more Orchard row');
+  });
+
   it('UIC-CARD-7.2 returns focus to More inside a shadow root, not to a same-id element outside', async () => {
     render(
       <ShadowHost name="card">
@@ -334,7 +355,7 @@ describe('Card adaptive presentation', () => {
     );
     const root = requireDefined(shadowRootOf('card').querySelector<HTMLElement>('.ui-card'));
     await resize(root, 260);
-    const more = inShadow('card').getByRole('button', { name: 'More Orchard row' });
+    const more = inShadow('card').getByRole('button', { name: 'Show more Orchard row' });
     const decoy = document.createElement('button');
     decoy.id = more.id;
     document.body.append(decoy);
@@ -366,7 +387,7 @@ describe('Card adaptive presentation', () => {
       />,
     );
     await resize(cardRoot(), 260);
-    const more = screen.getByRole('button', { name: 'More Orchard row' });
+    const more = screen.getByRole('button', { name: 'Show more Orchard row' });
     await user.click(more);
     const field = screen.getByRole('textbox', { name: 'Filter' });
     act(() => field.focus());
@@ -403,10 +424,10 @@ describe('Card adaptive presentation', () => {
     render(<RecordCard presentationSteps={steps} meta={inner} />);
     const [outerRoot, innerRoot] = Array.from(document.querySelectorAll<HTMLElement>('.ui-card'));
     await resize(requireDefined(outerRoot), 260);
-    const outerMore = screen.getByRole('button', { name: 'More Orchard row' });
+    const outerMore = screen.getByRole('button', { name: 'Show more Orchard row' });
     await user.click(outerMore);
     await resize(requireDefined(innerRoot), 260);
-    const innerMore = screen.getByRole('button', { name: 'More Inner row' });
+    const innerMore = screen.getByRole('button', { name: 'Show more Inner row' });
     await user.click(innerMore);
     // The inner card's toggle is not in a region its More revealed: the outer region holds it.
     act(() => screen.getByRole('button', { name: 'Details Inner row' }).focus());
@@ -465,12 +486,12 @@ describe('Card adaptive presentation', () => {
     const draft = screen.getByRole('textbox', { name: 'Draft' });
     await user.click(screen.getByRole('button', { name: 'Saved 0' }));
     await resize(cardRoot(), 260);
-    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    await user.click(screen.getByRole('button', { name: 'Show more Orchard row' }));
     expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
     expect(draft).toHaveValue('Unsaved');
-    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    await user.click(screen.getByRole('button', { name: 'Show more Orchard row' }));
     await resize(cardRoot(), 90);
-    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    await user.click(screen.getByRole('button', { name: 'Show more Orchard row' }));
     expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
     await resize(cardRoot(), 400);
     expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
@@ -495,7 +516,7 @@ describe('Card adaptive presentation', () => {
     expect(container.querySelector('.ui-card__leading')).toHaveAttribute('hidden');
     expect(container.querySelector('.ui-card__summary')).toHaveAttribute('hidden');
     expect(screen.queryByRole('button', { name: 'Details Orchard row' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'More Orchard row' }));
+    await user.click(screen.getByRole('button', { name: 'Show more Orchard row' }));
     expect(screen.getByText('Harvest 40% done')).toBeVisible();
     expect(screen.getByText('Active')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Details Orchard row' })).toHaveAttribute(
@@ -521,7 +542,7 @@ describe('Card adaptive presentation', () => {
     expect(container.querySelector('.ui-card__abbreviation')).toHaveTextContent('Q3');
     expect(container.querySelector('.ui-card__heading')).toHaveAttribute('hidden');
     expect(screen.getByRole('region', { name: 'Quarterly report' })).toBe(cardRoot());
-    expect(screen.getByRole('button', { name: 'More Quarterly report' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show more Quarterly report' })).toBeInTheDocument();
   });
 
   it.each([true, false])(
@@ -559,7 +580,7 @@ describe('Card adaptive presentation', () => {
       await resize(cardRoot(), 90);
       expect(screen.queryByRole('button', { name: 'Archive record' })).not.toBeInTheDocument();
       expect(screen.getByRole('region', { name: 'Record' })).toBe(cardRoot());
-      const more = screen.getByRole('button', { name: 'More Record' });
+      const more = screen.getByRole('button', { name: 'Show more Record' });
       await user.click(more);
       await user.click(screen.getByRole('button', { name: 'Archive record' }));
       expect(archive).toHaveBeenCalledOnce();

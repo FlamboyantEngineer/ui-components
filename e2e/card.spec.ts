@@ -395,9 +395,15 @@ test.describe('Card lab', () => {
     await expect(card).toHaveAttribute('data-presentation', 'compact');
     await expect(card.getByRole('button', { name: 'Water' })).toHaveCount(0);
     await expect(card.getByRole('button', { name: 'Details Plum row 7' })).toBeVisible();
-    const compactMore = card.getByRole('button', { name: 'More Plum row 7' });
+    const compactMore = card.getByRole('button', { name: 'Show more Plum row 7' });
     await compactMore.click();
+    await expect(compactMore).toHaveAttribute('aria-expanded', 'true');
     await expect(crates).toHaveValue('Unsaved');
+    // The revealed actions sit on their own line below the title row, not over it.
+    const opener = await compactMore.boundingBox();
+    const revealed = await card.locator('.ui-card__actions').boundingBox();
+    if (!opener || !revealed) throw new Error('no layout');
+    expect(revealed.y).toBeGreaterThanOrEqual(opener.y + opener.height);
     await compactMore.click();
     await thumb.focus();
 
@@ -411,7 +417,7 @@ test.describe('Card lab', () => {
     expect(box.width).toBeLessThanOrEqual(56);
     expect(box.overflows).toBe(false);
     await expect(card).toHaveAccessibleName('Plum row 7');
-    const more = card.getByRole('button', { name: 'More Plum row 7' });
+    const more = card.getByRole('button', { name: 'Show more Plum row 7' });
     await expect(more).toBeVisible();
     await more.click();
     await expect(more).toHaveAttribute('aria-expanded', 'true');
@@ -437,7 +443,7 @@ test.describe('Card lab', () => {
     const custom = demo.getByRole('region', { name: 'Plum row 9' });
     await expect(custom).toHaveAttribute('data-presentation', 'minimal');
     await expect(custom.getByRole('button', { name: 'Archive row 9' })).toHaveCount(0);
-    await custom.getByRole('button', { name: 'More Plum row 9' }).click();
+    await custom.getByRole('button', { name: 'Show more Plum row 9' }).click();
     await expect(custom.getByRole('button', { name: 'Archive row 9' })).toBeVisible();
     await lab.expectAccessible('[data-lab-demo="pane"]');
 
@@ -474,7 +480,7 @@ test('UIC-CARD-7.2 UIC-PORTAL-1.8 returns focus to More inside a shadow root', a
   await lab.open('card');
   const demo = page.locator('[data-lab-demo="shadow-card"]');
   await demo.scrollIntoViewIfNeeded();
-  const more = demo.getByRole('button', { name: 'More Pear row' });
+  const more = demo.getByRole('button', { name: 'Show more Pear row' });
   await more.click();
   await expect(more).toHaveAttribute('aria-expanded', 'true');
   await demo.getByRole('button', { name: 'Water' }).focus();
