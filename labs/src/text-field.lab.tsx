@@ -229,6 +229,47 @@ function CompletedCities() {
   );
 }
 
+const longLine = Array.from(
+  { length: 12 },
+  (_, index) => `segment ${index + 1} of a long reference code`,
+).join(' / ');
+
+const longNotes = Array.from(
+  { length: 60 },
+  (_, index) =>
+    `Line ${index + 1}: the river trail passes the old mill, crosses the stone bridge and climbs through the orchard toward the ridge.`,
+).join('\n');
+
+/** A long one-line value and two large multiline values, each kept inside a bounded box. */
+function LongContent() {
+  return (
+    <div style={{ display: 'grid', gap: 12, width: 360 }}>
+      <TextField
+        label="Reference"
+        description="One line that scrolls sideways; Home and End reach either end."
+        defaultValue={longLine}
+        data-lab-field="long-line"
+      />
+      <TextField
+        label="Route notes"
+        description="A fixed text area: the text wraps and scrolls inside it, and the corner handle resizes it."
+        multiline
+        defaultValue={longNotes}
+        data-lab-field="long-notes"
+      />
+      <TextField
+        label="Trail log"
+        description="Grows from 3 to 8 rows, then scrolls."
+        multiline
+        minRows={3}
+        maxRows={8}
+        defaultValue={longNotes}
+        data-lab-field="long-grow"
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -302,6 +343,12 @@ mountLab(
     </LabSection>
     <LabSection title="Growing notes" description="Grows from 2 to 5 rows, then scrolls.">
       <TextField label="Notes" multiline minRows={2} maxRows={5} data-lab-field="grow" />
+    </LabSection>
+    <LabSection
+      title="Long content"
+      description="Substantial values stay inside their boxes, so the page does not grow with them: a single line scrolls sideways, a fixed text area wraps and scrolls (and resizes from its corner), and a growing one stops at 8 rows and then scrolls. The caret and selection reach the end by keyboard (End, Ctrl+End) and by pointer."
+    >
+      <LongContent />
     </LabSection>
     <LabSection
       title="Character count"
