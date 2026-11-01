@@ -407,6 +407,26 @@ test.describe('Chat lab', () => {
     await expect(pair.locator('.ui-chat__banner')).toHaveCount(0);
   });
 
+  test('UIC-CHAT-2.5 UIC-CHAT-3.7 keeps words added while an edit is saved', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const pair = section(page, 'Between two people');
+    await message(pair, 'pair-2').hover();
+    await message(pair, 'pair-2').getByRole('button', { name: 'Edit' }).click();
+    await expect(composer(pair)).toBeFocused();
+    await page.keyboard.type(' Or 10?');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type(' Either works.');
+    await expect(message(pair, 'pair-2')).toContainText('Yes! 9 at the main gate? Or 10?');
+    await expect(pair.locator('.ui-chat__banner')).toHaveText('Editing your message');
+    await expect(composer(pair)).toHaveText('Yes! 9 at the main gate? Or 10? Either works.');
+    await page.keyboard.press('Enter');
+    await expect(message(pair, 'pair-2')).toContainText('Or 10? Either works.');
+    await expect(pair.locator('.ui-chat__banner')).toHaveCount(0);
+  });
+
   test('UIC-CHAT-3.1 keeps the draft of a conversation across a reload', async ({ page, lab }) => {
     await lab.open('chat');
     const pair = section(page, 'Between two people');

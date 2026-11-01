@@ -12,6 +12,8 @@ interface ChatEditing {
 /** The chat's own state about one conversation. */
 interface ChatOwnState {
   conversationId: string | undefined;
+  /** Counts each edit or reply the reader starts or leaves, so a late acceptance ends only its own. */
+  session: number;
   editing: ChatEditing | null;
   replyingId: string | null;
   /** The message a quote jumped to. */
@@ -30,17 +32,24 @@ export interface ChatState extends Omit<ChatOwnState, 'conversationId'> {
   cancelEdit: () => void;
   startReply: (messageId: string) => void;
   cancelReply: () => void;
-  /** Ends the reply to a message once its sending is accepted, if the chat still shows that conversation and reply. */
-  endReply: (conversationId: string | undefined, messageId: string) => void;
-  /** Ends an edit once its sending is accepted, if the chat still shows that conversation and edit. */
-  endEdit: (conversationId: string | undefined, editing: ChatEditing) => void;
+  /** Ends a reply once its sending is accepted, if the chat still shows that conversation and reply session. */
+  endReply: (conversationId: string | undefined, session: number) => void;
+  /** Ends an edit once its sending is accepted, if the chat still shows that conversation and edit session. */
+  endEdit: (conversationId: string | undefined, session: number) => void;
   jumpTo: (messageId: string) => void;
   setExpandedParts: (messageId: string, expanded: Record<string, boolean>) => void;
   focusComposer: () => void;
 }
 
 function createState(conversationId: string | undefined): ChatOwnState {
-  return { conversationId, editing: null, replyingId: null, jumpedId: undefined, expanded: {} };
+  return {
+    conversationId,
+    session: 0,
+    editing: null,
+    replyingId: null,
+    jumpedId: undefined,
+    expanded: {},
+  };
 }
 
 /**
@@ -71,29 +80,30 @@ export function useChatState(conversationId: string | undefined): ChatState {
   }, []);
   const commands = useMemo(() => {
     const update = (patch: Partial<ChatOwnState>) => setOwn((state) => ({ ...state, ...patch }));
+    // Starting or leaving an edit or a reply begins a new session.
+    const renew = (patch: Partial<ChatOwnState>) =>
+      setOwn((state) => ({ ...state, ...patch, session: state.session + 1 }));
     return {
       startEdit: (editing: ChatEditing) => {
-        update({ editing, replyingId: null });
+        renew({ editing, replyingId: null });
         focusComposer();
       },
-      cancelEdit: () => update({ editing: null }),
+      cancelEdit: () => renew({ editing: null }),
       startReply: (replyingId: string) => {
-        update({ replyingId, editing: null });
+        renew({ replyingId, editing: null });
         focusComposer();
       },
-      cancelReply: () => update({ replyingId: null }),
-      endReply: (scope: string | undefined, messageId: string) =>
+      cancelReply: () => renew({ replyingId: null }),
+      endReply: (scope: string | undefined, session: number) =>
         setOwn((state) =>
-          state.conversationId === scope && state.replyingId === messageId
-            ? { ...state, replyingId: null }
+          state.conversationId === scope && state.session === session
+            ? { ...state, replyingId: null, session: session + 1 }
             : state,
         ),
-      endEdit: (scope: string | undefined, editing: ChatEditing) =>
+      endEdit: (scope: string | undefined, session: number) =>
         setOwn((state) =>
-          state.conversationId === scope &&
-          state.editing?.kind === editing.kind &&
-          state.editing.id === editing.id
-            ? { ...state, editing: null }
+          state.conversationId === scope && state.session === session
+            ? { ...state, editing: null, session: session + 1 }
             : state,
         ),
       jumpTo: (jumpedId: string) => update({ jumpedId }),

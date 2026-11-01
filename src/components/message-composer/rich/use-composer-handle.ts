@@ -30,6 +30,8 @@ export interface MessageComposerHandle {
   insertToken: (token: Omit<MessageComposerToken, 'start' | 'end'>) => MessageComposerInsertResult;
   /** The draft as it is now, also while another message is being edited. */
   getDraft: () => MessageComposerMessage;
+  /** What the text box shows now: the message being edited, or else the draft. */
+  getValue: () => MessageComposerMessage;
 }
 
 interface ComposerHandleOptions {
@@ -65,6 +67,7 @@ export function useComposerHandle(options: ComposerHandleOptions): void {
         return 'inserted';
       },
       getDraft: () => latest.current.state.draft,
+      getValue: () => latest.current.state.value,
     }),
     [latest, editorRef],
   );
