@@ -97,12 +97,18 @@ function ChannelInput({
 
 /**
  * The picker's inputs for its format: a hex input, or a number input per channel of the format's
- * colour space (React Aria `ColorField` with `channel`), then alpha for a format that has it. Each
+ * colour space (React Aria `ColorField` with `channel`), then alpha while transparency is allowed. Each
  * input has a visible label: `#` for hex and the channel's initial for a channel.
  */
-export function ColorChannelInputs({ format }: { format: ColorFieldFormat }) {
+export function ColorChannelInputs({
+  format,
+  allowsTransparency,
+}: {
+  format: ColorFieldFormat;
+  allowsTransparency: boolean;
+}) {
   const strings = useUiStrings();
-  const { hasHex, space, channels } = describeFormatInputs(format);
+  const { hasHex, space, channels } = describeFormatInputs(format, allowsTransparency);
   return (
     <div {...hooks.slot('channels')}>
       {hasHex ? (

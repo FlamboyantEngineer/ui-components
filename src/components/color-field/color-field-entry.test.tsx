@@ -44,7 +44,7 @@ describe('ColorField typing', () => {
       <ColorField
         label="Accent"
         allowsTyping
-        format="hexa"
+        allowsTransparency
         defaultValue="#12345601"
         onCommit={onCommit}
       />,

@@ -83,7 +83,8 @@ describe('ColorField picker', () => {
         <ColorField
           label="Accent"
           defaultValue="#336699"
-          formats={['hex', 'rgba']}
+          formats={['hex', 'rgb']}
+          allowsTransparency
           swatches={['#336699']}
           allowsEyeDropper
         />
@@ -91,11 +92,11 @@ describe('ColorField picker', () => {
     );
     await user.click(trigger('Accent'));
     const dialog = await screen.findByRole('dialog');
-    await user.click(within(dialog).getByRole('radio', { name: 'RGBA' }));
+    await user.click(within(dialog).getByRole('radio', { name: 'RGB' }));
     expect(within(dialog).queryByRole('textbox', { name: 'Hex color' })).not.toBeInTheDocument();
     await user.click(within(dialog).getByRole('radio', { name: 'HEX' }));
     expect(within(dialog).getByRole('textbox', { name: 'Hex color' })).toBeInTheDocument();
-    await user.click(within(dialog).getByRole('radio', { name: 'RGBA' }));
+    await user.click(within(dialog).getByRole('radio', { name: 'RGB' }));
     expectHooksMatchSpec(document.body, 'COLOR-FIELD', {
       slots: [
         'group',
