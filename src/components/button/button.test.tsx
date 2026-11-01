@@ -4,6 +4,7 @@ import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { userEvent } from '@testing-library/user-event';
 import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
+import * as primitives from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -240,6 +241,31 @@ describe('Button', () => {
     await user.tab();
     expect(screen.getByRole('button', { name: 'Edit' })).toHaveFocus();
     expect(screen.getByRole('tooltip')).toHaveTextContent('Locked');
+  });
+
+  it('UIC-BUTTON-1.6 opens its disabled hint on the first physical hover while refusing activation', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const modality = vi
+      .spyOn(primitives, 'getInteractionModality')
+      .mockReturnValueOnce(null)
+      .mockReturnValue('pointer');
+    try {
+      render(
+        <Button isDisabled focusableWhenDisabled tooltip="Locked" onPress={onPress}>
+          Edit
+        </Button>,
+      );
+      const button = screen.getByRole('button', { name: 'Edit' });
+      await user.hover(button);
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Locked');
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      await user.click(button);
+      await user.keyboard('{Enter} ');
+      expect(onPress).not.toHaveBeenCalled();
+    } finally {
+      modality.mockRestore();
+    }
   });
 
   it('UIC-BUTTON-1.7 shows its shortcut after the hint and publishes aria-keyshortcuts', async () => {

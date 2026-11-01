@@ -162,6 +162,47 @@ function dismissalProps(dismissal: (typeof dismissals)[number]): Partial<Popover
     : { shouldCloseOnInteractOutside: () => false };
 }
 
+function RepeatablePopover({ label }: { label: string }) {
+  const [isOpen, setOpen] = useState(false);
+  const [changes, setChanges] = useState<string[]>([]);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const change = (next: boolean) => {
+    setOpen(next);
+    setChanges((previous) => [...previous, next ? 'open' : 'closed']);
+  };
+  return (
+    <div>
+      <PopoverTrigger isOpen={isOpen} onOpenChange={change}>
+        <Button ref={triggerRef}>{label}</Button>
+        <Popover
+          isNonModal
+          isOpen={isOpen}
+          onOpenChange={change}
+          triggerRef={triggerRef}
+          title={label}
+        >
+          <input aria-label={`${label} value`} />
+        </Popover>
+      </PopoverTrigger>
+      <LabOutput name={`${label}-changes`}>{changes.join(', ') || 'No changes'}</LabOutput>
+    </div>
+  );
+}
+
+function TriggerPressDemo() {
+  const [count, setCount] = useState(0);
+  return (
+    <div data-lab-demo="trigger-press" style={{ display: 'flex', gap: 48, alignItems: 'start' }}>
+      <RepeatablePopover label="First picker" />
+      <RepeatablePopover label="Second picker" />
+      <div>
+        <Button onPress={() => setCount((current) => current + 1)}>Outside action</Button>
+        <LabOutput name="outside-presses">{count}</LabOutput>
+      </div>
+    </div>
+  );
+}
+
 /** A non-modal popover beside a page counter that stays pressable. */
 function NonModal() {
   const [count, setCount] = useState(0);
@@ -338,6 +379,12 @@ mountLab(
       description="The page stays visible to assistive technology and the counter stays pressable while the notes are open; they close when focus leaves them."
     >
       <NonModal />
+    </LabSection>
+    <LabSection
+      title="Repeated trigger presses"
+      description="Each non-modal picker toggles once per press. Opening its neighbor or using the outside action keeps that press available."
+    >
+      <TriggerPressDemo />
     </LabSection>
     <LabSection
       title="Custom anchor"

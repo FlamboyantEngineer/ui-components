@@ -10,7 +10,7 @@ import {
   type GlyphComponent,
 } from '../../core/glyphs.js';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
-import { Input, Label, NumberField } from '../../primitives/index.js';
+import { Input, Label, NumberField, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Button } from '../button/button.js';
@@ -22,6 +22,7 @@ import { PdfViewerSearch } from './pdf-viewer-search.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The document commands of the toolbar's menu. */
 export interface PdfCommands {
@@ -121,6 +122,7 @@ function PdfViewerPageNav({
   onPageChange,
 }: PdfViewerPageNavProps) {
   const strings = useUiStrings();
+  const { locale } = useLocale();
   return (
     <div {...hooks.slot('group')}>
       <Button
@@ -142,8 +144,25 @@ function PdfViewerPageNav({
           if (Number.isFinite(pageNumber)) onPageChange(pageNumber - 1);
         }}
       >
-        <Label className={hooks.slotClass('page-label')}>{strings.page}</Label>
-        <Input className={hooks.slotClass('page-input')} />
+        {({ state }) => (
+          <>
+            <Label className={hooks.slotClass('page-label')}>{strings.page}</Label>
+            <Input
+              className={hooks.slotClass('page-input')}
+              onKeyDownCapture={(event) => {
+                if (isComposingKey(event.nativeEvent)) event.stopPropagation();
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== 'Escape' || isComposingKey(event.nativeEvent)) return;
+                event.preventDefault();
+                event.stopPropagation();
+                state.setInputValue(
+                  new Intl.NumberFormat(locale, { useGrouping: false }).format(currentPage + 1),
+                );
+              }}
+            />
+          </>
+        )}
       </NumberField>
       <span {...hooks.slot('page-total')}>{strings.ofTotal(pageCount)}</span>
       <Button
