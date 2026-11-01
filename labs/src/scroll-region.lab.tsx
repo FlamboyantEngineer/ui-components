@@ -292,6 +292,8 @@ function Strip() {
         Hidden before: <output data-lab-output="start">{overflow.start ? 'yes' : 'no'}</output>,
         hidden after: <output data-lab-output="end">{overflow.end ? 'yes' : 'no'}</output>
       </p>
+      {/* Room below, so the page could scroll if the strip let the wheel through at its ends. */}
+      <div data-lab-page-room="" style={{ height: '100vh' }} />
     </div>
   );
 }
@@ -496,7 +498,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrolling strip"
-      description="A strip of chips that reports hidden content at each edge; the vertical wheel scrolls it sideways."
+      description="A strip of chips that reports hidden content at each edge; the vertical wheel scrolls it sideways. With the pointer over the strip, the page stays put at either end of the strip; room below the strip lets you see it would otherwise scroll."
     >
       <Strip />
     </LabSection>

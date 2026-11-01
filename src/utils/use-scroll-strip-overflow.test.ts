@@ -155,7 +155,7 @@ function wheel(target: Element, init: WheelEventInit): WheelEvent {
   return event;
 }
 
-test('UIC-SCROLL-STRIP-1.3 turns wheel input into horizontal scrolling, except inside popups or with modifiers', async () => {
+test('UIC-SCROLL-STRIP-1.3 turns wheel input into horizontal scrolling and owns it at the bounds, except inside popups or with modifiers', async () => {
   const onWheelScroll = vi.fn();
   function Strip(): ReactElement {
     const ref = useRef<HTMLDivElement>(null);
@@ -189,7 +189,11 @@ test('UIC-SCROLL-STRIP-1.3 turns wheel input into horizontal scrolling, except i
     expect(geometry.position).toBe(198);
     expect(wheel(button, { deltaY: 10 }).defaultPrevented).toBe(true);
     expect(geometry.position).toBe(200);
-    expect(wheel(button, { deltaY: 10 }).defaultPrevented).toBe(false);
+    // At its end bound the strip still owns the wheel, so the page behind does not scroll.
+    expect(wheel(button, { deltaY: 10 }).defaultPrevented).toBe(true);
+    expect(wheel(button, { deltaX: 30, deltaY: 5 }).defaultPrevented).toBe(true);
+    expect(geometry.position).toBe(200);
+    expect(onWheelScroll).toHaveBeenCalledTimes(5);
 
     expect(wheel(button, { deltaY: -10, ctrlKey: true }).defaultPrevented).toBe(false);
     expect(
@@ -239,7 +243,10 @@ test('UIC-SCROLL-STRIP-1.4 reports and scrolls a right-to-left strip from its in
     expect(geometry.position).toBe(-150);
     wheel(strip, { deltaX: 500 });
     expect(geometry.position).toBe(0);
-    expect(wheel(strip, { deltaX: 20 }).defaultPrevented).toBe(false);
+    // At the inline start bound the strip keeps the wheel from the page.
+    expect(wheel(strip, { deltaX: 20 }).defaultPrevented).toBe(true);
+    expect(wheel(strip, { deltaY: -20 }).defaultPrevented).toBe(true);
+    expect(geometry.position).toBe(0);
   } finally {
     await act(async () => root.unmount());
   }
