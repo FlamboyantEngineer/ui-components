@@ -22,6 +22,7 @@ export type {
   FieldErrorSource,
   FieldIssue,
   FieldIssues,
+  FieldChangeLayout,
   FieldDensity,
   FieldLabelLayout,
   FieldLayoutProps,

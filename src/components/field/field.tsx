@@ -16,6 +16,7 @@ import {
   toInnerControlSize,
   useFieldIds,
   type FieldControlProps,
+  type FieldChangeLayout,
   type FieldDensity,
   type FieldLabelLayout,
 } from './field-parts.js';
@@ -46,6 +47,11 @@ export interface FieldProps<T> extends BaseProps {
    * (`default`), or only takes it while it shows them (`compact`), for dense rows.
    */
   density?: FieldDensity | undefined;
+  /**
+   * Where the control shows the value a dirty field's edit replaced (`FieldPreviousValue`): before
+   * the current value (`inline`, the default) or on its own line above it (`stacked`).
+   */
+  changeLayout?: FieldChangeLayout | undefined;
   /** Help text below the control, which describes it. */
   description?: ReactNode;
   /** Help shown in a tooltip from a help button after the control. */
@@ -134,13 +140,19 @@ function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
 
 /** What the root publishes: its layout, and its states from the field state and its focus. */
 function toFieldData(
-  layout: { labelLayout: FieldLabelLayout; size: ControlSize; density: FieldDensity | undefined },
+  layout: {
+    labelLayout: FieldLabelLayout;
+    size: ControlSize;
+    density: FieldDensity | undefined;
+    changeLayout: FieldChangeLayout | undefined;
+  },
   state: FieldState<unknown>,
   focused: boolean,
 ) {
   return {
     ...layout,
     density: layout.density ?? 'default',
+    changeLayout: layout.changeLayout ?? 'inline',
     focused,
     validation: state.validation.status,
     dirty: state.isDirty,
@@ -188,6 +200,7 @@ export function Field<T>({
   labelLayout = 'label-control',
   size = 'md',
   density,
+  changeLayout,
   description,
   help,
   decoration,
@@ -225,7 +238,7 @@ export function Field<T>({
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
-  const data = toFieldData({ labelLayout, size, density }, state, focus.isFocused);
+  const data = toFieldData({ labelLayout, size, density, changeLayout }, state, focus.isFocused);
   return (
     <div
       {...hooks.root({ className, props: rest, data })}
@@ -261,7 +274,12 @@ export function Field<T>({
   );
 }
 
-export type { FieldControlProps, FieldDensity, FieldLabelLayout } from './field-parts.js';
+export type {
+  FieldChangeLayout,
+  FieldControlProps,
+  FieldDensity,
+  FieldLabelLayout,
+} from './field-parts.js';
 export { FieldMessage } from './field-parts.js';
 export { FieldFormValue } from './field-form-value.js';
 export { isFieldValueEqual } from './field-value.js';

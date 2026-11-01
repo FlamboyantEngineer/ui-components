@@ -103,6 +103,7 @@ const layoutKeys = new Set<string>([
   'labelLayout',
   'size',
   'density',
+  'changeLayout',
   'description',
   'help',
   'decoration',

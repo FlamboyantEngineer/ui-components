@@ -459,6 +459,27 @@ describe('SelectField trigger', () => {
     expect(trigger('Fig Fruit')).toBeInTheDocument();
     expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['previous'] });
   });
+
+  it('UIC-SELECT-FIELD-2.3 UIC-FIELD-1.13 takes the change layout and shows a replaced value before an empty one', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <SelectField
+        label="Fruit"
+        options={fruit}
+        committedValue="apple"
+        changeLayout="stacked"
+        menu={['clear', 'reset']}
+      />,
+    );
+    expect(container.querySelector('.ui-field')).toHaveAttribute('data-change-layout', 'stacked');
+    await chooseFieldMenuItem(user, trigger('Apple Fruit'), 'Clear');
+    const previous = container.querySelector('.ui-select-field__previous');
+    expect(previous?.querySelector('del')).toHaveTextContent('Apple');
+    expect(trigger('Select an option Fruit')).toBeInTheDocument();
+    await chooseFieldMenuItem(user, trigger('Select an option Fruit'), 'Reset');
+    expect(trigger('Apple Fruit')).toBeInTheDocument();
+    expect(container.querySelector('.ui-select-field__previous')).toBeNull();
+  });
 });
 
 describe('SelectField forms', () => {

@@ -57,10 +57,10 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-2.3 - Previous value
 
-While a single select is dirty and its committed value had a choice, the frame shall show that committed option (icon and label) as a `FieldPreviousValue` (`ui-select-field__previous`) before the trigger. The previous value stays outside the trigger button, so the trigger's accessible name and visible text remain its current value.
+While a single select is dirty and its committed value had a choice, the frame shall show that committed option (icon and label) as a `FieldPreviousValue` (`ui-select-field__previous`) before the trigger. The previous value stays outside the trigger button, so the trigger's accessible name and visible text remain its current value. A select whose committed value had no choice shows no previous value, and one whose edit chose nothing shows the previous value before the placeholder. The field's `changeLayout` (UIC-FIELD-1.13) places it: `inline` before the trigger on its row, `stacked` on its own line above the trigger; a multiple select's chips and removed values (UIC-SELECT-FIELD-4.3) keep their rows below the trigger in both. Each removed value's restore button puts back that one value, while the field's restore button and the menu's Reset put back the whole committed value.
 
-Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`
-Verification: `src/components/select-field/select-field.test.tsx`
+Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`, `labs/reference/select-field.css`
+Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-2.4 - Trigger ref
 

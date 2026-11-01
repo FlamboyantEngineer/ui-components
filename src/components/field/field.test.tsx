@@ -201,6 +201,14 @@ describe('Field', () => {
     expect(sizesOf('lg')).toEqual(['lg', 'md', 'md']);
   });
 
+  it('UIC-FIELD-1.13 publishes where it shows the value an edit replaced', () => {
+    const { container, rerender } = render(<TextField />);
+    expect(root(container)).toHaveAttribute('data-change-layout', 'inline');
+    rerender(<TextField changeLayout="stacked" />);
+    expect(root(container)).toHaveAttribute('data-change-layout', 'stacked');
+    expectHooksMatchSpec(container, 'FIELD');
+  });
+
   it('UIC-FIELD-1.12 publishes its density and keeps every part in a compact field', async () => {
     const user = userEvent.setup();
     const { container, unmount } = render(<TextField />);
