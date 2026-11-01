@@ -8,6 +8,20 @@ const names = (table: Locator) =>
 const width = async (locator: Locator) => Math.round((await locator.boundingBox())?.width ?? 0);
 
 test.describe('Table lab', () => {
+  test('UIC-TABLE-1.3 toggles a checkbox in a header apart from select all', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab="header-controls"]');
+    await demo.getByText('Ounces').click();
+    await expect(demo.getByRole('checkbox', { name: 'Ounces' })).toBeChecked();
+    await expect(demo.getByRole('gridcell', { name: '6.3 oz' })).toBeVisible();
+    await expect(demo.locator('[data-lab-output="header-selected"]')).toHaveText('0');
+    await demo.locator('th .ui-table__checkbox').click();
+    await expect(demo.locator('[data-lab-output="header-selected"]')).toHaveText('3');
+  });
+
   test('UIC-TABLE-9.1 UIC-TABLE-13.4 keeps row expansion when a similarly named group collapses', async ({
     page,
     lab,

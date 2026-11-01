@@ -14,6 +14,7 @@ import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { FreeControls } from '../../utils/free-controls.js';
 
 export type TagGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -117,7 +118,9 @@ export function Tag({ id, children, tone, textValue, className, ...rest }: TagPr
     >
       {({ allowsRemoving, isDisabled }) => (
         <>
-          <span {...hooks.slot('label')}>{children}</span>
+          <span {...hooks.slot('label')}>
+            <FreeControls>{children}</FreeControls>
+          </span>
           {allowsRemoving && !isDisabled ? (
             <Button
               slot="remove"

@@ -2,10 +2,12 @@ import { DeleteGlyph, EditGlyph } from '../../src/core/glyphs.js';
 import { useState } from 'react';
 import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Table, type TableProps } from '../../src/components/table/table.js';
 import { applyTableMove, type TableColumn } from '../../src/components/table/index.js';
 import { sortTableRows } from '../../src/components/table/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   CallerFilter,
   CellWrapping,
@@ -135,6 +137,42 @@ function Selection() {
         )}
       />
       <output data-lab-output>{`${count} selected · Action: ${action}`}</output>
+    </div>
+  );
+}
+
+function HeaderControls() {
+  const [isOunces, setOunces] = useState(false);
+  const [selected, setSelected] = useState<Selection>(new Set());
+  const count = selected === 'all' ? 3 : selected.size;
+  return (
+    <div data-lab="header-controls">
+      <Table
+        aria-label="Fruit, with a unit switch"
+        rows={fruit.slice(0, 3)}
+        selectionMode="multiple"
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        columns={[
+          { id: 'name', header: 'Name' },
+          {
+            id: 'weight',
+            textValue: 'Weight',
+            align: 'end',
+            header: (
+              <>
+                Weight{' '}
+                <Checkbox isSelected={isOunces} onChange={setOunces}>
+                  Ounces
+                </Checkbox>
+              </>
+            ),
+            renderCell: (row) =>
+              isOunces ? `${(row.weight / 28.35).toFixed(1)} oz` : `${row.weight} g`,
+          },
+        ]}
+      />
+      <LabOutput name="header-selected">{count}</LabOutput>
     </div>
   );
 }
@@ -308,6 +346,12 @@ mountLab(
       description="Checkboxes, select all, a disabled row and an actions column."
     >
       <Selection />
+    </LabSection>
+    <LabSection
+      title="A control in a header"
+      description="The weight header holds a checkbox that switches the unit; the select-all checkbox keeps its own role."
+    >
+      <HeaderControls />
     </LabSection>
     <LabSection
       title="Resizing"

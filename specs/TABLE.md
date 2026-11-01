@@ -26,9 +26,9 @@ Verification: `src/components/table/table.test.tsx`
 
 ### UIC-TABLE-1.3 - Accessible column names
 
-Each column header shall carry its header content in `ui-table__column-label` and take its accessible name from it, or from the column's `textValue` when the header is not plain text. The actions column's label is the provider's `rowActions` string, which the stylesheet may hide visually.
+Each column header shall carry its header content in `ui-table__column-label` and take its accessible name from it, or from the column's `textValue` when the header is not plain text. Buttons and checkboxes in header content are free of the header row's slots (its select-all checkbox): they need no `slot` and take none of its props, and the select-all checkbox keeps its slot. The actions column's label is the provider's `rowActions` string, which the stylesheet may hide visually.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/core/strings.ts`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/utils/free-controls.tsx`, `src/core/strings.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-1.4 - Hooks and caller attributes

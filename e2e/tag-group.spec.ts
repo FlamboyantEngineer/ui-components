@@ -14,6 +14,22 @@ function output(page: Page, name: string): Locator {
 }
 
 test.describe('Tag Group lab', () => {
+  test('UIC-TAG-GROUP-1.1 UIC-TAG-GROUP-2.2 presses a button in a tag and still removes the tag', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tag-group');
+    const demo = page.locator('[data-lab-demo="tag-controls"]');
+    await demo.getByRole('button', { name: 'Edit Plum' }).click();
+    await expect(demo.locator('[data-lab-output="edited"]')).toHaveText('Plum');
+    await expect(demo.getByRole('row')).toHaveCount(2);
+    await demo
+      .getByRole('row', { name: 'Pear' })
+      .getByRole('button', { name: /^Remove/ })
+      .click();
+    await expect(demo.getByRole('row')).toHaveCount(1);
+  });
+
   test('UIC-TAG-GROUP-1.1 UIC-TAG-GROUP-1.3 UIC-TAG-GROUP-1.4 draws every tone and size', async ({
     page,
     lab,

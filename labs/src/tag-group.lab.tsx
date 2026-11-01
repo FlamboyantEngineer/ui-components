@@ -6,6 +6,7 @@ import {
   type TagGroupSize,
   type TagTone,
 } from '../../src/components/tag-group/tag-group.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
@@ -112,6 +113,33 @@ function Marked() {
   );
 }
 
+function Editable() {
+  const [edited, setEdited] = useState('none');
+  const [items, setItems] = useState<Fruit[]>([
+    { id: 'pear', name: 'Pear' },
+    { id: 'plum', name: 'Plum' },
+  ]);
+  return (
+    <div data-lab-demo="tag-controls">
+      <TagGroup
+        aria-label="Editable fruit"
+        items={items}
+        onRemove={(keys) => setItems((current) => current.filter((item) => !keys.has(item.id)))}
+      >
+        {(item) => (
+          <Tag id={item.id} textValue={item.name}>
+            {item.name}{' '}
+            <Button variant="bare" size="xs" onPress={() => setEdited(item.name)}>
+              {`Edit ${item.name}`}
+            </Button>
+          </Tag>
+        )}
+      </TagGroup>
+      <LabOutput name="edited">{edited}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -160,6 +188,12 @@ mountLab(
       description="Tags override the group tone; a caller attribute marks an added tag; rich content takes a text value."
     >
       <Marked />
+    </LabSection>
+    <LabSection
+      title="Controls in tags"
+      description="Each tag holds an Edit button of its own beside the tag's remove button."
+    >
+      <Editable />
     </LabSection>
   </>,
 );

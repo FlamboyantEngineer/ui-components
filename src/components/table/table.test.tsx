@@ -5,6 +5,8 @@ import type { Selection, SortDescriptor } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { Button } from '../button/button.js';
+import { Checkbox } from '../checkbox/checkbox.js';
 import { Table } from './table.js';
 import type { TableColumn } from './table-rows.js';
 
@@ -195,6 +197,42 @@ describe('Table', { timeout: 15_000 }, () => {
     expect(header('Actions')).toHaveAttribute('data-kind', 'actions');
     await user.click(header('Name'));
     await waitFor(() => expect(document.body).toHaveTextContent(/sorted by column Fruit name/));
+  });
+
+  it('UIC-TABLE-1.3 takes a free checkbox and button in header content', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onPress = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(
+      <Table
+        aria-label="Fruit"
+        rows={fruit}
+        selectionMode="multiple"
+        onSelectionChange={onSelectionChange}
+        columns={[
+          {
+            id: 'name',
+            textValue: 'Name',
+            header: (
+              <>
+                Name <Checkbox onChange={onChange}>Exact</Checkbox>{' '}
+                <Button variant="bare" size="xs" onPress={onPress}>
+                  Help
+                </Button>
+              </>
+            ),
+          },
+        ]}
+      />,
+    );
+    await user.click(screen.getByRole('checkbox', { name: 'Exact' }));
+    expect(onChange).toHaveBeenCalledWith(true);
+    await user.click(screen.getByRole('button', { name: 'Help' }));
+    expect(onPress).toHaveBeenCalledOnce();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('checkbox', { name: 'Select All' }));
+    expect(onSelectionChange).toHaveBeenCalledOnce();
   });
 
   it('UIC-TABLE-1.4 forwards ref to its root', () => {

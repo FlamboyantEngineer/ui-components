@@ -19,6 +19,7 @@ import { useColumnDrag } from './use-column-drag.js';
 import type { TableColumnDrag } from './use-column-reorder.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 import { getPinStyle } from './table-structure.js';
+import { FreeControls } from '../../utils/free-controls.js';
 
 /** What a data column header shows beyond the column's own declaration. */
 export interface TableColumnHeaderState {
@@ -97,7 +98,7 @@ export function DataColumn<T>({
     >
       <div ref={dragRef} {...targetProps} {...hooks.slot('column-content')}>
         <span {...(isReorderable ? sourceProps : {})} {...hooks.slot('column-label')}>
-          {column.header}
+          <FreeControls>{column.header}</FreeControls>
         </span>
         {column.allowsSorting ? (
           <Icon

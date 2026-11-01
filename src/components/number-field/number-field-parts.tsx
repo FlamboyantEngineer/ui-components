@@ -10,6 +10,7 @@ import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
+import { FreeControls } from '../../utils/free-controls.js';
 import type { FieldState } from '../field/field.js';
 
 export const numberFieldHooks = createHooks('number-field', [
@@ -90,7 +91,12 @@ export function NumberAdornment({
   side: 'start' | 'end';
   children: ReactNode;
 }) {
-  return isEmptyNode(children) ? null : <span {...hooks.slot(side)}>{children}</span>;
+  if (isEmptyNode(children)) return null;
+  return (
+    <span {...hooks.slot(side)}>
+      <FreeControls>{children}</FreeControls>
+    </span>
+  );
 }
 
 /** A step button, named by its action and the field label (`Decrease Weight`). */
