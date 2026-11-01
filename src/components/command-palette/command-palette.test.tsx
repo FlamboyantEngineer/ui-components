@@ -1,5 +1,5 @@
 import { PlusGlyph } from '../../core/glyphs.js';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -179,6 +179,32 @@ describe('CommandPalette', () => {
     render(<CommandPalette items={commands} defaultOpen size="lg" />);
     expect(document.querySelector('.ui-command-palette')).toHaveAttribute('data-size', 'lg');
     expect(screen.getByRole('menu')).toHaveAttribute('data-size', 'lg');
+  });
+
+  it.each([
+    { name: 'during a composition', init: { isComposing: true } },
+    { name: 'that confirms a candidate', init: { keyCode: 229 } },
+  ])('UIC-COMMAND-PALETTE-2.1 runs no command on an Enter $name', async ({ init }) => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onOpenChange = vi.fn();
+    render(
+      <CommandPalette
+        items={commands}
+        defaultOpen
+        onAction={onAction}
+        onOpenChange={onOpenChange}
+      />,
+    );
+    const search = screen.getByRole('searchbox');
+    await user.keyboard('o');
+    await waitFor(() => expect(search).toHaveAttribute('aria-activedescendant'));
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(search, { key: 'Enter', ...init });
+    expect(onAction).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-COMMAND-PALETTE-2.1 UIC-COMMAND-PALETTE-2.3 runs the highlighted command by keyboard and closes', async () => {

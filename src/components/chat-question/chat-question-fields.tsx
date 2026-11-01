@@ -11,6 +11,7 @@ import {
   type ChatQuestionOption,
   type QuestionDraft,
 } from './chat-question-model.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 interface QuestionTextFieldProps {
   /** The slot the field fills: the free-text answer or the words for Other. */
@@ -40,7 +41,7 @@ interface ChoiceOptionProps {
 /** Enter without a modifier, outside an input method's composition. */
 function isPlainEnter(event: KeyboardEvent) {
   const hasModifier = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey;
-  return event.key === 'Enter' && !hasModifier && !event.nativeEvent.isComposing;
+  return event.key === 'Enter' && !hasModifier && !isComposingKey(event.nativeEvent);
 }
 
 /**

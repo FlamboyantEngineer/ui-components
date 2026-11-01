@@ -7,6 +7,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Modal } from '../modal/modal.js';
 import { TextField } from '../text-field/text-field.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** The version a dialog is open for: its key, the name it shows and its current name. */
 export interface VersionDialogTarget {
@@ -95,7 +96,7 @@ export function RenameVersionDialog({
           onKeyDown={(event) => {
             // Control+Enter is the modal's own shortcut for the same action.
             if (event.key !== 'Enter' || event.ctrlKey || event.metaKey) return;
-            if (!event.nativeEvent.isComposing) runPrimaryAction();
+            if (!isComposingKey(event.nativeEvent)) runPrimaryAction();
           }}
           autoFocus
         />

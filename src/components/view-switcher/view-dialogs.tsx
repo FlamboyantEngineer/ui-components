@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Modal } from '../modal/modal.js';
 import { TextField } from '../text-field/text-field.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** A dialog a view switcher opens: what it does, and the name it starts from. */
 export type ViewDialog =
@@ -55,7 +56,7 @@ function NameViewDialog({
           onKeyDown={(event) => {
             // Control+Enter is the modal's own shortcut for the same action.
             if (event.key !== 'Enter' || event.ctrlKey || event.metaKey) return;
-            if (!event.nativeEvent.isComposing) runPrimaryAction();
+            if (!isComposingKey(event.nativeEvent)) runPrimaryAction();
           }}
           isRequired
           autoFocus

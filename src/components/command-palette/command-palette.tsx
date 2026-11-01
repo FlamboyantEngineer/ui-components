@@ -21,6 +21,7 @@ import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { isChordPress, type ShortcutChord } from '../shortcut/shortcut.js';
 import { useDocumentShortcut } from './command-palette-shortcut.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** Whether a command whose text is `textValue` matches the typed `inputValue`. */
 export type CommandPaletteFilter = (textValue: string, inputValue: string) => boolean;
@@ -97,6 +98,11 @@ function CommandPaletteDialog({
   const menuContext = useMemo(() => ({ onClose: close }), [close]);
   // Seen before the field, which would otherwise keep the key press for itself.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
+    // The Enter that confirms an input method candidate runs no command; the input method keeps it.
+    if (event.key === 'Enter' && isComposingKey(event.nativeEvent)) {
+      event.stopPropagation();
+      return;
+    }
     if (!shortcut || !isChordPress(event.nativeEvent, shortcut)) return;
     event.preventDefault();
     event.stopPropagation();

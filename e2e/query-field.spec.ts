@@ -51,4 +51,31 @@ test.describe('Query Field lab', () => {
       'genre:travel OR genre:cooking',
     ]);
   });
+
+  test('UIC-QUERY-FIELD-1.3 leaves composing and the candidate-confirming Enter to the input method', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('query-field');
+    const demo = page.locator('[data-lab-demo="submit"]');
+    const input = demo.getByRole('textbox', { name: 'Search books' });
+    await input.click();
+    await page.keyboard.press('End');
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Input.imeSetComposition', { text: 'é', selectionStart: 1, selectionEnd: 1 });
+    await cdp.send('Input.insertText', { text: 'é' });
+    // Chromium reports the Enter that confirms a candidate with key code 229.
+    await cdp.send('Input.dispatchKeyEvent', {
+      type: 'rawKeyDown',
+      key: 'Enter',
+      code: 'Enter',
+      windowsVirtualKeyCode: 229,
+    });
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter' });
+    await expect(input).toHaveValue(/é$/);
+    await expect(demo.locator('[data-lab-submitted] li')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(demo.locator('[data-lab-submitted] li')).toHaveCount(1);
+  });
 });

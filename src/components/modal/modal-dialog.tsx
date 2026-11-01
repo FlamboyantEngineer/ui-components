@@ -24,6 +24,7 @@ import { claimPrimaryShortcut } from './modal-shortcut.js';
 import { useModalActions, type ModalActions } from './use-modal-actions.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { modalHooks as hooks } from './modal-hooks.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 type ModalDialogProps = Omit<
   ModalProps,
@@ -84,7 +85,7 @@ function ModalBody({
  */
 function handleEscape(event: KeyboardEvent<HTMLElement>, options: EscapeOptions) {
   if (stopConsumedEscape(event)) return;
-  if (!options.canEscape || event.nativeEvent.isComposing) return;
+  if (!options.canEscape || isComposingKey(event.nativeEvent)) return;
   const isRefused = options.shouldCloseOnEscape?.() === false;
   if (!isRefused && !options.isFloating) return;
   event.stopPropagation();

@@ -9,6 +9,7 @@ import type {
 import { Modal, type ModalProps } from './modal.js';
 import { TextField } from '../text-field/text-field.js';
 import { ModalConfirmation, type ConfirmOptions } from './modal-confirm.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 
 /** Options of `alert`: a confirm dialog whose one action acknowledges it. */
 export type AlertOptions = Omit<
@@ -64,7 +65,7 @@ function PromptDialog({
   const [text, setText] = useState(defaultValue);
   // Enter answers the prompt, as in the browser's own; Control+Enter runs the action as in any modal.
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) close(text);
+    if (event.key === 'Enter' && !isComposingKey(event.nativeEvent)) close(text);
   };
   return (
     <Modal

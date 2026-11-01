@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -248,6 +248,24 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await userEvent.type(cleared, '{Enter}');
     expect(onRename).toHaveBeenLastCalledWith('v2', '');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it.each([
+    { name: 'during a composition', init: { isComposing: true } },
+    { name: 'that confirms a candidate', init: { keyCode: 229 } },
+  ])('UIC-VERSION-HISTORY-1.6 leaves an Enter $name to the input method', async ({ init }) => {
+    const onRename = vi.fn();
+    render(<VersionHistory versions={versions} currentKey="v5" onRename={onRename} />);
+    const menu = await openMenu(1);
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Rename version' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Rename version' });
+    const field = within(dialog).getByRole('textbox', { name: 'Version name' });
+    await userEvent.type(field, ' 2');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing or keyCode on a keydown
+    fireEvent.keyDown(field, { key: 'Enter', ...init });
+    expect(onRename).not.toHaveBeenCalled();
+    await userEvent.type(field, '{Enter}');
+    expect(onRename).toHaveBeenCalledWith('v4', 'Final draft 2');
   });
 
   it('UIC-VERSION-HISTORY-1.6 settles a dismissed rename without closing the dialog opened since', async () => {
