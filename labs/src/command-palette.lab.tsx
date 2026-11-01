@@ -145,6 +145,34 @@ function WordPalette() {
   );
 }
 
+// A slow fade as the palette closes, for this demo only, so it can be reopened while it leaves.
+const slowExitStyle = `
+.ui-command-palette[data-lab-palette='slow-exit'][data-exiting] {
+  animation: lab-slow-exit 2s linear forwards;
+}
+@keyframes lab-slow-exit {
+  to { opacity: 0; }
+}
+`;
+
+/** A palette that fades out over two seconds; Control+Shift+O toggles it, even while it fades. */
+function SlowExitPalette() {
+  return (
+    <>
+      <style>{slowExitStyle}</style>
+      <p>Control+Shift+O opens and closes this palette, which starts from “fi” each time.</p>
+      <Opener
+        label="Slow-closing commands"
+        items={commands}
+        shortcut="Ctrl+Shift+O"
+        defaultInputValue="fi"
+        aria-label="Slow-closing commands"
+        data-lab-palette="slow-exit"
+      />
+    </>
+  );
+}
+
 const allCities = Array.from(
   { length: 60 },
   (_, index) => `${cities[index % cities.length]} ${index + 1}`,
@@ -268,6 +296,12 @@ mountLab(
       description="Its own chord, and a filter that matches typed words in any order."
     >
       <WordPalette />
+    </LabSection>
+    <LabSection
+      title="Reopened while closing"
+      description="This palette fades out over two seconds. Type, close it with its chord and reopen it before the fade ends: the search starts again from its default text instead of keeping what was typed."
+    >
+      <SlowExitPalette />
     </LabSection>
     <LabSection
       title="Loading results"

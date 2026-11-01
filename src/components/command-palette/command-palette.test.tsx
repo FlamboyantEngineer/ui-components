@@ -50,6 +50,28 @@ function pressShortcut(init: KeyboardEventInit = { key: 'k', ctrlKey: true }) {
   return event;
 }
 
+/**
+ * Gives every element an animation that runs until `end` is called, as a stylesheet's exit
+ * animation would, so a closed palette stays mounted while it leaves.
+ */
+function stubExitAnimation() {
+  let end = () => {};
+  const finished = new Promise<void>((resolve) => {
+    end = resolve;
+  });
+  vi.stubGlobal('CSSTransition', class {});
+  Element.prototype.getAnimations = () => [
+    { playState: 'running', finished } as unknown as Animation,
+  ];
+  return {
+    end: () => end(),
+    restore: () => {
+      Reflect.deleteProperty(Element.prototype, 'getAnimations');
+      vi.unstubAllGlobals();
+    },
+  };
+}
+
 /** A button that opens a controlled palette, with the open state shown beside it. */
 function Opener(props: Omit<CommandPaletteProps, 'isOpen' | 'onOpenChange'>) {
   const [isOpen, setOpen] = useState(false);
@@ -402,6 +424,49 @@ describe('CommandPalette', () => {
     await user.keyboard('{Escape}{Escape}');
     await user.click(screen.getByRole('button', { name: 'Commands' }));
     expect(screen.getByRole('searchbox')).toHaveValue('go');
+  });
+
+  it.each([
+    ['interrupted', false],
+    ['finished', true],
+  ])('UIC-COMMAND-PALETTE-2.6 starts afresh when reopened after an %s exit', async (_, finish) => {
+    const user = userEvent.setup();
+    const animation = stubExitAnimation();
+    try {
+      const palette = (isOpen: boolean, defaultInputValue?: string) => (
+        <CommandPalette items={commands} isOpen={isOpen} defaultInputValue={defaultInputValue} />
+      );
+      const { rerender } = render(palette(true));
+      await user.type(screen.getByRole('searchbox'), 'zzz');
+      rerender(palette(false));
+      expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument();
+      if (finish) await act(async () => animation.end());
+      expect(screen.queryAllByRole('dialog', { hidden: true })).toHaveLength(finish ? 0 : 1);
+      rerender(palette(true, 'go'));
+      expect(screen.getByRole('searchbox')).toHaveValue('go');
+      expect(screen.getAllByRole('menuitem').length).toBeGreaterThan(0);
+    } finally {
+      animation.restore();
+    }
+  });
+
+  it('UIC-COMMAND-PALETTE-1.3 UIC-COMMAND-PALETTE-2.6 reopens on its chord while it is still leaving', async () => {
+    const user = userEvent.setup();
+    const animation = stubExitAnimation();
+    try {
+      const onOpenChange = vi.fn();
+      render(<CommandPalette items={commands} onOpenChange={onOpenChange} />);
+      pressShortcut();
+      const search = screen.getByRole('searchbox');
+      await waitFor(() => expect(search).toHaveFocus());
+      await user.keyboard('zzz{Control>}k{/Control}');
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+      await user.keyboard('{Control>}k{/Control}');
+      expect(onOpenChange.mock.calls).toEqual([[true], [false], [true]]);
+      expect(screen.getByRole('searchbox')).toHaveValue('');
+    } finally {
+      animation.restore();
+    }
   });
 
   it('UIC-COMMAND-PALETTE-3.1 names the dialog and the field from props or strings', () => {

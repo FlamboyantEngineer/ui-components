@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchGlyph } from '../../core/glyphs.js';
-import { useMemo, type KeyboardEvent } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
 import {
   Autocomplete,
   Dialog,
@@ -58,7 +58,11 @@ export interface CommandPaletteProps
 type CommandPaletteDialogProps = Omit<
   CommandPaletteProps,
   'isOpen' | 'defaultOpen' | 'onOpenChange' | 'className' | `data-${string}`
-> & { close: () => void };
+> & {
+  /** False while the dialog leaves: its chord then reaches the document and opens it again. */
+  isOpen: boolean;
+  close: () => void;
+};
 
 const hooks = createHooks('command-palette', [
   'panel',
@@ -84,6 +88,7 @@ function CommandPaletteDialog({
   shortcut,
   placeholder,
   renderEmptyState,
+  isOpen,
   close,
   ...menu
 }: CommandPaletteDialogProps) {
@@ -103,7 +108,7 @@ function CommandPaletteDialog({
       event.stopPropagation();
       return;
     }
-    if (!shortcut || !isChordPress(event.nativeEvent, shortcut)) return;
+    if (!isOpen || !shortcut || !isChordPress(event.nativeEvent, shortcut)) return;
     event.preventDefault();
     event.stopPropagation();
     close();
@@ -139,6 +144,16 @@ function CommandPaletteDialog({
 }
 
 /**
+ * Counts the palette's openings. A dialog keyed by the count starts afresh at each opening, even
+ * when the overlay was still leaving and kept the previous dialog mounted.
+ */
+function useOpening(isOpen: boolean) {
+  const [opening, setOpening] = useState({ isOpen, count: 0 });
+  if (opening.isOpen !== isOpen) setOpening({ isOpen, count: opening.count + (isOpen ? 1 : 0) });
+  return opening.count;
+}
+
+/**
  * A command palette: a modal dialog holding a search field and the commands it narrows (React Aria
  * `ModalOverlay`, `Dialog`, `Autocomplete` and the library `Menu`). A document-wide chord opens it;
  * running a command, Escape on an empty field or a press outside closes it, and focus returns to
@@ -154,6 +169,7 @@ export function CommandPalette({
   ...rest
 }: CommandPaletteProps) {
   const [open, setOpen] = useControllableState(isOpen, defaultOpen ?? false, onOpenChange);
+  const opening = useOpening(open);
   const zIndex = useLayerZIndex('modal');
   const [, dialogProps] = splitDataAttributes(rest);
   const changeOpen = (next: boolean) => {
@@ -170,9 +186,11 @@ export function CommandPalette({
     >
       <AriaModal className={hooks.slotClass('panel')}>
         <CommandPaletteDialog
+          key={opening}
           {...dialogProps}
           shortcut={shortcut}
           size={size}
+          isOpen={open}
           close={() => changeOpen(false)}
         />
       </AriaModal>
