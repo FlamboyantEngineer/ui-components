@@ -32,6 +32,13 @@ Verification: `src/components/mapping-table/mapping-table.test.tsx`, `src/compon
 Implementation: `src/components/mapping-table/mapping-table.tsx`
 Verification: `src/components/mapping-table/mapping-table.test.tsx`
 
+### UIC-MAPPING-TABLE-1.5 - Any string id
+
+Column and target ids shall be any unique strings, including names such as `constructor`, `__proto__` and `toString`: the table reads only the entries the mapping value and the summary hold themselves, never ones an object inherits, so such an id maps, warns as a duplicate and stops warning like any other. `summarizeMapping` returns `duplicates` as an object that inherits nothing.
+
+Implementation: `src/components/mapping-table/mapping.ts`, `src/components/mapping-table/mapping-table.tsx`, `src/utils/read-own.ts`
+Verification: `src/components/mapping-table/mapping-table.test.tsx`, `src/utils/read-own.test.ts`
+
 ## UIC-MAPPING-TABLE-2 - Checks and summary
 
 ### UIC-MAPPING-TABLE-2.1 - Summary

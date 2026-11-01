@@ -8,6 +8,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Badge } from '../badge/badge.js';
+import { readOwn } from '../../utils/read-own.js';
 import { SelectField, type SelectFieldOption } from '../select-field/select-field.js';
 import {
   readMappedTarget,
@@ -65,7 +66,7 @@ function describeDuplicate(options: {
   strings: UiStrings;
 }): string | null {
   const { column, target, summary, columns, targets, strings } = options;
-  const sources = target === null ? undefined : summary.duplicates[target];
+  const sources = target === null ? undefined : readOwn(summary.duplicates, target);
   if (target === null || !sources) return null;
   const others = sources.filter((id) => id !== column).map((id) => labelOf(columns, id));
   return strings.duplicateTarget(labelOf(targets, target), others);
