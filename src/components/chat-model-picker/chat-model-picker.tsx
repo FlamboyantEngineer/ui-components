@@ -65,7 +65,10 @@ export interface ChatModelPickerProps extends BaseProps {
   onEffortChange?: ((effort: string) => void) | undefined;
   /** Keeps the uncontrolled model and effort in the provider's storage under this key. */
   persistKey?: string | undefined;
-  /** Refuses to open the menu; the composer's own disabled state does as well. */
+  /**
+   * Refuses to open the menu and closes an open one; the composer's own disabled state does as
+   * well. Enabled again, the picker leaves the menu closed.
+   */
   isDisabled?: boolean | undefined;
 }
 
@@ -120,13 +123,17 @@ function renderEffortItem(effort: ChatEffortOption) {
 function ChatModelMenu({
   models,
   choice,
+  isDisabled,
 }: {
   models: readonly ChatModelOption[];
   choice: ChatModelChoice;
+  isDisabled: boolean;
 }) {
   const strings = useUiStrings();
   const { model, effort } = choice;
   const choose = (key: Key) => {
+    // A menu still open as the picker becomes disabled closes; its items choose nothing meanwhile.
+    if (isDisabled) return;
     const value = String(key);
     if (value.startsWith(modelPrefix)) choice.chooseModel(value.slice(modelPrefix.length));
     else choice.chooseEffort(value.slice(effortPrefix.length));
@@ -162,15 +169,17 @@ function ChatModelMenu({
  * takes. Each choice is controlled or held, optionally in the provider's storage.
  */
 export function ChatModelPicker(props: ChatModelPickerProps) {
-  const { models, isDisabled = false, className, id } = props;
+  const { models, className, id } = props;
   const strings = useUiStrings();
   const composer = useMessageComposerControls();
+  // Disabled itself or with its composer: the trigger refuses to open and an open menu closes.
+  const isDisabled = Boolean(props.isDisabled) || composer.isDisabled;
   const choice = useChatModelChoice(props);
   const { model, effort } = choice;
   if (!model) return null;
   const name = strings.chatModelTrigger(model.label, effort?.label);
   return (
-    <MenuTrigger>
+    <MenuTrigger isDisabled={isDisabled}>
       <ComposerControlButton
         {...hooks.root({
           className,
@@ -183,6 +192,8 @@ export function ChatModelPicker(props: ChatModelPickerProps) {
         name={name}
         hasMenu
         isDisabled={isDisabled}
+        // Disabled on its own, it stays focusable, so focus returns to it as its open menu closes.
+        focusableWhenDisabled={!composer.isDisabled}
       >
         <MetaLine
           items={[
@@ -198,7 +209,7 @@ export function ChatModelPicker(props: ChatModelPickerProps) {
         />
       </ComposerControlButton>
       <MenuPopover placement="top start">
-        <ChatModelMenu models={models} choice={choice} />
+        <ChatModelMenu models={models} choice={choice} isDisabled={isDisabled} />
       </MenuPopover>
     </MenuTrigger>
   );

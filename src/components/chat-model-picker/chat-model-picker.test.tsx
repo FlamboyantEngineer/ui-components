@@ -1,5 +1,5 @@
 import { StarGlyph } from '../../core/glyphs.js';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -126,10 +126,53 @@ describe('ChatModelPicker', () => {
 
   it('UIC-CHAT-MODEL-PICKER-1.3 refuses to open while disabled', async () => {
     const { user } = renderPicker({ isDisabled: true });
-    expect(trigger()).toBeDisabled();
+    // Disabled on its own, it stays focusable.
+    expect(trigger()).toHaveAttribute('aria-disabled', 'true');
     expect(trigger()).toHaveAttribute('data-disabled', 'true');
     await user.click(trigger());
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-MODEL-PICKER-1.3 closes an open menu when it or its composer becomes disabled', async () => {
+    const user = userEvent.setup();
+    const onModelChange = vi.fn();
+    const picker = (isDisabled: boolean, isComposerDisabled = false) => (
+      <MessageComposer
+        isDisabled={isComposerDisabled}
+        endControls={
+          <ChatModelPicker
+            models={models}
+            efforts={efforts}
+            onModelChange={onModelChange}
+            isDisabled={isDisabled}
+          />
+        }
+      />
+    );
+    const { rerender } = render(picker(false));
+    for (const [isDisabled, isComposerDisabled] of [
+      [true, false],
+      [false, true],
+    ] as const) {
+      act(() => trigger().focus());
+      await user.keyboard('{Enter}');
+      expect(await screen.findByRole('menu')).toBeInTheDocument();
+      rerender(picker(isDisabled, isComposerDisabled));
+      await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+      if (isComposerDisabled) expect(trigger()).toBeDisabled();
+      else await waitFor(() => expect(trigger()).toHaveFocus());
+      expect(trigger()).toHaveAttribute('data-disabled', 'true');
+      await user.keyboard('{Enter}');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      // Enabled again, the picker leaves the abandoned menu closed and opens on request.
+      rerender(picker(false));
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    }
+    expect(onModelChange).not.toHaveBeenCalled();
+    act(() => trigger().focus());
+    await user.keyboard('{Enter}');
+    await user.click(await screen.findByRole('menuitemradio', { name: /^Deep/ }));
+    expect(onModelChange).toHaveBeenCalledWith('deep');
   });
 
   it('UIC-CHAT-MODEL-PICKER-1.2 UIC-CHAT-MODEL-PICKER-2.2 draws a model icon on the trigger and in the menu', async () => {

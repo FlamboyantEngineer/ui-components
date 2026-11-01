@@ -20,7 +20,7 @@ Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`, `e2
 
 ### UIC-CHAT-MODEL-PICKER-1.3 - Disabled
 
-With `isDisabled`, the trigger shall be disabled (`data-disabled`) and the menu shall not open.
+With `isDisabled`, or inside a disabled composer, the trigger shall be disabled (`data-disabled`) and the menu shall not open. Disabled on its own the trigger stays focusable (`aria-disabled`), as the composer's send button does, while a disabled composer disables it natively with its other controls. Becoming disabled closes an open menu, and its models and efforts choose nothing meanwhile; focus returns to a trigger disabled on its own. Enabled again, the picker leaves the menu closed.
 
 Implementation: `src/components/chat-model-picker/chat-model-picker.tsx`
 Verification: `src/components/chat-model-picker/chat-model-picker.test.tsx`
