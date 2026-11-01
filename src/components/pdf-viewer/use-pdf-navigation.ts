@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { clamp } from '../../utils/clamp.js';
 import type { PdfTarget } from './pdf-destination.js';
@@ -26,6 +26,8 @@ interface UsePdfNavigationOptions {
   pageCount: number;
   scrollerRef: RefObject<HTMLElement | null>;
   pages: Pick<PdfPagesController, 'currentPage' | 'elements' | 'scrollToPage'>;
+  /** Find: each new `revealKey` while it has matches brings one into view. */
+  search?: { total: number; revealKey: number } | undefined;
 }
 
 interface UsePageViewportsOptions<
@@ -90,6 +92,7 @@ function useNavigationRequests(
     'page' | 'defaultPage' | 'document' | 'revealRect' | 'pages'
   >,
   reportedRef: RefObject<number[]>,
+  startRequest: () => number,
 ): RefObject<PdfTarget | null> {
   const { page, revealRect, document } = options;
   const pendingRef = useRef<PdfTarget | null>(null);
@@ -97,33 +100,62 @@ function useNavigationRequests(
   useLayoutEffect(() => {
     if (!document) return;
     reportedRef.current.length = 0;
+    startRequest();
     pendingRef.current = toOpeningRequest(latestRef.current);
-  }, [document, latestRef, reportedRef]);
+  }, [document, latestRef, reportedRef, startRequest]);
   useLayoutEffect(() => {
     if (page === undefined || consumeEcho(reportedRef.current, page)) return;
+    startRequest();
     if (page !== latestRef.current.pages.currentPage)
       pendingRef.current = { pageIndex: page, rect: null };
-  }, [page, latestRef, reportedRef]);
+  }, [page, latestRef, reportedRef, startRequest]);
   const rectKey = toRectKey(revealRect);
   useLayoutEffect(() => {
     const rect = latestRef.current.revealRect;
-    if (rect) pendingRef.current = { pageIndex: rect.pageIndex, rect };
-  }, [rectKey, latestRef]);
+    if (!rect) return;
+    startRequest();
+    pendingRef.current = { pageIndex: rect.pageIndex, rect };
+  }, [rectKey, latestRef, startRequest]);
   return pendingRef;
+}
+
+/** The order of navigation requests: only a request made after every other may still land. */
+export interface PdfNavigationOrder {
+  /** Counts a new navigation request and returns its ticket, superseding every earlier one. */
+  startRequest(): number;
+  /** Goes to `target` for the request with `ticket`, unless a newer request has started. */
+  goTo(target: PdfTarget, ticket: number): void;
+}
+
+/** Starts a request each time find brings a match into view. */
+function useRevealRequests(
+  search: UsePdfNavigationOptions['search'],
+  startRequest: () => number,
+): void {
+  const revealKey = search && search.total > 0 ? search.revealKey : null;
+  useEffect(() => {
+    if (revealKey !== null) startRequest();
+  }, [revealKey, startRequest]);
 }
 
 /**
  * Going to a page or a rectangle on request, once per request: a request waits until the document
  * has opened, its page is laid out and the viewer is shown, and is then carried out. The page the
- * reader is on is reported whenever it changes. `goTo` makes a request of the viewer's own.
+ * reader is on is reported whenever it changes. Every request is counted in one order: a new
+ * document, the caller's `page` or `revealRect`, find revealing a match, and the viewer's own
+ * requests started with `startRequest`; `goTo` lands only for the latest.
  */
-export function usePdfNavigation(options: UsePdfNavigationOptions): {
-  goTo(target: PdfTarget): void;
-} {
+export function usePdfNavigation(options: UsePdfNavigationOptions): PdfNavigationOrder {
   const { isReady, scale, pageCount, scrollerRef, pages } = options;
   const { currentPage, elements, scrollToPage } = pages;
   const reported = useRef<number[]>([]);
-  const pendingRef = useNavigationRequests(options, reported);
+  const requestRef = useRef(0);
+  const startRequest = useCallback(() => {
+    requestRef.current += 1;
+    return requestRef.current;
+  }, []);
+  const pendingRef = useNavigationRequests(options, reported, startRequest);
+  useRevealRequests(options.search, startRequest);
   const latestRef = useLatest(options);
   // The page a request just went to: commits from before it landed report nothing.
   const landingRef = useRef<number | null>(null);
@@ -159,13 +191,14 @@ export function usePdfNavigation(options: UsePdfNavigationOptions): {
   }, [currentPage, isReady, latestRef, pendingRef]);
 
   const goTo = useCallback(
-    (target: PdfTarget) => {
+    (target: PdfTarget, ticket: number) => {
+      if (ticket !== requestRef.current) return;
       pendingRef.current = target;
       serve();
     },
     [pendingRef, serve],
   );
-  return { goTo };
+  return useMemo(() => ({ startRequest, goTo }), [goTo, startRequest]);
 }
 
 /** Reports the viewports of the pages that render whenever that set or the zoom changes. */

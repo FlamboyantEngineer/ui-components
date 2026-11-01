@@ -242,4 +242,53 @@ describe('PdfViewer navigation', () => {
     expect(scroller().scrollTop).toBe(800);
     expect(pageField()).toHaveValue('2');
   });
+
+  it('UIC-PDF-VIEWER-4.5 drops a destination still being looked up once the caller sets the page', async () => {
+    stubLayout();
+    const engine = createEngine();
+    const lookups = holdDestinations(engine);
+    const view = await renderReady({ defaultZoom: 100, destination: 'pending' }, engine);
+    view.update({ defaultZoom: 100, destination: 'pending', page: 2 });
+    expect(pageField()).toHaveValue('3');
+    await lookups.settle('pending', [{ num: 0, gen: 0 }, { name: 'Fit' }]);
+    expect(pageField()).toHaveValue('3');
+    expect(scroller().scrollTop).toBe(1600);
+  });
+
+  it('UIC-PDF-VIEWER-4.5 drops a destination still being looked up once it is cleared', async () => {
+    stubLayout();
+    const engine = createEngine();
+    const lookups = holdDestinations(engine);
+    const view = await renderReady({ defaultZoom: 100, destination: 'pending' }, engine);
+    view.update({ defaultZoom: 100, destination: null });
+    await lookups.settle('pending', [{ num: 2, gen: 0 }, { name: 'Fit' }]);
+    expect(pageField()).toHaveValue('1');
+    expect(scroller().scrollTop).toBe(0);
+  });
+
+  it('UIC-PDF-VIEWER-4.5 drops a destination still being looked up once find reveals a match', async () => {
+    stubLayout();
+    const engine = createEngine();
+    const lookups = holdDestinations(engine);
+    const view = await renderReady({ defaultZoom: 100, destination: 'pending' }, engine);
+    view.update({ defaultZoom: 100, destination: 'pending', searchQuery: 'Varieties' });
+    await waitFor(() =>
+      expect(document.querySelector('.ui-pdf-viewer__match')).toBeInTheDocument(),
+    );
+    const revealed = scroller().scrollTop;
+    await lookups.settle('pending', [{ num: 2, gen: 0 }, { name: 'Fit' }]);
+    expect(scroller().scrollTop).toBe(revealed);
+    expect(pageField()).not.toHaveValue('3');
+  });
+
+  it('UIC-PDF-VIEWER-4.5 still lands a destination looked up across a rotation', async () => {
+    stubLayout();
+    const engine = createEngine();
+    const lookups = holdDestinations(engine);
+    await renderReady({ defaultZoom: 100, destination: 'pending' }, engine);
+    await userEvent.click(screen.getByRole('button', { name: 'More options' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Rotate clockwise' }));
+    await lookups.settle('pending', [{ num: 1, gen: 0 }, { name: 'Fit' }]);
+    await waitFor(() => expect(pageField()).toHaveValue('2'));
+  });
 });
