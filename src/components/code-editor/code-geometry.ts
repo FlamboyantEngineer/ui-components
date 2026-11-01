@@ -2,6 +2,7 @@
 // text area: the rectangle of a range, the offset under a point, and scrolling a range into view.
 
 import type { CodeRange } from './code-ranges.js';
+import { measureScale } from '../../utils/scroll-geometry.js';
 
 interface TextPoint {
   node: Text;
@@ -86,13 +87,16 @@ export function findOffsetAt(copy: CopyText, x: number, y: number): number | nul
 export function revealRange(input: HTMLElement, highlight: HTMLElement, range: CodeRange) {
   const rect = measureRange(readCopyText(highlight), range);
   if (!rect) return;
+  // The copy's own pixels, which the text area's scroll offsets count, under any ancestor scale.
   const frame = highlight.getBoundingClientRect();
-  const top = rect.top - frame.top + highlight.scrollTop;
-  const left = rect.left - frame.left + highlight.scrollLeft;
-  if (top < input.scrollTop || top + rect.height > input.scrollTop + input.clientHeight) {
+  const scale = measureScale(highlight);
+  const top = (rect.top - frame.top) / scale.y + highlight.scrollTop;
+  const left = (rect.left - frame.left) / scale.x + highlight.scrollLeft;
+  const size = { width: rect.width / scale.x, height: rect.height / scale.y };
+  if (top < input.scrollTop || top + size.height > input.scrollTop + input.clientHeight) {
     input.scrollTop = Math.max(0, top - input.clientHeight / 2);
   }
-  if (left < input.scrollLeft || left + rect.width > input.scrollLeft + input.clientWidth) {
+  if (left < input.scrollLeft || left + size.width > input.scrollLeft + input.clientWidth) {
     input.scrollLeft = Math.max(0, left - input.clientWidth / 2);
   }
 }

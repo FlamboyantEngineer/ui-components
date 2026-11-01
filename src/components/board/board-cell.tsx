@@ -37,6 +37,7 @@ import { isTextControlKey } from '../../utils/text-control-keys.js';
 import { isElement } from '../../utils/is-element.js';
 import { isMoveChord, type CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 import { keepControlFocusReturn } from '../../utils/keep-control-focus-return.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 /** Scrolls the virtualized cell holding the card `key` toward it; other cells ignore the call. */
 export type BoardCardReveal = (key: Key) => void;
@@ -117,12 +118,11 @@ const renderDropIndicator = createDropIndicator(hooks.slotClass('drop-indicator'
 function scrollTowardCard(grid: HTMLElement, cards: { keys: readonly Key[]; index: number }) {
   const { keys, index } = cards;
   const indexes = new Map(keys.map((key, at) => [toKeyIdentity(key), at]));
-  const origin = grid.getBoundingClientRect().top - grid.scrollTop;
   let anchor = { index: 0, top: 0 };
   for (const row of grid.querySelectorAll(`.${hooks.slotClass('card')}`)) {
     const at = indexes.get(row.getAttribute('data-key-identity') ?? '');
     if (at === undefined || Math.abs(at - index) >= Math.abs(anchor.index - index)) continue;
-    anchor = { index: at, top: row.getBoundingClientRect().top - origin };
+    anchor = { index: at, top: measureInScroller(row, grid).top };
   }
   const top = anchor.top + (index - anchor.index) * estimatedCardHeight;
   grid.scrollTop = Math.max(0, top - grid.clientHeight / 2);

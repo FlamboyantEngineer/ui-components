@@ -142,10 +142,10 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-4.5 - Scroll spy
 
-`useScrollSpy(viewportRef, { ids, offset })` shall return the id of the current section of a scrolling viewport, such as a region's (its `ref`): the last of `ids` whose top has reached `offset` pixels (0 by default) below the viewport's top, the first before any has, and the last once the viewport is scrolled to its end. Ids are looked up in the viewport's tree (its shadow root, else its document); ids without an element there are skipped. It updates as the viewport scrolls or resizes, as a child resizes or content changes anywhere inside it (a section above the reader that grows moves every heading without a scroll), and as fonts finish loading, reading the sections' positions at most once per animation frame however many scroll events arrive, and when the ids or the offset change, for a table of contents to mark its current entry. The ref is read again after every commit, so a viewport that mounts late or replaces the previous one under the same ref is followed; `resolveScrollSpy(viewport, options)` exposes the rule.
+`useScrollSpy(viewportRef, { ids, offset })` shall return the id of the current section of a scrolling viewport, such as a region's (its `ref`): the last of `ids` whose top has reached `offset` of the viewport's own pixels (0 by default) below its top, also under an ancestor `transform: scale()`, the first before any has, and the last once the viewport is scrolled to its end. Ids are looked up in the viewport's tree (its shadow root, else its document); ids without an element there are skipped. It updates as the viewport scrolls or resizes, as a child resizes or content changes anywhere inside it (a section above the reader that grows moves every heading without a scroll), and as fonts finish loading, reading the sections' positions at most once per animation frame however many scroll events arrive, and when the ids or the offset change, for a table of contents to mark its current entry. The ref is read again after every commit, so a viewport that mounts late or replaces the previous one under the same ref is followed; `resolveScrollSpy(viewport, options)` exposes the rule.
 
-Implementation: `src/components/scroll-region/use-scroll-spy.ts`
-Verification: `src/components/scroll-region/use-scroll-spy.test.tsx`, `e2e/scroll-region.spec.ts`
+Implementation: `src/components/scroll-region/use-scroll-spy.ts`, `src/utils/scroll-geometry.ts`
+Verification: `src/components/scroll-region/use-scroll-spy.test.tsx`, `src/utils/scroll-geometry.test.ts`, `e2e/scroll-region.spec.ts`, `e2e/scaled-reveals.spec.ts`
 
 ## Hooks
 

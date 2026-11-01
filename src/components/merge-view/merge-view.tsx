@@ -15,6 +15,7 @@ import { getConflictId, MergeResultPane, type MergeLabels } from './merge-view-r
 import { MergeSidePane } from './merge-view-sides.js';
 import { useMergeState, type MergeViewResult } from './use-merge-state.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 export type { MergeResolution } from './merge-blocks.js';
 export type { MergeViewResult } from './use-merge-state.js';
@@ -44,13 +45,12 @@ type PaneRefs = [HTMLElement | null, HTMLElement | null, HTMLElement | null, HTM
 
 /** Each chunk's first row or block, in order, as anchors the other panes align to. */
 function readChunkAnchors(container: HTMLElement): ScrollAnchor[] {
-  const origin = container.getBoundingClientRect().top - container.scrollTop;
   const chunks = container.querySelectorAll(
     `.${hooks.slotClass('chunk')}, .${hooks.slotClass('block')}`,
   );
   return Array.from(chunks, (chunk, index) => ({
     key: index,
-    offset: chunk.getBoundingClientRect().top - origin,
+    offset: measureInScroller(chunk, container).top,
   }));
 }
 

@@ -65,9 +65,13 @@ describe('useActiveCompletion', () => {
       const first = screen.getByRole('option', { name: 'Amsterdam' });
       const last = screen.getByRole('option', { name: 'Zurich' });
       first.getBoundingClientRect = () =>
-        ({ top: -container.scrollTop, bottom: 20 - container.scrollTop }) as DOMRect;
+        ({ top: -container.scrollTop, bottom: 20 - container.scrollTop, height: 20 }) as DOMRect;
       last.getBoundingClientRect = () =>
-        ({ top: 280 - container.scrollTop, bottom: 300 - container.scrollTop }) as DOMRect;
+        ({
+          top: 280 - container.scrollTop,
+          bottom: 300 - container.scrollTop,
+          height: 20,
+        }) as DOMRect;
       rerender(<Harness activeKey="last" outer={outer} />);
       act(() => frames[0]?.(0));
       expect(container.scrollTop).toBe(50);
@@ -99,7 +103,7 @@ describe('useActiveCompletion', () => {
     list.getBoundingClientRect = () => ({ top: 0, bottom: 100 }) as DOMRect;
     const last = inShadow('completions').getByRole('option', { name: 'Zurich' });
     last.getBoundingClientRect = () =>
-      ({ top: 280 - list.scrollTop, bottom: 300 - list.scrollTop }) as DOMRect;
+      ({ top: 280 - list.scrollTop, bottom: 300 - list.scrollTop, height: 20 }) as DOMRect;
     rerender(tree('last'));
     act(() => frames.at(-1)?.(0));
     expect(list.scrollTop).toBe(200);

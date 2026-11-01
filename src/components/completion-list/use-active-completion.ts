@@ -5,6 +5,7 @@ import { findOverlayScrollContainer } from '../../utils/overlay-geometry.js';
 import type { Key } from '../../core/props.js';
 import { getElementByIdFrom, getElementByIdWithin } from '../../utils/owner-window.js';
 import { getCompletionOptionId } from './completion-option-id.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 /** Reveals an active option within its own list without scrolling the editor or the document. */
 export function useActiveCompletion(
@@ -28,12 +29,12 @@ export function useActiveCompletion(
         skip: (ancestor) => ancestor.scrollHeight <= ancestor.clientHeight,
       });
       if (!container || !list.closest('.ui-completion-list')?.contains(container)) return;
-      const bounds = container.getBoundingClientRect();
-      const item = option.getBoundingClientRect();
-      const top = bounds.top + container.clientTop;
-      const bottom = top + container.clientHeight;
-      if (item.top < top) container.scrollTop -= top - item.top;
-      else if (item.bottom > bottom) container.scrollTop += item.bottom - bottom;
+      const item = measureInScroller(option, container);
+      const { scrollTop, clientHeight } = container;
+      if (item.top < scrollTop) container.scrollTop = item.top;
+      else if (item.top + item.height > scrollTop + clientHeight) {
+        container.scrollTop = item.top + item.height - clientHeight;
+      }
     });
     return () => {
       isCurrent = false;

@@ -2,11 +2,7 @@
 
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import { isHTMLElement } from '../../utils/is-element.js';
-
-/** The scale from an element's own CSS pixels to viewport pixels, 1 for an unlaid-out side. */
-export function toScale(viewportSize: number, ownSize: number): number {
-  return viewportSize > 0 && ownSize > 0 ? viewportSize / ownSize : 1;
-}
+import { toScale } from '../../utils/scroll-geometry.js';
 
 /** A rectangle in viewport pixels. */
 interface ViewportBox {
