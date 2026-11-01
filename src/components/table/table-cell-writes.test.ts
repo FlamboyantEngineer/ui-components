@@ -48,6 +48,7 @@ describe('table cell write helpers', () => {
   it('UIC-TABLE-14.8 writes values as text and reads text as values', () => {
     expect(formatCellText(new Date('2026-10-02T00:00:00Z'))).toBe('2026-10-02T00:00:00.000Z');
     expect(formatCellText(null)).toBe('');
+    expect(formatCellText(new Date(Number.NaN))).toBe('');
     expect(formatCellText(false)).toBe('false');
     expect(parseCellText('42', 7)).toBe(42);
     expect(parseCellText('42', 'seven')).toBe('42');

@@ -80,6 +80,28 @@ describe('table grouping helpers', () => {
     ]);
   });
 
+  it('UIC-TABLE-13.1 groups dates by local day and invalid dates with the empty values', () => {
+    const late = new Date(2024, 4, 1, 23, 30);
+    const source = buildTableNodes(
+      [
+        { id: 'late', on: late },
+        { id: 'morning', on: new Date(2024, 4, 1, 8) },
+        { id: 'broken', on: new Date(Number.NaN) },
+        { id: 'none', on: null },
+      ],
+      undefined,
+    );
+    const grouped = groupTableNodes(
+      source,
+      [{ id: 'on', label: 'On', getValue: (row) => row.on, direction: 'ascending' }],
+      { locale: 'en-US' },
+    );
+    expect(describe2(grouped as never)).toEqual([
+      { 'ui-table-group:on=2024-05-01': ['late', 'morning'], count: 2 },
+      { 'ui-table-group:on=': ['broken', 'none'], count: 2 },
+    ]);
+  });
+
   it('UIC-TABLE-13.1 UIC-TABLE-13.5 keeps delimiter-like group paths stable through sorting and input reordering', () => {
     const source = buildTableNodes(
       [

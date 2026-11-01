@@ -53,6 +53,27 @@ describe('table filter helpers', () => {
     expect(between('2026-11-01', '2026-11-30')).toEqual([]);
   });
 
+  it('UIC-TABLE-2.9 reads dates as four-digit local days and gives other years none', () => {
+    const inYear = (year: number) => {
+      const date = new Date(2024, 4, 1, 23, 30);
+      date.setFullYear(year);
+      return date;
+    };
+    const dated: Fruit[] = [999, 0, 10000, 2024].map((year) => ({
+      id: String(year),
+      name: 'Plum',
+      colour: 'Purple',
+      weight: 50,
+      picked: inYear(year),
+    }));
+    const between = (start: string, end: string) =>
+      ids(filterTableRows(dated, columns, { columns: { picked: { start, end } } }));
+    expect(between('2024-01-01', '2024-12-31')).toEqual(['2024']);
+    expect(between('0999-05-01', '0999-05-01')).toEqual(['999']);
+    // 23:30 local time stays on its local day.
+    expect(between('2024-05-02', '2024-05-02')).toEqual([]);
+  });
+
   it('UIC-TABLE-2.9 keeps cells holding a ticked value of a set', () => {
     expect(ids(filterTableRows(fruit, columns, { columns: { colour: ['Red'] } }))).toEqual([
       'apple',

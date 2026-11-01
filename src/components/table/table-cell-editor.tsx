@@ -5,7 +5,7 @@ import { Input, TableStateContext } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { getColumnText } from './table-columns.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import { readCellText, type CellReading } from './table-cell-writes.js';
+import { formatCellText, readCellText, type CellReading } from './table-cell-writes.js';
 import {
   getCellValue,
   isTextValue,
@@ -22,7 +22,7 @@ import type { CellEditing, CellMove } from './use-cell-editing.js';
  */
 function formatEditorText(value: TableCellValue): string {
   if (isTextValue(value) || typeof value === 'boolean') return String(value);
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? '' : value.toISOString();
+  if (value instanceof Date) return formatCellText(value);
   return '';
 }
 
