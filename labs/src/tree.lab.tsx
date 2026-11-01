@@ -494,7 +494,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Renaming in place"
-      description="F2 renames the focused country or city; Enter or leaving the field keeps the name, Escape drops it. Continents cannot be renamed."
+      description="F2 renames the focused country or city; Enter or leaving the field keeps the name, Escape drops it. Continents cannot be renamed. Rows drag by their handles only, and a row with its name field open does not drag at all, so a press in the field selects its text."
     >
       <InPlaceRenameTree />
     </LabSection>

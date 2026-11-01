@@ -22,6 +22,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { TypedBoard } from './collection-identity-cases.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
 import { RowMenu } from './row-menu.js';
 
 interface Task {
@@ -330,6 +331,27 @@ function MenuBoard() {
   );
 }
 
+/** Cards with a note field, moved by their drag handles only. */
+function HandleBoard() {
+  const [items, setItems] = useState(tasks.filter((task) => task.lane === 'garden'));
+  return (
+    <div style={frame} data-lab-demo="handle-drag">
+      <Board
+        aria-label="Garden notes"
+        columns={columns.slice(0, 2)}
+        items={items}
+        getColumn={getColumn}
+        getTextValue={getTextValue}
+        dragTrigger="handle"
+        renderCard={(task) => (
+          <TextField label={`Note for ${task.title}`} size="sm" defaultValue={task.title} />
+        )}
+        onMove={(move) => setItems(applyBoardMove(items, move, place))}
+      />
+    </div>
+  );
+}
+
 function NestedBoards() {
   return (
     <div style={frame} data-lab-demo="nested">
@@ -435,6 +457,12 @@ mountLab(
       description="A card that draws a board of its own, and a card with a notes field. Alt+Arrow keys on a card move it on the board it belongs to, even where both boards use the same card keys. In the notes field, the arrow keys, Alt+Arrow keys and typing stay with the field."
     >
       <NestedBoards />
+    </LabSection>
+    <LabSection
+      title="Drag by handle"
+      description="Cards that hold a note field move by their drag handles only: a press or drag in a field selects its text and never drags the card."
+    >
+      <HandleBoard />
     </LabSection>
   </>,
 );

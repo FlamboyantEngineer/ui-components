@@ -554,4 +554,26 @@ test.describe('Board lab', () => {
     await page.keyboard.press('Tab');
     await expect(field).not.toBeFocused();
   });
+
+  test('UIC-BOARD-2.2 drags a card by its handle only', async ({ page, lab }) => {
+    await lab.open('board');
+    const board = page.locator('[data-lab-demo="handle-drag"]');
+    const field = board.getByRole('textbox', { name: 'Note for Order seeds' });
+    const card = field.locator('xpath=ancestor::*[@role="row"][1]');
+    await expect(card).not.toHaveAttribute('draggable');
+    await field.click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Shift+Home');
+    await expect(field).toBeFocused();
+    await expect(card).not.toHaveAttribute('draggable');
+    const handle = card.locator('.ui-drag-handle');
+    const box = await handle.boundingBox();
+    if (!box) throw new Error('The handle has no box.');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await expect(card).toHaveAttribute('draggable', 'true');
+    await page.mouse.up();
+    await expect(card).not.toHaveAttribute('draggable');
+    await lab.expectAccessible('[data-lab-section="Drag by handle"]');
+  });
 });

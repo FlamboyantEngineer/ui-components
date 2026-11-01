@@ -1,5 +1,6 @@
 'use client';
 
+import { armHandleDrag } from '../drag-handle/drag-handle.js';
 import {
   Tree as AriaTree,
   ListLayout,
@@ -90,6 +91,11 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
           onKeyDownCapture={(event) => {
             keys.onKeyDownCapture(event);
             if (!event.isPropagationStopped()) domProps.onKeyDownCapture?.(event);
+          }}
+          // With handle drags only a press on a row's handle makes that row draggable.
+          onPointerDownCapture={(event) => {
+            if (reordering?.isHandleDrag) armHandleDrag(event);
+            domProps.onPointerDownCapture?.(event);
           }}
         />
       )}

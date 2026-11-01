@@ -197,21 +197,38 @@ export function LongListCase() {
   );
 }
 
-/** Rows with a note field and a servings field, which keep their caret and arrow keys. */
+const FIELD_ROWS = ['apple', 'banana', 'cherry'];
+
+/** The trailing control of a row in `FieldRowsCase`. */
+function fieldFor(id: string) {
+  if (id === 'apple') return <TextField label="Note for Apple" defaultValue="Crisp" />;
+  if (id === 'banana') return <NumberField label="Servings of Banana" defaultValue={2} />;
+  return undefined;
+}
+
+/**
+ * Rows with a note field and a servings field, which keep their caret and arrow keys, reordered by
+ * their drag handles only, so a press in a field selects its text.
+ */
 export function FieldRowsCase() {
+  const [order, setOrder] = useState(FIELD_ROWS.map((id) => ({ id })));
   return (
-    <ListView aria-label="Fruit notes" data-lab-demo="field-rows">
-      <ListViewItem
-        id="apple"
-        title="Apple"
-        trailing={<TextField label="Note for Apple" defaultValue="Crisp" />}
-      />
-      <ListViewItem
-        id="banana"
-        title="Banana"
-        trailing={<NumberField label="Servings of Banana" defaultValue={2} />}
-      />
-      <ListViewItem id="cherry" title="Cherry" />
+    <ListView
+      aria-label="Fruit notes"
+      data-lab-demo="field-rows"
+      items={order}
+      reorder={{
+        dragTrigger: 'handle',
+        onMove: (move) => setOrder((current) => applyMove(current, move)),
+      }}
+    >
+      {(row) => (
+        <ListViewItem
+          id={row.id}
+          title={row.id.charAt(0).toUpperCase() + row.id.slice(1)}
+          trailing={fieldFor(row.id)}
+        />
+      )}
     </ListView>
   );
 }
