@@ -10,8 +10,19 @@
   overflow: hidden;
   vertical-align: middle;
 }
+/*
+ * Equal segments share one column width: the widest label's when the group sizes to its content
+ * (a combinator in a row), so no label is cut, and an even share of a narrower width otherwise,
+ * where long labels end in an ellipsis.
+ */
 .ui-segmented-choice[data-sizing='equal'] {
-  display: flex;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+.ui-segmented-choice[data-sizing='equal'][data-orientation='vertical'] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: row;
 }
 .ui-segmented-choice[data-orientation='vertical'] {
   flex-direction: column;
@@ -39,9 +50,6 @@
   line-height: 1.2;
   cursor: pointer;
   outline: none;
-}
-.ui-segmented-choice[data-sizing='equal'] .ui-segmented-choice__segment {
-  flex: 1 1 0;
 }
 .ui-segmented-choice__segment + .ui-segmented-choice__segment {
   border-inline-start: 1px solid var(--ref-border);
