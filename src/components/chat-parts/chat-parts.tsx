@@ -159,6 +159,15 @@ function StepsView({ item, isRunning, context }: StepsViewProps) {
 }
 
 /**
+ * A part's DOM id within its message: the message id, percent-encoded with its hyphens too so it
+ * holds none, then a hyphen and the part id. The first hyphen ends the message id, so two
+ * messages' ids never meet in one DOM id (`m-1` and `p` against `m` and `1-p`).
+ */
+export function toPartDomId(messageId: string, partId: string): string {
+  return `${encodeURIComponent(messageId).replace(/-/g, '%2D')}-${partId}`;
+}
+
+/**
  * The parts of one message, each drawn by the component for its type: text as Markdown (or plain
  * text) with code blocks, citations and token pills, reasoning, tool calls with their approvals and
  * renderers, questions, plans, sources, attachments, code, diffs and custom parts. Consecutive
@@ -184,7 +193,7 @@ export function ChatParts({
     ...rest,
     textFormat,
     renderNode,
-    toDomId: (partId) => (messageId === undefined ? partId : `${messageId}-${partId}`),
+    toDomId: (partId) => (messageId === undefined ? partId : toPartDomId(messageId, partId)),
     expansion,
   };
   return (

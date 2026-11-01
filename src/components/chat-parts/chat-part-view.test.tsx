@@ -110,6 +110,20 @@ describe('ChatParts part views', () => {
     expect(container.querySelector('.ui-chat-question')).toHaveAttribute('id', 'ask-1');
   });
 
+  it('UIC-CHAT-PARTS-1.2 keeps the DOM ids of two messages apart whatever hyphens their ids hold', () => {
+    const call = (id: string): ChatPart => ({ ...approvalCall, id });
+    const { container } = render(
+      <>
+        <ChatParts parts={[call('p')]} messageId="m-1" />
+        <ChatParts parts={[call('1-p')]} messageId="m" />
+        <ChatParts parts={[call('x')]} messageId="a b%" />
+      </>,
+    );
+    const ids = [...container.querySelectorAll('.ui-chat-tool-call')].map((card) => card.id);
+    expect(ids).toEqual(['m%2D1-p', 'm-1-p', 'a%20b%25-x']);
+    expect(new Set(ids).size).toBe(3);
+  });
+
   it('UIC-CHAT-PARTS-3.3 draws a tool renderer in place of the body, with the bound handlers', async () => {
     const user = userEvent.setup();
     const onApprove = vi.fn();

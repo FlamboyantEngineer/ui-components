@@ -1,6 +1,11 @@
 import { ChatParts, type ChatPart } from '../../src/components/chat-parts/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { KeptExpansion, MixedConversation, ToolRenderers } from './chat-parts-conversation.js';
+import {
+  HyphenatedIds,
+  KeptExpansion,
+  MixedConversation,
+  ToolRenderers,
+} from './chat-parts-conversation.js';
 import { FailedRun, failedRunParts } from './chat-parts-failure.js';
 import {
   bookingCall,
@@ -188,6 +193,12 @@ mountLab(
       description="The host keeps the reader's open and closed choices (expandedParts), so they survive a remount, as under virtualization."
     >
       <KeptExpansion />
+    </LabSection>
+    <LabSection
+      title="Hyphenated message ids"
+      description="Message m-1 with call p and message m with call 1-p would both join to m-1-p; the message id is written with its hyphens encoded (m%2D1-p), so the two calls keep their own DOM ids."
+    >
+      <HyphenatedIds />
     </LabSection>
   </>,
 );

@@ -184,6 +184,18 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Tool renderers"]');
   });
 
+  test('UIC-CHAT-PARTS-1.2 keeps the DOM ids of hyphenated message ids apart', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const ids = demo(page, 'hyphenated-ids');
+    await expect(ids.locator('.ui-chat-tool-call')).toHaveCount(2);
+    await expect(page.locator('[id="m%2D1-p"]')).toContainText('Searched the first list');
+    await expect(page.locator('[id="m-1-p"]')).toContainText('Searched the second list');
+    await lab.expectAccessible('[data-lab-section="Hyphenated message ids"]');
+  });
+
   test('UIC-CHAT-PARTS-1.2 UIC-CHAT-PARTS-3.2 UIC-CHAT-PARTS-3.4 UIC-CHAT-PARTS-5.3 records decisions in a mixed message', async ({
     page,
     lab,
