@@ -189,14 +189,16 @@ const dayMs = 86_400_000;
  * the day's 24-hour wall-clock ruler, with overlapping events side by side. An instant sits at its
  * wall-clock time, so a skipped hour stays empty and both passes of a repeated hour share its
  * place; an event whose end reads earlier than its start, running back through a repeated hour,
- * keeps its elapsed length from its start. Events are packed by their place on that ruler, so
- * the two passes of a repeated hour overlap there and sit side by side.
+ * keeps its elapsed length from its start. Each event is drawn at least `minMinutes` of the ruler
+ * tall (short of the day's end), and events are packed by what is drawn, so a short event never
+ * covers the next one and the two passes of a repeated hour sit side by side.
  */
 export function layoutDay(
   day: string,
   events: readonly PlacedEvent[],
-  timeZone: string,
+  { timeZone, minMinutes }: { timeZone: string; minMinutes: number },
 ): DayBlock[] {
+  const minHeight = (Math.max(0, minMinutes) / 1440) * 100;
   const from = getDayStart(day, timeZone);
   const to = getDayStart(shiftDay(day, { days: 1 }), timeZone);
   const place = (instant: number) =>
@@ -212,10 +214,11 @@ export function layoutDay(
       const top = place(start);
       const bottom = place(end);
       const elapsed = ((end - start) / dayMs) * 100;
+      const height = bottom >= top ? bottom - top : Math.min(100 - top, elapsed);
       return {
         placed,
         top,
-        height: bottom >= top ? bottom - top : Math.min(100 - top, elapsed),
+        height: Math.min(100 - top, Math.max(height, minHeight)),
         continuesBefore: placed.start < from,
         continuesAfter: placed.end > to,
       };

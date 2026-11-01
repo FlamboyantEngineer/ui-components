@@ -80,6 +80,13 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
   timeZone?: string | undefined;
   /** The most rows of events a month cell shows, its `+n more` button included. Defaults to 3. */
   maxEvents?: number | undefined;
+  /**
+   * The least length of the week view's ruler a timed event is drawn over, in minutes, so a short
+   * or zero-duration event stays large enough to read and press; overlapping events are packed
+   * by what is drawn, so none covers another. Size the ruler so this length is a comfortable
+   * target. Defaults to 30.
+   */
+  minEventMinutes?: number | undefined;
   /** Called with the key of the event the reader presses. */
   onEventAction?: ((key: Key) => void) | undefined;
   /** Draws extra content in each day cell, such as a marker or a count. */
@@ -186,6 +193,7 @@ export function CalendarView({
   onDateChange,
   timeZone,
   maxEvents = 3,
+  minEventMinutes = 30,
   onEventAction,
   renderDay,
   getNow,
@@ -213,6 +221,7 @@ export function CalendarView({
     <div {...root}>
       <CalendarContent
         {...{ events, mode, views: allowed, focused, today, maxEvents, onEventAction, renderDay }}
+        minEventMinutes={minEventMinutes}
         timeZone={zone}
         onFocusedChange={setFocused}
         onModeChange={setMode}
@@ -224,7 +233,7 @@ export function CalendarView({
 
 /** The toolbar and the grid of a calendar whose focused day is known. */
 function CalendarContent(
-  props: Required<Pick<CalendarViewProps, 'events' | 'views' | 'maxEvents'>> &
+  props: Required<Pick<CalendarViewProps, 'events' | 'views' | 'maxEvents' | 'minEventMinutes'>> &
     Pick<CalendarViewProps, 'onEventAction' | 'renderDay'> & {
       mode: CalendarViewMode;
       focused: string;
@@ -238,7 +247,7 @@ function CalendarContent(
     },
 ) {
   const { events, mode, views, focused, today, timeZone, maxEvents, onEventAction } = props;
-  const { renderDay, onFocusedChange, onModeChange, getToday } = props;
+  const { minEventMinutes, renderDay, onFocusedChange, onModeChange, getToday } = props;
   const titleId = useId();
   const format = useCalendarFormat(timeZone);
   const placed = useMemo(() => readEvents(events, timeZone), [events, timeZone]);
@@ -282,6 +291,7 @@ function CalendarContent(
           grid={grid}
           titleId={titleId}
           timeZone={timeZone}
+          minEventMinutes={minEventMinutes}
           day={day}
           event={event}
         />

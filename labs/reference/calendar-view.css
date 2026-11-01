@@ -247,8 +247,7 @@
   align-items: flex-start;
   flex-direction: column;
   gap: 0;
-  height: auto;
-  min-height: 18px;
+  overflow: hidden;
   padding: 1px 4px;
   border: 1px solid var(--ref-canvas);
   border-inline-start: 3px solid var(--ref-border-strong);
