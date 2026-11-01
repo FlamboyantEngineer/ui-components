@@ -135,11 +135,16 @@ export function EditorSurface(props: EditorSurfaceProps) {
   const { state, dispatchTransaction } = props.editor;
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [contentAttributes, setContentAttributes] = useState<ContentAttributes>({});
+  const [gutterHolders, setGutterHolders] = useState(0);
+  const reserveGutter = useCallback(() => {
+    setGutterHolders((count) => count + 1);
+    return () => setGutterHolders((count) => count - 1);
+  }, []);
   const isDisabled = Boolean(content.disabled);
   const isEditable = !content.readOnly && !isDisabled;
   const context = useMemo<RichTextEditorContextValue>(
-    () => ({ isEditable, isDisabled, surfaceRef, setContentAttributes }),
-    [isEditable, isDisabled],
+    () => ({ isEditable, isDisabled, surfaceRef, setContentAttributes, reserveGutter }),
+    [isEditable, isDisabled, reserveGutter],
   );
   const editable = useEditable(isEditable);
   const placeholderClass = hooks.slotClass('placeholder');
@@ -162,7 +167,11 @@ export function EditorSurface(props: EditorSurfaceProps) {
           {isEmptyNode(props.toolbar) ? null : (
             <div {...hooks.slot('toolbar')}>{props.toolbar}</div>
           )}
-          <div {...hooks.slot('surface')} ref={surfaceRef} style={{ position: 'relative' }}>
+          <div
+            {...hooks.slot('surface', { gutter: gutterHolders > 0 })}
+            ref={surfaceRef}
+            style={{ position: 'relative' }}
+          >
             <ProseMirrorDoc
               {...contentAttributes}
               {...hooks.slot('content', { readonly: content.readOnly, disabled: content.disabled })}

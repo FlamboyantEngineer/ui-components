@@ -1,6 +1,14 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test, matrixCell } from './fixtures.js';
 
+interface DragPlan {
+  from: number;
+  to: number;
+  edge: 'top' | 'bottom';
+  /** Runs mid-drag, before the pointer reaches the target. */
+  beforeDrop?: () => Promise<unknown>;
+}
+
 function editor(page: Page, name: string): Locator {
   return page.locator(`[data-lab-editor="${name}"]`);
 }
@@ -310,20 +318,132 @@ test.describe('Rich Text Editor lab', () => {
     await expect(box.locator('h3')).toHaveCount(1);
   });
 
-  test('UIC-RICH-TEXT-EDITOR-9.2 drags a block by its grip', async ({ page, lab }) => {
-    await lab.open('rich-text-editor');
-    const box = content(page, 'full');
-    await box.locator('h1').hover();
+  /** The full editor's top-level blocks: tag and first words. */
+  async function blockOrder(page: Page): Promise<string[]> {
+    return content(page, 'full').evaluate((node) =>
+      [...node.children].map((block) => `${block.tagName} ${block.textContent?.slice(0, 12)}`),
+    );
+  }
+
+  /** Drags the block at `from` by its grip to the top or bottom edge of the block at `to`. */
+  async function dragBlock(page: Page, { from, to, edge, beforeDrop }: DragPlan): Promise<void> {
+    const blocks = content(page, 'full').locator(':scope > *');
+    await blocks.nth(from).hover();
     const grip = await editor(page, 'full').locator('.ui-block-handle__grip').boundingBox();
-    const quote = await box.locator('blockquote').boundingBox();
-    if (!grip || !quote) throw new Error('not rendered');
+    if (!grip) throw new Error('no grip');
     await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
     await page.mouse.down();
     await page.mouse.move(grip.x + 30, grip.y + 30, { steps: 3 });
-    await page.mouse.move(quote.x + 40, quote.y + quote.height / 2, { steps: 5 });
+    await beforeDrop?.();
+    const target = await blocks.nth(to).boundingBox();
+    if (!target) throw new Error('no target');
+    const y = edge === 'top' ? target.y + 3 : target.y + target.height - 3;
+    await page.mouse.move(target.x + 40, y, { steps: 8 });
+    // Playwright delivers a drag's moves late: one more move brings the last one in.
+    await page.mouse.move(target.x + 41, y);
+    await expect(page.locator('.ui-block-handle__drop-indicator')).toBeVisible();
     await page.mouse.up();
-    await expect.poll(async () => (await blockTypes(page)).at(0)).toBe('paragraph');
-    await expect(box.locator('h1')).toHaveCount(1);
+  }
+
+  test('UIC-RICH-TEXT-EDITOR-9.2 drags a block by its grip between blocks, first and last', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const start = await blockOrder(page);
+    expect(start).toEqual([
+      'H1 Orchard crum',
+      'P A quick dess',
+      'H2 Ingredients',
+      'UL Four applesT',
+      'UL Peel the fru',
+      'BLOCKQUOTE Serve warm.',
+    ]);
+    const [title, intro, heading, fruit, steps, quote] = start;
+    // Past a list: the paragraph lands between blocks, not inside the list.
+    await dragBlock(page, { from: 1, to: 3, edge: 'bottom' });
+    await expect.poll(() => blockOrder(page)).toEqual([title, heading, fruit, intro, steps, quote]);
+    await expect(page.locator('.ui-block-handle__drop-indicator')).toHaveCount(0);
+    const moved = content(page, 'full').locator(':scope > p');
+    await expect(moved.locator('strong')).toHaveText('ripe');
+    await expect(moved.getByRole('link', { name: 'market notes' })).toBeVisible();
+    await dragBlock(page, { from: 0, to: 5, edge: 'bottom' });
+    await expect.poll(() => blockOrder(page)).toEqual([heading, fruit, intro, steps, quote, title]);
+    await dragBlock(page, { from: 5, to: 0, edge: 'top' });
+    await expect.poll(() => blockOrder(page)).toEqual([title, heading, fruit, intro, steps, quote]);
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => blockOrder(page)).toEqual([heading, fruit, intro, steps, quote, title]);
+    await page.keyboard.press('ControlOrMeta+z');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => blockOrder(page)).toEqual(start);
+    await content(page, 'full').locator('h2').click();
+    await page.keyboard.press('Alt+Shift+ArrowUp');
+    await expect.poll(() => blockOrder(page)).toEqual([title, heading, intro, fruit, steps, quote]);
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-9.2 keeps the order when a drag is cancelled, and follows a scroll', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const start = await blockOrder(page);
+    const blocks = content(page, 'full').locator(':scope > *');
+    await blocks.nth(1).hover();
+    const grip = await editor(page, 'full').locator('.ui-block-handle__grip').boundingBox();
+    if (!grip) throw new Error('no grip');
+    await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + 30, grip.y + 120, { steps: 6 });
+    await expect(editor(page, 'full').locator('.ui-block-handle')).toHaveAttribute(
+      'data-dragging',
+      'true',
+    );
+    await page.keyboard.press('Escape');
+    await page.mouse.up();
+    await expect(editor(page, 'full').locator('.ui-block-handle[data-dragging]')).toHaveCount(0);
+    expect(await blockOrder(page)).toEqual(start);
+    const [title, intro, heading, fruit, steps, quote] = start;
+    await dragBlock(page, {
+      from: 0,
+      to: 4,
+      edge: 'bottom',
+      beforeDrop: () => page.evaluate(() => window.scrollBy(0, 60)),
+    });
+    await expect.poll(() => blockOrder(page)).toEqual([intro, heading, fruit, steps, title, quote]);
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-9.4 shows the chosen block handle controls and no gutter without one', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const choices = [
+      { name: 'grip-menu', grips: 1, menus: 1 },
+      { name: 'grip', grips: 1, menus: 0 },
+      { name: 'menu', grips: 0, menus: 1 },
+    ];
+    for (const { name, grips, menus } of choices) {
+      await content(page, `handle-${name}`).locator('p').first().hover();
+      const handle = editor(page, `handle-${name}`).locator('.ui-block-handle');
+      await expect(handle).toBeVisible();
+      await expect(handle.locator('.ui-block-handle__grip')).toHaveCount(grips);
+      await expect(handle.getByRole('button', { name: 'Block actions' })).toHaveCount(menus);
+    }
+    const inset = (name: string) =>
+      content(page, name).evaluate(
+        (node) =>
+          node.getBoundingClientRect().left -
+          (node.closest('.ui-rich-text-editor__surface')?.getBoundingClientRect().left ?? 0),
+      );
+    const none = content(page, 'handle-none');
+    await none.locator('p').first().hover();
+    await expect(editor(page, 'handle-none').locator('.ui-block-handle')).toHaveCount(0);
+    expect(await inset('handle-none')).toBeLessThan(await inset('handle-grip'));
+    await none.locator('p').nth(1).click();
+    await page.keyboard.press('Alt+Shift+ArrowUp');
+    await expect(none.locator('p').first()).toHaveText('Halve them and take out the stones.');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(none.locator('p').first()).toHaveText('Wash the plums.');
   });
 
   test('UIC-RICH-TEXT-EDITOR-2.3 ticks tasks', async ({ page, lab }) => {

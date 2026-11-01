@@ -7,6 +7,7 @@ import {
 } from '../../src/components/rich-text-editor/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
+  BlockHandleChoices,
   ControlledEditor,
   CustomSchemaEditor,
   FormEditor,
@@ -71,6 +72,12 @@ mountLab(
       description="Type a slash and a command label or keyword; equally good matches keep their menu order."
     >
       <FullEditor />
+    </LabSection>
+    <LabSection
+      title="Block handle controls"
+      description="BlockHandle shows a grip and a block menu; grip={false} or menu={false} leaves one out. Hover a block, or click into it, to see the handle. Without a BlockHandle child the editor keeps no gutter for it, and Alt+Shift+Up and Down still move blocks."
+    >
+      <BlockHandleChoices />
     </LabSection>
     <LabSection
       title="Floating toolbar on a moving editor"

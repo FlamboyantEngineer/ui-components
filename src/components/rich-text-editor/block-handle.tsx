@@ -4,7 +4,7 @@ import { DragHandleGlyph, MoreVerticalGlyph } from '../../core/glyphs.js';
 import { useEditorEventCallback } from '@handlewithcare/react-prosemirror';
 import { NodeSelection, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { useState, type DragEvent, type FocusEvent } from 'react';
+import { useLayoutEffect, useState, type DragEvent, type FocusEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -16,13 +16,20 @@ import { getBlockItems, getWrapItems } from './format-items.js';
 import type { RichTextCommand } from './rich-text-command.js';
 import type { RichTextController } from './rich-text-controller.js';
 import { useRichTextController } from './rich-text-controller.js';
+import { useBlockDrop } from './use-block-drop.js';
 import { useBlockTarget } from './use-block-target.js';
+import { useRichTextEditorContext } from './rich-text-context.js';
 import { useFocusReturn } from './use-focus-return.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 
-export type BlockHandleProps = BaseProps;
+export interface BlockHandleProps extends BaseProps {
+  /** Shows the grip that drags the block. Defaults to `true`. */
+  grip?: boolean | undefined;
+  /** Shows the block menu. Defaults to `true`. */
+  menu?: boolean | undefined;
+}
 
-const hooks = createHooks('block-handle', ['grip', 'menu']);
+const hooks = createHooks('block-handle', ['grip', 'menu', 'drop-indicator']);
 
 /** The block menu's commands by entry key: the turn-into entries, then the block actions. */
 function getBlockCommands(strings: UiStrings, controller: RichTextController) {
@@ -82,14 +89,21 @@ function selectBlock(view: EditorView, pos: number) {
  * A handle beside the hovered block, or the block holding the selection, in the enclosing
  * `RichTextEditor`, for its children: a grip that drags the block and a menu that turns it into
  * another type, moves, duplicates or deletes it. Alt+Shift+Up and Down move the block from the
- * keyboard.
+ * keyboard. `grip` and `menu` choose the controls; while either shows, the surface keeps a gutter
+ * for the handle (`data-gutter`). An editor without a block handle leaves `BlockHandle` out.
  */
-export function BlockHandle({ className, ...rest }: BlockHandleProps) {
+export function BlockHandle({ className, grip = true, menu = true, ...rest }: BlockHandleProps) {
   const strings = useUiStrings();
   const controller = useRichTextController();
+  const { surfaceRef, reserveGutter } = useRichTextEditorContext('BlockHandle');
+  const hasControls = grip || menu;
+  useLayoutEffect(() => (hasControls ? reserveGutter() : undefined), [hasControls, reserveGutter]);
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const target = useBlockTarget(isMenuOpen);
+  // The dragged block's position, held so the handle, and its grip that ends the drag, stay.
+  const [dragged, setDragged] = useState<number | null>(null);
+  const target = useBlockTarget(isMenuOpen || dragged !== null);
+  const gap = useBlockDrop(surfaceRef, dragged);
   const select = useEditorEventCallback(selectBlock);
   const startDrag = useEditorEventCallback((view, event: DragEvent, pos: number) => {
     const selection = NodeSelection.create(view.state.doc, pos);
@@ -98,11 +112,10 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', selection.node.textContent);
     if (isHTMLElement(dom)) event.dataTransfer.setDragImage(dom, 0, 0);
-    const dragging = { slice: selection.content(), move: true, node: selection };
-    view.dragging = dragging;
   });
   if (isMenuOpen && !controller.isEditable) setMenuOpen(false);
-  if (!target || !controller.isEditable) return null;
+  if (dragged !== null && !controller.isEditable) setDragged(null);
+  if (!target || !controller.isEditable || !hasControls) return null;
   const commands = getBlockCommands(strings, controller);
   const run = (key: Key) => {
     const id = String(key);
@@ -112,40 +125,49 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
     if (command && controller.run(command)) returnFocus();
   };
   return (
-    <div
-      {...hooks.root({ className, props: rest, data: { dragging: target.isDragging } })}
-      style={{ position: 'absolute', top: target.top }}
-      ref={returnFocusRef}
-      onFocus={target.onFocus}
-      onBlur={(event: FocusEvent) => target.onBlur(event)}
-    >
-      <span
-        {...hooks.slot('grip')}
-        aria-hidden="true"
-        draggable
-        onDragStart={(event) => {
-          startDrag(event, target.pos);
-          target.setDragging(true);
-        }}
-        onDragEnd={() => target.setDragging(false)}
+    <>
+      <div
+        {...hooks.root({ className, props: rest, data: { dragging: dragged !== null } })}
+        style={{ position: 'absolute', top: target.top }}
+        ref={returnFocusRef}
+        onFocus={target.onFocus}
+        onBlur={(event: FocusEvent) => target.onBlur(event)}
       >
-        <Glyph icon={DragHandleGlyph} />
-      </span>
-      <DropdownMenu
-        className={hooks.slotClass('menu')}
-        label={strings.blockActions}
-        icon={MoreVerticalGlyph}
-        iconOnly
-        size="sm"
-        menuSize="sm"
-        isOpen={isMenuOpen}
-        onOpenChange={(open) => {
-          if (open) select(target.pos);
-          setMenuOpen(open);
-        }}
-        items={toMenuEntries(strings, controller, commands)}
-        onAction={run}
-      />
-    </div>
+        {grip ? (
+          <span
+            {...hooks.slot('grip')}
+            aria-hidden="true"
+            draggable
+            onDragStart={(event) => {
+              startDrag(event, target.pos);
+              setDragged(target.pos);
+            }}
+            onDragEnd={() => setDragged(null)}
+          >
+            <Glyph icon={DragHandleGlyph} />
+          </span>
+        ) : null}
+        {menu ? (
+          <DropdownMenu
+            className={hooks.slotClass('menu')}
+            label={strings.blockActions}
+            icon={MoreVerticalGlyph}
+            iconOnly
+            size="sm"
+            menuSize="sm"
+            isOpen={isMenuOpen}
+            onOpenChange={(open) => {
+              if (open) select(target.pos);
+              setMenuOpen(open);
+            }}
+            items={toMenuEntries(strings, controller, commands)}
+            onAction={run}
+          />
+        ) : null}
+      </div>
+      {gap ? (
+        <div {...hooks.slot('drop-indicator')} style={{ position: 'absolute', top: gap.top }} />
+      ) : null}
+    </>
   );
 }

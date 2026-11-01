@@ -128,7 +128,7 @@ export function FullEditor() {
     <>
       <RichTextEditor
         label="Recipe"
-        description="Type / for blocks, select text for the floating toolbar, Alt+Shift+Up or Down to move a block."
+        description="Type / for blocks, select text for the floating toolbar, drag a block by its grip (a line marks where it lands) or press Alt+Shift+Up or Down to move it."
         data-lab-editor="full"
         value={value}
         onChange={setValue}
@@ -214,6 +214,46 @@ export function LockedChromeEditor() {
         <BlockHandle />
       </RichTextEditor>
     </>
+  );
+}
+
+/** Three short steps to move around. */
+const recipeSteps: RichTextDocument = {
+  type: 'doc',
+  content: [
+    paragraph(text('Wash the plums.')),
+    paragraph(text('Halve them and take out the stones.')),
+    paragraph(text('Bake for 20 minutes.')),
+  ],
+};
+
+const handleChoices = [
+  { name: 'grip-menu', label: 'Grip and menu', grip: true, menu: true },
+  { name: 'grip', label: 'Grip only', grip: true, menu: false },
+  { name: 'menu', label: 'Menu only', grip: false, menu: true },
+] as const;
+
+/** The block handle's controls side by side, and an editor that leaves the handle out. */
+export function BlockHandleChoices() {
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {handleChoices.map(({ name, label, grip, menu }) => (
+        <RichTextEditor
+          key={name}
+          label={label}
+          defaultValue={recipeSteps}
+          data-lab-editor={`handle-${name}`}
+        >
+          <BlockHandle grip={grip} menu={menu} />
+        </RichTextEditor>
+      ))}
+      <RichTextEditor
+        label="No block handle"
+        description="Alt+Shift+Up and Down still move a block."
+        defaultValue={recipeSteps}
+        data-lab-editor="handle-none"
+      />
+    </div>
   );
 }
 
