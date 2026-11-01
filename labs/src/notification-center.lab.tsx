@@ -104,6 +104,31 @@ function InboxDemo() {
   );
 }
 
+/** An unread inbox whose loaded page holds only read notifications: Load more stays. */
+function UnreadLaterDemo() {
+  const [items, setItems] = useState(firstPage.slice(4));
+  const [hasMore, setHasMore] = useState(true);
+  return (
+    <NotificationList
+      data-lab-unread-later
+      items={items}
+      getNow={getNow}
+      defaultFilter="unread"
+      unreadCount={hasMore ? 1 : items.filter((item) => !item.isRead).length}
+      hasMore={hasMore}
+      onLoadMore={() =>
+        new Promise<void>((resolve) => {
+          window.setTimeout(() => {
+            setItems((list) => [...list, ...olderPage]);
+            setHasMore(false);
+            resolve();
+          }, 600);
+        })
+      }
+    />
+  );
+}
+
 /** A bell on the real clock: each new notification is announced, open or closed. */
 function LiveDemo() {
   const [items, setItems] = useState<NotificationItem[]>(() => [
@@ -189,8 +214,14 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Unread on a later page"
+      description="Under the unread filter, the loaded page holds only a read notification while the count says one is unread: the list does not say the reader is caught up, and Load more brings the older page with the unread one."
+    >
+      <UnreadLaterDemo />
+    </LabSection>
+    <LabSection
       title="Live"
-      description="Notifications stamped on the real clock. Each arrival is announced politely, whether the panel is open or not."
+      description="Notifications stamped on the real clock. Each arrival is announced politely, whether the panel is open or not. The filter chosen in the panel stays when it closes and opens again."
     >
       <LiveDemo />
     </LabSection>

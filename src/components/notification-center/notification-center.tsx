@@ -52,6 +52,9 @@ export function NotificationCenter({
   onOpenChange,
   className,
   id,
+  filter: filterProp,
+  defaultFilter = 'all',
+  onFilterChange,
   ...rest
 }: NotificationCenterProps) {
   const strings = useUiStrings();
@@ -60,7 +63,17 @@ export function NotificationCenter({
   const unread = listProps.unreadCount ?? listProps.items.filter((item) => !item.isRead).length;
   const heading = title ?? strings.notifications;
   // The bell announces arrivals whether the panel is open or not, so the list stays silent.
-  const list = <NotificationList {...listProps} announcesArrivals={false} />;
+  // The centre owns the filter, so it outlives the panel: closing, reopening or changing the
+  // presentation keeps the reader's choice.
+  const [filter, setFilter] = useControllableState(filterProp, defaultFilter, onFilterChange);
+  const list = (
+    <NotificationList
+      {...listProps}
+      filter={filter}
+      onFilterChange={setFilter}
+      announcesArrivals={false}
+    />
+  );
   const bell = (
     <Button
       icon={BellGlyph}
