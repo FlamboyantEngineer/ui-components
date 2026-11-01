@@ -27,10 +27,10 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 ### UIC-FOLDER-MANAGER-1.4 - Loading and busy
 
-`isPending` shall show the tree's loading row while there are no folders and make the actions wait. While loading, deleting or naming a folder, the manager is busy: it publishes `data-pending` on its root and refuses other actions and moves.
+`isPending` shall show the tree's loading row while there are no folders and make the actions wait. A name submitted from an open name field while `isPending` is set (Enter or leaving the field) waits too: the field stays open with its text and marked `aria-busy`, no callback runs, and once loading ends the next submit goes ahead. While loading, deleting or naming a folder, the manager is busy: it publishes `data-pending` on its root and refuses other actions and moves.
 
-Implementation: `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-manager.tsx`
-Verification: `src/components/folder-manager/folder-manager.test.tsx`
+Implementation: `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/folder-manager-parts.tsx`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
 
 ## UIC-FOLDER-MANAGER-2 - Actions
 
@@ -82,12 +82,12 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 ### UIC-FOLDER-MANAGER-2.7 - Depth limit
 
-With `maxDepth`, New folder shall be disabled on a folder at that depth (the top level being 1), focusable with the provider string `folderDepthLimit` as its tooltip, and a move that would place a folder or its deepest subfolder below that depth is refused.
+With `maxDepth`, New folder shall be disabled on a folder at that depth (the top level being 1), focusable with the provider string `folderDepthLimit` as its tooltip, and a move that would place a folder or its deepest subfolder below that depth is refused. The limit is checked again when a new folder's name is submitted, against the current `maxDepth` and where its parent sits now: a draft that no longer fits calls no `onCreate`, keeps its field and text open, and shows `folderDepthLimit` as the message until the name is submitted where it fits or the draft is abandoned.
 
 The limit shall hold for a folder with any number of subfolders, such as hundreds of thousands.
 
-Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`, `src/core/strings.ts`
-Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`
+Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/use-folder-actions.ts`, `src/core/strings.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
 
 ### UIC-FOLDER-MANAGER-2.8 - Context menu
 

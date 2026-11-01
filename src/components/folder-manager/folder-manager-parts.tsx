@@ -12,6 +12,8 @@ interface FolderNameInputProps {
   edit: FolderEdit;
   /** The message that describes the field while an attempt was refused. */
   messageId: string | undefined;
+  /** The folders are loading: a submit waits. */
+  isWaiting: boolean;
   inputRef: Ref<HTMLInputElement>;
   /** Called with the text as the reader types it. */
   onType: (name: string) => void;
@@ -76,6 +78,7 @@ function ToolButton({
 export function FolderNameInput({
   edit,
   messageId,
+  isWaiting,
   inputRef,
   onType,
   onBlur,
@@ -90,7 +93,7 @@ export function FolderNameInput({
       }
       aria-invalid={messageId ? true : undefined}
       aria-describedby={messageId}
-      aria-busy={edit.isPending || undefined}
+      aria-busy={edit.isPending || isWaiting || undefined}
       defaultValue={edit.name}
       readOnly={edit.isPending}
       autoFocus

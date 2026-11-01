@@ -175,6 +175,7 @@ export function FolderTree<T extends FolderItem>({
   model,
   menuEntries,
   onMenuAction,
+  isPending,
   ...tree
 }: FolderTreeProps<T>) {
   const strings = useUiStrings();
@@ -187,6 +188,7 @@ export function FolderTree<T extends FolderItem>({
         <FolderNameInput
           edit={edit}
           messageId={message ? messageId : undefined}
+          isWaiting={isPending}
           inputRef={nameRef}
           onType={actions.type}
           onBlur={(name) => void actions.submit(name)}
@@ -194,7 +196,7 @@ export function FolderTree<T extends FolderItem>({
       ) : (
         <TextMatch>{node.name}</TextMatch>
       ),
-    [edit, message, editKey, messageId, nameRef, actions],
+    [edit, message, editKey, messageId, nameRef, actions, isPending],
   );
   const keys = useFolderKeys(model, menuEntries);
   const selection = useTreeSelection(selectedRows);
@@ -234,7 +236,7 @@ export function FolderTree<T extends FolderItem>({
             }}
             expandedKeys={expansion.expandedKeys}
             onExpandedChange={expansion.onExpandedChange}
-            isPending={tree.isPending}
+            isPending={isPending}
             emptyMessage={query.trim() ? strings.noResults : undefined}
             onItemKeyDown={keys.onItemKeyDown}
             reorder={reorderOf(tree, isBusy)}

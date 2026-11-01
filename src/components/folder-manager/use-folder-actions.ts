@@ -4,6 +4,7 @@ import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
 import { isKey } from '../../utils/is-key.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -36,6 +37,10 @@ export interface FolderCallbacks<T extends FolderItem> {
 
 interface FolderActionsOptions<T extends FolderItem> extends FolderCallbacks<T> {
   folders: readonly T[];
+  /** The folders are loading: a submit waits, keeping the field and its text, until they are not. */
+  isPending?: boolean | undefined;
+  /** The deepest a folder may sit, checked again when a new folder's name is submitted. */
+  maxDepth?: number | undefined;
   /** Selects a folder (`null`: no folder) after a create or delete. */
   select: (key: Key | null) => void;
   /** Called when an edit or delete ends, with the folder whose row should take focus. */
@@ -53,7 +58,11 @@ export interface FolderActions<T extends FolderItem> {
   startRename(folder: T): void;
   /** Keeps the name field's text with the edit. */
   type(name: string): void;
-  /** Ends the edit with `name`: a blank or unchanged name abandons it. */
+  /**
+   * Ends the edit with `name`: a blank or unchanged name abandons it. While the folders load it
+   * waits, and a new folder whose parent now sits at the depth limit is refused with the limit as
+   * the message; either way the field stays open with its text and no callback runs.
+   */
   submit(name: string): Promise<void>;
   cancel(): void;
   /**
@@ -86,6 +95,26 @@ function isEditAvailable(
   const isPresent = current.key === null || findFolderPath(folders, current.key).length > 0;
   const hasCallback = current.kind === 'rename' ? onRename !== undefined : onCreate !== undefined;
   return isPresent && (current.kind === 'create' || current.key !== null) && hasCallback;
+}
+
+/**
+ * What holds a submitted name back, checked when it is submitted: `false` while the folders load
+ * (the submit waits), the depth limit's message when a new folder's parent now sits at the limit,
+ * or `null` when nothing does.
+ */
+function findSubmitHold(
+  current: FolderEdit,
+  {
+    folders,
+    isLoading,
+    maxDepth,
+  }: { folders: readonly FolderItem[]; isLoading: boolean; maxDepth: number | undefined },
+  strings: UiStrings,
+): string | false | null {
+  if (isLoading) return false;
+  if (current.kind !== 'create' || maxDepth === undefined) return null;
+  const isAllowed = findFolderPath(folders, current.key).length < maxDepth;
+  return isAllowed ? null : strings.folderDepthLimit(maxDepth);
 }
 
 /** Ends an edit that is not pending once its folder, its parent or its callback leaves. */
@@ -141,6 +170,8 @@ function useEditSession() {
  */
 export function useFolderActions<T extends FolderItem>({
   folders,
+  isPending: isLoading = false,
+  maxDepth,
   onCreate,
   onRename,
   onDelete,
@@ -162,7 +193,6 @@ export function useFolderActions<T extends FolderItem>({
     setEdit(null);
     onSettle(current.kind === 'rename' ? current.key : key);
   };
-
   useEditRevocation({ edit, folders, onCreate, onRename, onRevoke, setEdit });
 
   const submit = async (text: string) => {
@@ -170,6 +200,8 @@ export function useFolderActions<T extends FolderItem>({
     if (!current || current.isPending) return;
     const name = text.trim();
     if (!name || name === current.original) return finish(current, current.key);
+    const hold = findSubmitHold(current, { folders, isLoading, maxDepth }, strings);
+    if (hold !== null) return hold === false ? undefined : setMessage(hold);
     setEdit({ ...current, name, isPending: true });
     const signal = beginAction();
     try {
