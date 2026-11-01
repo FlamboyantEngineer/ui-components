@@ -1,7 +1,7 @@
 'use client';
 
 import { BellSlashGlyph } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { GridListItem, Text, useLocale } from '../../primitives/index.js';
 import { useNow, useTimeZone } from '../../core/clock.js';
 import { useClockTick } from '../../core/clock-tick.js';
@@ -76,6 +76,31 @@ export const listHooks = createHooks('chat-list', [
   'empty',
   'skeleton',
 ]);
+
+// The event React Aria's FocusScope sends before it returns focus to an element, as a closing menu
+// does to its trigger. A collection cancels it to focus its row instead.
+const focusRestoreEvent = 'react-aria-focus-scope-restore';
+
+/**
+ * The host's controls in a row. A menu or popover one of them opened returns focus to it when it
+ * closes, instead of to the row: the list never hears of that return, which it would otherwise
+ * take over.
+ */
+function ChatListRowActions({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const keep = (event: Event) => event.stopPropagation();
+    element.addEventListener(focusRestoreEvent, keep);
+    return () => element.removeEventListener(focusRestoreEvent, keep);
+  }, []);
+  return (
+    <div ref={ref} {...listHooks.slot('actions')}>
+      {children}
+    </div>
+  );
+}
 
 /**
  * The time as the row shows it, for the row's name: the stable absolute text on the server and while
@@ -177,7 +202,7 @@ export function ChatListRow({ conversation, renderActions, ...timeOptions }: Cha
           className={listHooks.slotClass('unread')}
         />
       ) : null}
-      {isEmptyNode(actions) ? null : <div {...listHooks.slot('actions')}>{actions}</div>}
+      {isEmptyNode(actions) ? null : <ChatListRowActions>{actions}</ChatListRowActions>}
     </GridListItem>
   );
 }

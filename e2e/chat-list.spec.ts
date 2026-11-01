@@ -67,14 +67,47 @@ test.describe('Chat List lab', () => {
     await page.keyboard.press('Enter');
     await page.getByRole('menuitem', { name: 'Unmute' }).click();
     await expect(row(page, 'Recipe swap')).not.toHaveAttribute('data-muted');
-    // The changed conversation redraws its row, which keeps focus.
-    await expect(row(page, 'Recipe swap')).toBeFocused();
-    await page.keyboard.press('ArrowRight');
+    // The changed conversation redraws its row, and focus returns to the menu's button.
     await expect(page.getByRole('button', { name: 'More for Recipe swap' })).toBeFocused();
     await page.keyboard.press('ArrowLeft');
     await expect(row(page, 'Recipe swap')).toBeFocused();
     await page.keyboard.press('Space');
     await expect(log).toHaveText('Open: Recipe swap');
+  });
+
+  test('UIC-CHAT-LIST-1.5 opens a row menu with Enter and Space and returns focus to its button', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    const log = page.locator('[data-lab-log="inbox"]');
+    const more = page.getByRole('button', { name: 'More for Recipe swap' });
+    for (const key of ['Enter', 'Space']) {
+      await row(page, 'Recipe swap').focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(more).toBeFocused();
+      await page.keyboard.press(key);
+      const menu = page.getByRole('menu');
+      await expect(menu).toBeVisible();
+      await expect(menu.getByRole('menuitem').and(page.locator(':focus'))).toHaveCount(1);
+      await expect(log).toHaveText('Open: Lisbon trip');
+      await page.keyboard.press('Escape');
+      await expect(menu).toHaveCount(0);
+      await expect(more).toBeFocused();
+    }
+    // An action from the keyboard leaves the row's selection alone, and focus on the menu's button.
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menuitem', { name: /mute/i })).toBeVisible();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(row(page, 'Recipe swap')).not.toHaveAttribute('data-muted');
+    await expect(more).toBeFocused();
+    await expect(log).toHaveText('Open: Lisbon trip');
+    // Up and Down on the button move between rows, as everywhere in the list.
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(row(page, 'Recipe swap')).not.toBeFocused();
   });
 
   test('UIC-CHAT-LIST-1.6 UIC-CHAT-LIST-1.9 searches by title and last message', async ({

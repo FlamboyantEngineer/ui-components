@@ -154,7 +154,7 @@ mountLab(
   <>
     <LabSection
       title="Conversations"
-      description="Forty conversations, one-to-one with presence, groups, an assistant, unread and muted. Search narrows them by title and last message; each row's menu marks it read or mutes it; New chat starts one. Arrow keys move between rows, Left and Right into a row's menu, Enter or Space opens a conversation. The clock is fixed at 20 April 2026, 10:30."
+      description="Forty conversations, one-to-one with presence, groups, an assistant, unread and muted. Search narrows them by title and last message; each row's menu marks it read or mutes it; New chat starts one. Arrow keys move between rows, Left and Right into a row's menu, Enter or Space opens a conversation, or on the menu button opens the menu, which returns focus to its button as it closes. The clock is fixed at 20 April 2026, 10:30."
     >
       <InboxDemo />
     </LabSection>
