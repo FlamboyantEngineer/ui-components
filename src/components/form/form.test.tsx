@@ -5,11 +5,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { TextField as PlainField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
+import { Button } from '../button/button.js';
 import { Fieldset } from '../field/field.js';
 import { NumberField } from '../number-field/number-field.js';
+import { Modal, ModalTrigger } from '../modal/modal.js';
+import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { ProblemList } from '../problem-list/problem-list.js';
+import { Table } from '../table/table.js';
 import { TextField } from '../text-field/text-field.js';
-import { Form, type FormProps } from './form.js';
+import { Form, useFormValidity, type FormBlocker, type FormProps } from './form.js';
 
 function field(name: string) {
   return screen.getByRole('textbox', { name }).closest('.ui-field');
@@ -216,5 +220,119 @@ describe('Form', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(screen.getByRole('status')).toHaveTextContent(`${count} errors`);
     expect(compare.mock.calls.length).toBeLessThan(bound);
+  });
+
+  describe('UIC-FORM-1.8 where its fields end', () => {
+    /** A page form whose one required field stays empty, around `children`. */
+    function PageForm({
+      children,
+      ...props
+    }: Omit<FormProps, 'children'> & { children: React.ReactNode }) {
+      return (
+        <Form aria-label="Page" validationBehavior="aria" {...props}>
+          <TextField label="Title" isRequired />
+          {children}
+          <button type="submit">Save</button>
+        </Form>
+      );
+    }
+
+    it('ignores the submit of a form in a dialog it opened', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn(prevent);
+      const onInnerSubmit = vi.fn(prevent);
+      render(
+        <PageForm onSubmit={onSubmit}>
+          <ModalTrigger>
+            <Button>Rename</Button>
+            <Modal title="Rename">
+              <Form aria-label="Rename" onSubmit={onInnerSubmit}>
+                <TextField label="New name" />
+                <button type="submit">Apply</button>
+              </Form>
+            </Modal>
+          </ModalTrigger>
+        </PageForm>,
+      );
+      await user.click(screen.getByRole('button', { name: 'Rename' }));
+      await user.type(screen.getByRole('textbox', { name: 'New name' }), 'Notes{Enter}');
+      expect(onInnerSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(screen.getByRole('textbox', { name: 'Title', hidden: true })).not.toHaveAttribute(
+        'aria-invalid',
+      );
+      expect(screen.getByRole('textbox', { name: 'New name' })).toHaveFocus();
+    });
+
+    it('ignores the submit of a table bulk edit inside it', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn(prevent);
+      const onCellsChange = vi.fn();
+      const rows = [
+        { id: 'a', name: 'Apple', origin: 'Oslo' },
+        { id: 'b', name: 'Pear', origin: 'Lima' },
+      ];
+      render(
+        <PageForm onSubmit={onSubmit}>
+          <Table
+            aria-label="Items"
+            rows={rows}
+            columns={[
+              { id: 'name', header: 'Name' },
+              { id: 'origin', header: 'Origin', bulkEdit: { type: 'text' } },
+            ]}
+            selectionMode="multiple"
+            onCellsChange={onCellsChange}
+          />
+        </PageForm>,
+      );
+      const check = (name: string) =>
+        screen.getByRole('row', { name }).querySelector('.ui-table__checkbox') as HTMLElement;
+      await user.click(check('Apple'));
+      await user.click(screen.getByRole('button', { name: 'Edit selected' }));
+      // Enter submits the dialog's own form.
+      await user.type(screen.getByRole('textbox', { name: 'Origin' }), 'Rome{Enter}');
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(screen.getByRole('textbox', { name: 'Title', hidden: true })).not.toHaveAttribute(
+        'aria-invalid',
+      );
+      expect(screen.getByRole('textbox', { name: 'Origin' })).toHaveFocus();
+      await user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(onCellsChange).toHaveBeenCalledTimes(1);
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('leaves out the fields of a popover it opened', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn(prevent);
+      const onValidityChange = vi.fn<(blockers: readonly FormBlocker[]) => void>();
+      const page: { validity: ReturnType<typeof useFormValidity> } = { validity: null };
+      function Verdict() {
+        page.validity = useFormValidity();
+        return null;
+      }
+      render(
+        <PageForm onSubmit={onSubmit} onValidityChange={onValidityChange}>
+          <Verdict />
+          <ProblemList />
+          <PopoverTrigger>
+            <Button>Note</Button>
+            <Popover aria-label="Note">
+              <TextField label="Note text" isRequired />
+            </Popover>
+          </PopoverTrigger>
+        </PageForm>,
+      );
+      await user.type(screen.getByRole('textbox', { name: 'Title' }), 'Plan');
+      await user.click(screen.getByRole('button', { name: 'Note' }));
+      expect(screen.getByRole('textbox', { name: 'Note text' })).toBeInTheDocument();
+      expect(page.validity?.isBlocked()).toBe(false);
+      expect(onValidityChange).not.toHaveBeenLastCalledWith(
+        expect.arrayContaining([expect.objectContaining({ label: 'Note text' })]),
+      );
+      await user.keyboard('{Escape}');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    });
   });
 });

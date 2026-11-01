@@ -6,6 +6,9 @@ import { Combobox } from '../../src/components/combobox/combobox.js';
 import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
+import { ProblemList } from '../../src/components/problem-list/problem-list.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
@@ -227,6 +230,47 @@ function OutsideSubmit() {
   );
 }
 
+/**
+ * A page form that opens a dialog with its own form and a popover with a bare field: neither one
+ * submits, validates or blocks the page form.
+ */
+function OverlaysInForm() {
+  const [saved, setSaved] = useState('none');
+  const [renamed, setRenamed] = useState('none');
+  return (
+    <Form
+      aria-label="Page"
+      validationBehavior="aria"
+      onSubmit={(event) => setSaved(readEntries(event))}
+    >
+      <ProblemList />
+      <TextField label="Heading" name="heading" isRequired />
+      <ModalTrigger>
+        <Button>Rename</Button>
+        <Modal title="Rename">
+          <Form
+            aria-label="Rename"
+            validationBehavior="aria"
+            onSubmit={(event) => setRenamed(readEntries(event))}
+          >
+            <TextField label="New name" name="name" isRequired autoFocus />
+            <Button type="submit">Apply</Button>
+          </Form>
+        </Modal>
+      </ModalTrigger>
+      <PopoverTrigger>
+        <Button>Add a note</Button>
+        <Popover aria-label="Note">
+          <TextField label="Note text" isRequired />
+        </Popover>
+      </PopoverTrigger>
+      <Button type="submit">Save page</Button>
+      <LabOutput name="Page saved">{saved}</LabOutput>
+      <LabOutput name="Renamed">{renamed}</LabOutput>
+    </Form>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -286,6 +330,12 @@ mountLab(
       description="Save asks the form whether what its fields show can be saved, without showing their validation: a date typed in part, a range with one end empty or a colour that does not read refuses it. Check shows every message and focuses the first."
     >
       <ExternalSave />
+    </LabSection>
+    <LabSection
+      title="Overlays in a form"
+      description="Rename submits only the dialog's own form, and the note's required field neither blocks nor lists in the page form: Save page checks the heading alone."
+    >
+      <OverlaysInForm />
     </LabSection>
   </>,
 );

@@ -233,4 +233,30 @@ test.describe('Form lab', () => {
     await expect(month).toHaveText('mm');
     await expect(lid).toHaveValue('#336699');
   });
+
+  test('UIC-FORM-1.8 keeps the forms and fields of overlays out of the page form', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const form = page.getByRole('form', { name: 'Page' });
+    await form.getByRole('button', { name: 'Rename' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Rename' });
+    await dialog.getByRole('textbox', { name: 'New name' }).fill('Plan');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-output="Renamed"]')).toHaveText('name=Plan');
+    await expect(page.locator('[data-lab-output="Page saved"]')).toHaveText('none');
+    await expect(dialog.getByRole('textbox', { name: 'New name' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(form.getByRole('textbox', { name: 'Heading' })).not.toHaveAttribute(
+      'aria-invalid',
+    );
+    await form.getByRole('textbox', { name: 'Heading' }).fill('Spring');
+    await form.getByRole('button', { name: 'Add a note' }).click();
+    await expect(page.getByRole('textbox', { name: 'Note text' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await form.getByRole('button', { name: 'Save page' }).click();
+    await expect(page.locator('[data-lab-output="Page saved"]')).toHaveText('heading=Spring');
+  });
 });

@@ -16,6 +16,7 @@ import type { Placement } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { OverlayLayerScope, Portal, useLayerZIndex } from '../portal/portal.js';
+import { FormBoundary } from '../form/form-boundary.js';
 import { ModalShownContext, retainedStyle } from './modal-retained.js';
 import { DEFAULT_OVERLAY_GUTTER, POPOVER_OFFSET } from '../../utils/overlay-defaults.js';
 import { modalHooks as hooks } from './modal-hooks.js';
@@ -268,7 +269,9 @@ export function ModalPresentation({
 }: ModalPresentationChoiceProps) {
   // Overlays opened from the dialog, such as a drawer, stack at least on its layer.
   const content = (
-    <OverlayLayerScope layer={placement ? 'dropdown' : 'modal'}>{children}</OverlayLayerScope>
+    <OverlayLayerScope layer={placement ? 'dropdown' : 'modal'}>
+      <FormBoundary>{children}</FormBoundary>
+    </OverlayLayerScope>
   );
   if (placement)
     return (
