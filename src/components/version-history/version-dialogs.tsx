@@ -32,7 +32,7 @@ export function RestoreVersionDialog({
   isOpen,
   onClose,
   onAction,
-}: DialogProps<(key: Key) => void | Promise<unknown>>) {
+}: DialogProps<(target: VersionDialogTarget) => void | Promise<unknown>>) {
   const strings = useUiStrings();
   return (
     <Modal
@@ -47,7 +47,7 @@ export function RestoreVersionDialog({
       primaryAction={{
         label: strings.restore,
         onPress: async (close) => {
-          if (target) await onAction(target.key);
+          if (target) await onAction(target);
           close();
         },
       }}
@@ -65,7 +65,7 @@ export function RenameVersionDialog({
   isOpen,
   onClose,
   onAction,
-}: DialogProps<(key: Key, label: string) => void | Promise<unknown>>) {
+}: DialogProps<(target: VersionDialogTarget, label: string) => void | Promise<unknown>>) {
   const strings = useUiStrings();
   const [draft, setDraft] = useState<{ key: Key; value: string } | null>(null);
   const label = target?.label ?? '';
@@ -73,7 +73,7 @@ export function RenameVersionDialog({
   // `close` closes only the opening this save began in, never a dialog opened since.
   const save = async (close: () => void) => {
     const trimmed = value.trim();
-    if (target && trimmed !== label) await onAction(target.key, trimmed);
+    if (target && trimmed !== label) await onAction(target, trimmed);
     close();
   };
   return (

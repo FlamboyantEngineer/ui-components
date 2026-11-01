@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { ChangeList, type ChangeListChange } from '../../src/components/change-list/change-list.js';
 import {
   VersionHistory,
@@ -139,8 +140,16 @@ function RecipeHistory() {
         resolve();
       }, 300);
     });
+  const removeOriginal = () =>
+    window.setTimeout(
+      () => setSaved((list) => list.filter((version) => version.label !== 'Original')),
+      2000,
+    );
   return (
     <div data-lab-demo="recipe">
+      <Button variant="secondary" onPress={removeOriginal}>
+        Remove Original in 2 seconds
+      </Button>
       <VersionHistory
         aria-label="Recipe versions"
         versions={saved}
@@ -214,7 +223,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A recipe's history"
-      description="Select a version to view it, two to compare them; restore one (a new current version) or rename it from its menu. A rename takes a second and a half: press Escape while it saves and rename another version, and the late save leaves the new dialog open."
+      description="Select a version to view it, two to compare them; restore one (a new current version) or rename it from its menu. A rename takes a second and a half: press Escape while it saves and rename another version, and the late save leaves the new dialog open. Start removing Original, then select it with another version or open its restore: once it is gone, Compare turns off and the dialog closes."
     >
       <RecipeHistory />
     </LabSection>

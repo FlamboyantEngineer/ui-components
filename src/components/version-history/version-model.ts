@@ -61,7 +61,24 @@ export function limitSelection(previous: ReadonlySet<Key>, next: ReadonlySet<Key
   return new Set([...kept, ...added].slice(-maxSelectedVersions));
 }
 
-/** Two selected versions ordered for a comparison, the older first; `null` unless exactly two. */
+/**
+ * The selected keys that name a version in `versions` that is not disabled, in their order. A key
+ * hidden only by the filter stays: it is still in `versions`.
+ */
+export function keepSelectableKeys(
+  versions: readonly (VersionFacts & { isDisabled?: boolean | undefined })[],
+  selected: ReadonlySet<Key>,
+): Set<Key> {
+  const selectable = new Set(
+    versions.filter((version) => !version.isDisabled).map((version) => version.id),
+  );
+  return new Set([...selected].filter((key) => selectable.has(key)));
+}
+
+/**
+ * Two selected versions ordered for a comparison, the older first; `null` unless exactly two
+ * selected keys name versions in `versions` (pass the selectable ones, see `keepSelectableKeys`).
+ */
 export function orderForComparison(
   versions: readonly VersionFacts[],
   selected: ReadonlySet<Key>,
@@ -69,6 +86,7 @@ export function orderForComparison(
   if (selected.size !== maxSelectedVersions) return null;
   const [first, second] = [...selected] as [Key, Key];
   const position = (key: Key) => versions.findIndex((version) => version.id === key);
+  if (position(first) < 0 || position(second) < 0) return null;
   // Versions are listed newest first, so the older one comes later in the list.
   return position(first) > position(second) ? [first, second] : [second, first];
 }

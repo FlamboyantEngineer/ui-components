@@ -180,6 +180,92 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'VERSION-HISTORY', { slots: ['compare'] });
   });
 
+  it('UIC-VERSION-HISTORY-1.3 UIC-VERSION-HISTORY-1.4 compares only listed, enabled versions', async () => {
+    const onCompare = vi.fn();
+    const onSelectionChange = vi.fn();
+    const typed: VersionHistoryVersion[] = [
+      { id: 2, label: 'Two', time: '2026-04-19' },
+      { id: '2', label: 'Text two', time: '2026-04-18' },
+      { id: 1, label: 'One', time: '2026-04-17' },
+    ];
+    const history = (list: VersionHistoryVersion[]) => (
+      <VersionHistory
+        versions={list}
+        getNow={getNow}
+        defaultSelectedKeys={[2, 1]}
+        onSelectionChange={onSelectionChange}
+        onCompare={onCompare}
+      />
+    );
+    const { rerender } = render(history(typed));
+    const compare = screen.getByRole('button', { name: 'Compare' });
+    await userEvent.click(compare);
+    expect(onCompare).toHaveBeenLastCalledWith([1, 2]);
+    // A removed version leaves the uncontrolled selection, and the change is reported.
+    rerender(history(typed.filter((version) => version.id !== 1)));
+    expect(compare).toBeDisabled();
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2]));
+    rerender(history(typed));
+    expect(checkbox(2)).not.toBeChecked();
+    expect(compare).toBeDisabled();
+    // A selected version that becomes disabled leaves the comparison.
+    await userEvent.click(checkbox(2));
+    rerender(history(typed.map((v) => (v.id === 1 ? { ...v, isDisabled: true } : v))));
+    expect(compare).toBeDisabled();
+    expect(orderForComparison(typed, new Set([2, 'gone']))).toBeNull();
+    expect(onCompare).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-VERSION-HISTORY-1.3 ignores stale keys of a controlled selection', async () => {
+    const onCompare = vi.fn();
+    const onSelectionChange = vi.fn();
+    const history = (list: VersionHistoryVersion[], selectedKeys: Key[]) => (
+      <VersionHistory
+        versions={list}
+        getNow={getNow}
+        selectedKeys={selectedKeys}
+        onSelectionChange={onSelectionChange}
+        onCompare={onCompare}
+      />
+    );
+    const { rerender } = render(history(versions, ['v4', 'v2']));
+    const compare = screen.getByRole('button', { name: 'Compare' });
+    expect(compare).toBeEnabled();
+    rerender(
+      history(
+        versions.filter((version) => version.id !== 'v2'),
+        ['v4', 'v2'],
+      ),
+    );
+    expect(compare).toBeDisabled();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    await userEvent.click(checkbox(0));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['v4', 'v5']));
+  });
+
+  it('UIC-VERSION-HISTORY-1.7 keeps a selection the filter hides', async () => {
+    const onCompare = vi.fn();
+    const { rerender } = render(
+      <VersionHistory
+        versions={versions}
+        getNow={getNow}
+        defaultSelectedKeys={['v5', 'v4']}
+        onCompare={onCompare}
+      />,
+    );
+    rerender(
+      <VersionHistory
+        versions={versions}
+        getNow={getNow}
+        defaultSelectedKeys={['v5', 'v4']}
+        filter={{ namedOnly: true, person: null }}
+        onCompare={onCompare}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Compare' }));
+    expect(onCompare).toHaveBeenCalledWith(['v4', 'v5']);
+  });
+
   it('UIC-VERSION-HISTORY-1.5 restores a version after a confirmation', async () => {
     let settle = () => {};
     const onRestore = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)));
@@ -210,6 +296,90 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await userEvent.click(within(second).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     expect(onRestore).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-VERSION-HISTORY-1.5 closes a restore whose version is no longer restorable', async () => {
+    const onRestore = vi.fn();
+    const history = (props: { versions?: VersionHistoryVersion[]; currentKey?: Key }) => (
+      <VersionHistory
+        versions={props.versions ?? versions}
+        currentKey={props.currentKey ?? 'v5'}
+        getNow={getNow}
+        onRestore={onRestore}
+      />
+    );
+    const { rerender } = render(history({}));
+    const openRestore = async () => {
+      await openMenu(2);
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Restore this version' }));
+      return screen.findByRole('alertdialog');
+    };
+    const changes = [
+      { versions: versions.filter((version) => version.id !== 'v3') },
+      { versions: versions.map((v) => (v.id === 'v3' ? { ...v, isDisabled: true } : v)) },
+      { currentKey: 'v3' },
+    ];
+    for (const change of changes) {
+      await openRestore();
+      rerender(history(change));
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+      // The version coming back does not reopen the abandoned dialog.
+      rerender(history({}));
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    }
+    expect(onRestore).not.toHaveBeenCalled();
+  });
+
+  it('UIC-VERSION-HISTORY-1.5 keeps a running restore open when it makes its version current', async () => {
+    let settle = () => {};
+    const onRestore = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)));
+    const history = (currentKey: Key) => (
+      <VersionHistory
+        versions={versions}
+        currentKey={currentKey}
+        getNow={getNow}
+        onRestore={onRestore}
+      />
+    );
+    const { rerender } = render(history('v5'));
+    await openMenu(1);
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Restore this version' }));
+    const dialog = await screen.findByRole('alertdialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Restore' }));
+    rerender(history('v4'));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    settle();
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(onRestore).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-VERSION-HISTORY-1.6 closes a rename whose version or callback goes away', async () => {
+    const onRename = vi.fn();
+    const history = (props: { list?: VersionHistoryVersion[]; canRename?: boolean }) => (
+      <VersionHistory
+        versions={props.list ?? versions}
+        getNow={getNow}
+        onRename={props.canRename === false ? undefined : onRename}
+      />
+    );
+    const { rerender } = render(history({}));
+    await openMenu(1);
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename version' }));
+    const field = await screen.findByRole('textbox', { name: 'Version name' });
+    await userEvent.type(field, ' two');
+    rerender(history({ list: versions.filter((version) => version.id !== 'v4') }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    rerender(history({}));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await openMenu(1);
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename version' }));
+    await screen.findByRole('dialog');
+    rerender(history({ canRename: false }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    rerender(history({}));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(onRename).not.toHaveBeenCalled();
   });
 
   it('UIC-VERSION-HISTORY-1.6 names and renames versions', async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useTimeZone } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -19,6 +19,7 @@ import {
 } from './version-dialogs.js';
 import {
   filterVersions,
+  keepSelectableKeys,
   limitSelection,
   listVersionPeople,
   orderForComparison,
@@ -91,37 +92,83 @@ export interface VersionHistoryProps
   renderEmptyState?: (() => ReactNode) | undefined;
 }
 
-/** A dialog the history has open, and the version it is for. */
+/** A dialog the history has open, the version it is for, and whether its action runs. */
 interface OpenDialog {
   action: VersionAction;
   target: VersionDialogTarget;
   isOpen: boolean;
+  isPending: boolean;
 }
 
 const everyVersion: VersionHistoryFilter = { namedOnly: false, person: null };
 const noKeys: Iterable<Key> = [];
 
-/** The open dialog: opening one for a version, and closing it while it keeps its version. */
-function useVersionDialog() {
+/** Whether `action` can run on the version `key` now: listed, enabled, and offered. */
+function isActionAvailable(props: VersionHistoryProps, action: VersionAction, key: Key): boolean {
+  const version = props.versions.find((entry) => entry.id === key);
+  if (!version || version.isDisabled) return false;
+  if (action === 'rename') return props.onRename !== undefined;
+  return props.onRestore !== undefined && key !== (props.currentKey ?? null);
+}
+
+/**
+ * The open dialog: opening one for a version, and closing it while it keeps its version. A dialog
+ * whose action is no longer available for its version (the version left or was disabled, became
+ * the current one for a restore, or the callback went away) closes unless its action runs, and
+ * stays closed when the action comes back. The action is checked again when it is confirmed.
+ */
+function useVersionDialog(props: VersionHistoryProps) {
   const [dialog, setDialog] = useState<OpenDialog | null>(null);
+  if (
+    dialog?.isOpen &&
+    !dialog.isPending &&
+    !isActionAvailable(props, dialog.action, dialog.target.key)
+  ) {
+    setDialog({ ...dialog, isOpen: false });
+  }
   const open = (action: VersionAction, target: VersionDialogTarget) =>
-    setDialog({ action, target, isOpen: true });
+    setDialog({ action, target, isOpen: true, isPending: false });
   const close = () => setDialog((current) => current && { ...current, isOpen: false });
+  const setPending = (target: VersionDialogTarget, isPending: boolean) =>
+    setDialog((current) => (current?.target === target ? { ...current, isPending } : current));
+  /** Runs `action` for `target` if it is still available, marking the dialog pending meanwhile. */
+  const submit = async (
+    action: VersionAction,
+    target: VersionDialogTarget,
+    run: () => void | Promise<unknown>,
+  ) => {
+    if (!isActionAvailable(props, action, target.key)) return;
+    setPending(target, true);
+    try {
+      await run();
+    } finally {
+      setPending(target, false);
+    }
+  };
   const propsFor = (action: VersionAction) => ({
     target: dialog?.action === action ? dialog.target : null,
     isOpen: dialog?.action === action && dialog.isOpen,
     onClose: close,
   });
-  return { open, propsFor };
+  return { open, submit, propsFor };
 }
 
-/** The selection, limited to two versions, and the filter, each controlled or not. */
+/**
+ * The selection, limited to two versions, and the filter, each controlled or not. Only listed,
+ * enabled versions count as selected; an uncontrolled selection drops the others and reports it.
+ */
 function useVersionState(props: VersionHistoryProps) {
-  const [selected, setSelected] = useControllableState<Set<Key>>(
+  const [stored, setSelected] = useControllableState<Set<Key>>(
     props.selectedKeys === undefined ? undefined : new Set(props.selectedKeys),
     new Set(props.defaultSelectedKeys ?? noKeys),
     props.onSelectionChange,
   );
+  const selected = keepSelectableKeys(props.versions, stored);
+  const isStale = selected.size !== stored.size;
+  const isControlled = props.selectedKeys !== undefined;
+  useEffect(() => {
+    if (isStale && !isControlled) setSelected(selected);
+  });
   const [filter, setFilter] = useControllableState(
     props.filter,
     props.defaultFilter ?? everyVersion,
@@ -169,6 +216,34 @@ function VersionListError({ error, onRetry }: Pick<VersionHistoryProps, 'error' 
   );
 }
 
+/** The restore and rename dialogs the history offers, each running its action through `dialog`. */
+function VersionDialogs({
+  dialog,
+  onRestore,
+  onRename,
+}: Pick<VersionHistoryProps, 'onRestore' | 'onRename'> & {
+  dialog: ReturnType<typeof useVersionDialog>;
+}) {
+  return (
+    <>
+      {onRestore ? (
+        <RestoreVersionDialog
+          {...dialog.propsFor('restore')}
+          onAction={(target) => dialog.submit('restore', target, () => onRestore(target.key))}
+        />
+      ) : null}
+      {onRename ? (
+        <RenameVersionDialog
+          {...dialog.propsFor('rename')}
+          onAction={(target, label) =>
+            dialog.submit('rename', target, () => onRename(target.key, label))
+          }
+        />
+      ) : null}
+    </>
+  );
+}
+
 /**
  * The saved versions of a document or record, newest first: named and automatic versions with who
  * saved them and when, the current one marked. Select one to view it and two to compare them;
@@ -190,7 +265,7 @@ export function VersionHistory(props: VersionHistoryProps) {
   const { locale } = useLocale();
   const zone = useTimeZone(timeZone);
   const { selected, select, filter, setFilter } = useVersionState(props);
-  const dialog = useVersionDialog();
+  const dialog = useVersionDialog(props);
   const comparison = orderForComparison(versions, selected);
   const context = {
     currentKey,
@@ -246,10 +321,7 @@ export function VersionHistory(props: VersionHistoryProps) {
           {filterVersions(versions, filter).map((version) => renderVersionRow(version, context))}
         </ListView>
       )}
-      {onRestore ? (
-        <RestoreVersionDialog {...dialog.propsFor('restore')} onAction={onRestore} />
-      ) : null}
-      {onRename ? <RenameVersionDialog {...dialog.propsFor('rename')} onAction={onRename} /> : null}
+      <VersionDialogs dialog={dialog} onRestore={onRestore} onRename={onRename} />
     </div>
   );
 }
