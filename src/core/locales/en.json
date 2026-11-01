@@ -430,6 +430,7 @@
   "fieldHelp": "Help for {label}",
   "fieldActions": "{label} actions",
   "rangeUnderflow": "Enter {minimum} or more.",
+  "quantityUnreadable": "Enter a number in {units}.",
   "numberIncrease": "Increase",
   "numberDecrease": "Decrease",
   "rangeOverflow": "Enter {maximum} or less.",

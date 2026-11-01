@@ -6,3 +6,4 @@ export type {
   NumberFieldProps,
   NumberFieldTextInputProps,
 } from './number-field.js';
+export type { NumberFieldUnits } from './unit-number.js';

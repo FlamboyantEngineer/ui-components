@@ -430,6 +430,7 @@
   "fieldHelp": "Ayuda de {label}",
   "fieldActions": "Acciones de {label}",
   "rangeUnderflow": "Introduce {minimum} o más.",
+  "quantityUnreadable": "Introduce un número en {units}.",
   "numberIncrease": "Aumentar",
   "numberDecrease": "Disminuir",
   "rangeOverflow": "Introduce {maximum} o menos.",

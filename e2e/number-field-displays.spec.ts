@@ -99,3 +99,42 @@ test.describe('Number Field display choices', () => {
     });
   }
 });
+
+test.describe('Number Field typed units', () => {
+  test('UIC-NUMBER-FIELD-3.4 converts 5cm to 50 mm, keeps a wrong unit and restores', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const field = page.locator('[data-lab-field="units"]');
+    const input = field.getByRole('spinbutton', { name: 'Length' });
+    await expect(input).toHaveValue('120');
+    await expect(field.locator('.ui-number-field__end')).toHaveText('mm');
+    await input.fill('5cm');
+    await input.press('Enter');
+    await expect(input).toHaveValue('50');
+    await expect(input).toHaveAttribute('aria-valuetext', '50 mm');
+    await expect(page.locator('[data-lab-output="Length committed"]')).toHaveText('50');
+    // The unit follows the converted number.
+    const [sizer, unit] = await Promise.all([
+      field.locator('.ui-number-field__sizer').boundingBox(),
+      field.locator('.ui-number-field__end').boundingBox(),
+    ]);
+    expect((unit?.x ?? 0) - ((sizer?.x ?? 0) + (sizer?.width ?? 0))).toBeLessThanOrEqual(6);
+    await input.fill('3 parsecs');
+    await input.press('Enter');
+    await expect(input).toHaveValue('3 parsecs');
+    await expect(field.locator('.ui-field__message')).toHaveText(
+      'Enter a number in mm, cm, m, or in.',
+    );
+    await input.fill('');
+    await input.focus();
+    await page.keyboard.insertText('2 in');
+    await input.press('Enter');
+    await expect(input).toHaveValue('50.8');
+    await expect(field.locator('.ui-field__message')).toHaveText('');
+    await field.getByRole('button', { name: /Restore/ }).click();
+    await expect(input).toHaveValue('120');
+    await lab.expectAccessible();
+  });
+});

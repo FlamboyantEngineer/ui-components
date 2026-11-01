@@ -2,7 +2,7 @@
 
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { MinusGlyph, PlusGlyph } from '../../core/glyphs.js';
-import { useState, type KeyboardEvent } from 'react';
+import { useLayoutEffect, useState, type KeyboardEvent } from 'react';
 import {
   Button as AriaButton,
   Group,
@@ -15,6 +15,7 @@ import {
   FieldFormValue,
   toAriaControlProps,
   type FieldControlProps,
+  type FieldIssue,
   type FieldState,
 } from '../field/field.js';
 import type { NumberControlConfig } from './number-field.js';
@@ -28,29 +29,52 @@ import {
   toModifiedPressProps,
   type NumberSteps,
 } from './number-field-parts.js';
-import { formatRadixNumber, parseRadixNumber, type NumberFieldRadix } from './radix-number.js';
 import { snapNumberValue } from './snap-number-value.js';
 
-interface RadixControlProps {
+/** How a text number control reads and writes its text. */
+export interface NumberTextCodec {
+  /** The number a text spells: `null` while empty, `NaN` while it spells none. */
+  parse(text: string): number | null;
+  /** The text of a value, empty for none. */
+  format(value: number | null): string;
+  /** The value as assistive technology reads it (`0x1f`, `50 mm`). */
+  describe(value: number): string;
+  inputMode: 'text' | 'numeric' | 'decimal';
+  /**
+   * The issue text that spells no number reports while it stays in the input; without one, such
+   * text is put back to the value's when typing ends.
+   */
+  unreadable?: FieldIssue | undefined;
+}
+
+interface TextNumberControlProps {
   state: FieldState<number | null>;
   control: FieldControlProps;
-  radix: NumberFieldRadix;
+  codec: NumberTextCodec;
   config: NumberControlConfig;
   steps: NumberSteps;
 }
 
-function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
-  const formatted = formatRadixNumber(state.value, radix);
+function isUnreadable(value: number | null): boolean {
+  return value !== null && Number.isNaN(value);
+}
+
+function useTextEntry({ state, codec, config, steps }: TextNumberControlProps) {
+  const formatted = codec.format(state.value);
   const [draft, setDraft] = useState(formatted);
   const [previous, setPrevious] = useState(formatted);
   if (previous !== formatted) {
     setPrevious(formatted);
     setDraft(formatted);
   }
+  const issue = codec.unreadable && isUnreadable(codec.parse(draft)) ? codec.unreadable : null;
+  const { setDraftIssue } = state;
+  // After every commit: the field keeps the issue it has while the report says the same.
+  useLayoutEffect(() => setDraftIssue(issue));
   const finish = (commit: boolean) => {
-    const value = parseRadixNumber(draft, radix);
-    if (value !== null && Number.isNaN(value)) {
-      setDraft(formatted);
+    const value = codec.parse(draft);
+    if (isUnreadable(value)) {
+      if (!codec.unreadable) setDraft(formatted);
       return;
     }
     const next =
@@ -58,7 +82,7 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
         ? value
         : snapNumberValue(value, config);
     state.setValue(next);
-    setDraft(formatRadixNumber(next, radix));
+    setDraft(codec.format(next));
     if (commit) state.commit();
   };
   /**
@@ -67,8 +91,8 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
    */
   const step = (direction: number, modifier?: number) => {
     if (state.isDisabled || state.isReadOnly) return;
-    const parsed = parseRadixNumber(draft, radix);
-    const value = parsed !== null && Number.isNaN(parsed) ? state.value : parsed;
+    const parsed = codec.parse(draft);
+    const value = isUnreadable(parsed) ? state.value : parsed;
     const next =
       modifier === undefined
         ? snapNumberValue(addStep(value, direction * steps.step, steps), {
@@ -78,7 +102,7 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
           })
         : addStep(value, direction * modifier, steps);
     state.setValue(next);
-    setDraft(formatRadixNumber(next, radix));
+    setDraft(codec.format(next));
     state.commit();
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -101,10 +125,10 @@ function useRadixEntry({ state, radix, config, steps }: RadixControlProps) {
 }
 
 /**
- * A radix step button: by `step` when pressed (`onStep()`), or by a modifier's step with Shift or
+ * A step button: by `step` when pressed (`onStep()`), or by a modifier's step with Shift or
  * Alt (`onStep(size)`), and disabled when the value cannot move further.
  */
-function RadixStepper({
+function TextNumberStepper({
   direction,
   state,
   steps,
@@ -142,8 +166,11 @@ function RadixStepper({
   );
 }
 
-/** A radix spinbutton on a text-field building block; numeric value and stepping stay base independent. */
-export function RadixControl(props: RadixControlProps) {
+/**
+ * A spinbutton on a text-field building block, for numbers a decimal number field cannot type: a
+ * nondecimal base, or a quantity with a unit. The value and its stepping stay those of a number.
+ */
+export function TextNumberControl(props: TextNumberControlProps) {
   const { state, control, config, steps } = props;
   const {
     hideStepper,
@@ -159,9 +186,9 @@ export function RadixControl(props: RadixControlProps) {
     name,
   } = config;
   const [input, inputRef] = useForwardedRef<HTMLInputElement>(control.ref);
-  const entry = useRadixEntry(props);
+  const entry = useTextEntry(props);
   const stepper = (direction: 1 | -1) => (
-    <RadixStepper
+    <TextNumberStepper
       direction={direction}
       state={state}
       steps={steps}
@@ -192,12 +219,10 @@ export function RadixControl(props: RadixControlProps) {
             {...hooks.slot('input')}
             role="spinbutton"
             aria-valuenow={state.value ?? undefined}
-            aria-valuetext={
-              state.value === null ? undefined : formatRadixNumber(state.value, props.radix)
-            }
+            aria-valuetext={state.value === null ? undefined : props.codec.describe(state.value)}
             aria-valuemin={minValue}
             aria-valuemax={maxValue}
-            inputMode={props.radix === 16 ? 'text' : 'numeric'}
+            inputMode={props.codec.inputMode}
             ref={inputRef}
             placeholder={placeholder}
             autoComplete={autoComplete}

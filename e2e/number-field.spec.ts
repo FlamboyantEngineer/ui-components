@@ -136,7 +136,7 @@ test.describe('Number Field lab', () => {
     await dirty.getByRole('button', { name: 'Servings actions' }).click();
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(input).toHaveValue('2');
-    await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(output(page, 'Saved')).toHaveText('2');
   });
 
