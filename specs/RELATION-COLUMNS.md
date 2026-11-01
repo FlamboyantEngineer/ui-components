@@ -50,7 +50,7 @@ Verification: `src/components/relation-columns/relation-columns.test.tsx`, `e2e/
 
 ### UIC-RELATION-COLUMNS-2.1 - Moving between columns
 
-ArrowUp and ArrowDown shall move between the items of a column (React Aria), choosing them in a side column. ArrowLeft and ArrowRight on an item move focus to the column before or after it (mirrored right to left), onto its chosen item or else its first; at the first and last columns they keep focus where it is.
+ArrowUp and ArrowDown shall move between the items of a column (React Aria), choosing them in a side column. ArrowLeft and ArrowRight on an item move focus to the column before or after it (mirrored right to left), onto its chosen item or else its first; at the first and last columns they keep focus where it is. When a shorter path, from the caller or a choice, closes the column holding focus, focus shall move to the deepest column left on the same side, onto its chosen item or else its first, else to the middle column; focus that had left the columns stays where it is.
 
 Implementation: `src/components/relation-columns/relation-columns.tsx`
 Verification: `src/components/relation-columns/relation-columns.test.tsx`, `e2e/relation-columns.spec.ts`

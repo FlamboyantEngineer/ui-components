@@ -10,7 +10,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { useEffect, useState } from 'react';
+import { cloneElement, useEffect, useState, type ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
@@ -18,7 +18,12 @@ import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Section } from '../section-header/section-header.js';
-import { DockPanel, DockPanelPane, type DockPanelProps } from './dock-panel.js';
+import {
+  DockPanel,
+  DockPanelPane,
+  type DockPanelPaneProps,
+  type DockPanelProps,
+} from './dock-panel.js';
 
 const add = vi.fn();
 
@@ -453,6 +458,43 @@ describe('DockPanel panes', () => {
     act(() => screen.getByRole('button', { name: 'People' }).focus());
     await userEvent.keyboard('{Enter}');
     expect(screen.getByRole('button', { name: 'People' })).toHaveFocus();
+  });
+
+  const paneChanges: [string, (pane: ReactElement<DockPanelPaneProps>) => ReactElement | null][] = [
+    ['removed', () => null],
+    ['disabled', (pane) => cloneElement(pane, { isDisabled: true })],
+  ];
+
+  describe.each(paneChanges)('when the pane holding focus is %s', (_, change) => {
+    const alpha = (
+      <DockPanelPane key="alpha" id="alpha" label="Alpha" icon={InfoGlyph}>
+        <input aria-label="Alpha note" />
+      </DockPanelPane>
+    );
+    const blue = (
+      <DockPanelPane key="blue" id="blue" label="Blue" icon={InfoGlyph}>
+        Blue
+      </DockPanelPane>
+    );
+
+    it('UIC-DOCK-PANEL-2.4 moves focus to the pane shown in its place', () => {
+      const { rerender } = render(<DockPanel label="Details">{[alpha, blue]}</DockPanel>);
+      act(() => screen.getByRole('textbox', { name: 'Alpha note' }).focus());
+      rerender(<DockPanel label="Details">{[change(alpha), blue]}</DockPanel>);
+      expect(pane('Blue')).toHaveFocus();
+    });
+
+    it('UIC-DOCK-PANEL-2.4 moves focus to the pane shown in its place inside a shadow root', () => {
+      const panel = (first: ReactElement | null) => (
+        <ShadowHost name="page">
+          <DockPanel label="Details">{[first, blue]}</DockPanel>
+        </ShadowHost>
+      );
+      const { rerender } = render(panel(alpha));
+      act(() => inShadow('page').getByRole('textbox', { name: 'Alpha note' }).focus());
+      rerender(panel(change(alpha)));
+      expect(deepActive()).toHaveAttribute('aria-label', 'Blue');
+    });
   });
 
   it('UIC-DOCK-PANEL-2.4 returns focus to the launcher when the pane holding it closes', async () => {

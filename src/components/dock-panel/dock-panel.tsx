@@ -105,7 +105,7 @@ export function DockPanel({
     maxSize: largest,
   });
   const openKey = state.isExpanded && !isOverlay ? state.selectedKey : null;
-  const focus = useDockPanelFocus(openKey);
+  const focus = useDockPanelFocus(openKey, rootRef);
   const open = useDockPanelOpenState(state, isOverlay);
   const isDocked = openKey !== null;
   // A drag ends with its separator if the panel collapses mid-drag.

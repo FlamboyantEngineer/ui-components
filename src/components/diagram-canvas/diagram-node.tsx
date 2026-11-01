@@ -15,6 +15,7 @@ import {
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { getComposedActiveElement } from '../../utils/focus-target.js';
 import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 import { capturePointer } from '../../utils/pointer-drag.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
@@ -195,7 +196,7 @@ function DiagramNodeElement<T>({
   const revealRef = useLatest(reveal);
   // Keep a node moved by the keyboard in view.
   useEffect(() => {
-    if (element.current && element.current === element.current.ownerDocument.activeElement) {
+    if (element.current && element.current === getComposedActiveElement(element.current)) {
       revealRef.current();
     }
   }, [node.x, node.y, revealRef]);

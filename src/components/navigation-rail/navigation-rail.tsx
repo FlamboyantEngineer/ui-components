@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDoubleLeftGlyph, ChevronDoubleRightGlyph } from '../../core/glyphs.js';
-import { useId, useMemo, type ReactNode } from 'react';
+import { useId, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { FocusScope, useFocusManager, useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { measuredProperty } from '../../core/hooks.js';
@@ -14,6 +14,12 @@ import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isHTMLElement } from '../../utils/is-element.js';
+import {
+  closestHiddenSubtree,
+  isHiddenOrGone,
+  useFocusRecovery,
+} from '../../utils/use-focus-recovery.js';
 import { Button } from '../button/button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import { NavigationRailContext, navigationRailHooks as hooks } from './navigation-rail-state.js';
@@ -151,6 +157,25 @@ function RailToggle({ isCollapsed, bodyId, onPress }: RailToggleProps) {
 }
 
 /**
+ * Keeps focus in the rail when a group closes over the item holding it (also by the rail
+ * collapsing, which closes every group): focus moves to the trigger of the closed group, the
+ * outermost one shown when groups nest, else to the rail's collapse button.
+ */
+function useRailFocusRecovery(rootRef: RefObject<HTMLElement | null>) {
+  useFocusRecovery(rootRef, (lost) => {
+    let target: Element | null | undefined = lost;
+    while (target && isHiddenOrGone(target)) {
+      const group: Element | null | undefined = closestHiddenSubtree(target)?.closest(
+        `.${hooks.slotClass('group')}`,
+      );
+      target = group?.querySelector(`.${hooks.slotClass('group-trigger')}`);
+    }
+    const toggle = rootRef.current?.querySelector(`.${hooks.slotClass('toggle')}`);
+    return isHTMLElement(target) ? target : isHTMLElement(toggle) ? toggle : null;
+  });
+}
+
+/**
  * The side navigation of an application (a `navigation` landmark): a header with a collapse
  * button, sections of links and groups, and a footer. Collapsed, it shows icons with tooltips; it
  * can be resized, and its collapsed state and width persist through the provider storage.
@@ -173,6 +198,8 @@ export function NavigationRail({
   ...rest
 }: NavigationRailProps) {
   const bodyId = `${useId()}-body`;
+  const rootRef = useRef<HTMLElement>(null);
+  useRailFocusRecovery(rootRef);
   const [isCollapsed, setCollapsed] = usePersistedValue({
     value: collapsedProp,
     defaultValue: defaultCollapsed,
@@ -199,6 +226,7 @@ export function NavigationRail({
   const style = isResizable ? measuredProperty('navigation-rail-width', width) : undefined;
   return (
     <nav
+      ref={rootRef}
       {...rest}
       {...hooks.root({
         className,

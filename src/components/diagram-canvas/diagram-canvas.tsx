@@ -26,6 +26,7 @@ import {
 import { DiagramToolbar, type DiagramView } from './diagram-toolbar.js';
 import type { DiagramEdgeRouting } from './edge-route.js';
 import { useBackgroundPointer } from './use-background-pointer.js';
+import { useNodeFocusRecovery } from './use-node-focus-recovery.js';
 import type { DiagramConnection } from './use-diagram-connect.js';
 import {
   useDiagramController,
@@ -178,6 +179,7 @@ function DiagramViewportArea<T>({
   }) {
   const strings = useUiStrings();
   const ref = useRef<HTMLDivElement>(null);
+  useNodeFocusRecovery(ref);
   const viewportRef = useMemo(
     () => mergeRefs(ref, controller.setViewportElement),
     [controller.setViewportElement],

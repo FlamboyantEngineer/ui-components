@@ -57,7 +57,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-2.4 - Keyboard and focus
 
-The arrow keys along the launcher toolbar (Up and Down beside a side edge, Left and Right at the bottom) shall move focus between the launchers and the toggle, and Tab leaves the toolbar. When a launcher press opens its pane, focus moves to the pane element (`tabIndex="-1"`); when the open pane closes or another pane replaces it while focus is inside it, focus moves to its launcher. Focus is read through open shadow roots, so this holds for a panel inside one.
+The arrow keys along the launcher toolbar (Up and Down beside a side edge, Left and Right at the bottom) shall move focus between the launchers and the toggle, and Tab leaves the toolbar. When a launcher press opens its pane, focus moves to the pane element (`tabIndex="-1"`); when the open pane closes or another pane replaces it while focus is inside it, focus moves to its launcher. When the pane holding focus is removed or disabled, focus moves to the pane shown in its place, else to the first enabled launcher. Focus is read through open shadow roots, so this holds for a panel inside one.
 
 Implementation: `src/components/dock-panel/dock-panel-launchers.tsx`, `src/components/dock-panel/use-dock-panel-focus.ts`, `src/utils/focus-target.ts`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
