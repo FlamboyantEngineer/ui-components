@@ -75,6 +75,16 @@ describe('CodeBlock', () => {
     expectHooksMatchSpec(container, 'CODE-BLOCK');
   });
 
+  it('UIC-CODE-BLOCK-1.3 joins the tab order while the code is taller than its box', () => {
+    const { container, rerender } = render(<CodeBlock code="a" />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    vi.spyOn(pre, 'scrollHeight', 'get').mockReturnValue(2000);
+    vi.spyOn(pre, 'clientHeight', 'get').mockReturnValue(300);
+    rerender(<CodeBlock code={'a\n'.repeat(200)} />);
+    expect(pre).toHaveAttribute('data-overflowing', 'true');
+    expect(pre).toHaveAttribute('tabindex', '0');
+  });
+
   it('UIC-CODE-BLOCK-1.4 highlights typed tokens with the caller tokenizer', () => {
     const { container } = render(<CodeBlock code="const a = 12;" tokenize={tokenize} />);
     const tokens = [...container.querySelectorAll('.ui-code-block__token')];
@@ -234,5 +244,74 @@ describe('CodeBlock', () => {
     } finally {
       Reflect.deleteProperty(document, 'fonts');
     }
+  });
+
+  it('UIC-CODE-BLOCK-1.5 numbers each line outside the text and copies only the code', async () => {
+    const user = userEvent.setup();
+    const code = '/* one\n   two */\n\n  const a = 12;\n';
+    const commentTokens = (source: string): CodeToken[] => [
+      { text: source.slice(0, 17), type: 'comment' },
+      ...tokenize(source.slice(17)),
+    ];
+    const { container } = render(
+      <CodeBlock code={code} tokenize={commentTokens} lineNumbers onApply={() => undefined} />,
+    );
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(pre).toHaveAttribute('data-line-numbers', 'true');
+    expect(pre.style.getPropertyValue('--ui-code-block-line-number-digits')).toBe('1');
+    expect(pre.querySelector('code')?.textContent).toBe(code);
+    const lines = [...pre.querySelectorAll('.ui-code-block__line')];
+    expect(lines.map((line) => line.textContent)).toEqual([
+      '/* one\n',
+      '   two */\n',
+      '\n',
+      '  const a = 12;\n',
+      '',
+    ]);
+    const numbers = [...pre.querySelectorAll('.ui-code-block__line-number')];
+    expect(numbers.map((number) => number.getAttribute('data-line-number'))).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ]);
+    for (const number of numbers) {
+      expect(number).toHaveAttribute('aria-hidden', 'true');
+      expect(number).toBeEmptyDOMElement();
+    }
+    const comments = [...pre.querySelectorAll('[data-token="comment"]')];
+    expect(comments.map((token) => token.textContent)).toEqual(['/* one', '   two */']);
+    await user.click(screen.getByRole('button', { name: 'Copy code' }));
+    expect(await navigator.clipboard.readText()).toBe(code);
+    expectHooksMatchSpec(container, 'CODE-BLOCK', { slots: ['line', 'line-number', 'token'] });
+  });
+
+  it('UIC-CODE-BLOCK-1.5 numbers terminal lines and sizes the gutter by the highest number', () => {
+    const { container, rerender } = render(
+      <CodeBlock variant="terminal" code={'$ ls\nnotes.md'} lineNumbers />,
+    );
+    const lines = [...container.querySelectorAll('.ui-code-block__line')];
+    expect(lines.map((line) => line.getAttribute('data-kind'))).toEqual(['command', 'output']);
+    expect(lines[0]?.firstElementChild).toHaveClass('ui-code-block__line-number');
+    expect(container.querySelector('code')?.textContent).toBe('$ ls\nnotes.md');
+    rerender(
+      <CodeBlock code={Array.from({ length: 120 }, (_, i) => `${i}`).join('\n')} lineNumbers />,
+    );
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(pre.style.getPropertyValue('--ui-code-block-line-number-digits')).toBe('3');
+    expect(container.querySelectorAll('.ui-code-block__line-number')).toHaveLength(120);
+    rerender(<CodeBlock code={'a\nb'} />);
+    expect(pre).not.toHaveAttribute('data-line-numbers');
+    expect(pre.style.getPropertyValue('--ui-code-block-line-number-digits')).toBe('');
+    expect(container.querySelector('.ui-code-block__line')).toBeNull();
+  });
+
+  it('UIC-CODE-BLOCK-1.6 publishes whether long lines scroll or wrap', () => {
+    const { container, rerender } = render(<CodeBlock code="a long line" />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(pre).toHaveAttribute('data-wrap', 'off');
+    rerender(<CodeBlock code="a long line" wrap="soft" lineNumbers />);
+    expect(pre).toHaveAttribute('data-wrap', 'soft');
+    expectHooksMatchSpec(container, 'CODE-BLOCK', { slots: ['line', 'line-number'] });
   });
 });

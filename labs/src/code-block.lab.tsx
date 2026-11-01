@@ -4,11 +4,14 @@ import {
   createCodeBlockOverride,
   type CodeBlockVariant,
 } from '../../src/components/code-block/index.js';
-import type { CodeToken } from '../../src/components/code-editor/code-editor.js';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import type { CodeEditorWrap, CodeToken } from '../../src/components/code-editor/code-editor.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { languageSamples, largeFile, tokenizeTypeScript } from './code-block-samples.js';
 
 const keywords = new Set(['const', 'let', 'function', 'return', 'if', 'else', 'export', 'await']);
 const parts =
@@ -161,6 +164,84 @@ function LateHighlight() {
   );
 }
 
+const numberedScript = [
+  '/* Nights of a trip,',
+  '   counted per stop. */',
+  'function countNights(stops) {',
+  '',
+  '  return stops.reduce((sum, stop) => sum + stop.nights, 0);',
+  '}',
+  '',
+].join('\n');
+
+const wrappedScript = [
+  'const route = await planRoute({ from: "Lisbon", to: "Porto", stops: ["Coimbra", "Aveiro"], avoidTolls: true });',
+  'console.log(route.summary);',
+].join('\n');
+
+function LineNumbersDemo() {
+  return (
+    <div data-lab-demo="line-numbers" style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+      <CodeBlock
+        code={numberedScript}
+        language="js"
+        title="count-nights.js"
+        tokenize={tokenizeScript}
+        lineNumbers
+      />
+      <CodeBlock code={session} variant="terminal" lineNumbers />
+      <div style={{ width: 320 }}>
+        <CodeBlock
+          code={wrappedScript}
+          language="ts"
+          title="Wrapped"
+          tokenize={tokenizeScript}
+          lineNumbers
+          wrap="soft"
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Lab-only: the host bounds the code's height, so the large file scrolls down as well. */
+const boundedStyle = `
+[data-lab-demo="large"] .ui-code-block__code { max-height: 360px; box-sizing: border-box; }
+`;
+
+function LargeFileDemo() {
+  const [hasNumbers, setNumbers] = useState(true);
+  const [wrap, setWrap] = useState<CodeEditorWrap>('off');
+  return (
+    <div data-lab-demo="large" style={{ display: 'grid', gap: 8, maxWidth: 640 }}>
+      <style>{boundedStyle}</style>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+        <Checkbox isSelected={hasNumbers} onChange={setNumbers}>
+          Line numbers
+        </Checkbox>
+        <SegmentedChoice
+          aria-label="Long lines"
+          sizing="content"
+          options={[
+            { value: 'off', label: 'Scroll sideways' },
+            { value: 'soft', label: 'Wrap' },
+          ]}
+          value={wrap}
+          onChange={(value) => setWrap(value === 'soft' ? 'soft' : 'off')}
+        />
+      </div>
+      <CodeBlock
+        code={largeFile}
+        language="ts"
+        title="restock.ts"
+        tokenize={tokenizeTypeScript}
+        lineNumbers={hasNumbers}
+        wrap={wrap}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -196,6 +277,38 @@ mountLab(
         <CodeBlock code={script} language="ts" title="count-nights.ts" tokenize={tokenizeScript} />
         <CodeBlock code={'Plain text without a language.'} />
       </div>
+    </LabSection>
+    <LabSection
+      title="Highlighted languages"
+      description="TypeScript, JSON, CSS and Python through the code editor's tokenizers, and a shell syntax built from the same ordered rules, each passed as tokenize and numbered."
+    >
+      <div
+        data-lab-demo="highlighted-languages"
+        style={{ display: 'grid', gap: 12, maxWidth: 560 }}
+      >
+        {languageSamples.map((sample) => (
+          <CodeBlock
+            key={sample.title}
+            code={sample.code}
+            language={sample.language}
+            title={sample.title}
+            tokenize={sample.tokenize}
+            lineNumbers
+          />
+        ))}
+      </div>
+    </LabSection>
+    <LabSection
+      title="Line numbers"
+      description="lineNumbers numbers each line in a gutter the stylesheet draws, so Copy, a selection and find take only the code. Blank lines keep their numbers; the empty line after a final line break gets none. A wrapped line keeps one number."
+    >
+      <LineNumbersDemo />
+    </LabSection>
+    <LabSection
+      title="Large file"
+      description="Over a thousand lines in a viewport the host bounds to 360 pixels: the code scrolls down and sideways, and the keyboard can reach it to scroll. The numbers stay at the start while it scrolls sideways; Wrap trades sideways scrolling for wrapped rows."
+    >
+      <LargeFileDemo />
     </LabSection>
     <LabSection
       title="Long lines"

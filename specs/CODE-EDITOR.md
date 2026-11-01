@@ -329,7 +329,7 @@ Verification: `src/components/code-editor/code-json.test.tsx`
 
 ### UIC-CODE-EDITOR-12.1 - Built-in and custom syntax
 
-`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet.
+`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet. `resolveCodeTokenizer({ language, syntax })` returns the tokenizer the editor uses for them, or none for plain text, so a [Code Block](CODE-BLOCK.md) can highlight with the same presets through its `tokenize`.
 
 Implementation: `src/components/code-editor/code-languages.ts`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-languages.test.tsx`
