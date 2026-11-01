@@ -147,6 +147,25 @@ test.describe('Command Palette lab', () => {
     await expect(output(page, 'Word command')).toHaveText('new-file');
   });
 
+  test('UIC-COMMAND-PALETTE-2.6 starts from the default text when reopened while closing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('command-palette');
+    const slow = page.locator('[data-lab-palette="slow-exit"]');
+    await page.keyboard.press('Control+Shift+O');
+    const search = slow.getByRole('searchbox');
+    await expect(search).toHaveValue('fi');
+    await page.keyboard.press('Control+A');
+    await page.keyboard.type('zzz');
+    await page.keyboard.press('Control+Shift+O');
+    await expect(slow).toHaveAttribute('data-exiting', 'true');
+    await page.keyboard.press('Control+Shift+O');
+    await expect(search).toHaveValue('fi');
+    await expect(search).toBeFocused();
+    await expect(slow.getByRole('menuitem').first()).toBeVisible();
+  });
+
   test('UIC-COMMAND-PALETTE-2.6 shows a loading row while results for the typed text arrive', async ({
     page,
     lab,
