@@ -1,6 +1,13 @@
 'use client';
 
-import { useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -11,7 +18,7 @@ import { Icon } from '../icon/icon.js';
 import { toIconProps } from '../icon/icon.js';
 import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import type { ComboboxOption } from './combobox-options.js';
-import { getOwnerDocument } from '../../utils/owner-window.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
 
 export interface ComboboxChipsProps {
@@ -62,6 +69,8 @@ interface ChipsLabelOptions {
   aria: AriaLabellingProps;
   /** The combobox shows chips; otherwise nothing is read. */
   isEnabled: boolean;
+  /** The combobox's input, whose tree `aria-labelledby` ids are found in. */
+  inputRef: RefObject<Element | null>;
 }
 
 /**
@@ -70,7 +79,7 @@ interface ChipsLabelOptions {
  * `aria-labelledby` names, read once they render, so a label drawn as markup or named elsewhere
  * still names the chips.
  */
-export function useChipsLabel({ label, aria, isEnabled }: ChipsLabelOptions) {
+export function useChipsLabel({ label, aria, isEnabled, inputRef }: ChipsLabelOptions) {
   const given = typeof label === 'string' ? label : aria['aria-label'];
   const labelledBy = aria['aria-labelledby'];
   const labelRef = useRef<HTMLLabelElement>(null);
@@ -78,9 +87,8 @@ export function useChipsLabel({ label, aria, isEnabled }: ChipsLabelOptions) {
   useLayoutEffect(() => {
     if (!isEnabled || given !== undefined) return;
     const element = labelRef.current;
-    const owner = getOwnerDocument(element);
     const sources = labelledBy
-      ? labelledBy.split(/\s+/).map((id) => owner.getElementById(id))
+      ? labelledBy.split(/\s+/).map((id) => getElementByIdFrom(element ?? inputRef.current, id))
       : [element];
     setRead(
       sources
@@ -88,7 +96,7 @@ export function useChipsLabel({ label, aria, isEnabled }: ChipsLabelOptions) {
         .filter(Boolean)
         .join(' '),
     );
-  }, [isEnabled, given, label, labelledBy]);
+  }, [isEnabled, given, label, labelledBy, inputRef]);
   return { text: given ?? read, labelRef };
 }
 

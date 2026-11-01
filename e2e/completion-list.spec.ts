@@ -210,3 +210,19 @@ test.describe('Completion List lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-COMPLETION-LIST-1.2 UIC-PORTAL-1.8 scrolls the active option into view inside a shadow root', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('completion-list');
+  const demo = page.locator('[data-lab-demo="shadow-completions"]');
+  await demo.scrollIntoViewIfNeeded();
+  await demo.getByRole('combobox', { name: 'Shadow city' }).focus();
+  const list = demo.getByRole('listbox');
+  await expect(list).toBeVisible();
+  await page.keyboard.press('ArrowUp');
+  const active = list.locator('[role="option"][aria-selected="true"]');
+  await expect(active).toBeInViewport();
+  expect(await list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+});

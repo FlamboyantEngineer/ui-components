@@ -13,6 +13,7 @@ import { cardHooks as hooks } from './card-hooks.js';
 import type { CardHeaderProps } from './card-header.js';
 import type { CardPresentation } from './card-presentation.js';
 import { joinIds } from '../../utils/join-ids.js';
+import { getElementByIdFrom } from '../../utils/owner-window.js';
 
 /** The More disclosure: whether the regions a smaller presentation moved show. */
 export interface CardMore {
@@ -102,7 +103,7 @@ export function useMoreEscape(more: CardMore, ids: Record<MovableRegion | 'more'
     event.preventDefault();
     event.stopPropagation();
     more.setOpen(false);
-    target.ownerDocument.getElementById(ids.more)?.focus();
+    getElementByIdFrom(target, ids.more)?.focus();
   };
 }
 

@@ -203,7 +203,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   const [input, setInput] = useForwardedRef(inputRef);
   const createdRef = useRef<string | null>(null);
   const isMultiple = aria.selectionMode === 'multiple';
-  const naming = useChipsLabel({ label, aria, isEnabled: isMultiple });
+  const naming = useChipsLabel({ label, aria, isEnabled: isMultiple, inputRef: input });
   const list = { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
   const reset = useHeldChange((next) => onChange?.(decodeComboboxValue(next) as ComboboxValue<M>));
   return (

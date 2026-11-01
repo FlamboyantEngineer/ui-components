@@ -9,7 +9,9 @@ import {
 import { KeyHints } from '../../src/components/shortcut/shortcut.js';
 import { TriggeredNote } from './completion-list-note.js';
 import { ReloadedTextSection, SwitchedSourceSection } from './completion-list-reload.js';
+import { PortalHost } from '../../src/components/portal/index.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 
 const contents = ['labels', 'descriptions', 'documentation', 'drawn'] as const;
 const extras = ['none', 'footer', 'empty state'] as const;
@@ -237,5 +239,16 @@ mountLab(
     </LabSection>
     <ReloadedTextSection />
     <SwitchedSourceSection />
+    <LabSection
+      title="Inside a shadow root"
+      description="The long list inside an open shadow root with its portal host there too, as a web component keeps its styles inside. Arrow keys still scroll the active option into view within the list."
+    >
+      <ShadowRootApp demo="shadow-completions">
+        <style>{'.ui-completion-list__listbox { max-height: 8rem; overflow-y: auto; }'}</style>
+        <PortalHost>
+          <DemoEditor label="Shadow city" items={manyCities} options={{}} cell="shadow" />
+        </PortalHost>
+      </ShadowRootApp>
+    </LabSection>
   </>,
 );

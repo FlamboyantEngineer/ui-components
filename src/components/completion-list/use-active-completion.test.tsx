@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ShadowHost, inShadow } from '../../../test/shadow-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';
@@ -77,4 +78,30 @@ describe('useActiveCompletion', () => {
       expect(document.documentElement.scrollTop).toBe(0);
     },
   );
+  it('UIC-COMPLETION-LIST-1.2 finds its list in its own shadow root, not a same-id list outside', () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    const tree = (activeKey: string) => (
+      <>
+        <div id="cities" role="listbox" aria-label="Decoy" />
+        <ShadowHost name="completions">
+          <Harness activeKey={activeKey} outer={false} />
+        </ShadowHost>
+      </>
+    );
+    const { rerender } = render(tree('first'));
+    const list = inShadow('completions').getByRole('listbox', { name: 'Cities' });
+    Object.defineProperties(list, { clientHeight: { value: 100 }, scrollHeight: { value: 400 } });
+    list.getBoundingClientRect = () => ({ top: 0, bottom: 100 }) as DOMRect;
+    const last = inShadow('completions').getByRole('option', { name: 'Zurich' });
+    last.getBoundingClientRect = () =>
+      ({ top: 280 - list.scrollTop, bottom: 300 - list.scrollTop }) as DOMRect;
+    rerender(tree('last'));
+    act(() => frames.at(-1)?.(0));
+    expect(list.scrollTop).toBe(200);
+  });
 });

@@ -430,3 +430,19 @@ test.describe('Card lab', () => {
     await expect(page.locator('[data-lab-output="grid-selected"]')).toHaveText('none');
   });
 });
+
+test('UIC-CARD-7.2 UIC-PORTAL-1.8 returns focus to More inside a shadow root', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('card');
+  const demo = page.locator('[data-lab-demo="shadow-card"]');
+  await demo.scrollIntoViewIfNeeded();
+  const more = demo.getByRole('button', { name: 'More Pear row' });
+  await more.click();
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  await demo.getByRole('button', { name: 'Water' }).focus();
+  await page.keyboard.press('Escape');
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(more).toBeFocused();
+});

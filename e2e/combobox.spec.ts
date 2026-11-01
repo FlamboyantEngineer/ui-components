@@ -561,3 +561,13 @@ for (const [device, viewport] of [
     });
   }
 }
+
+test('UIC-COMBOBOX-3.1 UIC-PORTAL-1.8 names chips from aria-labelledby inside a shadow root', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('combobox');
+  const demo = page.locator('[data-lab-demo="shadow-combobox"]');
+  await demo.scrollIntoViewIfNeeded();
+  await expect(demo.getByRole('grid', { name: 'Cities to visit selected values' })).toBeVisible();
+});

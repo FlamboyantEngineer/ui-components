@@ -19,6 +19,7 @@ import { TextField } from '../../src/components/text-field/text-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { NarrowRows } from './combobox-narrow-cases.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['resting', 'with value', 'disabled', 'read-only', 'invalid', 'pending'] as const;
@@ -584,6 +585,26 @@ mountLab(
           ]}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="A multiple combobox named by aria-labelledby inside an open shadow root. The page outside holds another element with the same id; the chips are named from the heading inside the shadow root. The combobox is read-only: React Aria describes chip remove buttons from the outer document."
+    >
+      <p id="shadow-cities-heading" hidden>
+        Unrelated heading
+      </p>
+      <ShadowRootApp demo="shadow-combobox">
+        <p id="shadow-cities-heading">Cities to visit</p>
+        <Combobox
+          aria-labelledby="shadow-cities-heading"
+          selectionMode="multiple"
+          defaultItems={cities}
+          defaultValue={['lisbon']}
+          // React Aria describes chip remove buttons with a node in the outer document, which a
+          // reference from inside a shadow root cannot reach, so this demo keeps its chips fixed.
+          isReadOnly
+        />
+      </ShadowRootApp>
     </LabSection>
   </>,
 );

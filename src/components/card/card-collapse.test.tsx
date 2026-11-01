@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Board } from '../board/board.js';
 import { Card, CardAction, CardGrid, CardGridItem, CardTitle } from './index.js';
@@ -275,6 +276,33 @@ describe('Card adaptive presentation', () => {
     expect(more).toHaveFocus();
     expect(more).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: 'Water' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CARD-7.2 returns focus to More inside a shadow root, not to a same-id element outside', async () => {
+    render(
+      <ShadowHost name="card">
+        <RecordCard presentationSteps={steps} />
+      </ShadowHost>,
+    );
+    const root = requireDefined(shadowRootOf('card').querySelector<HTMLElement>('.ui-card'));
+    await resize(root, 260);
+    const more = inShadow('card').getByRole('button', { name: 'More Orchard row' });
+    const decoy = document.createElement('button');
+    decoy.id = more.id;
+    document.body.append(decoy);
+    try {
+      // React Aria presses need its shadow DOM flag, which stays off in unit tests (UIC-PORTAL-1.8).
+      // eslint-disable-next-line testing-library/prefer-user-event
+      fireEvent.click(more);
+      const water = await inShadow('card').findByRole('button', { name: 'Water' });
+      act(() => water.focus());
+      // eslint-disable-next-line testing-library/prefer-user-event
+      fireEvent.keyDown(water, { key: 'Escape' });
+      expect(more).toHaveAttribute('aria-expanded', 'false');
+      expect(deepActive()).toBe(more);
+    } finally {
+      decoy.remove();
+    }
   });
 
   it('UIC-CARD-7.2 leaves a composing or handled Escape to the control in a revealed region', async () => {

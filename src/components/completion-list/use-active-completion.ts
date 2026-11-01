@@ -3,6 +3,7 @@
 import { useLayoutEffect, type RefObject } from 'react';
 import { findOverlayScrollContainer } from '../../utils/overlay-geometry.js';
 import type { Key } from '../../core/props.js';
+import { getElementByIdFrom, getElementByIdWithin } from '../../utils/owner-window.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 
 /** Reveals an active option within its own list without scrolling the editor or the document. */
@@ -14,15 +15,15 @@ export function useActiveCompletion(
   const { isOpen, anchorRef } = options;
   useLayoutEffect(() => {
     if (!isOpen || activeKey === null) return;
-    const document = anchorRef.current?.ownerDocument;
-    const view = document?.defaultView;
-    if (!document || !view) return;
+    const anchor = anchorRef.current;
+    const view = anchor?.ownerDocument.defaultView;
+    if (!anchor || !view) return;
     let isCurrent = true;
     const frame = view.requestAnimationFrame(() => {
       if (!isCurrent) return;
-      const list = document.getElementById(listId);
-      const option = document.getElementById(getCompletionOptionId(listId, activeKey));
-      if (!list || !option || !list.contains(option)) return;
+      const list = getElementByIdFrom(anchor, listId);
+      const option = getElementByIdWithin(list, getCompletionOptionId(listId, activeKey));
+      if (!list || !option) return;
       const container = findOverlayScrollContainer(option, {
         skip: (ancestor) => ancestor.scrollHeight <= ancestor.clientHeight,
       });

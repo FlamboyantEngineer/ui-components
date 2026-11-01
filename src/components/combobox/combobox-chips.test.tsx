@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { ShadowHost, inShadow } from '../../../test/shadow-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxItem, type ComboboxOption } from './combobox.js';
 
@@ -144,6 +145,26 @@ describe('Combobox chips', () => {
     );
     expect(await screen.findByRole('grid', { name: 'Cities selected values' })).toBeInTheDocument();
     expect(await screen.findByRole('grid', { name: 'Towns selected values' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMBOBOX-3.1 reads aria-labelledby in its own shadow root, not a same-id element outside', async () => {
+    render(
+      <>
+        <h2 id="cities-heading">Decoy</h2>
+        <ShadowHost name="chips">
+          <h2 id="cities-heading">Cities</h2>
+          <Combobox
+            aria-labelledby="cities-heading"
+            selectionMode="multiple"
+            defaultItems={cities}
+            defaultValue={['lima']}
+          />
+        </ShadowHost>
+      </>,
+    );
+    expect(
+      await inShadow('chips').findByRole('grid', { name: 'Cities selected values' }),
+    ).toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-1.4 UIC-COMBOBOX-3.1 clears the typed text of a multiple combobox and keeps its chips', async () => {

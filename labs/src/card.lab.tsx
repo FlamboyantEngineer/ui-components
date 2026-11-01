@@ -14,6 +14,7 @@ import {
   ResizablePane,
 } from './card-collapse-cases.js';
 import { RowMenu } from './row-menu.js';
+import { ShadowRootApp } from './shadow-root-host.js';
 
 const variants: CardVariant[] = ['default', 'panel'];
 const densities: Density[] = ['default', 'comfortable', 'compact', 'tight'];
@@ -421,6 +422,24 @@ mountLab(
     </LabSection>
     <LabSection title="Collapsible cards in a selectable grid">
       <CollapsibleGrid />
+    </LabSection>
+    <LabSection
+      title="Inside a shadow root"
+      description="A compact card inside an open shadow root, as a web component holds it, with a button outside that shares the More button's id pattern. Open More, focus Water and press Escape: focus returns to this card's More button."
+    >
+      <ShadowRootApp demo="shadow-card">
+        <div style={{ width: 260 }}>
+          <Card
+            title="Pear row"
+            description="Eight pear trees"
+            meta="Updated Tuesday"
+            actions={<Button size="sm">Water</Button>}
+            presentationSteps={{ compact: { width: 320 } }}
+          >
+            Picked on Thursday
+          </Card>
+        </div>
+      </ShadowRootApp>
     </LabSection>
   </>,
 );
