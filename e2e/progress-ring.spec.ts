@@ -9,7 +9,7 @@ test.describe('ProgressBar circular shape', () => {
     const cells = matrix(page, 'progress-ring-cases').locator(
       'table[data-lab-matrix="state size"] td[data-lab-cell]',
     );
-    expect(await cells.count()).toBe(4 * 3);
+    expect(await cells.count()).toBe(5 * 3);
     for (const [size, edge] of [
       ['sm', 16],
       ['md', 24],
@@ -29,17 +29,19 @@ test.describe('ProgressBar circular shape', () => {
     lab,
   }) => {
     await lab.open('progress-bar');
+    const fill = (state: string) =>
+      matrixCell(page, `state=${state} size=md`, { family: 'progress-ring-cases' }).locator(
+        `.ui-progress-bar__fill`,
+      );
     for (const [state, offset] of [
       ['0%', '100'],
       ['42%', '58'],
-      ['100%', '0'],
+      ['99%', '1'],
     ] as const) {
-      await expect(
-        matrixCell(page, `state=${state} size=md`, { family: 'progress-ring-cases' }).locator(
-          `.ui-progress-bar__fill`,
-        ),
-      ).toHaveAttribute('stroke-dashoffset', offset);
+      await expect(fill(state)).toHaveAttribute('stroke-dashoffset', offset);
     }
+    await expect(fill('100%')).not.toHaveAttribute('stroke-dasharray');
+    await expect(fill('100%')).not.toHaveAttribute('stroke-dashoffset');
     const indeterminate = matrixCell(page, 'state=indeterminate size=md', {
       family: 'progress-ring-cases',
     }).getByRole('progressbar');
@@ -129,4 +131,44 @@ test('UIC-PROGRESS-BAR-11.4 circular indeterminate arcs rotate around the ring c
       expect(center.fillAnimations).toBe(0);
     }
   }
+});
+
+test.describe('ProgressBar circular shape on a dense screen', () => {
+  test.use({ deviceScaleFactor: 3 });
+
+  test('UIC-PROGRESS-BAR-11.2 closes a full ring with no seam at the top', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    for (const size of ['md', 'lg']) {
+      const ring = matrixCell(page, `state=100% size=${size}`, {
+        family: 'progress-ring-cases',
+      }).locator('.ui-progress-bar__ring');
+      const shot = (await ring.screenshot({ scale: 'device' })).toString('base64');
+      // The painted pixels across the top of the stroke, around where the fill starts and ends.
+      const row = await page.evaluate(async (data) => {
+        const image = new Image();
+        image.src = `data:image/png;base64,${data}`;
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const context = canvas.getContext('2d');
+        if (!context) return [];
+        context.drawImage(image, 0, 0);
+        const y = Math.round((3 / 32) * image.height);
+        const pixels = context.getImageData(Math.round(image.width / 2) - 4, y, 9, 1).data;
+        return Array.from({ length: 9 }, (_, index) =>
+          Array.from(pixels.slice(index * 4, index * 4 + 3)),
+        );
+      }, shot);
+      const first = row[0] ?? [];
+      for (const pixel of row) {
+        pixel.forEach((channel, index) =>
+          expect(Math.abs(channel - (first[index] ?? 0))).toBeLessThanOrEqual(8),
+        );
+      }
+    }
+  });
 });

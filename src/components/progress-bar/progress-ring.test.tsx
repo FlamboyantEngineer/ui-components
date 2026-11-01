@@ -37,11 +37,15 @@ describe('ProgressBar', () => {
     for (const [value, offset] of [
       [0, 100],
       [42, 58],
-      [100, 0],
+      [99.9, 0.1],
     ] as const) {
       rerender(<ProgressBar shape="circular" aria-label="Ratio" value={value} />);
       expect(Number(fill(ring)?.getAttribute('stroke-dashoffset'))).toBeCloseTo(offset, 9);
     }
+    // A full ring is one closed stroke: a dash ending where it starts would leave a seam.
+    rerender(<ProgressBar shape="circular" aria-label="Ratio" value={100} />);
+    expect(fill(ring)).not.toHaveAttribute('stroke-dasharray');
+    expect(fill(ring)).not.toHaveAttribute('stroke-dashoffset');
   });
 
   it('UIC-PROGRESS-BAR-11.3 keeps values truthful at every edge', () => {
