@@ -3,6 +3,7 @@ import {
   BooleanField,
   type BooleanFieldVariant,
 } from '../../src/components/boolean-field/boolean-field.js';
+import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import {
@@ -42,6 +43,31 @@ function Required() {
         data-lab-field="required-choice"
       />
     </>
+  );
+}
+
+const sizeStates = ['true', 'false', 'unset', 'disabled', 'required'] as const;
+
+/** One variant at one control size: a value, explicit unset (with allowsUnset), disabled or required. */
+function SizedSample({
+  variant,
+  state,
+  size,
+}: {
+  variant: BooleanFieldVariant;
+  state: (typeof sizeStates)[number];
+  size: ControlSize;
+}) {
+  return (
+    <BooleanField
+      label="Ripe"
+      variant={variant}
+      size={size}
+      defaultValue={state === 'unset' ? null : state === 'true' || state === 'disabled'}
+      allowsUnset={state === 'unset'}
+      isDisabled={state === 'disabled'}
+      isRequired={state === 'required'}
+    />
   );
 }
 
@@ -177,6 +203,17 @@ mountLab(
         axes={{ variant: variants, state: fieldStates, layout: fieldLayouts }}
         render={({ variant, state, layout }) => (
           <Sample state={state} layout={layout} variant={variant} />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Control sizes"
+      description="Every variant at xs, sm, md and lg through the field's size: true, false, explicit unset (allowsUnset), disabled and required. The checkbox box, switch track, segments, dropdown trigger, toggle button and label text all follow the field's control height and type step, and every focus ring stays outside the control."
+    >
+      <StateMatrix
+        axes={{ variant: variants, state: sizeStates, size: ['xs', 'sm', 'md', 'lg'] }}
+        render={({ variant, state, size }) => (
+          <SizedSample variant={variant} state={state} size={size} />
         )}
       />
     </LabSection>
