@@ -23,6 +23,8 @@ type QuestionAction = () => void | Promise<unknown>;
 interface RequestState {
   /** The card the state is about: its id while it is pending. */
   scope: string | undefined;
+  /** This pending lifetime, new each time the state starts over, even for the same id. */
+  lifetime: object;
   /** The latest request; one that settles after another started, or after a reset, is ignored. */
   attempt: number;
   running: QuestionRequestKind | null;
@@ -30,28 +32,29 @@ interface RequestState {
 }
 
 function startState(scope: string | undefined): RequestState {
-  return { scope, attempt: 0, running: null, failure: null };
+  return { scope, lifetime: {}, attempt: 0, running: null, failure: null };
 }
 
 /**
  * The requests of a pending card, one at a time. The state belongs to `scope`, the card's id
  * while it is pending: it starts over when the card changes id or leaves pending, so a request
- * sent for one card never marks or fails another. A callback that returns no promise leaves no
+ * sent for one card never marks, fails or blocks another, nor the same card pending again. A callback that returns no promise leaves no
  * trace unless it throws.
  */
 export function useQuestionRequest(scope: string | undefined): QuestionRequest {
   const strings = useUiStrings();
   const [state, setState] = useState(() => startState(scope));
   const attempts = useRef(0);
-  // The request in flight, which refuses a second one for the card before the first renders.
-  const inFlight = useRef<{ scope: string; attempt: number } | null>(null);
+  // The request in flight, which refuses a second one in its lifetime before the first renders.
+  const inFlight = useRef<{ lifetime: object; attempt: number } | null>(null);
   let current = state;
   if (state.scope !== scope) {
     current = startState(scope);
     setState(current);
   }
   const run = (kind: QuestionRequestKind, action: QuestionAction) => {
-    if (scope === undefined || current.running || inFlight.current?.scope === scope) return;
+    const { lifetime } = current;
+    if (scope === undefined || current.running || inFlight.current?.lifetime === lifetime) return;
     attempts.current += 1;
     const attempt = attempts.current;
     const fallback = kind === 'submit' ? strings.questionSubmitFailed : strings.actionFailed;
@@ -63,15 +66,15 @@ export function useQuestionRequest(scope: string | undefined): QuestionRequest {
     try {
       result = action();
     } catch (error) {
-      setState({ scope, attempt, running: null, failure: toErrorMessage(error, fallback) });
+      setState({ ...current, attempt, running: null, failure: toErrorMessage(error, fallback) });
       return;
     }
     if (!isThenable(result)) {
       setState((last) => (last.failure === null ? last : { ...last, attempt, failure: null }));
       return;
     }
-    inFlight.current = { scope, attempt };
-    setState({ scope, attempt, running: kind, failure: null });
+    inFlight.current = { lifetime, attempt };
+    setState({ ...current, attempt, running: kind, failure: null });
     result.then(
       () => settle(null),
       (error: unknown) => settle(toErrorMessage(error, fallback)),
