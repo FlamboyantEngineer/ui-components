@@ -3,6 +3,7 @@
 import { DeleteGlyph, EditGlyph } from '../../core/glyphs.js';
 import { findMaximum } from '../../utils/find-maximum.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { Key, BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -180,13 +181,19 @@ export function FolderManager<
   const strings = useUiStrings();
   const context = { model: useFolderManager(props), props, strings };
   const { model } = context;
+  const { ref } = props;
+  const setRootRef = useMergedRefs(model.rootRef, ref);
   const availability = availabilityOf(context);
   const { message } = model.actions;
   const { className, id, folders, rootLabel, maxDepth, isPending = false, onMove } = props;
-  const { selectionMode = 'single', virtualized, rowHeight, ref, filterable } = props;
+  const { selectionMode = 'single', virtualized, rowHeight, filterable } = props;
   const label = props['aria-label'];
   return (
-    <div {...hooks.root({ className, props, data: { pending: model.isBusy } })} id={id} ref={ref}>
+    <div
+      {...hooks.root({ className, props, data: { pending: model.isBusy } })}
+      id={id}
+      ref={setRootRef}
+    >
       <FolderToolbar {...toolbarOf(context, availability)} />
       {filterable ? (
         <SearchField

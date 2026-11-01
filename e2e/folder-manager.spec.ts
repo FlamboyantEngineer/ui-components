@@ -274,6 +274,23 @@ test.describe('Folder Manager lab', () => {
     expect(await rowNames(manager)).toContain('Fruit');
   });
 
+  test('UIC-FOLDER-MANAGER-2.5 leaves focus where the reader moved it while a rename is pending', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('folder-manager');
+    const manager = managed(page);
+    await row(manager, 'Herbs').click();
+    await manager.getByRole('button', { name: 'Rename' }).click();
+    await page.keyboard.type('Spices');
+    await page.keyboard.press('Enter');
+    const elsewhere = page.getByRole('button', { name: 'Elsewhere' });
+    await elsewhere.click();
+    await expect(page.locator('[data-lab-output="Action"]')).toHaveText('renamed herbs to Spices');
+    await expect(row(manager, 'Spices')).toBeVisible();
+    await expect(elsewhere).toBeFocused();
+  });
+
   test('UIC-FOLDER-MANAGER-2.3 keeps the typed name when the renamed folder moves', async ({
     page,
     lab,

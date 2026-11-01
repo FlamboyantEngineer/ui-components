@@ -3,6 +3,7 @@
 import { useEffect, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { isNode } from '../../utils/is-element.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { fromFolderRowKey, type FolderItem, type FolderNode } from './folder-model.js';
 
@@ -131,17 +132,32 @@ export function useFolderExpansion<T extends FolderItem>(
 /**
  * Moves focus to the row of `request.key` once that row is rendered: after an edit or a delete,
  * the field or row that held focus is gone. The tree renders new rows after its owner, and the
- * owner may update its folders later still, so the request waits for the row to appear.
+ * owner may update its folders later still, so the request waits for the row to appear. It only
+ * recovers focus the manager still owns: focus inside `rootRef`, or fallen to the page with the
+ * gone field. Focus the reader moved elsewhere ends the request, as does a newer one.
  */
 export function useRowFocus(
-  regionRef: RefObject<HTMLElement | null>,
+  {
+    rootRef,
+    regionRef,
+  }: { rootRef: RefObject<HTMLElement | null>; regionRef: RefObject<HTMLElement | null> },
   request: { key: Key } | null,
   done: () => void,
 ) {
   useEffect(() => {
+    const root = rootRef.current;
     const region = regionRef.current;
-    if (!request || !region) return undefined;
+    if (!request || !root || !region) return undefined;
+    const owner = root.ownerDocument;
+    const isOwned = () => {
+      const active = owner.activeElement;
+      return active === null || active === owner.body || root.contains(active);
+    };
     const focusRow = () => {
+      if (!isOwned()) {
+        done();
+        return true;
+      }
       const row = findRow(region, request.key);
       if (row) {
         row.focus();
@@ -153,7 +169,17 @@ export function useRowFocus(
     const observer = new MutationObserver(() => {
       if (focusRow()) observer.disconnect();
     });
+    // Focus the reader moves out of the manager while the row is awaited ends the request.
+    const onFocusIn = (event: FocusEvent) => {
+      if (isNode(event.target) && root.contains(event.target)) return;
+      observer.disconnect();
+      done();
+    };
     observer.observe(region, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [regionRef, request, done]);
+    owner.addEventListener('focusin', onFocusIn);
+    return () => {
+      observer.disconnect();
+      owner.removeEventListener('focusin', onFocusIn);
+    };
+  }, [rootRef, regionRef, request, done]);
 }

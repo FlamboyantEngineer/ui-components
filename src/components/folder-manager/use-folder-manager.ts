@@ -86,6 +86,8 @@ export interface FolderManagerModel<T extends FolderItem> {
   /** The query that filters and marks the folders: the typed one while the search box is drawn. */
   appliedQuery: string;
   setQuery(query: string): void;
+  /** The manager's root element: focus inside it is still the manager's. */
+  rootRef: RefObject<HTMLDivElement | null>;
   regionRef: RefObject<HTMLDivElement | null>;
   nameRef: RefObject<HTMLInputElement | null>;
   messageId: string;
@@ -155,6 +157,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
 ): FolderManagerModel<T> {
   const { folders, rootLabel, isPending = false } = options;
   const messageId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const [focusRequest, setFocusRequest] = useState<{ key: Key } | null>(null);
@@ -173,7 +176,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     },
   });
   const clearFocusRequest = useCallback(() => setFocusRequest(null), []);
-  useRowFocus(regionRef, focusRequest, clearFocusRequest);
+  useRowFocus({ rootRef, regionRef }, focusRequest, clearFocusRequest);
   const isListed = useCallback((key: Key) => findFolderPath(folders, key).length > 0, [folders]);
   const loads = useTreeLoads(options.onLoadChildren, isListed);
   const { edit } = actions;
@@ -189,6 +192,8 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
   const { selection, selectedFolders, path, folder } = describeSelection(folders, selected);
   const editKey = edit?.kind === 'create' ? folderDraftKey : edit ? toRowKey(edit.key) : null;
   const startEdit = (start: () => void) => {
+    // A new edit takes focus itself: a focus request still waiting for its row is dropped.
+    clearFocusRequest();
     setQuery('');
     start();
   };
@@ -208,6 +213,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
     query: filter.query,
     appliedQuery: filter.applied,
     setQuery,
+    rootRef,
     regionRef,
     nameRef,
     messageId,
