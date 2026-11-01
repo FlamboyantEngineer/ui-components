@@ -186,6 +186,7 @@ function ChoiceValue({ field, condition, labelLayout, slotClass, setValue }: Val
       labelLayout={labelLayout}
       className={slotClass('value')}
       selectionMode="multiple"
+      chipPlacement="inside"
       options={options}
       value={value}
       tracksChanges={false}

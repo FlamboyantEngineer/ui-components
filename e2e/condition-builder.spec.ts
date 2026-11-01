@@ -136,4 +136,42 @@ test.describe('Condition Builder lab', () => {
     await page.keyboard.press('Escape');
     await lab.expectAccessible();
   });
+
+  test('UIC-SELECT-FIELD-4.4 UIC-CONDITION-BUILDER-1.3 draws multiple values as chips inside the value field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('condition-builder');
+    const narrow = matrixCell(page, 'values=many width=360');
+    const genre = narrow.getByRole('group', { name: 'Rule 1' });
+    const frame = genre.locator('.ui-select-field__chip-frame');
+    await frame.scrollIntoViewIfNeeded();
+    const box = await frame.boundingBox();
+    const chips = genre.getByRole('grid', { name: /selected values/ });
+    const trigger = frame.locator('.ui-select-field__trigger');
+    if (!box) throw new Error('The value field has no layout box.');
+    // Every chip and the trigger sit inside the field's box; the chips wrap onto two lines.
+    for (const part of [...(await chips.getByRole('row').all()), trigger]) {
+      const inner = await part.boundingBox();
+      expect(inner?.x).toBeGreaterThanOrEqual(box.x);
+      expect((inner?.x ?? 0) + (inner?.width ?? 0)).toBeLessThanOrEqual(box.x + box.width + 0.5);
+      expect(inner?.y).toBeGreaterThanOrEqual(box.y);
+      expect((inner?.y ?? 0) + (inner?.height ?? 0)).toBeLessThanOrEqual(box.y + box.height + 0.5);
+    }
+    const tops = new Set(
+      await chips
+        .getByRole('row')
+        .evaluateAll((rows) => rows.map((row) => Math.round(row.getBoundingClientRect().top))),
+    );
+    expect(tops.size).toBe(2);
+    // Removing a chip from the keyboard keeps the rule's operator and the other values.
+    await chips.getByRole('row', { name: /Cooking/ }).click();
+    await page.keyboard.press('Delete');
+    await expect(chips.getByRole('row')).toHaveCount(4);
+    await expect(genre.getByRole('button', { name: /is any of/ })).toBeVisible();
+    await trigger.click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await lab.expectAccessible();
+  });
 });

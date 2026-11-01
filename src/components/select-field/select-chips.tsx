@@ -21,13 +21,16 @@ interface SelectChipsProps {
   chosen: readonly ChosenSelectOption[];
   /** Keys the edit added to the committed value; their chips publish `data-change="added"`. */
   added: ReadonlySet<Key>;
-  /** Committed options the edit removed, each shown as a previous value with a restore button. */
-  removed: readonly ChosenSelectOption[];
   /** Chips offer a remove button and answer Delete and Backspace. */
   isEditable: boolean;
+  onRemove: (keys: Set<Key>) => void;
+}
+
+interface SelectRemovedValuesProps {
+  /** Committed options the edit removed, each shown as a previous value with a restore button. */
+  removed: readonly ChosenSelectOption[];
   /** The select holds its `maxValues`: removed values cannot be put back. */
   isFull: boolean;
-  onRemove: (keys: Set<Key>) => void;
   onRestore: (key: Key) => void;
 }
 
@@ -38,20 +41,10 @@ function ChipIcon({ option }: { option: ChosenSelectOption }) {
 }
 
 /**
- * A multiple select's choices as removable chips in a React Aria tag group (arrow keys move between
- * chips, Delete and Backspace remove one), followed by the committed values the edit removed, each
- * with a button that puts it back.
+ * A multiple select's choices as removable chips in a React Aria tag group: arrow keys move between
+ * chips, Delete and Backspace remove one.
  */
-export function SelectChips({
-  label,
-  chosen,
-  added,
-  removed,
-  isEditable,
-  isFull,
-  onRemove,
-  onRestore,
-}: SelectChipsProps) {
+export function SelectChips({ label, chosen, added, isEditable, onRemove }: SelectChipsProps) {
   const strings = useUiStrings();
   return (
     <>
@@ -94,6 +87,14 @@ export function SelectChips({
           </TagList>
         </TagGroup>
       ) : null}
+    </>
+  );
+}
+
+/** The committed values a multiple select's edit removed, each with a button that puts it back. */
+export function SelectRemovedValues({ removed, isFull, onRestore }: SelectRemovedValuesProps) {
+  return (
+    <>
       {removed.map((option) => (
         <FieldPreviousValue
           key={toKeyIdentity(option.id)}

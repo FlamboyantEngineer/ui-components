@@ -4,6 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 export const selectFieldHooks = createHooks('select-field', [
   'select',
   'chips',
+  'chip-frame',
   'chip',
   'popover',
   'dialog',

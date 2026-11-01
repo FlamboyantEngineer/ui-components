@@ -145,4 +145,57 @@ describe('SelectField chips', () => {
     expect(onCommit).toHaveBeenCalledWith(['apple', 'pear', 'plum']);
     expect(container.querySelector('.ui-select-field__removed')).toBeNull();
   });
+
+  it('UIC-SELECT-FIELD-4.4 draws the chips inside a chip frame before the select', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <SelectField
+        label="Fruit"
+        selectionMode="multiple"
+        chipPlacement="inside"
+        options={fruit}
+        defaultValue={['apple', 'pear']}
+        onChange={onChange}
+      />,
+    );
+    const root = container.querySelector('.ui-select-field');
+    expect(root).toHaveAttribute('data-chip-placement', 'inside');
+    const frame = requireFrame(container);
+    const trigger = screen.getByRole('button', { name: /Fruit/ });
+    expect(frame).toContainElement(chips());
+    expect(frame).toContainElement(trigger);
+    expect(
+      chips().compareDocumentPosition(trigger) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // The chips keep their own keys: Delete on a chip removes it.
+    const [apple] = within(chips()).getAllByRole('row');
+    act(() => apple?.focus());
+    await user.keyboard('{Delete}');
+    expect(onChange).toHaveBeenLastCalledWith(['pear']);
+    await user.click(screen.getByRole('button', { name: 'Remove Pear' }));
+    expect(onChange).toHaveBeenLastCalledWith([]);
+    expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+    await user.click(trigger);
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
+  });
+
+  it('UIC-SELECT-FIELD-4.4 keeps the chips below a single select’s default and a below select', () => {
+    const { container, rerender } = render(
+      <SelectField label="Fruit" selectionMode="multiple" options={fruit} defaultValue={['fig']} />,
+    );
+    expect(container.querySelector('.ui-select-field')).toHaveAttribute(
+      'data-chip-placement',
+      'below',
+    );
+    expect(container.querySelector('.ui-select-field__chip-frame')).toBeNull();
+    rerender(<SelectField label="Fruit" chipPlacement="inside" options={fruit} />);
+    expect(container.querySelector('.ui-select-field')).not.toHaveAttribute('data-chip-placement');
+  });
 });
+
+function requireFrame(container: HTMLElement) {
+  const frame = container.querySelector<HTMLElement>('.ui-select-field__chip-frame');
+  if (!frame) throw new Error('The select has no frame.');
+  return frame;
+}

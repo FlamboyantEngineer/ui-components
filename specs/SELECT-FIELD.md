@@ -136,6 +136,13 @@ While a multiple select is dirty, the chips of values the edit added shall publi
 Implementation: `src/components/select-field/select-chips.tsx`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-chips.test.tsx`, `src/components/select-field/select-options.test.ts`, `e2e/select-field.spec.ts`
 
+### UIC-SELECT-FIELD-4.4 - Chips inside the frame
+
+`chipPlacement="inside"` shall draw a multiple list select's chips before the select, both in a chip frame (`ui-select-field__chip-frame`), instead of after the select (`below`, the default), and the root publishes `data-chip-placement` (`below` or `inside`) on a multiple select. The chips keep their tag group, keys and removal, and removed values still follow. The reference sheet draws the field's box around the chip frame instead of the trigger: the chips wrap inside it, the trigger shows the placeholder while nothing is chosen and otherwise only its chevron at the end, and its count of the choices stays readable to assistive technology only.
+
+Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`, `labs/reference/select-field.css`
+Verification: `src/components/select-field/select-chips.test.tsx`, `e2e/condition-builder.spec.ts`
+
 ## UIC-SELECT-FIELD-5 - Search
 
 ### UIC-SELECT-FIELD-5.1 - Loading options
@@ -352,6 +359,7 @@ Verification: `src/components/select-field/select-icons.test.tsx`
 | `ui-select-field`                     | root      |                                            | The field root (also `ui-field`).                                        |
 | `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.           |
 | `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger.                                |
+| `ui-select-field__chip-frame`         | slot      |                                            | With `chipPlacement="inside"`: holds the chips, then the select.         |
 | `ui-select-field__trigger`            | slot      |                                            | The trigger button.                                                      |
 | `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-button`).                   |
 | `ui-select-field__previous`           | slot      |                                            | A single select's previous value (also `ui-field-previous-value`).       |
@@ -382,6 +390,7 @@ Verification: `src/components/select-field/select-icons.test.tsx`
 | `ui-select-field__chip-remove`        | slot      |                                            | A chip's remove button (also `ui-button`).                               |
 | `ui-select-field__removed`            | slot      |                                            | A removed committed value (also `ui-field-previous-value`).              |
 | `data-selection-mode`                 | attribute | `single`, `multiple`                       | On the root (and React Aria's options): how many values the field takes. |
+| `data-chip-placement`                 | attribute | `below`, `inside`                          | On a multiple select's root: where its chips are drawn.                  |
 | `data-layer`                          | attribute | `dropdown`                                 | The popover's overlay layer.                                             |
 | `--ui-select-field-label-width`       | property  |                                            | The widest option label or placeholder, in pixels.                       |
 | `data-icons`                          | state     | `true`                                     | On the root: some option has an icon.                                    |
