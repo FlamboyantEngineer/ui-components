@@ -6,6 +6,7 @@ import { I18nProvider } from '../../primitives/index.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { InfoGlyph, PlusGlyph, SaveGlyph, SearchGlyph } from '../../core/glyphs.js';
 import { Steps, type StepsItem } from './steps.js';
 
 const items: StepsItem[] = [
@@ -77,6 +78,31 @@ describe('Steps', () => {
     expect(itemOf('Upload')).not.toHaveAttribute('aria-current');
     expect(itemOf('Upload')).not.toHaveAttribute('data-current');
     expectHooksMatchSpec(container, 'STEPS');
+  });
+
+  it('UIC-STEPS-1.4 draws a step icon until the step settles, then its status glyph', () => {
+    const iconed: StepsItem[] = [
+      { id: 'upload', label: 'Upload', icon: SaveGlyph },
+      { id: 'prepare', label: 'Prepare', icon: SearchGlyph },
+      { id: 'review', label: 'Review', icon: InfoGlyph },
+      { id: 'import', label: 'Import', icon: PlusGlyph, status: 'error' },
+    ];
+    const { rerender } = render(<Steps items={iconed} currentKey="prepare" />);
+    const marker = (label: string) => itemOf(label).querySelector('.ui-steps__marker');
+    expect(marker('Upload')?.querySelector('[data-glyph="check"]')).not.toBeNull();
+    expect(marker('Prepare')?.querySelector('[data-glyph="search"]')).not.toBeNull();
+    expect(marker('Review')?.querySelector('[data-glyph="info"]')).not.toBeNull();
+    expect(marker('Import')?.querySelector('[data-glyph="error"]')).not.toBeNull();
+    for (const label of ['Upload', 'Prepare', 'Review', 'Import']) {
+      expect(marker(label)).toHaveTextContent('');
+      expect(marker(label)).toHaveAttribute('aria-hidden', 'true');
+    }
+    expect(itemOf('Prepare')).toHaveAttribute('aria-current', 'step');
+    expect(itemOf('Upload')).toHaveTextContent('Upload Completed');
+    rerender(<Steps items={iconed} isComplete />);
+    for (const label of ['Upload', 'Prepare', 'Review', 'Import']) {
+      expect(marker(label)?.querySelector('[data-glyph="check"]')).not.toBeNull();
+    }
   });
 
   it('UIC-STEPS-1.4 shows numbers for open steps and glyphs for settled ones', () => {

@@ -10,7 +10,7 @@ import type { BaseProps, Density, Key, Orientation, RefProps } from '../../core/
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { Icon } from '../icon/icon.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
 /** Where a step stands: done, being worked on, not reached, failed or passed over. */
 export type StepsStatus = 'complete' | 'current' | 'upcoming' | 'error' | 'skipped';
@@ -25,6 +25,11 @@ export interface StepsItem {
   label: ReactNode;
   /** A line under the label. */
   description?: ReactNode;
+  /**
+   * Drawn in the marker instead of the step's number while the step is upcoming or current. A
+   * complete, failed or skipped step shows its status glyph instead, so its status stays visible.
+   */
+  icon?: IconSource;
   /** Overrides the status read from the step's place before, at or after `currentKey`. */
   status?: StepsStatus | undefined;
   /** Marks the step as one the reader may skip. */
@@ -82,13 +87,28 @@ function resolveStepStatus(item: StepsItem, index: number, currentIndex: number)
   return index === currentIndex ? 'current' : 'complete';
 }
 
-/** The decorative marker: a glyph for a settled step, else the step's number. */
-function StepMarker({ status, index }: { status: StepsStatus; index: number }) {
+/** The decorative marker: a glyph for a settled step, else the step's own icon or its number. */
+function StepMarker({
+  status,
+  index,
+  icon,
+}: {
+  status: StepsStatus;
+  index: number;
+  icon: IconSource;
+}) {
   const format = useNumberFormatter();
   const glyph = status in statusGlyphs ? statusGlyphs[status as keyof typeof statusGlyphs] : null;
+  const content = glyph ? (
+    <Icon icon={glyph} size="sm" />
+  ) : icon ? (
+    <Icon {...toIconProps(icon)} size="sm" />
+  ) : (
+    format.format(index + 1)
+  );
   return (
     <span {...hooks.slot('marker')} aria-hidden="true">
-      {glyph ? <Icon icon={glyph} size="sm" /> : format.format(index + 1)}
+      {content}
     </span>
   );
 }
@@ -138,7 +158,7 @@ function Step(props: StepProps) {
   const { item, index, status, isCurrent, isLast, isDisabled, onAction } = props;
   const content = (
     <>
-      <StepMarker status={status} index={index} />
+      <StepMarker status={status} index={index} icon={item.icon} />
       <StepText {...props} />
     </>
   );
