@@ -6,9 +6,9 @@
 
 ### UIC-AVATAR-1.1 - Picture, initials or glyph
 
-`Avatar` shall draw the picture at `src` in the `ui-avatar__image` slot when `src` is not blank, otherwise its initials in the `ui-avatar__initials` slot. With `kind="group"` it shall draw the decorative `users` glyph in the `ui-avatar__glyph` slot instead, ignoring `src` and `initials`. `kind` defaults to `person` and is published in `data-kind`.
+`Avatar` shall draw the picture at `src` in the `ui-avatar__image` slot when `src` is not blank, otherwise its initials in the `ui-avatar__initials` slot. With `kind="group"` it shall draw the decorative `users` glyph in the `ui-avatar__glyph` slot instead, ignoring `src` and `initials`. `kind` defaults to `person` and is published in `data-kind`. The reference stylesheet centres the glyph, picture or initials within the `ui-avatar__surface` slot in every size, shape and variant, also when the avatar opens a card.
 
-Implementation: `src/components/avatar/avatar.tsx`
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-1.2 - Initials
