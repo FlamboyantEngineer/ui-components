@@ -6,6 +6,7 @@ import {
   type CompletionListItem,
   type CompletionListProps,
 } from '../../src/components/completion-list/completion-list.js';
+import { Spinner } from '../../src/components/progress-bar/progress-bar.js';
 import { KeyHints } from '../../src/components/shortcut/shortcut.js';
 import { TriggeredNote } from './completion-list-note.js';
 import { ReloadedTextSection, SwitchedSourceSection } from './completion-list-reload.js';
@@ -14,7 +15,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { ShadowRootApp } from './shadow-root-host.js';
 
 const contents = ['labels', 'descriptions', 'documentation', 'drawn'] as const;
-const extras = ['none', 'footer', 'empty state'] as const;
+const extras = ['none', 'footer', 'loading', 'empty state'] as const;
 
 const cities: CompletionListItem[] = [
   { id: 'lisbon', label: 'Lisbon', description: 'Portugal', kind: 'city' },
@@ -92,6 +93,15 @@ const drawCity: CompletionListProps['renderItem'] = (item, { isActive }) => (
 function extraOptions(extra: (typeof extras)[number], count: number): ListOptions {
   if (extra === 'footer') return { footer: `${count} matches` };
   if (extra === 'empty state') return { renderEmptyState: () => 'No cities match' };
+  if (extra === 'loading') {
+    return {
+      renderEmptyState: () => (
+        <span aria-busy="true">
+          <Spinner size="sm" /> Looking up cities
+        </span>
+      ),
+    };
+  }
   return {};
 }
 
@@ -186,13 +196,14 @@ mountLab(
     </LabSection>
     <LabSection
       title="Content and extras"
-      description="Focus an input to open its list: labels alone, with descriptions, with the active option's documentation, or drawn by the caller; with a footer or an empty state for a filter that matches nothing."
+      description="Focus an input to open its list: labels alone, with descriptions, with the active option's documentation, or drawn by the caller; with a footer, a busy line while a source looks options up, or an empty state for a filter that matches nothing."
     >
       <StateMatrix
         axes={{ content: contents, extra: extras }}
         render={({ content, extra }) => {
           const cell = `${content}-${extra}`;
-          const items = extra === 'empty state' ? [] : contentOptions(content);
+          const items =
+            extra === 'empty state' || extra === 'loading' ? [] : contentOptions(content);
           return (
             <DemoEditor
               label={`City (${content}, ${extra})`}

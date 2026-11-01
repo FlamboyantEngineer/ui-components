@@ -47,14 +47,31 @@ function tokenizeQuery(source: string): CodeToken[] {
   return tokens;
 }
 
+const fieldDescriptions: Readonly<Record<string, string>> = {
+  genre: 'Shelf section',
+  reader: 'Who borrowed it',
+  pages: 'A number',
+  title: 'Quoted text',
+};
+
+const keywordDescriptions: Readonly<Record<string, string>> = {
+  AND: 'Both terms',
+  OR: 'Either term',
+  NOT: 'Leaves out the term',
+};
+
 const fieldCompletions: Completion[] = [
   ...Object.keys(fieldValues).map((name) => ({
     label: name,
     insertText: `${name}:`,
     kind: 'field',
-    description: 'Field',
+    description: fieldDescriptions[name],
   })),
-  ...keywords.map((keyword) => ({ label: keyword, kind: 'keyword', description: 'Operator' })),
+  ...keywords.map((keyword) => ({
+    label: keyword,
+    kind: 'keyword',
+    description: keywordDescriptions[keyword],
+  })),
 ];
 
 function completeQuery({ value, caret }: CompletionContext): CompletionResult {
@@ -97,6 +114,38 @@ const samples = {
   disabled: 'title:"salt road"',
 } as const;
 
+/** Long field names with long descriptions, to show how the list wraps and truncates. */
+const longCompletions: Completion[] = [
+  {
+    label: 'first-publication-date-of-the-original-edition',
+    insertText: 'published:',
+    kind: 'field',
+    description: 'The year the first edition of the book reached the shelves',
+  },
+  { label: 'translated-from', insertText: 'translated:', kind: 'field' },
+  { label: 'NOT', kind: 'keyword', description: 'Leaves out the term' },
+];
+
+const shapes = ['short', 'long', 'slow', 'no matches'] as const;
+
+const wait = (milliseconds: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+
+const shapeGrammars: Readonly<Record<(typeof shapes)[number], QueryGrammar>> = {
+  short: grammar,
+  long: { ...grammar, complete: () => longCompletions },
+  slow: {
+    ...grammar,
+    complete: async (context) => {
+      await wait(1200);
+      return completeQuery(context);
+    },
+  },
+  'no matches': { ...grammar, complete: () => [] },
+};
+
 function SubmitDemo() {
   const [submitted, setSubmitted] = useState<string[]>([]);
   return (
@@ -134,6 +183,24 @@ mountLab(
               placeholder="genre:history AND pages:300"
               isReadOnly={state === 'read-only'}
               isDisabled={state === 'disabled'}
+              onSubmit={() => undefined}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Suggestion shapes"
+      description="Type in each query: short names with a kind tag and a description, long names that wrap while long descriptions truncate, a source that answers after a second (the list keeps its narrowed options until the answer comes), and a source with no matches, which opens no list."
+    >
+      <StateMatrix
+        axes={{ suggestions: shapes }}
+        render={({ suggestions }) => (
+          <div style={column}>
+            <QueryField
+              label={`Query, ${suggestions} suggestions`}
+              grammar={shapeGrammars[suggestions]}
+              placeholder="genre:history"
               onSubmit={() => undefined}
             />
           </div>
