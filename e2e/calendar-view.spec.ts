@@ -4,6 +4,18 @@ import { expect, test, matrixCell } from './fixtures.js';
 const plain = (text: string) => text.replace(/[\u00a0\u2009\u202f]/g, ' ');
 const interactive = (page: Page) => page.locator('[data-lab-demo="interactive"]');
 const day = (page: Page, date: string) => interactive(page).locator(`[data-date="${date}"]`);
+const shortEvents = [
+  ['Five', 'short-5'],
+  ['Ten', 'short-10'],
+  ['Fifteen', 'short-15'],
+  ['First', 'first'],
+  ['Second', 'second'],
+  ['Third', 'third'],
+  ['Check-in', 'check-in'],
+  ['Workshop', 'workshop'],
+  ['Deadline', 'deadline'],
+  ['Last call', 'late'],
+] as const;
 
 test.describe('Calendar View lab', () => {
   test('UIC-CALENDAR-VIEW-1.1 UIC-CALENDAR-VIEW-1.2 UIC-CALENDAR-VIEW-1.4 UIC-CALENDAR-VIEW-4.1 shows each view with today marked', async ({
@@ -223,6 +235,41 @@ test.describe('Calendar View lab', () => {
       '2026-04-28, month. No event opened',
     );
   });
+
+  for (const { demo, minutes } of [
+    { demo: 'short-default', minutes: 30 },
+    { demo: 'short-tall', minutes: 15 },
+  ]) {
+    test(`UIC-CALENDAR-VIEW-2.5 keeps short events apart for the pointer (${demo})`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('calendar-view');
+      const calendar = page.locator(`[data-lab-demo="${demo}"]`);
+      const output = calendar.locator('[data-lab-output]');
+      const ruler = await calendar
+        .locator('[data-date="2026-03-02"] .ui-calendar-view__timed')
+        .boundingBox();
+      if (!ruler) throw new Error('The ruler is not drawn.');
+      for (const [title, id] of shortEvents) {
+        const button = calendar.getByRole('button', { name: new RegExp(`^${title},`) });
+        await button.scrollIntoViewIfNeeded();
+        const box = await button.boundingBox();
+        if (!box) throw new Error(`${title} is not drawn.`);
+        // Drawn at least the least length of the ruler tall, short of the day's end.
+        const least = id === 'late' ? (ruler.height * 10) / 1440 : (ruler.height * minutes) / 1440;
+        expect(box.height).toBeGreaterThanOrEqual(least - 1);
+        const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+        const hit = await button.evaluate(
+          (element, { x, y }) => element.contains(document.elementFromPoint(x, y)),
+          center,
+        );
+        expect(hit, `${title} is on top at its center`).toBe(true);
+        await page.mouse.click(center.x, center.y);
+        await expect(output).toHaveText(`Opened ${id}`);
+      }
+    });
+  }
 
   test('UIC-CALENDAR-VIEW-2.5 packs overlapping events from the right edge right to left', async ({
     page,

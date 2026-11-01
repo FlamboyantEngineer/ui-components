@@ -91,6 +91,44 @@ const clockChanges: CalendarViewEvent[] = [
   { id: 'fall-next', title: 'Noon call', start: '2026-11-02T12:00', end: '2026-11-02T13:00' },
 ];
 
+const shortEvents: CalendarViewEvent[] = [
+  { id: 'short-5', title: 'Five', start: '2026-03-02T09:00', end: '2026-03-02T09:05' },
+  { id: 'short-10', title: 'Ten', start: '2026-03-02T09:05', end: '2026-03-02T09:15' },
+  { id: 'short-15', title: 'Fifteen', start: '2026-03-02T09:15', end: '2026-03-02T09:30' },
+  { id: 'first', title: 'First', start: '2026-03-03T09:00', end: '2026-03-03T09:10' },
+  { id: 'second', title: 'Second', start: '2026-03-03T09:10', end: '2026-03-03T09:20' },
+  { id: 'third', title: 'Third', start: '2026-03-03T09:20', end: '2026-03-03T09:30' },
+  { id: 'check-in', title: 'Check-in', start: '2026-03-04T10:00', end: '2026-03-04T10:15' },
+  { id: 'workshop', title: 'Workshop', start: '2026-03-04T10:00', end: '2026-03-04T11:00' },
+  { id: 'deadline', title: 'Deadline', start: '2026-03-05T12:00', end: '2026-03-05T12:00' },
+  { id: 'late', title: 'Last call', start: '2026-03-06T23:50', end: '2026-03-07T00:00' },
+];
+
+// A host ruler twice the reference height, where 15 minutes is as tall as the reference's 30.
+const tallRuler = `[data-lab-demo='short-tall'] .ui-calendar-view[data-view='week'] .ui-calendar-view__week {
+  grid-template-rows: auto 1920px;
+}`;
+
+/** Short events in a week, drawn at least `minEventMinutes` tall; the last press shows its key. */
+function ShortEvents({ minEventMinutes, demo }: { minEventMinutes?: number; demo: string }) {
+  const [opened, setOpened] = useState('No event opened');
+  return (
+    <div style={frame(900)} data-lab-demo={demo}>
+      <CalendarView
+        events={shortEvents}
+        timeZone="UTC"
+        getNow={getNow}
+        defaultDate="2026-03-02"
+        defaultView="week"
+        views={['week']}
+        minEventMinutes={minEventMinutes}
+        onEventAction={(key) => setOpened(`Opened ${String(key)}`)}
+      />
+      <output data-lab-output>{opened}</output>
+    </div>
+  );
+}
+
 function InteractiveCalendar() {
   const [date, setDate] = useState('2026-03-18');
   const [view, setView] = useState<CalendarViewMode>('month');
@@ -239,6 +277,16 @@ mountLab(
       description="Focus an event after pressing a button: a second later an event is added before it, or the added event is renamed so it sorts after the other. The focused event keeps its button and focus, and Enter opens it, not the event now in its lane."
     >
       <LiveLanes />
+    </LabSection>
+    <LabSection
+      title="Short events"
+      description="Consecutive 5, 10 and 15 minute events, 10 minute events back to back, a short event inside a longer one, a deadline with no duration and a last call before midnight. Each is drawn at least 30 minutes of the ruler tall, and events whose drawn areas overlap sit side by side, so every event can be read and pressed on its own. The second calendar sizes its ruler twice as tall and draws events at least 15 minutes tall."
+    >
+      <div style={{ display: 'grid', gap: 16 }}>
+        <ShortEvents demo="short-default" />
+        <style>{tallRuler}</style>
+        <ShortEvents demo="short-tall" minEventMinutes={15} />
+      </div>
     </LabSection>
     <LabSection
       title="Clock changes"

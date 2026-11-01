@@ -133,7 +133,7 @@ describe('calendar layout', () => {
       ],
       'UTC',
     );
-    const blocks = layoutDay(day('2026-03-18'), placed, 'UTC');
+    const blocks = layoutDay(day('2026-03-18'), placed, { timeZone: 'UTC', minMinutes: 0 });
     expect(
       blocks.map((block) => [
         block.placed.event.id,
@@ -145,11 +145,42 @@ describe('calendar layout', () => {
       ['c', 75, 25, 0, 100],
     ]);
     expect(blocks[2]?.continuesAfter).toBe(true);
-    const next = layoutDay(day('2026-03-19'), placed, 'UTC');
+    const next = layoutDay(day('2026-03-19'), placed, { timeZone: 'UTC', minMinutes: 0 });
     expect(next.map((block) => [block.placed.event.id, block.top, block.height])).toEqual([
       ['c', 0, 12.5],
     ]);
     expect(next[0]?.continuesBefore).toBe(true);
+  });
+
+  it('UIC-CALENDAR-VIEW-2.5 draws short events at least the least length and packs what is drawn', () => {
+    const placed = readEvents(
+      [
+        { id: 'first', title: 'First', start: '2026-03-02T09:00', end: '2026-03-02T09:10' },
+        { id: 'second', title: 'Second', start: '2026-03-02T09:10', end: '2026-03-02T09:20' },
+        { id: 'third', title: 'Third', start: '2026-03-02T09:20', end: '2026-03-02T09:30' },
+        { id: 'point', title: 'Point', start: '2026-03-02T12:00', end: '2026-03-02T12:00' },
+        { id: 'long', title: 'Long', start: '2026-03-02T14:00', end: '2026-03-02T15:00' },
+        { id: 'late', title: 'Late', start: '2026-03-02T23:50', end: '2026-03-03T00:00' },
+      ],
+      'UTC',
+    );
+    const blocks = layoutDay(day('2026-03-02'), placed, { timeZone: 'UTC', minMinutes: 30 });
+    expect(
+      blocks.map((block) => [
+        block.placed.event.id,
+        ...[block.top, block.height, block.left, block.width].map(rounded),
+      ]),
+    ).toEqual([
+      ['first', 37.5, 2.083, 0, 33.333],
+      ['second', 38.194, 2.083, 33.333, 33.333],
+      ['third', 38.889, 2.083, 66.667, 33.333],
+      ['point', 50, 2.083, 0, 100],
+      ['long', 58.333, 4.167, 0, 100],
+      ['late', 99.306, 0.694, 0, 100],
+    ]);
+    const exact = layoutDay(day('2026-03-02'), placed, { timeZone: 'UTC', minMinutes: 0 });
+    expect(exact.slice(0, 3).map((block) => block.width)).toEqual([100, 100, 100]);
+    expect(exact[3]?.height).toBe(0);
   });
 
   it('UIC-CALENDAR-VIEW-2.5 places events at their wall-clock time on a day that skips an hour', () => {
@@ -163,7 +194,7 @@ describe('calendar layout', () => {
       ],
       timeZone,
     );
-    const blocks = layoutDay(day('2026-03-08'), placed, timeZone);
+    const blocks = layoutDay(day('2026-03-08'), placed, { timeZone, minMinutes: 0 });
     expect(
       blocks.map((block) => [block.placed.event.id, rounded(block.top), rounded(block.height)]),
     ).toEqual([
@@ -172,7 +203,7 @@ describe('calendar layout', () => {
       ['noon', 50, 4.167],
     ]);
     // Noon sits where the hour labels and the next, ordinary day put it.
-    const [next] = layoutDay(day('2026-03-09'), placed, timeZone);
+    const [next] = layoutDay(day('2026-03-09'), placed, { timeZone, minMinutes: 0 });
     expect([next?.top, rounded(next?.height ?? 0)]).toEqual([50, 4.167]);
   });
 
@@ -185,11 +216,9 @@ describe('calendar layout', () => {
       end: `2026-11-01T${end}`,
     });
     const lanes = (events: CalendarViewEvent[]) =>
-      layoutDay(day('2026-11-01'), readEvents(events, timeZone), timeZone).map((block) => [
-        block.placed.event.id,
-        rounded(block.left),
-        rounded(block.width),
-      ]);
+      layoutDay(day('2026-11-01'), readEvents(events, timeZone), { timeZone, minMinutes: 0 }).map(
+        (block) => [block.placed.event.id, rounded(block.left), rounded(block.width)],
+      );
     // Early and Late share 1:30 to 1:45 on the ruler, an hour apart: each takes its own lane.
     expect(
       lanes([
@@ -259,7 +288,7 @@ describe('calendar layout', () => {
       ],
       timeZone,
     );
-    const blocks = layoutDay('2026-11-01', placed, timeZone);
+    const blocks = layoutDay('2026-11-01', placed, { timeZone, minMinutes: 0 });
     expect(
       blocks.map((block) => [
         block.placed.event.id,
@@ -287,7 +316,7 @@ describe('calendar layout', () => {
       [{ id: 'ten', title: 'Ten', start: '2026-10-04T10:00', end: '2026-10-04T11:00' }],
       timeZone,
     );
-    const [block] = layoutDay('2026-10-04', placed, timeZone);
+    const [block] = layoutDay('2026-10-04', placed, { timeZone, minMinutes: 0 });
     expect([rounded(block?.top ?? 0), rounded(block?.height ?? 0)]).toEqual([41.667, 4.167]);
   });
 });
