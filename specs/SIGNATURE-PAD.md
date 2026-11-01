@@ -41,6 +41,13 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`
 Implementation: `src/components/signature-pad/signature-pad.tsx`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`
 
+### UIC-SIGNATURE-PAD-1.6 - Icon controls
+
+The pad's controls shall be icon-only, each named by its provider string and showing that name in a tooltip on hover and on keyboard focus: the mode choice's segments (`iconOnly`, [UIC-SEGMENTED-CHOICE-1.7](SEGMENTED-CHOICE.md#uic-segmented-choice-17---icon-only-segments)) draw the edit glyph for Draw, the italic glyph for Type and the image glyph for Image, and keep the radio semantics of the choice; the actions are small [Buttons](BUTTON.md) with the undo glyph for Undo stroke, the upload glyph for Upload image, the clipboard glyph for Paste image and the delete glyph for Clear. Disabled states, focus rings and target sizes are the Segmented Choice's and the Button's own.
+
+Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/components/signature-pad/signature-surface.tsx`, `src/components/signature-pad/signature-image.tsx`, `src/core/glyphs.tsx`
+Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
+
 ## UIC-SIGNATURE-PAD-2 - Drawing
 
 ### UIC-SIGNATURE-PAD-2.1 - Strokes
@@ -59,7 +66,7 @@ Verification: `src/components/signature-pad/signature-path.test.ts`
 
 ### UIC-SIGNATURE-PAD-2.3 - Undo stroke and Clear
 
-The draw mode shall end with Undo stroke and Clear buttons (in `ui-signature-pad__actions`, named by the provider strings `undoStroke` and `clear`). Undo stroke removes the last stroke and Clear removes them all, each committing the result; a drawing left with no stroke is `null`. Both are disabled while the drawing is empty.
+The draw mode shall end with Undo stroke and Clear icon buttons (in `ui-signature-pad__actions`, named by the provider strings `undoStroke` and `clear`, UIC-SIGNATURE-PAD-1.6). Undo stroke removes the last stroke and Clear removes them all, each committing the result; a drawing left with no stroke is `null`. Both are disabled while the drawing is empty.
 
 Implementation: `src/components/signature-pad/signature-surface.tsx`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signature-pad.spec.ts`
@@ -105,7 +112,7 @@ Verification: `src/components/signature-pad/signature-image.test.tsx`, `e2e/sign
 
 ### UIC-SIGNATURE-PAD-4.2 - Upload and paste
 
-The image mode's actions (`ui-signature-pad__actions`) shall be Upload image (`uploadSignatureImage`), which opens the file chooser for PNG, JPEG, WebP and GIF images; Paste image (`pasteSignatureImage`), which reads the first image the clipboard holds through the asynchronous Clipboard API; and Clear, disabled while the area is empty. A paste anywhere in `ui-signature-pad__image` (the area once clicked, or one of its buttons focused) takes the first image file it carries. A taken image becomes the value and is committed: an `ImageSignature` whose `src` is the file read as a `data:` URL, with the file's `type` and the image's natural `width` and `height` in pixels. The value holds no object URL or other temporary browser resource, so it needs no clean-up and serializes as it is; a file read after a later one was chosen, or after the image mode left, is dropped.
+The image mode's actions (`ui-signature-pad__actions`, icon buttons as in UIC-SIGNATURE-PAD-1.6) shall be Upload image (`uploadSignatureImage`), which opens the file chooser for PNG, JPEG, WebP and GIF images; Paste image (`pasteSignatureImage`), which reads the first image the clipboard holds through the asynchronous Clipboard API; and Clear, disabled while the area is empty. A paste anywhere in `ui-signature-pad__image` (the area once clicked, or one of its buttons focused) takes the first image file it carries. A taken image becomes the value and is committed: an `ImageSignature` whose `src` is the file read as a `data:` URL, with the file's `type` and the image's natural `width` and `height` in pixels. The value holds no object URL or other temporary browser resource, so it needs no clean-up and serializes as it is; a file read after a later one was chosen, or after the image mode left, is dropped.
 
 Implementation: `src/components/signature-pad/signature-image.tsx`, `src/components/signature-pad/signature-image-file.ts`, `src/core/strings/field.ts`
 Verification: `src/components/signature-pad/signature-image.test.tsx`, `e2e/signature-pad.spec.ts`

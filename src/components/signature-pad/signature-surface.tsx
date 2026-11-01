@@ -106,7 +106,7 @@ function useStrokeCapture(
 
 /**
  * The drawing area, an image named by the field's label and described by its stroke count, whose
- * SVG canvas shows the strokes drawn so far, then Undo stroke and Clear buttons.
+ * SVG canvas shows the strokes drawn so far, then Undo stroke and Clear as icon buttons.
  */
 export function SignatureSurface({ control, drawing, isEditable, onDraw }: SignatureSurfaceProps) {
   const strings = useUiStrings();
@@ -161,20 +161,20 @@ export function SignatureSurface({ control, drawing, isEditable, onDraw }: Signa
       <div {...hooks.slot('actions')}>
         <Button
           size="sm"
-          startIcon={UndoGlyph}
+          icon={UndoGlyph}
+          label={strings.undoStroke}
+          tooltip={strings.undoStroke}
           isDisabled={!isEditable || !hasStrokes}
           onPress={() => onDraw(paths.length > 1 ? { ...size, paths: paths.slice(0, -1) } : null)}
-        >
-          {strings.undoStroke}
-        </Button>
+        />
         <Button
           size="sm"
-          startIcon={DeleteGlyph}
+          icon={DeleteGlyph}
+          label={strings.clear}
+          tooltip={strings.clear}
           isDisabled={!isEditable || !hasStrokes}
           onPress={() => onDraw(null)}
-        >
-          {strings.clear}
-        </Button>
+        />
       </div>
     </>
   );

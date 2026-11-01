@@ -37,6 +37,7 @@ import {
   chevronRightPath,
   chevronUpPath,
   clipboardDocumentCheckPath,
+  clipboardPath,
   clockPath,
   codeBracketPath,
   codeBracketSquarePath,
@@ -225,3 +226,4 @@ export const TerminalGlyph = /* @__PURE__ */ createGlyph('terminal', commandLine
 export const GlobeGlyph = /* @__PURE__ */ createGlyph('globe', globeAltPath);
 export const WrenchGlyph = /* @__PURE__ */ createGlyph('wrench', wrenchPath);
 export const SparklesGlyph = /* @__PURE__ */ createGlyph('sparkles', sparklesPath);
+export const ClipboardGlyph = /* @__PURE__ */ createGlyph('clipboard', clipboardPath);
