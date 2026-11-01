@@ -89,7 +89,9 @@ function MatrixCell({
   set: (typeof sets)[number];
 }) {
   const [storage] = useState(() =>
-    createMemoryStorage(recent === 'stored' ? { 'lab-matrix': '["©","€","→"]' } : {}),
+    // The stored list repeats one character and holds one no category offers; the grid shows each
+    // offered one once.
+    createMemoryStorage(recent === 'stored' ? { 'lab-matrix': '["©","€","©","☃","→"]' } : {}),
   );
   return (
     <UiProvider storage={storage}>
@@ -147,7 +149,7 @@ mountLab(
   <>
     <LabSection
       title="Recent characters and sets"
-      description="Without and with recently chosen characters in storage, over every category or a single one."
+      description="Without and with recently chosen characters in storage, over every category or a single one. The stored list repeats a character and names one no category offers; each offered character shows once."
     >
       <StateMatrix
         axes={{ recent: recentStates, set: sets }}
