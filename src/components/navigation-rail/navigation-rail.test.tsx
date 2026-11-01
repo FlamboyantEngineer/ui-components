@@ -13,6 +13,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
+import { Disclosure } from '../disclosure/disclosure.js';
+import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { NavigationRail, type NavigationRailProps } from './navigation-rail.js';
 import {
   NavigationRailGroup,
@@ -235,6 +237,63 @@ describe('NavigationRail', () => {
     act(() => screen.getByRole('link', { name: 'Upper meadow' }).focus());
     rerender(rail(false));
     expect(screen.getByRole('button', { name: /Fields/ })).toHaveFocus();
+  });
+
+  it('UIC-NAVIGATION-RAIL-2.5 keeps toggles and disclosures in a group panel on their own state', async () => {
+    const user = userEvent.setup();
+    const onDetails = vi.fn();
+    const onNotes = vi.fn();
+    function Toggles() {
+      const [isNotesOpen, setNotesOpen] = useState(false);
+      return (
+        <NavigationRail aria-label="Main navigation">
+          <NavigationRailSection title="Workspace">
+            <NavigationRailGroup label="Tools" defaultExpanded>
+              <li>
+                <ExpandToggle
+                  label="Details"
+                  defaultExpanded={false}
+                  onExpandedChange={onDetails}
+                />
+              </li>
+              <li>
+                <ExpandToggle
+                  label="Notes"
+                  isExpanded={isNotesOpen}
+                  onExpandedChange={(next) => {
+                    onNotes(next);
+                    setNotesOpen(next);
+                  }}
+                />
+              </li>
+              <li>
+                <Disclosure title="Shortcuts">
+                  <p>Press G then I</p>
+                </Disclosure>
+              </li>
+              <NavigationRailGroup label="North" defaultExpanded>
+                <NavigationRailItem label="Upper meadow" href="/upper" />
+              </NavigationRailGroup>
+            </NavigationRailGroup>
+          </NavigationRailSection>
+        </NavigationRail>
+      );
+    }
+    render(<Toggles />);
+    const details = screen.getByRole('button', { name: 'Details' });
+    expect(details).toHaveAttribute('aria-expanded', 'false');
+    await user.click(details);
+    expect(onDetails).toHaveBeenLastCalledWith(true);
+    expect(details).toHaveAttribute('aria-expanded', 'true');
+    await user.click(screen.getByRole('button', { name: 'Notes' }));
+    expect(onNotes).toHaveBeenLastCalledWith(true);
+    expect(screen.getByRole('button', { name: 'Notes' })).toHaveAttribute('aria-expanded', 'true');
+    const shortcuts = screen.getByRole('button', { name: 'Shortcuts' });
+    expect(shortcuts).toHaveAttribute('aria-expanded', 'false');
+    await user.click(shortcuts);
+    expect(shortcuts).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: /Tools/ })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'Upper meadow' })).toBeVisible();
   });
 
   it('UIC-NAVIGATION-RAIL-2.5 leaves focus elsewhere when a group closes', async () => {
