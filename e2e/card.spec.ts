@@ -550,6 +550,61 @@ test('UIC-CARD-6.3 UIC-CARD-5.3 keeps the header row controls apart at every wid
   await expect(grid.locator('[data-lab-output="grid-selected"]')).toHaveText('R4');
 });
 
+test('UIC-CARD-6.3 UIC-CARD-7.2 keeps the header controls inside the card and More at the top end', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('card');
+  /** Each card's header controls that leave the card's box, and More's place among them. */
+  const measure = (demo: string, width: number) =>
+    page.locator(`[data-lab-demo="${demo}"]`).evaluate((root, next) => {
+      const frame = (root.querySelector('[data-lab-pane]') ??
+        root.querySelector(':scope > div:last-child')) as HTMLElement;
+      frame.style.width = `${next}px`;
+      const rtl = getComputedStyle(root).direction === 'rtl';
+      return [...root.querySelectorAll('.ui-card')].map((card) => {
+        const box = card.getBoundingClientRect();
+        const header = card.querySelector(':scope > .ui-card__header');
+        const parts = [
+          ...(header?.querySelectorAll(
+            ':scope > :is(.ui-card-grid-item__checkbox, .ui-card__leading, .ui-card__toggle, .ui-card__more)',
+          ) ?? []),
+        ].filter((part) => part.getBoundingClientRect().width > 0);
+        // A 2px focus ring around each control stays inside the card too.
+        const outside = parts
+          .filter((part) => {
+            const rect = part.getBoundingClientRect();
+            return rect.left - 2 < box.left || rect.right + 2 > box.right;
+          })
+          .map((part) => part.className);
+        const more = header?.querySelector(':scope > .ui-card__more')?.getBoundingClientRect();
+        const toggle = header?.querySelector(':scope > .ui-card__toggle')?.getBoundingClientRect();
+        const isAtEnd =
+          !more ||
+          parts.every((part) => {
+            const rect = part.getBoundingClientRect();
+            return rtl ? rect.left >= more.left - 0.5 : rect.right <= more.right + 0.5;
+          });
+        const isOnTop = !more || !toggle || Math.abs(more.top - toggle.top) < 1;
+        return { outside, isAtEnd, isOnTop };
+      });
+    }, width);
+  for (let width = 100; width <= 200; width += 1) {
+    for (const [index, card] of (await measure('pane', width)).entries()) {
+      expect(card.outside, `pane at ${width}, card ${index}`).toEqual([]);
+      expect(card.isAtEnd && card.isOnTop, `pane at ${width}, card ${index}`).toBe(true);
+    }
+  }
+  for (const demo of ['top-row', 'top-row-rtl']) {
+    for (const width of [160, 200, 240, 300, 400, 560, 720]) {
+      for (const [index, card] of (await measure(demo, width)).entries()) {
+        expect(card.outside, `${demo} at ${width}, card ${index}`).toEqual([]);
+        expect(card.isAtEnd && card.isOnTop, `${demo} at ${width}, card ${index}`).toBe(true);
+      }
+    }
+  }
+});
+
 test('UIC-CARD-6.2 collapses and expands each record from its toggle and row 4 from outside', async ({
   page,
   lab,

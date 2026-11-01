@@ -221,6 +221,17 @@
   flex: 1 1 0;
   min-width: 2ch;
 }
+/*
+ * The leading content gives up its width after the title's last characters, clipped at the end,
+ * so the toggle and More keep their room inside the card however narrow it gets.
+ */
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
+  > .ui-card__header
+  > .ui-card__leading {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
 .ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
   .ui-card__title
   > .ui-truncation-tooltip {
