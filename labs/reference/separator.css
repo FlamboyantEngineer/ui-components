@@ -1,6 +1,6 @@
 /*
  * Separator. A 1px rule in the border colour: solid rules are filled, dashed and dotted ones are a
- * border. A labelled separator lays out a line on each side of its label. The generic rules sit in
+ * border, and a wiggly one is a wave the border colour shows through. A labelled separator lays out a line on each side of its label. The generic rules sit in
  * :where() so the separators of toolbar rows and menus keep the look their own partials give them.
  */
 
@@ -50,6 +50,31 @@
 
 :where(.ui-separator[data-variant='dotted']) {
   border-style: dotted;
+}
+
+/* Wiggly rules: a 6px band masked by a repeating wave, along either axis. */
+
+:where(.ui-separator) {
+  --separator-wave-x: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3Q3 0 6 3T12 3' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E"); /* token-exempt: an alpha mask, not a colour */
+  --separator-wave-y: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='12'%3E%3Cpath d='M3 0Q0 3 3 6T3 12' fill='none' stroke='black' stroke-width='1.25'/%3E%3C/svg%3E"); /* token-exempt: an alpha mask, not a colour */
+}
+
+:where(.ui-separator[data-orientation='horizontal'][data-variant='wiggly']),
+.ui-separator[data-orientation='horizontal'][data-variant='wiggly']
+  > :is(.ui-separator__start-line, .ui-separator__end-line) {
+  block-size: 6px;
+  border-width: 0;
+  background: var(--ref-border);
+  mask: var(--separator-wave-x) 0 50% / 12px 6px repeat-x;
+}
+
+:where(.ui-separator[data-orientation='vertical'][data-variant='wiggly']),
+.ui-separator[data-orientation='vertical'][data-variant='wiggly']
+  > :is(.ui-separator__start-line, .ui-separator__end-line) {
+  inline-size: 6px;
+  border-width: 0;
+  background: var(--ref-border);
+  mask: var(--separator-wave-y) 50% 0 / 6px 12px repeat-y;
 }
 
 /* Labelled separators: the lines grow; the one on the label's side keeps a short inset. */
@@ -104,4 +129,59 @@
 
 .ui-separator[data-variant='dotted'] > :is(.ui-separator__start-line, .ui-separator__end-line) {
   border-style: dotted;
+}
+
+/*
+ * Labels beside the line: one unbroken line (the start line; the end line is not drawn) with the
+ * label before or after it, aligned along it by its position.
+ */
+
+.ui-separator:is([data-label-placement='before'], [data-label-placement='after']) {
+  display: grid;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.ui-separator[data-orientation='vertical']:is(
+    [data-label-placement='before'],
+    [data-label-placement='after']
+  ) {
+  grid-auto-flow: column;
+}
+
+.ui-separator:is([data-label-placement='before'], [data-label-placement='after'])
+  > .ui-separator__end-line {
+  display: none;
+}
+
+.ui-separator[data-label-placement='before'] > .ui-separator__label {
+  order: -1;
+}
+
+.ui-separator[data-label-position='start'] {
+  --separator-label-align: start;
+}
+
+.ui-separator[data-label-position='center'] {
+  --separator-label-align: center;
+}
+
+.ui-separator[data-label-position='end'] {
+  --separator-label-align: end;
+}
+
+.ui-separator[data-orientation='horizontal']:is(
+    [data-label-placement='before'],
+    [data-label-placement='after']
+  )
+  > .ui-separator__label {
+  justify-self: var(--separator-label-align);
+}
+
+.ui-separator[data-orientation='vertical']:is(
+    [data-label-placement='before'],
+    [data-label-placement='after']
+  )
+  > .ui-separator__label {
+  align-self: var(--separator-label-align);
 }
