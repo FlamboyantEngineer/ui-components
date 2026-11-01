@@ -247,3 +247,21 @@ export function KeptExpansion() {
     </Stack>
   );
 }
+
+const hyphenCall = (id: string, label: string): ChatToolCallPart => ({
+  type: 'tool-call',
+  id,
+  name: 'search',
+  label,
+  status: 'succeeded',
+});
+
+/** Two messages whose ids and part ids join to the same text, yet keep their DOM ids apart. */
+export function HyphenatedIds() {
+  return (
+    <Stack space="sm" data-lab-demo="hyphenated-ids">
+      <ChatParts parts={[hyphenCall('p', 'Searched the first list')]} messageId="m-1" />
+      <ChatParts parts={[hyphenCall('1-p', 'Searched the second list')]} messageId="m" />
+    </Stack>
+  );
+}

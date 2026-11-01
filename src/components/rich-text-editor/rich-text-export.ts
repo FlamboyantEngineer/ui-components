@@ -47,11 +47,17 @@ function renderSpec(spec: DOMOutputSpec, content: string): string {
   return voidElements.has(name) ? open : `${open}${children}</${name}>`;
 }
 
+// The hole of a mark's element while its open and close tags are split apart. Rendered text and
+// attribute values escape `<`, and every tag the export writes names its element, so `<>` never
+// appears in rendered HTML otherwise, whatever characters a mark's attributes hold.
+const contentHole = '<>';
+
 function renderMarkOpen(mark: Mark): { open: string; close: string } {
   const spec = mark.type.spec.toDOM?.(mark, true) ?? ['span', 0];
-  const marker = '\u0000';
-  const [open = '', close = ''] = renderSpec(spec, marker).split(marker);
-  return { open, close };
+  const html = renderSpec(spec, contentHole);
+  const at = html.indexOf(contentHole);
+  if (at < 0) return { open: html, close: '' };
+  return { open: html.slice(0, at), close: html.slice(at + contentHole.length) };
 }
 
 /** The inline content of a text block, with runs of shared marks kept in one element. */

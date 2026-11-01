@@ -15,7 +15,7 @@ Verification: `src/components/chat-parts/chat-parts.test.tsx`, `src/components/c
 
 ### UIC-CHAT-PARTS-1.2 - DOM ids
 
-A tool call's and a question's `id` become their root element's DOM id. With a `messageId`, `ChatParts` shall prefix these DOM ids with it (`<messageId>-<part id>`), so equal part ids in two messages of one page never collide; the callbacks still receive the part's own `id`. Without a `messageId` the DOM id is the part's `id`.
+A tool call's and a question's `id` become their root element's DOM id. With a `messageId`, `ChatParts` shall prefix these DOM ids with it (`<messageId>-<part id>`), the message id percent-encoded with its hyphens too (`m-1` writes `m%2D1`), so the first hyphen ends it and no two messages' parts share a DOM id, whatever their ids hold (`m-1` with `p` and `m` with `1-p` stay apart); the callbacks still receive the part's own `id`. Without a `messageId` the DOM id is the part's `id`.
 
 Implementation: `src/components/chat-parts/chat-parts.tsx`, `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`

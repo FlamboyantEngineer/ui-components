@@ -46,6 +46,31 @@ describe('rich-text export', () => {
     );
   });
 
+  it('UIC-RICH-TEXT-EDITOR-10.1 keeps a mark element whole whatever characters its attributes hold', () => {
+    const marked = (title: string): RichTextDocument => ({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'market',
+              marks: [{ type: 'link', attrs: { href: '/m', title } }],
+            },
+            { type: 'text', text: ' after' },
+          ],
+        },
+      ],
+    });
+    expect(serializeRichTextHtml(marked('A\u0000B'))).toBe(
+      '<p><a href="/m" title="A\u0000B">market</a> after</p>',
+    );
+    expect(serializeRichTextHtml(marked('<> & \u0000<>'))).toBe(
+      '<p><a href="/m" title="&lt;&gt; &amp; \u0000&lt;&gt;">market</a> after</p>',
+    );
+  });
+
   it('UIC-RICH-TEXT-EDITOR-10.1 renders a caller schema with its own renderers', () => {
     const schema = createRichTextSchema({
       nodes: {
