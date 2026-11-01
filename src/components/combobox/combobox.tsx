@@ -1,18 +1,19 @@
 'use client';
 
-import { useMemo, useRef, type ReactNode, type Ref } from 'react';
+import { useRef, type ReactNode, type Ref } from 'react';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
 import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
+import { decodeComboboxValue, useComboboxValues } from './combobox-values.js';
 import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
 import { ComboboxReset, useHeldChange } from './combobox-reset.js';
-import type { ComboboxItem } from './combobox-options.js';
+import type { ComboboxItem, ComboboxOption } from './combobox-options.js';
 import type { ComboboxLoader } from './combobox-search.js';
 import {
+  useComboboxCollection,
   useComboboxModel,
   useInlineCompletionState,
   type ComboboxModelOptions,
@@ -80,6 +81,11 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   defaultItems?: Iterable<ComboboxItem> | undefined;
   /** Suggestions the caller filters (for example from `onInputChange`, possibly asynchronously). */
   items?: Iterable<ComboboxItem> | undefined;
+  /**
+   * Options that name chosen ids the suggestions do not list now, such as earlier search results:
+   * the input and the chips show their labels and icons. They are never listed.
+   */
+  knownOptions?: Iterable<ComboboxOption> | undefined;
   /** The caller is still fetching suggestions: shows a busy indicator and marks the input busy. */
   isPending?: boolean | undefined;
   /** Defaults to `default`. */
@@ -121,6 +127,7 @@ function omitModelProps<P extends ComboboxModelOptions>(props: P) {
   const {
     items,
     defaultItems,
+    knownOptions,
     loadItems,
     minSearchLength,
     searchDelay,
@@ -191,7 +198,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   const aria = omitModelProps(rest);
   const values = useComboboxValues(aria.value, aria.defaultValue);
   const model = useComboboxModel({ ...rest, isPending, isDisabled, isReadOnly });
-  const suggestions = useMemo(() => encodeComboboxItems(model.suggestions), [model.suggestions]);
+  const { suggestions, known, collection } = useComboboxCollection(model, rest.knownOptions);
   const inline = useInlineCompletionState({ completesInline, suggestions });
   const [input, setInput] = useForwardedRef(inputRef);
   const createdRef = useRef<string | null>(null);
@@ -206,7 +213,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
       onChange={reset.onChange}
       name={aria.allowsCustomValue ? name : undefined}
       {...hooks.root({ className, props: aria, data: { variant, size, pending: model.isPending } })}
-      {...(model.isControlled ? { items: suggestions } : { defaultItems: suggestions })}
+      {...(model.isControlled ? { items: collection } : { defaultItems: collection })}
       defaultFilter={inline.defaultFilter}
       onInputChange={model.input.onInputChange}
       onOpenChange={model.onOpenChange}
@@ -222,7 +229,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
         placeholder={placeholder}
         isPending={model.isPending}
         isEditable={!isDisabled && !isReadOnly}
-        chips={isMultiple ? { label: naming.text, options: model.flatOptions } : null}
+        chips={isMultiple ? { label: naming.text, options: model.flatOptions, known } : null}
         completion={inline.field}
         input={{ ref: input, setRef: setInput }}
       />
@@ -231,7 +238,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
       <ComboboxSuggestions
         {...list}
         size={size}
-        items={suggestions}
+        items={collection}
         loading={model.loading}
         inputText={model.input.text}
         completion={inline.completion}

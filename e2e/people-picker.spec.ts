@@ -103,4 +103,30 @@ test.describe('People Picker lab', () => {
     await expect(listbox.getByRole('option')).toHaveCount(2);
     await expect(listbox.getByRole('option').nth(0)).toContainText('Chen Wei');
   });
+
+  test('UIC-PEOPLE-PICKER-3.1 UIC-PEOPLE-PICKER-3.6 restores a searched person and draws the newest copy', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('people-picker');
+    const area = section(page, 'Restoring a chosen person');
+    const input = area.getByRole('combobox', { name: 'Handover owner' });
+    const listbox = page.getByRole('listbox');
+    await input.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(listbox.getByRole('option', { name: /Eli Brandt \(old record\)/ })).toBeDisabled();
+    await input.fill('eli');
+    const eli = listbox.getByRole('option', { name: /Eli Brandt/ });
+    await expect(eli).toContainText('eli.brandt@example.com');
+    await expect(eli).not.toContainText('old record');
+    await expect(eli).toBeEnabled();
+    await input.fill('dara');
+    await expect(listbox.getByRole('option', { name: /Dara Nkemelu/ })).toBeVisible();
+    await input.fill('ben');
+    await expect(listbox.getByRole('option', { name: /Ben Okafor/ })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Restore Dara' }).click();
+    await expect(input).toHaveValue('Dara Nkemelu');
+    await expect(area.locator('[data-lab-output="owner"]')).toHaveText('dara');
+  });
 });

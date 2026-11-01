@@ -305,3 +305,47 @@ describe('Combobox chips', () => {
     expect(within(chips).getByRole('row', { name: 'paris' })).toBeInTheDocument();
   });
 });
+
+describe('Combobox known options', () => {
+  const known: ComboboxOption[] = [{ id: 'oslo', label: 'Oslo', icon: FolderGlyph }];
+
+  it('UIC-COMBOBOX-3.7 names a chosen id the suggestions leave out with its known option', () => {
+    const { rerender } = render(
+      <Combobox label="Cities" items={[]} knownOptions={known} value="oslo" />,
+    );
+    expect(screen.getByRole('combobox')).toHaveValue('Oslo');
+    rerender(
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        items={[]}
+        knownOptions={known}
+        value={['oslo', 'rome']}
+      />,
+    );
+    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+    const oslo = within(chips).getByRole('row', { name: 'Oslo' });
+    expect(oslo.querySelector('.ui-combobox__chip-icon')).not.toBeNull();
+    expect(within(chips).getByRole('row', { name: 'rome' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMBOBOX-3.7 lists suggestions over known options and never lists the known ones', async () => {
+    const user = userEvent.setup();
+    const listed = [{ id: 'oslo', label: 'Oslo city' }, ...cities.slice(0, 1)];
+    render(
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        items={listed}
+        knownOptions={[...known, { id: 'rome', label: 'Rome' }]}
+        value={['oslo']}
+      />,
+    );
+    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+    expect(within(chips).getByRole('row', { name: 'Oslo city' })).toBeInTheDocument();
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{ArrowDown}');
+    const names = (await screen.findAllByRole('option')).map((option) => option.textContent);
+    expect(names).toEqual(['Oslo city', 'Paris']);
+  });
+});

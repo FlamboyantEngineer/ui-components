@@ -1,5 +1,6 @@
 import type { Key } from '../../core/props.js';
 import type { PickerItem, PickerOption, PickerSection } from '../field/field.js';
+import { flattenPickerItems } from '../field/field-picker-items.js';
 
 /** One suggestion; its label is written to the input when chosen. */
 export type ComboboxOption = PickerOption;
@@ -63,4 +64,14 @@ export function findFirstOptionKey(
     if (first) return first.key;
   }
   return null;
+}
+
+/** The items, then each known option no item lists, so a chosen id they leave out keeps its label. */
+export function withKnownOptions(
+  items: readonly ComboboxItem[],
+  known: readonly ComboboxOption[],
+): ComboboxItem[] {
+  if (known.length === 0) return [...items];
+  const listed = new Set(flattenPickerItems(items).map((option) => option.id));
+  return [...items, ...known.filter((option) => !listed.has(option.id))];
 }

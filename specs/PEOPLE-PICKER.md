@@ -45,7 +45,7 @@ Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people
 
 ### UIC-PEOPLE-PICKER-3.1 - Searching people
 
-`loadItems(query, signal)` shall search people and groups once the reader types, as the combobox's remote search does: after `searchDelay`, aborting a replaced search, with the search status in the empty list and further pages from `{ items, cursor }` results. Every person a search returns stays known while the picker is mounted, so their row and chip keep their avatar and name after later results leave them out.
+`loadItems(query, signal)` shall search people and groups once the reader types, as the combobox's remote search does: after `searchDelay`, aborting a replaced search, with the search status in the empty list and further pages from `{ items, cursor }` results. Every person a search returns, on any page, stays known while the picker is mounted and is handed to the combobox as a known option (UIC-COMBOBOX-3.7), so their chip keeps their avatar and name, and a single input their name, after later results leave them out, including when the caller sets a value that holds them afterwards. Known people are not listed before a search; an id no source gives shows itself on a chip and empties a single input.
 
 Implementation: `src/components/people-picker/people-picker.tsx`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
@@ -74,6 +74,13 @@ Verification: `src/components/people-picker/people-picker.test.tsx`
 ### UIC-PEOPLE-PICKER-3.5 - Known people
 
 Before a search, `knownPeople` other than the current user shall be listed after the current user and before the recent people, in the given order and without a heading; a recent person among them is listed here only. They are known like people a search returned (UIC-PEOPLE-PICKER-3.1), so a value that holds them, such as a saved one, shows their names in the input or the chips before any search.
+
+Implementation: `src/components/people-picker/people-picker.tsx`
+Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
+
+### UIC-PEOPLE-PICKER-3.6 - One copy of each person
+
+The picker shall keep one copy of each person by id and draw every place from it: the row's identity, description and disabled reason, the option's label (the text the input shows once picked) and disabled state, and the chip's name and avatar. The copy the latest search returned wins, as the newest data; otherwise the caller's, the current user over a known person over a recent one. The current user's mark (UIC-PEOPLE-PICKER-3.2) goes by id, so it never picks which copy is drawn.
 
 Implementation: `src/components/people-picker/people-picker.tsx`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
