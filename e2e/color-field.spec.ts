@@ -389,4 +389,33 @@ test.describe('Color Field lab', () => {
     await expect(unreadable).toHaveAttribute('data-validation', 'invalid');
     await expect(unreadable).toContainText('Enter a color, such as #3366ff.');
   });
+  test('UIC-COLOR-FIELD-1.2 scales the swatch with the field size at one inset', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const measure = await page
+      .locator('[data-lab-section="Sizes"] .ui-color-field')
+      .evaluateAll((fields) =>
+        fields.map((field) => {
+          const frame = field.querySelector(
+            ':is(.ui-color-field__group, .ui-color-field__trigger)',
+          );
+          const swatch = field.querySelector('.ui-color-field__swatch');
+          const outer = frame?.getBoundingClientRect();
+          const inner = swatch?.getBoundingClientRect();
+          return {
+            size: inner?.height ?? 0,
+            inset: (inner?.top ?? 0) - (outer?.top ?? 0),
+          };
+        }),
+      );
+    expect(measure).toHaveLength(8);
+    for (const entry of [measure.slice(0, 4), measure.slice(4)]) {
+      const sizes = entry.map(({ size }) => size);
+      expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
+      expect(new Set(sizes).size).toBe(4);
+      for (const { inset } of entry) expect(inset).toBeCloseTo(entry[0]?.inset ?? 0, 0);
+    }
+  });
 });
