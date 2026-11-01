@@ -22,6 +22,7 @@
 @import url('reference/avatar-group.css') layer(ui-reference);
 @import url('reference/badge.css') layer(ui-reference);
 @import url('reference/banner.css') layer(ui-reference);
+@import url('reference/barcode.css') layer(ui-reference);
 @import url('reference/board.css') layer(ui-reference);
 @import url('reference/boolean-field.css') layer(ui-reference);
 @import url('reference/breadcrumb.css') layer(ui-reference);

@@ -538,6 +538,8 @@
   "peopleCount": "{count, plural, one {# persona} other {# personas}}",
   "qrCodeOf": "Código QR: {value}",
   "qrCodeTooLong": "El texto es demasiado largo para un código QR.",
+  "barcodeOf": "Código de barras {format}: {value}",
+  "barcodeInvalid": "Este valor no se puede codificar en {format}.",
   "filters": "Filtros",
   "addFilter": "Añadir filtro",
   "clearAllFilters": "Borrar todo",
