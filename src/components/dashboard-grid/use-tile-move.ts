@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type DOMAttributes } from 'react';
 import { useLocale, useMove } from '../../primitives/index.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { DashboardGridItem } from './dashboard-layout.js';
 
@@ -122,5 +123,12 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
     },
     [latestAbandon],
   );
-  return moveProps;
+  // Only plain arrows move or resize; modified, composing and already handled keys pass by.
+  const { onKeyDown } = moveProps;
+  return {
+    ...moveProps,
+    onKeyDown: (event) => {
+      if (isFreeEditKey(event.nativeEvent) && !event.shiftKey) onKeyDown?.(event);
+    },
+  };
 }

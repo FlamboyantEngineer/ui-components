@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
@@ -224,6 +224,35 @@ describe('DashboardGrid', () => {
     await user.keyboard('{ArrowUp}');
     expect(status()).toHaveTextContent('Notes moved to column 1, row 1');
     expect(tileNames()).toEqual(['Notes', 'Visitors', 'Sales']);
+  });
+
+  it('UIC-DASHBOARD-GRID-2.2 UIC-DASHBOARD-GRID-2.3 moves and resizes only on plain arrow keys', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    render(<Board isEditing onLayoutChange={onLayoutChange} />);
+    for (const name of ['Move Visitors', 'Resize Visitors']) {
+      const handle = screen.getByRole('button', { name });
+      handle.focus();
+      for (const chord of ['Control', 'Alt', 'Meta', 'Shift']) {
+        await user.keyboard(`{${chord}>}{ArrowRight}{ArrowDown}{/${chord}}`);
+      }
+      // A keydown that an input method composition owns, or that another handler took.
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot mark a key as composing.
+      fireEvent.keyDown(handle, { key: 'ArrowDown', isComposing: true });
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot send key code 229.
+      fireEvent.keyDown(handle, { key: 'ArrowDown', keyCode: 229 });
+      const handled = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+      });
+      handled.preventDefault();
+      handle.dispatchEvent(handled);
+      expect(onLayoutChange).not.toHaveBeenCalled();
+      expect(handle).toHaveFocus();
+    }
+    await user.keyboard('{ArrowDown}');
+    expect(onLayoutChange).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-DASHBOARD-GRID-2.2 moves toward the inline end with the left arrow in right-to-left text', async () => {

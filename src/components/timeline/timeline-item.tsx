@@ -4,8 +4,9 @@ import { useId, type KeyboardEvent } from 'react';
 import { useDateFormatter, useLocale, useNumberFormatter } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { clamp } from '../../utils/clamp.js';
 import {
+  readTimelineItem,
+  readTimelineProgress,
   resolveKeyboardChange,
   toInlineStart,
   type TimelineItemChange,
@@ -14,6 +15,7 @@ import {
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import type { ItemPredecessors, PlacedItem } from './timeline-layout.js';
 import { useTimelineDrag } from './use-timeline-drag.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 
 interface TimelineItemSelection {
   isSelectable: boolean;
@@ -32,15 +34,6 @@ interface TimelineItemButtonProps {
   onCommit: (change: TimelineItemChange) => void;
 }
 
-/** The item's progress as a share from 0 to 1, or `undefined` for none. */
-function readProgress({ item, read }: PlacedItem): number | undefined {
-  const { progress } = item;
-  if (read.kind !== 'bar' || typeof progress !== 'number' || !Number.isFinite(progress)) {
-    return undefined;
-  }
-  return clamp(progress, 0, 1);
-}
-
 /** The text that describes an item: its days, progress, predecessors and how to move it. */
 function useItemDescription(
   placed: PlacedItem,
@@ -52,7 +45,7 @@ function useItemDescription(
   const percent = useNumberFormatter({ style: 'percent' });
   const formatDay = (date: string) => days.format(new Date(date));
   const { read } = placed;
-  const progress = readProgress(placed);
+  const progress = readTimelineProgress(placed.item);
   const parts = [
     read.kind === 'milestone'
       ? strings.timelineMilestone(formatDay(read.start))
@@ -83,12 +76,17 @@ export function TimelineItemButton({
   const { item, read, left, right } = placed;
   const description = useItemDescription(placed, predecessors, isEditable);
   const isRtl = useLocale().direction === 'rtl';
-  const drag = useTimelineDrag({ read, dayWidth, isRtl, isEditable, onDraft, onCommit });
-  const progress = readProgress(placed);
+  const drag = useTimelineDrag({
+    ...{ read, source: readTimelineItem(item), dayWidth, isRtl, isEditable },
+    ...{ onDraft, onCommit },
+  });
+  const progress = readTimelineProgress(placed.item);
   const isBar = read.kind === 'bar';
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const key = { key: event.key, shiftKey: event.shiftKey, isRtl };
-    const change = isEditable ? resolveKeyboardChange(read, key, scale) : null;
+    // Only plain arrows and Shift with arrows edit; other chords and composing keys pass by.
+    const isEditKey = isEditable && isFreeEditKey(event.nativeEvent);
+    const change = isEditKey ? resolveKeyboardChange(read, key, scale) : null;
     if (!change) return;
     event.preventDefault();
     if (change.start !== read.start || change.end !== read.end) onCommit(change);

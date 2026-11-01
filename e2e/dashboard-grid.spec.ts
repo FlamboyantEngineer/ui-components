@@ -163,6 +163,25 @@ test.describe('Dashboard Grid lab', () => {
     await expect(move).toBeFocused();
   });
 
+  test('UIC-DASHBOARD-GRID-2.2 UIC-DASHBOARD-GRID-2.3 leaves modified arrow keys alone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dashboard-grid');
+    const grid = overview(page).getByRole('group', { name: 'Overview' });
+    const before = await layout(page).textContent();
+    for (const name of ['Move Visitors', 'Resize Visitors']) {
+      await grid.getByRole('button', { name }).focus();
+      for (const chord of ['Control', 'Alt', 'Shift']) {
+        await page.keyboard.press(`${chord}+ArrowRight`);
+        await page.keyboard.press(`${chord}+ArrowDown`);
+      }
+    }
+    await expect(layout(page)).toHaveText(requireDefined(before));
+    await page.keyboard.press('ArrowRight');
+    await expect(layout(page)).not.toHaveText(requireDefined(before));
+  });
+
   test('UIC-DASHBOARD-GRID-3.1 reflows a narrow grid onto one column, read only', async ({
     page,
     lab,

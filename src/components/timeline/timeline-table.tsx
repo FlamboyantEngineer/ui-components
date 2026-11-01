@@ -4,10 +4,9 @@ import { useMemo } from 'react';
 import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { clamp } from '../../utils/clamp.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from '../table/table.js';
-import { readTimelineItem, type TimelineItem } from './timeline-geometry.js';
+import { readTimelineItem, readTimelineProgress, type TimelineItem } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import { flattenTimelineRows, type TimelineRow } from './timeline-rows.js';
 
@@ -39,7 +38,7 @@ function toEntries(rows: readonly TimelineRow[], items: readonly TimelineItem[])
       const read = readTimelineItem(item);
       const index = rowIndex.get(item.rowId);
       if (!read || index === undefined) return [];
-      const progress = read.kind === 'bar' ? item.progress : undefined;
+      const progress = readTimelineProgress(item);
       const entry = {
         id: item.id,
         name: item.label,
@@ -82,8 +81,7 @@ function useColumns(): TableProps<TableEntry>['columns'] {
         header: strings.timelineProgressColumn,
         align: 'end',
         getValue: (entry) => entry.progress ?? null,
-        renderCell: (entry) =>
-          entry.progress === undefined ? '' : percent.format(clamp(entry.progress, 0, 1)),
+        renderCell: (entry) => (entry.progress === undefined ? '' : percent.format(entry.progress)),
       },
     ];
   }, [strings, days, percent]);

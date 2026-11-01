@@ -12,6 +12,8 @@ import { isElement } from '../../utils/is-element.js';
 
 interface TimelineDragOptions {
   read: ReadItem;
+  /** The item's own days as the host gives them, without a draft; `null` when they are unreadable. */
+  source: ReadItem | null;
   dayWidth: number;
   /** The axis runs right to left, so a drag to the left moves later. */
   isRtl: boolean;
@@ -44,6 +46,7 @@ function readEdge(target: EventTarget, kind: ReadItem['kind']): TimelineDragEdge
  */
 export function useTimelineDrag({
   read,
+  source,
   dayWidth,
   isRtl,
   isEditable,
@@ -85,6 +88,9 @@ export function useTimelineDrag({
   };
   const handlers = usePointerDrag<HTMLElement, Drag>({
     isDisabled: !isEditable,
+    // A gesture belongs to the dates, kind and geometry it started from. When the host replaces
+    // them mid-drag the gesture is given up, so its draft never overwrites the newer dates.
+    resetKey: [source?.kind, source?.start, source?.end, dayWidth, isRtl].join('|'),
     onCancel: () => {
       setDragging(false);
       showDraft(null);
