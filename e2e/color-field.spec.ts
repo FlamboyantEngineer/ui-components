@@ -172,6 +172,45 @@ test.describe('Color Field lab', () => {
     await expect(trigger).toHaveAccessibleName('Overlay #FF6699');
   });
 
+  test('UIC-COLOR-FIELD-3.2 labels each channel and steps the one under the wheel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const formats = field(page, 'formats');
+    const trigger = formats.locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Overlay' });
+    await expect(
+      dialog.locator('.ui-color-field__channel-label > [aria-hidden="true"]'),
+    ).toHaveText(['R', 'G', 'B', 'A']);
+    const green = dialog.getByRole('textbox', { name: 'Green' });
+    await expect(green).toHaveValue('102');
+    // The label sits above its input and names it.
+    const label = dialog.locator('.ui-color-field__channel-label').nth(1);
+    const [labelBox, inputBox] = [await label.boundingBox(), await green.boundingBox()];
+    expect(labelBox && inputBox && labelBox.y + labelBox.height <= inputBox.y + 1).toBe(true);
+    const scroller = await page.evaluate(() => document.scrollingElement?.scrollTop ?? 0);
+    await green.hover();
+    await page.mouse.wheel(0, -100);
+    await expect(green).toHaveValue('103');
+    await page.mouse.wheel(0, -100);
+    await page.mouse.wheel(0, 100);
+    await page.mouse.wheel(0, 100);
+    await page.mouse.wheel(0, 100);
+    await expect(green).toHaveValue('101');
+    await expect(dialog.getByRole('textbox', { name: 'Red' })).toHaveValue('51');
+    await expect(dialog.getByRole('textbox', { name: 'Alpha' })).toHaveValue('50%');
+    expect(await page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(scroller);
+    const alpha = dialog.getByRole('textbox', { name: 'Alpha' });
+    await alpha.hover();
+    await page.mouse.wheel(0, -100);
+    await expect(alpha).toHaveValue('51%');
+    await expect(green).not.toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Format committed')).toHaveText('#33659982');
+  });
+
   test('UIC-COLOR-FIELD-3.4 stores the value in its value format', async ({ page, lab }) => {
     await lab.open('color-field');
     const trigger = field(page, 'value-format').locator('.ui-color-field__trigger');
