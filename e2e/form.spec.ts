@@ -279,4 +279,33 @@ test.describe('Form lab', () => {
     await expect(sealed).not.toBeChecked();
     await lab.expectAccessible('[data-lab-section="Owned by another form"]');
   });
+
+  test('UIC-FIELD-2.6 UIC-SEGMENTED-CHOICE-2.7 UIC-FILE-UPLOAD-4.2 resets a form inside a shadow root and keeps its files', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const host = page.locator('[data-lab-demo="shadow-form"]');
+    const fruit = host.getByRole('textbox', { name: 'Fruit' });
+    const output = host.locator('[data-lab-output="Shadow form"]');
+    const reset = host.getByRole('button', { name: 'Reset' });
+    await fruit.fill('Pear');
+    await host.getByRole('radio', { name: 'Week' }).click({ force: true });
+    const keepEdits = host.getByRole('switch', { name: 'Keep shadow edits' });
+    await host.getByText('Keep shadow edits').click();
+    await expect(keepEdits).toBeChecked();
+    await reset.click();
+    await host.getByRole('button', { name: 'Read form data' }).click();
+    await expect(output).toHaveText('view=week; attachment=sample.txt');
+    await expect(fruit).toHaveValue('Pear');
+    await host.getByText('Keep shadow edits').click();
+    await expect(keepEdits).not.toBeChecked();
+    await reset.click();
+    await expect(fruit).toHaveValue('Fig');
+    await expect(host.getByRole('radio', { name: 'Day' })).toBeChecked();
+    await host.getByRole('button', { name: 'Read form data' }).click();
+    await expect(output).toHaveText('view=day; attachment=sample.txt');
+    await expect(host.getByText('sample.txt').first()).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Inside a shadow root"]');
+  });
 });

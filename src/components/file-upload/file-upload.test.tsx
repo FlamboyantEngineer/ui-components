@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { StrictMode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ShadowHost, deepActive, inShadow } from '../../../test/shadow-fixtures.js';
+import { ShadowHost, deepActive, inShadow, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
@@ -1028,6 +1028,23 @@ describe('FileUpload', () => {
     document.querySelector('input[name="docs"]')?.setAttribute('form', 'second-owner');
     expect(submitted('First')).toEqual([]);
     expect(submitted('Second')).toHaveLength(1);
+    vi.unstubAllGlobals();
+  });
+
+  it('UIC-FILE-UPLOAD-4.2 submits the listed files with a form inside a shadow root', () => {
+    vi.stubGlobal('DataTransfer', undefined);
+    const listed = [{ id: 'a', name: 'sample.txt', file: file('sample.txt', 'text/plain') }];
+    render(
+      <ShadowHost name="panel">
+        <form>
+          <FileUpload label="Attach" name="attachment" files={listed} onSelect={() => {}} />
+        </form>
+      </ShadowHost>,
+    );
+    const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
+    const formData = new FormData();
+    form.dispatchEvent(Object.assign(new Event('formdata'), { formData }));
+    expect((formData.get('attachment') as File).name).toBe('sample.txt');
     vi.unstubAllGlobals();
   });
 

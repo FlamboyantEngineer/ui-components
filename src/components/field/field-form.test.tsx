@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { inShadow, ShadowHost, shadowRootOf } from '../../../test/shadow-fixtures.js';
 import { Input } from '../../primitives/index.js';
 import { Field, useFieldState } from './field.js';
 
@@ -195,5 +196,29 @@ describe('Field in a form', () => {
     resetForm('missing-form');
     await settle();
     expect(input).toHaveValue('initial');
+  });
+
+  it('UIC-FIELD-2.6 resets a field in a form inside a shadow root, and keeps it through a cancelled reset', async () => {
+    let isCancelling = true;
+    render(
+      <ShadowHost name="panel">
+        <form onReset={(event) => isCancelling && event.preventDefault()}>
+          <TextField label="Fruit" options={{ defaultValue: 'Fig' }} />
+        </form>
+      </ShadowHost>,
+    );
+    const input = inShadow('panel').getByRole('textbox', { name: 'Fruit' });
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event's typing does not reach a React input inside a shadow root
+    fireEvent.change(input, { target: { value: 'Pear' } });
+    expect(input).toHaveValue('Pear');
+    const form = shadowRootOf('panel').querySelector('form') as HTMLFormElement;
+    const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    act(() => form.reset());
+    await settle();
+    expect(input).toHaveValue('Pear');
+    isCancelling = false;
+    act(() => form.reset());
+    await settle();
+    expect(input).toHaveValue('Fig');
   });
 });
