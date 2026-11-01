@@ -113,7 +113,12 @@ export function PropertyRow({
   const scope = useContext(PropertyScopeContext);
   const labelText = typeof label === 'string' ? label : undefined;
   const isMatch = matchesPropertyScope(scope, [labelText, ...keywords]);
-  useReportPropertyTally(scope, { count: 1, matches: isMatch ? 1 : 0, isOverridden });
+  useReportPropertyTally(scope, {
+    count: 1,
+    matches: isMatch ? 1 : 0,
+    isOverridden,
+    isPending: false,
+  });
   const generatedId = useId();
   const labelId = `${id ?? generatedId}-label`;
   const data = { overridden: isOverridden, required: isRequired, wide };

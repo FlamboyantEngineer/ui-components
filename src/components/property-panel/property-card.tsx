@@ -67,12 +67,14 @@ export function PropertyCard({
 }: PropertyCardProps) {
   const level = usePropertyScopeLevel(name);
   const { parent, total, isFiltering } = level;
-  const isMatch = matchesPropertyScope(parent, [name]) || total.matches > 0;
+  // Until the rows inside have reported, the card stays shown rather than hide a match.
+  const isMatch = matchesPropertyScope(parent, [name]) || total.matches > 0 || total.isPending;
   const overridden = isOverridden || total.isOverridden;
   useReportPropertyTally(parent, {
     count: 1,
     matches: isMatch ? 1 : 0,
     isOverridden: overridden,
+    isPending: total.isPending,
   });
   const expansion = useScopedExpansion({
     isFiltering,

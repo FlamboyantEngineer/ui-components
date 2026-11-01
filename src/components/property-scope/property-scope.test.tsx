@@ -1,13 +1,17 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { Input } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { Field, useFieldState } from '../field/field.js';
 import {
   PropertyCard,
   PropertyGroup,
+  PropertyPanel,
   PropertyRow,
   PropertySection,
 } from '../property-panel/property-panel.js';
@@ -300,5 +304,83 @@ describe('PropertyScope', () => {
     rerender(<Scope query="  " />);
     expect(filter).not.toHaveBeenCalled();
     expect(rowByLabel('Height')).not.toHaveAttribute('hidden');
+  });
+
+  it('UIC-PROPERTY-SCOPE-1.2 UIC-PROPERTY-SCOPE-1.4 server-renders a preset query without hiding matches, then hydrates', async () => {
+    function Inspector({ query }: { query: string }) {
+      return (
+        <UiProvider locale="en-US">
+          <PropertyScope query={query}>
+            <PropertyPanel aria-label="Inspector">
+              <PropertySection title="Dimensions">
+                <PropertyGroup heading="Measures">
+                  <PropertyRow label="Width">
+                    <Draft label="Width value" />
+                  </PropertyRow>
+                  <PropertyRow label="Depth">3</PropertyRow>
+                </PropertyGroup>
+                <PropertyCard name="Frame">
+                  <PropertyRow label="Width offset">2</PropertyRow>
+                </PropertyCard>
+              </PropertySection>
+            </PropertyPanel>
+          </PropertyScope>
+        </UiProvider>
+      );
+    }
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = renderToString(<Inspector query="Width" />);
+    const section = () => host.querySelector('.ui-property-section');
+    const group = () => host.querySelector('.ui-property-group');
+    const status = () => host.querySelector('.ui-property-scope__status');
+    expect(section()).not.toHaveAttribute('hidden');
+    expect(group()).not.toHaveAttribute('hidden');
+    expect(host.querySelector('.ui-property-card')).not.toHaveAttribute('hidden');
+    expect(status()).toBeEmptyDOMElement();
+    const recoverable: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, <Inspector query="Width" />, {
+        onRecoverableError: (error) => recoverable.push(error),
+      });
+    });
+    expect(recoverable).toEqual([]);
+    expect(section()).not.toHaveAttribute('hidden');
+    expect(group()).not.toHaveAttribute('hidden');
+    expect(host.querySelector('.ui-property-card')).not.toHaveAttribute('hidden');
+    expect(status()).toBeEmptyDOMElement();
+    const input = within(host).getByRole('textbox', { name: 'Width value' });
+    await userEvent.setup().type(input, 'draft');
+    await act(async () => app?.render(<Inspector query="Nothing" />));
+    expect(section()).toHaveAttribute('hidden');
+    expect(status()).toHaveTextContent('No properties match');
+    await act(async () => app?.render(<Inspector query="Width" />));
+    expect(within(host).getByRole('textbox', { name: 'Width value' })).toBe(input);
+    expect(input).toHaveValue('draft');
+    act(() => app?.unmount());
+    host.remove();
+  });
+
+  it('UIC-PROPERTY-SCOPE-1.4 server-renders a query nothing matches without announcing it yet', () => {
+    expect(
+      renderToString(
+        <UiProvider locale="en-US">
+          <PropertyScope query="zzz">
+            <PropertySection title="Dimensions">
+              <PropertyRow label="Width">1</PropertyRow>
+            </PropertySection>
+          </PropertyScope>
+        </UiProvider>,
+      ),
+    ).not.toContain('No properties match');
+    render(
+      <PropertyScope query="zzz">
+        <PropertySection title="Dimensions">
+          <PropertyRow label="Width">1</PropertyRow>
+        </PropertySection>
+      </PropertyScope>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('No properties match');
+    expect(document.querySelector('.ui-property-section')).toHaveAttribute('hidden');
   });
 });

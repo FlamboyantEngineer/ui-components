@@ -141,7 +141,7 @@ export function PropertyGroup({ heading, children, className, id, ...rest }: Pro
       id={id}
       role={hasHeading ? 'group' : undefined}
       aria-labelledby={hasHeading ? headingId : undefined}
-      hidden={level.isFiltering && level.total.matches === 0}
+      hidden={level.hasNoMatch}
     >
       {heading ? (
         <div {...groupHooks.slot('heading')} id={headingId}>

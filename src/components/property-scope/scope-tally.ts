@@ -16,6 +16,11 @@ interface PropertyTally {
   matches: number;
   /** Whether a property inside overrides an inherited value. */
   isOverridden: boolean;
+  /**
+   * Whether the parts inside have not all reported yet, as during server rendering and before the
+   * first effects run: `matches` is then a lower bound, not a confirmed count.
+   */
+  isPending: boolean;
 }
 
 /** Whether a row's joined texts match the query, in place of holding each of its terms. */
@@ -49,6 +54,8 @@ interface PropertyScopeLevel {
   total: PropertyTally;
   /** Whether a query is active. */
   isFiltering: boolean;
+  /** Whether a query is active and every part inside has reported that none of them matches. */
+  hasNoMatch: boolean;
 }
 
 export const PropertyScopeContext = createContext<PropertyScopeValue>({
@@ -61,11 +68,12 @@ export const PropertyScopeContext = createContext<PropertyScopeValue>({
 });
 
 function sumTallies(tallies: Iterable<PropertyTally>): PropertyTally {
-  const total: PropertyTally = { count: 0, matches: 0, isOverridden: false };
+  const total: PropertyTally = { count: 0, matches: 0, isOverridden: false, isPending: false };
   for (const tally of tallies) {
     total.count += tally.count;
     total.matches += tally.matches;
     total.isOverridden ||= tally.isOverridden;
+    total.isPending ||= tally.isPending;
   }
   return total;
 }
@@ -75,11 +83,24 @@ function joinScopeText(texts: ReadonlyArray<string | undefined>): string {
   return texts.filter((text): text is string => Boolean(text?.trim())).join(' ');
 }
 
-/** Collects the tallies the parts inside one level report, and their sum. */
+/** Whether a query is active and the tallies confirm that nothing inside matches. */
+export function hasNoPropertyMatch(isFiltering: boolean, total: PropertyTally): boolean {
+  return isFiltering && !total.isPending && total.matches === 0;
+}
+
+/**
+ * Collects the tallies the parts inside one level report, and their sum, which stays pending until
+ * the parts mounted with the level have reported: their reports run in effects before the level's.
+ */
 export function usePropertyTallies(): Pick<PropertyScopeValue, 'report'> & {
   total: PropertyTally;
 } {
   const [tallies, setTallies] = useState<ReadonlyMap<symbol, PropertyTally>>(() => new Map());
+  const [isCollected, setCollected] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The parts report in their own effects, which run just before this one.
+    setCollected(true);
+  }, []);
   const report = useCallback((key: symbol, tally: PropertyTally) => {
     setTallies((previous) =>
       isShallowEqual(previous.get(key), tally) ? previous : new Map(previous).set(key, tally),
@@ -91,7 +112,10 @@ export function usePropertyTallies(): Pick<PropertyScopeValue, 'report'> & {
         return next;
       });
   }, []);
-  const total = useMemo(() => sumTallies(tallies.values()), [tallies]);
+  const total = useMemo(() => {
+    const sum = sumTallies(tallies.values());
+    return isCollected ? sum : { ...sum, isPending: true };
+  }, [tallies, isCollected]);
   return { report, total };
 }
 
@@ -99,10 +123,10 @@ export function usePropertyTallies(): Pick<PropertyScopeValue, 'report'> & {
 export function useReportPropertyTally(scope: PropertyScopeValue, tally: PropertyTally): void {
   const [key] = useState(() => Symbol('property'));
   const { report } = scope;
-  const { count, matches, isOverridden } = tally;
+  const { count, matches, isOverridden, isPending } = tally;
   useEffect(
-    () => report(key, { count, matches, isOverridden }),
-    [report, key, count, matches, isOverridden],
+    () => report(key, { count, matches, isOverridden, isPending }),
+    [report, key, count, matches, isOverridden, isPending],
   );
 }
 
@@ -114,7 +138,8 @@ export function usePropertyScopeLevel(text: string | undefined): PropertyScopeLe
     () => ({ ...parent, path: joinScopeText([parent.path, text]), report }),
     [parent, text, report],
   );
-  return { parent, value, total, isFiltering: parent.isFiltering };
+  const { isFiltering } = parent;
+  return { parent, value, total, isFiltering, hasNoMatch: hasNoPropertyMatch(isFiltering, total) };
 }
 
 /**

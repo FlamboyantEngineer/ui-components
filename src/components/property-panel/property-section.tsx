@@ -89,8 +89,12 @@ export function PropertySection({
   ...rest
 }: PropertySectionProps) {
   const level = usePropertyScopeLevel(title);
-  const { total, isFiltering } = level;
-  useReportPropertyTally(level.parent, { ...total, matches: hidden ? 0 : total.matches });
+  const { total, isFiltering, hasNoMatch } = level;
+  useReportPropertyTally(level.parent, {
+    ...total,
+    matches: hidden ? 0 : total.matches,
+    isPending: !hidden && total.isPending,
+  });
   const expansion = useSectionExpansion({
     id,
     isFiltering,
@@ -110,7 +114,7 @@ export function PropertySection({
         {...rest}
         {...expansion}
         {...hooks.root({ className, data: { overridden: total.isOverridden } })}
-        hidden={hidden || (isFiltering && total.matches === 0)}
+        hidden={hidden || hasNoMatch}
       >
         <div {...hooks.slot('header')}>
           <Heading level={headingLevel} className={hooks.slotClass('heading')}>

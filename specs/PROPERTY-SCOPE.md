@@ -13,7 +13,7 @@ Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/prop
 
 ### UIC-PROPERTY-SCOPE-1.2 - Containers
 
-While a query is active, a group and a section shall hide while no row inside matches, and a card while neither its name nor a row inside matches. A section or card that stays visible opens and ignores presses of its trigger; when the query clears, each returns to the open state it had before, whether the user chose it, it was stored or the caller controls it. Counts keep the number of properties inside, matching or not.
+While a query is active, a group and a section shall hide while no row inside matches, and a card while neither its name nor a row inside matches. A section or card that stays visible opens and ignores presses of its trigger; when the query clears, each returns to the open state it had before, whether the user chose it, it was stored or the caller controls it. Counts keep the number of properties inside, matching or not. Until every part mounted inside a container has reported, as in server rendering and the first client render, the container treats its match count as unknown and stays visible, so a preset query never hides a matching row before effects run.
 
 Implementation: `src/components/property-scope/scope-tally.ts`, `src/components/property-panel/property-panel.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`, `src/components/property-panel/property-disclosure.tsx`
 Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`
@@ -27,7 +27,7 @@ Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/prop
 
 ### UIC-PROPERTY-SCOPE-1.4 - No match
 
-The scope shall keep a status region (`role="status"`, `ui-property-scope__status`) after its content. While a query is active and no row matches, the region holds a small `EmptyState` with the provider string `noPropertyMatches` for the trimmed query, followed, when `onClear` is given, by a button named by the provider string `clearFilter` that calls it. Otherwise the region is empty.
+The scope shall keep a status region (`role="status"`, `ui-property-scope__status`) after its content. While a query is active and every part has reported that no row matches, the region holds a small `EmptyState` with the provider string `noPropertyMatches` for the trimmed query, followed, when `onClear` is given, by a button named by the provider string `clearFilter` that calls it. Otherwise the region is empty, also in server rendering and the first client render, before the parts have reported.
 
 Implementation: `src/components/property-scope/property-scope.tsx`, `src/core/strings.ts`
 Verification: `src/components/property-scope/property-scope.test.tsx`, `e2e/property-scope.spec.ts`

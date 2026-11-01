@@ -9,6 +9,7 @@ import { EmptyState } from '../empty-state/empty-state.js';
 import { TextMatchProvider, splitMatchTerms } from '../text-match/text-match.js';
 import {
   PropertyScopeContext,
+  hasNoPropertyMatch,
   usePropertyTallies,
   type PropertyScopeFilter,
 } from './scope-tally.js';
@@ -50,7 +51,7 @@ export function PropertyScope({
     () => ({ terms, isFiltering, query, filter, path: '', report }),
     [terms, isFiltering, query, filter, report],
   );
-  const hasNoMatch = isFiltering && total.matches === 0;
+  const hasNoMatch = hasNoPropertyMatch(isFiltering, total);
 
   return (
     <div {...rest} {...hooks.root({ className })}>
