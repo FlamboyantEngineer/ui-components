@@ -183,27 +183,22 @@ describe('Field', () => {
   it('UIC-FIELD-1.10 publishes its size and sizes its buttons one step below', () => {
     const sizesOf = (size?: ControlSize) => {
       const { container, unmount } = render(
-        <TextField
-          size={size}
-          options={{ value: 'Pear', committedValue: 'Apple' }}
-          help="Tip"
-          menu={['clear']}
-        />,
+        <TextField size={size} options={{ value: 'Pear', committedValue: 'Apple' }} help="Tip" />,
       );
       expectHooksMatchSpec(container, 'FIELD');
       const sizes = [
         root(container),
-        ...['.ui-field-restore-button', '.ui-field__help', '.ui-field__menu'].map((selector) =>
+        ...['.ui-field-restore-button', '.ui-field__help'].map((selector) =>
           container.querySelector(selector),
         ),
       ].map((element) => element?.getAttribute('data-size'));
       unmount();
       return sizes;
     };
-    expect(sizesOf()).toEqual(['md', 'sm', 'sm', 'sm']);
-    expect(sizesOf('xs')).toEqual(['xs', 'xs', 'xs', 'xs']);
-    expect(sizesOf('sm')).toEqual(['sm', 'xs', 'xs', 'xs']);
-    expect(sizesOf('lg')).toEqual(['lg', 'md', 'md', 'md']);
+    expect(sizesOf()).toEqual(['md', 'sm', 'sm']);
+    expect(sizesOf('xs')).toEqual(['xs', 'xs', 'xs']);
+    expect(sizesOf('sm')).toEqual(['sm', 'xs', 'xs']);
+    expect(sizesOf('lg')).toEqual(['lg', 'md', 'md']);
   });
 
   it('UIC-FIELD-1.12 publishes its density and keeps every part in a compact field', async () => {

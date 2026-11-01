@@ -119,7 +119,6 @@ function SavedGroup() {
         value={value}
         onChange={setValue}
         committedValue={saved}
-        menu={['clear']}
         data-lab-field="saved"
       >
         <Fruit />

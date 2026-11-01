@@ -119,8 +119,6 @@ test.describe('Code Editor JSON mode lab', () => {
     // Moving between the field's own buttons commits nothing.
     await page.keyboard.press('Tab');
     await expect(editor.getByRole('button', { name: 'Help for Order' })).toBeFocused();
-    await page.keyboard.press('Tab');
-    await expect(editor.getByRole('button', { name: 'Order actions' })).toBeFocused();
     await expect(committed).toHaveText('{"fruit":"Pear","id":9007199254740993,"sizes":[1,2,3]}');
     await page.keyboard.press('Tab');
     await expect(committed).toHaveText(

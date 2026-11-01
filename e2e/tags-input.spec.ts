@@ -217,7 +217,7 @@ test.describe('Tags Input lab', () => {
     await expect(input).toBeFocused();
     await page.keyboard.press('ControlOrMeta+z');
     await expect(tags(basket)).toHaveText(['Apple', 'Pear', 'Fig']);
-    await basket.getByRole('button', { name: 'Basket actions' }).click();
+    await basket.locator('.ui-field__label', { hasText: 'Basket' }).click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(tags(basket)).toHaveCount(0);
     // The input's own text keeps the browser's menu; the rest of the field opens the field menu.

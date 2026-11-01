@@ -7,6 +7,7 @@ import { UiProvider } from '../../core/provider.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { Form } from '../form/form.js';
 import { RelativeDateField } from './relative-date-field.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 const getNow = () => new Date(2026, 4, 23, 10, 30, 0);
 
@@ -244,7 +245,6 @@ describe('RelativeDateField', () => {
         label="Due"
         committedValue="2026-05-23"
         getNow={getNow}
-        menu={['clear']}
         onCommit={onCommit}
       />,
     );
@@ -253,8 +253,7 @@ describe('RelativeDateField', () => {
     expect(root(container)).toHaveAttribute('data-dirty', 'true');
     await user.click(screen.getByRole('button', { name: 'Restore Due' }));
     expect(screen.getByRole('button', { name: 'Today Due' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Due actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, screen.getByRole('button', { name: 'Today Due' }), 'Clear');
     expect(onCommit).toHaveBeenLastCalledWith(null);
   });
 
@@ -324,13 +323,7 @@ describe('RelativeDateField', () => {
       const user = userEvent.setup();
       renderInLocale(
         <form aria-label="Plan">
-          <RelativeDateField
-            label="Due"
-            name="due"
-            defaultValue="2026-05-24"
-            getNow={getNow}
-            menu={['clear']}
-          />
+          <RelativeDateField label="Due" name="due" defaultValue="2026-05-24" getNow={getNow} />
           <RelativeDateField label="Start" defaultValue="2026-05-20" getNow={getNow} />
           <button type="reset">Reset</button>
         </form>,
@@ -339,10 +332,10 @@ describe('RelativeDateField', () => {
       await user.click(screen.getByRole('button', { name: 'Tomorrow Due' }));
       await user.click(screen.getByRole('option', { name: 'Yesterday' }));
       expect(new FormData(form()).get('due')).toBe('2026-05-22');
-      await user.click(screen.getByRole('button', { name: 'Due actions' }));
-      await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+      const trigger = screen.getByRole('button', { name: 'Yesterday Due' });
+      await chooseFieldMenuItem(user, trigger, 'Clear');
       expect(new FormData(form()).get('due')).toBe('');
-      act(() => screen.getByRole('button', { name: 'Due actions' }).focus());
+      act(() => screen.getByRole('button', { name: /Due$/ }).focus());
       await user.keyboard('{Control>}z{/Control}');
       expect(new FormData(form()).get('due')).toBe('2026-05-22');
       await user.click(screen.getByRole('button', { name: 'Reset' }));

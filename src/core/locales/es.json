@@ -419,6 +419,7 @@
   "problemCount": "{errors, plural, =0 {{warnings, plural, =0 {Sin problemas} one {# advertencia} other {# advertencias}}} one {# error{warnings, plural, =0 {} one {, # advertencia} other {, # advertencias}}} other {# errores{warnings, plural, =0 {} one {, # advertencia} other {, # advertencias}}}}",
   "problemSeverityLead": "{severity, select, error {Error:} other {Advertencia:}}",
   "setDefault": "Restablecer el valor predeterminado",
+  "resetValue": "Restablecer",
   "valueRequired": "Se requiere un valor.",
   "validating": "Validando",
   "tooShort": "{minLength, plural, one {Usa al menos # carácter.} other {Usa al menos # caracteres.}}",

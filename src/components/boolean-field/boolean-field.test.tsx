@@ -1,9 +1,10 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Form } from '../form/form.js';
 import { BooleanField, type BooleanFieldVariant } from './boolean-field.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -243,7 +244,6 @@ describe('BooleanField', () => {
         variant="segmented"
         allowsUnset
         defaultValue
-        menu={['clear']}
         onChange={(value) => changes.push(value)}
       />,
     );
@@ -251,21 +251,24 @@ describe('BooleanField', () => {
     expect(changes.at(-1)).toBe(null);
     unmountSegmented();
 
-    render(<BooleanField label="Plain" defaultValue menu={['clear']} />);
-    await user.click(screen.getByRole('button', { name: 'Plain actions' }));
-    expect(await screen.findByRole('menuitem', { name: 'Clear' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    // A two-state field can never be cleared, so its menu leaves Clear out.
+    render(<BooleanField label="Plain" defaultValue />);
+    act(() => screen.getByRole('checkbox', { name: 'Plain' }).focus());
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    const menu = await screen.findByRole('menu', { name: 'Plain actions' });
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Reset']);
   });
 
   it('UIC-BOOLEAN-FIELD-2.2 unsets from the field menu with allowsUnset', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <BooleanField label="Inherit" variant="switch" allowsUnset defaultValue menu={['clear']} />,
+      <BooleanField label="Inherit" variant="switch" allowsUnset defaultValue />,
     );
-    await user.click(screen.getByRole('button', { name: 'Inherit actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, screen.getByRole('switch', { name: 'Inherit' }), 'Clear');
     expect(root(container)).toHaveAttribute('data-value', 'unset');
   });
 
@@ -337,11 +340,15 @@ describe('BooleanField', () => {
     await user.click(screen.getByRole('button', { name: 'Restore Ripe' }));
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(root(container)).not.toHaveAttribute('data-dirty');
-    await user.click(screen.getByRole('button', { name: 'Ripe actions' }));
-    expect(await screen.findByRole('menuitem', { name: 'Clear' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    // A two-state field can never be cleared, so its menu leaves Clear out.
+    act(() => button.focus());
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    const menu = await screen.findByRole('menu', { name: 'Ripe actions' });
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Set to default']);
   });
 
   it('UIC-BOOLEAN-FIELD-2.3 keeps the field behaviour in the dropdown', async () => {
@@ -353,7 +360,6 @@ describe('BooleanField', () => {
         allowsUnset
         defaultValue
         validate={(value) => (value === false ? { severity: 'error', message: 'Not yet.' } : null)}
-        menu={['clear']}
       />,
     );
     await user.click(screen.getByRole('button', { name: 'True Ripe' }));
@@ -366,8 +372,7 @@ describe('BooleanField', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'False Ripe' })).toHaveFocus());
     await user.keyboard('{Control>}z{/Control}');
     expect(root(container)).toHaveAttribute('data-value', 'true');
-    await user.click(screen.getByRole('button', { name: 'Ripe actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, screen.getByRole('button', { name: 'True Ripe' }), 'Clear');
     expect(root(container)).toHaveAttribute('data-value', 'unset');
     unmount();
     render(<BooleanField label="Ripe" variant="dropdown" value isReadOnly />);

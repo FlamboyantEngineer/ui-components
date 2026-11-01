@@ -8,6 +8,7 @@ import { UiProvider } from '../../core/provider.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
 import { DateTimeField } from './date-time-field.js';
+import { chooseFieldMenuItem } from '../../../test/field-fixtures.js';
 
 function renderInLocale(element: ReactElement) {
   return render(<UiProvider locale="en-US">{element}</UiProvider>);
@@ -362,14 +363,7 @@ describe('DateTimeField field', () => {
   it('UIC-DATE-TIME-FIELD-1.7 restores, undoes and clears from the menu', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    renderInLocale(
-      <DateTimeField
-        label="Due"
-        committedValue="2026-04-13"
-        menu={['clear']}
-        onCommit={onCommit}
-      />,
-    );
+    renderInLocale(<DateTimeField label="Due" committedValue="2026-04-13" onCommit={onCommit} />);
     act(() => segment(/^day/).focus());
     await user.keyboard('{ArrowUp}');
     expect(onCommit).toHaveBeenLastCalledWith('2026-04-14');
@@ -378,8 +372,7 @@ describe('DateTimeField field', () => {
     await user.keyboard('{ArrowUp}{ArrowUp}');
     await user.click(screen.getByRole('button', { name: 'Restore Due' }));
     expect(segment(/^day/)).toHaveTextContent('13');
-    await user.click(screen.getByRole('button', { name: 'Due actions' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    await chooseFieldMenuItem(user, segment(/^day/), 'Clear');
     expect(onCommit).toHaveBeenLastCalledWith(null);
     expect(segment(/^day/)).toHaveAttribute('data-placeholder', 'true');
   });

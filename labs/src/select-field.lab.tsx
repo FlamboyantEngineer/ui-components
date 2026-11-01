@@ -327,7 +327,7 @@ function Locking() {
   );
 }
 
-const menu: FieldMenuEntry[] = ['clear', 'set-default', 'help'];
+const menu: FieldMenuEntry[] = ['clear', 'reset', 'set-default', 'help'];
 
 function Form() {
   const [entries, setEntries] = useState('none');
@@ -445,7 +445,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Field menu"
-        description="Clear, Set to default and Help from the field base."
+        description="The field's context menu: right-click the field or press Shift+F10 on its trigger. Clear empties it, Reset puts back the committed value (Apple) and Set to default the default (Pear); Help follows."
       >
         <SelectField
           label="Fruit"
@@ -453,7 +453,7 @@ mountLab(
           defaultValue="pear"
           committedValue="apple"
           menu={menu}
-          help="Right-click the field or use its menu button."
+          help="Right-click the field, or press Shift+F10 in it, for its menu."
         />
       </LabSection>
       <LabSection title="Groups" description="Headed sections of options.">

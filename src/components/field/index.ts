@@ -1,3 +1,4 @@
+export { defaultFieldMenu } from './field-menu-entries.js';
 export {
   Field,
   FieldPreviousValue,
