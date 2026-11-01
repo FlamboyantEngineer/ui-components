@@ -174,6 +174,55 @@ describe('Tour', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it.each([
+    ['modal', false],
+    ['non-modal', true],
+  ])('UIC-TOUR-2.2 leaves Escape to a %s step control that handles it', async (_, isNonModal) => {
+    const user = userEvent.setup();
+    const onSkip = vi.fn();
+    const storage = createMemoryStorage();
+    const editor: TourStep[] = [
+      {
+        target: searchRef,
+        title: 'Editor',
+        content: (
+          <>
+            <input
+              aria-label="Prevented"
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') event.preventDefault();
+              }}
+            />
+            <input
+              aria-label="Stopped"
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') event.stopPropagation();
+              }}
+            />
+            <input aria-label="Plain" />
+          </>
+        ),
+      },
+    ];
+    render(
+      <UiProvider storage={storage}>
+        <Page steps={editor} onSkip={onSkip} persistKey="tour.editor" isNonModal={isNonModal} />
+      </UiProvider>,
+    );
+    const step = await screen.findByRole('dialog', { name: 'Editor' });
+    for (const name of ['Prevented', 'Stopped']) {
+      await user.click(within(step).getByRole('textbox', { name }));
+      await user.keyboard('{Escape}');
+      expect(onSkip).not.toHaveBeenCalled();
+      expect(screen.getByRole('dialog', { name: 'Editor' })).toBeInTheDocument();
+      expect(storage.getItem('tour.editor')).toBeNull();
+    }
+    await user.click(within(step).getByRole('textbox', { name: 'Plain' }));
+    await user.keyboard('{Escape}');
+    expect(onSkip).toHaveBeenCalledExactlyOnceWith(0);
+    expect(storage.getItem('tour.editor')).toBe('true');
+  });
+
   it('UIC-TOUR-2.5 moves focus to each step, keeps it inside, and returns it on close', async () => {
     const user = userEvent.setup();
     function Helped() {

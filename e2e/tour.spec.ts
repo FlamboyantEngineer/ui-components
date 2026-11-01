@@ -205,6 +205,26 @@ test.describe('Tour lab', () => {
     await expect(start).toBeFocused();
     await lab.expectAccessible();
   });
+
+  test('UIC-TOUR-2.2 leaves Escape to a field of the step that handles it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tour');
+    const demo = page.locator('[data-lab-demo="escape-in-content"]');
+    await demo.getByRole('button', { name: 'Open the note tour' }).click();
+    const note = page.getByRole('dialog', { name: 'Quick note' }).getByRole('textbox', {
+      name: 'Note',
+    });
+    await note.click();
+    await page.keyboard.press('Escape');
+    await expect(note).toHaveValue('');
+    await expect(page.getByRole('dialog', { name: 'Quick note' })).toBeVisible();
+    await expect(demo.locator('[data-lab-output="escape outcome"]')).toHaveText('open');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Quick note' })).toHaveCount(0);
+    await expect(demo.locator('[data-lab-output="escape outcome"]')).toHaveText('skipped');
+  });
 });
 
 test('UIC-TOUR-1.2 follows a target replaced or removed while its step shows', async ({

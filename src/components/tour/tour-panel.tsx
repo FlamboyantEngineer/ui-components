@@ -41,17 +41,22 @@ export function TourPanel({
   const isLast = step === count - 1;
   const dialogRef = useRef<HTMLElement>(null);
   const skip = useLatest(onSkip);
-  // The dialog takes no key handler, so Escape is heard on its element.
+  // The dialog takes no key handler, so Escape is heard on its document, once the event has bubbled
+  // past React's root: a control in the step's content that handles Escape in its own React or
+  // native handler (preventDefault or stopPropagation) keeps it.
   useEffect(() => {
     const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const owner = dialog.ownerDocument;
     const onKeyDown = (event: KeyboardEvent) => {
+      if (!event.composedPath().includes(dialog)) return;
       // A composing Escape in a field of the step's content is the input method's.
       if (event.key !== 'Escape' || event.defaultPrevented || isComposingKey(event)) return;
       event.preventDefault();
       skip.current();
     };
-    dialog?.addEventListener('keydown', onKeyDown);
-    return () => dialog?.removeEventListener('keydown', onKeyDown);
+    owner.addEventListener('keydown', onKeyDown);
+    return () => owner.removeEventListener('keydown', onKeyDown);
   }, [skip]);
   return (
     <Dialog ref={dialogRef} id={id} className={hooks.slotClass('dialog')}>
