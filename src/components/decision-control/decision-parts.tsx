@@ -68,7 +68,14 @@ interface DecisionSubmission {
 
 interface DecisionSubmissionOptions {
   details: Omit<DecisionControlDetails, 'signature'>;
-  isSigned: boolean;
+  /**
+   * What a signature signs for: the decision, whether it needs a comment and the signer's
+   * configuration, or `null` while the decision cannot be signed (no signature, no decision picked,
+   * or disabled). Signing ends when it changes.
+   */
+  signingContext: string | null;
+  /** The decision asks for a comment and has none, so it cannot be submitted. */
+  isIncomplete: boolean;
   isDisabled: boolean;
   onSubmit: (details: DecisionControlDetails) => void | Promise<unknown>;
   /** Called once a submission succeeds while its decision and comment are unchanged. */
@@ -88,32 +95,64 @@ export const decisionControlHooks = createHooks('decision-control', [
 const hooks = decisionControlHooks;
 
 /**
+ * What a signature would sign for, and whether the decision lacks a comment it needs: the signing
+ * context is the decision, its comment requirement and the signer's configuration, or `null` while
+ * the decision cannot be signed.
+ */
+export function describeSigning({
+  signature,
+  picked,
+  comment,
+  commentText,
+  isDisabled,
+}: {
+  signature: DecisionControlSignature | undefined;
+  picked: DecisionControlOption | undefined;
+  comment: DecisionControlComment;
+  commentText: string;
+  isDisabled: boolean;
+}): Pick<DecisionSubmissionOptions, 'signingContext' | 'isIncomplete'> {
+  const needsComment = comment === 'required' || Boolean(picked?.requiresComment);
+  const signingContext =
+    signature && picked && !isDisabled
+      ? JSON.stringify([
+          picked.value,
+          needsComment,
+          signature.userName,
+          signature.credentials ?? 'password',
+          signature.drawing ?? 'none',
+        ])
+      : null;
+  return { signingContext, isIncomplete: !picked || (needsComment && commentText === '') };
+}
+
+/**
  * Submitting a decision: pending and failed while unsigned, through the signature dialog when
- * signed. A success settles only in the mounted control, and only while the reader has not changed
- * the decision or the comment since submitting, so later edits stay.
+ * signed. A signature is tied to the context it was started for: when the decision, its comment
+ * requirement or the signer's configuration changes, or the control is disabled, signing ends and
+ * needs a new Submit. A success settles only in the mounted control, and only while the reader has
+ * not changed the decision or the comment since submitting, so later edits stay.
  */
 export function useDecisionSubmission({
   details,
-  isSigned,
+  signingContext,
+  isIncomplete,
   isDisabled,
   onSubmit,
   onSubmitted,
 }: DecisionSubmissionOptions): DecisionSubmission {
   const strings = useUiStrings();
   const [isPending, setPending] = useState(false);
-  const [isSigning, setSigning] = useState(false);
+  const [signingFor, setSigningFor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const running = useRef(false);
   const latest = useLatest(details);
   const beginSubmission = useLifetimeSignal();
-  // Disabling ends a signature in progress.
-  const [wasDisabled, setWasDisabled] = useState(isDisabled);
-  if (isDisabled !== wasDisabled) {
-    setWasDisabled(isDisabled);
-    if (isDisabled) setSigning(false);
-  }
+  // A signature in progress ends with its context, and does not come back with it.
+  if (signingFor !== null && signingFor !== signingContext) setSigningFor(null);
+  const isSigning = signingFor !== null && signingFor === signingContext;
   const submit = async (signature: SignatureDetails | null) => {
-    if (isDisabled || running.current) return;
+    if (isDisabled || isIncomplete || running.current) return;
     running.current = true;
     const sent = details;
     const signal = beginSubmission();
@@ -127,9 +166,9 @@ export function useDecisionSubmission({
     }
   };
   const start = () => {
-    if (isDisabled || running.current) return;
-    if (isSigned) {
-      setSigning(true);
+    if (isDisabled || isIncomplete || running.current) return;
+    if (signingContext !== null) {
+      setSigningFor(signingContext);
       return;
     }
     setError(null);
@@ -140,6 +179,7 @@ export function useDecisionSubmission({
       onError: (reason) => setError(toErrorMessage(reason, strings.decisionFailed)),
     });
   };
+  const setSigning = (next: boolean) => setSigningFor(next ? signingContext : null);
   return { isPending, isSigning, setSigning, error, start, submit };
 }
 

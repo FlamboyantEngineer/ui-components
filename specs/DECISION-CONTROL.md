@@ -34,10 +34,10 @@ Verification: `src/components/decision-control/decision-control.test.tsx`, `src/
 
 ### UIC-DECISION-CONTROL-1.5 - Signed decisions
 
-With `signature`, submitting a valid form shall open a `SignatureDialog` (`ui-decision-control__signature`) titled by the provider's `signDecision` string, with the picked decision's label as its only meaning, no reason, the comment as its summary, and the `userName`, `credentials` and `drawing` of `signature`. Signing calls `onSubmit({ decision, comment, signature })` with what the signer gave; the dialog shows a rejection's error and stays open, and closes and clears the comment on success.
+With `signature`, submitting a valid form shall open a `SignatureDialog` (`ui-decision-control__signature`) titled by the provider's `signDecision` string, with the picked decision's label as its only meaning, no reason, the comment as its summary, and the `userName`, `credentials` and `drawing` of `signature`. Signing calls `onSubmit({ decision, comment, signature })` with what the signer gave; the dialog shows a rejection's error and stays open, and closes and clears the comment on success. A signature belongs to the decision it was started for: when the picked decision, whether it needs a comment, or the signer's `userName`, `credentials` or `drawing` changes, or `signature` or the picked option goes away, the dialog closes without calling `onSubmit`, its entries are dropped, and signing needs a new Submit; it does not reopen when the earlier state returns. A decision that needs a comment and has none is never submitted.
 
 Implementation: `src/components/decision-control/decision-parts.tsx`, `src/components/decision-control/decision-control.tsx`
-Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/decision-control.spec.ts`
+Verification: `src/components/decision-control/decision-control.test.tsx`, `src/components/decision-control/decision-control-signing.test.tsx`, `e2e/decision-control.spec.ts`
 
 ### UIC-DECISION-CONTROL-1.6 - Disabled
 

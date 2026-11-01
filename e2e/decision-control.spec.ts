@@ -109,6 +109,19 @@ test.describe('Decision Control lab', () => {
     );
   });
 
+  test('UIC-DECISION-CONTROL-1.5 ends signing when the decision changes', async ({ page, lab }) => {
+    await lab.open('decision-control');
+    const form = page.getByRole('form', { name: 'Decision changed while signing' });
+    await page.getByRole('button', { name: 'Switch to Reject in 2 seconds' }).click();
+    await form.getByRole('button', { name: 'Submit' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Sign your decision' });
+    await expect(dialog).toContainText('Meaning of signature: Approve');
+    await dialog.getByLabel(/^Password/).fill('sample');
+    await expect(dialog).toHaveCount(0, { timeout: 5000 });
+    await expect(form.getByRole('radio', { name: 'Reject' })).toBeChecked();
+    await expect(page.locator('[data-lab-record="changed"]')).toHaveText('');
+  });
+
   test('UIC-DECISION-CONTROL-2.1 passes axe', async ({ lab }) => {
     await lab.open('decision-control');
     await lab.expectAccessible();
