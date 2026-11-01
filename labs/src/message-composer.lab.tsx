@@ -264,7 +264,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Recalling earlier prompts"
-      description="In an empty composer Up shows the newest earlier prompt and each further Up an older one; Down goes back, then empties the composer. Once you change a recalled prompt the arrows move the caret again."
+      description="In an empty composer Up shows the newest earlier prompt and each further Up an older one; Down goes back, then empties the composer. Once you change a recalled prompt the arrows move the caret again. During an input method composition the arrows and Escape stay the input method's."
     >
       <Recalling />
     </LabSection>

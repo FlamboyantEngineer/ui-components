@@ -248,6 +248,17 @@ test.describe('Message Composer lab', () => {
     await lab.open('message-composer');
     const input = composer(page, 'history').getByRole('textbox');
     await input.click();
+    // The arrow some browsers report with key code 229 as a composition ends is the input method's.
+    await input.evaluate((element) => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowUp',
+        bubbles: true,
+        cancelable: true,
+      });
+      Object.defineProperty(event, 'keyCode', { value: 229 });
+      element.dispatchEvent(event);
+    });
+    await expect(input).toHaveValue('');
     await page.keyboard.press('ArrowUp');
     await expect(input).toHaveValue('List the open questions');
     await page.keyboard.press('ArrowUp');
