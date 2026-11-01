@@ -34,7 +34,7 @@ Verification: `src/components/text-diff/diff-rows.test.ts`, `src/components/text
 
 ### UIC-TEXT-DIFF-1.5 - Panes scroll together
 
-The split panes shall scroll vertically together through `useSyncedScroll` with matched anchors ([UIC-SYNCED-SCROLL-1.2](SYNCED-SCROLL.md#uic-synced-scroll-12---matched-anchors)): the line, filler and fold rows of both panes, matched by their order, so a widget drawn on one side only shifts the panes by its height and they meet again at the next shared row. Each pane scrolls horizontally on its own.
+The split panes shall scroll vertically together through `useSyncedScroll` with matched anchors ([UIC-SYNCED-SCROLL-1.2](SYNCED-SCROLL.md#uic-synced-scroll-12---matched-anchors)): the line, filler and fold rows of both panes, matched by their order, so a widget drawn on one side only shifts the panes by its height and they meet again at the next shared row. Rows are measured in each pane's own pixels, so the panes stay level under an ancestor `transform: scale()`. Each pane scrolls horizontally on its own.
 
 Implementation: `src/components/text-diff/text-diff.tsx`, `src/utils/use-synced-scroll.ts`
 Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`

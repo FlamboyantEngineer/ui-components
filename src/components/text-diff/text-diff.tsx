@@ -40,6 +40,7 @@ import {
   type TableOptions,
 } from './text-diff-table.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 export { ChangeNavigation } from './change-navigation.js';
 export type { TextDiffChange, TextDiffLine } from './diff-rows.js';
@@ -84,13 +85,12 @@ const noneExpanded: ReadonlySet<number> = new Set();
 
 /** The rows of a split side, as anchors the other side aligns to: line, filler and fold rows. */
 function readRowAnchors(container: HTMLElement): ScrollAnchor[] {
-  const origin = container.getBoundingClientRect().top - container.scrollTop;
   const rows = container.querySelectorAll(
     `:scope > table > tbody > tr:not(.${hooks.slotClass('widget')})`,
   );
   return Array.from(rows, (row, index) => ({
     key: index,
-    offset: row.getBoundingClientRect().top - origin,
+    offset: measureInScroller(row, container).top,
   }));
 }
 

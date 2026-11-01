@@ -20,7 +20,7 @@ Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/
 
 ### UIC-MERGE-VIEW-1.3 - Panes scroll together
 
-Every pane shall scroll vertically with the others through `useSyncedScroll` with matched anchors ([UIC-SYNCED-SCROLL-1.2](SYNCED-SCROLL.md#uic-synced-scroll-12---matched-anchors)): each chunk's body in the input panes and its block in the result pane, matched by their order, so the panes meet at every chunk even where a conflict's editor is taller than its rows. Each pane scrolls horizontally on its own.
+Every pane shall scroll vertically with the others through `useSyncedScroll` with matched anchors ([UIC-SYNCED-SCROLL-1.2](SYNCED-SCROLL.md#uic-synced-scroll-12---matched-anchors)): each chunk's body in the input panes and its block in the result pane, matched by their order, so the panes meet at every chunk even where a conflict's editor is taller than its rows. Anchors are measured in each pane's own pixels, so the panes stay level under an ancestor `transform: scale()`. Each pane scrolls horizontally on its own.
 
 Implementation: `src/components/merge-view/merge-view.tsx`, `src/utils/use-synced-scroll.ts`
 Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`

@@ -2,6 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useNearPages, type NearPages } from './use-near-pages.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 interface UsePdfPagesOptions {
   scrollerRef: RefObject<HTMLElement | null>;
@@ -74,11 +75,10 @@ function findMostVisiblePage(elements: ReadonlyMap<number, HTMLElement>, view: D
 }
 
 function measureAnchor(scroller: HTMLElement, page: HTMLElement, pageIndex: number): ScrollAnchor {
-  const view = scroller.getBoundingClientRect();
-  const box = page.getBoundingClientRect();
+  const box = measureInScroller(page, scroller);
   return {
     pageIndex,
-    fraction: box.height > 0 ? (view.top - box.top) / box.height : 0,
+    fraction: box.height > 0 ? (scroller.scrollTop - box.top) / box.height : 0,
     centre:
       scroller.scrollWidth > 0
         ? (scroller.scrollLeft + scroller.clientWidth / 2) / scroller.scrollWidth
@@ -87,9 +87,8 @@ function measureAnchor(scroller: HTMLElement, page: HTMLElement, pageIndex: numb
 }
 
 function scrollToAnchor(scroller: HTMLElement, page: HTMLElement, anchor: ScrollAnchor) {
-  const box = page.getBoundingClientRect();
-  scroller.scrollTop +=
-    box.top - scroller.getBoundingClientRect().top + anchor.fraction * box.height;
+  const box = measureInScroller(page, scroller);
+  scroller.scrollTop = box.top + anchor.fraction * box.height;
   scroller.scrollLeft = anchor.centre * scroller.scrollWidth - scroller.clientWidth / 2;
 }
 
@@ -100,16 +99,15 @@ function revealSpan(start: number, size: number, view: { start: number; size: nu
 }
 
 function revealInScroller(scroller: HTMLElement, element: HTMLElement) {
-  const view = scroller.getBoundingClientRect();
-  const box = element.getBoundingClientRect();
+  const box = measureInScroller(element, scroller);
   const { scrollTop, scrollLeft } = scroller;
-  scroller.scrollTop = revealSpan(scrollTop + box.top - view.top, box.height, {
+  scroller.scrollTop = revealSpan(box.top, box.height, {
     start: scrollTop,
-    size: view.height,
+    size: scroller.clientHeight,
   });
-  scroller.scrollLeft = revealSpan(scrollLeft + box.left - view.left, box.width, {
+  scroller.scrollLeft = revealSpan(box.left, box.width, {
     start: scrollLeft,
-    size: view.width,
+    size: scroller.clientWidth,
   });
 }
 

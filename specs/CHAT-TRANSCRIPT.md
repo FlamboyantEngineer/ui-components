@@ -159,7 +159,7 @@ Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `e2
 
 ### UIC-CHAT-TRANSCRIPT-3.2 - Moving between messages
 
-On a focused message, Up and Down shall move focus to the previous and next message and Home and End to the first and last, skipping the parts between messages and stopping at either end, and bring the newly focused message into view: just far enough to show it whole, or with its top at the top when it is taller than the view or for Home (a separator right before it comes into view with it). Arrow keys with a modifier are left alone.
+On a focused message, Up and Down shall move focus to the previous and next message and Home and End to the first and last, skipping the parts between messages and stopping at either end, and bring the newly focused message into view: just far enough to show it whole, or with its top at the top when it is taller than the view or for Home (a separator right before it comes into view with it), measured in the viewport's own pixels, also under an ancestor `transform: scale()`. Arrow keys with a modifier are left alone.
 
 Implementation: `src/components/chat-transcript/transcript-keyboard.ts`, `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-geometry.ts`
 Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `e2e/chat-transcript.spec.ts`

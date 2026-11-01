@@ -73,7 +73,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.4 - Overflow
 
-While its tabs do not fit, the list shall publish `data-overflowing`, re-measured when the list, its tabs or their content change size (also outside a render of the list, such as a count badge or an icon that loads), and when fonts load, at most once per animation frame. Whenever the selection changes, and on first render, an overflowing list shall scroll the selected tab toward its middle, clamped to the list's scroll range so the last tab ends flush with the list's end, smoothly unless the reader prefers reduced motion.
+While its tabs do not fit, the list shall publish `data-overflowing`, re-measured when the list, its tabs or their content change size (also outside a render of the list, such as a count badge or an icon that loads), and when fonts load, at most once per animation frame. Whenever the selection changes, and on first render, an overflowing list shall scroll the selected tab toward its middle, clamped to the list's scroll range so the last tab ends flush with the list's end, smoothly unless the reader prefers reduced motion. Positions are read in the scroller's own pixels, so this holds under an ancestor `transform: scale()` as without one.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list-overflow.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`

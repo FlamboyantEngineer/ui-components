@@ -9,6 +9,7 @@ import {
 } from '../scroll-region/scroll-region.js';
 import { type CodeDiagnostic } from './code-layers.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 interface CodeScrollbarsProps {
   input: RefObject<HTMLTextAreaElement | null>;
@@ -28,9 +29,7 @@ function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): Code
   const viewport = input.current;
   const lines = gutter.current?.children;
   if (!viewport || !lines || viewport.scrollHeight <= viewport.clientHeight) return [];
-  const origin =
-    requireDefined(gutter.current).getBoundingClientRect().top -
-    requireDefined(gutter.current).scrollTop;
+  const lineGutter = requireDefined(gutter.current);
   return diagnostics.flatMap((diagnostic) => {
     const start = diagnostic.line === undefined ? undefined : lines[diagnostic.line - 1];
     if (!start) return [];
@@ -41,8 +40,9 @@ function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): Code
           Math.min(lines.length - 1, (diagnostic.endLine ?? requireDefined(diagnostic.line)) - 1),
         )
       ] ?? start;
-    const top = start.getBoundingClientRect().top - origin;
-    const bottom = end.getBoundingClientRect().bottom - origin;
+    const top = measureInScroller(start, lineGutter).top;
+    const last = measureInScroller(end, lineGutter);
+    const bottom = last.top + last.height;
     return [
       {
         top: top / viewport.scrollHeight,

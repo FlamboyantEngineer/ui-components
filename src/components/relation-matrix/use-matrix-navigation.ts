@@ -20,6 +20,7 @@ import {
 } from './matrix-navigation.js';
 import { isElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 interface MatrixNavigationOptions {
   root: RefObject<HTMLDivElement | null>;
@@ -75,24 +76,22 @@ function readPosition(target: EventTarget): MatrixPosition | null {
  * (header cells stay in view on their own axis).
  */
 function revealCell(root: HTMLElement, cell: HTMLElement, position: MatrixPosition) {
-  const view = root.getBoundingClientRect();
-  const box = cell.getBoundingClientRect();
-  const corner = root
-    .querySelector(selectMatrixCell({ row: -1, column: -1 }))
-    ?.getBoundingClientRect();
+  const box = measureInScroller(cell, root);
+  const cornerCell = root.querySelector(selectMatrixCell({ row: -1, column: -1 }));
+  const corner = cornerCell ? measureInScroller(cornerCell, root) : null;
   if (position.row >= 0) {
-    const top = view.top + root.clientTop + (corner?.height ?? 0);
-    const bottom = view.top + root.clientTop + root.clientHeight;
+    const top = root.scrollTop + (corner?.height ?? 0);
+    const bottom = root.scrollTop + root.clientHeight;
     if (box.top < top) root.scrollTop -= top - box.top;
-    else if (box.bottom > bottom) root.scrollTop += box.bottom - bottom;
+    else if (box.top + box.height > bottom) root.scrollTop += box.top + box.height - bottom;
   }
   if (position.column >= 0) {
     const isRightToLeft = getOwnerWindow(root).getComputedStyle(root).direction === 'rtl';
     const inset = corner?.width ?? 0;
-    const left = view.left + root.clientLeft + (isRightToLeft ? 0 : inset);
-    const right = view.left + root.clientLeft + root.clientWidth - (isRightToLeft ? inset : 0);
+    const left = root.scrollLeft + (isRightToLeft ? 0 : inset);
+    const right = root.scrollLeft + root.clientWidth - (isRightToLeft ? inset : 0);
     if (box.left < left) root.scrollLeft -= left - box.left;
-    else if (box.right > right) root.scrollLeft += box.right - right;
+    else if (box.left + box.width > right) root.scrollLeft += box.left + box.width - right;
   }
 }
 

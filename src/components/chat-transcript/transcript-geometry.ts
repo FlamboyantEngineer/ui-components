@@ -1,3 +1,5 @@
+import { measureInScroller } from '../../utils/scroll-geometry.js';
+
 /** Where a revealed message sits: just into view, at the top, or in the middle. */
 export type RevealAlignment = 'nearest' | 'start' | 'center';
 
@@ -10,11 +12,21 @@ export function readViewportPadding(viewport: HTMLElement): { top: number; botto
   };
 }
 
+/**
+ * How far an element's top edge sits below the top of the viewport's padding box, and its height,
+ * in the viewport's own pixels under any ancestor scale.
+ */
+export function readOffsetBox(
+  element: Element,
+  viewport: HTMLElement,
+): { top: number; height: number } {
+  const box = measureInScroller(element, viewport);
+  return { top: box.top - viewport.scrollTop, height: box.height };
+}
+
 /** How far an element's top edge sits below the top of the viewport's padding box, in pixels. */
 export function readOffset(element: Element, viewport: HTMLElement): number {
-  return (
-    element.getBoundingClientRect().top - viewport.getBoundingClientRect().top - viewport.clientTop
-  );
+  return readOffsetBox(element, viewport).top;
 }
 
 /** How far the viewport is from its bottom, in pixels. */
@@ -37,8 +49,7 @@ export function resolveReveal(
   align: RevealAlignment,
 ): number {
   const padding = readViewportPadding(viewport);
-  const top = readOffset(element, viewport);
-  const height = element.getBoundingClientRect().height;
+  const { top, height } = readOffsetBox(element, viewport);
   const room = viewport.clientHeight - padding.top - padding.bottom;
   const start = viewport.scrollTop + top - padding.top;
   if (align === 'start' || height >= room) return start;
@@ -58,7 +69,8 @@ export function findFirstVisible(elements: readonly Element[], viewport: HTMLEle
   while (low < high) {
     const middle = (low + high) >> 1;
     const element = elements[middle] as Element;
-    const bottom = readOffset(element, viewport) + element.getBoundingClientRect().height;
+    const box = readOffsetBox(element, viewport);
+    const bottom = box.top + box.height;
     if (bottom > 0) high = middle;
     else low = middle + 1;
   }

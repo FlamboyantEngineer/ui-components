@@ -7,6 +7,7 @@ import { clamp } from '../../utils/clamp.js';
 import { isOverflowing } from '../../utils/is-overflowing.js';
 import { prefersReducedMotion } from '../../utils/prefers-reduced-motion.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 
 interface ListScrollOptions {
   orientation: Orientation;
@@ -19,16 +20,15 @@ interface ListScrollOptions {
  */
 function centerTab(list: HTMLElement, tab: HTMLElement, orientation: Orientation) {
   if (!isOverflowing(list, orientation)) return;
-  const listBox = list.getBoundingClientRect();
-  const tabBox = tab.getBoundingClientRect();
+  const tabBox = measureInScroller(tab, list);
   const vertical = orientation === 'vertical';
   const range = vertical
     ? list.scrollHeight - list.clientHeight
     : list.scrollWidth - list.clientWidth;
   const position = vertical ? list.scrollTop : list.scrollLeft;
   const delta = vertical
-    ? tabBox.top + tabBox.height / 2 - (listBox.top + list.clientTop + list.clientHeight / 2)
-    : tabBox.left + tabBox.width / 2 - (listBox.left + list.clientLeft + list.clientWidth / 2);
+    ? tabBox.top + tabBox.height / 2 - (position + list.clientHeight / 2)
+    : tabBox.left + tabBox.width / 2 - (position + list.clientWidth / 2);
   const rtl = !vertical && getOwnerWindow(list).getComputedStyle(list).direction === 'rtl';
   const [min, max] = rtl ? [-range, 0] : [0, range];
   const target = clamp(position + delta, min, max);

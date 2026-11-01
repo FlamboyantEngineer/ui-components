@@ -5,6 +5,7 @@ import { observeViewport } from '../../utils/observe-viewport.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useTargetElement } from '../../utils/use-target-element.js';
+import { measureScale } from '../../utils/scroll-geometry.js';
 
 export interface ScrollSpyOptions {
   /** The ids of the sections to follow, in document order. */
@@ -29,7 +30,8 @@ export function resolveScrollSpy(
   });
   const atEnd = viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= 1;
   if (atEnd && viewport.scrollTop > 0) return sections.at(-1)?.id;
-  const line = viewport.getBoundingClientRect().top + offset + 1;
+  // `offset` counts the viewport's own pixels; the sections' edges are read in viewport pixels.
+  const line = viewport.getBoundingClientRect().top + (offset + 1) * measureScale(viewport).y;
   const reached = sections.filter(({ element }) => element.getBoundingClientRect().top <= line);
   return (reached.at(-1) ?? sections[0])?.id;
 }

@@ -108,7 +108,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components
 
 ### UIC-CODE-EDITOR-3.5 - Next and previous problem
 
-F8 in the text area shall select the next marked range after the caret and Shift+F8 the previous one, wrapping at either end, scroll it into view, show its hover tip on the next animation frame (after any scrolling the browser does to reveal the selection, so that scrolling neither closes the tip nor leaves it pointing at the range's old place) and read its message out in a polite status (`ui-code-editor__announcement`, visually hidden), which renders while the editor has `diagnostics`. Without a marked range the keys do nothing.
+F8 in the text area shall select the next marked range after the caret and Shift+F8 the previous one, wrapping at either end, scroll it into view (measured in the text area's own pixels, also under an ancestor `transform: scale()`), show its hover tip on the next animation frame (after any scrolling the browser does to reveal the selection, so that scrolling neither closes the tip nor leaves it pointing at the range's old place) and read its message out in a polite status (`ui-code-editor__announcement`, visually hidden), which renders while the editor has `diagnostics`. Without a marked range the keys do nothing.
 
 Implementation: `src/components/code-editor/use-code-editor.ts`, `src/components/code-editor/use-code-keys.ts`, `src/components/code-editor/code-geometry.ts`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -343,7 +343,7 @@ Verification: `src/components/code-editor/code-languages.test.tsx`, `src/compone
 
 ### UIC-CODE-EDITOR-12.3 - Diagnostic scrollbar marks
 
-Multiline surfaces hide native scrollbars and draw the shared custom scrollbars around the native textarea viewport. Colored marks inside the vertical track map each diagnostic line or multiline range to its position in the whole document, including wrapped text and non-default first line numbers. Error marks are red and warning marks amber in the reference stylesheet. The track and thumb preserve pointer drag, paging, wheel and keyboard scrolling, while existing F8 diagnostic navigation remains available. Editor thumbs stay out of the Tab sequence so Tab can reach the field restore controls; focusing a thumb by pointer still enables its scrolling keys. Measurements refresh when text or layout changes; obsolete marks disappear with diagnostics.
+Multiline surfaces hide native scrollbars and draw the shared custom scrollbars around the native textarea viewport. Colored marks inside the vertical track map each diagnostic line or multiline range to its position in the whole document, including wrapped text and non-default first line numbers, measured in the gutter's own pixels so they stay in place under an ancestor `transform: scale()`. Error marks are red and warning marks amber in the reference stylesheet. The track and thumb preserve pointer drag, paging, wheel and keyboard scrolling, while existing F8 diagnostic navigation remains available. Editor thumbs stay out of the Tab sequence so Tab can reach the field restore controls; focusing a thumb by pointer still enables its scrolling keys. Measurements refresh when text or layout changes; obsolete marks disappear with diagnostics.
 
 Implementation: `src/components/code-editor/code-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `e2e/code-overview.spec.ts`

@@ -3,7 +3,8 @@
 import { getElementByIdWithin } from '../../utils/owner-window.js';
 import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { clipToAncestors, toScale } from './anchor-clip.js';
+import { toScale } from '../../utils/scroll-geometry.js';
+import { clipToAncestors } from './anchor-clip.js';
 
 /** A rectangle in pixels from the top left corner of the layer's content. */
 export interface AnnotationRect {
