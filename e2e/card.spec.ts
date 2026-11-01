@@ -542,6 +542,26 @@ test('UIC-CARD-6.3 UIC-CARD-5.3 keeps the header row controls apart at every wid
   if (!checkbox || !toggle) throw new Error('no layout');
   expect(checkbox.x).toBeGreaterThan(toggle.x);
 
+  // The width slider runs right to left with its grid: its minimum is at the right end.
+  const rtlDemo = page.locator('[data-lab-demo="top-row-rtl"]');
+  const widthSlider = rtlDemo.getByRole('slider', { name: 'Grid width, right to left' });
+  const rail = await rtlDemo.locator('.ui-number-field__track').boundingBox();
+  if (!rail) throw new Error('no layout');
+  for (const [key, fraction] of [
+    ['Home', 0],
+    ['End', 1],
+  ] as const) {
+    await widthSlider.focus();
+    await page.keyboard.press(key);
+    const thumb = await rtlDemo.locator('.ui-number-field__thumb').boundingBox();
+    if (!thumb) throw new Error('no layout');
+    expect(
+      Math.abs(rail.x + rail.width * (1 - fraction) - (thumb.x + thumb.width / 2)),
+    ).toBeLessThan(2);
+  }
+  await page.keyboard.press('ArrowRight');
+  await expect(widthSlider).toHaveValue('719');
+
   const grid = page.locator('[data-lab-demo="collapse-grid"]');
   const row = grid.getByRole('row').first();
   await row.getByRole('button', { name: /^Details/ }).click();

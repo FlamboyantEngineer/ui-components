@@ -257,3 +257,49 @@ test('UIC-NUMBER-FIELD-8.5 UIC-NUMBER-FIELD-5.4 types a range and a slider value
   expect(inputBox.x + inputBox.width).toBeLessThan(track.x);
   expect(track.width).toBeGreaterThan(80);
 });
+
+test('UIC-NUMBER-FIELD-5.6 runs right to left under a right-to-left locale', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('number-slider');
+  for (const name of ['rtl', 'rtl-range']) {
+    const demo = field(page, name);
+    const track = await boxOf(demo.locator('.ui-number-field__track'));
+    const first = demo.getByRole('slider').first();
+    const thumbCentre = async () => {
+      const box = await boxOf(demo.locator('.ui-number-field__thumb').first());
+      return box.x + box.width / 2;
+    };
+    // At the minimum, the midpoint and the maximum, the thumb sits where the value says, from the right.
+    for (const [key, fraction] of [
+      ['Home', 0],
+      ['End', name === 'rtl' ? 1 : 0.6],
+    ] as const) {
+      await first.focus();
+      await page.keyboard.press(key);
+      expect(Math.abs(track.x + track.width * (1 - fraction) - (await thumbCentre()))).toBeLessThan(
+        2,
+      );
+    }
+    await first.focus();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowLeft');
+    await expect(first).toHaveValue('1');
+    await page.keyboard.press('ArrowRight');
+    await expect(first).toHaveValue('0');
+  }
+  const volume = field(page, 'rtl');
+  const track = volume.locator('.ui-number-field__track');
+  const thumb = volume.locator('.ui-number-field__thumb');
+  await dragThumb(page, thumb, track, 0.5);
+  await page.mouse.up();
+  await expect(volume.getByRole('slider')).toHaveValue('50');
+  const rail = await boxOf(track);
+  const fill = await boxOf(volume.locator('.ui-number-field__fill'));
+  expect(Math.abs(fill.x + fill.width - (rail.x + rail.width))).toBeLessThan(2);
+  expect(Math.abs(fill.width - rail.width / 2)).toBeLessThan(3);
+  await dragThumb(page, thumb, track, 0.25);
+  await page.mouse.up();
+  await expect(volume.getByRole('slider')).toHaveValue('75');
+});
