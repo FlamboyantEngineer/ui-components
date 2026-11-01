@@ -69,7 +69,7 @@ test.describe('Wizard lab', () => {
     await expect(demo.getByRole('alert')).toHaveCount(0);
   });
 
-  test('UIC-WIZARD-2.1 UIC-WIZARD-2.4 UIC-WIZARD-2.5 skips, goes back and finishes', async ({
+  test('UIC-WIZARD-2.1 UIC-WIZARD-2.4 UIC-WIZARD-2.5 UIC-WIZARD-2.7 skips, goes back and finishes', async ({
     page,
     lab,
   }) => {
@@ -103,6 +103,11 @@ test.describe('Wizard lab', () => {
     );
     await page.clock.runFor(700);
     await expect(demo.locator('[data-lab-result]')).toHaveText('Created Hermes');
+    for (const item of await items.all())
+      await expect(item).toHaveAttribute('data-status', 'complete');
+    await expect(demo.locator('.ui-steps [aria-current]')).toHaveCount(0);
+    await expect(demo.locator('.ui-wizard')).toHaveAttribute('data-finished', 'true');
+    await expect(demo.getByRole('button', { name: 'Create project' })).toBeDisabled();
   });
 
   test('UIC-WIZARD-2.6 sends nothing once the panel closes during the check', async ({

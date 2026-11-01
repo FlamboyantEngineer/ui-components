@@ -26,6 +26,8 @@ export interface WizardNavigation {
   isPending: boolean;
   /** The shown step failed its check: its message, or `null` when it gave none. */
   failure: { message: string | null } | null;
+  /** The last step passed and `onFinish` succeeded: every step is settled and none is current. */
+  isFinished: boolean;
   /** The heading focus moves to after each move. */
   headingRef: RefObject<HTMLHeadingElement | null>;
   /** Runs the shown step's check, then moves to the next step or finishes. */
@@ -49,14 +51,21 @@ function withMark(keys: ReadonlySet<Key>, key: Key, isMarked: boolean): Readonly
   return next;
 }
 
-/** Where each step stands: settled before the shown one, upcoming after it. */
+interface StatusState {
+  index: number;
+  skipped: ReadonlySet<Key>;
+  hasFailed: boolean;
+  isFinished: boolean;
+}
+
+/** Where each step stands: settled before the shown one, upcoming after it, all settled once finished. */
 function toStatuses(
   steps: readonly WizardStep[],
-  { index, skipped, hasFailed }: { index: number; skipped: ReadonlySet<Key>; hasFailed: boolean },
+  { index, skipped, hasFailed, isFinished }: StatusState,
 ): StepsStatus[] {
   return steps.map((step, position) => {
     if (position > index) return 'upcoming';
-    if (position === index) return hasFailed ? 'error' : 'current';
+    if (position === index && !isFinished) return hasFailed ? 'error' : 'current';
     return skipped.has(step.id) ? 'skipped' : 'complete';
   });
 }
@@ -106,6 +115,21 @@ function useStepFailure(stepId: Key | undefined, workflow: readonly Key[]) {
 }
 
 /**
+ * Whether the workflow finished: the last step passed and `onFinish` succeeded. Like a failure it
+ * belongs to the step and workflow it finished, so showing another step (Back, a step in the list,
+ * a controlled move) or replacing the steps makes the workflow unfinished again.
+ */
+function useFinished(stepId: Key | undefined, workflow: readonly Key[]) {
+  const [owned, setOwned] = useState<{ stepId: Key | undefined; workflow: readonly Key[] } | null>(
+    null,
+  );
+  const isOwned = owned !== null && owned.stepId === stepId && owned.workflow === workflow;
+  if (owned !== null && !isOwned) setOwned(null);
+  const markFinished = () => setOwned({ stepId, workflow });
+  return [isOwned, markFinished] as const;
+}
+
+/**
  * The navigation of a wizard: the shown step (controlled or not), the steps skipped on the way, the
  * pending check and its failure, and focus moving to the step's heading after each move. A Next or
  * Finish belongs to the step and workflow it started in, and finishes through the `onFinish` of that
@@ -135,6 +159,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     steps.map((step) => step.id),
   );
   const [failure, setFailure] = useStepFailure(steps[index]?.id, workflow);
+  const [isFinished, markFinished] = useFinished(steps[index]?.id, workflow);
 
   useEffect(() => {
     if (!movedRef.current) return;
@@ -156,15 +181,17 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     if (stay) return setFailure(stay);
     setSkipped((keys) => withMark(keys, step.id, false));
     const next = steps[index + 1];
-    if (next) goTo(next.id);
-    else await onFinish?.();
+    if (next) return goTo(next.id);
+    await onFinish?.();
+    if (!signal.aborted) markFinished();
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const step = steps[index];
     const attempt = new AbortController();
     void runPendingAction({
-      blocked: runningRef.current || !step,
+      // A finished workflow takes no second Finish.
+      blocked: runningRef.current || !step || isFinished,
       setPending: (pending) => {
         if (pending) attemptRef.current = attempt;
         else if (attemptRef.current === attempt) attemptRef.current = null;
@@ -187,6 +214,6 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     setSkipped((keys) => withMark(keys, step.id, true));
     goTo(next.id);
   };
-  const statuses = toStatuses(steps, { index, skipped, hasFailed: failure !== null });
-  return { index, statuses, isPending, failure, headingRef, submit, goTo, skip };
+  const statuses = toStatuses(steps, { index, skipped, hasFailed: failure !== null, isFinished });
+  return { index, statuses, isPending, failure, isFinished, headingRef, submit, goTo, skip };
 }

@@ -83,6 +83,13 @@ A Next or Finish shall belong to the step it was pressed on and the workflow it 
 Implementation: `src/components/wizard/wizard.tsx`, `src/components/wizard/wizard-navigation.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 
+### UIC-WIZARD-2.7 - Finished workflow
+
+Once the last step passes and `onFinish` succeeds (returns, or its promise fulfils), the wizard shall be finished: the list of steps shows every step as complete, or skipped where the reader skipped it, and none as current (no `aria-current`); the root publishes `data-finished`; and Finish is disabled, so a second submit is refused. A finish that fails, or that the wizard left (UIC-WIZARD-2.6), does not finish it. Showing another step (Back, a step in the list, or a controlled `currentKey`) or replacing the steps makes the workflow unfinished again, with the shown step current.
+
+Implementation: `src/components/wizard/wizard.tsx`, `src/components/wizard/wizard-navigation.ts`
+Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
+
 ## UIC-WIZARD-3 - Accessibility
 
 ### UIC-WIZARD-3.1 - Focus follows the step
@@ -114,3 +121,4 @@ Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 | `data-orientation`   | attribute | `horizontal`, `vertical`                   | Steps above or beside the panel.                        |
 | `data-action`        | attribute | `cancel`, `back`, `skip`, `next`, `finish` | Which footer button (on the action).                    |
 | `data-pending`       | state     | `true`                                     | While a check or the finish runs.                       |
+| `data-finished`      | state     | `true`                                     | Once the finish succeeded (UIC-WIZARD-2.7).             |

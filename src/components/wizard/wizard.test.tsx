@@ -330,6 +330,73 @@ describe('Wizard', () => {
     expect(action('Finish')).not.toHaveAttribute('data-pending');
   });
 
+  it('UIC-WIZARD-2.7 settles every step and disables Finish once the finish succeeds', async () => {
+    let settle: () => void = () => {};
+    const onFinish = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)));
+    const { container } = render(<Wizard steps={tripSteps()} onFinish={onFinish} />);
+    await passCity();
+    await userEvent.click(action('Skip'));
+    await userEvent.click(action('Finish'));
+    expect(statuses()).toEqual(['complete', 'skipped', 'current']);
+    expect(container.firstElementChild).not.toHaveAttribute('data-finished');
+    await act(async () => settle());
+    expect(statuses()).toEqual(['complete', 'skipped', 'complete']);
+    expect(document.querySelector('[aria-current]')).toBeNull();
+    expect(container.firstElementChild).toHaveAttribute('data-finished', 'true');
+    expect(action('Finish')).toBeDisabled();
+    act(() => (document.querySelector('.ui-wizard__form') as HTMLFormElement).requestSubmit());
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-WIZARD-2.7 finishes after a synchronous finish, but not after a failed one', async () => {
+    const onFinish = vi.fn().mockRejectedValueOnce(new Error('The booking failed.'));
+    onFinish.mockReturnValueOnce(undefined);
+    const { container } = renderWizard({ defaultCurrentKey: 'summary', onFinish });
+    await userEvent.click(action('Finish'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The booking failed.');
+    expect(container.firstElementChild).not.toHaveAttribute('data-finished');
+    expect(action('Finish')).toBeEnabled();
+    await userEvent.click(action('Finish'));
+    expect(statuses()).toEqual(['complete', 'complete', 'complete']);
+    expect(container.firstElementChild).toHaveAttribute('data-finished', 'true');
+  });
+
+  it('UIC-WIZARD-2.7 is unfinished again once another step shows or the steps change', async () => {
+    const onFinish = vi.fn();
+    const { container, rerender } = renderWizard({ defaultCurrentKey: 'summary', onFinish });
+    const root = () => container.firstElementChild;
+    await userEvent.click(action('Finish'));
+    expect(root()).toHaveAttribute('data-finished', 'true');
+    await userEvent.click(action('Back'));
+    expect(root()).not.toHaveAttribute('data-finished');
+    await userEvent.click(action('Next'));
+    await userEvent.click(action('Finish'));
+    expect(root()).toHaveAttribute('data-finished', 'true');
+    const extra = { id: 'review', label: 'Review', content: <p>Check it.</p> };
+    rerender(
+      <Wizard
+        aria-label="Plan a trip"
+        steps={[...tripSteps(), extra]}
+        defaultCurrentKey="summary"
+        onFinish={onFinish}
+      />,
+    );
+    expect(root()).not.toHaveAttribute('data-finished');
+    expect(statuses()).toEqual(['complete', 'complete', 'current', 'upcoming']);
+  });
+
+  it('UIC-WIZARD-2.7 does not finish from a finish the wizard left', async () => {
+    let settle: () => void = () => {};
+    const onFinish = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)));
+    const props = { 'aria-label': 'Plan a trip', steps: tripSteps(), onFinish };
+    const { container, rerender } = render(<Wizard {...props} currentKey="summary" />);
+    await userEvent.click(action('Finish'));
+    rerender(<Wizard {...props} currentKey="note" />);
+    await act(async () => settle());
+    expect(container.firstElementChild).not.toHaveAttribute('data-finished');
+    expect(statuses()).toEqual(['complete', 'current', 'upcoming']);
+  });
+
   it('UIC-WIZARD-2.2 shows the message of a rejected finish or check', async () => {
     const onFinish = vi.fn().mockRejectedValueOnce(new Error('The booking failed.'));
     onFinish.mockRejectedValueOnce('no message');

@@ -47,7 +47,10 @@ export interface WizardProps extends BaseProps, AriaLabellingProps {
   /**
    * Runs when the last step passes; a returned promise keeps Finish pending until it settles. It
    * never runs for a check the wizard has left. Once it runs it is the host's: leaving the step or
-   * workflow, or unmounting, then ends the pending state and ignores its outcome.
+   * workflow, or unmounting, then ends the pending state and ignores its outcome. When it succeeds
+   * (returns, or its promise fulfils) the wizard is finished: every step shows as complete or
+   * skipped, none as current, and Finish is disabled until the reader shows another step or the
+   * steps change.
    */
   onFinish?: (() => void | Promise<unknown>) | undefined;
   /** Draws a Cancel button that calls it. */
@@ -77,7 +80,7 @@ const hooks = createHooks('wizard', [
 
 function WizardFooter({ navigation, steps, onCancel, finishLabel }: FooterProps) {
   const strings = useUiStrings();
-  const { index, isPending, goTo, skip } = navigation;
+  const { index, isPending, isFinished, goTo, skip } = navigation;
   const previous = steps[index - 1];
   const isLast = index >= steps.length - 1;
   const action = (name: string) => hooks.slot('action', { action: name });
@@ -103,6 +106,7 @@ function WizardFooter({ navigation, steps, onCancel, finishLabel }: FooterProps)
         type="submit"
         variant="primary"
         isPending={isPending}
+        isDisabled={isFinished}
       >
         {isLast ? (finishLabel ?? strings.finish) : strings.next}
       </Button>
@@ -137,7 +141,7 @@ export function Wizard({
     onCurrentKeyChange,
     onFinish,
   });
-  const { index, statuses, isPending, goTo, submit, headingRef, failure } = navigation;
+  const { index, statuses, isPending, isFinished, goTo, submit, headingRef, failure } = navigation;
   const headingId = useId();
   const Heading = `h${useHeadingLevel(headingLevel)}` as const;
   const step = steps[index];
@@ -148,12 +152,12 @@ export function Wizard({
     isOptional: entry.isOptional,
     status: statuses[position],
   }));
-  const data = { orientation, pending: isPending };
+  const data = { orientation, pending: isPending, finished: isFinished };
   return (
     <div role="group" {...rest} {...hooks.root({ className, props: rest, data })}>
       <Steps
         items={items}
-        currentKey={step?.id}
+        currentKey={isFinished ? null : step?.id}
         orientation={orientation}
         isDisabled={isPending}
         onAction={goTo}
