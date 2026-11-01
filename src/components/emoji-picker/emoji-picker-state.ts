@@ -12,6 +12,7 @@ import {
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import {
   addRecentEmoji,
@@ -290,9 +291,16 @@ export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPick
   const [activeEmoji] = useState(() => createValueStore<EmojiEntry | null>(null));
   const gridRef = useRef<HTMLDivElement>(null);
   const [isEntering, setEntering] = useState(false);
-  const tab = tabs.find((item) => item.id === tabId) ?? tabs[0];
   // The body shows no emoji, custom ones included, while the standard ones load or failed to.
   const isShown = data.emoji !== null && !data.failed;
+  // With no chosen tab, the tab shown first stays shown while it is there, so a Custom or Recently
+  // used tab that arrives later is offered without taking over.
+  const shownTabId = useRetainedKey(
+    tabId,
+    (id) => tabs.some((item) => item.id === id),
+    isShown ? tabs[0]?.id : undefined,
+  );
+  const tab = tabs.find((item) => item.id === shownTabId) ?? tabs[0];
   const first = isShown ? (search.isSearching ? search.results[0] : tab?.entries[0]) : undefined;
   return {
     data,

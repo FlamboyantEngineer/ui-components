@@ -323,6 +323,34 @@ describe('DockPanel panes', () => {
     expect(pane('People')).not.toBeVisible();
   });
 
+  it('UIC-DOCK-PANEL-2.1 keeps the first pane shown by id while panes are added or reordered', async () => {
+    const onSelectionChange = vi.fn();
+    function Ordered({ ids }: { ids: readonly string[] }) {
+      return (
+        <DockPanel label="Details" onSelectionChange={onSelectionChange}>
+          {ids.map((id) => (
+            <DockPanelPane key={id} id={id} label={id} icon={FolderGlyph}>
+              <input aria-label={`${id} note`} />
+            </DockPanelPane>
+          ))}
+        </DockPanel>
+      );
+    }
+    const { rerender } = render(<Ordered ids={[]} />);
+    rerender(<Ordered ids={['Alpha', 'Blue']} />);
+    const note = screen.getByRole('textbox', { name: 'Alpha note' });
+    await userEvent.type(note, 'draft');
+    rerender(<Ordered ids={['Gamma', 'Blue', 'Alpha']} />);
+    expect(note).toBeVisible();
+    expect(note).toHaveValue('draft');
+    expect(note).toHaveFocus();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    // Only when the shown pane goes does the first pane take its place.
+    rerender(<Ordered ids={['Gamma', 'Blue']} />);
+    expect(screen.getByRole('textbox', { name: 'Gamma note' })).toBeVisible();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-DOCK-PANEL-2.1 keeps the selection while collapsed', () => {
     render(<Panel defaultSelectedKey="people" defaultExpanded={false} />);
     const launcher = screen

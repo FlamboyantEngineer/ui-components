@@ -43,7 +43,7 @@ Verification: `src/components/wizard/wizard.test.tsx`
 
 ### UIC-WIZARD-2.1 - Current step
 
-The shown step shall be `currentKey` when set (controlled), else starts at `defaultCurrentKey` or the first step. Every move calls `onCurrentKeyChange` with the step moved to. The list of steps marks steps before the shown one `complete` (or `skipped`), the shown one `current` and the ones after it `upcoming`.
+The shown step shall be `currentKey` when set (controlled), else starts at `defaultCurrentKey` or the first step. When the key names no step, as when the wizard started with no steps, the first step is shown, and that step, kept by its `id`, stays shown while it is among the steps: steps added or reordered around it change nothing, and only when it goes does the first step take its place. This keeping is not a move: `onCurrentKeyChange` receives nothing. Every move calls `onCurrentKeyChange` with the step moved to. The list of steps marks steps before the shown one `complete` (or `skipped`), the shown one `current` and the ones after it `upcoming`.
 
 Implementation: `src/components/wizard/wizard.tsx`, `src/components/wizard/wizard-navigation.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useFocusWithin, useLocale } from '../../primitives/index.js';
 import {
+  adoptMatrixFocus,
   moveMatrixFocus,
   resolveMatrixFocus,
   toMatrixFocus,
@@ -116,6 +117,9 @@ export function useMatrixNavigation({
   const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocusWithin });
   const shouldFocus = useRef(false);
   const { position: focus, isLost } = resolveMatrixFocus(own, rowIds, columnIds);
+  // A focus taken while the matrix was empty binds to the items at its place once they arrive.
+  const adopted = adoptMatrixFocus(own, rowIds, columnIds);
+  if (adopted !== own) setOwn(adopted);
   const moveTo = (position: MatrixPosition) => setOwn(toMatrixFocus(position, rowIds, columnIds));
   useLayoutEffect(() => {
     if (!root.current) return;

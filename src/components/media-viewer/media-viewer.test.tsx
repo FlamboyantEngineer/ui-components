@@ -114,6 +114,24 @@ describe('MediaViewer', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('UIC-MEDIA-VIEWER-1.2 keeps the first item shown by id when items arrive, are added or reordered', () => {
+    const onSelectionChange = vi.fn();
+    const pick = (ids: string[]) =>
+      ids.map((id) => requireDefined(items.find((item) => item.id === id)));
+    const { rerender } = render(<Viewer items={[]} onSelectionChange={onSelectionChange} />);
+    rerender(<Viewer items={pick(['harbour', 'bridge'])} onSelectionChange={onSelectionChange} />);
+    expect(title()).toBe('Harbour.jpg');
+    rerender(
+      <Viewer items={pick(['guide', 'bridge', 'harbour'])} onSelectionChange={onSelectionChange} />,
+    );
+    expect(title()).toBe('Harbour.jpg');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    // Only when the shown item goes does the first item take its place.
+    rerender(<Viewer items={pick(['guide', 'bridge'])} onSelectionChange={onSelectionChange} />);
+    expect(title()).toBe('Guide.pdf');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-MEDIA-VIEWER-1.2 moves through the set with the previous and next buttons', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();

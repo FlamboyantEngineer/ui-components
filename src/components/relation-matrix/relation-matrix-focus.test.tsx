@@ -64,6 +64,24 @@ describe('RelationMatrix focus across row and column changes', () => {
     },
   );
 
+  it('UIC-RELATION-MATRIX-2.3 binds the first cell to its items when a matrix mounted empty fills', async () => {
+    const user = userEvent.setup();
+    const { onCellAction, update } = renderMatrix({ rows: [], columns: [] });
+    update({ rows: [rowA, rowB], columns: [columnX, columnY] });
+    expect(cellOf('Row A', 'Column X')).toHaveAttribute('tabindex', '0');
+    update({ rows: [rowB, rowA], columns: [columnX, columnY] });
+    expect(cellOf('Row A', 'Column X')).toHaveAttribute('tabindex', '0');
+    expect(tabStops()).toHaveLength(1);
+    await user.tab();
+    expect(cellOf('Row A', 'Column X')).toHaveFocus();
+    expect(screen.getByRole('rowheader', { name: /Row A/ })).toHaveAttribute(
+      'data-current',
+      'true',
+    );
+    await user.keyboard('{Enter}');
+    expect(onCellAction).toHaveBeenLastCalledWith({ row: 'a', column: 'x', relation: null });
+  });
+
   it('UIC-RELATION-MATRIX-2.3 acts on the focused cell after columns reorder', async () => {
     const user = userEvent.setup();
     const axes = { rows: [rowA, rowB], columns: [columnX, columnY] };

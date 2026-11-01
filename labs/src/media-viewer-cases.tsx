@@ -127,3 +127,35 @@ export function RefreshingList() {
     </>
   );
 }
+
+/**
+ * A viewer opened before its items load, which then reverse: the first item shown stays shown, and
+ * no selection is reported.
+ */
+export function ArrivingItems() {
+  const [isMounted, setMounted] = useState(false);
+  const [items, setItems] = useState<MediaViewerItem[]>([]);
+  const [reported, setReported] = useState(0);
+  const open = () => {
+    setItems([]);
+    setMounted(true);
+    setTimeout(() => setItems(largeSet.slice(0, 3)), 300);
+    setTimeout(() => setItems(largeSet.slice(0, 3).reverse()), 1200);
+  };
+  return (
+    <>
+      <Button onPress={open} data-lab-open="arriving">
+        Open, then load and reverse the items
+      </Button>
+      <LabOutput name="arriving-selections">{reported}</LabOutput>
+      {isMounted ? (
+        <MediaViewer
+          items={items}
+          defaultOpen
+          onOpenChange={setMounted}
+          onSelectionChange={() => setReported((count) => count + 1)}
+        />
+      ) : null}
+    </>
+  );
+}

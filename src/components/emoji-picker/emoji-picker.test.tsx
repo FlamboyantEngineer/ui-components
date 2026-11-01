@@ -99,9 +99,40 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     const { container } = render(<Host />);
     const grid = await screen.findByRole('grid', { name: 'Smileys & Emotion' });
     await userEvent.click(within(grid).getByRole('row', { name: 'grinning face' }));
-    expect(await screen.findByRole('grid', { name: 'Recently used' })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: 'Recently used' })).toBeInTheDocument();
     expect(container.querySelector('.ui-emoji-picker')).not.toHaveAttribute('data-loading');
     expect(load).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-EMOJI-PICKER-1.2 keeps the first category shown when custom and recent tabs arrive', async () => {
+    const user = userEvent.setup();
+    function Host({ custom }: { custom: CustomEmoji[] }) {
+      const [recent, setRecent] = useState<string[]>([]);
+      return (
+        <EmojiPicker
+          loadEmoji={loadFixture}
+          customEmoji={custom}
+          recentEmoji={recent}
+          onRecentEmojiChange={setRecent}
+        />
+      );
+    }
+    const { rerender } = render(<Host custom={[]} />);
+    const grid = await screen.findByRole('grid', { name: 'Smileys & Emotion' });
+    const grinning = within(grid).getByRole('row', { name: 'grinning face' });
+    await user.click(grinning);
+    expect(await screen.findByRole('tab', { name: 'Recently used' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Smileys & Emotion' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(grinning).toHaveFocus();
+    rerender(<Host custom={[parrot]} />);
+    expect(screen.getByRole('tab', { name: 'Custom' })).toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: 'Smileys & Emotion' })).toBe(grid);
+    expect(grinning).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(within(grid).getByRole('row', { name: 'face with tears of joy' })).toHaveFocus();
   });
 
   it('UIC-EMOJI-PICKER-1.1 loads the bundled set by default', async () => {

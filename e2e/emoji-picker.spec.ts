@@ -10,6 +10,27 @@ async function openPopover(page: Page, lab: LabFixture, theme?: string) {
 }
 
 test.describe('Emoji Picker lab', () => {
+  test('UIC-EMOJI-PICKER-1.2 keeps the category browsed when recent and custom tabs arrive', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const demo = page.locator('[data-lab-demo="arriving"]');
+    const smileys = demo.getByRole('tab', { name: 'Smileys & Emotion' });
+    await expect(smileys).toHaveAttribute('aria-selected', 'true');
+    const grid = demo.getByRole('grid', { name: 'Smileys & Emotion' });
+    const first = grid.getByRole('row').first();
+    await first.focus();
+    await page.keyboard.press('Enter');
+    await expect(demo.getByRole('tab', { name: 'Recently used' })).toBeVisible();
+    await expect(smileys).toHaveAttribute('aria-selected', 'true');
+    await expect(first).toBeFocused();
+    await demo.getByRole('button', { name: 'Load custom emoji' }).click();
+    await expect(demo.getByRole('tab', { name: 'Custom' })).toBeVisible();
+    await expect(smileys).toHaveAttribute('aria-selected', 'true');
+    await lab.expectAccessible('[data-lab-demo="arriving"]');
+  });
+
   test('UIC-EMOJI-PICKER-1.6 renders the emoji in view of a virtualized grid and reaches the last', async ({
     page,
     lab,

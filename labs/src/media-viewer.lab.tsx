@@ -10,7 +10,13 @@ import { requireDefined } from './require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
-import { FailingImages, LargeSet, NoteDrafts, RefreshingList } from './media-viewer-cases.js';
+import {
+  ArrivingItems,
+  FailingImages,
+  LargeSet,
+  NoteDrafts,
+  RefreshingList,
+} from './media-viewer-cases.js';
 
 /** A drawn landscape of the given size, as an SVG data URL. */
 function scene(width: number, height: number, sky: string, ground: string): string {
@@ -182,6 +188,12 @@ mountLab(
       description="A viewer opened on mount. Close it, then refresh the list: it empties for a moment and fills again, and the viewer stays closed."
     >
       <RefreshingList />
+    </LabSection>
+    <LabSection
+      title="Items that arrive"
+      description="The viewer opens before its items load. Once they do, the first item shows; a moment later the list reverses and that item stays shown, by its id, with no selection reported."
+    >
+      <ArrivingItems />
     </LabSection>
   </>,
 );
