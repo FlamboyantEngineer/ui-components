@@ -94,6 +94,16 @@ describe('RelationMatrix', () => {
     expect(ref.current).toBe(container.querySelector('.ui-relation-matrix'));
   });
 
+  it('UIC-RELATION-MATRIX-1.1 leaves out the body of a matrix without rows', async () => {
+    const user = userEvent.setup();
+    render(<RelationMatrix aria-label="Empty links" rows={[]} columns={[]} relations={[]} />);
+    const grid = screen.getByRole('grid', { name: 'Empty links' });
+    expect(within(grid).queryByRole('rowgroup')).not.toBeInTheDocument();
+    expect(within(grid).getAllByRole('row')).toHaveLength(1);
+    await user.tab();
+    expect(within(grid).getByRole('columnheader')).toHaveFocus();
+  });
+
   it('UIC-RELATION-MATRIX-1.1 UIC-RELATION-MATRIX-1.5 UIC-RELATION-MATRIX-4.1 renders a grid of headers and cells', () => {
     const { container } = render(
       <Matrix id="coverage" className="mine" data-test="matrix" rowsLabel="Requirements" />,
