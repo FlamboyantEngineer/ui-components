@@ -15,6 +15,7 @@ import { EditorSurface, useSyncedEditorState, withEditorHistory } from './editor
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
 import { isRichTextEqual, type RichTextDocument } from './rich-text-document.js';
 import { getEngineSchema } from './engine-schema.js';
+import type { RichTextBlockMarker } from './block-markers.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
 
 // The engine glue the rich composer shares (`message-composer/rich`), kept out of the entry point.
@@ -31,6 +32,12 @@ export interface RichTextEditorProps extends FieldInputProps<RichTextDocument> {
   toolbar?: ReactNode;
   /** Chrome that floats over the document: `SelectionToolbar`, `InsertMenu`, `BlockHandle`. */
   children?: ReactNode;
+  /**
+   * The host's own findings about top-level blocks, by index into the document's `content`:
+   * each marks its blocks (`data-severity`, its message as their description) and, while the
+   * surface scrolls, its place in the scroll track. The editor checks nothing itself.
+   */
+  blockMarkers?: readonly RichTextBlockMarker[] | undefined;
 }
 
 /**
@@ -92,6 +99,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
             editor={editor}
             placeholder={rest.placeholder}
             toolbar={rest.toolbar}
+            blockMarkers={rest.blockMarkers}
           >
             {rest.children}
           </EditorSurface>
@@ -128,6 +136,7 @@ export type {
   RichTextNode,
 } from './rich-text-document.js';
 export type { RichTextCommand } from './rich-text-command.js';
+export type { RichTextBlockMarker } from './block-markers.js';
 export { useRichTextController } from './rich-text-controller.js';
 export type { RichTextController } from './rich-text-controller.js';
 export { serializeRichTextHtml, serializeRichTextText } from './rich-text-export.js';

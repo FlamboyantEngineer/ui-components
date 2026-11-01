@@ -377,6 +377,10 @@ test.describe('Rich Text Editor lab', () => {
     await page.keyboard.press('ControlOrMeta+z');
     await expect.poll(() => blockOrder(page)).toEqual(start);
     await content(page, 'full').locator('h2').click();
+    // The editor reads the caret the click placed before the key moves its block.
+    await expect(formatToolbar(page).getByRole('button', { name: /Block type/ })).toHaveText(
+      /Heading 2/,
+    );
     await page.keyboard.press('Alt+Shift+ArrowUp');
     await expect.poll(() => blockOrder(page)).toEqual([title, heading, intro, fruit, steps, quote]);
   });
@@ -557,6 +561,58 @@ test.describe('Rich Text Editor lab', () => {
     await page.keyboard.press('Control+z');
     await expect(first).toContainText('Picked.');
     await expect(field).toHaveAttribute('data-dirty', 'true');
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-12.1 UIC-RICH-TEXT-EDITOR-12.2 scrolls a long document inside the editor with marked rows', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = editor(page, 'long');
+    const box = content(page, 'long');
+    const surface = field.locator('.ui-rich-text-editor__surface');
+    const markers = field.locator('.ui-rich-text-editor__scroll-marker');
+    expect(await surface.evaluate((node) => node.clientHeight)).toBe(360);
+    expect((await field.boundingBox())?.height).toBeLessThan(600);
+    await expect(field.locator('.ui-scroll-region__thumb')).toHaveCount(1);
+    await expect(markers).toHaveCount(4);
+    expect(
+      await markers.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-severity'))),
+    ).toEqual(['error', 'error', 'warning', 'warning']);
+    const flagged = box.locator('p').nth(480);
+    await expect(flagged).toHaveAttribute('data-severity', 'error');
+    await expect(flagged).toHaveAttribute('aria-description', 'Blight reported: inspect this row.');
+    await expect(box.locator('p').nth(749)).toHaveAttribute('data-severity', 'warning');
+    // The second marker spans rows 481 and 482, at their place in the whole document.
+    const [mark, rows] = await Promise.all([
+      markers.nth(1).evaluate((node) => parseFloat((node as HTMLElement).style.top) / 100),
+      surface.evaluate((node) => {
+        const row = node.querySelectorAll('.ui-rich-text-editor__content > p')[480];
+        const top = (row?.getBoundingClientRect().top ?? 0) - node.getBoundingClientRect().top;
+        return (top + node.scrollTop) / node.scrollHeight;
+      }),
+    ]);
+    expect(Math.abs(mark - rows)).toBeLessThan(0.002);
+    await box.locator('p').first().click();
+    await page.keyboard.press('ControlOrMeta+End');
+    // The caret's row scrolls into the surface's view.
+    await expect
+      .poll(() =>
+        surface.evaluate((node) => {
+          const last = node.querySelector('.ui-rich-text-editor__content > p:last-child');
+          const row = last?.getBoundingClientRect();
+          const view = node.getBoundingClientRect();
+          return Boolean(row && row.bottom <= view.bottom + 1 && row.top >= view.top - 1);
+        }),
+      )
+      .toBe(true);
+    await page.keyboard.type(' Blight.');
+    await expect(markers).toHaveCount(5);
+    await expect(box.locator('p').last()).toHaveAttribute('data-severity', 'error');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(markers).toHaveCount(4);
+    await page.keyboard.press('ControlOrMeta+Home');
+    await expect.poll(() => surface.evaluate((node) => node.scrollTop)).toBeLessThan(20);
   });
 
   test('UIC-FIELD-1.11 UIC-RICH-TEXT-EDITOR-4.2 reaches the restore button by Tab and commits on leaving the field', async ({

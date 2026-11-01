@@ -79,6 +79,40 @@ describe('RichTextEditor', () => {
     });
   });
 
+  it("UIC-RICH-TEXT-EDITOR-12.1 UIC-RICH-TEXT-EDITOR-12.2 marks the host's blocks and keeps scrollbars beside the surface", () => {
+    const paragraph = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+    const value: RichTextDocument = {
+      type: 'doc',
+      content: [paragraph('Plums'), paragraph('Figs'), paragraph('Pears')],
+    };
+    const { container, rerender } = render(
+      <RichTextEditor
+        label="Notes"
+        value={value}
+        blockMarkers={[
+          { block: 0, endBlock: 1, severity: 'warning', message: 'Frost expected.' },
+          { block: 1, message: 'Blight reported.' },
+          { block: 7, message: 'Out of the document.' },
+        ]}
+      />,
+    );
+    const blocks = [...getContent().children];
+    expect(blocks[0]).toHaveAttribute('data-severity', 'warning');
+    expect(blocks[0]).toHaveAttribute('aria-description', 'Frost expected.');
+    expect(blocks[1]).toHaveAttribute('data-severity', 'error');
+    expect(blocks[1]).toHaveAttribute('aria-description', 'Frost expected. Blight reported.');
+    expect(blocks[2]).not.toHaveAttribute('data-severity');
+    const body = container.querySelector('.ui-rich-text-editor__body');
+    const surface = container.querySelector('.ui-rich-text-editor__surface');
+    expect(body).toContainElement(surface as HTMLElement);
+    expect(body?.querySelector(':scope > .ui-rich-text-editor__scrollbars')).toBeInTheDocument();
+    // An unscrolled surface draws no track and no marks.
+    expect(container.querySelector('.ui-rich-text-editor__scroll-marker')).toBeNull();
+    expectHooksMatchSpec(container, 'RICH-TEXT-EDITOR');
+    rerender(<RichTextEditor label="Notes" value={value} />);
+    expect(getContent().querySelector('[data-severity]')).toBeNull();
+  });
+
   it('UIC-RICH-TEXT-EDITOR-1.2 keeps the engine inside the component and ships no styles', () => {
     const dir = join(process.cwd(), 'src');
     const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter(

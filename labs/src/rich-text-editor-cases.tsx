@@ -1,5 +1,5 @@
 import { StarGlyph } from '../../src/core/glyphs.js';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
@@ -13,6 +13,7 @@ import {
   serializeRichTextHtml,
   serializeRichTextText,
   useRichTextController,
+  type RichTextBlockMarker,
   type InsertMenuItem,
   type RichTextDocument,
 } from '../../src/components/rich-text-editor/index.js';
@@ -458,13 +459,49 @@ export function RequiredEditor() {
 
 const longLine =
   'Rows of plums, figs and quinces ripen in turn along the orchard wall, one week apart. ';
-/** A thousand paragraphs of about 200 characters each. */
+/** Notes some rows carry, which the host's check below reports. */
+const rowNotes: Record<number, string> = {
+  120: ' Blight on the plums.',
+  481: ' Blight on the figs.',
+  482: ' Blight spreading to the quinces.',
+  750: ' Frost expected.',
+  990: ' Frost expected.',
+};
+
+/** A thousand paragraphs of about 200 characters each, a few with notes. */
 const longDocument: RichTextDocument = {
   type: 'doc',
   content: Array.from({ length: 1000 }, (_, index) =>
-    paragraph(text(`${index + 1}. ${longLine.repeat(3).slice(0, 195)}`)),
+    paragraph(
+      text(`${index + 1}. ${longLine.repeat(3).slice(0, 195)}${rowNotes[index + 1] ?? ''}`),
+    ),
   ),
 };
+
+/**
+ * The host's own check, not the editor's: a block mentioning blight is an error, frost a warning.
+ * Runs of neighbouring blocks with the same finding form one marker.
+ */
+function checkOrchardLog(value: RichTextDocument): RichTextBlockMarker[] {
+  const markers: RichTextBlockMarker[] = [];
+  (value.content ?? []).forEach((block, index) => {
+    const words = serializeRichTextText({ type: 'doc', content: [block] });
+    const finding = /blight/i.test(words)
+      ? { severity: 'error' as const, message: 'Blight reported: inspect this row.' }
+      : /frost/i.test(words)
+        ? { severity: 'warning' as const, message: 'Frost expected: cover this row.' }
+        : null;
+    if (!finding) return;
+    const previous = markers.at(-1);
+    if (
+      previous?.severity === finding.severity &&
+      (previous.endBlock ?? previous.block) === index - 1
+    ) {
+      previous.endBlock = index;
+    } else markers.push({ block: index, ...finding });
+  });
+  return markers;
+}
 
 /** How many top-level blocks of `next` are the very objects of `previous`. */
 function countKeptBlocks(previous: RichTextDocument, next: RichTextDocument): number {
@@ -472,15 +509,25 @@ function countKeptBlocks(previous: RichTextDocument, next: RichTextDocument): nu
   return (next.content ?? []).filter((block) => before.has(block)).length;
 }
 
-/** A long document whose changes report how many blocks they kept from the previous value. */
+/**
+ * A long document in a bounded, scrolling editor, whose changes report how many blocks they kept
+ * from the previous value, with the host's findings marked on the blocks and the scroll track.
+ */
 export function LongDocumentEditor() {
   const [value, setValue] = useState(longDocument);
   const [kept, setKept] = useState<string>('none yet');
+  const markers = useMemo(() => checkOrchardLog(value), [value]);
   return (
     <>
+      <style>
+        {'[data-lab-editor="long"] .ui-rich-text-editor__surface { max-height: 360px; }'}
+      </style>
       <RichTextEditor
         label="Orchard log"
         data-lab-editor="long"
+        description="The host flags rows mentioning blight (error) or frost (warning)."
+        toolbar={<FormatToolbar />}
+        blockMarkers={markers}
         value={value}
         onChange={(next) => {
           setKept(`${countKeptBlocks(value, next)} of ${next.content?.length ?? 0}`);

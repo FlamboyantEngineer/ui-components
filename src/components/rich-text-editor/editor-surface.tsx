@@ -4,7 +4,8 @@ import { ProseMirror, ProseMirrorDoc } from '@handlewithcare/react-prosemirror';
 import type { Node, Schema } from 'prosemirror-model';
 import { redo, redoDepth, undo, undoDepth } from 'prosemirror-history';
 import type { EditorState, Transaction } from 'prosemirror-state';
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { DecorationSet } from 'prosemirror-view';
 import { useLatest } from '../../utils/use-latest.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
 import { decoratePlaceholder } from './editor-state.js';
@@ -19,6 +20,8 @@ import { defaultMarks } from './default-schema.js';
 import { LinkMarkView } from './link-mark-view.js';
 import { TaskItemView } from './task-item-view.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { decorateMarkers, placeMarkers, type RichTextBlockMarker } from './block-markers.js';
+import { SurfaceScrollbars } from './surface-scrollbars.js';
 
 /** The engine state behind an editor and the function that applies its transactions. */
 export interface SyncedEditor {
@@ -32,7 +35,11 @@ interface EditorSurfaceProps {
   placeholder: string | undefined;
   toolbar: ReactNode;
   children: ReactNode;
+  /** The host's findings about blocks, marked on the blocks and in the scroll track. */
+  blockMarkers?: readonly RichTextBlockMarker[] | undefined;
 }
+
+const noMarkers: readonly RichTextBlockMarker[] = [];
 
 type ContentAttributes = Readonly<Record<string, string | undefined>>;
 
@@ -128,6 +135,23 @@ export function withEditorHistory(
   };
 }
 
+/** The content's decorations: the empty document's placeholder and the host's block markers. */
+function useDecorations(
+  placeholder: string | undefined,
+  markers: readonly RichTextBlockMarker[],
+): (state: EditorState) => DecorationSet {
+  const placeholderClass = hooks.slotClass('placeholder');
+  return useCallback(
+    (current: EditorState) => {
+      const empty = decoratePlaceholder(current, placeholder, placeholderClass);
+      const marked = decorateMarkers(current.doc, placeMarkers(current.doc, markers));
+      if (marked === DecorationSet.empty) return empty;
+      return marked.add(current.doc, empty.find());
+    },
+    [placeholder, placeholderClass, markers],
+  );
+}
+
 /** The editable document inside the field: its toolbar, the content and the floating chrome. */
 export function EditorSurface(props: EditorSurfaceProps) {
   const { control, placeholder } = props;
@@ -147,11 +171,10 @@ export function EditorSurface(props: EditorSurfaceProps) {
     [isEditable, isDisabled, reserveGutter],
   );
   const editable = useEditable(isEditable);
-  const placeholderClass = hooks.slotClass('placeholder');
-  const decorations = useCallback(
-    (current: EditorState) => decoratePlaceholder(current, placeholder, placeholderClass),
-    [placeholder, placeholderClass],
-  );
+  const markers = props.blockMarkers ?? noMarkers;
+  const placed = useMemo(() => placeMarkers(state.doc, markers), [state.doc, markers]);
+  const decorations = useDecorations(placeholder, markers);
+  const surfaceId = useId();
   return (
     <ProseMirror
       state={state}
@@ -167,30 +190,37 @@ export function EditorSurface(props: EditorSurfaceProps) {
           {isEmptyNode(props.toolbar) ? null : (
             <div {...hooks.slot('toolbar')}>{props.toolbar}</div>
           )}
-          <div
-            {...hooks.slot('surface', { gutter: gutterHolders > 0 })}
-            ref={surfaceRef}
-            style={{ position: 'relative' }}
-          >
-            <ProseMirrorDoc
-              {...contentAttributes}
-              {...hooks.slot('content', { readonly: content.readOnly, disabled: content.disabled })}
-              ref={contentRef}
-              id={content.id}
-              role="textbox"
-              aria-multiline="true"
-              aria-label={content['aria-label']}
-              aria-labelledby={content['aria-labelledby']}
-              aria-describedby={content['aria-describedby']}
-              aria-errormessage={content['aria-errormessage']}
-              aria-invalid={content['aria-invalid']}
-              aria-required={content['aria-required']}
-              aria-readonly={content.readOnly || undefined}
-              aria-disabled={content.disabled || undefined}
-              aria-placeholder={placeholder}
-              tabIndex={content.readOnly && !content.disabled ? 0 : undefined}
-            />
-            {props.children}
+          <div {...hooks.slot('body')} style={{ position: 'relative' }}>
+            <div
+              {...hooks.slot('surface', { gutter: gutterHolders > 0 })}
+              ref={surfaceRef}
+              id={surfaceId}
+              style={{ position: 'relative' }}
+            >
+              <ProseMirrorDoc
+                {...contentAttributes}
+                {...hooks.slot('content', {
+                  readonly: content.readOnly,
+                  disabled: content.disabled,
+                })}
+                ref={contentRef}
+                id={content.id}
+                role="textbox"
+                aria-multiline="true"
+                aria-label={content['aria-label']}
+                aria-labelledby={content['aria-labelledby']}
+                aria-describedby={content['aria-describedby']}
+                aria-errormessage={content['aria-errormessage']}
+                aria-invalid={content['aria-invalid']}
+                aria-required={content['aria-required']}
+                aria-readonly={content.readOnly || undefined}
+                aria-disabled={content.disabled || undefined}
+                aria-placeholder={placeholder}
+                tabIndex={content.disabled ? undefined : 0}
+              />
+              {props.children}
+            </div>
+            <SurfaceScrollbars surfaceRef={surfaceRef} surfaceId={surfaceId} markers={placed} />
           </div>
         </div>
       </RichTextEditorContext>
