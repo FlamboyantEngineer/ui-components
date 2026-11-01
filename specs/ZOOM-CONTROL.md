@@ -62,7 +62,7 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`
 
 ### UIC-ZOOM-CONTROL-1.9 - Size, hooks and caller attributes
 
-`size` (`xs`, `sm` by default, `md` or `lg`) shall size the built-in buttons and publish `data-size` on the root. The control carries the hooks below, appends the caller's `className`, and forwards caller `data-*` attributes and `id` to its root.
+`size` (`xs`, `sm` by default, `md` or `lg`) shall size the built-in buttons and publish `data-size` on the root, so a stylesheet sizes the slider with them: the reference stylesheet grows its width, track and thumb from `xs` to `lg` and gives it the buttons' height, so it lines up with them and the value and keeps a full-height pointer target at `xs`. The control carries the hooks below, appends the caller's `className`, and forwards caller `data-*` attributes and `id` to its root.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`, `labs/reference/zoom-control.css`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
@@ -85,5 +85,5 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-con
 | `ui-zoom-control__value`    | slot      |                        | The `<output>` showing the percentage.             |
 | `ui-zoom-control__presets`  | slot      |                        | The preset menu trigger (also `ui-dropdown-menu`). |
 | `ui-zoom-control__reset`    | slot      |                        | The reset button (also `ui-button`).               |
-| `data-size`                 | attribute | `xs`, `sm`, `md`, `lg` | Size of the built-in buttons.                      |
+| `data-size`                 | attribute | `xs`, `sm`, `md`, `lg` | Size of the built-in buttons and the slider.       |
 | `data-disabled`             | state     | `true`                 | The whole control is disabled.                     |
