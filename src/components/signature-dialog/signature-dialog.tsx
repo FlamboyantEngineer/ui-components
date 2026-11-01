@@ -37,7 +37,7 @@ export interface SignatureDialogProps
   meanings: readonly SignatureMeaning[];
   /** Asks for a reason. Defaults to `optional`. */
   reason?: SignatureDialogEntry | undefined;
-  /** Asks for a drawn or typed signature. Defaults to `none`. */
+  /** Asks for a drawn, typed or image signature. Defaults to `none`. */
   drawing?: SignatureDialogEntry | undefined;
   /** Labels the Sign action. Defaults to the provider's `sign` string. */
   confirmLabel?: ReactNode;

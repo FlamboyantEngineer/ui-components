@@ -1,4 +1,4 @@
-/* Signature Pad: a mode choice, a framed 3:1 drawing area with its buttons, or a name input. */
+/* Signature Pad: a mode choice, a framed 3:1 drawing or image area with its buttons, or a name input. */
 
 .ui-signature-pad .ui-field__control {
   display: flex;
@@ -11,7 +11,8 @@
   margin-bottom: 2px;
 }
 
-.ui-signature-pad__surface {
+.ui-signature-pad__surface,
+.ui-signature-pad__image-surface {
   box-sizing: border-box;
   width: 300px;
   max-width: 100%;
@@ -22,7 +23,43 @@
   cursor: crosshair;
 }
 
-.ui-signature-pad__surface:focus-visible {
+.ui-signature-pad__image {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.ui-signature-pad__image-surface {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  cursor: default;
+}
+
+.ui-signature-pad__image-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  min-height: 0;
+}
+
+.ui-signature-pad__image-hint {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  text-align: center;
+}
+
+.ui-signature-pad__image-message {
+  margin: 0;
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-signature-pad__surface:focus-visible,
+.ui-signature-pad__image-surface:focus-visible {
   border-color: var(--ref-focus);
   outline: var(--ref-focus-ring-thin);
 }
@@ -67,27 +104,30 @@
   outline: var(--ref-focus-ring-thin);
 }
 
-.ui-signature-pad[data-dirty] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+.ui-signature-pad[data-dirty]
+  :is(.ui-signature-pad__surface, .ui-signature-pad__image-surface, .ui-signature-pad__input) {
   border-color: var(--ref-dirty);
 }
 
 .ui-signature-pad[data-validation='invalid']
-  :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  :is(.ui-signature-pad__surface, .ui-signature-pad__image-surface, .ui-signature-pad__input) {
   border-color: var(--ref-danger);
 }
 
 .ui-signature-pad[data-validation='warning']
-  :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+  :is(.ui-signature-pad__surface, .ui-signature-pad__image-surface, .ui-signature-pad__input) {
   border-color: var(--ref-warning);
 }
 
-.ui-signature-pad[data-readonly] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+.ui-signature-pad[data-readonly]
+  :is(.ui-signature-pad__surface, .ui-signature-pad__image-surface, .ui-signature-pad__input) {
   border-style: dashed;
   background: var(--ref-field-fill-inactive);
   cursor: default;
 }
 
-.ui-signature-pad[data-disabled] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
+.ui-signature-pad[data-disabled]
+  :is(.ui-signature-pad__surface, .ui-signature-pad__image-surface, .ui-signature-pad__input) {
   cursor: not-allowed;
   background: var(--ref-field-fill-inactive);
   color: var(--ref-muted);

@@ -14,23 +14,45 @@ import {
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import type { SignatureValue } from './signature-path.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { SignatureImageArea } from './signature-image.js';
 import { SignatureSurface, signaturePadHooks as hooks } from './signature-surface.js';
 
-export type { DrawnSignature, SignatureValue, TypedSignature } from './signature-path.js';
+export type {
+  DrawnSignature,
+  ImageSignature,
+  SignatureValue,
+  TypedSignature,
+} from './signature-path.js';
 
-/** How the signature is given: drawn with a pointer, or typed as the signer's name. */
-type SignaturePadMode = 'draw' | 'type';
+/**
+ * How the signature is given: drawn with a pointer, typed as the signer's name, or as an existing
+ * image, uploaded or pasted.
+ */
+export type SignaturePadMode = 'draw' | 'type' | 'image';
+
+const allModes: readonly SignaturePadMode[] = ['draw', 'type', 'image'];
+
+/** An image file of 2 MB at most is taken by default. */
+const defaultMaxImageSize = 2 * 1024 * 1024;
 
 export interface SignaturePadProps extends FieldInputProps<SignatureValue | null> {
-  /** Offers typing the name as the keyboard alternative to drawing. Defaults to true. */
-  allowsTyping?: boolean | undefined;
+  /**
+   * The ways the signer may give the signature, in the order offered; the first is where an empty
+   * pad starts. Defaults to drawing, typing and an image. With one mode, no choice shows.
+   */
+  modes?: readonly SignaturePadMode[] | undefined;
+  /** The largest image file the image mode takes, in bytes. Defaults to 2 MB. */
+  maxImageSize?: number | undefined;
 }
 
 interface SignatureControlsProps {
   control: FieldControlProps;
   state: FieldState<SignatureValue | null>;
   mode: SignaturePadMode;
-  onModeChange: ((mode: SignaturePadMode) => void) | null;
+  /** The modes offered, when there is a choice. */
+  modes: readonly SignaturePadMode[] | null;
+  onModeChange: (mode: SignaturePadMode) => void;
+  maxImageSize: number;
   name: string | undefined;
 }
 
@@ -40,11 +62,14 @@ interface SignatureControlsProps {
  */
 function isSignatureEmpty(value: SignatureValue | null): boolean {
   if (!value) return true;
-  return value.kind === 'typed' ? value.text.trim() === '' : value.paths.length === 0;
+  if (value.kind === 'typed') return value.text.trim() === '';
+  return value.kind === 'image' ? value.src === '' : value.paths.length === 0;
 }
 
+const modeByKind = { drawn: 'draw', typed: 'type', image: 'image' } as const;
+
 function modeOf(value: SignatureValue): SignaturePadMode {
-  return value.kind === 'typed' ? 'type' : 'draw';
+  return modeByKind[value.kind];
 }
 
 /** The name input of the typed mode: blank text is no signature. */
@@ -70,46 +95,66 @@ function SignatureInput({ control, state }: Pick<SignatureControlsProps, 'contro
   );
 }
 
-function SignatureControls({ control, state, mode, onModeChange, name }: SignatureControlsProps) {
-  const strings = useUiStrings();
+/** Where the signature is given in the current mode: the name input, the image area or the canvas. */
+function SignatureEntry({ control, state, mode, maxImageSize }: SignatureControlsProps) {
   const { value } = state;
   const isEditable = !state.isReadOnly && !state.isDisabled;
+  const settle = (next: SignatureValue | null) => {
+    state.setValue(next);
+    state.commit();
+  };
+  if (mode === 'type') return <SignatureInput control={control} state={state} />;
+  if (mode === 'image') {
+    return (
+      <SignatureImageArea
+        control={control}
+        image={value?.kind === 'image' ? value : null}
+        isEditable={isEditable}
+        maxSize={maxImageSize}
+        onImage={settle}
+      />
+    );
+  }
+  return (
+    <SignatureSurface
+      control={control}
+      drawing={value?.kind === 'drawn' ? value : null}
+      isEditable={isEditable}
+      onDraw={settle}
+    />
+  );
+}
+
+function SignatureControls(props: SignatureControlsProps) {
+  const { state, mode, modes, onModeChange, name } = props;
+  const strings = useUiStrings();
+  const labels: Record<SignaturePadMode, string> = {
+    draw: strings.signatureDraw,
+    type: strings.signatureType,
+    image: strings.signatureImage,
+  };
   return (
     <>
-      {onModeChange ? (
+      {modes ? (
         <SegmentedChoice
           {...hooks.slot('modes')}
           aria-label={strings.signatureMethod}
           size="sm"
           sizing="content"
-          options={[
-            { value: 'draw', label: strings.signatureDraw },
-            { value: 'type', label: strings.signatureType },
-          ]}
+          options={modes.map((entry) => ({ value: entry, label: labels[entry] }))}
           value={mode}
           isReadOnly={state.isReadOnly}
           isDisabled={state.isDisabled}
           onChange={(next) => {
-            if (next === 'draw' || next === 'type') onModeChange(next);
+            const chosen = modes.find((entry) => entry === next);
+            if (chosen) onModeChange(chosen);
           }}
         />
       ) : null}
-      {mode === 'type' ? (
-        <SignatureInput control={control} state={state} />
-      ) : (
-        <SignatureSurface
-          control={control}
-          drawing={value?.kind === 'drawn' ? value : null}
-          isEditable={isEditable}
-          onDraw={(drawing) => {
-            state.setValue(drawing);
-            state.commit();
-          }}
-        />
-      )}
+      <SignatureEntry {...props} />
       <FieldFormValue
         name={name}
-        value={value ? JSON.stringify(value) : null}
+        value={state.value ? JSON.stringify(state.value) : null}
         isDisabled={state.isDisabled}
       />
     </>
@@ -118,22 +163,31 @@ function SignatureControls({ control, state, mode, onModeChange, name }: Signatu
 
 /**
  * A field for a signature: drawn with a mouse, a pen or a touch as smoothed strokes on an SVG
- * canvas, with Undo stroke and Clear, or typed as the signer's name, the keyboard alternative. The
- * value is a drawn signature (SVG path data) or a typed one, and `null` while empty. It has the
- * field base's label, validation, dirty state, restore, undo and menu.
+ * canvas, with Undo stroke and Clear; typed as the signer's name, the keyboard alternative; or
+ * given as an existing image, uploaded or pasted. The value is a drawn signature (SVG path data), a
+ * typed one or an image one, and `null` while empty. It has the field base's label, validation,
+ * dirty state, restore, undo and menu.
  */
-export function SignaturePad({ allowsTyping = true, ...props }: SignaturePadProps) {
+export function SignaturePad({
+  modes: offered = allModes,
+  maxImageSize = defaultMaxImageSize,
+  ...props
+}: SignaturePadProps) {
   const { state, field, rest } = useFieldControl(props, {
     initialValue: null,
     emptyValue: null,
     isEmpty: isSignatureEmpty,
   });
+  const modes = offered.length > 0 ? offered : allModes.slice(0, 1);
+  const firstMode = modes[0] ?? 'draw';
   const valueMode = state.value ? modeOf(state.value) : null;
-  const [chosenMode, setChosenMode] = useState<SignaturePadMode>(valueMode ?? 'draw');
+  const [chosenMode, setChosenMode] = useState<SignaturePadMode>(valueMode ?? firstMode);
   // An empty field keeps the mode of the value it last held, so clearing a typed name keeps its input.
   if (valueMode && valueMode !== chosenMode) setChosenMode(valueMode);
-  // Without typing, an empty field draws; a typed value already held still shows, not erased.
-  const mode = valueMode ?? (allowsTyping ? chosenMode : 'draw');
+  // An empty field shows the chosen mode while it is offered; a value of a mode no longer offered
+  // still shows, not erased.
+  const mode = valueMode ?? (modes.includes(chosenMode) ? chosenMode : firstMode);
+  // Changing the mode clears a signature given another way, so no hidden signature is kept.
   const changeMode = (next: SignaturePadMode) => {
     setChosenMode(next);
     if (state.value && modeOf(state.value) !== next) {
@@ -153,7 +207,9 @@ export function SignaturePad({ allowsTyping = true, ...props }: SignaturePadProp
           control={control}
           state={state}
           mode={mode}
-          onModeChange={allowsTyping ? changeMode : null}
+          modes={modes.length > 1 ? modes : null}
+          onModeChange={changeMode}
+          maxImageSize={maxImageSize}
           name={rest.name}
         />
       )}

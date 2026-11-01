@@ -35,6 +35,11 @@ export const signaturePadHooks = createHooks('signature-pad', [
   'stroke',
   'actions',
   'input',
+  'image',
+  'image-surface',
+  'image-preview',
+  'image-hint',
+  'image-message',
 ]);
 
 const hooks = signaturePadHooks;
