@@ -27,7 +27,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-1.4 - Size and wrapping
 
-`size` (`sm`, `md` by default, `lg`) shall publish `data-size`, from which the stylesheet sets the starting height. `wrap` (`soft` by default, or `off`) shall publish `data-wrap` and set the text area's `wrap`: `soft` wraps long lines and `off` scrolls them sideways.
+`size` (`sm`, `md` by default, `lg`) shall publish `data-size`, from which the stylesheet sets the starting height and the source metrics (font size, line height and inset) that the text area, the highlighted copy, the gutter and the caret marker share, so a larger size has larger text and the layers stay level at every size. `wrap` (`soft` by default, or `off`) shall publish `data-wrap` and set the text area's `wrap`: `soft` wraps long lines and `off` scrolls them sideways.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -419,7 +419,7 @@ Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.sp
 | `ui-code-editor__tooltip`       | slot      |                                                                                        | The hover tip popover.                                                   |
 | `ui-code-editor__popover`       | slot      |                                                                                        | The completion list (also `ui-completion-list`).                         |
 | `ui-code-editor__search`        | slot      |                                                                                        | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
-| `data-size`                     | attribute | `sm`, `md`, `lg`                                                                       | Starting height.                                                         |
+| `data-size`                     | attribute | `sm`, `md`, `lg`                                                                       | Starting height and source metrics.                                      |
 | `data-wrap`                     | attribute | `soft`, `off`                                                                          | Whether long lines wrap.                                                 |
 | `data-token`                    | attribute |                                                                                        | On a token: its type, from the caller's tokenizer.                       |
 | `data-numbered`                 | state     | `true`                                                                                 | The gutter shows.                                                        |

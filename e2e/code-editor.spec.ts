@@ -89,7 +89,11 @@ test.describe('Code Editor lab', () => {
     expect(await highlight.evaluate((element) => element.scrollLeft)).toBe(30);
     const gutter = long.locator('.ui-code-editor__gutter');
     expect(await gutter.evaluate((element) => element.scrollTop)).toBe(240);
-    const row = long.locator('.ui-code-editor__line').nth(14);
+    // The first row below the scrolled-off part, whatever the size's line height.
+    const lineHeight = await input.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).lineHeight),
+    );
+    const row = long.locator('.ui-code-editor__line').nth(Math.ceil(240 / lineHeight));
     const line = await box(row);
     const surface = await box(long.locator('.ui-code-editor__surface'));
     expect(line.y).toBeGreaterThanOrEqual(surface.y);
@@ -574,5 +578,43 @@ test.describe('Code Editor lab', () => {
         expect(corners, `${wrap} ${size}`).toEqual([true, true]);
       }
     }
+  });
+  test('UIC-CODE-EDITOR-1.4 UIC-CODE-EDITOR-1.3 scales the source text with the size and keeps the layers level', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const sizes: number[] = [];
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const wrap of ['soft', 'off']) {
+        const target = cell(page, wrap, 'numbered', size);
+        await target.scrollIntoViewIfNeeded();
+        const input = target.getByRole('textbox', { name: 'Source' });
+        const highlight = target.locator('.ui-code-editor__highlight');
+        const metrics = (locator: Locator) =>
+          locator.evaluate((node) => {
+            const style = getComputedStyle(node);
+            return [style.fontSize, style.lineHeight, style.paddingTop, style.paddingLeft];
+          });
+        const inputMetrics = await metrics(input);
+        expect(await metrics(highlight)).toEqual(inputMetrics);
+        expect(await box(input)).toEqual(await box(highlight));
+        const gutter = target.locator('.ui-code-editor__gutter');
+        expect(await gutter.evaluate((node) => getComputedStyle(node).fontSize)).toBe(
+          inputMetrics[0],
+        );
+        // The gutter's numbers stay level with the lines they number.
+        const rows = target.locator('.ui-code-editor__line-number');
+        const lines = target.locator('.ui-code-editor__highlight');
+        const firstRow = await box(rows.first());
+        const text = await box(lines);
+        expect(
+          Math.abs(firstRow.y - (text.y + Number.parseFloat(inputMetrics[2] ?? '0'))),
+        ).toBeLessThanOrEqual(1);
+        if (wrap === 'soft') sizes.push(Number.parseFloat(inputMetrics[0] ?? '0'));
+      }
+    }
+    expect(sizes[0]).toBeLessThan(sizes[1] ?? 0);
+    expect(sizes[1]).toBeLessThan(sizes[2] ?? 0);
   });
 });
