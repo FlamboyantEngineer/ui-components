@@ -169,8 +169,9 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
     if (cell.dataset['editing']) return;
     const position = readCellPosition(grid, cell);
     if (!position) return;
-    // The press is the table's: no row selection, no text selection.
-    event.preventDefault();
+    // The press is the table's: no row selection, no text selection. A touch keeps its default, so
+    // a long touch still reaches a context menu around the table.
+    if (event.pointerType !== 'touch') event.preventDefault();
     event.stopPropagation();
     press(cell, position, event);
   };

@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Menu, MenuItem, MenuPopover, SubmenuTrigger } from '../menu/menu.js';
+import { Button } from '../button/button.js';
+import { ListView, ListViewItem } from '../list-row/list-view.js';
 import { ContextMenuTrigger } from './context-menu.js';
 
 afterEach(() => {
@@ -177,6 +179,39 @@ describe('ContextMenuTrigger', () => {
     expect(popover()?.style.left).toBe('40px');
     expect(fireEvent.contextMenu(target, { clientX: 200, clientY: 200 })).toBe(false);
     expect(popover()?.style.left).toBe('40px');
+  });
+
+  it('UIC-CONTEXT-MENU-1.3 opens at a long touch on a button or a list row inside the target', async () => {
+    const user = setupOnFakeClock();
+    const onPress = vi.fn();
+    render(
+      <ContextMenuTrigger>
+        <div tabIndex={0}>
+          <Button onPress={onPress}>Preview</Button>
+          <ListView aria-label="Files" items={[{ id: 'notes', name: 'Notes.txt' }]}>
+            {(item) => <ListViewItem title={item.name} />}
+          </ListView>
+        </div>
+        <FileMenu />
+      </ContextMenuTrigger>,
+    );
+    for (const target of [
+      screen.getByRole('button', { name: 'Preview' }),
+      screen.getByRole('row', { name: 'Notes.txt' }),
+    ]) {
+      await user.pointer({ keys: '[TouchA>]', target, coords: { clientX: 30, clientY: 50 } });
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(popover()?.style.left).toBe('30px');
+      await user.keyboard('{Escape}');
+      await user.pointer({ keys: '[/TouchA]', target });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    }
   });
 
   it('UIC-CONTEXT-MENU-1.4 focuses the first item and returns focus to the target', async () => {
