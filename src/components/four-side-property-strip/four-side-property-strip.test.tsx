@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -9,6 +9,7 @@ import { PropertyScope } from '../property-scope/property-scope.js';
 import {
   FourSidePropertyStrip,
   type BoxSide,
+  type FourSideField,
   type FourSideValues,
 } from './four-side-property-strip.js';
 
@@ -205,5 +206,92 @@ describe('FourSidePropertyStrip', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Grow left 5' }));
     expect(screen.getByRole('button', { name: 'Grow left 6' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Grow right 5' })).toBeInTheDocument();
+  });
+
+  it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 builds edits made in one batch on each other', () => {
+    const fields = new Map<string, FourSideField<number>>();
+    const onChange = vi.fn<(value: FourSideValues<string, number>) => void>();
+    function Strip(props: { link?: 'all' | 'pairs'; value?: FourSideValues<BoxSide, number> }) {
+      return (
+        <FourSidePropertyStrip<number>
+          label="Margin"
+          defaultValue={props.value ? undefined : { top: 1, bottom: 2, left: 3, right: 4 }}
+          value={props.value}
+          onChange={onChange}
+          link={props.link}
+          defaultLinked
+          renderSide={(side, field) => {
+            fields.set(side, field);
+            return <output aria-label={`Margin ${side}`}>{field.value ?? ''}</output>;
+          }}
+        />
+      );
+    }
+    const field = (side: string) => {
+      const found = fields.get(side);
+      if (!found) throw new Error(`no ${side} field`);
+      return found;
+    };
+    const shown = (side: string) => screen.getByRole('status', { name: `Margin ${side}` });
+
+    const { unmount } = render(<Strip />);
+    act(() => {
+      field('top').onChange(10);
+      field('left').onChange(30);
+      field('left').onChange(31);
+    });
+    expect(onChange.mock.calls.map(([value]) => value)).toEqual([
+      { top: 10, bottom: 2, left: 3, right: 4 },
+      { top: 10, bottom: 2, left: 30, right: 4 },
+      { top: 10, bottom: 2, left: 31, right: 4 },
+    ]);
+    expect(shown('top')).toHaveTextContent('10');
+    expect(shown('left')).toHaveTextContent('31');
+    unmount();
+
+    onChange.mockClear();
+    const { unmount: unmountPairs } = render(<Strip link="pairs" />);
+    act(() => {
+      field('top').onChange(10);
+      field('left').onChange(30);
+    });
+    expect(onChange).toHaveBeenLastCalledWith({ top: 10, bottom: 10, left: 30, right: 30 });
+    expect(shown('bottom')).toHaveTextContent('10');
+    unmountPairs();
+
+    // A controlling owner that accepts nothing: once the strip renders again, edits start over.
+    onChange.mockClear();
+    const { rerender } = render(<Strip value={{ top: 1 }} />);
+    act(() => {
+      field('top').onChange(5);
+      field('right').onChange(6);
+    });
+    expect(onChange).toHaveBeenLastCalledWith({ top: 5, right: 6 });
+    rerender(<Strip value={{ top: 1 }} />);
+    act(() => field('bottom').onChange(7));
+    expect(onChange).toHaveBeenLastCalledWith({ top: 1, bottom: 7 });
+    expect(onChange.mock.calls[0]?.[0]).toEqual({ top: 5 });
+  });
+
+  it('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 builds batched edits on each other for logical sides', () => {
+    const fields = new Map<string, FourSideField<string>>();
+    const onChange = vi.fn();
+    render(
+      <FourSidePropertyStrip
+        label="Inset"
+        sides="logical"
+        link="all"
+        onChange={onChange}
+        renderSide={(side, field) => {
+          fields.set(side, field);
+          return null;
+        }}
+      />,
+    );
+    act(() => {
+      fields.get('block-start')?.onChange('1px');
+      fields.get('inline-end')?.onChange('2px');
+    });
+    expect(onChange).toHaveBeenLastCalledWith({ 'block-start': '1px', 'inline-end': '2px' });
   });
 });

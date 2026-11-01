@@ -1,7 +1,7 @@
 'use client';
 
 import { LinkGlyph } from '../../core/glyphs.js';
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, dataAttributes, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -95,6 +95,23 @@ function setSide<S extends string, T>(
 }
 
 /**
+ * Applies edits to `values` through `setValues`, each built on the edits made before the strip
+ * renders again rather than on the values shown, so edits in one batch keep each other. Every
+ * commit drops them, so an edit a controlling owner did not accept is not carried on.
+ */
+function useBatchedEdits<V>(values: V, setValues: (next: V) => void) {
+  const unrendered = useRef<{ values: V } | null>(null);
+  useLayoutEffect(() => {
+    unrendered.current = null;
+  });
+  return (update: (base: V) => V) => {
+    const next = update(unrendered.current ? unrendered.current.values : values);
+    unrendered.current = { values: next };
+    setValues(next);
+  };
+}
+
+/**
  * One property row holding a value for each side of a box, such as margins or padding: top,
  * bottom, left and right, or their flow-relative counterparts. Each side's cell shows the first
  * letter of the side's name; the names are also words a query matches. Holding the values, the
@@ -119,6 +136,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
     mode === 'logical'
       ? strings.logicalBoxSide(side as LogicalBoxSide)
       : strings.boxSide(side as BoxSide);
+  const edit = useBatchedEdits(values, setValues);
   const draw = renderSide as (side: string, field: FourSideField<T>) => ReactNode;
   const activeLink = link && linked ? link : null;
 
@@ -135,7 +153,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
           const field: FourSideField<T> = {
             value: values[side],
             onChange: (next) =>
-              setValues(setSide(values, { sides, side, value: next }, activeLink)),
+              edit((base) => setSide(base, { sides, side, value: next }, activeLink)),
           };
           return (
             <PropertyStripCell
