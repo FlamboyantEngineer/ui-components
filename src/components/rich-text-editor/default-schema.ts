@@ -12,6 +12,12 @@ function readHref(element: HTMLElement) {
   return href !== null && isSafeUrl(href) ? { href, title: element.getAttribute('title') } : false;
 }
 
+/** Reads an `<ol start>` attribute: any whole number, 0 and negatives included, else 1. */
+function toListStart(value: string | null) {
+  const start = value === null || value.trim() === '' ? 1 : Number(value);
+  return Number.isSafeInteger(start) ? start : 1;
+}
+
 /** The default block and inline node types, in the order the schema tries them. */
 export const defaultNodes: Record<string, NodeSpec> = {
   doc: { content: 'block+' },
@@ -68,7 +74,7 @@ export const defaultNodes: Record<string, NodeSpec> = {
     parseDOM: [
       {
         tag: 'ol',
-        getAttrs: (element) => ({ start: Number(element.getAttribute('start') ?? 1) || 1 }),
+        getAttrs: (element) => ({ start: toListStart(element.getAttribute('start')) }),
       },
     ],
     toDOM: (node) => ['ol', node.attrs.start === 1 ? {} : { start: String(node.attrs.start) }, 0],

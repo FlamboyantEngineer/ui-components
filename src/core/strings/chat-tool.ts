@@ -46,16 +46,17 @@ export interface ChatToolStrings {
 function toDurationParts(milliseconds: number) {
   const rounded = Math.max(0, Math.round(milliseconds));
   if (rounded < 1000) return { unit: 'ms', milliseconds: rounded, seconds: 0, minutes: 0 };
-  if (rounded < 60_000) {
-    return {
-      unit: 'seconds',
-      milliseconds: rounded,
-      seconds: Math.round(rounded / 100) / 10,
-      minutes: 0,
-    };
-  }
-  const seconds = Math.round((rounded % 60_000) / 1000);
-  return { unit: 'minutes', milliseconds: rounded, seconds, minutes: Math.floor(rounded / 60_000) };
+  // The unit comes from the value as shown, so 59.95 s reads as 1 min, never 60 s.
+  const tenths = Math.round(rounded / 100);
+  if (tenths < 600)
+    return { unit: 'seconds', milliseconds: rounded, seconds: tenths / 10, minutes: 0 };
+  const totalSeconds = Math.round(rounded / 1000);
+  return {
+    unit: 'minutes',
+    milliseconds: rounded,
+    seconds: totalSeconds % 60,
+    minutes: Math.floor(totalSeconds / 60),
+  };
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

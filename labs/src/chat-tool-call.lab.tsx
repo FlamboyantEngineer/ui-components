@@ -200,6 +200,23 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Durations"
+      description="The unit follows the duration as shown: 59.94 s still reads in seconds, while 59.95 s rounds to a whole minute and never reads 60 s."
+    >
+      <StateMatrix
+        axes={{ duration: ['350', '59940', '59950', '119600', '125000'] }}
+        render={({ duration }) => (
+          <ChatToolCall
+            id={`duration-${duration}`}
+            name="search_recipes"
+            variant="row"
+            status="succeeded"
+            durationMs={Number(duration)}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Custom body"
       description="A host draws its own view of a weather tool's result in place of the JSON."
     >

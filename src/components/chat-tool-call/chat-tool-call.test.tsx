@@ -196,6 +196,24 @@ describe('ChatToolCall', () => {
     expect(duration()).toBeNull();
   });
 
+  it('UIC-CHAT-TOOL-CALL-1.4 picks the unit from the rounded duration', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={59_949} />,
+    );
+    const shown = () =>
+      container.querySelector('.ui-chat-tool-call__duration [aria-hidden="true"]') as HTMLElement;
+    expect(shown()).toHaveTextContent('59.9 s');
+    for (const durationMs of [59_950, 59_999, 60_000]) {
+      rerender(
+        <ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={durationMs} />,
+      );
+      expect(shown()).toHaveTextContent(/^1 min$/);
+    }
+    rerender(<ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={119_600} />);
+    expect(shown()).toHaveTextContent(/^2 min$/);
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Run tests Done 2 minutes');
+  });
+
   it('UIC-CHAT-TOOL-CALL-1.5 marks an auto-approved call with a badge', () => {
     const { container, rerender } = render(
       <ChatToolCall id="call" name="run_tests" status="running" approval={{}} />,

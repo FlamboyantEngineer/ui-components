@@ -55,6 +55,17 @@ describe('table cell write helpers', () => {
     expect(parseCellText(' ', 7)).toBe(' ');
   });
 
+  it('UIC-TABLE-11.2 reads only plain decimal text of a safe size as a number', () => {
+    expect(['-1.5', '+3', '.5', '2.', ' 8 '].map((text) => parseCellText(text, 7))).toEqual([
+      -1.5, 3, 0.5, 2, 8,
+    ]);
+    const unsafe = '9007199254740993';
+    for (const text of ['0x10', '0b11', '0o7', '1e3', 'Infinity', unsafe]) {
+      expect(parseCellText(text, 7)).toBe(text);
+    }
+    expect(parseCellText(String(Number.MAX_SAFE_INTEGER), 7)).toBe(Number.MAX_SAFE_INTEGER);
+  });
+
   it('UIC-TABLE-14.7 reads text through the column and reports its refusal', () => {
     const [name, count] = columns;
     if (!name || !count) throw new Error('columns');
