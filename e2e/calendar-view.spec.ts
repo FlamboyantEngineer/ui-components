@@ -112,7 +112,8 @@ test.describe('Calendar View lab', () => {
       .getByRole('button', { name: /^Second pass, 1:30\sAM EST/ })
       .boundingBox();
     expect(first?.y).toBeCloseTo(second?.y ?? 0, 0);
-    expect((second?.x ?? 0) > (first?.x ?? 0)).toBe(true);
+    // Each pass keeps its own lane: the second never covers the first.
+    expect((second?.x ?? 0) >= (first?.x ?? 0) + (first?.width ?? 0) - 1).toBe(true);
   });
 
   test('UIC-CALENDAR-VIEW-1.3 UIC-CALENDAR-VIEW-2.2 navigates periods and views and opens events', async ({

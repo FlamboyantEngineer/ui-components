@@ -176,6 +176,46 @@ describe('calendar layout', () => {
     expect([next?.top, rounded(next?.height ?? 0)]).toEqual([50, 4.167]);
   });
 
+  it('UIC-CALENDAR-VIEW-2.5 packs the passes of a repeated hour by their place on the ruler', () => {
+    const timeZone = 'America/New_York';
+    const event = (id: string, start: string, end: string): CalendarViewEvent => ({
+      id,
+      title: id,
+      start: `2026-11-01T${start}`,
+      end: `2026-11-01T${end}`,
+    });
+    const lanes = (events: CalendarViewEvent[]) =>
+      layoutDay(day('2026-11-01'), readEvents(events, timeZone), timeZone).map((block) => [
+        block.placed.event.id,
+        rounded(block.left),
+        rounded(block.width),
+      ]);
+    // Early and Late share 1:30 to 1:45 on the ruler, an hour apart: each takes its own lane.
+    expect(
+      lanes([
+        event('early', '01:30-04:00', '01:45-04:00'),
+        event('middle', '01:50-04:00', '01:55-04:00'),
+        event('late', '01:30-05:00', '01:45-05:00'),
+      ]),
+    ).toEqual([
+      ['early', 0, 50],
+      ['late', 50, 50],
+      ['middle', 0, 100],
+    ]);
+    // A longer event across both passes: the three share the hour's place, in three lanes.
+    expect(
+      lanes([
+        event('bridge', '01:00-04:00', '01:20-05:00'),
+        event('late', '01:05-05:00', '01:15-05:00'),
+        event('early', '01:05-04:00', '01:15-04:00'),
+      ]),
+    ).toEqual([
+      ['bridge', 0, 33.333],
+      ['early', 33.333, 33.333],
+      ['late', 66.667, 33.333],
+    ]);
+  });
+
   it('UIC-CALENDAR-VIEW-2.5 shares a repeated hour between its passes and clips a 25-hour day', () => {
     const timeZone = 'America/New_York';
     const placed = readEvents(
@@ -230,9 +270,9 @@ describe('calendar layout', () => {
     ).toEqual([
       ['before', 0, 4.167, 0],
       ['early', 6.25, 1.042, 0],
+      ['late', 6.25, 1.042, 33.333],
       // It ends at an earlier wall-clock time than it starts, so it keeps its 30 elapsed minutes.
-      ['back', 6.944, 2.083, 33.333],
-      ['late', 6.25, 1.042, 66.667],
+      ['back', 6.944, 2.083, 66.667],
       ['zero', 95.833, 0, 0],
       ['after', 97.917, 2.083, 0],
     ]);

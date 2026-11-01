@@ -189,7 +189,8 @@ const dayMs = 86_400_000;
  * the day's 24-hour wall-clock ruler, with overlapping events side by side. An instant sits at its
  * wall-clock time, so a skipped hour stays empty and both passes of a repeated hour share its
  * place; an event whose end reads earlier than its start, running back through a repeated hour,
- * keeps its elapsed length from its start.
+ * keeps its elapsed length from its start. Events are packed by their place on that ruler, so
+ * the two passes of a repeated hour overlap there and sit side by side.
  */
 export function layoutDay(
   day: string,
@@ -205,7 +206,6 @@ export function layoutDay(
       (placed) =>
         !placed.isSpan && placed.start < to && (placed.end > from || placed.start >= from),
     )
-    .sort((first, second) => first.start - second.start || second.end - first.end)
     .map((placed) => {
       const start = Math.max(placed.start, from);
       const end = Math.min(placed.end, to);
@@ -219,6 +219,15 @@ export function layoutDay(
         continuesBefore: placed.start < from,
         continuesAfter: placed.end > to,
       };
-    });
+    })
+    // Packed in the order drawn: by place on the ruler, the taller first, then by instant. During a
+    // repeated hour a later instant can sit higher on the ruler than an earlier one.
+    .sort(
+      (first, second) =>
+        first.top - second.top ||
+        second.height - first.height ||
+        first.placed.start - second.placed.start ||
+        second.placed.end - first.placed.end,
+    );
   return packColumns(blocks);
 }

@@ -77,6 +77,12 @@ const clockChanges: CalendarViewEvent[] = [
     end: '2026-11-01T01:45-04:00',
   },
   {
+    id: 'fall-between',
+    title: 'Between passes',
+    start: '2026-11-01T01:50-04:00',
+    end: '2026-11-01T01:55-04:00',
+  },
+  {
     id: 'fall-second',
     title: 'Second pass',
     start: '2026-11-01T01:30-05:00',
@@ -236,7 +242,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Clock changes"
-      description="Weeks in New York when the clocks go forward (8 March) and back (1 November). Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; Open day runs midnight to midnight, 23 hours that day, and is still a bar; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST)."
+      description="Weeks in New York when the clocks go forward (8 March) and back (1 November). Events sit under the hour labels at their wall-clock times, so noon lines up on every day. The skipped 2 AM hour stays empty and a shift across it spans it; Open day runs midnight to midnight, 23 hours that day, and is still a bar; both passes of the repeated 1 AM hour share its place side by side and name their offsets (EDT, EST), each in its own lane even with Between passes, later in the first pass, between them in time."
     >
       <div style={{ display: 'grid', gap: 16 }}>
         {(['2026-03-08', '2026-11-01'] as const).map((date) => (
