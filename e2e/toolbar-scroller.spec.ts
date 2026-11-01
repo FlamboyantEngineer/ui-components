@@ -54,6 +54,23 @@ test.describe('Toolbar Scroller lab', () => {
     expect(await strip.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
   });
 
+  test('UIC-TOOLBAR-SCROLLER-1.2 keeps the caret keys of a tool field until the caret reaches an end', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toolbar-scroller');
+    const tools = page.getByRole('toolbar', { name: 'Separate tool drafts' });
+    const numeric = tools.getByRole('textbox', { name: 'Numeric tool' });
+    await numeric.click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowLeft');
+    await expect(numeric).toBeFocused();
+    expect(await numeric.evaluate((field: HTMLInputElement) => field.selectionStart)).toBe(11);
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowRight');
+    await expect(tools.getByRole('textbox', { name: 'Text tool' })).toBeFocused();
+  });
+
   test('UIC-TOOLBAR-SCROLLER-2.3 scroll buttons page toward their edge and mirror right to left', async ({
     page,
     lab,

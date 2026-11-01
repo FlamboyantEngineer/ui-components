@@ -19,6 +19,11 @@ const textControls = [
   '[role="combobox"]',
 ].join(', ');
 
+/** Whether `target` is in a text control: a field, editable content or a host's text widget. */
+export function isInTextControl(target: EventTarget | null): boolean {
+  return isElement(target) && target.closest(textControls) !== null;
+}
+
 /** The keys a text control leaves to its row or cell: moving focus out and closing. */
 const passedKeys = new Set(['Tab', 'Escape']);
 
@@ -28,11 +33,7 @@ const passedKeys = new Set(['Tab', 'Escape']);
  * it.
  */
 export function isTextControlKey(event: { key: string; target: EventTarget | null }): boolean {
-  return (
-    !passedKeys.has(event.key) &&
-    isElement(event.target) &&
-    event.target.closest(textControls) !== null
-  );
+  return !passedKeys.has(event.key) && isInTextControl(event.target);
 }
 
 interface KeyHandlers<E> {

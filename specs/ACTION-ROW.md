@@ -78,9 +78,9 @@ Verification: `src/components/action-row/action-row.test.tsx`
 
 ### UIC-ACTION-ROW-2.4 - Toolbar
 
-With `toolbar` the actions slot shall be a React Aria `Toolbar`: `role="toolbar"` named by the row's `aria-label` or `aria-labelledby`, with `data-orientation`. Tab enters and leaves it as one stop, Arrow Left and Arrow Right move focus between the actions (mirrored right to left), and focus returning to it goes back to the action that last had it. Without `toolbar` each action is its own tab stop and the row takes no name.
+With `toolbar` the actions slot shall be a React Aria `Toolbar`: `role="toolbar"` named by the row's `aria-label` or `aria-labelledby`, with `data-orientation`. Tab enters and leaves it as one stop, Arrow Left and Arrow Right move focus between the actions (mirrored right to left), and focus returning to it goes back to the action that last had it. Inside a text control in the toolbar (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) the arrow keys move the caret and move focus only from the end of the text they point to, with no modifier held (Shift, Alt, Control or Meta arrows stay with the control) and no input method composing; a field among several in a group, such as the cells of a `PinInput`, moves between them first. Without `toolbar` each action is its own tab stop and the row takes no name.
 
-Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`
+Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`, `src/utils/toolbar-caret-keys.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ### UIC-ACTION-ROW-2.5 - Overflow menu

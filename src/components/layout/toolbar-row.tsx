@@ -1,5 +1,6 @@
 'use client';
 
+import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   createContext,
@@ -98,6 +99,7 @@ function ToolbarRowStrip({ role, orientation, stripRef, children, ...rest }: Too
         ref={stripRef}
         className={hooks.slotClass('strip')}
         orientation={orientation}
+        render={renderCaretKeyToolbar}
       >
         {children}
       </Toolbar>

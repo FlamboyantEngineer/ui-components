@@ -1,5 +1,6 @@
 'use client';
 
+import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
 import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import { Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
@@ -226,7 +227,12 @@ export function ActionRowActions({
   );
   if (isToolbar) {
     return (
-      <Toolbar {...labels} ref={ref} className={hooks.slotClass('actions')}>
+      <Toolbar
+        {...labels}
+        ref={ref}
+        className={hooks.slotClass('actions')}
+        render={renderCaretKeyToolbar}
+      >
         {children}
       </Toolbar>
     );

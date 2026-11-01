@@ -13,10 +13,10 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-1.2 - Toolbar semantics and keyboard
 
-The strip shall be a React Aria `Toolbar`: `role="toolbar"` with horizontal `aria-orientation` and `data-orientation`, named by `aria-label` or `aria-labelledby`. Arrow Left and Arrow Right move focus between the tools (mirrored in right-to-left locales), Tab leaves the toolbar, and focus returning to the toolbar goes back to the tool that last had it. Inside another `role="toolbar"` element the strip becomes a `group` and leaves keyboard handling to the outer toolbar.
+The strip shall be a React Aria `Toolbar`: `role="toolbar"` with horizontal `aria-orientation` and `data-orientation`, named by `aria-label` or `aria-labelledby`. Arrow Left and Arrow Right move focus between the tools (mirrored in right-to-left locales), Tab leaves the toolbar, and focus returning to the toolbar goes back to the tool that last had it. Inside a text control in the toolbar (a text input, a slider or select, a text area, editable content, or an element with role `textbox` or `combobox`) the arrow keys move the caret and move focus only from the end of the text they point to, with no modifier held (Shift, Alt, Control or Meta arrows stay with the control) and no input method composing; a field among several in a group, such as the cells of a `PinInput`, moves between them first. Inside another `role="toolbar"` element the strip becomes a `group` and leaves keyboard handling to the outer toolbar.
 
-Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
-Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/toolbar-caret-keys.tsx`
+Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`, `src/utils/toolbar-caret-keys.test.tsx`
 
 ### UIC-TOOLBAR-SCROLLER-1.3 - Hooks and caller attributes
 
